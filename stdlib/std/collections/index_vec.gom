@@ -32,9 +32,7 @@ impl[T] IndexVec[T] {
     }
 
     pub fn with_capacity(capacity: int) -> IndexVec[T] {
-        IndexVec {
-            values: Vec::with_capacity(capacity),
-        }
+        IndexVec { values: Vec::with_capacity(capacity) }
     }
 
     pub fn len(self: IndexVec[T]) -> int {
@@ -46,9 +44,7 @@ impl[T] IndexVec[T] {
     }
 
     pub fn push(self: IndexVec[T], value: T) -> Index[T] {
-        let index = Index {
-            value: self.values.len(),
-        };
+        let index = Index { value: self.values.len() };
         self.values.push(value);
         index
     }
@@ -58,18 +54,18 @@ impl[T] IndexVec[T] {
     }
 
     pub fn get(self: IndexVec[T], index: Index[T]) -> T {
-        self.values.get(index.value)
+        self.values[index.value]
     }
 
     pub fn try_get(self: IndexVec[T], index: Index[T]) -> Option[T] {
         if self.contains(index) {
-            Option::Some(self.values.get(index.value))
+            Option::Some(self.values[index.value])
         } else {
             Option::None
         }
     }
 
     pub fn set(self: IndexVec[T], index: Index[T], value: T) -> unit {
-        self.values.set(index.value, value)
+        self.values[index.value] = value;
     }
 }

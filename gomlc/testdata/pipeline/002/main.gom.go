@@ -27,81 +27,81 @@ func main0() struct{} {
         _0: true,
         _1: false,
     }
-    var x108 bool = a__0._0
-    var x109 bool = a__0._1
-    var jp117 Tuple2_4bool_4bool
-    switch x109 {
+    var x152 bool = a__0._0
+    var x153 bool = a__0._1
+    var jp161 Tuple2_4bool_4bool
+    switch x153 {
     case true:
-        var jp132 Tuple2_4bool_4bool
-        switch x108 {
+        var jp176 Tuple2_4bool_4bool
+        switch x152 {
         case true:
-            var t133 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+            var t177 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: false,
                 _1: false,
             }
-            jp132 = t133
+            jp176 = t177
         case false:
-            var t134 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+            var t178 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: true,
                 _1: false,
             }
-            jp132 = t134
+            jp176 = t178
         default:
             panic("non-exhaustive match")
         }
-        jp117 = jp132
+        jp161 = jp176
     case false:
-        var jp136 Tuple2_4bool_4bool
-        switch x108 {
+        var jp180 Tuple2_4bool_4bool
+        switch x152 {
         case true:
-            var t137 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+            var t181 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: false,
                 _1: true,
             }
-            jp136 = t137
+            jp180 = t181
         case false:
-            var t138 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+            var t182 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: true,
                 _1: true,
             }
-            jp136 = t138
+            jp180 = t182
         default:
             panic("non-exhaustive match")
         }
-        jp117 = jp136
+        jp161 = jp180
     default:
         panic("non-exhaustive match")
     }
-    var b__1 Tuple2_4bool_4bool = jp117
-    var x111 bool = b__1._1
-    var w__2 bool = x111
+    var b__1 Tuple2_4bool_4bool = jp161
+    var x155 bool = b__1._1
+    var w__2 bool = x155
     var b_1__3 bool = w__2
-    var mtmp112 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var mtmp156 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: b_1__3,
     }
-    var x113 bool = mtmp112._0
-    var x114 bool = mtmp112._1
-    switch x114 {
+    var x157 bool = mtmp156._0
+    var x158 bool = mtmp156._1
+    switch x158 {
     case true:
-        switch x113 {
+        switch x157 {
         case true:
-            var t122 string = _goml_m_inherent_i_int_i_int_i_to__string(3)
-            println__T_string(t122)
+            var t166 string = _goml_m_inherent_i_int_i_int_i_to__string(3)
+            println__T_string(t166)
         case false:
-            var t124 string = _goml_m_inherent_i_int_i_int_i_to__string(1)
-            println__T_string(t124)
+            var t168 string = _goml_m_inherent_i_int_i_int_i_to__string(1)
+            println__T_string(t168)
         default:
             panic("non-exhaustive match")
         }
     case false:
-        switch x113 {
+        switch x157 {
         case true:
-            var t127 string = _goml_m_inherent_i_int_i_int_i_to__string(2)
-            println__T_string(t127)
+            var t171 string = _goml_m_inherent_i_int_i_int_i_to__string(2)
+            println__T_string(t171)
         case false:
-            var t129 string = _goml_m_inherent_i_int_i_int_i_to__string(0)
-            println__T_string(t129)
+            var t173 string = _goml_m_inherent_i_int_i_int_i_to__string(0)
+            println__T_string(t173)
         default:
             panic("non-exhaustive match")
         }
@@ -109,35 +109,35 @@ func main0() struct{} {
         panic("non-exhaustive match")
     }
     var c__4 struct{} = struct{}{}
-    var t119 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(c__4)
-    println__T_string(t119)
+    var t163 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(c__4)
+    println__T_string(t163)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t140 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t140)
+    var t184 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t184)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv143 string
-    var t144 string = _goml_runtime_core_int_to_string(self__5)
-    retv143 = t144
-    return retv143
+    var retv187 string
+    var t188 string = _goml_runtime_core_int_to_string(self__5)
+    retv187 = t188
+    return retv187
 }
 
 func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__36 struct{}) string {
-    var retv146 string
-    var t147 string = _goml_runtime_core_unit_to_string(self__36)
-    retv146 = t147
-    return retv146
+    var retv190 string
+    var t191 string = _goml_runtime_core_unit_to_string(self__36)
+    retv190 = t191
+    return retv190
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv149 string
-    retv149 = self__38
-    return retv149
+    var retv193 string
+    retv193 = self__38
+    return retv193
 }
 
 func main() {

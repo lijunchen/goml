@@ -20,109 +20,109 @@ func _goml_runtime_core_string_println(s string) struct{} {
 type closure_env_f_0 struct {}
 
 func add_after_match(flag__0 bool) int32 {
-    var retv116 int32
-    var jp118 int32
+    var retv160 int32
+    var jp162 int32
     switch flag__0 {
     case true:
-        retv116 = 5
-        return retv116
+        retv160 = 5
+        return retv160
     case false:
-        jp118 = 7
-        var value__1 int32 = jp118
-        var t119 int32 = value__1 + 1
-        retv116 = t119
-        return retv116
+        jp162 = 7
+        var value__1 int32 = jp162
+        var t163 int32 = value__1 + 1
+        retv160 = t163
+        return retv160
     default:
         panic("non-exhaustive match")
     }
 }
 
 func receiver_after_match(flag__2 bool) string {
-    var retv121 string
-    var jp123 int
+    var retv165 string
+    var jp167 int
     switch flag__2 {
     case true:
-        retv121 = "early"
-        return retv121
+        retv165 = "early"
+        return retv165
     case false:
-        jp123 = 7
-        var t124 string = _goml_m_inherent_i_int_i_int_i_to__string(jp123)
-        retv121 = t124
-        return retv121
+        jp167 = 7
+        var t168 string = _goml_m_inherent_i_int_i_int_i_to__string(jp167)
+        retv165 = t168
+        return retv165
     default:
         panic("non-exhaustive match")
     }
 }
 
 func closure_after_match(flag__3 bool) int32 {
-    var retv126 int32
+    var retv170 int32
     var f__6 closure_env_f_0 = closure_env_f_0{}
-    var t127 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__6, flag__3)
-    retv126 = t127
-    return retv126
+    var t171 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__6, flag__3)
+    retv170 = t171
+    return retv170
 }
 
 func main0() struct{} {
-    var t129 int32 = add_after_match(false)
-    println__T_int32(t129)
-    var t130 int32 = add_after_match(true)
-    println__T_int32(t130)
-    var t131 string = receiver_after_match(false)
-    println__T_string(t131)
-    var t132 string = receiver_after_match(true)
-    println__T_string(t132)
-    var t133 int32 = closure_after_match(false)
-    println__T_int32(t133)
-    var t134 int32 = closure_after_match(true)
-    println__T_int32(t134)
+    var t173 int32 = add_after_match(false)
+    println__T_int32(t173)
+    var t174 int32 = add_after_match(true)
+    println__T_int32(t174)
+    var t175 string = receiver_after_match(false)
+    println__T_string(t175)
+    var t176 string = receiver_after_match(true)
+    println__T_string(t176)
+    var t177 int32 = closure_after_match(false)
+    println__T_int32(t177)
+    var t178 int32 = closure_after_match(true)
+    println__T_int32(t178)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv136 string
-    var t137 string = _goml_runtime_core_int_to_string(self__5)
-    retv136 = t137
-    return retv136
+    var retv180 string
+    var t181 string = _goml_runtime_core_int_to_string(self__5)
+    retv180 = t181
+    return retv180
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t139 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t139)
+    var t183 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t183)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t142 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t142)
+    var t186 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t186)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv145 string
-    var t146 string = _goml_runtime_core_int32_to_string(self__43)
-    retv145 = t146
-    return retv145
+    var retv189 string
+    var t190 string = _goml_runtime_core_int32_to_string(self__43)
+    retv189 = t190
+    return retv189
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv148 string
-    retv148 = self__38
-    return retv148
+    var retv192 string
+    retv192 = self__38
+    return retv192
 }
 
-func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env114 closure_env_f_0, inner__4 bool) int32 {
-    var retv150 int32
-    var jp152 int32
+func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env158 closure_env_f_0, inner__4 bool) int32 {
+    var retv194 int32
+    var jp196 int32
     switch inner__4 {
     case true:
-        retv150 = 2
-        return retv150
+        retv194 = 2
+        return retv194
     case false:
-        jp152 = 4
-        var value__5 int32 = jp152
-        var t153 int32 = value__5 + 3
-        retv150 = t153
-        return retv150
+        jp196 = 4
+        var value__5 int32 = jp196
+        var t197 int32 = value__5 + 3
+        retv194 = t197
+        return retv194
     default:
         panic("non-exhaustive match")
     }

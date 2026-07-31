@@ -14,86 +14,81 @@ struct CacheSpec {
 }
 
 fn sha256_constants() -> Vec[uint32] {
-    let values = Vec::with_capacity(64);
-    values.push(1116352408);
-    values.push(1899447441);
-    values.push(3049323471);
-    values.push(3921009573);
-    values.push(961987163);
-    values.push(1508970993);
-    values.push(2453635748);
-    values.push(2870763221);
-    values.push(3624381080);
-    values.push(310598401);
-    values.push(607225278);
-    values.push(1426881987);
-    values.push(1925078388);
-    values.push(2162078206);
-    values.push(2614888103);
-    values.push(3248222580);
-    values.push(3835390401);
-    values.push(4022224774);
-    values.push(264347078);
-    values.push(604807628);
-    values.push(770255983);
-    values.push(1249150122);
-    values.push(1555081692);
-    values.push(1996064986);
-    values.push(2554220882);
-    values.push(2821834349);
-    values.push(2952996808);
-    values.push(3210313671);
-    values.push(3336571891);
-    values.push(3584528711);
-    values.push(113926993);
-    values.push(338241895);
-    values.push(666307205);
-    values.push(773529912);
-    values.push(1294757372);
-    values.push(1396182291);
-    values.push(1695183700);
-    values.push(1986661051);
-    values.push(2177026350);
-    values.push(2456956037);
-    values.push(2730485921);
-    values.push(2820302411);
-    values.push(3259730800);
-    values.push(3345764771);
-    values.push(3516065817);
-    values.push(3600352804);
-    values.push(4094571909);
-    values.push(275423344);
-    values.push(430227734);
-    values.push(506948616);
-    values.push(659060556);
-    values.push(883997877);
-    values.push(958139571);
-    values.push(1322822218);
-    values.push(1537002063);
-    values.push(1747873779);
-    values.push(1955562222);
-    values.push(2024104815);
-    values.push(2227730452);
-    values.push(2361852424);
-    values.push(2428436474);
-    values.push(2756734187);
-    values.push(3204031479);
-    values.push(3329325298);
-    values
+    Vec::[
+        1116352408,
+        1899447441,
+        3049323471,
+        3921009573,
+        961987163,
+        1508970993,
+        2453635748,
+        2870763221,
+        3624381080,
+        310598401,
+        607225278,
+        1426881987,
+        1925078388,
+        2162078206,
+        2614888103,
+        3248222580,
+        3835390401,
+        4022224774,
+        264347078,
+        604807628,
+        770255983,
+        1249150122,
+        1555081692,
+        1996064986,
+        2554220882,
+        2821834349,
+        2952996808,
+        3210313671,
+        3336571891,
+        3584528711,
+        113926993,
+        338241895,
+        666307205,
+        773529912,
+        1294757372,
+        1396182291,
+        1695183700,
+        1986661051,
+        2177026350,
+        2456956037,
+        2730485921,
+        2820302411,
+        3259730800,
+        3345764771,
+        3516065817,
+        3600352804,
+        4094571909,
+        275423344,
+        430227734,
+        506948616,
+        659060556,
+        883997877,
+        958139571,
+        1322822218,
+        1537002063,
+        1747873779,
+        1955562222,
+        2024104815,
+        2227730452,
+        2361852424,
+        2428436474,
+        2756734187,
+        3204031479,
+        3329325298,
+    ]
 }
 
 fn sha256_rotate_right(value: uint32, count: uint32) -> uint32 {
     (value >> count) | (value << (32 - count))
 }
 
-fn sha256_padded_byte(
-    value: Vec[byte],
-    index: int,
-    padded_len: int,
-    bit_len: uint64,
-) -> byte {
+fn sha256_padded_byte(value: Vec[byte], index: int, padded_len: int, bit_len: uint64) -> byte {
     if index < value.len() {
-        value.get(index)
+        value[index]
     } else if index == value.len() {
         128
     } else if index >= padded_len - 8 {
@@ -104,36 +99,16 @@ fn sha256_padded_byte(
     }
 }
 
-fn sha256_message_word(
-    value: Vec[byte],
-    offset: int,
-    padded_len: int,
-    bit_len: uint64,
-) -> uint32 {
+fn sha256_message_word(value: Vec[byte], offset: int, padded_len: int, bit_len: uint64) -> uint32 {
     ((sha256_padded_byte(value, offset, padded_len, bit_len) as uint32) << 24)
-        | ((sha256_padded_byte(
-            value,
-            offset + 1,
-            padded_len,
-            bit_len,
-        ) as uint32) << 16)
-        | ((sha256_padded_byte(
-            value,
-            offset + 2,
-            padded_len,
-            bit_len,
-        ) as uint32) << 8)
-        | (sha256_padded_byte(
-            value,
-            offset + 3,
-            padded_len,
-            bit_len,
-        ) as uint32)
+        | ((sha256_padded_byte(value, offset + 1, padded_len, bit_len) as uint32) << 16)
+        | ((sha256_padded_byte(value, offset + 2, padded_len, bit_len) as uint32) << 8)
+        | (sha256_padded_byte(value, offset + 3, padded_len, bit_len) as uint32)
 }
 
 fn sha256_write_hex(builder: text::StringBuilder, value: uint32) -> unit {
     let digits = "0123456789abcdef";
-    for index in range(0, 8) {
+    for index in 0..8 {
         let shift = ((7 - index) * 4) as uint32;
         builder.write_char(digits.get(((value >> shift) & 15) as int))
     }
@@ -155,37 +130,21 @@ fn sha256_bytes(value: Vec[byte]) -> string {
     let mut h6 = 528734635;
     let mut h7 = 1541459225;
     let words: Vec[uint32] = Vec::with_capacity(64);
-    for _ in range(0, 64) {
+    for _ in 0..64 {
         words.push(0)
     };
-    for chunk in range(0, padded_len / 64) {
-        for index in range(0, 16) {
-            words.set(
-                index,
-                sha256_message_word(
-                    value,
-                    chunk * 64 + index * 4,
-                    padded_len,
-                    bit_len,
-                ),
-            )
+    for chunk in 0..padded_len / 64 {
+        for index in 0..16 {
+            words[index] = sha256_message_word(value, chunk * 64 + index * 4, padded_len, bit_len);
         };
-        for index in range(16, 64) {
-            let first = words.get(index - 15);
-            let second = words.get(index - 2);
-            let sigma0 = sha256_rotate_right(first, 7)
-                ^ sha256_rotate_right(first, 18)
+        for index in 16..64 {
+            let first = words[index - 15];
+            let second = words[index - 2];
+            let sigma0 = sha256_rotate_right(first, 7) ^ sha256_rotate_right(first, 18)
                 ^ (first >> 3);
-            let sigma1 = sha256_rotate_right(second, 17)
-                ^ sha256_rotate_right(second, 19)
+            let sigma1 = sha256_rotate_right(second, 17) ^ sha256_rotate_right(second, 19)
                 ^ (second >> 10);
-            words.set(
-                index,
-                words.get(index - 16)
-                    + sigma0
-                    + words.get(index - 7)
-                    + sigma1,
-            )
+            words[index] = words[index - 16] + sigma0 + words[index - 7] + sigma1;
         };
         let mut a = h0;
         let mut b = h1;
@@ -195,18 +154,12 @@ fn sha256_bytes(value: Vec[byte]) -> string {
         let mut f = h5;
         let mut g = h6;
         let mut h = h7;
-        for index in range(0, 64) {
-            let sigma1 = sha256_rotate_right(e, 6)
-                ^ sha256_rotate_right(e, 11)
+        for index in 0..64 {
+            let sigma1 = sha256_rotate_right(e, 6) ^ sha256_rotate_right(e, 11)
                 ^ sha256_rotate_right(e, 25);
             let choice = (e & f) ^ (~e & g);
-            let temp1 = h
-                + sigma1
-                + choice
-                + constants.get(index)
-                + words.get(index);
-            let sigma0 = sha256_rotate_right(a, 2)
-                ^ sha256_rotate_right(a, 13)
+            let temp1 = h + sigma1 + choice + constants[index] + words[index];
+            let sigma0 = sha256_rotate_right(a, 2) ^ sha256_rotate_right(a, 13)
                 ^ sha256_rotate_right(a, 22);
             let majority = (a & b) ^ (a & c) ^ (b & c);
             let temp2 = sigma0 + majority;
@@ -255,9 +208,7 @@ fn absolute_from_module(module_dir: string, value: string) -> string {
 fn file_digest(module_dir: string, value: string) -> Result[string, string] {
     match fs::sha256_file(absolute_from_module(module_dir, value)) {
         Ok(value) => Result::Ok(value),
-        Err(message) => Result::Err(
-            "failed to read cache input " + value + ": " + message,
-        ),
+        Err(message) => Result::Err("failed to read cache input " + value + ": " + message),
     }
 }
 
@@ -271,21 +222,16 @@ fn compiler_digest(context: Context) -> Result[string, string] {
 
 fn cache_spec(value: Command) -> Option[CacheSpec] {
     match value {
-        PrepareWorld { output } => Option::Some(CacheSpec {
-            kind: "prepare-world",
-            args: command_args(value).1,
-            inputs: Vec::new(),
-            outputs: Vec::new().pushed(output),
-            anchor: output,
-        }),
-        Compile {
-            subcommand,
-            input_files,
-            interface_files,
-            output,
-            world,
-            ..
-        } => {
+        PrepareWorld { output } => Option::Some(
+            CacheSpec {
+                kind: "prepare-world",
+                args: command_args(value).1,
+                inputs: Vec::new(),
+                outputs: Vec::[output],
+                anchor: output,
+            },
+        ),
+        Compile { subcommand, input_files, interface_files, output, world, .. } => {
             let inputs = Vec::new();
             for input in input_files {
                 inputs.push(input)
@@ -297,29 +243,23 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                 Some(value) => inputs.push(value),
                 None => (),
             };
-            let outputs = Vec::new().pushed(path::with_extension(
-                output,
-                "interface",
-            ));
+            let outputs = Vec::[path::with_extension(output, "interface")];
             if subcommand == "build" || subcommand == "test-build" {
                 outputs.push(path::with_extension(output, "core"))
             } else {
                 ()
             };
-            Option::Some(CacheSpec {
-                kind: subcommand,
-                args: command_args(value).1,
-                inputs,
-                outputs,
-                anchor: output,
-            })
+            Option::Some(
+                CacheSpec {
+                    kind: subcommand,
+                    args: command_args(value).1,
+                    inputs,
+                    outputs,
+                    anchor: output,
+                },
+            )
         },
-        Link {
-            input_cores,
-            output,
-            world,
-            ..
-        } => {
+        Link { input_cores, output, world, .. } => {
             let inputs = Vec::new();
             for input in input_cores {
                 inputs.push(input)
@@ -328,21 +268,17 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                 Some(value) => inputs.push(value),
                 None => (),
             };
-            Option::Some(CacheSpec {
-                kind: "link",
-                args: command_args(value).1,
-                inputs,
-                outputs: Vec::new().pushed(output),
-                anchor: output,
-            })
+            Option::Some(
+                CacheSpec {
+                    kind: "link",
+                    args: command_args(value).1,
+                    inputs,
+                    outputs: Vec::[output],
+                    anchor: output,
+                },
+            )
         },
-        TestLink {
-            input_cores,
-            output,
-            manifest,
-            world,
-            ..
-        } => {
+        TestLink { input_cores, output, manifest, world, .. } => {
             let inputs = Vec::new();
             for input in input_cores {
                 inputs.push(input)
@@ -351,36 +287,36 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                 Some(value) => inputs.push(value),
                 None => (),
             };
-            Option::Some(CacheSpec {
-                kind: "test-link",
-                args: command_args(value).1,
-                inputs,
-                outputs: Vec::new().pushed(output).pushed(manifest),
-                anchor: output,
-            })
+            Option::Some(
+                CacheSpec {
+                    kind: "test-link",
+                    args: command_args(value).1,
+                    inputs,
+                    outputs: Vec::[output, manifest],
+                    anchor: output,
+                },
+            )
         },
-        GoBuild { input, output } => Option::Some(CacheSpec {
-            kind: "go-build",
-            args: command_args(value).1,
-            inputs: Vec::new().pushed(input),
-            outputs: Vec::new().pushed(output),
-            anchor: output,
-        }),
+        GoBuild { input, output } => Option::Some(
+            CacheSpec {
+                kind: "go-build",
+                args: command_args(value).1,
+                inputs: Vec::[input],
+                outputs: Vec::[output],
+                anchor: output,
+            },
+        ),
     }
 }
 
 fn cache_path(module_dir: string, spec: CacheSpec) -> string {
-    absolute_from_module(module_dir, spec.anchor)
-        + ".goml-"
-        + spec.kind
-        + "-fingerprint"
+    absolute_from_module(module_dir, spec.anchor) + ".goml-" + spec.kind + "-fingerprint"
 }
 
-fn command_fingerprint(
-    context: Context,
-    compiler: string,
-    spec: CacheSpec,
-) -> Result[string, string] {
+fn command_fingerprint(context: Context, compiler: string, spec: CacheSpec) -> Result[
+    string,
+    string,
+] {
     let builder = text::StringBuilder::new();
     builder.write_string("goml-build-cache-v1\n");
     builder.write_string(compiler);
@@ -396,10 +332,7 @@ fn command_fingerprint(
     };
     builder.write_char('\n');
     for input in spec.inputs {
-        let digest = match file_digest(context.graph.module_dir, input) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let digest = file_digest(context.graph.module_dir, input)?;
         builder.write_string(input.byte_len().to_string());
         builder.write_char(':');
         builder.write_string(input);
@@ -408,10 +341,7 @@ fn command_fingerprint(
     Result::Ok(sha256_text(builder.finish()))
 }
 
-fn output_digests(
-    module_dir: string,
-    outputs: Vec[string],
-) -> Result[Option[Vec[string]], string] {
+fn output_digests(module_dir: string, outputs: Vec[string]) -> Result[Option[Vec[string]], string] {
     let result = Vec::new();
     for output in outputs {
         if fs::is_file(absolute_from_module(module_dir, output)) {
@@ -426,37 +356,27 @@ fn output_digests(
     Result::Ok(Option::Some(result))
 }
 
-fn cache_is_fresh(
-    context: Context,
-    spec: CacheSpec,
-    fingerprint: string,
-) -> Result[bool, string] {
+fn cache_is_fresh(context: Context, spec: CacheSpec, fingerprint: string) -> Result[bool, string] {
     let record_path = cache_path(context.graph.module_dir, spec);
     if !fs::is_file(record_path) {
         return Result::Ok(false)
     } else {
         ()
     };
-    let source = match fs::read_file(record_path) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let source = fs::read_file(record_path)?;
     let lines = util::split(source, "\n");
-    if lines.len() != spec.outputs.len() + 1 || lines.get(0) != fingerprint {
+    if lines.len() != spec.outputs.len() + 1 || lines[0] != fingerprint {
         return Result::Ok(false)
     } else {
         ()
     };
-    let actual = match output_digests(
-        context.graph.module_dir,
-        spec.outputs,
-    ) {
+    let actual = match output_digests(context.graph.module_dir, spec.outputs) {
         Ok(Some(value)) => value,
         Ok(None) => return Result::Ok(false),
         Err(message) => return Result::Err(message),
     };
-    for index in range(0, actual.len()) {
-        if lines.get(index + 1) != actual.get(index) {
+    for index in 0..actual.len() {
+        if lines[index + 1] != actual[index] {
             return Result::Ok(false)
         } else {
             ()
@@ -473,32 +393,18 @@ fn remove_cache_file(value: string) -> Result[unit, string] {
     }
 }
 
-fn prepare_cache_execution(
-    context: Context,
-    spec: CacheSpec,
-) -> Result[unit, string] {
-    match remove_cache_file(cache_path(context.graph.module_dir, spec)) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+fn prepare_cache_execution(context: Context, spec: CacheSpec) -> Result[unit, string] {
+    remove_cache_file(cache_path(context.graph.module_dir, spec))?;
     for output in spec.outputs {
-        match remove_cache_file(absolute_from_module(
-            context.graph.module_dir,
-            output,
-        )) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        }
+        remove_cache_file(absolute_from_module(context.graph.module_dir, output))?
     };
     Result::Ok(())
 }
 
-fn store_cache(
-    context: Context,
-    spec: CacheSpec,
-    compiler: string,
-    before: string,
-) -> Result[unit, string] {
+fn store_cache(context: Context, spec: CacheSpec, compiler: string, before: string) -> Result[
+    unit,
+    string,
+] {
     let after = match command_fingerprint(context, compiler, spec) {
         Ok(value) => value,
         Err(message) => {
@@ -512,16 +418,11 @@ fn store_cache(
     } else {
         ()
     };
-    let digests = match output_digests(
-        context.graph.module_dir,
-        spec.outputs,
-    ) {
+    let digests = match output_digests(context.graph.module_dir, spec.outputs) {
         Ok(Some(value)) => value,
         Ok(None) => {
             let _ = prepare_cache_execution(context, spec);
-            return Result::Err(
-                "subcommand succeeded without all expected outputs",
-            )
+            return Result::Err("subcommand succeeded without all expected outputs")
         },
         Err(message) => {
             let _ = prepare_cache_execution(context, spec);
@@ -536,13 +437,8 @@ fn store_cache(
     };
     let record_path = cache_path(context.graph.module_dir, spec);
     match path::parent(record_path) {
-        Some(parent) => match fs::create_dir_all(parent) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        },
-        None => return Result::Err(
-            "fingerprint path has no parent directory",
-        ),
+        Some(parent) => fs::create_dir_all(parent)?,
+        None => return Result::Err("fingerprint path has no parent directory"),
     };
     fs::write_file(record_path, builder.finish())
 }

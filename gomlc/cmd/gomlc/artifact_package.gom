@@ -19,12 +19,11 @@ fn artifact_builtin_interface_hash(world: PackageWorld) -> string {
     world.builtin_interface.interface_hash
 }
 
-fn artifact_find_interface_unit(
-    values: Vec[ArtifactInterfaceUnit],
-    package_name: string,
-) -> Option[ArtifactInterfaceUnit] {
-    for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+fn artifact_find_interface_unit(values: Vec[ArtifactInterfaceUnit], package_name: string) -> Option[
+    ArtifactInterfaceUnit,
+] {
+    for offset in 0..values.len() {
+        let value = values[values.len() - 1 - offset];
         if value.package_name == package_name {
             return Option::Some(value)
         } else {
@@ -34,9 +33,7 @@ fn artifact_find_interface_unit(
     Option::None
 }
 
-fn artifact_read_interface_units(
-    paths: Vec[string],
-) -> Result[Vec[ArtifactInterfaceUnit], string] {
+fn artifact_read_interface_units(paths: Vec[string]) -> Result[Vec[ArtifactInterfaceUnit], string] {
     let result = Vec::new();
     let names = Vec::new();
     for path_value in paths {
@@ -64,10 +61,9 @@ fn artifact_read_interface_units(
     Result::Ok(result)
 }
 
-fn artifact_standard_package(
-    standard: ArtifactStandardLibrary,
-    package_name: string,
-) -> Option[ArtifactStandardPackage] {
+fn artifact_standard_package(standard: ArtifactStandardLibrary, package_name: string) -> Option[
+    ArtifactStandardPackage,
+] {
     match package_name {
         "std" => Option::Some(standard.root),
         "std::internal::host" => Option::Some(standard.host),
@@ -87,17 +83,12 @@ fn artifact_standard_package(
     }
 }
 
-fn artifact_interface_builtin_valid(
-    world: PackageWorld,
-    value: ArtifactInterfaceUnit,
-) -> bool {
+fn artifact_interface_builtin_valid(world: PackageWorld, value: ArtifactInterfaceUnit) -> bool {
     if value.package_name == "builtin" {
         true
     } else {
         for dependency in value.deps {
-            if dependency.0 == "builtin"
-                && dependency.1 == artifact_builtin_interface_hash(world)
-            {
+            if dependency.0 == "builtin" && dependency.1 == artifact_builtin_interface_hash(world) {
                 return true
             } else {
                 ()
@@ -107,10 +98,7 @@ fn artifact_interface_builtin_valid(
     }
 }
 
-fn artifact_dependency_hash_matches(
-    expected: Option[string],
-    actual: string,
-) -> bool {
+fn artifact_dependency_hash_matches(expected: Option[string], actual: string) -> bool {
     match expected {
         Some(value) => value == actual,
         None => true,
@@ -125,11 +113,13 @@ fn artifact_resolve_interface_units(
 ) -> Result[Vec[ArtifactInterfaceUnit], string] {
     let pending = Vec::new();
     for package_name in direct_dependencies {
-        pending.push(ArtifactDependencyRequest {
-            package_name,
-            parent: current_package,
-            expected_hash: Option::None,
-        })
+        pending.push(
+            ArtifactDependencyRequest {
+                package_name,
+                parent: current_package,
+                expected_hash: Option::None,
+            },
+        )
     };
     let resolved_names = Vec::new();
     let resolved = Vec::new();
@@ -143,23 +133,15 @@ fn artifact_resolve_interface_units(
                 ()
             } else {
                 return Result::Err(
-                    "interface "
-                        + request.parent
-                        + " expects a different builtin interface_hash",
+                    "interface " + request.parent + " expects a different builtin interface_hash",
                 )
             }
         } else if request.package_name == current_package {
             return Result::Err("package " + current_package + " cannot use itself")
         } else if vecs::contains(resolved_names, request.package_name) {
-            let actual = match artifact_standard_package(
-                world.standard,
-                request.package_name,
-            ) {
+            let actual = match artifact_standard_package(world.standard, request.package_name) {
                 Some(value) => value.interface_unit.interface_hash,
-                None => match artifact_find_interface_unit(
-                    resolved,
-                    request.package_name,
-                ) {
+                None => match artifact_find_interface_unit(resolved, request.package_name) {
                     Some(value) => value.interface_hash,
                     None => "",
                 },
@@ -168,22 +150,14 @@ fn artifact_resolve_interface_units(
                 ()
             } else {
                 return Result::Err(
-                    "interface "
-                        + request.parent
-                        + " expects a different interface_hash for "
+                    "interface " + request.parent + " expects a different interface_hash for "
                         + request.package_name,
                 )
             }
         } else {
-            let interface = match artifact_standard_package(
-                world.standard,
-                request.package_name,
-            ) {
+            let interface = match artifact_standard_package(world.standard, request.package_name) {
                 Some(value) => value.interface_unit,
-                None => match artifact_find_interface_unit(
-                    provided,
-                    request.package_name,
-                ) {
+                None => match artifact_find_interface_unit(provided, request.package_name) {
                     Some(value) => value,
                     None => return Result::Err(
                         "missing interface file for package " + request.package_name,
@@ -192,8 +166,7 @@ fn artifact_resolve_interface_units(
             };
             if !artifact_interface_builtin_valid(world, interface) {
                 return Result::Err(
-                    "interface "
-                        + interface.package_name
+                    "interface " + interface.package_name
                         + " is missing the current builtin dependency",
                 )
             } else if !artifact_dependency_hash_matches(
@@ -201,9 +174,7 @@ fn artifact_resolve_interface_units(
                 interface.interface_hash,
             ) {
                 return Result::Err(
-                    "interface "
-                        + request.parent
-                        + " expects a different interface_hash for "
+                    "interface " + request.parent + " expects a different interface_hash for "
                         + request.package_name,
                 )
             } else {
@@ -215,11 +186,13 @@ fn artifact_resolve_interface_units(
                 None => resolved.push(interface),
             };
             for dependency in interface.deps {
-                pending.push(ArtifactDependencyRequest {
-                    package_name: dependency.0,
-                    parent: interface.package_name,
-                    expected_hash: Option::Some(dependency.1),
-                })
+                pending.push(
+                    ArtifactDependencyRequest {
+                        package_name: dependency.0,
+                        parent: interface.package_name,
+                        expected_hash: Option::Some(dependency.1),
+                    },
+                )
             }
         }
     };
@@ -433,17 +406,15 @@ fn artifact_standard_needs_from_units(
 ) -> StandardNeeds {
     let needs = Ref::new(no_standard_needs());
     for package_name in direct_dependencies {
-        needs.set(merge_standard_needs(
-            needs.get(),
-            artifact_standard_needs_for_package(package_name),
-        ))
+        needs.set(
+            merge_standard_needs(needs.get(), artifact_standard_needs_for_package(package_name)),
+        )
     };
     for interface in units {
         for dependency in interface.deps {
-            needs.set(merge_standard_needs(
-                needs.get(),
-                artifact_standard_needs_for_package(dependency.0),
-            ))
+            needs.set(
+                merge_standard_needs(needs.get(), artifact_standard_needs_for_package(dependency.0)),
+            )
         }
     };
     needs.get()
@@ -461,9 +432,7 @@ fn artifact_dependency_environments(
             let methods = Vec::new();
             for method in value.methods {
                 match method.trait_ref {
-                    Some(_) => if artifact_builtin_extension_iterator(
-                        method.for_type,
-                    ) {
+                    Some(_) => if artifact_builtin_extension_iterator(method.for_type) {
                         methods.push(method)
                     } else {
                         ()
@@ -479,23 +448,23 @@ fn artifact_dependency_environments(
                     ()
                 }
             };
-            result.push(tast::dependency_environment(
-                value.enums,
-                value.structs,
-                value.type_aliases,
-                value.constants,
-                Vec::new(),
-                value.functions,
-                methods,
-                impls,
-            ))
+            result.push(
+                tast::dependency_environment(
+                    value.enums,
+                    value.structs,
+                    value.type_aliases,
+                    value.constants,
+                    Vec::new(),
+                    value.functions,
+                    methods,
+                    impls,
+                ),
+            )
         },
         Err(error) => return Result::Err(error),
     };
     for package_value in selected_standard_packages_for_needs(standard, needs) {
-        match artifact_dependency_environment_from_exports(
-            package_value.environment_exports,
-        ) {
+        match artifact_dependency_environment_from_exports(package_value.environment_exports) {
             Ok(value) => result.push(value),
             Err(error) => return Result::Err(error),
         }
@@ -512,8 +481,7 @@ fn artifact_dependency_environments(
 fn artifact_builtin_extension_iterator(value: tast::Type) -> bool {
     match value {
         App { ty: base, args: _ } => match base {
-            Con { name } => name == "EnumerateIterator"
-                || name == "ZipIterator"
+            Con { name } => name == "EnumerateIterator" || name == "ZipIterator"
                 || name == "SkipIterator"
                 || name == "ChainIterator",
             _ => false,
@@ -522,18 +490,18 @@ fn artifact_builtin_extension_iterator(value: tast::Type) -> bool {
     }
 }
 
-fn artifact_dependency_core_types(
-    units: Vec[ArtifactInterfaceUnit],
-) -> Vec[core::File] {
+fn artifact_dependency_core_types(units: Vec[ArtifactInterfaceUnit]) -> Vec[core::File] {
     let result = Vec::new();
     for interface in units {
-        result.push(core::File {
-            functions: Vec::new(),
-            enums: interface.exports.enums,
-            structs: interface.exports.structs,
-            type_instances: Vec::new(),
-            constants: Vec::new(),
-        })
+        result.push(
+            core::File {
+                functions: Vec::new(),
+                enums: interface.exports.enums,
+                structs: interface.exports.structs,
+                type_instances: Vec::new(),
+                constants: Vec::new(),
+            },
+        )
     };
     result
 }
@@ -551,15 +519,10 @@ fn artifact_direct_dependency_hashes(
             ()
         } else {
             match artifact_standard_package(world.standard, name) {
-                Some(value) => result.push((
-                    name,
-                    value.interface_unit.interface_hash,
-                )),
+                Some(value) => result.push((name, value.interface_unit.interface_hash)),
                 None => match artifact_find_interface_unit(units, name) {
                     Some(value) => result.push((name, value.interface_hash)),
-                    None => return Result::Err(
-                        "missing interface file for package " + name,
-                    ),
+                    None => return Result::Err("missing interface file for package " + name),
                 },
             }
         }
@@ -567,27 +530,22 @@ fn artifact_direct_dependency_hashes(
     Result::Ok(result)
 }
 
-fn artifact_declared_package_name(
-    values: Vec[ast::LowerResult],
-    paths: Vec[string],
-) -> Result[string, string] {
+fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[string]) -> Result[
+    string,
+    string,
+] {
     let names = Vec::new();
-    for index in range(0, values.len()) {
-        let value = values.get(index);
+    for index in 0..values.len() {
+        let value = values[index];
         match value.ast {
             Some(file) => if !file.package_explicit {
-                return Result::Err(
-                    paths.get(index) + " must declare `package <name>;`",
-                )
+                return Result::Err(paths[index] + " must declare `package <name>;`")
             } else {
                 if names.len() > 0 {
-                    let name = names.get(0);
+                    let name = names[0];
                     if name != file.package_name {
                         return Result::Err(
-                            "package mismatch in "
-                                + paths.get(index)
-                                + ": expected "
-                                + name
+                            "package mismatch in " + paths[index] + ": expected " + name
                                 + ", found "
                                 + file.package_name,
                         )
@@ -603,7 +561,7 @@ fn artifact_declared_package_name(
         }
     };
     if names.len() > 0 {
-        Result::Ok(names.get(0))
+        Result::Ok(names[0])
     } else {
         Result::Err("package has no valid source files")
     }
@@ -614,24 +572,19 @@ fn artifact_validate_entrypoint(
     declared_name: string,
     exports: ArtifactPackageExports,
 ) -> Result[unit, string] {
-    let diagnostics = artifact_entrypoint_diagnostics(
-        package_name,
-        declared_name,
-        exports,
-    );
+    let diagnostics = artifact_entrypoint_diagnostics(package_name, declared_name, exports);
     if diagnostics.len() == 0 {
         Result::Ok(())
     } else {
-        Result::Err(diagnostics.get(0))
+        Result::Err(diagnostics[0])
     }
 }
 
-fn artifact_find_function(
-    functions: Vec[ArtifactFnScheme],
-    name: string,
-) -> Option[ArtifactFnScheme] {
-    for offset in range(0, functions.len()) {
-        let function = functions.get(functions.len() - 1 - offset);
+fn artifact_find_function(functions: Vec[ArtifactFnScheme], name: string) -> Option[
+    ArtifactFnScheme,
+] {
+    for offset in 0..functions.len() {
+        let function = functions[functions.len() - 1 - offset];
         if function.name == name {
             return Option::Some(function)
         } else {
@@ -675,11 +628,9 @@ fn artifact_entrypoint_diagnostics(
     diagnostics
 }
 
-fn artifact_dependency_type_names(
-    builtins: core::File,
-    dependencies: Vec[core::File],
-    enums: bool,
-) -> Vec[string] {
+fn artifact_dependency_type_names(builtins: core::File, dependencies: Vec[core::File], enums: bool) -> Vec[
+    string,
+] {
     let result = Vec::new();
     if enums {
         for definition in dependency_enums(builtins, dependencies) {
@@ -693,10 +644,7 @@ fn artifact_dependency_type_names(
     result
 }
 
-fn artifact_use_has_explicit_alias(
-    value: ast::LowerResult,
-    package_name: string,
-) -> bool {
+fn artifact_use_has_explicit_alias(value: ast::LowerResult, package_name: string) -> bool {
     match value.ast {
         Some(file) => {
             for use_decl in file.uses {
@@ -715,15 +663,13 @@ fn artifact_use_has_explicit_alias(
     }
 }
 
-fn artifact_declared_package_alias(
-    units: Vec[ArtifactInterfaceUnit],
-    package_name: string,
-) -> Option[string] {
-    for offset in range(0, units.len()) {
-        let interface_unit = units.get(units.len() - 1 - offset);
+fn artifact_declared_package_alias(units: Vec[ArtifactInterfaceUnit], package_name: string) -> Option[
+    string,
+] {
+    for offset in 0..units.len() {
+        let interface_unit = units[units.len() - 1 - offset];
         if interface_unit.package_name == package_name
-            && interface_unit.package_interface.name != ""
-        {
+            && interface_unit.package_interface.name != "" {
             return Option::Some(interface_unit.package_interface.name)
         } else {
             ()
@@ -737,23 +683,17 @@ fn artifact_apply_declared_package_aliases(
     sources: Vec[ast::LowerResult],
     units: Vec[ArtifactInterfaceUnit],
 ) -> unit {
-    for file_index in range(0, files.len()) {
-        let file = files.get(file_index);
-        for alias_index in range(0, file.import_aliases.len()) {
-            let alias = file.import_aliases.get(alias_index);
-            if artifact_use_has_explicit_alias(
-                sources.get(file_index),
-                alias.package_name,
-            ) {
+    for file_index in 0..files.len() {
+        let file = files[file_index];
+        for alias_index in 0..file.import_aliases.len() {
+            let alias = file.import_aliases[alias_index];
+            if artifact_use_has_explicit_alias(sources[file_index], alias.package_name) {
                 ()
             } else {
                 match artifact_declared_package_alias(units, alias.package_name) {
                     Some(name) => file.import_aliases.set(
                         alias_index,
-                        hir::ImportAlias {
-                            alias: name,
-                            package_name: alias.package_name,
-                        },
+                        hir::ImportAlias { alias: name, package_name: alias.package_name },
                     ),
                     None => (),
                 }
@@ -767,10 +707,7 @@ fn standard_internal_import_allowed(package_name: string) -> bool {
     package_name == "std" || strings::starts_with(package_name, "std::")
 }
 
-fn disallowed_standard_internal_import(
-    package_name: string,
-    import_name: string,
-) -> bool {
+fn disallowed_standard_internal_import(package_name: string, import_name: string) -> bool {
     strings::starts_with(import_name, "std::internal::")
         && !standard_internal_import_allowed(package_name)
 }
@@ -781,21 +718,23 @@ fn standard_internal_import_diagnostics(
     package_name: string,
 ) -> Vec[tast::Diagnostic] {
     let diagnostics = Vec::new();
-    for index in range(0, values.len()) {
-        match values.get(index).ast {
+    for index in 0..values.len() {
+        match values[index].ast {
             Some(file) => for use_decl in file.uses {
                 let import_name = import_path_text(use_decl.path);
                 if disallowed_standard_internal_import(package_name, import_name) {
-                    diagnostics.push(tast::Diagnostic {
-                        severity: tast::DiagnosticSeverity::Error,
-                        stage: "typer",
-                        message: "package " + import_name + " is internal to std",
-                        source_path: paths.get(index),
-                        span: Option::None,
-                        primary_label: Option::None,
-                        secondary_labels: Vec::new(),
-                        sort_order: 0,
-                    })
+                    diagnostics.push(
+                        tast::Diagnostic {
+                            severity: tast::DiagnosticSeverity::Error,
+                            stage: "typer",
+                            message: "package " + import_name + " is internal to std",
+                            source_path: paths[index],
+                            span: Option::None,
+                            primary_label: Option::None,
+                            secondary_labels: Vec::new(),
+                            sort_order: 0,
+                        },
+                    )
                 } else {
                     ()
                 }
@@ -806,10 +745,7 @@ fn standard_internal_import_diagnostics(
     diagnostics
 }
 
-fn without_disallowed_standard_internal_imports(
-    value: ast::LowerResult,
-    package_name: string,
-) -> ast::LowerResult {
+fn without_disallowed_standard_internal_imports(value: ast::LowerResult, package_name: string) -> ast::LowerResult {
     ast::LowerResult {
         ast: match value.ast {
             Some(file) => {
@@ -824,13 +760,15 @@ fn without_disallowed_standard_internal_imports(
                         uses.push(use_decl)
                     }
                 };
-                Option::Some(ast::File {
-                    package_name: file.package_name,
-                    package_explicit: file.package_explicit,
-                    uses,
-                    items: file.items,
-                    invalid_self_type_spans: file.invalid_self_type_spans,
-                })
+                Option::Some(
+                    ast::File {
+                        package_name: file.package_name,
+                        package_explicit: file.package_explicit,
+                        uses,
+                        items: file.items,
+                        invalid_self_type_spans: file.invalid_self_type_spans,
+                    },
+                )
             },
             None => Option::None,
         },
@@ -848,11 +786,7 @@ fn compile_artifact_package(
     let parser_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for source_path in command.inputs {
         let value = parser::parse(read_source(source_path));
-        for diagnostic in ast_diagnostics(
-            value.diagnostics,
-            "parser",
-            source_path,
-        ) {
+        for diagnostic in ast_diagnostics(value.diagnostics, "parser", source_path) {
             parser_diagnostics.push(diagnostic)
         };
         parsed.push(value)
@@ -860,11 +794,11 @@ fn compile_artifact_package(
     fail_on_typer_diagnostics(parser_diagnostics, "", "");
     let ast_values = ast::lower_package(parsed);
     let lower_diagnostics: Vec[tast::Diagnostic] = Vec::new();
-    for index in range(0, ast_values.len()) {
+    for index in 0..ast_values.len() {
         for diagnostic in ast_diagnostics(
-            ast_values.get(index).diagnostics,
+            ast_values[index].diagnostics,
             "lower",
-            command.inputs.get(index),
+            command.inputs[index],
         ) {
             lower_diagnostics.push(diagnostic)
         }
@@ -875,95 +809,54 @@ fn compile_artifact_package(
         command.inputs,
         command.package_name,
     );
-    let declared_name = match artifact_declared_package_name(
-        ast_values,
-        command.inputs,
-    ) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let declared_name = artifact_declared_package_name(ast_values, command.inputs)?;
     let public_names = public_item_names(ast_values, command.package_name);
-    let test_candidates = collect_package_test_candidates(
-        ast_values,
-        command.inputs,
-    );
+    let test_candidates = collect_package_test_candidates(ast_values, command.inputs);
     fail_on_typer_diagnostics(test_candidates.diagnostics, "", "");
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     let derive_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     let source_needs = Ref::new(no_standard_needs());
-    for index in range(0, ast_values.len()) {
-        let ast_value = ast_values.get(index);
-        source_needs.set(merge_standard_needs(
-            source_needs.get(),
-            source_standard_needs(ast_value),
-        ));
+    for index in 0..ast_values.len() {
+        let ast_value = ast_values[index];
+        source_needs.set(merge_standard_needs(source_needs.get(), source_standard_needs(ast_value)));
         let expanded = hir::expand_derives(
-            without_disallowed_standard_internal_imports(
-                ast_value,
-                command.package_name,
-            ),
+            without_disallowed_standard_internal_imports(ast_value, command.package_name),
         );
-        for diagnostic in ast_diagnostics(
-            expanded.diagnostics,
-            "derive",
-            command.inputs.get(index),
-        ) {
+        for diagnostic in ast_diagnostics(expanded.diagnostics, "derive", command.inputs[index]) {
             derive_diagnostics.push(diagnostic)
         };
-        hir_inputs.push((
-            expanded,
-            command.inputs.get(index),
-        ))
+        hir_inputs.push((expanded, command.inputs[index]))
     };
     fail_on_typer_diagnostics(derive_diagnostics, "", "");
     let hir_files = Vec::new();
-    for lowered in hir::lower_expanded_package_files(
-        hir_inputs,
-        command.package_name,
-    ) {
+    for lowered in hir::lower_expanded_package_files(hir_inputs, command.package_name) {
         hir_files.push(checked_hir_file(lowered, command.package_name))
     };
     let dependency_names = direct_hir_dependencies(hir_files);
-    let provided = match artifact_read_interface_units(command.interface_paths) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let provided = artifact_read_interface_units(command.interface_paths)?;
     let production_interface = if emit_tests {
         artifact_find_interface_unit(provided, command.package_name)
     } else {
         Option::None
     };
-    let dependency_units = match artifact_resolve_interface_units(
+    let dependency_units = artifact_resolve_interface_units(
         world,
         command.package_name,
         dependency_names,
         provided,
-    ) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    artifact_apply_declared_package_aliases(
-        hir_files,
-        ast_values,
-        dependency_units,
-    );
+    )?;
+    artifact_apply_declared_package_aliases(hir_files, ast_values, dependency_units);
     let needs = merge_standard_needs(
         source_needs.get(),
         artifact_standard_needs_from_units(dependency_names, dependency_units),
     );
-    let environments = match artifact_dependency_environments(
+    let environments = artifact_dependency_environments(
         world.builtin_interface.exports,
         world.standard,
         needs,
         dependency_units,
-    ) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let checked = tast::check_package_files_for_link_with_environments(
-        hir_files,
-        environments,
-    );
+    )?;
+    let checked = tast::check_package_files_for_link_with_environments(hir_files, environments);
     for diagnostic in internal_import_diagnostics {
         checked.diagnostics.push(diagnostic)
     };
@@ -974,20 +867,9 @@ fn compile_artifact_package(
         None => return Result::Err("failed to typecheck package " + command.package_name),
     };
     let dependency_core = selected_link_standard_core(world.standard, needs);
-    append_core_files(
-        dependency_core,
-        artifact_dependency_core_types(dependency_units),
-    );
-    let enum_names = artifact_dependency_type_names(
-        world.builtins,
-        dependency_core,
-        true,
-    );
-    let struct_names = artifact_dependency_type_names(
-        world.builtins,
-        dependency_core,
-        false,
-    );
+    append_core_files(dependency_core, artifact_dependency_core_types(dependency_units));
+    let enum_names = artifact_dependency_type_names(world.builtins, dependency_core, true);
+    let struct_names = artifact_dependency_type_names(world.builtins, dependency_core, false);
     let public_exports = artifact_package_exports(
         tast_file,
         signatures,
@@ -1015,58 +897,37 @@ fn compile_artifact_package(
         checked.diagnostics.push(diagnostic)
     };
     if !emit_tests {
-        for message in artifact_entrypoint_diagnostics(
-            command.package_name,
-            declared_name,
-            exports,
-        ) {
-            checked.diagnostics.push(tast::Diagnostic {
-                severity: tast::DiagnosticSeverity::Error,
-                stage: "typer",
-                message,
-                source_path: "",
-                span: Option::None,
-                primary_label: Option::None,
-                secondary_labels: Vec::new(),
-                sort_order: 0,
-            })
+        for message in artifact_entrypoint_diagnostics(command.package_name, declared_name, exports) {
+            checked.diagnostics.push(
+                tast::Diagnostic {
+                    severity: tast::DiagnosticSeverity::Error,
+                    stage: "typer",
+                    message,
+                    source_path: "",
+                    span: Option::None,
+                    primary_label: Option::None,
+                    secondary_labels: Vec::new(),
+                    sort_order: 0,
+                },
+            )
         }
     } else {
         ()
     };
     fail_on_typer_diagnostics(checked.diagnostics, "", "");
-    match validate_public_trait_impls(
-        hir_file,
-        command.package_name,
-        public_names,
-    ) {
+    match validate_public_trait_impls(hir_file, command.package_name, public_names) {
         Ok(()) => (),
         Err(error) => return Result::Err("error[typer]: " + error),
     };
-    match validate_public_fields_and_inherent_methods(
-        hir_file,
-        command.package_name,
-        public_names,
-    ) {
+    match validate_public_fields_and_inherent_methods(hir_file, command.package_name, public_names) {
         Ok(()) => (),
         Err(error) => return Result::Err("error[typer]: " + error),
     };
-    let deps = match artifact_direct_dependency_hashes(
-        world,
-        dependency_names,
-        dependency_units,
-    ) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let deps = artifact_direct_dependency_hashes(world, dependency_names, dependency_units)?;
     let generated_interface = new_artifact_interface_unit(
         command.package_name,
         public_exports,
-        artifact_package_interface(
-            command.package_name,
-            declared_name,
-            public_exports,
-        ),
+        artifact_package_interface(command.package_name, declared_name, public_exports),
         deps,
     );
     let interface_unit = match production_interface {
@@ -1084,43 +945,41 @@ fn compile_artifact_package(
     } else {
         empty_core_file()
     };
-    Result::Ok(ArtifactCompiledPackage {
-        interface_unit,
-        core_unit: ArtifactCoreUnit {
-            package_name: command.package_name,
-            declared_name,
-            interface_hash: interface_unit.interface_hash,
-            exports,
-            core_ir,
-            deps,
-            sources: command.inputs,
-            tests: if emit_tests { test_validation.tests } else { Vec::new() },
+    Result::Ok(
+        ArtifactCompiledPackage {
+            interface_unit,
+            core_unit: ArtifactCoreUnit {
+                package_name: command.package_name,
+                declared_name,
+                interface_hash: interface_unit.interface_hash,
+                exports,
+                core_ir,
+                deps,
+                sources: command.inputs,
+                tests: if emit_tests {
+                    test_validation.tests
+                } else {
+                    Vec::new()
+                },
+            },
         },
-    })
+    )
 }
 
-fn artifact_read_core_units(
-    paths: Vec[string],
-) -> Result[Vec[ArtifactCoreUnit], string] {
+fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[ArtifactCoreUnit], string] {
     let result = Vec::new();
     let names = Vec::new();
     for path_value in paths {
         let source = match fs::read_bytes(path_value) {
             Ok(value) => value,
-            Err(error) => return Result::Err(
-                "failed to read core " + path_value + ": " + error,
-            ),
+            Err(error) => return Result::Err("failed to read core " + path_value + ": " + error),
         };
         let core_unit = match decode_artifact_core_bytes(source) {
             Ok(value) => value,
-            Err(error) => return Result::Err(
-                "failed to parse core " + path_value + ": " + error,
-            ),
+            Err(error) => return Result::Err("failed to parse core " + path_value + ": " + error),
         };
         if vecs::contains(names, core_unit.package_name) {
-            return Result::Err(
-                "duplicate core provided for package " + core_unit.package_name,
-            )
+            return Result::Err("duplicate core provided for package " + core_unit.package_name)
         } else {
             names.push(core_unit.package_name);
             result.push(core_unit)
@@ -1129,12 +988,11 @@ fn artifact_read_core_units(
     Result::Ok(result)
 }
 
-fn artifact_find_core_unit(
-    values: Vec[ArtifactCoreUnit],
-    package_name: string,
-) -> Option[ArtifactCoreUnit] {
-    for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+fn artifact_find_core_unit(values: Vec[ArtifactCoreUnit], package_name: string) -> Option[
+    ArtifactCoreUnit,
+] {
+    for offset in 0..values.len() {
+        let value = values[values.len() - 1 - offset];
         if value.package_name == package_name {
             return Option::Some(value)
         } else {
@@ -1145,15 +1003,14 @@ fn artifact_find_core_unit(
 }
 
 fn artifact_link_dependency_name(package_name: string) -> bool {
-    package_name != "builtin"
-        && package_name != "std"
+    package_name != "builtin" && package_name != "std"
         && !strings::starts_with(package_name, "std::")
 }
 
-fn artifact_reachable_core_units(
-    roots: Vec[string],
-    values: Vec[ArtifactCoreUnit],
-) -> Result[Vec[ArtifactCoreUnit], string] {
+fn artifact_reachable_core_units(roots: Vec[string], values: Vec[ArtifactCoreUnit]) -> Result[
+    Vec[ArtifactCoreUnit],
+    string,
+] {
     let pending = Vec::new();
     for root in roots {
         pending.push(root)
@@ -1166,9 +1023,7 @@ fn artifact_reachable_core_units(
         } else {
             let core_unit = match artifact_find_core_unit(values, package_name) {
                 Some(value) => value,
-                None => return Result::Err(
-                    "missing core for package " + package_name,
-                ),
+                None => return Result::Err("missing core for package " + package_name),
             };
             names.push(package_name);
             for dependency in core_unit.deps {
@@ -1191,17 +1046,16 @@ fn artifact_reachable_core_units(
     Result::Ok(result)
 }
 
-fn artifact_validate_link_core_units(
-    world: PackageWorld,
-    values: Vec[ArtifactCoreUnit],
-) -> Result[unit, string] {
+fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[ArtifactCoreUnit]) -> Result[
+    unit,
+    string,
+] {
     for value in values {
         for dependency in value.deps {
             if dependency.0 == "builtin" {
                 if dependency.1 != artifact_builtin_interface_hash(world) {
                     return Result::Err(
-                        "package "
-                            + value.package_name
+                        "package " + value.package_name
                             + " expects a different builtin interface_hash",
                     )
                 } else {
@@ -1209,12 +1063,9 @@ fn artifact_validate_link_core_units(
                 }
             } else {
                 match artifact_standard_package(world.standard, dependency.0) {
-                    Some(standard) => if dependency.1
-                        != standard.interface_unit.interface_hash
-                    {
+                    Some(standard) => if dependency.1 != standard.interface_unit.interface_hash {
                         return Result::Err(
-                            "package "
-                                + value.package_name
+                            "package " + value.package_name
                                 + " expects a different interface_hash for "
                                 + dependency.0,
                         )
@@ -1222,12 +1073,9 @@ fn artifact_validate_link_core_units(
                         ()
                     },
                     None => match artifact_find_core_unit(values, dependency.0) {
-                        Some(actual) => if dependency.1
-                            != actual.interface_hash
-                        {
+                        Some(actual) => if dependency.1 != actual.interface_hash {
                             return Result::Err(
-                                "package "
-                                    + value.package_name
+                                "package " + value.package_name
                                     + " expects a different interface_hash for "
                                     + dependency.0,
                             )
@@ -1235,9 +1083,7 @@ fn artifact_validate_link_core_units(
                             ()
                         },
                         None => return Result::Err(
-                            "package "
-                                + value.package_name
-                                + " depends on missing package "
+                            "package " + value.package_name + " depends on missing package "
                                 + dependency.0,
                         ),
                     },
@@ -1248,16 +1094,13 @@ fn artifact_validate_link_core_units(
     Result::Ok(())
 }
 
-fn artifact_core_standard_needs(
-    values: Vec[ArtifactCoreUnit],
-) -> StandardNeeds {
+fn artifact_core_standard_needs(values: Vec[ArtifactCoreUnit]) -> StandardNeeds {
     let needs = Ref::new(no_standard_needs());
     for value in values {
         for dependency in value.deps {
-            needs.set(merge_standard_needs(
-                needs.get(),
-                artifact_standard_needs_for_package(dependency.0),
-            ))
+            needs.set(
+                merge_standard_needs(needs.get(), artifact_standard_needs_for_package(dependency.0)),
+            )
         }
     };
     needs.get()
@@ -1279,9 +1122,10 @@ fn artifact_core_compilation(value: ArtifactCoreUnit) -> ArtifactCompilation {
     }
 }
 
-fn artifact_core_compilations(
-    values: Vec[ArtifactCoreUnit],
-) -> Result[Vec[ArtifactCompilation], string] {
+fn artifact_core_compilations(values: Vec[ArtifactCoreUnit]) -> Result[
+    Vec[ArtifactCompilation],
+    string,
+] {
     let result = Vec::new();
     for value in values {
         result.push(artifact_core_compilation(value))

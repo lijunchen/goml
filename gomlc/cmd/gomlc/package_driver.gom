@@ -72,15 +72,10 @@ fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
     let needs_io = needs_root || imports_package(value, "std::io");
     let needs_process = needs_root || imports_package(value, "std::process");
     let needs_json = needs_root || imports_package(value, "std::json");
-    let needs_text = needs_root
-        || needs_json
-        || imports_package(value, "std::text");
+    let needs_text = needs_root || needs_json || imports_package(value, "std::text");
     StandardNeeds {
         root: needs_root,
-        bytes: imports_package(value, "std::bytes")
-            || needs_root
-            || needs_fs
-            || needs_io
+        bytes: imports_package(value, "std::bytes") || needs_root || needs_fs || needs_io
             || needs_process
             || needs_text,
         collections: needs_root || imports_package(value, "std::collections"),
@@ -119,16 +114,10 @@ fn package_world() -> PackageWorld {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let builtin_interface = builtin_artifact_interface_unit();
-    let standard = artifact_standard_library(compile_standard_library(
-        builtins,
-        builtin_interface.interface_hash,
-    ));
-    PackageWorld {
-        counter,
-        builtins,
-        builtin_interface,
-        standard,
-    }
+    let standard = artifact_standard_library(
+        compile_standard_library(builtins, builtin_interface.interface_hash),
+    );
+    PackageWorld { counter, builtins, builtin_interface, standard }
 }
 
 fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> unit {
@@ -139,12 +128,12 @@ fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> unit {
 
 fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
     let path = if values.len() > 0 {
-        values.get(0).path
+        values[0].path
     } else {
         "<unknown>"
     };
     let source_path = if values.len() > 0 {
-        values.get(0).source_path
+        values[0].source_path
     } else {
         "<unknown>"
     };
@@ -182,9 +171,7 @@ fn artifact_short_name(value: string) -> string {
     let result = Ref::new(value);
     let index = Ref::new(0);
     while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58
-            && value.byte_get(index.get() + 1) == 58
-        {
+        if value.byte_get(index.get()) == b':' && value.byte_get(index.get() + 1) == b':' {
             result.set(value.byte_slice(index.get() + 2, value.byte_len()));
             index.set(index.get() + 2)
         } else {
@@ -228,10 +215,7 @@ fn public_ast_item_name(package_name: string, value: ast::Item) -> Option[string
     }
 }
 
-fn public_item_names(
-    values: Vec[ast::LowerResult],
-    package_name: string,
-) -> Vec[string] {
+fn public_item_names(values: Vec[ast::LowerResult], package_name: string) -> Vec[string] {
     let result = Vec::new();
     for value in values {
         match value.ast {
@@ -247,18 +231,13 @@ fn public_item_names(
     result
 }
 
-fn local_item_is_public(
-    package_name: string,
-    public_names: Vec[string],
-    name: string,
-) -> bool {
+fn local_item_is_public(package_name: string, public_names: Vec[string], name: string) -> bool {
     let prefix = package_name + "::";
     if !strings::starts_with(name, prefix) {
         true
     } else {
         let relative = name.byte_slice(prefix.byte_len(), name.byte_len());
-        strings::contains(relative, "::")
-            || vecs::contains(public_names, name)
+        strings::contains(relative, "::") || vecs::contains(public_names, name)
     }
 }
 
@@ -268,9 +247,7 @@ fn add_private_local_name(
     public_names: Vec[string],
     name: string,
 ) -> unit {
-    if !local_item_is_public(package_name, public_names, name)
-        && !vecs::contains(result, name)
-    {
+    if !local_item_is_public(package_name, public_names, name) && !vecs::contains(result, name) {
         result.push(name)
     } else {
         ()
@@ -284,18 +261,8 @@ fn collect_private_type_names(
     value: hir::TypeExpr,
 ) -> unit {
     match value {
-        Con { name } => add_private_local_name(
-            result,
-            package_name,
-            public_names,
-            name,
-        ),
-        Dyn { trait_name: name } => add_private_local_name(
-            result,
-            package_name,
-            public_names,
-            name,
-        ),
+        Con { name } => add_private_local_name(result, package_name, public_names, name),
+        Dyn { trait_name: name } => add_private_local_name(result, package_name, public_names, name),
         Tuple { items: values } => for value in values {
             collect_private_type_names(result, package_name, public_names, value)
         },
@@ -323,22 +290,7 @@ fn collect_private_type_names(
             };
             collect_private_type_names(result, package_name, public_names, ret_ty)
         },
-        Unit
-        | Bool
-        | Int
-        | Int8
-        | Int16
-        | Int32
-        | Int64
-        | Uint
-        | Uint8
-        | Uint16
-        | Uint32
-        | Uint64
-        | Float32
-        | Float64
-        | String
-        | Char => (),
+        Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => (),
     }
 }
 
@@ -363,12 +315,7 @@ fn collect_private_predicate_names(
     match value {
         Trait { ty: for_ty, trait_ref } => {
             collect_private_type_names(result, package_name, public_names, for_ty);
-            collect_private_trait_ref_names(
-                result,
-                package_name,
-                public_names,
-                trait_ref,
-            )
+            collect_private_trait_ref_names(result, package_name, public_names, trait_ref)
         },
         Equality { lhs: left, rhs: right } => {
             collect_private_type_names(result, package_name, public_names, left);
@@ -385,12 +332,7 @@ fn collect_private_bounds_names(
 ) -> unit {
     for value in values {
         for trait_ref in value.1 {
-            collect_private_trait_ref_names(
-                result,
-                package_name,
-                public_names,
-                trait_ref,
-            )
+            collect_private_trait_ref_names(result, package_name, public_names, trait_ref)
         }
     }
 }
@@ -403,12 +345,7 @@ fn trait_impl_header_is_public(
     match value.trait_ref {
         Some(trait_ref) => {
             let private_names = Vec::new();
-            collect_private_type_names(
-                private_names,
-                package_name,
-                public_names,
-                value.for_type,
-            );
+            collect_private_type_names(private_names, package_name, public_names, value.for_type);
             local_item_is_public(package_name, public_names, trait_ref.name)
                 && private_names.len() == 0
         },
@@ -428,58 +365,23 @@ fn trait_impl_exposed_private_names(
         },
         None => (),
     };
-    collect_private_bounds_names(
-        result,
-        package_name,
-        public_names,
-        value.generic_bounds,
-    );
+    collect_private_bounds_names(result, package_name, public_names, value.generic_bounds);
     for predicate in value.predicates {
-        collect_private_predicate_names(
-            result,
-            package_name,
-            public_names,
-            predicate,
-        )
+        collect_private_predicate_names(result, package_name, public_names, predicate)
     };
     for associated in value.associated_types {
-        collect_private_type_names(
-            result,
-            package_name,
-            public_names,
-            associated.1,
-        )
+        collect_private_type_names(result, package_name, public_names, associated.1)
     };
     for method in value.methods {
-        collect_private_bounds_names(
-            result,
-            package_name,
-            public_names,
-            method.generic_bounds,
-        );
+        collect_private_bounds_names(result, package_name, public_names, method.generic_bounds);
         for predicate in method.predicates {
-            collect_private_predicate_names(
-                result,
-                package_name,
-                public_names,
-                predicate,
-            )
+            collect_private_predicate_names(result, package_name, public_names, predicate)
         };
         for param in method.params {
-            collect_private_type_names(
-                result,
-                package_name,
-                public_names,
-                param.1,
-            )
+            collect_private_type_names(result, package_name, public_names, param.1)
         };
         match method.ret_ty {
-            Some(ret_ty) => collect_private_type_names(
-                result,
-                package_name,
-                public_names,
-                ret_ty,
-            ),
+            Some(ret_ty) => collect_private_type_names(result, package_name, public_names, ret_ty),
             None => (),
         }
     };
@@ -492,7 +394,7 @@ fn artifact_string_less(left: string, right: string) -> bool {
     } else {
         right.byte_len()
     };
-    for index in range(0, common) {
+    for index in 0..common {
         if left.byte_get(index) < right.byte_get(index) {
             return true
         } else if left.byte_get(index) > right.byte_get(index) {
@@ -505,57 +407,45 @@ fn artifact_string_less(left: string, right: string) -> bool {
 }
 
 fn sort_artifact_names(values: Vec[string]) -> Vec[string] {
-    for index in range(1, values.len()) {
-        let current = values.get(index);
+    for index in 1..values.len() {
+        let current = values[index];
         let destination = Ref::new(index);
-        while destination.get() > 0
-            && artifact_string_less(current, values.get(destination.get() - 1))
-        {
-            values.set(destination.get(), values.get(destination.get() - 1));
+        while destination.get() > 0 && artifact_string_less(current, values[destination.get() - 1]) {
+            values[destination.get()] = values[destination.get() - 1];
             destination.set(destination.get() - 1)
         };
-        values.set(destination.get(), current)
+        values[destination.get()] = current;
     };
     values
 }
 
 fn join_artifact_names(values: Vec[string]) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
             ()
         };
-        builder.write_string(values.get(index))
+        builder.write_string(values[index])
     };
     builder.finish()
 }
 
-fn validate_public_trait_impls(
-    value: hir::File,
-    package_name: string,
-    public_names: Vec[string],
-) -> Result[unit, string] {
+fn validate_public_trait_impls(value: hir::File, package_name: string, public_names: Vec[string]) -> Result[
+    unit,
+    string,
+] {
     for item in value.items {
         match item {
             ImplBlock(value) => match value.trait_ref {
-                Some(trait_ref) => if trait_impl_header_is_public(
-                    value,
-                    package_name,
-                    public_names,
-                ) {
+                Some(trait_ref) => if trait_impl_header_is_public(value, package_name, public_names) {
                     let private_names = sort_artifact_names(
-                        trait_impl_exposed_private_names(
-                            value,
-                            package_name,
-                            public_names,
-                        ),
+                        trait_impl_exposed_private_names(value, package_name, public_names),
                     );
                     if private_names.len() > 0 {
                         return Result::Err(
-                            "Public trait implementation "
-                                + trait_ref.name
+                            "Public trait implementation " + trait_ref.name
                                 + " exposes private type "
                                 + join_artifact_names(private_names),
                         )
@@ -579,35 +469,15 @@ fn function_exposed_private_names(
     public_names: Vec[string],
 ) -> Vec[string] {
     let result = Vec::new();
-    collect_private_bounds_names(
-        result,
-        package_name,
-        public_names,
-        value.generic_bounds,
-    );
+    collect_private_bounds_names(result, package_name, public_names, value.generic_bounds);
     for predicate in value.predicates {
-        collect_private_predicate_names(
-            result,
-            package_name,
-            public_names,
-            predicate,
-        )
+        collect_private_predicate_names(result, package_name, public_names, predicate)
     };
     for param in value.params {
-        collect_private_type_names(
-            result,
-            package_name,
-            public_names,
-            param.1,
-        )
+        collect_private_type_names(result, package_name, public_names, param.1)
     };
     match value.ret_ty {
-        Some(ret_ty) => collect_private_type_names(
-            result,
-            package_name,
-            public_names,
-            ret_ty,
-        ),
+        Some(ret_ty) => collect_private_type_names(result, package_name, public_names, ret_ty),
         None => (),
     };
     sort_artifact_names(result)
@@ -620,10 +490,7 @@ fn validate_public_fields_and_inherent_methods(
 ) -> Result[unit, string] {
     for item in value.items {
         match item {
-            StructDef(value) => if vecs::contains(
-                public_names,
-                value.name,
-            ) {
+            StructDef(value) => if vecs::contains(public_names, value.name) {
                 for field in value.fields {
                     if vecs::contains(value.public_fields, field.0) {
                         let private_names = Vec::new();
@@ -635,14 +502,9 @@ fn validate_public_fields_and_inherent_methods(
                         );
                         if private_names.len() > 0 {
                             return Result::Err(
-                                "Public field "
-                                    + value.name
-                                    + "."
-                                    + field.0
+                                "Public field " + value.name + "." + field.0
                                     + " exposes private type "
-                                    + join_artifact_names(
-                                        sort_artifact_names(private_names),
-                                    ),
+                                    + join_artifact_names(sort_artifact_names(private_names)),
                             )
                         } else {
                             ()
@@ -668,12 +530,11 @@ fn validate_public_fields_and_inherent_methods(
                         for method in value.methods {
                             match method.visibility {
                                 Public => {
-                                    let private_names =
-                                        function_exposed_private_names(
-                                            method,
-                                            package_name,
-                                            public_names,
-                                        );
+                                    let private_names = function_exposed_private_names(
+                                        method,
+                                        package_name,
+                                        public_names,
+                                    );
                                     if private_names.len() > 0 {
                                         return Result::Err(
                                             "Public inherent method "
@@ -699,10 +560,9 @@ fn validate_public_fields_and_inherent_methods(
     Result::Ok(())
 }
 
-fn selected_standard_packages_for_needs(
-    standard: ArtifactStandardLibrary,
-    needs: StandardNeeds,
-) -> Vec[ArtifactStandardPackage] {
+fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs: StandardNeeds) -> Vec[
+    ArtifactStandardPackage,
+] {
     let result: Vec[ArtifactStandardPackage] = Vec::new();
     if needs.bytes {
         result.push(standard.bytes)
@@ -774,11 +634,13 @@ fn selected_standard_packages_for_needs(
 
 fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File {
     if value.diagnostics.len() > 0 {
-        fail(render_typer_diagnostics(
-            hir_diagnostics(value.diagnostics, value.source_path),
-            value.source_path,
-            read_source(value.source_path),
-        ))
+        fail(
+            render_typer_diagnostics(
+                hir_diagnostics(value.diagnostics, value.source_path),
+                value.source_path,
+                read_source(value.source_path),
+            ),
+        )
     } else {
         ()
     };
@@ -800,12 +662,9 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
     }
 }
 
-fn core_function_ret_type(
-    functions: Vec[core::Function],
-    name: string,
-) -> Option[tast::Type] {
-    for offset in range(0, functions.len()) {
-        let function = functions.get(functions.len() - 1 - offset);
+fn core_function_ret_type(functions: Vec[core::Function], name: string) -> Option[tast::Type] {
+    for offset in 0..functions.len() {
+        let function = functions[functions.len() - 1 - offset];
         if function.name == name {
             return Option::Some(function.ret_ty)
         } else {
@@ -827,26 +686,30 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
     };
     match core_function_ret_type(functions, expected) {
         Some(ret_ty) => if expected != "main" {
-            functions.push(core::Function {
-                name: "main",
-                root: true,
-                generics: Vec::new(),
-                predicates: Vec::new(),
-                trait_impl: Option::None,
-                params: Vec::new(),
-                ret_ty,
-                body: core::Block {
-                    stmts: Vec::new(),
-                    tail: Option::Some(core::Expr::Call {
-                        func: core::Expr::Var {
-                                                name: expected,
-                                                ty: tast::Type::Func { params: Vec::new(), ret_ty },
-                                            },
-                        args: Vec::new(),
-                        ty: ret_ty,
-                    }),
+            functions.push(
+                core::Function {
+                    name: "main",
+                    root: true,
+                    generics: Vec::new(),
+                    predicates: Vec::new(),
+                    trait_impl: Option::None,
+                    params: Vec::new(),
+                    ret_ty,
+                    body: core::Block {
+                        stmts: Vec::new(),
+                        tail: Option::Some(
+                            core::Expr::Call {
+                                func: core::Expr::Var {
+                                    name: expected,
+                                    ty: tast::Type::Func { params: Vec::new(), ret_ty },
+                                },
+                                args: Vec::new(),
+                                ty: ret_ty,
+                            },
+                        ),
+                    },
                 },
-            })
+            )
         } else {
             ()
         },
@@ -875,10 +738,9 @@ fn entry_core(value: core::File, package_name: string) -> core::File {
     }
 }
 
-fn selected_link_standard_core(
-    standard: ArtifactStandardLibrary,
-    needs: StandardNeeds,
-) -> Vec[core::File] {
+fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: StandardNeeds) -> Vec[
+    core::File,
+] {
     let result = Vec::new();
     if needs.bytes {
         result.push(standard.bytes.core_value)
@@ -948,15 +810,11 @@ fn selected_link_standard_core(
     result
 }
 
-fn run_package_command(
-    args: Vec[string],
-    build: bool,
-    emit_tests: bool,
-) -> unit {
+fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit {
     let command = match parse_package_command_args(args) {
         Ok(value) => value,
         Err(error) => {
-            handle_cli_parse_error(args.get(1), error);
+            handle_cli_parse_error(args[1], error);
             PackageCommandArgs {
                 package_name: "main",
                 inputs: Vec::new(),
@@ -993,7 +851,7 @@ fn run_package_command(
                     value_exports: Vec::new(),
                     enum_variants: Vec::new(),
                 },
-                Vec::new().pushed(("builtin", artifact_builtin_interface_hash(world))),
+                Vec::[("builtin", artifact_builtin_interface_hash(world))],
             );
             ArtifactCompiledPackage {
                 interface_unit,
@@ -1003,10 +861,7 @@ fn run_package_command(
                     interface_hash: interface_unit.interface_hash,
                     exports: empty_artifact_package_exports(),
                     core_ir: empty_core_file(),
-                    deps: Vec::new().pushed((
-                        "builtin",
-                        artifact_builtin_interface_hash(world),
-                    )),
+                    deps: Vec::[("builtin", artifact_builtin_interface_hash(world))],
                     sources: Vec::new(),
                     tests: Vec::new(),
                 },
@@ -1069,7 +924,7 @@ fn run_link_command(args: Vec[string]) -> unit {
             Vec::new()
         },
     };
-    let roots = Vec::new().pushed(command.entry);
+    let roots = Vec::[command.entry];
     let core_units = match artifact_reachable_core_units(roots, core_units) {
         Ok(value) => value,
         Err(error) => {
@@ -1083,15 +938,11 @@ fn run_link_command(args: Vec[string]) -> unit {
     };
     artifact_prepare_core_units(world, core_units);
     match artifact_find_core_unit(core_units, command.entry) {
-        Some(value) => if value.declared_name == ""
-            || value.declared_name == "main"
-        {
+        Some(value) => if value.declared_name == "" || value.declared_name == "main" {
             ()
         } else {
             fail(
-                "error[compile]: entry package "
-                    + command.entry
-                    + " declares package "
+                "error[compile]: entry package " + command.entry + " declares package "
                     + value.declared_name
                     + ", expected main",
             )
@@ -1120,7 +971,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     } else {
         ()
     };
-    let entry = entries.get(entries.len() - 1);
+    let entry = entries[entries.len() - 1];
     let linked_dependencies = selected_link_standard_core(world.standard, needs);
     append_core_files(linked_dependencies, dependencies);
     let linked = core::link_with_dependencies(
@@ -1182,10 +1033,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
             Vec::new()
         },
     };
-    let core_units = match artifact_reachable_core_units(
-        command.packages,
-        core_units,
-    ) {
+    let core_units = match artifact_reachable_core_units(command.packages, core_units) {
         Ok(value) => value,
         Err(error) => {
             fail("error[compile]: " + error);
@@ -1215,9 +1063,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
             Some(core_unit) => for test in core_unit.tests {
                 tests.push(test)
             },
-            None => fail(
-                "error[compile]: missing test package " + package_name,
-            ),
+            None => fail("error[compile]: missing test package " + package_name),
         }
     };
     let linked_dependencies = selected_link_standard_core(world.standard, needs);
@@ -1230,10 +1076,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     let mono_value = lower_mono_or_fail(linked);
     let lift_value = lift::lower_with_counter(mono_value, world.counter);
     let anf_value = anf::lower_with_counter(lift_value, world.counter);
-    let go_source = go_backend::encode(go_backend::lower_tests(
-        anf_value,
-        test_link_cases(tests),
-    ));
+    let go_source = go_backend::encode(go_backend::lower_tests(anf_value, test_link_cases(tests)));
     match ensure_parent(command.output) {
         Ok(()) => match fs::write_file(command.output, go_source) {
             Ok(()) => (),
@@ -1242,10 +1085,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
         Err(error) => fail(error),
     };
     match ensure_parent(command.manifest) {
-        Ok(()) => match fs::write_file(
-            command.manifest,
-            encode_test_manifest(tests),
-        ) {
+        Ok(()) => match fs::write_file(command.manifest, encode_test_manifest(tests)) {
             Ok(()) => (),
             Err(error) => fail(error),
         },

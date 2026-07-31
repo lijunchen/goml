@@ -32,12 +32,7 @@ struct ProjectCheck {
     environments: Vec[tast::DependencyEnvironment],
 }
 
-fn query_diagnostic(
-    source_path: string,
-    stage: string,
-    message: string,
-    span: Option[ast::Span],
-) -> tast::Diagnostic {
+fn query_diagnostic(source_path: string, stage: string, message: string, span: Option[ast::Span]) -> tast::Diagnostic {
     tast::Diagnostic {
         severity: tast::DiagnosticSeverity::Error,
         stage,
@@ -50,18 +45,9 @@ fn query_diagnostic(
     }
 }
 
-fn failed_check(
-    source_path: string,
-    stage: string,
-    message: string,
-) -> tast::CheckResult {
+fn failed_check(source_path: string, stage: string, message: string) -> tast::CheckResult {
     let diagnostics = Vec::new();
-    diagnostics.push(query_diagnostic(
-        source_path,
-        stage,
-        message,
-        Option::None,
-    ));
+    diagnostics.push(query_diagnostic(source_path, stage, message, Option::None));
     tast::CheckResult {
         tast: Option::None,
         diagnostics,
@@ -79,28 +65,20 @@ fn lower_package(value: Project) -> LoweredPackage {
     let diagnostics = Vec::new();
     for value in lowered {
         for diagnostic in value.diagnostics {
-            diagnostics.push(query_diagnostic(
-                value.source_path,
-                "lower",
-                diagnostic.message,
-                diagnostic.span,
-            ))
+            diagnostics.push(
+                query_diagnostic(value.source_path, "lower", diagnostic.message, diagnostic.span),
+            )
         };
         match value.hir {
             Some(file) => files.push(file),
             None => (),
         }
     };
-    LoweredPackage {
-        name: value.package_name,
-        files,
-        diagnostics,
-    }
+    LoweredPackage { name: value.package_name, files, diagnostics }
 }
 
 fn is_local_package(module_path: string, package_name: string) -> bool {
-    package_name == module_path
-        || strings::starts_with(package_name, module_path + "::")
+    package_name == module_path || strings::starts_with(package_name, module_path + "::")
 }
 
 fn dependency_sources(
@@ -116,21 +94,12 @@ fn dependency_sources(
             Result::Ok(files)
         },
         None => if is_local_package(module_path, package_name) {
-            match dependency_project(
-                module_root,
-                module_path,
-                package_name,
-                overrides,
-            ) {
+            match dependency_project(module_root, module_path, package_name, overrides) {
                 Ok(project) => Result::Ok(project.files),
                 Err(error) => Result::Err(error),
             }
         } else {
-            external_package_sources(
-                module_root,
-                package_name,
-                overrides,
-            )
+            external_package_sources(module_root, package_name, overrides)
         },
     }
 }
@@ -150,12 +119,7 @@ fn collect_dependency(
         ()
     } else {
         visited.push(package_name);
-        match dependency_sources(
-            module_root,
-            module_path,
-            package_name,
-            overrides,
-        ) {
+        match dependency_sources(module_root, module_path, package_name, overrides) {
             Ok(sources) => {
                 for source in sources {
                     all_sources.push(source)
@@ -190,12 +154,9 @@ fn collect_dependency(
                     dependencies.push(file)
                 }
             },
-            Err(error) => diagnostics.push(query_diagnostic(
-                source_path,
-                "project",
-                error,
-                Option::None,
-            )),
+            Err(error) => diagnostics.push(
+                query_diagnostic(source_path, "project", error, Option::None),
+            ),
         }
     }
 }
@@ -218,7 +179,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
                 dependencies,
                 diagnostics,
                 all_sources,
-                value.files.get(0).path,
+                value.files[0].path,
             )
         }
     };
@@ -232,10 +193,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
     let environments = tast::dependency_environments(environment_files);
     let dependency_environments = tast::dependency_environments(dependencies);
     let checked = if entry.files.len() > 0 {
-        tast::check_package_files_for_link_with_environments(
-            entry.files,
-            dependency_environments,
-        )
+        tast::check_package_files_for_link_with_environments(entry.files, dependency_environments)
     } else {
         tast::CheckResult {
             tast: Option::None,
@@ -247,11 +205,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
         checked.diagnostics.push(diagnostic)
     };
     append_builtin_navigation_source(all_sources);
-    ProjectCheck {
-        checked,
-        sources: all_sources,
-        environments,
-    }
+    ProjectCheck { checked, sources: all_sources, environments }
 }
 
 fn single_file_analysis(
@@ -271,11 +225,7 @@ fn single_file_analysis(
         None => "main",
     };
     let files = Vec::new();
-    files.push(SourceFile {
-        path: source_path,
-        source,
-        package_name,
-    });
+    files.push(SourceFile { path: source_path, source, package_name });
     let directory = source_directory(source_path);
     let result = check_project(
         Project {
@@ -300,11 +250,7 @@ fn single_file_analysis(
     }
 }
 
-pub fn analyze_with_overrides(
-    source_path: string,
-    source: string,
-    overrides: Vec[SourceOverride],
-) -> Analysis {
+pub fn analyze_with_overrides(source_path: string, source: string, overrides: Vec[SourceOverride]) -> Analysis {
     let parsed = parser::parse(source);
     let syntax = syntax_index(parsed.root);
     match discover_project(source_path, source, overrides) {
@@ -324,24 +270,14 @@ pub fn analyze_with_overrides(
             }
         },
         Ok(None) => {
-            single_file_analysis(
-                source_path,
-                source,
-                parsed,
-                syntax,
-                overrides,
-            )
+            single_file_analysis(source_path, source, parsed, syntax, overrides)
         },
         Err(error) => Analysis {
             source_path,
             source,
             package_name: "",
             overrides,
-            sources: Vec::new().pushed(SourceFile {
-                path: source_path,
-                source,
-                package_name: "",
-            }),
+            sources: Vec::[SourceFile { path: source_path, source, package_name: "" }],
             environments: Vec::new(),
             parse: parsed,
             syntax,

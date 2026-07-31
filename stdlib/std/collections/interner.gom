@@ -29,10 +29,7 @@ pub struct Interner {
 
 impl Interner {
     pub fn new() -> Interner {
-        Interner {
-            symbols: HashMap::new(),
-            values: Vec::new(),
-        }
+        Interner { symbols: HashMap::{}, values: Vec::[] }
     }
 
     pub fn len(self: Interner) -> int {
@@ -48,26 +45,24 @@ impl Interner {
     }
 
     pub fn intern(self: Interner, value: string) -> Symbol {
-        match self.symbols.get(value) {
-            Option::Some(symbol) => symbol,
-            Option::None => {
-                let symbol = Symbol {
-                    index: self.values.len(),
-                };
+        match self.symbols[value] {
+            Some(symbol) => symbol,
+            None => {
+                let symbol = Symbol { index: self.values.len() };
                 self.values.push(value);
-                self.symbols.set(value, symbol);
+                self.symbols[value] = symbol;
                 symbol
             },
         }
     }
 
     pub fn get(self: Interner, symbol: Symbol) -> string {
-        self.values.get(symbol.index)
+        self.values[symbol.index]
     }
 
     pub fn resolve(self: Interner, symbol: Symbol) -> Option[string] {
         if symbol.index >= 0 && symbol.index < self.values.len() {
-            Option::Some(self.values.get(symbol.index))
+            Option::Some(self.values[symbol.index])
         } else {
             Option::None
         }

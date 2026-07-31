@@ -1,65 +1,65 @@
 fn make_some(value/0: int32) -> Maybe__int32 {
-  join ret115(retv116: Maybe__int32) -> Maybe__int32 {
-    retv116
+  join ret159(retv160: Maybe__int32) -> Maybe__int32 {
+    retv160
   } in
-  let t117 = Maybe__int32::Some(value/0) in
-  jump ret115(t117)
+  let t161 = Maybe__int32::Some(value/0) in
+  jump ret159(t161)
 }
 
 fn build_point(x/1: int32, y/2: int32) -> Point {
-  join ret118(retv119: Point) -> Point {
-    retv119
+  join ret162(retv163: Point) -> Point {
+    retv163
   } in
-  let t120 = Point { x: x/1, y: y/2 } in
-  jump ret118(t120)
+  let t164 = Point { x: x/1, y: y/2 } in
+  jump ret162(t164)
 }
 
 fn magnitude(p/3: Point) -> int32 {
-  join ret121(retv122: int32) -> int32 {
-    retv122
+  join ret165(retv166: int32) -> int32 {
+    retv166
   } in
-  let mtmp108 = p/3 in
-  let x109 = Point.x(mtmp108) in
-  let x110 = Point.y(mtmp108) in
-  let y/5 = x110 in
-  let x/4 = x109 in
-  let t123 = (x/4 + y/5) in
-  jump ret121(t123)
+  let mtmp152 = p/3 in
+  let x153 = Point.x(mtmp152) in
+  let x154 = Point.y(mtmp152) in
+  let y/5 = x154 in
+  let x/4 = x153 in
+  let t167 = (x/4 + y/5) in
+  jump ret165(t167)
 }
 
 fn main() -> int32 {
-  join ret124(retv125: int32) -> int32 {
-    retv125
+  join ret168(retv169: int32) -> int32 {
+    retv169
   } in
-  let mtmp111 = make_some(5) in
-  join k126(jp127: int32) -> int32 {
-    jump ret124(jp127)
+  let mtmp155 = make_some(5) in
+  join k170(jp171: int32) -> int32 {
+    jump ret168(jp171)
   } in
-  match mtmp111 {
+  match mtmp155 {
     Tag_0 => {
-      let x112 = Maybe__int32::Some._0(mtmp111) in
-      let result/6 = x112 in
+      let x156 = Maybe__int32::Some._0(mtmp155) in
+      let result/6 = x156 in
       let pt/7 = build_point(result/6, 7) in
-      let t128 = Point.x(pt/7) in
-      let mtmp113 = Maybe__int32::Some(t128) in
-      join k129(jp130: int32) -> int32 {
-        jump k126(jp130)
+      let t172 = Point.x(pt/7) in
+      let mtmp157 = Maybe__int32::Some(t172) in
+      join k173(jp174: int32) -> int32 {
+        jump k170(jp174)
       } in
-      match mtmp113 {
+      match mtmp157 {
         Tag_0 => {
-          let x114 = Maybe__int32::Some._0(mtmp113) in
-          let value/8 = x114 in
-          let t131 = magnitude(pt/7) in
-          let t132 = (value/8 + t131) in
-          jump k129(t132)
+          let x158 = Maybe__int32::Some._0(mtmp157) in
+          let value/8 = x158 in
+          let t175 = magnitude(pt/7) in
+          let t176 = (value/8 + t175) in
+          jump k173(t176)
         },
         Tag_1 => {
-          jump k129(0)
+          jump k173(0)
         },
       }
     },
     Tag_1 => {
-      jump k126(0)
+      jump k170(0)
     },
   }
 }

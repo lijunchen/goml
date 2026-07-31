@@ -66,88 +66,88 @@ type Only struct {
 func (_ Only) isSingle() {}
 
 func unwrap(value__5 Single) int32 {
-    var retv176 int32
-    var mtmp113 Single = value__5
-    var jp178 int32
-    switch mtmp113.(type) {
+    var retv220 int32
+    var mtmp157 Single = value__5
+    var jp222 int32
+    switch mtmp157.(type) {
     case Only:
-        var x114 int32 = mtmp113.(Only)._0
-        var inner__6 int32 = x114
-        jp178 = inner__6
+        var x158 int32 = mtmp157.(Only)._0
+        var inner__6 int32 = x158
+        jp222 = inner__6
     default:
         panic("non-exhaustive match")
     }
-    retv176 = jp178
-    return retv176
+    retv220 = jp222
+    return retv220
 }
 
 func decide(flag__7 bool) int32 {
-    var retv180 int32
+    var retv224 int32
     switch flag__7 {
     case true:
-        retv180 = 1
+        retv224 = 1
     case false:
-        retv180 = 2
+        retv224 = 2
     default:
         panic("non-exhaustive match")
     }
-    return retv180
+    return retv224
 }
 
 func signed_zero(value__8 float64) string {
-    var retv184 string
-    var jp186 string
+    var retv228 string
+    var jp230 string
     switch value__8 {
     case -0:
-        jp186 = "zero"
+        jp230 = "zero"
     default:
-        jp186 = "other"
+        jp230 = "other"
     }
-    retv184 = jp186
-    return retv184
+    retv228 = jp230
+    return retv228
 }
 
 func main0() struct{} {
-    var t188 Single = Only{
+    var t232 Single = Only{
         _0: 12,
     }
-    var mtmp115 Tuple1_6Single = Tuple1_6Single{
-        _0: t188,
+    var mtmp159 Tuple1_6Single = Tuple1_6Single{
+        _0: t232,
     }
-    var x116 Single = mtmp115._0
-    var single__9 Single = x116
-    var t189 int32 = unwrap(single__9)
-    println__T_int32(t189)
-    var t190 int32 = decide(true)
-    println__T_int32(t190)
-    var t191 string = signed_zero(0)
-    println__T_string(t191)
+    var x160 Single = mtmp159._0
+    var single__9 Single = x160
+    var t233 int32 = unwrap(single__9)
+    println__T_int32(t233)
+    var t234 int32 = decide(true)
+    println__T_int32(t234)
+    var t235 string = signed_zero(0)
+    println__T_string(t235)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t193 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t193)
+    var t237 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t237)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t196)
+    var t240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t240)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv199 string
-    var t200 string = _goml_runtime_core_int32_to_string(self__43)
-    retv199 = t200
-    return retv199
+    var retv243 string
+    var t244 string = _goml_runtime_core_int32_to_string(self__43)
+    retv243 = t244
+    return retv243
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv202 string
-    retv202 = self__38
-    return retv202
+    var retv246 string
+    retv246 = self__38
+    return retv246
 }
 
 func main() {

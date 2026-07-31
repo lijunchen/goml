@@ -16,11 +16,7 @@ fn parse_version_format(value: string) -> Result[VersionFormat, string] {
     } else if value == "json" {
         Result::Ok(VersionFormat::Json)
     } else {
-        Result::Err(invalid_value_error(
-            value,
-            "--format <FORMAT>",
-            "text, json",
-        ))
+        Result::Err(invalid_value_error(value, "--format <FORMAT>", "text, json"))
     }
 }
 
@@ -29,50 +25,41 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
     let positional = Ref::new(false);
     let index = Ref::new(2);
     while index.get() < args.len() {
-        let argument = args.get(index.get());
+        let argument = args[index.get()];
         if positional.get() == false && argument == "--" {
             positional.set(true);
             index.set(index.get() + 1)
         } else if positional.get() == false && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if positional.get() == false
-            && option_string_present(inline_cli_value(argument, "--help"))
-        {
+            && option_string_present(inline_cli_value(argument, "--help")) {
             let value = match inline_cli_value(argument, "--help") {
                 Some(value) => value,
                 None => "",
             };
-            return Result::Err(unexpected_value_error_with_usage(
-                value,
-                "--help",
-                "gomlc version --help",
-            ))
-        } else if positional.get() == false
-            && cli_value_option("version", argument)
+            return Result::Err(
+                unexpected_value_error_with_usage(value, "--help", "gomlc version --help"),
+            )
+        } else if positional.get() == false && cli_value_option("version", argument)
             && index.get() + 1 < args.len()
-            && cli_option(args.get(index.get() + 1))
-            && !known_cli_option("version", args.get(index.get() + 1))
-        {
-            return Result::Err(unexpected_cli_option_error_with_usage(
-                "version",
-                args.get(index.get() + 1),
-                command_usage("version"),
-            ))
-        } else if positional.get() == false && argument == "--format" {
-            if index.get() + 1 >= args.len()
-                || cli_option(args.get(index.get() + 1))
-            {
-                return Result::Err(value_required_error(
-                    "--format <FORMAT>",
-                    Option::Some("text, json"),
-                ))
-            } else if option_string_present(format.get()) {
-                return Result::Err(repeated_argument_error(
+            && cli_option(args[index.get() + 1])
+            && !known_cli_option("version", args[index.get() + 1]) {
+            return Result::Err(
+                unexpected_cli_option_error_with_usage(
                     "version",
-                    "--format <FORMAT>",
-                ))
+                    args[index.get() + 1],
+                    command_usage("version"),
+                ),
+            )
+        } else if positional.get() == false && argument == "--format" {
+            if index.get() + 1 >= args.len() || cli_option(args[index.get() + 1]) {
+                return Result::Err(
+                    value_required_error("--format <FORMAT>", Option::Some("text, json")),
+                )
+            } else if option_string_present(format.get()) {
+                return Result::Err(repeated_argument_error("version", "--format <FORMAT>"))
             } else {
-                let value = args.get(index.get() + 1);
+                let value = args[index.get() + 1];
                 match parse_version_format(value) {
                     Ok(_) => {
                         format.set(Option::Some(value));
@@ -82,20 +69,15 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                 }
             }
         } else if positional.get() == false
-            && option_string_present(inline_cli_value(argument, "--format"))
-        {
+            && option_string_present(inline_cli_value(argument, "--format")) {
             if option_string_present(format.get()) {
-                return Result::Err(repeated_argument_error(
-                    "version",
-                    "--format <FORMAT>",
-                ))
+                return Result::Err(repeated_argument_error("version", "--format <FORMAT>"))
             } else {
                 match inline_cli_value(argument, "--format") {
                     Some(value) => if value == "" {
-                        return Result::Err(value_required_error(
-                            "--format <FORMAT>",
-                            Option::Some("text, json"),
-                        ))
+                        return Result::Err(
+                            value_required_error("--format <FORMAT>", Option::Some("text, json")),
+                        )
                     } else {
                         match parse_version_format(value) {
                             Ok(_) => format.set(Option::Some(value)),
@@ -108,11 +90,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             }
         } else {
             if positional.get() {
-                return Result::Err(unexpected_argument_error(
-                    "version",
-                    argument,
-                    false,
-                ))
+                return Result::Err(unexpected_argument_error("version", argument, false))
             } else {
                 ()
             };
@@ -124,11 +102,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                         similar_cli_argument_usage("version", similar),
                     ),
                 ),
-                None => return Result::Err(unexpected_argument_error(
-                    "version",
-                    argument,
-                    false,
-                )),
+                None => return Result::Err(unexpected_argument_error("version", argument, false)),
             }
         }
     };
@@ -141,9 +115,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
 fn trim_version_value(value: string) -> string {
     let end = Ref::new(value.byte_len());
     while end.get() > 0
-        && (value.byte_get(end.get() - 1) == 10
-            || value.byte_get(end.get() - 1) == 13)
-    {
+        && (value.byte_get(end.get() - 1) == b'\n' || value.byte_get(end.get() - 1) == b'\r') {
         end.set(end.get() - 1)
     };
     value.byte_slice(0, end.get())
@@ -173,12 +145,7 @@ fn git_version_value(args: Vec[string]) -> Option[string] {
 fn version_git_hash() -> Option[string] {
     match env::var("GOML_GIT_HASH") {
         Some(value) => Option::Some(value),
-        None => git_version_value(
-            Vec::new()
-                .pushed("rev-parse")
-                .pushed("--short=9")
-                .pushed("HEAD"),
-        ),
+        None => git_version_value(Vec::["rev-parse", "--short=9", "HEAD"]),
     }
 }
 
@@ -186,12 +153,7 @@ fn version_git_date() -> Option[string] {
     match env::var("GOML_GIT_DATE") {
         Some(value) => Option::Some(value),
         None => git_version_value(
-            Vec::new()
-                .pushed("show")
-                .pushed("-s")
-                .pushed("--date=format:%Y-%m-%d")
-                .pushed("--format=%cd")
-                .pushed("HEAD"),
+            Vec::["show", "-s", "--date=format:%Y-%m-%d", "--format=%cd", "HEAD"],
         ),
     }
 }
@@ -203,21 +165,11 @@ fn version_json_option(value: Option[string]) -> string {
     }
 }
 
-fn version_output_with(
-    format: VersionFormat,
-    hash: Option[string],
-    date: Option[string],
-) -> string {
+fn version_output_with(format: VersionFormat, hash: Option[string], date: Option[string]) -> string {
     match format {
         Text => match (hash, date) {
             (Some(hash), Some(date)) => {
-                "gomlc "
-                    + version::current()
-                    + " ("
-                    + hash
-                    + " "
-                    + date
-                    + ")"
+                "gomlc " + version::current() + " (" + hash + " " + date + ")"
             },
             _ => "gomlc " + version::current(),
         },

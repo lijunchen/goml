@@ -1,50 +1,50 @@
 fn trait_impl#Label#string#label(self/0: string) -> string {
-  join ret109(retv110: string) -> string {
-    retv110
+  join ret153(retv154: string) -> string {
+    retv154
   } in
-  let t111 = ("label:" + self/0) in
-  jump ret109(t111)
+  let t155 = ("label:" + self/0) in
+  jump ret153(t155)
 }
 
 fn trait_impl#Source#TextSource#get(self/1: TextSource) -> string {
-  join ret112(retv113: string) -> string {
-    retv113
+  join ret156(retv157: string) -> string {
+    retv157
   } in
-  let t114 = TextSource.value(self/1) in
-  jump ret112(t114)
+  let t158 = TextSource.value(self/1) in
+  jump ret156(t158)
 }
 
 fn main() -> unit {
-  join ret115() -> unit {
+  join ret159() -> unit {
     ()
   } in
-  let t116 = TextSource { value: "goml" } in
-  let t117 = render__S_TextSource(t116) in
-  let _wild108 = println__T_string(t117) in
-  jump ret115()
+  let t160 = TextSource { value: "goml" } in
+  let t161 = render__S_TextSource(t160) in
+  let _wild152 = println__T_string(t161) in
+  jump ret159()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret118() -> unit {
+  join ret162() -> unit {
     ()
   } in
-  let t119 = trait_impl#ToString#string#to_string(value/1) in
-  let t120 = @runtime(core.string_println)(t119) in
-  jump ret118()
+  let t163 = trait_impl#ToString#string#to_string(value/1) in
+  let t164 = @runtime(core.string_println)(t163) in
+  jump ret162()
 }
 
 fn render__S_TextSource(source/2: TextSource) -> string {
-  join ret121(retv122: string) -> string {
-    retv122
+  join ret165(retv166: string) -> string {
+    retv166
   } in
-  let t123 = trait_impl#Source#TextSource#get(source/2) in
-  let t124 = trait_impl#Label#string#label(t123) in
-  jump ret121(t124)
+  let t167 = trait_impl#Source#TextSource#get(source/2) in
+  let t168 = trait_impl#Label#string#label(t167) in
+  jump ret165(t168)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret125(retv126: string) -> string {
-    retv126
+  join ret169(retv170: string) -> string {
+    retv170
   } in
-  jump ret125(self/38)
+  jump ret169(self/38)
 }

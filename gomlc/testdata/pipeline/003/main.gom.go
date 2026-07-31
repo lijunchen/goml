@@ -34,42 +34,42 @@ func main0() struct{} {
 }
 
 func print__T_unit(value__0 struct{}) struct{} {
-    var t114 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(value__0)
-    _goml_runtime_core_string_print(t114)
+    var t158 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(value__0)
+    _goml_runtime_core_string_print(t158)
     return struct{}{}
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t117 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
-    _goml_runtime_core_string_print(t117)
+    var t161 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
+    _goml_runtime_core_string_print(t161)
     return struct{}{}
 }
 
 func print__T_int(value__0 int) struct{} {
-    var t120 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
-    _goml_runtime_core_string_print(t120)
+    var t164 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
+    _goml_runtime_core_string_print(t164)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__36 struct{}) string {
-    var retv123 string
-    var t124 string = _goml_runtime_core_unit_to_string(self__36)
-    retv123 = t124
-    return retv123
+    var retv167 string
+    var t168 string = _goml_runtime_core_unit_to_string(self__36)
+    retv167 = t168
+    return retv167
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv126 string
-    var t127 string = _goml_runtime_core_bool_to_string(self__37)
-    retv126 = t127
-    return retv126
+    var retv170 string
+    var t171 string = _goml_runtime_core_bool_to_string(self__37)
+    retv170 = t171
+    return retv170
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv129 string
-    var t130 string = _goml_runtime_core_int_to_string(self__40)
-    retv129 = t130
-    return retv129
+    var retv173 string
+    var t174 string = _goml_runtime_core_int_to_string(self__40)
+    retv173 = t174
+    return retv173
 }
 
 func main() {

@@ -27,40 +27,40 @@ type Tuple2_5int32_5int32 struct {
 }
 
 func sum_pair(value__0 Tuple2_5int32_5int32) int32 {
-    var retv114 int32
-    var t115 int32 = value__0._0
-    var t116 int32 = value__0._1
-    var t117 int32 = t115 + t116
-    retv114 = t117
-    return retv114
+    var retv158 int32
+    var t159 int32 = value__0._0
+    var t160 int32 = value__0._1
+    var t161 int32 = t159 + t160
+    retv158 = t161
+    return retv158
 }
 
 func classify(value__1 uint8) string {
-    var retv119 string
-    var match108 uint8 = value__1
-    var t122 bool = match108 == 10
-    var jp121 string
-    if t122 {
-        jp121 = "newline"
+    var retv163 string
+    var match152 uint8 = value__1
+    var t166 bool = match152 == 10
+    var jp165 string
+    if t166 {
+        jp165 = "newline"
     } else {
-        var t125 bool = match108 >= 65
-        var jp124 string
-        if t125 {
-            var t128 bool = match108 <= 90
-            var jp127 string
-            if t128 {
-                jp127 = "uppercase"
+        var t169 bool = match152 >= 65
+        var jp168 string
+        if t169 {
+            var t172 bool = match152 <= 90
+            var jp171 string
+            if t172 {
+                jp171 = "uppercase"
             } else {
-                jp127 = "other"
+                jp171 = "other"
             }
-            jp124 = jp127
+            jp168 = jp171
         } else {
-            jp124 = "other"
+            jp168 = "other"
         }
-        jp121 = jp124
+        jp165 = jp168
     }
-    retv119 = jp121
-    return retv119
+    retv163 = jp165
+    return retv163
 }
 
 func main0() struct{} {
@@ -71,65 +71,65 @@ func main0() struct{} {
     }
     var marker__4 uint8 = 65
     println__T_uint64(user__2)
-    var t130 int32 = sum_pair(pair__3)
-    println__T_int32(t130)
+    var t174 int32 = sum_pair(pair__3)
+    println__T_int32(t174)
     println__T_uint8(marker__4)
-    var t131 string = classify(marker__4)
-    println__T_string(t131)
-    var t132 string = classify(10)
-    println__T_string(t132)
+    var t175 string = classify(marker__4)
+    println__T_string(t175)
+    var t176 string = classify(10)
+    println__T_string(t176)
     return struct{}{}
 }
 
 func println__T_uint64(value__1 uint64) struct{} {
-    var t135 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(value__1)
-    _goml_runtime_core_string_println(t135)
+    var t179 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(value__1)
+    _goml_runtime_core_string_println(t179)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t138 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t138)
+    var t182 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t182)
     return struct{}{}
 }
 
 func println__T_uint8(value__1 uint8) struct{} {
-    var t141 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(value__1)
-    _goml_runtime_core_string_println(t141)
+    var t185 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(value__1)
+    _goml_runtime_core_string_println(t185)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t144 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t144)
+    var t188 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t188)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__48 uint64) string {
-    var retv147 string
-    var t148 string = _goml_runtime_core_uint64_to_string(self__48)
-    retv147 = t148
-    return retv147
+    var retv191 string
+    var t192 string = _goml_runtime_core_uint64_to_string(self__48)
+    retv191 = t192
+    return retv191
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv150 string
-    var t151 string = _goml_runtime_core_int32_to_string(self__43)
-    retv150 = t151
-    return retv150
+    var retv194 string
+    var t195 string = _goml_runtime_core_int32_to_string(self__43)
+    retv194 = t195
+    return retv194
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var retv153 string
-    var t154 string = _goml_runtime_core_uint8_to_string(self__45)
-    retv153 = t154
-    return retv153
+    var retv197 string
+    var t198 string = _goml_runtime_core_uint8_to_string(self__45)
+    retv197 = t198
+    return retv197
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv156 string
-    retv156 = self__38
-    return retv156
+    var retv200 string
+    retv200 = self__38
+    return retv200
 }
 
 func main() {

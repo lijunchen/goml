@@ -5,25 +5,7 @@ use gomlc::lexer;
 
 fn is_binary_operator(kind: lexer::TokenKind) -> bool {
     match kind {
-        Plus
-        | Minus
-        | Star
-        | Slash
-        | Percent
-        | AndAnd
-        | Amp
-        | OrOr
-        | Pipe
-        | Caret
-        | Less
-        | LessLess
-        | Greater
-        | GreaterGreater
-        | LessEq
-        | GreaterEq
-        | EqEq
-        | NotEq
-        | Dot => true,
+        Plus | Minus | Star | Slash | Percent | AndAnd | Amp | OrOr | Pipe | Caret | Less | LessLess | Greater | GreaterGreater | LessEq | GreaterEq | EqEq | NotEq | Dot => true,
         _ => false,
     }
 }
@@ -85,7 +67,7 @@ fn parse_decimal_int32(value: string) -> Option[int] {
     let valid = Ref::new(value.byte_len() > 0);
     while index.get() < value.byte_len() && valid.get() {
         let byte = value.byte_get(index.get());
-        if byte < 48 || byte > 57 {
+        if byte < b'0' || byte > b'9' {
             valid.set(false)
         } else {
             let digit = match byte {
@@ -115,31 +97,20 @@ fn parse_decimal_int32(value: string) -> Option[int] {
     }
 }
 
-fn apply_trailing_args(
-    ctx: LowerCtx,
-    expression: Expr,
-    trailing_args: Vec[Expr],
-    value_span: Span,
-) -> Option[Expr] {
+fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr], value_span: Span) -> Option[
+    Expr,
+] {
     if trailing_args.len() == 0 {
         Option::Some(expression)
     } else {
         match expression {
-            Path {
-                path,
-                owner_type_args,
-                member_type_args,
-                span: expr_span,
-            } => Option::Some(Expr::Call {
-                func: Expr::Path {
-                    path,
-                    owner_type_args,
-                    member_type_args,
+            Path { path, owner_type_args, member_type_args, span: expr_span } => Option::Some(
+                Expr::Call {
+                    func: Expr::Path { path, owner_type_args, member_type_args, span: expr_span },
+                    args: trailing_args,
                     span: expr_span,
                 },
-                args: trailing_args,
-                span: expr_span,
-            }),
+            ),
             Call { func, args, span: expr_span } => {
                 let result = Ref::new(Expr::Call { func, args, span: expr_span });
                 for arg in trailing_args {
@@ -147,11 +118,9 @@ fn apply_trailing_args(
                     match result.get() {
                         Call { func: next_func, args: next_args, span: next_span } => {
                             next_args.push(arg);
-                            result.set(Expr::Call {
-                                func: next_func,
-                                args: next_args,
-                                span: next_span,
-                            })
+                            result.set(
+                                Expr::Call { func: next_func, args: next_args, span: next_span },
+                            )
                         },
                         _ => (),
                     }
@@ -159,11 +128,9 @@ fn apply_trailing_args(
                 Option::Some(result.get())
             },
             ConstructorValue { constructor: path, span: expr_span } => {
-                Option::Some(Expr::Constr {
-                    constructor: path,
-                    args: trailing_args,
-                    span: expr_span,
-                })
+                Option::Some(
+                    Expr::Constr { constructor: path, args: trailing_args, span: expr_span },
+                )
             },
             Constr { constructor: path, args, span: expr_span } => {
                 for arg in trailing_args {
@@ -171,32 +138,27 @@ fn apply_trailing_args(
                 };
                 Option::Some(Expr::Constr { constructor: path, args, span: expr_span })
             },
-            Field {
-                expr: base,
-                field_name: field,
-                method_type_args,
-                span: expr_span,
-            } => Option::Some(Expr::Call {
-                func: Expr::Field {
-                    expr: base,
-                    field_name: field,
-                    method_type_args,
+            Field { expr: base, field_name: field, method_type_args, span: expr_span } => Option::Some(
+                Expr::Call {
+                    func: Expr::Field {
+                        expr: base,
+                        field_name: field,
+                        method_type_args,
+                        span: expr_span,
+                    },
+                    args: trailing_args,
                     span: expr_span,
                 },
-                args: trailing_args,
-                span: expr_span,
-            }),
+            ),
             Index { base, index, span: expr_span } => match apply_trailing_args(
                 ctx,
                 index,
                 trailing_args,
                 value_span,
             ) {
-                Some(next_index) => Option::Some(Expr::Index {
-                    base,
-                    index: next_index,
-                    span: expr_span,
-                }),
+                Some(next_index) => Option::Some(
+                    Expr::Index { base, index: next_index, span: expr_span },
+                ),
                 None => Option::None,
             },
             Binary { op, lhs, rhs, span: expr_span } => match apply_trailing_args(
@@ -205,12 +167,9 @@ fn apply_trailing_args(
                 trailing_args,
                 value_span,
             ) {
-                Some(next_rhs) => Option::Some(Expr::Binary {
-                    op,
-                    lhs,
-                    rhs: next_rhs,
-                    span: expr_span,
-                }),
+                Some(next_rhs) => Option::Some(
+                    Expr::Binary { op, lhs, rhs: next_rhs, span: expr_span },
+                ),
                 None => Option::None,
             },
             Unary { op, expr: inner, span: expr_span } => match apply_trailing_args(
@@ -219,11 +178,9 @@ fn apply_trailing_args(
                 trailing_args,
                 value_span,
             ) {
-                Some(next_inner) => Option::Some(Expr::Unary {
-                    op,
-                    expr: next_inner,
-                    span: expr_span,
-                }),
+                Some(next_inner) => Option::Some(
+                    Expr::Unary { op, expr: next_inner, span: expr_span },
+                ),
                 None => Option::None,
             },
             _ => {
@@ -240,7 +197,7 @@ fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
         Some(list) => for arg in children_of_kind(list, cst::NodeKind::ARG) {
             let values = expr_children(arg);
             if values.len() > 0 {
-                match lower_expr(ctx, values.get(0)) {
+                match lower_expr(ctx, values[0]) {
                     Some(value) => args.push(value),
                     None => (),
                 }
@@ -255,9 +212,7 @@ fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
 
 fn is_direct_call_callee(kind: cst::NodeKind) -> bool {
     match kind {
-        EXPR_CALL
-        | EXPR_CLOSURE
-        | EXPR_PAREN => true,
+        EXPR_CALL | EXPR_CLOSURE | EXPR_PAREN => true,
         _ => false,
     }
 }
@@ -276,20 +231,15 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
         push_error(ctx, node_span(node), "CallExpr has no function name");
         Option::None
     } else {
-        let callee = callees.get(0);
+        let callee = callees[0];
         if cst::node_kind_equal(node_kind(callee), cst::NodeKind::EXPR_IDENT) {
             match lower_ident_parts(ctx, callee) {
                 Some(parts) => match path_last(parts.path) {
                     Some(last) => {
                         let call = if parts.owner_type_args.len() == 0
                             && parts.member_type_args.len() == 0
-                            && ident_starts_upper(last)
-                        {
-                            Expr::Constr {
-                                constructor: parts.path,
-                                args,
-                                span: node_span(node),
-                            }
+                            && ident_starts_upper(last) {
+                            Expr::Constr { constructor: parts.path, args, span: node_span(node) }
                         } else {
                             Expr::Call {
                                 func: Expr::Path {
@@ -336,7 +286,7 @@ fn lower_prefix_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         push_error(ctx, node_span(node), "Prefix expression missing operand");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(inner) => {
                 let op = if has_token(node, lexer::TokenKind::Minus) {
                     Option::Some(UnaryOp::Neg)
@@ -371,8 +321,8 @@ fn lower_cast_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
     if values.len() == 0 || types.len() == 0 {
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Some(value) => match lower_ty(ctx, types.get(0)) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
+            Some(value) => match lower_ty(ctx, types[0]) {
                 Some(ty) => apply_trailing_args(
                     ctx,
                     Expr::Cast { expr: value, ty, span: node_span(node) },
@@ -395,8 +345,8 @@ fn lower_index_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         push_error(ctx, node_span(node), "Index expression missing index");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Some(base) => match lower_expr(ctx, values.get(1)) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
+            Some(base) => match lower_expr(ctx, values[1]) {
                 Some(index) => apply_trailing_args(
                     ctx,
                     Expr::Index { base, index, span: node_span(node) },
@@ -416,7 +366,7 @@ fn lower_try_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
         push_error(ctx, node_span(node), "Try expression missing operand");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(value) => apply_trailing_args(
                 ctx,
                 Expr::Try { expr: value, span: node_span(node) },
@@ -437,8 +387,8 @@ fn lower_range_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         push_error(ctx, node_span(node), "Range expression missing end");
         Option::None
     } else {
-        match lower_expr(ctx, values.get(0)) {
-            Some(start) => match lower_expr(ctx, values.get(1)) {
+        match lower_expr(ctx, values[0]) {
+            Some(start) => match lower_expr(ctx, values[1]) {
                 Some(end) => apply_trailing_args(
                     ctx,
                     Expr::Range { start, end, span: node_span(node) },
@@ -461,19 +411,19 @@ fn lower_binary_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         push_error(ctx, node_span(node), "Binary expression missing rhs");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(lhs) => match binary_operator_token(node) {
-                Some(operator) => if lexer::token_kind_equal(operator.token.kind, lexer::TokenKind::Dot) {
-                    lower_dot_expr(ctx, node, lhs, values.get(1), trailing_args)
+                Some(operator) => if lexer::token_kind_equal(
+                    operator.token.kind,
+                    lexer::TokenKind::Dot,
+                ) {
+                    lower_dot_expr(ctx, node, lhs, values[1], trailing_args)
                 } else {
                     match binary_operator(operator.token.kind) {
-                        Some(op) => match lower_expr_with_args(ctx, values.get(1), trailing_args) {
-                            Some(rhs) => Option::Some(Expr::Binary {
-                                op,
-                                lhs,
-                                rhs,
-                                span: node_span(node),
-                            }),
+                        Some(op) => match lower_expr_with_args(ctx, values[1], trailing_args) {
+                            Some(rhs) => Option::Some(
+                                Expr::Binary { op, lhs, rhs, span: node_span(node) },
+                            ),
                             None => Option::None,
                         },
                         None => {
@@ -501,14 +451,8 @@ fn lower_dot_expr(
 ) -> Option[Expr] {
     if cst::node_kind_equal(node_kind(rhs), cst::NodeKind::EXPR_INT) {
         match first_token(rhs, lexer::TokenKind::IntLit) {
-            Some(token) => match parse_decimal_int32(
-                strip_suffix(token.token.text, ""),
-            ) {
-                Some(index) => Option::Some(Expr::Proj {
-                    tuple: lhs,
-                    index,
-                    span: node_span(node),
-                }),
+            Some(token) => match parse_decimal_int32(strip_suffix(token.token.text, "")) {
+                Some(index) => Option::Some(Expr::Proj { tuple: lhs, index, span: node_span(node) }),
                 None => {
                     push_error(ctx, token_span(token), "Invalid tuple index: " + token.token.text);
                     Option::None
@@ -528,20 +472,16 @@ fn lower_dot_expr(
                 } else {
                     let field = Expr::Field {
                         expr: lhs,
-                        field_name: parts.path.segments
-                            .get(parts.path.segments.len() - 1)
-                            .ident,
+                        field_name: parts.path.segments[parts.path.segments.len() - 1].ident,
                         method_type_args: parts.member_type_args,
                         span: node_span(node),
                     };
                     if trailing_args.len() == 0 {
                         Option::Some(field)
                     } else {
-                        Option::Some(Expr::Call {
-                            func: field,
-                            args: trailing_args,
-                            span: node_span(node),
-                        })
+                        Option::Some(
+                            Expr::Call { func: field, args: trailing_args, span: node_span(node) },
+                        )
                     }
                 }
             },

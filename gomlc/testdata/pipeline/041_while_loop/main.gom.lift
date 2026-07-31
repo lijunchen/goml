@@ -1,10 +1,10 @@
 fn sum_to(limit/0: int32) -> int32 {
   let acc/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let mtmp110 = while (inherent#Ref#Ref[T]#get__T_int32(i/2) < limit/0) {
+  let mtmp154 = while (inherent#Ref#Ref[T]#get__T_int32(i/2) < limit/0) {
       let current/3 = inherent#Ref#Ref[T]#get__T_int32(i/2) in
-      let mtmp108 = inherent#Ref#Ref[T]#set__T_int32(acc/1, (inherent#Ref#Ref[T]#get__T_int32(acc/1) + current/3)) in
-      let mtmp109 = inherent#Ref#Ref[T]#set__T_int32(i/2, (current/3 + 1)) in
+      let mtmp152 = inherent#Ref#Ref[T]#set__T_int32(acc/1, (inherent#Ref#Ref[T]#get__T_int32(acc/1) + current/3)) in
+      let mtmp153 = inherent#Ref#Ref[T]#set__T_int32(i/2, (current/3 + 1)) in
       ()
   } in
   inherent#Ref#Ref[T]#get__T_int32(acc/1)
@@ -14,11 +14,11 @@ fn sum_even(limit/4: int32) -> int32 {
   let acc/5 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/6 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let is_even/7 = inherent#Ref#Ref[T]#new__T_bool(true) in
-  let mtmp113 = while (inherent#Ref#Ref[T]#get__T_int32(i/6) < limit/4) {
+  let mtmp157 = while (inherent#Ref#Ref[T]#get__T_int32(i/6) < limit/4) {
       let current/8 = inherent#Ref#Ref[T]#get__T_int32(i/6) in
-      let mtmp111 = inherent#Ref#Ref[T]#set__T_int32(i/6, (current/8 + 1)) in
+      let mtmp155 = inherent#Ref#Ref[T]#set__T_int32(i/6, (current/8 + 1)) in
       let add_now/9 = inherent#Ref#Ref[T]#get__T_bool(is_even/7) in
-      let mtmp112 = inherent#Ref#Ref[T]#set__T_bool(is_even/7, (!add_now/9)) in
+      let mtmp156 = inherent#Ref#Ref[T]#set__T_bool(is_even/7, (!add_now/9)) in
       if add_now/9 {
           inherent#Ref#Ref[T]#set__T_int32(acc/5, (inherent#Ref#Ref[T]#get__T_int32(acc/5) + current/8))
       } else {
@@ -31,10 +31,10 @@ fn sum_even(limit/4: int32) -> int32 {
 fn main() -> unit {
   let first/10 = sum_to(5) in
   let evens/11 = sum_even(6) in
-  let mtmp114 = print__T_string("sum_to(5)=") in
-  let mtmp115 = println__T_int32(first/10) in
-  let mtmp116 = print__T_string("sum_even(6)=") in
-  let mtmp117 = println__T_int32(evens/11) in
+  let mtmp158 = print__T_string("sum_to(5)=") in
+  let mtmp159 = println__T_int32(first/10) in
+  let mtmp160 = print__T_string("sum_even(6)=") in
+  let mtmp161 = println__T_int32(evens/11) in
   ()
 }
 

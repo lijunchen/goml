@@ -5,7 +5,7 @@ use gomlc::tast;
 use std::text;
 
 fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char(' ')
     }
 }
@@ -61,13 +61,13 @@ fn write_exprs(
     mono_style: bool,
     flatten_blocks: bool,
 ) -> unit {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
             ()
         };
-        write_expr(builder, values.get(index), indent, mono_style, flatten_blocks)
+        write_expr(builder, values[index], indent, mono_style, flatten_blocks)
     }
 }
 
@@ -85,21 +85,15 @@ fn write_constructor(
             builder.write_string(" {}")
         } else if constructor.fields.len() == args.len() {
             builder.write_string(" { ");
-            for index in range(0, args.len()) {
+            for index in 0..args.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
                 };
-                builder.write_string(constructor.fields.get(index));
+                builder.write_string(constructor.fields[index]);
                 builder.write_string(": ");
-                write_expr(
-                    builder,
-                    args.get(index),
-                    indent,
-                    mono_style,
-                    flatten_blocks,
-                )
+                write_expr(builder, args[index], indent, mono_style, flatten_blocks)
             };
             builder.write_string(" }")
         } else if args.len() > 0 {
@@ -133,13 +127,13 @@ fn write_block_contents(
             None => builder.write_string("()"),
         }
     } else {
-        for index in range(0, value.stmts.len()) {
+        for index in 0..value.stmts.len() {
             if index > 0 {
                 newline(builder, indent)
             } else {
                 ()
             };
-            let stmt = value.stmts.get(index);
+            let stmt = value.stmts[index];
             builder.write_string("let ");
             builder.write_string(stmt.name);
             builder.write_string(" = ");
@@ -185,13 +179,7 @@ fn write_arm(
     write_expr(builder, value.lhs, indent, mono_style, flatten_blocks);
     builder.write_string(" => {");
     newline(builder, indent + 2);
-    write_expr(
-        builder,
-        value.body,
-        indent + 2,
-        mono_style,
-        flatten_blocks,
-    );
+    write_expr(builder, value.body, indent + 2, mono_style, flatten_blocks);
     newline(builder, indent);
     builder.write_string("},")
 }
@@ -208,14 +196,7 @@ fn write_expr(
         Callable { callable, ty: _ } => write_callable(builder, callable),
         Prim { value, ty: _ } => tast::write_primitive(builder, value),
         Constr { constructor, args, ty: _ } => {
-            write_constructor(
-                builder,
-                constructor,
-                args,
-                indent,
-                mono_style,
-                flatten_blocks,
-            )
+            write_constructor(builder, constructor, args, indent, mono_style, flatten_blocks)
         },
         Tuple { items: values, ty: _ } => {
             builder.write_char('(');
@@ -230,13 +211,13 @@ fn write_expr(
         Closure { params, body, ty: _ } => {
             builder.write_char('|');
             if params.len() > 0 {
-                for index in range(0, params.len()) {
+                for index in 0..params.len() {
                     if index > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
                     };
-                    let param = params.get(index);
+                    let param = params[index];
                     builder.write_string(param.name);
                     if mono_style {
                         ()
@@ -274,13 +255,7 @@ fn write_expr(
                 Some(value) => {
                     newline(builder, indent + 2);
                     builder.write_string("_ => ");
-                    write_expr(
-                        builder,
-                        value,
-                        indent + 2,
-                        mono_style,
-                        flatten_blocks,
-                    );
+                    write_expr(builder, value, indent + 2, mono_style, flatten_blocks);
                     builder.write_char(',')
                 },
                 None => (),
@@ -293,23 +268,11 @@ fn write_expr(
             write_expr(builder, cond, indent, mono_style, flatten_blocks);
             builder.write_string(" {");
             newline(builder, indent + 4);
-            write_expr(
-                builder,
-                then_branch,
-                indent + 4,
-                mono_style,
-                flatten_blocks,
-            );
+            write_expr(builder, then_branch, indent + 4, mono_style, flatten_blocks);
             newline(builder, indent);
             builder.write_string("} else {");
             newline(builder, indent + 4);
-            write_expr(
-                builder,
-                else_branch,
-                indent + 4,
-                mono_style,
-                flatten_blocks,
-            );
+            write_expr(builder, else_branch, indent + 4, mono_style, flatten_blocks);
             newline(builder, indent);
             builder.write_char('}')
         },
@@ -318,17 +281,24 @@ fn write_expr(
             write_expr(builder, cond, indent, mono_style, flatten_blocks);
             builder.write_string(" {");
             newline(builder, indent + 4);
-            write_expr(
-                builder,
-                body,
-                indent + 4,
-                mono_style,
-                flatten_blocks,
-            );
+            write_expr(builder, body, indent + 4, mono_style, flatten_blocks);
             newline(builder, indent);
             builder.write_char('}')
         },
-        Break { ty: _ } => builder.write_string("break"),
+        Loop { body, ty: _ } => {
+            builder.write_string("loop ");
+            write_expr(builder, body, indent, mono_style, flatten_blocks)
+        },
+        Break { value, ty: _ } => {
+            builder.write_string("break");
+            match value {
+                Some(expr) => {
+                    builder.write_char(' ');
+                    write_expr(builder, expr, indent, mono_style, flatten_blocks)
+                },
+                None => (),
+            }
+        },
         Continue { ty: _ } => builder.write_string("continue"),
         Return { expr: value, ty: _ } => {
             builder.write_string("return");
@@ -348,7 +318,7 @@ fn write_expr(
             builder.write_string(constructor.name);
             builder.write_char('.');
             if constructor.is_struct && field_index < constructor.fields.len() {
-                builder.write_string(constructor.fields.get(field_index))
+                builder.write_string(constructor.fields[field_index])
             } else {
                 builder.write_char('_');
                 builder.write_string(field_index.to_string())
@@ -414,13 +384,7 @@ fn write_expr(
             };
             builder.write_char(')')
         },
-        TraitCall {
-            trait_ref: reference,
-            method_name,
-            receiver,
-            args,
-            ..
-        } => {
+        TraitCall { trait_ref: reference, method_name, receiver, args, .. } => {
             builder.write_string("trait_call[");
             tast::write_trait_ref(builder, reference);
             builder.write_string("::");
@@ -453,26 +417,26 @@ fn write_function(
     builder.write_string(value.name);
     if value.generics.len() > 0 {
         builder.write_char('[');
-        for index in range(0, value.generics.len()) {
+        for index in 0..value.generics.len() {
             if index > 0 {
                 builder.write_string(", ")
             } else {
                 ()
             };
-            builder.write_string(value.generics.get(index))
+            builder.write_string(value.generics[index])
         };
         builder.write_char(']')
     } else {
         ()
     };
     builder.write_char('(');
-    for index in range(0, value.params.len()) {
+    for index in 0..value.params.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
             ()
         };
-        let param = value.params.get(index);
+        let param = value.params[index];
         builder.write_string(param.0);
         builder.write_string(": ");
         tast::write_type(builder, param.1)
@@ -488,31 +452,26 @@ fn write_function(
 
 fn encode_with_style(value: File, mono_style: bool, flatten_blocks: bool) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, value.constants.len()) {
+    for index in 0..value.constants.len() {
         if index > 0 {
             builder.write_char('\n')
         } else {
             ()
         };
-        tast::write_constant(builder, value.constants.get(index))
+        tast::write_constant(builder, value.constants[index])
     };
     if value.constants.len() > 0 && value.functions.len() > 0 {
         builder.write_string("\n\n")
     } else {
         ()
     };
-    for index in range(0, value.functions.len()) {
+    for index in 0..value.functions.len() {
         if index > 0 {
             builder.write_string("\n\n")
         } else {
             ()
         };
-        write_function(
-            builder,
-            value.functions.get(index),
-            mono_style,
-            flatten_blocks,
-        )
+        write_function(builder, value.functions[index], mono_style, flatten_blocks)
     };
     builder.finish()
 }

@@ -34,35 +34,35 @@ const (
 )
 
 func main0() struct{} {
-    var t112 string = _goml_m_inherent_i_int_i_int_i_to__string(answer)
-    _goml_runtime_core_string_println(t112)
-    var t113 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(mask)
-    _goml_runtime_core_string_println(t113)
+    var t156 string = _goml_m_inherent_i_int_i_int_i_to__string(answer)
+    _goml_runtime_core_string_println(t156)
+    var t157 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(mask)
+    _goml_runtime_core_string_println(t157)
     _goml_runtime_core_string_println(greeting)
-    var t114 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(enabled)
-    _goml_runtime_core_string_println(t114)
+    var t158 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(enabled)
+    _goml_runtime_core_string_println(t158)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv117 string
-    var t118 string = _goml_runtime_core_int_to_string(self__5)
-    retv117 = t118
-    return retv117
+    var retv161 string
+    var t162 string = _goml_runtime_core_int_to_string(self__5)
+    retv161 = t162
+    return retv161
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var retv120 string
-    var t121 string = _goml_runtime_core_uint8_to_string(self__45)
-    retv120 = t121
-    return retv120
+    var retv164 string
+    var t165 string = _goml_runtime_core_uint8_to_string(self__45)
+    retv164 = t165
+    return retv164
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv123 string
-    var t124 string = _goml_runtime_core_bool_to_string(self__37)
-    retv123 = t124
-    return retv123
+    var retv167 string
+    var t168 string = _goml_runtime_core_bool_to_string(self__37)
+    retv167 = t168
+    return retv167
 }
 
 func main() {

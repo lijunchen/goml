@@ -13,7 +13,11 @@ impl Duration {
 
     pub fn from_nanoseconds(value: int64) -> Duration {
         Duration {
-            nanoseconds: if value < 0 { 0 } else { value },
+            nanoseconds: if value < 0 {
+                0
+            } else {
+                value
+            },
         }
     }
 
@@ -64,9 +68,7 @@ pub struct Instant {
 
 impl Instant {
     pub fn now() -> Instant {
-        Instant {
-            nanoseconds: host::monotonic_nanoseconds(),
-        }
+        Instant { nanoseconds: host::monotonic_nanoseconds() }
     }
 
     pub fn elapsed(self: Instant) -> Duration {
@@ -84,15 +86,11 @@ pub struct SystemTime {
 
 impl SystemTime {
     pub fn now() -> SystemTime {
-        SystemTime {
-            unix_nanoseconds: host::unix_nanoseconds(),
-        }
+        SystemTime { unix_nanoseconds: host::unix_nanoseconds() }
     }
 
     pub fn from_unix_nanoseconds(value: int64) -> SystemTime {
-        SystemTime {
-            unix_nanoseconds: value,
-        }
+        SystemTime { unix_nanoseconds: value }
     }
 
     pub fn unix_nanoseconds(self: SystemTime) -> int64 {

@@ -1,0 +1,201 @@
+package main;
+
+use gomlc::formatter;
+use gomlc::version;
+use std::env;
+use std::fs;
+use std::io;
+use std::process;
+
+struct Options {
+    write: bool,
+    list: bool,
+    check: bool,
+    paths: Vec[string],
+}
+
+struct FormattedFile {
+    path: string,
+    source: string,
+    formatted: string,
+}
+
+fn help() -> string {
+    "Usage: gomlfmt [OPTIONS] [FILE...]\n\nOptions:\n  -w          write result to files\n  -l          list files whose formatting differs\n  --check     exit 1 if any file needs formatting\n  -h, --help  print help\n  --version   print version"
+}
+
+fn parse_options(args: Vec[string]) -> Result[Options, string] {
+    let mut write = false;
+    let mut list = false;
+    let mut check = false;
+    let paths: Vec[string] = Vec::new();
+    let mut positional = false;
+    for index in 1..args.len() {
+        let argument = args[index];
+        if !positional && argument == "--" {
+            positional = true;
+        } else if !positional && argument == "-w" {
+            write = true;
+        } else if !positional && argument == "-l" {
+            list = true;
+        } else if !positional && argument == "--check" {
+            check = true;
+        } else if !positional && (argument == "-h" || argument == "--help") {
+            return Result::Err("help")
+        } else if !positional && argument == "--version" {
+            return Result::Err("version")
+        } else if !positional && argument.byte_len() > 0 && argument.byte_get(0) == b'-'
+            && argument != "-" {
+            return Result::Err(f"unrecognized option: {argument}")
+        } else {
+            paths.push(argument)
+        }
+    };
+    if write && check {
+        Result::Err("-w and --check cannot be used together")
+    } else if paths.len() > 1 && !write && !list && !check {
+        Result::Err("multiple files require -w, -l, or --check")
+    } else {
+        if paths.len() == 0 {
+            paths.push("-")
+        } else {
+            ()
+        };
+        let mut stdin_count = 0;
+        for path in paths {
+            if path == "-" {
+                stdin_count += 1;
+            } else {
+                ()
+            }
+        };
+        if write && stdin_count > 0 {
+            Result::Err("-w cannot be used with stdin")
+        } else if stdin_count > 0 && paths.len() > 1 {
+            Result::Err("stdin cannot be combined with file paths")
+        } else {
+            Result::Ok(Options { write, list, check, paths })
+        }
+    }
+}
+
+fn read_stdin_source() -> Result[string, string] {
+    match io::read_stdin() {
+        Ok(bytes) => bytes.to_string(),
+        Err(error) => Result::Err(error),
+    }
+}
+
+fn read_source(path: string) -> Result[string, string] {
+    if path == "-" {
+        read_stdin_source()
+    } else {
+        fs::read_file(path)
+    }
+}
+
+fn diagnostic_error(path: string, error: formatter::FormatError) -> string {
+    let mut output = "";
+    for diagnostic in error.diagnostics {
+        let prefix = if output == "" {
+            ""
+        } else {
+            "\n"
+        };
+        output = f"{output}{prefix}{path}:{diagnostic.start}: {diagnostic.message}";
+    };
+    output
+}
+
+fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
+    let result: Vec[FormattedFile] = Vec::new();
+    for path in paths {
+        let source = match read_source(path) {
+            Ok(value) => value,
+            Err(error) => return Result::Err(f"{path}: {error}"),
+        };
+        let formatted = match formatter::format_source(source) {
+            Ok(value) => value,
+            Err(error) => return Result::Err(diagnostic_error(path, error)),
+        };
+        result.push(FormattedFile { path, source, formatted })
+    };
+    Result::Ok(result)
+}
+
+fn write_files(values: Vec[FormattedFile]) -> Result[unit, string] {
+    for value in values {
+        if value.source != value.formatted {
+            match fs::write_file(value.path, value.formatted) {
+                Ok(_) => (),
+                Err(error) => return Result::Err(f"{value.path}: {error}"),
+            }
+        } else {
+            ()
+        }
+    };
+    Result::Ok(())
+}
+
+fn run(options: Options) -> int {
+    let files = match format_files(options.paths) {
+        Ok(values) => values,
+        Err(error) => {
+            io::eprintln(error);
+            return 2
+        },
+    };
+    let mut changed = false;
+    for file in files {
+        if file.source != file.formatted {
+            changed = true;
+            if options.list {
+                io::println(file.path)
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    if options.write {
+        match write_files(files) {
+            Ok(_) => (),
+            Err(error) => {
+                io::eprintln(error);
+                return 2
+            },
+        }
+    } else if !options.list && !options.check {
+        io::print(files[0].formatted)
+    } else {
+        ()
+    };
+    if options.check && changed {
+        1
+    } else {
+        0
+    }
+}
+
+fn main() -> unit {
+    let args = env::args();
+    match parse_options(args) {
+        Ok(options) => {
+            let code = run(options);
+            if code == 0 {
+                ()
+            } else {
+                process::exit(code)
+            }
+        },
+        Err(message) => if message == "help" {
+            io::println(help())
+        } else if message == "version" {
+            io::println(f"gomlfmt {version::current()}")
+        } else {
+            io::eprintln(f"gomlfmt: {message}");
+            process::exit(2)
+        },
+    }
+}

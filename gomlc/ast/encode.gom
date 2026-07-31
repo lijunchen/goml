@@ -20,7 +20,13 @@ fn encode_string_value(builder: text::StringBuilder, value: string) -> unit {
 }
 
 fn encode_bool_value(builder: text::StringBuilder, value: bool) -> unit {
-    builder.write_string(if value { "B\t1\n" } else { "B\t0\n" })
+    builder.write_string(
+        if value {
+            "B\t1\n"
+        } else {
+            "B\t0\n"
+        },
+    )
 }
 
 fn encode_int_value(builder: text::StringBuilder, value: int) -> unit {
@@ -136,10 +142,13 @@ fn encode_attributes(builder: text::StringBuilder, values: Vec[Attribute]) -> un
 }
 
 fn encode_visibility(builder: text::StringBuilder, value: Visibility) -> unit {
-    encode_string_value(builder, match value {
-        Private => "Private",
-        Public => "Public",
-    })
+    encode_string_value(
+        builder,
+        match value {
+            Private => "Private",
+            Public => "Public",
+        },
+    )
 }
 
 fn encode_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
@@ -166,10 +175,7 @@ fn encode_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
     }
 }
 
-fn encode_generic_bounds(
-    builder: text::StringBuilder,
-    values: Vec[(string, Vec[TraitRef])],
-) -> unit {
+fn encode_generic_bounds(builder: text::StringBuilder, values: Vec[(string, Vec[TraitRef])]) -> unit {
     encode_list(builder, values.len());
     for value in values {
         let (name, bounds) = value;
@@ -423,13 +429,20 @@ fn encode_block(builder: text::StringBuilder, value: Block) -> unit {
 
 fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
     match value {
-        Let { is_mut, pat, annotation, value: expr, span: value_span } => {
+        Let { is_mut, pat, annotation, value: expr, else_branch, span: value_span } => {
             encode_open(builder, "Stmt.Let");
             encode_span(builder, value_span);
             encode_bool_value(builder, is_mut);
             encode_pat(builder, pat);
             encode_optional_type(builder, annotation);
-            encode_expr(builder, expr)
+            encode_expr(builder, expr);
+            match else_branch {
+                Some(value) => {
+                    encode_some(builder);
+                    encode_expr(builder, value)
+                },
+                None => encode_none(builder),
+            }
         },
         Assign { target, op, value: expr, span: value_span } => {
             encode_open(builder, "Stmt.Assign");

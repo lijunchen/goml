@@ -42,6 +42,18 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
                 };
                 collect_mutable_expr(expr, result)
             },
+            LetElse { is_mut, pat: pattern, value: expr, else_branch } => {
+                if is_mut {
+                    match pattern {
+                        Var { name, ty } => push_mutable(result, name, ty),
+                        _ => (),
+                    }
+                } else {
+                    ()
+                };
+                collect_mutable_expr(expr, result);
+                collect_mutable_expr(else_branch, result)
+            },
             Assign { target, op: _, value: expr } => {
                 collect_mutable_expr(target, result);
                 collect_mutable_expr(expr, result)
@@ -57,14 +69,17 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
 
 fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) -> unit {
     match value {
-        Var { name: _, ty: _ }
-        | Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
-        Constr { constructor: _, args, ty: _ }
-        | Tuple { items: args, ty: _ }
-        | Array { items: args, ty: _ } => collect_mutable_exprs(args, result),
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
+            ty: _,
+        } => (),
+        Break { value, ty: _ } => match value {
+            Some(expr) => collect_mutable_expr(expr, result),
+            None => (),
+        },
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
+            items: args,
+            ty: _,
+        } => collect_mutable_exprs(args, result),
         Closure { params: _, body, ty: _ } => collect_mutable_expr(body, result),
         Block { block, ty: _ } => collect_mutable_block(block, result),
         Match { expr: source, arms, ty: _ } => {
@@ -86,6 +101,7 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
             collect_mutable_expr(cond, result);
             collect_mutable_expr(body, result)
         },
+        Loop { body, ty: _ } => collect_mutable_expr(body, result),
         For {
             pat: _,
             iterator,
@@ -102,23 +118,19 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
             Some(value) => collect_mutable_expr(value, result),
             None => (),
         },
-        Go { expr, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ }
-        | Field { expr, field_name: _, ty: _ }
-        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_mutable_expr(expr, result),
+        Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } | Field { expr, field_name: _, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_mutable_expr(
+            expr,
+            result,
+        ),
         Call { func: function, args, ty: _ } => {
             collect_mutable_expr(function, result);
             collect_mutable_exprs(args, result)
         },
-        Index { base, index, ty: _ } | Binary {
-            op: _,
-            lhs: base,
-            rhs: index,
-            ty: _,
-            resolution: _,
-        } => {
+        Index { base, index, ty: _ } | Binary { op: _, lhs: base, rhs: index, ty: _, resolution: _ } => {
             collect_mutable_expr(base, result);
             collect_mutable_expr(index, result)
         },
@@ -172,6 +184,11 @@ fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
                 collect_pattern_names(pattern, result);
                 collect_bound_expr(expr, result)
             },
+            LetElse { is_mut: _, pat: pattern, value: expr, else_branch } => {
+                collect_pattern_names(pattern, result);
+                collect_bound_expr(expr, result);
+                collect_bound_expr(else_branch, result)
+            },
             Assign { target, op: _, value: expr } => {
                 collect_bound_expr(target, result);
                 collect_bound_expr(expr, result)
@@ -187,15 +204,19 @@ fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
 
 fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
     match value {
-        Var { name: _, ty: _ }
-        | Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Closure { params: _, body: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
-        Constr { constructor: _, args, ty: _ }
-        | Tuple { items: args, ty: _ }
-        | Array { items: args, ty: _ } => collect_bound_exprs(args, result),
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Closure {
+            params: _,
+            body: _,
+            ty: _,
+        } | Continue { ty: _ } => (),
+        Break { value, ty: _ } => match value {
+            Some(expr) => collect_bound_expr(expr, result),
+            None => (),
+        },
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
+            items: args,
+            ty: _,
+        } => collect_bound_exprs(args, result),
         Block { block, ty: _ } => collect_bound_block(block, result),
         Match { expr: source, arms, ty: _ } => {
             collect_bound_expr(source, result);
@@ -217,6 +238,7 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
             collect_bound_expr(cond, result);
             collect_bound_expr(body, result)
         },
+        Loop { body, ty: _ } => collect_bound_expr(body, result),
         For {
             pat: pattern,
             iterator,
@@ -234,23 +256,19 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
             Some(value) => collect_bound_expr(value, result),
             None => (),
         },
-        Go { expr, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ }
-        | Field { expr, field_name: _, ty: _ }
-        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_bound_expr(expr, result),
+        Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } | Field { expr, field_name: _, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_bound_expr(
+            expr,
+            result,
+        ),
         Call { func: function, args, ty: _ } => {
             collect_bound_expr(function, result);
             collect_bound_exprs(args, result)
         },
-        Index { base, index, ty: _ } | Binary {
-            op: _,
-            lhs: base,
-            rhs: index,
-            ty: _,
-            resolution: _,
-        } => {
+        Index { base, index, ty: _ } | Binary { op: _, lhs: base, rhs: index, ty: _, resolution: _ } => {
             collect_bound_expr(base, result);
             collect_bound_expr(index, result)
         },
@@ -267,6 +285,10 @@ fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
             Let { is_mut: _, pat: _, value: expr } => collect_reference_expr(expr, result),
+            LetElse { is_mut: _, pat: _, value: expr, else_branch } => {
+                collect_reference_expr(expr, result);
+                collect_reference_expr(else_branch, result)
+            },
             Assign { target, op: _, value: expr } => {
                 collect_reference_expr(target, result);
                 collect_reference_expr(expr, result)
@@ -283,14 +305,19 @@ fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
 fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
     match value {
         Var { name, ty: _ } => push_name(result, name),
-        Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Closure { params: _, body: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
-        Constr { constructor: _, args, ty: _ }
-        | Tuple { items: args, ty: _ }
-        | Array { items: args, ty: _ } => collect_reference_exprs(args, result),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Closure {
+            params: _,
+            body: _,
+            ty: _,
+        } | Continue { ty: _ } => (),
+        Break { value, ty: _ } => match value {
+            Some(expr) => collect_reference_expr(expr, result),
+            None => (),
+        },
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
+            items: args,
+            ty: _,
+        } => collect_reference_exprs(args, result),
         Block { block, ty: _ } => collect_reference_block(block, result),
         Match { expr: source, arms, ty: _ } => {
             collect_reference_expr(source, result);
@@ -311,6 +338,7 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
             collect_reference_expr(cond, result);
             collect_reference_expr(body, result)
         },
+        Loop { body, ty: _ } => collect_reference_expr(body, result),
         For {
             pat: _,
             iterator,
@@ -327,23 +355,19 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
             Some(value) => collect_reference_expr(value, result),
             None => (),
         },
-        Go { expr, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ }
-        | Field { expr, field_name: _, ty: _ }
-        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_reference_expr(expr, result),
+        Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } | Field { expr, field_name: _, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_reference_expr(
+            expr,
+            result,
+        ),
         Call { func: function, args, ty: _ } => {
             collect_reference_expr(function, result);
             collect_reference_exprs(args, result)
         },
-        Index { base, index, ty: _ } | Binary {
-            op: _,
-            lhs: base,
-            rhs: index,
-            ty: _,
-            resolution: _,
-        } => {
+        Index { base, index, ty: _ } | Binary { op: _, lhs: base, rhs: index, ty: _, resolution: _ } => {
             collect_reference_expr(base, result);
             collect_reference_expr(index, result)
         },
@@ -360,6 +384,10 @@ fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
             Let { is_mut: _, pat: _, value: expr } => collect_capture_expr(expr, result),
+            LetElse { is_mut: _, pat: _, value: expr, else_branch } => {
+                collect_capture_expr(expr, result);
+                collect_capture_expr(else_branch, result)
+            },
             Assign { target, op: _, value: expr } => {
                 collect_capture_expr(target, result);
                 collect_capture_expr(expr, result)
@@ -373,11 +401,7 @@ fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
     }
 }
 
-fn collect_closure_captures(
-    params: Vec[tast::ClosureParam],
-    body: tast::Expr,
-    result: Vec[string],
-) -> unit {
+fn collect_closure_captures(params: Vec[tast::ClosureParam], body: tast::Expr, result: Vec[string]) -> unit {
     let bound: Vec[string] = Vec::new();
     for param in params {
         push_name(bound, param.name)
@@ -397,14 +421,17 @@ fn collect_closure_captures(
 
 fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
     match value {
-        Var { name: _, ty: _ }
-        | Callable { callable: _, ty: _ }
-        | Prim { value: _, ty: _ }
-        | Break { ty: _ }
-        | Continue { ty: _ } => (),
-        Constr { constructor: _, args, ty: _ }
-        | Tuple { items: args, ty: _ }
-        | Array { items: args, ty: _ } => collect_capture_exprs(args, result),
+        Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
+            ty: _,
+        } => (),
+        Break { value, ty: _ } => match value {
+            Some(expr) => collect_capture_expr(expr, result),
+            None => (),
+        },
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
+            items: args,
+            ty: _,
+        } => collect_capture_exprs(args, result),
         Closure { params, body, ty: _ } => collect_closure_captures(params, body, result),
         Block { block, ty: _ } => collect_capture_block(block, result),
         Match { expr: source, arms, ty: _ } => {
@@ -426,6 +453,7 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
             collect_capture_expr(cond, result);
             collect_capture_expr(body, result)
         },
+        Loop { body, ty: _ } => collect_capture_expr(body, result),
         For {
             pat: _,
             iterator,
@@ -442,23 +470,19 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
             Some(value) => collect_capture_expr(value, result),
             None => (),
         },
-        Go { expr, ty: _ }
-        | Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | Proj { tuple: expr, index: _, ty: _ }
-        | Field { expr, field_name: _, ty: _ }
-        | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_capture_expr(expr, result),
+        Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
+            tuple: expr,
+            index: _,
+            ty: _,
+        } | Field { expr, field_name: _, ty: _ } | ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => collect_capture_expr(
+            expr,
+            result,
+        ),
         Call { func: function, args, ty: _ } => {
             collect_capture_expr(function, result);
             collect_capture_exprs(args, result)
         },
-        Index { base, index, ty: _ } | Binary {
-            op: _,
-            lhs: base,
-            rhs: index,
-            ty: _,
-            resolution: _,
-        } => {
+        Index { base, index, ty: _ } | Binary { op: _, lhs: base, rhs: index, ty: _, resolution: _ } => {
             collect_capture_expr(base, result);
             collect_capture_expr(index, result)
         },
@@ -488,7 +512,7 @@ fn hidden_cell_type(value: tast::Type) -> tast::Type {
 fn hidden_cell_inner(cells: Vec[(string, tast::Type)], name: string) -> Option[tast::Type] {
     let index = Ref::new(cells.len() - 1);
     while index.get() >= 0 {
-        let value = cells.get(index.get());
+        let value = cells[index.get()];
         if value.0 == name {
             return Option::Some(value.1)
         } else {
@@ -555,16 +579,14 @@ fn lower_hidden_block(value: Block, cells: Vec[(string, tast::Type)]) -> Block {
     for stmt in value.stmts {
         let lowered = lower_hidden_expr(stmt.value, cells);
         match hidden_cell_inner(cells, stmt.name) {
-            Some(inner_ty) => stmts.push(LetStmt {
-                name: stmt.name,
-                value: hidden_ref_alloc(lowered, inner_ty),
-                ty: hidden_cell_type(inner_ty),
-            }),
-            None => stmts.push(LetStmt {
-                name: stmt.name,
-                value: lowered,
-                ty: stmt.ty,
-            }),
+            Some(inner_ty) => stmts.push(
+                LetStmt {
+                    name: stmt.name,
+                    value: hidden_ref_alloc(lowered, inner_ty),
+                    ty: hidden_cell_type(inner_ty),
+                },
+            ),
+            None => stmts.push(LetStmt { name: stmt.name, value: lowered, ty: stmt.ty }),
         }
     };
     Block {
@@ -579,10 +601,12 @@ fn lower_hidden_block(value: Block, cells: Vec[(string, tast::Type)]) -> Block {
 fn lower_hidden_arms(values: Vec[Arm], cells: Vec[(string, tast::Type)]) -> Vec[Arm] {
     let result: Vec[Arm] = Vec::new();
     for value in values {
-        result.push(Arm {
-            lhs: lower_hidden_expr(value.lhs, cells),
-            body: lower_hidden_expr(value.body, cells),
-        })
+        result.push(
+            Arm {
+                lhs: lower_hidden_expr(value.lhs, cells),
+                body: lower_hidden_expr(value.body, cells),
+            },
+        )
     };
     result
 }
@@ -608,9 +632,9 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             expr: lower_hidden_expr(source, cells),
             arms: lower_hidden_arms(arms, cells),
             default: match default {
-                            Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
-                            None => Option::None,
-                        },
+                Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
+                None => Option::None,
+            },
             ty,
         },
         If { cond, then_branch, else_branch, ty } => Expr::If {
@@ -626,13 +650,20 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
                 ty,
             }
         },
-        Break { ty } => Expr::Break { ty },
+        Loop { body, ty } => Expr::Loop { body: lower_hidden_expr(body, cells), ty },
+        Break { value, ty } => Expr::Break {
+            value: match value {
+                Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
+                None => Option::None,
+            },
+            ty,
+        },
         Continue { ty } => Expr::Continue { ty },
         Return { expr, ty } => Expr::Return {
             expr: match expr {
-                        Some(value) => Option::Some(lower_hidden_expr(value, cells)),
-                        None => Option::None,
-                    },
+                Some(value) => Option::Some(lower_hidden_expr(value, cells)),
+                None => Option::None,
+            },
             ty,
         },
         Go { expr, ty } => Expr::Go { expr: lower_hidden_expr(expr, cells), ty },
@@ -672,14 +703,7 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             args: lower_hidden_exprs(args, cells),
             ty,
         },
-        TraitCall {
-            trait_ref: reference,
-            method_name: name,
-            instance_name,
-            receiver,
-            args,
-            ty,
-        } => Expr::TraitCall {
+        TraitCall { trait_ref: reference, method_name: name, instance_name, receiver, args, ty } => Expr::TraitCall {
             trait_ref: reference,
             method_name: name,
             instance_name,

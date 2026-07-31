@@ -7,11 +7,7 @@ use gomlc::tast;
 use std::testing;
 
 fn lowered_standard_hir(source: string, path: string, package_name: string) -> hir::File {
-    let result = hir::lower_package(
-        ast::lower(parser::parse(source)),
-        path,
-        package_name,
-    );
+    let result = hir::lower_package(ast::lower(parser::parse(source)), path, package_name);
     testing::assert_eq(result.diagnostics.len(), 0);
     match result.hir {
         Some(file) => file,
@@ -38,11 +34,7 @@ fn assert_standard_typechecks(
     dependencies: Vec[hir::File],
 ) -> unit {
     let result = tast::check_for_link_with_dependencies_allowing_externs(
-        hir::lower_package(
-            ast::lower(parser::parse(source)),
-            path,
-            package_name,
-        ),
+        hir::lower_package(ast::lower(parser::parse(source)), path, package_name),
         dependencies,
     );
     testing::assert_eq(result.diagnostics.len(), 0)
@@ -61,84 +53,29 @@ fn typechecks_collections_source() -> unit {
 #[test]
 fn typechecks_text_source_with_bytes() -> unit {
     let dependencies = Vec::new();
-    dependencies.push(lowered_standard_hir(
-        bytes_source(),
-        "bytes.gom",
-        "std::bytes",
-    ));
-    assert_standard_typechecks(
-        text_source(),
-        "string_builder.gom",
-        "std::text",
-        dependencies,
-    )
+    dependencies.push(lowered_standard_hir(bytes_source(), "bytes.gom", "std::bytes"));
+    assert_standard_typechecks(text_source(), "string_builder.gom", "std::text", dependencies)
 }
 
 #[test]
 fn typechecks_json_source_with_text() -> unit {
     let dependencies = Vec::new();
-    dependencies.push(lowered_standard_hir(
-        text_source(),
-        "string_builder.gom",
-        "std::text",
-    ));
-    assert_standard_typechecks(
-        json_source(),
-        "json.gom",
-        "std::json",
-        dependencies,
-    )
+    dependencies.push(lowered_standard_hir(text_source(), "string_builder.gom", "std::text"));
+    assert_standard_typechecks(json_source(), "json.gom", "std::json", dependencies)
 }
 
 #[test]
 fn typechecks_path_process_and_testing_sources() -> unit {
-    let host = lowered_standard_hir(
-        host_source(),
-        "host.gom",
-        "std::internal::host",
-    );
-    let bytes = lowered_standard_hir(
-        bytes_source(),
-        "bytes.gom",
-        "std::bytes",
-    );
-    assert_standard_typechecks(
-        path_source(),
-        "path.gom",
-        "std::path",
-        Vec::new().pushed(host),
-    );
-    assert_standard_typechecks(
-        process_source(),
-        "process.gom",
-        "std::process",
-        Vec::new().pushed(host).pushed(bytes),
-    );
-    assert_standard_typechecks(
-        testing_source(),
-        "testing.gom",
-        "std::testing",
-        Vec::new().pushed(host),
-    )
+    let host = lowered_standard_hir(host_source(), "host.gom", "std::internal::host");
+    let bytes = lowered_standard_hir(bytes_source(), "bytes.gom", "std::bytes");
+    assert_standard_typechecks(path_source(), "path.gom", "std::path", Vec::[host]);
+    assert_standard_typechecks(process_source(), "process.gom", "std::process", Vec::[host, bytes]);
+    assert_standard_typechecks(testing_source(), "testing.gom", "std::testing", Vec::[host])
 }
 
 #[test]
 fn typechecks_num_and_time_sources() -> unit {
-    let host = lowered_standard_hir(
-        host_source(),
-        "host.gom",
-        "std::internal::host",
-    );
-    assert_standard_typechecks(
-        num_source(),
-        "num.gom",
-        "std::num",
-        Vec::new().pushed(host),
-    );
-    assert_standard_typechecks(
-        time_source(),
-        "time.gom",
-        "std::time",
-        Vec::new().pushed(host),
-    )
+    let host = lowered_standard_hir(host_source(), "host.gom", "std::internal::host");
+    assert_standard_typechecks(num_source(), "num.gom", "std::num", Vec::[host]);
+    assert_standard_typechecks(time_source(), "time.gom", "std::time", Vec::[host])
 }

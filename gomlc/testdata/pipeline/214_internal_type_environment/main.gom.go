@@ -68,85 +68,85 @@ type Origin struct {}
 func (_ Origin) isShape__int32() {}
 
 func _goml_m_inherent_i_Point_i_Point_i_new(x__0 int32, y__1 int32) Point {
-    var retv114 Point
-    var t115 Point = Point{
+    var retv158 Point
+    var t159 Point = Point{
         x: x__0,
         y: y__1,
     }
-    retv114 = t115
-    return retv114
+    retv158 = t159
+    return retv158
 }
 
 func _goml_m_inherent_i_Point_i_Point_i_copy(self__2 Point, other__3 Point) Point {
-    var retv117 Point
-    var t118 int32 = self__2.x
-    var t119 int32 = other__3.x
-    var t120 int32 = t118 + t119
-    var t121 int32 = self__2.y
-    var t122 int32 = other__3.y
-    var t123 int32 = t121 + t122
-    var t124 Point = Point{
-        x: t120,
-        y: t123,
+    var retv161 Point
+    var t162 int32 = self__2.x
+    var t163 int32 = other__3.x
+    var t164 int32 = t162 + t163
+    var t165 int32 = self__2.y
+    var t166 int32 = other__3.y
+    var t167 int32 = t165 + t166
+    var t168 Point = Point{
+        x: t164,
+        y: t167,
     }
-    retv117 = t124
-    return retv117
+    retv161 = t168
+    return retv161
 }
 
 func _goml_m_inherent_i_Point_i_Point_i_origin() Point {
-    var retv126 Point
-    var t127 Point = Point{
+    var retv170 Point
+    var t171 Point = Point{
         x: 0,
         y: 0,
     }
-    retv126 = t127
-    return retv126
+    retv170 = t171
+    return retv170
 }
 
 func shape_value(value__7 Shape__int32) int32 {
-    var retv129 int32
-    var jp131 int32
+    var retv173 int32
+    var jp175 int32
     switch value__7.(type) {
     case Dot:
-        var x108 Point = value__7.(Dot)._0
-        var point__8 Point = x108
-        var t132 int32 = point__8.x
-        var t133 int32 = point__8.y
-        var t134 int32 = t132 + t133
-        jp131 = t134
+        var x152 Point = value__7.(Dot)._0
+        var point__8 Point = x152
+        var t176 int32 = point__8.x
+        var t177 int32 = point__8.y
+        var t178 int32 = t176 + t177
+        jp175 = t178
     case Wrapped:
-        var x109 Wrapper__int32 = value__7.(Wrapped)._0
-        var wrapper__9 Wrapper__int32 = x109
-        var t135 int32 = wrapper__9.value
-        jp131 = t135
+        var x153 Wrapper__int32 = value__7.(Wrapped)._0
+        var wrapper__9 Wrapper__int32 = x153
+        var t179 int32 = wrapper__9.value
+        jp175 = t179
     case Origin:
-        jp131 = 0
+        jp175 = 0
     default:
         panic("non-exhaustive match")
     }
-    retv129 = jp131
-    return retv129
+    retv173 = jp175
+    return retv173
 }
 
 func list_value(value__10 List) int32 {
-    var retv137 int32
-    var jp139 int32
+    var retv181 int32
+    var jp183 int32
     switch value__10.(type) {
     case Cons:
-        var x110 Node = value__10.(Cons)._0
-        var node__11 Node = x110
-        var t140 int32 = node__11.value
-        var t141 List = node__11.next
-        var t142 int32 = list_value(t141)
-        var t143 int32 = t140 + t142
-        jp139 = t143
+        var x154 Node = value__10.(Cons)._0
+        var node__11 Node = x154
+        var t184 int32 = node__11.value
+        var t185 List = node__11.next
+        var t186 int32 = list_value(t185)
+        var t187 int32 = t184 + t186
+        jp183 = t187
     case Nil:
-        jp139 = 0
+        jp183 = 0
     default:
         panic("non-exhaustive match")
     }
-    retv137 = jp139
-    return retv137
+    retv181 = jp183
+    return retv181
 }
 
 func main0() struct{} {
@@ -154,75 +154,75 @@ func main0() struct{} {
     var add__14 closure_env_add_0 = closure_env_add_0{
         offset_0: offset__12,
     }
-    var t145 int32 = _goml_m_inherent_i_closure__env__add__0_i_closure__env__add__0_i_apply(add__14, 1)
-    var point__15 Point = _goml_m_inherent_i_Point_i_Point_i_new(t145, 3)
-    var t146 Point = _goml_m_inherent_i_Point_i_Point_i_origin()
-    var combined__16 Point = _goml_m_inherent_i_Point_i_Point_i_copy(point__15, t146)
-    var t147 int32 = wrap__T_int32(4)
-    var t148 Wrapper__int32 = Wrapper__int32{
-        value: t147,
+    var t189 int32 = _goml_m_inherent_i_closure__env__add__0_i_closure__env__add__0_i_apply(add__14, 1)
+    var point__15 Point = _goml_m_inherent_i_Point_i_Point_i_new(t189, 3)
+    var t190 Point = _goml_m_inherent_i_Point_i_Point_i_origin()
+    var combined__16 Point = _goml_m_inherent_i_Point_i_Point_i_copy(point__15, t190)
+    var t191 int32 = wrap__T_int32(4)
+    var t192 Wrapper__int32 = Wrapper__int32{
+        value: t191,
     }
     var wrapped__17 Shape__int32 = Wrapped{
-        _0: t148,
+        _0: t192,
     }
-    var t149 Node = Node{
+    var t193 Node = Node{
         value: 5,
         next: Nil{},
     }
     var list__18 List = Cons{
-        _0: t149,
+        _0: t193,
     }
-    var t150 int32 = combined__16.x
-    var t151 int32 = combined__16.y
-    var t152 int32 = t150 + t151
-    var t153 int32 = shape_value(wrapped__17)
-    var t154 int32 = t152 + t153
-    var t155 int32 = list_value(list__18)
-    var t156 int32 = t154 + t155
-    var t157 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t156)
-    println__T_string(t157)
+    var t194 int32 = combined__16.x
+    var t195 int32 = combined__16.y
+    var t196 int32 = t194 + t195
+    var t197 int32 = shape_value(wrapped__17)
+    var t198 int32 = t196 + t197
+    var t199 int32 = list_value(list__18)
+    var t200 int32 = t198 + t199
+    var t201 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t200)
+    println__T_string(t201)
     return struct{}{}
 }
 
 func wrap__T_int32(value__4 int32) int32 {
-    var retv160 int32
+    var retv204 int32
     var id__6 closure_env_id_1 = closure_env_id_1{}
-    var t161 int32 = _goml_m_inherent_i_closure__env__id__1_i_closure__env__id__1_i_apply(id__6, value__4)
-    retv160 = t161
-    return retv160
+    var t205 int32 = _goml_m_inherent_i_closure__env__id__1_i_closure__env__id__1_i_apply(id__6, value__4)
+    retv204 = t205
+    return retv204
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t163 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t163)
+    var t207 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t207)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv166 string
-    var t167 string = _goml_runtime_core_int32_to_string(self__6)
-    retv166 = t167
-    return retv166
+    var retv210 string
+    var t211 string = _goml_runtime_core_int32_to_string(self__6)
+    retv210 = t211
+    return retv210
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv169 string
-    retv169 = self__38
-    return retv169
+    var retv213 string
+    retv213 = self__38
+    return retv213
 }
 
-func _goml_m_inherent_i_closure__env__add__0_i_closure__env__add__0_i_apply(env111 closure_env_add_0, value__13 int32) int32 {
-    var retv171 int32
-    var offset__12 int32 = env111.offset_0
-    var t172 int32 = value__13 + offset__12
-    retv171 = t172
-    return retv171
+func _goml_m_inherent_i_closure__env__add__0_i_closure__env__add__0_i_apply(env155 closure_env_add_0, value__13 int32) int32 {
+    var retv215 int32
+    var offset__12 int32 = env155.offset_0
+    var t216 int32 = value__13 + offset__12
+    retv215 = t216
+    return retv215
 }
 
-func _goml_m_inherent_i_closure__env__id__1_i_closure__env__id__1_i_apply(env112 closure_env_id_1, item__5 int32) int32 {
-    var retv174 int32
-    retv174 = item__5
-    return retv174
+func _goml_m_inherent_i_closure__env__id__1_i_closure__env__id__1_i_apply(env156 closure_env_id_1, item__5 int32) int32 {
+    var retv218 int32
+    retv218 = item__5
+    return retv218
 }
 
 func main() {

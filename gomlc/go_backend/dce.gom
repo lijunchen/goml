@@ -12,10 +12,7 @@ struct DceResult {
 }
 
 fn new_dce_names() -> DceNames {
-    DceNames {
-        values: Vec::new(),
-        present: HashMap::new(),
-    }
+    DceNames { values: Vec::new(), present: HashMap::{} }
 }
 
 fn contains_name(values: DceNames, expected: string) -> bool {
@@ -24,7 +21,7 @@ fn contains_name(values: DceNames, expected: string) -> bool {
 
 fn add_name(values: DceNames, value: string) -> unit {
     if !contains_name(values, value) {
-        values.present.set(value, ());
+        values.present[value] = ();
         values.values.push(value)
     } else {
         ()
@@ -42,10 +39,7 @@ fn add_names(target: DceNames, values: DceNames) -> unit {
 }
 
 fn copy_names(values: DceNames) -> DceNames {
-    let result = DceNames {
-        values: Vec::with_capacity(values.present.len()),
-        present: HashMap::new(),
-    };
+    let result = DceNames { values: Vec::with_capacity(values.present.len()), present: HashMap::{} };
     add_names(result, values);
     result
 }
@@ -107,12 +101,7 @@ fn add_expr_uses(values: DceNames, value: Expr) -> unit {
             };
             add_names(values, uses)
         },
-        Nil
-        | Unit
-        | Bool { value: _ }
-        | Int { value: _ }
-        | Float { value: _ }
-        | String { value: _ } => (),
+        Nil | Unit | Bool { value: _ } | Int { value: _ } | Float { value: _ } | String { value: _ } => (),
     }
 }
 
@@ -188,11 +177,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
             };
             add_names(values, body_uses)
         },
-        Break
-        | BreakLabel { label: _ }
-        | Continue
-        | Panic { message: _ }
-        | Unreachable => (),
+        Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
     }
 }
 
@@ -287,11 +272,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
                     None => (),
                 }
             },
-            Break
-            | BreakLabel { label: _ }
-            | Continue
-            | Panic { message: _ }
-            | Unreachable => (),
+            Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
         }
     };
     for name in declared.values {
@@ -303,10 +284,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
 fn call_result_must_be_used(value: Expr) -> bool {
     match value {
         Var { name } => {
-            name == "append"
-                || name == "cap"
-                || name == "complex"
-                || name == "imag"
+            name == "append" || name == "cap" || name == "complex" || name == "imag"
                 || name == "len"
                 || name == "make"
                 || name == "max"
@@ -346,7 +324,7 @@ fn append_call(value: Expr) -> bool {
 
 fn append_target(values: Vec[Expr]) -> Option[string] {
     if values.len() > 0 {
-        match values.get(0) {
+        match values[0] {
             Var { name } => Option::Some(name),
             _ => Option::None,
         }
@@ -387,8 +365,7 @@ fn expr_has_side_effects(value: Expr) -> bool {
         Field { expr, field_name: _ } => expr_has_side_effects(expr),
         Index { base: expr, index } => expr_has_side_effects(expr) || expr_has_side_effects(index),
         Slice { base: expr, start, end } => {
-            expr_has_side_effects(expr)
-                || expr_has_side_effects(start)
+            expr_has_side_effects(expr) || expr_has_side_effects(start)
                 || expr_has_side_effects(end)
         },
         Cast { expr, ty: _ } | Convert { ty: _, expr } => expr_has_side_effects(expr),
@@ -424,20 +401,16 @@ fn expr_has_side_effects(value: Expr) -> bool {
             false
         },
         FuncLit { params: _, ret_ty: _, body: _ } => false,
-        Nil
-        | Unit
-        | Var { name: _ }
-        | Bool { value: _ }
-        | Int { value: _ }
-        | Float { value: _ }
-        | String { value: _ } => false,
+        Nil | Unit | Var { name: _ } | Bool { value: _ } | Int { value: _ } | Float { value: _ } | String {
+            value: _,
+        } => false,
     }
 }
 
 fn reversed(values: Vec[Stmt]) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::with_capacity(values.len());
-    for index in range(0, values.len()) {
-        result.push(values.get(values.len() - index - 1))
+    for index in 0..values.len() {
+        result.push(values[values.len() - index - 1])
     };
     result
 }
@@ -449,7 +422,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
     let index = Ref::new(value.stmts.len());
     while index.get() > 0 {
         index.set(index.get() - 1);
-        match value.stmts.get(index.get()) {
+        match value.stmts[index.get()] {
             Expr { expr } => {
                 if expr_has_side_effects(expr) {
                     add_expr_uses(live, expr);
@@ -649,22 +622,20 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     None => Option::None,
                 };
                 add_expr_uses(live, expr);
-                output.push(Stmt::TypeSwitch {
-                    binding: bind,
-                    expr,
-                    cases: lowered_cases,
-                    default: lowered_default,
-                })
+                output.push(
+                    Stmt::TypeSwitch {
+                        binding: bind,
+                        expr,
+                        cases: lowered_cases,
+                        default: lowered_default,
+                    },
+                )
             },
             Panic { message } => output.push(Stmt::Panic { message }),
             Unreachable => output.push(Stmt::Unreachable),
         }
     };
-    DceResult {
-        block: Block { stmts: reversed(output) },
-        live,
-        needs_decl,
-    }
+    DceResult { block: Block { stmts: reversed(output) }, live, needs_decl }
 }
 
 pub fn eliminate_dead_vars(value: Block) -> Block {

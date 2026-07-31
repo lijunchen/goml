@@ -1,17 +1,48 @@
 package main;
 
+use gomlc::core;
+use gomlc::tast;
 use std::bytes;
 use std::testing;
 
 fn binary_core_fixture() -> ArtifactCoreUnit {
+    let core_ir = empty_core_file();
+    core_ir.functions.push(
+        core::Function {
+            name: "audit::value::choose",
+            root: true,
+            generics: Vec::new(),
+            predicates: Vec::new(),
+            trait_impl: Option::None,
+            params: Vec::new(),
+            ret_ty: tast::Type::Int,
+            body: core::Block {
+                stmts: Vec::new(),
+                tail: Option::Some(
+                    core::Expr::Loop {
+                        body: core::Expr::Break {
+                            value: Option::Some(
+                                core::Expr::Prim {
+                                    value: tast::Primitive::Int { value: "7" },
+                                    ty: tast::Type::Int,
+                                },
+                            ),
+                            ty: tast::Type::Never,
+                        },
+                        ty: tast::Type::Int,
+                    },
+                ),
+            },
+        },
+    );
     ArtifactCoreUnit {
         package_name: "audit::value",
         declared_name: "value",
         interface_hash: "0123456789abcdef",
         exports: empty_artifact_package_exports(),
-        core_ir: empty_core_file(),
-        deps: Vec::new().pushed(("builtin", "fedcba9876543210")),
-        sources: Vec::new().pushed("value.gom"),
+        core_ir,
+        deps: Vec::[("builtin", "fedcba9876543210")],
+        sources: Vec::["value.gom"],
         tests: Vec::new(),
     }
 }

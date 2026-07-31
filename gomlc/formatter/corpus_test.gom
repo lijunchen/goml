@@ -1,0 +1,51 @@
+package formatter;
+
+use std::fs;
+use std::path;
+use std::testing;
+
+fn corpus_skip_directory(name: string) -> bool {
+    name == "_artifact" || name == "_bootstrap" || name == "testdata" || name == "bin"
+        || name.starts_with(".")
+}
+
+fn collect_corpus(directory: string, result: Vec[string]) -> unit {
+    let names = match fs::read_dir(directory) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(directory + ": " + error);
+            Vec::new()
+        },
+    };
+    for name in names {
+        let entry = path::join(directory, name);
+        if fs::is_dir(entry) && !corpus_skip_directory(name) {
+            collect_corpus(entry, result)
+        } else if fs::is_file(entry)
+            && match path::extension(entry) {
+                Some(extension) => extension == "gom",
+                None => false,
+            } {
+            result.push(entry)
+        } else {
+            ()
+        }
+    }
+}
+
+#[test]
+fn formats_repository_corpus_without_semantic_changes() -> unit {
+    let root = repository_root();
+    let files: Vec[string] = Vec::new();
+    collect_corpus(path::join(root, "gomlc"), files);
+    collect_corpus(path::join(root, "goml"), files);
+    collect_corpus(path::join(root, "stdlib"), files);
+    testing::assert(files.len() >= 100);
+    for file in files {
+        let source = read_fixture(file);
+        match format_source(source) {
+            Ok(formatted) => assert_format_invariants(source, formatted),
+            Err(_) => testing::fail("corpus format failed: " + file),
+        }
+    }
+}

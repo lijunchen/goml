@@ -97,14 +97,12 @@ fn core_function_index(value: core::File, expected: string) -> int {
 
 #[test]
 fn detects_single_file_entrypoint() -> unit {
-    let present = tast::check_for_link(hir::lower(
-        ast::lower(parser::parse("fn main() -> unit {}")),
-        "main.gom",
-    ));
-    let missing = tast::check_for_link(hir::lower(
-        ast::lower(parser::parse("fn helper() -> unit {}")),
-        "main.gom",
-    ));
+    let present = tast::check_for_link(
+        hir::lower(ast::lower(parser::parse("fn main() -> unit {}")), "main.gom"),
+    );
+    let missing = tast::check_for_link(
+        hir::lower(ast::lower(parser::parse("fn helper() -> unit {}")), "main.gom"),
+    );
     testing::assert(has_single_file_entrypoint(present));
     testing::assert(!has_single_file_entrypoint(missing))
 }
@@ -124,10 +122,7 @@ fn links_imported_standard_package_closure() -> unit {
     testing::assert(bytes < fs);
     testing::assert(fs < io);
     testing::assert(io < main);
-    testing::assert_eq(
-        core_function_index(compilation.core_value, "std::env::args"),
-        -1,
-    )
+    testing::assert_eq(core_function_index(compilation.core_value, "std::env::args"), -1)
 }
 
 #[test]
@@ -159,9 +154,9 @@ fn tracks_json_package_link_needs() -> unit {
 
 #[test]
 fn tracks_standard_root_package_needs() -> unit {
-    let needs = source_standard_needs(ast::lower(parser::parse(
-        "package main; use std; fn main() -> unit {}",
-    )));
+    let needs = source_standard_needs(
+        ast::lower(parser::parse("package main; use std; fn main() -> unit {}")),
+    );
     testing::assert(needs.root);
     testing::assert(needs.bytes);
     testing::assert(needs.collections);
@@ -296,33 +291,19 @@ fn package_information_scanner_stops_at_the_first_body_token() -> unit {
 #[test]
 fn package_information_scanner_respects_keyword_boundaries() -> unit {
     let scanner = new_package_info_scanner("package_name");
-    testing::assert_eq(
-        package_info_consume_keyword(scanner, "package"),
-        false,
-    );
+    testing::assert_eq(package_info_consume_keyword(scanner, "package"), false);
     let use_scanner = new_package_info_scanner("useful");
-    testing::assert_eq(
-        package_info_consume_keyword(use_scanner, "use"),
-        false,
-    )
+    testing::assert_eq(package_info_consume_keyword(use_scanner, "use"), false)
 }
 
 #[test]
 fn reports_driver_protocol_version() -> unit {
     testing::assert_eq(
-        version_output_with(
-            VersionFormat::Text,
-            Option::None,
-            Option::None,
-        ),
+        version_output_with(VersionFormat::Text, Option::None, Option::None),
         "gomlc " + version::current(),
     );
     testing::assert_eq(
-        version_output_with(
-            VersionFormat::Json,
-            Option::None,
-            Option::None,
-        ),
+        version_output_with(VersionFormat::Json, Option::None, Option::None),
         "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
             + version::current()
             + "\"}",
@@ -377,10 +358,7 @@ fn parses_package_command_arguments() -> unit {
             testing::assert_eq(args.interface_paths.get(0), "lib.interface");
             testing::assert_eq(args.output, "artifact/package");
             match args.world {
-                Some(value) => testing::assert_eq(
-                    value,
-                    "artifact/world.gaf",
-                ),
+                Some(value) => testing::assert_eq(value, "artifact/world.gaf"),
                 None => testing::fail("expected compiler world"),
             }
         },
@@ -448,25 +426,25 @@ fn collects_and_encodes_test_descriptors() -> unit {
     let collected = collect_package_test_candidates(files, paths);
     testing::assert_eq(collected.diagnostics.len(), 0);
     let exports = empty_artifact_package_exports();
-    exports.functions.push(ArtifactFnScheme {
-        name: "alice::sample::zebra",
-        type_params: Vec::new(),
-        constraints: Vec::new(),
-        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
-        body: tast::Callable::Function("alice::sample::zebra"),
-    });
-    exports.functions.push(ArtifactFnScheme {
-        name: "alice::sample::alpha",
-        type_params: Vec::new(),
-        constraints: Vec::new(),
-        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
-        body: tast::Callable::Function("alice::sample::alpha"),
-    });
-    let validated = validate_package_tests(
-        "alice::sample",
-        collected.candidates,
-        exports,
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "alice::sample::zebra",
+            type_params: Vec::new(),
+            constraints: Vec::new(),
+            ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
+            body: tast::Callable::Function("alice::sample::zebra"),
+        },
     );
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "alice::sample::alpha",
+            type_params: Vec::new(),
+            constraints: Vec::new(),
+            ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
+            body: tast::Callable::Function("alice::sample::alpha"),
+        },
+    );
+    let validated = validate_package_tests("alice::sample", collected.candidates, exports);
     testing::assert_eq(validated.diagnostics.len(), 0);
     let tests = validated.tests;
     testing::assert_eq(tests.len(), 2);
@@ -479,46 +457,33 @@ fn collects_and_encodes_test_descriptors() -> unit {
     testing::assert_eq(tests.get(1).id, "alice::sample::zebra");
     testing::assert(!(tests.get(1).ignored));
     let manifest = encode_test_manifest(tests);
-    testing::assert_eq(
-        manifest.byte_slice(manifest.byte_len() - 1, manifest.byte_len()),
-        "]",
-    );
-    testing::assert(main_string_contains(
-        manifest,
-        "\"source_path\": \"sample/sample_test.gom\"",
-    ));
-    testing::assert(main_string_contains(
-        manifest,
-        "\"ignore_reason\": \"later: \\\"quoted\\\"\"",
-    ))
+    testing::assert_eq(manifest.byte_slice(manifest.byte_len() - 1, manifest.byte_len()), "]");
+    testing::assert(main_string_contains(manifest, "\"source_path\": \"sample/sample_test.gom\""));
+    testing::assert(main_string_contains(manifest, "\"ignore_reason\": \"later: \\\"quoted\\\"\""))
 }
 
 #[test]
 fn collects_all_invalid_test_signature_diagnostics() -> unit {
     let files = Vec::new();
-    files.push(ast::lower(parser::parse(
-        "#[test] fn invalid[T](value: T) -> bool { true }",
-    )));
+    files.push(ast::lower(parser::parse("#[test] fn invalid[T](value: T) -> bool { true }")));
     let paths = Vec::new();
     paths.push("bad_test.gom");
     let collected = collect_package_test_candidates(files, paths);
     testing::assert_eq(collected.diagnostics.len(), 0);
     let exports = empty_artifact_package_exports();
-    exports.functions.push(ArtifactFnScheme {
-        name: "alice::bad::invalid",
-        type_params: Vec::new().pushed("T"),
-        constraints: Vec::new(),
-        ty: tast::Type::Func {
-            params: Vec::new().pushed(tast::Type::Param { name: "T" }),
-            ret_ty: tast::Type::Bool,
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "alice::bad::invalid",
+            type_params: Vec::["T"],
+            constraints: Vec::new(),
+            ty: tast::Type::Func {
+                params: Vec::[tast::Type::Param { name: "T" }],
+                ret_ty: tast::Type::Bool,
+            },
+            body: tast::Callable::Function("alice::bad::invalid"),
         },
-        body: tast::Callable::Function("alice::bad::invalid"),
-    });
-    let validated = validate_package_tests(
-        "alice::bad",
-        collected.candidates,
-        exports,
     );
+    let validated = validate_package_tests("alice::bad", collected.candidates, exports);
     testing::assert_eq(validated.tests.len(), 0);
     testing::assert_eq(validated.diagnostics.len(), 3);
     testing::assert_eq(
@@ -578,12 +543,8 @@ fn collects_all_invalid_test_attribute_diagnostics() -> unit {
 #[test]
 fn labels_duplicate_test_ids_across_files() -> unit {
     let parsed = Vec::new();
-    parsed.push(parser::parse(
-        "package tests; #[test] fn duplicate() -> unit { () }",
-    ));
-    parsed.push(parser::parse(
-        "package tests;\n#[test]\nfn duplicate() -> unit { () }",
-    ));
+    parsed.push(parser::parse("package tests; #[test] fn duplicate() -> unit { () }"));
+    parsed.push(parser::parse("package tests;\n#[test]\nfn duplicate() -> unit { () }"));
     let files = ast::lower_package(parsed);
     let paths = Vec::new();
     paths.push("first.gom");
@@ -591,25 +552,20 @@ fn labels_duplicate_test_ids_across_files() -> unit {
     let collected = collect_package_test_candidates(files, paths);
     testing::assert_eq(collected.diagnostics.len(), 0);
     let exports = empty_artifact_package_exports();
-    exports.functions.push(ArtifactFnScheme {
-        name: "example::tests::duplicate",
-        type_params: Vec::new(),
-        constraints: Vec::new(),
-        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
-        body: tast::Callable::Function("example::tests::duplicate"),
-    });
-    let validated = validate_package_tests(
-        "example::tests",
-        collected.candidates,
-        exports,
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "example::tests::duplicate",
+            type_params: Vec::new(),
+            constraints: Vec::new(),
+            ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
+            body: tast::Callable::Function("example::tests::duplicate"),
+        },
     );
+    let validated = validate_package_tests("example::tests", collected.candidates, exports);
     testing::assert_eq(validated.tests.len(), 1);
     testing::assert_eq(validated.diagnostics.len(), 1);
     let diagnostic = validated.diagnostics.get(0);
-    testing::assert_eq(
-        diagnostic.message,
-        "duplicate test id `example::tests::duplicate`",
-    );
+    testing::assert_eq(diagnostic.message, "duplicate test id `example::tests::duplicate`");
     testing::assert_eq(diagnostic.source_path, "second.gom");
     match diagnostic.primary_label {
         Some(label) => testing::assert_eq(label, "duplicate test declared here"),
@@ -624,38 +580,38 @@ fn labels_duplicate_test_ids_across_files() -> unit {
 #[test]
 fn adds_canonical_entry_wrapper() -> unit {
     let functions = Vec::new();
-    functions.push(core::Function {
-        name: "alice::app::main",
-        root: true,
-        generics: Vec::new(),
-        predicates: Vec::new(),
-        trait_impl: Option::None,
-        params: Vec::new(),
-        ret_ty: tast::Type::Unit,
-        body: core::Block {
-            stmts: Vec::new(),
-            tail: Option::Some(core::Expr::Prim {
-                value: tast::Primitive::Unit,
-                ty: tast::Type::Unit,
-            }),
+    functions.push(
+        core::Function {
+            name: "alice::app::main",
+            root: true,
+            generics: Vec::new(),
+            predicates: Vec::new(),
+            trait_impl: Option::None,
+            params: Vec::new(),
+            ret_ty: tast::Type::Unit,
+            body: core::Block {
+                stmts: Vec::new(),
+                tail: Option::Some(
+                    core::Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
+                ),
+            },
         },
-    });
-    let wrapped = add_entry_wrapper(core::File {
-        functions,
-        enums: Vec::new(),
-        structs: Vec::new(),
-        type_instances: Vec::new(),
-        constants: Vec::new(),
-    }, "alice::app");
+    );
+    let wrapped = add_entry_wrapper(
+        core::File {
+            functions,
+            enums: Vec::new(),
+            structs: Vec::new(),
+            type_instances: Vec::new(),
+            constants: Vec::new(),
+        },
+        "alice::app",
+    );
     testing::assert_eq(wrapped.functions.len(), 2);
     testing::assert_eq(wrapped.functions.get(0).name, "alice::app::main");
     testing::assert_eq(wrapped.functions.get(1).name, "main");
     match wrapped.functions.get(1).body.tail {
-        Some(Call {
-            func: Var { name, ty: Func { params, ret_ty: Unit } },
-            args,
-            ty: Unit,
-        }) => {
+        Some(Call { func: Var { name, ty: Func { params, ret_ty: Unit } }, args, ty: Unit }) => {
             testing::assert_eq(name, "alice::app::main");
             testing::assert_eq(params.len(), 0);
             testing::assert_eq(args.len(), 0)
@@ -763,9 +719,9 @@ fn rejects_project_imports_in_single_file_mode() -> unit {
         Some(value) => testing::assert_eq(value, "packages_basic::Lib"),
         None => testing::fail("expected project import"),
     };
-    match single_file_project_import(ast::lower(parser::parse(
-        "use std::fs; use std::io; fn main() -> unit {}",
-    ))) {
+    match single_file_project_import(
+        ast::lower(parser::parse("use std::fs; use std::io; fn main() -> unit {}")),
+    ) {
         Some(_) => testing::fail("expected standard imports to be accepted"),
         None => (),
     }
@@ -798,11 +754,7 @@ fn rejects_private_types_exposed_by_public_trait_impls() -> unit {
             }
         },
     };
-    match validate_public_trait_impls(
-        file,
-        "visibility_impl_audit::api",
-        public_names,
-    ) {
+    match validate_public_trait_impls(file, "visibility_impl_audit::api", public_names) {
         Err(error) => testing::assert_eq(
             error,
             "Public trait implementation visibility_impl_audit::api::Source exposes private type visibility_impl_audit::api::Hidden",
@@ -839,10 +791,7 @@ fn filters_private_types_traits_and_trait_impls() -> unit {
         },
     };
     let signatures = tast::package_signatures(file);
-    let checked = tast::check_package_files_for_link_with_dependencies(
-        Vec::new().pushed(file),
-        Vec::new(),
-    );
+    let checked = tast::check_package_files_for_link_with_dependencies(Vec::[file], Vec::new());
     let tast_file = match checked.tast {
         Some(value) => value,
         None => {
@@ -876,26 +825,10 @@ fn filters_private_types_traits_and_trait_impls() -> unit {
 #[test]
 fn orders_link_inputs_by_dependencies_and_name() -> unit {
     let nodes = Vec::new();
-    nodes.push(PackageOrderNode {
-        name: "z",
-        dependencies: Vec::new(),
-        position: 0,
-    });
-    nodes.push(PackageOrderNode {
-        name: "c",
-        dependencies: Vec::new().pushed("a"),
-        position: 1,
-    });
-    nodes.push(PackageOrderNode {
-        name: "a",
-        dependencies: Vec::new(),
-        position: 2,
-    });
-    nodes.push(PackageOrderNode {
-        name: "b",
-        dependencies: Vec::new().pushed("a"),
-        position: 3,
-    });
+    nodes.push(PackageOrderNode { name: "z", dependencies: Vec::new(), position: 0 });
+    nodes.push(PackageOrderNode { name: "c", dependencies: Vec::["a"], position: 1 });
+    nodes.push(PackageOrderNode { name: "a", dependencies: Vec::new(), position: 2 });
+    nodes.push(PackageOrderNode { name: "b", dependencies: Vec::["a"], position: 3 });
     match order_package_nodes(nodes) {
         Ok(order) => {
             testing::assert_eq(order.len(), 4);
@@ -941,26 +874,17 @@ fn writes_pretty_artifact_json() -> unit {
 
 #[test]
 fn writes_artifact_type_shapes() -> unit {
-    let context = artifact_type_context(
-        Vec::new().pushed("Option"),
-        Vec::new().pushed("Box"),
-    );
+    let context = artifact_type_context(Vec::["Option"], Vec::["Box"]);
     let option = tast::Type::App {
         ty: tast::Type::Con { name: "Option" },
-        args: Vec::new().pushed(tast::Type::Int32),
+        args: Vec::[tast::Type::Int32],
     };
     let projection = tast::Type::Projection {
         for_ty: tast::Type::Param { name: "I" },
         name: "Item",
-        trait_ref: Option::Some(tast::TraitRef {
-                    name: "Iterator",
-                    args: Vec::new(),
-                }),
+        trait_ref: Option::Some(tast::TraitRef { name: "Iterator", args: Vec::new() }),
     };
-    let value = tast::Type::Func {
-        params: Vec::new().pushed(option),
-        ret_ty: projection,
-    };
+    let value = tast::Type::Func { params: Vec::[option], ret_ty: projection };
     let writer = new_artifact_json_writer(false);
     artifact_json_type(writer, context, value);
     testing::assert_eq(
@@ -985,33 +909,33 @@ fn writes_artifact_type_shapes() -> unit {
 #[test]
 fn writes_core_file_shape() -> unit {
     let value = core::File {
-        functions: Vec::new().pushed(core::Function {
-            name: "audit::answer",
-            root: true,
-            generics: Vec::new(),
-            predicates: Vec::new(),
-            trait_impl: Option::None,
-            params: Vec::new(),
-            ret_ty: tast::Type::Int32,
-            body: core::Block {
-                stmts: Vec::new(),
-                tail: Option::Some(core::Expr::Prim {
-                    value: tast::Primitive::Int32 { value: "41" },
-                    ty: tast::Type::Int32,
-                }),
+        functions: Vec::[
+            core::Function {
+                name: "audit::answer",
+                root: true,
+                generics: Vec::new(),
+                predicates: Vec::new(),
+                trait_impl: Option::None,
+                params: Vec::new(),
+                ret_ty: tast::Type::Int32,
+                body: core::Block {
+                    stmts: Vec::new(),
+                    tail: Option::Some(
+                        core::Expr::Prim {
+                            value: tast::Primitive::Int32 { value: "41" },
+                            ty: tast::Type::Int32,
+                        },
+                    ),
+                },
             },
-        }),
+        ],
         enums: Vec::new(),
         structs: Vec::new(),
         type_instances: Vec::new(),
         constants: Vec::new(),
     };
     let writer = new_artifact_json_writer(false);
-    artifact_json_core_file(
-        writer,
-        artifact_type_context(Vec::new(), Vec::new()),
-        value,
-    );
+    artifact_json_core_file(writer, artifact_type_context(Vec::new(), Vec::new()), value);
     testing::assert_eq(
         artifact_json_finish(writer),
         "{\"toplevels\":[{\"name\":\"audit::answer\",\"root\":true,\"generics\":[],\"trait_impl\":null,\"params\":[],\"ret_ty\":\"TInt32\",\"body\":{\"stmts\":[],\"tail\":{\"EPrim\":{\"value\":{\"Int32\":{\"value\":41}},\"ty\":\"TInt32\"}}}}],\"constants\":[]}",
@@ -1052,26 +976,25 @@ fn decodes_primitive_equality_intrinsic_id() -> unit {
 #[test]
 fn writes_interface_unit_shape_and_hash() -> unit {
     let exports = empty_artifact_package_exports();
-    exports.functions.push(ArtifactFnScheme {
-        name: "audit::value::value",
-        type_params: Vec::new(),
-        constraints: Vec::new(),
-        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Int32 },
-        body: tast::Callable::Function("audit::value::value"),
-    });
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "audit::value::value",
+            type_params: Vec::new(),
+            constraints: Vec::new(),
+            ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Int32 },
+            body: tast::Callable::Function("audit::value::value"),
+        },
+    );
     let artifact_unit = new_artifact_interface_unit(
         "audit::value",
         exports,
         ArtifactPackageInterface {
             package_name: "audit::value",
             name: "value",
-            value_exports: Vec::new().pushed(("audit::value::value", 0)),
+            value_exports: Vec::[("audit::value::value", 0)],
             enum_variants: Vec::new(),
         },
-        Vec::new().pushed((
-            "builtin",
-            "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8",
-        )),
+        Vec::[("builtin", "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8")],
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
@@ -1081,7 +1004,7 @@ fn writes_interface_unit_shape_and_hash() -> unit {
     testing::assert_eq(
         encoded,
         "{\"format_version\":17,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
-        + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"41d1a08b7d853e9b2827ff0521f0e4d8b933795d7379df841ca500536ee45867\"}",
+            + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"41d1a08b7d853e9b2827ff0521f0e4d8b933795d7379df841ca500536ee45867\"}",
     );
     let binary = match encode_artifact_interface_binary(artifact_unit) {
         Ok(value) => value,
@@ -1091,10 +1014,7 @@ fn writes_interface_unit_shape_and_hash() -> unit {
         },
     };
     match decode_artifact_interface_binary(binary) {
-        Ok(value) => testing::assert_eq(
-            encode_artifact_interface_unit(value, false),
-            encoded,
-        ),
+        Ok(value) => testing::assert_eq(encode_artifact_interface_unit(value, false), encoded),
         Err(error) => testing::fail(error),
     }
 }
@@ -1124,10 +1044,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
         },
     };
     let signatures = tast::package_signatures(hir_file);
-    let checked = tast::check_package_files_for_link_with_dependencies(
-        Vec::new().pushed(hir_file),
-        Vec::new(),
-    );
+    let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::new());
     let tast_file = match checked.tast {
         Some(value) => value,
         None => {
@@ -1150,19 +1067,12 @@ fn extracts_interface_unit_from_checked_package() -> unit {
         Vec::new(),
     );
     testing::assert_eq(exports.functions.len(), 1);
-    let package_interface = artifact_package_interface(
-        "audit::value",
-        "value",
-        exports,
-    );
+    let package_interface = artifact_package_interface("audit::value", "value", exports);
     let artifact_unit = new_artifact_interface_unit(
         "audit::value",
         exports,
         package_interface,
-        Vec::new().pushed((
-            "builtin",
-            "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8",
-        )),
+        Vec::[("builtin", "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8")],
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
@@ -1195,10 +1105,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
         },
     };
     let signatures = tast::package_signatures(hir_file);
-    let checked = tast::check_package_files_for_link_with_dependencies(
-        Vec::new().pushed(hir_file),
-        Vec::new(),
-    );
+    let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::new());
     let tast_file = match checked.tast {
         Some(value) => value,
         None => {
@@ -1225,10 +1132,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
         "demo::api",
         exports,
         package_interface,
-        Vec::new().pushed((
-            "builtin",
-            "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8",
-        )),
+        Vec::[("builtin", "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8")],
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
@@ -1244,13 +1148,8 @@ fn extracts_trait_interface_from_checked_package() -> unit {
     };
     match decode_artifact_interface_binary(binary) {
         Ok(value) => {
-            testing::assert_eq(
-                encode_artifact_interface_unit(value, false),
-                encoded,
-            );
-            let dependency = match artifact_dependency_environment_from_exports(
-                value.exports,
-            ) {
+            testing::assert_eq(encode_artifact_interface_unit(value, false), encoded);
+            let dependency = match artifact_dependency_environment_from_exports(value.exports) {
                 Ok(value) => value,
                 Err(error) => {
                     testing::fail(error);
@@ -1267,9 +1166,11 @@ fn extracts_trait_interface_from_checked_package() -> unit {
                 },
             };
             let consumer = hir::lower_package(
-                ast::lower(parser::parse(
-                    "package consumer; use demo::api; use api::Child; fn consume() -> string { api::boxed(1).child() }",
-                )),
+                ast::lower(
+                    parser::parse(
+                        "package consumer; use demo::api; use api::Child; fn consume() -> string { api::boxed(1).child() }",
+                    ),
+                ),
                 "consumer/consumer.gom",
                 "demo::consumer",
             );
@@ -1290,8 +1191,8 @@ fn extracts_trait_interface_from_checked_package() -> unit {
                 },
             };
             let checked = tast::check_package_files_for_link_with_environments(
-                Vec::new().pushed(consumer_hir),
-                Vec::new().pushed(dependency),
+                Vec::[consumer_hir],
+                Vec::[dependency],
             );
             testing::assert_eq(checked.diagnostics.len(), 0)
         },
@@ -1324,10 +1225,7 @@ fn writes_core_unit_from_checked_package() -> unit {
         },
     };
     let signatures = tast::package_signatures(hir_file);
-    let checked = tast::check_package_files_for_link_with_dependencies(
-        Vec::new().pushed(hir_file),
-        Vec::new(),
-    );
+    let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::new());
     let tast_file = match checked.tast {
         Some(value) => value,
         None => {
@@ -1358,22 +1256,16 @@ fn writes_core_unit_from_checked_package() -> unit {
         Vec::new(),
         Vec::new(),
     );
-    let deps = Vec::new().pushed((
-        "builtin",
-        "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8",
-    ));
+    let deps = Vec::[
+        ("builtin", "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8"),
+    ];
     let interface_unit = new_artifact_interface_unit(
         "audit::value",
         public_exports,
         artifact_package_interface("audit::value", "value", public_exports),
         deps,
     );
-    let core_ir = core::lower_with_counter_and_types(
-        checked,
-        Ref::new(0),
-        Vec::new(),
-        Vec::new(),
-    );
+    let core_ir = core::lower_with_counter_and_types(checked, Ref::new(0), Vec::new(), Vec::new());
     let core_unit = ArtifactCoreUnit {
         package_name: "audit::value",
         declared_name: "value",
@@ -1381,7 +1273,7 @@ fn writes_core_unit_from_checked_package() -> unit {
         exports: full_exports,
         core_ir,
         deps,
-        sources: Vec::new().pushed("/tmp/gomlc-test-link-audit/value/value.gom"),
+        sources: Vec::["/tmp/gomlc-test-link-audit/value/value.gom"],
         tests: Vec::new(),
     };
     let encoded = encode_artifact_core_unit(core_unit, false);
@@ -1397,27 +1289,16 @@ fn writes_core_unit_from_checked_package() -> unit {
         },
     };
     match decode_artifact_core_binary(binary) {
-        Ok(value) => testing::assert_eq(
-            encode_artifact_core_unit(value, false),
-            encoded,
-        ),
+        Ok(value) => testing::assert_eq(encode_artifact_core_unit(value, false), encoded),
         Err(error) => testing::fail(error),
     }
 }
 
 #[test]
 fn requires_explicit_package_declarations_for_artifacts() -> unit {
-    let values = Vec::new().pushed(ast::lower(parser::parse(
-        "fn main() -> unit {}",
-    )));
-    match artifact_declared_package_name(
-        values,
-        Vec::new().pushed("/tmp/main.gom"),
-    ) {
-        Err(error) => testing::assert_eq(
-            error,
-            "/tmp/main.gom must declare `package <name>;`",
-        ),
+    let values = Vec::[ast::lower(parser::parse("fn main() -> unit {}"))];
+    match artifact_declared_package_name(values, Vec::["/tmp/main.gom"]) {
+        Err(error) => testing::assert_eq(error, "/tmp/main.gom must declare `package <name>;`"),
         Ok(_) => testing::fail("expected package declaration error"),
     }
 }
@@ -1426,42 +1307,34 @@ fn requires_explicit_package_declarations_for_artifacts() -> unit {
 fn validates_artifact_main_entrypoints() -> unit {
     let exports = empty_artifact_package_exports();
     match artifact_validate_entrypoint("example::app", "main", exports) {
-        Err(error) => testing::assert_eq(
-            error,
-            "main function is required",
-        ),
+        Err(error) => testing::assert_eq(error, "main function is required"),
         Ok(()) => testing::fail("expected missing main error"),
     };
-    exports.functions.push(ArtifactFnScheme {
-        name: "example::app::main",
-        type_params: Vec::new().pushed("T"),
-        constraints: Vec::new(),
-        ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
-        body: tast::Callable::Function("example::app::main"),
-    });
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "example::app::main",
+            type_params: Vec::["T"],
+            constraints: Vec::new(),
+            ty: tast::Type::Func { params: Vec::new(), ret_ty: tast::Type::Unit },
+            body: tast::Callable::Function("example::app::main"),
+        },
+    );
     match artifact_validate_entrypoint("example::app", "main", exports) {
-        Err(error) => testing::assert_eq(
-            error,
-            "main function must not have type parameters",
-        ),
+        Err(error) => testing::assert_eq(error, "main function must not have type parameters"),
         Ok(()) => testing::fail("expected generic main error"),
     };
     let exports = empty_artifact_package_exports();
-    exports.functions.push(ArtifactFnScheme {
-        name: "example::app::main",
-        type_params: Vec::new(),
-        constraints: Vec::new(),
-        ty: tast::Type::Func {
-            params: Vec::new().pushed(tast::Type::Int32),
-            ret_ty: tast::Type::Unit,
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "example::app::main",
+            type_params: Vec::new(),
+            constraints: Vec::new(),
+            ty: tast::Type::Func { params: Vec::[tast::Type::Int32], ret_ty: tast::Type::Unit },
+            body: tast::Callable::Function("example::app::main"),
         },
-        body: tast::Callable::Function("example::app::main"),
-    });
+    );
     match artifact_validate_entrypoint("example::app", "main", exports) {
-        Err(error) => testing::assert_eq(
-            error,
-            "main function must not have parameters",
-        ),
+        Err(error) => testing::assert_eq(error, "main function must not have parameters"),
         Ok(()) => testing::fail("expected parameterized main error"),
     };
     match artifact_validate_entrypoint("example::lib", "lib", exports) {
@@ -1473,30 +1346,19 @@ fn validates_artifact_main_entrypoints() -> unit {
 #[test]
 fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
     let exports = empty_artifact_package_exports();
-    exports.functions.push(ArtifactFnScheme {
-        name: "example::app::main",
-        type_params: Vec::new().pushed("T"),
-        constraints: Vec::new(),
-        ty: tast::Type::Func {
-            params: Vec::new().pushed(tast::Type::Int32),
-            ret_ty: tast::Type::Unit,
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "example::app::main",
+            type_params: Vec::["T"],
+            constraints: Vec::new(),
+            ty: tast::Type::Func { params: Vec::[tast::Type::Int32], ret_ty: tast::Type::Unit },
+            body: tast::Callable::Function("example::app::main"),
         },
-        body: tast::Callable::Function("example::app::main"),
-    });
-    let diagnostics = artifact_entrypoint_diagnostics(
-        "example::app",
-        "main",
-        exports,
     );
+    let diagnostics = artifact_entrypoint_diagnostics("example::app", "main", exports);
     testing::assert_eq(diagnostics.len(), 2);
-    testing::assert_eq(
-        diagnostics.get(0),
-        "main function must not have type parameters",
-    );
-    testing::assert_eq(
-        diagnostics.get(1),
-        "main function must not have parameters",
-    )
+    testing::assert_eq(diagnostics.get(0), "main function must not have type parameters");
+    testing::assert_eq(diagnostics.get(1), "main function must not have parameters")
 }
 
 #[test]
@@ -1506,86 +1368,82 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
         lhs: tast::Type::Param { name: "T" },
         rhs: tast::Type::Int32,
     };
-    exports.functions.push(ArtifactFnScheme {
-        name: "audit::identity",
-        type_params: Vec::new().pushed("T"),
-        constraints: Vec::new().pushed(function_constraint),
-        ty: tast::Type::Func {
-            params: Vec::new().pushed(tast::Type::Param { name: "T" }),
-            ret_ty: tast::Type::Param { name: "T" },
+    exports.functions.push(
+        ArtifactFnScheme {
+            name: "audit::identity",
+            type_params: Vec::["T"],
+            constraints: Vec::[function_constraint],
+            ty: tast::Type::Func {
+                params: Vec::[tast::Type::Param { name: "T" }],
+                ret_ty: tast::Type::Param { name: "T" },
+            },
+            body: tast::Callable::Function("audit::identity"),
         },
-        body: tast::Callable::Function("audit::identity"),
-    });
-    let empty_body = core::Block {
-        stmts: Vec::new(),
-        tail: Option::None,
-    };
+    );
+    let empty_body = core::Block { stmts: Vec::new(), tail: Option::None };
     let function = artifact_prepare_core_function_metadata(
         core::Function {
             name: "audit::identity",
             root: false,
-            generics: Vec::new().pushed("T"),
+            generics: Vec::["T"],
             predicates: Vec::new(),
             trait_impl: Option::None,
-            params: Vec::new().pushed(("value", tast::Type::Param { name: "T" })),
+            params: Vec::[("value", tast::Type::Param { name: "T" })],
             ret_ty: tast::Type::Param { name: "T" },
             body: empty_body,
         },
         exports,
     );
     testing::assert_eq(function.predicates.len(), 1);
-    let trait_ref = tast::TraitRef {
-        name: "audit::Source",
-        args: Vec::new(),
-    };
+    let trait_ref = tast::TraitRef { name: "audit::Source", args: Vec::new() };
     let impl_constraint = tast::TypePredicate::Trait {
         for_ty: tast::Type::Con { name: "audit::Numbers" },
-        trait_ref: tast::TraitRef {
-                    name: "ToString",
-                    args: Vec::new(),
-                },
+        trait_ref: tast::TraitRef { name: "ToString", args: Vec::new() },
     };
     let method_constraint = tast::TypePredicate::Equality {
         lhs: tast::Type::Int32,
         rhs: tast::Type::Int32,
     };
-    exports.trait_impls.push(ArtifactTraitImpl {
-        trait_ref,
-        for_ty: tast::Type::Con { name: "audit::Numbers" },
-        definition: ArtifactImplDef {
-            params: Vec::new(),
-            constraints: Vec::new().pushed(impl_constraint),
-            associated_types: Vec::new().pushed(("Item", tast::Type::Int32)),
-            methods: Vec::new().pushed(ArtifactFnScheme {
-                name: "read",
-                type_params: Vec::new(),
-                constraints: Vec::new().pushed(method_constraint),
-                ty: tast::Type::Func {
-                    params: Vec::new().pushed(tast::Type::Con { name: "audit::Numbers" }),
-                    ret_ty: tast::Type::Int32,
-                },
-                body: tast::Callable::TraitMethod { trait_ref, method_name: "read" },
-            }),
-            valid: true,
+    exports.trait_impls.push(
+        ArtifactTraitImpl {
+            trait_ref,
+            for_ty: tast::Type::Con { name: "audit::Numbers" },
+            definition: ArtifactImplDef {
+                params: Vec::new(),
+                constraints: Vec::[impl_constraint],
+                associated_types: Vec::[("Item", tast::Type::Int32)],
+                methods: Vec::[
+                    ArtifactFnScheme {
+                        name: "read",
+                        type_params: Vec::new(),
+                        constraints: Vec::[method_constraint],
+                        ty: tast::Type::Func {
+                            params: Vec::[tast::Type::Con { name: "audit::Numbers" }],
+                            ret_ty: tast::Type::Int32,
+                        },
+                        body: tast::Callable::TraitMethod { trait_ref, method_name: "read" },
+                    },
+                ],
+                valid: true,
+            },
         },
-    });
+    );
     let method = artifact_prepare_core_function_metadata(
         core::Function {
             name: "audit::Numbers#audit::Source#read",
             root: false,
             generics: Vec::new(),
             predicates: Vec::new(),
-            trait_impl: Option::Some(core::TraitImpl {
-                trait_ref,
-                for_ty: tast::Type::Con { name: "audit::Numbers" },
-                associated_types: Vec::new(),
-                generic_count: 0,
-                predicate_count: 0,
-            }),
-            params: Vec::new().pushed((
-                "self",
-                tast::Type::Con { name: "audit::Numbers" },
-            )),
+            trait_impl: Option::Some(
+                core::TraitImpl {
+                    trait_ref,
+                    for_ty: tast::Type::Con { name: "audit::Numbers" },
+                    associated_types: Vec::new(),
+                    generic_count: 0,
+                    predicate_count: 0,
+                },
+            ),
+            params: Vec::[("self", tast::Type::Con { name: "audit::Numbers" })],
             ret_ty: tast::Type::Int32,
             body: empty_body,
         },
@@ -1621,10 +1479,7 @@ fn parses_artifact_json_values() -> unit {
             testing::assert_eq(fields.len(), 4);
             testing::assert_eq(fields.get(0).0, "text");
             match fields.get(0).1 {
-                String(value) => testing::assert_eq(
-                    value,
-                    "quote\" slash\\ zero\u0000 face😀 é",
-                ),
+                String(value) => testing::assert_eq(value, "quote\" slash\\ zero\u0000 face😀 é"),
                 _ => testing::fail("expected JSON string"),
             };
             match fields.get(1).1 {
@@ -1666,28 +1521,20 @@ fn decodes_artifact_type_shapes() -> unit {
     let type_json = "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}";
     let context = new_artifact_decode_context();
     let type_value = tast::Type::Func {
-        params: Vec::new().pushed(tast::Type::App {
-            ty: tast::Type::Con { name: "Option" },
-            args: Vec::new().pushed(tast::Type::Int32),
-        }),
+        params: Vec::[
+            tast::Type::App {
+                ty: tast::Type::Con { name: "Option" },
+                args: Vec::[tast::Type::Int32],
+            },
+        ],
         ret_ty: tast::Type::Projection {
-            trait_ref: Option::Some(tast::TraitRef {
-                name: "Iterator",
-                args: Vec::new(),
-            }),
+            trait_ref: Option::Some(tast::TraitRef { name: "Iterator", args: Vec::new() }),
             for_ty: tast::Type::Param { name: "I" },
             name: "Item",
         },
     };
     let value_writer = new_artifact_value_writer();
-    artifact_json_type(
-        value_writer,
-        artifact_type_context(
-            Vec::new().pushed("Option"),
-            Vec::new(),
-        ),
-        type_value,
-    );
+    artifact_json_type(value_writer, artifact_type_context(Vec::["Option"], Vec::new()), type_value);
     let type_value = match artifact_value_finish(value_writer) {
         Ok(value) => value,
         Err(error) => {
@@ -1719,10 +1566,7 @@ fn decodes_artifact_type_shapes() -> unit {
     let value_writer = new_artifact_value_writer();
     artifact_json_type_predicate(
         value_writer,
-        artifact_type_context(
-            Vec::new(),
-            Vec::new().pushed("Box"),
-        ),
+        artifact_type_context(Vec::new(), Vec::["Box"]),
         predicate_value,
     );
     let predicate_value = match artifact_value_finish(value_writer) {
@@ -1751,10 +1595,7 @@ fn decodes_artifact_type_shapes() -> unit {
 #[test]
 fn standard_interface_hashes_are_stable() -> unit {
     let builtin = builtin_artifact_dependency().1;
-    testing::assert_eq(
-        builtin,
-        builtin_artifact_dependency().1,
-    );
+    testing::assert_eq(builtin, builtin_artifact_dependency().1);
     testing::assert_eq(builtin.byte_len(), 64);
     let first = package_world().standard;
     let second = package_world().standard;
@@ -1866,16 +1707,18 @@ fn renders_unicode_diagnostic_text() -> unit {
 #[test]
 fn renders_source_path_for_spanless_diagnostics() -> unit {
     let diagnostics = Vec::new();
-    diagnostics.push(tast::Diagnostic {
-        severity: tast::DiagnosticSeverity::Error,
-        stage: "typer",
-        message: "Unknown trait Missing",
-        source_path: "helper.gom",
-        span: Option::None,
-        primary_label: Option::None,
-        secondary_labels: Vec::new(),
-        sort_order: 0,
-    });
+    diagnostics.push(
+        tast::Diagnostic {
+            severity: tast::DiagnosticSeverity::Error,
+            stage: "typer",
+            message: "Unknown trait Missing",
+            source_path: "helper.gom",
+            span: Option::None,
+            primary_label: Option::None,
+            secondary_labels: Vec::new(),
+            sort_order: 0,
+        },
+    );
     testing::assert_eq(
         render_typer_diagnostics(diagnostics, "helper.gom", ""),
         "error[typer]: Unknown trait Missing\nat: helper.gom",

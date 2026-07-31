@@ -52,190 +52,190 @@ type Err struct {
 func (_ Err) isResult__int32__string() {}
 
 func read_left(ok__0 bool) Result__int32__string {
-    var retv125 Result__int32__string
-    var jp127 Result__int32__string
+    var retv169 Result__int32__string
+    var jp171 Result__int32__string
     if ok__0 {
-        var t128 Result__int32__string = Ok{
+        var t172 Result__int32__string = Ok{
             _0: 10,
         }
-        jp127 = t128
+        jp171 = t172
     } else {
-        var t129 Result__int32__string = Err{
+        var t173 Result__int32__string = Err{
             _0: "left failed",
         }
-        jp127 = t129
+        jp171 = t173
     }
-    retv125 = jp127
-    return retv125
+    retv169 = jp171
+    return retv169
 }
 
 func read_right(ok__1 bool) Result__int32__string {
-    var retv131 Result__int32__string
-    var jp133 Result__int32__string
+    var retv175 Result__int32__string
+    var jp177 Result__int32__string
     if ok__1 {
-        var t134 Result__int32__string = Ok{
+        var t178 Result__int32__string = Ok{
             _0: 20,
         }
-        jp133 = t134
+        jp177 = t178
     } else {
-        var t135 Result__int32__string = Err{
+        var t179 Result__int32__string = Err{
             _0: "right failed",
         }
-        jp133 = t135
+        jp177 = t179
     }
-    retv131 = jp133
-    return retv131
+    retv175 = jp177
+    return retv175
 }
 
 func choose(choice__2 Choice) Result__int32__string {
-    var retv137 Result__int32__string
-    var jp139 int32
+    var retv181 Result__int32__string
+    var jp183 int32
     switch choice__2.(type) {
     case Left:
-        var x108 bool = choice__2.(Left)._0
-        var ok__3 bool = x108
-        var mtmp111 Result__int32__string = read_left(ok__3)
-        var jp142 int32
-        switch mtmp111.(type) {
+        var x152 bool = choice__2.(Left)._0
+        var ok__3 bool = x152
+        var mtmp155 Result__int32__string = read_left(ok__3)
+        var jp186 int32
+        switch mtmp155.(type) {
         case Ok:
-            var x112 int32 = mtmp111.(Ok)._0
-            var try_value__21 int32 = x112
-            jp142 = try_value__21
-            jp139 = jp142
-            var value__6 int32 = jp139
-            var t140 Result__int32__string = Ok{
+            var x156 int32 = mtmp155.(Ok)._0
+            var try_value__21 int32 = x156
+            jp186 = try_value__21
+            jp183 = jp186
+            var value__6 int32 = jp183
+            var t184 Result__int32__string = Ok{
                 _0: value__6,
             }
-            retv137 = t140
-            return retv137
+            retv181 = t184
+            return retv181
         case Err:
-            var x113 string = mtmp111.(Err)._0
-            var try_residual__21 string = x113
-            var t143 Result__int32__string = Err{
+            var x157 string = mtmp155.(Err)._0
+            var try_residual__21 string = x157
+            var t187 Result__int32__string = Err{
                 _0: try_residual__21,
             }
-            retv137 = t143
-            return retv137
+            retv181 = t187
+            return retv181
         default:
             panic("non-exhaustive match")
         }
     case Right:
-        var x109 bool = choice__2.(Right)._0
-        var ok__4 bool = x109
-        var mtmp114 Result__int32__string = read_right(ok__4)
-        var jp145 int32
-        switch mtmp114.(type) {
+        var x153 bool = choice__2.(Right)._0
+        var ok__4 bool = x153
+        var mtmp158 Result__int32__string = read_right(ok__4)
+        var jp189 int32
+        switch mtmp158.(type) {
         case Ok:
-            var x115 int32 = mtmp114.(Ok)._0
-            var try_value__25 int32 = x115
-            jp145 = try_value__25
-            var t146 int32 = jp145 + 1
-            jp139 = t146
-            var value__6 int32 = jp139
-            var t140 Result__int32__string = Ok{
+            var x159 int32 = mtmp158.(Ok)._0
+            var try_value__25 int32 = x159
+            jp189 = try_value__25
+            var t190 int32 = jp189 + 1
+            jp183 = t190
+            var value__6 int32 = jp183
+            var t184 Result__int32__string = Ok{
                 _0: value__6,
             }
-            retv137 = t140
-            return retv137
+            retv181 = t184
+            return retv181
         case Err:
-            var x116 string = mtmp114.(Err)._0
-            var try_residual__25 string = x116
-            var t147 Result__int32__string = Err{
+            var x160 string = mtmp158.(Err)._0
+            var try_residual__25 string = x160
+            var t191 Result__int32__string = Err{
                 _0: try_residual__25,
             }
-            retv137 = t147
-            return retv137
+            retv181 = t191
+            return retv181
         default:
             panic("non-exhaustive match")
         }
     case Keep:
-        var x110 int32 = choice__2.(Keep)._0
-        var value__5 int32 = x110
-        jp139 = value__5
-        var value__6 int32 = jp139
-        var t140 Result__int32__string = Ok{
+        var x154 int32 = choice__2.(Keep)._0
+        var value__5 int32 = x154
+        jp183 = value__5
+        var value__6 int32 = jp183
+        var t184 Result__int32__string = Ok{
             _0: value__6,
         }
-        retv137 = t140
-        return retv137
+        retv181 = t184
+        return retv181
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(res__7 Result__int32__string) string {
-    var retv149 string
-    var jp151 string
+    var retv193 string
+    var jp195 string
     switch res__7.(type) {
     case Ok:
-        var x117 int32 = res__7.(Ok)._0
-        var value__8 int32 = x117
-        var t152 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__8)
-        var t153 string = "ok " + t152
-        jp151 = t153
+        var x161 int32 = res__7.(Ok)._0
+        var value__8 int32 = x161
+        var t196 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__8)
+        var t197 string = "ok " + t196
+        jp195 = t197
     case Err:
-        var x118 string = res__7.(Err)._0
-        var err__9 string = x118
-        var t154 string = "err " + err__9
-        jp151 = t154
+        var x162 string = res__7.(Err)._0
+        var err__9 string = x162
+        var t198 string = "err " + err__9
+        jp195 = t198
     default:
         panic("non-exhaustive match")
     }
-    retv149 = jp151
-    return retv149
+    retv193 = jp195
+    return retv193
 }
 
 func main0() struct{} {
-    var t156 Choice = Left{
+    var t200 Choice = Left{
         _0: true,
     }
-    var t157 Result__int32__string = choose(t156)
-    var t158 string = show(t157)
-    println__T_string(t158)
-    var t159 Choice = Right{
+    var t201 Result__int32__string = choose(t200)
+    var t202 string = show(t201)
+    println__T_string(t202)
+    var t203 Choice = Right{
         _0: true,
     }
-    var t160 Result__int32__string = choose(t159)
-    var t161 string = show(t160)
-    println__T_string(t161)
-    var t162 Choice = Keep{
+    var t204 Result__int32__string = choose(t203)
+    var t205 string = show(t204)
+    println__T_string(t205)
+    var t206 Choice = Keep{
         _0: 5,
     }
-    var t163 Result__int32__string = choose(t162)
-    var t164 string = show(t163)
-    println__T_string(t164)
-    var t165 Choice = Left{
+    var t207 Result__int32__string = choose(t206)
+    var t208 string = show(t207)
+    println__T_string(t208)
+    var t209 Choice = Left{
         _0: false,
     }
-    var t166 Result__int32__string = choose(t165)
-    var t167 string = show(t166)
-    println__T_string(t167)
-    var t168 Choice = Right{
+    var t210 Result__int32__string = choose(t209)
+    var t211 string = show(t210)
+    println__T_string(t211)
+    var t212 Choice = Right{
         _0: false,
     }
-    var t169 Result__int32__string = choose(t168)
-    var t170 string = show(t169)
-    println__T_string(t170)
+    var t213 Result__int32__string = choose(t212)
+    var t214 string = show(t213)
+    println__T_string(t214)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv172 string
-    var t173 string = _goml_runtime_core_int32_to_string(self__6)
-    retv172 = t173
-    return retv172
+    var retv216 string
+    var t217 string = _goml_runtime_core_int32_to_string(self__6)
+    retv216 = t217
+    return retv216
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t175 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t175)
+    var t219 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t219)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv178 string
-    retv178 = self__38
-    return retv178
+    var retv222 string
+    retv222 = self__38
+    return retv222
 }
 
 func main() {

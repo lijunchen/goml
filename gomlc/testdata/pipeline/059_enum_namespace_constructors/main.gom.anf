@@ -1,43 +1,43 @@
 fn color_is_red(color/0: Color) -> bool {
-  join ret109(retv110: bool) -> bool {
-    retv110
+  join ret153(retv154: bool) -> bool {
+    retv154
   } in
-  join k111(jp112: bool) -> bool {
-    jump ret109(jp112)
+  join k155(jp156: bool) -> bool {
+    jump ret153(jp156)
   } in
   match color/0 {
     Tag_0 => {
-      jump k111(true)
+      jump k155(true)
     },
     Tag_1 => {
-      jump k111(false)
+      jump k155(false)
     },
   }
 }
 
 fn toggle_signal(signal/1: Signal) -> Signal {
-  join ret113(retv114: Signal) -> Signal {
-    retv114
+  join ret157(retv158: Signal) -> Signal {
+    retv158
   } in
-  join k115(jp116: Signal) -> Signal {
-    jump ret113(jp116)
+  join k159(jp160: Signal) -> Signal {
+    jump ret157(jp160)
   } in
   match signal/1 {
     Tag_0 => {
-      jump k115(Tag_1)
+      jump k159(Tag_1)
     },
     Tag_1 => {
-      jump k115(Tag_0)
+      jump k159(Tag_0)
     },
   }
 }
 
 fn main() -> Signal {
-  join ret117(retv118: Signal) -> Signal {
-    retv118
+  join ret161(retv162: Signal) -> Signal {
+    retv162
   } in
   let current/2 = Tag_0 in
-  let mtmp108 = color_is_red(current/2) in
-  let t119 = toggle_signal(Tag_0) in
-  jump ret117(t119)
+  let mtmp152 = color_is_red(current/2) in
+  let t163 = toggle_signal(Tag_0) in
+  jump ret161(t163)
 }

@@ -14,7 +14,13 @@ fn append_source(node: cst::CstNode, builder: text::StringBuilder) -> unit {
 }
 
 fn count_nodes(node: cst::CstNode, kind: cst::NodeKind) -> int {
-    let count = Ref::new(if cst::node_kind_equal(cst::node_kind(node), kind) { 1 } else { 0 });
+    let count = Ref::new(
+        if cst::node_kind_equal(cst::node_kind(node), kind) {
+            1
+        } else {
+            0
+        },
+    );
     for child in cst::node_children(node) {
         match child {
             Node(inner) => count.set(count.get() + count_nodes(inner, kind)),
@@ -22,6 +28,26 @@ fn count_nodes(node: cst::CstNode, kind: cst::NodeKind) -> int {
         }
     };
     count.get()
+}
+
+fn has_prefix_with_direct_child(node: cst::CstNode, kind: cst::NodeKind) -> bool {
+    let found = Ref::new(false);
+    for child in cst::node_children(node) {
+        match child {
+            Node(inner) => {
+                if cst::node_kind_equal(cst::node_kind(node), cst::NodeKind::EXPR_PREFIX)
+                    && cst::node_kind_equal(cst::node_kind(inner), kind) {
+                    found.set(true)
+                } else if has_prefix_with_direct_child(inner, kind) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            },
+            Token(_) => (),
+        }
+    };
+    found.get()
 }
 
 #[test]
@@ -84,6 +110,45 @@ fn parses_practical_expression_syntax() -> unit {
     let builder = text::StringBuilder::new();
     append_source(result.root, builder);
     testing::assert_eq(builder.finish(), source)
+}
+
+#[test]
+fn parses_raw_strings_let_else_and_value_loops() -> unit {
+    let source = "enum Choice { Value(int), Empty } fn choose(value: Choice) -> int { let Value(item) = value else { return -1; }; loop { break item; } } fn raw() -> string { r#\"quoted \"text\"\"# }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_RAW_STR), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_LOOP), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BREAK), 1)
+}
+
+#[test]
+fn parses_block_expressions_and_byte_strings() -> unit {
+    let source = "fn value() -> int { return { let base = 40; base + 2 }; } fn main() -> unit { let bytes: Vec[byte] = b\"A\\n\\x42\"; let raw = br#\"raw \\\\ bytes\"#; let nested = consume({ let item = value(); item }); if ({ true }) { let _ = nested; } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BLOCK), 3);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BYTE_STRING), 2)
+}
+
+#[test]
+fn keeps_control_flow_body_braces_out_of_header_expressions() -> unit {
+    let source = "fn main() -> unit { while break { () } if return { () } for _ in return { () } match return { _ => () } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BLOCK), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_WHILE), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_IF), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_FOR), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_MATCH), 1)
+}
+
+#[test]
+fn postfix_expressions_bind_tighter_than_prefix_operators() -> unit {
+    let source = "fn main() -> bool { let values = Vec::[false]; !values[0] }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert(has_prefix_with_direct_child(result.root, cst::NodeKind::EXPR_INDEX))
 }
 
 #[test]

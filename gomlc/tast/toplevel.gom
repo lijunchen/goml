@@ -61,6 +61,7 @@ fn function_context(
         self_ty,
         type_params,
         loop_depth: Ref::new(0),
+        loop_results: Vec::new(),
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
     }
@@ -112,6 +113,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         self_ty: base.self_ty,
         type_params: base.type_params,
         loop_depth: Ref::new(0),
+        loop_results: Vec::new(),
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
     }
@@ -121,13 +123,8 @@ fn deferred_method_name(value: Callable) -> Option[string] {
     match value {
         Function(name) => {
             let prefix = "__goml_deferred_method:";
-            if name.byte_len() > prefix.byte_len()
-                && strings::starts_with(name, prefix)
-            {
-                Option::Some(name.byte_slice(
-                    prefix.byte_len(),
-                    name.byte_len(),
-                ))
+            if name.byte_len() > prefix.byte_len() && strings::starts_with(name, prefix) {
+                Option::Some(name.byte_slice(prefix.byte_len(), name.byte_len()))
             } else {
                 Option::None
             }
@@ -147,21 +144,27 @@ fn resolve_deferred_exprs(ctx: Checker, values: Vec[Expr]) -> Vec[Expr] {
 fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
     let stmts: Vec[Stmt] = Vec::new();
     for stmt in value.stmts {
-        stmts.push(match stmt {
-            Let { is_mut, pat, value } => Stmt::Let {
-                is_mut,
-                pat,
-                value: resolve_deferred_expr(ctx, value),
+        stmts.push(
+            match stmt {
+                Let { is_mut, pat, value } => Stmt::Let {
+                    is_mut,
+                    pat,
+                    value: resolve_deferred_expr(ctx, value),
+                },
+                LetElse { is_mut, pat, value, else_branch } => Stmt::LetElse {
+                    is_mut,
+                    pat,
+                    value: resolve_deferred_expr(ctx, value),
+                    else_branch: resolve_deferred_expr(ctx, else_branch),
+                },
+                Assign { target, op, value } => Stmt::Assign {
+                    target: resolve_deferred_expr(ctx, target),
+                    op,
+                    value: resolve_deferred_expr(ctx, value),
+                },
+                Expr { expr } => Stmt::Expr { expr: resolve_deferred_expr(ctx, expr) },
             },
-            Assign { target, op, value } => Stmt::Assign {
-                target: resolve_deferred_expr(ctx, target),
-                op,
-                value: resolve_deferred_expr(ctx, value),
-            },
-            Expr { expr } => Stmt::Expr {
-                expr: resolve_deferred_expr(ctx, expr),
-            },
-        })
+        )
     };
     Block {
         stmts,
@@ -179,10 +182,7 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
             body: resolve_deferred_expr(ctx, body),
             ty,
         },
-        Block { block, ty } => Expr::Block {
-            block: resolve_deferred_block(ctx, block),
-            ty,
-        },
+        Block { block, ty } => Expr::Block { block: resolve_deferred_block(ctx, block), ty },
         Call { func, args, ty } => {
             let args = resolve_deferred_exprs(ctx, args);
             let func = match func {
@@ -190,12 +190,12 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
                     match deferred_method_name(callable) {
                         Some(name) => if args.len() > 0 {
                             let arg_types: Vec[Type] = Vec::new();
-                            for index in range(1, args.len()) {
-                                arg_types.push(expr_type(args.get(index)))
+                            for index in 1..args.len() {
+                                arg_types.push(expr_type(args[index]))
                             };
                             match resolve_method(
                                 ctx,
-                                expr_type(args.get(0)),
+                                expr_type(args[0]),
                                 name,
                                 arg_types,
                                 Option::Some(ty),
@@ -205,18 +205,12 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
                                     callable: value.callable,
                                     ty: value.ty,
                                 },
-                                None => Expr::Callable {
-                                    callable,
-                                    ty: callable_ty,
-                                },
+                                None => Expr::Callable { callable, ty: callable_ty },
                             }
                         } else {
                             Expr::Callable { callable, ty: callable_ty }
                         },
-                        None => Expr::Callable {
-                            callable,
-                            ty: callable_ty,
-                        },
+                        None => Expr::Callable { callable, ty: callable_ty },
                     }
                 },
                 other => resolve_deferred_expr(ctx, other),
@@ -227,18 +221,13 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
     }
 }
 
-fn pattern_has_unresolved_inference(
-    ctx: Checker,
-    value: hir::Pat,
-) -> bool {
+fn pattern_has_unresolved_inference(ctx: Checker, value: hir::Pat) -> bool {
     match value.kind {
         Var { name } => match find_local(ctx, name) {
             Some(ty) => contains_unresolved_inference(ctx, ty),
             None => false,
         },
-        Constr { head: _, args }
-        | Tuple { items: args }
-        | Or { pats: args } => {
+        Constr { head: _, args } | Tuple { items: args } | Or { pats: args } => {
             for arg in args {
                 if pattern_has_unresolved_inference(ctx, arg) {
                     return true
@@ -299,17 +288,18 @@ fn report_unresolved_exprs(ctx: Checker, values: Vec[hir::Expr]) -> unit {
 fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
     for stmt in value.stmts {
         match stmt {
-            Let { is_mut: _, pat, annotation, value } => {
-                if match annotation {
-                    Some(_) => false,
-                    None => pattern_has_unresolved_inference(ctx, pat),
-                } {
+            Let { is_mut: _, pat, annotation, value, else_branch } => {
+                if annotation.is_none() && pattern_has_unresolved_inference(ctx, pat) {
                     push_inference_diagnostic_at(ctx, pat.span, 1);
                     mark_unresolved_pattern_locals(ctx, pat)
                 } else {
                     ()
                 };
-                report_unresolved_expr(ctx, value)
+                report_unresolved_expr(ctx, value);
+                match else_branch {
+                    Some(value) => report_unresolved_expr(ctx, value),
+                    None => (),
+                }
             },
             Assign { target, op: _, value } => {
                 report_unresolved_expr(ctx, target);
@@ -326,9 +316,7 @@ fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
 
 fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
     match value.kind {
-        NameRef {
-            name_ref: Local(local),
-        } => match find_local(ctx, local) {
+        NameRef { name_ref: Local(local) } => match find_local(ctx, local) {
             Some(ty) => if contains_unresolved_inference(ctx, ty) {
                 push_inference_diagnostic_at(ctx, value.span, 2)
             } else {
@@ -337,10 +325,9 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
             None => (),
         },
         ConstructorValue { constructor: _ } => (),
-        Constr { constructor: _, args }
-        | Tuple { items: args }
-        | Array { items: args }
-        | VecLiteral { items: args } => {
+        Constr { constructor: _, args } | Tuple { items: args } | Array { items: args } | VecLiteral {
+            items: args,
+        } => {
             report_unresolved_exprs(ctx, args)
         },
         HashMapLiteral { entries } => for entry in entries {
@@ -394,6 +381,7 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
             report_unresolved_expr(ctx, cond);
             report_unresolved_expr(ctx, body)
         },
+        Loop { body } => report_unresolved_expr(ctx, body),
         For { pat: _, iterator, body } => {
             report_unresolved_expr(ctx, iterator);
             report_unresolved_expr(ctx, body)
@@ -402,19 +390,22 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
             Some(expr) => report_unresolved_expr(ctx, expr),
             None => (),
         },
+        Break { value } => match value {
+            Some(expr) => report_unresolved_expr(ctx, expr),
+            None => (),
+        },
         Call { func, args } => {
             report_unresolved_expr(ctx, func);
             report_unresolved_exprs(ctx, args)
         },
-        Unary { op: _, expr }
-        | Cast { expr, ty: _ }
-        | Try { depth: _, expr }
-        | Proj { tuple: expr, index: _ }
-        | Field { expr, .. }
-        | Go { expr } => report_unresolved_expr(ctx, expr),
-        Range { start, end }
-        | Binary { op: _, lhs: start, rhs: end }
-        | Index { base: start, index: end } => {
+        Unary { op: _, expr } | Cast { expr, ty: _ } | Try { depth: _, expr } | Proj {
+            tuple: expr,
+            index: _,
+        } | Field { expr, .. } | Go { expr } => report_unresolved_expr(ctx, expr),
+        Range { start, end } | Binary { op: _, lhs: start, rhs: end } | Index {
+            base: start,
+            index: end,
+        } => {
             report_unresolved_expr(ctx, start);
             report_unresolved_expr(ctx, end)
         },
@@ -433,11 +424,7 @@ fn check_function(
     match self_ty {
         None => if value.name == "main" {
             if value.params.len() > 0 {
-                push_diagnostic_at(
-                    base,
-                    "main function must not have parameters",
-                    Option::None,
-                )
+                push_diagnostic_at(base, "main function must not have parameters", Option::None)
             } else {
                 ()
             };
@@ -464,12 +451,7 @@ fn check_function(
         base,
         append_predicates(
             inherited_predicates,
-            predicates_from_hir(
-                value.generic_bounds,
-                value.predicates,
-                type_params,
-                self_ty,
-            ),
+            predicates_from_hir(value.generic_bounds, value.predicates, type_params, self_ty),
         ),
         true,
     );
@@ -482,11 +464,13 @@ fn check_function(
     for param in value.params {
         let index = params.len();
         let previous_span = ctx.current_span.get();
-        ctx.current_span.set(if index < value.param_type_spans.len() {
-            Option::Some(value.param_type_spans.get(index))
-        } else {
-            Option::None
-        });
+        ctx.current_span.set(
+            if index < value.param_type_spans.len() {
+                Option::Some(value.param_type_spans[index])
+            } else {
+                Option::None
+            },
+        );
         let ty = resolve_signature_type(
             ctx,
             type_from_hir(param.1, type_params, self_ty),
@@ -528,24 +512,10 @@ fn lower_constant_expr(ctx: Checker, value: Expr) -> ConstExpr {
                 ConstExpr::Error { ty }
             },
         },
-        Unary { op, expr, ty } => ConstExpr::Unary {
-            op,
-            expr: lower_constant_expr(ctx, expr),
-            ty,
-        },
-        Cast { expr, ty } => ConstExpr::Cast {
-            expr: lower_constant_expr(ctx, expr),
-            ty,
-        },
-        Binary {
-            op,
-            lhs,
-            rhs,
-            ty,
-            resolution,
-        } => match resolution {
-            Builtin
-            | Overloaded { trait_name: _ } => ConstExpr::Binary {
+        Unary { op, expr, ty } => ConstExpr::Unary { op, expr: lower_constant_expr(ctx, expr), ty },
+        Cast { expr, ty } => ConstExpr::Cast { expr: lower_constant_expr(ctx, expr), ty },
+        Binary { op, lhs, rhs, ty, resolution } => match resolution {
+            Builtin | Overloaded { trait_name: _ } => ConstExpr::Binary {
                 op,
                 lhs: lower_constant_expr(ctx, lhs),
                 rhs: lower_constant_expr(ctx, rhs),
@@ -565,21 +535,7 @@ fn lower_constant_expr(ctx: Checker, value: Expr) -> ConstExpr {
 
 fn constant_type_supported(value: Type) -> bool {
     match prune(value) {
-        Bool
-        | Int
-        | Int8
-        | Int16
-        | Int32
-        | Int64
-        | Uint
-        | Uint8
-        | Uint16
-        | Uint32
-        | Uint64
-        | Float32
-        | Float64
-        | String
-        | Char => true,
+        Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => true,
         _ => false,
     }
 }
@@ -594,10 +550,7 @@ fn check_constant(base: Checker, value: hir::Constant) -> Constant {
         true,
     );
     if !constant_type_supported(ty) {
-        push_diagnostic(
-            base,
-            "constant type must be bool, numeric, string, char, or byte",
-        )
+        push_diagnostic(base, "constant type must be bool, numeric, string, char, or byte")
     } else {
         ()
     };
@@ -626,8 +579,10 @@ fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> unit {
                 ()
             }
         },
-        Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ } => constant_expr_references(expr, result),
+        Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } => constant_expr_references(
+            expr,
+            result,
+        ),
         Binary { op: _, lhs, rhs, ty: _ } => {
             constant_expr_references(lhs, result);
             constant_expr_references(rhs, result)
@@ -636,10 +591,7 @@ fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> unit {
     }
 }
 
-fn checked_constant_by_name(
-    values: Vec[Constant],
-    name: string,
-) -> Option[Constant] {
+fn checked_constant_by_name(values: Vec[Constant], name: string) -> Option[Constant] {
     for value in values {
         if value.name == name {
             return Option::Some(value)
@@ -650,12 +602,7 @@ fn checked_constant_by_name(
     Option::None
 }
 
-fn constant_reaches(
-    values: Vec[Constant],
-    current: string,
-    target: string,
-    visited: Vec[string],
-) -> bool {
+fn constant_reaches(values: Vec[Constant], current: string, target: string, visited: Vec[string]) -> bool {
     if vecs::contains(visited, current) {
         false
     } else {
@@ -665,9 +612,7 @@ fn constant_reaches(
                 let references: Vec[string] = Vec::new();
                 constant_expr_references(value.value, references);
                 for reference in references {
-                    if reference == target
-                        || constant_reaches(values, reference, target, visited)
-                    {
+                    if reference == target || constant_reaches(values, reference, target, visited) {
                         return true
                     } else {
                         ()
@@ -683,10 +628,7 @@ fn constant_reaches(
 fn validate_constant_cycles(ctx: Checker, values: Vec[Constant]) -> unit {
     for value in values {
         if constant_reaches(values, value.name, value.name, Vec::new()) {
-            push_global_diagnostic(
-                ctx,
-                "Cyclic constant " + short_name(value.name),
-            )
+            push_global_diagnostic(ctx, "Cyclic constant " + short_name(value.name))
         } else {
             ()
         }
@@ -710,11 +652,9 @@ fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
                 collect_injective_type_params(arg, result)
             }
         },
-        Array { len: _, elem }
-        | Slice { elem }
-        | VecType { elem }
-        | RefType { elem }
-        | Channel { elem } => collect_injective_type_params(elem, result),
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => collect_injective_type_params(elem, result),
         HashMap { key, value } => {
             collect_injective_type_params(key, result);
             collect_injective_type_params(value, result)
@@ -757,11 +697,9 @@ fn type_contains_projection(value: Type) -> bool {
             };
             false
         },
-        Array { len: _, elem }
-        | Slice { elem }
-        | VecType { elem }
-        | RefType { elem }
-        | Channel { elem } => type_contains_projection(elem),
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => type_contains_projection(elem),
         HashMap { key, value } => {
             type_contains_projection(key) || type_contains_projection(value)
         },
@@ -805,9 +743,7 @@ fn validate_impl_type_params(
         } else {
             push_diagnostic_at(
                 ctx,
-                "Implementation type parameter "
-                    + generic
-                    + " is not constrained by type "
+                "Implementation type parameter " + generic + " is not constrained by type "
                     + type_text(for_type),
                 if type_contains_projection(for_type) {
                     Option::Some(span)
@@ -833,10 +769,7 @@ fn mark_impl_invalid_at(ctx: Checker, span: ast::Span) -> unit {
     }
 }
 
-fn trait_reference_has_wrong_arity(
-    ctx: Checker,
-    reference: TraitRef,
-) -> bool {
+fn trait_reference_has_wrong_arity(ctx: Checker, reference: TraitRef) -> bool {
     match find_trait(ctx, reference.name) {
         Some(info) => info.generics.len() != reference.args.len(),
         None => false,
@@ -848,8 +781,9 @@ fn hir_type_uses_self_projection(value: hir::TypeExpr) -> bool {
         Projection { base: Con { name }, associated: _ } => {
             name == "Self"
         },
-        Projection { base, associated: _ }
-        | Array { len: _, elem: base } => hir_type_uses_self_projection(base),
+        Projection { base, associated: _ } | Array { len: _, elem: base } => hir_type_uses_self_projection(
+            base,
+        ),
         Tuple { items } => {
             for item in items {
                 if hir_type_uses_self_projection(item) {
@@ -925,18 +859,12 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     );
     let trait_ref = match value.trait_ref {
         Some(reference) => {
-            let reference = trait_ref_from_hir(
-                reference,
-                value.generics,
-                Option::Some(for_type),
-            );
+            let reference = trait_ref_from_hir(reference, value.generics, Option::Some(for_type));
             match find_trait(base, reference.name) {
                 Some(_) => validate_trait_reference(base, reference),
                 None => push_diagnostic(
                     base,
-                    "Trait "
-                        + reference.name
-                        + " is not defined, cannot implement it for "
+                    "Trait " + reference.name + " is not defined, cannot implement it for "
                         + type_text(for_type),
                 ),
             };
@@ -945,23 +873,14 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         None => Option::None,
     };
     let validation_start = base.diagnostics.len();
-    validate_impl_type_params(
-        base,
-        value.generics,
-        trait_ref,
-        for_type,
-        value.for_type_span,
-    );
+    validate_impl_type_params(base, value.generics, trait_ref, for_type, value.for_type_span);
     if base.diagnostics.len() > validation_start {
         invalid.set(true)
     } else {
         ()
     };
     match trait_ref {
-        Some(reference) => if trait_reference_has_wrong_arity(
-            base,
-            reference,
-        ) {
+        Some(reference) => if trait_reference_has_wrong_arity(base, reference) {
             mark_impl_invalid_at(base, value.for_type_span);
             return ImplBlock {
                 generics: value.generics,
@@ -982,29 +901,24 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
             Some(reference) => if hir_type_uses_self_projection(associated.1) {
                 append_predicates(
                     predicates,
-                    Vec::new().pushed(TypePredicate::Trait {
-                        for_ty: for_type,
-                        trait_ref: reference,
-                    }),
+                    Vec::[TypePredicate::Trait { for_ty: for_type, trait_ref: reference }],
                 )
             } else {
                 predicates
             },
             None => predicates,
         };
-        associated_types.push((
-            associated.0,
-            resolve_signature_type(
-                base,
-                type_from_hir(
-                    associated.1,
-                    value.generics,
-                    Option::Some(for_type),
+        associated_types.push(
+            (
+                associated.0,
+                resolve_signature_type(
+                    base,
+                    type_from_hir(associated.1, value.generics, Option::Some(for_type)),
+                    associated_predicates,
+                    true,
                 ),
-                associated_predicates,
-                true,
             ),
-        ))
+        )
     };
     match trait_ref {
         Some(reference) => {
@@ -1029,13 +943,9 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     };
     let methods: Vec[Function] = Vec::new();
     for method in value.methods {
-        methods.push(check_function(
-            base,
-            method,
-            value.generics,
-            predicates,
-            Option::Some(for_type),
-        ))
+        methods.push(
+            check_function(base, method, value.generics, predicates, Option::Some(for_type)),
+        )
     };
     match trait_ref {
         Some(reference) => {
@@ -1076,10 +986,7 @@ fn type_matches(ctx: Checker, left: Type, right: Type) -> bool {
     types_equal(normalize_type(ctx, left), normalize_type(ctx, right))
 }
 
-fn contains_type_predicate(
-    values: Vec[TypePredicate],
-    expected: TypePredicate,
-) -> bool {
+fn contains_type_predicate(values: Vec[TypePredicate], expected: TypePredicate) -> bool {
     for value in values {
         if predicate_equal(value, expected) {
             return true
@@ -1090,10 +997,7 @@ fn contains_type_predicate(
     false
 }
 
-fn type_predicate_sets_equal(
-    left: Vec[TypePredicate],
-    right: Vec[TypePredicate],
-) -> bool {
+fn type_predicate_sets_equal(left: Vec[TypePredicate], right: Vec[TypePredicate]) -> bool {
     if left.len() != right.len() {
         false
     } else {
@@ -1118,17 +1022,13 @@ fn validate_method_signature(
     owner_predicate_count: int,
 ) -> unit {
     let actual_method_generics = Vec::new();
-    for index in range(owner_generic_count, actual.generics.len()) {
-        actual_method_generics.push(actual.generics.get(index))
+    for index in owner_generic_count..actual.generics.len() {
+        actual_method_generics.push(actual.generics[index])
     };
     if expected.generics.len() != actual_method_generics.len() {
         push_diagnostic(
             ctx,
-            "Trait "
-                + trait_name
-                + "::"
-                + actual.name
-                + " expects "
+            "Trait " + trait_name + "::" + actual.name + " expects "
                 + expected.generics.len().to_string()
                 + " method type parameters but impl has "
                 + actual_method_generics.len().to_string(),
@@ -1136,36 +1036,28 @@ fn validate_method_signature(
     } else {
         ()
     };
-    let generic_count = if expected.generics.len()
-        < actual_method_generics.len()
-    {
+    let generic_count = if expected.generics.len() < actual_method_generics.len() {
         expected.generics.len()
     } else {
         actual_method_generics.len()
     };
-    for index in range(0, generic_count) {
-        substitutions.push(TypeSubst {
-            name: expected.generics.get(index),
-            ty: Type::Param {
-                name: actual_method_generics.get(index),
+    for index in 0..generic_count {
+        substitutions.push(
+            TypeSubst {
+                name: expected.generics[index],
+                ty: Type::Param { name: actual_method_generics[index] },
             },
-        })
+        )
     };
     let expected_params: Vec[Type] = Vec::new();
     for param in expected.params {
         expected_params.push(normalize_type(ctx, substitute_type(param, substitutions)))
     };
-    let expected_ret = normalize_type(
-        ctx,
-        substitute_type(expected.ret_ty, substitutions),
-    );
+    let expected_ret = normalize_type(ctx, substitute_type(expected.ret_ty, substitutions));
     if expected_params.len() != actual.params.len() {
-        push_diagnostic(ctx,
-            "Trait "
-                + trait_name
-                + "::"
-                + actual.name
-                + " expects "
+        push_diagnostic(
+            ctx,
+            "Trait " + trait_name + "::" + actual.name + " expects "
                 + expected_params.len().to_string()
                 + " parameters but impl has "
                 + actual.params.len().to_string(),
@@ -1178,17 +1070,13 @@ fn validate_method_signature(
     } else {
         actual.params.len()
     };
-    for index in range(0, common) {
-        let expected_ty = expected_params.get(index);
-        let actual_ty = normalize_type(ctx, actual.params.get(index).1);
+    for index in 0..common {
+        let expected_ty = expected_params[index];
+        let actual_ty = normalize_type(ctx, actual.params[index].1);
         if !type_matches(ctx, expected_ty, actual_ty) {
-            push_diagnostic(ctx,
-                "Trait "
-                    + trait_name
-                    + "::"
-                    + actual.name
-                    + " parameter "
-                    + index.to_string()
+            push_diagnostic(
+                ctx,
+                "Trait " + trait_name + "::" + actual.name + " parameter " + index.to_string()
                     + " expected type "
                     + type_text(expected_ty)
                     + " but found "
@@ -1200,12 +1088,9 @@ fn validate_method_signature(
     };
     let actual_ret = normalize_type(ctx, actual.ret_ty);
     if !type_matches(ctx, expected_ret, actual_ret) {
-        push_diagnostic(ctx,
-            "Trait "
-                + trait_name
-                + "::"
-                + actual.name
-                + " expected return type "
+        push_diagnostic(
+            ctx,
+            "Trait " + trait_name + "::" + actual.name + " expected return type "
                 + type_text(expected_ret)
                 + " but found "
                 + type_text(actual_ret),
@@ -1215,25 +1100,16 @@ fn validate_method_signature(
     };
     let expected_predicates: Vec[TypePredicate] = Vec::new();
     for predicate in expected.predicates {
-        expected_predicates.push(substitute_predicate(
-            predicate,
-            substitutions,
-        ))
+        expected_predicates.push(substitute_predicate(predicate, substitutions))
     };
     let actual_predicates: Vec[TypePredicate] = Vec::new();
-    for index in range(owner_predicate_count, actual.predicates.len()) {
-        actual_predicates.push(actual.predicates.get(index))
+    for index in owner_predicate_count..actual.predicates.len() {
+        actual_predicates.push(actual.predicates[index])
     };
-    if !type_predicate_sets_equal(
-        expected_predicates,
-        actual_predicates,
-    ) {
+    if !type_predicate_sets_equal(expected_predicates, actual_predicates) {
         push_diagnostic(
             ctx,
-            "Trait "
-                + trait_name
-                + "::"
-                + actual.name
+            "Trait " + trait_name + "::" + actual.name
                 + " method bounds do not match the trait declaration",
         )
     } else {
@@ -1251,17 +1127,14 @@ fn validate_trait_associated_types(
     let seen: Vec[string] = Vec::new();
     for associated in associated_types {
         if !contains_associated_type(info.associated_types, associated.0) {
-            push_diagnostic(ctx,
-                "Associated type "
-                    + associated.0
-                    + " is not declared in trait "
-                    + reference.name,
+            push_diagnostic(
+                ctx,
+                "Associated type " + associated.0 + " is not declared in trait " + reference.name,
             )
         } else if vecs::contains(seen, associated.0) {
-            push_diagnostic(ctx,
-                "Associated type "
-                    + associated.0
-                    + " is bound multiple times in impl of trait "
+            push_diagnostic(
+                ctx,
+                "Associated type " + associated.0 + " is bound multiple times in impl of trait "
                     + reference.name,
             )
         } else {
@@ -1270,11 +1143,9 @@ fn validate_trait_associated_types(
     };
     for expected in info.associated_types {
         if !vecs::contains(seen, expected.name) {
-            push_diagnostic(ctx,
-                "Trait "
-                    + reference.name
-                    + " implementation for "
-                    + type_text(for_type)
+            push_diagnostic(
+                ctx,
+                "Trait " + reference.name + " implementation for " + type_text(for_type)
                     + " is missing associated type "
                     + expected.name,
             )
@@ -1295,12 +1166,9 @@ fn contains_associated_type(values: Vec[AssociatedTypeInfo], name: string) -> bo
     false
 }
 
-fn impl_associated_type(
-    values: Vec[(string, Type)],
-    name: string,
-) -> Option[Type] {
-    for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+fn impl_associated_type(values: Vec[(string, Type)], name: string) -> Option[Type] {
+    for offset in 0..values.len() {
+        let value = values[values.len() - 1 - offset];
         if value.0 == name {
             return Option::Some(value.1)
         } else {
@@ -1327,12 +1195,7 @@ fn associated_type_reaches(
                 match impl_associated_type(values, name) {
                     Some(next) => {
                         active.push(name);
-                        let reaches = associated_type_reaches(
-                            values,
-                            next,
-                            target,
-                            active,
-                        );
+                        let reaches = associated_type_reaches(values, next, target, active);
                         active.truncate(active.len() - 1);
                         if reaches {
                             return true
@@ -1387,11 +1250,9 @@ fn associated_type_reaches(
             };
             false
         },
-        Array { len: _, elem }
-        | Slice { elem }
-        | VecType { elem }
-        | RefType { elem }
-        | Channel { elem } => {
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => {
             associated_type_reaches(values, elem, target, active)
         },
         HashMap { key, value } => {
@@ -1423,17 +1284,10 @@ fn validate_associated_type_cycles(
     associated_types: Vec[(string, Type)],
 ) -> unit {
     for associated in associated_types {
-        if associated_type_reaches(
-            associated_types,
-            associated.1,
-            associated.0,
-            Vec::new(),
-        ) {
+        if associated_type_reaches(associated_types, associated.1, associated.0, Vec::new()) {
             push_diagnostic_at(
                 ctx,
-                "Associated type "
-                    + associated.0
-                    + " has a cyclic definition in impl of trait "
+                "Associated type " + associated.0 + " has a cyclic definition in impl of trait "
                     + short_name(reference.name),
                 Option::None,
             )
@@ -1454,10 +1308,7 @@ fn predicate_text(value: TypePredicate) -> string {
     }
 }
 
-fn resolve_impl_alias_types(
-    ctx: Checker,
-    values: Vec[Type],
-) -> Vec[Type] {
+fn resolve_impl_alias_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
     let result: Vec[Type] = Vec::new();
     for value in values {
         result.push(resolve_impl_alias_type(ctx, value))
@@ -1465,14 +1316,8 @@ fn resolve_impl_alias_types(
     result
 }
 
-fn resolve_impl_alias_trait_ref(
-    ctx: Checker,
-    value: TraitRef,
-) -> TraitRef {
-    TraitRef {
-        name: value.name,
-        args: resolve_impl_alias_types(ctx, value.args),
-    }
+fn resolve_impl_alias_trait_ref(ctx: Checker, value: TraitRef) -> TraitRef {
+    TraitRef { name: value.name, args: resolve_impl_alias_types(ctx, value.args) }
 }
 
 fn resolve_impl_alias_type(ctx: Checker, value: Type) -> Type {
@@ -1484,41 +1329,26 @@ fn resolve_impl_alias_type(ctx: Checker, value: Type) -> Type {
                     for_ty: resolve_impl_alias_type(ctx, for_ty),
                     name,
                     trait_ref: match trait_ref {
-                        Some(value) => Option::Some(
-                            resolve_impl_alias_trait_ref(ctx, value),
-                        ),
+                        Some(value) => Option::Some(resolve_impl_alias_trait_ref(ctx, value)),
                         None => Option::None,
                     },
                 },
             }
         },
-        Tuple { items } => Type::Tuple {
-            items: resolve_impl_alias_types(ctx, items),
-        },
+        Tuple { items } => Type::Tuple { items: resolve_impl_alias_types(ctx, items) },
         App { ty, args } => Type::App {
             ty: resolve_impl_alias_type(ctx, ty),
             args: resolve_impl_alias_types(ctx, args),
         },
-        Array { len, elem } => Type::Array {
-            len,
-            elem: resolve_impl_alias_type(ctx, elem),
-        },
-        Slice { elem } => Type::Slice {
-            elem: resolve_impl_alias_type(ctx, elem),
-        },
-        VecType { elem } => Type::VecType {
-            elem: resolve_impl_alias_type(ctx, elem),
-        },
-        RefType { elem } => Type::RefType {
-            elem: resolve_impl_alias_type(ctx, elem),
-        },
+        Array { len, elem } => Type::Array { len, elem: resolve_impl_alias_type(ctx, elem) },
+        Slice { elem } => Type::Slice { elem: resolve_impl_alias_type(ctx, elem) },
+        VecType { elem } => Type::VecType { elem: resolve_impl_alias_type(ctx, elem) },
+        RefType { elem } => Type::RefType { elem: resolve_impl_alias_type(ctx, elem) },
         HashMap { key, value } => Type::HashMap {
             key: resolve_impl_alias_type(ctx, key),
             value: resolve_impl_alias_type(ctx, value),
         },
-        Channel { elem } => Type::Channel {
-            elem: resolve_impl_alias_type(ctx, elem),
-        },
+        Channel { elem } => Type::Channel { elem: resolve_impl_alias_type(ctx, elem) },
         Func { params, ret_ty } => Type::Func {
             params: resolve_impl_alias_types(ctx, params),
             ret_ty: resolve_impl_alias_type(ctx, ret_ty),
@@ -1527,10 +1357,7 @@ fn resolve_impl_alias_type(ctx: Checker, value: Type) -> Type {
     }
 }
 
-fn resolve_impl_alias_predicate(
-    ctx: Checker,
-    value: TypePredicate,
-) -> TypePredicate {
+fn resolve_impl_alias_predicate(ctx: Checker, value: TypePredicate) -> TypePredicate {
     match value {
         Trait { for_ty, trait_ref } => TypePredicate::Trait {
             for_ty: resolve_impl_alias_type(ctx, for_ty),
@@ -1560,10 +1387,7 @@ fn validate_associated_type_bounds(
                 } else {
                     push_diagnostic(
                         ctx,
-                        "Associated type "
-                            + definition.name
-                            + " = "
-                            + type_text(actual)
+                        "Associated type " + definition.name + " = " + type_text(actual)
                             + " does not satisfy bound "
                             + trait_ref_text(bound)
                             + " in impl of "
@@ -1590,10 +1414,7 @@ fn validate_trait_impl_requirements(
         } else {
             push_diagnostic(
                 ctx,
-                "Trait "
-                    + short_name(reference.name)
-                    + " implementation for "
-                    + type_text(for_type)
+                "Trait " + short_name(reference.name) + " implementation for " + type_text(for_type)
                     + " requires supertrait "
                     + trait_ref_text(supertrait),
             )
@@ -1601,15 +1422,12 @@ fn validate_trait_impl_requirements(
     };
     for predicate in substitute_predicates(info.predicates, substitutions) {
         let predicate = resolve_impl_alias_predicate(ctx, predicate);
-        if predicates_satisfied_at(ctx, Vec::new().pushed(predicate), 0) {
+        if predicates_satisfied_at(ctx, Vec::[predicate], 0) {
             ()
         } else {
             push_diagnostic(
                 ctx,
-                "Trait "
-                    + short_name(reference.name)
-                    + " implementation for "
-                    + type_text(for_type)
+                "Trait " + short_name(reference.name) + " implementation for " + type_text(for_type)
                     + " does not satisfy declared requirement "
                     + predicate_text(predicate),
             )
@@ -1633,11 +1451,7 @@ fn validate_trait_impl_definition_requirements(
                 Vec::new(),
                 predicates,
             );
-            validate_associated_type_cycles(
-                validation_ctx,
-                reference,
-                associated_types,
-            );
+            validate_associated_type_cycles(validation_ctx, reference, associated_types);
             let substitutions = trait_substitutions(
                 validation_ctx,
                 info,
@@ -1645,22 +1459,26 @@ fn validate_trait_impl_definition_requirements(
                 Option::Some(for_type),
             );
             for associated in associated_types {
-                validation_ctx.projection_aliases.push(ProjectionAlias {
-                    projection: Type::Projection {
-                        for_ty: for_type,
-                        name: associated.0,
-                        trait_ref: Option::Some(reference),
+                validation_ctx.projection_aliases.push(
+                    ProjectionAlias {
+                        projection: Type::Projection {
+                            for_ty: for_type,
+                            name: associated.0,
+                            trait_ref: Option::Some(reference),
+                        },
+                        ty: associated.1,
                     },
-                    ty: associated.1,
-                });
-                validation_ctx.projection_aliases.push(ProjectionAlias {
-                    projection: Type::Projection {
-                        for_ty: for_type,
-                        name: associated.0,
-                        trait_ref: Option::None,
+                );
+                validation_ctx.projection_aliases.push(
+                    ProjectionAlias {
+                        projection: Type::Projection {
+                            for_ty: for_type,
+                            name: associated.0,
+                            trait_ref: Option::None,
+                        },
+                        ty: associated.1,
                     },
-                    ty: associated.1,
-                })
+                )
             };
             validate_trait_impl_requirements(
                 validation_ctx,
@@ -1692,45 +1510,38 @@ fn validate_trait_impl(
 ) -> unit {
     match find_trait(ctx, reference.name) {
         Some(info) => {
-            validate_trait_associated_types(
-                ctx,
-                info,
-                reference,
-                for_type,
-                associated_types,
-            );
-            let substitutions = trait_substitutions(
-                ctx,
-                info,
-                reference,
-                Option::Some(for_type),
-            );
+            validate_trait_associated_types(ctx, info, reference, for_type, associated_types);
+            let substitutions = trait_substitutions(ctx, info, reference, Option::Some(for_type));
             let projection_alias_count = ctx.projection_aliases.len();
             for associated in associated_types {
-                ctx.projection_aliases.push(ProjectionAlias {
-                    projection: Type::Projection {
-                        for_ty: for_type,
-                        name: associated.0,
-                        trait_ref: Option::Some(reference),
+                ctx.projection_aliases.push(
+                    ProjectionAlias {
+                        projection: Type::Projection {
+                            for_ty: for_type,
+                            name: associated.0,
+                            trait_ref: Option::Some(reference),
+                        },
+                        ty: associated.1,
                     },
-                    ty: associated.1,
-                });
-                ctx.projection_aliases.push(ProjectionAlias {
-                    projection: Type::Projection {
-                        for_ty: for_type,
-                        name: associated.0,
-                        trait_ref: Option::None,
+                );
+                ctx.projection_aliases.push(
+                    ProjectionAlias {
+                        projection: Type::Projection {
+                            for_ty: for_type,
+                            name: associated.0,
+                            trait_ref: Option::None,
+                        },
+                        ty: associated.1,
                     },
-                    ty: associated.1,
-                })
+                )
             };
             let seen: Vec[string] = Vec::new();
             for method in methods {
                 match find_trait_method(info, method.name) {
                     Some(expected) => if vecs::contains(seen, method.name) {
-                        push_diagnostic(ctx,
-                            "Method "
-                                + method.name
+                        push_diagnostic(
+                            ctx,
+                            "Method " + method.name
                                 + " implemented multiple times in impl of trait "
                                 + reference.name,
                         )
@@ -1746,21 +1557,17 @@ fn validate_trait_impl(
                             owner_predicate_count,
                         )
                     },
-                    None => push_diagnostic(ctx,
-                        "Method "
-                            + method.name
-                            + " is not declared in trait "
-                            + reference.name,
+                    None => push_diagnostic(
+                        ctx,
+                        "Method " + method.name + " is not declared in trait " + reference.name,
                     ),
                 }
             };
             for expected in info.methods {
                 if !vecs::contains(seen, expected.name) {
-                    push_diagnostic(ctx,
-                        "Trait "
-                            + reference.name
-                            + " implementation for "
-                            + type_text(for_type)
+                    push_diagnostic(
+                        ctx,
+                        "Trait " + reference.name + " implementation for " + type_text(for_type)
                             + " is missing method "
                             + expected.name,
                     )
@@ -1778,10 +1585,9 @@ fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) 
     let seen: Vec[string] = Vec::new();
     for method in methods {
         if vecs::contains(seen, method.name) {
-            push_diagnostic(ctx,
-                "Method "
-                    + method.name
-                    + " implemented multiple times in impl for "
+            push_diagnostic(
+                ctx,
+                "Method " + method.name + " implemented multiple times in impl for "
                     + type_text(for_type),
             )
         } else {
@@ -1806,11 +1612,7 @@ fn struct_application_parts(value: Type) -> Option[(string, Vec[Type])] {
     }
 }
 
-fn by_value_type_has_cycle(
-    ctx: Checker,
-    value: Type,
-    active: Vec[string],
-) -> bool {
+fn by_value_type_has_cycle(ctx: Checker, value: Type, active: Vec[string]) -> bool {
     match prune(normalize_type(ctx, value)) {
         Tuple { items: values } => {
             for value in values {
@@ -1833,11 +1635,7 @@ fn by_value_type_has_cycle(
                     for field in info.fields {
                         if by_value_type_has_cycle(
                             ctx,
-                            substitute_params(
-                                field.1,
-                                info.generics,
-                                parts.1,
-                            ),
+                            substitute_params(field.1, info.generics, parts.1),
                             next,
                         ) {
                             return true
@@ -1855,15 +1653,14 @@ fn by_value_type_has_cycle(
 }
 
 fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
-    for index in range(0, struct_count) {
-        let info = ctx.structs.get(index);
-        let active = Vec::new().pushed(info.name);
+    for index in 0..struct_count {
+        let info = ctx.structs[index];
+        let active = Vec::[info.name];
         for field in info.fields {
             if by_value_type_has_cycle(ctx, field.1, active) {
-                push_diagnostic(ctx,
-                    "Struct "
-                        + info.name
-                        + " has infinite size due to recursive field; use Ref["
+                push_diagnostic(
+                    ctx,
+                    "Struct " + info.name + " has infinite size due to recursive field; use Ref["
                         + info.name
                         + "] for indirection",
                 );
@@ -1892,13 +1689,7 @@ fn supertrait_path(
             Some(info) => for reference in info.supertraits {
                 let length = path.len();
                 path.push(short_name(reference.name));
-                if supertrait_path(
-                    ctx,
-                    reference.name,
-                    target,
-                    active,
-                    path,
-                ) {
+                if supertrait_path(ctx, reference.name, target, active, path) {
                     active.truncate(active.len() - 1);
                     return true
                 } else {
@@ -1917,19 +1708,11 @@ fn cycle_text(values: Vec[string]) -> string {
 }
 
 fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
-    for index in range(0, trait_count) {
-        let info = ctx.traits.get(index);
+    for index in 0..trait_count {
+        let info = ctx.traits[index];
         for reference in info.supertraits {
-            let path = Vec::new()
-                .pushed(short_name(info.name))
-                .pushed(short_name(reference.name));
-            if supertrait_path(
-                ctx,
-                reference.name,
-                info.name,
-                Vec::new(),
-                path,
-            ) {
+            let path = Vec::[short_name(info.name), short_name(reference.name)];
+            if supertrait_path(ctx, reference.name, info.name, Vec::new(), path) {
                 push_diagnostic_at(
                     ctx,
                     "Supertrait cycle detected: " + cycle_text(path),
@@ -1943,28 +1726,23 @@ fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
     }
 }
 
-fn validate_local_definitions(
-    ctx: Checker,
-    enum_count: int,
-    struct_count: int,
-    trait_count: int,
-) -> unit {
-    for index in range(0, enum_count) {
-        for variant in ctx.enums.get(index).variants {
+fn validate_local_definitions(ctx: Checker, enum_count: int, struct_count: int, trait_count: int) -> unit {
+    for index in 0..enum_count {
+        for variant in ctx.enums[index].variants {
             for field in enum_variant_field_types(variant.fields) {
                 validate_signature_type(ctx, field)
             }
         }
     };
-    for index in range(0, struct_count) {
-        for field in ctx.structs.get(index).fields {
+    for index in 0..struct_count {
+        for field in ctx.structs[index].fields {
             validate_signature_type(ctx, field.1)
         }
     };
     validate_struct_sizes(ctx, struct_count);
     validate_supertrait_cycles(ctx, trait_count);
-    for index in range(0, trait_count) {
-        let info = ctx.traits.get(index);
+    for index in 0..trait_count {
+        let info = ctx.traits[index];
         for predicate in info.predicates {
             match predicate {
                 Trait { for_ty, trait_ref: reference } => {
@@ -1988,10 +1766,7 @@ fn validate_local_definitions(
         for method in info.methods {
             for predicate in method.predicates {
                 match predicate {
-                    Trait {
-                        for_ty,
-                        trait_ref: reference,
-                    } => {
+                    Trait { for_ty, trait_ref: reference } => {
                         validate_signature_type(ctx, for_ty);
                         validate_trait_reference(ctx, reference)
                     },
@@ -2011,44 +1786,41 @@ fn validate_local_definitions(
 
 fn builtin_enum_definitions() -> Vec[EnumDef] {
     let result: Vec[EnumDef] = Vec::new();
-    result.push(EnumDef {
-        name: "Option",
-        generics: Vec::new().pushed("T"),
-        variants: Vec::new()
-            .pushed(EnumVariantDef {
-                name: "None",
-                fields: EnumVariantFields::Unit,
-            })
-            .pushed(EnumVariantDef {
-                name: "Some",
-                fields: EnumVariantFields::Tuple(
-                    Vec::new().pushed(Type::Param { name: "T" }),
-                ),
-            }),
-    });
-    result.push(EnumDef {
-        name: "Result",
-        generics: Vec::new().pushed("T").pushed("E"),
-        variants: Vec::new()
-            .pushed(EnumVariantDef {
-                name: "Ok",
-                fields: EnumVariantFields::Tuple(
-                    Vec::new().pushed(Type::Param { name: "T" }),
-                ),
-            })
-            .pushed(EnumVariantDef {
-                name: "Err",
-                fields: EnumVariantFields::Tuple(
-                    Vec::new().pushed(Type::Param { name: "E" }),
-                ),
-            }),
-    });
+    result.push(
+        EnumDef {
+            name: "Option",
+            generics: Vec::["T"],
+            variants: Vec::[
+                EnumVariantDef { name: "None", fields: EnumVariantFields::Unit },
+                EnumVariantDef {
+                    name: "Some",
+                    fields: EnumVariantFields::Tuple(Vec::[Type::Param { name: "T" }]),
+                },
+            ],
+        },
+    );
+    result.push(
+        EnumDef {
+            name: "Result",
+            generics: Vec::["T", "E"],
+            variants: Vec::[
+                EnumVariantDef {
+                    name: "Ok",
+                    fields: EnumVariantFields::Tuple(Vec::[Type::Param { name: "T" }]),
+                },
+                EnumVariantDef {
+                    name: "Err",
+                    fields: EnumVariantFields::Tuple(Vec::[Type::Param { name: "E" }]),
+                },
+            ],
+        },
+    );
     result
 }
 
 fn declaration_name_index(values: Vec[string], expected: string) -> int {
-    for index in range(0, values.len()) {
-        if values.get(index) == expected {
+    for index in 0..values.len() {
+        if values[index] == expected {
             return index
         } else {
             ()
@@ -2080,10 +1852,7 @@ fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit
     for param in value.params {
         let name = param.0.hint;
         if vecs::contains(names, name) {
-            push_declaration_diagnostic(
-                ctx,
-                "parameter " + name + " is defined multiple times",
-            )
+            push_declaration_diagnostic(ctx, "parameter " + name + " is defined multiple times")
         } else {
             names.push(name)
         }
@@ -2096,10 +1865,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
         if vecs::contains(names, variant.name) {
             push_declaration_diagnostic(
                 ctx,
-                "variant "
-                    + variant.name
-                    + " is defined multiple times in enum "
-                    + value.name,
+                "variant " + variant.name + " is defined multiple times in enum " + value.name,
             )
         } else {
             names.push(variant.name)
@@ -2111,9 +1877,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
                     if vecs::contains(field_names, field.0) {
                         push_declaration_diagnostic(
                             ctx,
-                            "field "
-                                + field.0
-                                + " is defined multiple times in variant "
+                            "field " + field.0 + " is defined multiple times in variant "
                                 + value.name
                                 + "::"
                                 + variant.name,
@@ -2134,10 +1898,7 @@ fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
         if vecs::contains(names, field.0) {
             push_declaration_diagnostic(
                 ctx,
-                "field "
-                    + field.0
-                    + " is defined multiple times in struct "
-                    + value.name,
+                "field " + field.0 + " is defined multiple times in struct " + value.name,
             )
         } else {
             names.push(field.0)
@@ -2151,10 +1912,7 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
         if vecs::contains(methods, method.name) {
             push_declaration_diagnostic(
                 ctx,
-                "method "
-                    + method.name
-                    + " is defined multiple times in trait "
-                    + value.name,
+                "method " + method.name + " is defined multiple times in trait " + value.name,
             )
         } else {
             methods.push(method.name)
@@ -2165,9 +1923,7 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
         if vecs::contains(associated_types, associated.name) {
             push_declaration_diagnostic(
                 ctx,
-                "associated type "
-                    + associated.name
-                    + " is defined multiple times in trait "
+                "associated type " + associated.name + " is defined multiple times in trait "
                     + value.name,
             )
         } else {
@@ -2186,25 +1942,21 @@ fn nominal_kind_name(kind: int) -> string {
     }
 }
 
-fn mixed_nominal_declaration_message(
-    name: string,
-    first: int,
-    second: int,
-) -> string {
+fn mixed_nominal_declaration_message(name: string, first: int, second: int) -> string {
     if (first == 1 && second == 2) || (first == 2 && second == 1) {
         "type " + name + " is defined as both a struct and an enum"
     } else {
-        "type "
-            + name
-            + " is defined as both a "
-            + nominal_kind_name(first)
-            + " and a "
+        "type " + name + " is defined as both a " + nominal_kind_name(first) + " and a "
             + nominal_kind_name(second)
     }
 }
 
 fn value_kind_name(kind: int) -> string {
-    if kind == 1 { "function" } else { "constant" }
+    if kind == 1 {
+        "function"
+    } else {
+        "constant"
+    }
 }
 
 fn mixed_value_declaration_message(name: string) -> string {
@@ -2229,7 +1981,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 if index < 0 {
                     nominal_names.push(value.0);
                     nominal_kinds.push(value.1)
-                } else if nominal_kinds.get(index) == value.1 {
+                } else if nominal_kinds[index] == value.1 {
                     push_declaration_diagnostic(
                         ctx,
                         (if value.1 == 1 {
@@ -2245,11 +1997,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 } else {
                     push_declaration_diagnostic(
                         ctx,
-                        mixed_nominal_declaration_message(
-                            value.0,
-                            nominal_kinds.get(index),
-                            value.1,
-                        ),
+                        mixed_nominal_declaration_message(value.0, nominal_kinds[index], value.1),
                     )
                 }
             },
@@ -2267,19 +2015,13 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 if index < 0 {
                     function_names.push(value.0);
                     function_kinds.push(value.1)
-                } else if function_kinds.get(index) == value.1 {
+                } else if function_kinds[index] == value.1 {
                     push_declaration_diagnostic(
                         ctx,
-                        value_kind_name(value.1)
-                            + " "
-                            + value.0
-                            + " is defined multiple times",
+                        value_kind_name(value.1) + " " + value.0 + " is defined multiple times",
                     )
                 } else {
-                    push_declaration_diagnostic(
-                        ctx,
-                        mixed_value_declaration_message(value.0),
-                    )
+                    push_declaration_diagnostic(ctx, mixed_value_declaration_message(value.0))
                 }
             },
             None => (),
@@ -2301,10 +2043,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 for method in definition.method_sigs {
                     validate_type_parameter_names(
                         ctx,
-                        append_names(
-                            definition.generics,
-                            method.generics,
-                        ),
+                        append_names(definition.generics, method.generics),
                     )
                 }
             },
@@ -2375,10 +2114,7 @@ fn validate_cross_file_declaration_names(
                 _ => Option::None,
             };
             match function_name {
-                Some(value) => if !vecs::contains(
-                    local_function_names,
-                    value.0,
-                ) {
+                Some(value) => if !vecs::contains(local_function_names, value.0) {
                     local_function_names.push(value.0);
                     local_function_kinds.push(value.1)
                 } else {
@@ -2387,14 +2123,14 @@ fn validate_cross_file_declaration_names(
                 None => (),
             }
         };
-        for index in range(0, local_nominal_names.len()) {
-            let name = local_nominal_names.get(index);
-            let kind = local_nominal_kinds.get(index);
+        for index in 0..local_nominal_names.len() {
+            let name = local_nominal_names[index];
+            let kind = local_nominal_kinds[index];
             let previous = declaration_name_index(nominal_names, name);
             if previous < 0 {
                 nominal_names.push(name);
                 nominal_kinds.push(kind)
-            } else if nominal_kinds.get(previous) == kind {
+            } else if nominal_kinds[previous] == kind {
                 push_global_diagnostic(
                     ctx,
                     (if kind == 1 {
@@ -2410,34 +2146,24 @@ fn validate_cross_file_declaration_names(
             } else {
                 push_global_diagnostic(
                     ctx,
-                    mixed_nominal_declaration_message(
-                        name,
-                        nominal_kinds.get(previous),
-                        kind,
-                    ),
+                    mixed_nominal_declaration_message(name, nominal_kinds[previous], kind),
                 )
             }
         };
-        for index in range(0, local_function_names.len()) {
-            let name = local_function_names.get(index);
-            let kind = local_function_kinds.get(index);
+        for index in 0..local_function_names.len() {
+            let name = local_function_names[index];
+            let kind = local_function_kinds[index];
             let previous = declaration_name_index(function_names, name);
             if previous < 0 {
                 function_names.push(name);
                 function_kinds.push(kind)
-            } else if function_kinds.get(previous) == kind {
+            } else if function_kinds[previous] == kind {
                 push_global_diagnostic(
                     ctx,
-                    value_kind_name(kind)
-                        + " "
-                        + name
-                        + " is defined multiple times",
+                    value_kind_name(kind) + " " + name + " is defined multiple times",
                 )
             } else {
-                push_global_diagnostic(
-                    ctx,
-                    mixed_value_declaration_message(name),
-                )
+                push_global_diagnostic(ctx, mixed_value_declaration_message(name))
             }
         }
     }
@@ -2446,45 +2172,41 @@ fn validate_cross_file_declaration_names(
 fn validate_extern_declarations(ctx: Checker) -> unit {
     for value in ctx.rejected_externs {
         if value.local {
-            ctx.diagnostics.push(new_diagnostic(
-                "typer",
-                "extern " + short_name(value.name) + " is not permitted in this source",
-                value.source_path,
-                Option::None,
-            ))
+            ctx.diagnostics.push(
+                new_diagnostic(
+                    "typer",
+                    "extern " + short_name(value.name) + " is not permitted in this source",
+                    value.source_path,
+                    Option::None,
+                ),
+            )
         } else {
             ()
         }
     }
 }
 
-fn validate_lang_item_attributes(
-    ctx: Checker,
-    attrs: Vec[ast::Attribute],
-    allow_lang_items: bool,
-) -> unit {
+fn validate_lang_item_attributes(ctx: Checker, attrs: Vec[ast::Attribute], allow_lang_items: bool) -> unit {
     if allow_lang_items {
         ()
     } else {
         for attribute in attrs {
             match extern_attribute_payload(attribute, "lang") {
-                Some(name) => ctx.diagnostics.push(new_diagnostic(
-                    "typer",
-                    "lang item " + name + " is not permitted in this source",
-                    ctx.source_path,
-                    Option::None,
-                )),
+                Some(name) => ctx.diagnostics.push(
+                    new_diagnostic(
+                        "typer",
+                        "lang item " + name + " is not permitted in this source",
+                        ctx.source_path,
+                        Option::None,
+                    ),
+                ),
                 None => (),
             }
         }
     }
 }
 
-fn validate_lang_item_declarations(
-    ctx: Checker,
-    value: hir::File,
-    allow_lang_items: bool,
-) -> unit {
+fn validate_lang_item_declarations(ctx: Checker, value: hir::File, allow_lang_items: bool) -> unit {
     for item in value.items {
         match item {
             EnumDef(value) => {
@@ -2513,11 +2235,9 @@ fn validate_lang_item_declarations(
     }
 }
 
-fn move_diagnostics_before(
-    values: Vec[Diagnostic],
-    message: string,
-    anchor: string,
-) -> Vec[Diagnostic] {
+fn move_diagnostics_before(values: Vec[Diagnostic], message: string, anchor: string) -> Vec[
+    Diagnostic,
+] {
     let anchor_index = diagnostic_message_index(values, anchor);
     if anchor_index < 0 {
         values
@@ -2531,8 +2251,8 @@ fn move_diagnostics_before(
             }
         };
         let result: Vec[Diagnostic] = Vec::new();
-        for index in range(0, values.len()) {
-            let value = values.get(index);
+        for index in 0..values.len() {
+            let value = values[index];
             if value.message == message {
                 ()
             } else {
@@ -2550,12 +2270,9 @@ fn move_diagnostics_before(
     }
 }
 
-fn diagnostic_message_index(
-    values: Vec[Diagnostic],
-    message: string,
-) -> int {
-    for index in range(0, values.len()) {
-        if values.get(index).message == message {
+fn diagnostic_message_index(values: Vec[Diagnostic], message: string) -> int {
+    for index in 0..values.len() {
+        if values[index].message == message {
             return index
         } else {
             ()
@@ -2564,10 +2281,7 @@ fn diagnostic_message_index(
     -1
 }
 
-fn diagnostics_have_message(
-    values: Vec[Diagnostic],
-    message: string,
-) -> bool {
+fn diagnostics_have_message(values: Vec[Diagnostic], message: string) -> bool {
     for value in values {
         if value.message == message {
             return true
@@ -2583,11 +2297,13 @@ fn order_extern_diagnostics(ctx: Checker) -> Vec[Diagnostic] {
     for value in ctx.rejected_externs {
         if value.local {
             let name = short_name(value.name);
-            result.set(move_diagnostics_before(
-                result.get(),
-                "Internal error: Function " + name + " not found in environment",
-                "extern " + name + " is not permitted in this source",
-            ))
+            result.set(
+                move_diagnostics_before(
+                    result.get(),
+                    "Internal error: Function " + name + " not found in environment",
+                    "extern " + name + " is not permitted in this source",
+                ),
+            )
         } else {
             ()
         }
@@ -2595,28 +2311,25 @@ fn order_extern_diagnostics(ctx: Checker) -> Vec[Diagnostic] {
     result.get()
 }
 
-fn attach_diagnostic_span(
-    ctx: Checker,
-    message: string,
-    span: Option[ast::Span],
-) -> unit {
+fn attach_diagnostic_span(ctx: Checker, message: string, span: Option[ast::Span]) -> unit {
     match span {
         Some(span) => {
-            for index in range(0, ctx.diagnostics.len()) {
-                let value = ctx.diagnostics.get(index);
-                if value.message == message
-                    && value.source_path == ctx.source_path
-                {
-                    ctx.diagnostics.set(index, Diagnostic {
-                        severity: value.severity,
-                        stage: value.stage,
-                        message: value.message,
-                        source_path: value.source_path,
-                        span: Option::Some(span),
-                        primary_label: value.primary_label,
-                        secondary_labels: value.secondary_labels,
-                        sort_order: value.sort_order,
-                    });
+            for index in 0..ctx.diagnostics.len() {
+                let value = ctx.diagnostics[index];
+                if value.message == message && value.source_path == ctx.source_path {
+                    ctx.diagnostics.set(
+                        index,
+                        Diagnostic {
+                            severity: value.severity,
+                            stage: value.stage,
+                            message: value.message,
+                            source_path: value.source_path,
+                            span: Option::Some(span),
+                            primary_label: value.primary_label,
+                            secondary_labels: value.secondary_labels,
+                            sort_order: value.sort_order,
+                        },
+                    );
                     return
                 } else {
                     ()
@@ -2627,31 +2340,20 @@ fn attach_diagnostic_span(
     }
 }
 
-fn attach_type_diagnostic_span(
-    ctx: Checker,
-    value: hir::TypeExpr,
-    span: Option[ast::Span],
-) -> unit {
+fn attach_type_diagnostic_span(ctx: Checker, value: hir::TypeExpr, span: Option[ast::Span]) -> unit {
     match value {
         Con { name } => match nominal_arity(ctx, name) {
             Some(expected) => if expected != 0 {
                 attach_diagnostic_span(
                     ctx,
-                    "Type "
-                        + short_name(name)
-                        + " expects "
-                        + expected.to_string()
+                    "Type " + short_name(name) + " expects " + expected.to_string()
                         + " type arguments, but got 0",
                     span,
                 )
             } else {
                 ()
             },
-            None => attach_diagnostic_span(
-                ctx,
-                "Unknown type constructor " + name,
-                span,
-            ),
+            None => attach_diagnostic_span(ctx, "Unknown type constructor " + name, span),
         },
         App { ty, args } => {
             match ty {
@@ -2667,11 +2369,7 @@ fn attach_type_diagnostic_span(
                         };
                         attach_diagnostic_span(
                             ctx,
-                            category
-                                + " "
-                                + short_name(name)
-                                + " expects "
-                                + expected.to_string()
+                            category + " " + short_name(name) + " expects " + expected.to_string()
                                 + " type arguments, but got "
                                 + args.len().to_string(),
                             span,
@@ -2691,16 +2389,13 @@ fn attach_type_diagnostic_span(
     }
 }
 
-fn attach_trait_ref_diagnostic_spans(
-    ctx: Checker,
-    value: hir::TraitRef,
-) -> unit {
-    for index in range(0, value.args.len()) {
+fn attach_trait_ref_diagnostic_spans(ctx: Checker, value: hir::TraitRef) -> unit {
+    for index in 0..value.args.len() {
         attach_type_diagnostic_span(
             ctx,
-            value.args.get(index),
+            value.args[index],
             if index < value.arg_spans.len() {
-                value.arg_spans.get(index)
+                value.arg_spans[index]
             } else {
                 Option::None
             },
@@ -2708,10 +2403,7 @@ fn attach_trait_ref_diagnostic_spans(
     }
 }
 
-fn attach_expr_list_diagnostic_spans(
-    ctx: Checker,
-    values: Vec[hir::Expr],
-) -> unit {
+fn attach_expr_list_diagnostic_spans(ctx: Checker, values: Vec[hir::Expr]) -> unit {
     for value in values {
         attach_expr_diagnostic_spans(ctx, value)
     }
@@ -2720,8 +2412,12 @@ fn attach_expr_list_diagnostic_spans(
 fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> unit {
     for stmt in value.stmts {
         match stmt {
-            Let { is_mut: _, pat: _, annotation: _, value } => {
-                attach_expr_diagnostic_spans(ctx, value)
+            Let { is_mut: _, pat: _, annotation: _, value, else_branch } => {
+                attach_expr_diagnostic_spans(ctx, value);
+                match else_branch {
+                    Some(value) => attach_expr_diagnostic_spans(ctx, value),
+                    None => (),
+                }
             },
             Assign { target, op: _, value } => {
                 attach_expr_diagnostic_spans(ctx, target);
@@ -2746,23 +2442,23 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             member_type_args,
             member_type_arg_spans,
         } => {
-            for index in range(0, owner_type_args.len()) {
+            for index in 0..owner_type_args.len() {
                 attach_type_diagnostic_span(
                     ctx,
-                    owner_type_args.get(index),
+                    owner_type_args[index],
                     if index < owner_type_arg_spans.len() {
-                        owner_type_arg_spans.get(index)
+                        owner_type_arg_spans[index]
                     } else {
                         Option::None
                     },
                 )
             };
-            for index in range(0, member_type_args.len()) {
+            for index in 0..member_type_args.len() {
                 attach_type_diagnostic_span(
                     ctx,
-                    member_type_args.get(index),
+                    member_type_args[index],
                     if index < member_type_arg_spans.len() {
-                        member_type_arg_spans.get(index)
+                        member_type_arg_spans[index]
                     } else {
                         Option::None
                     },
@@ -2770,10 +2466,9 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             }
         },
         ConstructorValue { constructor: _ } => (),
-        Constr { constructor: _, args }
-        | Tuple { items: args }
-        | Array { items: args }
-        | VecLiteral { items: args } => {
+        Constr { constructor: _, args } | Tuple { items: args } | Array { items: args } | VecLiteral {
+            items: args,
+        } => {
             attach_expr_list_diagnostic_spans(ctx, args)
         },
         HashMapLiteral { entries } => for entry in entries {
@@ -2797,13 +2492,10 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
                 None => (),
             }
         },
-        Closure { params: _, body }
-        | Unary { op: _, expr: body }
-        | Cast { expr: body, ty: _ }
-        | Try { depth: _, expr: body }
-        | Proj { tuple: body, index: _ }
-        | Field { expr: body, .. }
-        | Go { expr: body } => {
+        Closure { params: _, body } | Unary { op: _, expr: body } | Cast { expr: body, ty: _ } | Try {
+            depth: _,
+            expr: body,
+        } | Proj { tuple: body, index: _ } | Field { expr: body, .. } | Go { expr: body } => {
             attach_expr_diagnostic_spans(ctx, body)
         },
         Match { expr, arms } => {
@@ -2825,6 +2517,7 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             attach_expr_diagnostic_spans(ctx, cond);
             attach_expr_diagnostic_spans(ctx, body)
         },
+        Loop { body } => attach_expr_diagnostic_spans(ctx, body),
         For { pat: _, iterator, body } => {
             attach_expr_diagnostic_spans(ctx, iterator);
             attach_expr_diagnostic_spans(ctx, body)
@@ -2833,13 +2526,18 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
             None => (),
         },
+        Break { value } => match value {
+            Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
+            None => (),
+        },
         Call { func, args } => {
             attach_expr_diagnostic_spans(ctx, func);
             attach_expr_list_diagnostic_spans(ctx, args)
         },
-        Range { start, end }
-        | Binary { op: _, lhs: start, rhs: end }
-        | Index { base: start, index: end } => {
+        Range { start, end } | Binary { op: _, lhs: start, rhs: end } | Index {
+            base: start,
+            index: end,
+        } => {
             attach_expr_diagnostic_spans(ctx, start);
             attach_expr_diagnostic_spans(ctx, end)
         },
@@ -2855,12 +2553,12 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                 match variant.fields {
                     Unit => (),
                     Tuple(types) => {
-                        for index in range(0, types.len()) {
+                        for index in 0..types.len() {
                             attach_type_diagnostic_span(
                                 ctx,
-                                types.get(index),
+                                types[index],
                                 if index < variant.field_type_spans.len() {
-                                    Option::Some(variant.field_type_spans.get(index))
+                                    Option::Some(variant.field_type_spans[index])
                                 } else {
                                     Option::None
                                 },
@@ -2868,12 +2566,12 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                         }
                     },
                     Struct(values) => {
-                        for index in range(0, values.len()) {
+                        for index in 0..values.len() {
                             attach_type_diagnostic_span(
                                 ctx,
-                                values.get(index).1,
+                                values[index].1,
                                 if index < variant.field_type_spans.len() {
-                                    Option::Some(variant.field_type_spans.get(index))
+                                    Option::Some(variant.field_type_spans[index])
                                 } else {
                                     Option::None
                                 },
@@ -2883,12 +2581,12 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                 }
             },
             StructDef(value) => if value.generics.len() == 0 {
-                for index in range(0, value.fields.len()) {
+                for index in 0..value.fields.len() {
                     attach_type_diagnostic_span(
                         ctx,
-                        value.fields.get(index).1,
+                        value.fields[index].1,
                         if index < value.field_type_spans.len() {
-                            Option::Some(value.field_type_spans.get(index))
+                            Option::Some(value.field_type_spans[index])
                         } else {
                             Option::None
                         },
@@ -2904,11 +2602,7 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                     }
                 };
                 for method in value.method_sigs {
-                    attach_type_diagnostic_span(
-                        ctx,
-                        method.ret_ty,
-                        method.ret_ty_span,
-                    )
+                    attach_type_diagnostic_span(ctx, method.ret_ty, method.ret_ty_span)
                 }
             },
             Function(value) => {
@@ -2941,11 +2635,7 @@ fn check_file_with_package(
         ctx.diagnostics.push(diagnostic)
     };
     for span in value.invalid_self_type_spans {
-        push_diagnostic_at(
-            ctx,
-            "Self type is only valid in impl methods",
-            Option::Some(span),
-        )
+        push_diagnostic_at(ctx, "Self type is only valid in impl methods", Option::Some(span))
     };
     validate_extern_declarations(ctx);
     validate_lang_item_declarations(ctx, value, allow_externs);
@@ -2964,18 +2654,16 @@ fn check_file_with_package(
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     };
-    for index in range(0, ctx.constants.len()) {
-        let constant = ctx.constants.get(index);
-        ctx.constants.set(index, ConstantScheme {
-            def_id: constant.def_id,
-            name: constant.name,
-            ty: resolve_signature_type(
-                ctx,
-                constant.ty,
-                Vec::new(),
-                false,
-            ),
-        })
+    for index in 0..ctx.constants.len() {
+        let constant = ctx.constants[index];
+        ctx.constants.set(
+            index,
+            ConstantScheme {
+                def_id: constant.def_id,
+                name: constant.name,
+                ty: resolve_signature_type(ctx, constant.ty, Vec::new(), false),
+            },
+        )
     };
     for item in value.items {
         match item {
@@ -2998,20 +2686,11 @@ fn check_file_with_package(
             Some(_) => (),
             None => {
                 push_global_diagnostic(ctx, "Could not infer type");
-                push_diagnostic_at(
-                    ctx,
-                    "Unknown trait " + trait_name,
-                    Option::None,
-                )
+                push_diagnostic_at(ctx, "Unknown trait " + trait_name, Option::None)
             },
         }
     };
-    validate_local_definitions(
-        ctx,
-        local_enum_count,
-        local_struct_count,
-        local_trait_count,
-    );
+    validate_local_definitions(ctx, local_enum_count, local_struct_count, local_trait_count);
     expand_in_scope_supertraits(ctx);
     validate_impl_overlaps(ctx);
     validate_builtin_impl_overlaps(ctx, value);
@@ -3027,13 +2706,9 @@ fn check_file_with_package(
     for item in value.items {
         match item {
             ImplBlock(value) => items.push(Item::ImplBlock(check_impl(ctx, value))),
-            Function(value) => items.push(Item::Function(check_function(
-                ctx,
-                value,
-                Vec::new(),
-                Vec::new(),
-                Option::None,
-            ))),
+            Function(value) => items.push(
+                Item::Function(check_function(ctx, value, Vec::new(), Vec::new(), Option::None)),
+            ),
             _ => (),
         }
     };
@@ -3043,39 +2718,29 @@ fn check_file_with_package(
     } else {
         Vec::new()
     };
-    for index in range(0, local_enum_count) {
-        let value = ctx.enums.get(index);
+    for index in 0..local_enum_count {
+        let value = ctx.enums[index];
         let variants: Vec[EnumVariantDef] = Vec::new();
         for variant in value.variants {
-            variants.push(EnumVariantDef {
-                name: variant.name,
-                fields: variant.fields,
-            })
+            variants.push(EnumVariantDef { name: variant.name, fields: variant.fields })
         };
-        enums.push(EnumDef {
-            name: value.name,
-            generics: value.generics,
-            variants,
-        })
+        enums.push(EnumDef { name: value.name, generics: value.generics, variants })
     };
     let structs: Vec[StructDef] = Vec::new();
-    for index in range(0, local_struct_count) {
-        let value = ctx.structs.get(index);
-        structs.push(StructDef {
-            name: value.name,
-            generics: value.generics,
-            fields: value.fields,
-            public_fields: value.public_fields,
-            has_hidden_fields: false,
-        })
+    for index in 0..local_struct_count {
+        let value = ctx.structs[index];
+        structs.push(
+            StructDef {
+                name: value.name,
+                generics: value.generics,
+                fields: value.fields,
+                public_fields: value.public_fields,
+                has_hidden_fields: false,
+            },
+        )
     };
     CheckResult {
-        tast: Option::Some(File {
-            items,
-            enums,
-            structs,
-            constants,
-        }),
+        tast: Option::Some(File { items, enums, structs, constants }),
         diagnostics: order_extern_diagnostics(ctx),
         typeck_results: ctx.typeck_results,
     }
@@ -3133,10 +2798,7 @@ pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
     }
 }
 
-pub fn check_for_link_with_dependencies(
-    value: hir::LowerResult,
-    dependencies: Vec[hir::File],
-) -> CheckResult {
+pub fn check_for_link_with_dependencies(value: hir::LowerResult, dependencies: Vec[hir::File]) -> CheckResult {
     match value.hir {
         Some(file) => check_file(
             file,
@@ -3177,10 +2839,7 @@ pub fn check_package_files_for_link_with_dependencies(
     values: Vec[hir::File],
     dependencies: Vec[hir::File],
 ) -> CheckResult {
-    check_package_files_for_link_with_environments(
-        values,
-        dependency_environments(dependencies),
-    )
+    check_package_files_for_link_with_environments(values, dependency_environments(dependencies))
 }
 
 pub fn check_package_files_for_link_with_environments(
@@ -3194,17 +2853,17 @@ pub fn check_package_files_for_link_with_environments(
     let diagnostics: Vec[Diagnostic] = Vec::new();
     let typeck_results = empty_typeck_results();
     let valid = Ref::new(true);
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let package_files: Vec[hir::File] = Vec::new();
-        for other in range(0, values.len()) {
+        for other in 0..values.len() {
             if other != index {
-                package_files.push(values.get(other))
+                package_files.push(values[other])
             } else {
                 ()
             }
         };
         let checked = check_file_with_package(
-            values.get(index),
+            values[index],
             package_files,
             dependencies,
             Vec::new(),
@@ -3235,33 +2894,22 @@ pub fn check_package_files_for_link_with_environments(
         }
     };
     let diagnostic_source = if values.len() > 0 {
-        values.get(0).source_path
+        values[0].source_path
     } else {
         "<unknown>"
     };
     for value in constants {
         let message = "Cyclic constant " + short_name(value.name);
         if constant_reaches(constants, value.name, value.name, Vec::new())
-            && !diagnostics_have_message(diagnostics, message)
-        {
-            diagnostics.push(new_diagnostic(
-                "typer",
-                message,
-                diagnostic_source,
-                Option::None,
-            ))
+            && !diagnostics_have_message(diagnostics, message) {
+            diagnostics.push(new_diagnostic("typer", message, diagnostic_source, Option::None))
         } else {
             ()
         }
     };
     CheckResult {
         tast: if valid.get() {
-            Option::Some(File {
-                items,
-                enums,
-                structs,
-                constants,
-            })
+            Option::Some(File { items, enums, structs, constants })
         } else {
             Option::None
         },

@@ -1,13 +1,13 @@
 fn absurd(value/0: Never) -> int32 {
   {
-    let _wild108 = value/0 in
+    let _wild152 = value/0 in
     @intrinsic(compiler.missing)("")
   }
 }
 
 fn absurd_loop(value/1: Loop) -> int32 {
   {
-    let _wild109 = value/1 in
+    let _wild153 = value/1 in
     @intrinsic(compiler.missing)("")
   }
 }
@@ -22,8 +22,8 @@ fn maybe_never(value/2: MaybeNever) -> int32 {
 
 fn empty_never_vec(value/3: Vec[Never]) -> int32 {
   {
-    let match111 = value/3 in
-    if (@intrinsic(vec.len)(match111) == 0) {
+    let match155 = value/3 in
+    if (@intrinsic(vec.len)(match155) == 0) {
         0
     } else {
         @intrinsic(compiler.missing)("")
@@ -33,19 +33,19 @@ fn empty_never_vec(value/3: Vec[Never]) -> int32 {
 
 fn sequence_coverage(value/4: Vec[bool]) -> int32 {
   {
-    let match112 = value/4 in
-    if (@intrinsic(vec.len)(match112) == 0) {
+    let match156 = value/4 in
+    if (@intrinsic(vec.len)(match156) == 0) {
         0
     } else {
-        if (@intrinsic(vec.len)(match112) == 1) {
+        if (@intrinsic(vec.len)(match156) == 1) {
             1
         } else {
-            if (@intrinsic(vec.len)(match112) >= 2) {
-                if (@intrinsic(vec.get)(match112, 0) == true) {
+            if (@intrinsic(vec.len)(match156) >= 2) {
+                if (@intrinsic(vec.get)(match156, 0) == true) {
                     2
                 } else {
-                    if (@intrinsic(vec.len)(match112) >= 2) {
-                        if (@intrinsic(vec.get)(match112, 0) == false) {
+                    if (@intrinsic(vec.len)(match156) >= 2) {
+                        if (@intrinsic(vec.get)(match156, 0) == false) {
                             3
                         } else {
                             @intrinsic(compiler.missing)("")
@@ -55,8 +55,8 @@ fn sequence_coverage(value/4: Vec[bool]) -> int32 {
                     }
                 }
             } else {
-                if (@intrinsic(vec.len)(match112) >= 2) {
-                    if (@intrinsic(vec.get)(match112, 0) == false) {
+                if (@intrinsic(vec.len)(match156) >= 2) {
+                    if (@intrinsic(vec.get)(match156, 0) == false) {
                         3
                     } else {
                         @intrinsic(compiler.missing)("")
@@ -71,13 +71,13 @@ fn sequence_coverage(value/4: Vec[bool]) -> int32 {
 }
 
 fn unwrap(value/5: Single) -> int32 {
-  let mtmp113 = value/5 in
-  match mtmp113 {
-    Single::Only(x114) => {
+  let mtmp157 = value/5 in
+  match mtmp157 {
+    Single::Only(x158) => {
       {
-        let x114 = Single::Only._0(mtmp113) in
+        let x158 = Single::Only._0(mtmp157) in
         {
-          let inner/6 = x114 in
+          let inner/6 = x158 in
           {
             inner/6
           }
@@ -108,15 +108,15 @@ fn signed_zero(value/8: float64) -> string {
 }
 
 fn main() -> unit {
-  let mtmp115 = (Single::Only(12)) in
+  let mtmp159 = (Single::Only(12)) in
   {
-    let x116 = mtmp115.0 in
+    let x160 = mtmp159.0 in
     {
-      let single/9 = x116 in
+      let single/9 = x160 in
       {
-        let _wild117 = println__T_int32(unwrap(single/9)) in
-        let _wild118 = println__T_int32(decide(true)) in
-        let _wild119 = println__T_string(signed_zero(0)) in
+        let _wild161 = println__T_int32(unwrap(single/9)) in
+        let _wild162 = println__T_int32(decide(true)) in
+        let _wild163 = println__T_string(signed_zero(0)) in
       }
     }
   }

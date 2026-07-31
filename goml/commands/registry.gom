@@ -23,16 +23,11 @@ fn run_git(arguments: Vec[string]) -> Result[unit, string] {
         let _ = command.arg(argument);
         ()
     };
-    let output = match command.output() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let output = command.output()?;
     if process::ExitStatus::success(process::Output::status(output)) {
         Result::Ok(())
     } else {
-        let message = util::trim(command_output(
-            process::Output::stderr(output),
-        ));
+        let message = util::trim(command_output(process::Output::stderr(output)));
         if message == "" {
             Result::Err("git command failed")
         } else {
@@ -49,53 +44,32 @@ fn config_path() -> Result[string, string] {
 }
 
 fn config_registry_source() -> Result[string, string] {
-    let config = match config_path() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let config = config_path()?;
     if !fs::is_file(config) {
-        match ensure_home_layout() {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        };
-        match fs::write_file(config, "[registry]\ndefault = \"\"\n") {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        }
+        ensure_home_layout()?;
+        fs::write_file(config, "[registry]\ndefault = \"\"\n")?
     } else {
         ()
     };
-    let source = match fs::read_file(config) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
-    let section = Ref::new("");
+    let source = fs::read_file(config)?;
+    let mut section = "";
     for original in util::split_lines(source) {
         let line = util::trim(original);
-        if util::starts_with(line, "[")
-            && util::ends_with(line, "]")
-        {
-            section.set(line.byte_slice(1, line.byte_len() - 1))
-        } else if section.get() == "registry"
-            && util::starts_with(line, "default")
-        {
-            let equals = Ref::new(-1);
-            for index in range(0, line.byte_len()) {
-                if equals.get() < 0 && line.byte_get(index) == 61 {
-                    equals.set(index)
+        if util::starts_with(line, "[") && util::ends_with(line, "]") {
+            section = line.byte_slice(1, line.byte_len() - 1);
+        } else if section == "registry" && util::starts_with(line, "default") {
+            let mut equals = -1;
+            for index in 0..line.byte_len() {
+                if equals < 0 && line.byte_get(index) == b'=' {
+                    equals = index;
                 } else {
                     ()
                 }
             };
-            if equals.get() >= 0 {
-                let value = util::trim(line.byte_slice(
-                    equals.get() + 1,
-                    line.byte_len(),
-                ));
-                if value.byte_len() >= 2
-                    && value.byte_get(0) == 34
-                    && value.byte_get(value.byte_len() - 1) == 34
-                {
+            if equals >= 0 {
+                let value = util::trim(line.byte_slice(equals + 1, line.byte_len()));
+                if value.byte_len() >= 2 && value.byte_get(0) == b'"'
+                    && value.byte_get(value.byte_len() - 1) == b'"' {
                     let value = value.byte_slice(1, value.byte_len() - 1);
                     if value != "" {
                         return Result::Ok(value)
@@ -113,22 +87,17 @@ fn config_registry_source() -> Result[string, string] {
         }
     };
     Result::Err(
-        "registry.default is not configured in "
-            + config
-            + "; set it or use --local-registry",
+        "registry.default is not configured in " + config + "; set it or use --local-registry",
     )
 }
 
-fn option_local_registry(
-    args: Vec[string],
-    index: Ref[int],
-) -> Result[Option[string], string] {
-    let argument = args.get(index.get());
+fn option_local_registry(args: Vec[string], index: Ref[int]) -> Result[Option[string], string] {
+    let argument = args[index.get()];
     if argument == "--local-registry" {
         if index.get() + 1 >= args.len() {
             Result::Err("--local-registry requires a value")
         } else {
-            let value = args.get(index.get() + 1);
+            let value = args[index.get() + 1];
             index.set(index.get() + 2);
             Result::Ok(Option::Some(value))
         }
@@ -146,115 +115,73 @@ fn option_local_registry(
 }
 
 fn registry_argument(args: Vec[string]) -> Result[Option[string], string] {
-    let value: Ref[Option[string]] = Ref::new(Option::None);
+    let mut value: Option[string] = Option::None;
     let index = Ref::new(2);
     while index.get() < args.len() {
-        let parsed = match option_local_registry(args, index) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let parsed = option_local_registry(args, index)?;
         match parsed {
-            Some(registry) => match value.get() {
-                Some(_) => return Result::Err(
-                    "--local-registry cannot be repeated",
-                ),
-                None => value.set(Option::Some(registry)),
+            Some(registry) => match value {
+                Some(_) => return Result::Err("--local-registry cannot be repeated"),
+                None => {
+                    value = Option::Some(registry);
+                    ()
+                },
             },
-            None => return Result::Err(
-                "unexpected argument " + args.get(index.get()),
-            ),
+            None => return Result::Err("unexpected argument " + args[index.get()]),
         }
     };
-    Result::Ok(value.get())
+    Result::Ok(value)
 }
 
 pub fn update_registry(args: Vec[string]) -> Result[unit, string] {
-    let local = match registry_argument(args) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let local = registry_argument(args)?;
     let source = match local {
         Some(value) => value,
-        None => match config_registry_source() {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        },
+        None => config_registry_source()?,
     };
-    match ensure_home_layout() {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
-    let cache = match registry::cached_root() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    ensure_home_layout()?;
+    let cache = registry::cached_root()?;
     if fs::exists(cache) {
         if !fs::is_dir(path::join(cache, ".git")) {
             return Result::Err(
-                "cached registry path "
-                    + cache
-                    + " exists but is not a git repository",
+                "cached registry path " + cache + " exists but is not a git repository",
             )
         } else {
             ()
         };
-        match run_git(Vec::[
-            "-C",
-            cache,
-            "remote",
-            "set-url",
-            "origin",
-            source,
-        ]) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        };
-        match run_git(Vec::["-C", cache, "pull", "--ff-only"]) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        }
+        run_git(Vec::["-C", cache, "remote", "set-url", "origin", source])?;
+        run_git(Vec::["-C", cache, "pull", "--ff-only"])?
     } else {
-        match run_git(Vec::["clone", source, cache]) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        }
+        run_git(Vec::["clone", source, cache])?
     };
-    match registry::validate(cache) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    registry::validate(cache)?;
     io::println("updated registry cache at " + cache);
     Result::Ok(())
 }
 
 fn module_root() -> Result[string, string] {
-    let current = match env::current_dir() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
-    let directory = Ref::new(current);
+    let current = env::current_dir()?;
+    let mut directory = current;
     while true {
-        let manifest_path = path::join(directory.get(), "goml.toml");
+        let manifest_path = path::join(directory, "goml.toml");
         if fs::is_file(manifest_path) {
             match manifest::load(manifest_path) {
-                Ok(_) => return Result::Ok(directory.get()),
+                Ok(_) => return Result::Ok(directory),
                 Err(_) => (),
             }
         } else {
             ()
         };
-        match path::parent(directory.get()) {
-            Some(parent) => if parent == directory.get() {
+        match path::parent(directory) {
+            Some(parent) => if parent == directory {
                 return Result::Err(
-                    "no goml.toml with [module] section found in ancestors of "
-                        + current,
+                    "no goml.toml with [module] section found in ancestors of " + current,
                 )
             } else {
-                directory.set(parent)
+                directory = parent;
             },
             None => return Result::Err(
-                "no goml.toml with [module] section found in ancestors of "
-                    + current,
+                "no goml.toml with [module] section found in ancestors of " + current,
             ),
         }
     };
@@ -263,17 +190,14 @@ fn module_root() -> Result[string, string] {
 
 fn dependency_line_name(line: string) -> Option[string] {
     let line = util::trim(line);
-    if line.byte_len() < 3 || line.byte_get(0) != 34 {
+    if line.byte_len() < 3 || line.byte_get(0) != b'"' {
         return Option::None
     } else {
         ()
     };
-    for index in range(1, line.byte_len()) {
-        if line.byte_get(index) == 34 {
-            let rest = util::trim(line.byte_slice(
-                index + 1,
-                line.byte_len(),
-            ));
+    for index in 1..line.byte_len() {
+        if line.byte_get(index) == b'"' {
+            let rest = util::trim(line.byte_slice(index + 1, line.byte_len()));
             if util::starts_with(rest, "=") {
                 return Option::Some(line.byte_slice(1, index))
             } else {
@@ -288,13 +212,9 @@ fn dependency_line_name(line: string) -> Option[string] {
 
 fn section_name(line: string) -> Option[string] {
     let line = util::trim(line);
-    if line.byte_len() >= 2
-        && line.byte_get(0) == 91
-        && line.byte_get(line.byte_len() - 1) == 93
-    {
-        Option::Some(util::trim(
-            line.byte_slice(1, line.byte_len() - 1),
-        ))
+    if line.byte_len() >= 2 && line.byte_get(0) == b'['
+        && line.byte_get(line.byte_len() - 1) == b']' {
+        Option::Some(util::trim(line.byte_slice(1, line.byte_len() - 1)))
     } else {
         Option::None
     }
@@ -314,42 +234,34 @@ fn has_section(lines: Vec[string], expected: string) -> bool {
     false
 }
 
-fn upsert_dependency(
-    manifest_path: string,
-    name: string,
-    version: string,
-) -> Result[unit, string] {
-    let source = match fs::read_file(manifest_path) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+fn upsert_dependency(manifest_path: string, name: string, version: string) -> Result[unit, string] {
+    let source = fs::read_file(manifest_path)?;
     let result = Vec::new();
-    let in_dependencies = Ref::new(false);
-    let inserted = Ref::new(false);
+    let mut in_dependencies = false;
+    let mut inserted = false;
     let entry = "\"" + name + "\" = \"" + version + "\"";
     let lines = util::split_lines(source);
     let dependency_section_exists = has_section(lines, "dependencies");
     for line in lines {
         match section_name(line) {
             Some(section) => {
-                if in_dependencies.get() && !(inserted.get()) {
+                if in_dependencies && !(inserted) {
                     result.push(entry);
-                    inserted.set(true)
+                    inserted = true;
                 } else {
                     ()
                 };
-                in_dependencies.set(section == "dependencies");
+                in_dependencies = section == "dependencies";
                 result.push(line)
             },
             None => {
-                if in_dependencies.get()
+                if in_dependencies
                     && match dependency_line_name(line) {
                         Some(value) => value == name,
                         None => false,
-                    }
-                {
+                    } {
                     result.push(entry);
-                    inserted.set(true)
+                    inserted = true;
                 } else {
                     result.push(line)
                 }
@@ -357,14 +269,14 @@ fn upsert_dependency(
         }
     };
     if !dependency_section_exists {
-        if result.len() > 0 && result.get(result.len() - 1) != "" {
+        if result.len() > 0 && result[result.len() - 1] != "" {
             result.push("")
         } else {
             ()
         };
         result.push("[dependencies]");
         result.push(entry)
-    } else if !(inserted.get()) {
+    } else if !(inserted) {
         result.push(entry)
     } else {
         ()
@@ -372,21 +284,13 @@ fn upsert_dependency(
     fs::write_file(manifest_path, util::join(result, "\n") + "\n")
 }
 
-fn remove_dependency_line(
-    manifest_path: string,
-    name: string,
-) -> Result[unit, string] {
-    let source = match fs::read_file(manifest_path) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, string] {
+    let source = fs::read_file(manifest_path)?;
     let result = Vec::new();
     let buffer = Vec::new();
-    let in_dependencies = Ref::new(false);
+    let mut in_dependencies = false;
     let kept = Ref::new(0);
-    let flush = |result: Vec[string],
-                 buffer: Vec[string],
-                 kept: Ref[int]| {
+    let flush = |result: Vec[string], buffer: Vec[string], kept: Ref[int]| {
         if kept.get() > 0 {
             result.push("[dependencies]");
             for value in buffer {
@@ -404,19 +308,19 @@ fn remove_dependency_line(
     for line in util::split_lines(source) {
         match section_name(line) {
             Some(section) => {
-                if in_dependencies.get() {
+                if in_dependencies {
                     flush(result, buffer, kept)
                 } else {
                     ()
                 };
                 if section == "dependencies" {
-                    in_dependencies.set(true)
+                    in_dependencies = true;
                 } else {
-                    in_dependencies.set(false);
+                    in_dependencies = false;
                     result.push(line)
                 }
             },
-            None => if in_dependencies.get() {
+            None => if in_dependencies {
                 match dependency_line_name(line) {
                     Some(value) => if value == name {
                         ()
@@ -431,15 +335,12 @@ fn remove_dependency_line(
             },
         }
     };
-    if in_dependencies.get() {
+    if in_dependencies {
         flush(result, buffer, kept)
     } else {
         ()
     };
-    while result.len() > 1
-        && result.get(result.len() - 1) == ""
-        && result.get(result.len() - 2) == ""
-    {
+    while result.len() > 1 && result[result.len() - 1] == "" && result[result.len() - 2] == "" {
         let _ = result.remove(result.len() - 1);
         ()
     };
@@ -449,16 +350,11 @@ fn remove_dependency_line(
 fn command_registry_root(local: Option[string]) -> Result[string, string] {
     let root = match local {
         Some(value) => value,
-        None => match registry::cached_root() {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        },
+        None => registry::cached_root()?,
     };
     if !fs::is_dir(root) {
         return Result::Err(
-            "registry cache not found at "
-                + root
-                + "; run `goml update` or use --local-registry",
+            "registry cache not found at " + root + "; run `goml update` or use --local-registry",
         )
     } else {
         ()
@@ -469,35 +365,29 @@ fn command_registry_root(local: Option[string]) -> Result[string, string] {
     }
 }
 
-fn dependency_command_args(
-    args: Vec[string],
-) -> Result[(string, Option[string]), string] {
-    let dependency: Ref[Option[string]] = Ref::new(Option::None);
-    let local: Ref[Option[string]] = Ref::new(Option::None);
+fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string]), string] {
+    let mut dependency: Option[string] = Option::None;
+    let mut local: Option[string] = Option::None;
     let index = Ref::new(2);
     while index.get() < args.len() {
-        let parsed = match option_local_registry(args, index) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let parsed = option_local_registry(args, index)?;
         match parsed {
-            Some(value) => match local.get() {
-                Some(_) => return Result::Err(
-                    "--local-registry cannot be repeated",
-                ),
-                None => local.set(Option::Some(value)),
+            Some(value) => match local {
+                Some(_) => return Result::Err("--local-registry cannot be repeated"),
+                None => {
+                    local = Option::Some(value);
+                    ()
+                },
             },
             None => {
-                let argument = args.get(index.get());
+                let argument = args[index.get()];
                 if util::starts_with(argument, "-") {
                     return Result::Err("unknown option " + argument)
                 } else {
-                    match dependency.get() {
-                        Some(_) => return Result::Err(
-                            "unexpected argument " + argument,
-                        ),
+                    match dependency {
+                        Some(_) => return Result::Err("unexpected argument " + argument),
                         None => {
-                            dependency.set(Option::Some(argument));
+                            dependency = Option::Some(argument);
                             index.set(index.get() + 1)
                         },
                     }
@@ -505,17 +395,14 @@ fn dependency_command_args(
             },
         }
     };
-    match dependency.get() {
-        Some(value) => Result::Ok((value, local.get())),
+    match dependency {
+        Some(value) => Result::Ok((value, local)),
         None => Result::Err("dependency is required"),
     }
 }
 
 pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
-    let parsed = match dependency_command_args(args) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let parsed = dependency_command_args(args)?;
     let spec = parsed.0;
     let local = parsed.1;
     let parts = util::split(spec, "@");
@@ -524,63 +411,26 @@ pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
     } else {
         ()
     };
-    let name = parts.get(0);
-    match registry::validate_coordinate(name) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
-    let root = match command_registry_root(local) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let name = parts[0];
+    registry::validate_coordinate(name)?;
+    let root = command_registry_root(local)?;
     let version = if parts.len() == 2 {
-        match registry::select_version(root, name, parts.get(1)) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        }
+        registry::select_version(root, name, parts[1])?
     } else {
-        match registry::latest_version(root, name) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        }
+        registry::latest_version(root, name)?
     };
-    let module = match module_root() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
-    match upsert_dependency(
-        path::join(module, "goml.toml"),
-        name,
-        version,
-    ) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    let module = module_root()?;
+    upsert_dependency(path::join(module, "goml.toml"), name, version)?;
     io::println("added " + name + " = " + version);
     Result::Ok(())
 }
 
 pub fn remove_dependency(args: Vec[string]) -> Result[unit, string] {
-    let parsed = match dependency_command_args(args) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let parsed = dependency_command_args(args)?;
     let name = util::trim(parsed.0);
-    match registry::validate_coordinate(name) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
-    let module = match module_root() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
-    match remove_dependency_line(
-        path::join(module, "goml.toml"),
-        name,
-    ) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    registry::validate_coordinate(name)?;
+    let module = module_root()?;
+    remove_dependency_line(path::join(module, "goml.toml"), name)?;
     io::println("removed " + name);
     Result::Ok(())
 }

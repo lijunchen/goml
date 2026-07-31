@@ -1,126 +1,126 @@
 fn sum_pair(value/0: (int32, int32)) -> int32 {
-  join ret113(retv114: int32) -> int32 {
-    retv114
+  join ret157(retv158: int32) -> int32 {
+    retv158
   } in
-  let t115 = value/0.0 in
-  let t116 = value/0.1 in
-  let t117 = (t115 + t116) in
-  jump ret113(t117)
+  let t159 = value/0.0 in
+  let t160 = value/0.1 in
+  let t161 = (t159 + t160) in
+  jump ret157(t161)
 }
 
 fn classify(value/1: uint8) -> string {
-  join ret118(retv119: string) -> string {
-    retv119
+  join ret162(retv163: string) -> string {
+    retv163
   } in
-  let match108 = value/1 in
-  let t122 = (match108 == 10) in
-  join k120(jp121: string) -> string {
-    jump ret118(jp121)
+  let match152 = value/1 in
+  let t166 = (match152 == 10) in
+  join k164(jp165: string) -> string {
+    jump ret162(jp165)
   } in
-  if t122 {
-    jump k120("newline")
+  if t166 {
+    jump k164("newline")
   } else {
-    let t125 = (match108 >= 65) in
-    join k123(jp124: string) -> string {
-      jump k120(jp124)
+    let t169 = (match152 >= 65) in
+    join k167(jp168: string) -> string {
+      jump k164(jp168)
     } in
-    if t125 {
-      let t128 = (match108 <= 90) in
-      join k126(jp127: string) -> string {
-        jump k123(jp127)
+    if t169 {
+      let t172 = (match152 <= 90) in
+      join k170(jp171: string) -> string {
+        jump k167(jp171)
       } in
-      if t128 {
-        jump k126("uppercase")
+      if t172 {
+        jump k170("uppercase")
       } else {
-        jump k126("other")
+        jump k170("other")
       }
     } else {
-      jump k123("other")
+      jump k167("other")
     }
   }
 }
 
 fn main() -> unit {
-  join ret129() -> unit {
+  join ret173() -> unit {
     ()
   } in
   let user/2 = 255 in
   let pair/3 = (10, 10) in
   let marker/4 = 65 in
-  let _wild109 = println__T_uint64(user/2) in
-  let t130 = sum_pair(pair/3) in
-  let _wild110 = println__T_int32(t130) in
-  let _wild111 = println__T_uint8(marker/4) in
-  let t131 = classify(marker/4) in
-  let _wild112 = println__T_string(t131) in
-  let t132 = classify(10) in
-  let t133 = println__T_string(t132) in
-  jump ret129()
+  let _wild153 = println__T_uint64(user/2) in
+  let t174 = sum_pair(pair/3) in
+  let _wild154 = println__T_int32(t174) in
+  let _wild155 = println__T_uint8(marker/4) in
+  let t175 = classify(marker/4) in
+  let _wild156 = println__T_string(t175) in
+  let t176 = classify(10) in
+  let t177 = println__T_string(t176) in
+  jump ret173()
 }
 
 fn println__T_uint64(value/1: uint64) -> unit {
-  join ret134() -> unit {
+  join ret178() -> unit {
     ()
   } in
-  let t135 = trait_impl#ToString#uint64#to_string(value/1) in
-  let t136 = @runtime(core.string_println)(t135) in
-  jump ret134()
+  let t179 = trait_impl#ToString#uint64#to_string(value/1) in
+  let t180 = @runtime(core.string_println)(t179) in
+  jump ret178()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret137() -> unit {
+  join ret181() -> unit {
     ()
   } in
-  let t138 = trait_impl#ToString#int32#to_string(value/1) in
-  let t139 = @runtime(core.string_println)(t138) in
-  jump ret137()
+  let t182 = trait_impl#ToString#int32#to_string(value/1) in
+  let t183 = @runtime(core.string_println)(t182) in
+  jump ret181()
 }
 
 fn println__T_uint8(value/1: uint8) -> unit {
-  join ret140() -> unit {
+  join ret184() -> unit {
     ()
   } in
-  let t141 = trait_impl#ToString#uint8#to_string(value/1) in
-  let t142 = @runtime(core.string_println)(t141) in
-  jump ret140()
+  let t185 = trait_impl#ToString#uint8#to_string(value/1) in
+  let t186 = @runtime(core.string_println)(t185) in
+  jump ret184()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret143() -> unit {
+  join ret187() -> unit {
     ()
   } in
-  let t144 = trait_impl#ToString#string#to_string(value/1) in
-  let t145 = @runtime(core.string_println)(t144) in
-  jump ret143()
+  let t188 = trait_impl#ToString#string#to_string(value/1) in
+  let t189 = @runtime(core.string_println)(t188) in
+  jump ret187()
 }
 
 fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
-  join ret146(retv147: string) -> string {
-    retv147
+  join ret190(retv191: string) -> string {
+    retv191
   } in
-  let t148 = @runtime(core.uint64_to_string)(self/48) in
-  jump ret146(t148)
+  let t192 = @runtime(core.uint64_to_string)(self/48) in
+  jump ret190(t192)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret149(retv150: string) -> string {
-    retv150
+  join ret193(retv194: string) -> string {
+    retv194
   } in
-  let t151 = @runtime(core.int32_to_string)(self/43) in
-  jump ret149(t151)
+  let t195 = @runtime(core.int32_to_string)(self/43) in
+  jump ret193(t195)
 }
 
 fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
-  join ret152(retv153: string) -> string {
-    retv153
+  join ret196(retv197: string) -> string {
+    retv197
   } in
-  let t154 = @runtime(core.uint8_to_string)(self/45) in
-  jump ret152(t154)
+  let t198 = @runtime(core.uint8_to_string)(self/45) in
+  jump ret196(t198)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret155(retv156: string) -> string {
-    retv156
+  join ret199(retv200: string) -> string {
+    retv200
   } in
-  jump ret155(self/38)
+  jump ret199(self/38)
 }

@@ -1,69 +1,69 @@
 fn trait_impl#Provider#Number#get(self/0: Number) -> int32 {
-  join ret111(retv112: int32) -> int32 {
-    retv112
+  join ret155(retv156: int32) -> int32 {
+    retv156
   } in
-  let t113 = Number.value(self/0) in
-  jump ret111(t113)
+  let t157 = Number.value(self/0) in
+  jump ret155(t157)
 }
 
 fn main() -> unit {
-  join ret114() -> unit {
+  join ret158() -> unit {
     ()
   } in
-  let t115 = Number { value: 42 } in
-  let t116 = read__P_Number(t115) in
-  let t117 = inherent#int32#int32#to_string(t116) in
-  let _wild108 = @runtime(core.string_println)(t117) in
-  let t118 = Number { value: 7 } in
-  let value/4 = read_as__P_Number__T_int32(t118) in
-  let t119 = inherent#int32#int32#to_string(value/4) in
-  let _wild109 = @runtime(core.string_println)(t119) in
-  let t120 = Box__string { value: "generic" } in
-  let t121 = read__P_Box[string](t120) in
-  let _wild110 = @runtime(core.string_println)(t121) in
-  let t122 = Number { value: 11 } in
-  let t123 = trait_impl#Provider#Number#get(t122) in
-  let t124 = inherent#int32#int32#to_string(t123) in
-  let t125 = @runtime(core.string_println)(t124) in
-  jump ret114()
+  let t159 = Number { value: 42 } in
+  let t160 = read__P_Number(t159) in
+  let t161 = inherent#int32#int32#to_string(t160) in
+  let _wild152 = @runtime(core.string_println)(t161) in
+  let t162 = Number { value: 7 } in
+  let value/4 = read_as__P_Number__T_int32(t162) in
+  let t163 = inherent#int32#int32#to_string(value/4) in
+  let _wild153 = @runtime(core.string_println)(t163) in
+  let t164 = Box__string { value: "generic" } in
+  let t165 = read__P_Box[string](t164) in
+  let _wild154 = @runtime(core.string_println)(t165) in
+  let t166 = Number { value: 11 } in
+  let t167 = trait_impl#Provider#Number#get(t166) in
+  let t168 = inherent#int32#int32#to_string(t167) in
+  let t169 = @runtime(core.string_println)(t168) in
+  jump ret158()
 }
 
 fn read__P_Number(provider/2: Number) -> int32 {
-  join ret126(retv127: int32) -> int32 {
-    retv127
+  join ret170(retv171: int32) -> int32 {
+    retv171
   } in
-  let t128 = trait_impl#Provider#Number#get(provider/2) in
-  jump ret126(t128)
+  let t172 = trait_impl#Provider#Number#get(provider/2) in
+  jump ret170(t172)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret129(retv130: string) -> string {
-    retv130
+  join ret173(retv174: string) -> string {
+    retv174
   } in
-  let t131 = @runtime(core.int32_to_string)(self/6) in
-  jump ret129(t131)
+  let t175 = @runtime(core.int32_to_string)(self/6) in
+  jump ret173(t175)
 }
 
 fn read_as__P_Number__T_int32(provider/3: Number) -> int32 {
-  join ret132(retv133: int32) -> int32 {
-    retv133
+  join ret176(retv177: int32) -> int32 {
+    retv177
   } in
-  let t134 = trait_impl#Provider#Number#get(provider/3) in
-  jump ret132(t134)
+  let t178 = trait_impl#Provider#Number#get(provider/3) in
+  jump ret176(t178)
 }
 
 fn read__P_Box[string](provider/2: Box__string) -> string {
-  join ret135(retv136: string) -> string {
-    retv136
+  join ret179(retv180: string) -> string {
+    retv180
   } in
-  let t137 = trait_impl#Provider#Box__string#get(provider/2) in
-  jump ret135(t137)
+  let t181 = trait_impl#Provider#Box__string#get(provider/2) in
+  jump ret179(t181)
 }
 
 fn trait_impl#Provider#Box__string#get(self/1: Box__string) -> string {
-  join ret138(retv139: string) -> string {
-    retv139
+  join ret182(retv183: string) -> string {
+    retv183
   } in
-  let t140 = Box__string.value(self/1) in
-  jump ret138(t140)
+  let t184 = Box__string.value(self/1) in
+  jump ret182(t184)
 }

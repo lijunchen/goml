@@ -1,58 +1,58 @@
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
-  join ret114(retv115: [int32; 3]) -> [int32; 3] {
-    retv115
+  join ret158(retv159: [int32; 3]) -> [int32; 3] {
+    retv159
   } in
   let arr/1 = arr/0 in
-  let place_root108 = arr/1 in
-  let index109 = 1 in
-  let place110 = @intrinsic(array.get)(place_root108, index109) in
-  let value111 = 42 in
-  let t116 = @intrinsic(array.set)(place_root108, index109, value111) in
-  let t117 = arr/1 = t116 in
-  let _wild112 = t117 in
-  jump ret114(arr/1)
+  let place_root152 = arr/1 in
+  let index153 = 1 in
+  let place154 = @intrinsic(array.get)(place_root152, index153) in
+  let value155 = 42 in
+  let t160 = @intrinsic(array.set)(place_root152, index153, value155) in
+  let t161 = arr/1 = t160 in
+  let _wild156 = t161 in
+  jump ret158(arr/1)
 }
 
 fn read_array(arr/2: [int32; 3]) -> int32 {
-  join ret118(retv119: int32) -> int32 {
-    retv119
+  join ret162(retv163: int32) -> int32 {
+    retv163
   } in
-  let t120 = @intrinsic(array.get)(arr/2, 1) in
-  jump ret118(t120)
+  let t164 = @intrinsic(array.get)(arr/2, 1) in
+  jump ret162(t164)
 }
 
 fn main() -> unit {
-  join ret121() -> unit {
+  join ret165() -> unit {
     ()
   } in
   let arr/3 = [1, 2, 3] in
   let updated/4 = update_array(arr/3) in
   let value/5 = read_array(updated/4) in
-  let t122 = inherent#int32#int32#to_string(value/5) in
-  let mtmp113 = println__T_string(t122) in
-  jump ret121()
+  let t166 = inherent#int32#int32#to_string(value/5) in
+  let mtmp157 = println__T_string(t166) in
+  jump ret165()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret123() -> unit {
+  join ret167() -> unit {
     ()
   } in
-  let t124 = trait_impl#ToString#string#to_string(value/1) in
-  let t125 = @runtime(core.string_println)(t124) in
-  jump ret123()
+  let t168 = trait_impl#ToString#string#to_string(value/1) in
+  let t169 = @runtime(core.string_println)(t168) in
+  jump ret167()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret126(retv127: string) -> string {
-    retv127
+  join ret170(retv171: string) -> string {
+    retv171
   } in
-  let t128 = @runtime(core.int32_to_string)(self/6) in
-  jump ret126(t128)
+  let t172 = @runtime(core.int32_to_string)(self/6) in
+  jump ret170(t172)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret129(retv130: string) -> string {
-    retv130
+  join ret173(retv174: string) -> string {
+    retv174
   } in
-  jump ret129(self/38)
+  jump ret173(self/38)
 }

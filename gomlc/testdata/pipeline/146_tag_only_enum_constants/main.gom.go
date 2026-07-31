@@ -29,72 +29,72 @@ const (
 )
 
 func light_code(light__0 Light) int32 {
-    var retv112 int32
-    var jp114 int32
+    var retv156 int32
+    var jp158 int32
     switch light__0 {
     case Light_Red:
-        jp114 = 10
+        jp158 = 10
     case Yellow:
-        jp114 = 20
+        jp158 = 20
     case Green:
-        jp114 = 30
+        jp158 = 30
     default:
         panic("non-exhaustive match")
     }
-    retv112 = jp114
-    return retv112
+    retv156 = jp158
+    return retv156
 }
 
 func paint_code(paint__1 Paint) int32 {
-    var retv116 int32
-    var jp118 int32
+    var retv160 int32
+    var jp162 int32
     switch paint__1 {
     case Paint_Red:
-        jp118 = 1
+        jp162 = 1
     case Blue:
-        jp118 = 2
+        jp162 = 2
     default:
         panic("non-exhaustive match")
     }
-    retv116 = jp118
-    return retv116
+    retv160 = jp162
+    return retv160
 }
 
 func main0() struct{} {
     var light__2 Light = Light_Red
     var paint__3 Paint = Paint_Red
-    var t120 int32 = light_code(light__2)
-    var t121 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t120)
-    println__T_string(t121)
-    var t122 int32 = paint_code(paint__3)
-    var t123 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t122)
-    println__T_string(t123)
-    var t124 int32 = light_code(Green)
-    var t125 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t124)
-    println__T_string(t125)
-    var t126 int32 = paint_code(Blue)
-    var t127 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t126)
-    println__T_string(t127)
+    var t164 int32 = light_code(light__2)
+    var t165 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t164)
+    println__T_string(t165)
+    var t166 int32 = paint_code(paint__3)
+    var t167 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t166)
+    println__T_string(t167)
+    var t168 int32 = light_code(Green)
+    var t169 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t168)
+    println__T_string(t169)
+    var t170 int32 = paint_code(Blue)
+    var t171 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t170)
+    println__T_string(t171)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t130 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t130)
+    var t174 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t174)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv133 string
-    var t134 string = _goml_runtime_core_int32_to_string(self__6)
-    retv133 = t134
-    return retv133
+    var retv177 string
+    var t178 string = _goml_runtime_core_int32_to_string(self__6)
+    retv177 = t178
+    return retv177
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv136 string
-    retv136 = self__38
-    return retv136
+    var retv180 string
+    retv180 = self__38
+    return retv180
 }
 
 func main() {

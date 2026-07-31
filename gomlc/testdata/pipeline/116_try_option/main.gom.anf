@@ -1,102 +1,102 @@
 fn maybe_value(flag/0: bool) -> Option__int32 {
-  join ret113(retv114: Option__int32) -> Option__int32 {
-    retv114
+  join ret157(retv158: Option__int32) -> Option__int32 {
+    retv158
   } in
-  join k115(jp116: Option__int32) -> Option__int32 {
-    jump ret113(jp116)
+  join k159(jp160: Option__int32) -> Option__int32 {
+    jump ret157(jp160)
   } in
   if flag/0 {
-    let t117 = Option__int32::Some(4) in
-    jump k115(t117)
+    let t161 = Option__int32::Some(4) in
+    jump k159(t161)
   } else {
-    jump k115(Tag_0)
+    jump k159(Tag_0)
   }
 }
 
 fn add(a/1: int32, b/2: int32) -> int32 {
-  join ret118(retv119: int32) -> int32 {
-    retv119
+  join ret162(retv163: int32) -> int32 {
+    retv163
   } in
-  let t120 = (a/1 + b/2) in
-  jump ret118(t120)
+  let t164 = (a/1 + b/2) in
+  jump ret162(t164)
 }
 
 fn plus_two(flag/3: bool) -> Option__int32 {
-  join ret121(retv122: Option__int32) -> Option__int32 {
-    retv122
+  join ret165(retv166: Option__int32) -> Option__int32 {
+    retv166
   } in
-  let mtmp108 = maybe_value(flag/3) in
-  join k123(jp124: int32) -> Option__int32 {
-    let t125 = add(jp124, 2) in
-    let t126 = Option__int32::Some(t125) in
-    jump ret121(t126)
+  let mtmp152 = maybe_value(flag/3) in
+  join k167(jp168: int32) -> Option__int32 {
+    let t169 = add(jp168, 2) in
+    let t170 = Option__int32::Some(t169) in
+    jump ret165(t170)
   } in
-  match mtmp108 {
+  match mtmp152 {
     Tag_0 => {
-      jump ret121(Tag_0)
+      jump ret165(Tag_0)
     },
     Tag_1 => {
-      let x109 = Option__int32::Some._0(mtmp108) in
-      let try_value/15 = x109 in
-      jump k123(try_value/15)
+      let x153 = Option__int32::Some._0(mtmp152) in
+      let try_value/15 = x153 in
+      jump k167(try_value/15)
     },
   }
 }
 
 fn show(opt/4: Option__int32) -> string {
-  join ret127(retv128: string) -> string {
-    retv128
+  join ret171(retv172: string) -> string {
+    retv172
   } in
-  join k129(jp130: string) -> string {
-    jump ret127(jp130)
+  join k173(jp174: string) -> string {
+    jump ret171(jp174)
   } in
   match opt/4 {
     Tag_0 => {
-      jump k129("none")
+      jump k173("none")
     },
     Tag_1 => {
-      let x110 = Option__int32::Some._0(opt/4) in
-      let value/5 = x110 in
-      let t131 = inherent#int32#int32#to_string(value/5) in
-      let t132 = ("some=" + t131) in
-      jump k129(t132)
+      let x154 = Option__int32::Some._0(opt/4) in
+      let value/5 = x154 in
+      let t175 = inherent#int32#int32#to_string(value/5) in
+      let t176 = ("some=" + t175) in
+      jump k173(t176)
     },
   }
 }
 
 fn main() -> unit {
-  join ret133() -> unit {
+  join ret177() -> unit {
     ()
   } in
-  let t134 = plus_two(true) in
-  let t135 = show(t134) in
-  let _wild111 = println__T_string(t135) in
-  let t136 = plus_two(false) in
-  let t137 = show(t136) in
-  let _wild112 = println__T_string(t137) in
-  jump ret133()
+  let t178 = plus_two(true) in
+  let t179 = show(t178) in
+  let _wild155 = println__T_string(t179) in
+  let t180 = plus_two(false) in
+  let t181 = show(t180) in
+  let _wild156 = println__T_string(t181) in
+  jump ret177()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret138(retv139: string) -> string {
-    retv139
+  join ret182(retv183: string) -> string {
+    retv183
   } in
-  let t140 = @runtime(core.int32_to_string)(self/6) in
-  jump ret138(t140)
+  let t184 = @runtime(core.int32_to_string)(self/6) in
+  jump ret182(t184)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret141() -> unit {
+  join ret185() -> unit {
     ()
   } in
-  let t142 = trait_impl#ToString#string#to_string(value/1) in
-  let t143 = @runtime(core.string_println)(t142) in
-  jump ret141()
+  let t186 = trait_impl#ToString#string#to_string(value/1) in
+  let t187 = @runtime(core.string_println)(t186) in
+  jump ret185()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret144(retv145: string) -> string {
-    retv145
+  join ret188(retv189: string) -> string {
+    retv189
   } in
-  jump ret144(self/38)
+  jump ret188(self/38)
 }

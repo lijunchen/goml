@@ -45,7 +45,7 @@ pub fn invalidate_analyses(value: Server) -> unit {
 fn document_index(value: Server, uri: string) -> Option[int] {
     let index = Ref::new(value.documents.len() - 1);
     while index.get() >= 0 {
-        if value.documents.get(index.get()).uri == uri {
+        if value.documents[index.get()].uri == uri {
             return Option::Some(index.get())
         } else {
             index.set(index.get() - 1)
@@ -56,7 +56,7 @@ fn document_index(value: Server, uri: string) -> Option[int] {
 
 pub fn server_document(value: Server, uri: string) -> Option[Document] {
     match document_index(value, uri) {
-        Some(index) => Option::Some(value.documents.get(index)),
+        Some(index) => Option::Some(value.documents[index]),
         None => Option::None,
     }
 }
@@ -69,21 +69,14 @@ pub fn open_document(value: Server, document: Document) -> unit {
     invalidate_analyses(value)
 }
 
-pub fn change_document(
-    value: Server,
-    uri: string,
-    text: string,
-    version: int,
-) -> unit {
+pub fn change_document(value: Server, uri: string, text: string, version: int) -> unit {
     match document_index(value, uri) {
         Some(index) => {
-            let current = value.documents.get(index);
-            value.documents.set(index, Document {
-                uri: current.uri,
-                path: current.path,
-                text,
-                version,
-            });
+            let current = value.documents[index];
+            value.documents.set(
+                index,
+                Document { uri: current.uri, path: current.path, text, version },
+            );
             invalidate_analyses(value)
         },
         None => (),
@@ -103,24 +96,16 @@ pub fn close_document(value: Server, uri: string) -> unit {
 fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
     let result = Vec::new();
     for document in value.documents {
-        result.push(query::SourceOverride {
-            path: document.path,
-            source: document.text,
-        })
+        result.push(query::SourceOverride { path: document.path, source: document.text })
     };
     result
 }
 
-pub fn document_analysis(
-    value: Server,
-    document: Document,
-) -> query::Analysis {
+pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
     let index = Ref::new(value.analyses.len() - 1);
     while index.get() >= 0 {
-        let cached = value.analyses.get(index.get());
-        if cached.path == document.path
-            && cached.generation == value.generation.get()
-        {
+        let cached = value.analyses[index.get()];
+        if cached.path == document.path && cached.generation == value.generation.get() {
             return cached.analysis
         } else {
             index.set(index.get() - 1)
@@ -131,10 +116,8 @@ pub fn document_analysis(
         document.text,
         source_overrides(value),
     );
-    value.analyses.push(CachedAnalysis {
-        path: document.path,
-        generation: value.generation.get(),
-        analysis,
-    });
+    value.analyses.push(
+        CachedAnalysis { path: document.path, generation: value.generation.get(), analysis },
+    );
     analysis
 }

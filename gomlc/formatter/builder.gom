@@ -1,0 +1,329 @@
+package formatter;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+struct BuiltDoc {
+    doc: Doc,
+    first: Option[lexer::TokenKind],
+    last: Option[lexer::TokenKind],
+    starts_with_line: bool,
+    trailing_lines: int,
+}
+
+struct Parts {
+    values: Vec[Doc],
+    first: Ref[Option[lexer::TokenKind]],
+    last: Ref[Option[lexer::TokenKind]],
+    starts_with_line: Ref[bool],
+    trailing_lines: Ref[int],
+    pending_newlines: Ref[int],
+}
+
+struct Builder {
+    docs: DocBuilder,
+}
+
+fn builder() -> Builder {
+    Builder { docs: doc_builder() }
+}
+
+fn empty_built() -> BuiltDoc {
+    BuiltDoc {
+        doc: nil(),
+        first: Option::None,
+        last: Option::None,
+        starts_with_line: false,
+        trailing_lines: 0,
+    }
+}
+
+fn built(doc: Doc, first: Option[lexer::TokenKind], last: Option[lexer::TokenKind]) -> BuiltDoc {
+    BuiltDoc { doc, first, last, starts_with_line: false, trailing_lines: 0 }
+}
+
+fn parts() -> Parts {
+    Parts {
+        values: Vec::new(),
+        first: Ref::new(Option::None),
+        last: Ref::new(Option::None),
+        starts_with_line: Ref::new(false),
+        trailing_lines: Ref::new(0),
+        pending_newlines: Ref::new(0),
+    }
+}
+
+fn option_token_kind_some(value: Option[lexer::TokenKind]) -> bool {
+    value.is_some()
+}
+
+fn kind_is(kind: lexer::TokenKind, expected: lexer::TokenKind) -> bool {
+    lexer::token_kind_equal(kind, expected)
+}
+
+fn is_word(kind: lexer::TokenKind) -> bool {
+    match kind {
+        ExternKeyword | PackageKeyword | UseKeyword | ImportKeyword | AsKeyword | PubKeyword | ModKeyword | CrateKeyword | SuperKeyword | FnKeyword | TraitKeyword | ImplKeyword | ForKeyword | EnumKeyword | StructKeyword | TypeKeyword | ConstKeyword | WhereKeyword | MatchKeyword | IfKeyword | ElseKeyword | LetKeyword | MutKeyword | InKeyword | ReturnKeyword | GoKeyword | WhileKeyword | LoopKeyword | BreakKeyword | ContinueKeyword | DynKeyword | TrueKeyword | FalseKeyword | WildcardKeyword | UnitKeyword | BoolKeyword | IntKeyword | Int8Keyword | Int16Keyword | Int32Keyword | Int64Keyword | UintKeyword | Uint8Keyword | Uint16Keyword | Uint32Keyword | Uint64Keyword | Float32Keyword | Float64Keyword | StringKeyword | CharKeyword | ArrayKeyword | Ident | Float | IntLit | Str | RawStr | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | ByteCharLit | ByteStr | RawByteStr => true,
+        _ => false,
+    }
+}
+
+fn is_operator(kind: lexer::TokenKind) -> bool {
+    match kind {
+        Eq | Arrow | FatArrow | Plus | PlusEq | Minus | MinusEq | Star | StarEq | Slash | SlashEq | Percent | PercentEq | At | AndAnd | Amp | AmpEq | OrOr | Pipe | PipeEq | Caret | CaretEq | Less | LessLess | LessLessEq | Greater | GreaterGreater | GreaterGreaterEq | GreaterEq | LessEq | EqEq | NotEq => true,
+        _ => false,
+    }
+}
+
+fn needs_space(previous: lexer::TokenKind, current: lexer::TokenKind) -> bool {
+    if match current {
+        RParen | RBrace | RBracket | Comma | Semi | Colon | ColonColon | Dot | Question => true,
+        _ => false,
+    } {
+        false
+    } else if kind_is(current, lexer::TokenKind::DotDot)
+        || kind_is(current, lexer::TokenKind::DotDotEq) {
+        kind_is(previous, lexer::TokenKind::At)
+    } else if match previous {
+        LParen | LBracket | ColonColon | Dot | DotDot | DotDotEq | Pound => true,
+        _ => false,
+    } {
+        false
+    } else if kind_is(current, lexer::TokenKind::LParen) {
+        is_operator(previous)
+            || match previous {
+                Colon | Semi | LetKeyword | IfKeyword | WhileKeyword | LoopKeyword | ForKeyword | MatchKeyword | ReturnKeyword | GoKeyword => true,
+                _ => false,
+            }
+    } else if kind_is(current, lexer::TokenKind::LBracket) {
+        is_operator(previous)
+            || match previous {
+                Colon | Semi | LetKeyword | ReturnKeyword | GoKeyword => true,
+                _ => false,
+            }
+    } else if kind_is(previous, lexer::TokenKind::Comma)
+        || kind_is(previous, lexer::TokenKind::Colon)
+        || kind_is(previous, lexer::TokenKind::Semi)
+        || kind_is(previous, lexer::TokenKind::Arrow)
+        || kind_is(previous, lexer::TokenKind::FatArrow)
+        || kind_is(previous, lexer::TokenKind::AsKeyword)
+        || kind_is(current, lexer::TokenKind::AsKeyword)
+        || is_operator(previous)
+        || is_operator(current) {
+        true
+    } else if kind_is(current, lexer::TokenKind::LBrace) {
+        !kind_is(previous, lexer::TokenKind::ColonColon)
+    } else if kind_is(previous, lexer::TokenKind::RBracket)
+        && kind_is(current, lexer::TokenKind::Ident) {
+        true
+    } else if kind_is(previous, lexer::TokenKind::RBrace)
+        && kind_is(current, lexer::TokenKind::ElseKeyword) {
+        true
+    } else if match current {
+        IfKeyword | ElseKeyword | WhereKeyword | InKeyword => true,
+        _ => false,
+    } {
+        true
+    } else if match previous {
+        IfKeyword | WhileKeyword | LoopKeyword | ForKeyword | MatchKeyword | ReturnKeyword | GoKeyword | InKeyword | DynKeyword => true,
+        _ => false,
+    } {
+        true
+    } else {
+        is_word(previous) && is_word(current)
+    }
+}
+
+fn token_doc(value: LocatedToken) -> Doc {
+    if token_is(value, lexer::TokenKind::MultilineStr) || token_is(value, lexer::TokenKind::RawStr)
+        || token_is(value, lexer::TokenKind::RawByteStr) {
+        verbatim(value.token.text)
+    } else {
+        text(value.token.text)
+    }
+}
+
+impl Parts {
+    fn add_pending_newlines(self: Parts, count: int) -> unit {
+        if count > self.pending_newlines.get() {
+            self.pending_newlines.set(count)
+        } else {
+            ()
+        }
+    }
+
+    fn push_line(self: Parts) -> unit {
+        self.values.push(Doc::HardLine);
+        if self.first.get().is_none() && self.values.len() == 1 {
+            self.starts_with_line.set(true)
+        } else {
+            ()
+        };
+        self.last.set(Option::None);
+        self.trailing_lines.set(self.trailing_lines.get() + 1);
+        self.pending_newlines.set(0)
+    }
+
+    fn ensure_lines(self: Parts, count: int) -> unit {
+        while self.trailing_lines.get() < count {
+            self.push_line()
+        }
+    }
+
+    fn push_syntax(self: Parts, value: BuiltDoc) -> unit {
+        match value.doc {
+            Nil => (),
+            _ => {
+                let current_first = value.first;
+                match (self.last.get(), current_first) {
+                    (Some(previous), Some(current)) => if self.trailing_lines.get() == 0
+                        && !value.starts_with_line
+                        && needs_space(previous, current) {
+                        self.values.push(text(" "))
+                    } else {
+                        ()
+                    },
+                    _ => (),
+                };
+                if self.values.len() == 0 && value.starts_with_line {
+                    self.starts_with_line.set(true)
+                } else {
+                    ()
+                };
+                self.values.push(value.doc);
+                if self.first.get().is_none() {
+                    self.first.set(value.first)
+                } else {
+                    ()
+                };
+                self.last.set(value.last);
+                self.trailing_lines.set(value.trailing_lines);
+                self.pending_newlines.set(0)
+            },
+        }
+    }
+
+    fn push_token(self: Parts, value: LocatedToken) -> unit {
+        let first = Option::Some(value.token.kind);
+        self.push_syntax(built(token_doc(value), first, first))
+    }
+
+    fn push_comment(self: Parts, value: LocatedToken) -> unit {
+        let trailing = self.trailing_lines.get() == 0 && self.pending_newlines.get() == 0
+            && option_token_kind_some(self.last.get());
+        if trailing {
+            self.values.push(line_suffix(concat2(text(" "), verbatim(value.token.text))));
+            self.values.push(Doc::BreakParent);
+            self.push_line()
+        } else {
+            if self.pending_newlines.get() >= 2 && self.values.len() > 0 {
+                self.ensure_lines(2)
+            } else if self.values.len() > 0 {
+                self.ensure_lines(1)
+            } else {
+                ()
+            };
+            self.values.push(verbatim(value.token.text));
+            self.trailing_lines.set(0);
+            self.push_line()
+        }
+    }
+
+    fn finish(self: Parts) -> BuiltDoc {
+        BuiltDoc {
+            doc: concat(self.values),
+            first: self.first.get(),
+            last: self.last.get(),
+            starts_with_line: self.starts_with_line.get(),
+            trailing_lines: self.trailing_lines.get(),
+        }
+    }
+}
+
+fn format_generic_with_options(value: Builder, node: LocatedNode, skip_direct_comma: bool) -> BuiltDoc {
+    let output = parts();
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => output.push_syntax(format_node(value, child)),
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::Whitespace) {
+                output.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                output.push_comment(token)
+            } else if skip_direct_comma && token_is(token, lexer::TokenKind::Comma) {
+                ()
+            } else {
+                output.push_token(token)
+            },
+            None => (),
+        }
+    };
+    output.finish()
+}
+
+fn format_generic(value: Builder, node: LocatedNode) -> BuiltDoc {
+    format_generic_with_options(value, node, false)
+}
+
+fn format_item_content(value: Builder, node: LocatedNode) -> BuiltDoc {
+    if node_is(node, cst::NodeKind::ARG) || node_is(node, cst::NodeKind::PARAM)
+        || node_is(node, cst::NodeKind::CLOSURE_PARAM) {
+        format_generic_with_options(value, node, true)
+    } else {
+        format_node(value, node)
+    }
+}
+
+fn node_kind_is_delimited_list(kind: cst::NodeKind) -> bool {
+    match kind {
+        ARG_LIST | PARAM_LIST | GENERIC_LIST | TYPE_PARAM_LIST | TYPE_LIST | CLOSURE_PARAM_LIST | TYPE_TUPLE | EXPR_TUPLE | EXPR_ARRAY_LITERAL | EXPR_VEC_LITERAL | EXPR_HASHMAP_LITERAL | STRUCT_LITERAL_FIELD_LIST | PATTERN_TUPLE | PATTERN_ARRAY | STRUCT_PATTERN_FIELD_LIST => true,
+        _ => false,
+    }
+}
+
+fn node_kind_is_vertical_body(kind: cst::NodeKind) -> bool {
+    match kind {
+        VARIANT_LIST | STRUCT_FIELD_LIST | TRAIT_METHOD_SIG_LIST | MATCH_ARM_LIST => true,
+        _ => false,
+    }
+}
+
+fn format_node(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let kind = cst::node_kind(node.node);
+    match kind {
+        FILE => format_file(value, node),
+        BLOCK => format_block(value, node),
+        IMPL => format_impl(value, node),
+        TRAIT_METHOD_SIG | EXTERN => format_semicolon_item(value, node),
+        EXPR_BINARY => format_binary(value, node),
+        EXPR_PREFIX => format_prefix(value, node),
+        EXPR_MULTILINE_STR => format_multiline_string(node),
+        EXPR_RAW_STR => built(
+            verbatim(node_significant_source(node)),
+            Option::Some(lexer::TokenKind::RawStr),
+            Option::Some(lexer::TokenKind::RawStr),
+        ),
+        ATTRIBUTE_LIST => format_attribute_list(value, node),
+        WHERE_CLAUSE => format_where_clause(value, node),
+        EXPR_INTERPOLATED_STRING | ATTRIBUTE => {
+            let first = match first_significant_token(node) {
+                Some(token) => Option::Some(token.token.kind),
+                None => Option::None,
+            };
+            let last = match last_significant_token(node) {
+                Some(token) => Option::Some(token.token.kind),
+                None => Option::None,
+            };
+            built(verbatim(node_significant_source(node)), first, last)
+        },
+        _ => if node_kind_is_pattern(kind) {
+            format_pattern(value, node)
+        } else if node_kind_is_delimited_list(kind) {
+            format_delimited_list(value, node)
+        } else if node_kind_is_vertical_body(kind) {
+            format_vertical_body(value, node)
+        } else {
+            format_generic(value, node)
+        },
+    }
+}

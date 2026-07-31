@@ -1,62 +1,62 @@
 fn trait_impl#Source#Value#get(self/1: Value) -> int32 {
-  join ret111(retv112: int32) -> int32 {
-    retv112
+  join ret155(retv156: int32) -> int32 {
+    retv156
   } in
-  let t113 = Value.value(self/1) in
-  jump ret111(t113)
+  let t157 = Value.value(self/1) in
+  jump ret155(t157)
 }
 
 fn main() -> unit {
-  join ret114() -> unit {
+  join ret158() -> unit {
     ()
   } in
-  let t115 = Value { value: 41 } in
-  let direct/6 = trait_impl#Pick#[int32]@Value#pick(t115) in
-  let _wild108 = println__T_int32(direct/6) in
-  let t116 = Value { value: 42 } in
-  let t117 = copy__S_Value(t116) in
-  let _wild109 = println__T_int32(t117) in
-  jump ret114()
+  let t159 = Value { value: 41 } in
+  let direct/6 = trait_impl#Pick#[int32]@Value#pick(t159) in
+  let _wild152 = println__T_int32(direct/6) in
+  let t160 = Value { value: 42 } in
+  let t161 = copy__S_Value(t160) in
+  let _wild153 = println__T_int32(t161) in
+  jump ret158()
 }
 
 fn trait_impl#Pick#[int32]@Value#pick(self/0: Value) -> int32 {
-  join ret118(retv119: int32) -> int32 {
-    retv119
+  join ret162(retv163: int32) -> int32 {
+    retv163
   } in
-  let t120 = trait_impl#Source#Value#get(self/0) in
-  jump ret118(t120)
+  let t164 = trait_impl#Source#Value#get(self/0) in
+  jump ret162(t164)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret121() -> unit {
+  join ret165() -> unit {
     ()
   } in
-  let t122 = trait_impl#ToString#int32#to_string(value/1) in
-  let t123 = @runtime(core.string_println)(t122) in
-  jump ret121()
+  let t166 = trait_impl#ToString#int32#to_string(value/1) in
+  let t167 = @runtime(core.string_println)(t166) in
+  jump ret165()
 }
 
 fn copy__S_Value(source/2: Value) -> int32 {
-  join ret124(retv125: int32) -> int32 {
-    retv125
+  join ret168(retv169: int32) -> int32 {
+    retv169
   } in
   let value/3 = trait_impl#Pick#[int32]@Value#pick(source/2) in
   let identity/5 = closure_env_identity_0 {} in
-  let t126 = inherent#closure_env_identity_0#closure_env_identity_0#apply(identity/5, value/3) in
-  jump ret124(t126)
+  let t170 = inherent#closure_env_identity_0#closure_env_identity_0#apply(identity/5, value/3) in
+  jump ret168(t170)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret127(retv128: string) -> string {
-    retv128
+  join ret171(retv172: string) -> string {
+    retv172
   } in
-  let t129 = @runtime(core.int32_to_string)(self/43) in
-  jump ret127(t129)
+  let t173 = @runtime(core.int32_to_string)(self/43) in
+  jump ret171(t173)
 }
 
-fn inherent#closure_env_identity_0#closure_env_identity_0#apply(env110: closure_env_identity_0, item/4: int32) -> int32 {
-  join ret130(retv131: int32) -> int32 {
-    retv131
+fn inherent#closure_env_identity_0#closure_env_identity_0#apply(env154: closure_env_identity_0, item/4: int32) -> int32 {
+  join ret174(retv175: int32) -> int32 {
+    retv175
   } in
-  jump ret130(item/4)
+  jump ret174(item/4)
 }

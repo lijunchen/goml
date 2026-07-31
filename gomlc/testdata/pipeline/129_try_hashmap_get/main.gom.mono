@@ -1,8 +1,8 @@
 fn fetch(flag/0: bool) -> Option__int32 {
   let m/1 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
-  let _wild109 = if flag/0 {
+  let _wild153 = if flag/0 {
       {
-        let _wild108 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
+        let _wild152 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
         ()
       }
   } else {
@@ -11,16 +11,16 @@ fn fetch(flag/0: bool) -> Option__int32 {
       }
   } in
   let value/2 = {
-    let mtmp110 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
-    match mtmp110 {
+    let mtmp154 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
+    match mtmp154 {
       Option__int32::None => {
         return Option__int32::None
       },
-      Option__int32::Some(x111) => {
+      Option__int32::Some(x155) => {
         {
-          let x111 = Option__int32::Some._0(mtmp110) in
+          let x155 = Option__int32::Some._0(mtmp154) in
           {
-            let try_value/18 = x111 in
+            let try_value/18 = x155 in
             try_value/18
           }
         }
@@ -35,11 +35,11 @@ fn show(opt/3: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x112) => {
+    Option__int32::Some(x156) => {
       {
-        let x112 = Option__int32::Some._0(opt/3) in
+        let x156 = Option__int32::Some._0(opt/3) in
         {
-          let value/4 = x112 in
+          let value/4 = x156 in
           ("some=" + inherent#int32#int32#to_string(value/4))
         }
       }
@@ -48,8 +48,8 @@ fn show(opt/3: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild113 = println__T_string(show(fetch(true))) in
-  let _wild114 = println__T_string(show(fetch(false))) in
+  let _wild157 = println__T_string(show(fetch(true))) in
+  let _wild158 = println__T_string(show(fetch(false))) in
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {

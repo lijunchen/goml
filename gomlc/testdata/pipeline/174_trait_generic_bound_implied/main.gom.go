@@ -18,54 +18,54 @@ type NumberBox struct {
 }
 
 func _goml_m_trait__impl_i_Mark_i_int32_i_mark(self__0 int32) string {
-    var retv110 string
-    var t111 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    var t112 string = "marked:" + t111
-    retv110 = t112
-    return retv110
+    var retv154 string
+    var t155 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
+    var t156 string = "marked:" + t155
+    retv154 = t156
+    return retv154
 }
 
 func _goml_m_trait__impl_i_Container_i__l_int32_r__x40_NumberBox_i_value(self__1 NumberBox) int32 {
-    var retv114 int32
-    var t115 int32 = self__1.value
-    retv114 = t115
-    return retv114
+    var retv158 int32
+    var t159 int32 = self__1.value
+    retv158 = t159
+    return retv158
 }
 
 func main0() struct{} {
-    var t117 NumberBox = NumberBox{
+    var t161 NumberBox = NumberBox{
         value: 7,
     }
-    var t118 string = describe__C_NumberBox__T_int32(t117)
-    println__T_string(t118)
+    var t162 string = describe__C_NumberBox__T_int32(t161)
+    println__T_string(t162)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv120 string
-    var t121 string = _goml_runtime_core_int32_to_string(self__6)
-    retv120 = t121
-    return retv120
+    var retv164 string
+    var t165 string = _goml_runtime_core_int32_to_string(self__6)
+    retv164 = t165
+    return retv164
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t123 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t123)
+    var t167 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t167)
     return struct{}{}
 }
 
 func describe__C_NumberBox__T_int32(container__2 NumberBox) string {
-    var retv126 string
-    var t127 int32 = _goml_m_trait__impl_i_Container_i__l_int32_r__x40_NumberBox_i_value(container__2)
-    var t128 string = _goml_m_trait__impl_i_Mark_i_int32_i_mark(t127)
-    retv126 = t128
-    return retv126
+    var retv170 string
+    var t171 int32 = _goml_m_trait__impl_i_Container_i__l_int32_r__x40_NumberBox_i_value(container__2)
+    var t172 string = _goml_m_trait__impl_i_Mark_i_int32_i_mark(t171)
+    retv170 = t172
+    return retv170
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv130 string
-    retv130 = self__38
-    return retv130
+    var retv174 string
+    retv174 = self__38
+    return retv174
 }
 
 func main() {

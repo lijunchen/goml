@@ -30,117 +30,117 @@ type Err struct {
 func (_ Err) isResult__int32__string() {}
 
 func parse(flag__0 bool) Result__int32__string {
-    var retv117 Result__int32__string
-    var jp119 Result__int32__string
+    var retv161 Result__int32__string
+    var jp163 Result__int32__string
     if flag__0 {
-        var t120 Result__int32__string = Ok{
+        var t164 Result__int32__string = Ok{
             _0: 5,
         }
-        jp119 = t120
+        jp163 = t164
     } else {
-        var t121 Result__int32__string = Err{
+        var t165 Result__int32__string = Err{
             _0: "bad-branch",
         }
-        jp119 = t121
+        jp163 = t165
     }
-    retv117 = jp119
-    return retv117
+    retv161 = jp163
+    return retv161
 }
 
 func bump(flag__1 bool, fallback__2 bool) Result__int32__string {
-    var retv123 Result__int32__string
-    var jp125 int32
+    var retv167 Result__int32__string
+    var jp169 int32
     if flag__1 {
-        var mtmp108 Result__int32__string = parse(fallback__2)
-        var jp129 int32
-        switch mtmp108.(type) {
+        var mtmp152 Result__int32__string = parse(fallback__2)
+        var jp173 int32
+        switch mtmp152.(type) {
         case Ok:
-            var x109 int32 = mtmp108.(Ok)._0
-            var try_value__13 int32 = x109
-            jp129 = try_value__13
-            jp125 = jp129
-            var value__3 int32 = jp125
-            var t126 int32 = value__3 + 1
-            var t127 Result__int32__string = Ok{
-                _0: t126,
+            var x153 int32 = mtmp152.(Ok)._0
+            var try_value__13 int32 = x153
+            jp173 = try_value__13
+            jp169 = jp173
+            var value__3 int32 = jp169
+            var t170 int32 = value__3 + 1
+            var t171 Result__int32__string = Ok{
+                _0: t170,
             }
-            retv123 = t127
-            return retv123
+            retv167 = t171
+            return retv167
         case Err:
-            var x110 string = mtmp108.(Err)._0
-            var try_residual__13 string = x110
-            var t130 Result__int32__string = Err{
+            var x154 string = mtmp152.(Err)._0
+            var try_residual__13 string = x154
+            var t174 Result__int32__string = Err{
                 _0: try_residual__13,
             }
-            retv123 = t130
-            return retv123
+            retv167 = t174
+            return retv167
         default:
             panic("non-exhaustive match")
         }
     } else {
-        jp125 = 10
-        var value__3 int32 = jp125
-        var t126 int32 = value__3 + 1
-        var t127 Result__int32__string = Ok{
-            _0: t126,
+        jp169 = 10
+        var value__3 int32 = jp169
+        var t170 int32 = value__3 + 1
+        var t171 Result__int32__string = Ok{
+            _0: t170,
         }
-        retv123 = t127
-        return retv123
+        retv167 = t171
+        return retv167
     }
 }
 
 func show(res__4 Result__int32__string) string {
-    var retv132 string
-    var jp134 string
+    var retv176 string
+    var jp178 string
     switch res__4.(type) {
     case Ok:
-        var x111 int32 = res__4.(Ok)._0
-        var value__5 int32 = x111
-        var t135 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__5)
-        var t136 string = "ok=" + t135
-        jp134 = t136
+        var x155 int32 = res__4.(Ok)._0
+        var value__5 int32 = x155
+        var t179 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__5)
+        var t180 string = "ok=" + t179
+        jp178 = t180
     case Err:
-        var x112 string = res__4.(Err)._0
-        var err__6 string = x112
-        var t137 string = "err=" + err__6
-        jp134 = t137
+        var x156 string = res__4.(Err)._0
+        var err__6 string = x156
+        var t181 string = "err=" + err__6
+        jp178 = t181
     default:
         panic("non-exhaustive match")
     }
-    retv132 = jp134
-    return retv132
+    retv176 = jp178
+    return retv176
 }
 
 func main0() struct{} {
-    var t139 Result__int32__string = bump(true, true)
-    var t140 string = show(t139)
-    println__T_string(t140)
-    var t141 Result__int32__string = bump(true, false)
-    var t142 string = show(t141)
-    println__T_string(t142)
-    var t143 Result__int32__string = bump(false, false)
-    var t144 string = show(t143)
-    println__T_string(t144)
+    var t183 Result__int32__string = bump(true, true)
+    var t184 string = show(t183)
+    println__T_string(t184)
+    var t185 Result__int32__string = bump(true, false)
+    var t186 string = show(t185)
+    println__T_string(t186)
+    var t187 Result__int32__string = bump(false, false)
+    var t188 string = show(t187)
+    println__T_string(t188)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv146 string
-    var t147 string = _goml_runtime_core_int32_to_string(self__6)
-    retv146 = t147
-    return retv146
+    var retv190 string
+    var t191 string = _goml_runtime_core_int32_to_string(self__6)
+    retv190 = t191
+    return retv190
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t149 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t149)
+    var t193 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t193)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv152 string
-    retv152 = self__38
-    return retv152
+    var retv196 string
+    retv196 = self__38
+    return retv196
 }
 
 func main() {

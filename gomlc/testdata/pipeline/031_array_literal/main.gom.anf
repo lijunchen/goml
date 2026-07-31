@@ -1,35 +1,35 @@
 fn make_array() -> [int32; 3] {
-  join ret111(retv112: [int32; 3]) -> [int32; 3] {
-    retv112
+  join ret155(retv156: [int32; 3]) -> [int32; 3] {
+    retv156
   } in
-  let t113 = [1, 2, 3] in
-  jump ret111(t113)
+  let t157 = [1, 2, 3] in
+  jump ret155(t157)
 }
 
 fn main() -> unit {
-  join ret114() -> unit {
+  join ret158() -> unit {
     ()
   } in
   let arr/0 = make_array() in
   let inline/1 = [4, 5, 6] in
-  let mtmp108 = print__T_string("array literal") in
-  let mtmp109 = arr/0 in
-  let mtmp110 = inline/1 in
-  jump ret114()
+  let mtmp152 = print__T_string("array literal") in
+  let mtmp153 = arr/0 in
+  let mtmp154 = inline/1 in
+  jump ret158()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  join ret115() -> unit {
+  join ret159() -> unit {
     ()
   } in
-  let t116 = trait_impl#ToString#string#to_string(value/0) in
-  let t117 = @runtime(core.string_print)(t116) in
-  jump ret115()
+  let t160 = trait_impl#ToString#string#to_string(value/0) in
+  let t161 = @runtime(core.string_print)(t160) in
+  jump ret159()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret118(retv119: string) -> string {
-    retv119
+  join ret162(retv163: string) -> string {
+    retv163
   } in
-  jump ret118(self/38)
+  jump ret162(self/38)
 }

@@ -15,15 +15,11 @@ fn lower_block(ctx: LowerCtx, node: LocatedNode) -> Option[Block] {
     };
     let tails = expr_children(node);
     let tail = if tails.len() > 0 {
-        lower_expr(ctx, tails.get(0))
+        lower_expr(ctx, tails[0])
     } else {
         Option::None
     };
-    Option::Some(Block {
-        stmts,
-        tail,
-        span: node_span(node),
-    })
+    Option::Some(Block { stmts, tail, span: node_span(node) })
 }
 
 fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
@@ -38,22 +34,34 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                 push_error(ctx, node_span(node), "Let statement missing value");
                 Option::None
             } else {
-                match lower_pat(ctx, patterns.get(0)) {
-                    Some(pat) => match lower_expr(ctx, values.get(0)) {
+                match lower_pat(ctx, patterns[0]) {
+                    Some(pat) => match lower_expr(ctx, values[0]) {
                         Some(value) => {
                             let types = type_children(node);
                             let annotation = if types.len() > 0 {
-                                lower_ty(ctx, types.get(0))
+                                lower_ty(ctx, types[0])
                             } else {
                                 Option::None
                             };
-                            Option::Some(Stmt::Let {
-                                is_mut: has_token(node, lexer::TokenKind::MutKeyword),
-                                pat,
-                                annotation,
-                                value,
-                                span: node_span(node),
-                            })
+                            let else_branch = match first_child(node, cst::NodeKind::BLOCK) {
+                                Some(block_node) => match lower_block(ctx, block_node) {
+                                    Some(block) => Option::Some(
+                                        Expr::Block { block, span: node_span(block_node) },
+                                    ),
+                                    None => Option::None,
+                                },
+                                None => Option::None,
+                            };
+                            Option::Some(
+                                Stmt::Let {
+                                    is_mut: has_token(node, lexer::TokenKind::MutKeyword),
+                                    pat,
+                                    annotation,
+                                    value,
+                                    else_branch,
+                                    span: node_span(node),
+                                },
+                            )
                         },
                         None => Option::None,
                     },
@@ -70,8 +78,8 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                 push_error(ctx, node_span(node), "Assignment statement missing value");
                 Option::None
             } else {
-                match lower_expr(ctx, values.get(0)) {
-                    Some(target) => match lower_expr(ctx, values.get(1)) {
+                match lower_expr(ctx, values[0]) {
+                    Some(target) => match lower_expr(ctx, values[1]) {
                         Some(value) => {
                             let op = Ref::new(AssignmentOp::Plain);
                             for token in direct_tokens(node) {
@@ -80,12 +88,9 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                                     None => (),
                                 }
                             };
-                            Option::Some(Stmt::Assign {
-                                target,
-                                op: op.get(),
-                                value,
-                                span: node_span(node),
-                            })
+                            Option::Some(
+                                Stmt::Assign { target, op: op.get(), value, span: node_span(node) },
+                            )
                         },
                         None => Option::None,
                     },
@@ -99,11 +104,8 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                 push_error(ctx, node_span(node), "Expression statement missing expression");
                 Option::None
             } else {
-                match lower_expr(ctx, values.get(0)) {
-                    Some(value) => Option::Some(Stmt::Expr {
-                        expr: value,
-                        span: node_span(node),
-                    }),
+                match lower_expr(ctx, values[0]) {
+                    Some(value) => Option::Some(Stmt::Expr { expr: value, span: node_span(node) }),
                     None => Option::None,
                 }
             }
@@ -150,7 +152,7 @@ fn unicode_escape_character(value: string, start: int) -> Option[char] {
         ()
     };
     let code = Ref::new(0);
-    for cursor in range(start, start + 4) {
+    for cursor in start..start + 4 {
         match hex_value(value.byte_get(cursor)) {
             Some(part) => code.set(code.get() * 16 + part),
             None => return Option::None,
@@ -164,7 +166,7 @@ fn unescape_string(value: string) -> string {
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        if byte != 92 {
+        if byte != b'\\' {
             let width = if byte < 128 {
                 1
             } else if byte < 224 {
@@ -215,10 +217,8 @@ fn collapse_interpolated_braces(value: string) -> string {
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        if (byte == 123 || byte == 125)
-            && index.get() + 1 < value.byte_len()
-            && value.byte_get(index.get() + 1) == byte
-        {
+        if (byte == b'{' || byte == b'}') && index.get() + 1 < value.byte_len()
+            && value.byte_get(index.get() + 1) == byte {
             builder.write_string(value.byte_slice(index.get(), index.get() + 1));
             index.set(index.get() + 2)
         } else {
@@ -238,11 +238,9 @@ fn collapse_interpolated_braces(value: string) -> string {
     builder.finish()
 }
 
-fn lower_interpolated_string(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    trailing_args: Vec[Expr],
-) -> Option[Expr] {
+fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[
+    Expr,
+] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to interpolated string") {
         Option::None
     } else {
@@ -252,9 +250,11 @@ fn lower_interpolated_string(
             match element {
                 Token(token) => {
                     if lexer::token_kind_equal(token.kind, lexer::TokenKind::FStringText) {
-                        parts.push(InterpolatedStringPart::Text(
-                            collapse_interpolated_braces(unescape_string(token.text)),
-                        ))
+                        parts.push(
+                            InterpolatedStringPart::Text(
+                                collapse_interpolated_braces(unescape_string(token.text)),
+                            ),
+                        )
                     } else {
                         ()
                     }
@@ -267,7 +267,7 @@ fn lower_interpolated_string(
                     ) {
                         let values = expr_children(located);
                         if values.len() > 0 {
-                            match lower_expr(ctx, values.get(0)) {
+                            match lower_expr(ctx, values[0]) {
                                 Some(value) => {
                                     parts.push(InterpolatedStringPart::Expr(value))
                                 },
@@ -299,23 +299,18 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
             let line_start = Ref::new(0);
             while line_start.get() <= value.byte_len() {
                 let line_end = Ref::new(line_start.get());
-                while line_end.get() < value.byte_len() && value.byte_get(line_end.get()) != 10 {
+                while line_end.get() < value.byte_len() && value.byte_get(line_end.get()) != b'\n' {
                     line_end.set(line_end.get() + 1)
                 };
                 let marker = Ref::new(line_start.get());
                 while marker.get() < line_end.get()
-                    && (value.byte_get(marker.get()) == 32 || value.byte_get(marker.get()) == 9)
-                {
+                    && (value.byte_get(marker.get()) == b' '
+                        || value.byte_get(marker.get()) == b'\t') {
                     marker.set(marker.get() + 1)
                 };
                 if marker.get() + 2 > line_end.get()
-                    || value.byte_slice(marker.get(), marker.get() + 2) != "\\\\"
-                {
-                    push_error(
-                        ctx,
-                        token_span(token),
-                        "Invalid multiline string content",
-                    );
+                    || value.byte_slice(marker.get(), marker.get() + 2) != "\\\\" {
+                    push_error(ctx, token_span(token), "Invalid multiline string content");
                     return Option::None
                 } else {
                     if line_start.get() > 0 {
@@ -382,11 +377,13 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
     if applications.len() == 0 {
         match first_child(node, cst::NodeKind::PATH) {
             Some(path_node) => match lower_path(ctx, path_node) {
-                Some(path) => Option::Some(LowerIdentParts {
-                    path,
-                    owner_type_args: Vec::new(),
-                    member_type_args: Vec::new(),
-                }),
+                Some(path) => Option::Some(
+                    LowerIdentParts {
+                        path,
+                        owner_type_args: Vec::new(),
+                        member_type_args: Vec::new(),
+                    },
+                ),
                 None => Option::None,
             },
             None => {
@@ -395,38 +392,41 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
             },
         }
     } else {
-        match lower_type_application_path(ctx, applications.get(0)) {
+        match lower_type_application_path(ctx, applications[0]) {
             Some(first_path) => {
-                let first_args = lower_type_application_args(ctx, applications.get(0));
+                let first_args = lower_type_application_args(ctx, applications[0]);
                 if applications.len() > 1 {
-                    match lower_type_application_path(ctx, applications.get(1)) {
-                        Some(member_path) => Option::Some(LowerIdentParts {
-                            path: append_path_segments(first_path, member_path),
-                            owner_type_args: first_args,
-                            member_type_args: lower_type_application_args(
-                                ctx,
-                                applications.get(1),
-                            ),
-                        }),
+                    match lower_type_application_path(ctx, applications[1]) {
+                        Some(member_path) => Option::Some(
+                            LowerIdentParts {
+                                path: append_path_segments(first_path, member_path),
+                                owner_type_args: first_args,
+                                member_type_args: lower_type_application_args(ctx, applications[1]),
+                            },
+                        ),
                         None => Option::None,
                     }
                 } else {
                     let paths = children_of_kind(node, cst::NodeKind::PATH);
                     if paths.len() > 0 {
-                        match lower_path(ctx, paths.get(0)) {
-                            Some(member_path) => Option::Some(LowerIdentParts {
-                                path: append_path_segments(first_path, member_path),
-                                owner_type_args: first_args,
-                                member_type_args: Vec::new(),
-                            }),
+                        match lower_path(ctx, paths[0]) {
+                            Some(member_path) => Option::Some(
+                                LowerIdentParts {
+                                    path: append_path_segments(first_path, member_path),
+                                    owner_type_args: first_args,
+                                    member_type_args: Vec::new(),
+                                },
+                            ),
                             None => Option::None,
                         }
                     } else {
-                        Option::Some(LowerIdentParts {
-                            path: first_path,
-                            owner_type_args: Vec::new(),
-                            member_type_args: first_args,
-                        })
+                        Option::Some(
+                            LowerIdentParts {
+                                path: first_path,
+                                owner_type_args: Vec::new(),
+                                member_type_args: first_args,
+                            },
+                        )
                     }
                 }
             },
@@ -444,15 +444,11 @@ fn lower_closure_param(ctx: LowerCtx, node: LocatedNode) -> Option[ClosureParam]
         Some(name_token) => {
             let types = type_children(node);
             let ty = if types.len() > 0 {
-                lower_ty(ctx, types.get(0))
+                lower_ty(ctx, types[0])
             } else {
                 Option::None
             };
-            Option::Some(ClosureParam {
-                name: name_token.token.text,
-                ty,
-                span: node_span(node),
-            })
+            Option::Some(ClosureParam { name: name_token.token.text, ty, span: node_span(node) })
         },
         None => {
             push_error(ctx, node_span(node), "Closure parameter missing name");
@@ -478,22 +474,22 @@ fn lower_closure(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
         match first_child(node, cst::NodeKind::EXPR_CLOSURE_BODY) {
             Some(body_node) => match first_child(body_node, cst::NodeKind::BLOCK) {
                 Some(block_node) => match lower_block(ctx, block_node) {
-                    Some(block) => Option::Some(Expr::Closure {
-                        params,
-                        body: Expr::Block { block, span: node_span(block_node) },
-                        span: node_span(node),
-                    }),
+                    Some(block) => Option::Some(
+                        Expr::Closure {
+                            params,
+                            body: Expr::Block { block, span: node_span(block_node) },
+                            span: node_span(node),
+                        },
+                    ),
                     None => Option::None,
                 },
                 None => {
                     let values = expr_children(body_node);
                     if values.len() > 0 {
-                        match lower_expr(ctx, values.get(0)) {
-                            Some(body) => Option::Some(Expr::Closure {
-                                params,
-                                body,
-                                span: node_span(node),
-                            }),
+                        match lower_expr(ctx, values[0]) {
+                            Some(body) => Option::Some(
+                                Expr::Closure { params, body, span: node_span(node) },
+                            ),
                             None => Option::None,
                         }
                     } else {
@@ -519,25 +515,34 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                 Some(path) => {
                     let fields: Vec[(string, Expr)] = Vec::new();
                     match first_child(node, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST) {
-                        Some(list) => for field in children_of_kind(list, cst::NodeKind::STRUCT_LITERAL_FIELD) {
+                        Some(list) => for field in children_of_kind(
+                            list,
+                            cst::NodeKind::STRUCT_LITERAL_FIELD,
+                        ) {
                             match first_token(field, lexer::TokenKind::Ident) {
                                 Some(name_token) => {
                                     let values = expr_children(field);
                                     if values.len() > 0 {
-                                        match lower_expr(ctx, values.get(0)) {
-                                            Some(value) => fields.push((name_token.token.text, value)),
+                                        match lower_expr(ctx, values[0]) {
+                                            Some(value) => fields.push(
+                                                (name_token.token.text, value),
+                                            ),
                                             None => (),
                                         }
                                     } else {
-                                        fields.push((
-                                            name_token.token.text,
-                                            Expr::Path {
-                                                path: path_from_single_ident(name_token.token.text),
-                                                owner_type_args: Vec::new(),
-                                                member_type_args: Vec::new(),
-                                                span: node_span(field),
-                                            },
-                                        ))
+                                        fields.push(
+                                            (
+                                                name_token.token.text,
+                                                Expr::Path {
+                                                    path: path_from_single_ident(
+                                                        name_token.token.text,
+                                                    ),
+                                                    owner_type_args: Vec::new(),
+                                                    member_type_args: Vec::new(),
+                                                    span: node_span(field),
+                                                },
+                                            ),
+                                        )
                                     }
                                 },
                                 None => (),
@@ -545,18 +550,12 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                         },
                         None => (),
                     };
-                    let base = match first_child(
-                        node,
-                        cst::NodeKind::STRUCT_LITERAL_FIELD_LIST,
-                    ) {
-                        Some(list) => match first_child(
-                            list,
-                            cst::NodeKind::STRUCT_LITERAL_UPDATE,
-                        ) {
+                    let base = match first_child(node, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST) {
+                        Some(list) => match first_child(list, cst::NodeKind::STRUCT_LITERAL_UPDATE) {
                             Some(update) => {
                                 let values = expr_children(update);
                                 if values.len() > 0 {
-                                    lower_expr(ctx, values.get(0))
+                                    lower_expr(ctx, values[0])
                                 } else {
                                     Option::None
                                 }
@@ -565,12 +564,9 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                         },
                         None => Option::None,
                     };
-                    Option::Some(Expr::StructLiteral {
-                        name: path,
-                        fields,
-                        base,
-                        span: node_span(node),
-                    })
+                    Option::Some(
+                        Expr::StructLiteral { name: path, fields, base, span: node_span(node) },
+                    )
                 },
                 None => Option::None,
             },
@@ -583,11 +579,7 @@ fn lower_expr(ctx: LowerCtx, node: LocatedNode) -> Option[Expr] {
     lower_expr_with_args(ctx, node, Vec::new())
 }
 
-fn lower_vec_literal(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    trailing_args: Vec[Expr],
-) -> Option[Expr] {
+fn lower_vec_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to Vec literal") {
         Option::None
     } else {
@@ -602,11 +594,7 @@ fn lower_vec_literal(
     }
 }
 
-fn lower_hashmap_literal(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    trailing_args: Vec[Expr],
-) -> Option[Expr] {
+fn lower_hashmap_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to HashMap literal") {
         Option::None
     } else {
@@ -614,8 +602,8 @@ fn lower_hashmap_literal(
         for entry in children_of_kind(node, cst::NodeKind::HASHMAP_LITERAL_ENTRY) {
             let values = expr_children(entry);
             if values.len() == 2 {
-                match lower_expr(ctx, values.get(0)) {
-                    Some(key) => match lower_expr(ctx, values.get(1)) {
+                match lower_expr(ctx, values[0]) {
+                    Some(key) => match lower_expr(ctx, values[1]) {
                         Some(value) => entries.push((key, value)),
                         None => (),
                     },
@@ -637,12 +625,22 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
         ctx.expr_depth.set(ctx.expr_depth.get() + 1);
         let value_span = node_span(node);
         let result = match node_kind(node) {
-            EXPR_UNIT => if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to unit expression") {
+            EXPR_UNIT => if reject_trailing(
+                ctx,
+                node,
+                trailing_args,
+                "Cannot apply arguments to unit expression",
+            ) {
                 Option::None
             } else {
                 Option::Some(Expr::Unit { span: value_span })
             },
-            EXPR_BOOL => if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to bool literal") {
+            EXPR_BOOL => if reject_trailing(
+                ctx,
+                node,
+                trailing_args,
+                "Cannot apply arguments to bool literal",
+            ) {
                 Option::None
             } else if has_token(node, lexer::TokenKind::TrueKeyword) {
                 Option::Some(Expr::Bool { value: true, span: value_span })
@@ -656,8 +654,15 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_FLOAT => lower_number_expr(ctx, node, trailing_args, lexer::TokenKind::Float, true),
             EXPR_CHAR => lower_char_expr(ctx, node, trailing_args),
             EXPR_BYTE => lower_byte_expr(ctx, node, trailing_args),
+            EXPR_BYTE_STRING => lower_byte_string_expr(ctx, node, trailing_args),
             EXPR_STR => lower_string_expr(ctx, node, trailing_args),
-            EXPR_MULTILINE_STR => if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to string literal") {
+            EXPR_RAW_STR => lower_raw_string_expr(ctx, node, trailing_args),
+            EXPR_MULTILINE_STR => if reject_trailing(
+                ctx,
+                node,
+                trailing_args,
+                "Cannot apply arguments to string literal",
+            ) {
                 Option::None
             } else {
                 match lower_multiline_string(ctx, node) {
@@ -670,6 +675,27 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             },
             EXPR_IDENT => lower_ident_expr(ctx, node, trailing_args),
             EXPR_STRUCT_LITERAL => lower_struct_literal(ctx, node, trailing_args),
+            EXPR_BLOCK => if reject_trailing(
+                ctx,
+                node,
+                trailing_args,
+                "Cannot apply type arguments to block expression",
+            ) {
+                Option::None
+            } else {
+                match first_child(node, cst::NodeKind::BLOCK) {
+                    Some(block_node) => match lower_block(ctx, block_node) {
+                        Some(block) => {
+                            Option::Some(Expr::Block { block, span: value_span })
+                        },
+                        None => Option::None,
+                    },
+                    None => {
+                        push_error(ctx, value_span, "Block expression has no block");
+                        Option::None
+                    },
+                }
+            },
             EXPR_ARRAY_LITERAL => lower_expr_sequence(ctx, node, trailing_args, false),
             EXPR_VEC_LITERAL => lower_vec_literal(ctx, node, trailing_args),
             EXPR_HASHMAP_LITERAL => lower_hashmap_literal(ctx, node, trailing_args),
@@ -677,7 +703,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_PAREN => {
                 let values = expr_children(node);
                 if values.len() > 0 {
-                    lower_expr_with_args(ctx, values.get(0), trailing_args)
+                    lower_expr_with_args(ctx, values[0], trailing_args)
                 } else {
                     Option::None
                 }
@@ -693,13 +719,30 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_MATCH => lower_match_expr(ctx, node, trailing_args),
             EXPR_IF => lower_if_expr(ctx, node, trailing_args),
             EXPR_WHILE => lower_while_expr(ctx, node, trailing_args),
+            EXPR_LOOP => lower_loop_expr(ctx, node, trailing_args),
             EXPR_FOR => lower_for_expr(ctx, node, trailing_args),
-            EXPR_BREAK => if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to break expression") {
+            EXPR_BREAK => if reject_trailing(
+                ctx,
+                node,
+                trailing_args,
+                "Cannot apply arguments to break expression",
+            ) {
                 Option::None
             } else {
-                Option::Some(Expr::Break { span: value_span })
+                let values = expr_children(node);
+                let value = if values.len() > 0 {
+                    lower_expr(ctx, values[0])
+                } else {
+                    Option::None
+                };
+                Option::Some(Expr::Break { value, span: value_span })
             },
-            EXPR_CONTINUE => if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to continue expression") {
+            EXPR_CONTINUE => if reject_trailing(
+                ctx,
+                node,
+                trailing_args,
+                "Cannot apply arguments to continue expression",
+            ) {
                 Option::None
             } else {
                 Option::Some(Expr::Continue { span: value_span })
@@ -784,42 +827,112 @@ fn lower_char_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
 
 fn byte_escape_value(value: uint8) -> Option[int] {
     match value {
-        39 => Option::Some(39),
-        48 => Option::Some(0),
-        92 => Option::Some(92),
-        98 => Option::Some(8),
-        102 => Option::Some(12),
-        110 => Option::Some(10),
-        114 => Option::Some(13),
-        116 => Option::Some(9),
+        b'\'' => Option::Some(39),
+        b'"' => Option::Some(34),
+        b'0' => Option::Some(0),
+        b'\\' => Option::Some(92),
+        b'/' => Option::Some(47),
+        b'b' => Option::Some(8),
+        b'f' => Option::Some(12),
+        b'n' => Option::Some(10),
+        b'r' => Option::Some(13),
+        b't' => Option::Some(9),
         _ => Option::None,
     }
 }
 
+fn byte_string_values(value: string) -> Option[Vec[string]] {
+    if value.byte_len() < 3 || value.byte_get(0) != b'b' || value.byte_get(1) != b'"'
+        || value.byte_get(value.byte_len() - 1) != b'"' {
+        return Option::None
+    } else {
+        ()
+    };
+    let result: Vec[string] = Vec::new();
+    let mut index = 2;
+    while index + 1 < value.byte_len() {
+        let byte = value.byte_get(index);
+        if byte == b'\\' {
+            if index + 1 >= value.byte_len() - 1 {
+                return Option::None
+            } else if value.byte_get(index + 1) == b'x' {
+                if index + 3 >= value.byte_len() - 1 {
+                    return Option::None
+                } else {
+                    match (
+                        hex_value(value.byte_get(index + 2)),
+                        hex_value(value.byte_get(index + 3)),
+                    ) {
+                        (Some(high), Some(low)) => {
+                            result.push((high * 16 + low).to_string());
+                            index = index + 4;
+                        },
+                        _ => return Option::None,
+                    }
+                }
+            } else {
+                match byte_escape_value(value.byte_get(index + 1)) {
+                    Some(decoded) => {
+                        result.push(decoded.to_string());
+                        index = index + 2;
+                    },
+                    None => return Option::None,
+                }
+            }
+        } else if byte > 127 {
+            return Option::None
+        } else {
+            result.push((byte as int).to_string());
+            index = index + 1;
+        }
+    };
+    Option::Some(result)
+}
+
+fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
+    if value.byte_len() < 4 || value.byte_get(0) != b'b' || value.byte_get(1) != b'r' {
+        return Option::None
+    } else {
+        ()
+    };
+    let mut hash_count = 0;
+    while 2 + hash_count < value.byte_len() && value.byte_get(2 + hash_count) == b'#' {
+        hash_count = hash_count + 1;
+    };
+    let start = hash_count + 3;
+    let end = value.byte_len() - hash_count - 1;
+    if start > end || value.byte_get(start - 1) != b'"' || value.byte_get(end) != b'"' {
+        return Option::None
+    } else {
+        ()
+    };
+    let result: Vec[string] = Vec::new();
+    for index in start..end {
+        let byte = value.byte_get(index);
+        if byte > 127 {
+            return Option::None
+        } else {
+            result.push((byte as int).to_string())
+        }
+    };
+    Option::Some(result)
+}
+
 fn byte_literal_value(value: string) -> Option[string] {
-    if value.byte_len() == 4
-        && value.byte_get(0) == 98
-        && value.byte_get(1) == 39
-        && value.byte_get(3) == 39
-    {
+    if value.byte_len() == 4 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
+        && value.byte_get(3) == b'\'' {
         Option::Some((value.byte_get(2) as int).to_string())
-    } else if value.byte_len() == 5
-        && value.byte_get(0) == 98
-        && value.byte_get(1) == 39
-        && value.byte_get(2) == 92
-        && value.byte_get(4) == 39
-    {
+    } else if value.byte_len() == 5 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
+        && value.byte_get(2) == b'\\'
+        && value.byte_get(4) == b'\'' {
         match byte_escape_value(value.byte_get(3)) {
             Some(byte) => Option::Some(byte.to_string()),
             None => Option::None,
         }
-    } else if value.byte_len() == 7
-        && value.byte_get(0) == 98
-        && value.byte_get(1) == 39
-        && value.byte_get(2) == 92
-        && value.byte_get(3) == 120
-        && value.byte_get(6) == 39
-    {
+    } else if value.byte_len() == 7 && value.byte_get(0) == b'b' && value.byte_get(1) == b'\''
+        && value.byte_get(2) == b'\\'
+        && value.byte_get(3) == b'x'
+        && value.byte_get(6) == b'\'' {
         match (hex_value(value.byte_get(4)), hex_value(value.byte_get(5))) {
             (Some(high), Some(low)) => {
                 Option::Some((high * 16 + low).to_string())
@@ -837,10 +950,7 @@ fn lower_byte_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
     } else {
         match first_token(node, lexer::TokenKind::ByteCharLit) {
             Some(token) => match byte_literal_value(token.token.text) {
-                Some(value) => Option::Some(Expr::Byte {
-                    value,
-                    span: node_span(node),
-                }),
+                Some(value) => Option::Some(Expr::Byte { value, span: node_span(node) }),
                 None => {
                     push_error(ctx, token_span(token), "Invalid byte literal");
                     Option::None
@@ -854,16 +964,40 @@ fn lower_byte_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
     }
 }
 
+fn lower_byte_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[
+    Expr,
+] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to byte string literal") {
+        Option::None
+    } else {
+        let values = match first_token(node, lexer::TokenKind::ByteStr) {
+            Some(token) => byte_string_values(token.token.text),
+            None => match first_token(node, lexer::TokenKind::RawByteStr) {
+                Some(token) => raw_byte_string_values(token.token.text),
+                None => Option::None,
+            },
+        };
+        match values {
+            Some(values) => {
+                Option::Some(Expr::ByteString { values, span: node_span(node) })
+            },
+            None => {
+                push_error(ctx, node_span(node), "Invalid byte string literal");
+                Option::None
+            },
+        }
+    }
+}
+
 fn lower_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to string literal") {
         Option::None
     } else {
         match first_token(node, lexer::TokenKind::Str) {
             Some(token) => match strip_delimiters(token.token.text) {
-                Some(value) => Option::Some(Expr::String {
-                    value: unescape_string(value),
-                    span: node_span(node),
-                }),
+                Some(value) => Option::Some(
+                    Expr::String { value: unescape_string(value), span: node_span(node) },
+                ),
                 None => {
                     push_error(ctx, token_span(token), "StrExpr has no value");
                     Option::None
@@ -877,18 +1011,38 @@ fn lower_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
     }
 }
 
+fn lower_raw_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to string literal") {
+        Option::None
+    } else {
+        match first_token(node, lexer::TokenKind::RawStr) {
+            Some(token) => {
+                let source = token.token.text;
+                let mut hash_count = 0;
+                while 1 + hash_count < source.byte_len() && source.byte_get(1 + hash_count) == b'#' {
+                    hash_count = hash_count + 1;
+                };
+                let start = hash_count + 2;
+                let end = source.byte_len() - hash_count - 1;
+                Option::Some(
+                    Expr::String { value: source.byte_slice(start, end), span: node_span(node) },
+                )
+            },
+            None => {
+                push_error(ctx, node_span(node), "Raw string expression has no value");
+                Option::None
+            },
+        }
+    }
+}
+
 fn lower_ident_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     match lower_ident_parts(ctx, node) {
         Some(parts) => match path_last(parts.path) {
             Some(last) => {
-                let base = if parts.owner_type_args.len() == 0
-                    && parts.member_type_args.len() == 0
-                    && ident_starts_upper(last)
-                {
-                    Expr::ConstructorValue {
-                        constructor: parts.path,
-                        span: node_span(node),
-                    }
+                let base = if parts.owner_type_args.len() == 0 && parts.member_type_args.len() == 0
+                    && ident_starts_upper(last) {
+                    Expr::ConstructorValue { constructor: parts.path, span: node_span(node) }
                 } else {
                     Expr::Path {
                         path: parts.path,
@@ -908,17 +1062,18 @@ fn lower_ident_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
     }
 }
 
-fn lower_expr_sequence(
-    ctx: LowerCtx,
-    node: LocatedNode,
-    trailing_args: Vec[Expr],
-    tuple: bool,
-) -> Option[Expr] {
+fn lower_expr_sequence(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr], tuple: bool) -> Option[
+    Expr,
+] {
     if reject_trailing(
         ctx,
         node,
         trailing_args,
-        if tuple { "Cannot apply arguments to tuple literal" } else { "Cannot apply arguments to array literal" },
+        if tuple {
+            "Cannot apply arguments to tuple literal"
+        } else {
+            "Cannot apply arguments to array literal"
+        },
     ) {
         Option::None
     } else {

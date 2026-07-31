@@ -9,20 +9,14 @@ use gomlc::tast;
 use std::testing;
 
 fn lower_source(source: string) -> core::File {
-    lower(core::lower(tast::check(hir::lower(
-        ast::lower(parser::parse(source)),
-        "main.gom",
-    ))))
+    lower(core::lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom"))))
 }
 
 fn lower_linked_source(source: string) -> core::File {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let user = core::lower_with_counter_and_types(
-        tast::check_for_link(hir::lower(
-            ast::lower(parser::parse(source)),
-            "main.gom",
-        )),
+        tast::check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
         counter,
         builtins.enums,
         builtins.structs,
@@ -31,10 +25,9 @@ fn lower_linked_source(source: string) -> core::File {
 }
 
 fn lower_checked_source(source: string) -> LowerResult {
-    lower_checked(core::lower(tast::check(hir::lower(
-        ast::lower(parser::parse(source)),
-        "main.gom",
-    ))))
+    lower_checked(
+        core::lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom"))),
+    )
 }
 
 fn string_contains(value: string, expected: string) -> bool {
@@ -68,78 +61,57 @@ fn resolves_static_trait_calls() -> unit {
 fn retains_linked_monomorphic_trait_impls() -> unit {
     let output = encode(lower_linked_source("fn main() -> unit { print(true) }"));
     testing::assert(string_contains(output, "fn print__T_bool"));
-    testing::assert(string_contains(
-        output,
-        "fn trait_impl#ToString#bool#to_string",
-    ))
+    testing::assert(string_contains(output, "fn trait_impl#ToString#bool#to_string"))
 }
 
 #[test]
 fn specializes_generic_functions_for_matching_dyn_bounds() -> unit {
-    let output = encode(lower_linked_source(
-        "fn main() -> unit { let value: dyn ToString = 1; println(value) }",
-    ));
+    let output = encode(
+        lower_linked_source("fn main() -> unit { let value: dyn ToString = 1; println(value) }"),
+    );
     testing::assert(string_contains(output, "fn println__T_dynToString"));
     testing::assert(string_contains(output, "dyn_call[ToString::to_string]"))
 }
 
 #[test]
 fn retains_linked_monomorphic_inherent_methods() -> unit {
-    let output = encode(lower_linked_source(
-        "fn main() -> string { let value: int32 = 42; value.to_string() }",
-    ));
-    testing::assert(string_contains(
-        output,
-        "fn inherent#int32#int32#to_string",
-    ));
-    testing::assert(string_contains(
-        output,
-        "@runtime(core.int32_to_string)",
-    ))
+    let output = encode(
+        lower_linked_source("fn main() -> string { let value: int32 = 42; value.to_string() }"),
+    );
+    testing::assert(string_contains(output, "fn inherent#int32#int32#to_string"));
+    testing::assert(string_contains(output, "@runtime(core.int32_to_string)"))
 }
 
 #[test]
 fn queues_inherent_callees_after_call_arguments() -> unit {
-    let output = encode(lower_linked_source(
-        "fn main() -> unit { for character in \"x\".chars() { println(character) } }",
-    ));
-    let get_index = string_index(
-        output,
-        "fn inherent#Ref#Ref[T]#get__T_int",
+    let output = encode(
+        lower_linked_source(
+            "fn main() -> unit { let value = Ref::new(0); let iterator: FnIterator[int] = FnIterator::from_fn(|| { let _ = value.get(); Option::None }); let _ = iterator; }",
+        ),
     );
-    let from_fn_index = string_index(
-        output,
-        "fn inherent#FnIterator#FnIterator[T]#from_fn__T_char",
-    );
+    let get_index = string_index(output, "fn inherent#Ref#Ref[T]#get__T_int");
+    let from_fn_index = string_index(output, "fn inherent#FnIterator#FnIterator[T]#from_fn__T_int");
     testing::assert(get_index >= 0);
     testing::assert(from_fn_index > get_index)
 }
 
 #[test]
 fn resolves_vec_for_loop_iterator_receiver() -> unit {
-    let output = encode(lower_source("fn iterate(values: Vec[int32]) -> unit { for value in values { println(value.to_string()) } }"));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#Iterator#FnIterator__int32#next",
-    ));
-    testing::assert(!string_contains(
-        output,
-        "trait_impl#Iterator#Vec[int32]#next",
-    ))
+    let output = encode(
+        lower_source(
+            "fn iterate(values: Vec[int32]) -> unit { for value in values { println(value.to_string()) } }",
+        ),
+    );
+    testing::assert(string_contains(output, "trait_impl#Iterator#FnIterator__int32#next"));
+    testing::assert(!string_contains(output, "trait_impl#Iterator#Vec[int32]#next"))
 }
 
 #[test]
 fn infers_generic_arguments_from_trait_predicates() -> unit {
     let source = "trait Parent[T] { fn parent(self: Self) -> T; } trait Child[T: ToString]: Parent[T] { fn child(self: Self) -> string; } struct Box[T] { value: T } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } } impl[T: ToString] Child[T] for Box[T] { fn child(self: Box[T]) -> string { \"child\" } } fn describe[T, B: Child[T]](value: B) -> string { value.parent().to_string() + value.child() } fn main() -> unit { println(describe(Box { value: 5 })) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "describe__B_Box[int]__T_int",
-    ));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#Child#[int]@Box__int#child",
-    ));
+    testing::assert(string_contains(output, "describe__B_Box[int]__T_int"));
+    testing::assert(string_contains(output, "trait_impl#Child#[int]@Box__int#child"));
     testing::assert(!string_contains(output, "trait_impl#Child#[T]"))
 }
 
@@ -147,28 +119,16 @@ fn infers_generic_arguments_from_trait_predicates() -> unit {
 fn sorts_inferred_generic_instance_bindings() -> unit {
     let source = "trait Convert[T] { fn convert(self: Self) -> T; } struct Token {} impl Convert[int32] for Token { fn convert(self: Token) -> int32 { 7 } } fn convert_to[T, V: Convert[T]](value: V) -> T { value.convert() } fn main() -> unit { let value: int32 = convert_to(Token {}); println(value) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "convert_to__T_int32__V_Token",
-    ));
-    testing::assert(!string_contains(
-        output,
-        "convert_to__V_Token__T_int32",
-    ))
+    testing::assert(string_contains(output, "convert_to__T_int32__V_Token"));
+    testing::assert(!string_contains(output, "convert_to__V_Token__T_int32"))
 }
 
 #[test]
 fn normalizes_nested_associated_iterator_types() -> unit {
     let source = "trait Batch { type Items: IntoIterator; fn items(self: Self) -> Self::Items; } struct Numbers { values: Vec[int32] } impl Batch for Numbers { type Items = Vec[int32]; fn items(self: Numbers) -> Vec[int32] { self.values } } fn count[B: Batch](batch: B) -> int32 { let total = Ref::new(0); for _ in Batch::items(batch) { total.set(total.get() + 1); }; total.get() } fn main() -> unit { let values: Vec[int32] = Vec::new(); println(count(Numbers { values })) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#IntoIterator#Vec[int32]#into_iter",
-    ));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#Iterator#FnIterator__int32#next",
-    ));
+    testing::assert(string_contains(output, "trait_impl#IntoIterator#Vec[int32]#into_iter"));
+    testing::assert(string_contains(output, "trait_impl#Iterator#FnIterator__int32#next"));
     testing::assert(!string_contains(output, "Numbers::Items"))
 }
 
@@ -207,10 +167,7 @@ fn transfers_projection_equalities_between_generic_parameters() -> unit {
 fn normalizes_projected_trait_impl_calls() -> unit {
     let source = "trait Source { type Item; fn get(self: Self) -> Self::Item; } trait Pick[T] { fn pick(self: Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn main() -> unit { let direct: int32 = (Value { value: 41 }).pick(); println(direct) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#Pick#[int32]@Value#pick",
-    ));
+    testing::assert(string_contains(output, "trait_impl#Pick#[int32]@Value#pick"));
     testing::assert(!string_contains(output, "Value::Item"))
 }
 
@@ -218,10 +175,7 @@ fn normalizes_projected_trait_impl_calls() -> unit {
 fn filters_unsatisfied_blanket_impls() -> unit {
     let source = "trait Mark { fn mark(self: Self) -> string; } trait Label { fn label(self: Self) -> string; } struct Box[T] { value: T } impl Mark for int32 { fn mark(self: int32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { \"blanket:\" + self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { \"string:\" + self.value } } fn main() -> unit { println((Box { value: \"text\" }).label()); println((Box { value: 7 }).label()) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#Label#Box__int32#label",
-    ));
+    testing::assert(string_contains(output, "trait_impl#Label#Box__int32#label"));
     testing::assert(!string_contains(output, "trait_impl#Mark#string#mark"));
     testing::assert(!string_contains(output, "label__mono"))
 }
@@ -230,14 +184,8 @@ fn filters_unsatisfied_blanket_impls() -> unit {
 fn resolves_trait_arguments_from_generic_impls() -> unit {
     let source = "trait ItemSource { type Item; fn item(self: Self) -> Self::Item; } trait Select[T] { fn select(self: Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item = T { fn select(self: S) -> T { ItemSource::item(self) } } struct Selected { value: int32 } impl ItemSource for Selected { type Item = int32; fn item(self: Selected) -> int32 { self.value } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn select_item[S: ItemSource](source: S) -> S::Item { invoke(source) } fn main() -> unit { println(select_item(Selected { value: 9 })) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "invoke__S_Selected__T_int32",
-    ));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#Select#[int32]@Selected#select",
-    ));
+    testing::assert(string_contains(output, "invoke__S_Selected__T_int32"));
+    testing::assert(string_contains(output, "trait_impl#Select#[int32]@Selected#select"));
     testing::assert(!string_contains(output, "invoke(source"))
 }
 
@@ -254,10 +202,7 @@ fn filters_unsatisfied_blanket_into_iterator_impls() -> unit {
     let source = "struct Numbers { values: Vec[int32] } impl IntoIterator for Numbers { type Item = int32; type IntoIter = FnIterator[int32]; fn into_iter(self: Numbers) -> FnIterator[int32] { self.values.iter() } } fn consume[S: IntoIterator](source: S) -> unit where S::Item = int32 { for _ in source {} } fn main() -> unit { let values: Vec[int32] = Vec::new(); consume(Numbers { values }) }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "consume__S_Numbers"));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#IntoIterator#Numbers#into_iter",
-    ));
+    testing::assert(string_contains(output, "trait_impl#IntoIterator#Numbers#into_iter"));
     testing::assert(!string_contains(output, "consume(Numbers"))
 }
 
@@ -300,14 +245,8 @@ fn prints_monomorphic_closures_without_parameter_types() -> unit {
 fn retains_generic_trait_impls_for_dyn_coercions() -> unit {
     let source = "struct Box[T] { value: T } trait Printable { fn print_me(self: Self) -> string; } impl Printable for int32 { fn print_me(self: int32) -> string { self.to_string() } } impl[T: Printable] Printable for Box[T] { fn print_me(self: Box[T]) -> string { \"Box(\" + Printable::print_me(self.value) + \")\" } } fn show(value: dyn Printable) -> string { Printable::print_me(value) } fn main() -> unit { let value: Box[int32] = Box { value: 42 }; println(show(value)) }";
     let output = encode(lower_source(source));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#Printable#Box__int32#print_me",
-    ));
-    testing::assert(string_contains(
-        output,
-        "trait_impl#Printable#int32#print_me",
-    ))
+    testing::assert(string_contains(output, "trait_impl#Printable#Box__int32#print_me"));
+    testing::assert(string_contains(output, "trait_impl#Printable#int32#print_me"))
 }
 
 #[test]

@@ -34,124 +34,124 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 func main0() struct{} {
     var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop155:
+    Loop_loop199:
     for {
-        var t161 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-        var t162 bool = t161 < 3
-        var jp157 bool
-        if t162 {
-            jp157 = true
+        var t205 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+        var t206 bool = t205 < 3
+        var jp201 bool
+        if t206 {
+            jp201 = true
         } else {
-            jp157 = false
+            jp201 = false
         }
-        if jp157 {
-            var t158 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-            println__T_int(t158)
-            var t159 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-            var t160 int = t159 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(i__0, t160)
+        if jp201 {
+            var t202 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+            println__T_int(t202)
+            var t203 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+            var t204 int = t203 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(i__0, t204)
             continue
         } else {
-            break Loop_loop155
+            break Loop_loop199
         }
     }
     var j__1 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var total__2 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop138:
+    Loop_loop182:
     for {
-        var t146 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
-        var t147 bool = t146 < 4
-        var jp140 bool
-        if t147 {
-            var t150 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
-            var t151 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t150, 1)
-            var jp149 bool
-            if t151 {
-                jp149 = true
+        var t190 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
+        var t191 bool = t190 < 4
+        var jp184 bool
+        if t191 {
+            var t194 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
+            var t195 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t194, 1)
+            var jp193 bool
+            if t195 {
+                jp193 = true
             } else {
-                var t152 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
-                var t153 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t152, 3)
-                var t154 bool = !t153
-                jp149 = t154
+                var t196 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
+                var t197 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t196, 3)
+                var t198 bool = !t197
+                jp193 = t198
             }
-            jp140 = jp149
+            jp184 = jp193
         } else {
-            jp140 = false
+            jp184 = false
         }
-        if jp140 {
-            var t141 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(total__2)
-            var t142 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
-            var t143 int = t141 + t142
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(total__2, t143)
-            var t144 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
-            var t145 int = t144 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(j__1, t145)
+        if jp184 {
+            var t185 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(total__2)
+            var t186 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
+            var t187 int = t185 + t186
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(total__2, t187)
+            var t188 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
+            var t189 int = t188 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(j__1, t189)
             continue
         } else {
-            break Loop_loop138
+            break Loop_loop182
         }
     }
-    var t123 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(total__2)
-    println__T_int(t123)
+    var t167 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(total__2)
+    println__T_int(t167)
     var k__3 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var sum__4 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop126:
+    Loop_loop170:
     for {
-        var mtmp115 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(k__3)
-        var jp128 bool
-        switch mtmp115 {
+        var mtmp159 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(k__3)
+        var jp172 bool
+        switch mtmp159 {
         case 0:
-            jp128 = true
+            jp172 = true
         case 1:
-            var t136 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__4)
-            var t137 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t136, 0)
-            var jp135 bool
-            if t137 {
-                jp135 = true
+            var t180 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__4)
+            var t181 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t180, 0)
+            var jp179 bool
+            if t181 {
+                jp179 = true
             } else {
-                jp135 = false
+                jp179 = false
             }
-            jp128 = jp135
+            jp172 = jp179
         case 2:
-            jp128 = true
+            jp172 = true
         default:
-            jp128 = false
+            jp172 = false
         }
-        if jp128 {
-            var t129 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__4)
-            var t130 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(k__3)
-            var t131 int = t129 + t130
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(sum__4, t131)
-            var t132 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(k__3)
-            var t133 int = t132 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(k__3, t133)
+        if jp172 {
+            var t173 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__4)
+            var t174 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(k__3)
+            var t175 int = t173 + t174
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(sum__4, t175)
+            var t176 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(k__3)
+            var t177 int = t176 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(k__3, t177)
             continue
         } else {
-            break Loop_loop126
+            break Loop_loop170
         }
     }
-    var t125 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__4)
-    println__T_int(t125)
+    var t169 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__4)
+    println__T_int(t169)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv164 *ref_int_x
-    var t165 *ref_int_x = ref__Ref_3int(value__207)
-    retv164 = t165
-    return retv164
+    var retv208 *ref_int_x
+    var t209 *ref_int_x = ref__Ref_3int(value__207)
+    retv208 = t209
+    return retv208
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv167 int
-    var t168 int = ref_get__Ref_3int(self__208)
-    retv167 = t168
-    return retv167
+    var retv211 int
+    var t212 int = ref_get__Ref_3int(self__208)
+    retv211 = t212
+    return retv211
 }
 
 func println__T_int(value__1 int) struct{} {
-    var t170 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
-    _goml_runtime_core_string_println(t170)
+    var t214 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
+    _goml_runtime_core_string_println(t214)
     return struct{}{}
 }
 
@@ -161,17 +161,17 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, v
 }
 
 func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv175 bool
-    var t176 bool = self__59 == other__60
-    retv175 = t176
-    return retv175
+    var retv219 bool
+    var t220 bool = self__59 == other__60
+    retv219 = t220
+    return retv219
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv178 string
-    var t179 string = _goml_runtime_core_int_to_string(self__40)
-    retv178 = t179
-    return retv178
+    var retv222 string
+    var t223 string = _goml_runtime_core_int_to_string(self__40)
+    retv222 = t223
+    return retv222
 }
 
 func main() {

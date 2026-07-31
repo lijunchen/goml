@@ -27,16 +27,21 @@ fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
         } else {
             ()
         };
+        if parser.eat(lexer::TokenKind::ElseKeyword) {
+            if parser.at(lexer::TokenKind::LBrace) {
+                block(parser)
+            } else {
+                parser.error("`let else` requires a block after `else`")
+            }
+        } else {
+            ()
+        };
         parser.expect(lexer::TokenKind::Semi);
         Option::Some(parser.close(marker, cst::NodeKind::STMT_LET))
     }
 }
 
-fn finish_assign_stmt(
-    parser: Parser,
-    target: MarkerClosed,
-    operator: lexer::TokenKind,
-) -> MarkerClosed {
+fn finish_assign_stmt(parser: Parser, target: MarkerClosed, operator: lexer::TokenKind) -> MarkerClosed {
     let marker = target.precede(parser);
     parser.expect(operator);
     if marker_is_none(expr(parser)) {

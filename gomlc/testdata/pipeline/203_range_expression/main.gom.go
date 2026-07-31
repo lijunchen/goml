@@ -18,58 +18,58 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func _goml_m_range(start__0 int32, end__1 int32) int32 {
-    var retv116 int32
-    var t117 int32 = start__0 + end__1
-    retv116 = t117
-    return retv116
+    var retv160 int32
+    var t161 int32 = start__0 + end__1
+    retv160 = t161
+    return retv160
 }
 
 func main0() struct{} {
-    var for_index108 int = 1
-    var for_limit109 int = 4
-    Loop_loop121:
+    var for_index152 int = 1
+    var for_limit153 int = 4
+    Loop_loop165:
     for {
-        var t122 bool = for_index108 < for_limit109
-        if t122 {
-            var for_item110 int = for_index108
-            var t123 int = for_index108 + 1
-            for_index108 = t123
-            var value__2 int = for_item110
+        var t166 bool = for_index152 < for_limit153
+        if t166 {
+            var for_item154 int = for_index152
+            var t167 int = for_index152 + 1
+            for_index152 = t167
+            var value__2 int = for_item154
             println__T_int(value__2)
             continue
         } else {
-            break Loop_loop121
+            break Loop_loop165
         }
     }
-    var t120 int32 = _goml_m_range(10, 20)
-    println__T_int32(t120)
+    var t164 int32 = _goml_m_range(10, 20)
+    println__T_int32(t164)
     return struct{}{}
 }
 
 func println__T_int(value__1 int) struct{} {
-    var t125 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
-    _goml_runtime_core_string_println(t125)
+    var t169 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
+    _goml_runtime_core_string_println(t169)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t128 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t128)
+    var t172 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t172)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv131 string
-    var t132 string = _goml_runtime_core_int_to_string(self__40)
-    retv131 = t132
-    return retv131
+    var retv175 string
+    var t176 string = _goml_runtime_core_int_to_string(self__40)
+    retv175 = t176
+    return retv175
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv134 string
-    var t135 string = _goml_runtime_core_int32_to_string(self__43)
-    retv134 = t135
-    return retv134
+    var retv178 string
+    var t179 string = _goml_runtime_core_int32_to_string(self__43)
+    retv178 = t179
+    return retv178
 }
 
 func main() {

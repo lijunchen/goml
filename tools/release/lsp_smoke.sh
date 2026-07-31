@@ -18,4 +18,5 @@ exit_message='{"jsonrpc":"2.0","method":"exit","params":null}'
 } | "$lsp_binary" > "$lsp_output"
 
 grep -q "\"version\":\"$lsp_version\"" "$lsp_output"
+grep -q '"documentFormattingProvider":true' "$lsp_output"
 grep -q '"id":2,"result":null' "$lsp_output"

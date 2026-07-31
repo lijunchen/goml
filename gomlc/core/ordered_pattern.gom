@@ -63,18 +63,8 @@ fn ordered_if(cond: Expr, then_branch: Expr, else_branch: Expr, ty: tast::Type) 
 
 fn bind_ordered_value(name: string, value: Expr, body: Expr, ty: tast::Type) -> Expr {
     let stmts: Vec[LetStmt] = Vec::new();
-    stmts.push(LetStmt {
-        name,
-        ty: expr_type(value),
-        value,
-    });
-    Expr::Block {
-        block: Block {
-                    stmts,
-                    tail: Option::Some(body),
-                },
-        ty,
-    }
+    stmts.push(LetStmt { name, ty: expr_type(value), value });
+    Expr::Block { block: Block { stmts, tail: Option::Some(body) }, ty }
 }
 
 fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
@@ -85,32 +75,20 @@ fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
             params.push(container_ty);
             let args: Vec[Expr] = Vec::new();
             args.push(value);
-            Option::Some(place_intrinsic_call(
-                "vec.len",
-                params,
-                tast::Type::Int,
-                args,
-            ))
+            Option::Some(place_intrinsic_call("vec.len", params, tast::Type::Int, args))
         },
         Slice { elem: _ } => {
             let params: Vec[tast::Type] = Vec::new();
             params.push(container_ty);
             let args: Vec[Expr] = Vec::new();
             args.push(value);
-            Option::Some(place_intrinsic_call(
-                "slice.len",
-                params,
-                tast::Type::Int,
-                args,
-            ))
+            Option::Some(place_intrinsic_call("slice.len", params, tast::Type::Int, args))
         },
         _ => Option::None,
     }
 }
 
-fn ordered_container_parts(
-    container_ty: tast::Type,
-) -> Option[(tast::Type, Option[int])] {
+fn ordered_container_parts(container_ty: tast::Type) -> Option[(tast::Type, Option[int])] {
     match tast::resolve_type(container_ty) {
         Array { len: length, elem } => Option::Some((elem, Option::Some(length))),
         VecType { elem } | Slice { elem } => {
@@ -137,13 +115,8 @@ fn ordered_rest_value(
                 Some(length) => length - suffix_len,
                 None => prefix_len,
             };
-            for index in range(prefix_len, end) {
-                items.push(place_index_read(
-                    value,
-                    container_ty,
-                    ordered_int(index),
-                    elem_ty,
-                ))
+            for index in prefix_len..end {
+                items.push(place_index_read(value, container_ty, ordered_int(index), elem_ty))
             };
             Expr::Array { items, ty: rest_ty }
         },
@@ -193,22 +166,12 @@ fn ordered_rest_value(
     }
 }
 
-fn ordered_suffix_index(
-    fixed_len: Option[int],
-    len_expr: Expr,
-    suffix_len: int,
-    offset: int,
-) -> Expr {
+fn ordered_suffix_index(fixed_len: Option[int], len_expr: Expr, suffix_len: int, offset: int) -> Expr {
     match fixed_len {
         Some(length) => ordered_int(length - suffix_len + offset),
         None => ordered_binary(
             ast::BinaryOp::Add,
-            ordered_binary(
-                ast::BinaryOp::Sub,
-                len_expr,
-                ordered_int(suffix_len),
-                tast::Type::Int,
-            ),
+            ordered_binary(ast::BinaryOp::Sub, len_expr, ordered_int(suffix_len), tast::Type::Int),
             ordered_int(offset),
             tast::Type::Int,
         ),
@@ -232,63 +195,59 @@ fn lower_ordered_array_pattern(
                 let next = Ref::new(success);
                 match rest {
                     Some(rest_value) => match rest_value.binding {
-                        Some(binding) => next.set(bind_ordered_value(
-                            binding,
-                            ordered_rest_value(
-                                value,
-                                container_ty,
-                                elem_ty,
-                                fixed_len,
-                                prefix.len(),
-                                suffix.len(),
-                                len_expr,
-                                rest_value.ty,
+                        Some(binding) => next.set(
+                            bind_ordered_value(
+                                binding,
+                                ordered_rest_value(
+                                    value,
+                                    container_ty,
+                                    elem_ty,
+                                    fixed_len,
+                                    prefix.len(),
+                                    suffix.len(),
+                                    len_expr,
+                                    rest_value.ty,
+                                ),
+                                next.get(),
+                                result_ty,
                             ),
-                            next.get(),
-                            result_ty,
-                        )),
+                        ),
                         None => (),
                     },
                     None => (),
                 };
-                for offset in range(0, suffix.len()) {
+                for offset in 0..suffix.len() {
                     let index = suffix.len() - 1 - offset;
                     let item = place_index_read(
                         value,
                         container_ty,
-                        ordered_suffix_index(
-                            fixed_len,
-                            len_expr,
-                            suffix.len(),
-                            index,
+                        ordered_suffix_index(fixed_len, len_expr, suffix.len(), index),
+                        elem_ty,
+                    );
+                    next.set(
+                        lower_ordered_pattern(
+                            ctx,
+                            suffix[index],
+                            item,
+                            next.get(),
+                            failure,
+                            result_ty,
                         ),
-                        elem_ty,
-                    );
-                    next.set(lower_ordered_pattern(
-                        ctx,
-                        suffix.get(index),
-                        item,
-                        next.get(),
-                        failure,
-                        result_ty,
-                    ))
+                    )
                 };
-                for offset in range(0, prefix.len()) {
+                for offset in 0..prefix.len() {
                     let index = prefix.len() - 1 - offset;
-                    let item = place_index_read(
-                        value,
-                        container_ty,
-                        ordered_int(index),
-                        elem_ty,
-                    );
-                    next.set(lower_ordered_pattern(
-                        ctx,
-                        prefix.get(index),
-                        item,
-                        next.get(),
-                        failure,
-                        result_ty,
-                    ))
+                    let item = place_index_read(value, container_ty, ordered_int(index), elem_ty);
+                    next.set(
+                        lower_ordered_pattern(
+                            ctx,
+                            prefix[index],
+                            item,
+                            next.get(),
+                            failure,
+                            result_ty,
+                        ),
+                    )
                 };
                 match fixed_len {
                     Some(_) => next.get(),
@@ -341,16 +300,18 @@ fn lower_ordered_pattern(
         },
         Or { pats: patterns, ty: _ } => {
             let next = Ref::new(failure);
-            for offset in range(0, patterns.len()) {
+            for offset in 0..patterns.len() {
                 let index = patterns.len() - 1 - offset;
-                next.set(lower_ordered_pattern(
-                    ctx,
-                    patterns.get(index),
-                    value,
-                    success,
-                    next.get(),
-                    result_ty,
-                ))
+                next.set(
+                    lower_ordered_pattern(
+                        ctx,
+                        patterns[index],
+                        value,
+                        success,
+                        next.get(),
+                        result_ty,
+                    ),
+                )
             };
             next.get()
         },
@@ -372,12 +333,7 @@ fn lower_ordered_pattern(
                 ast::BinaryOp::Less
             };
             let upper = ordered_if(
-                ordered_binary(
-                    upper_op,
-                    value,
-                    Expr::Prim { value: end, ty },
-                    tast::Type::Bool,
-                ),
+                ordered_binary(upper_op, value, Expr::Prim { value: end, ty }, tast::Type::Bool),
                 success,
                 failure,
                 result_ty,
@@ -397,16 +353,18 @@ fn lower_ordered_pattern(
         Tuple { items, ty: tuple_ty } => match tast::resolve_type(tuple_ty) {
             Tuple { items: types } => {
                 let next = Ref::new(success);
-                for offset in range(0, items.len()) {
+                for offset in 0..items.len() {
                     let index = items.len() - 1 - offset;
-                    next.set(lower_ordered_pattern(
-                        ctx,
-                        items.get(index),
-                        Expr::Proj { tuple: value, index, ty: types.get(index) },
-                        next.get(),
-                        failure,
-                        result_ty,
-                    ))
+                    next.set(
+                        lower_ordered_pattern(
+                            ctx,
+                            items[index],
+                            Expr::Proj { tuple: value, index, ty: types[index] },
+                            next.get(),
+                            failure,
+                            result_ty,
+                        ),
+                    )
                 };
                 next.get()
             },
@@ -414,22 +372,24 @@ fn lower_ordered_pattern(
         },
         Constr { constructor, args, ty: pattern_ty } => {
             let next = Ref::new(success);
-            for offset in range(0, args.len()) {
+            for offset in 0..args.len() {
                 let index = args.len() - 1 - offset;
-                let arg = args.get(index);
-                next.set(lower_ordered_pattern(
-                    ctx,
-                    arg,
-                    Expr::ConstrGet {
-                        expr: value,
-                        constructor,
-                        field_index: index,
-                        ty: tast::pat_type(arg),
-                    },
-                    next.get(),
-                    failure,
-                    result_ty,
-                ))
+                let arg = args[index];
+                next.set(
+                    lower_ordered_pattern(
+                        ctx,
+                        arg,
+                        Expr::ConstrGet {
+                            expr: value,
+                            constructor,
+                            field_index: index,
+                            ty: tast::pat_type(arg),
+                        },
+                        next.get(),
+                        failure,
+                        result_ty,
+                    ),
+                )
             };
             if constructor.is_struct {
                 next.get()
@@ -439,10 +399,12 @@ fn lower_ordered_pattern(
                     lhs_args.push(Expr::Var { name: gensym(ctx, "p"), ty: tast::pat_type(arg) })
                 };
                 let arms: Vec[Arm] = Vec::new();
-                arms.push(Arm {
-                    lhs: Expr::Constr { constructor, args: lhs_args, ty: pattern_ty },
-                    body: next.get(),
-                });
+                arms.push(
+                    Arm {
+                        lhs: Expr::Constr { constructor, args: lhs_args, ty: pattern_ty },
+                        body: next.get(),
+                    },
+                );
                 Expr::Match { expr: value, arms, default: Option::Some(failure), ty: result_ty }
             }
         },
@@ -462,38 +424,21 @@ fn lower_ordered_pattern(
     }
 }
 
-fn lower_ordered_match(
-    ctx: Lowerer,
-    source: tast::Expr,
-    arms: Vec[tast::Arm],
-    ty: tast::Type,
-) -> Expr {
+fn lower_ordered_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast::Type) -> Expr {
     let source_ty = tast::expr_type(source);
     let source_value = lower_expr(ctx, source);
     let source_name = gensym(ctx, "match");
     let source_var = Expr::Var { name: source_name, ty: source_ty };
     let next = Ref::new(missing_expr(ty));
-    for offset in range(0, arms.len()) {
+    for offset in 0..arms.len() {
         let index = arms.len() - 1 - offset;
-        let arm = arms.get(index);
+        let arm = arms[index];
         let body = lower_expr(ctx, arm.body);
         let success = match arm.guard {
-            Some(guard) => ordered_if(
-                lower_expr(ctx, guard),
-                body,
-                next.get(),
-                ty,
-            ),
+            Some(guard) => ordered_if(lower_expr(ctx, guard), body, next.get(), ty),
             None => body,
         };
-        next.set(lower_ordered_pattern(
-            ctx,
-            arm.pat,
-            source_var,
-            success,
-            next.get(),
-            ty,
-        ))
+        next.set(lower_ordered_pattern(ctx, arm.pat, source_var, success, next.get(), ty))
     };
     bind_ordered_value(source_name, source_value, next.get(), ty)
 }

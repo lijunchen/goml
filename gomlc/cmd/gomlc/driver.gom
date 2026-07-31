@@ -90,9 +90,7 @@ struct ArtifactStandardLibrary {
     time: ArtifactStandardPackage,
 }
 
-fn artifact_standard_package_from_compilation(
-    value: PackageCompilation,
-) -> ArtifactStandardPackage {
+fn artifact_standard_package_from_compilation(value: PackageCompilation) -> ArtifactStandardPackage {
     ArtifactStandardPackage {
         core_value: value.core_value,
         interface_unit: value.interface_unit,
@@ -100,9 +98,7 @@ fn artifact_standard_package_from_compilation(
     }
 }
 
-fn artifact_standard_library(
-    value: StandardLibrary,
-) -> ArtifactStandardLibrary {
+fn artifact_standard_library(value: StandardLibrary) -> ArtifactStandardLibrary {
     ArtifactStandardLibrary {
         root: artifact_standard_package_from_compilation(value.root),
         host: artifact_standard_package_from_compilation(value.host),
@@ -189,10 +185,7 @@ fn has_standard_import(value: ast::LowerResult) -> bool {
     }
 }
 
-fn dependency_enums(
-    builtins: core::File,
-    dependencies: Vec[core::File],
-) -> Vec[tast::EnumDef] {
+fn dependency_enums(builtins: core::File, dependencies: Vec[core::File]) -> Vec[tast::EnumDef] {
     let result: Vec[tast::EnumDef] = Vec::new();
     for value in builtins.enums {
         result.push(value)
@@ -205,10 +198,7 @@ fn dependency_enums(
     result
 }
 
-fn dependency_structs(
-    builtins: core::File,
-    dependencies: Vec[core::File],
-) -> Vec[tast::StructDef] {
+fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Vec[tast::StructDef] {
     let result: Vec[tast::StructDef] = Vec::new();
     for value in builtins.structs {
         result.push(value)
@@ -235,11 +225,7 @@ fn compile_standard_package(
     let ast_values = Vec::new();
     ast_values.push(ast_value);
     let public_names = public_item_names(ast_values, package_name);
-    let hir_value = hir::lower_package(
-        ast_value,
-        source_path,
-        package_name,
-    );
+    let hir_value = hir::lower_package(ast_value, source_path, package_name);
     if hir_value.diagnostics.len() > 0 {
         fail("error[compile]: failed to lower standard package " + package_name)
     } else {
@@ -266,11 +252,7 @@ fn compile_standard_package(
         hir_dependencies,
     );
     if tast_value.diagnostics.len() > 0 {
-        fail(render_typer_diagnostics(
-            tast_value.diagnostics,
-            source_path,
-            source,
-        ))
+        fail(render_typer_diagnostics(tast_value.diagnostics, source_path, source))
     } else {
         ()
     };
@@ -326,20 +308,12 @@ fn compile_standard_package(
         dependency_structs(builtins, core_dependencies),
         true,
     );
-    PackageCompilation {
-        hir_file,
-        core_value,
-        interface_unit,
-        exports,
-    }
+    PackageCompilation { hir_file, core_value, interface_unit, exports }
 }
 
 fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
     let source = core::builtin_source();
-    let lowered = hir::lower(
-        ast::lower(parser::parse(source)),
-        "builtin_contract.gom",
-    );
+    let lowered = hir::lower(ast::lower(parser::parse(source)), "builtin_contract.gom");
     let signatures = match lowered.hir {
         Some(file) => tast::package_signatures(file),
         None => {
@@ -360,13 +334,7 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
             traits.push(value)
         }
     };
-    for name in Vec::new()
-        .pushed("Iterator")
-        .pushed("IntoIterator")
-        .pushed("Eq")
-        .pushed("Hash")
-        .pushed("ToString")
-    {
+    for name in Vec::["Iterator", "IntoIterator", "Eq", "Hash", "ToString"] {
         match tast::builtin_trait_info(name) {
             Some(value) => traits.push(value),
             None => fail("error[compile]: missing builtin trait " + name),
@@ -378,81 +346,82 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
         type_aliases: signatures.type_aliases,
         constants: signatures.constants,
     };
-    let contract_functions = Vec::new()
-        .pushed("array_get")
-        .pushed("array_set")
-        .pushed("unit_to_string")
-        .pushed("bool_to_string")
-        .pushed("string_len")
-        .pushed("string_get")
-        .pushed("string_byte_get")
-        .pushed("string_byte_slice")
-        .pushed("string_is_char_boundary")
-        .pushed("string_decode_utf8_at")
-        .pushed("string_to_bytes")
-        .pushed("string_from_utf8")
-        .pushed("string_concat")
-        .pushed("string_print")
-        .pushed("string_println")
-        .pushed("char_to_string")
-        .pushed("char_from_uint32_raw")
-        .pushed("int_to_string")
-        .pushed("int8_to_string")
-        .pushed("int16_to_string")
-        .pushed("int32_to_string")
-        .pushed("int64_to_string")
-        .pushed("uint_to_string")
-        .pushed("uint8_to_string")
-        .pushed("uint16_to_string")
-        .pushed("uint32_to_string")
-        .pushed("uint64_to_string")
-        .pushed("float32_to_string")
-        .pushed("float64_to_string")
-        .pushed("string_parse_float32")
-        .pushed("string_parse_float64")
-        .pushed("int_hash")
-        .pushed("int8_hash")
-        .pushed("int16_hash")
-        .pushed("int32_hash")
-        .pushed("int64_hash")
-        .pushed("uint_hash")
-        .pushed("uint8_hash")
-        .pushed("uint16_hash")
-        .pushed("uint32_hash")
-        .pushed("float32_hash")
-        .pushed("float64_hash")
-        .pushed("string_hash")
-        .pushed("char_hash")
-        .pushed("vec_new")
-        .pushed("vec_with_capacity")
-        .pushed("vec_push")
-        .pushed("vec_get")
-        .pushed("vec_set")
-        .pushed("vec_len")
-        .pushed("vec_capacity")
-        .pushed("vec_reserve")
-        .pushed("vec_truncate")
-        .pushed("slice")
-        .pushed("slice_get")
-        .pushed("slice_len")
-        .pushed("slice_sub")
-        .pushed("__goml_primitive_eq")
-        .pushed("hashmap_new")
-        .pushed("hashmap_get")
-        .pushed("hashmap_set")
-        .pushed("hashmap_remove")
-        .pushed("hashmap_len")
-        .pushed("hashmap_contains")
-        .pushed("hashmap_entries")
-        .pushed("channel_new")
-        .pushed("channel_send")
-        .pushed("channel_recv")
-        .pushed("channel_close")
-        .pushed("ref")
-        .pushed("ref_get")
-        .pushed("ref_set")
-        .pushed("ptr_eq")
-        .pushed("ptr_hash");
+    let contract_functions = Vec::[
+        "array_get",
+        "array_set",
+        "unit_to_string",
+        "bool_to_string",
+        "string_len",
+        "string_get",
+        "string_byte_get",
+        "string_byte_slice",
+        "string_is_char_boundary",
+        "string_decode_utf8_at",
+        "string_to_bytes",
+        "string_from_utf8",
+        "string_concat",
+        "string_print",
+        "string_println",
+        "char_to_string",
+        "char_from_uint32_raw",
+        "int_to_string",
+        "int8_to_string",
+        "int16_to_string",
+        "int32_to_string",
+        "int64_to_string",
+        "uint_to_string",
+        "uint8_to_string",
+        "uint16_to_string",
+        "uint32_to_string",
+        "uint64_to_string",
+        "float32_to_string",
+        "float64_to_string",
+        "string_parse_float32",
+        "string_parse_float64",
+        "int_hash",
+        "int8_hash",
+        "int16_hash",
+        "int32_hash",
+        "int64_hash",
+        "uint_hash",
+        "uint8_hash",
+        "uint16_hash",
+        "uint32_hash",
+        "float32_hash",
+        "float64_hash",
+        "string_hash",
+        "char_hash",
+        "vec_new",
+        "vec_with_capacity",
+        "vec_push",
+        "vec_get",
+        "vec_set",
+        "vec_len",
+        "vec_capacity",
+        "vec_reserve",
+        "vec_truncate",
+        "slice",
+        "slice_get",
+        "slice_len",
+        "slice_sub",
+        "__goml_primitive_eq",
+        "hashmap_new",
+        "hashmap_get",
+        "hashmap_set",
+        "hashmap_remove",
+        "hashmap_len",
+        "hashmap_contains",
+        "hashmap_entries",
+        "channel_new",
+        "channel_send",
+        "channel_recv",
+        "channel_close",
+        "ref",
+        "ref_get",
+        "ref_set",
+        "ptr_eq",
+        "ptr_hash",
+    ];
     let functions = Vec::new();
     for name in contract_functions {
         match tast::builtin_function_scheme(name) {
@@ -509,25 +478,20 @@ fn builtin_artifact_json() -> string {
     artifact_json_finish(writer)
 }
 
-fn standard_artifact_deps(
-    builtin_hash: string,
-    dependencies: Vec[PackageCompilation],
-) -> Vec[(string, string)] {
+fn standard_artifact_deps(builtin_hash: string, dependencies: Vec[PackageCompilation]) -> Vec[
+    (string, string),
+] {
     let result = Vec::new();
     result.push(("builtin", builtin_hash));
     for dependency in dependencies {
-        result.push((
-            dependency.interface_unit.package_name,
-            dependency.interface_unit.interface_hash,
-        ))
+        result.push(
+            (dependency.interface_unit.package_name, dependency.interface_unit.interface_hash),
+        )
     };
     result
 }
 
-fn compile_standard_library(
-    builtins: core::File,
-    builtin_hash: string,
-) -> StandardLibrary {
+fn compile_standard_library(builtins: core::File, builtin_hash: string) -> StandardLibrary {
     let host = compile_standard_package(
         stdlib::host_source(),
         "host.gom",
@@ -568,7 +532,7 @@ fn compile_standard_library(
         env_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
     let fs_hir_dependencies: Vec[hir::File] = Vec::new();
     fs_hir_dependencies.push(host.hir_file);
@@ -583,10 +547,7 @@ fn compile_standard_library(
         fs_hir_dependencies,
         fs_core_dependencies,
         builtins,
-        standard_artifact_deps(
-            builtin_hash,
-            Vec::new().pushed(bytes).pushed(host),
-        ),
+        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
     );
     let io_hir_dependencies: Vec[hir::File] = Vec::new();
     io_hir_dependencies.push(host.hir_file);
@@ -601,10 +562,7 @@ fn compile_standard_library(
         io_hir_dependencies,
         io_core_dependencies,
         builtins,
-        standard_artifact_deps(
-            builtin_hash,
-            Vec::new().pushed(bytes).pushed(host),
-        ),
+        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
     );
     let path_hir_dependencies: Vec[hir::File] = Vec::new();
     path_hir_dependencies.push(host.hir_file);
@@ -616,7 +574,7 @@ fn compile_standard_library(
         path_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
     let process_hir_dependencies: Vec[hir::File] = Vec::new();
     process_hir_dependencies.push(host.hir_file);
@@ -631,10 +589,7 @@ fn compile_standard_library(
         process_hir_dependencies,
         process_core_dependencies,
         builtins,
-        standard_artifact_deps(
-            builtin_hash,
-            Vec::new().pushed(bytes).pushed(host),
-        ),
+        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
     );
     let testing_hir_dependencies: Vec[hir::File] = Vec::new();
     testing_hir_dependencies.push(host.hir_file);
@@ -646,7 +601,7 @@ fn compile_standard_library(
         testing_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
     let text_hir_dependencies: Vec[hir::File] = Vec::new();
     text_hir_dependencies.push(bytes.hir_file);
@@ -660,7 +615,7 @@ fn compile_standard_library(
         text_hir_dependencies,
         text_core_dependencies,
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(bytes)),
+        standard_artifact_deps(builtin_hash, Vec::[bytes]),
     );
     let json_hir_dependencies: Vec[hir::File] = Vec::new();
     json_hir_dependencies.push(text.hir_file);
@@ -674,7 +629,7 @@ fn compile_standard_library(
         json_hir_dependencies,
         json_core_dependencies,
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(text)),
+        standard_artifact_deps(builtin_hash, Vec::[text]),
     );
     let num_hir_dependencies: Vec[hir::File] = Vec::new();
     num_hir_dependencies.push(host.hir_file);
@@ -686,7 +641,7 @@ fn compile_standard_library(
         num_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
     let time_hir_dependencies: Vec[hir::File] = Vec::new();
     time_hir_dependencies.push(host.hir_file);
@@ -698,32 +653,34 @@ fn compile_standard_library(
         time_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
-    let root_hir_dependencies = Vec::new()
-        .pushed(bytes.hir_file)
-        .pushed(collections.hir_file)
-        .pushed(env.hir_file)
-        .pushed(fs.hir_file)
-        .pushed(io.hir_file)
-        .pushed(num.hir_file)
-        .pushed(path.hir_file)
-        .pushed(process.hir_file)
-        .pushed(text.hir_file)
-        .pushed(json.hir_file)
-        .pushed(time.hir_file);
-    let root_core_dependencies = Vec::new()
-        .pushed(bytes.core_value)
-        .pushed(collections.core_value)
-        .pushed(env.core_value)
-        .pushed(fs.core_value)
-        .pushed(io.core_value)
-        .pushed(num.core_value)
-        .pushed(path.core_value)
-        .pushed(process.core_value)
-        .pushed(text.core_value)
-        .pushed(json.core_value)
-        .pushed(time.core_value);
+    let root_hir_dependencies = Vec::[
+        bytes.hir_file,
+        collections.hir_file,
+        env.hir_file,
+        fs.hir_file,
+        io.hir_file,
+        num.hir_file,
+        path.hir_file,
+        process.hir_file,
+        text.hir_file,
+        json.hir_file,
+        time.hir_file,
+    ];
+    let root_core_dependencies = Vec::[
+        bytes.core_value,
+        collections.core_value,
+        env.core_value,
+        fs.core_value,
+        io.core_value,
+        num.core_value,
+        path.core_value,
+        process.core_value,
+        text.core_value,
+        json.core_value,
+        time.core_value,
+    ];
     let root = compile_standard_package(
         stdlib::root_source(),
         "lib.gom",
@@ -734,18 +691,7 @@ fn compile_standard_library(
         builtins,
         standard_artifact_deps(
             builtin_hash,
-            Vec::new()
-                .pushed(bytes)
-                .pushed(collections)
-                .pushed(env)
-                .pushed(fs)
-                .pushed(io)
-                .pushed(num)
-                .pushed(path)
-                .pushed(process)
-                .pushed(text)
-                .pushed(json)
-                .pushed(time),
+            Vec::[bytes, collections, env, fs, io, num, path, process, text, json, time],
         ),
     );
     StandardLibrary {
@@ -766,22 +712,14 @@ fn compile_standard_library(
     }
 }
 
-fn selected_standard_hir(
-    ast_value: ast::LowerResult,
-    standard: StandardLibrary,
-) -> Vec[hir::File] {
+fn selected_standard_hir(ast_value: ast::LowerResult, standard: StandardLibrary) -> Vec[hir::File] {
     let needs_root = imports_package(ast_value, "std");
     let needs_fs = needs_root || imports_package(ast_value, "std::fs");
     let needs_io = needs_root || imports_package(ast_value, "std::io");
     let needs_process = needs_root || imports_package(ast_value, "std::process");
     let needs_json = needs_root || imports_package(ast_value, "std::json");
-    let needs_text = needs_root
-        || needs_json
-        || imports_package(ast_value, "std::text");
-    let needs_bytes = imports_package(ast_value, "std::bytes")
-        || needs_root
-        || needs_fs
-        || needs_io
+    let needs_text = needs_root || needs_json || imports_package(ast_value, "std::text");
+    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_root || needs_fs || needs_io
         || needs_process
         || needs_text;
     let result: Vec[hir::File] = Vec::new();
@@ -853,22 +791,14 @@ fn selected_standard_hir(
     result
 }
 
-fn selected_standard_core(
-    ast_value: ast::LowerResult,
-    standard: StandardLibrary,
-) -> Vec[core::File] {
+fn selected_standard_core(ast_value: ast::LowerResult, standard: StandardLibrary) -> Vec[core::File] {
     let needs_root = imports_package(ast_value, "std");
     let needs_fs = needs_root || imports_package(ast_value, "std::fs");
     let needs_io = needs_root || imports_package(ast_value, "std::io");
     let needs_process = needs_root || imports_package(ast_value, "std::process");
     let needs_json = needs_root || imports_package(ast_value, "std::json");
-    let needs_text = needs_root
-        || needs_json
-        || imports_package(ast_value, "std::text");
-    let needs_bytes = imports_package(ast_value, "std::bytes")
-        || needs_root
-        || needs_fs
-        || needs_io
+    let needs_text = needs_root || needs_json || imports_package(ast_value, "std::text");
+    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_root || needs_fs || needs_io
         || needs_process
         || needs_text;
     let result: Vec[core::File] = Vec::new();
@@ -940,22 +870,21 @@ fn selected_standard_core(
     result
 }
 
-fn hir_diagnostics(
-    diagnostics: Vec[hir::Diagnostic],
-    source_path: string,
-) -> Vec[tast::Diagnostic] {
+fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Vec[tast::Diagnostic] {
     let result = Vec::new();
     for diagnostic in diagnostics {
-        result.push(tast::Diagnostic {
-            severity: tast::DiagnosticSeverity::Error,
-            stage: "typer",
-            message: diagnostic.message,
-            source_path,
-            span: diagnostic.span,
-            primary_label: Option::None,
-            secondary_labels: Vec::new(),
-            sort_order: 0,
-        })
+        result.push(
+            tast::Diagnostic {
+                severity: tast::DiagnosticSeverity::Error,
+                stage: "typer",
+                message: diagnostic.message,
+                source_path,
+                span: diagnostic.span,
+                primary_label: Option::None,
+                secondary_labels: Vec::new(),
+                sort_order: 0,
+            },
+        )
     };
     result
 }
@@ -963,14 +892,22 @@ fn hir_diagnostics(
 fn diagnostic_span_start(value: tast::Diagnostic) -> int {
     match value.span {
         Some(span) => span.start,
-        None => if value.source_path == "" { 2147483647 } else { 0 },
+        None => if value.source_path == "" {
+            2147483647
+        } else {
+            0
+        },
     }
 }
 
 fn diagnostic_span_end(value: tast::Diagnostic) -> int {
     match value.span {
         Some(span) => span.end,
-        None => if value.source_path == "" { 2147483647 } else { 0 },
+        None => if value.source_path == "" {
+            2147483647
+        } else {
+            0
+        },
     }
 }
 
@@ -999,25 +936,19 @@ fn sorted_typer_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnost
     for value in values {
         result.push(value)
     };
-    for index in range(1, result.len()) {
-        let value = result.get(index);
+    for index in 1..result.len() {
+        let value = result[index];
         let target = Ref::new(index);
-        while target.get() > 0
-            && diagnostic_precedes(value, result.get(target.get() - 1))
-        {
-            result.set(target.get(), result.get(target.get() - 1));
+        while target.get() > 0 && diagnostic_precedes(value, result[target.get() - 1]) {
+            result[target.get()] = result[target.get() - 1];
             target.set(target.get() - 1)
         };
-        result.set(target.get(), value)
+        result[target.get()] = value;
     };
     result
 }
 
-fn diagnostic_source(
-    source_path: string,
-    fallback_path: string,
-    fallback_source: string,
-) -> string {
+fn diagnostic_source(source_path: string, fallback_path: string, fallback_source: string) -> string {
     if source_path == fallback_path {
         fallback_source
     } else {
@@ -1039,9 +970,9 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
     let line = Ref::new(0);
     let column = Ref::new(0);
     let line_start = Ref::new(0);
-    for index in range(0, limit) {
+    for index in 0..limit {
         let byte = source.byte_get(index);
-        if byte == 10 {
+        if byte == b'\n' {
             line.set(line.get() + 1);
             column.set(0);
             line_start.set(index + 1)
@@ -1054,7 +985,7 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
     let line_end = Ref::new(line_start.get());
     while line_end.get() < source.byte_len() {
         let byte = source.byte_get(line_end.get());
-        if byte == 10 || byte == 13 {
+        if byte == b'\n' || byte == b'\r' {
             break
         } else {
             line_end.set(line_end.get() + 1)
@@ -1070,7 +1001,7 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
 
 fn repeat_char(value: char, count: int) -> string {
     let builder = text::StringBuilder::new();
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char(value)
     };
     builder.finish()
@@ -1171,10 +1102,12 @@ fn render_diagnostic_label(
         let indentation = diagnostic_visual_width(
             source.byte_slice(start.line_start, highlight_start),
         );
-        let measured = diagnostic_visual_width(
-            source.byte_slice(highlight_start, highlight_end),
-        );
-        let marker_width = if measured > 0 { measured } else { 1 };
+        let measured = diagnostic_visual_width(source.byte_slice(highlight_start, highlight_end));
+        let marker_width = if measured > 0 {
+            measured
+        } else {
+            1
+        };
         builder.write_char('\n');
         builder.write_string(line_number);
         builder.write_string(" | ");
@@ -1187,21 +1120,23 @@ fn render_diagnostic_label(
     }
 }
 
-fn render_typer_diagnostic(
-    value: tast::Diagnostic,
-    fallback_path: string,
-    fallback_source: string,
-) -> string {
+fn render_typer_diagnostic(value: tast::Diagnostic, fallback_path: string, fallback_source: string) -> string {
     let builder = text::StringBuilder::new();
-    builder.write_string(match value.severity {
-        Error => "error[",
-        Warning => "warning[",
-    });
+    builder.write_string(
+        match value.severity {
+            Error => "error[",
+            Warning => "warning[",
+        },
+    );
     builder.write_string(value.stage);
     builder.write_string("]: ");
     builder.write_string(value.message);
     let inference = value.message == "Could not infer type";
-    match if inference { Option::None } else { value.span } {
+    match if inference {
+        Option::None
+    } else {
+        value.span
+    } {
         Some(span) => render_diagnostic_label(
             builder,
             "primary",
@@ -1245,11 +1180,7 @@ fn render_typer_diagnostics(
         } else {
             ()
         };
-        builder.write_string(render_typer_diagnostic(
-            value,
-            fallback_path,
-            fallback_source,
-        ));
+        builder.write_string(render_typer_diagnostic(value, fallback_path, fallback_source));
         index.set(index.get() + 1)
     };
     builder.finish()
@@ -1261,36 +1192,29 @@ fn fail_on_typer_diagnostics(
     fallback_source: string,
 ) -> unit {
     if typer_diagnostics_have_errors(diagnostics) {
-        fail(render_typer_diagnostics(
-            diagnostics,
-            fallback_path,
-            fallback_source,
-        ))
+        fail(render_typer_diagnostics(diagnostics, fallback_path, fallback_source))
     } else {
         ()
     }
 }
 
-fn ast_diagnostics(
-    diagnostics: Vec[cst::Diagnostic],
-    stage: string,
-    source_path: string,
-) -> Vec[tast::Diagnostic] {
+fn ast_diagnostics(diagnostics: Vec[cst::Diagnostic], stage: string, source_path: string) -> Vec[
+    tast::Diagnostic,
+] {
     let result: Vec[tast::Diagnostic] = Vec::new();
     for diagnostic in diagnostics {
-        result.push(tast::Diagnostic {
-            severity: tast::DiagnosticSeverity::Error,
-            stage,
-            message: diagnostic.message,
-            source_path,
-            span: Option::Some(ast::Span {
-                start: diagnostic.start,
-                end: diagnostic.end,
-            }),
-            primary_label: Option::None,
-            secondary_labels: Vec::new(),
-            sort_order: 0,
-        })
+        result.push(
+            tast::Diagnostic {
+                severity: tast::DiagnosticSeverity::Error,
+                stage,
+                message: diagnostic.message,
+                source_path,
+                span: Option::Some(ast::Span { start: diagnostic.start, end: diagnostic.end }),
+                primary_label: Option::None,
+                secondary_labels: Vec::new(),
+                sort_order: 0,
+            },
+        )
     };
     result
 }
@@ -1302,11 +1226,13 @@ fn fail_on_ast_diagnostics(
     source: string,
 ) -> unit {
     if diagnostics.len() > 0 {
-        fail(render_typer_diagnostics(
-            ast_diagnostics(diagnostics, stage, source_path),
-            source_path,
-            source,
-        ))
+        fail(
+            render_typer_diagnostics(
+                ast_diagnostics(diagnostics, stage, source_path),
+                source_path,
+                source,
+            ),
+        )
     } else {
         ()
     }
@@ -1332,21 +1258,14 @@ fn compact_diagnostic_line(
     builder.write_char('\n')
 }
 
-fn compact_ast_diagnostics(
-    diagnostics: Vec[cst::Diagnostic],
-    source: string,
-    with_locations: bool,
-) -> string {
+fn compact_ast_diagnostics(diagnostics: Vec[cst::Diagnostic], source: string, with_locations: bool) -> string {
     let builder = text::StringBuilder::new();
     for diagnostic in diagnostics {
         compact_diagnostic_line(
             builder,
             diagnostic.message,
             if with_locations {
-                Option::Some(ast::Span {
-                    start: diagnostic.start,
-                    end: diagnostic.end,
-                })
+                Option::Some(ast::Span { start: diagnostic.start, end: diagnostic.end })
             } else {
                 Option::None
             },
@@ -1364,18 +1283,10 @@ fn compact_messages(diagnostics: Vec[string]) -> string {
     builder.finish()
 }
 
-fn compact_hir_diagnostics(
-    diagnostics: Vec[hir::Diagnostic],
-    source: string,
-) -> string {
+fn compact_hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source: string) -> string {
     let builder = text::StringBuilder::new();
     for diagnostic in diagnostics {
-        compact_diagnostic_line(
-            builder,
-            diagnostic.message,
-            diagnostic.span,
-            source,
-        )
+        compact_diagnostic_line(builder, diagnostic.message, diagnostic.span, source)
     };
     builder.finish()
 }
@@ -1399,8 +1310,7 @@ fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
     } else if diagnostic_message_starts_with(value.message, "No instance found for trait ") {
         2
     } else if diagnostic_message_starts_with(value.message, "Struct ")
-        && strings::contains(value.message, " type arguments, but got ")
-    {
+        && strings::contains(value.message, " type arguments, but got ") {
         1
     } else {
         0
@@ -1417,37 +1327,27 @@ fn specialized_inference_priority(value: string) -> int {
     }
 }
 
-fn compact_diagnostic_precedes(
-    left: tast::Diagnostic,
-    right: tast::Diagnostic,
-) -> bool {
+fn compact_diagnostic_precedes(left: tast::Diagnostic, right: tast::Diagnostic) -> bool {
     let left_phase = compact_diagnostic_phase(left);
     let right_phase = compact_diagnostic_phase(right);
     if left_phase != right_phase {
         left_phase < right_phase
-    } else if diagnostic_message_starts_with(
-        left.message,
-        "extern ",
-    ) && diagnostic_message_starts_with(right.message, "Internal error: ") {
+    } else if diagnostic_message_starts_with(left.message, "extern ")
+        && diagnostic_message_starts_with(right.message, "Internal error: ") {
         true
     } else if left_phase == 0
         && diagnostic_message_starts_with(left.message, "Unknown type constructor ")
-        && diagnostic_message_starts_with(right.message, "Unknown type constructor ")
-    {
+        && diagnostic_message_starts_with(right.message, "Unknown type constructor ") {
         diagnostic_span_start(left) < diagnostic_span_start(right)
     } else if left_phase == 2
         && diagnostic_message_starts_with(left.message, "No instance found for trait ")
         && diagnostic_message_starts_with(right.message, "No instance found for trait ")
-        && diagnostic_span_start(left) == diagnostic_span_start(right)
-    {
+        && diagnostic_span_start(left) == diagnostic_span_start(right) {
         left.message > right.message
     } else if left_phase == 3 {
-        specialized_inference_priority(left.message)
-            < specialized_inference_priority(right.message)
-    } else if left_phase == 4
-        && left.sort_order != right.sort_order
-        && (left.sort_order > 0 || right.sort_order > 0)
-    {
+        specialized_inference_priority(left.message) < specialized_inference_priority(right.message)
+    } else if left_phase == 4 && left.sort_order != right.sort_order
+        && (left.sort_order > 0 || right.sort_order > 0) {
         left.sort_order < right.sort_order
     } else if left_phase == 4 {
         diagnostic_span_start(left) < diagnostic_span_start(right)
@@ -1464,16 +1364,14 @@ fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagno
             Warning => (),
         }
     };
-    for index in range(1, result.len()) {
-        let value = result.get(index);
+    for index in 1..result.len() {
+        let value = result[index];
         let target = Ref::new(index);
-        while target.get() > 0
-            && compact_diagnostic_precedes(value, result.get(target.get() - 1))
-        {
-            result.set(target.get(), result.get(target.get() - 1));
+        while target.get() > 0 && compact_diagnostic_precedes(value, result[target.get() - 1]) {
+            result[target.get()] = result[target.get() - 1];
             target.set(target.get() - 1)
         };
-        result.set(target.get(), value)
+        result[target.get()] = value;
     };
     result
 }
@@ -1539,10 +1437,7 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(
-            builtins,
-            builtin_artifact_dependency().1,
-        ))
+        Option::Some(compile_standard_library(builtins, builtin_artifact_dependency().1))
     } else {
         Option::None
     };
@@ -1554,10 +1449,7 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
         Some(value) => selected_standard_core(ast_value, value),
         None => Vec::new(),
     };
-    let tast_value = tast::check_for_link_with_dependencies(
-        hir_value,
-        hir_dependencies,
-    );
+    let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
         return compact_typer_diagnostics(tast_value.diagnostics, source_path, source)
     } else {
@@ -1590,11 +1482,8 @@ fn run_test_diagnostics(args: Vec[string]) -> unit {
     if args.len() != 3 {
         fail("usage: gomlc __test-diagnostics <FILE>")
     } else {
-        let source_path = args.get(2);
-        io::print(diagnostic_output(
-            source_path,
-            read_source(source_path),
-        ))
+        let source_path = args[2];
+        io::print(diagnostic_output(source_path, read_source(source_path)))
     }
 }
 
@@ -1653,10 +1542,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(
-            builtins,
-            builtin_artifact_dependency().1,
-        ))
+        Option::Some(compile_standard_library(builtins, builtin_artifact_dependency().1))
     } else {
         Option::None
     };
@@ -1668,10 +1554,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
         Some(value) => selected_standard_core(ast_value, value),
         None => Vec::new(),
     };
-    let tast_value = tast::check_for_link_with_dependencies(
-        hir_value,
-        hir_dependencies,
-    );
+    let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
     fail_on_missing_single_file_entrypoint(tast_value);
     let core_value = core::link_with_dependencies(
@@ -1701,10 +1584,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     }
 }
 
-pub fn compile_source_or_diagnostics(
-    source_path: string,
-    source: string,
-) -> SourceCompilation {
+pub fn compile_source_or_diagnostics(source_path: string, source: string) -> SourceCompilation {
     let parsed = parser::parse(source);
     if parsed.diagnostics.len() > 0 {
         return SourceCompilation::Diagnostics(
@@ -1723,9 +1603,7 @@ pub fn compile_source_or_diagnostics(
     };
     match single_file_project_import(ast_value) {
         Some(package_path) => return SourceCompilation::Diagnostics(
-            "single-file compilation cannot use project package "
-                + package_path
-                + "\n",
+            "single-file compilation cannot use project package " + package_path + "\n",
         ),
         None => (),
     };
@@ -1748,10 +1626,7 @@ pub fn compile_source_or_diagnostics(
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
     let standard = if has_standard_import(ast_value) {
-        Option::Some(compile_standard_library(
-            builtins,
-            builtin_artifact_dependency().1,
-        ))
+        Option::Some(compile_standard_library(builtins, builtin_artifact_dependency().1))
     } else {
         Option::None
     };
@@ -1763,16 +1638,11 @@ pub fn compile_source_or_diagnostics(
         Some(value) => selected_standard_core(ast_value, value),
         None => Vec::new(),
     };
-    let tast_value = tast::check_for_link_with_dependencies(
-        hir_value,
-        hir_dependencies,
-    );
+    let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
-        return SourceCompilation::Diagnostics(compact_typer_diagnostics(
-            tast_value.diagnostics,
-            source_path,
-            source,
-        ))
+        return SourceCompilation::Diagnostics(
+            compact_typer_diagnostics(tast_value.diagnostics, source_path, source),
+        )
     } else if !has_single_file_entrypoint(tast_value) {
         return SourceCompilation::Diagnostics("main function is required\n")
     } else {
@@ -1797,16 +1667,18 @@ pub fn compile_source_or_diagnostics(
             let lift_value = lift::lower_with_counter(mono_value, counter);
             let anf_value = anf::lower_with_counter(lift_value, counter);
             let go_value = go_backend::lower(anf_value);
-            SourceCompilation::Compiled(Compilation {
-                ast_value,
-                hir_value,
-                tast_value,
-                core_value,
-                mono_value,
-                lift_value,
-                anf_value,
-                go_value,
-            })
+            SourceCompilation::Compiled(
+                Compilation {
+                    ast_value,
+                    hir_value,
+                    tast_value,
+                    core_value,
+                    mono_value,
+                    lift_value,
+                    anf_value,
+                    go_value,
+                },
+            )
         },
     }
 }
@@ -1932,7 +1804,11 @@ fn trim_ascii(value: string) -> string {
 
 fn temp_root() -> string {
     match env::var("TMPDIR") {
-        Some(value) => if value == "" { "/tmp" } else { value },
+        Some(value) => if value == "" {
+            "/tmp"
+        } else {
+            value
+        },
         None => "/tmp",
     }
 }
@@ -1959,13 +1835,10 @@ fn try_execute_with_yaegi(directory: string, go_file: string) -> bool {
     if !available {
         false
     } else {
-        match process::Command::new("yaegi")
-            .arg("run")
-            .arg(go_file)
-            .current_dir(directory)
-            .env("TZ", "UTC")
-            .output()
-        {
+        match process::Command::new("yaegi").arg("run").arg(go_file).current_dir(directory).env(
+            "TZ",
+            "UTC",
+        ).output() {
             Ok(output) => if command_succeeded(output) {
                 write_stdout(process::Output::stdout(output));
                 true
@@ -1983,22 +1856,14 @@ fn cleanup_temp_file(go_file: string) -> unit {
 }
 
 fn execute_with_go_run(directory: string, go_file: string) -> unit {
-    match process::Command::new("go")
-        .arg("run")
-        .arg(go_file)
-        .current_dir(directory)
-        .env("TZ", "UTC")
-        .env("GOWORK", "off")
-        .env("GO111MODULE", "off")
-        .output()
-    {
+    match process::Command::new("go").arg("run").arg(go_file).current_dir(directory).env(
+        "TZ",
+        "UTC",
+    ).env("GOWORK", "off").env("GO111MODULE", "off").output() {
         Ok(output) => if command_succeeded(output) {
             write_stdout(process::Output::stdout(output))
         } else {
-            fail(
-                "go run failed: "
-                    + trim_ascii(bytes_to_string(process::Output::stderr(output))),
-            )
+            fail("go run failed: " + trim_ascii(bytes_to_string(process::Output::stderr(output))))
         },
         Err(error) => fail("failed to execute go run: " + error),
     }

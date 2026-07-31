@@ -199,7 +199,7 @@ pub fn bytes_source() -> string {
     let source = \\package bytes;
         \\
         \\pub struct Bytes {
-        \\    pub values: Vec[uint8],
+        \\    pub values: Vec[byte],
         \\}
         \\
         \\impl Bytes {
@@ -208,19 +208,15 @@ pub fn bytes_source() -> string {
         \\    }
         \\
         \\    pub fn with_capacity(capacity: int) -> Bytes {
-        \\        Bytes {
-        \\            values: Vec::with_capacity(capacity),
-        \\        }
+        \\        Bytes { values: Vec::with_capacity(capacity) }
         \\    }
         \\
-        \\    pub fn from_vec(values: Vec[uint8]) -> Bytes {
+        \\    pub fn from_vec(values: Vec[byte]) -> Bytes {
         \\        Bytes { values }
         \\    }
         \\
         \\    pub fn from_string(value: string) -> Bytes {
-        \\        Bytes {
-        \\            values: value.to_bytes(),
-        \\        }
+        \\        Bytes { values: value.to_bytes() }
         \\    }
         \\
         \\    pub fn len(self: Bytes) -> int {
@@ -235,19 +231,19 @@ pub fn bytes_source() -> string {
         \\        self.values.is_empty()
         \\    }
         \\
-        \\    pub fn get(self: Bytes, index: int) -> uint8 {
-        \\        self.values.get(index)
+        \\    pub fn get(self: Bytes, index: int) -> byte {
+        \\        self.values[index]
         \\    }
         \\
-        \\    pub fn set(self: Bytes, index: int, value: uint8) -> unit {
-        \\        self.values.set(index, value)
+        \\    pub fn set(self: Bytes, index: int, value: byte) -> unit {
+        \\        self.values[index] = value;
         \\    }
         \\
-        \\    pub fn push(self: Bytes, value: uint8) -> unit {
+        \\    pub fn push(self: Bytes, value: byte) -> unit {
         \\        self.values.push(value)
         \\    }
         \\
-        \\    pub fn pop(self: Bytes) -> Option[uint8] {
+        \\    pub fn pop(self: Bytes) -> Option[byte] {
         \\        self.values.pop()
         \\    }
         \\
@@ -263,11 +259,11 @@ pub fn bytes_source() -> string {
         \\        self.values.clear()
         \\    }
         \\
-        \\    pub fn slice(self: Bytes, start: int, end: int) -> Slice[uint8] {
+        \\    pub fn slice(self: Bytes, start: int, end: int) -> Slice[byte] {
         \\        self.values.slice(start, end)
         \\    }
         \\
-        \\    pub fn to_vec(self: Bytes) -> Vec[uint8] {
+        \\    pub fn to_vec(self: Bytes) -> Vec[byte] {
         \\        self.values
         \\    }
         \\
@@ -292,8 +288,8 @@ pub fn fs_source() -> string {
         \\
         \\pub fn read_file(path: string) -> Result[string, string] {
         \\    match read_bytes(path) {
-        \\        Result::Ok(data) => data.to_string(),
-        \\        Result::Err(error) => Result::Err(error),
+        \\        Ok(data) => data.to_string(),
+        \\        Err(error) => Result::Err(error),
         \\    }
         \\}
         \\
@@ -680,40 +676,40 @@ pub fn process_source() -> string {
         \\            self.input_value,
         \\        );
         \\        if ok {
-        \\            Result::Ok(Output {
-        \\                status_value: ExitStatus { code_value: code },
-        \\                stdout_value: bytes::Bytes::from_vec(stdout),
-        \\                stderr_value: bytes::Bytes::from_vec(stderr),
-        \\            })
-        \\        } else {
-        \\            Result::Err(err)
-        \\        }
-        \\    }
-        \\
-        \\    pub fn output_timeout(
-        \\        self: Command,
-        \\        timeout_ms: int,
-        \\    ) -> Result[(Output, bool), string] {
-        \\        let (ok, code, stdout, stderr, err, timed_out) =
-        \\            host::process_output_timeout(
-        \\                self.program,
-        \\                self.arguments,
-        \\                self.has_directory,
-        \\                self.directory,
-        \\                self.environment,
-        \\                self.has_input,
-        \\                self.input_value,
-        \\                timeout_ms,
-        \\            );
-        \\        if ok {
-        \\            Result::Ok((
+        \\            Result::Ok(
         \\                Output {
         \\                    status_value: ExitStatus { code_value: code },
         \\                    stdout_value: bytes::Bytes::from_vec(stdout),
         \\                    stderr_value: bytes::Bytes::from_vec(stderr),
         \\                },
-        \\                timed_out,
-        \\            ))
+        \\            )
+        \\        } else {
+        \\            Result::Err(err)
+        \\        }
+        \\    }
+        \\
+        \\    pub fn output_timeout(self: Command, timeout_ms: int) -> Result[(Output, bool), string] {
+        \\        let (ok, code, stdout, stderr, err, timed_out) = host::process_output_timeout(
+        \\            self.program,
+        \\            self.arguments,
+        \\            self.has_directory,
+        \\            self.directory,
+        \\            self.environment,
+        \\            self.has_input,
+        \\            self.input_value,
+        \\            timeout_ms,
+        \\        );
+        \\        if ok {
+        \\            Result::Ok(
+        \\                (
+        \\                    Output {
+        \\                        status_value: ExitStatus { code_value: code },
+        \\                        stdout_value: bytes::Bytes::from_vec(stdout),
+        \\                        stderr_value: bytes::Bytes::from_vec(stderr),
+        \\                    },
+        \\                    timed_out,
+        \\                ),
+        \\            )
         \\        } else {
         \\            Result::Err(err)
         \\        }
@@ -734,10 +730,7 @@ pub fn process_source() -> string {
         \\        }
         \\    }
         \\
-        \\    pub fn status_timeout(
-        \\        self: Command,
-        \\        timeout_ms: int,
-        \\    ) -> Result[(ExitStatus, bool), string] {
+        \\    pub fn status_timeout(self: Command, timeout_ms: int) -> Result[(ExitStatus, bool), string] {
         \\        let (ok, code, err, timed_out) = host::process_status_timeout(
         \\            self.program,
         \\            self.arguments,
@@ -792,8 +785,7 @@ pub fn testing_source() -> string {
         \\        ()
         \\    } else {
         \\        fail(
-        \\            "assertion failed: values are not equal\n  actual: "
-        \\                + ToString::to_string(actual)
+        \\            "assertion failed: values are not equal\n  actual: " + ToString::to_string(actual)
         \\                + "\nexpected: "
         \\                + ToString::to_string(expected),
         \\        )
@@ -802,9 +794,7 @@ pub fn testing_source() -> string {
         \\
         \\pub fn assert_ne[T: Eq + ToString](actual: T, expected: T) -> unit {
         \\    if Eq::eq(actual, expected) {
-        \\        fail(
-        \\            "assertion failed: values are equal\nvalue: " + ToString::to_string(actual),
-        \\        )
+        \\        fail("assertion failed: values are equal\nvalue: " + ToString::to_string(actual))
         \\    } else {
         \\        ()
         \\    }
@@ -866,19 +856,19 @@ pub fn collections_source() -> string {
         \\    }
         \\
         \\    pub fn get(self: Arena[T], id: ArenaId[T]) -> T {
-        \\        self.values.get(id.index)
+        \\        self.values[id.index]
         \\    }
         \\
         \\    pub fn try_get(self: Arena[T], id: ArenaId[T]) -> Option[T] {
         \\        if self.contains_id(id) {
-        \\            Option::Some(self.values.get(id.index))
+        \\            Option::Some(self.values[id.index])
         \\        } else {
         \\            Option::None
         \\        }
         \\    }
         \\
         \\    pub fn set(self: Arena[T], id: ArenaId[T], value: T) -> unit {
-        \\        self.values.set(id.index, value)
+        \\        self.values[id.index] = value;
         \\    }
         \\}
         \\
@@ -889,10 +879,7 @@ pub fn collections_source() -> string {
         \\
         \\impl BitSet {
         \\    pub fn new() -> BitSet {
-        \\        BitSet {
-        \\            words: Vec::new(),
-        \\            len: Ref::new(0),
-        \\        }
+        \\        BitSet { words: Vec::new(), len: Ref::new(0) }
         \\    }
         \\
         \\    pub fn len(self: BitSet) -> int {
@@ -912,7 +899,7 @@ pub fn collections_source() -> string {
         \\                false
         \\            } else {
         \\                let mask = 1 << (index % 64);
-        \\                self.words.get(word_index) & mask != 0
+        \\                self.words[word_index] & mask != 0
         \\            }
         \\        }
         \\    }
@@ -926,11 +913,11 @@ pub fn collections_source() -> string {
         \\                self.words.push(0);
         \\            };
         \\            let mask = 1 << (index % 64);
-        \\            let old = self.words.get(word_index);
+        \\            let old = self.words[word_index];
         \\            if old & mask != 0 {
         \\                false
         \\            } else {
-        \\                self.words.set(word_index, old | mask);
+        \\                self.words[word_index] = old | mask;
         \\                self.len.set(self.len.get() + 1);
         \\                true
         \\            }
@@ -943,7 +930,7 @@ pub fn collections_source() -> string {
         \\        } else {
         \\            let word_index = index / 64;
         \\            let mask = 1 << (index % 64);
-        \\            self.words.set(word_index, self.words.get(word_index) & ~mask);
+        \\            self.words[word_index] = self.words[word_index] & ~mask;
         \\            self.len.set(self.len.get() - 1);
         \\            true
         \\        }
@@ -963,25 +950,17 @@ pub fn collections_source() -> string {
         \\
         \\impl[T] Deque[T] {
         \\    pub fn new() -> Deque[T] {
-        \\        Deque {
-        \\            slots: Ref::new(Vec::new()),
-        \\            head: Ref::new(0),
-        \\            len: Ref::new(0),
-        \\        }
+        \\        Deque { slots: Ref::new(Vec::new()), head: Ref::new(0), len: Ref::new(0) }
         \\    }
         \\
         \\    pub fn with_capacity(capacity: int) -> Deque[T] {
         \\        let slots: Vec[Option[T]] = Vec::with_capacity(capacity);
-        \\        let index = Ref::new(0);
-        \\        while index.get() < capacity {
+        \\        let mut index = 0;
+        \\        while index < capacity {
         \\            slots.push(Option::None);
-        \\            index.set(index.get() + 1);
+        \\            index += 1;
         \\        };
-        \\        Deque {
-        \\            slots: Ref::new(slots),
-        \\            head: Ref::new(0),
-        \\            len: Ref::new(0),
-        \\        }
+        \\        Deque { slots: Ref::new(slots), head: Ref::new(0), len: Ref::new(0) }
         \\    }
         \\
         \\    pub fn len(self: Deque[T]) -> int {
@@ -1002,18 +981,22 @@ pub fn collections_source() -> string {
         \\        } else {
         \\            let old = self.slots.get();
         \\            let old_capacity = old.len();
-        \\            let new_capacity = if old_capacity == 0 { 4 } else { old_capacity * 2 };
-        \\            let next: Vec[Option[T]] = Vec::with_capacity(new_capacity);
-        \\            let index = Ref::new(0);
-        \\            while index.get() < new_capacity {
-        \\                next.push(Option::None);
-        \\                index.set(index.get() + 1);
+        \\            let new_capacity = if old_capacity == 0 {
+        \\                4
+        \\            } else {
+        \\                old_capacity * 2
         \\            };
-        \\            index.set(0);
-        \\            while index.get() < self.len.get() {
-        \\                let old_index = (self.head.get() + index.get()) % old_capacity;
-        \\                next.set(index.get(), old.get(old_index));
-        \\                index.set(index.get() + 1);
+        \\            let next: Vec[Option[T]] = Vec::with_capacity(new_capacity);
+        \\            let mut index = 0;
+        \\            while index < new_capacity {
+        \\                next.push(Option::None);
+        \\                index += 1;
+        \\            };
+        \\            index = 0;
+        \\            while index < self.len.get() {
+        \\                let old_index = (self.head.get() + index) % old_capacity;
+        \\                next[index] = old[old_index];
+        \\                index += 1;
         \\            };
         \\            self.slots.set(next);
         \\            self.head.set(0)
@@ -1023,7 +1006,7 @@ pub fn collections_source() -> string {
         \\    pub fn push_back(self: Deque[T], value: T) -> unit {
         \\        self.ensure_space();
         \\        let index = (self.head.get() + self.len.get()) % self.capacity();
-        \\        self.slots.get().set(index, Option::Some(value));
+        \\        self.slots.get()[index] = Option::Some(value);
         \\        self.len.set(self.len.get() + 1)
         \\    }
         \\
@@ -1031,7 +1014,7 @@ pub fn collections_source() -> string {
         \\        self.ensure_space();
         \\        let index = (self.head.get() - 1 + self.capacity()) % self.capacity();
         \\        self.head.set(index);
-        \\        self.slots.get().set(index, Option::Some(value));
+        \\        self.slots.get()[index] = Option::Some(value);
         \\        self.len.set(self.len.get() + 1)
         \\    }
         \\
@@ -1040,8 +1023,8 @@ pub fn collections_source() -> string {
         \\            Option::None
         \\        } else {
         \\            let index = self.head.get();
-        \\            let value = self.slots.get().get(index);
-        \\            self.slots.get().set(index, Option::None);
+        \\            let value = self.slots.get()[index];
+        \\            self.slots.get()[index] = Option::None;
         \\            self.len.set(self.len.get() - 1);
         \\            if self.len.get() == 0 {
         \\                self.head.set(0)
@@ -1057,8 +1040,8 @@ pub fn collections_source() -> string {
         \\            Option::None
         \\        } else {
         \\            let index = (self.head.get() + self.len.get() - 1) % self.capacity();
-        \\            let value = self.slots.get().get(index);
-        \\            self.slots.get().set(index, Option::None);
+        \\            let value = self.slots.get()[index];
+        \\            self.slots.get()[index] = Option::None;
         \\            self.len.set(self.len.get() - 1);
         \\            if self.len.get() == 0 {
         \\                self.head.set(0)
@@ -1073,7 +1056,7 @@ pub fn collections_source() -> string {
         \\        if self.len.get() == 0 {
         \\            Option::None
         \\        } else {
-        \\            self.slots.get().get(self.head.get())
+        \\            self.slots.get()[self.head.get()]
         \\        }
         \\    }
         \\
@@ -1081,7 +1064,7 @@ pub fn collections_source() -> string {
         \\        if self.len.get() == 0 {
         \\            Option::None
         \\        } else {
-        \\            self.slots.get().get((self.head.get() + self.len.get() - 1) % self.capacity())
+        \\            self.slots.get()[(self.head.get() + self.len.get() - 1) % self.capacity()]
         \\        }
         \\    }
         \\
@@ -1089,7 +1072,7 @@ pub fn collections_source() -> string {
         \\        if index < 0 || index >= self.len.get() {
         \\            Option::None
         \\        } else {
-        \\            self.slots.get().get((self.head.get() + index) % self.capacity())
+        \\            self.slots.get()[(self.head.get() + index) % self.capacity()]
         \\        }
         \\    }
         \\
@@ -1106,9 +1089,7 @@ pub fn collections_source() -> string {
         \\
         \\impl[K: Eq + Hash] HashSet[K] {
         \\    pub fn new() -> HashSet[K] {
-        \\        HashSet {
-        \\            entries: HashMap::new(),
-        \\        }
+        \\        HashSet { entries: HashMap::{} }
         \\    }
         \\
         \\    pub fn len(self: HashSet[K]) -> int {
@@ -1127,7 +1108,7 @@ pub fn collections_source() -> string {
         \\        if self.entries.contains(value) {
         \\            false
         \\        } else {
-        \\            self.entries.set(value, ());
+        \\            self.entries[value] = ();
         \\            true
         \\        }
         \\    }
@@ -1161,20 +1142,24 @@ pub fn collections_source() -> string {
         \\}
         \\
         \\fn index_map_capacity_for_entries(entries: int) -> int {
-        \\    let requested = if entries < 0 { 0 } else { entries };
-        \\    let capacity = Ref::new(8);
-        \\    while requested * 3 >= capacity.get() * 2 {
-        \\        capacity.set(capacity.get() * 2)
+        \\    let requested = if entries < 0 {
+        \\        0
+        \\    } else {
+        \\        entries
         \\    };
-        \\    capacity.get()
+        \\    let mut capacity = 8;
+        \\    while requested * 3 >= capacity * 2 {
+        \\        capacity *= 2;
+        \\    };
+        \\    capacity
         \\}
         \\
         \\fn index_map_empty_indices(capacity: int) -> Vec[int] {
         \\    let indices = Vec::with_capacity(capacity);
-        \\    let index = Ref::new(0);
-        \\    while index.get() < capacity {
+        \\    let mut index = 0;
+        \\    while index < capacity {
         \\        indices.push(-1);
-        \\        index.set(index.get() + 1)
+        \\        index += 1;
         \\    };
         \\    indices
         \\}
@@ -1185,11 +1170,15 @@ pub fn collections_source() -> string {
         \\    }
         \\
         \\    pub fn with_capacity(capacity: int) -> IndexMap[K, V] {
-        \\        let entry_capacity = if capacity < 0 { 0 } else { capacity };
+        \\        let entry_capacity = if capacity < 0 {
+        \\            0
+        \\        } else {
+        \\            capacity
+        \\        };
         \\        IndexMap {
-        \\            indices: Ref::new(index_map_empty_indices(
-        \\                index_map_capacity_for_entries(entry_capacity),
-        \\            )),
+        \\            indices: Ref::new(
+        \\                index_map_empty_indices(index_map_capacity_for_entries(entry_capacity)),
+        \\            ),
         \\            entries: Ref::new(Vec::with_capacity(entry_capacity)),
         \\            len: Ref::new(0),
         \\            deleted: Ref::new(0),
@@ -1207,62 +1196,54 @@ pub fn collections_source() -> string {
         \\    fn probe(self: IndexMap[K, V], key: K, hash: uint64) -> IndexMapProbe {
         \\        let indices = self.indices.get();
         \\        let mask = indices.len() - 1;
-        \\        let position = Ref::new((hash & mask as uint64) as int);
-        \\        let perturb = Ref::new(hash);
-        \\        let first_deleted = Ref::new(-1);
+        \\        let mut position = (hash & mask as uint64) as int;
+        \\        let mut perturb = hash;
+        \\        let mut first_deleted = -1;
         \\        while true {
-        \\            let dense_index = indices.get(position.get());
+        \\            let dense_index = indices[position];
         \\            if dense_index == -1 {
         \\                return IndexMapProbe::Vacant(
-        \\                    if first_deleted.get() >= 0 {
-        \\                        first_deleted.get()
+        \\                    if first_deleted >= 0 {
+        \\                        first_deleted
         \\                    } else {
-        \\                        position.get()
+        \\                        position
         \\                    },
         \\                )
         \\            } else if dense_index == -2 {
-        \\                if first_deleted.get() < 0 {
-        \\                    first_deleted.set(position.get())
+        \\                if first_deleted < 0 {
+        \\                    first_deleted = position;
         \\                } else {
         \\                    ()
         \\                }
         \\            } else {
-        \\                match self.entries.get().get(dense_index) {
-        \\                    Option::Some(entry) => {
+        \\                match self.entries.get()[dense_index] {
+        \\                    Some(entry) => {
         \\                        if entry.hash == hash && Eq::eq(entry.key, key) {
-        \\                            return IndexMapProbe::Found(position.get(), dense_index)
+        \\                            return IndexMapProbe::Found(position, dense_index)
         \\                        } else {
         \\                            ()
         \\                        }
         \\                    },
-        \\                    Option::None => (),
+        \\                    None => (),
         \\                }
         \\            };
-        \\            position.set(
-        \\                (
-        \\                    (
-        \\                        position.get() as uint64 * 5
-        \\                            + perturb.get()
-        \\                            + 1
-        \\                    ) & mask as uint64
-        \\                ) as int,
-        \\            );
-        \\            perturb.set(perturb.get() >> 5)
+        \\            position = ((position as uint64 * 5 + perturb + 1) & mask as uint64) as int;
+        \\            perturb >>= 5;
         \\        };
         \\        IndexMapProbe::Vacant(0)
         \\    }
         \\
         \\    fn place_entry_index(self: IndexMap[K, V], dense_index: int) -> unit {
-        \\        match self.entries.get().get(dense_index) {
-        \\            Option::Some(entry) => match self.probe(entry.key, entry.hash) {
-        \\                IndexMapProbe::Found(slot, _) => {
-        \\                    self.indices.get().set(slot, dense_index)
+        \\        match self.entries.get()[dense_index] {
+        \\            Some(entry) => match self.probe(entry.key, entry.hash) {
+        \\                Found(slot, _) => {
+        \\                    self.indices.get()[slot] = dense_index;
         \\                },
-        \\                IndexMapProbe::Vacant(slot) => {
-        \\                    self.indices.get().set(slot, dense_index)
+        \\                Vacant(slot) => {
+        \\                    self.indices.get()[slot] = dense_index;
         \\                },
         \\            },
-        \\            Option::None => (),
+        \\            None => (),
         \\        }
         \\    }
         \\
@@ -1274,25 +1255,22 @@ pub fn collections_source() -> string {
         \\            live_entries
         \\        };
         \\        let old_entries = self.entries.get();
-        \\        let next_entries: Vec[Option[IndexMapEntry[K, V]]] =
-        \\            Vec::with_capacity(desired_entries);
-        \\        let old_index = Ref::new(0);
-        \\        while old_index.get() < old_entries.len() {
-        \\            match old_entries.get(old_index.get()) {
-        \\                Option::Some(entry) => next_entries.push(Option::Some(entry)),
-        \\                Option::None => (),
+        \\        let next_entries: Vec[Option[IndexMapEntry[K, V]]] = Vec::with_capacity(desired_entries);
+        \\        let mut old_index = 0;
+        \\        while old_index < old_entries.len() {
+        \\            match old_entries[old_index] {
+        \\                Some(entry) => next_entries.push(Option::Some(entry)),
+        \\                None => (),
         \\            };
-        \\            old_index.set(old_index.get() + 1)
+        \\            old_index += 1;
         \\        };
         \\        self.entries.set(next_entries);
-        \\        self.indices.set(index_map_empty_indices(
-        \\            index_map_capacity_for_entries(desired_entries),
-        \\        ));
+        \\        self.indices.set(index_map_empty_indices(index_map_capacity_for_entries(desired_entries)));
         \\        self.deleted.set(0);
-        \\        let dense_index = Ref::new(0);
-        \\        while dense_index.get() < self.entries.get().len() {
-        \\            self.place_entry_index(dense_index.get());
-        \\            dense_index.set(dense_index.get() + 1)
+        \\        let mut dense_index = 0;
+        \\        while dense_index < self.entries.get().len() {
+        \\            self.place_entry_index(dense_index);
+        \\            dense_index += 1;
         \\        }
         \\    }
         \\
@@ -1318,21 +1296,21 @@ pub fn collections_source() -> string {
         \\    pub fn contains(self: IndexMap[K, V], key: K) -> bool {
         \\        let hash = Hash::hash(key);
         \\        match self.probe(key, hash) {
-        \\            IndexMapProbe::Found(_, _) => true,
-        \\            IndexMapProbe::Vacant(_) => false,
+        \\            Found(_, _) => true,
+        \\            Vacant(_) => false,
         \\        }
         \\    }
         \\
         \\    pub fn get(self: IndexMap[K, V], key: K) -> Option[V] {
         \\        let hash = Hash::hash(key);
         \\        match self.probe(key, hash) {
-        \\            IndexMapProbe::Found(_, dense_index) => {
-        \\                match self.entries.get().get(dense_index) {
-        \\                    Option::Some(entry) => Option::Some(entry.value),
-        \\                    Option::None => Option::None,
+        \\            Found(_, dense_index) => {
+        \\                match self.entries.get()[dense_index] {
+        \\                    Some(entry) => Option::Some(entry.value),
+        \\                    None => Option::None,
         \\                }
         \\            },
-        \\            IndexMapProbe::Vacant(_) => Option::None,
+        \\            Vacant(_) => Option::None,
         \\        }
         \\    }
         \\
@@ -1340,31 +1318,22 @@ pub fn collections_source() -> string {
         \\        self.ensure_insert_capacity();
         \\        let hash = Hash::hash(key);
         \\        match self.probe(key, hash) {
-        \\            IndexMapProbe::Found(_, dense_index) => {
-        \\                match self.entries.get().get(dense_index) {
-        \\                    Option::Some(entry) => {
+        \\            Found(_, dense_index) => {
+        \\                match self.entries.get()[dense_index] {
+        \\                    Some(entry) => {
         \\                        let previous = entry.value;
-        \\                        self.entries.get().set(
-        \\                            dense_index,
-        \\                            Option::Some(IndexMapEntry {
-        \\                                hash: entry.hash,
-        \\                                key: entry.key,
-        \\                                value,
-        \\                            }),
+        \\                        self.entries.get()[dense_index] = Option::Some(
+        \\                            IndexMapEntry { hash: entry.hash, key: entry.key, value },
         \\                        );
         \\                        Option::Some(previous)
         \\                    },
-        \\                    Option::None => Option::None,
+        \\                    None => Option::None,
         \\                }
         \\            },
-        \\            IndexMapProbe::Vacant(slot) => {
+        \\            Vacant(slot) => {
         \\                let dense_index = self.entries.get().len();
-        \\                self.entries.get().push(Option::Some(IndexMapEntry {
-        \\                    hash,
-        \\                    key,
-        \\                    value,
-        \\                }));
-        \\                self.indices.get().set(slot, dense_index);
+        \\                self.entries.get().push(Option::Some(IndexMapEntry { hash, key, value }));
+        \\                self.indices.get()[slot] = dense_index;
         \\                self.len.set(self.len.get() + 1);
         \\                Option::None
         \\            },
@@ -1374,20 +1343,20 @@ pub fn collections_source() -> string {
         \\    pub fn remove(self: IndexMap[K, V], key: K) -> Option[V] {
         \\        let hash = Hash::hash(key);
         \\        match self.probe(key, hash) {
-        \\            IndexMapProbe::Found(slot, dense_index) => {
-        \\                match self.entries.get().get(dense_index) {
-        \\                    Option::Some(entry) => {
-        \\                        self.indices.get().set(slot, -2);
-        \\                        self.entries.get().set(dense_index, Option::None);
+        \\            Found(slot, dense_index) => {
+        \\                match self.entries.get()[dense_index] {
+        \\                    Some(entry) => {
+        \\                        self.indices.get()[slot] = -2;
+        \\                        self.entries.get()[dense_index] = Option::None;
         \\                        self.len.set(self.len.get() - 1);
         \\                        self.deleted.set(self.deleted.get() + 1);
         \\                        self.compact_after_remove();
         \\                        Option::Some(entry.value)
         \\                    },
-        \\                    Option::None => Option::None,
+        \\                    None => Option::None,
         \\                }
         \\            },
-        \\            IndexMapProbe::Vacant(_) => Option::None,
+        \\            Vacant(_) => Option::None,
         \\        }
         \\    }
         \\
@@ -1415,64 +1384,67 @@ pub fn collections_source() -> string {
         \\
         \\    pub fn entries(self: IndexMap[K, V]) -> Vec[(K, V)] {
         \\        let result = Vec::with_capacity(self.len.get());
-        \\        let index = Ref::new(0);
-        \\        while index.get() < self.entries.get().len() {
-        \\            match self.entries.get().get(index.get()) {
-        \\                Option::Some(entry) => result.push((entry.key, entry.value)),
-        \\                Option::None => (),
+        \\        let mut index = 0;
+        \\        while index < self.entries.get().len() {
+        \\            match self.entries.get()[index] {
+        \\                Some(entry) => result.push((entry.key, entry.value)),
+        \\                None => (),
         \\            };
-        \\            index.set(index.get() + 1)
+        \\            index += 1;
         \\        };
         \\        result
         \\    }
         \\
         \\    pub fn keys(self: IndexMap[K, V]) -> Vec[K] {
         \\        let result = Vec::with_capacity(self.len.get());
-        \\        let index = Ref::new(0);
-        \\        while index.get() < self.entries.get().len() {
-        \\            match self.entries.get().get(index.get()) {
-        \\                Option::Some(entry) => result.push(entry.key),
-        \\                Option::None => (),
+        \\        let mut index = 0;
+        \\        while index < self.entries.get().len() {
+        \\            match self.entries.get()[index] {
+        \\                Some(entry) => result.push(entry.key),
+        \\                None => (),
         \\            };
-        \\            index.set(index.get() + 1)
+        \\            index += 1;
         \\        };
         \\        result
         \\    }
         \\
         \\    pub fn values(self: IndexMap[K, V]) -> Vec[V] {
         \\        let result = Vec::with_capacity(self.len.get());
-        \\        let index = Ref::new(0);
-        \\        while index.get() < self.entries.get().len() {
-        \\            match self.entries.get().get(index.get()) {
-        \\                Option::Some(entry) => result.push(entry.value),
-        \\                Option::None => (),
+        \\        let mut index = 0;
+        \\        while index < self.entries.get().len() {
+        \\            match self.entries.get()[index] {
+        \\                Some(entry) => result.push(entry.value),
+        \\                None => (),
         \\            };
-        \\            index.set(index.get() + 1)
+        \\            index += 1;
         \\        };
         \\        result
         \\    }
         \\
         \\    pub fn iter(self: IndexMap[K, V]) -> FnIterator[(K, V)] {
-        \\        let index = Ref::new(0);
+        \\        let mut index = 0;
         \\        let entries_len = self.entries.get().len();
-        \\        FnIterator::from_fn(|| {
-        \\            while index.get() < entries_len {
-        \\                let current = index.get();
-        \\                index.set(current + 1);
-        \\                match self.entries.get().get(current) {
-        \\                    Option::Some(entry) => {
-        \\                        return Option::Some((entry.key, entry.value))
-        \\                    },
-        \\                    Option::None => (),
-        \\                }
-        \\            };
-        \\            Option::None
-        \\        })
+        \\        FnIterator::from_fn(
+        \\            || {
+        \\                while index < entries_len {
+        \\                    let current = index;
+        \\                    index += 1;
+        \\                    match self.entries.get()[current] {
+        \\                        Some(entry) => {
+        \\                            return Option::Some((entry.key, entry.value))
+        \\                        },
+        \\                        None => (),
+        \\                    }
+        \\                };
+        \\                Option::None
+        \\            },
+        \\        )
         \\    }
         \\}
         \\
         \\impl[K: Eq + Hash, V] IntoIterator for IndexMap[K, V] {
         \\    type Item = (K, V);
+        \\
         \\    type IntoIter = FnIterator[(K, V)];
         \\
         \\    fn into_iter(self: IndexMap[K, V]) -> FnIterator[(K, V)] {
@@ -1512,9 +1484,7 @@ pub fn collections_source() -> string {
         \\    }
         \\
         \\    pub fn with_capacity(capacity: int) -> IndexVec[T] {
-        \\        IndexVec {
-        \\            values: Vec::with_capacity(capacity),
-        \\        }
+        \\        IndexVec { values: Vec::with_capacity(capacity) }
         \\    }
         \\
         \\    pub fn len(self: IndexVec[T]) -> int {
@@ -1526,9 +1496,7 @@ pub fn collections_source() -> string {
         \\    }
         \\
         \\    pub fn push(self: IndexVec[T], value: T) -> Index[T] {
-        \\        let index = Index {
-        \\            value: self.values.len(),
-        \\        };
+        \\        let index = Index { value: self.values.len() };
         \\        self.values.push(value);
         \\        index
         \\    }
@@ -1538,19 +1506,19 @@ pub fn collections_source() -> string {
         \\    }
         \\
         \\    pub fn get(self: IndexVec[T], index: Index[T]) -> T {
-        \\        self.values.get(index.value)
+        \\        self.values[index.value]
         \\    }
         \\
         \\    pub fn try_get(self: IndexVec[T], index: Index[T]) -> Option[T] {
         \\        if self.contains(index) {
-        \\            Option::Some(self.values.get(index.value))
+        \\            Option::Some(self.values[index.value])
         \\        } else {
         \\            Option::None
         \\        }
         \\    }
         \\
         \\    pub fn set(self: IndexVec[T], index: Index[T], value: T) -> unit {
-        \\        self.values.set(index.value, value)
+        \\        self.values[index.value] = value;
         \\    }
         \\}
         \\
@@ -1583,10 +1551,7 @@ pub fn collections_source() -> string {
         \\
         \\impl Interner {
         \\    pub fn new() -> Interner {
-        \\        Interner {
-        \\            symbols: HashMap::new(),
-        \\            values: Vec::new(),
-        \\        }
+        \\        Interner { symbols: HashMap::{}, values: Vec::[] }
         \\    }
         \\
         \\    pub fn len(self: Interner) -> int {
@@ -1602,26 +1567,24 @@ pub fn collections_source() -> string {
         \\    }
         \\
         \\    pub fn intern(self: Interner, value: string) -> Symbol {
-        \\        match self.symbols.get(value) {
-        \\            Option::Some(symbol) => symbol,
-        \\            Option::None => {
-        \\                let symbol = Symbol {
-        \\                    index: self.values.len(),
-        \\                };
+        \\        match self.symbols[value] {
+        \\            Some(symbol) => symbol,
+        \\            None => {
+        \\                let symbol = Symbol { index: self.values.len() };
         \\                self.values.push(value);
-        \\                self.symbols.set(value, symbol);
+        \\                self.symbols[value] = symbol;
         \\                symbol
         \\            },
         \\        }
         \\    }
         \\
         \\    pub fn get(self: Interner, symbol: Symbol) -> string {
-        \\        self.values.get(symbol.index)
+        \\        self.values[symbol.index]
         \\    }
         \\
         \\    pub fn resolve(self: Interner, symbol: Symbol) -> Option[string] {
         \\        if symbol.index >= 0 && symbol.index < self.values.len() {
-        \\            Option::Some(self.values.get(symbol.index))
+        \\            Option::Some(self.values[symbol.index])
         \\        } else {
         \\            Option::None
         \\        }
@@ -1638,9 +1601,7 @@ pub fn collections_source() -> string {
         \\    }
         \\
         \\    pub fn with_capacity(capacity: int) -> Stack[T] {
-        \\        Stack {
-        \\            values: Vec::with_capacity(capacity),
-        \\        }
+        \\        Stack { values: Vec::with_capacity(capacity) }
         \\    }
         \\
         \\    pub fn len(self: Stack[T]) -> int {
@@ -1669,13 +1630,14 @@ pub fn collections_source() -> string {
         \\}
         \\
         \\fn smaller(left: int, right: int) -> int {
-        \\    if left < right { left } else { right }
+        \\    if left < right {
+        \\        left
+        \\    } else {
+        \\        right
+        \\    }
         \\}
         \\
-        \\pub fn stable_sort_by[T](
-        \\    values: Vec[T],
-        \\    compare: (T, T) -> int,
-        \\) -> unit {
+        \\pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
         \\    let length = values.len();
         \\    if length < 2 {
         \\        return
@@ -1683,54 +1645,48 @@ pub fn collections_source() -> string {
         \\        ()
         \\    };
         \\    let buffer: Vec[T] = Vec::with_capacity(length);
-        \\    for index in range(0, length) {
-        \\        buffer.push(values.get(index))
+        \\    for index in 0..length {
+        \\        buffer.push(values[index])
         \\    };
-        \\    let width = Ref::new(1);
-        \\    while width.get() < length {
-        \\        let left = Ref::new(0);
-        \\        while left.get() < length {
-        \\            let middle = smaller(left.get() + width.get(), length);
-        \\            let right = smaller(middle + width.get(), length);
-        \\            let first = Ref::new(left.get());
-        \\            let second = Ref::new(middle);
-        \\            let output = Ref::new(left.get());
-        \\            while first.get() < middle && second.get() < right {
-        \\                if compare(
-        \\                    values.get(first.get()),
-        \\                    values.get(second.get()),
-        \\                ) <= 0
-        \\                {
-        \\                    buffer.set(output.get(), values.get(first.get()));
-        \\                    first.set(first.get() + 1)
+        \\    let mut width = 1;
+        \\    while width < length {
+        \\        let mut left = 0;
+        \\        while left < length {
+        \\            let middle = smaller(left + width, length);
+        \\            let right = smaller(middle + width, length);
+        \\            let mut first = left;
+        \\            let mut second = middle;
+        \\            let mut output = left;
+        \\            while first < middle && second < right {
+        \\                if compare(values[first], values[second]) <= 0 {
+        \\                    buffer[output] = values[first];
+        \\                    first += 1;
         \\                } else {
-        \\                    buffer.set(output.get(), values.get(second.get()));
-        \\                    second.set(second.get() + 1)
+        \\                    buffer[output] = values[second];
+        \\                    second += 1;
         \\                };
-        \\                output.set(output.get() + 1)
+        \\                output += 1;
         \\            };
-        \\            while first.get() < middle {
-        \\                buffer.set(output.get(), values.get(first.get()));
-        \\                first.set(first.get() + 1);
-        \\                output.set(output.get() + 1)
+        \\            while first < middle {
+        \\                buffer[output] = values[first];
+        \\                first += 1;
+        \\                output += 1;
         \\            };
-        \\            while second.get() < right {
-        \\                buffer.set(output.get(), values.get(second.get()));
-        \\                second.set(second.get() + 1);
-        \\                output.set(output.get() + 1)
+        \\            while second < right {
+        \\                buffer[output] = values[second];
+        \\                second += 1;
+        \\                output += 1;
         \\            };
-        \\            left.set(right)
+        \\            left = right;
         \\        };
-        \\        for index in range(0, length) {
-        \\            values.set(index, buffer.get(index))
+        \\        for index in 0..length {
+        \\            values[index] = buffer[index];
         \\        };
-        \\        width.set(
-        \\            if width.get() > length / 2 {
-        \\                length
-        \\            } else {
-        \\                width.get() * 2
-        \\            },
-        \\        )
+        \\        width = if width > length / 2 {
+        \\            length
+        \\        } else {
+        \\            width * 2
+        \\        };
         \\    }
         \\}
         \\
@@ -1738,33 +1694,27 @@ pub fn collections_source() -> string {
         \\    stable_sort_by(values, compare)
         \\}
         \\
-        \\pub fn binary_search_by[T](
-        \\    values: Vec[T],
-        \\    compare: (T) -> int,
-        \\) -> Option[int] {
-        \\    let low = Ref::new(0);
-        \\    let high = Ref::new(values.len());
-        \\    while low.get() < high.get() {
-        \\        let middle = low.get() + (high.get() - low.get()) / 2;
-        \\        if compare(values.get(middle)) < 0 {
-        \\            low.set(middle + 1)
+        \\pub fn binary_search_by[T](values: Vec[T], compare: (T) -> int) -> Option[int] {
+        \\    let mut low = 0;
+        \\    let mut high = values.len();
+        \\    while low < high {
+        \\        let middle = low + (high - low) / 2;
+        \\        if compare(values[middle]) < 0 {
+        \\            low = middle + 1;
         \\        } else {
-        \\            high.set(middle)
+        \\            high = middle;
         \\        }
         \\    };
-        \\    if low.get() < values.len() && compare(values.get(low.get())) == 0 {
-        \\        Option::Some(low.get())
+        \\    if low < values.len() && compare(values[low]) == 0 {
+        \\        Option::Some(low)
         \\    } else {
         \\        Option::None
         \\    }
         \\}
         \\
-        \\pub fn position_by[T](
-        \\    values: Vec[T],
-        \\    predicate: (T) -> bool,
-        \\) -> Option[int] {
-        \\    for index in range(0, values.len()) {
-        \\        if predicate(values.get(index)) {
+        \\pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
+        \\    for index in 0..values.len() {
+        \\        if predicate(values[index]) {
         \\            return Option::Some(index)
         \\        } else {
         \\            ()
@@ -1774,72 +1724,60 @@ pub fn collections_source() -> string {
         \\}
         \\
         \\pub fn contains[T: Eq](values: Vec[T], expected: T) -> bool {
-        \\    match position_by(values, |value: T| Eq::eq(value, expected)) {
-        \\        Option::Some(_) => true,
-        \\        Option::None => false,
-        \\    }
+        \\    position_by(values, |value: T| Eq::eq(value, expected)).is_some()
         \\}
         \\
-        \\pub fn min_by[T](
-        \\    values: Vec[T],
-        \\    compare: (T, T) -> int,
-        \\) -> Option[T] {
+        \\pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
         \\    if values.len() == 0 {
         \\        Option::None
         \\    } else {
-        \\        let best = Ref::new(values.get(0));
-        \\        for index in range(1, values.len()) {
-        \\            let value = values.get(index);
-        \\            if compare(value, best.get()) < 0 {
-        \\                best.set(value)
+        \\        let mut best = values[0];
+        \\        for index in 1..values.len() {
+        \\            let value = values[index];
+        \\            if compare(value, best) < 0 {
+        \\                best = value;
         \\            } else {
         \\                ()
         \\            }
         \\        };
-        \\        Option::Some(best.get())
+        \\        Option::Some(best)
         \\    }
         \\}
         \\
-        \\pub fn max_by[T](
-        \\    values: Vec[T],
-        \\    compare: (T, T) -> int,
-        \\) -> Option[T] {
+        \\pub fn max_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
         \\    if values.len() == 0 {
         \\        Option::None
         \\    } else {
-        \\        let best = Ref::new(values.get(0));
-        \\        for index in range(1, values.len()) {
-        \\            let value = values.get(index);
-        \\            if compare(value, best.get()) > 0 {
-        \\                best.set(value)
+        \\        let mut best = values[0];
+        \\        for index in 1..values.len() {
+        \\            let value = values[index];
+        \\            if compare(value, best) > 0 {
+        \\                best = value;
         \\            } else {
         \\                ()
         \\            }
         \\        };
-        \\        Option::Some(best.get())
+        \\        Option::Some(best)
         \\    }
         \\}
         \\
-        \\pub fn dedup_by[T](
-        \\    values: Vec[T],
-        \\    equal: (T, T) -> bool,
-        \\) -> unit {
+        \\pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
         \\    if values.len() < 2 {
         \\        return
         \\    } else {
         \\        ()
         \\    };
-        \\    let output = Ref::new(1);
-        \\    for index in range(1, values.len()) {
-        \\        let value = values.get(index);
-        \\        if equal(values.get(output.get() - 1), value) == false {
-        \\            values.set(output.get(), value);
-        \\            output.set(output.get() + 1)
+        \\    let mut output = 1;
+        \\    for index in 1..values.len() {
+        \\        let value = values[index];
+        \\        if equal(values[output - 1], value) == false {
+        \\            values[output] = value;
+        \\            output += 1;
         \\        } else {
         \\            ()
         \\        }
         \\    };
-        \\    values.truncate(output.get())
+        \\    values.truncate(output)
         \\}
         \\
         \\pub fn dedup[T: Eq](values: Vec[T]) -> unit {
@@ -1869,35 +1807,31 @@ pub fn json_source() -> string {
         \\}
         \\
         \\fn json_parser(input: string) -> JsonParser {
-        \\    JsonParser {
-        \\        input,
-        \\        index: Ref::new(0),
-        \\    }
+        \\    JsonParser { input, index: Ref::new(0) }
         \\}
         \\
         \\fn json_error(value: JsonParser, message: string) -> string {
-        \\    message + " at byte " + value.index.get().to_string()
+        \\    f"{message} at byte {value.index.get()}"
         \\}
         \\
-        \\fn json_whitespace(value: uint8) -> bool {
-        \\    value == 9 || value == 10 || value == 13 || value == 32
+        \\fn json_whitespace(value: byte) -> bool {
+        \\    value == b'\t' || value == b'\n' || value == b'\r' || value == b' '
         \\}
         \\
         \\fn skip_json_whitespace(value: JsonParser) -> unit {
         \\    while value.index.get() < value.input.byte_len()
-        \\        && json_whitespace(value.input.byte_get(value.index.get()))
-        \\    {
+        \\        && json_whitespace(value.input.byte_get(value.index.get())) {
         \\        value.index.set(value.index.get() + 1)
         \\    }
         \\}
         \\
-        \\fn hex_digit(value: uint8) -> Option[uint32] {
-        \\    if value >= 48 && value <= 57 {
-        \\        Option::Some((value - 48) as uint32)
-        \\    } else if value >= 65 && value <= 70 {
-        \\        Option::Some((value - 55) as uint32)
-        \\    } else if value >= 97 && value <= 102 {
-        \\        Option::Some((value - 87) as uint32)
+        \\fn hex_digit(value: byte) -> Option[uint32] {
+        \\    if value >= b'0' && value <= b'9' {
+        \\        Option::Some((value - b'0') as uint32)
+        \\    } else if value >= b'A' && value <= b'F' {
+        \\        Option::Some((value - b'A' + 10) as uint32)
+        \\    } else if value >= b'a' && value <= b'f' {
+        \\        Option::Some((value - b'a' + 10) as uint32)
         \\    } else {
         \\        Option::None
         \\    }
@@ -1907,70 +1841,49 @@ pub fn json_source() -> string {
         \\    if value.index.get() + 4 > value.input.byte_len() {
         \\        Result::Err(json_error(value, "incomplete unicode escape"))
         \\    } else {
-        \\        let result = Ref::new(0 as uint32);
-        \\        for offset in range(0, 4) {
+        \\        let mut result = 0 as uint32;
+        \\        for offset in 0..4 {
         \\            match hex_digit(value.input.byte_get(value.index.get() + offset)) {
-        \\                Option::Some(digit) => {
-        \\                    result.set(result.get() * 16 + digit)
+        \\                Some(digit) => {
+        \\                    result = result * 16 + digit;
         \\                },
-        \\                Option::None => {
-        \\                    return Result::Err(json_error(
-        \\                        value,
-        \\                        "invalid unicode escape",
-        \\                    ))
+        \\                None => {
+        \\                    return Result::Err(json_error(value, "invalid unicode escape"))
         \\                },
         \\            }
         \\        };
         \\        value.index.set(value.index.get() + 4);
-        \\        Result::Ok(result.get())
+        \\        Result::Ok(result)
         \\    }
         \\}
         \\
-        \\fn write_codepoint(
-        \\    value: JsonParser,
-        \\    builder: text::StringBuilder,
-        \\    codepoint: uint32,
-        \\) -> Result[unit, string] {
+        \\fn write_codepoint(value: JsonParser, builder: text::StringBuilder, codepoint: uint32) -> Result[
+        \\    unit,
+        \\    string,
+        \\] {
         \\    match char_from_uint32(codepoint) {
-        \\        Option::Some(character) => {
+        \\        Some(character) => {
         \\            builder.write_char(character);
         \\            Result::Ok(())
         \\        },
-        \\        Option::None => Result::Err(json_error(
-        \\            value,
-        \\            "invalid unicode codepoint",
-        \\        )),
+        \\        None => Result::Err(json_error(value, "invalid unicode codepoint")),
         \\    }
         \\}
         \\
-        \\fn parse_unicode_escape(
-        \\    value: JsonParser,
-        \\    builder: text::StringBuilder,
-        \\) -> Result[unit, string] {
-        \\    let first = match parse_hex_quad(value) {
-        \\        Result::Ok(codepoint) => codepoint,
-        \\        Result::Err(error) => return Result::Err(error),
-        \\    };
+        \\fn parse_unicode_escape(value: JsonParser, builder: text::StringBuilder) -> Result[unit, string] {
+        \\    let first = parse_hex_quad(value)?;
         \\    if first >= 55296 && first <= 56319 {
         \\        if value.index.get() + 2 > value.input.byte_len()
-        \\            || value.input.byte_get(value.index.get()) != 92
-        \\            || value.input.byte_get(value.index.get() + 1) != 117
-        \\        {
+        \\            || value.input.byte_get(value.index.get()) != b'\\'
+        \\            || value.input.byte_get(value.index.get() + 1) != b'u' {
         \\            Result::Err(json_error(value, "missing low surrogate"))
         \\        } else {
         \\            value.index.set(value.index.get() + 2);
-        \\            let second = match parse_hex_quad(value) {
-        \\                Result::Ok(codepoint) => codepoint,
-        \\                Result::Err(error) => return Result::Err(error),
-        \\            };
+        \\            let second = parse_hex_quad(value)?;
         \\            if second < 56320 || second > 57343 {
         \\                Result::Err(json_error(value, "invalid low surrogate"))
         \\            } else {
-        \\                write_codepoint(
-        \\                    value,
-        \\                    builder,
-        \\                    65536 + (first - 55296) * 1024 + second - 56320,
-        \\                )
+        \\                write_codepoint(value, builder, 65536 + (first - 55296) * 1024 + second - 56320)
         \\            }
         \\        }
         \\    } else if first >= 56320 && first <= 57343 {
@@ -1982,33 +1895,26 @@ pub fn json_source() -> string {
         \\
         \\fn parse_json_string(value: JsonParser) -> Result[string, string] {
         \\    if value.index.get() >= value.input.byte_len()
-        \\        || value.input.byte_get(value.index.get()) != 34
-        \\    {
+        \\        || value.input.byte_get(value.index.get()) != b'"' {
         \\        return Result::Err(json_error(value, "expected string"))
         \\    } else {
         \\        value.index.set(value.index.get() + 1)
         \\    };
         \\    let builder = text::StringBuilder::new();
-        \\    let segment = Ref::new(value.index.get());
+        \\    let mut segment = value.index.get();
         \\    while value.index.get() < value.input.byte_len() {
         \\        let byte = value.input.byte_get(value.index.get());
-        \\        if byte == 34 {
-        \\            if segment.get() < value.index.get() {
-        \\                builder.write_string(value.input.byte_slice(
-        \\                    segment.get(),
-        \\                    value.index.get(),
-        \\                ))
+        \\        if byte == b'"' {
+        \\            if segment < value.index.get() {
+        \\                builder.write_string(value.input.byte_slice(segment, value.index.get()))
         \\            } else {
         \\                ()
         \\            };
         \\            value.index.set(value.index.get() + 1);
         \\            return Result::Ok(builder.finish())
-        \\        } else if byte == 92 {
-        \\            if segment.get() < value.index.get() {
-        \\                builder.write_string(value.input.byte_slice(
-        \\                    segment.get(),
-        \\                    value.index.get(),
-        \\                ))
+        \\        } else if byte == b'\\' {
+        \\            if segment < value.index.get() {
+        \\                builder.write_string(value.input.byte_slice(segment, value.index.get()))
         \\            } else {
         \\                ()
         \\            };
@@ -2020,42 +1926,36 @@ pub fn json_source() -> string {
         \\            };
         \\            let escape = value.input.byte_get(value.index.get());
         \\            value.index.set(value.index.get() + 1);
-        \\            if escape == 34 {
+        \\            if escape == b'"' {
         \\                builder.write_char('"')
-        \\            } else if escape == 92 {
+        \\            } else if escape == b'\\' {
         \\                builder.write_char('\\')
-        \\            } else if escape == 47 {
+        \\            } else if escape == b'/' {
         \\                builder.write_char('/')
-        \\            } else if escape == 98 {
+        \\            } else if escape == b'b' {
         \\                match char_from_uint32(8) {
-        \\                    Option::Some(character) => builder.write_char(character),
-        \\                    Option::None => (),
+        \\                    Some(character) => builder.write_char(character),
+        \\                    None => (),
         \\                }
-        \\            } else if escape == 102 {
+        \\            } else if escape == b'f' {
         \\                match char_from_uint32(12) {
-        \\                    Option::Some(character) => builder.write_char(character),
-        \\                    Option::None => (),
+        \\                    Some(character) => builder.write_char(character),
+        \\                    None => (),
         \\                }
-        \\            } else if escape == 110 {
+        \\            } else if escape == b'n' {
         \\                builder.write_char('\n')
-        \\            } else if escape == 114 {
+        \\            } else if escape == b'r' {
         \\                builder.write_char('\r')
-        \\            } else if escape == 116 {
+        \\            } else if escape == b't' {
         \\                builder.write_char('\t')
-        \\            } else if escape == 117 {
-        \\                match parse_unicode_escape(value, builder) {
-        \\                    Result::Ok(()) => (),
-        \\                    Result::Err(error) => return Result::Err(error),
-        \\                }
+        \\            } else if escape == b'u' {
+        \\                parse_unicode_escape(value, builder)?
         \\            } else {
         \\                return Result::Err(json_error(value, "invalid escape"))
         \\            };
-        \\            segment.set(value.index.get())
-        \\        } else if byte < 32 {
-        \\            return Result::Err(json_error(
-        \\                value,
-        \\                "unescaped control character",
-        \\            ))
+        \\            segment = value.index.get();
+        \\        } else if byte < b' ' {
+        \\            return Result::Err(json_error(value, "unescaped control character"))
         \\        } else {
         \\            value.index.set(value.index.get() + 1)
         \\        }
@@ -2063,15 +1963,14 @@ pub fn json_source() -> string {
         \\    Result::Err(json_error(value, "unterminated string"))
         \\}
         \\
-        \\fn json_digit(value: uint8) -> bool {
-        \\    value >= 48 && value <= 57
+        \\fn json_digit(value: byte) -> bool {
+        \\    value >= b'0' && value <= b'9'
         \\}
         \\
         \\fn parse_digits(value: JsonParser) -> bool {
         \\    let start = value.index.get();
         \\    while value.index.get() < value.input.byte_len()
-        \\        && json_digit(value.input.byte_get(value.index.get()))
-        \\    {
+        \\        && json_digit(value.input.byte_get(value.index.get())) {
         \\        value.index.set(value.index.get() + 1)
         \\    };
         \\    value.index.get() > start
@@ -2079,18 +1978,17 @@ pub fn json_source() -> string {
         \\
         \\fn parse_json_number(value: JsonParser) -> Result[Value, string] {
         \\    let start = value.index.get();
-        \\    if value.input.byte_get(value.index.get()) == 45 {
+        \\    if value.input.byte_get(value.index.get()) == b'-' {
         \\        value.index.set(value.index.get() + 1)
         \\    } else {
         \\        ()
         \\    };
         \\    if value.index.get() >= value.input.byte_len() {
         \\        return Result::Err(json_error(value, "incomplete number"))
-        \\    } else if value.input.byte_get(value.index.get()) == 48 {
+        \\    } else if value.input.byte_get(value.index.get()) == b'0' {
         \\        value.index.set(value.index.get() + 1);
         \\        if value.index.get() < value.input.byte_len()
-        \\            && json_digit(value.input.byte_get(value.index.get()))
-        \\        {
+        \\            && json_digit(value.input.byte_get(value.index.get())) {
         \\            return Result::Err(json_error(value, "invalid leading zero"))
         \\        } else {
         \\            ()
@@ -2100,15 +1998,10 @@ pub fn json_source() -> string {
         \\    } else {
         \\        ()
         \\    };
-        \\    if value.index.get() < value.input.byte_len()
-        \\        && value.input.byte_get(value.index.get()) == 46
-        \\    {
+        \\    if value.index.get() < value.input.byte_len() && value.input.byte_get(value.index.get()) == b'.' {
         \\        value.index.set(value.index.get() + 1);
         \\        if !parse_digits(value) {
-        \\            return Result::Err(json_error(
-        \\                value,
-        \\                "missing fraction digits",
-        \\            ))
+        \\            return Result::Err(json_error(value, "missing fraction digits"))
         \\        } else {
         \\            ()
         \\        }
@@ -2116,46 +2009,31 @@ pub fn json_source() -> string {
         \\        ()
         \\    };
         \\    if value.index.get() < value.input.byte_len()
-        \\        && (value.input.byte_get(value.index.get()) == 101
-        \\            || value.input.byte_get(value.index.get()) == 69)
-        \\    {
+        \\        && (value.input.byte_get(value.index.get()) == b'e'
+        \\            || value.input.byte_get(value.index.get()) == b'E') {
         \\        value.index.set(value.index.get() + 1);
         \\        if value.index.get() < value.input.byte_len()
-        \\            && (value.input.byte_get(value.index.get()) == 43
-        \\                || value.input.byte_get(value.index.get()) == 45)
-        \\        {
+        \\            && (value.input.byte_get(value.index.get()) == b'+'
+        \\                || value.input.byte_get(value.index.get()) == b'-') {
         \\            value.index.set(value.index.get() + 1)
         \\        } else {
         \\            ()
         \\        };
         \\        if !parse_digits(value) {
-        \\            return Result::Err(json_error(
-        \\                value,
-        \\                "missing exponent digits",
-        \\            ))
+        \\            return Result::Err(json_error(value, "missing exponent digits"))
         \\        } else {
         \\            ()
         \\        }
         \\    } else {
         \\        ()
         \\    };
-        \\    Result::Ok(Value::Number(value.input.byte_slice(
-        \\        start,
-        \\        value.index.get(),
-        \\    )))
+        \\    Result::Ok(Value::Number(value.input.byte_slice(start, value.index.get())))
         \\}
         \\
-        \\fn parse_json_literal(
-        \\    value: JsonParser,
-        \\    expected: string,
-        \\    result: Value,
-        \\) -> Result[Value, string] {
+        \\fn parse_json_literal(value: JsonParser, expected: string, result: Value) -> Result[Value, string] {
         \\    if value.index.get() + expected.byte_len() <= value.input.byte_len()
-        \\        && value.input.byte_slice(
-        \\            value.index.get(),
-        \\            value.index.get() + expected.byte_len(),
-        \\        ) == expected
-        \\    {
+        \\        && value.input.byte_slice(value.index.get(), value.index.get() + expected.byte_len())
+        \\            == expected {
         \\        value.index.set(value.index.get() + expected.byte_len());
         \\        Result::Ok(result)
         \\    } else {
@@ -2167,33 +2045,26 @@ pub fn json_source() -> string {
         \\    value.index.set(value.index.get() + 1);
         \\    skip_json_whitespace(value);
         \\    let result = Vec::new();
-        \\    if value.index.get() < value.input.byte_len()
-        \\        && value.input.byte_get(value.index.get()) == 93
-        \\    {
+        \\    if value.index.get() < value.input.byte_len() && value.input.byte_get(value.index.get()) == b']' {
         \\        value.index.set(value.index.get() + 1);
         \\        return Result::Ok(Value::Array(result))
         \\    } else {
         \\        ()
         \\    };
         \\    while value.index.get() < value.input.byte_len() {
-        \\        match parse_json_value(value) {
-        \\            Result::Ok(item) => result.push(item),
-        \\            Result::Err(error) => return Result::Err(error),
-        \\        };
+        \\        let item = parse_json_value(value)?;
+        \\        result.push(item);
         \\        skip_json_whitespace(value);
         \\        if value.index.get() >= value.input.byte_len() {
         \\            return Result::Err(json_error(value, "unterminated array"))
-        \\        } else if value.input.byte_get(value.index.get()) == 93 {
+        \\        } else if value.input.byte_get(value.index.get()) == b']' {
         \\            value.index.set(value.index.get() + 1);
         \\            return Result::Ok(Value::Array(result))
-        \\        } else if value.input.byte_get(value.index.get()) == 44 {
+        \\        } else if value.input.byte_get(value.index.get()) == b',' {
         \\            value.index.set(value.index.get() + 1);
         \\            skip_json_whitespace(value)
         \\        } else {
-        \\            return Result::Err(json_error(
-        \\                value,
-        \\                "expected array separator",
-        \\            ))
+        \\            return Result::Err(json_error(value, "expected array separator"))
         \\        }
         \\    };
         \\    Result::Err(json_error(value, "unterminated array"))
@@ -2203,46 +2074,35 @@ pub fn json_source() -> string {
         \\    value.index.set(value.index.get() + 1);
         \\    skip_json_whitespace(value);
         \\    let result = Vec::new();
-        \\    if value.index.get() < value.input.byte_len()
-        \\        && value.input.byte_get(value.index.get()) == 125
-        \\    {
+        \\    if value.index.get() < value.input.byte_len() && value.input.byte_get(value.index.get()) == b'}' {
         \\        value.index.set(value.index.get() + 1);
         \\        return Result::Ok(Value::Object(result))
         \\    } else {
         \\        ()
         \\    };
         \\    while value.index.get() < value.input.byte_len() {
-        \\        let name = match parse_json_string(value) {
-        \\            Result::Ok(name) => name,
-        \\            Result::Err(error) => return Result::Err(error),
-        \\        };
+        \\        let name = parse_json_string(value)?;
         \\        skip_json_whitespace(value);
         \\        if value.index.get() >= value.input.byte_len()
-        \\            || value.input.byte_get(value.index.get()) != 58
-        \\        {
+        \\            || value.input.byte_get(value.index.get()) != b':' {
         \\            return Result::Err(json_error(value, "expected object colon"))
         \\        } else {
         \\            value.index.set(value.index.get() + 1)
         \\        };
         \\        skip_json_whitespace(value);
-        \\        match parse_json_value(value) {
-        \\            Result::Ok(item) => result.push((name, item)),
-        \\            Result::Err(error) => return Result::Err(error),
-        \\        };
+        \\        let item = parse_json_value(value)?;
+        \\        result.push((name, item));
         \\        skip_json_whitespace(value);
         \\        if value.index.get() >= value.input.byte_len() {
         \\            return Result::Err(json_error(value, "unterminated object"))
-        \\        } else if value.input.byte_get(value.index.get()) == 125 {
+        \\        } else if value.input.byte_get(value.index.get()) == b'}' {
         \\            value.index.set(value.index.get() + 1);
         \\            return Result::Ok(Value::Object(result))
-        \\        } else if value.input.byte_get(value.index.get()) == 44 {
+        \\        } else if value.input.byte_get(value.index.get()) == b',' {
         \\            value.index.set(value.index.get() + 1);
         \\            skip_json_whitespace(value)
         \\        } else {
-        \\            return Result::Err(json_error(
-        \\                value,
-        \\                "expected object separator",
-        \\            ))
+        \\            return Result::Err(json_error(value, "expected object separator"))
         \\        }
         \\    };
         \\    Result::Err(json_error(value, "unterminated object"))
@@ -2254,16 +2114,16 @@ pub fn json_source() -> string {
         \\        Result::Err(json_error(value, "expected JSON value"))
         \\    } else {
         \\        match value.input.byte_get(value.index.get()) {
-        \\            123 => parse_json_object(value),
-        \\            91 => parse_json_array(value),
-        \\            34 => match parse_json_string(value) {
-        \\                Result::Ok(text) => Result::Ok(Value::String(text)),
-        \\                Result::Err(error) => Result::Err(error),
+        \\            b'{' => parse_json_object(value),
+        \\            b'[' => parse_json_array(value),
+        \\            b'"' => match parse_json_string(value) {
+        \\                Ok(text) => Result::Ok(String(text)),
+        \\                Err(error) => Result::Err(error),
         \\            },
-        \\            116 => parse_json_literal(value, "true", Value::Bool(true)),
-        \\            102 => parse_json_literal(value, "false", Value::Bool(false)),
-        \\            110 => parse_json_literal(value, "null", Value::Null),
-        \\            byte => if byte == 45 || json_digit(byte) {
+        \\            b't' => parse_json_literal(value, "true", Bool(true)),
+        \\            b'f' => parse_json_literal(value, "false", Bool(false)),
+        \\            b'n' => parse_json_literal(value, "null", Null),
+        \\            byte => if byte == b'-' || json_digit(byte) {
         \\                parse_json_number(value)
         \\            } else {
         \\                Result::Err(json_error(value, "unexpected JSON token"))
@@ -2274,10 +2134,7 @@ pub fn json_source() -> string {
         \\
         \\pub fn parse(input: string) -> Result[Value, string] {
         \\    let parser = json_parser(input);
-        \\    let result = match parse_json_value(parser) {
-        \\        Result::Ok(value) => value,
-        \\        Result::Err(error) => return Result::Err(error),
-        \\    };
+        \\    let result = parse_json_value(parser)?;
         \\    skip_json_whitespace(parser);
         \\    if parser.index.get() == input.byte_len() {
         \\        Result::Ok(result)
@@ -2286,58 +2143,50 @@ pub fn json_source() -> string {
         \\    }
         \\}
         \\
-        \\fn json_hex_digit(value: uint8) -> char {
+        \\fn json_hex_digit(value: byte) -> char {
         \\    "0123456789abcdef".get(value as int)
         \\}
         \\
         \\fn write_json_string(builder: text::StringBuilder, value: string) -> unit {
         \\    builder.write_char('"');
-        \\    let start = Ref::new(0);
-        \\    for index in range(0, value.byte_len()) {
+        \\    let mut start = 0;
+        \\    for index in 0..value.byte_len() {
         \\        let byte = value.byte_get(index);
-        \\        if byte == 34
-        \\            || byte == 92
-        \\            || byte == 8
-        \\            || byte == 9
-        \\            || byte == 10
-        \\            || byte == 12
-        \\            || byte == 13
-        \\            || byte < 32
-        \\        {
-        \\            if start.get() < index {
-        \\                builder.write_string(value.byte_slice(start.get(), index))
+        \\        if byte == b'"' || byte == b'\\' || byte == b'\b' || byte == b'\t' || byte == b'\n'
+        \\            || byte == b'\f'
+        \\            || byte == b'\r'
+        \\            || byte < b' ' {
+        \\            if start < index {
+        \\                builder.write_string(value.byte_slice(start, index))
         \\            } else {
         \\                ()
         \\            };
-        \\            if byte == 34 {
+        \\            if byte == b'"' {
         \\                builder.write_string("\\\"")
-        \\            } else if byte == 92 {
+        \\            } else if byte == b'\\' {
         \\                builder.write_string("\\\\")
-        \\            } else if byte == 8 {
+        \\            } else if byte == b'\b' {
         \\                builder.write_string("\\b")
-        \\            } else if byte == 9 {
+        \\            } else if byte == b'\t' {
         \\                builder.write_string("\\t")
-        \\            } else if byte == 10 {
+        \\            } else if byte == b'\n' {
         \\                builder.write_string("\\n")
-        \\            } else if byte == 12 {
+        \\            } else if byte == b'\f' {
         \\                builder.write_string("\\f")
-        \\            } else if byte == 13 {
+        \\            } else if byte == b'\r' {
         \\                builder.write_string("\\r")
         \\            } else {
         \\                builder.write_string("\\u00");
         \\                builder.write_char(json_hex_digit(byte / 16));
         \\                builder.write_char(json_hex_digit(byte % 16))
         \\            };
-        \\            start.set(index + 1)
+        \\            start = index + 1;
         \\        } else {
         \\            ()
         \\        }
         \\    };
-        \\    if start.get() < value.byte_len() {
-        \\        builder.write_string(value.byte_slice(
-        \\            start.get(),
-        \\            value.byte_len(),
-        \\        ))
+        \\    if start < value.byte_len() {
+        \\        builder.write_string(value.byte_slice(start, value.byte_len()))
         \\    } else {
         \\        ()
         \\    };
@@ -2346,11 +2195,11 @@ pub fn json_source() -> string {
         \\
         \\fn write_json_value(builder: text::StringBuilder, value: Value) -> unit {
         \\    match value {
-        \\        Value::Object(fields) => {
+        \\        Object(fields) => {
         \\            builder.write_char('{');
-        \\            let index = Ref::new(0);
+        \\            let mut index = 0;
         \\            for field in fields {
-        \\                if index.get() > 0 {
+        \\                if index > 0 {
         \\                    builder.write_char(',')
         \\                } else {
         \\                    ()
@@ -2358,32 +2207,34 @@ pub fn json_source() -> string {
         \\                write_json_string(builder, field.0);
         \\                builder.write_char(':');
         \\                write_json_value(builder, field.1);
-        \\                index.set(index.get() + 1)
+        \\                index += 1;
         \\            };
         \\            builder.write_char('}')
         \\        },
-        \\        Value::Array(items) => {
+        \\        Array(items) => {
         \\            builder.write_char('[');
-        \\            let index = Ref::new(0);
+        \\            let mut index = 0;
         \\            for item in items {
-        \\                if index.get() > 0 {
+        \\                if index > 0 {
         \\                    builder.write_char(',')
         \\                } else {
         \\                    ()
         \\                };
         \\                write_json_value(builder, item);
-        \\                index.set(index.get() + 1)
+        \\                index += 1;
         \\            };
         \\            builder.write_char(']')
         \\        },
-        \\        Value::String(text) => write_json_string(builder, text),
-        \\        Value::Number(number) => builder.write_string(number),
-        \\        Value::Bool(value) => builder.write_string(if value {
-        \\            "true"
-        \\        } else {
-        \\            "false"
-        \\        }),
-        \\        Value::Null => builder.write_string("null"),
+        \\        String(text) => write_json_string(builder, text),
+        \\        Number(number) => builder.write_string(number),
+        \\        Bool(value) => builder.write_string(
+        \\            if value {
+        \\                "true"
+        \\            } else {
+        \\                "false"
+        \\            },
+        \\        ),
+        \\        Null => builder.write_string("null"),
         \\    }
         \\}
         \\
@@ -2395,16 +2246,15 @@ pub fn json_source() -> string {
         \\
         \\pub fn field(value: Value, name: string) -> Option[Value] {
         \\    match value {
-        \\        Value::Object(fields) => {
-        \\            let result = Ref::new(Option::None);
+        \\        Object(fields) => {
         \\            for field in fields {
         \\                if field.0 == name {
-        \\                    result.set(Option::Some(field.1))
+        \\                    return Option::Some(field.1)
         \\                } else {
         \\                    ()
         \\                }
         \\            };
-        \\            result.get()
+        \\            Option::None
         \\        },
         \\        _ => Option::None,
         \\    }
@@ -2412,7 +2262,7 @@ pub fn json_source() -> string {
         \\
         \\pub fn as_string(value: Value) -> Option[string] {
         \\    match value {
-        \\        Value::String(text) => Option::Some(text),
+        \\        String(text) => Option::Some(text),
         \\        _ => Option::None,
         \\    }
         \\}
@@ -2421,44 +2271,54 @@ pub fn json_source() -> string {
         \\    if value.byte_len() == 0 {
         \\        Option::None
         \\    } else {
-        \\        let negative = value.byte_get(0) == 45;
-        \\        let index = Ref::new(if negative { 1 } else { 0 });
-        \\        let result = Ref::new(0);
-        \\        if index.get() == value.byte_len() {
+        \\        let negative = value.byte_get(0) == b'-';
+        \\        let mut index = if negative {
+        \\            1
+        \\        } else {
+        \\            0
+        \\        };
+        \\        let mut result = 0;
+        \\        if index == value.byte_len() {
         \\            return Option::None
         \\        } else {
         \\            ()
         \\        };
-        \\        while index.get() < value.byte_len() {
-        \\            let byte = value.byte_get(index.get());
-        \\            if byte < 48 || byte > 57 {
+        \\        while index < value.byte_len() {
+        \\            let byte = value.byte_get(index);
+        \\            if byte < b'0' || byte > b'9' {
         \\                return Option::None
         \\            } else {
-        \\                result.set(result.get() * 10 + (byte - 48) as int)
+        \\                result = result * 10 + (byte - b'0') as int;
         \\            };
-        \\            index.set(index.get() + 1)
+        \\            index += 1;
         \\        };
-        \\        Option::Some(if negative { 0 - result.get() } else { result.get() })
+        \\        Option::Some(
+        \\            if negative {
+        \\                0 - result
+        \\            } else {
+        \\                result
+        \\            },
+        \\        )
         \\    }
         \\}
         \\
         \\pub fn as_int(value: Value) -> Option[int] {
         \\    match value {
-        \\        Value::Number(number) => parse_json_int_text(number),
+        \\        Number(number) => parse_json_int_text(number),
         \\        _ => Option::None,
         \\    }
         \\}
         \\
         \\pub fn as_bool(value: Value) -> Option[bool] {
         \\    match value {
-        \\        Value::Bool(result) => Option::Some(result),
+        \\        Bool(result) => Option::Some(result),
         \\        _ => Option::None,
         \\    }
         \\}
         \\
         \\pub fn as_array(value: Value) -> Option[Vec[Value]] {
         \\    match value {
-        \\        Value::Array(items) => Option::Some(items),
+        \\        Array(items) => Option::Some(items),
         \\        _ => Option::None,
         \\    }
         \\}
@@ -2476,20 +2336,16 @@ pub fn text_source() -> string {
         \\use std::bytes;
         \\
         \\pub struct StringBuilder {
-        \\    pub values: Vec[uint8],
+        \\    pub values: Vec[byte],
         \\}
         \\
         \\impl StringBuilder {
         \\    pub fn new() -> StringBuilder {
-        \\        StringBuilder {
-        \\            values: Vec::new(),
-        \\        }
+        \\        StringBuilder { values: Vec::new() }
         \\    }
         \\
         \\    pub fn with_capacity(capacity: int) -> StringBuilder {
-        \\        StringBuilder {
-        \\            values: Vec::with_capacity(capacity),
-        \\        }
+        \\        StringBuilder { values: Vec::with_capacity(capacity) }
         \\    }
         \\
         \\    pub fn len(self: StringBuilder) -> int {
@@ -2502,7 +2358,7 @@ pub fn text_source() -> string {
         \\
         \\    pub fn write_string(self: StringBuilder, value: string) -> unit {
         \\        self.values.reserve(value.byte_len());
-        \\        for index in range(0, value.byte_len()) {
+        \\        for index in 0..value.byte_len() {
         \\            self.values.push(value.byte_get(index))
         \\        }
         \\    }
@@ -2513,11 +2369,11 @@ pub fn text_source() -> string {
         \\
         \\    pub fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[unit, string] {
         \\        match value.to_string() {
-        \\            Result::Ok(text) => {
+        \\            Ok(text) => {
         \\                self.write_string(text);
         \\                Result::Ok(())
         \\            },
-        \\            Result::Err(error) => Result::Err(error),
+        \\            Err(error) => Result::Err(error),
         \\        }
         \\    }
         \\
@@ -2542,13 +2398,9 @@ pub fn text_source() -> string {
         \\    }
         \\}
         \\
-        \\fn is_ascii_whitespace_byte(value: uint8) -> bool {
-        \\    value == 9
-        \\        || value == 10
-        \\        || value == 11
-        \\        || value == 12
-        \\        || value == 13
-        \\        || value == 32
+        \\fn is_ascii_whitespace_byte(value: byte) -> bool {
+        \\    value == b'\t' || value == b'\n' || value == b'\x0B' || value == b'\f' || value == b'\r'
+        \\        || value == b' '
         \\}
         \\
         \\fn find_from(value: string, expected: string, start: int) -> Option[int] {
@@ -2560,16 +2412,14 @@ pub fn text_source() -> string {
         \\        Option::None
         \\    } else {
         \\        let limit = value.byte_len() - expected.byte_len();
-        \\        let index = Ref::new(start);
-        \\        while index.get() <= limit {
-        \\            let end = index.get() + expected.byte_len();
-        \\            if value.is_char_boundary(index.get())
-        \\                && value.is_char_boundary(end)
-        \\                && value.byte_slice(index.get(), end) == expected
-        \\            {
-        \\                return Option::Some(index.get())
+        \\        let mut index = start;
+        \\        while index <= limit {
+        \\            let end = index + expected.byte_len();
+        \\            if value.is_char_boundary(index) && value.is_char_boundary(end)
+        \\                && value.byte_slice(index, end) == expected {
+        \\                return Option::Some(index)
         \\            } else {
-        \\                index.set(index.get() + 1)
+        \\                index += 1;
         \\            }
         \\        };
         \\        Option::None
@@ -2581,23 +2431,19 @@ pub fn text_source() -> string {
         \\}
         \\
         \\pub fn trim_start(value: string) -> string {
-        \\    let start = Ref::new(0);
-        \\    while start.get() < value.byte_len()
-        \\        && is_ascii_whitespace_byte(value.byte_get(start.get()))
-        \\    {
-        \\        start.set(start.get() + 1)
+        \\    let mut start = 0;
+        \\    while start < value.byte_len() && is_ascii_whitespace_byte(value.byte_get(start)) {
+        \\        start += 1;
         \\    };
-        \\    value.byte_slice(start.get(), value.byte_len())
+        \\    value.byte_slice(start, value.byte_len())
         \\}
         \\
         \\pub fn trim_end(value: string) -> string {
-        \\    let end = Ref::new(value.byte_len());
-        \\    while end.get() > 0
-        \\        && is_ascii_whitespace_byte(value.byte_get(end.get() - 1))
-        \\    {
-        \\        end.set(end.get() - 1)
+        \\    let mut end = value.byte_len();
+        \\    while end > 0 && is_ascii_whitespace_byte(value.byte_get(end - 1)) {
+        \\        end -= 1;
         \\    };
-        \\    value.byte_slice(0, end.get())
+        \\    value.byte_slice(0, end)
         \\}
         \\
         \\pub fn trim(value: string) -> string {
@@ -2612,17 +2458,16 @@ pub fn text_source() -> string {
         \\    } else {
         \\        ()
         \\    };
-        \\    let start = Ref::new(0);
-        \\    let done: Ref[bool] = Ref::new(false);
-        \\    while done.get() == false {
-        \\        match find_from(value, separator, start.get()) {
-        \\            Option::Some(index) => {
-        \\                result.push(value.byte_slice(start.get(), index));
-        \\                start.set(index + separator.byte_len())
+        \\    let mut start = 0;
+        \\    while true {
+        \\        match find_from(value, separator, start) {
+        \\            Some(index) => {
+        \\                result.push(value.byte_slice(start, index));
+        \\                start = index + separator.byte_len();
         \\            },
-        \\            Option::None => {
-        \\                result.push(value.byte_slice(start.get(), value.byte_len()));
-        \\                done.set(true)
+        \\            None => {
+        \\                result.push(value.byte_slice(start, value.byte_len()));
+        \\                break
         \\            },
         \\        }
         \\    };
@@ -2634,26 +2479,28 @@ pub fn text_source() -> string {
         \\        Option::None
         \\    } else {
         \\        match find(value, separator) {
-        \\            Option::Some(index) => Option::Some((
-        \\                value.byte_slice(0, index),
-        \\                value.byte_slice(index + separator.byte_len(), value.byte_len()),
-        \\            )),
-        \\            Option::None => Option::None,
+        \\            Some(index) => Option::Some(
+        \\                (
+        \\                    value.byte_slice(0, index),
+        \\                    value.byte_slice(index + separator.byte_len(), value.byte_len()),
+        \\                ),
+        \\            ),
+        \\            None => Option::None,
         \\        }
         \\    }
         \\}
         \\
         \\pub fn lines(value: string) -> Vec[string] {
         \\    let result = split(value, "\n");
-        \\    if result.len() > 0 && result.get(result.len() - 1) == "" {
+        \\    if result.len() > 0 && result[result.len() - 1] == "" {
         \\        let _ = result.pop();
         \\    } else {
         \\        ()
         \\    };
-        \\    for index in range(0, result.len()) {
-        \\        let line = result.get(index);
-        \\        if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == 13 {
-        \\            result.set(index, line.byte_slice(0, line.byte_len() - 1))
+        \\    for index in 0..result.len() {
+        \\        let line = result[index];
+        \\        if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == b'\r' {
+        \\            result[index] = line.byte_slice(0, line.byte_len() - 1);
         \\        } else {
         \\            ()
         \\        }
@@ -2666,20 +2513,17 @@ pub fn text_source() -> string {
         \\        value
         \\    } else {
         \\        let builder = StringBuilder::with_capacity(value.byte_len());
-        \\        let start = Ref::new(0);
-        \\        let done: Ref[bool] = Ref::new(false);
-        \\        while done.get() == false {
-        \\            match find_from(value, expected, start.get()) {
-        \\                Option::Some(index) => {
-        \\                    builder.write_string(value.byte_slice(start.get(), index));
+        \\        let mut start = 0;
+        \\        while true {
+        \\            match find_from(value, expected, start) {
+        \\                Some(index) => {
+        \\                    builder.write_string(value.byte_slice(start, index));
         \\                    builder.write_string(replacement);
-        \\                    start.set(index + expected.byte_len())
+        \\                    start = index + expected.byte_len();
         \\                },
-        \\                Option::None => {
-        \\                    builder.write_string(
-        \\                        value.byte_slice(start.get(), value.byte_len()),
-        \\                    );
-        \\                    done.set(true)
+        \\                None => {
+        \\                    builder.write_string(value.byte_slice(start, value.byte_len()));
+        \\                    break
         \\                },
         \\            }
         \\        };
@@ -2689,13 +2533,13 @@ pub fn text_source() -> string {
         \\
         \\pub fn join(values: Vec[string], separator: string) -> string {
         \\    let builder = StringBuilder::new();
-        \\    for index in range(0, values.len()) {
+        \\    for index in 0..values.len() {
         \\        if index > 0 {
         \\            builder.write_string(separator)
         \\        } else {
         \\            ()
         \\        };
-        \\        builder.write_string(values.get(index))
+        \\        builder.write_string(values[index])
         \\    };
         \\    builder.finish()
         \\}
@@ -2705,7 +2549,7 @@ pub fn text_source() -> string {
         \\        ""
         \\    } else {
         \\        let builder = StringBuilder::with_capacity(value.byte_len() * count);
-        \\        for _ in range(0, count) {
+        \\        for _ in 0..count {
         \\            builder.write_string(value)
         \\        };
         \\        builder.finish()
@@ -2713,24 +2557,22 @@ pub fn text_source() -> string {
         \\}
         \\
         \\pub fn is_ascii(value: string) -> bool {
-        \\    let ascii = Ref::new(true);
-        \\    let index = Ref::new(0);
-        \\    while ascii.get() && index.get() < value.byte_len() {
-        \\        if value.byte_get(index.get()) > 127 {
-        \\            ascii.set(false)
+        \\    for index in 0..value.byte_len() {
+        \\        if value.byte_get(index) > 127 {
+        \\            return false
         \\        } else {
-        \\            index.set(index.get() + 1)
+        \\            ()
         \\        }
         \\    };
-        \\    ascii.get()
+        \\    true
         \\}
         \\
         \\pub fn to_ascii_lowercase(value: string) -> string {
         \\    let values = value.to_bytes();
-        \\    for index in range(0, values.len()) {
-        \\        let current = values.get(index);
-        \\        if current >= 65 && current <= 90 {
-        \\            values.set(index, current + 32)
+        \\    for index in 0..values.len() {
+        \\        let current = values[index];
+        \\        if current >= b'A' && current <= b'Z' {
+        \\            values[index] = current + (b'a' - b'A');
         \\        } else {
         \\            ()
         \\        }
@@ -2741,10 +2583,10 @@ pub fn text_source() -> string {
         \\
         \\pub fn to_ascii_uppercase(value: string) -> string {
         \\    let values = value.to_bytes();
-        \\    for index in range(0, values.len()) {
-        \\        let current = values.get(index);
-        \\        if current >= 97 && current <= 122 {
-        \\            values.set(index, current - 32)
+        \\    for index in 0..values.len() {
+        \\        let current = values[index];
+        \\        if current >= b'a' && current <= b'z' {
+        \\            values[index] = current - (b'a' - b'A');
         \\        } else {
         \\            ()
         \\        }
@@ -2840,7 +2682,11 @@ pub fn time_source() -> string {
         \\
         \\    pub fn from_nanoseconds(value: int64) -> Duration {
         \\        Duration {
-        \\            nanoseconds: if value < 0 { 0 } else { value },
+        \\            nanoseconds: if value < 0 {
+        \\                0
+        \\            } else {
+        \\                value
+        \\            },
         \\        }
         \\    }
         \\
@@ -2891,9 +2737,7 @@ pub fn time_source() -> string {
         \\
         \\impl Instant {
         \\    pub fn now() -> Instant {
-        \\        Instant {
-        \\            nanoseconds: host::monotonic_nanoseconds(),
-        \\        }
+        \\        Instant { nanoseconds: host::monotonic_nanoseconds() }
         \\    }
         \\
         \\    pub fn elapsed(self: Instant) -> Duration {
@@ -2911,15 +2755,11 @@ pub fn time_source() -> string {
         \\
         \\impl SystemTime {
         \\    pub fn now() -> SystemTime {
-        \\        SystemTime {
-        \\            unix_nanoseconds: host::unix_nanoseconds(),
-        \\        }
+        \\        SystemTime { unix_nanoseconds: host::unix_nanoseconds() }
         \\    }
         \\
         \\    pub fn from_unix_nanoseconds(value: int64) -> SystemTime {
-        \\        SystemTime {
-        \\            unix_nanoseconds: value,
-        \\        }
+        \\        SystemTime { unix_nanoseconds: value }
         \\    }
         \\
         \\    pub fn unix_nanoseconds(self: SystemTime) -> int64 {

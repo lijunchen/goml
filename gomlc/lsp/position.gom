@@ -23,7 +23,11 @@ fn utf8_width(value: uint8) -> int {
 }
 
 fn utf16_width(value: uint8) -> int {
-    if utf8_width(value) == 4 { 2 } else { 1 }
+    if utf8_width(value) == 4 {
+        2
+    } else {
+        1
+    }
 }
 
 pub fn offset_to_position(source: string, offset: int) -> Position {
@@ -39,7 +43,7 @@ pub fn offset_to_position(source: string, offset: int) -> Position {
     let index = Ref::new(0);
     while index.get() < limit {
         let byte = source.byte_get(index.get());
-        if byte == 10 {
+        if byte == b'\n' {
             line.set(line.get() + 1);
             character.set(0);
             index.set(index.get() + 1)
@@ -53,10 +57,7 @@ pub fn offset_to_position(source: string, offset: int) -> Position {
             }
         }
     };
-    Position {
-        line: line.get(),
-        character: character.get(),
-    }
+    Position { line: line.get(), character: character.get() }
 }
 
 pub fn position_to_offset(source: string, position: Position) -> int {
@@ -64,15 +65,13 @@ pub fn position_to_offset(source: string, position: Position) -> int {
     let character = Ref::new(0);
     let index = Ref::new(0);
     while index.get() < source.byte_len() {
-        if line.get() == position.line
-            && character.get() >= position.character
-        {
+        if line.get() == position.line && character.get() >= position.character {
             return index.get()
         } else {
             ()
         };
         let byte = source.byte_get(index.get());
-        if byte == 10 {
+        if byte == b'\n' {
             if line.get() == position.line {
                 return index.get()
             } else {
@@ -83,9 +82,7 @@ pub fn position_to_offset(source: string, position: Position) -> int {
         } else {
             let width = utf8_width(byte);
             let units = utf16_width(byte);
-            if line.get() == position.line
-                && character.get() + units > position.character
-            {
+            if line.get() == position.line && character.get() + units > position.character {
                 return index.get()
             } else {
                 character.set(character.get() + units);
@@ -96,18 +93,13 @@ pub fn position_to_offset(source: string, position: Position) -> int {
     source.byte_len()
 }
 
-pub fn position_to_offset_checked(
-    source: string,
-    position: Position,
-) -> Option[int] {
+pub fn position_to_offset_checked(source: string, position: Position) -> Option[int] {
     if position.line < 0 || position.character < 0 {
         Option::None
     } else {
         let offset = position_to_offset(source, position);
         let actual = offset_to_position(source, offset);
-        if actual.line == position.line
-            && actual.character == position.character
-        {
+        if actual.line == position.line && actual.character == position.character {
             Option::Some(offset)
         } else {
             Option::None
@@ -115,13 +107,6 @@ pub fn position_to_offset_checked(
     }
 }
 
-pub fn offsets_to_range(
-    source: string,
-    start: int,
-    end: int,
-) -> Range {
-    Range {
-        start: offset_to_position(source, start),
-        end: offset_to_position(source, end),
-    }
+pub fn offsets_to_range(source: string, start: int, end: int) -> Range {
+    Range { start: offset_to_position(source, start), end: offset_to_position(source, end) }
 }

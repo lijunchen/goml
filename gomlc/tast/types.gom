@@ -24,16 +24,7 @@ fn merge_var_kind(left: VarKind, right: VarKind) -> Option[VarKind] {
 
 fn is_integer_type(value: Type) -> bool {
     match prune(value) {
-        Int
-        | Int8
-        | Int16
-        | Int32
-        | Int64
-        | Uint
-        | Uint8
-        | Uint16
-        | Uint32
-        | Uint64 => true,
+        Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 => true,
         Var(variable) => match variable.get() {
             Unbound { id: _, kind: Integer } => true,
             Link(inner) => is_integer_type(inner),
@@ -111,14 +102,14 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                 true
             } else {
                 match qualifier {
-                Some(reference) => for arg in reference.args {
-                    if occurs(variable, arg) {
-                        return true
-                    } else {
-                        ()
-                    }
-                },
-                None => (),
+                    Some(reference) => for arg in reference.args {
+                        if occurs(variable, arg) {
+                            return true
+                        } else {
+                            ()
+                        }
+                    },
+                    None => (),
                 };
                 false
             }
@@ -137,11 +128,9 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                 false
             }
         },
-        Array { len: _, elem }
-        | Slice { elem }
-        | VecType { elem }
-        | RefType { elem }
-        | Channel { elem } => occurs(variable, elem),
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => occurs(variable, elem),
         HashMap { key, value: item } => occurs(variable, key) || occurs(variable, item),
         Func { params, ret_ty } => {
             if occurs(variable, ret_ty) {
@@ -181,8 +170,8 @@ fn unify_types(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
-            if !unify(left.get(index), right.get(index)) {
+        for index in 0..left.len() {
+            if !unify(left[index], right[index]) {
                 return false
             } else {
                 ()
@@ -213,10 +202,7 @@ fn unify(left: Type, right: Type) -> bool {
             match (first.get(), second.get()) {
                 (Link(inner), _) => unify(inner, Type::Var(second)),
                 (_, Link(inner)) => unify(Type::Var(first), inner),
-                (Unbound { id: _, kind: first_kind }, Unbound {
-                    id: second_id,
-                    kind: second_kind,
-                }) => {
+                (Unbound { id: _, kind: first_kind }, Unbound { id: second_id, kind: second_kind }) => {
                     match merge_var_kind(first_kind, second_kind) {
                         Some(kind) => {
                             second.set(TypeVar::Unbound { id: second_id, kind });
@@ -230,22 +216,13 @@ fn unify(left: Type, right: Type) -> bool {
         },
         (Var(variable), value) => bind_variable(variable, value),
         (value, Var(variable)) => bind_variable(variable, value),
-        (Unit, Unit)
-        | (Bool, Bool)
-        | (Int, Int)
-        | (Int8, Int8)
-        | (Int16, Int16)
-        | (Int32, Int32)
-        | (Int64, Int64)
-        | (Uint, Uint)
-        | (Uint8, Uint8)
-        | (Uint16, Uint16)
-        | (Uint32, Uint32)
-        | (Uint64, Uint64)
-        | (Float32, Float32)
-        | (Float64, Float64)
-        | (String, String)
-        | (Char, Char) => true,
+        (Unit, Unit) | (Bool, Bool) | (Int, Int) | (Int8, Int8) | (Int16, Int16) | (Int32, Int32) | (
+            Int64,
+            Int64,
+        ) | (Uint, Uint) | (Uint8, Uint8) | (Uint16, Uint16) | (Uint32, Uint32) | (Uint64, Uint64) | (
+            Float32,
+            Float32,
+        ) | (Float64, Float64) | (String, String) | (Char, Char) => true,
         (Tuple { items: first }, Tuple { items: second }) => unify_types(first, second),
         (Con { name: first }, Con { name: second }) => first == second,
         (Dyn { trait_name: first }, Dyn { trait_name: second }) => first == second,
@@ -253,8 +230,7 @@ fn unify(left: Type, right: Type) -> bool {
             Projection { for_ty: first_base, name: first_name, trait_ref: first_trait },
             Projection { for_ty: second_base, name: second_name, trait_ref: second_trait },
         ) => {
-            first_name == second_name
-                && unify_trait_refs(first_trait, second_trait)
+            first_name == second_name && unify_trait_refs(first_trait, second_trait)
                 && unify(first_base, second_base)
         },
         (App { ty: first_base, args: first_args }, App { ty: second_base, args: second_args }) => {
@@ -264,21 +240,24 @@ fn unify(left: Type, right: Type) -> bool {
             (first_len < 0 || second_len < 0 || first_len == second_len)
                 && unify(first_elem, second_elem)
         },
-        (Slice { elem: first }, Slice { elem: second })
-        | (VecType { elem: first }, VecType { elem: second })
-        | (RefType { elem: first }, RefType { elem: second })
-        | (Channel { elem: first }, Channel { elem: second }) => unify(first, second),
-        (HashMap { key: first_key, value: first_value }, HashMap {
-            key: second_key,
-            value: second_value,
-        }) => {
+        (Slice { elem: first }, Slice { elem: second }) | (
+            VecType { elem: first },
+            VecType { elem: second },
+        ) | (RefType { elem: first }, RefType { elem: second }) | (
+            Channel { elem: first },
+            Channel { elem: second },
+        ) => unify(first, second),
+        (
+            HashMap { key: first_key, value: first_value },
+            HashMap { key: second_key, value: second_value },
+        ) => {
             unify(first_key, second_key) && unify(first_value, second_value)
         },
         (Param { name: first }, Param { name: second }) => first == second,
-        (Func { params: first_params, ret_ty: first_ret }, Func {
-            params: second_params,
-            ret_ty: second_ret,
-        }) => {
+        (
+            Func { params: first_params, ret_ty: first_ret },
+            Func { params: second_params, ret_ty: second_ret },
+        ) => {
             unify_types(first_params, second_params) && unify(first_ret, second_ret)
         },
         _ => false,
@@ -286,15 +265,13 @@ fn unify(left: Type, right: Type) -> bool {
 }
 
 fn type_mismatch_text(left: Type, right: Type) -> string {
-    "Type mismatch: expected "
-        + diagnostic_type_text(left)
-        + ", found "
+    "Type mismatch: expected " + diagnostic_type_text(left) + ", found "
         + diagnostic_type_text(right)
 }
 
 fn first_type_list_error(left: Vec[Type], right: Vec[Type]) -> Option[string] {
-    for index in range(0, left.len()) {
-        match first_unification_error(left.get(index), right.get(index)) {
+    for index in 0..left.len() {
+        match first_unification_error(left[index], right[index]) {
             Some(message) => return Option::Some(message),
             None => (),
         }
@@ -305,8 +282,7 @@ fn first_type_list_error(left: Vec[Type], right: Vec[Type]) -> Option[string] {
 fn first_trait_ref_error(left: Option[TraitRef], right: Option[TraitRef]) -> Option[string] {
     match (left, right) {
         (Some(first), Some(second)) => if names_match(first.name, second.name)
-            && first.args.len() == second.args.len()
-        {
+            && first.args.len() == second.args.len() {
             first_type_list_error(first.args, second.args)
         } else {
             Option::Some("trait reference mismatch")
@@ -335,9 +311,7 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
                 (Unbound { id: _, kind: first_kind }, Unbound { id: _, kind: second_kind }) => {
                     match merge_var_kind(first_kind, second_kind) {
                         Some(_) => Option::None,
-                        None => Option::Some(
-                            "Type inference failed while unifying unknown types",
-                        ),
+                        None => Option::Some("Type inference failed while unifying unknown types"),
                     }
                 },
             }
@@ -353,40 +327,26 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
                     Integer | Float => true,
                     Any => false,
                 } {
-                    Option::Some(
-                        "Numeric literal cannot be used as "
-                            + diagnostic_type_text(value),
-                    )
+                    Option::Some("Numeric literal cannot be used as " + diagnostic_type_text(value))
                 } else {
                     Option::Some(
-                        "Type inference failed while unifying unknown type with "
-                            + type_text(value),
+                        "Type inference failed while unifying unknown type with " + type_text(value),
                     )
                 },
             }
         },
-        (Unit, Unit)
-        | (Bool, Bool)
-        | (Int, Int)
-        | (Int8, Int8)
-        | (Int16, Int16)
-        | (Int32, Int32)
-        | (Int64, Int64)
-        | (Uint, Uint)
-        | (Uint8, Uint8)
-        | (Uint16, Uint16)
-        | (Uint32, Uint32)
-        | (Uint64, Uint64)
-        | (Float32, Float32)
-        | (Float64, Float64)
-        | (String, String)
-        | (Char, Char) => Option::None,
+        (Unit, Unit) | (Bool, Bool) | (Int, Int) | (Int8, Int8) | (Int16, Int16) | (Int32, Int32) | (
+            Int64,
+            Int64,
+        ) | (Uint, Uint) | (Uint8, Uint8) | (Uint16, Uint16) | (Uint32, Uint32) | (Uint64, Uint64) | (
+            Float32,
+            Float32,
+        ) | (Float64, Float64) | (String, String) | (Char, Char) => Option::None,
         (Tuple { items: first }, Tuple { items: second }) => if first.len() == second.len() {
             first_type_list_error(first, second)
         } else {
             Option::Some(
-                "Tuple length mismatch: expected "
-                    + type_text(Type::Tuple { items: first })
+                "Tuple length mismatch: expected " + type_text(Type::Tuple { items: first })
                     + ", found "
                     + type_text(Type::Tuple { items: second }),
             )
@@ -399,16 +359,31 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
         (Dyn { trait_name: first }, Dyn { trait_name: second }) => if first == second {
             Option::None
         } else {
-            Option::Some(type_mismatch_text(Type::Dyn { trait_name: first }, Type::Dyn { trait_name: second }))
+            Option::Some(
+                type_mismatch_text(
+                    Type::Dyn { trait_name: first },
+                    Type::Dyn { trait_name: second },
+                ),
+            )
         },
         (
             Projection { for_ty: first_base, name: first_name, trait_ref: first_trait },
             Projection { for_ty: second_base, name: second_name, trait_ref: second_trait },
         ) => if first_name != second_name {
-            Option::Some(type_mismatch_text(
-                Type::Projection { for_ty: first_base, name: first_name, trait_ref: first_trait },
-                Type::Projection { for_ty: second_base, name: second_name, trait_ref: second_trait },
-            ))
+            Option::Some(
+                type_mismatch_text(
+                    Type::Projection {
+                        for_ty: first_base,
+                        name: first_name,
+                        trait_ref: first_trait,
+                    },
+                    Type::Projection {
+                        for_ty: second_base,
+                        name: second_name,
+                        trait_ref: second_trait,
+                    },
+                ),
+            )
         } else {
             match first_trait_ref_error(first_trait, second_trait) {
                 Some(message) => Option::Some(message),
@@ -442,16 +417,19 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
                 first_unification_error(first_elem, second_elem)
             }
         },
-        (Slice { elem: first }, Slice { elem: second })
-        | (VecType { elem: first }, VecType { elem: second })
-        | (RefType { elem: first }, RefType { elem: second })
-        | (Channel { elem: first }, Channel { elem: second }) => {
+        (Slice { elem: first }, Slice { elem: second }) | (
+            VecType { elem: first },
+            VecType { elem: second },
+        ) | (RefType { elem: first }, RefType { elem: second }) | (
+            Channel { elem: first },
+            Channel { elem: second },
+        ) => {
             first_unification_error(first, second)
         },
-        (HashMap { key: first_key, value: first_value }, HashMap {
-            key: second_key,
-            value: second_value,
-        }) => {
+        (
+            HashMap { key: first_key, value: first_value },
+            HashMap { key: second_key, value: second_value },
+        ) => {
             match first_unification_error(first_key, second_key) {
                 Some(message) => Option::Some(message),
                 None => first_unification_error(first_value, second_value),
@@ -460,15 +438,17 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
         (Param { name: first }, Param { name: second }) => if first == second {
             Option::None
         } else {
-            Option::Some(type_mismatch_text(Type::Param { name: first }, Type::Param { name: second }))
+            Option::Some(
+                type_mismatch_text(Type::Param { name: first }, Type::Param { name: second }),
+            )
         },
         (Param { name }, value) | (value, Param { name }) => Option::Some(
             "Type mismatch: expected " + name + ", found " + type_text(value),
         ),
-        (Func { params: first_params, ret_ty: first_ret }, Func {
-            params: second_params,
-            ret_ty: second_ret,
-        }) => {
+        (
+            Func { params: first_params, ret_ty: first_ret },
+            Func { params: second_params, ret_ty: second_ret },
+        ) => {
             if first_params.len() != second_params.len() {
                 Option::Some(
                     "Function arity mismatch: expected "
@@ -491,8 +471,8 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
-            if !types_equal(left.get(index), right.get(index)) {
+        for index in 0..left.len() {
+            if !types_equal(left[index], right[index]) {
                 return false
             } else {
                 ()
@@ -514,34 +494,26 @@ fn trait_refs_equal(left: Option[TraitRef], right: Option[TraitRef]) -> bool {
 pub fn types_equal(left: Type, right: Type) -> bool {
     match (prune(left), prune(right)) {
         (Var(first), Var(second)) => refs::same(first, second),
-        (Unit, Unit)
-        | (Never, Never)
-        | (Bool, Bool)
-        | (Int, Int)
-        | (Int8, Int8)
-        | (Int16, Int16)
-        | (Int32, Int32)
-        | (Int64, Int64)
-        | (Uint, Uint)
-        | (Uint8, Uint8)
-        | (Uint16, Uint16)
-        | (Uint32, Uint32)
-        | (Uint64, Uint64)
-        | (Float32, Float32)
-        | (Float64, Float64)
-        | (String, String)
-        | (Char, Char)
-        | (Error, Error) => true,
+        (Unit, Unit) | (Never, Never) | (Bool, Bool) | (Int, Int) | (Int8, Int8) | (Int16, Int16) | (
+            Int32,
+            Int32,
+        ) | (Int64, Int64) | (Uint, Uint) | (Uint8, Uint8) | (Uint16, Uint16) | (Uint32, Uint32) | (
+            Uint64,
+            Uint64,
+        ) | (Float32, Float32) | (Float64, Float64) | (String, String) | (Char, Char) | (
+            Error,
+            Error,
+        ) => true,
         (Tuple { items: first }, Tuple { items: second }) => type_lists_equal(first, second),
-        (Con { name: first }, Con { name: second })
-        | (Dyn { trait_name: first }, Dyn { trait_name: second })
-        | (Param { name: first }, Param { name: second }) => first == second,
+        (Con { name: first }, Con { name: second }) | (
+            Dyn { trait_name: first },
+            Dyn { trait_name: second },
+        ) | (Param { name: first }, Param { name: second }) => first == second,
         (
             Projection { for_ty: first_base, name: first_name, trait_ref: first_trait },
             Projection { for_ty: second_base, name: second_name, trait_ref: second_trait },
         ) => {
-            first_name == second_name
-                && trait_refs_equal(first_trait, second_trait)
+            first_name == second_name && trait_refs_equal(first_trait, second_trait)
                 && types_equal(first_base, second_base)
         },
         (App { ty: first_base, args: first_args }, App { ty: second_base, args: second_args }) => {
@@ -550,31 +522,30 @@ pub fn types_equal(left: Type, right: Type) -> bool {
         (Array { len: first_len, elem: first_elem }, Array { len: second_len, elem: second_elem }) => {
             first_len == second_len && types_equal(first_elem, second_elem)
         },
-        (Slice { elem: first }, Slice { elem: second })
-        | (VecType { elem: first }, VecType { elem: second })
-        | (RefType { elem: first }, RefType { elem: second })
-        | (Channel { elem: first }, Channel { elem: second }) => types_equal(first, second),
-        (HashMap { key: first_key, value: first_value }, HashMap {
-            key: second_key,
-            value: second_value,
-        }) => {
+        (Slice { elem: first }, Slice { elem: second }) | (
+            VecType { elem: first },
+            VecType { elem: second },
+        ) | (RefType { elem: first }, RefType { elem: second }) | (
+            Channel { elem: first },
+            Channel { elem: second },
+        ) => types_equal(first, second),
+        (
+            HashMap { key: first_key, value: first_value },
+            HashMap { key: second_key, value: second_value },
+        ) => {
             types_equal(first_key, second_key) && types_equal(first_value, second_value)
         },
-        (Func { params: first_params, ret_ty: first_ret }, Func {
-            params: second_params,
-            ret_ty: second_ret,
-        }) => {
+        (
+            Func { params: first_params, ret_ty: first_ret },
+            Func { params: second_params, ret_ty: second_ret },
+        ) => {
             type_lists_equal(first_params, second_params) && types_equal(first_ret, second_ret)
         },
         _ => false,
     }
 }
 
-fn resolve_parameter_alias_at(
-    value: Type,
-    substitutions: Vec[TypeSubst],
-    depth: int,
-) -> Type {
+fn resolve_parameter_alias_at(value: Type, substitutions: Vec[TypeSubst], depth: int) -> Type {
     if depth > substitutions.len() {
         value
     } else {
@@ -591,11 +562,7 @@ fn resolve_parameter_alias(value: Type, substitutions: Vec[TypeSubst]) -> Type {
     resolve_parameter_alias_at(value, substitutions, 0)
 }
 
-fn contains_parameter(
-    value: Type,
-    name: string,
-    substitutions: Vec[TypeSubst],
-) -> bool {
+fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) -> bool {
     match prune(resolve_parameter_alias(value, substitutions)) {
         Param { name: candidate } => candidate == name,
         Tuple { items: values } => {
@@ -613,14 +580,14 @@ fn contains_parameter(
                 true
             } else {
                 match qualifier {
-                Some(reference) => for arg in reference.args {
-                    if contains_parameter(arg, name, substitutions) {
-                        return true
-                    } else {
-                        ()
-                    }
-                },
-                None => (),
+                    Some(reference) => for arg in reference.args {
+                        if contains_parameter(arg, name, substitutions) {
+                            return true
+                        } else {
+                            ()
+                        }
+                    },
+                    None => (),
                 };
                 false
             }
@@ -639,11 +606,9 @@ fn contains_parameter(
                 false
             }
         },
-        Array { len: _, elem }
-        | Slice { elem }
-        | VecType { elem }
-        | RefType { elem }
-        | Channel { elem } => contains_parameter(elem, name, substitutions),
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => contains_parameter(elem, name, substitutions),
         HashMap { key, value: item } => {
             contains_parameter(key, name, substitutions)
                 || contains_parameter(item, name, substitutions)
@@ -666,11 +631,7 @@ fn contains_parameter(
     }
 }
 
-fn bind_parameter_alias(
-    name: string,
-    value: Type,
-    substitutions: Vec[TypeSubst],
-) -> bool {
+fn bind_parameter_alias(name: string, value: Type, substitutions: Vec[TypeSubst]) -> bool {
     let value = resolve_parameter_alias(value, substitutions);
     match value {
         Param { name: candidate } => if candidate == name {
@@ -688,16 +649,12 @@ fn bind_parameter_alias(
     }
 }
 
-fn unify_parameter_alias_lists(
-    left: Vec[Type],
-    right: Vec[Type],
-    substitutions: Vec[TypeSubst],
-) -> bool {
+fn unify_parameter_alias_lists(left: Vec[Type], right: Vec[Type], substitutions: Vec[TypeSubst]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
-            if !unify_parameter_aliases(left.get(index), right.get(index), substitutions) {
+        for index in 0..left.len() {
+            if !unify_parameter_aliases(left[index], right[index], substitutions) {
                 return false
             } else {
                 ()
@@ -722,11 +679,7 @@ fn unify_parameter_alias_trait_refs(
     }
 }
 
-fn unify_parameter_aliases(
-    left: Type,
-    right: Type,
-    substitutions: Vec[TypeSubst],
-) -> bool {
+fn unify_parameter_aliases(left: Type, right: Type, substitutions: Vec[TypeSubst]) -> bool {
     let left = prune(resolve_parameter_alias(left, substitutions));
     let right = prune(resolve_parameter_alias(right, substitutions));
     match (left, right) {
@@ -748,20 +701,25 @@ fn unify_parameter_aliases(
                 && unify_parameter_alias_lists(left_args, right_args, substitutions)
         },
         (Array { len: left_len, elem: left }, Array { len: right_len, elem: right }) => {
-            left_len == right_len
-                && unify_parameter_aliases(left, right, substitutions)
+            left_len == right_len && unify_parameter_aliases(left, right, substitutions)
         },
-        (Slice { elem: left }, Slice { elem: right })
-        | (VecType { elem: left }, VecType { elem: right })
-        | (RefType { elem: left }, RefType { elem: right })
-        | (Channel { elem: left }, Channel { elem: right }) => {
+        (Slice { elem: left }, Slice { elem: right }) | (
+            VecType { elem: left },
+            VecType { elem: right },
+        ) | (RefType { elem: left }, RefType { elem: right }) | (
+            Channel { elem: left },
+            Channel { elem: right },
+        ) => {
             unify_parameter_aliases(left, right, substitutions)
         },
         (HashMap { key: left_key, value: left_item }, HashMap { key: right_key, value: right_item }) => {
             unify_parameter_aliases(left_key, right_key, substitutions)
                 && unify_parameter_aliases(left_item, right_item, substitutions)
         },
-        (Func { params: left_params, ret_ty: left_ret }, Func { params: right_params, ret_ty: right_ret }) => {
+        (
+            Func { params: left_params, ret_ty: left_ret },
+            Func { params: right_params, ret_ty: right_ret },
+        ) => {
             unify_parameter_alias_lists(left_params, right_params, substitutions)
                 && unify_parameter_aliases(left_ret, right_ret, substitutions)
         },
@@ -774,11 +732,10 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
     for predicate in predicates {
         match predicate {
             Equality { lhs: left, rhs: right } => match (prune(left), prune(right)) {
-                (Projection { for_ty: _, name: _, trait_ref: _ }, _) | (_, Projection {
-                    for_ty: _,
-                    name: _,
-                    trait_ref: _,
-                }) => (),
+                (Projection { for_ty: _, name: _, trait_ref: _ }, _) | (
+                    _,
+                    Projection { for_ty: _, name: _, trait_ref: _ },
+                ) => (),
                 (left, right) => {
                     let _ = unify_parameter_aliases(left, right, substitutions);
                 },
@@ -791,8 +748,8 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
 
 fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int {
     let result = Ref::new(-1);
-    for index in range(0, values.len()) {
-        if result.get() < 0 && types_equal(values.get(index).projection, projection) {
+    for index in 0..values.len() {
+        if result.get() < 0 && types_equal(values[index].projection, projection) {
             result.set(index)
         } else {
             ()
@@ -801,31 +758,24 @@ fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int
     result.get()
 }
 
-fn projection_alias(
-    values: Vec[ProjectionAlias],
-    projection: Type,
-) -> Option[Type] {
+fn projection_alias(values: Vec[ProjectionAlias], projection: Type) -> Option[Type] {
     let index = projection_alias_index(values, projection);
     if index < 0 {
         Option::None
     } else {
-        Option::Some(values.get(index).ty)
+        Option::Some(values[index].ty)
     }
 }
 
-fn set_projection_alias(
-    values: Vec[ProjectionAlias],
-    projection: Type,
-    ty: Type,
-) -> bool {
+fn set_projection_alias(values: Vec[ProjectionAlias], projection: Type, ty: Type) -> bool {
     let index = projection_alias_index(values, projection);
     if index < 0 {
         values.push(ProjectionAlias { projection, ty });
         true
-    } else if types_equal(values.get(index).ty, ty) {
+    } else if types_equal(values[index].ty, ty) {
         false
     } else {
-        values.set(index, ProjectionAlias { projection, ty });
+        values[index] = ProjectionAlias { projection, ty };
         true
     }
 }
@@ -858,9 +808,7 @@ fn resolve_projection_alias(value: Type, aliases: Vec[ProjectionAlias]) -> Type 
     current.get()
 }
 
-fn predicate_projection_aliases(
-    predicates: Vec[TypePredicate],
-) -> Vec[ProjectionAlias] {
+fn predicate_projection_aliases(predicates: Vec[TypePredicate]) -> Vec[ProjectionAlias] {
     let aliases = Vec::new();
     let equalities: Vec[(Type, Type)] = Vec::new();
     for predicate in predicates {
@@ -872,20 +820,14 @@ fn predicate_projection_aliases(
                 ) => equalities.push((left, right)),
                 (projection @ Projection { for_ty: _, name: _, trait_ref: _ }, other) => {
                     if projection_alias_index(aliases, projection) < 0 {
-                        aliases.push(ProjectionAlias {
-                            projection,
-                            ty: other,
-                        })
+                        aliases.push(ProjectionAlias { projection, ty: other })
                     } else {
                         ()
                     }
                 },
                 (other, projection @ Projection { for_ty: _, name: _, trait_ref: _ }) => {
                     if projection_alias_index(aliases, projection) < 0 {
-                        aliases.push(ProjectionAlias {
-                            projection,
-                            ty: other,
-                        })
+                        aliases.push(ProjectionAlias { projection, ty: other })
                     } else {
                         ()
                     }
@@ -898,12 +840,8 @@ fn predicate_projection_aliases(
     while advance_projection_aliases(aliases, equalities) {};
     for equality in equalities {
         if projection_alias_index(aliases, equality.0) < 0
-            && projection_alias_index(aliases, equality.1) < 0
-        {
-            aliases.push(ProjectionAlias {
-                projection: equality.0,
-                ty: equality.1,
-            })
+            && projection_alias_index(aliases, equality.1) < 0 {
+            aliases.push(ProjectionAlias { projection: equality.0, ty: equality.1 })
         } else {
             ()
         }
@@ -911,24 +849,17 @@ fn predicate_projection_aliases(
     aliases
 }
 
-fn advance_projection_aliases(
-    aliases: Vec[ProjectionAlias],
-    equalities: Vec[(Type, Type)],
-) -> bool {
+fn advance_projection_aliases(aliases: Vec[ProjectionAlias], equalities: Vec[(Type, Type)]) -> bool {
     for equality in equalities {
         let left = equality.0;
         let right = equality.1;
         let left_alias = resolve_projection_alias(left, aliases);
         let right_alias = resolve_projection_alias(right, aliases);
-        if !types_equal(left_alias, left)
-            && types_equal(right_alias, right)
-            && set_projection_alias(aliases, right, left_alias)
-        {
+        if !types_equal(left_alias, left) && types_equal(right_alias, right)
+            && set_projection_alias(aliases, right, left_alias) {
             return true
-        } else if !types_equal(right_alias, right)
-            && types_equal(left_alias, left)
-            && set_projection_alias(aliases, left, right_alias)
-        {
+        } else if !types_equal(right_alias, right) && types_equal(left_alias, left)
+            && set_projection_alias(aliases, left, right_alias) {
             return true
         } else {
             ()
@@ -937,12 +868,9 @@ fn advance_projection_aliases(
     false
 }
 
-fn projection_equality(
-    ctx: Checker,
-    base: Type,
-    name: string,
-    qualifier: Option[TraitRef],
-) -> Option[Type] {
+fn projection_equality(ctx: Checker, base: Type, name: string, qualifier: Option[TraitRef]) -> Option[
+    Type,
+] {
     let projection = Type::Projection { for_ty: base, name, trait_ref: qualifier };
     let resolved = resolve_projection_alias(projection, ctx.projection_aliases);
     if types_equal(projection, resolved) {
@@ -953,10 +881,8 @@ fn projection_equality(
 }
 
 fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
-    for offset in range(0, value.associated_types.len()) {
-        let associated = value.associated_types.get(
-            value.associated_types.len() - 1 - offset,
-        );
+    for offset in 0..value.associated_types.len() {
+        let associated = value.associated_types[value.associated_types.len() - 1 - offset];
         if associated.0 == name {
             return Option::Some(associated.1)
         } else {
@@ -969,60 +895,49 @@ fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
 fn builtin_iterator_item(base: Type) -> Option[Type] {
     match prune(base) {
         App { ty: Con { name: owner }, args } => if owner == "FnIterator" && args.len() == 1 {
-            Option::Some(args.get(0))
+            Option::Some(args[0])
         } else if owner == "MapIterator" && args.len() == 3 {
-            Option::Some(args.get(1))
+            Option::Some(args[1])
         } else if owner == "FilterIterator" && args.len() == 2 {
-            Option::Some(args.get(0))
+            Option::Some(args[0])
         } else if owner == "TakeIterator" && args.len() == 1 {
-            Option::Some(Type::Projection {
-                for_ty: args.get(0),
-                name: "Item",
-                trait_ref: Option::Some(TraitRef {
-                                    name: "Iterator",
-                                    args: Vec::new(),
-                                }),
-            })
-        } else if (owner == "EnumerateIterator" || owner == "SkipIterator")
-            && args.len() == 1
-        {
+            Option::Some(
+                Type::Projection {
+                    for_ty: args[0],
+                    name: "Item",
+                    trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
+                },
+            )
+        } else if (owner == "EnumerateIterator" || owner == "SkipIterator") && args.len() == 1 {
             let item = Type::Projection {
-                for_ty: args.get(0),
+                for_ty: args[0],
                 name: "Item",
-                trait_ref: Option::Some(TraitRef {
-                                    name: "Iterator",
-                                    args: Vec::new(),
-                                }),
+                trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
             };
             if owner == "EnumerateIterator" {
-                Option::Some(Type::Tuple {
-                    items: Vec::new().pushed(Type::Int).pushed(item),
-                })
+                Option::Some(Type::Tuple { items: Vec::[Type::Int, item] })
             } else {
                 Option::Some(item)
             }
         } else if owner == "ZipIterator" && args.len() == 2 {
-            Option::Some(Type::Tuple {
-                items: Vec::new()
-                    .pushed(Type::Projection {
-                        for_ty: args.get(0),
-                        name: "Item",
-                        trait_ref: Option::Some(TraitRef {
-                                            name: "Iterator",
-                                            args: Vec::new(),
-                                        }),
-                    })
-                    .pushed(Type::Projection {
-                        for_ty: args.get(1),
-                        name: "Item",
-                        trait_ref: Option::Some(TraitRef {
-                                            name: "Iterator",
-                                            args: Vec::new(),
-                                        }),
-                    }),
-            })
+            Option::Some(
+                Type::Tuple {
+                    items: Vec::[
+                        Type::Projection {
+                            for_ty: args[0],
+                            name: "Item",
+                            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
+                        },
+                        Type::Projection {
+                            for_ty: args[1],
+                            name: "Item",
+                            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
+                        },
+                    ],
+                },
+            )
         } else if owner == "ChainIterator" && args.len() == 3 {
-            Option::Some(args.get(0))
+            Option::Some(args[0])
         } else {
             Option::None
         },
@@ -1049,11 +964,7 @@ fn builtin_into_iterator_type(base: Type) -> Option[Type] {
     }
 }
 
-pub fn builtin_projection(
-    base: Type,
-    name: string,
-    qualifier: Option[TraitRef],
-) -> Option[Type] {
+pub fn builtin_projection(base: Type, name: string, qualifier: Option[TraitRef]) -> Option[Type] {
     if name == "Item" {
         match qualifier {
             Some(reference) => if names_match(reference.name, "Iterator") {
@@ -1082,12 +993,9 @@ pub fn builtin_projection(
     }
 }
 
-fn impl_projection(
-    ctx: Checker,
-    base: Type,
-    name: string,
-    qualifier: Option[TraitRef],
-) -> Option[Type] {
+fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[TraitRef]) -> Option[
+    Type,
+] {
     let candidates: Vec[Type] = Vec::new();
     for impl_info in ctx.impls {
         match associated_binding(impl_info, name) {
@@ -1125,7 +1033,7 @@ fn impl_projection(
         }
     };
     if candidates.len() == 1 {
-        Option::Some(candidates.get(0))
+        Option::Some(candidates[0])
     } else {
         Option::None
     }
@@ -1217,8 +1125,8 @@ fn normalize_callable(ctx: Checker, value: Callable) -> Callable {
 }
 
 fn find_substitution(values: Vec[TypeSubst], name: string) -> Option[Type] {
-    for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+    for offset in 0..values.len() {
+        let value = values[values.len() - 1 - offset];
         if value.name == name {
             return Option::Some(value.ty)
         } else {
@@ -1285,12 +1193,9 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
 
 pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Type {
     let substitutions: Vec[TypeSubst] = Vec::new();
-    for index in range(0, names.len()) {
+    for index in 0..names.len() {
         if index < args.len() {
-            substitutions.push(TypeSubst {
-                name: names.get(index),
-                ty: args.get(index),
-            })
+            substitutions.push(TypeSubst { name: names[index], ty: args[index] })
         } else {
             ()
         }
@@ -1298,21 +1203,21 @@ pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Ty
     substitute_type(value, substitutions)
 }
 
-fn instantiate_substitutions(
-    counter: Ref[int],
-    params: Vec[string],
-    explicit: Vec[Type],
-) -> Vec[TypeSubst] {
+fn instantiate_substitutions(counter: Ref[int], params: Vec[string], explicit: Vec[Type]) -> Vec[
+    TypeSubst,
+] {
     let result: Vec[TypeSubst] = Vec::new();
-    for index in range(0, params.len()) {
-        result.push(TypeSubst {
-            name: params.get(index),
-            ty: if index < explicit.len() {
-                explicit.get(index)
-            } else {
-                fresh_type(counter, VarKind::Any)
+    for index in 0..params.len() {
+        result.push(
+            TypeSubst {
+                name: params[index],
+                ty: if index < explicit.len() {
+                    explicit[index]
+                } else {
+                    fresh_type(counter, VarKind::Any)
+                },
             },
-        })
+        )
     };
     result
 }
@@ -1339,10 +1244,7 @@ pub fn resolve_type(value: Type) -> Type {
                     for arg in reference.args {
                         args.push(resolve_type(arg))
                     };
-                    Option::Some(TraitRef {
-                        name: reference.name,
-                        args,
-                    })
+                    Option::Some(TraitRef { name: reference.name, args })
                 },
                 None => Option::None,
             };
@@ -1407,11 +1309,7 @@ fn default_numeric_type(value: Type) -> Type {
                 },
                 None => Option::None,
             };
-            Type::Projection {
-                for_ty: default_numeric_type(for_ty),
-                name,
-                trait_ref,
-            }
+            Type::Projection { for_ty: default_numeric_type(for_ty), name, trait_ref }
         },
         App { ty, args } => {
             let result = Vec::new();
@@ -1420,10 +1318,7 @@ fn default_numeric_type(value: Type) -> Type {
             };
             Type::App { ty: default_numeric_type(ty), args: result }
         },
-        Array { len, elem } => Type::Array {
-            len,
-            elem: default_numeric_type(elem),
-        },
+        Array { len, elem } => Type::Array { len, elem: default_numeric_type(elem) },
         Slice { elem } => Type::Slice { elem: default_numeric_type(elem) },
         VecType { elem } => Type::VecType { elem: default_numeric_type(elem) },
         RefType { elem } => Type::RefType { elem: default_numeric_type(elem) },
@@ -1437,10 +1332,7 @@ fn default_numeric_type(value: Type) -> Type {
             for param in params {
                 result.push(default_numeric_type(param))
             };
-            Type::Func {
-                params: result,
-                ret_ty: default_numeric_type(ret_ty),
-            }
+            Type::Func { params: result, ret_ty: default_numeric_type(ret_ty) }
         },
         other => other,
     }
@@ -1478,15 +1370,15 @@ fn type_constructor_name(value: Type) -> Option[string] {
 
 fn nominal_type(name: string, args: Vec[Type]) -> Type {
     if name == "Vec" && args.len() == 1 {
-        Type::VecType { elem: args.get(0) }
+        Type::VecType { elem: args[0] }
     } else if name == "Slice" && args.len() == 1 {
-        Type::Slice { elem: args.get(0) }
+        Type::Slice { elem: args[0] }
     } else if name == "Ref" && args.len() == 1 {
-        Type::RefType { elem: args.get(0) }
+        Type::RefType { elem: args[0] }
     } else if name == "HashMap" && args.len() == 2 {
-        Type::HashMap { key: args.get(0), value: args.get(1) }
+        Type::HashMap { key: args[0], value: args[1] }
     } else if name == "Channel" && args.len() == 1 {
-        Type::Channel { elem: args.get(0) }
+        Type::Channel { elem: args[0] }
     } else if args.len() == 0 {
         Type::Con { name }
     } else {
@@ -1496,9 +1388,9 @@ fn nominal_type(name: string, args: Vec[Type]) -> Type {
 
 fn parse_array_length(value: string) -> int {
     let result = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
-        if byte >= 48 && byte <= 57 {
+        if byte >= b'0' && byte <= b'9' {
             result.set(result.get() * 10 + (byte - 48) as int)
         } else {
             ()

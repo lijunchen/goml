@@ -14,10 +14,7 @@ fn artifact_readers_accept_only_gaf() -> unit {
         },
     };
     match decode_artifact_interface_bytes(interface_data) {
-        Ok(value) => testing::assert_eq(
-            value.interface_hash,
-            interface.interface_hash,
-        ),
+        Ok(value) => testing::assert_eq(value.interface_hash, interface.interface_hash),
         Err(error) => testing::fail(error),
     };
     match decode_artifact_interface_bytes(bytes::Bytes::from_string("{}")) {
@@ -33,10 +30,7 @@ fn artifact_readers_accept_only_gaf() -> unit {
         },
     };
     match decode_artifact_core_bytes(core_data) {
-        Ok(value) => testing::assert_eq(
-            value.interface_hash,
-            core.interface_hash,
-        ),
+        Ok(value) => testing::assert_eq(value.interface_hash, core.interface_hash),
         Err(error) => testing::fail(error),
     };
     match decode_artifact_core_bytes(bytes::Bytes::from_string("{}")) {

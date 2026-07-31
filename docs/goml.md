@@ -13,7 +13,7 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 5. Generic calls usually rely on type inference; when explicit type arguments are required, write `id::[int32](1)`, not `id[int32](1)` or Rust's `id::<int32>(1)`.
 6. `if` is an expression; when `else` is omitted, the then branch must return `unit`.`match` must be exhaustive.
 7. The last semicolon-free expression of a block is the block value; adding a semicolon discards the value.
-8. `let` and assignment statements must end with a semicolon.Local binding must be declared with `let mut` before reassignment; the semicolon can be omitted for `if`, `match`, `while` and `for` as statements.
+8. `let` and assignment statements must end with a semicolon.Local binding must be declared with `let mut` before reassignment; the semicolon can be omitted for `if`, `match`, `while`, `loop` and `for` as statements.
 9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
 11. Before using trait method syntax across packages, import the package first and then write `use alias::Trait;`; when in doubt, use UFCS: `Trait::method(value)`.
@@ -64,7 +64,7 @@ Common keywords include:
 
 ```text
 package use as pub fn struct enum trait impl for type const where
-let mut if else match while for in break continue return go dyn
+let mut if else match while loop for in break continue return go dyn
 true false unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
 float32 float64 string char extern
 ```
@@ -82,6 +82,9 @@ The white space is not noticeable.Only line comments from `//` to the end of the
 | integer | `0`、`42`、`1_000`、`0b1010`、`0o755`、`0xff` | Determined by context; defaults to `int` when unconstrained |
 | floating point number | `1.25`、`1e3`、`2.5e-2` | Determined by context; defaults to `float64` when unconstrained |
 | string | `"text"` | Type is `string` |
+| raw string | `r"text"`、`r#"text with \"quotes\""#` | Type is `string`; escapes are not processed |
+| byte string | `b"text\\n"` | Type is `Vec[byte]`; ASCII contents and byte escapes are supported |
+| raw byte string | `br"text"`、`br#"text with "quotes""#` | Type is `Vec[byte]`; escapes are not processed |
 | interpolated string | `f"value={value}"` | Type is `string`; embedded values use `ToString` |
 | character | `'a'`、`'\n'`、`'\u0041'` | Type is `char`, representing a Unicode scalar value |
 | byte | `b'A'`、`b'\n'`、`b'\xFF'` | Type is `byte`, a transparent alias of `uint8` |
@@ -98,6 +101,15 @@ let values: [int16; 3] = [1, 2, 3];
 
 Strings support `\"`, `\\`, `\n`, `\r`, `\t`, `\b`, `\f`, `\/` and four-digit `\uXXXX` escaping; characters are escaped using the same set of control characters, and `\'` is used to represent single quotes. Ordinary strings cannot span lines.
 
+Raw strings use `r"..."` or matching hash delimiters such as `r#"..."#` and `r##"..."##`. Their contents may span lines, and backslashes, quotes, braces, and newlines are retained exactly. Escapes and interpolation are not processed. A quote closes the literal only when it is followed by the same number of `#` characters as the opening delimiter:
+
+```goml
+let windows_path = r"C:\users\alice";
+let quoted = r#"She said "hello"."#;
+let multiline = r##"first line
+second line"##;
+```
+
 Interpolated strings use `f"..."`. Each `{expression}` is evaluated once from left to right and converted with `ToString`; a value that is already `string` is inserted directly. Write `{{` and `}}` for literal braces. Formatting specifications and interpolated multiline strings are not supported:
 
 ```goml
@@ -106,7 +118,23 @@ let count = 3;
 let message = f"{name} has {count} items {{ready}}";
 ```
 
-Byte literals contain exactly one ASCII byte and support `\'`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, and two-digit `\xNN` escapes.Non-ASCII contents are rejected.There is no builtin `bytes` type or byte-string literal; `b"..."` is deliberately rejected pending a separate design.
+Byte literals contain exactly one ASCII byte and support `\'`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, and two-digit `\xNN` escapes. Non-ASCII contents are rejected.
+
+Byte strings use `b"..."` and have type `Vec[byte]`. Ordinary byte strings accept ASCII contents together with `\"`, `\\`, `\0`, `\b`, `\f`, `\n`, `\r`, `\t`, `\/`, and two-digit `\xNN` escapes. Unicode escapes and non-ASCII source characters are rejected:
+
+```goml
+let request = b"GET / HTTP/1.0\r\n\r\n";
+let marker = b"\x00\xFF";
+```
+
+Raw byte strings use `br"..."` or matching hash delimiters such as `br#"..."#`. Their contents may span lines and are copied as ASCII bytes without escapes or interpolation:
+
+```goml
+let path = br"C:\tmp\file";
+let quoted = br#"say "hello""#;
+```
+
+The standard library type `std::bytes::Bytes` remains a separate buffer abstraction. Use `bytes::Bytes::from_vec(value)` when an API requires it.
 
 Each line of a multiline string begins with two backslashes; the indentation before the mark is removed, the lines are connected with newlines, and the content after the mark is retained as is.At the end, the next line no longer starts with two backslashes, usually written directly `;` or `}`:
 
@@ -567,7 +595,7 @@ fn run() -> unit {
 }
 ```
 
-`let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them.
+`let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them.
 
 ### `let`, type annotations and shadowing
 
@@ -588,7 +616,18 @@ let (left, right) = pair;
 let Point { x, y: vertical } = point;
 ```
 
-You cannot do `let` with enumeration or literal patterns that may fail; use `if let` or `match` instead.
+An ordinary `let` cannot use an enumeration or literal pattern that may fail. Use `let ... else` when the failure path must leave the surrounding control flow:
+
+```goml
+fn require_value(value: Option[int]) -> int {
+    let Some(item) = value else {
+        return -1;
+    };
+    item
+}
+```
+
+The initializer is evaluated once. The pattern must be refutable, bindings become visible after the statement, and the `else` block cannot use those bindings. The `else` block must diverge with `return`, `break`, `continue`, an infinite `loop`, or another expression of type `never`. Use `if let` or `match` when both paths continue locally.
 
 ### `mut` and assignment
 
@@ -638,6 +677,7 @@ GoML supports:
 
 - Literals, variables and paths
 - Tuple, array, and structure literals
+- Block expressions `{ ... }`
 - Function call `f(a, b)`
 - Field access `value.field`
 - Tuple projection `pair.0`, `triple.2`
@@ -646,11 +686,34 @@ GoML supports:
 - Unary and binary operations
 - Integer conversion `value as uint32`
 - Half-open range expression `start..end`
-- `if`、`if let`、`match`、`while`、`while let`、`for`
+- `if`、`if let`、`match`、`while`、`while let`、`loop`、`for`
 - closure
 - `return`, `break`, `continue`, `go` and `?`
 
-There is currently no separate arbitrary block expression syntax; blocks appear within functions, closures, and control flow constructs.
+A block is an expression in any ordinary expression position. Its last expression without a semicolon supplies the value; a block without a tail expression has type `unit`:
+
+```goml
+let answer = {
+    let base = 40;
+    base + 2
+};
+
+return {
+    cleanup();
+    answer
+};
+```
+
+In an `if`, `if let`, `while`, `while let`, `for`, or `match` header, the top-level `{` starts the control-flow body. Parenthesize a block expression used as the header value:
+
+```goml
+if ({
+    prepare();
+    ready()
+}) {
+    run()
+}
+```
 
 ### operator precedence
 
@@ -825,7 +888,7 @@ while index < limit {
 };
 ```
 
-The condition must be `bool` and the loop result is `unit`.There is currently no `break` with a value.
+The condition must be `bool` and the loop result is `unit`. A `while` loop accepts only `break` without a value.
 
 `while let` evaluates the right-hand expression once in each round; when the match is successful, it enters the loop body and provides pattern binding, and when the match fails, it exits the loop:
 
@@ -836,6 +899,21 @@ while let Option::Some(value) = iterator.next() {
 ```
 
 The loop body must return `unit`.Pattern binding is only visible within the loop body.
+
+### `loop`
+
+`loop` repeats a block until control leaves it. Unlike `while` and `for`, it is an expression whose result comes from `break`:
+
+```goml
+let result = loop {
+    let candidate = next();
+    if candidate >= 0 {
+        break candidate;
+    };
+};
+```
+
+All `break` values targeting the same `loop` must have compatible types. `break;` supplies `unit`, so it cannot be mixed with non-`unit` break values. A `loop` with no `break` targeting it has type `never` and does not continue to the following expression. Nested loops always associate `break` and `continue` with the nearest loop.
 
 ### `for`
 
@@ -873,7 +951,7 @@ while true {
 };
 ```
 
-`break` and `continue` can only appear in loops, and neither has a value.They are divergent control expressions that can appear in `if`, `match`, or other value positions.
+`break` and `continue` can only appear in loops. `continue` never has a value. `break value` is allowed only for `loop`; `while` and `for` accept `break;` only. Both are divergent control expressions and can appear in `if`, `match`, or other value positions.
 
 `return` can be taken with or without a value and checks the return type of the current function or closure:
 
@@ -1452,9 +1530,13 @@ If the identity of the package under test is `alice::myapp::math`, the canonical
 goml check
 goml check --tests
 goml build
+goml fmt
+goml fmt --check
 ```
 
 Test source code cannot be used to fix a production package that itself fails inspection.
+
+`goml fmt` formats the current module's production files, internal tests, and black-box test packages using the same package graphs as builds and tests. It can be run from any nested package directory. Package discovery excludes `testdata`, build output, hidden directories, nested modules, and external dependencies. `goml fmt --check` only checks formatting and exits unsuccessfully when any source file would change.
 
 Run the test using:
 
@@ -1479,6 +1561,8 @@ Each test is executed in a separate runner process, and failure to exit and time
 ### LSP and editor
 
 LSP will construct the analysis package according to the production file, white box test file and black box test file respectively according to the path, so diagnosis, completion, hover and jump follow the corresponding visibility.`Run Test` CodeLens will appear on the `#[test]` function; the VS Code extension will save the dirty file first, and then call the module-level `goml test` with the complete test name and test type.
+
+`gomllsp` supports full-document formatting through `textDocument/formatting`. Formatting uses the latest unsaved document text and the fixed rules described in `docs/formatting.md`. Invalid documents are left unchanged.
 
 ## Built-in prelude
 
@@ -1769,6 +1853,8 @@ Sorting mutates a `Vec[T]` in place. Both `sort_by` and `stable_sort_by` are sta
 | `id::<int32>(1)` | `id::[int32](1)` |
 | Ordinary function `id[int32](1)` | `id::[int32](1)`, or rely on parameter/result type inference |
 | `1i32`、`1u64`、`1.0f32` | Use the expected type, such as `let value: uint64 = 1;` |
+| Non-ASCII source text in `b"é"` | Use a `string`, or write its encoded bytes explicitly such as `b"\xC3\xA9"` |
+| A bare block as a control-flow header value | Parenthesize it, for example `if ({ prepare(); ready() }) { ... }` |
 | `let mut x: &T` | Use value `T` or `Ref[T]` as required |
 | Write `if cond { value }` in the value position | `if cond { value } else { other }` |
 | `let Option::Some(x) = value;` | `if let Option::Some(x) = value { ... };` or `match` |
@@ -1777,7 +1863,7 @@ Sorting mutates a `Vec[T]` in place. Both `sort_by` and `stable_sort_by` are sta
 | `x++`、`x--` | `x += 1;`、`x -= 1;` |
 | Assign through an immutable structure binding | Declare the binding with `let mut`, or create a new value with `Point { field: value, ..point }` |
 | `var x = 1`、`x := 1` | `let x = 1;` |
-| `loop { ... }` | `while true { ... }` |
+| A loop with a condition | `while condition { ... }` |
 | `for i := 0; ...` | `while`, or `for i in start..end` |
 | `switch` | `match` |
 | `null`、`nil` | `Option::None` |
@@ -1854,7 +1940,7 @@ type_args     = "[" type_list "]"
 type_list     = type ("," type)* ","?
 
 block         = "{" statement* expression? "}"
-statement     = "let" "mut"? pattern (":" type)? "=" expression ";"
+statement     = "let" "mut"? pattern (":" type)? "=" expression ("else" block)? ";"
               | assign_target assignment_operator expression ";"
               | expression ";"
               | control_expression
@@ -1862,14 +1948,18 @@ statement     = "let" "mut"? pattern (":" type)? "=" expression ";"
 assignment_operator = "=" | "+=" | "-=" | "*=" | "/=" | "%="
                     | "&=" | "|=" | "^=" | "<<=" | ">>="
 
-expression    = literal | interpolated_string | path | tuple | array
+expression    = literal | raw_string | byte_string | raw_byte_string
+              | interpolated_string | path | tuple | array | block
               | vec_literal | hashmap_literal | struct_literal | closure
               | call | field | index | unary | binary | cast | range_expression
               | try_expression
-              | if_expression | match_expression | while_expression | for_expression
-              | "return" expression? | "break" | "continue" | "go" expression
+              | if_expression | match_expression | while_expression | loop_expression | for_expression
+              | "return" expression? | "break" expression? | "continue" | "go" expression
 
 interpolated_string = "f\"" (string_text | "{{" | "}}" | "{" expression "}")* "\""
+byte_string   = "b\"" byte_string_content* "\""
+raw_byte_string = "br\"...\"" | "br#\"...\"#" | "br##\"...\"##" | ...
+raw_string    = "r" raw_hashes? "\"" raw_text "\"" raw_hashes?
 vec_literal   = "Vec" "::" "[" (expression ("," expression)* ","?)? "]"
 hashmap_literal = "HashMap" "::" "{"
                   (expression "=>" expression
@@ -1879,7 +1969,7 @@ struct_literal = path "{" (struct_literal_field ("," struct_literal_field)*
                  ("," ".." expression)? ","? | ".." expression ","?)? "}"
 struct_literal_field = lower_ident (":" expression)?
 
-control_expression = if_expression | match_expression | while_expression | for_expression
+control_expression = if_expression | match_expression | while_expression | loop_expression | for_expression
 if_expression = "if" expression block ("else" (block | if_expression))?
               | "if" "let" pattern "=" expression block
                 ("else" (block | if_expression))?
@@ -1888,6 +1978,7 @@ match_expression = "match" expression
 match_arm     = pattern ("if" expression)? "=>" (expression | block)
 while_expression = "while" expression block
               | "while" "let" pattern "=" expression block
+loop_expression = "loop" block
 for_expression = "for" pattern "in" expression block
 closure       = "||" (expression | block)
               | "|" closure_params? "|" (expression | block)
@@ -1933,9 +2024,10 @@ goml build
 goml check --tests
 goml test
 goml run
+goml fmt
 ```
 
-`goml check`, `goml build`, and `goml test` always operate on the complete module and do not accept package or file targets. `goml run [TARGET]` accepts an optional entry package file or directory when a module has multiple executable packages.
+`goml check`, `goml build`, `goml test`, and `goml fmt` always operate on the complete module and do not accept package or file targets. `goml run [TARGET]` accepts an optional entry package file or directory when a module has multiple executable packages.
 
 When you need to inspect a compilation phase, add `--dump-ast`, `--dump-hir`, `--dump-tast`, `--dump-core`, `--dump-mono`, `--dump-lift`, `--dump-anf`, or `--dump-go` to `gomlc run-single`.
 

@@ -112,7 +112,9 @@ fn lexes_keywords_and_identifiers() -> unit {
 
 #[test]
 fn lexes_radix_and_byte_literals() -> unit {
-    let tokens = lex("0b1010 0B1_001 0o755 0O7_0 0xff 0XCA_FE b'A' b'\\n' b'\\xFF' b\"text\" 0b102 0x_1 0o7_ b'é'");
+    let tokens = lex(
+        "0b1010 0B1_001 0o755 0O7_0 0xff 0XCA_FE b'A' b'\\n' b'\\xFF' b\"text\" 0b102 0x_1 0o7_ b'é'",
+    );
     let builder = text::StringBuilder::new();
     for token in tokens {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
@@ -130,13 +132,15 @@ fn lexes_radix_and_byte_literals() -> unit {
     };
     testing::assert_eq(
         builder.finish(),
-        "IntLit:0b1010 IntLit:0B1_001 IntLit:0o755 IntLit:0O7_0 IntLit:0xff IntLit:0XCA_FE ByteCharLit:b'A' ByteCharLit:b'\\n' ByteCharLit:b'\\xFF' UnsupportedByteStr:b\"text\" Error:0b102 Error:0x_1 Error:0o7_ Error:b'é'",
+        "IntLit:0b1010 IntLit:0B1_001 IntLit:0o755 IntLit:0O7_0 IntLit:0xff IntLit:0XCA_FE ByteCharLit:b'A' ByteCharLit:b'\\n' ByteCharLit:b'\\xFF' ByteStr:b\"text\" Error:0b102 Error:0x_1 Error:0o7_ Error:b'é'",
     )
 }
 
 #[test]
 fn lexes_numeric_literals() -> unit {
-    let tokens = lex("0 12 1i8 2i16 3i32 4i64 5u8 6u16 7u32 8u64 1.25 2.5f32 3.75f64 1. 1f32 1.2f33 9i32x");
+    let tokens = lex(
+        "0 12 1i8 2i16 3i32 4i64 5u8 6u16 7u32 8u64 1.25 2.5f32 3.75f64 1. 1f32 1.2f33 9i32x",
+    );
     let builder = text::StringBuilder::new();
     for token in tokens {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
@@ -205,4 +209,57 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> unit {
     testing::assert_eq(multiline.get(0).text, "\"hello ");
     testing::assert_eq(multiline.get(1).text, "\\");
     testing::assert_eq(multiline.get(4).text, "\";")
+}
+
+#[test]
+fn lexes_raw_strings_and_preserves_delimiters() -> unit {
+    let source = "r\"plain \\\\ text\" r##\"quoted \"text\" and #\nnext\"## r#\"unterminated";
+    let tokens = lex(source);
+    assert_token(tokens, 0, TokenKind::RawStr, "r\"plain \\\\ text\"", 0, 16);
+    testing::assert(token_kind_equal(tokens.get(2).kind, TokenKind::RawStr));
+    testing::assert_eq(tokens.get(2).text, "r##\"quoted \"text\" and #\nnext\"##");
+    testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(4).text, "r#\"unterminated")
+}
+
+#[test]
+fn lexes_byte_strings_and_raw_byte_strings() -> unit {
+    let source = "b\"A\\n\\xFF\" br#\"raw \\\\ text\"# br##\"quoted \"text\" and #\nnext\"##";
+    let tokens = lex(source);
+    assert_token(tokens, 0, TokenKind::ByteStr, "b\"A\\n\\xFF\"", 0, 10);
+    testing::assert(token_kind_equal(tokens.get(2).kind, TokenKind::RawByteStr));
+    testing::assert_eq(tokens.get(2).text, "br#\"raw \\\\ text\"#");
+    testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::RawByteStr));
+    testing::assert_eq(tokens.get(4).text, "br##\"quoted \"text\" and #\nnext\"##")
+}
+
+#[test]
+fn rejects_invalid_byte_strings() -> unit {
+    let tokens = lex("b\"é\" b\"\\u0041\" br#\"é\"# br#\"unterminated");
+    testing::assert(token_kind_equal(tokens.get(0).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(0).text, "b\"é\"");
+    testing::assert(token_kind_equal(tokens.get(2).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(2).text, "b\"\\u0041\"");
+    testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(4).text, "br#\"é\"#");
+    testing::assert(token_kind_equal(tokens.get(6).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(6).text, "br#\"unterminated")
+}
+
+#[test]
+fn skips_raw_byte_string_braces_in_interpolation() -> unit {
+    let tokens = lex("f\"{br#\"}\"#}\"");
+    let errors = Ref::new(0);
+    let raw_bytes = Ref::new(0);
+    for token in tokens {
+        if token_kind_equal(token.kind, TokenKind::Error) {
+            errors.set(errors.get() + 1)
+        } else if token_kind_equal(token.kind, TokenKind::RawByteStr) {
+            raw_bytes.set(raw_bytes.get() + 1)
+        } else {
+            ()
+        }
+    };
+    testing::assert_eq(errors.get(), 0);
+    testing::assert_eq(raw_bytes.get(), 1)
 }

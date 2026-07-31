@@ -61,8 +61,5 @@ fn finds_byte_offsets_without_crossing_utf8_boundaries() -> unit {
     testing::assert_eq(trailing.len(), 2);
     testing::assert_eq(trailing.get(1), "");
     testing::assert_eq(join(Vec::new(), ", "), "");
-    testing::assert_eq(
-        join(Vec::new().pushed("alpha").pushed("语言").pushed("omega"), " -> "),
-        "alpha -> 语言 -> omega",
-    )
+    testing::assert_eq(join(Vec::["alpha", "语言", "omega"], " -> "), "alpha -> 语言 -> omega")
 }

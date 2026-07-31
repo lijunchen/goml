@@ -1,5 +1,5 @@
 fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
-  let _wild108 = inherent#Ref#Ref[T]#set__T_int32(counter/0, (inherent#Ref#Ref[T]#get__T_int32(counter/0) + 1)) in
+  let _wild152 = inherent#Ref#Ref[T]#set__T_int32(counter/0, (inherent#Ref#Ref[T]#get__T_int32(counter/0) + 1)) in
   if ok/1 {
       Result__int32__string::Ok(inherent#Ref#Ref[T]#get__T_int32(counter/0))
   } else {
@@ -8,16 +8,16 @@ fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
 }
 
 fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
-  let value/4 = let mtmp109 = bump(counter/2, ok/3) in
-  match mtmp109 {
-    Result__int32__string::Ok(x110) => {
-      let x110 = Result__int32__string::Ok._0(mtmp109) in
-      let try_value/23 = x110 in
+  let value/4 = let mtmp153 = bump(counter/2, ok/3) in
+  match mtmp153 {
+    Result__int32__string::Ok(x154) => {
+      let x154 = Result__int32__string::Ok._0(mtmp153) in
+      let try_value/23 = x154 in
       try_value/23
     },
-    Result__int32__string::Err(x111) => {
-      let x111 = Result__int32__string::Err._0(mtmp109) in
-      let try_residual/23 = x111 in
+    Result__int32__string::Err(x155) => {
+      let x155 = Result__int32__string::Err._0(mtmp153) in
+      let try_residual/23 = x155 in
       return Result__int32__string::Err(try_residual/23)
     },
   } in
@@ -26,14 +26,14 @@ fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
 
 fn show(res/5: Result__int32__string) -> string {
   match res/5 {
-    Result__int32__string::Ok(x112) => {
-      let x112 = Result__int32__string::Ok._0(res/5) in
-      let value/6 = x112 in
+    Result__int32__string::Ok(x156) => {
+      let x156 = Result__int32__string::Ok._0(res/5) in
+      let value/6 = x156 in
       ("ok " + inherent#int32#int32#to_string(value/6))
     },
-    Result__int32__string::Err(x113) => {
-      let x113 = Result__int32__string::Err._0(res/5) in
-      let err/7 = x113 in
+    Result__int32__string::Err(x157) => {
+      let x157 = Result__int32__string::Err._0(res/5) in
+      let err/7 = x157 in
       ("err " + err/7)
     },
   }
@@ -46,8 +46,8 @@ fn run(ok/8: bool) -> string {
 }
 
 fn main() -> unit {
-  let _wild114 = println__T_string(run(true)) in
-  let _wild115 = println__T_string(run(false)) in
+  let _wild158 = println__T_string(run(true)) in
+  let _wild159 = println__T_string(run(false)) in
   ()
 }
 

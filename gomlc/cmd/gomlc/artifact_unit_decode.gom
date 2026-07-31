@@ -2,10 +2,10 @@ package main;
 
 use gomlc::vecs;
 
-fn artifact_decode_optional_string(
-    value: ArtifactValue,
-    expected: string,
-) -> Result[Option[string], string] {
+fn artifact_decode_optional_string(value: ArtifactValue, expected: string) -> Result[
+    Option[string],
+    string,
+] {
     match value {
         Null => Result::Ok(Option::None),
         other => match artifact_json_string_value(other, expected) {
@@ -15,75 +15,40 @@ fn artifact_decode_optional_string(
     }
 }
 
-fn artifact_decode_test_descriptor(
-    value: ArtifactValue,
-) -> Result[TestDescriptor, string] {
-    let object = match artifact_json_object(value, "test descriptor") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let id = match artifact_json_field_string(object, "id") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let package_name = match artifact_json_field_string(object, "package") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let symbol = match artifact_json_field_string(object, "symbol") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let display_name = match artifact_json_field_string(object, "display_name") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let source_path = match artifact_json_field_string(object, "source_path") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let start = match artifact_decode_core_index_field(object, "start") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let end = match artifact_decode_core_index_field(object, "end") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+fn artifact_decode_test_descriptor(value: ArtifactValue) -> Result[TestDescriptor, string] {
+    let object = artifact_json_object(value, "test descriptor")?;
+    let id = artifact_json_field_string(object, "id")?;
+    let package_name = artifact_json_field_string(object, "package")?;
+    let symbol = artifact_json_field_string(object, "symbol")?;
+    let display_name = artifact_json_field_string(object, "display_name")?;
+    let source_path = artifact_json_field_string(object, "source_path")?;
+    let start = artifact_decode_core_index_field(object, "start")?;
+    let end = artifact_decode_core_index_field(object, "end")?;
     let ignored = match artifact_json_required_field(object, "ignored") {
-        Ok(value) => match artifact_json_bool_value(value, "test ignored flag") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_json_bool_value(value, "test ignored flag")?,
         Err(error) => return Result::Err(error),
     };
     let ignore_reason = match artifact_json_required_field(object, "ignore_reason") {
-        Ok(value) => match artifact_decode_optional_string(value, "test ignore reason") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_optional_string(value, "test ignore reason")?,
         Err(error) => return Result::Err(error),
     };
-    Result::Ok(TestDescriptor {
-        id,
-        package_name,
-        symbol,
-        display_name,
-        source_path,
-        start,
-        end,
-        ignored,
-        ignore_reason,
-    })
+    Result::Ok(
+        TestDescriptor {
+            id,
+            package_name,
+            symbol,
+            display_name,
+            source_path,
+            start,
+            end,
+            ignored,
+            ignore_reason,
+        },
+    )
 }
 
-fn artifact_decode_tests(
-    value: ArtifactValue,
-) -> Result[Vec[TestDescriptor], string] {
-    let values = match artifact_json_array(value, "test descriptors") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+fn artifact_decode_tests(value: ArtifactValue) -> Result[Vec[TestDescriptor], string] {
+    let values = artifact_json_array(value, "test descriptors")?;
     let result = Vec::new();
     for value in values {
         match artifact_decode_test_descriptor(value) {
@@ -94,21 +59,15 @@ fn artifact_decode_tests(
     Result::Ok(result)
 }
 
-fn artifact_test_descriptors_valid(
-    package_name: string,
-    values: Vec[TestDescriptor],
-) -> bool {
+fn artifact_test_descriptors_valid(package_name: string, values: Vec[TestDescriptor]) -> bool {
     let ids = Vec::new();
     for value in values {
-        if value.package_name != package_name
-            || value.id == ""
-            || value.symbol == ""
+        if value.package_name != package_name || value.id == "" || value.symbol == ""
             || value.display_name == ""
             || value.source_path == ""
             || value.start > value.end
             || (!value.ignored && option_string_present(value.ignore_reason))
-            || vecs::contains(ids, value.id)
-        {
+            || vecs::contains(ids, value.id) {
             return false
         } else {
             ids.push(value.id)
@@ -117,80 +76,46 @@ fn artifact_test_descriptors_valid(
     true
 }
 
-fn artifact_decode_core_value(
-    value: ArtifactValue,
-) -> Result[ArtifactCoreUnit, string] {
-    let object = match artifact_json_object(value, "Core unit") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let package_name = match artifact_json_field_string(object, "package") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let declared_name = match artifact_json_field_string(
-        object,
-        "declared_name",
-    ) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let interface_hash = match artifact_json_field_string(
-        object,
-        "interface_hash",
-    ) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+fn artifact_decode_core_value(value: ArtifactValue) -> Result[ArtifactCoreUnit, string] {
+    let object = artifact_json_object(value, "Core unit")?;
+    let package_name = artifact_json_field_string(object, "package")?;
+    let declared_name = artifact_json_field_string(object, "declared_name")?;
+    let interface_hash = artifact_json_field_string(object, "interface_hash")?;
     let exports = match artifact_json_required_field(object, "exports") {
-        Ok(value) => match artifact_decode_package_exports(value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_package_exports(value)?,
         Err(error) => return Result::Err(error),
     };
     let context = artifact_core_decode_context(exports);
     let core_ir = match artifact_json_required_field(object, "core_ir") {
-        Ok(value) => match artifact_decode_core_file(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_core_file(context, value)?,
         Err(error) => return Result::Err(error),
     };
     let deps = match artifact_json_required_field(object, "deps") {
-        Ok(value) => match artifact_decode_string_map(value, "dependency hashes") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_map(value, "dependency hashes")?,
         Err(error) => return Result::Err(error),
     };
     let sources = match artifact_json_required_field(object, "sources") {
-        Ok(value) => match artifact_decode_string_array(value, "source paths") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_array(value, "source paths")?,
         Err(error) => return Result::Err(error),
     };
-    let tests = match artifact_json_optional_field(object, "tests") {
-        Ok(Some(value)) => match artifact_decode_tests(value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
-        Ok(None) => Vec::new(),
-        Err(error) => return Result::Err(error),
+    let tests = match artifact_json_optional_field(object, "tests")? {
+        Some(value) => artifact_decode_tests(value)?,
+        None => Vec::new(),
     };
     if !artifact_test_descriptors_valid(package_name, tests) {
         Result::Err(artifact_decode_error("valid test descriptors"))
     } else {
-        Result::Ok(ArtifactCoreUnit {
-            package_name,
-            declared_name,
-            interface_hash,
-            exports,
-            core_ir,
-            deps,
-            sources,
-            tests,
-        })
+        Result::Ok(
+            ArtifactCoreUnit {
+                package_name,
+                declared_name,
+                interface_hash,
+                exports,
+                core_ir,
+                deps,
+                sources,
+                tests,
+            },
+        )
     }
 }

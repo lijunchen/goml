@@ -10,18 +10,29 @@ use gomlc::tast;
 use std::testing;
 
 fn lower_source(source: string) -> File {
-    lower(lift::lower(mono::lower(core::lower(tast::check(hir::lower(
-        ast::lower(parser::parse(source)),
-        "main.gom",
-    ))))))
+    lower(
+        lift::lower(
+            mono::lower(
+                core::lower(tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom"))),
+            ),
+        ),
+    )
 }
 
 #[test]
 fn starts_fresh_names_from_shared_counter() -> unit {
-    let lowered = lift::lower(mono::lower(core::lower(tast::check(hir::lower(
-        ast::lower(parser::parse("fn main() -> unit { println(1) }")),
-        "main.gom",
-    )))));
+    let lowered = lift::lower(
+        mono::lower(
+            core::lower(
+                tast::check(
+                    hir::lower(
+                        ast::lower(parser::parse("fn main() -> unit { println(1) }")),
+                        "main.gom",
+                    ),
+                ),
+            ),
+        ),
+    );
     let counter = Ref::new(61);
     let file = lower_with_counter(lowered, counter);
     match file.functions.get(0).body.binds.get(0) {

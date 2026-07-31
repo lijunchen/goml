@@ -1,0 +1,149 @@
+package formatter;
+
+pub enum Doc {
+    Nil,
+    Text(string, int),
+    Verbatim(string),
+    Concat(Vec[Doc]),
+    Group(int, Doc),
+    IfBreak(int, Doc, Doc),
+    SoftLine,
+    Line,
+    HardLine,
+    Indent(Doc),
+    LineSuffix(Doc),
+    BreakParent,
+}
+
+struct DocBuilder {
+    next_group: Ref[int],
+}
+
+struct GroupedDoc {
+    id: int,
+    doc: Doc,
+}
+
+fn doc_builder() -> DocBuilder {
+    DocBuilder { next_group: Ref::new(0) }
+}
+
+fn nil() -> Doc {
+    Doc::Nil
+}
+
+fn codepoint_width(value: string) -> int {
+    let width: Ref[int] = Ref::new(0);
+    for _ in value.chars() {
+        width.set(width.get() + 1)
+    };
+    width.get()
+}
+
+fn text(value: string) -> Doc {
+    if value == "" {
+        Doc::Nil
+    } else {
+        Doc::Text(value, codepoint_width(value))
+    }
+}
+
+fn verbatim(value: string) -> Doc {
+    if value == "" {
+        Doc::Nil
+    } else {
+        Doc::Verbatim(value)
+    }
+}
+
+fn concat(values: Vec[Doc]) -> Doc {
+    let flattened: Vec[Doc] = Vec::new();
+    for value in values {
+        match value {
+            Nil => (),
+            Concat(children) => for child in children {
+                match child {
+                    Nil => (),
+                    _ => flattened.push(child),
+                }
+            },
+            _ => flattened.push(value),
+        }
+    };
+    if flattened.len() == 0 {
+        Doc::Nil
+    } else if flattened.len() == 1 {
+        flattened[0]
+    } else {
+        Doc::Concat(flattened)
+    }
+}
+
+fn concat2(first: Doc, second: Doc) -> Doc {
+    concat(Vec::[first, second])
+}
+
+fn concat3(first: Doc, second: Doc, third: Doc) -> Doc {
+    concat(Vec::[first, second, third])
+}
+
+fn indent(value: Doc) -> Doc {
+    match value {
+        Nil => Doc::Nil,
+        _ => Doc::Indent(value),
+    }
+}
+
+fn if_break(group_id: int, broken: Doc, flat: Doc) -> Doc {
+    Doc::IfBreak(group_id, broken, flat)
+}
+
+fn line_suffix(value: Doc) -> Doc {
+    Doc::LineSuffix(value)
+}
+
+fn soft_line() -> Doc {
+    Doc::SoftLine
+}
+
+fn line() -> Doc {
+    Doc::Line
+}
+
+fn hard_line() -> Doc {
+    Doc::HardLine
+}
+
+fn break_parent() -> Doc {
+    Doc::BreakParent
+}
+
+fn join(separator: Doc, values: Vec[Doc]) -> Doc {
+    let result: Vec[Doc] = Vec::new();
+    for index in 0..values.len() {
+        if index > 0 {
+            result.push(separator)
+        } else {
+            ()
+        };
+        result.push(values[index])
+    };
+    concat(result)
+}
+
+impl DocBuilder {
+    fn new_group_id(self: DocBuilder) -> int {
+        let id = self.next_group.get();
+        self.next_group.set(id + 1);
+        id
+    }
+
+    fn group_with_id(self: DocBuilder, id: int, content: Doc) -> GroupedDoc {
+        GroupedDoc { id, doc: Doc::Group(id, content) }
+    }
+
+    fn group(self: DocBuilder, content: Doc) -> GroupedDoc {
+        let id = self.new_group_id();
+        self.group_with_id(id, content)
+    }
+}

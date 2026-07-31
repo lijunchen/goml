@@ -1,0 +1,263 @@
+package formatter;
+
+use gomlc::cst;
+use gomlc::lexer;
+use std::text;
+
+struct LocatedNode {
+    node: cst::CstNode,
+    start: int,
+    end: int,
+}
+
+struct LocatedToken {
+    token: lexer::Token,
+    start: int,
+    end: int,
+}
+
+enum LocatedElement {
+    Node(LocatedNode),
+    Token(LocatedToken),
+}
+
+struct ChildCursor {
+    elements: Vec[LocatedElement],
+    index: Ref[int],
+}
+
+fn located_node(node: cst::CstNode, start: int) -> LocatedNode {
+    LocatedNode { node, start, end: start + cst::node_byte_len(node) }
+}
+
+fn child_cursor(value: LocatedNode) -> ChildCursor {
+    let elements: Vec[LocatedElement] = Vec::new();
+    let offset: Ref[int] = Ref::new(value.start);
+    for element in cst::node_children(value.node) {
+        let length = cst::element_byte_len(element);
+        match element {
+            Node(node) => elements.push(
+                LocatedElement::Node(
+                    LocatedNode { node, start: offset.get(), end: offset.get() + length },
+                ),
+            ),
+            Token(token) => elements.push(
+                LocatedElement::Token(
+                    LocatedToken { token, start: offset.get(), end: offset.get() + length },
+                ),
+            ),
+        };
+        offset.set(offset.get() + length)
+    };
+    ChildCursor { elements, index: Ref::new(0) }
+}
+
+fn node_is(value: LocatedNode, kind: cst::NodeKind) -> bool {
+    cst::node_kind_equal(cst::node_kind(value.node), kind)
+}
+
+fn token_is(value: LocatedToken, kind: lexer::TokenKind) -> bool {
+    lexer::token_kind_equal(value.token.kind, kind)
+}
+
+fn element_node(value: LocatedElement) -> Option[LocatedNode] {
+    match value {
+        Node(node) => Option::Some(node),
+        Token(_) => Option::None,
+    }
+}
+
+fn element_token(value: LocatedElement) -> Option[LocatedToken] {
+    match value {
+        Node(_) => Option::None,
+        Token(token) => Option::Some(token),
+    }
+}
+
+fn element_start(value: LocatedElement) -> int {
+    match value {
+        Node(node) => node.start,
+        Token(token) => token.start,
+    }
+}
+
+fn element_end(value: LocatedElement) -> int {
+    match value {
+        Node(node) => node.end,
+        Token(token) => token.end,
+    }
+}
+
+impl ChildCursor {
+    fn remaining(self: ChildCursor) -> int {
+        self.elements.len() - self.index.get()
+    }
+
+    fn peek(self: ChildCursor) -> Option[LocatedElement] {
+        if self.index.get() < self.elements.len() {
+            Option::Some(self.elements[self.index.get()])
+        } else {
+            Option::None
+        }
+    }
+
+    fn next(self: ChildCursor) -> Option[LocatedElement] {
+        match self.peek() {
+            Some(value) => {
+                self.index.set(self.index.get() + 1);
+                Option::Some(value)
+            },
+            None => Option::None,
+        }
+    }
+
+    fn peek_node_kind(self: ChildCursor, kind: cst::NodeKind) -> bool {
+        match self.peek() {
+            Some(Node(node)) => node_is(node, kind),
+            _ => false,
+        }
+    }
+
+    fn peek_token_kind(self: ChildCursor, kind: lexer::TokenKind) -> bool {
+        match self.peek() {
+            Some(Token(token)) => token_is(token, kind),
+            _ => false,
+        }
+    }
+
+    fn consume_node(self: ChildCursor, kind: cst::NodeKind) -> Option[LocatedNode] {
+        if self.peek_node_kind(kind) {
+            match self.next() {
+                Some(Node(node)) => Option::Some(node),
+                _ => Option::None,
+            }
+        } else {
+            Option::None
+        }
+    }
+
+    fn consume_token(self: ChildCursor, kind: lexer::TokenKind) -> Option[LocatedToken] {
+        if self.peek_token_kind(kind) {
+            match self.next() {
+                Some(Token(token)) => Option::Some(token),
+                _ => Option::None,
+            }
+        } else {
+            Option::None
+        }
+    }
+
+    fn consume_trivia(self: ChildCursor) -> Vec[LocatedToken] {
+        let result: Vec[LocatedToken] = Vec::new();
+        while true {
+            match self.peek() {
+                Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {
+                    let _ = self.next();
+                    result.push(token)
+                } else {
+                    return result
+                },
+                _ => return result,
+            }
+        };
+        result
+    }
+}
+
+fn first_significant_token(value: LocatedNode) -> Option[LocatedToken] {
+    let cursor = child_cursor(value);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(node)) => match first_significant_token(node) {
+                Some(token) => return Option::Some(token),
+                None => (),
+            },
+            Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {
+                ()
+            } else {
+                return Option::Some(token)
+            },
+            None => (),
+        }
+    };
+    Option::None
+}
+
+fn last_significant_token(value: LocatedNode) -> Option[LocatedToken] {
+    let result: Ref[Option[LocatedToken]] = Ref::new(Option::None);
+    let cursor = child_cursor(value);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(node)) => match last_significant_token(node) {
+                Some(token) => result.set(Option::Some(token)),
+                None => (),
+            },
+            Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {
+                ()
+            } else {
+                result.set(Option::Some(token))
+            },
+            None => (),
+        }
+    };
+    result.get()
+}
+
+fn node_has_comment(value: LocatedNode) -> bool {
+    let cursor = child_cursor(value);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(node)) => if node_has_comment(node) {
+                return true
+            } else {
+                ()
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::Comment) {
+                return true
+            } else {
+                ()
+            },
+            None => (),
+        }
+    };
+    false
+}
+
+fn write_node_source(value: LocatedNode, output: text::StringBuilder) -> unit {
+    let cursor = child_cursor(value);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(node)) => write_node_source(node, output),
+            Some(Token(token)) => output.write_string(token.token.text),
+            None => (),
+        }
+    }
+}
+
+fn node_source(value: LocatedNode) -> string {
+    let output = text::StringBuilder::with_capacity(value.end - value.start);
+    write_node_source(value, output);
+    output.finish()
+}
+
+fn node_significant_source(value: LocatedNode) -> string {
+    match (first_significant_token(value), last_significant_token(value)) {
+        (Some(first), Some(last)) => {
+            let source = node_source(value);
+            source.byte_slice(first.start - value.start, last.end - value.start)
+        },
+        _ => "",
+    }
+}
+
+fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
+    let result: Vec[LocatedNode] = Vec::new();
+    let cursor = child_cursor(value);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(node)) => result.push(node),
+            _ => (),
+        }
+    };
+    result
+}

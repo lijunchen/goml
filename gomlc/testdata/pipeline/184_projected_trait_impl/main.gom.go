@@ -20,59 +20,59 @@ type Value struct {
 type closure_env_identity_0 struct {}
 
 func _goml_m_trait__impl_i_Source_i_Value_i_get(self__1 Value) int32 {
-    var retv112 int32
-    var t113 int32 = self__1.value
-    retv112 = t113
-    return retv112
+    var retv156 int32
+    var t157 int32 = self__1.value
+    retv156 = t157
+    return retv156
 }
 
 func main0() struct{} {
-    var t115 Value = Value{
+    var t159 Value = Value{
         value: 41,
     }
-    var direct__6 int32 = _goml_m_trait__impl_i_Pick_i__l_int32_r__x40_Value_i_pick(t115)
+    var direct__6 int32 = _goml_m_trait__impl_i_Pick_i__l_int32_r__x40_Value_i_pick(t159)
     println__T_int32(direct__6)
-    var t116 Value = Value{
+    var t160 Value = Value{
         value: 42,
     }
-    var t117 int32 = copy__S_Value(t116)
-    println__T_int32(t117)
+    var t161 int32 = copy__S_Value(t160)
+    println__T_int32(t161)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_Pick_i__l_int32_r__x40_Value_i_pick(self__0 Value) int32 {
-    var retv119 int32
-    var t120 int32 = _goml_m_trait__impl_i_Source_i_Value_i_get(self__0)
-    retv119 = t120
-    return retv119
+    var retv163 int32
+    var t164 int32 = _goml_m_trait__impl_i_Source_i_Value_i_get(self__0)
+    retv163 = t164
+    return retv163
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t122 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t122)
+    var t166 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t166)
     return struct{}{}
 }
 
 func copy__S_Value(source__2 Value) int32 {
-    var retv125 int32
+    var retv169 int32
     var value__3 int32 = _goml_m_trait__impl_i_Pick_i__l_int32_r__x40_Value_i_pick(source__2)
     var identity__5 closure_env_identity_0 = closure_env_identity_0{}
-    var t126 int32 = _goml_m_inherent_i_closure__env__identity__0_i_closure__env__identity__0_i_apply(identity__5, value__3)
-    retv125 = t126
-    return retv125
+    var t170 int32 = _goml_m_inherent_i_closure__env__identity__0_i_closure__env__identity__0_i_apply(identity__5, value__3)
+    retv169 = t170
+    return retv169
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv128 string
-    var t129 string = _goml_runtime_core_int32_to_string(self__43)
-    retv128 = t129
-    return retv128
+    var retv172 string
+    var t173 string = _goml_runtime_core_int32_to_string(self__43)
+    retv172 = t173
+    return retv172
 }
 
-func _goml_m_inherent_i_closure__env__identity__0_i_closure__env__identity__0_i_apply(env110 closure_env_identity_0, item__4 int32) int32 {
-    var retv131 int32
-    retv131 = item__4
-    return retv131
+func _goml_m_inherent_i_closure__env__identity__0_i_closure__env__identity__0_i_apply(env154 closure_env_identity_0, item__4 int32) int32 {
+    var retv175 int32
+    retv175 = item__4
+    return retv175
 }
 
 func main() {

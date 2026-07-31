@@ -1,6 +1,6 @@
 # GoML VS Code extension
 
-The extension provides syntax highlighting, diagnostics, hover, completion, go-to-definition, signature help, inlay hints, test code lenses, and quick fixes.
+The extension provides syntax highlighting, diagnostics, hover, completion, go-to-definition, signature help, inlay hints, formatting, test code lenses, and quick fixes.
 
 Build the self-hosted language server and extension:
 
@@ -9,6 +9,8 @@ just vscode-ext
 ```
 
 Press F5 from VS Code to launch the Extension Development Host.
+
+Use **Format Document** to format the current GoML buffer. The language server uses GoML's fixed formatting rules and leaves syntactically invalid documents unchanged.
 
 Configuration:
 

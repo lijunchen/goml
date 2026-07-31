@@ -19,13 +19,13 @@ pub fn compact_type(value: tast::Type) -> string {
 
 fn join_type_parts(values: Vec[tast::Type]) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_char('_')
         } else {
             ()
         };
-        let encoded = encode_type(values.get(index));
+        let encoded = encode_type(values[index]);
         builder.write_string(encoded.byte_len().to_string());
         builder.write_string(encoded)
     };
@@ -51,7 +51,8 @@ pub fn encode_type(value: tast::Type) -> string {
         Float64 => "float64",
         String => "string",
         Char => "char",
-        Tuple { items: values } => "Tuple" + values.len().to_string() + "_" + join_type_parts(values),
+        Tuple { items: values } => "Tuple" + values.len().to_string() + "_"
+            + join_type_parts(values),
         Con { name } => name,
         Dyn { trait_name: name } => "Dyn_" + name,
         Projection { for_ty: base, name, trait_ref: _ } => {
@@ -63,11 +64,7 @@ pub fn encode_type(value: tast::Type) -> string {
             if args.len() == 0 {
                 base_name
             } else {
-                "App_"
-                    + base_name.byte_len().to_string()
-                    + base_name
-                    + "__"
-                    + join_type_parts(args)
+                "App_" + base_name.byte_len().to_string() + base_name + "__" + join_type_parts(args)
             }
         },
         Array { len: length, elem } => {
@@ -89,10 +86,7 @@ pub fn encode_type(value: tast::Type) -> string {
         HashMap { key, value } => {
             let key_name = encode_type(key);
             let value_name = encode_type(value);
-            "HashMap_"
-                + key_name.byte_len().to_string()
-                + key_name
-                + "_"
+            "HashMap_" + key_name.byte_len().to_string() + key_name + "_"
                 + value_name.byte_len().to_string()
                 + value_name
         },
@@ -103,11 +97,7 @@ pub fn encode_type(value: tast::Type) -> string {
         Param { name } => "TParam_" + name,
         Func { params, ret_ty } => {
             let ret_name = encode_type(ret_ty);
-            "Fn"
-                + params.len().to_string()
-                + "_"
-                + join_type_parts(params)
-                + "_to_"
+            "Fn" + params.len().to_string() + "_" + join_type_parts(params) + "_to_"
                 + ret_name.byte_len().to_string()
                 + ret_name
         },
@@ -213,36 +203,31 @@ pub fn lower_type(value: tast::Type) -> Type {
         Tuple { items: _ } => Type::Named { name: type_name(value) },
         Con { name } => Type::Named { name: go_user_type_name(name) },
         Dyn { trait_name: name } => Type::Named { name: go_dyn_struct_name(name) },
-        Projection { for_ty: _, name: _, trait_ref: _ } => Type::Named {
-            name: type_name(value),
-        },
+        Projection { for_ty: _, name: _, trait_ref: _ } => Type::Named { name: type_name(value) },
         App { ty: _, args: _ } => Type::Named { name: type_name(value) },
-        Array { len: length, elem } => Type::Array {
-            len: length,
-            elem: lower_type(elem),
-        },
+        Array { len: length, elem } => Type::Array { len: length, elem: lower_type(elem) },
         Slice { elem } => Type::Slice { elem: lower_type(elem) },
         VecType { elem } => {
             Type::Pointer {
                 elem: Type::Named {
-                                name: go_generated_ident("_goml_vec_" + go_ident(encode_type(elem))),
-                            },
+                    name: go_generated_ident("_goml_vec_" + go_ident(encode_type(elem))),
+                },
             }
         },
         RefType { elem } => {
             Type::Pointer {
                 elem: Type::Named {
-                                name: go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x"),
-                            },
+                    name: go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x"),
+                },
             }
         },
         HashMap { key, value } => {
             Type::Pointer {
                 elem: Type::Named {
-                                name: go_generated_ident(
-                                                "hashmap_" + go_ident(encode_type(key) + "_" + encode_type(value)) + "_x",
-                                            ),
-                            },
+                    name: go_generated_ident(
+                        "hashmap_" + go_ident(encode_type(key) + "_" + encode_type(value)) + "_x",
+                    ),
+                },
             }
         },
         Channel { elem } => Type::Chan { elem: lower_type(elem) },

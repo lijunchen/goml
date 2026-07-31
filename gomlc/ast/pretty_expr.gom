@@ -3,11 +3,11 @@ package ast;
 use std::text;
 
 fn pretty_decimal_byte(value: string) -> uint8 {
-    let result = Ref::new(0);
-    for index in range(0, value.byte_len()) {
-        result.set(result.get() * 10 + (value.byte_get(index) - 48) as int)
+    let mut result = 0;
+    for index in 0..value.byte_len() {
+        result = result * 10 + (value.byte_get(index) - 48) as int;
     };
-    result.get() as uint8
+    result as uint8
 }
 
 fn pretty_write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
@@ -18,21 +18,32 @@ fn pretty_write_byte_literal(builder: text::StringBuilder, value: string) -> uni
     builder.write_char('\'')
 }
 
+fn pretty_write_byte_string(builder: text::StringBuilder, values: Vec[string]) -> unit {
+    builder.write_string("b\"");
+    for value in values {
+        let byte = pretty_decimal_byte(value);
+        builder.write_string("\\x");
+        builder.write_char(pretty_hex_digit(byte / 16));
+        builder.write_char(pretty_hex_digit(byte % 16))
+    };
+    builder.write_char('"')
+}
+
 fn pretty_write_exprs(
     builder: text::StringBuilder,
     values: Vec[Expr],
     separator: string,
     indent: int,
 ) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         pretty_write_expr(builder, value, indent);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -69,7 +80,7 @@ fn pretty_write_block(builder: text::StringBuilder, value: Block, indent: int) -
 
 fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
-        Let { is_mut, pat, annotation, value: expr, span: _ } => {
+        Let { is_mut, pat, annotation, value: expr, else_branch, span: _ } => {
             builder.write_string("let ");
             if is_mut {
                 builder.write_string("mut ")
@@ -85,7 +96,14 @@ fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> 
                 None => (),
             };
             builder.write_string(" = ");
-            pretty_write_expr(builder, expr, indent)
+            pretty_write_expr(builder, expr, indent);
+            match else_branch {
+                Some(value) => {
+                    builder.write_string(" else ");
+                    pretty_write_expr(builder, value, indent)
+                },
+                None => (),
+            }
         },
         Assign { target, op, value: expr, span: _ } => {
             pretty_write_expr(builder, target, indent);
@@ -111,13 +129,13 @@ fn pretty_write_path_expr(
         pretty_write_path(builder, path)
     } else {
         let last = path.segments.len() - 1;
-        for index in range(0, last) {
+        for index in 0..last {
             if index > 0 {
                 builder.write_string("::")
             } else {
                 ()
             };
-            builder.write_string(path.segments.get(index).ident)
+            builder.write_string(path.segments[index].ident)
         };
         builder.write_string("::");
         builder.write_char('[');
@@ -125,7 +143,7 @@ fn pretty_write_path_expr(
         builder.write_char(']');
         if last > 0 {
             builder.write_string("::");
-            builder.write_string(path.segments.get(last).ident)
+            builder.write_string(path.segments[last].ident)
         } else {
             ()
         }
@@ -140,46 +158,47 @@ fn pretty_write_path_expr(
 }
 
 fn pretty_write_interpolated_text(builder: text::StringBuilder, value: string) -> unit {
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
-        if byte == 34 {
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
+        if byte == b'"' {
             builder.write_string("\\\"")
-        } else if byte == 92 {
+        } else if byte == b'\\' {
             builder.write_string("\\\\")
-        } else if byte == 10 {
+        } else if byte == b'\n' {
             builder.write_string("\\n")
-        } else if byte == 13 {
+        } else if byte == b'\r' {
             builder.write_string("\\r")
-        } else if byte == 9 {
+        } else if byte == b'\t' {
             builder.write_string("\\t")
-        } else if byte == 123 {
+        } else if byte == b'{' {
             builder.write_string("{{")
-        } else if byte == 125 {
+        } else if byte == b'}' {
             builder.write_string("}}")
         } else {
             let width = pretty_utf8_width(byte);
-            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+            builder.write_string(value.byte_slice(index, index + width))
         };
-        index.set(index.get() + pretty_utf8_width(byte))
+        index = index + pretty_utf8_width(byte);
     }
 }
 
 fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
     match value {
-        Path {
-            path,
-            owner_type_args,
-            member_type_args,
-            span: _,
-        } => pretty_write_path_expr(
+        Path { path, owner_type_args, member_type_args, span: _ } => pretty_write_path_expr(
             builder,
             path,
             owner_type_args,
             member_type_args,
         ),
         Unit { span: _ } => builder.write_string("()"),
-        Bool { value, span: _ } => builder.write_string(if value { "true" } else { "false" }),
+        Bool { value, span: _ } => builder.write_string(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
         Int { value, span: _ } => builder.write_string(value),
         Float { value, span: _ } => builder.write_string(value.to_string()),
         String { value, span: _ } => pretty_write_quoted_string(builder, value),
@@ -205,6 +224,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char('\'')
         },
         Byte { value, span: _ } => pretty_write_byte_literal(builder, value),
+        ByteString { values, span: _ } => pretty_write_byte_string(builder, values),
         ConstructorValue { constructor: path, span: _ } => {
             pretty_write_path(builder, path)
         },
@@ -221,15 +241,12 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
         StructLiteral { name: path, fields, base, span: _ } => {
             pretty_write_path(builder, path);
             builder.write_string(" {");
-            if fields.len() == 0 && match base {
-                Some(_) => false,
-                None => true,
-            } {
+            if fields.len() == 0 && base.is_none() {
                 builder.write_char('}')
             } else {
-                let index = Ref::new(0);
+                let mut index = 0;
                 for field in fields {
-                    if index.get() > 0 {
+                    if index > 0 {
                         builder.write_char(',')
                     } else {
                         ()
@@ -238,11 +255,11 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
                     builder.write_string(field.0);
                     builder.write_string(": ");
                     pretty_write_expr(builder, field.1, indent + 4);
-                    index.set(index.get() + 1)
+                    index = index + 1;
                 };
                 match base {
                     Some(value) => {
-                        if index.get() > 0 {
+                        if index > 0 {
                             builder.write_char(',')
                         } else {
                             ()
@@ -274,9 +291,9 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
         },
         HashMapLiteral { entries, span: _ } => {
             builder.write_string("HashMap::{");
-            let index = Ref::new(0);
+            let mut index = 0;
             for entry in entries {
-                if index.get() > 0 {
+                if index > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
@@ -284,15 +301,15 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
                 pretty_write_expr(builder, entry.0, indent);
                 builder.write_string(" => ");
                 pretty_write_expr(builder, entry.1, indent);
-                index.set(index.get() + 1)
+                index = index + 1;
             };
             builder.write_char('}')
         },
         Closure { params, body, span: _ } => {
             builder.write_char('|');
-            let index = Ref::new(0);
+            let mut index = 0;
             for param in params {
-                if index.get() > 0 {
+                if index > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
@@ -305,7 +322,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
                     },
                     None => (),
                 };
-                index.set(index.get() + 1)
+                index = index + 1;
             };
             builder.write_string("| ");
             pretty_write_expr(builder, body, indent)
@@ -343,6 +360,10 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             pretty_newline(builder, indent);
             builder.write_char('}')
         },
+        Loop { body, span: _ } => {
+            builder.write_string("loop ");
+            pretty_write_expr(builder, body, indent)
+        },
         For { pat, iterator, body, span: _ } => {
             builder.write_string("for ");
             pretty_write_pat(builder, pat, indent);
@@ -351,7 +372,16 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char(' ');
             pretty_write_expr(builder, body, indent)
         },
-        Break { span: _ } => builder.write_string("break"),
+        Break { value, span: _ } => {
+            builder.write_string("break");
+            match value {
+                Some(expr) => {
+                    builder.write_char(' ');
+                    pretty_write_expr(builder, expr, indent)
+                },
+                None => (),
+            }
+        },
         Continue { span: _ } => builder.write_string("continue"),
         Return { expr, span: _ } => {
             builder.write_string("return");
@@ -403,12 +433,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             builder.write_char('.');
             builder.write_string(index.to_string())
         },
-        Field {
-            expr,
-            field_name: field,
-            method_type_args,
-            span: _,
-        } => {
+        Field { expr, field_name: field, method_type_args, span: _ } => {
             pretty_write_expr(builder, expr, indent);
             builder.write_char('.');
             builder.write_string(field);
@@ -451,21 +476,16 @@ fn pretty_pat_is_or(value: Pat) -> bool {
     }
 }
 
-fn pretty_write_pats(
-    builder: text::StringBuilder,
-    values: Vec[Pat],
-    separator: string,
-    indent: int,
-) -> unit {
-    let index = Ref::new(0);
+fn pretty_write_pats(builder: text::StringBuilder, values: Vec[Pat], separator: string, indent: int) -> unit {
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         pretty_write_pat(builder, value, indent);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -473,7 +493,13 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
     match value {
         Var { name, span: _ } => builder.write_string(name),
         Unit { span: _ } => builder.write_string("()"),
-        Bool { value, span: _ } => builder.write_string(if value { "true" } else { "false" }),
+        Bool { value, span: _ } => builder.write_string(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
         Int { value, span: _ } => builder.write_string(value),
         Float { value, span: _ } => builder.write_string(value),
         String { value, span: _ } => pretty_write_quoted_string(builder, value),
@@ -499,9 +525,9 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
                 builder.write_string(" {}")
             } else {
                 builder.write_string(" { ");
-                let index = Ref::new(0);
+                let mut index = 0;
                 for field in fields {
-                    if index.get() > 0 {
+                    if index > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -509,10 +535,10 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
                     builder.write_string(field.0);
                     builder.write_string(": ");
                     pretty_write_pat(builder, field.1, indent);
-                    index.set(index.get() + 1)
+                    index = index + 1;
                 };
                 if has_rest {
-                    if index.get() > 0 {
+                    if index > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -531,19 +557,19 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
         },
         Array { prefix, rest, suffix, span: _ } => {
             builder.write_char('[');
-            let count = Ref::new(0);
+            let mut count = 0;
             for value in prefix {
-                if count.get() > 0 {
+                if count > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
                 };
                 pretty_write_pat(builder, value, indent);
-                count.set(count.get() + 1)
+                count = count + 1;
             };
             match rest {
                 Some(value) => {
-                    if count.get() > 0 {
+                    if count > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -555,18 +581,18 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
                         },
                         None => builder.write_string(".."),
                     };
-                    count.set(count.get() + 1)
+                    count = count + 1;
                 },
                 None => (),
             };
             for value in suffix {
-                if count.get() > 0 {
+                if count > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
                 };
                 pretty_write_pat(builder, value, indent);
-                count.set(count.get() + 1)
+                count = count + 1;
             };
             builder.write_char(']')
         },
@@ -584,7 +610,13 @@ fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> un
         Or { pats: values, span: _ } => pretty_write_pats(builder, values, " | ", indent),
         Range { start, end, inclusive, span: _ } => {
             pretty_write_pat(builder, start, indent);
-            builder.write_string(if inclusive { "..=" } else { ".." });
+            builder.write_string(
+                if inclusive {
+                    "..="
+                } else {
+                    ".."
+                },
+            );
             pretty_write_pat(builder, end, indent)
         },
         Wild { span: _ } => builder.write_char('_'),

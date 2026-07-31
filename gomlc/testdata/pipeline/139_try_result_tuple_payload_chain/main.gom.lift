@@ -11,44 +11,44 @@ fn pair(ok/1: bool) -> Result__(string,string)__string {
 }
 
 fn render(ok/2: bool) -> Result__string__string {
-  let mtmp111 = let mtmp108 = pair(ok/2) in
-  match mtmp108 {
-    Result__(string,string)__string::Ok(x109) => {
-      let x109 = Result__(string,string)__string::Ok._0(mtmp108) in
-      let try_value/17 = x109 in
+  let mtmp155 = let mtmp152 = pair(ok/2) in
+  match mtmp152 {
+    Result__(string,string)__string::Ok(x153) => {
+      let x153 = Result__(string,string)__string::Ok._0(mtmp152) in
+      let try_value/17 = x153 in
       try_value/17
     },
-    Result__(string,string)__string::Err(x110) => {
-      let x110 = Result__(string,string)__string::Err._0(mtmp108) in
-      let try_residual/17 = x110 in
+    Result__(string,string)__string::Err(x154) => {
+      let x154 = Result__(string,string)__string::Err._0(mtmp152) in
+      let try_residual/17 = x154 in
       return Result__string__string::Err(try_residual/17)
     },
   } in
-  let x112 = mtmp111.0 in
-  let x113 = mtmp111.1 in
-  let port/4 = x113 in
-  let host/3 = x112 in
+  let x156 = mtmp155.0 in
+  let x157 = mtmp155.1 in
+  let port/4 = x157 in
+  let host/3 = x156 in
   Result__string__string::Ok(((host/3 + "=") + port/4))
 }
 
 fn show(res/5: Result__string__string) -> string {
   match res/5 {
-    Result__string__string::Ok(x114) => {
-      let x114 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x114 in
+    Result__string__string::Ok(x158) => {
+      let x158 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x158 in
       ("ok " + value/6)
     },
-    Result__string__string::Err(x115) => {
-      let x115 = Result__string__string::Err._0(res/5) in
-      let err/7 = x115 in
+    Result__string__string::Err(x159) => {
+      let x159 = Result__string__string::Err._0(res/5) in
+      let err/7 = x159 in
       ("err " + err/7)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild116 = println__T_string(show(render(true))) in
-  let _wild117 = println__T_string(show(render(false))) in
+  let _wild160 = println__T_string(show(render(true))) in
+  let _wild161 = println__T_string(show(render(false))) in
   ()
 }
 

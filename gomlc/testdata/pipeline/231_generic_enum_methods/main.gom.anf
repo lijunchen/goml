@@ -1,76 +1,76 @@
 fn main() -> unit {
-  join ret112() -> unit {
+  join ret156() -> unit {
     ()
   } in
   let value/3 = Maybe__int::Some(3) in
-  let t113 = closure_env_main_0 {} in
-  let mtmp109 = inherent#Maybe#Maybe[T]#map__T_int__U_string(value/3, t113) in
-  join k114() -> unit {
-    jump ret112()
+  let t157 = closure_env_main_0 {} in
+  let mtmp153 = inherent#Maybe#Maybe[T]#map__T_int__U_string(value/3, t157) in
+  join k158() -> unit {
+    jump ret156()
   } in
-  match mtmp109 {
+  match mtmp153 {
     Tag_0 => {
-      let t115 = println__T_string("none") in
-      jump k114()
+      let t159 = println__T_string("none") in
+      jump k158()
     },
     Tag_1 => {
-      let x110 = Maybe__string::Some._0(mtmp109) in
-      let text/5 = x110 in
-      let t116 = println__T_string(text/5) in
-      jump k114()
+      let x154 = Maybe__string::Some._0(mtmp153) in
+      let text/5 = x154 in
+      let t160 = println__T_string(text/5) in
+      jump k158()
     },
   }
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret117(retv118: string) -> string {
-    retv118
+  join ret161(retv162: string) -> string {
+    retv162
   } in
-  let t119 = @runtime(core.int_to_string)(self/5) in
-  jump ret117(t119)
+  let t163 = @runtime(core.int_to_string)(self/5) in
+  jump ret161(t163)
 }
 
 fn inherent#Maybe#Maybe[T]#map__T_int__U_string(self/0: Maybe__int, map_fn/1: (int) -> string) -> Maybe__string {
-  join ret120(retv121: Maybe__string) -> Maybe__string {
-    retv121
+  join ret164(retv165: Maybe__string) -> Maybe__string {
+    retv165
   } in
-  join k122(jp123: Maybe__string) -> Maybe__string {
-    jump ret120(jp123)
+  join k166(jp167: Maybe__string) -> Maybe__string {
+    jump ret164(jp167)
   } in
   match self/0 {
     Tag_0 => {
-      jump k122(Tag_0)
+      jump k166(Tag_0)
     },
     Tag_1 => {
-      let x108 = Maybe__int::Some._0(self/0) in
-      let value/2 = x108 in
-      let t124 = map_fn/1(value/2) in
-      let t125 = Maybe__string::Some(t124) in
-      jump k122(t125)
+      let x152 = Maybe__int::Some._0(self/0) in
+      let value/2 = x152 in
+      let t168 = map_fn/1(value/2) in
+      let t169 = Maybe__string::Some(t168) in
+      jump k166(t169)
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret126() -> unit {
+  join ret170() -> unit {
     ()
   } in
-  let t127 = trait_impl#ToString#string#to_string(value/1) in
-  let t128 = @runtime(core.string_println)(t127) in
-  jump ret126()
+  let t171 = trait_impl#ToString#string#to_string(value/1) in
+  let t172 = @runtime(core.string_println)(t171) in
+  jump ret170()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret129(retv130: string) -> string {
-    retv130
+  join ret173(retv174: string) -> string {
+    retv174
   } in
-  jump ret129(self/38)
+  jump ret173(self/38)
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env111: closure_env_main_0, item/4: int) -> string {
-  join ret131(retv132: string) -> string {
-    retv132
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env155: closure_env_main_0, item/4: int) -> string {
+  join ret175(retv176: string) -> string {
+    retv176
   } in
-  let t133 = inherent#int#int#to_string(item/4) in
-  jump ret131(t133)
+  let t177 = inherent#int#int#to_string(item/4) in
+  jump ret175(t177)
 }

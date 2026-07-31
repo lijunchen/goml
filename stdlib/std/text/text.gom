@@ -1,12 +1,8 @@
 package text;
 
-fn is_ascii_whitespace_byte(value: uint8) -> bool {
-    value == 9
-        || value == 10
-        || value == 11
-        || value == 12
-        || value == 13
-        || value == 32
+fn is_ascii_whitespace_byte(value: byte) -> bool {
+    value == b'\t' || value == b'\n' || value == b'\x0B' || value == b'\f' || value == b'\r'
+        || value == b' '
 }
 
 fn find_from(value: string, expected: string, start: int) -> Option[int] {
@@ -18,16 +14,14 @@ fn find_from(value: string, expected: string, start: int) -> Option[int] {
         Option::None
     } else {
         let limit = value.byte_len() - expected.byte_len();
-        let index = Ref::new(start);
-        while index.get() <= limit {
-            let end = index.get() + expected.byte_len();
-            if value.is_char_boundary(index.get())
-                && value.is_char_boundary(end)
-                && value.byte_slice(index.get(), end) == expected
-            {
-                return Option::Some(index.get())
+        let mut index = start;
+        while index <= limit {
+            let end = index + expected.byte_len();
+            if value.is_char_boundary(index) && value.is_char_boundary(end)
+                && value.byte_slice(index, end) == expected {
+                return Option::Some(index)
             } else {
-                index.set(index.get() + 1)
+                index += 1;
             }
         };
         Option::None
@@ -39,23 +33,19 @@ pub fn find(value: string, expected: string) -> Option[int] {
 }
 
 pub fn trim_start(value: string) -> string {
-    let start = Ref::new(0);
-    while start.get() < value.byte_len()
-        && is_ascii_whitespace_byte(value.byte_get(start.get()))
-    {
-        start.set(start.get() + 1)
+    let mut start = 0;
+    while start < value.byte_len() && is_ascii_whitespace_byte(value.byte_get(start)) {
+        start += 1;
     };
-    value.byte_slice(start.get(), value.byte_len())
+    value.byte_slice(start, value.byte_len())
 }
 
 pub fn trim_end(value: string) -> string {
-    let end = Ref::new(value.byte_len());
-    while end.get() > 0
-        && is_ascii_whitespace_byte(value.byte_get(end.get() - 1))
-    {
-        end.set(end.get() - 1)
+    let mut end = value.byte_len();
+    while end > 0 && is_ascii_whitespace_byte(value.byte_get(end - 1)) {
+        end -= 1;
     };
-    value.byte_slice(0, end.get())
+    value.byte_slice(0, end)
 }
 
 pub fn trim(value: string) -> string {
@@ -70,17 +60,16 @@ pub fn split(value: string, separator: string) -> Vec[string] {
     } else {
         ()
     };
-    let start = Ref::new(0);
-    let done: Ref[bool] = Ref::new(false);
-    while done.get() == false {
-        match find_from(value, separator, start.get()) {
-            Option::Some(index) => {
-                result.push(value.byte_slice(start.get(), index));
-                start.set(index + separator.byte_len())
+    let mut start = 0;
+    while true {
+        match find_from(value, separator, start) {
+            Some(index) => {
+                result.push(value.byte_slice(start, index));
+                start = index + separator.byte_len();
             },
-            Option::None => {
-                result.push(value.byte_slice(start.get(), value.byte_len()));
-                done.set(true)
+            None => {
+                result.push(value.byte_slice(start, value.byte_len()));
+                break
             },
         }
     };
@@ -92,26 +81,28 @@ pub fn split_once(value: string, separator: string) -> Option[(string, string)] 
         Option::None
     } else {
         match find(value, separator) {
-            Option::Some(index) => Option::Some((
-                value.byte_slice(0, index),
-                value.byte_slice(index + separator.byte_len(), value.byte_len()),
-            )),
-            Option::None => Option::None,
+            Some(index) => Option::Some(
+                (
+                    value.byte_slice(0, index),
+                    value.byte_slice(index + separator.byte_len(), value.byte_len()),
+                ),
+            ),
+            None => Option::None,
         }
     }
 }
 
 pub fn lines(value: string) -> Vec[string] {
     let result = split(value, "\n");
-    if result.len() > 0 && result.get(result.len() - 1) == "" {
+    if result.len() > 0 && result[result.len() - 1] == "" {
         let _ = result.pop();
     } else {
         ()
     };
-    for index in range(0, result.len()) {
-        let line = result.get(index);
-        if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == 13 {
-            result.set(index, line.byte_slice(0, line.byte_len() - 1))
+    for index in 0..result.len() {
+        let line = result[index];
+        if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == b'\r' {
+            result[index] = line.byte_slice(0, line.byte_len() - 1);
         } else {
             ()
         }
@@ -124,20 +115,17 @@ pub fn replace(value: string, expected: string, replacement: string) -> string {
         value
     } else {
         let builder = StringBuilder::with_capacity(value.byte_len());
-        let start = Ref::new(0);
-        let done: Ref[bool] = Ref::new(false);
-        while done.get() == false {
-            match find_from(value, expected, start.get()) {
-                Option::Some(index) => {
-                    builder.write_string(value.byte_slice(start.get(), index));
+        let mut start = 0;
+        while true {
+            match find_from(value, expected, start) {
+                Some(index) => {
+                    builder.write_string(value.byte_slice(start, index));
                     builder.write_string(replacement);
-                    start.set(index + expected.byte_len())
+                    start = index + expected.byte_len();
                 },
-                Option::None => {
-                    builder.write_string(
-                        value.byte_slice(start.get(), value.byte_len()),
-                    );
-                    done.set(true)
+                None => {
+                    builder.write_string(value.byte_slice(start, value.byte_len()));
+                    break
                 },
             }
         };
@@ -147,13 +135,13 @@ pub fn replace(value: string, expected: string, replacement: string) -> string {
 
 pub fn join(values: Vec[string], separator: string) -> string {
     let builder = StringBuilder::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
-        builder.write_string(values.get(index))
+        builder.write_string(values[index])
     };
     builder.finish()
 }
@@ -163,7 +151,7 @@ pub fn repeat(value: string, count: int) -> string {
         ""
     } else {
         let builder = StringBuilder::with_capacity(value.byte_len() * count);
-        for _ in range(0, count) {
+        for _ in 0..count {
             builder.write_string(value)
         };
         builder.finish()
@@ -171,24 +159,22 @@ pub fn repeat(value: string, count: int) -> string {
 }
 
 pub fn is_ascii(value: string) -> bool {
-    let ascii = Ref::new(true);
-    let index = Ref::new(0);
-    while ascii.get() && index.get() < value.byte_len() {
-        if value.byte_get(index.get()) > 127 {
-            ascii.set(false)
+    for index in 0..value.byte_len() {
+        if value.byte_get(index) > 127 {
+            return false
         } else {
-            index.set(index.get() + 1)
+            ()
         }
     };
-    ascii.get()
+    true
 }
 
 pub fn to_ascii_lowercase(value: string) -> string {
     let values = value.to_bytes();
-    for index in range(0, values.len()) {
-        let current = values.get(index);
-        if current >= 65 && current <= 90 {
-            values.set(index, current + 32)
+    for index in 0..values.len() {
+        let current = values[index];
+        if current >= b'A' && current <= b'Z' {
+            values[index] = current + (b'a' - b'A');
         } else {
             ()
         }
@@ -199,10 +185,10 @@ pub fn to_ascii_lowercase(value: string) -> string {
 
 pub fn to_ascii_uppercase(value: string) -> string {
     let values = value.to_bytes();
-    for index in range(0, values.len()) {
-        let current = values.get(index);
-        if current >= 97 && current <= 122 {
-            values.set(index, current - 32)
+    for index in 0..values.len() {
+        let current = values[index];
+        if current >= b'a' && current <= b'z' {
+            values[index] = current - (b'a' - b'A');
         } else {
             ()
         }

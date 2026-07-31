@@ -10,29 +10,23 @@ fn standard_source_path(relative: string) -> string {
     candidates.push(path::join("stdlib/std", relative));
     match env::current_exe() {
         Ok(executable) => match path::parent(executable) {
-            Some(directory) => candidates.push(path::join(
-                path::join(path::join(directory, "lib"), "std"),
-                relative,
-            )),
+            Some(directory) => candidates.push(
+                path::join(path::join(path::join(directory, "lib"), "std"), relative),
+            ),
             None => (),
         },
         Err(_) => (),
     };
     match env::var("GOML_HOME") {
-        Some(home) => candidates.push(path::join(
-            path::join(path::join(home, "lib"), "std"),
-            relative,
-        )),
+        Some(home) => candidates.push(
+            path::join(path::join(path::join(home, "lib"), "std"), relative),
+        ),
         None => (),
     };
     match env::var("HOME") {
-        Some(home) => candidates.push(path::join(
-            path::join(
-                path::join(path::join(home, ".goml"), "lib"),
-                "std",
-            ),
-            relative,
-        )),
+        Some(home) => candidates.push(
+            path::join(path::join(path::join(path::join(home, ".goml"), "lib"), "std"), relative),
+        ),
         None => (),
     };
     for candidate in candidates {
@@ -47,22 +41,23 @@ fn standard_source_path(relative: string) -> string {
 
 fn standard_library_children(package_name: string) -> Vec[string] {
     if package_name == "std" {
-        Vec::new()
-            .pushed("bytes")
-            .pushed("collections")
-            .pushed("env")
-            .pushed("fs")
-            .pushed("internal")
-            .pushed("io")
-            .pushed("json")
-            .pushed("num")
-            .pushed("path")
-            .pushed("process")
-            .pushed("testing")
-            .pushed("text")
-            .pushed("time")
+        Vec::[
+            "bytes",
+            "collections",
+            "env",
+            "fs",
+            "internal",
+            "io",
+            "json",
+            "num",
+            "path",
+            "process",
+            "testing",
+            "text",
+            "time",
+        ]
     } else if package_name == "std::internal" {
-        Vec::new().pushed("host")
+        Vec::["host"]
     } else {
         Vec::new()
     }
@@ -70,89 +65,117 @@ fn standard_library_children(package_name: string) -> Vec[string] {
 
 fn standard_library_source(package_name: string) -> Option[SourceFile] {
     if package_name == "std" {
-        Option::Some(SourceFile {
-            path: standard_source_path("std.gom"),
-            source: stdlib::root_source(),
-            package_name: "std",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("std.gom"),
+                source: stdlib::root_source(),
+                package_name: "std",
+            },
+        )
     } else if package_name == "std::internal::host" {
-        Option::Some(SourceFile {
-            path: standard_source_path("internal/host/host.gom"),
-            source: stdlib::host_source(),
-            package_name: "std::internal::host",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("internal/host/host.gom"),
+                source: stdlib::host_source(),
+                package_name: "std::internal::host",
+            },
+        )
     } else if package_name == "std::bytes" {
-        Option::Some(SourceFile {
-            path: standard_source_path("bytes/bytes.gom"),
-            source: stdlib::bytes_source(),
-            package_name: "std::bytes",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("bytes/bytes.gom"),
+                source: stdlib::bytes_source(),
+                package_name: "std::bytes",
+            },
+        )
     } else if package_name == "std::collections" {
-        Option::Some(SourceFile {
-            path: standard_source_path("collections/collections.gom"),
-            source: stdlib::collections_source(),
-            package_name: "std::collections",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("collections/collections.gom"),
+                source: stdlib::collections_source(),
+                package_name: "std::collections",
+            },
+        )
     } else if package_name == "std::env" {
-        Option::Some(SourceFile {
-            path: standard_source_path("env/env.gom"),
-            source: stdlib::env_source(),
-            package_name: "std::env",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("env/env.gom"),
+                source: stdlib::env_source(),
+                package_name: "std::env",
+            },
+        )
     } else if package_name == "std::fs" {
-        Option::Some(SourceFile {
-            path: standard_source_path("fs/fs.gom"),
-            source: stdlib::fs_source(),
-            package_name: "std::fs",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("fs/fs.gom"),
+                source: stdlib::fs_source(),
+                package_name: "std::fs",
+            },
+        )
     } else if package_name == "std::io" {
-        Option::Some(SourceFile {
-            path: standard_source_path("io/io.gom"),
-            source: stdlib::io_source(),
-            package_name: "std::io",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("io/io.gom"),
+                source: stdlib::io_source(),
+                package_name: "std::io",
+            },
+        )
     } else if package_name == "std::json" {
-        Option::Some(SourceFile {
-            path: standard_source_path("json/json.gom"),
-            source: stdlib::json_source(),
-            package_name: "std::json",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("json/json.gom"),
+                source: stdlib::json_source(),
+                package_name: "std::json",
+            },
+        )
     } else if package_name == "std::num" {
-        Option::Some(SourceFile {
-            path: standard_source_path("num/num.gom"),
-            source: stdlib::num_source(),
-            package_name: "std::num",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("num/num.gom"),
+                source: stdlib::num_source(),
+                package_name: "std::num",
+            },
+        )
     } else if package_name == "std::path" {
-        Option::Some(SourceFile {
-            path: standard_source_path("path/path.gom"),
-            source: stdlib::path_source(),
-            package_name: "std::path",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("path/path.gom"),
+                source: stdlib::path_source(),
+                package_name: "std::path",
+            },
+        )
     } else if package_name == "std::process" {
-        Option::Some(SourceFile {
-            path: standard_source_path("process/process.gom"),
-            source: stdlib::process_source(),
-            package_name: "std::process",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("process/process.gom"),
+                source: stdlib::process_source(),
+                package_name: "std::process",
+            },
+        )
     } else if package_name == "std::testing" {
-        Option::Some(SourceFile {
-            path: standard_source_path("testing/testing.gom"),
-            source: stdlib::testing_source(),
-            package_name: "std::testing",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("testing/testing.gom"),
+                source: stdlib::testing_source(),
+                package_name: "std::testing",
+            },
+        )
     } else if package_name == "std::text" {
-        Option::Some(SourceFile {
-            path: standard_source_path("text/text.gom"),
-            source: stdlib::text_source(),
-            package_name: "std::text",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("text/text.gom"),
+                source: stdlib::text_source(),
+                package_name: "std::text",
+            },
+        )
     } else if package_name == "std::time" {
-        Option::Some(SourceFile {
-            path: standard_source_path("time/time.gom"),
-            source: stdlib::time_source(),
-            package_name: "std::time",
-        })
+        Option::Some(
+            SourceFile {
+                path: standard_source_path("time/time.gom"),
+                source: stdlib::time_source(),
+                package_name: "std::time",
+            },
+        )
     } else {
         Option::None
     }

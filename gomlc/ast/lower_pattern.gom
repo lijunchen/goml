@@ -15,8 +15,8 @@ fn literal_value(node: LocatedNode, kind: lexer::TokenKind) -> Option[string] {
 
 fn strip_suffix(value: string, suffix: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
-    for index in range(0, value.byte_len()) {
-        if value.byte_get(index) != 95 {
+    for index in 0..value.byte_len() {
+        if value.byte_get(index) != b'_' {
             builder.write_string(value.byte_slice(index, index + 1))
         } else {
             ()
@@ -38,12 +38,25 @@ fn strip_delimiters(value: string) -> Option[string] {
     }
 }
 
+fn raw_string_pattern_value(node: LocatedNode) -> Option[string] {
+    match literal_value(node, lexer::TokenKind::RawStr) {
+        Some(source) => {
+            let mut hash_count = 0;
+            while 1 + hash_count < source.byte_len()
+                && source.byte_get(1 + hash_count) == b'#' {
+                hash_count = hash_count + 1;
+            };
+            Option::Some(
+                source.byte_slice(hash_count + 2, source.byte_len() - hash_count - 1),
+            )
+        },
+        None => Option::None,
+    }
+}
+
 fn path_from_single_ident(value: string) -> Path {
     let segments: Vec[PathSegment] = Vec::new();
-    segments.push(PathSegment {
-        ident: value,
-        span: span(0, 0),
-    });
+    segments.push(PathSegment { ident: value, span: span(0, 0) });
     Path { segments }
 }
 
@@ -84,10 +97,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
         let value_span = node_span(node);
         let result = match node_kind(node) {
             PATTERN_VARIABLE => match first_token(node, lexer::TokenKind::Ident) {
-                Some(token) => Option::Some(Pat::Var {
-                    name: token.token.text,
-                    span: value_span,
-                }),
+                Some(token) => Option::Some(Pat::Var { name: token.token.text, span: value_span }),
                 None => {
                     push_error(ctx, value_span, "Variable pattern is missing a name");
                     Option::None
@@ -117,9 +127,12 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     Some(value) => Option::Some(Pat::String { value, span: value_span }),
                     None => Option::None,
                 },
-                None => {
-                    push_error(ctx, value_span, "StringPat has no value");
-                    Option::None
+                None => match raw_string_pattern_value(node) {
+                    Some(value) => Option::Some(Pat::String { value, span: value_span }),
+                    None => {
+                        push_error(ctx, value_span, "StringPat has no value");
+                        Option::None
+                    },
                 },
             },
             PATTERN_CHAR => match literal_value(node, lexer::TokenKind::CharLit) {
@@ -132,10 +145,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     Option::None
                 },
             },
-            PATTERN_BYTE => match literal_value(
-                node,
-                lexer::TokenKind::ByteCharLit,
-            ) {
+            PATTERN_BYTE => match literal_value(node, lexer::TokenKind::ByteCharLit) {
                 Some(raw) => match byte_literal_value(raw) {
                     Some(value) => {
                         Option::Some(Pat::Byte { value, span: value_span })
@@ -157,7 +167,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     }
                 };
                 if has_token(node, lexer::TokenKind::Comma) == false && pats.len() == 1 {
-                    Option::Some(pats.get(0))
+                    Option::Some(pats[0])
                 } else {
                     Option::Some(Pat::Tuple { items: pats, span: value_span })
                 }
@@ -167,12 +177,10 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 let names = tokens_of_kind(node, lexer::TokenKind::Ident);
                 let pats = pattern_children(node);
                 if names.len() > 0 && pats.len() > 0 {
-                    match lower_pat_inner(ctx, pats.get(0)) {
-                        Some(pat) => Option::Some(Pat::Alias {
-                            name: names.get(0).token.text,
-                            pat,
-                            span: value_span,
-                        }),
+                    match lower_pat_inner(ctx, pats[0]) {
+                        Some(pat) => Option::Some(
+                            Pat::Alias { name: names[0].token.text, pat, span: value_span },
+                        ),
                         None => Option::None,
                     }
                 } else {
@@ -197,14 +205,16 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             PATTERN_RANGE => {
                 let children = pattern_children(node);
                 if children.len() >= 2 {
-                    match lower_pat_inner(ctx, children.get(0)) {
-                        Some(start) => match lower_pat_inner(ctx, children.get(1)) {
-                            Some(end) => Option::Some(Pat::Range {
-                                start,
-                                end,
-                                inclusive: has_token(node, lexer::TokenKind::DotDotEq),
-                                span: value_span,
-                            }),
+                    match lower_pat_inner(ctx, children[0]) {
+                        Some(start) => match lower_pat_inner(ctx, children[1]) {
+                            Some(end) => Option::Some(
+                                Pat::Range {
+                                    start,
+                                    end,
+                                    inclusive: has_token(node, lexer::TokenKind::DotDotEq),
+                                    span: value_span,
+                                },
+                            ),
                             None => Option::None,
                         },
                         None => Option::None,
@@ -237,39 +247,48 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                             Some(name_token) => {
                                 let patterns = pattern_children(field);
                                 if patterns.len() > 0 {
-                                    match lower_pat_inner(ctx, patterns.get(0)) {
+                                    match lower_pat_inner(ctx, patterns[0]) {
                                         Some(pat) => fields.push((name_token.token.text, pat)),
                                         None => valid.set(false),
                                     }
                                 } else if has_token(field, lexer::TokenKind::Colon) {
-                                    push_error(ctx, node_span(field), "Struct pattern field missing pattern");
+                                    push_error(
+                                        ctx,
+                                        node_span(field),
+                                        "Struct pattern field missing pattern",
+                                    );
                                     valid.set(false)
                                 } else {
-                                    fields.push((
-                                        name_token.token.text,
-                                        Pat::Var {
-                                            name: name_token.token.text,
-                                            span: node_span(field),
-                                        },
-                                    ))
+                                    fields.push(
+                                        (
+                                            name_token.token.text,
+                                            Pat::Var {
+                                                name: name_token.token.text,
+                                                span: node_span(field),
+                                            },
+                                        ),
+                                    )
                                 }
                             },
                             None => {
-                                push_error(ctx, node_span(field), "Struct pattern field missing name");
+                                push_error(
+                                    ctx,
+                                    node_span(field),
+                                    "Struct pattern field missing name",
+                                );
                                 valid.set(false)
                             },
                         }
                     };
                     if valid.get() {
-                        Option::Some(Pat::Struct {
-                            name: path,
-                            fields,
-                            has_rest: match first_child(list, cst::NodeKind::PATTERN_REST) {
-                                                            Some(_) => true,
-                                                            None => false,
-                                                        },
-                            span: node_span(node),
-                        })
+                        Option::Some(
+                            Pat::Struct {
+                                name: path,
+                                fields,
+                                has_rest: first_child(list, cst::NodeKind::PATTERN_REST).is_some(),
+                                span: node_span(node),
+                            },
+                        )
                     } else {
                         Option::None
                     }
@@ -282,11 +301,9 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                             None => (),
                         }
                     };
-                    Option::Some(Pat::Constr {
-                        constructor: path,
-                        args: pats,
-                        span: node_span(node),
-                    })
+                    Option::Some(
+                        Pat::Constr { constructor: path, args: pats, span: node_span(node) },
+                    )
                 },
             },
             None => Option::None,
@@ -309,10 +326,7 @@ fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 Some(token) => Option::Some(token.token.text),
                 None => Option::None,
             };
-            rest.set(Option::Some(ArrayPatRest {
-                binding,
-                span: node_span(child),
-            }))
+            rest.set(Option::Some(ArrayPatRest { binding, span: node_span(child) }))
         } else {
             match lower_pat_inner(ctx, child) {
                 Some(value) => match rest.get() {

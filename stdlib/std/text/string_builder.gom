@@ -3,20 +3,16 @@ package text;
 use std::bytes;
 
 pub struct StringBuilder {
-    pub values: Vec[uint8],
+    pub values: Vec[byte],
 }
 
 impl StringBuilder {
     pub fn new() -> StringBuilder {
-        StringBuilder {
-            values: Vec::new(),
-        }
+        StringBuilder { values: Vec::new() }
     }
 
     pub fn with_capacity(capacity: int) -> StringBuilder {
-        StringBuilder {
-            values: Vec::with_capacity(capacity),
-        }
+        StringBuilder { values: Vec::with_capacity(capacity) }
     }
 
     pub fn len(self: StringBuilder) -> int {
@@ -29,7 +25,7 @@ impl StringBuilder {
 
     pub fn write_string(self: StringBuilder, value: string) -> unit {
         self.values.reserve(value.byte_len());
-        for index in range(0, value.byte_len()) {
+        for index in 0..value.byte_len() {
             self.values.push(value.byte_get(index))
         }
     }
@@ -40,11 +36,11 @@ impl StringBuilder {
 
     pub fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[unit, string] {
         match value.to_string() {
-            Result::Ok(text) => {
+            Ok(text) => {
                 self.write_string(text);
                 Result::Ok(())
             },
-            Result::Err(error) => Result::Err(error),
+            Err(error) => Result::Err(error),
         }
     }
 

@@ -17,8 +17,12 @@ fn tast_exprs_exit(values: Vec[tast::Expr]) -> bool {
 fn tast_stmt_exits(value: tast::Stmt) -> bool {
     match value {
         Expr { expr } => tast_expr_exits(expr),
-        Let { is_mut: _, pat: _, value: _ }
-        | Assign { target: _, op: _, value: _ } => false,
+        Let { is_mut: _, pat: _, value: _ } | LetElse {
+            is_mut: _,
+            pat: _,
+            value: _,
+            else_branch: _,
+        } | Assign { target: _, op: _, value: _ } => false,
     }
 }
 
@@ -49,14 +53,16 @@ fn tast_match_arms_exit(arms: Vec[tast::Arm]) -> bool {
 
 fn tast_expr_exits(value: tast::Expr) -> bool {
     match value {
-        Break { ty: _ } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
-        Constr { constructor: _, args, ty: _ }
-        | Tuple { items: args, ty: _ }
-        | Array { items: args, ty: _ } => tast_exprs_exit(args),
-        Unary { op: _, expr, ty: _ }
-        | Cast { expr, ty: _ }
-        | Go { expr, ty: _ }
-        | Field { expr, field_name: _, ty: _ } => tast_expr_exits(expr),
+        Break { ty: _, .. } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
+            items: args,
+            ty: _,
+        } => tast_exprs_exit(args),
+        Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Go { expr, ty: _ } | Field {
+            expr,
+            field_name: _,
+            ty: _,
+        } => tast_expr_exits(expr),
         Call { func: function, args, ty: _ } => {
             tast_expr_exits(function) || tast_exprs_exit(args)
         },
@@ -65,16 +71,21 @@ fn tast_expr_exits(value: tast::Expr) -> bool {
             tast_expr_exits(base) || tast_expr_exits(index)
         },
         Binary { op, lhs: left, rhs: right, ty: _, resolution: _ } => {
-            tast_expr_exits(left) || match op {
-                And | Or => false,
-                _ => tast_expr_exits(right),
-            }
+            tast_expr_exits(left)
+                || match op {
+                    And | Or => false,
+                    _ => tast_expr_exits(right),
+                }
         },
         Block { block, ty: _ } => tast_block_exits(block),
         If { cond: _, then_branch, else_branch, ty: _ } => {
             tast_expr_exits(then_branch) && tast_expr_exits(else_branch)
         },
         While { cond, body: _, ty: _ } => tast_expr_exits(cond),
+        Loop { body: _, ty } => match tast::resolve_type(ty) {
+            Never => true,
+            _ => false,
+        },
         For {
             pat: _,
             iterator,
@@ -91,16 +102,6 @@ fn tast_expr_exits(value: tast::Expr) -> bool {
 
 fn exit_expr_as(ctx: Lowerer, value: Expr, ty: tast::Type) -> Expr {
     let stmts: Vec[LetStmt] = Vec::new();
-    stmts.push(LetStmt {
-        name: gensym(ctx, "_wild"),
-        ty: expr_type(value),
-        value,
-    });
-    Expr::Block {
-        block: Block {
-                    stmts,
-                    tail: Option::Some(missing_expr(ty)),
-                },
-        ty,
-    }
+    stmts.push(LetStmt { name: gensym(ctx, "_wild"), ty: expr_type(value), value });
+    Expr::Block { block: Block { stmts, tail: Option::Some(missing_expr(ty)) }, ty }
 }

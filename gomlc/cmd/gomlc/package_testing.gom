@@ -49,22 +49,18 @@ fn test_ascii_whitespace(value: uint8) -> bool {
 
 fn trim_test_text(value: string) -> string {
     let start = Ref::new(0);
-    while start.get() < value.byte_len()
-        && test_ascii_whitespace(value.byte_get(start.get()))
-    {
+    while start.get() < value.byte_len() && test_ascii_whitespace(value.byte_get(start.get())) {
         start.set(start.get() + 1)
     };
     let end = Ref::new(value.byte_len());
-    while end.get() > start.get()
-        && test_ascii_whitespace(value.byte_get(end.get() - 1))
-    {
+    while end.get() > start.get() && test_ascii_whitespace(value.byte_get(end.get() - 1)) {
         end.set(end.get() - 1)
     };
     value.byte_slice(start.get(), end.get())
 }
 
 fn find_test_byte(value: string, expected: uint8) -> Option[int] {
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == expected {
             return Option::Some(index)
         } else {
@@ -76,10 +72,8 @@ fn find_test_byte(value: string, expected: uint8) -> Option[int] {
 
 fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
     let normalized = trim_test_text(value.text);
-    if normalized.byte_len() < 3
-        || !strings::starts_with(normalized, "#[")
-        || !strings::ends_with(normalized, "]")
-    {
+    if normalized.byte_len() < 3 || !strings::starts_with(normalized, "#[")
+        || !strings::ends_with(normalized, "]") {
         Option::None
     } else {
         let inner = trim_test_text(normalized.byte_slice(2, normalized.byte_len() - 1));
@@ -87,27 +81,23 @@ fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
             Some(open) => {
                 let name = trim_test_text(inner.byte_slice(0, open));
                 let tail = trim_test_text(inner.byte_slice(open + 1, inner.byte_len()));
-                if name.byte_len() == 0
-                    || tail.byte_len() == 0
-                    || !strings::ends_with(tail, ")")
-                {
+                if name.byte_len() == 0 || tail.byte_len() == 0 || !strings::ends_with(tail, ")") {
                     Option::None
                 } else {
-                    Option::Some(ParsedTestAttribute {
-                        name,
-                        args: Option::Some(trim_test_text(
-                            tail.byte_slice(0, tail.byte_len() - 1),
-                        )),
-                    })
+                    Option::Some(
+                        ParsedTestAttribute {
+                            name,
+                            args: Option::Some(
+                                trim_test_text(tail.byte_slice(0, tail.byte_len() - 1)),
+                            ),
+                        },
+                    )
                 }
             },
             None => if inner.byte_len() == 0 {
                 Option::None
             } else {
-                Option::Some(ParsedTestAttribute {
-                    name: inner,
-                    args: Option::None,
-                })
+                Option::Some(ParsedTestAttribute { name: inner, args: Option::None })
             },
         }
     }
@@ -120,10 +110,7 @@ fn test_attribute_name(value: ast::Attribute) -> Option[string] {
     }
 }
 
-fn named_test_attributes(
-    values: Vec[ast::Attribute],
-    expected: string,
-) -> Vec[ast::Attribute] {
+fn named_test_attributes(values: Vec[ast::Attribute], expected: string) -> Vec[ast::Attribute] {
     let result = Vec::new();
     for value in values {
         match test_attribute_name(value) {
@@ -146,7 +133,7 @@ fn parse_ignore_reason(value: string) -> Option[string] {
     } else {
         match lowered.ast {
             Some(file) => if file.items.len() == 1 {
-                match file.items.get(0) {
+                match file.items[0] {
                     Function(function) => match function.body.tail {
                         Some(String { value: reason, span: _ }) => Option::Some(reason),
                         _ => Option::None,
@@ -169,12 +156,7 @@ fn test_symbol(package_name: string, name: string) -> string {
     }
 }
 
-fn package_test_diagnostic(
-    stage: string,
-    message: string,
-    source_path: string,
-    span: ast::Span,
-) -> tast::Diagnostic {
+fn package_test_diagnostic(stage: string, message: string, source_path: string, span: ast::Span) -> tast::Diagnostic {
     tast::Diagnostic {
         severity: tast::DiagnosticSeverity::Error,
         stage,
@@ -187,29 +169,21 @@ fn package_test_diagnostic(
     }
 }
 
-fn duplicate_test_id_diagnostic(
-    id: string,
-    candidate: TestCandidate,
-    first: TestCandidate,
-) -> tast::Diagnostic {
+fn duplicate_test_id_diagnostic(id: string, candidate: TestCandidate, first: TestCandidate) -> tast::Diagnostic {
     let secondary_labels: Vec[tast::DiagnosticLabel] = Vec::new();
-    secondary_labels.push(tast::DiagnosticLabel {
-        message: "first test declared here",
-        source_path: first.source_path,
-        span: ast::Span {
-            start: first.start,
-            end: first.label_end,
+    secondary_labels.push(
+        tast::DiagnosticLabel {
+            message: "first test declared here",
+            source_path: first.source_path,
+            span: ast::Span { start: first.start, end: first.label_end },
         },
-    });
+    );
     tast::Diagnostic {
         severity: tast::DiagnosticSeverity::Error,
         stage: "typer",
         message: "duplicate test id `" + id + "`",
         source_path: candidate.source_path,
-        span: Option::Some(ast::Span {
-            start: candidate.start,
-            end: candidate.label_end,
-        }),
+        span: Option::Some(ast::Span { start: candidate.start, end: candidate.label_end }),
         primary_label: Option::Some("duplicate test declared here"),
         secondary_labels,
         sort_order: 0,
@@ -225,63 +199,71 @@ fn collect_function_test(
     let test_attrs = named_test_attributes(function.attrs, "test");
     let ignore_attrs = named_test_attributes(function.attrs, "ignore");
     if test_attrs.len() > 1 {
-        for index in range(1, test_attrs.len()) {
-            let attribute = test_attrs.get(index);
-            diagnostics.push(package_test_diagnostic(
-                "attribute",
-                "duplicate `#[test]` attribute",
-                source_path,
-                attribute.span,
-            ))
+        for index in 1..test_attrs.len() {
+            let attribute = test_attrs[index];
+            diagnostics.push(
+                package_test_diagnostic(
+                    "attribute",
+                    "duplicate `#[test]` attribute",
+                    source_path,
+                    attribute.span,
+                ),
+            )
         }
     } else {
         ()
     };
     if ignore_attrs.len() > 1 {
-        for index in range(1, ignore_attrs.len()) {
-            let attribute = ignore_attrs.get(index);
-            diagnostics.push(package_test_diagnostic(
-                "attribute",
-                "duplicate `#[ignore]` attribute",
-                source_path,
-                attribute.span,
-            ))
+        for index in 1..ignore_attrs.len() {
+            let attribute = ignore_attrs[index];
+            diagnostics.push(
+                package_test_diagnostic(
+                    "attribute",
+                    "duplicate `#[ignore]` attribute",
+                    source_path,
+                    attribute.span,
+                ),
+            )
         }
     } else {
         ()
     };
     if test_attrs.len() == 0 {
         for attribute in ignore_attrs {
-            diagnostics.push(package_test_diagnostic(
-                "attribute",
-                "`#[ignore]` requires `#[test]`",
-                source_path,
-                attribute.span,
-            ))
+            diagnostics.push(
+                package_test_diagnostic(
+                    "attribute",
+                    "`#[ignore]` requires `#[test]`",
+                    source_path,
+                    attribute.span,
+                ),
+            )
         };
         return
     } else {
         ()
     };
-    let test_attr = test_attrs.get(0);
+    let test_attr = test_attrs[0];
     let parsed_test = match parse_test_attribute(test_attr) {
         Some(value) => value,
         None => return,
     };
     match parsed_test.args {
         Some(_) => {
-            diagnostics.push(package_test_diagnostic(
-                "attribute",
-                "`#[test]` does not accept arguments",
-                source_path,
-                test_attr.span,
-            ));
+            diagnostics.push(
+                package_test_diagnostic(
+                    "attribute",
+                    "`#[test]` does not accept arguments",
+                    source_path,
+                    test_attr.span,
+                ),
+            );
             return
         },
         None => (),
     };
     let ignore_reason = if ignore_attrs.len() > 0 {
-        let ignore_attr = ignore_attrs.get(0);
+        let ignore_attr = ignore_attrs[0];
         let parsed_ignore = match parse_test_attribute(ignore_attr) {
             Some(value) => value,
             None => return,
@@ -290,12 +272,14 @@ fn collect_function_test(
             Some(args) => match parse_ignore_reason(args) {
                 Some(reason) => Option::Some(reason),
                 None => {
-                    diagnostics.push(package_test_diagnostic(
-                        "attribute",
-                        "`#[ignore]` accepts either no arguments or one string reason",
-                        source_path,
-                        ignore_attr.span,
-                    ));
+                    diagnostics.push(
+                        package_test_diagnostic(
+                            "attribute",
+                            "`#[ignore]` accepts either no arguments or one string reason",
+                            source_path,
+                            ignore_attr.span,
+                        ),
+                    );
                     Option::None
                 },
             },
@@ -304,15 +288,17 @@ fn collect_function_test(
     } else {
         Option::None
     };
-    candidates.push(TestCandidate {
-        name: function.name,
-        source_path,
-        start: test_attr.span.start,
-        end: test_attr.span.end,
-        label_end: test_attr.span.start + trim_test_text(test_attr.text).byte_len(),
-        ignored: ignore_attrs.len() > 0,
-        ignore_reason,
-    })
+    candidates.push(
+        TestCandidate {
+            name: function.name,
+            source_path,
+            start: test_attr.span.start,
+            end: test_attr.span.end,
+            label_end: test_attr.span.start + trim_test_text(test_attr.text).byte_len(),
+            ignored: ignore_attrs.len() > 0,
+            ignore_reason,
+        },
+    )
 }
 
 fn reject_item_test_attributes(
@@ -324,19 +310,23 @@ fn reject_item_test_attributes(
     for value in values {
         match test_attribute_name(value) {
             Some(name) => if name == "test" {
-                diagnostics.push(package_test_diagnostic(
-                    "attribute",
-                    "`#[test]` can only be applied to top-level functions, not " + target,
-                    source_path,
-                    value.span,
-                ))
+                diagnostics.push(
+                    package_test_diagnostic(
+                        "attribute",
+                        "`#[test]` can only be applied to top-level functions, not " + target,
+                        source_path,
+                        value.span,
+                    ),
+                )
             } else if name == "ignore" {
-                diagnostics.push(package_test_diagnostic(
-                    "attribute",
-                    "`#[ignore]` requires a top-level `#[test]` function",
-                    source_path,
-                    value.span,
-                ))
+                diagnostics.push(
+                    package_test_diagnostic(
+                        "attribute",
+                        "`#[ignore]` requires a top-level `#[test]` function",
+                        source_path,
+                        value.span,
+                    ),
+                )
             } else {
                 ()
             },
@@ -351,7 +341,7 @@ fn test_string_less(left: string, right: string) -> bool {
     } else {
         right.byte_len()
     };
-    for index in range(0, common) {
+    for index in 0..common {
         if left.byte_get(index) < right.byte_get(index) {
             return true
         } else if left.byte_get(index) > right.byte_get(index) {
@@ -364,33 +354,29 @@ fn test_string_less(left: string, right: string) -> bool {
 }
 
 fn sort_test_descriptors(values: Vec[TestDescriptor]) -> Vec[TestDescriptor] {
-    for index in range(1, values.len()) {
-        let current = values.get(index);
+    for index in 1..values.len() {
+        let current = values[index];
         let destination = Ref::new(index);
         while destination.get() > 0
-            && test_string_less(current.id, values.get(destination.get() - 1).id)
-        {
-            values.set(destination.get(), values.get(destination.get() - 1));
+            && test_string_less(current.id, values[destination.get() - 1].id) {
+            values[destination.get()] = values[destination.get() - 1];
             destination.set(destination.get() - 1)
         };
-        values.set(destination.get(), current)
+        values[destination.get()] = current;
     };
     values
 }
 
-fn collect_package_test_candidates(
-    files: Vec[ast::LowerResult],
-    source_paths: Vec[string],
-) -> TestCandidateCollection {
+fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: Vec[string]) -> TestCandidateCollection {
     let candidates: Vec[TestCandidate] = Vec::new();
     let diagnostics: Vec[tast::Diagnostic] = Vec::new();
-    for file_index in range(0, files.len()) {
+    for file_index in 0..files.len() {
         let source_path = if file_index < source_paths.len() {
-            source_paths.get(file_index)
+            source_paths[file_index]
         } else {
             "<unknown>"
         };
-        match files.get(file_index).ast {
+        match files[file_index].ast {
             Some(file) => for item in file.items {
                 match item {
                     Function(function) => collect_function_test(
@@ -456,16 +442,10 @@ fn collect_package_test_candidates(
             None => (),
         }
     };
-    TestCandidateCollection {
-        candidates,
-        diagnostics,
-    }
+    TestCandidateCollection { candidates, diagnostics }
 }
 
-fn find_test_scheme(
-    exports: ArtifactPackageExports,
-    symbol: string,
-) -> Option[ArtifactFnScheme] {
+fn find_test_scheme(exports: ArtifactPackageExports, symbol: string) -> Option[ArtifactFnScheme] {
     for function in exports.functions {
         if function.name == symbol {
             return Option::Some(function)
@@ -476,10 +456,7 @@ fn find_test_scheme(
     Option::None
 }
 
-fn find_valid_test_candidate(
-    values: Vec[TestCandidate],
-    name: string,
-) -> Option[TestCandidate] {
+fn find_valid_test_candidate(values: Vec[TestCandidate], name: string) -> Option[TestCandidate] {
     for value in values {
         if value.name == name {
             return Option::Some(value)
@@ -499,98 +476,107 @@ fn validate_package_tests(
     let valid_candidates: Vec[TestCandidate] = Vec::new();
     let diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for candidate in candidates {
-        let span = ast::Span {
-            start: candidate.start,
-            end: candidate.end,
-        };
+        let span = ast::Span { start: candidate.start, end: candidate.end };
         let symbol = test_symbol(package_name, candidate.name);
         let scheme = match find_test_scheme(exports, symbol) {
             Some(value) => value,
             None => {
-                diagnostics.push(package_test_diagnostic(
-                    "typer",
-                    "test function `" + candidate.name + "` was not resolved",
-                    candidate.source_path,
-                    span,
-                ));
+                diagnostics.push(
+                    package_test_diagnostic(
+                        "typer",
+                        "test function `" + candidate.name + "` was not resolved",
+                        candidate.source_path,
+                        span,
+                    ),
+                );
                 continue
             },
         };
         let diagnostic_count = diagnostics.len();
         if candidate.name == "main" {
-            diagnostics.push(package_test_diagnostic(
-                "typer",
-                "the main function cannot be a test",
-                candidate.source_path,
-                span,
-            ))
+            diagnostics.push(
+                package_test_diagnostic(
+                    "typer",
+                    "the main function cannot be a test",
+                    candidate.source_path,
+                    span,
+                ),
+            )
         } else {
             ()
         };
         if scheme.type_params.len() > 0 {
-            diagnostics.push(package_test_diagnostic(
-                "typer",
-                "test function `" + candidate.name + "` must not have type parameters",
-                candidate.source_path,
-                span,
-            ))
+            diagnostics.push(
+                package_test_diagnostic(
+                    "typer",
+                    "test function `" + candidate.name + "` must not have type parameters",
+                    candidate.source_path,
+                    span,
+                ),
+            )
         } else {
             ()
         };
         match tast::resolve_type(scheme.ty) {
             Func { params, ret_ty } => {
                 if params.len() > 0 {
-                    diagnostics.push(package_test_diagnostic(
-                        "typer",
-                        "test function `" + candidate.name + "` must not have parameters",
-                        candidate.source_path,
-                        span,
-                    ))
+                    diagnostics.push(
+                        package_test_diagnostic(
+                            "typer",
+                            "test function `" + candidate.name + "` must not have parameters",
+                            candidate.source_path,
+                            span,
+                        ),
+                    )
                 } else {
                     ()
                 };
                 match tast::resolve_type(ret_ty) {
                     Unit => (),
                     actual => {
-                        diagnostics.push(package_test_diagnostic(
-                            "typer",
-                            "test function `" + candidate.name + "` must return unit, found "
-                                + tast::diagnostic_type_text(actual),
-                            candidate.source_path,
-                            span,
-                        ))
+                        diagnostics.push(
+                            package_test_diagnostic(
+                                "typer",
+                                "test function `" + candidate.name + "` must return unit, found "
+                                    + tast::diagnostic_type_text(actual),
+                                candidate.source_path,
+                                span,
+                            ),
+                        )
                     },
                 }
             },
             other => {
-                diagnostics.push(package_test_diagnostic(
-                    "typer",
-                    "test item `" + candidate.name + "` must be a function, found "
-                        + tast::diagnostic_type_text(other),
-                    candidate.source_path,
-                    span,
-                ))
+                diagnostics.push(
+                    package_test_diagnostic(
+                        "typer",
+                        "test item `" + candidate.name + "` must be a function, found "
+                            + tast::diagnostic_type_text(other),
+                        candidate.source_path,
+                        span,
+                    ),
+                )
             },
         };
         if diagnostics.len() == diagnostic_count {
             match find_valid_test_candidate(valid_candidates, candidate.name) {
-                Some(first) => diagnostics.push(duplicate_test_id_diagnostic(
-                    symbol,
-                    candidate,
-                    first,
-                )),
+                Some(first) => diagnostics.push(
+                    duplicate_test_id_diagnostic(symbol, candidate, first),
+                ),
                 None => {
-                    tests.push(TestDescriptor {
-                        id: symbol,
-                        package_name,
-                        symbol,
-                        display_name: symbol,
-                        source_path: candidate.source_path,
-                        start: candidate.start,
-                        end: candidate.end,
-                        ignored: candidate.ignored,
-                        ignore_reason: candidate.ignore_reason,
-                    });
+                    tests.push(
+                        TestDescriptor {
+                            id: symbol,
+                            package_name,
+                            symbol,
+                            display_name: symbol,
+                            source_path: candidate.source_path,
+                            start: candidate.start,
+                            end: candidate.end,
+                            ignored: candidate.ignored,
+                            ignore_reason: candidate.ignore_reason,
+                        },
+                    );
                     valid_candidates.push(candidate)
                 },
             }
@@ -598,10 +584,7 @@ fn validate_package_tests(
             ()
         }
     };
-    TestValidation {
-        tests: sort_test_descriptors(tests),
-        diagnostics,
-    }
+    TestValidation { tests: sort_test_descriptors(tests), diagnostics }
 }
 
 fn write_test_json_hex(builder: text::StringBuilder, value: uint8) -> unit {
@@ -615,28 +598,28 @@ fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        if byte == 34 {
+        if byte == b'"' {
             builder.write_string("\\\"");
             index.set(index.get() + 1)
-        } else if byte == 92 {
+        } else if byte == b'\\' {
             builder.write_string("\\\\");
             index.set(index.get() + 1)
-        } else if byte == 8 {
+        } else if byte == b'\b' {
             builder.write_string("\\b");
             index.set(index.get() + 1)
-        } else if byte == 12 {
+        } else if byte == b'\f' {
             builder.write_string("\\f");
             index.set(index.get() + 1)
-        } else if byte == 10 {
+        } else if byte == b'\n' {
             builder.write_string("\\n");
             index.set(index.get() + 1)
-        } else if byte == 13 {
+        } else if byte == b'\r' {
             builder.write_string("\\r");
             index.set(index.get() + 1)
-        } else if byte == 9 {
+        } else if byte == b'\t' {
             builder.write_string("\\t");
             index.set(index.get() + 1)
-        } else if byte < 32 {
+        } else if byte < b' ' {
             builder.write_string("\\u00");
             write_test_json_hex(builder, byte);
             index.set(index.get() + 1)
@@ -660,8 +643,8 @@ fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {
 fn encode_test_manifest(values: Vec[TestDescriptor]) -> string {
     let builder = text::StringBuilder::new();
     builder.write_char('[');
-    for index in range(0, values.len()) {
-        let value = values.get(index);
+    for index in 0..values.len() {
+        let value = values[index];
         if index > 0 {
             builder.write_char(',')
         } else {
@@ -682,7 +665,13 @@ fn encode_test_manifest(values: Vec[TestDescriptor]) -> string {
         builder.write_string(",\n    \"end\": ");
         builder.write_string(value.end.to_string());
         builder.write_string(",\n    \"ignored\": ");
-        builder.write_string(if value.ignored { "true" } else { "false" });
+        builder.write_string(
+            if value.ignored {
+                "true"
+            } else {
+                "false"
+            },
+        );
         builder.write_string(",\n    \"ignore_reason\": ");
         match value.ignore_reason {
             Some(reason) => write_test_json_string(builder, reason),

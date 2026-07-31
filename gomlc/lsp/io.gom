@@ -31,10 +31,7 @@ pub fn read_rpc_payload() -> Result[string, string] {
     let length = Ref::new(Option::None);
     while true {
         let line = match read_stdin_line() {
-            Ok(line) => match line.to_string() {
-                Ok(line) => line,
-                Err(error) => return Result::Err(error),
-            },
+            Ok(line) => line.to_string()?,
             Err(error) => return Result::Err(error),
         };
         if header_line_content(line) == "" {

@@ -26,86 +26,86 @@ type Err struct {
 func (_ Err) isResult__unit__string() {}
 
 func step(ok__0 bool) Result__unit__string {
-    var retv117 Result__unit__string
-    var jp119 Result__unit__string
+    var retv161 Result__unit__string
+    var jp163 Result__unit__string
     if ok__0 {
-        var t120 Result__unit__string = Ok{
+        var t164 Result__unit__string = Ok{
             _0: struct{}{},
         }
-        jp119 = t120
+        jp163 = t164
     } else {
-        var t121 Result__unit__string = Err{
+        var t165 Result__unit__string = Err{
             _0: "step failed",
         }
-        jp119 = t121
+        jp163 = t165
     }
-    retv117 = jp119
-    return retv117
+    retv161 = jp163
+    return retv161
 }
 
 func run(ok__1 bool) Result__unit__string {
-    var retv123 Result__unit__string
-    var mtmp108 Result__unit__string = step(ok__1)
-    switch mtmp108.(type) {
+    var retv167 Result__unit__string
+    var mtmp152 Result__unit__string = step(ok__1)
+    switch mtmp152.(type) {
     case Ok:
-        var t125 Result__unit__string = Ok{
+        var t169 Result__unit__string = Ok{
             _0: struct{}{},
         }
-        retv123 = t125
-        return retv123
+        retv167 = t169
+        return retv167
     case Err:
-        var x110 string = mtmp108.(Err)._0
-        var try_residual__12 string = x110
-        var t126 Result__unit__string = Err{
+        var x154 string = mtmp152.(Err)._0
+        var try_residual__12 string = x154
+        var t170 Result__unit__string = Err{
             _0: try_residual__12,
         }
-        retv123 = t126
-        return retv123
+        retv167 = t170
+        return retv167
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(res__2 Result__unit__string) string {
-    var retv128 string
-    var jp130 string
+    var retv172 string
+    var jp174 string
     switch res__2.(type) {
     case Ok:
-        var jp132 string
-        jp132 = "ok unit"
-        jp130 = jp132
+        var jp176 string
+        jp176 = "ok unit"
+        jp174 = jp176
     case Err:
-        var x113 string = res__2.(Err)._0
-        var err__3 string = x113
-        var t133 string = "err " + err__3
-        jp130 = t133
+        var x157 string = res__2.(Err)._0
+        var err__3 string = x157
+        var t177 string = "err " + err__3
+        jp174 = t177
     default:
         panic("non-exhaustive match")
     }
-    retv128 = jp130
-    return retv128
+    retv172 = jp174
+    return retv172
 }
 
 func main0() struct{} {
-    var t135 Result__unit__string = run(true)
-    var t136 string = show(t135)
-    println__T_string(t136)
-    var t137 Result__unit__string = run(false)
-    var t138 string = show(t137)
-    println__T_string(t138)
+    var t179 Result__unit__string = run(true)
+    var t180 string = show(t179)
+    println__T_string(t180)
+    var t181 Result__unit__string = run(false)
+    var t182 string = show(t181)
+    println__T_string(t182)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t140 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t140)
+    var t184 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t184)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv143 string
-    retv143 = self__38
-    return retv143
+    var retv187 string
+    retv187 = self__38
+    return retv187
 }
 
 func main() {

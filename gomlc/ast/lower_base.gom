@@ -17,18 +17,13 @@ fn push_error(ctx: LowerCtx, value_span: Span, message: string) -> unit {
 }
 
 fn ident_starts_upper(value: string) -> bool {
-    value.byte_len() > 0
-        && value.byte_get(0) >= 65
-        && value.byte_get(0) <= 90
+    value.byte_len() > 0 && value.byte_get(0) >= b'A' && value.byte_get(0) <= b'Z'
 }
 
 fn lower_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
     let segments: Vec[PathSegment] = Vec::new();
     for token in tokens_of_kind(node, lexer::TokenKind::Ident) {
-        segments.push(PathSegment {
-            ident: token.token.text,
-            span: token_span(token),
-        })
+        segments.push(PathSegment { ident: token.token.text, span: token_span(token) })
     };
     if segments.len() == 0 {
         push_error(ctx, node_span(node), "Paths must contain at least one identifier");
@@ -42,7 +37,7 @@ fn path_last(path: Path) -> Option[string] {
     if path.segments.len() == 0 {
         Option::None
     } else {
-        Option::Some(path.segments.get(path.segments.len() - 1).ident)
+        Option::Some(path.segments[path.segments.len() - 1].ident)
     }
 }
 
@@ -50,10 +45,7 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
     let attrs: Vec[Attribute] = Vec::new();
     match first_child(node, cst::NodeKind::ATTRIBUTE_LIST) {
         Some(list) => for attr in children_of_kind(list, cst::NodeKind::ATTRIBUTE) {
-            attrs.push(Attribute {
-                span: node_span(attr),
-                text: node_text(attr),
-            })
+            attrs.push(Attribute { span: node_span(attr), text: node_text(attr) })
         },
         None => (),
     };
@@ -72,31 +64,27 @@ fn attribute_matches(value: Attribute, expected: string) -> bool {
     let text_value = value.text;
     let index = Ref::new(0);
     while index.get() < text_value.byte_len()
-        && (text_value.byte_get(index.get()) == 32
-            || text_value.byte_get(index.get()) == 9
-            || text_value.byte_get(index.get()) == 10
-            || text_value.byte_get(index.get()) == 13)
-    {
+        && (text_value.byte_get(index.get()) == b' ' || text_value.byte_get(index.get()) == b'\t'
+            || text_value.byte_get(index.get()) == b'\n'
+            || text_value.byte_get(index.get()) == b'\r') {
         index.set(index.get() + 1)
     };
     if index.get() + 2 > text_value.byte_len()
-        || text_value.byte_slice(index.get(), index.get() + 2) != "#["
-    {
+        || text_value.byte_slice(index.get(), index.get() + 2) != "#[" {
         false
     } else {
         index.set(index.get() + 2);
         while index.get() < text_value.byte_len()
-            && (text_value.byte_get(index.get()) == 32
-                || text_value.byte_get(index.get()) == 9
-                || text_value.byte_get(index.get()) == 10
-                || text_value.byte_get(index.get()) == 13)
-        {
+            && (text_value.byte_get(index.get()) == b' '
+                || text_value.byte_get(index.get()) == b'\t'
+                || text_value.byte_get(index.get()) == b'\n'
+                || text_value.byte_get(index.get()) == b'\r') {
             index.set(index.get() + 1)
         };
         let start = index.get();
         while index.get() < text_value.byte_len() {
             let byte = text_value.byte_get(index.get());
-            if byte == 40 || byte == 93 || byte == 32 || byte == 9 {
+            if byte == b'(' || byte == b']' || byte == b' ' || byte == b'\t' {
                 break
             } else {
                 index.set(index.get() + 1)
@@ -105,8 +93,7 @@ fn attribute_matches(value: Attribute, expected: string) -> bool {
         let path_text = text_value.byte_slice(start, index.get());
         match strings::rfind(path_text, "::") {
             Some(separator) => {
-                path_text.byte_slice(separator + 2, path_text.byte_len())
-                    == expected
+                path_text.byte_slice(separator + 2, path_text.byte_len()) == expected
             },
             None => path_text == expected,
         }
@@ -137,7 +124,7 @@ fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
 
 fn normalized_array_length(value: string) -> Option[string] {
     let index = Ref::new(0);
-    while index.get() + 1 < value.byte_len() && value.byte_get(index.get()) == 48 {
+    while index.get() + 1 < value.byte_len() && value.byte_get(index.get()) == b'0' {
         index.set(index.get() + 1)
     };
     let normalized = value.byte_slice(index.get(), value.byte_len());
@@ -147,7 +134,7 @@ fn normalized_array_length(value: string) -> Option[string] {
     } else if normalized.byte_len() > maximum.byte_len() {
         Option::None
     } else {
-        for cursor in range(0, normalized.byte_len()) {
+        for cursor in 0..normalized.byte_len() {
             let left = normalized.byte_get(cursor);
             let right = maximum.byte_get(cursor);
             if left < right {
@@ -191,7 +178,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                     if types.len() == 0 {
                         Option::Some(TypeExpr::Unit)
                     } else if types.len() == 1 {
-                        Option::Some(types.get(0))
+                        Option::Some(types[0])
                     } else {
                         Option::Some(TypeExpr::Tuple { items: types })
                     }
@@ -202,9 +189,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                 Some(path_node) => match lower_path(ctx, path_node) {
                     Some(path) => {
                         match path_last(path) {
-                            Some(name) => if ident_starts_upper(name) == false
-                                && name != "byte"
-                            {
+                            Some(name) => if ident_starts_upper(name) == false && name != "byte" {
                                 push_error(
                                     ctx,
                                     node_span(node),
@@ -244,11 +229,10 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                         strip_suffix(length_token.token.text, ""),
                     ) {
                         Some(length) => if types.len() > 0 {
-                            match lower_ty(ctx, types.get(0)) {
-                                Some(element) => Option::Some(TypeExpr::Array {
-                                    len: length,
-                                    elem: element,
-                                }),
+                            match lower_ty(ctx, types[0]) {
+                                Some(element) => Option::Some(
+                                    TypeExpr::Array { len: length, elem: element },
+                                ),
                                 None => Option::None,
                             }
                         } else {
@@ -256,7 +240,11 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                             Option::None
                         },
                         None => {
-                            push_error(ctx, token_span(length_token), "Invalid array length: " + length_token.token.text);
+                            push_error(
+                                ctx,
+                                token_span(length_token),
+                                "Invalid array length: " + length_token.token.text,
+                            );
                             Option::None
                         },
                     },
@@ -272,10 +260,13 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                     push_error(ctx, node_span(node), "Function type missing return type");
                     Option::None
                 } else {
-                    match lower_ty(ctx, types.get(1)) {
+                    match lower_ty(ctx, types[1]) {
                         Some(ret_ty) => {
-                            let param_node = types.get(0);
-                            let params = if cst::node_kind_equal(node_kind(param_node), cst::NodeKind::TYPE_TUPLE) {
+                            let param_node = types[0];
+                            let params = if cst::node_kind_equal(
+                                node_kind(param_node),
+                                cst::NodeKind::TYPE_TUPLE,
+                            ) {
                                 match first_child(param_node, cst::NodeKind::TYPE_LIST) {
                                     Some(list) => lower_type_list(ctx, list),
                                     None => Vec::new(),
@@ -363,18 +354,22 @@ fn lower_where_clause(ctx: LowerCtx, node: LocatedNode) -> Vec[Predicate] {
             if types.len() == 0 {
                 push_error(ctx, node_span(predicate), "Where predicate is missing a type")
             } else {
-                match lower_ty(ctx, types.get(0)) {
+                match lower_ty(ctx, types[0]) {
                     Some(lhs) => match first_child(predicate, cst::NodeKind::TRAIT_SET) {
                         Some(set) => for trait_ref in lower_trait_set(ctx, set) {
                             result.push(Predicate::Trait { ty: lhs, trait_ref })
                         },
                         None => if types.len() > 1 {
-                            match lower_ty(ctx, types.get(1)) {
+                            match lower_ty(ctx, types[1]) {
                                 Some(rhs) => result.push(Predicate::Equality { lhs, rhs }),
                                 None => (),
                             }
                         } else {
-                            push_error(ctx, node_span(predicate), "Equality predicate is missing its right-hand type")
+                            push_error(
+                                ctx,
+                                node_span(predicate),
+                                "Equality predicate is missing its right-hand type",
+                            )
                         },
                     },
                     None => (),
@@ -412,10 +407,7 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
 fn lower_result(result: cst::ParseResult) -> LowerResult {
     let diagnostics = result.diagnostics;
     if diagnostics.len() > 0 {
-        LowerResult {
-            ast: Option::None,
-            diagnostics,
-        }
+        LowerResult { ast: Option::None, diagnostics }
     } else {
         let root = root_node(result);
         let ctx = LowerCtx {
@@ -449,20 +441,19 @@ fn lower_result(result: cst::ParseResult) -> LowerResult {
             }
         };
         let ast = if ctx.diagnostics.len() == 0 {
-            Option::Some(File {
-                package_name,
-                package_explicit,
-                uses,
-                items,
-                invalid_self_type_spans: ctx.invalid_self_type_spans,
-            })
+            Option::Some(
+                File {
+                    package_name,
+                    package_explicit,
+                    uses,
+                    items,
+                    invalid_self_type_spans: ctx.invalid_self_type_spans,
+                },
+            )
         } else {
             Option::None
         };
-        LowerResult {
-            ast,
-            diagnostics: ctx.diagnostics,
-        }
+        LowerResult { ast, diagnostics: ctx.diagnostics }
     }
 }
 

@@ -19,29 +19,29 @@ fn format_duration(value/2: string) -> string {
 }
 
 fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result__string__string {
-  let _wild111 = let mtmp108 = configure(config_ok/3) in
-  match mtmp108 {
-    Result__unit__string::Ok(x109) => {
-      let x109 = Result__unit__string::Ok._0(mtmp108) in
-      let try_value/23 = x109 in
+  let _wild155 = let mtmp152 = configure(config_ok/3) in
+  match mtmp152 {
+    Result__unit__string::Ok(x153) => {
+      let x153 = Result__unit__string::Ok._0(mtmp152) in
+      let try_value/23 = x153 in
       try_value/23
     },
-    Result__unit__string::Err(x110) => {
-      let x110 = Result__unit__string::Err._0(mtmp108) in
-      let try_residual/23 = x110 in
+    Result__unit__string::Err(x154) => {
+      let x154 = Result__unit__string::Err._0(mtmp152) in
+      let try_residual/23 = x154 in
       return Result__string__string::Err(try_residual/23)
     },
   } in
-  let value/5 = let mtmp112 = read_duration(read_ok/4) in
-  match mtmp112 {
-    Result__string__string::Ok(x113) => {
-      let x113 = Result__string__string::Ok._0(mtmp112) in
-      let try_value/27 = x113 in
+  let value/5 = let mtmp156 = read_duration(read_ok/4) in
+  match mtmp156 {
+    Result__string__string::Ok(x157) => {
+      let x157 = Result__string__string::Ok._0(mtmp156) in
+      let try_value/27 = x157 in
       try_value/27
     },
-    Result__string__string::Err(x114) => {
-      let x114 = Result__string__string::Err._0(mtmp112) in
-      let try_residual/27 = x114 in
+    Result__string__string::Err(x158) => {
+      let x158 = Result__string__string::Err._0(mtmp156) in
+      let try_residual/27 = x158 in
       return Result__string__string::Err(try_residual/27)
     },
   } in
@@ -50,23 +50,23 @@ fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result__string__s
 
 fn show(res/6: Result__string__string) -> string {
   match res/6 {
-    Result__string__string::Ok(x115) => {
-      let x115 = Result__string__string::Ok._0(res/6) in
-      let value/7 = x115 in
+    Result__string__string::Ok(x159) => {
+      let x159 = Result__string__string::Ok._0(res/6) in
+      let value/7 = x159 in
       ("ok " + value/7)
     },
-    Result__string__string::Err(x116) => {
-      let x116 = Result__string__string::Err._0(res/6) in
-      let err/8 = x116 in
+    Result__string__string::Err(x160) => {
+      let x160 = Result__string__string::Err._0(res/6) in
+      let err/8 = x160 in
       ("err " + err/8)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild117 = println__T_string(show(configure_and_format(true, true))) in
-  let _wild118 = println__T_string(show(configure_and_format(true, false))) in
-  let _wild119 = println__T_string(show(configure_and_format(false, true))) in
+  let _wild161 = println__T_string(show(configure_and_format(true, true))) in
+  let _wild162 = println__T_string(show(configure_and_format(true, false))) in
+  let _wild163 = println__T_string(show(configure_and_format(false, true))) in
   ()
 }
 

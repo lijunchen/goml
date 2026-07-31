@@ -1,13 +1,14 @@
 package collections;
 
 fn smaller(left: int, right: int) -> int {
-    if left < right { left } else { right }
+    if left < right {
+        left
+    } else {
+        right
+    }
 }
 
-pub fn stable_sort_by[T](
-    values: Vec[T],
-    compare: (T, T) -> int,
-) -> unit {
+pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
     let length = values.len();
     if length < 2 {
         return
@@ -15,54 +16,48 @@ pub fn stable_sort_by[T](
         ()
     };
     let buffer: Vec[T] = Vec::with_capacity(length);
-    for index in range(0, length) {
-        buffer.push(values.get(index))
+    for index in 0..length {
+        buffer.push(values[index])
     };
-    let width = Ref::new(1);
-    while width.get() < length {
-        let left = Ref::new(0);
-        while left.get() < length {
-            let middle = smaller(left.get() + width.get(), length);
-            let right = smaller(middle + width.get(), length);
-            let first = Ref::new(left.get());
-            let second = Ref::new(middle);
-            let output = Ref::new(left.get());
-            while first.get() < middle && second.get() < right {
-                if compare(
-                    values.get(first.get()),
-                    values.get(second.get()),
-                ) <= 0
-                {
-                    buffer.set(output.get(), values.get(first.get()));
-                    first.set(first.get() + 1)
+    let mut width = 1;
+    while width < length {
+        let mut left = 0;
+        while left < length {
+            let middle = smaller(left + width, length);
+            let right = smaller(middle + width, length);
+            let mut first = left;
+            let mut second = middle;
+            let mut output = left;
+            while first < middle && second < right {
+                if compare(values[first], values[second]) <= 0 {
+                    buffer[output] = values[first];
+                    first += 1;
                 } else {
-                    buffer.set(output.get(), values.get(second.get()));
-                    second.set(second.get() + 1)
+                    buffer[output] = values[second];
+                    second += 1;
                 };
-                output.set(output.get() + 1)
+                output += 1;
             };
-            while first.get() < middle {
-                buffer.set(output.get(), values.get(first.get()));
-                first.set(first.get() + 1);
-                output.set(output.get() + 1)
+            while first < middle {
+                buffer[output] = values[first];
+                first += 1;
+                output += 1;
             };
-            while second.get() < right {
-                buffer.set(output.get(), values.get(second.get()));
-                second.set(second.get() + 1);
-                output.set(output.get() + 1)
+            while second < right {
+                buffer[output] = values[second];
+                second += 1;
+                output += 1;
             };
-            left.set(right)
+            left = right;
         };
-        for index in range(0, length) {
-            values.set(index, buffer.get(index))
+        for index in 0..length {
+            values[index] = buffer[index];
         };
-        width.set(
-            if width.get() > length / 2 {
-                length
-            } else {
-                width.get() * 2
-            },
-        )
+        width = if width > length / 2 {
+            length
+        } else {
+            width * 2
+        };
     }
 }
 
@@ -70,33 +65,27 @@ pub fn sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
     stable_sort_by(values, compare)
 }
 
-pub fn binary_search_by[T](
-    values: Vec[T],
-    compare: (T) -> int,
-) -> Option[int] {
-    let low = Ref::new(0);
-    let high = Ref::new(values.len());
-    while low.get() < high.get() {
-        let middle = low.get() + (high.get() - low.get()) / 2;
-        if compare(values.get(middle)) < 0 {
-            low.set(middle + 1)
+pub fn binary_search_by[T](values: Vec[T], compare: (T) -> int) -> Option[int] {
+    let mut low = 0;
+    let mut high = values.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if compare(values[middle]) < 0 {
+            low = middle + 1;
         } else {
-            high.set(middle)
+            high = middle;
         }
     };
-    if low.get() < values.len() && compare(values.get(low.get())) == 0 {
-        Option::Some(low.get())
+    if low < values.len() && compare(values[low]) == 0 {
+        Option::Some(low)
     } else {
         Option::None
     }
 }
 
-pub fn position_by[T](
-    values: Vec[T],
-    predicate: (T) -> bool,
-) -> Option[int] {
-    for index in range(0, values.len()) {
-        if predicate(values.get(index)) {
+pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
+    for index in 0..values.len() {
+        if predicate(values[index]) {
             return Option::Some(index)
         } else {
             ()
@@ -106,72 +95,60 @@ pub fn position_by[T](
 }
 
 pub fn contains[T: Eq](values: Vec[T], expected: T) -> bool {
-    match position_by(values, |value: T| Eq::eq(value, expected)) {
-        Option::Some(_) => true,
-        Option::None => false,
-    }
+    position_by(values, |value: T| Eq::eq(value, expected)).is_some()
 }
 
-pub fn min_by[T](
-    values: Vec[T],
-    compare: (T, T) -> int,
-) -> Option[T] {
+pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
     if values.len() == 0 {
         Option::None
     } else {
-        let best = Ref::new(values.get(0));
-        for index in range(1, values.len()) {
-            let value = values.get(index);
-            if compare(value, best.get()) < 0 {
-                best.set(value)
+        let mut best = values[0];
+        for index in 1..values.len() {
+            let value = values[index];
+            if compare(value, best) < 0 {
+                best = value;
             } else {
                 ()
             }
         };
-        Option::Some(best.get())
+        Option::Some(best)
     }
 }
 
-pub fn max_by[T](
-    values: Vec[T],
-    compare: (T, T) -> int,
-) -> Option[T] {
+pub fn max_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
     if values.len() == 0 {
         Option::None
     } else {
-        let best = Ref::new(values.get(0));
-        for index in range(1, values.len()) {
-            let value = values.get(index);
-            if compare(value, best.get()) > 0 {
-                best.set(value)
+        let mut best = values[0];
+        for index in 1..values.len() {
+            let value = values[index];
+            if compare(value, best) > 0 {
+                best = value;
             } else {
                 ()
             }
         };
-        Option::Some(best.get())
+        Option::Some(best)
     }
 }
 
-pub fn dedup_by[T](
-    values: Vec[T],
-    equal: (T, T) -> bool,
-) -> unit {
+pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
     if values.len() < 2 {
         return
     } else {
         ()
     };
-    let output = Ref::new(1);
-    for index in range(1, values.len()) {
-        let value = values.get(index);
-        if equal(values.get(output.get() - 1), value) == false {
-            values.set(output.get(), value);
-            output.set(output.get() + 1)
+    let mut output = 1;
+    for index in 1..values.len() {
+        let value = values[index];
+        if equal(values[output - 1], value) == false {
+            values[output] = value;
+            output += 1;
         } else {
             ()
         }
     };
-    values.truncate(output.get())
+    values.truncate(output)
 }
 
 pub fn dedup[T: Eq](values: Vec[T]) -> unit {

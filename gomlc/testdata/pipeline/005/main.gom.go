@@ -31,25 +31,25 @@ func main0() struct{} {
         _0: Blue,
         _1: Red,
     }
-    var x108 Color = a__0._0
-    var x109 Color = a__0._1
-    switch x109 {
+    var x152 Color = a__0._0
+    var x153 Color = a__0._1
+    switch x153 {
     case Red:
-        switch x108 {
+        switch x152 {
         case Red:
             print__T_int(1)
         default:
             print__T_int(3)
         }
     case Green:
-        switch x108 {
+        switch x152 {
         case Red:
             print__T_int(0)
         default:
             print__T_int(3)
         }
     case Blue:
-        switch x108 {
+        switch x152 {
         case Blue:
             print__T_int(2)
         default:
@@ -62,16 +62,16 @@ func main0() struct{} {
 }
 
 func print__T_int(value__0 int) struct{} {
-    var t122 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
-    _goml_runtime_core_string_print(t122)
+    var t166 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
+    _goml_runtime_core_string_print(t166)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv125 string
-    var t126 string = _goml_runtime_core_int_to_string(self__40)
-    retv125 = t126
-    return retv125
+    var retv169 string
+    var t170 string = _goml_runtime_core_int_to_string(self__40)
+    retv169 = t170
+    return retv169
 }
 
 func main() {

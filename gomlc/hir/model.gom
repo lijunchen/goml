@@ -25,7 +25,10 @@ pub enum NameRef {
 }
 
 pub enum ConstructorRef {
-    Resolved { enum_def: DefId, variant_index: int },
+    Resolved {
+        enum_def: DefId,
+        variant_index: int,
+    },
     Unresolved(string),
 }
 
@@ -35,8 +38,14 @@ pub enum PatternHead {
         variant_index: int,
         span: ast::Span,
     },
-    Qualified { name: string, span: ast::Span },
-    Contextual { name: string, span: ast::Span },
+    Qualified {
+        name: string,
+        span: ast::Span,
+    },
+    Contextual {
+        name: string,
+        span: ast::Span,
+    },
 }
 
 pub enum TypeExpr {
@@ -56,13 +65,31 @@ pub enum TypeExpr {
     Float64,
     String,
     Char,
-    Tuple { items: Vec[TypeExpr] },
-    Con { name: string },
-    Projection { base: TypeExpr, associated: string },
-    Dyn { trait_name: string },
-    App { ty: TypeExpr, args: Vec[TypeExpr] },
-    Array { len: string, elem: TypeExpr },
-    Func { params: Vec[TypeExpr], ret_ty: TypeExpr },
+    Tuple {
+        items: Vec[TypeExpr],
+    },
+    Con {
+        name: string,
+    },
+    Projection {
+        base: TypeExpr,
+        associated: string,
+    },
+    Dyn {
+        trait_name: string,
+    },
+    App {
+        ty: TypeExpr,
+        args: Vec[TypeExpr],
+    },
+    Array {
+        len: string,
+        elem: TypeExpr,
+    },
+    Func {
+        params: Vec[TypeExpr],
+        ret_ty: TypeExpr,
+    },
 }
 
 pub struct TraitRef {
@@ -72,8 +99,14 @@ pub struct TraitRef {
 }
 
 pub enum Predicate {
-    Trait { ty: TypeExpr, trait_ref: TraitRef },
-    Equality { lhs: TypeExpr, rhs: TypeExpr },
+    Trait {
+        ty: TypeExpr,
+        trait_ref: TraitRef,
+    },
+    Equality {
+        lhs: TypeExpr,
+        rhs: TypeExpr,
+    },
 }
 
 pub struct AssociatedType {
@@ -230,13 +263,16 @@ pub enum Stmt {
         pat: Pat,
         annotation: Option[TypeExpr],
         value: Expr,
+        else_branch: Option[Expr],
     },
     Assign {
         target: Expr,
         op: ast::AssignmentOp,
         value: Expr,
     },
-    Expr { expr: Expr },
+    Expr {
+        expr: Expr,
+    },
 }
 
 pub struct Expr {
@@ -250,7 +286,9 @@ pub enum InterpolatedStringPart {
 }
 
 pub enum ExprKind {
-    NameRef { name_ref: NameRef },
+    NameRef {
+        name_ref: NameRef,
+    },
     StaticMember {
         owner: string,
         member: string,
@@ -260,47 +298,130 @@ pub enum ExprKind {
         member_type_arg_spans: Vec[Option[ast::Span]],
     },
     Unit,
-    Bool { value: bool },
-    Int { value: string },
-    Float { value: float64 },
-    String { value: string },
-    InterpolatedString { parts: Vec[InterpolatedStringPart] },
-    Char { value: string },
-    Byte { value: string },
-    ConstructorValue { constructor: ConstructorRef },
-    Constr { constructor: ConstructorRef, args: Vec[Expr] },
+    Bool {
+        value: bool,
+    },
+    Int {
+        value: string,
+    },
+    Float {
+        value: float64,
+    },
+    String {
+        value: string,
+    },
+    InterpolatedString {
+        parts: Vec[InterpolatedStringPart],
+    },
+    Char {
+        value: string,
+    },
+    Byte {
+        value: string,
+    },
+    ByteString {
+        values: Vec[string],
+    },
+    ConstructorValue {
+        constructor: ConstructorRef,
+    },
+    Constr {
+        constructor: ConstructorRef,
+        args: Vec[Expr],
+    },
     StructLiteral {
         name: string,
         fields: Vec[(string, Expr)],
         base: Option[Expr],
     },
-    Tuple { items: Vec[Expr] },
-    Array { items: Vec[Expr] },
-    VecLiteral { items: Vec[Expr] },
-    HashMapLiteral { entries: Vec[(Expr, Expr)] },
-    Closure { params: Vec[ClosureParam], body: Expr },
-    Match { expr: Expr, arms: Vec[Arm] },
-    If { cond: Expr, then_branch: Expr, else_branch: Expr },
-    While { cond: Expr, body: Expr },
-    For { pat: Pat, iterator: Expr, body: Expr },
-    Break,
+    Tuple {
+        items: Vec[Expr],
+    },
+    Array {
+        items: Vec[Expr],
+    },
+    VecLiteral {
+        items: Vec[Expr],
+    },
+    HashMapLiteral {
+        entries: Vec[(Expr, Expr)],
+    },
+    Closure {
+        params: Vec[ClosureParam],
+        body: Expr,
+    },
+    Match {
+        expr: Expr,
+        arms: Vec[Arm],
+    },
+    If {
+        cond: Expr,
+        then_branch: Expr,
+        else_branch: Expr,
+    },
+    While {
+        cond: Expr,
+        body: Expr,
+    },
+    Loop {
+        body: Expr,
+    },
+    For {
+        pat: Pat,
+        iterator: Expr,
+        body: Expr,
+    },
+    Break {
+        value: Option[Expr],
+    },
     Continue,
-    Return { expr: Option[Expr] },
-    Go { expr: Expr },
-    Call { func: Expr, args: Vec[Expr] },
-    Unary { op: ast::UnaryOp, expr: Expr },
-    Cast { expr: Expr, ty: TypeExpr },
-    Try { depth: int, expr: Expr },
-    Range { start: Expr, end: Expr },
-    Binary { op: ast::BinaryOp, lhs: Expr, rhs: Expr },
-    Proj { tuple: Expr, index: int },
+    Return {
+        expr: Option[Expr],
+    },
+    Go {
+        expr: Expr,
+    },
+    Call {
+        func: Expr,
+        args: Vec[Expr],
+    },
+    Unary {
+        op: ast::UnaryOp,
+        expr: Expr,
+    },
+    Cast {
+        expr: Expr,
+        ty: TypeExpr,
+    },
+    Try {
+        depth: int,
+        expr: Expr,
+    },
+    Range {
+        start: Expr,
+        end: Expr,
+    },
+    Binary {
+        op: ast::BinaryOp,
+        lhs: Expr,
+        rhs: Expr,
+    },
+    Proj {
+        tuple: Expr,
+        index: int,
+    },
     Field {
         expr: Expr,
         field_name: string,
         method_type_args: Vec[TypeExpr],
     },
-    Index { base: Expr, index: Expr },
-    Block { block: Block },
+    Index {
+        base: Expr,
+        index: Expr,
+    },
+    Block {
+        block: Block,
+    },
 }
 
 pub struct Arm {
@@ -319,21 +440,57 @@ pub struct Pat {
 }
 
 pub enum PatKind {
-    Var { name: LocalId },
+    Var {
+        name: LocalId,
+    },
     Unit,
-    Bool { value: bool },
-    Int { value: string },
-    Float { value: string },
-    String { value: string },
-    Char { value: string },
-    Byte { value: string },
-    Constr { head: PatternHead, args: Vec[Pat] },
-    Struct { head: PatternHead, fields: Vec[(string, Pat)], has_rest: bool },
-    Tuple { items: Vec[Pat] },
-    Array { prefix: Vec[Pat], rest: Option[ArrayPatRest], suffix: Vec[Pat] },
-    Alias { name: LocalId, pat: Pat },
-    Or { pats: Vec[Pat] },
-    Range { start: Pat, end: Pat, inclusive: bool },
+    Bool {
+        value: bool,
+    },
+    Int {
+        value: string,
+    },
+    Float {
+        value: string,
+    },
+    String {
+        value: string,
+    },
+    Char {
+        value: string,
+    },
+    Byte {
+        value: string,
+    },
+    Constr {
+        head: PatternHead,
+        args: Vec[Pat],
+    },
+    Struct {
+        head: PatternHead,
+        fields: Vec[(string, Pat)],
+        has_rest: bool,
+    },
+    Tuple {
+        items: Vec[Pat],
+    },
+    Array {
+        prefix: Vec[Pat],
+        rest: Option[ArrayPatRest],
+        suffix: Vec[Pat],
+    },
+    Alias {
+        name: LocalId,
+        pat: Pat,
+    },
+    Or {
+        pats: Vec[Pat],
+    },
+    Range {
+        start: Pat,
+        end: Pat,
+        inclusive: bool,
+    },
     Wild,
 }
 

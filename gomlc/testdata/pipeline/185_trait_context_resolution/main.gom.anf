@@ -1,144 +1,144 @@
 fn trait_impl#Put#[int32]@Target#put(self/0: Target, value/1: int32) -> string {
-  join ret114(retv115: string) -> string {
-    retv115
+  join ret158(retv159: string) -> string {
+    retv159
   } in
-  let t116 = inherent#int32#int32#to_string(value/1) in
-  let t117 = ("number:" + t116) in
-  jump ret114(t117)
+  let t160 = inherent#int32#int32#to_string(value/1) in
+  let t161 = ("number:" + t160) in
+  jump ret158(t161)
 }
 
 fn trait_impl#Put#[string]@Target#put(self/2: Target, value/3: string) -> string {
-  join ret118(retv119: string) -> string {
-    retv119
-  } in
-  let t120 = ("text:" + value/3) in
-  jump ret118(t120)
-}
-
-fn trait_impl#Convert#[int32]@Convertible#convert(self/4: Convertible) -> string {
-  join ret121(retv122: string) -> string {
-    retv122
-  } in
-  jump ret121("converted")
-}
-
-fn trait_impl#Convert#[string]@Convertible#convert(self/5: Convertible) -> int32 {
-  join ret123(retv124: int32) -> int32 {
-    retv124
-  } in
-  jump ret123(7)
-}
-
-fn trait_impl#Source#[int32]@Number#get(self/6: Number) -> int32 {
-  join ret125(retv126: int32) -> int32 {
-    retv126
-  } in
-  let t127 = Number.value(self/6) in
-  jump ret125(t127)
-}
-
-fn trait_impl#ItemSource#Selected#item(self/9: Selected) -> int32 {
-  join ret128(retv129: int32) -> int32 {
-    retv129
-  } in
-  let t130 = Selected.value(self/9) in
-  jump ret128(t130)
-}
-
-fn main() -> unit {
-  join ret131() -> unit {
-    ()
-  } in
-  let t132 = Target {} in
-  let t133 = trait_impl#Put#[int32]@Target#put(t132, 3) in
-  let _wild108 = println__T_string(t133) in
-  let t134 = Target {} in
-  let t135 = trait_impl#Put#[string]@Target#put(t134, "goml") in
-  let _wild109 = println__T_string(t135) in
-  let t136 = Convertible {} in
-  let text/12 = trait_impl#Convert#[int32]@Convertible#convert(t136) in
-  let t137 = Convertible {} in
-  let number/13 = trait_impl#Convert#[string]@Convertible#convert(t137) in
-  let _wild110 = println__T_string(text/12) in
-  let _wild111 = println__T_int32(number/13) in
-  let t138 = Number { value: 8 } in
-  let t139 = read__S_Number__T_int32(t138) in
-  let _wild112 = println__T_int32(t139) in
-  let t140 = Selected { value: 9 } in
-  let t141 = select_item__S_Selected(t140) in
-  let _wild113 = println__T_int32(t141) in
-  jump ret131()
-}
-
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret142(retv143: string) -> string {
-    retv143
-  } in
-  let t144 = @runtime(core.int32_to_string)(self/6) in
-  jump ret142(t144)
-}
-
-fn println__T_string(value/1: string) -> unit {
-  join ret145() -> unit {
-    ()
-  } in
-  let t146 = trait_impl#ToString#string#to_string(value/1) in
-  let t147 = @runtime(core.string_println)(t146) in
-  jump ret145()
-}
-
-fn println__T_int32(value/1: int32) -> unit {
-  join ret148() -> unit {
-    ()
-  } in
-  let t149 = trait_impl#ToString#int32#to_string(value/1) in
-  let t150 = @runtime(core.string_println)(t149) in
-  jump ret148()
-}
-
-fn read__S_Number__T_int32(source/7: Number) -> int32 {
-  join ret151(retv152: int32) -> int32 {
-    retv152
-  } in
-  let t153 = trait_impl#Source#[int32]@Number#get(source/7) in
-  jump ret151(t153)
-}
-
-fn select_item__S_Selected(source/11: Selected) -> int32 {
-  join ret154(retv155: int32) -> int32 {
-    retv155
-  } in
-  let t156 = invoke__S_Selected__T_int32(source/11) in
-  jump ret154(t156)
-}
-
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret157(retv158: string) -> string {
-    retv158
-  } in
-  jump ret157(self/38)
-}
-
-fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret159(retv160: string) -> string {
-    retv160
-  } in
-  let t161 = @runtime(core.int32_to_string)(self/43) in
-  jump ret159(t161)
-}
-
-fn invoke__S_Selected__T_int32(source/10: Selected) -> int32 {
-  join ret162(retv163: int32) -> int32 {
+  join ret162(retv163: string) -> string {
     retv163
   } in
-  let t164 = trait_impl#Select#[int32]@Selected#select(source/10) in
+  let t164 = ("text:" + value/3) in
   jump ret162(t164)
 }
 
-fn trait_impl#Select#[int32]@Selected#select(self/8: Selected) -> int32 {
-  join ret165(retv166: int32) -> int32 {
+fn trait_impl#Convert#[int32]@Convertible#convert(self/4: Convertible) -> string {
+  join ret165(retv166: string) -> string {
     retv166
   } in
-  let t167 = trait_impl#ItemSource#Selected#item(self/8) in
-  jump ret165(t167)
+  jump ret165("converted")
+}
+
+fn trait_impl#Convert#[string]@Convertible#convert(self/5: Convertible) -> int32 {
+  join ret167(retv168: int32) -> int32 {
+    retv168
+  } in
+  jump ret167(7)
+}
+
+fn trait_impl#Source#[int32]@Number#get(self/6: Number) -> int32 {
+  join ret169(retv170: int32) -> int32 {
+    retv170
+  } in
+  let t171 = Number.value(self/6) in
+  jump ret169(t171)
+}
+
+fn trait_impl#ItemSource#Selected#item(self/9: Selected) -> int32 {
+  join ret172(retv173: int32) -> int32 {
+    retv173
+  } in
+  let t174 = Selected.value(self/9) in
+  jump ret172(t174)
+}
+
+fn main() -> unit {
+  join ret175() -> unit {
+    ()
+  } in
+  let t176 = Target {} in
+  let t177 = trait_impl#Put#[int32]@Target#put(t176, 3) in
+  let _wild152 = println__T_string(t177) in
+  let t178 = Target {} in
+  let t179 = trait_impl#Put#[string]@Target#put(t178, "goml") in
+  let _wild153 = println__T_string(t179) in
+  let t180 = Convertible {} in
+  let text/12 = trait_impl#Convert#[int32]@Convertible#convert(t180) in
+  let t181 = Convertible {} in
+  let number/13 = trait_impl#Convert#[string]@Convertible#convert(t181) in
+  let _wild154 = println__T_string(text/12) in
+  let _wild155 = println__T_int32(number/13) in
+  let t182 = Number { value: 8 } in
+  let t183 = read__S_Number__T_int32(t182) in
+  let _wild156 = println__T_int32(t183) in
+  let t184 = Selected { value: 9 } in
+  let t185 = select_item__S_Selected(t184) in
+  let _wild157 = println__T_int32(t185) in
+  jump ret175()
+}
+
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
+  join ret186(retv187: string) -> string {
+    retv187
+  } in
+  let t188 = @runtime(core.int32_to_string)(self/6) in
+  jump ret186(t188)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret189() -> unit {
+    ()
+  } in
+  let t190 = trait_impl#ToString#string#to_string(value/1) in
+  let t191 = @runtime(core.string_println)(t190) in
+  jump ret189()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret192() -> unit {
+    ()
+  } in
+  let t193 = trait_impl#ToString#int32#to_string(value/1) in
+  let t194 = @runtime(core.string_println)(t193) in
+  jump ret192()
+}
+
+fn read__S_Number__T_int32(source/7: Number) -> int32 {
+  join ret195(retv196: int32) -> int32 {
+    retv196
+  } in
+  let t197 = trait_impl#Source#[int32]@Number#get(source/7) in
+  jump ret195(t197)
+}
+
+fn select_item__S_Selected(source/11: Selected) -> int32 {
+  join ret198(retv199: int32) -> int32 {
+    retv199
+  } in
+  let t200 = invoke__S_Selected__T_int32(source/11) in
+  jump ret198(t200)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret201(retv202: string) -> string {
+    retv202
+  } in
+  jump ret201(self/38)
+}
+
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+  join ret203(retv204: string) -> string {
+    retv204
+  } in
+  let t205 = @runtime(core.int32_to_string)(self/43) in
+  jump ret203(t205)
+}
+
+fn invoke__S_Selected__T_int32(source/10: Selected) -> int32 {
+  join ret206(retv207: int32) -> int32 {
+    retv207
+  } in
+  let t208 = trait_impl#Select#[int32]@Selected#select(source/10) in
+  jump ret206(t208)
+}
+
+fn trait_impl#Select#[int32]@Selected#select(self/8: Selected) -> int32 {
+  join ret209(retv210: int32) -> int32 {
+    retv210
+  } in
+  let t211 = trait_impl#ItemSource#Selected#item(self/8) in
+  jump ret209(t211)
 }

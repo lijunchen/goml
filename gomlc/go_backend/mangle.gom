@@ -23,10 +23,7 @@ fn is_valid_ident(value: string) -> bool {
         ()
     };
     for character in characters {
-        if !(is_ascii_letter(character)
-            || is_ascii_digit(character)
-            || character == '_')
-        {
+        if !(is_ascii_letter(character) || is_ascii_digit(character) || character == '_') {
             return false
         } else {
             ()
@@ -36,10 +33,7 @@ fn is_valid_ident(value: string) -> bool {
 }
 
 fn is_keyword(value: string) -> bool {
-    value == "break"
-        || value == "default"
-        || value == "func"
-        || value == "interface"
+    value == "break" || value == "default" || value == "func" || value == "interface"
         || value == "select"
         || value == "case"
         || value == "defer"
@@ -64,11 +58,7 @@ fn is_keyword(value: string) -> bool {
 }
 
 fn is_predeclared(value: string) -> bool {
-    value == "any"
-        || value == "append"
-        || value == "cap"
-        || value == "clear"
-        || value == "close"
+    value == "any" || value == "append" || value == "cap" || value == "clear" || value == "close"
         || value == "comparable"
         || value == "complex"
         || value == "copy"
@@ -92,13 +82,10 @@ fn is_predeclared(value: string) -> bool {
 }
 
 fn is_generated_value(value: string) -> bool {
-    strings::starts_with(value, "_goml_")
-        || strings::starts_with(value, "dyn__")
-        || (strings::starts_with(value, "ref_")
-            && strings::ends_with(value, "_x"))
+    strings::starts_with(value, "_goml_") || strings::starts_with(value, "dyn__")
+        || (strings::starts_with(value, "ref_") && strings::ends_with(value, "_x"))
         || (strings::starts_with(value, "hashmap_")
-            && (strings::ends_with(value, "_x")
-                || strings::ends_with(value, "_x_entry")))
+            && (strings::ends_with(value, "_x") || strings::ends_with(value, "_x_entry")))
         || strings::starts_with(value, "array_get__")
         || strings::starts_with(value, "array_set__")
         || strings::starts_with(value, "vec_new__")
@@ -234,8 +221,7 @@ fn compact_ident(value: string) -> string {
         let budget = 80 - marker.byte_len();
         let head_len = budget * 2 / 3;
         let tail_len = budget - head_len;
-        value.byte_slice(0, head_len)
-            + marker
+        value.byte_slice(0, head_len) + marker
             + value.byte_slice(value.byte_len() - tail_len, value.byte_len())
     }
 }
@@ -247,8 +233,7 @@ fn bounded_hint(value: string, budget: int) -> string {
         let content_budget = budget - 1;
         let head_len = content_budget * 2 / 3;
         let tail_len = content_budget - head_len;
-        value.byte_slice(0, head_len)
-            + "_"
+        value.byte_slice(0, head_len) + "_"
             + value.byte_slice(value.byte_len() - tail_len, value.byte_len())
     }
 }
@@ -309,14 +294,12 @@ pub fn is_generated_tuple_type_name(value: string) -> bool {
         while index.get() < value.len() && is_ascii_digit(value.get(index.get())) {
             index.set(index.get() + 1)
         };
-        index.get() > 5
-            && (index.get() == value.len() || value.get(index.get()) == '_')
+        index.get() > 5 && (index.get() == value.len() || value.get(index.get()) == '_')
     }
 }
 
 fn generated_type_name(value: string) -> bool {
-    strings::starts_with(value, "Tuple")
-        || strings::starts_with(value, "Array")
+    strings::starts_with(value, "Tuple") || strings::starts_with(value, "Array")
         || strings::starts_with(value, "Slice_")
         || strings::starts_with(value, "Vec_")
         || strings::starts_with(value, "Ptr_")

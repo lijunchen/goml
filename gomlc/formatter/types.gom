@@ -1,0 +1,239 @@
+package formatter;
+
+use gomlc::cst;
+use gomlc::lexer;
+
+fn direct_delimiter_tokens(node: LocatedNode) -> Option[(LocatedToken, LocatedToken)] {
+    let first: Ref[Option[LocatedToken]] = Ref::new(Option::None);
+    let last: Ref[Option[LocatedToken]] = Ref::new(Option::None);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Token(token)) => {
+                let delimiter = match token.token.kind {
+                    LParen | RParen | LBracket | RBracket | LBrace | RBrace | Pipe => true,
+                    _ => false,
+                };
+                if delimiter {
+                    if first.get().is_none() {
+                        first.set(Option::Some(token))
+                    } else {
+                        ()
+                    };
+                    last.set(Option::Some(token))
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        }
+    };
+    match (first.get(), last.get()) {
+        (Some(open), Some(close)) => Option::Some((open, close)),
+        _ => Option::None,
+    }
+}
+
+fn list_requires_flat_comma(kind: cst::NodeKind, items: int) -> bool {
+    items == 1
+        && match kind {
+            EXPR_TUPLE | TYPE_TUPLE | PATTERN_TUPLE => true,
+            _ => false,
+        }
+}
+
+fn delimiter_uses_edge_space(value: LocatedToken) -> bool {
+    token_is(value, lexer::TokenKind::LBrace)
+}
+
+fn direct_prefix_doc(node: LocatedNode, open: LocatedToken) -> Doc {
+    let values: Vec[Doc] = Vec::new();
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Token(token)) => if token.start < open.start
+                && !lexer::token_is_trivia(token.token.kind) {
+                values.push(token_doc(token))
+            } else {
+                ()
+            },
+            _ => (),
+        }
+    };
+    concat(values)
+}
+
+fn format_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
+    if node_has_comment(node) {
+        return format_commented_delimited_list(value, node)
+    } else {
+        ()
+    };
+    let delimiters = match direct_delimiter_tokens(node) {
+        Some(value) => value,
+        None => return format_generic(value, node),
+    };
+    let (open, close) = delimiters;
+    if open.start == close.start {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let item_nodes = direct_nodes(node);
+    let items: Vec[Doc] = Vec::new();
+    for item in item_nodes {
+        items.push(format_item_content(value, item).doc)
+    };
+    let prefix = direct_prefix_doc(node, open);
+    let open_doc = token_doc(open);
+    let close_doc = token_doc(close);
+    let first = match first_significant_token(node) {
+        Some(token) => Option::Some(token.token.kind),
+        None => Option::None,
+    };
+    let last = Option::Some(close.token.kind);
+    if items.len() == 0 {
+        built(concat(Vec::[prefix, open_doc, close_doc]), first, last)
+    } else {
+        let group_id = value.docs.new_group_id();
+        let separated = join(concat2(text(","), Doc::SoftLine), items);
+        let tail = if list_requires_flat_comma(cst::node_kind(node.node), item_nodes.len()) {
+            text(",")
+        } else {
+            if_break(group_id, text(","), nil())
+        };
+        let edge = if delimiter_uses_edge_space(open) {
+            Doc::SoftLine
+        } else {
+            Doc::Line
+        };
+        let content = concat(
+            Vec::[prefix, open_doc, edge, indent(concat2(separated, tail)), edge, close_doc],
+        );
+        built(value.docs.group_with_id(group_id, content).doc, first, last)
+    }
+}
+
+fn format_commented_delimited_list(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let delimiters = match direct_delimiter_tokens(node) {
+        Some(value) => value,
+        None => return format_generic(value, node),
+    };
+    let (open, close) = delimiters;
+    let body = parts();
+    let item_count: Ref[int] = Ref::new(0);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => if child.start > open.start && child.end <= close.start {
+                if body.values.len() > 0 && body.trailing_lines.get() == 0 {
+                    body.ensure_lines(1)
+                } else {
+                    ()
+                };
+                body.push_syntax(format_item_content(value, child));
+                if body.trailing_lines.get() == 0 {
+                    body.push_syntax(
+                        built(
+                            text(","),
+                            Option::Some(lexer::TokenKind::Comma),
+                            Option::Some(lexer::TokenKind::Comma),
+                        ),
+                    )
+                } else {
+                    ()
+                };
+                item_count.set(item_count.get() + 1)
+            } else {
+                ()
+            },
+            Some(Token(token)) => if token.start <= open.start || token.start >= close.start
+                || token_is(token, lexer::TokenKind::Comma) {
+                ()
+            } else if token_is(token, lexer::TokenKind::Whitespace) {
+                body.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                body.push_comment(token)
+            } else {
+                body.push_token(token)
+            },
+            None => (),
+        }
+    };
+    if item_count.get() == 0 && body.values.len() == 0 {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let prefix = direct_prefix_doc(node, open);
+    let body_doc = body.finish();
+    let closing = if body_doc.trailing_lines > 0 {
+        token_doc(close)
+    } else {
+        concat2(Doc::HardLine, token_doc(close))
+    };
+    let first = match first_significant_token(node) {
+        Some(token) => Option::Some(token.token.kind),
+        None => Option::None,
+    };
+    built(
+        concat(Vec::[prefix, token_doc(open), Doc::HardLine, indent(body_doc.doc), closing]),
+        first,
+        Option::Some(close.token.kind),
+    )
+}
+
+fn format_where_clause_with_body(value: Builder, node: LocatedNode, body_follows: bool) -> BuiltDoc {
+    if node_has_comment(node) {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let predicates = direct_nodes(node);
+    if predicates.len() == 0 {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let docs: Vec[Doc] = Vec::new();
+    for predicate in predicates {
+        docs.push(format_node(value, predicate).doc)
+    };
+    let group_id = value.docs.new_group_id();
+    let tail = if body_follows {
+        if_break(group_id, concat2(text(","), Doc::HardLine), text(" "))
+    } else {
+        nil()
+    };
+    let content = concat(
+        Vec::[
+            Doc::SoftLine,
+            text("where"),
+            indent(concat(Vec::[Doc::SoftLine, join(concat2(text(","), Doc::SoftLine), docs)])),
+            tail,
+        ],
+    );
+    let result = value.docs.group_with_id(group_id, content);
+    BuiltDoc {
+        doc: result.doc,
+        first: Option::Some(lexer::TokenKind::WhereKeyword),
+        last: if body_follows {
+            Option::None
+        } else {
+            match last_significant_token(node) {
+                Some(token) => Option::Some(token.token.kind),
+                None => Option::None,
+            }
+        },
+        starts_with_line: true,
+        trailing_lines: 0,
+    }
+}
+
+fn format_where_clause(value: Builder, node: LocatedNode) -> BuiltDoc {
+    format_where_clause_with_body(value, node, true)
+}
+
+fn format_where_clause_signature(value: Builder, node: LocatedNode) -> BuiltDoc {
+    format_where_clause_with_body(value, node, false)
+}

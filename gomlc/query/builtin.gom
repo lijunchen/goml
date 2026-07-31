@@ -11,26 +11,19 @@ fn builtin_source_candidates() -> Vec[string] {
     result.push("../stdlib/builtin_prelude.gom");
     match env::current_exe() {
         Ok(executable) => match path::parent(executable) {
-            Some(directory) => result.push(path::join(
-                directory,
-                "builtin_prelude.gom",
-            )),
+            Some(directory) => result.push(path::join(directory, "builtin_prelude.gom")),
             None => (),
         },
         Err(_) => (),
     };
     match env::var("GOML_HOME") {
-        Some(home) => result.push(path::join(
-            path::join(home, "lib"),
-            "builtin_prelude.gom",
-        )),
+        Some(home) => result.push(path::join(path::join(home, "lib"), "builtin_prelude.gom")),
         None => (),
     };
     match env::var("HOME") {
-        Some(home) => result.push(path::join(
-            path::join(path::join(home, ".goml"), "lib"),
-            "builtin_prelude.gom",
-        )),
+        Some(home) => result.push(
+            path::join(path::join(path::join(home, ".goml"), "lib"), "builtin_prelude.gom"),
+        ),
         None => (),
     };
     result
@@ -40,11 +33,7 @@ fn builtin_navigation_source() -> SourceFile {
     for candidate in builtin_source_candidates() {
         if fs::is_file(candidate) {
             match fs::read_file(candidate) {
-                Ok(source) => return SourceFile {
-                    path: candidate,
-                    source,
-                    package_name: "builtin",
-                },
+                Ok(source) => return SourceFile { path: candidate, source, package_name: "builtin" },
                 Err(_) => (),
             }
         } else {

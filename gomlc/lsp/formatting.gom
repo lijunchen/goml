@@ -1,0 +1,24 @@
+package lsp;
+
+use gomlc::formatter;
+use std::json;
+
+fn formatting_response(server: Server, params: json::Value) -> Result[json::Value, string] {
+    let document = request_document(server, params)?;
+    let formatted = match formatter::format_source(document.text) {
+        Ok(value) => value,
+        Err(_) => return Result::Ok(json::Value::Array(Vec::new())),
+    };
+    if formatted == document.text {
+        Result::Ok(json::Value::Array(Vec::new()))
+    } else {
+        let edit = Vec::new();
+        push_json_field(
+            edit,
+            "range",
+            range_json(offsets_to_range(document.text, 0, document.text.byte_len())),
+        );
+        push_json_field(edit, "newText", json::Value::String(formatted));
+        Result::Ok(json::Value::Array(Vec::[json::Value::Object(edit)]))
+    }
+}

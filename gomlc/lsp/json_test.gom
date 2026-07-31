@@ -57,20 +57,8 @@ fn converts_utf16_positions_and_file_uris() -> unit {
     let position = offset_to_position(source, 5);
     testing::assert_eq(position.line, 0);
     testing::assert_eq(position.character, 3);
-    testing::assert_eq(position_to_offset(
-        source,
-        Position {
-            line: 0,
-            character: 3,
-        },
-    ), 5);
-    match position_to_offset_checked(
-        source,
-        Position {
-            line: 0,
-            character: 2,
-        },
-    ) {
+    testing::assert_eq(position_to_offset(source, Position { line: 0, character: 3 }), 5);
+    match position_to_offset_checked(source, Position { line: 0, character: 2 }) {
         Some(_) => testing::fail("expected invalid surrogate position"),
         None => (),
     };
@@ -82,29 +70,17 @@ fn converts_utf16_positions_and_file_uris() -> unit {
         Err(error) => testing::fail(error),
     };
     match uri_to_path("file:///tmp/%FF.gom") {
-        Err(error) => testing::assert_eq(
-            error,
-            "URI path is not valid UTF-8",
-        ),
+        Err(error) => testing::assert_eq(error, "URI path is not valid UTF-8"),
         Ok(_) => testing::fail("expected invalid UTF-8 URI"),
     }
 }
 
 #[test]
 fn frames_and_parses_json_rpc_metadata() -> unit {
-    let message = rpc_success(
-        json::Value::Number("7"),
-        json::Value::String("ok"),
-    );
+    let message = rpc_success(json::Value::Number("7"), json::Value::String("ok"));
     let framed = framed_json(message);
     let body = json::encode(message);
-    testing::assert_eq(
-        framed,
-        "Content-Length: "
-            + body.byte_len().to_string()
-            + "\r\n\r\n"
-            + body,
-    );
+    testing::assert_eq(framed, "Content-Length: " + body.byte_len().to_string() + "\r\n\r\n" + body);
     match content_length("Content-Length: 123\r\n") {
         Ok(value) => testing::assert_eq(value, 123),
         Err(error) => testing::fail(error),
@@ -115,7 +91,7 @@ fn frames_and_parses_json_rpc_metadata() -> unit {
     };
     testing::assert(is_content_length_header("Content-Length: 123\r\n"));
     testing::assert(is_content_length_header("CONTENT-LENGTH: 123\r\n"));
-    testing::assert(!is_content_length_header(
-        "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n",
-    ))
+    testing::assert(
+        !is_content_length_header("Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"),
+    )
 }

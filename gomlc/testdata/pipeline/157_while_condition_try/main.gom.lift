@@ -17,19 +17,19 @@ fn step_none(i/1: int32) -> Option__bool {
 fn run_some() -> Option__int32 {
   let i/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let total/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild112 = while let mtmp108 = step_some(inherent#Ref#Ref[T]#get__T_int32(i/2)) in
-  match mtmp108 {
+  let _wild156 = while let mtmp152 = step_some(inherent#Ref#Ref[T]#get__T_int32(i/2)) in
+  match mtmp152 {
     Option__bool::None => {
       return Option__int32::None
     },
-    Option__bool::Some(x109) => {
-      let x109 = Option__bool::Some._0(mtmp108) in
-      let try_value/31 = x109 in
+    Option__bool::Some(x153) => {
+      let x153 = Option__bool::Some._0(mtmp152) in
+      let try_value/31 = x153 in
       try_value/31
     },
   } {
-      let _wild110 = inherent#Ref#Ref[T]#set__T_int32(total/3, (inherent#Ref#Ref[T]#get__T_int32(total/3) + inherent#Ref#Ref[T]#get__T_int32(i/2))) in
-      let _wild111 = inherent#Ref#Ref[T]#set__T_int32(i/2, (inherent#Ref#Ref[T]#get__T_int32(i/2) + 1)) in
+      let _wild154 = inherent#Ref#Ref[T]#set__T_int32(total/3, (inherent#Ref#Ref[T]#get__T_int32(total/3) + inherent#Ref#Ref[T]#get__T_int32(i/2))) in
+      let _wild155 = inherent#Ref#Ref[T]#set__T_int32(i/2, (inherent#Ref#Ref[T]#get__T_int32(i/2) + 1)) in
       ()
   } in
   Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(total/3))
@@ -38,19 +38,19 @@ fn run_some() -> Option__int32 {
 fn run_none() -> Option__int32 {
   let i/4 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let total/5 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild117 = while let mtmp113 = step_none(inherent#Ref#Ref[T]#get__T_int32(i/4)) in
-  match mtmp113 {
+  let _wild161 = while let mtmp157 = step_none(inherent#Ref#Ref[T]#get__T_int32(i/4)) in
+  match mtmp157 {
     Option__bool::None => {
       return Option__int32::None
     },
-    Option__bool::Some(x114) => {
-      let x114 = Option__bool::Some._0(mtmp113) in
-      let try_value/67 = x114 in
+    Option__bool::Some(x158) => {
+      let x158 = Option__bool::Some._0(mtmp157) in
+      let try_value/67 = x158 in
       try_value/67
     },
   } {
-      let _wild115 = inherent#Ref#Ref[T]#set__T_int32(total/5, (inherent#Ref#Ref[T]#get__T_int32(total/5) + inherent#Ref#Ref[T]#get__T_int32(i/4))) in
-      let _wild116 = inherent#Ref#Ref[T]#set__T_int32(i/4, (inherent#Ref#Ref[T]#get__T_int32(i/4) + 1)) in
+      let _wild159 = inherent#Ref#Ref[T]#set__T_int32(total/5, (inherent#Ref#Ref[T]#get__T_int32(total/5) + inherent#Ref#Ref[T]#get__T_int32(i/4))) in
+      let _wild160 = inherent#Ref#Ref[T]#set__T_int32(i/4, (inherent#Ref#Ref[T]#get__T_int32(i/4) + 1)) in
       ()
   } in
   Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(total/5))
@@ -61,17 +61,17 @@ fn show(x/6: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x118) => {
-      let x118 = Option__int32::Some._0(x/6) in
-      let v/7 = x118 in
+    Option__int32::Some(x162) => {
+      let x162 = Option__int32::Some._0(x/6) in
+      let v/7 = x162 in
       ("some=" + inherent#int32#int32#to_string(v/7))
     },
   }
 }
 
 fn main() -> unit {
-  let _wild119 = println__T_string(show(run_some())) in
-  let _wild120 = println__T_string(show(run_none())) in
+  let _wild163 = println__T_string(show(run_some())) in
+  let _wild164 = println__T_string(show(run_none())) in
   ()
 }
 

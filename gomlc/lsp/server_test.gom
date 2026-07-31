@@ -26,17 +26,10 @@ fn initializes_and_answers_hover_requests() -> unit {
                                 testing::assert_eq(name, "gomllsp");
                                 match json::field(info, "version") {
                                     Some(value) => match json::as_string(value) {
-                                        Some(value) => testing::assert_eq(
-                                            value,
-                                            version::current(),
-                                        ),
-                                        None => testing::fail(
-                                            "expected server version",
-                                        ),
+                                        Some(value) => testing::assert_eq(value, version::current()),
+                                        None => testing::fail("expected server version"),
                                     },
-                                    None => testing::fail(
-                                        "expected server version",
-                                    ),
+                                    None => testing::fail("expected server version"),
                                 }
                             },
                             None => testing::fail("expected server name"),
@@ -61,16 +54,10 @@ fn initializes_and_answers_hover_requests() -> unit {
             testing::assert_eq(messages.len(), 1);
             match response_result(messages.get(0)) {
                 Some(result) => match json::field(result, "contents") {
-                    Some(contents) => match json::field(
-                        contents,
-                        "value",
-                    ) {
+                    Some(contents) => match json::field(contents, "value") {
                         Some(value) => match json::as_string(value) {
                             Some(value) => {
-                                testing::assert_eq(
-                                    value,
-                                    "```goml\nint32\n```",
-                                )
+                                testing::assert_eq(value, "```goml\nint32\n```")
                             },
                             None => testing::fail("expected hover text"),
                         },
@@ -95,10 +82,7 @@ fn applies_full_document_changes_and_stops_on_exit() -> unit {
     };
     let change = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didChange\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"version\":2},\"contentChanges\":[{\"text\":\"fn main() -> int32 { 2 }\"}]}}";
     match handle_payload(server, change) {
-        Ok(_) => match server_document(
-            server,
-            "file:///tmp/gomllsp-change.gom",
-        ) {
+        Ok(_) => match server_document(server, "file:///tmp/gomllsp-change.gom") {
             Some(document) => {
                 testing::assert_eq(document.version, 2);
                 testing::assert_eq(document.text, "fn main() -> int32 { 2 }")
@@ -107,10 +91,7 @@ fn applies_full_document_changes_and_stops_on_exit() -> unit {
         },
         Err(error) => testing::fail(error),
     };
-    let _ = handle_payload(
-        server,
-        "{\"jsonrpc\":\"2.0\",\"method\":\"exit\"}",
-    );
+    let _ = handle_payload(server, "{\"jsonrpc\":\"2.0\",\"method\":\"exit\"}");
     testing::assert(!server_running(server))
 }
 
@@ -129,10 +110,7 @@ fn returns_run_test_code_lenses() -> unit {
                 Some(lenses) => {
                     testing::assert_eq(lenses.len(), 1);
                     match json::field(lenses.get(0), "command") {
-                        Some(command) => match json::field(
-                            command,
-                            "command",
-                        ) {
+                        Some(command) => match json::field(command, "command") {
                             Some(value) => match json::as_string(value) {
                                 Some(value) => {
                                     testing::assert_eq(value, "goml.runTest")
@@ -214,10 +192,7 @@ fn reports_json_rpc_parse_and_invalid_request_errors() -> unit {
         },
         Err(error) => testing::fail(error),
     };
-    match handle_payload(
-        server,
-        "{\"jsonrpc\":\"1.0\",\"id\":1,\"method\":\"initialize\"}",
-    ) {
+    match handle_payload(server, "{\"jsonrpc\":\"1.0\",\"id\":1,\"method\":\"initialize\"}") {
         Ok(messages) => match json::field(messages.get(0), "error") {
             Some(error) => match json::field(error, "code") {
                 Some(code) => match json::as_int(code) {
@@ -302,10 +277,7 @@ fn includes_diagnostics_in_hover() -> unit {
             Some(result) => match json::field(result, "contents") {
                 Some(contents) => match json::field(contents, "value") {
                     Some(value) => match json::as_string(value) {
-                        Some(value) => testing::assert(strings::contains(
-                            value,
-                            "**Diagnostics**",
-                        )),
+                        Some(value) => testing::assert(strings::contains(value, "**Diagnostics**")),
                         None => testing::fail("expected hover text"),
                     },
                     None => testing::fail("expected hover value"),

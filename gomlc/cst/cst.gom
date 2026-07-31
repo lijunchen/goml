@@ -60,6 +60,7 @@ pub enum NodeKind {
     EXPR_WHILE,
     EXPR_WHILE_COND,
     EXPR_WHILE_BODY,
+    EXPR_LOOP,
     EXPR_FOR,
     EXPR_BREAK,
     EXPR_CONTINUE,
@@ -72,7 +73,9 @@ pub enum NodeKind {
     EXPR_FLOAT,
     EXPR_CHAR,
     EXPR_BYTE,
+    EXPR_BYTE_STRING,
     EXPR_STR,
+    EXPR_RAW_STR,
     EXPR_MULTILINE_STR,
     EXPR_INTERPOLATED_STRING,
     INTERPOLATED_STRING_EXPR,
@@ -85,6 +88,7 @@ pub enum NodeKind {
     EXPR_INDEX,
     EXPR_TRY,
     EXPR_STRUCT_LITERAL,
+    EXPR_BLOCK,
     ARG_LIST,
     ARG,
     STRUCT_LITERAL_FIELD_LIST,
@@ -198,7 +202,7 @@ pub fn node_kind_equal(left: NodeKind, right: NodeKind) -> bool {
 }
 
 fn debug_write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_string("  ")
     }
 }
@@ -260,19 +264,19 @@ fn debug_write_quoted_string(builder: text::StringBuilder, value: string) -> uni
     let index = Ref::new(0);
     while index.get() < value.byte_len() {
         let byte = value.byte_get(index.get());
-        if byte == 34 {
+        if byte == b'"' {
             builder.write_string("\\\"")
-        } else if byte == 92 {
+        } else if byte == b'\\' {
             builder.write_string("\\\\")
-        } else if byte == 10 {
+        } else if byte == b'\n' {
             builder.write_string("\\n")
-        } else if byte == 13 {
+        } else if byte == b'\r' {
             builder.write_string("\\r")
-        } else if byte == 9 {
+        } else if byte == b'\t' {
             builder.write_string("\\t")
         } else if byte == 0 {
             builder.write_string("\\0")
-        } else if byte < 32 || byte == 127 {
+        } else if byte < b' ' || byte == 127 {
             debug_write_control_escape(builder, byte)
         } else {
             let width = debug_utf8_width(byte);
@@ -295,12 +299,7 @@ fn debug_token_text(value: string) -> string {
     }
 }
 
-fn debug_write_node(
-    value: CstNode,
-    start: int,
-    depth: int,
-    builder: text::StringBuilder,
-) -> int {
+fn debug_write_node(value: CstNode, start: int, depth: int, builder: text::StringBuilder) -> int {
     let end = start + value.byte_len;
     debug_write_spaces(builder, depth);
     builder.write_string(node_kind_name(value.kind));
@@ -312,12 +311,9 @@ fn debug_write_node(
     let cursor = Ref::new(start);
     for child in value.children {
         match child {
-            Node(child_node) => cursor.set(debug_write_node(
-                child_node,
-                cursor.get(),
-                depth + 1,
-                builder,
-            )),
+            Node(child_node) => cursor.set(
+                debug_write_node(child_node, cursor.get(), depth + 1, builder),
+            ),
             Token(token) => {
                 let token_end = cursor.get() + token.text.byte_len();
                 debug_write_spaces(builder, depth + 1);

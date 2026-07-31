@@ -1,0 +1,108 @@
+fn unwrap_or_negative(value/0: Option__int) -> int {
+  let mtmp152 = value/0 in
+  match mtmp152 {
+    Option__int::Some(x153) => {
+      let x153 = Option__int::Some._0(mtmp152) in
+      let result/1 = x153 in
+      result/1
+    },
+    _ => let _wild154 = return -1 in
+    (),
+  }
+}
+
+fn count_to(limit/2: int) -> int {
+  let counter/3 = inherent#Ref#Ref[T]#new__T_int(0) in
+  loop let current/4 = inherent#Ref#Ref[T]#get__T_int(counter/3) in
+  let _wild156 = if (current/4 >= limit/2) {
+      let _wild155 = break current/4 in
+      ()
+  } else {
+      ()
+  } in
+  let _wild157 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
+  ()
+}
+
+fn loop_option(value/5: Option__int) -> int {
+  loop let mtmp158 = value/5 in
+  match mtmp158 {
+    Option__int::Some(x159) => {
+      let x159 = Option__int::Some._0(mtmp158) in
+      let item/6 = x159 in
+      let _wild160 = break item/6 in
+      ()
+    },
+    _ => let _wild161 = break -2 in
+    (),
+  }
+}
+
+fn nested_loop_value() -> int {
+  loop let _wild163 = loop let _wild162 = break in
+  () in
+  let _wild164 = break 7 in
+  ()
+}
+
+fn never_returns() -> int {
+  loop ()
+}
+
+fn matches_raw_path(value/7: string) -> bool {
+  match value/7 {
+    "C:\\tmp" => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn main() -> unit {
+  let _wild165 = @runtime(core.string_println)("C:\\tmp\\\"quoted\\\"") in
+  let _wild166 = @runtime(core.string_println)(("" + "}")) in
+  let _wild167 = println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::Some(11)))) in
+  let _wild168 = println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
+  let _wild169 = println__T_string(inherent#int#int#to_string(count_to(4))) in
+  let _wild170 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
+  let _wild171 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
+  let _wild172 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
+  let _wild173 = println__T_string(trait_impl#ToString#bool#to_string(matches_raw_path("C:\\tmp"))) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/207)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/208)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int#int#to_string(self/5: int) -> string {
+  @runtime(core.int_to_string)(self/5)
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  @runtime(core.bool_to_string)(self/37)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  @intrinsic(eq.primitive)(self/59, other/60)
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  @runtime(core.int_hash)(self/85)
+}

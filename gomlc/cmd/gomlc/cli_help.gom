@@ -10,41 +10,50 @@ fn top_level_help() -> string {
 }
 
 fn package_command_help(command: string) -> string {
-    "Usage: gomlc " + command + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>\n\nOptions:\n      --package <PACKAGE>                \n      --input <INPUT>...                 \n      --interface-path <INTERFACE_FILE>  \n      --output <OUTPUT>                  \n  -h, --help                             Print help"
+    "Usage: gomlc " + command
+        + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>\n\nOptions:\n      --package <PACKAGE>                \n      --input <INPUT>...                 \n      --interface-path <INTERFACE_FILE>  \n      --output <OUTPUT>                  \n  -h, --help                             Print help"
 }
 
 fn command_help(command: string) -> Option[string] {
-    if command == "check"
-        || command == "test-check"
-        || command == "build"
-        || command == "test-build"
-    {
+    if command == "check" || command == "test-check" || command == "build"
+        || command == "test-build" {
         Option::Some(package_command_help(command))
     } else if command == "link" {
-        Option::Some("Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>\n\nOptions:\n      --input <INPUT>...  \n      --entry <ENTRY>     \n      --output <OUTPUT>   \n  -h, --help              Print help")
+        Option::Some(
+            "Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>\n\nOptions:\n      --input <INPUT>...  \n      --entry <ENTRY>     \n      --output <OUTPUT>   \n  -h, --help              Print help",
+        )
     } else if command == "test-link" {
-        Option::Some("Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help")
+        Option::Some(
+            "Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help",
+        )
     } else if command == "prepare-world" {
-        Option::Some("Usage: gomlc prepare-world --output <OUTPUT>\n\nOptions:\n      --output <OUTPUT>  \n  -h, --help             Print help")
+        Option::Some(
+            "Usage: gomlc prepare-world --output <OUTPUT>\n\nOptions:\n      --output <OUTPUT>  \n  -h, --help             Print help",
+        )
     } else if command == "package-info" {
-        Option::Some("Usage: gomlc package-info [OPTIONS] --input <INPUT>...\n\nOptions:\n      --input <INPUT>...  \n      --format <FORMAT>   [default: json] [possible values: json]\n  -h, --help              Print help")
+        Option::Some(
+            "Usage: gomlc package-info [OPTIONS] --input <INPUT>...\n\nOptions:\n      --input <INPUT>...  \n      --format <FORMAT>   [default: json] [possible values: json]\n  -h, --help              Print help",
+        )
     } else if command == "run-single" {
-        Option::Some("Usage: gomlc run-single [OPTIONS] <FILE>\n\nArguments:\n  <FILE>  \n\nOptions:\n      --dump-ast   \n      --dump-hir   \n      --dump-tast  \n      --dump-core  \n      --dump-mono  \n      --dump-lift  \n      --dump-anf   \n      --dump-go    \n  -h, --help       Print help")
+        Option::Some(
+            "Usage: gomlc run-single [OPTIONS] <FILE>\n\nArguments:\n  <FILE>  \n\nOptions:\n      --dump-ast   \n      --dump-hir   \n      --dump-tast  \n      --dump-core  \n      --dump-mono  \n      --dump-lift  \n      --dump-anf   \n      --dump-go    \n  -h, --help       Print help",
+        )
     } else if command == "version" {
-        Option::Some("Usage: gomlc version [OPTIONS]\n\nOptions:\n      --format <FORMAT>  [default: text] [possible values: text, json]\n  -h, --help             Print help")
+        Option::Some(
+            "Usage: gomlc version [OPTIONS]\n\nOptions:\n      --format <FORMAT>  [default: text] [possible values: text, json]\n  -h, --help             Print help",
+        )
     } else if command == "help" {
-        Option::Some("Print this message or the help of the given subcommand(s)\n\nUsage: gomlc help [COMMAND]...\n\nArguments:\n  [COMMAND]...  Print help for the subcommand(s)")
+        Option::Some(
+            "Print this message or the help of the given subcommand(s)\n\nUsage: gomlc help [COMMAND]...\n\nArguments:\n  [COMMAND]...  Print help for the subcommand(s)",
+        )
     } else {
         Option::None
     }
 }
 
 fn command_usage(command: string) -> string {
-    if command == "check"
-        || command == "test-check"
-        || command == "build"
-        || command == "test-build"
-    {
+    if command == "check" || command == "test-check" || command == "build"
+        || command == "test-build" {
         "gomlc " + command + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
     } else if command == "link" {
         "gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>"
@@ -66,11 +75,8 @@ fn command_usage(command: string) -> string {
 }
 
 fn required_command_usage(command: string) -> string {
-    if command == "check"
-        || command == "test-check"
-        || command == "build"
-        || command == "test-build"
-    {
+    if command == "check" || command == "test-check" || command == "build"
+        || command == "test-build" {
         "gomlc " + command + " --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
     } else if command == "run-single" {
         "gomlc run-single <FILE>"
@@ -109,66 +115,70 @@ fn cli_argument_name(argument: string) -> string {
     } else {
         ()
     };
-    let end = Ref::new(argument.byte_len());
-    for index in range(0, argument.byte_len()) {
-        if end.get() == argument.byte_len()
-            && argument.byte_get(index) == 61
-        {
-            end.set(index)
+    let mut end = argument.byte_len();
+    for index in 0..argument.byte_len() {
+        if end == argument.byte_len() && argument.byte_get(index) == b'=' {
+            end = index;
         } else {
             ()
         }
     };
-    argument.byte_slice(0, end.get())
+    argument.byte_slice(0, end)
 }
 
 fn cli_help_argument(argument: string) -> bool {
-    argument == "--help"
-        || strings::starts_with(argument, "-h")
+    argument == "--help" || strings::starts_with(argument, "-h")
 }
 
 fn cli_minimum(left: int, middle: int, right: int) -> int {
-    let first = if left < middle { left } else { middle };
-    if first < right { first } else { right }
+    let first = if left < middle {
+        left
+    } else {
+        middle
+    };
+    if first < right {
+        first
+    } else {
+        right
+    }
 }
 
 fn cli_maximum(left: int, right: int) -> int {
-    if left > right { left } else { right }
+    if left > right {
+        left
+    } else {
+        right
+    }
 }
 
 fn cli_edit_distance(left: string, right: string) -> int {
     let initial = Vec::new();
-    for index in range(0, right.byte_len() + 1) {
+    for index in 0..right.byte_len() + 1 {
         initial.push(index)
     };
-    let previous = Ref::new(initial);
-    for left_index in range(0, left.byte_len()) {
+    let mut previous = initial;
+    for left_index in 0..left.byte_len() {
         let current = Vec::new();
         current.push(left_index + 1);
-        for right_index in range(0, right.byte_len()) {
+        for right_index in 0..right.byte_len() {
             let substitution = if left.byte_get(left_index) == right.byte_get(right_index) {
-                previous.get().get(right_index)
+                previous[right_index]
             } else {
-                previous.get().get(right_index) + 1
+                previous[right_index] + 1
             };
-            current.push(cli_minimum(
-                current.get(right_index) + 1,
-                previous.get().get(right_index + 1) + 1,
-                substitution,
-            ))
+            current.push(
+                cli_minimum(current[right_index] + 1, previous[right_index + 1] + 1, substitution),
+            )
         };
-        previous.set(current)
+        previous = current;
     };
-    previous.get().get(right.byte_len())
+    previous[right.byte_len()]
 }
 
 fn similar_cli_argument(command: string, argument: string) -> Option[string] {
     let candidates = Vec::new();
-    if command == "check"
-        || command == "test-check"
-        || command == "build"
-        || command == "test-build"
-    {
+    if command == "check" || command == "test-check" || command == "build"
+        || command == "test-build" {
         candidates.push("--package");
         candidates.push("--input");
         candidates.push("--interface-path");
@@ -209,19 +219,19 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
         candidates.push("--help")
     };
     let name = cli_argument_name(argument);
-    let best: Ref[Option[string]] = Ref::new(Option::None);
-    let distance = Ref::new(2147483647);
+    let mut best: Option[string] = Option::None;
+    let mut distance = 2147483647;
     for candidate in candidates {
         let candidate_distance = cli_edit_distance(name, candidate);
-        if candidate_distance < distance.get() {
-            distance.set(candidate_distance);
-            best.set(Option::Some(candidate))
+        if candidate_distance < distance {
+            distance = candidate_distance;
+            best = Option::Some(candidate);
         } else {
             ()
         }
     };
-    if distance.get() <= 3 {
-        best.get()
+    if distance <= 3 {
+        best
     } else {
         Option::None
     }
@@ -238,11 +248,8 @@ fn similar_cli_argument_usage(command: string, argument: string) -> string {
         "gomlc package-info --format <FORMAT> --input <INPUT>..."
     } else if command == "package-info" && argument == "--help" {
         "gomlc package-info --help --input <INPUT>..."
-    } else if command == "check"
-        || command == "test-check"
-        || command == "build"
-        || command == "test-build"
-    {
+    } else if command == "check" || command == "test-check" || command == "build"
+        || command == "test-build" {
         if argument == "--interface-path" {
             required_command_usage(command) + " --interface-path <INTERFACE_FILE>"
         } else if argument == "--help" {
@@ -256,21 +263,14 @@ fn similar_cli_argument_usage(command: string, argument: string) -> string {
 }
 
 fn cli_value_option(command: string, argument: string) -> bool {
-    if command == "check"
-        || command == "test-check"
-        || command == "build"
-        || command == "test-build"
-    {
-        argument == "--package"
-            || argument == "--input"
-            || argument == "--interface-path"
+    if command == "check" || command == "test-check" || command == "build"
+        || command == "test-build" {
+        argument == "--package" || argument == "--input" || argument == "--interface-path"
             || argument == "--output"
     } else if command == "link" {
         argument == "--input" || argument == "--entry" || argument == "--output"
     } else if command == "test-link" {
-        argument == "--input"
-            || argument == "--package"
-            || argument == "--output"
+        argument == "--input" || argument == "--package" || argument == "--output"
             || argument == "--manifest"
     } else if command == "prepare-world" {
         argument == "--output"
@@ -284,17 +284,12 @@ fn cli_value_option(command: string, argument: string) -> bool {
 }
 
 fn known_cli_option(command: string, argument: string) -> bool {
-    if argument == "--"
-        || cli_help_argument(argument)
+    if argument == "--" || cli_help_argument(argument)
         || option_string_present(inline_cli_value(argument, "--help"))
-        || cli_value_option(command, argument)
-    {
+        || cli_value_option(command, argument) {
         true
-    } else if command == "check"
-        || command == "test-check"
-        || command == "build"
-        || command == "test-build"
-    {
+    } else if command == "check" || command == "test-check" || command == "build"
+        || command == "test-build" {
         option_string_present(inline_cli_value(argument, "--package"))
             || option_string_present(inline_cli_value(argument, "--input"))
             || option_string_present(inline_cli_value(argument, "--interface-path"))
@@ -320,29 +315,18 @@ fn known_cli_option(command: string, argument: string) -> bool {
     }
 }
 
-fn unexpected_cli_option_error_with_usage(
-    command: string,
-    argument: string,
-    usage: string,
-) -> string {
+fn unexpected_cli_option_error_with_usage(command: string, argument: string, usage: string) -> string {
     match similar_cli_argument(command, argument) {
         Some(similar) => unexpected_similar_argument_error(
             argument,
             similar,
             similar_cli_argument_usage(command, similar),
         ),
-        None => unexpected_argument_error_with_usage(
-            argument,
-            false,
-            usage,
-        ),
+        None => unexpected_argument_error_with_usage(argument, false, usage),
     }
 }
 
-fn missing_required_arguments_error_with_usage(
-    arguments: Vec[string],
-    usage: string,
-) -> string {
+fn missing_required_arguments_error_with_usage(arguments: Vec[string], usage: string) -> string {
     let builder = text::StringBuilder::new();
     builder.write_string("error: the following required arguments were not provided:");
     for argument in arguments {
@@ -357,10 +341,7 @@ fn missing_required_arguments_error_with_usage(
 }
 
 fn missing_required_arguments_error(command: string, arguments: Vec[string]) -> string {
-    missing_required_arguments_error_with_usage(
-        arguments,
-        required_command_usage(command),
-    )
+    missing_required_arguments_error_with_usage(arguments, required_command_usage(command))
 }
 
 fn value_required_error(argument: string, possible_values: Option[string]) -> string {
@@ -368,24 +349,14 @@ fn value_required_error(argument: string, possible_values: Option[string]) -> st
         Some(values) => "\n  [possible values: " + values + "]",
         None => "",
     };
-    "error: a value is required for '"
-        + argument
-        + "' but none was supplied"
-        + values
-        + "\n\n"
+    "error: a value is required for '" + argument + "' but none was supplied" + values + "\n\n"
         + cli_error_footer()
 }
 
-fn unexpected_argument_error_with_usage(
-    argument: string,
-    value_tip: bool,
-    usage: string,
-) -> string {
+fn unexpected_argument_error_with_usage(argument: string, value_tip: bool, usage: string) -> string {
     let name = cli_argument_name(argument);
-    let displayed = if name.byte_len() > 2
-        && strings::starts_with(name, "-")
-        && !strings::starts_with(name, "--")
-    {
+    let displayed = if name.byte_len() > 2 && strings::starts_with(name, "-")
+        && !strings::starts_with(name, "--") {
         name.byte_slice(0, 2)
     } else {
         name
@@ -395,28 +366,16 @@ fn unexpected_argument_error_with_usage(
     } else {
         ""
     };
-    cli_error_with_usage(
-        "unexpected argument '" + displayed + "' found" + tip,
-        usage,
-    )
+    cli_error_with_usage("unexpected argument '" + displayed + "' found" + tip, usage)
 }
 
 fn unexpected_argument_error(command: string, argument: string, value_tip: bool) -> string {
-    unexpected_argument_error_with_usage(
-        argument,
-        value_tip,
-        command_usage(command),
-    )
+    unexpected_argument_error_with_usage(argument, value_tip, command_usage(command))
 }
 
-fn unexpected_similar_argument_error(
-    argument: string,
-    similar: string,
-    usage: string,
-) -> string {
+fn unexpected_similar_argument_error(argument: string, similar: string, usage: string) -> string {
     cli_error_with_usage(
-        "unexpected argument '"
-            + cli_argument_name(argument)
+        "unexpected argument '" + cli_argument_name(argument)
             + "' found\n\n  tip: a similar argument exists: '"
             + similar
             + "'",
@@ -433,52 +392,28 @@ fn repeated_argument_error(command: string, argument: string) -> string {
 
 fn invalid_value_error(value: string, argument: string, possible_values: string) -> string {
     cli_error(
-        "invalid value '"
-            + value
-            + "' for '"
-            + argument
-            + "'\n  [possible values: "
+        "invalid value '" + value + "' for '" + argument + "'\n  [possible values: "
             + possible_values
             + "]",
     )
 }
 
-fn unexpected_value_error(
-    command: string,
-    value: string,
-    argument: string,
-    usage: string,
-) -> string {
+fn unexpected_value_error(command: string, value: string, argument: string, usage: string) -> string {
     cli_error_with_usage(
-        "unexpected value '"
-            + value
-            + "' for '"
-            + argument
-            + "' found; no more were expected",
+        "unexpected value '" + value + "' for '" + argument + "' found; no more were expected",
         "gomlc " + command + " " + usage,
     )
 }
 
-fn unexpected_value_error_with_usage(
-    value: string,
-    argument: string,
-    usage: string,
-) -> string {
+fn unexpected_value_error_with_usage(value: string, argument: string, usage: string) -> string {
     cli_error_with_usage(
-        "unexpected value '"
-            + value
-            + "' for '"
-            + argument
-            + "' found; no more were expected",
+        "unexpected value '" + value + "' for '" + argument + "' found; no more were expected",
         usage,
     )
 }
 
 fn is_debug_stage(command: string) -> bool {
-    command == "lex"
-        || command == "cst"
-        || command == "ast"
-        || command == "hir"
+    command == "lex" || command == "cst" || command == "ast" || command == "hir"
         || command == "tast"
         || command == "core"
         || command == "mono"
@@ -499,93 +434,66 @@ struct CliSimilarity {
 
 fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
     if left == right {
-        return Option::Some(CliSimilarity {
-            value: right,
-            numerator: 1,
-            denominator: 1,
-        })
+        return Option::Some(CliSimilarity { value: right, numerator: 1, denominator: 1 })
     } else if left.byte_len() == 0 || right.byte_len() == 0 {
         return Option::None
     } else {
         ()
     };
-    let window = cli_maximum(
-        cli_maximum(left.byte_len(), right.byte_len()) / 2 - 1,
-        0,
-    );
+    let window = cli_maximum(cli_maximum(left.byte_len(), right.byte_len()) / 2 - 1, 0);
     let left_matches = Vec::new();
     let right_matches = Vec::new();
-    for _ in range(0, left.byte_len()) {
+    for _ in 0..left.byte_len() {
         left_matches.push(false)
     };
-    for _ in range(0, right.byte_len()) {
+    for _ in 0..right.byte_len() {
         right_matches.push(false)
     };
-    let matches = Ref::new(0);
-    for left_index in range(0, left.byte_len()) {
+    let mut matches = 0;
+    for left_index in 0..left.byte_len() {
         let start = cli_maximum(left_index - window, 0);
-        let end = cli_minimum(
-            left_index + window + 1,
-            right.byte_len(),
-            right.byte_len(),
-        );
-        let right_index = Ref::new(start);
-        while right_index.get() < end {
-            let index = right_index.get();
-            if !right_matches.get(index)
-                && left.byte_get(left_index) == right.byte_get(index)
-            {
-                left_matches.set(left_index, true);
-                right_matches.set(index, true);
-                matches.set(matches.get() + 1);
+        let end = cli_minimum(left_index + window + 1, right.byte_len(), right.byte_len());
+        let mut right_index = start;
+        while right_index < end {
+            let index = right_index;
+            if !(right_matches[index]) && left.byte_get(left_index) == right.byte_get(index) {
+                left_matches[left_index] = true;
+                right_matches[index] = true;
+                matches = matches + 1;
                 break
             } else {
-                right_index.set(index + 1)
+                right_index = index + 1;
             }
         }
     };
-    if matches.get() == 0 {
+    if matches == 0 {
         return Option::None
     } else {
         ()
     };
-    let right_index = Ref::new(0);
-    let mismatches = Ref::new(0);
-    for left_index in range(0, left.byte_len()) {
-        if left_matches.get(left_index) {
-            while !right_matches.get(right_index.get()) {
-                right_index.set(right_index.get() + 1)
+    let mut right_index = 0;
+    let mut mismatches = 0;
+    for left_index in 0..left.byte_len() {
+        if left_matches[left_index] {
+            while !(right_matches[right_index]) {
+                right_index = right_index + 1;
             };
-            if left.byte_get(left_index) != right.byte_get(right_index.get()) {
-                mismatches.set(mismatches.get() + 1)
+            if left.byte_get(left_index) != right.byte_get(right_index) {
+                mismatches = mismatches + 1;
             } else {
                 ()
             };
-            right_index.set(right_index.get() + 1)
+            right_index = right_index + 1;
         } else {
             ()
         }
     };
-    let matched = matches.get();
-    let transpositions = mismatches.get() / 2;
-    let numerator = matched
-        * matched
-        * right.byte_len()
-        + matched
-            * matched
-            * left.byte_len()
-        + (matched - transpositions)
-            * left.byte_len()
-            * right.byte_len();
-    let denominator = 3
-        * left.byte_len()
-        * right.byte_len()
-        * matched;
-    Option::Some(CliSimilarity {
-        value: right,
-        numerator,
-        denominator,
-    })
+    let matched = matches;
+    let transpositions = mismatches / 2;
+    let numerator = matched * matched * right.byte_len() + matched * matched * left.byte_len()
+        + (matched - transpositions) * left.byte_len() * right.byte_len();
+    let denominator = 3 * left.byte_len() * right.byte_len() * matched;
+    Option::Some(CliSimilarity { value: right, numerator, denominator })
 }
 
 fn similar_cli_subcommands(command: string) -> Vec[string] {
@@ -612,17 +520,16 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
             None => (),
         }
     };
-    for index in range(1, similar.len()) {
-        let value = similar.get(index);
-        let target = Ref::new(index);
-        while target.get() > 0
-            && similar.get(target.get() - 1).numerator * value.denominator
-                > value.numerator * similar.get(target.get() - 1).denominator
-        {
-            similar.set(target.get(), similar.get(target.get() - 1));
-            target.set(target.get() - 1)
+    for index in 1..similar.len() {
+        let value = similar[index];
+        let mut target = index;
+        while target > 0
+            && similar[target - 1].numerator * value.denominator
+                > value.numerator * similar[target - 1].denominator {
+            similar[target] = similar[target - 1];
+            target = target - 1;
         };
-        similar.set(target.get(), value)
+        similar[target] = value;
     };
     let result = Vec::new();
     for value in similar {
@@ -636,19 +543,21 @@ fn similar_subcommand_tip(values: Vec[string]) -> string {
         ""
     } else {
         let builder = text::StringBuilder::new();
-        builder.write_string(if values.len() == 1 {
-            "\n\n  tip: a similar subcommand exists: "
-        } else {
-            "\n\n  tip: some similar subcommands exist: "
-        });
-        for index in range(0, values.len()) {
+        builder.write_string(
+            if values.len() == 1 {
+                "\n\n  tip: a similar subcommand exists: "
+            } else {
+                "\n\n  tip: some similar subcommands exist: "
+            },
+        );
+        for index in 0..values.len() {
             if index > 0 {
                 builder.write_string(", ")
             } else {
                 ()
             };
             builder.write_char('\'');
-            builder.write_string(values.get(index));
+            builder.write_string(values[index]);
             builder.write_char('\'')
         };
         builder.finish()
@@ -657,10 +566,7 @@ fn similar_subcommand_tip(values: Vec[string]) -> string {
 
 fn unknown_subcommand_error(command: string) -> string {
     let tip = similar_subcommand_tip(similar_cli_subcommands(command));
-    "error: unrecognized subcommand '"
-        + command
-        + "'"
-        + tip
+    "error: unrecognized subcommand '" + command + "'" + tip
         + "\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'."
 }
 
@@ -689,12 +595,12 @@ fn run_help_command(args: Vec[string]) -> unit {
     if args.len() == 2 {
         print_cli_help(top_level_help())
     } else if args.len() == 3 {
-        match command_help(args.get(2)) {
+        match command_help(args[2]) {
             Some(help) => print_cli_help(help),
-            None => fail_unknown_subcommand(args.get(2)),
+            None => fail_unknown_subcommand(args[2]),
         }
     } else {
-        let command = args.get(2);
+        let command = args[2];
         match command_help(command) {
             Some(_) => {
                 let usage = if command == "help" {
@@ -708,11 +614,7 @@ fn run_help_command(args: Vec[string]) -> unit {
                     "\n\n" + cli_error_footer()
                 };
                 fail_cli(
-                    "error: unrecognized subcommand '"
-                        + args.get(3)
-                        + "'\n\nUsage: "
-                        + usage
-                        + footer,
+                    "error: unrecognized subcommand '" + args[3] + "'\n\nUsage: " + usage + footer,
                 )
             },
             None => fail_unknown_subcommand(command),
