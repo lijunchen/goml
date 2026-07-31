@@ -23,10 +23,7 @@ fn artifact_binary_interface_sections(value: ArtifactInterfaceUnit) -> Result[
     let table = artifact_binary_collected_string_table(collector);
     let writer = new_artifact_binary_value_stream(table);
     artifact_json_interface_unit(writer, value);
-    let payload = match artifact_binary_stream_finish(writer) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let payload = artifact_binary_stream_finish(writer)?;
     Result::Ok(
         Vec::new().pushed(
             ArtifactBinarySection {
@@ -47,10 +44,7 @@ fn artifact_binary_interface_sections(value: ArtifactInterfaceUnit) -> Result[
 }
 
 fn encode_artifact_interface_binary(value: ArtifactInterfaceUnit) -> Result[bytes::Bytes, string] {
-    let sections = match artifact_binary_interface_sections(value) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let sections = artifact_binary_interface_sections(value)?;
     encode_artifact_binary_container(1, sections)
 }
 
@@ -85,19 +79,13 @@ fn artifact_binary_validate_interface_sections(value: ArtifactBinaryContainer) -
 }
 
 fn decode_artifact_interface_binary(data: bytes::Bytes) -> Result[ArtifactInterfaceUnit, string] {
-    let container = match decode_artifact_binary_container(data) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let container = decode_artifact_binary_container(data)?;
     if container.kind != 1 {
         return Result::Err("binary artifact is not an interface")
     } else {
         ()
     };
-    match artifact_binary_validate_interface_sections(container) {
-        Ok(()) => (),
-        Err(error) => return Result::Err(error),
-    };
+    artifact_binary_validate_interface_sections(container)?;
     let string_section = match artifact_binary_find_section(
         container,
         artifact_binary_string_table_section_id(),
@@ -116,9 +104,6 @@ fn decode_artifact_interface_binary(data: bytes::Bytes) -> Result[ArtifactInterf
             return Result::Err("binary interface artifact is missing value")
         },
     };
-    let table = match decode_artifact_binary_string_table(string_section.data) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let table = decode_artifact_binary_string_table(string_section.data)?;
     decode_artifact_interface_binary_value(table, value_section.data)
 }

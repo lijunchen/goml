@@ -809,10 +809,7 @@ fn compile_artifact_package(
         command.inputs,
         command.package_name,
     );
-    let declared_name = match artifact_declared_package_name(ast_values, command.inputs) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let declared_name = artifact_declared_package_name(ast_values, command.inputs)?;
     let public_names = public_item_names(ast_values, command.package_name);
     let test_candidates = collect_package_test_candidates(ast_values, command.inputs);
     fail_on_typer_diagnostics(test_candidates.diagnostics, "", "");
@@ -836,38 +833,29 @@ fn compile_artifact_package(
         hir_files.push(checked_hir_file(lowered, command.package_name))
     };
     let dependency_names = direct_hir_dependencies(hir_files);
-    let provided = match artifact_read_interface_units(command.interface_paths) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let provided = artifact_read_interface_units(command.interface_paths)?;
     let production_interface = if emit_tests {
         artifact_find_interface_unit(provided, command.package_name)
     } else {
         Option::None
     };
-    let dependency_units = match artifact_resolve_interface_units(
+    let dependency_units = artifact_resolve_interface_units(
         world,
         command.package_name,
         dependency_names,
         provided,
-    ) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    )?;
     artifact_apply_declared_package_aliases(hir_files, ast_values, dependency_units);
     let needs = merge_standard_needs(
         source_needs.get(),
         artifact_standard_needs_from_units(dependency_names, dependency_units),
     );
-    let environments = match artifact_dependency_environments(
+    let environments = artifact_dependency_environments(
         world.builtin_interface.exports,
         world.standard,
         needs,
         dependency_units,
-    ) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    )?;
     let checked = tast::check_package_files_for_link_with_environments(hir_files, environments);
     for diagnostic in internal_import_diagnostics {
         checked.diagnostics.push(diagnostic)
@@ -935,10 +923,7 @@ fn compile_artifact_package(
         Ok(()) => (),
         Err(error) => return Result::Err("error[typer]: " + error),
     };
-    let deps = match artifact_direct_dependency_hashes(world, dependency_names, dependency_units) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let deps = artifact_direct_dependency_hashes(world, dependency_names, dependency_units)?;
     let generated_interface = new_artifact_interface_unit(
         command.package_name,
         public_exports,

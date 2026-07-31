@@ -185,10 +185,7 @@ fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[uint64, 
     let value = Ref::new(0 as uint64);
     let index = Ref::new(0);
     while index.get() < 10 {
-        let byte = match artifact_binary_read_u8(reader) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let byte = artifact_binary_read_u8(reader)?;
         if index.get() == 9 && byte > 1 {
             return Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))
         } else {
@@ -232,10 +229,7 @@ fn artifact_binary_read_length(reader: ArtifactBinaryReader) -> Result[int, stri
 }
 
 fn artifact_binary_read_bytes(reader: ArtifactBinaryReader) -> Result[bytes::Bytes, string] {
-    let length = match artifact_binary_read_length(reader) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let length = artifact_binary_read_length(reader)?;
     if length > artifact_binary_reader_remaining(reader) {
         Result::Err(artifact_binary_reader_error(reader, "byte sequence exceeds remaining input"))
     } else {

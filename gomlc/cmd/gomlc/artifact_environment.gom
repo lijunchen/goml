@@ -117,10 +117,7 @@ fn artifact_dependency_function_scheme(
     inherited: Vec[tast::TypePredicate],
     callable: tast::Callable,
 ) -> Result[tast::FunctionScheme, string] {
-    let function_type = match artifact_function_type_parts(value.ty) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let function_type = artifact_function_type_parts(value.ty)?;
     let predicates = Vec::new();
     for predicate in inherited {
         predicates.push(predicate)
@@ -159,12 +156,7 @@ fn artifact_dependency_trait(value: ArtifactTraitDef) -> Result[tast::TraitInfo,
     };
     let methods = Vec::new();
     for method in value.methods {
-        let function_type = match artifact_function_type_parts(
-            artifact_dependency_trait_type(method.ty),
-        ) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let function_type = artifact_function_type_parts(artifact_dependency_trait_type(method.ty))?;
         methods.push(
             tast::TraitMethodInfo {
                 name: method.name,

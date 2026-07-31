@@ -11,10 +11,7 @@ fn artifact_binary_core_sections(value: ArtifactCoreUnit) -> Result[
     let table = artifact_binary_collected_string_table(collector);
     let writer = new_artifact_binary_value_stream(table);
     artifact_json_core_unit(writer, value);
-    let payload = match artifact_binary_stream_finish(writer) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let payload = artifact_binary_stream_finish(writer)?;
     Result::Ok(
         Vec::new().pushed(
             ArtifactBinarySection {
@@ -35,10 +32,7 @@ fn artifact_binary_core_sections(value: ArtifactCoreUnit) -> Result[
 }
 
 fn encode_artifact_core_binary(value: ArtifactCoreUnit) -> Result[bytes::Bytes, string] {
-    let sections = match artifact_binary_core_sections(value) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let sections = artifact_binary_core_sections(value)?;
     encode_artifact_binary_container(2, sections)
 }
 
@@ -70,19 +64,13 @@ fn artifact_binary_validate_core_sections(value: ArtifactBinaryContainer) -> Res
 }
 
 fn decode_artifact_core_binary(data: bytes::Bytes) -> Result[ArtifactCoreUnit, string] {
-    let container = match decode_artifact_binary_container(data) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let container = decode_artifact_binary_container(data)?;
     if container.kind != 2 {
         return Result::Err("binary artifact is not Core")
     } else {
         ()
     };
-    match artifact_binary_validate_core_sections(container) {
-        Ok(()) => (),
-        Err(error) => return Result::Err(error),
-    };
+    artifact_binary_validate_core_sections(container)?;
     let string_section = match artifact_binary_find_section(
         container,
         artifact_binary_string_table_section_id(),
@@ -99,13 +87,7 @@ fn decode_artifact_core_binary(data: bytes::Bytes) -> Result[ArtifactCoreUnit, s
         Some(value) => value,
         None => return Result::Err("binary Core artifact is missing value"),
     };
-    let table = match decode_artifact_binary_string_table(string_section.data) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let value = match decode_artifact_binary_value(table, value_section.data) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let table = decode_artifact_binary_string_table(string_section.data)?;
+    let value = decode_artifact_binary_value(table, value_section.data)?;
     artifact_decode_core_value(value)
 }

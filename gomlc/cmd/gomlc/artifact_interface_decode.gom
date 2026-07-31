@@ -101,21 +101,12 @@ fn artifact_decode_callable_body(name: string, value: ArtifactValue) -> Result[
     tast::Callable,
     string,
 ] {
-    let object = match artifact_json_object(value, "callable body") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let kind = match artifact_json_field_string(object, "kind") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "callable body")?;
+    let kind = artifact_json_field_string(object, "kind")?;
     if kind == "goml" {
         Result::Ok(tast::Callable::Function(name))
     } else {
-        let id = match artifact_json_field_string(object, "id") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let id = artifact_json_field_string(object, "id")?;
         if kind == "intrinsic" {
             match artifact_intrinsic_key_from_id(id) {
                 Some(value) => Result::Ok(tast::Callable::Intrinsic(value)),
@@ -136,10 +127,7 @@ fn artifact_decode_predicates(context: ArtifactDecodeContext, value: ArtifactVal
     Vec[tast::TypePredicate],
     string,
 ] {
-    let values = match artifact_json_array(value, "type predicates") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let values = artifact_json_array(value, "type predicates")?;
     let result = Vec::new();
     for value in values {
         match artifact_decode_predicate(context, value) {
@@ -154,10 +142,7 @@ fn artifact_decode_trait_refs(context: ArtifactDecodeContext, value: ArtifactVal
     Vec[tast::TraitRef],
     string,
 ] {
-    let values = match artifact_json_array(value, "trait references") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let values = artifact_json_array(value, "trait references")?;
     let result = Vec::new();
     for value in values {
         match artifact_decode_trait_ref(context, value) {
@@ -172,38 +157,22 @@ fn artifact_decode_fn_scheme(context: ArtifactDecodeContext, name: string, value
     ArtifactFnScheme,
     string,
 ] {
-    let object = match artifact_json_object(value, "function scheme") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "function scheme")?;
     let type_params = match artifact_json_required_field(object, "type_params") {
-        Ok(value) => match artifact_decode_string_array(value, "type parameters") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_array(value, "type parameters")?,
         Err(error) => return Result::Err(error),
     };
     let constraints = match artifact_json_required_field(object, "constraints") {
-        Ok(value) => match artifact_decode_predicates(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_predicates(context, value)?,
         Err(error) => return Result::Err(error),
     };
     let ty = match artifact_json_required_field(object, "ty") {
-        Ok(value) => match artifact_decode_type(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_type(context, value)?,
         Err(error) => return Result::Err(error),
     };
-    let body = match artifact_json_optional_field(object, "body") {
-        Ok(Some(value)) => match artifact_decode_callable_body(name, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
-        Ok(None) => tast::Callable::Function(name),
-        Err(error) => return Result::Err(error),
+    let body = match artifact_json_optional_field(object, "body")? {
+        Some(value) => artifact_decode_callable_body(name, value)?,
+        None => tast::Callable::Function(name),
     };
     Result::Ok(ArtifactFnScheme { name, type_params, constraints, ty, body })
 }
@@ -212,10 +181,7 @@ fn artifact_decode_fn_map(context: ArtifactDecodeContext, value: ArtifactValue) 
     Vec[ArtifactFnScheme],
     string,
 ] {
-    let object = match artifact_json_object(value, "function map") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "function map")?;
     let result = Vec::new();
     for item in object {
         match artifact_decode_fn_scheme(context, item.0, item.1) {
@@ -231,25 +197,16 @@ fn artifact_decode_type_pairs(
     value: ArtifactValue,
     expected: string,
 ) -> Result[Vec[(string, tast::Type)], string] {
-    let values = match artifact_json_array(value, expected) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let values = artifact_json_array(value, expected)?;
     let result = Vec::new();
     for value in values {
-        let pair = match artifact_json_array(value, expected) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let pair = artifact_json_array(value, expected)?;
         if pair.len() != 2 {
             return Result::Err(artifact_decode_error(expected))
         } else {
             ()
         };
-        let name = match artifact_json_string_value(pair[0], expected) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let name = artifact_json_string_value(pair[0], expected)?;
         match artifact_decode_type(context, pair[1]) {
             Ok(value) => result.push((name, value)),
             Err(error) => return Result::Err(error),
@@ -298,44 +255,20 @@ fn artifact_decode_enum_def(context: ArtifactDecodeContext, value: ArtifactValue
     tast::EnumDef,
     string,
 ] {
-    let object = match artifact_json_object(value, "enum definition") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let name = match artifact_json_field_string(object, "name") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "enum definition")?;
+    let name = artifact_json_field_string(object, "name")?;
     artifact_add_type_name(context.enum_names, name);
     let generics = match artifact_json_required_field(object, "generics") {
-        Ok(value) => match artifact_decode_string_array(value, "enum generics") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_array(value, "enum generics")?,
         Err(error) => return Result::Err(error),
     };
-    let values = match artifact_json_field_array(object, "variants") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let values = artifact_json_field_array(object, "variants")?;
     let variants = Vec::new();
     for value in values {
-        let variant = match artifact_json_object(value, "enum variant") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
-        let variant_name = match artifact_json_field_string(variant, "name") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
-        let fields_value = match artifact_json_required_field(variant, "fields") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
-        let fields = match artifact_decode_enum_variant_fields(context, fields_value) {
-            Ok(fields) => fields,
-            Err(error) => return Result::Err(error),
-        };
+        let variant = artifact_json_object(value, "enum variant")?;
+        let variant_name = artifact_json_field_string(variant, "name")?;
+        let fields_value = artifact_json_required_field(variant, "fields")?;
+        let fields = artifact_decode_enum_variant_fields(context, fields_value)?;
         variants.push(tast::EnumVariantDef { name: variant_name, fields })
     };
     Result::Ok(tast::EnumDef { name, generics, variants })
@@ -345,27 +278,15 @@ fn artifact_decode_struct_def(context: ArtifactDecodeContext, value: ArtifactVal
     tast::StructDef,
     string,
 ] {
-    let object = match artifact_json_object(value, "struct definition") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let name = match artifact_json_field_string(object, "name") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "struct definition")?;
+    let name = artifact_json_field_string(object, "name")?;
     artifact_add_type_name(context.struct_names, name);
     let generics = match artifact_json_required_field(object, "generics") {
-        Ok(value) => match artifact_decode_string_array(value, "struct generics") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_array(value, "struct generics")?,
         Err(error) => return Result::Err(error),
     };
     let fields = match artifact_json_required_field(object, "fields") {
-        Ok(value) => match artifact_decode_type_pairs(context, value, "struct fields") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_type_pairs(context, value, "struct fields")?,
         Err(error) => return Result::Err(error),
     };
     let public_fields = Vec::new();
@@ -373,10 +294,7 @@ fn artifact_decode_struct_def(context: ArtifactDecodeContext, value: ArtifactVal
         public_fields.push(field.0)
     };
     let has_hidden_fields = match artifact_json_required_field(object, "has_hidden_fields") {
-        Ok(value) => match artifact_json_bool_value(value, "struct hidden fields flag") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_json_bool_value(value, "struct hidden fields flag")?,
         Err(error) => return Result::Err(error),
     };
     Result::Ok(tast::StructDef { name, generics, fields, public_fields, has_hidden_fields })
@@ -386,22 +304,13 @@ fn artifact_decode_type_alias(context: ArtifactDecodeContext, name: string, valu
     tast::TypeAliasInfo,
     string,
 ] {
-    let object = match artifact_json_object(value, "type alias") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "type alias")?;
     let generics = match artifact_json_required_field(object, "generics") {
-        Ok(value) => match artifact_decode_string_array(value, "type alias generics") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_array(value, "type alias generics")?,
         Err(error) => return Result::Err(error),
     };
     let ty = match artifact_json_required_field(object, "ty") {
-        Ok(value) => match artifact_decode_type(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_type(context, value)?,
         Err(error) => return Result::Err(error),
     };
     Result::Ok(tast::TypeAliasInfo { name, generics, ty })
@@ -411,21 +320,12 @@ fn artifact_decode_associated_type_defs(context: ArtifactDecodeContext, value: A
     Vec[ArtifactAssociatedTypeDef],
     string,
 ] {
-    let object = match artifact_json_object(value, "associated type definitions") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "associated type definitions")?;
     let result = Vec::new();
     for item in object {
-        let definition = match artifact_json_object(item.1, "associated type definition") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let definition = artifact_json_object(item.1, "associated type definition")?;
         let bounds = match artifact_json_required_field(definition, "bounds") {
-            Ok(value) => match artifact_decode_trait_refs(context, value) {
-                Ok(value) => value,
-                Err(error) => return Result::Err(error),
-            },
+            Ok(value) => artifact_decode_trait_refs(context, value)?,
             Err(error) => return Result::Err(error),
         };
         result.push(ArtifactAssociatedTypeDef { name: item.0, bounds })
@@ -437,43 +337,25 @@ fn artifact_decode_trait_def(context: ArtifactDecodeContext, name: string, value
     ArtifactTraitDef,
     string,
 ] {
-    let object = match artifact_json_object(value, "trait definition") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "trait definition")?;
     let params = match artifact_json_required_field(object, "params") {
-        Ok(value) => match artifact_decode_string_array(value, "trait parameters") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_array(value, "trait parameters")?,
         Err(error) => return Result::Err(error),
     };
     let predicates = match artifact_json_required_field(object, "predicates") {
-        Ok(value) => match artifact_decode_predicates(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_predicates(context, value)?,
         Err(error) => return Result::Err(error),
     };
     let supertraits = match artifact_json_required_field(object, "supertraits") {
-        Ok(value) => match artifact_decode_trait_refs(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_trait_refs(context, value)?,
         Err(error) => return Result::Err(error),
     };
     let associated_types = match artifact_json_required_field(object, "associated_types") {
-        Ok(value) => match artifact_decode_associated_type_defs(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_associated_type_defs(context, value)?,
         Err(error) => return Result::Err(error),
     };
     let methods = match artifact_json_required_field(object, "methods") {
-        Ok(value) => match artifact_decode_fn_map(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_fn_map(context, value)?,
         Err(error) => return Result::Err(error),
     };
     Result::Ok(
@@ -485,10 +367,7 @@ fn artifact_decode_associated_types(context: ArtifactDecodeContext, value: Artif
     Vec[(string, tast::Type)],
     string,
 ] {
-    let object = match artifact_json_object(value, "associated types") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "associated types")?;
     let result = Vec::new();
     for item in object {
         match artifact_decode_type(context, item.1) {
@@ -503,45 +382,26 @@ fn artifact_decode_impl_def(context: ArtifactDecodeContext, value: ArtifactValue
     ArtifactImplDef,
     string,
 ] {
-    let object = match artifact_json_object(value, "implementation definition") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "implementation definition")?;
     let params = match artifact_json_required_field(object, "params") {
-        Ok(value) => match artifact_decode_string_array(value, "implementation parameters") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_array(value, "implementation parameters")?,
         Err(error) => return Result::Err(error),
     };
     let constraints = match artifact_json_required_field(object, "constraints") {
-        Ok(value) => match artifact_decode_predicates(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_predicates(context, value)?,
         Err(error) => return Result::Err(error),
     };
     let associated_types = match artifact_json_required_field(object, "associated_types") {
-        Ok(value) => match artifact_decode_associated_types(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_associated_types(context, value)?,
         Err(error) => return Result::Err(error),
     };
     let methods = match artifact_json_required_field(object, "methods") {
-        Ok(value) => match artifact_decode_fn_map(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_fn_map(context, value)?,
         Err(error) => return Result::Err(error),
     };
-    let valid = match artifact_json_optional_field(object, "valid") {
-        Ok(Some(value)) => match artifact_json_bool_value(value, "implementation validity") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
-        Ok(None) => true,
-        Err(error) => return Result::Err(error),
+    let valid = match artifact_json_optional_field(object, "valid")? {
+        Some(value) => artifact_json_bool_value(value, "implementation validity")?,
+        None => true,
     };
     Result::Ok(ArtifactImplDef { params, constraints, associated_types, methods, valid })
 }
@@ -550,43 +410,25 @@ fn artifact_decode_trait_impls(context: ArtifactDecodeContext, value: ArtifactVa
     Vec[ArtifactTraitImpl],
     string,
 ] {
-    let values = match artifact_json_array(value, "trait implementations") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let values = artifact_json_array(value, "trait implementations")?;
     let result = Vec::new();
     for value in values {
-        let pair = match artifact_json_array(value, "trait implementation") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let pair = artifact_json_array(value, "trait implementation")?;
         if pair.len() != 2 {
             return Result::Err(artifact_decode_error("trait implementation pair"))
         } else {
             ()
         };
-        let key = match artifact_json_object(pair[0], "trait implementation key") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let key = artifact_json_object(pair[0], "trait implementation key")?;
         let trait_ref = match artifact_json_required_field(key, "trait_ref") {
-            Ok(value) => match artifact_decode_trait_ref(context, value) {
-                Ok(value) => value,
-                Err(error) => return Result::Err(error),
-            },
+            Ok(value) => artifact_decode_trait_ref(context, value)?,
             Err(error) => return Result::Err(error),
         };
         let for_ty = match artifact_json_required_field(key, "for_ty") {
-            Ok(value) => match artifact_decode_type(context, value) {
-                Ok(value) => value,
-                Err(error) => return Result::Err(error),
-            },
+            Ok(value) => artifact_decode_type(context, value)?,
             Err(error) => return Result::Err(error),
         };
-        let definition = match artifact_decode_impl_def(context, pair[1]) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let definition = artifact_decode_impl_def(context, pair[1])?;
         result.push(ArtifactTraitImpl { trait_ref, for_ty, definition })
     };
     Result::Ok(result)
@@ -596,10 +438,7 @@ fn artifact_decode_inherent_impl_key(context: ArtifactDecodeContext, value: Arti
     ArtifactInherentImplKey,
     string,
 ] {
-    let object = match artifact_json_object(value, "inherent implementation key") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "inherent implementation key")?;
     if object.len() != 1 {
         Result::Err(artifact_decode_error("inherent implementation key variant"))
     } else if object[0].0 == "Exact" {
@@ -621,29 +460,17 @@ fn artifact_decode_inherent_impls(context: ArtifactDecodeContext, value: Artifac
     Vec[ArtifactInherentImpl],
     string,
 ] {
-    let values = match artifact_json_array(value, "inherent implementations") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let values = artifact_json_array(value, "inherent implementations")?;
     let result = Vec::new();
     for value in values {
-        let pair = match artifact_json_array(value, "inherent implementation") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let pair = artifact_json_array(value, "inherent implementation")?;
         if pair.len() != 2 {
             return Result::Err(artifact_decode_error("inherent implementation pair"))
         } else {
             ()
         };
-        let key = match artifact_decode_inherent_impl_key(context, pair[0]) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
-        let definition = match artifact_decode_impl_def(context, pair[1]) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let key = artifact_decode_inherent_impl_key(context, pair[0])?;
+        let definition = artifact_decode_impl_def(context, pair[1])?;
         result.push(ArtifactInherentImpl { key, definition })
     };
     Result::Ok(result)
@@ -651,22 +478,10 @@ fn artifact_decode_inherent_impls(context: ArtifactDecodeContext, value: Artifac
 
 fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPackageExports, string] {
     let context = new_artifact_decode_context();
-    let object = match artifact_json_object(value, "package exports") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let type_env = match artifact_json_field_object(object, "type_env") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let enum_map = match artifact_json_field_object(type_env, "enums") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let struct_map = match artifact_json_field_object(type_env, "structs") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "package exports")?;
+    let type_env = artifact_json_field_object(object, "type_env")?;
+    let enum_map = artifact_json_field_object(type_env, "enums")?;
+    let struct_map = artifact_json_field_object(type_env, "structs")?;
     for item in enum_map {
         artifact_add_type_name(context.enum_names, item.0)
     };
@@ -695,10 +510,7 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
             Err(error) => return Result::Err(error),
         }
     };
-    let alias_map = match artifact_json_field_object(type_env, "aliases") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let alias_map = artifact_json_field_object(type_env, "aliases")?;
     let type_aliases = Vec::new();
     for item in alias_map {
         match artifact_decode_type_alias(context, item.0, item.1) {
@@ -706,14 +518,8 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
             Err(error) => return Result::Err(error),
         }
     };
-    let trait_env = match artifact_json_field_object(object, "trait_env") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let trait_map = match artifact_json_field_object(trait_env, "trait_defs") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let trait_env = artifact_json_field_object(object, "trait_env")?;
+    let trait_map = artifact_json_field_object(trait_env, "trait_defs")?;
     let traits = Vec::new();
     for item in trait_map {
         match artifact_decode_trait_def(context, item.0, item.1) {
@@ -722,45 +528,24 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
         }
     };
     let trait_impls = match artifact_json_required_field(trait_env, "trait_impls") {
-        Ok(value) => match artifact_decode_trait_impls(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_trait_impls(context, value)?,
         Err(error) => return Result::Err(error),
     };
     let inherent_impls = match artifact_json_required_field(trait_env, "inherent_impls") {
-        Ok(value) => match artifact_decode_inherent_impls(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_inherent_impls(context, value)?,
         Err(error) => return Result::Err(error),
     };
-    let value_env = match artifact_json_field_object(object, "value_env") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let value_env = artifact_json_field_object(object, "value_env")?;
     let functions = match artifact_json_required_field(value_env, "funcs") {
-        Ok(value) => match artifact_decode_fn_map(context, value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_fn_map(context, value)?,
         Err(error) => return Result::Err(error),
     };
-    let constant_map = match artifact_json_field_object(value_env, "consts") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let constant_map = artifact_json_field_object(value_env, "consts")?;
     let constants = Vec::new();
     for item in constant_map {
-        let definition = match artifact_json_object(item.1, "constant scheme") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let definition = artifact_json_object(item.1, "constant scheme")?;
         let ty = match artifact_json_required_field(definition, "ty") {
-            Ok(value) => match artifact_decode_type(context, value) {
-                Ok(value) => value,
-                Err(error) => return Result::Err(error),
-            },
+            Ok(value) => artifact_decode_type(context, value)?,
             Err(error) => return Result::Err(error),
         };
         constants.push(tast::ConstantScheme { def_id: Option::None, name: item.0, ty })
@@ -785,37 +570,19 @@ fn artifact_decode_package_interface(value: ArtifactValue) -> Result[
     ArtifactPackageInterface,
     string,
 ] {
-    let object = match artifact_json_object(value, "package interface") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let package_name = match artifact_json_field_string(object, "package") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let name = match artifact_json_field_string(object, "name") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let value_map = match artifact_json_field_object(object, "value_exports") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "package interface")?;
+    let package_name = artifact_json_field_string(object, "package")?;
+    let name = artifact_json_field_string(object, "name")?;
+    let value_map = artifact_json_field_object(object, "value_exports")?;
     let value_exports = Vec::new();
     for item in value_map {
-        let number = match artifact_json_number_value(item.1, "value export index") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let number = artifact_json_number_value(item.1, "value export index")?;
         match artifact_parse_nonnegative_int(number) {
             Ok(value) => value_exports.push((item.0, value)),
             Err(error) => return Result::Err(error),
         }
     };
-    let enum_map = match artifact_json_field_object(object, "enum_variants") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let enum_map = artifact_json_field_object(object, "enum_variants")?;
     let enum_variants = Vec::new();
     for item in enum_map {
         match artifact_decode_string_array(item.1, "enum variant names") {
@@ -830,10 +597,7 @@ fn artifact_decode_string_map(value: ArtifactValue, expected: string) -> Result[
     Vec[(string, string)],
     string,
 ] {
-    let object = match artifact_json_object(value, expected) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, expected)?;
     let result = Vec::new();
     for item in object {
         match artifact_json_string_value(item.1, expected) {
@@ -845,39 +609,21 @@ fn artifact_decode_string_map(value: ArtifactValue, expected: string) -> Result[
 }
 
 fn artifact_decode_interface_value(value: ArtifactValue) -> Result[ArtifactInterfaceUnit, string] {
-    let object = match artifact_json_object(value, "interface unit") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
-    let package_name = match artifact_json_field_string(object, "package") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let object = artifact_json_object(value, "interface unit")?;
+    let package_name = artifact_json_field_string(object, "package")?;
     let exports = match artifact_json_required_field(object, "exports") {
-        Ok(value) => match artifact_decode_package_exports(value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_package_exports(value)?,
         Err(error) => return Result::Err(error),
     };
     let package_interface = match artifact_json_required_field(object, "interface") {
-        Ok(value) => match artifact_decode_package_interface(value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_package_interface(value)?,
         Err(error) => return Result::Err(error),
     };
     let deps = match artifact_json_required_field(object, "deps") {
-        Ok(value) => match artifact_decode_string_map(value, "dependency hashes") {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => artifact_decode_string_map(value, "dependency hashes")?,
         Err(error) => return Result::Err(error),
     };
-    let interface_hash = match artifact_json_field_string(object, "interface_hash") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let interface_hash = artifact_json_field_string(object, "interface_hash")?;
     let result = ArtifactInterfaceUnit {
         package_name,
         exports,

@@ -77,10 +77,7 @@ fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
     string,
 ] {
     let reader = new_artifact_binary_reader(data);
-    let count = match artifact_binary_read_length(reader) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let count = artifact_binary_read_length(reader)?;
     if count > 10000000 {
         return Result::Err("binary artifact string table exceeds limit")
     } else {
@@ -89,10 +86,7 @@ fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
     let values = Vec::with_capacity(count);
     let indexes: HashMap[string, int] = HashMap::new();
     for index in range(0, count) {
-        let value = match artifact_binary_read_string(reader) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        };
+        let value = artifact_binary_read_string(reader)?;
         if indexes.contains(value) {
             return Result::Err("duplicate binary artifact string")
         } else if index > 0 && !artifact_string_less(values[index - 1], value) {
@@ -127,10 +121,7 @@ fn artifact_binary_decode_string_id(reader: ArtifactBinaryReader, table: Artifac
     string,
     string,
 ] {
-    let id = match artifact_binary_read_length(reader) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let id = artifact_binary_read_length(reader)?;
     if id >= table.values.len() {
         Result::Err(artifact_binary_reader_error(reader, "string table index out of bounds"))
     } else {
@@ -186,10 +177,7 @@ fn artifact_binary_encode_value_at(
             artifact_binary_write_u8(writer, 5);
             artifact_binary_write_u32(writer, items.len() as uint32);
             for item in items {
-                match artifact_binary_encode_value_at(writer, table, item, depth + 1) {
-                    Ok(()) => (),
-                    Err(error) => return Result::Err(error),
-                }
+                artifact_binary_encode_value_at(writer, table, item, depth + 1)?
             };
             Result::Ok(())
         },
@@ -197,14 +185,8 @@ fn artifact_binary_encode_value_at(
             artifact_binary_write_u8(writer, 6);
             artifact_binary_write_u32(writer, fields.len() as uint32);
             for field in fields {
-                match artifact_binary_encode_string_id(writer, table, field.0) {
-                    Ok(()) => (),
-                    Err(error) => return Result::Err(error),
-                };
-                match artifact_binary_encode_value_at(writer, table, field.1, depth + 1) {
-                    Ok(()) => (),
-                    Err(error) => return Result::Err(error),
-                }
+                artifact_binary_encode_string_id(writer, table, field.0)?;
+                artifact_binary_encode_value_at(writer, table, field.1, depth + 1)?
             };
             Result::Ok(())
         },
@@ -232,10 +214,7 @@ fn artifact_binary_decode_value_at(
     } else {
         ()
     };
-    let tag = match artifact_binary_read_u8(reader) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let tag = artifact_binary_read_u8(reader)?;
     match tag {
         0 => Result::Ok(ArtifactValue::Null),
         1 => Result::Ok(ArtifactValue::Bool(false)),
@@ -249,10 +228,7 @@ fn artifact_binary_decode_value_at(
             Err(error) => Result::Err(error),
         },
         5 => {
-            let count = match artifact_binary_read_u32(reader) {
-                Ok(value) => value as int,
-                Err(error) => return Result::Err(error),
-            };
+            let count = artifact_binary_read_u32(reader)? as int;
             if count > 10000000 {
                 return Result::Err("binary artifact array exceeds limit")
             } else {
@@ -268,10 +244,7 @@ fn artifact_binary_decode_value_at(
             Result::Ok(ArtifactValue::Array(values))
         },
         6 => {
-            let count = match artifact_binary_read_u32(reader) {
-                Ok(value) => value as int,
-                Err(error) => return Result::Err(error),
-            };
+            let count = artifact_binary_read_u32(reader)? as int;
             if count > 10000000 {
                 return Result::Err("binary artifact object exceeds limit")
             } else {
@@ -284,10 +257,7 @@ fn artifact_binary_decode_value_at(
                 Option::None
             };
             for _ in range(0, count) {
-                let name = match artifact_binary_decode_string_id(reader, table) {
-                    Ok(value) => value,
-                    Err(error) => return Result::Err(error),
-                };
+                let name = artifact_binary_decode_string_id(reader, table)?;
                 let duplicate = match names {
                     Some(value) => value.contains(name),
                     None => artifact_binary_object_has_field(fields, name),
@@ -300,10 +270,7 @@ fn artifact_binary_decode_value_at(
                         None => (),
                     }
                 };
-                let value = match artifact_binary_decode_value_at(reader, table, depth + 1) {
-                    Ok(value) => value,
-                    Err(error) => return Result::Err(error),
-                };
+                let value = artifact_binary_decode_value_at(reader, table, depth + 1)?;
                 fields.push((name, value))
             };
             Result::Ok(ArtifactValue::Object(fields))
@@ -317,10 +284,7 @@ fn decode_artifact_binary_value(table: ArtifactBinaryStringTable, data: bytes::B
     string,
 ] {
     let reader = new_artifact_binary_reader(data);
-    let value = match artifact_binary_decode_value_at(reader, table, 0) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let value = artifact_binary_decode_value_at(reader, table, 0)?;
     if artifact_binary_reader_remaining(reader) != 0 {
         Result::Err("trailing bytes in binary artifact value")
     } else {
