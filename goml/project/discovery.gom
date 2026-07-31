@@ -22,7 +22,7 @@ fn canonical(value: string) -> Result[string, string] {
     result_string(fs::canonicalize(value), "failed to resolve " + value)
 }
 
-fn manifest_root(start: string) -> Result[string, string] {
+pub fn find_module_root(start: string) -> Result[string, string] {
     let current = Ref::new(start);
     while true {
         if fs::is_file(path::join(current.get(), "goml.toml")) {
@@ -46,7 +46,7 @@ pub fn clean(target_dir_override: Option[string]) -> Result[unit, string] {
         Ok(value) => value,
         Err(message) => return Result::Err(message),
     };
-    let module_dir = match manifest_root(current) {
+    let module_dir = match find_module_root(current) {
         Ok(value) => value,
         Err(message) => return Result::Err(message),
     };
@@ -1148,7 +1148,7 @@ pub fn load_context(
         Ok(value) => value,
         Err(message) => return Result::Err(message),
     };
-    let module_dir = match manifest_root(current) {
+    let module_dir = match find_module_root(current) {
         Ok(value) => value,
         Err(message) => return Result::Err(message),
     };
@@ -1200,7 +1200,7 @@ pub fn load_target_context(
         Ok(value) => value,
         Err(message) => return Result::Err(message),
     };
-    let module_dir = match manifest_root(entry_dir) {
+    let module_dir = match find_module_root(entry_dir) {
         Ok(value) => value,
         Err(message) => return Result::Err(message),
     };

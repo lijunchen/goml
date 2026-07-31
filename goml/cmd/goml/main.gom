@@ -29,13 +29,18 @@ struct CliArgs {
     test_kind: string,
 }
 
+struct FmtArgs {
+    check: bool,
+    formatter: Option[string],
+}
+
 fn fail(message: string) -> unit {
     io::eprintln("error: " + message);
     process::exit(1)
 }
 
 fn top_help() -> string {
-    "Usage: goml <COMMAND>\n\nCommands:\n  new\n  check\n  build\n  run\n  test\n  clean\n  update\n  add\n  remove\n  home\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
+    "Usage: goml <COMMAND>\n\nCommands:\n  new\n  check\n  build\n  run\n  test\n  fmt\n  clean\n  update\n  add\n  remove\n  home\n  version\n  help\n\nOptions:\n  -h, --help  Print help"
 }
 
 fn command_help(command: string) -> string {
@@ -49,6 +54,8 @@ fn command_help(command: string) -> string {
         "Usage: goml run [OPTIONS] [TARGET] [-- <ARGS>...]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --jobs <JOBS>        [default: 16]\n  -h, --help"
     } else if command == "test" {
         "Usage: goml test [OPTIONS] [FILTER]\n\nOptions:\n      --target-dir <TARGET_DIR>\n      --dry-run\n      --compiler <COMPILER>\n      --list\n      --ignored\n      --include-ignored\n      --nocapture\n      --format <FORMAT>    [default: text] [possible values: text, json]\n      --timeout <TIMEOUT>  [default: 30s]\n      --jobs <JOBS>        [default: 1]\n      --kind <KIND>        [default: all] [possible values: internal, external, all]\n  -h, --help"
+    } else if command == "fmt" {
+        "Usage: goml fmt [OPTIONS]\n\nOptions:\n      --check                  exit 1 if formatting differs\n      --formatter <FORMATTER>  formatter executable\n  -h, --help"
     } else if command == "clean" {
         "Usage: goml clean [OPTIONS]\n\nOptions:\n      --target-dir <TARGET_DIR>\n  -h, --help"
     } else if command == "update" {
@@ -132,6 +139,52 @@ fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
         }
     };
     Result::Ok(target_dir.get())
+}
+
+fn parse_fmt(args: Vec[string]) -> Result[FmtArgs, string] {
+    let check = Ref::new(false);
+    let formatter: Ref[Option[string]] = Ref::new(Option::None);
+    let index = Ref::new(2);
+    while index.get() < args.len() {
+        let argument = args[index.get()];
+        if argument == "-h" || argument == "--help" {
+            return Result::Err("help")
+        } else if argument == "--check" {
+            if check.get() {
+                return Result::Err("--check cannot be repeated")
+            } else {
+                check.set(true);
+                index.set(index.get() + 1)
+            }
+        } else {
+            let parsed = match option_value(
+                args,
+                index,
+                argument,
+                "--formatter",
+            ) {
+                Ok(value) => value,
+                Err(message) => return Result::Err(message),
+            };
+            match parsed {
+                Some(value) => match formatter.get() {
+                    Some(_) => {
+                        return Result::Err("--formatter cannot be repeated")
+                    },
+                    None => formatter.set(Option::Some(value)),
+                },
+                None => if util::starts_with(argument, "-") {
+                    return Result::Err("unknown option " + argument)
+                } else {
+                    return Result::Err("unexpected argument " + argument)
+                },
+            }
+        }
+    };
+    Result::Ok(FmtArgs {
+        check: check.get(),
+        formatter: formatter.get(),
+    })
 }
 
 fn parse_duration(value: string) -> Result[int, string] {
@@ -555,6 +608,25 @@ fn main() -> unit {
                 },
                 Err(message) => fail(message),
             }
+        }
+    } else if args[1] == "fmt" {
+        match parse_fmt(args) {
+            Ok(options) => match commands::format_module(
+                options.check,
+                options.formatter,
+            ) {
+                Ok(code) => if code == 0 {
+                    ()
+                } else {
+                    process::exit(code)
+                },
+                Err(message) => fail(message),
+            },
+            Err(message) => if message == "help" {
+                io::println(command_help("fmt"))
+            } else {
+                fail(message)
+            },
         }
     } else if args[1] == "update"
         || args[1] == "add"
