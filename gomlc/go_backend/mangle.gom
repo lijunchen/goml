@@ -1,5 +1,6 @@
 package go_backend;
 
+use gomlc::hash;
 use gomlc::strings;
 use std::text;
 
@@ -216,7 +217,7 @@ fn compact_ident(value: string) -> string {
     if value.byte_len() <= 80 {
         value
     } else {
-        let marker = "_h" + sha256_prefix(value) + "_";
+        let marker = "_h" + hash::sha256_prefix(value) + "_";
         let budget = 80 - marker.byte_len();
         let head_len = budget * 2 / 3;
         let tail_len = budget - head_len;
@@ -239,7 +240,7 @@ fn bounded_hint(value: string, budget: int) -> string {
 
 pub fn go_hashed_ident(kind: string, value: string) -> string {
     let prefix = "_goml_" + kind + "_";
-    let digest = sha256_prefix(kind + "\u0000" + value);
+    let digest = hash::sha256_prefix(kind + "\u0000" + value);
     let suffix = "_h" + digest;
     let budget = 80 - prefix.byte_len() - suffix.byte_len();
     prefix + bounded_hint(encode_name(value), budget) + suffix

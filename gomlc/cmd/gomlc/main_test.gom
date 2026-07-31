@@ -3,6 +3,7 @@ package main;
 use gomlc::ast;
 use gomlc::core;
 use gomlc::go_backend;
+use gomlc::hash;
 use gomlc::hir;
 use gomlc::parser;
 use gomlc::tast;
@@ -1278,7 +1279,7 @@ fn writes_core_unit_from_checked_package() -> unit {
     };
     let encoded = encode_artifact_core_unit(core_unit, false);
     testing::assert_eq(
-        go_backend::sha256_hex(encoded),
+        hash::sha256_hex(encoded),
         "51645ab8c570f0e0292a8967605f0b3fe56eee727ef49d7aaf46f9d1510feca3",
     );
     let binary = match encode_artifact_core_binary(core_unit) {

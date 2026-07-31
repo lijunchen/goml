@@ -1,6 +1,6 @@
 package main;
 
-use gomlc::go_backend;
+use gomlc::hash;
 use gomlc::tast;
 
 struct ArtifactFnScheme {
@@ -467,7 +467,7 @@ fn artifact_json_interface_hash_view(
 fn artifact_interface_hash(value: ArtifactInterfaceUnit) -> string {
     let writer = new_artifact_json_writer(false);
     artifact_json_interface_hash_view(writer, artifact_exports_type_context(value.exports), value);
-    go_backend::sha256_hex(artifact_json_finish(writer))
+    hash::sha256_hex(artifact_json_finish(writer))
 }
 
 fn new_artifact_interface_unit(

@@ -406,6 +406,12 @@ fn project_build_links_every_main_package() -> unit {
     testing::assert(
         fs::is_file(path::join(root, "_artifact/build/pkg/alice/app/cmd/client/goml_generated.go")),
     );
+    let dry_run = test_support::project_command("build", "", Vec::["--dry-run"], root);
+    test_support::assert_success(dry_run);
+    test_support::assert_contains(
+        test_support::stdout(dry_run),
+        "gomlc link --input _artifact/build/pkg/alice/app/cmd/client/client.core --output _artifact/build/pkg/alice/app/cmd/client/goml_generated.go --entry alice::app::cmd::client",
+    );
     let rejected = test_support::run(
         Vec::["build", "cmd/server", "--compiler", test_support::gomlc_binary()],
         root,

@@ -3,6 +3,7 @@ package go_backend;
 use gomlc::anf;
 use gomlc::ast;
 use gomlc::core;
+use gomlc::hash;
 use gomlc::hir;
 use gomlc::lift;
 use gomlc::mono;
@@ -707,9 +708,9 @@ fn preserves_user_struct_order_before_closure_environments() -> unit {
 
 #[test]
 fn hashes_and_compacts_long_go_identifiers() -> unit {
-    testing::assert_eq(sha256_prefix("abc"), "ba7816bf8f01cfea414140de5dae2223");
+    testing::assert_eq(hash::sha256_prefix("abc"), "ba7816bf8f01cfea414140de5dae2223");
     testing::assert_eq(
-        sha256_hex("abc"),
+        hash::sha256_hex("abc"),
         "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
     );
     testing::assert_eq(

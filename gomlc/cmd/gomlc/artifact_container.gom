@@ -1,6 +1,6 @@
 package main;
 
-use gomlc::go_backend;
+use gomlc::hash;
 use std::collections;
 use std::bytes;
 
@@ -54,7 +54,7 @@ fn artifact_binary_hex_value(value: uint8) -> uint8 {
 }
 
 fn artifact_binary_sha256(value: bytes::Bytes) -> bytes::Bytes {
-    let text = go_backend::sha256_bytes_hex(value);
+    let text = hash::sha256_bytes_hex(value);
     let result = bytes::Bytes::with_capacity(32);
     for index in 0..32 {
         result.push(
