@@ -17,7 +17,7 @@ fn push_error(ctx: LowerCtx, value_span: Span, message: string) -> unit {
 }
 
 fn ident_starts_upper(value: string) -> bool {
-    value.byte_len() > 0 && value.byte_get(0) >= 65 && value.byte_get(0) <= 90
+    value.byte_len() > 0 && value.byte_get(0) >= b'A' && value.byte_get(0) <= b'Z'
 }
 
 fn lower_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
@@ -64,9 +64,9 @@ fn attribute_matches(value: Attribute, expected: string) -> bool {
     let text_value = value.text;
     let index = Ref::new(0);
     while index.get() < text_value.byte_len()
-        && (text_value.byte_get(index.get()) == 32 || text_value.byte_get(index.get()) == 9
-            || text_value.byte_get(index.get()) == 10
-            || text_value.byte_get(index.get()) == 13) {
+        && (text_value.byte_get(index.get()) == b' ' || text_value.byte_get(index.get()) == b'\t'
+            || text_value.byte_get(index.get()) == b'\n'
+            || text_value.byte_get(index.get()) == b'\r') {
         index.set(index.get() + 1)
     };
     if index.get() + 2 > text_value.byte_len()
@@ -75,15 +75,16 @@ fn attribute_matches(value: Attribute, expected: string) -> bool {
     } else {
         index.set(index.get() + 2);
         while index.get() < text_value.byte_len()
-            && (text_value.byte_get(index.get()) == 32 || text_value.byte_get(index.get()) == 9
-                || text_value.byte_get(index.get()) == 10
-                || text_value.byte_get(index.get()) == 13) {
+            && (text_value.byte_get(index.get()) == b' '
+                || text_value.byte_get(index.get()) == b'\t'
+                || text_value.byte_get(index.get()) == b'\n'
+                || text_value.byte_get(index.get()) == b'\r') {
             index.set(index.get() + 1)
         };
         let start = index.get();
         while index.get() < text_value.byte_len() {
             let byte = text_value.byte_get(index.get());
-            if byte == 40 || byte == 93 || byte == 32 || byte == 9 {
+            if byte == b'(' || byte == b']' || byte == b' ' || byte == b'\t' {
                 break
             } else {
                 index.set(index.get() + 1)
@@ -123,7 +124,7 @@ fn lower_type_list(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
 
 fn normalized_array_length(value: string) -> Option[string] {
     let index = Ref::new(0);
-    while index.get() + 1 < value.byte_len() && value.byte_get(index.get()) == 48 {
+    while index.get() + 1 < value.byte_len() && value.byte_get(index.get()) == b'0' {
         index.set(index.get() + 1)
     };
     let normalized = value.byte_slice(index.get(), value.byte_len());

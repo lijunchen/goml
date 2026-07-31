@@ -284,19 +284,19 @@ fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> un
     let mut index = 0;
     while index < value.byte_len() {
         let byte = value.byte_get(index);
-        if byte == 34 {
+        if byte == b'"' {
             builder.write_string("\\\"")
-        } else if byte == 92 {
+        } else if byte == b'\\' {
             builder.write_string("\\\\")
-        } else if byte == 10 {
+        } else if byte == b'\n' {
             builder.write_string("\\n")
-        } else if byte == 13 {
+        } else if byte == b'\r' {
             builder.write_string("\\r")
-        } else if byte == 9 {
+        } else if byte == b'\t' {
             builder.write_string("\\t")
         } else if byte == 0 {
             builder.write_string("\\0")
-        } else if byte < 32 || byte == 127 {
+        } else if byte < b' ' || byte == 127 {
             pretty_write_control_escape(builder, byte)
         } else {
             let width = pretty_utf8_width(byte);

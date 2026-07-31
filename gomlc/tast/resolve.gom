@@ -194,14 +194,8 @@ fn find_expected_struct(ctx: Checker, name: string) -> Option[StructInfo] {
 }
 
 fn pattern_owner_is_builtin_enum(ctx: Checker, name: string) -> bool {
-    (name == "Option" || name == "Result")
-        && match find_enum_by_exact_name(ctx, name) {
-            Some(_) => false,
-            None => match find_struct_by_exact_name(ctx, name) {
-                Some(_) => false,
-                None => true,
-            },
-        }
+    (name == "Option" || name == "Result") && find_enum_by_exact_name(ctx, name).is_none()
+        && find_struct_by_exact_name(ctx, name).is_none()
 }
 
 fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {

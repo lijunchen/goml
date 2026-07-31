@@ -23,11 +23,11 @@ fn strip_comment(value: string) -> string {
         let byte = value.byte_get(index);
         if escaped.get() {
             escaped.set(false)
-        } else if quoted.get() && byte == 92 {
+        } else if quoted.get() && byte == b'\\' {
             escaped.set(true)
-        } else if byte == 34 {
+        } else if byte == b'"' {
             quoted.set(!(quoted.get()))
-        } else if !(quoted.get()) && byte == 35 {
+        } else if !(quoted.get()) && byte == b'#' {
             return value.byte_slice(0, index)
         } else {
             ()
@@ -38,7 +38,8 @@ fn strip_comment(value: string) -> string {
 
 fn parse_string(value: string) -> Result[string, string] {
     let value = util::trim(value);
-    if value.byte_len() < 2 || value.byte_get(0) != 34 || value.byte_get(value.byte_len() - 1) != 34 {
+    if value.byte_len() < 2 || value.byte_get(0) != b'"'
+        || value.byte_get(value.byte_len() - 1) != b'"' {
         return Result::Err("manifest values must be quoted strings")
     } else {
         ()
@@ -75,9 +76,10 @@ fn valid_segment(value: string) -> bool {
     };
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
-        if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122)
-            || byte == 95
-            || byte == 45 {
+        if (byte >= b'0' && byte <= b'9') || (byte >= b'A' && byte <= b'Z')
+            || (byte >= b'a' && byte <= b'z')
+            || byte == b'_'
+            || byte == b'-' {
             ()
         } else {
             return false
@@ -135,13 +137,13 @@ pub fn load(path: string) -> Result[Manifest, string] {
         let line = util::trim(strip_comment(original));
         if line == "" {
             ()
-        } else if line.byte_len() >= 2 && line.byte_get(0) == 91
-            && line.byte_get(line.byte_len() - 1) == 93 {
+        } else if line.byte_len() >= 2 && line.byte_get(0) == b'['
+            && line.byte_get(line.byte_len() - 1) == b']' {
             section.set(util::trim(line.byte_slice(1, line.byte_len() - 1)))
         } else {
             let equals = Ref::new(-1);
             for index in 0..line.byte_len() {
-                if equals.get() < 0 && line.byte_get(index) == 61 {
+                if equals.get() < 0 && line.byte_get(index) == b'=' {
                     equals.set(index)
                 } else {
                     ()

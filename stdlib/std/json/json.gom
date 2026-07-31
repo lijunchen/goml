@@ -327,12 +327,12 @@ fn parse_json_value(value: JsonParser) -> Result[Value, string] {
             b'{' => parse_json_object(value),
             b'[' => parse_json_array(value),
             b'"' => match parse_json_string(value) {
-                Ok(text) => Result::Ok(Value::String(text)),
+                Ok(text) => Result::Ok(String(text)),
                 Err(error) => Result::Err(error),
             },
-            b't' => parse_json_literal(value, "true", Value::Bool(true)),
-            b'f' => parse_json_literal(value, "false", Value::Bool(false)),
-            b'n' => parse_json_literal(value, "null", Value::Null),
+            b't' => parse_json_literal(value, "true", Bool(true)),
+            b'f' => parse_json_literal(value, "false", Bool(false)),
+            b'n' => parse_json_literal(value, "null", Null),
             byte => if byte == b'-' || json_digit(byte) {
                 parse_json_number(value)
             } else {
@@ -405,7 +405,7 @@ fn write_json_string(builder: text::StringBuilder, value: string) -> unit {
 
 fn write_json_value(builder: text::StringBuilder, value: Value) -> unit {
     match value {
-        Value::Object(fields) => {
+        Object(fields) => {
             builder.write_char('{');
             let mut index = 0;
             for field in fields {
@@ -421,7 +421,7 @@ fn write_json_value(builder: text::StringBuilder, value: Value) -> unit {
             };
             builder.write_char('}')
         },
-        Value::Array(items) => {
+        Array(items) => {
             builder.write_char('[');
             let mut index = 0;
             for item in items {
@@ -435,16 +435,16 @@ fn write_json_value(builder: text::StringBuilder, value: Value) -> unit {
             };
             builder.write_char(']')
         },
-        Value::String(text) => write_json_string(builder, text),
-        Value::Number(number) => builder.write_string(number),
-        Value::Bool(value) => builder.write_string(
+        String(text) => write_json_string(builder, text),
+        Number(number) => builder.write_string(number),
+        Bool(value) => builder.write_string(
             if value {
                 "true"
             } else {
                 "false"
             },
         ),
-        Value::Null => builder.write_string("null"),
+        Null => builder.write_string("null"),
     }
 }
 
@@ -456,7 +456,7 @@ pub fn encode(value: Value) -> string {
 
 pub fn field(value: Value, name: string) -> Option[Value] {
     match value {
-        Value::Object(fields) => {
+        Object(fields) => {
             for field in fields {
                 if field.0 == name {
                     return Option::Some(field.1)
@@ -472,7 +472,7 @@ pub fn field(value: Value, name: string) -> Option[Value] {
 
 pub fn as_string(value: Value) -> Option[string] {
     match value {
-        Value::String(text) => Option::Some(text),
+        String(text) => Option::Some(text),
         _ => Option::None,
     }
 }
@@ -514,21 +514,21 @@ fn parse_json_int_text(value: string) -> Option[int] {
 
 pub fn as_int(value: Value) -> Option[int] {
     match value {
-        Value::Number(number) => parse_json_int_text(number),
+        Number(number) => parse_json_int_text(number),
         _ => Option::None,
     }
 }
 
 pub fn as_bool(value: Value) -> Option[bool] {
     match value {
-        Value::Bool(result) => Option::Some(result),
+        Bool(result) => Option::Some(result),
         _ => Option::None,
     }
 }
 
 pub fn as_array(value: Value) -> Option[Vec[Value]] {
     match value {
-        Value::Array(items) => Option::Some(items),
+        Array(items) => Option::Some(items),
         _ => Option::None,
     }
 }

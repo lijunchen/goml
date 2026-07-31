@@ -117,7 +117,7 @@ fn cli_argument_name(argument: string) -> string {
     };
     let mut end = argument.byte_len();
     for index in 0..argument.byte_len() {
-        if end == argument.byte_len() && argument.byte_get(index) == 61 {
+        if end == argument.byte_len() && argument.byte_get(index) == b'=' {
             end = index;
         } else {
             ()

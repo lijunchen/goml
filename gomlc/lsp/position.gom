@@ -43,7 +43,7 @@ pub fn offset_to_position(source: string, offset: int) -> Position {
     let index = Ref::new(0);
     while index.get() < limit {
         let byte = source.byte_get(index.get());
-        if byte == 10 {
+        if byte == b'\n' {
             line.set(line.get() + 1);
             character.set(0);
             index.set(index.get() + 1)
@@ -71,7 +71,7 @@ pub fn position_to_offset(source: string, position: Position) -> int {
             ()
         };
         let byte = source.byte_get(index.get());
-        if byte == 10 {
+        if byte == b'\n' {
             if line.get() == position.line {
                 return index.get()
             } else {

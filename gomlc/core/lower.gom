@@ -465,10 +465,7 @@ fn lower_generic_match(
             ),
             pattern => match lower_pattern_expr(pattern) {
                 Some(lhs) => result.push(Arm { lhs, body: lower_expr(ctx, arm.body) }),
-                None => if match default.get() {
-                    Some(_) => false,
-                    None => true,
-                } {
+                None => if default.get().is_none() {
                     default.set(Option::Some(lower_expr(ctx, arm.body)))
                 } else {
                     ()

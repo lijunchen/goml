@@ -115,7 +115,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
 fn trim_version_value(value: string) -> string {
     let end = Ref::new(value.byte_len());
     while end.get() > 0
-        && (value.byte_get(end.get() - 1) == 10 || value.byte_get(end.get() - 1) == 13) {
+        && (value.byte_get(end.get() - 1) == b'\n' || value.byte_get(end.get() - 1) == b'\r') {
         end.set(end.get() - 1)
     };
     value.byte_slice(0, end.get())

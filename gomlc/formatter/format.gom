@@ -13,7 +13,7 @@ fn canonical_file_ending(value: string) -> string {
     let end: Ref[int] = Ref::new(value.byte_len());
     while end.get() > 0 {
         let byte = value.byte_get(end.get() - 1);
-        if byte == 10 || byte == 13 {
+        if byte == b'\n' || byte == b'\r' {
             end.set(end.get() - 1)
         } else {
             break

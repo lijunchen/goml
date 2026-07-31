@@ -38,7 +38,7 @@ fn render_mode_flat(mode: RenderMode) -> bool {
 
 fn string_contains_newline(value: string) -> bool {
     for index in 0..value.byte_len() {
-        if value.byte_get(index) == 10 {
+        if value.byte_get(index) == b'\n' {
             return true
         } else {
             ()
@@ -143,7 +143,7 @@ fn write_text(value: Renderer, content: string, width: int) -> unit {
 fn raw_last_line_width(content: string) -> int {
     let start: Ref[int] = Ref::new(0);
     for index in 0..content.byte_len() {
-        if content.byte_get(index) == 10 {
+        if content.byte_get(index) == b'\n' {
             start.set(index + 1)
         } else {
             ()

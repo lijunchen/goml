@@ -143,19 +143,19 @@ fn pretty_write_interpolated_text(builder: text::StringBuilder, value: string) -
     let mut index = 0;
     while index < value.byte_len() {
         let byte = value.byte_get(index);
-        if byte == 34 {
+        if byte == b'"' {
             builder.write_string("\\\"")
-        } else if byte == 92 {
+        } else if byte == b'\\' {
             builder.write_string("\\\\")
-        } else if byte == 10 {
+        } else if byte == b'\n' {
             builder.write_string("\\n")
-        } else if byte == 13 {
+        } else if byte == b'\r' {
             builder.write_string("\\r")
-        } else if byte == 9 {
+        } else if byte == b'\t' {
             builder.write_string("\\t")
-        } else if byte == 123 {
+        } else if byte == b'{' {
             builder.write_string("{{")
-        } else if byte == 125 {
+        } else if byte == b'}' {
             builder.write_string("}}")
         } else {
             let width = pretty_utf8_width(byte);
@@ -222,11 +222,7 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
         StructLiteral { name: path, fields, base, span: _ } => {
             pretty_write_path(builder, path);
             builder.write_string(" {");
-            if fields.len() == 0
-                && match base {
-                    Some(_) => false,
-                    None => true,
-                } {
+            if fields.len() == 0 && base.is_none() {
                 builder.write_char('}')
             } else {
                 let mut index = 0;

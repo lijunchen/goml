@@ -87,7 +87,7 @@ fn derive_targets(value: string) -> Vec[string] {
         let open = Ref::new(-1);
         let scan = Ref::new(derive_start.get());
         while scan.get() < value.byte_len() && open.get() < 0 {
-            if value.byte_get(scan.get()) == 40 {
+            if value.byte_get(scan.get()) == b'(' {
                 open.set(scan.get() + 1)
             } else {
                 ()
@@ -96,7 +96,7 @@ fn derive_targets(value: string) -> Vec[string] {
         };
         if open.get() >= 0 {
             let index = Ref::new(open.get());
-            while index.get() < value.byte_len() && value.byte_get(index.get()) != 41 {
+            while index.get() < value.byte_len() && value.byte_get(index.get()) != b')' {
                 if derive_identifier_byte(value.byte_get(index.get())) {
                     let start = index.get();
                     while index.get() < value.byte_len()

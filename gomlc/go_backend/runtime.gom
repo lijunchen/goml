@@ -2319,7 +2319,7 @@ fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
 fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
     let separator = Ref::new(-1);
     for index in 0..value.byte_len() {
-        if separator.get() < 0 && value.byte_get(index) == 35 {
+        if separator.get() < 0 && value.byte_get(index) == b'#' {
             separator.set(index)
         } else {
             ()

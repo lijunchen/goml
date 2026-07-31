@@ -972,7 +972,7 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
     let line_start = Ref::new(0);
     for index in 0..limit {
         let byte = source.byte_get(index);
-        if byte == 10 {
+        if byte == b'\n' {
             line.set(line.get() + 1);
             column.set(0);
             line_start.set(index + 1)
@@ -985,7 +985,7 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
     let line_end = Ref::new(line_start.get());
     while line_end.get() < source.byte_len() {
         let byte = source.byte_get(line_end.get());
-        if byte == 10 || byte == 13 {
+        if byte == b'\n' || byte == b'\r' {
             break
         } else {
             line_end.set(line_end.get() + 1)

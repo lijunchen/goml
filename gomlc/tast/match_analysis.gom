@@ -157,7 +157,7 @@ fn coverage_primitive_raw(value: Primitive) -> Option[string] {
 fn coverage_number(value: string) -> CoverageNumber {
     let magnitude = integer_magnitude(value);
     CoverageNumber {
-        negative: value.byte_len() > 0 && value.byte_get(0) == 45 && magnitude != "0",
+        negative: value.byte_len() > 0 && value.byte_get(0) == b'-' && magnitude != "0",
         magnitude,
     }
 }

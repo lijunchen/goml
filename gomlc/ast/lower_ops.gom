@@ -67,7 +67,7 @@ fn parse_decimal_int32(value: string) -> Option[int] {
     let valid = Ref::new(value.byte_len() > 0);
     while index.get() < value.byte_len() && valid.get() {
         let byte = value.byte_get(index.get());
-        if byte < 48 || byte > 57 {
+        if byte < b'0' || byte > b'9' {
             valid.set(false)
         } else {
             let digit = match byte {

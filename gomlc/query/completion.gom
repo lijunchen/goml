@@ -70,7 +70,7 @@ fn use_completion_context(source: string, offset: int) -> Option[UseCompletionCo
         source.byte_len()
     };
     let mut line_start = limit;
-    while line_start > 0 && source.byte_get(line_start - 1) != 10 {
+    while line_start > 0 && source.byte_get(line_start - 1) != b'\n' {
         line_start = line_start - 1;
     };
     let mut content_start = line_start;
@@ -190,7 +190,7 @@ fn namespace_path(source: string, offset: int) -> Option[string] {
         let mut owner_start = owner_end;
         while owner_start > 0 {
             let byte = source.byte_get(owner_start - 1);
-            if identifier_byte(byte) || byte == 58 {
+            if identifier_byte(byte) || byte == b':' {
                 owner_start = owner_start - 1;
             } else {
                 break
@@ -209,7 +209,7 @@ fn namespace_path(source: string, offset: int) -> Option[string] {
 fn first_namespace_segment(value: string) -> string {
     let mut index = 0;
     while index + 1 < value.byte_len() {
-        if value.byte_get(index) == 58 && value.byte_get(index + 1) == 58 {
+        if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
             return value.byte_slice(0, index)
         } else {
             index = index + 1;
@@ -329,7 +329,7 @@ fn immediate_package_member(qualified_name: string, package_name: string) -> boo
         let remainder = qualified_name.byte_slice(prefix.byte_len(), qualified_name.byte_len());
         let mut index = 0;
         while index + 1 < remainder.byte_len() {
-            if remainder.byte_get(index) == 58 && remainder.byte_get(index + 1) == 58 {
+            if remainder.byte_get(index) == b':' && remainder.byte_get(index + 1) == b':' {
                 return false
             } else {
                 ()
@@ -517,7 +517,7 @@ fn short_type_name(value: string) -> string {
     let mut start = 0;
     let mut index = 0;
     while index + 1 < value.byte_len() {
-        if value.byte_get(index) == 58 && value.byte_get(index + 1) == 58 {
+        if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
             start = index + 2;
             index = index + 1;
         } else {
@@ -612,7 +612,7 @@ fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
 
 fn member_dot(source: string, offset: int) -> Option[int] {
     let start = prefix_start(source, offset);
-    if start > 0 && source.byte_get(start - 1) == 46 {
+    if start > 0 && source.byte_get(start - 1) == b'.' {
         Option::Some(start - 1)
     } else {
         Option::None
@@ -666,7 +666,7 @@ fn source_explicit_receiver_type(source: string, name: string, limit: int) -> Op
             while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
                 cursor = cursor + 1;
             };
-            if cursor < limit && source.byte_get(cursor) == 58 {
+            if cursor < limit && source.byte_get(cursor) == b':' {
                 cursor = cursor + 1;
                 while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
                     cursor = cursor + 1;
@@ -681,7 +681,7 @@ fn source_explicit_receiver_type(source: string, name: string, limit: int) -> Op
                 };
                 let type_start = cursor;
                 while cursor < limit
-                    && (identifier_byte(source.byte_get(cursor)) || source.byte_get(cursor) == 58) {
+                    && (identifier_byte(source.byte_get(cursor)) || source.byte_get(cursor) == b':') {
                     cursor = cursor + 1;
                 };
                 if cursor > type_start {
@@ -1098,9 +1098,9 @@ fn call_open_before(source: string, offset: int) -> Option[int] {
     while index > 0 {
         index = index - 1;
         let byte = source.byte_get(index);
-        if byte == 41 {
+        if byte == b')' {
             depth = depth + 1;
-        } else if byte == 40 {
+        } else if byte == b'(' {
             if depth == 0 {
                 return Option::Some(index)
             } else {
@@ -1154,13 +1154,8 @@ pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
         } else {
             let result = completion_query(value, value.source, offset, prefix);
             if result.len() > 0
-                || (match member_dot(value.source, offset) {
-                    Some(_) => false,
-                    None => match namespace_path(value.source, offset) {
-                        Some(_) => false,
-                        None => true,
-                    },
-                }) {
+                || (member_dot(value.source, offset).is_none()
+                    && namespace_path(value.source, offset).is_none()) {
                 result
             } else {
                 let repaired_source = insert_completion_placeholder(value.source, offset);

@@ -250,8 +250,5 @@ fn stmt_children(value: LocatedNode) -> Vec[LocatedNode] {
 }
 
 fn option_node_is_none(value: Option[LocatedNode]) -> bool {
-    match value {
-        Some(_) => false,
-        None => true,
-    }
+    value.is_none()
 }

@@ -76,9 +76,9 @@ fn first_type_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[Syntax
     for token in syntax.tokens {
         if token_is_inside_node(token, node) && !lexer::token_is_trivia(token.kind)
             && token.text.byte_len() > 0
-            && ((token.text.byte_get(0) >= 65 && token.text.byte_get(0) <= 90)
-                || (token.text.byte_get(0) >= 97 && token.text.byte_get(0) <= 122)
-                || token.text.byte_get(0) == 95)
+            && ((token.text.byte_get(0) >= b'A' && token.text.byte_get(0) <= b'Z')
+                || (token.text.byte_get(0) >= b'a' && token.text.byte_get(0) <= b'z')
+                || token.text.byte_get(0) == b'_')
             && token.text != "dyn" {
             return Option::Some(token)
         } else {

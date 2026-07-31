@@ -281,10 +281,7 @@ fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
     for stmt in value.stmts {
         match stmt {
             Let { is_mut: _, pat, annotation, value } => {
-                if match annotation {
-                    Some(_) => false,
-                    None => pattern_has_unresolved_inference(ctx, pat),
-                } {
+                if annotation.is_none() && pattern_has_unresolved_inference(ctx, pat) {
                     push_inference_diagnostic_at(ctx, pat.span, 1);
                     mark_unresolved_pattern_locals(ctx, pat)
                 } else {

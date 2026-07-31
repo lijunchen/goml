@@ -6,23 +6,23 @@ fn parse_digits(value: string, start: int) -> int {
     let result = Ref::new(0);
     for index in start..value.byte_len() {
         let byte = value.byte_get(index);
-        let digit = if byte == 48 {
+        let digit = if byte == b'0' {
             0
-        } else if byte == 49 {
+        } else if byte == b'1' {
             1
-        } else if byte == 50 {
+        } else if byte == b'2' {
             2
-        } else if byte == 51 {
+        } else if byte == b'3' {
             3
-        } else if byte == 52 {
+        } else if byte == b'4' {
             4
-        } else if byte == 53 {
+        } else if byte == b'5' {
             5
-        } else if byte == 54 {
+        } else if byte == b'6' {
             6
-        } else if byte == 55 {
+        } else if byte == b'7' {
             7
-        } else if byte == 56 {
+        } else if byte == b'8' {
             8
         } else {
             9
@@ -34,7 +34,7 @@ fn parse_digits(value: string, start: int) -> int {
 
 fn trailing_number(value: string) -> Option[int] {
     for index in 0..value.byte_len() {
-        if value.byte_get(index) == 47 {
+        if value.byte_get(index) == b'/' {
             return Option::None
         } else {
             ()
@@ -48,7 +48,7 @@ fn trailing_number(value: string) -> Option[int] {
         while index.get() > 0 {
             let next = index.get() - 1;
             let byte = value.byte_get(next);
-            if byte >= 48 && byte <= 57 {
+            if byte >= b'0' && byte <= b'9' {
                 start.set(next);
                 index.set(next)
             } else {

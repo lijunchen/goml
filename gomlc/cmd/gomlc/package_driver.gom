@@ -171,7 +171,7 @@ fn artifact_short_name(value: string) -> string {
     let result = Ref::new(value);
     let index = Ref::new(0);
     while index.get() + 1 < value.byte_len() {
-        if value.byte_get(index.get()) == 58 && value.byte_get(index.get() + 1) == 58 {
+        if value.byte_get(index.get()) == b':' && value.byte_get(index.get() + 1) == b':' {
             result.set(value.byte_slice(index.get() + 2, value.byte_len()));
             index.set(index.get() + 2)
         } else {

@@ -164,8 +164,8 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                     match first_token(variant, lexer::TokenKind::Ident) {
                         Some(variant_name) => {
                             if variant_name.token.text.byte_len() == 0
-                                || variant_name.token.text.byte_get(0) < 65
-                                || variant_name.token.text.byte_get(0) > 90 {
+                                || variant_name.token.text.byte_get(0) < b'A'
+                                || variant_name.token.text.byte_get(0) > b'Z' {
                                 push_error(
                                     ctx,
                                     token_span(variant_name),
@@ -760,8 +760,5 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
 }
 
 fn option_attribute_is_none(value: Option[Attribute]) -> bool {
-    match value {
-        Some(_) => false,
-        None => true,
-    }
+    value.is_none()
 }

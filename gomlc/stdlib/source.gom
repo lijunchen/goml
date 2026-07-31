@@ -1236,10 +1236,10 @@ pub fn collections_source() -> string {
         \\    fn place_entry_index(self: IndexMap[K, V], dense_index: int) -> unit {
         \\        match self.entries.get()[dense_index] {
         \\            Some(entry) => match self.probe(entry.key, entry.hash) {
-        \\                IndexMapProbe::Found(slot, _) => {
+        \\                Found(slot, _) => {
         \\                    self.indices.get()[slot] = dense_index;
         \\                },
-        \\                IndexMapProbe::Vacant(slot) => {
+        \\                Vacant(slot) => {
         \\                    self.indices.get()[slot] = dense_index;
         \\                },
         \\            },
@@ -1296,21 +1296,21 @@ pub fn collections_source() -> string {
         \\    pub fn contains(self: IndexMap[K, V], key: K) -> bool {
         \\        let hash = Hash::hash(key);
         \\        match self.probe(key, hash) {
-        \\            IndexMapProbe::Found(_, _) => true,
-        \\            IndexMapProbe::Vacant(_) => false,
+        \\            Found(_, _) => true,
+        \\            Vacant(_) => false,
         \\        }
         \\    }
         \\
         \\    pub fn get(self: IndexMap[K, V], key: K) -> Option[V] {
         \\        let hash = Hash::hash(key);
         \\        match self.probe(key, hash) {
-        \\            IndexMapProbe::Found(_, dense_index) => {
+        \\            Found(_, dense_index) => {
         \\                match self.entries.get()[dense_index] {
         \\                    Some(entry) => Option::Some(entry.value),
         \\                    None => Option::None,
         \\                }
         \\            },
-        \\            IndexMapProbe::Vacant(_) => Option::None,
+        \\            Vacant(_) => Option::None,
         \\        }
         \\    }
         \\
@@ -1318,7 +1318,7 @@ pub fn collections_source() -> string {
         \\        self.ensure_insert_capacity();
         \\        let hash = Hash::hash(key);
         \\        match self.probe(key, hash) {
-        \\            IndexMapProbe::Found(_, dense_index) => {
+        \\            Found(_, dense_index) => {
         \\                match self.entries.get()[dense_index] {
         \\                    Some(entry) => {
         \\                        let previous = entry.value;
@@ -1330,7 +1330,7 @@ pub fn collections_source() -> string {
         \\                    None => Option::None,
         \\                }
         \\            },
-        \\            IndexMapProbe::Vacant(slot) => {
+        \\            Vacant(slot) => {
         \\                let dense_index = self.entries.get().len();
         \\                self.entries.get().push(Option::Some(IndexMapEntry { hash, key, value }));
         \\                self.indices.get()[slot] = dense_index;
@@ -1343,7 +1343,7 @@ pub fn collections_source() -> string {
         \\    pub fn remove(self: IndexMap[K, V], key: K) -> Option[V] {
         \\        let hash = Hash::hash(key);
         \\        match self.probe(key, hash) {
-        \\            IndexMapProbe::Found(slot, dense_index) => {
+        \\            Found(slot, dense_index) => {
         \\                match self.entries.get()[dense_index] {
         \\                    Some(entry) => {
         \\                        self.indices.get()[slot] = -2;
@@ -1356,7 +1356,7 @@ pub fn collections_source() -> string {
         \\                    None => Option::None,
         \\                }
         \\            },
-        \\            IndexMapProbe::Vacant(_) => Option::None,
+        \\            Vacant(_) => Option::None,
         \\        }
         \\    }
         \\
@@ -2117,12 +2117,12 @@ pub fn json_source() -> string {
         \\            b'{' => parse_json_object(value),
         \\            b'[' => parse_json_array(value),
         \\            b'"' => match parse_json_string(value) {
-        \\                Ok(text) => Result::Ok(Value::String(text)),
+        \\                Ok(text) => Result::Ok(String(text)),
         \\                Err(error) => Result::Err(error),
         \\            },
-        \\            b't' => parse_json_literal(value, "true", Value::Bool(true)),
-        \\            b'f' => parse_json_literal(value, "false", Value::Bool(false)),
-        \\            b'n' => parse_json_literal(value, "null", Value::Null),
+        \\            b't' => parse_json_literal(value, "true", Bool(true)),
+        \\            b'f' => parse_json_literal(value, "false", Bool(false)),
+        \\            b'n' => parse_json_literal(value, "null", Null),
         \\            byte => if byte == b'-' || json_digit(byte) {
         \\                parse_json_number(value)
         \\            } else {
@@ -2195,7 +2195,7 @@ pub fn json_source() -> string {
         \\
         \\fn write_json_value(builder: text::StringBuilder, value: Value) -> unit {
         \\    match value {
-        \\        Value::Object(fields) => {
+        \\        Object(fields) => {
         \\            builder.write_char('{');
         \\            let mut index = 0;
         \\            for field in fields {
@@ -2211,7 +2211,7 @@ pub fn json_source() -> string {
         \\            };
         \\            builder.write_char('}')
         \\        },
-        \\        Value::Array(items) => {
+        \\        Array(items) => {
         \\            builder.write_char('[');
         \\            let mut index = 0;
         \\            for item in items {
@@ -2225,16 +2225,16 @@ pub fn json_source() -> string {
         \\            };
         \\            builder.write_char(']')
         \\        },
-        \\        Value::String(text) => write_json_string(builder, text),
-        \\        Value::Number(number) => builder.write_string(number),
-        \\        Value::Bool(value) => builder.write_string(
+        \\        String(text) => write_json_string(builder, text),
+        \\        Number(number) => builder.write_string(number),
+        \\        Bool(value) => builder.write_string(
         \\            if value {
         \\                "true"
         \\            } else {
         \\                "false"
         \\            },
         \\        ),
-        \\        Value::Null => builder.write_string("null"),
+        \\        Null => builder.write_string("null"),
         \\    }
         \\}
         \\
@@ -2246,7 +2246,7 @@ pub fn json_source() -> string {
         \\
         \\pub fn field(value: Value, name: string) -> Option[Value] {
         \\    match value {
-        \\        Value::Object(fields) => {
+        \\        Object(fields) => {
         \\            for field in fields {
         \\                if field.0 == name {
         \\                    return Option::Some(field.1)
@@ -2262,7 +2262,7 @@ pub fn json_source() -> string {
         \\
         \\pub fn as_string(value: Value) -> Option[string] {
         \\    match value {
-        \\        Value::String(text) => Option::Some(text),
+        \\        String(text) => Option::Some(text),
         \\        _ => Option::None,
         \\    }
         \\}
@@ -2304,21 +2304,21 @@ pub fn json_source() -> string {
         \\
         \\pub fn as_int(value: Value) -> Option[int] {
         \\    match value {
-        \\        Value::Number(number) => parse_json_int_text(number),
+        \\        Number(number) => parse_json_int_text(number),
         \\        _ => Option::None,
         \\    }
         \\}
         \\
         \\pub fn as_bool(value: Value) -> Option[bool] {
         \\    match value {
-        \\        Value::Bool(result) => Option::Some(result),
+        \\        Bool(result) => Option::Some(result),
         \\        _ => Option::None,
         \\    }
         \\}
         \\
         \\pub fn as_array(value: Value) -> Option[Vec[Value]] {
         \\    match value {
-        \\        Value::Array(items) => Option::Some(items),
+        \\        Array(items) => Option::Some(items),
         \\        _ => Option::None,
         \\    }
         \\}

@@ -267,7 +267,7 @@ fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
     let exact = Vec::new();
     let fallback = Vec::new();
     match token_at(value.syntax, offset) {
-        Some(token) => if token.start > 0 && value.source.byte_get(token.start - 1) == 46 {
+        Some(token) => if token.start > 0 && value.source.byte_get(token.start - 1) == b'.' {
             match receiver_type(value, token.start - 1) {
                 Some(receiver) => {
                     let owner = type_owner_name(receiver);

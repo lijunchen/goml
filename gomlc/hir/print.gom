@@ -333,19 +333,19 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     let mut index = 0;
     while index < value.byte_len() {
         let byte = value.byte_get(index);
-        if byte == 34 {
+        if byte == b'"' {
             builder.write_string("\\\"")
-        } else if byte == 92 {
+        } else if byte == b'\\' {
             builder.write_string("\\\\")
-        } else if byte == 10 {
+        } else if byte == b'\n' {
             builder.write_string("\\n")
-        } else if byte == 13 {
+        } else if byte == b'\r' {
             builder.write_string("\\r")
-        } else if byte == 9 {
+        } else if byte == b'\t' {
             builder.write_string("\\t")
         } else if byte == 0 {
             builder.write_string("\\0")
-        } else if byte < 32 || byte == 127 {
+        } else if byte < b' ' || byte == 127 {
             write_control_escape(builder, byte)
         } else {
             let width = utf8_width(byte);
@@ -360,19 +360,19 @@ fn write_interpolated_text(builder: text::StringBuilder, value: string) -> unit 
     let mut index = 0;
     while index < value.byte_len() {
         let byte = value.byte_get(index);
-        if byte == 34 {
+        if byte == b'"' {
             builder.write_string("\\\"")
-        } else if byte == 92 {
+        } else if byte == b'\\' {
             builder.write_string("\\\\")
-        } else if byte == 10 {
+        } else if byte == b'\n' {
             builder.write_string("\\n")
-        } else if byte == 13 {
+        } else if byte == b'\r' {
             builder.write_string("\\r")
-        } else if byte == 9 {
+        } else if byte == b'\t' {
             builder.write_string("\\t")
-        } else if byte == 123 {
+        } else if byte == b'{' {
             builder.write_string("{{")
-        } else if byte == 125 {
+        } else if byte == b'}' {
             builder.write_string("}}")
         } else {
             let width = utf8_width(byte);
@@ -584,11 +584,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
         StructLiteral { name, fields, base } => {
             builder.write_string(name);
             builder.write_string(" {");
-            if fields.len() == 0
-                && match base {
-                    Some(_) => false,
-                    None => true,
-                } {
+            if fields.len() == 0 && base.is_none() {
                 builder.write_char('}')
             } else {
                 let mut index = 0;

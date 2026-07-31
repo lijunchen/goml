@@ -44,10 +44,7 @@ fn token_is(left: lexer::TokenKind, right: lexer::TokenKind) -> bool {
 }
 
 fn marker_is_none(value: Option[MarkerClosed]) -> bool {
-    match value {
-        Some(_) => false,
-        None => true,
-    }
+    value.is_none()
 }
 
 fn input_peek_raw(parser: Parser) -> lexer::TokenKind {
@@ -265,7 +262,7 @@ impl Parser {
                 false
             } else {
                 let first = text_value.byte_get(0);
-                (first >= 97 && first <= 122) || first == 95
+                (first >= b'a' && first <= b'z') || first == b'_'
             }
         } else {
             false
@@ -279,7 +276,7 @@ impl Parser {
                 false
             } else {
                 let first = text_value.byte_get(0);
-                first >= 65 && first <= 90
+                first >= b'A' && first <= b'Z'
             }
         } else {
             false

@@ -26,7 +26,7 @@ pub fn path_to_uri(value: string) -> string {
     builder.write_string("file://");
     for index in 0..absolute.byte_len() {
         let byte = absolute.byte_get(index);
-        if uri_unreserved(byte) || byte == 47 || byte == 58 {
+        if uri_unreserved(byte) || byte == b'/' || byte == b':' {
             builder.write_string(absolute.byte_slice(index, index + 1))
         } else {
             builder.write_char('%');
@@ -58,7 +58,7 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
         let index = Ref::new(prefix.byte_len());
         while index.get() < value.byte_len() {
             let byte = value.byte_get(index.get());
-            if byte == 37 {
+            if byte == b'%' {
                 if index.get() + 2 >= value.byte_len() {
                     return Result::Err("invalid URI escape")
                 } else {

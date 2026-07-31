@@ -44,7 +44,7 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
             return Result::Err("help")
         } else if !positional && argument == "--version" {
             return Result::Err("version")
-        } else if !positional && argument.byte_len() > 0 && argument.byte_get(0) == 45
+        } else if !positional && argument.byte_len() > 0 && argument.byte_get(0) == b'-'
             && argument != "-" {
             return Result::Err(f"unrecognized option: {argument}")
         } else {

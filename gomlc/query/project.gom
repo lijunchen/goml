@@ -50,7 +50,7 @@ fn manifest_module_path(source: string) -> Option[string] {
     let in_module = Ref::new(false);
     while cursor.get() <= source.byte_len() {
         let end = Ref::new(cursor.get());
-        while end.get() < source.byte_len() && source.byte_get(end.get()) != 10 {
+        while end.get() < source.byte_len() && source.byte_get(end.get()) != b'\n' {
             end.set(end.get() + 1)
         };
         let line = trim_ascii(source.byte_slice(cursor.get(), end.get()));
@@ -58,13 +58,13 @@ fn manifest_module_path(source: string) -> Option[string] {
             in_module.set(line == "[module]")
         } else if in_module.get() && strings::starts_with(line, "path") {
             let equals = Ref::new(0);
-            while equals.get() < line.byte_len() && line.byte_get(equals.get()) != 61 {
+            while equals.get() < line.byte_len() && line.byte_get(equals.get()) != b'=' {
                 equals.set(equals.get() + 1)
             };
             if equals.get() < line.byte_len() {
                 let value = trim_ascii(line.byte_slice(equals.get() + 1, line.byte_len()));
-                if value.byte_len() >= 2 && value.byte_get(0) == 34
-                    && value.byte_get(value.byte_len() - 1) == 34 {
+                if value.byte_len() >= 2 && value.byte_get(0) == b'"'
+                    && value.byte_get(value.byte_len() - 1) == b'"' {
                     return Option::Some(value.byte_slice(1, value.byte_len() - 1))
                 } else {
                     ()
@@ -147,7 +147,7 @@ fn package_name(module_root: string, module_path: string, package_dir: string) -
             let index = Ref::new(0);
             while index.get() < relative.byte_len() {
                 let byte = relative.byte_get(index.get());
-                if byte == 47 || byte == 92 {
+                if byte == b'/' || byte == b'\\' {
                     builder.write_string("::")
                 } else {
                     builder.write_string(relative.byte_slice(index.get(), index.get() + 1))
@@ -273,8 +273,8 @@ fn local_package_directory(module_root: string, module_path: string, package_nam
             while index.get() <= suffix.byte_len() {
                 let at_end = index.get() == suffix.byte_len();
                 let separator = !at_end && index.get() + 1 < suffix.byte_len()
-                    && suffix.byte_get(index.get()) == 58
-                    && suffix.byte_get(index.get() + 1) == 58;
+                    && suffix.byte_get(index.get()) == b':'
+                    && suffix.byte_get(index.get() + 1) == b':';
                 if at_end || separator {
                     let segment = suffix.byte_slice(start.get(), index.get());
                     if segment == "" || segment == "." || segment == ".." {

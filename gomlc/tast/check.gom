@@ -15,12 +15,12 @@ struct FloatDecimal {
 }
 
 fn char_hex_value(value: uint8) -> Option[uint32] {
-    if value >= 48 && value <= 57 {
-        Option::Some((value - 48) as uint32)
-    } else if value >= 65 && value <= 70 {
-        Option::Some((value - 55) as uint32)
-    } else if value >= 97 && value <= 102 {
-        Option::Some((value - 87) as uint32)
+    if value >= b'0' && value <= b'9' {
+        Option::Some((value - b'0') as uint32)
+    } else if value >= b'A' && value <= b'F' {
+        Option::Some((value - b'A' + 10) as uint32)
+    } else if value >= b'a' && value <= b'f' {
+        Option::Some((value - b'a' + 10) as uint32)
     } else {
         Option::None
     }
@@ -29,7 +29,7 @@ fn char_hex_value(value: uint8) -> Option[uint32] {
 fn parse_char_literal(value: string) -> Option[char] {
     if value.byte_len() == 0 {
         Option::None
-    } else if value.byte_get(0) != 92 {
+    } else if value.byte_get(0) != b'\\' {
         let character = value.get(0);
         if character.to_string().byte_len() == value.byte_len() {
             Option::Some(character)
@@ -38,18 +38,18 @@ fn parse_char_literal(value: string) -> Option[char] {
         }
     } else if value.byte_len() == 2 {
         match value.byte_get(1) {
-            39 => Option::Some('\''),
-            34 => Option::Some('"'),
-            92 => Option::Some('\\'),
-            47 => Option::Some('/'),
-            98 => char_from_uint32(8),
-            102 => char_from_uint32(12),
-            110 => Option::Some('\n'),
-            114 => Option::Some('\r'),
-            116 => Option::Some('\t'),
+            b'\'' => Option::Some('\''),
+            b'"' => Option::Some('"'),
+            b'\\' => Option::Some('\\'),
+            b'/' => Option::Some('/'),
+            b'b' => char_from_uint32(8),
+            b'f' => char_from_uint32(12),
+            b'n' => Option::Some('\n'),
+            b'r' => Option::Some('\r'),
+            b't' => Option::Some('\t'),
             _ => Option::None,
         }
-    } else if value.byte_len() == 6 && value.byte_get(1) == 117 {
+    } else if value.byte_len() == 6 && value.byte_get(1) == b'u' {
         let code = Ref::new(0);
         for index in 2..6 {
             match char_hex_value(value.byte_get(index)) {
@@ -99,7 +99,7 @@ fn increment_decimal(value: string) -> string {
     let index = Ref::new(digits.len() - 1);
     while index.get() >= 0 {
         let byte = digits.get(index.get());
-        if byte == 57 {
+        if byte == b'9' {
             digits[index.get()] = 48 as uint8;
             index.set(index.get() - 1)
         } else {
@@ -140,10 +140,10 @@ fn trim_fractional_zeros(value: string) -> string {
         value
     } else {
         let end = Ref::new(value.byte_len());
-        while end.get() > 0 && value.byte_get(end.get() - 1) == 48 {
+        while end.get() > 0 && value.byte_get(end.get() - 1) == b'0' {
             end.set(end.get() - 1)
         };
-        if end.get() > 0 && value.byte_get(end.get() - 1) == 46 {
+        if end.get() > 0 && value.byte_get(end.get() - 1) == b'.' {
             end.set(end.get() - 1)
         } else {
             ()
@@ -166,7 +166,7 @@ fn fixed_decimal(coefficient: string, power: int) -> string {
 }
 
 fn float_decimal(value: string) -> Option[FloatDecimal] {
-    let negative = value.byte_len() > 0 && value.byte_get(0) == 45;
+    let negative = value.byte_len() > 0 && value.byte_get(0) == b'-';
     let start = if negative {
         1
     } else {
@@ -176,9 +176,9 @@ fn float_decimal(value: string) -> Option[FloatDecimal] {
     let decimal_position = Ref::new(-1);
     for index in start..value.byte_len() {
         let byte = value.byte_get(index);
-        if byte == 46 && decimal_position.get() < 0 {
+        if byte == b'.' && decimal_position.get() < 0 {
             decimal_position.set(builder.len())
-        } else if byte >= 48 && byte <= 57 {
+        } else if byte >= b'0' && byte <= b'9' {
             builder.write_string(value.byte_slice(index, index + 1))
         } else {
             return Option::None
@@ -191,7 +191,7 @@ fn float_decimal(value: string) -> Option[FloatDecimal] {
     };
     let digits = builder.finish();
     let first = Ref::new(0);
-    while first.get() < digits.byte_len() && digits.byte_get(first.get()) == 48 {
+    while first.get() < digits.byte_len() && digits.byte_get(first.get()) == b'0' {
         first.set(first.get() + 1)
     };
     if first.get() == digits.byte_len() {
@@ -323,13 +323,13 @@ fn normalized_float64_literal(value: string) -> string {
 
 fn integer_magnitude(value: string) -> string {
     let start = Ref::new(
-        if value.byte_len() > 0 && value.byte_get(0) == 45 {
+        if value.byte_len() > 0 && value.byte_get(0) == b'-' {
             1
         } else {
             0
         },
     );
-    while start.get() + 1 < value.byte_len() && value.byte_get(start.get()) == 48 {
+    while start.get() + 1 < value.byte_len() && value.byte_get(start.get()) == b'0' {
         start.set(start.get() + 1)
     };
     value.byte_slice(start.get(), value.byte_len())
@@ -356,7 +356,7 @@ fn decimal_magnitude_fits(value: string, limit: string) -> bool {
 }
 
 fn integer_literal_fits(value: string, ty: Type) -> bool {
-    let negative = value.byte_len() > 0 && value.byte_get(0) == 45;
+    let negative = value.byte_len() > 0 && value.byte_get(0) == b'-';
     match prune(ty) {
         Int => decimal_magnitude_fits(
             value,
@@ -2221,11 +2221,7 @@ fn apply_typed_call(
         _ => ret_ty,
     };
     let result_ty = if arity_mismatch {
-        if trait_method
-            && match dyn_method {
-                Some(_) => false,
-                None => true,
-            } {
+        if trait_method && dyn_method.is_none() {
             Type::Error
         } else {
             fresh_unresolved_inference(ctx)
@@ -2554,10 +2550,7 @@ fn check_call_expr(
                                     member,
                                     owner_type_args,
                                     member_type_args,
-                                    match expected {
-                                        Some(_) => false,
-                                        None => true,
-                                    },
+                                    expected.is_none(),
                                 )
                             },
                         };
@@ -4364,10 +4357,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             let deferred = match expected {
                 Some(ty) => match prune(ty) {
                     Var(_) => true,
-                    Dyn { trait_name: name } => match find_trait(ctx, name) {
-                        Some(_) => false,
-                        None => true,
-                    },
+                    Dyn { trait_name: name } => find_trait(ctx, name).is_none(),
                     other => !(is_numeric_type(other)),
                 },
                 None => true,
@@ -4404,10 +4394,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             let deferred = match expected {
                 Some(ty) => match prune(ty) {
                     Var(_) => true,
-                    Dyn { trait_name: name } => match find_trait(ctx, name) {
-                        Some(_) => false,
-                        None => true,
-                    },
+                    Dyn { trait_name: name } => find_trait(ctx, name).is_none(),
                     other => !(is_numeric_type(other)),
                 },
                 None => true,

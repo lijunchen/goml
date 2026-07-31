@@ -260,27 +260,28 @@ fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> 
     let start = Ref::new(0);
     for index in 0..input.byte_len() {
         let byte = input.byte_get(index);
-        if byte == 34 || byte == 92 || byte == 8 || byte == 9 || byte == 10 || byte == 12
-            || byte == 13
-            || byte < 32 {
+        if byte == b'"' || byte == b'\\' || byte == b'\b' || byte == b'\t' || byte == b'\n'
+            || byte == b'\f'
+            || byte == b'\r'
+            || byte < b' ' {
             if start.get() < index {
                 value.builder.write_string(input.byte_slice(start.get(), index))
             } else {
                 ()
             };
-            if byte == 34 {
+            if byte == b'"' {
                 value.builder.write_string("\\\"")
-            } else if byte == 92 {
+            } else if byte == b'\\' {
                 value.builder.write_string("\\\\")
-            } else if byte == 8 {
+            } else if byte == b'\b' {
                 value.builder.write_string("\\b")
-            } else if byte == 9 {
+            } else if byte == b'\t' {
                 value.builder.write_string("\\t")
-            } else if byte == 10 {
+            } else if byte == b'\n' {
                 value.builder.write_string("\\n")
-            } else if byte == 12 {
+            } else if byte == b'\f' {
                 value.builder.write_string("\\f")
-            } else if byte == 13 {
+            } else if byte == b'\r' {
                 value.builder.write_string("\\r")
             } else {
                 value.builder.write_string("\\u00");

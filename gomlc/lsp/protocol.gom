@@ -99,7 +99,7 @@ fn ascii_prefix_equal_case_insensitive(value: string, expected: string) -> bool 
 fn header_line_content(value: string) -> string {
     let end = Ref::new(value.byte_len());
     while end.get() > 0
-        && (value.byte_get(end.get() - 1) == 10 || value.byte_get(end.get() - 1) == 13) {
+        && (value.byte_get(end.get() - 1) == b'\n' || value.byte_get(end.get() - 1) == b'\r') {
         end.set(end.get() - 1)
     };
     value.byte_slice(0, end.get())
@@ -114,7 +114,7 @@ fn decimal_length(value: string) -> Result[int, string] {
     };
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
-        if byte < 48 || byte > 57 {
+        if byte < b'0' || byte > b'9' {
             return Result::Err("invalid Content-Length")
         } else {
             result.set(result.get() * 10 + (byte - 48) as int)
@@ -131,7 +131,7 @@ pub fn content_length(value: string) -> Result[int, string] {
     } else {
         let start = Ref::new(prefix.byte_len());
         while start.get() < line.byte_len()
-            && (line.byte_get(start.get()) == 32 || line.byte_get(start.get()) == 9) {
+            && (line.byte_get(start.get()) == b' ' || line.byte_get(start.get()) == b'\t') {
             start.set(start.get() + 1)
         };
         decimal_length(line.byte_slice(start.get(), line.byte_len()))

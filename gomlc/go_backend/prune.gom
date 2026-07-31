@@ -194,7 +194,7 @@ fn name_uses_import(name: string, alias: string) -> bool {
     } else if name.byte_len() <= alias.byte_len() {
         false
     } else {
-        strings::starts_with(name, alias) && name.byte_get(alias.byte_len()) == 46
+        strings::starts_with(name, alias) && name.byte_get(alias.byte_len()) == b'.'
     }
 }
 

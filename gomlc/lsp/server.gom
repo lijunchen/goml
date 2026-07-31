@@ -277,8 +277,8 @@ fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, st
         if hint.position >= range_start && hint.position <= range_end {
             let position = Ref::new(hint.position);
             while position.get() > 0
-                && (document.text.byte_get(position.get() - 1) == 32
-                    || document.text.byte_get(position.get() - 1) == 9) {
+                && (document.text.byte_get(position.get() - 1) == b' '
+                    || document.text.byte_get(position.get() - 1) == b'\t') {
                 position.set(position.get() - 1)
             };
             let fields = Vec::new();

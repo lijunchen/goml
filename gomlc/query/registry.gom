@@ -26,7 +26,7 @@ fn quoted_values(value: string) -> Vec[string] {
     let result = Vec::new();
     let start = Ref::new(Option::None);
     for index in 0..value.byte_len() {
-        if value.byte_get(index) == 34 {
+        if value.byte_get(index) == b'"' {
             match start.get() {
                 Some(offset) => {
                     result.push(value.byte_slice(offset, index));
@@ -47,7 +47,7 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
     let in_dependencies = Ref::new(false);
     while cursor.get() <= source.byte_len() {
         let end = Ref::new(cursor.get());
-        while end.get() < source.byte_len() && source.byte_get(end.get()) != 10 {
+        while end.get() < source.byte_len() && source.byte_get(end.get()) != b'\n' {
             end.set(end.get() + 1)
         };
         let line = trim_ascii(source.byte_slice(cursor.get(), end.get()));
@@ -79,7 +79,7 @@ fn decimal_number(value: string) -> Option[int] {
         let result = Ref::new(0);
         for index in 0..value.byte_len() {
             let byte = value.byte_get(index);
-            if byte < 48 || byte > 57 {
+            if byte < b'0' || byte > b'9' {
                 return Option::None
             } else {
                 result.set(result.get() * 10 + (byte - 48) as int)
@@ -93,7 +93,7 @@ fn parse_sem_version(value: string) -> Option[SemVersion] {
     let parts = Vec::new();
     let start = Ref::new(0);
     for index in 0..value.byte_len() + 1 {
-        if index == value.byte_len() || value.byte_get(index) == 46 {
+        if index == value.byte_len() || value.byte_get(index) == b'.' {
             parts.push(value.byte_slice(start.get(), index));
             start.set(index + 1)
         } else {
@@ -168,7 +168,7 @@ fn registry_versions(root: string, module_name: string) -> Result[Vec[string], s
     let selected = Ref::new(false);
     while cursor.get() <= source.byte_len() {
         let end = Ref::new(cursor.get());
-        while end.get() < source.byte_len() && source.byte_get(end.get()) != 10 {
+        while end.get() < source.byte_len() && source.byte_get(end.get()) != b'\n' {
             end.set(end.get() + 1)
         };
         let line = trim_ascii(source.byte_slice(cursor.get(), end.get()));
@@ -341,8 +341,8 @@ fn external_package_directory(module: ResolvedModule, package_name: string) -> O
         let start = Ref::new(0);
         for index in 0..suffix.byte_len() + 1 {
             let separator = index == suffix.byte_len()
-                || (index + 1 < suffix.byte_len() && suffix.byte_get(index) == 58
-                    && suffix.byte_get(index + 1) == 58);
+                || (index + 1 < suffix.byte_len() && suffix.byte_get(index) == b':'
+                    && suffix.byte_get(index + 1) == b':');
             if separator {
                 directory.set(path::join(directory.get(), suffix.byte_slice(start.get(), index)));
                 start.set(index + 2)

@@ -83,15 +83,16 @@ fn valid_identifier(value: string) -> bool {
         ()
     };
     let first = value.byte_get(0);
-    if !((first >= 65 && first <= 90) || (first >= 97 && first <= 122) || first == 95) {
+    if !((first >= b'A' && first <= b'Z') || (first >= b'a' && first <= b'z') || first == b'_') {
         return false
     } else {
         ()
     };
     for index in 1..value.byte_len() {
         let byte = value.byte_get(index);
-        if (byte >= 48 && byte <= 57) || (byte >= 65 && byte <= 90) || (byte >= 97 && byte <= 122)
-            || byte == 95 {
+        if (byte >= b'0' && byte <= b'9') || (byte >= b'A' && byte <= b'Z')
+            || (byte >= b'a' && byte <= b'z')
+            || byte == b'_' {
             ()
         } else {
             return false

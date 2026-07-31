@@ -113,10 +113,10 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     fn place_entry_index(self: IndexMap[K, V], dense_index: int) -> unit {
         match self.entries.get()[dense_index] {
             Some(entry) => match self.probe(entry.key, entry.hash) {
-                IndexMapProbe::Found(slot, _) => {
+                Found(slot, _) => {
                     self.indices.get()[slot] = dense_index;
                 },
-                IndexMapProbe::Vacant(slot) => {
+                Vacant(slot) => {
                     self.indices.get()[slot] = dense_index;
                 },
             },
@@ -173,21 +173,21 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     pub fn contains(self: IndexMap[K, V], key: K) -> bool {
         let hash = Hash::hash(key);
         match self.probe(key, hash) {
-            IndexMapProbe::Found(_, _) => true,
-            IndexMapProbe::Vacant(_) => false,
+            Found(_, _) => true,
+            Vacant(_) => false,
         }
     }
 
     pub fn get(self: IndexMap[K, V], key: K) -> Option[V] {
         let hash = Hash::hash(key);
         match self.probe(key, hash) {
-            IndexMapProbe::Found(_, dense_index) => {
+            Found(_, dense_index) => {
                 match self.entries.get()[dense_index] {
                     Some(entry) => Option::Some(entry.value),
                     None => Option::None,
                 }
             },
-            IndexMapProbe::Vacant(_) => Option::None,
+            Vacant(_) => Option::None,
         }
     }
 
@@ -195,7 +195,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         self.ensure_insert_capacity();
         let hash = Hash::hash(key);
         match self.probe(key, hash) {
-            IndexMapProbe::Found(_, dense_index) => {
+            Found(_, dense_index) => {
                 match self.entries.get()[dense_index] {
                     Some(entry) => {
                         let previous = entry.value;
@@ -207,7 +207,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                     None => Option::None,
                 }
             },
-            IndexMapProbe::Vacant(slot) => {
+            Vacant(slot) => {
                 let dense_index = self.entries.get().len();
                 self.entries.get().push(Option::Some(IndexMapEntry { hash, key, value }));
                 self.indices.get()[slot] = dense_index;
@@ -220,7 +220,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     pub fn remove(self: IndexMap[K, V], key: K) -> Option[V] {
         let hash = Hash::hash(key);
         match self.probe(key, hash) {
-            IndexMapProbe::Found(slot, dense_index) => {
+            Found(slot, dense_index) => {
                 match self.entries.get()[dense_index] {
                     Some(entry) => {
                         self.indices.get()[slot] = -2;
@@ -233,7 +233,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                     None => Option::None,
                 }
             },
-            IndexMapProbe::Vacant(_) => Option::None,
+            Vacant(_) => Option::None,
         }
     }
 
