@@ -258,7 +258,7 @@ fn worker(
     work: Channel[(int, Test)],
     results: Channel[Execution],
 ) -> unit {
-    while true {
+    loop {
         match work.recv() {
             Some(item) => results.send(run_one(module_dir, item.0, item.1, options)),
             None => break,

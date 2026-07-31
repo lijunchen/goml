@@ -918,7 +918,7 @@ fn execute_plan_worker(
     work: Channel[BuildWork],
     results: Channel[BuildWorkResult],
 ) -> unit {
-    while true {
+    loop {
         match work.recv() {
             Some(value) => results.send(
                 BuildWorkResult {

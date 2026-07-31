@@ -299,7 +299,7 @@ pub fn prune_functions(value: File) -> File {
     let reachable = new_name_set();
     let expanded = new_name_set();
     add_reachable(reachable, "main");
-    while true {
+    loop {
         let previous_len = expanded.values.len();
         for item in value.items {
             match item {
@@ -321,7 +321,7 @@ pub fn prune_functions(value: File) -> File {
             ()
         }
     };
-    while true {
+    loop {
         let previous_len = expanded.values.len();
         for item in value.items {
             match item {
@@ -341,7 +341,7 @@ pub fn prune_functions(value: File) -> File {
             ()
         }
     };
-    while true {
+    loop {
         let previous_len = expanded.values.len();
         for item in value.items {
             match item {

@@ -18,7 +18,7 @@ pub struct TestItem {
 
 fn test_path_kind(source_path: string) -> Option[TestItemKind] {
     let current = Ref::new(path::clean(source_path));
-    while true {
+    loop {
         match path::parent(current.get()) {
             Some(parent) => {
                 match path::file_name(parent) {

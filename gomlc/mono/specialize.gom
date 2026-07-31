@@ -1925,7 +1925,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     };
     let output = Vec::new();
     let index = Ref::new(0);
-    while true {
+    loop {
         while index.get() < ctx.work.len() {
             let instance = ctx.work[index.get()];
             index.set(index.get() + 1);

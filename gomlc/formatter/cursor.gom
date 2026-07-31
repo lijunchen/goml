@@ -149,7 +149,7 @@ impl ChildCursor {
 
     fn consume_trivia(self: ChildCursor) -> Vec[LocatedToken] {
         let result: Vec[LocatedToken] = Vec::new();
-        while true {
+        loop {
             match self.peek() {
                 Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {
                     let _ = self.next();
@@ -159,8 +159,7 @@ impl ChildCursor {
                 },
                 _ => return result,
             }
-        };
-        result
+        }
     }
 }
 

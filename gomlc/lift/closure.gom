@@ -273,7 +273,7 @@ fn sanitize_name(value: string) -> Option[string] {
 }
 
 fn fresh_struct_name(state: State, hint: Option[string]) -> string {
-    while true {
+    loop {
         let index = state.next_env.get();
         state.next_env.set(index + 1);
         let candidate = match hint {
@@ -286,8 +286,7 @@ fn fresh_struct_name(state: State, hint: Option[string]) -> string {
             state.used_types.push(candidate);
             return candidate
         }
-    };
-    ""
+    }
 }
 
 fn fresh_name(state: State, prefix: string) -> string {
@@ -445,9 +444,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_exprs(maximum, args)
         },
         Break { value, ty: _ } => observe_optional_expr(maximum, value),
-        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
-            ty: _,
-        } => (),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _ } => (),
     }
 }
 
@@ -846,9 +843,7 @@ fn collect_captured(
             Some(expr) => collect_captured(expr, bound, captured, scope),
             None => (),
         },
-        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
-            ty: _,
-        } => (),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _ } => (),
     }
 }
 

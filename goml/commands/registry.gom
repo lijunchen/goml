@@ -162,7 +162,7 @@ pub fn update_registry(args: Vec[string]) -> Result[unit, string] {
 fn module_root() -> Result[string, string] {
     let current = env::current_dir()?;
     let mut directory = current;
-    while true {
+    loop {
         let manifest_path = path::join(directory, "goml.toml");
         if fs::is_file(manifest_path) {
             match manifest::load(manifest_path) {
@@ -184,8 +184,7 @@ fn module_root() -> Result[string, string] {
                 "no goml.toml with [module] section found in ancestors of " + current,
             ),
         }
-    };
-    Result::Err("could not find module root")
+    }
 }
 
 fn dependency_line_name(line: string) -> Option[string] {

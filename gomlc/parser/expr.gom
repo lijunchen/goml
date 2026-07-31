@@ -500,7 +500,7 @@ fn path_has_legacy_type_args(parser: Parser) -> bool {
         false
     } else {
         let mut depth = 0;
-        while true {
+        loop {
             match parser.nth(index) {
                 LBracket => {
                     depth += 1;
@@ -518,8 +518,7 @@ fn path_has_legacy_type_args(parser: Parser) -> bool {
                 _ => (),
             };
             index = index + 1;
-        };
-        false
+        }
     }
 }
 

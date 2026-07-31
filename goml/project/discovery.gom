@@ -24,7 +24,7 @@ fn canonical(value: string) -> Result[string, string] {
 
 pub fn find_module_root(start: string) -> Result[string, string] {
     let current = Ref::new(start);
-    while true {
+    loop {
         if fs::is_file(path::join(current.get(), "goml.toml")) {
             return Result::Ok(current.get())
         } else {
@@ -37,8 +37,7 @@ pub fn find_module_root(start: string) -> Result[string, string] {
                 None => return Result::Err("could not find goml.toml"),
             }
         }
-    };
-    Result::Err("could not find goml.toml")
+    }
 }
 
 pub fn clean(target_dir_override: Option[string]) -> Result[unit, string] {
