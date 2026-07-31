@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::vecs;
 
 fn artifact_decode_optional_string(value: ArtifactValue, expected: string) -> Result[
@@ -15,7 +17,7 @@ fn artifact_decode_optional_string(value: ArtifactValue, expected: string) -> Re
     }
 }
 
-fn artifact_decode_test_descriptor(value: ArtifactValue) -> Result[TestDescriptor, string] {
+fn artifact_decode_test_descriptor(value: ArtifactValue) -> Result[artifact_model::ArtifactTestDescriptor, string] {
     let object = artifact_json_object(value, "test descriptor")?;
     let id = artifact_json_field_string(object, "id")?;
     let package_name = artifact_json_field_string(object, "package")?;
@@ -33,7 +35,7 @@ fn artifact_decode_test_descriptor(value: ArtifactValue) -> Result[TestDescripto
         "test ignore reason",
     )?;
     Result::Ok(
-        TestDescriptor {
+        artifact_model::ArtifactTestDescriptor {
             id,
             package_name,
             symbol,
@@ -47,16 +49,16 @@ fn artifact_decode_test_descriptor(value: ArtifactValue) -> Result[TestDescripto
     )
 }
 
-fn artifact_decode_tests(value: ArtifactValue) -> Result[Vec[TestDescriptor], string] {
+fn artifact_decode_tests(value: ArtifactValue) -> Result[Vec[artifact_model::ArtifactTestDescriptor], string] {
     let values = artifact_json_array(value, "test descriptors")?;
-    let result: Vec[TestDescriptor] = Vec::[];
+    let result: Vec[artifact_model::ArtifactTestDescriptor] = Vec::[];
     for value in values {
         result.push(artifact_decode_test_descriptor(value)?)
     };
     Result::Ok(result)
 }
 
-fn artifact_test_descriptors_valid(package_name: string, values: Vec[TestDescriptor]) -> bool {
+fn artifact_test_descriptors_valid(package_name: string, values: Vec[artifact_model::ArtifactTestDescriptor]) -> bool {
     let ids: Vec[string] = Vec::[];
     for value in values {
         if value.package_name != package_name || value.id == "" || value.symbol == ""
@@ -73,7 +75,7 @@ fn artifact_test_descriptors_valid(package_name: string, values: Vec[TestDescrip
     true
 }
 
-fn artifact_decode_core_value(value: ArtifactValue) -> Result[ArtifactCoreUnit, string] {
+fn artifact_decode_core_value(value: ArtifactValue) -> Result[artifact_model::ArtifactCoreUnit, string] {
     let object = artifact_json_object(value, "Core unit")?;
     let package_name = artifact_json_field_string(object, "package")?;
     let declared_name = artifact_json_field_string(object, "declared_name")?;
@@ -100,7 +102,7 @@ fn artifact_decode_core_value(value: ArtifactValue) -> Result[ArtifactCoreUnit, 
         Result::Err(artifact_decode_error("valid test descriptors"))
     } else {
         Result::Ok(
-            ArtifactCoreUnit {
+            artifact_model::ArtifactCoreUnit {
                 package_name,
                 declared_name,
                 interface_hash,

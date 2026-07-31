@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::ast;
 use gomlc::hir;
 use gomlc::tast;
@@ -112,7 +114,7 @@ fn artifact_dependency_trait_predicates(values: Vec[tast::TypePredicate]) -> Vec
 }
 
 fn artifact_dependency_function_scheme(
-    value: ArtifactFnScheme,
+    value: artifact_model::ArtifactFnScheme,
     inherited_type_params: Vec[string],
     inherited: Vec[tast::TypePredicate],
     callable: tast::Callable,
@@ -145,7 +147,7 @@ fn artifact_dependency_function_scheme(
     )
 }
 
-fn artifact_dependency_trait(value: ArtifactTraitDef) -> Result[tast::TraitInfo, string] {
+fn artifact_dependency_trait(value: artifact_model::ArtifactTraitDef) -> Result[tast::TraitInfo, string] {
     let associated_types: Vec[tast::AssociatedTypeInfo] = Vec::[];
     for associated in value.associated_types {
         let bounds: Vec[tast::TraitRef] = Vec::[];
@@ -207,7 +209,7 @@ fn artifact_dependency_struct(value: tast::StructDef) -> tast::StructInfo {
     }
 }
 
-fn artifact_dependency_inherent_for_type(value: ArtifactInherentImpl) -> tast::Type {
+fn artifact_dependency_inherent_for_type(value: artifact_model::ArtifactInherentImpl) -> tast::Type {
     match value.key {
         Exact(value) => value,
         Constr(name) => {
@@ -224,7 +226,7 @@ fn artifact_dependency_inherent_for_type(value: ArtifactInherentImpl) -> tast::T
     }
 }
 
-fn artifact_dependency_environment_from_exports(value: ArtifactPackageExports) -> Result[
+fn artifact_dependency_environment_from_exports(value: artifact_model::ArtifactPackageExports) -> Result[
     tast::DependencyEnvironment,
     string,
 ] {

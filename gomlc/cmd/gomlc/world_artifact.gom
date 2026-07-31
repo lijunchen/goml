@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::core;
 use std::bytes;
 use std::fs;
@@ -23,11 +25,11 @@ fn world_decode_counter(data: bytes::Bytes) -> Result[int, string] {
 fn world_core_unit(
     package_name: string,
     declared_name: string,
-    interface: ArtifactInterfaceUnit,
-    exports: ArtifactPackageExports,
+    interface: artifact_model::ArtifactInterfaceUnit,
+    exports: artifact_model::ArtifactPackageExports,
     value: core::File,
-) -> ArtifactCoreUnit {
-    ArtifactCoreUnit {
+) -> artifact_model::ArtifactCoreUnit {
+    artifact_model::ArtifactCoreUnit {
         package_name,
         declared_name,
         interface_hash: interface.interface_hash,

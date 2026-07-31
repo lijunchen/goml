@@ -1,17 +1,19 @@
 package main;
 
+use gomlc::artifact_model;
+
 use std::bytes;
 use std::fs;
 
-fn decode_artifact_interface_bytes(data: bytes::Bytes) -> Result[ArtifactInterfaceUnit, string] {
+fn decode_artifact_interface_bytes(data: bytes::Bytes) -> Result[artifact_model::ArtifactInterfaceUnit, string] {
     decode_artifact_interface_binary(data)
 }
 
-fn decode_artifact_core_bytes(data: bytes::Bytes) -> Result[ArtifactCoreUnit, string] {
+fn decode_artifact_core_bytes(data: bytes::Bytes) -> Result[artifact_model::ArtifactCoreUnit, string] {
     decode_artifact_core_binary(data)
 }
 
-fn write_artifact_interface(path_value: string, value: ArtifactInterfaceUnit) -> Result[
+fn write_artifact_interface(path_value: string, value: artifact_model::ArtifactInterfaceUnit) -> Result[
     unit,
     string,
 ] {
@@ -21,7 +23,7 @@ fn write_artifact_interface(path_value: string, value: ArtifactInterfaceUnit) ->
     }
 }
 
-fn write_artifact_core(path_value: string, value: ArtifactCoreUnit) -> Result[unit, string] {
+fn write_artifact_core(path_value: string, value: artifact_model::ArtifactCoreUnit) -> Result[unit, string] {
     match encode_artifact_core_binary(value) {
         Ok(data) => fs::write_bytes(path_value, data),
         Err(error) => Result::Err(error),

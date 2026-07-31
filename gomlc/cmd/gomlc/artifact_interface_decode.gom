@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::tast;
 
 fn artifact_intrinsic_key_from_id(value: string) -> Option[string] {
@@ -148,7 +150,7 @@ fn artifact_decode_trait_refs(context: ArtifactDecodeContext, value: ArtifactVal
 }
 
 fn artifact_decode_fn_scheme(context: ArtifactDecodeContext, name: string, value: ArtifactValue) -> Result[
-    ArtifactFnScheme,
+    artifact_model::ArtifactFnScheme,
     string,
 ] {
     let object = artifact_json_object(value, "function scheme")?;
@@ -165,15 +167,15 @@ fn artifact_decode_fn_scheme(context: ArtifactDecodeContext, name: string, value
         Some(value) => artifact_decode_callable_body(name, value)?,
         None => tast::Callable::Function(name),
     };
-    Result::Ok(ArtifactFnScheme { name, type_params, constraints, ty, body })
+    Result::Ok(artifact_model::ArtifactFnScheme { name, type_params, constraints, ty, body })
 }
 
 fn artifact_decode_fn_map(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
-    Vec[ArtifactFnScheme],
+    Vec[artifact_model::ArtifactFnScheme],
     string,
 ] {
     let object = artifact_json_object(value, "function map")?;
-    let result: Vec[ArtifactFnScheme] = Vec::[];
+    let result: Vec[artifact_model::ArtifactFnScheme] = Vec::[];
     for item in object {
         result.push(artifact_decode_fn_scheme(context, item.0, item.1)?)
     };
@@ -300,24 +302,24 @@ fn artifact_decode_type_alias(context: ArtifactDecodeContext, name: string, valu
 }
 
 fn artifact_decode_associated_type_defs(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
-    Vec[ArtifactAssociatedTypeDef],
+    Vec[artifact_model::ArtifactAssociatedTypeDef],
     string,
 ] {
     let object = artifact_json_object(value, "associated type definitions")?;
-    let result: Vec[ArtifactAssociatedTypeDef] = Vec::[];
+    let result: Vec[artifact_model::ArtifactAssociatedTypeDef] = Vec::[];
     for item in object {
         let definition = artifact_json_object(item.1, "associated type definition")?;
         let bounds = artifact_decode_trait_refs(
             context,
             artifact_json_required_field(definition, "bounds")?,
         )?;
-        result.push(ArtifactAssociatedTypeDef { name: item.0, bounds })
+        result.push(artifact_model::ArtifactAssociatedTypeDef { name: item.0, bounds })
     };
     Result::Ok(result)
 }
 
 fn artifact_decode_trait_def(context: ArtifactDecodeContext, name: string, value: ArtifactValue) -> Result[
-    ArtifactTraitDef,
+    artifact_model::ArtifactTraitDef,
     string,
 ] {
     let object = artifact_json_object(value, "trait definition")?;
@@ -339,7 +341,7 @@ fn artifact_decode_trait_def(context: ArtifactDecodeContext, name: string, value
     )?;
     let methods = artifact_decode_fn_map(context, artifact_json_required_field(object, "methods")?)?;
     Result::Ok(
-        ArtifactTraitDef { name, params, predicates, supertraits, associated_types, methods },
+        artifact_model::ArtifactTraitDef { name, params, predicates, supertraits, associated_types, methods },
     )
 }
 
@@ -356,7 +358,7 @@ fn artifact_decode_associated_types(context: ArtifactDecodeContext, value: Artif
 }
 
 fn artifact_decode_impl_def(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
-    ArtifactImplDef,
+    artifact_model::ArtifactImplDef,
     string,
 ] {
     let object = artifact_json_object(value, "implementation definition")?;
@@ -377,15 +379,15 @@ fn artifact_decode_impl_def(context: ArtifactDecodeContext, value: ArtifactValue
         Some(value) => artifact_json_bool_value(value, "implementation validity")?,
         None => true,
     };
-    Result::Ok(ArtifactImplDef { params, constraints, associated_types, methods, valid })
+    Result::Ok(artifact_model::ArtifactImplDef { params, constraints, associated_types, methods, valid })
 }
 
 fn artifact_decode_trait_impls(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
-    Vec[ArtifactTraitImpl],
+    Vec[artifact_model::ArtifactTraitImpl],
     string,
 ] {
     let values = artifact_json_array(value, "trait implementations")?;
-    let result: Vec[ArtifactTraitImpl] = Vec::[];
+    let result: Vec[artifact_model::ArtifactTraitImpl] = Vec::[];
     for value in values {
         let pair = artifact_json_array(value, "trait implementation")?;
         if pair.len() != 2 {
@@ -400,13 +402,13 @@ fn artifact_decode_trait_impls(context: ArtifactDecodeContext, value: ArtifactVa
         )?;
         let for_ty = artifact_decode_type(context, artifact_json_required_field(key, "for_ty")?)?;
         let definition = artifact_decode_impl_def(context, pair[1])?;
-        result.push(ArtifactTraitImpl { trait_ref, for_ty, definition })
+        result.push(artifact_model::ArtifactTraitImpl { trait_ref, for_ty, definition })
     };
     Result::Ok(result)
 }
 
 fn artifact_decode_inherent_impl_key(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
-    ArtifactInherentImplKey,
+    artifact_model::ArtifactInherentImplKey,
     string,
 ] {
     let object = artifact_json_object(value, "inherent implementation key")?;
@@ -414,12 +416,12 @@ fn artifact_decode_inherent_impl_key(context: ArtifactDecodeContext, value: Arti
         Result::Err(artifact_decode_error("inherent implementation key variant"))
     } else if object[0].0 == "Exact" {
         match artifact_decode_type(context, object[0].1) {
-            Ok(value) => Result::Ok(ArtifactInherentImplKey::Exact(value)),
+            Ok(value) => Result::Ok(artifact_model::ArtifactInherentImplKey::Exact(value)),
             Err(error) => Result::Err(error),
         }
     } else if object[0].0 == "Constr" {
         match artifact_json_string_value(object[0].1, "inherent constructor") {
-            Ok(value) => Result::Ok(ArtifactInherentImplKey::Constr(value)),
+            Ok(value) => Result::Ok(artifact_model::ArtifactInherentImplKey::Constr(value)),
             Err(error) => Result::Err(error),
         }
     } else {
@@ -428,11 +430,11 @@ fn artifact_decode_inherent_impl_key(context: ArtifactDecodeContext, value: Arti
 }
 
 fn artifact_decode_inherent_impls(context: ArtifactDecodeContext, value: ArtifactValue) -> Result[
-    Vec[ArtifactInherentImpl],
+    Vec[artifact_model::ArtifactInherentImpl],
     string,
 ] {
     let values = artifact_json_array(value, "inherent implementations")?;
-    let result: Vec[ArtifactInherentImpl] = Vec::[];
+    let result: Vec[artifact_model::ArtifactInherentImpl] = Vec::[];
     for value in values {
         let pair = artifact_json_array(value, "inherent implementation")?;
         if pair.len() != 2 {
@@ -442,12 +444,12 @@ fn artifact_decode_inherent_impls(context: ArtifactDecodeContext, value: Artifac
         };
         let key = artifact_decode_inherent_impl_key(context, pair[0])?;
         let definition = artifact_decode_impl_def(context, pair[1])?;
-        result.push(ArtifactInherentImpl { key, definition })
+        result.push(artifact_model::ArtifactInherentImpl { key, definition })
     };
     Result::Ok(result)
 }
 
-fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPackageExports, string] {
+fn artifact_decode_package_exports(value: ArtifactValue) -> Result[artifact_model::ArtifactPackageExports, string] {
     let context = new_artifact_decode_context();
     let object = artifact_json_object(value, "package exports")?;
     let type_env = artifact_json_field_object(object, "type_env")?;
@@ -484,7 +486,7 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
     };
     let trait_env = artifact_json_field_object(object, "trait_env")?;
     let trait_map = artifact_json_field_object(trait_env, "trait_defs")?;
-    let traits: Vec[ArtifactTraitDef] = Vec::[];
+    let traits: Vec[artifact_model::ArtifactTraitDef] = Vec::[];
     for item in trait_map {
         traits.push(artifact_decode_trait_def(context, item.0, item.1)?)
     };
@@ -509,7 +511,7 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
         constants.push(tast::ConstantScheme { def_id: Option::None, name: item.0, ty })
     };
     Result::Ok(
-        ArtifactPackageExports {
+        artifact_model::ArtifactPackageExports {
             enum_type_names: context.enum_names,
             struct_type_names: context.struct_names,
             type_aliases,
@@ -525,7 +527,7 @@ fn artifact_decode_package_exports(value: ArtifactValue) -> Result[ArtifactPacka
 }
 
 fn artifact_decode_package_interface(value: ArtifactValue) -> Result[
-    ArtifactPackageInterface,
+    artifact_model::ArtifactPackageInterface,
     string,
 ] {
     let object = artifact_json_object(value, "package interface")?;
@@ -542,7 +544,7 @@ fn artifact_decode_package_interface(value: ArtifactValue) -> Result[
     for item in enum_map {
         enum_variants.push((item.0, artifact_decode_string_array(item.1, "enum variant names")?))
     };
-    Result::Ok(ArtifactPackageInterface { package_name, name, value_exports, enum_variants })
+    Result::Ok(artifact_model::ArtifactPackageInterface { package_name, name, value_exports, enum_variants })
 }
 
 fn artifact_decode_string_map(value: ArtifactValue, expected: string) -> Result[
@@ -557,7 +559,7 @@ fn artifact_decode_string_map(value: ArtifactValue, expected: string) -> Result[
     Result::Ok(result)
 }
 
-fn artifact_decode_interface_value(value: ArtifactValue) -> Result[ArtifactInterfaceUnit, string] {
+fn artifact_decode_interface_value(value: ArtifactValue) -> Result[artifact_model::ArtifactInterfaceUnit, string] {
     let object = artifact_json_object(value, "interface unit")?;
     let package_name = artifact_json_field_string(object, "package")?;
     let exports = artifact_decode_package_exports(artifact_json_required_field(object, "exports")?)?;
@@ -569,7 +571,7 @@ fn artifact_decode_interface_value(value: ArtifactValue) -> Result[ArtifactInter
         "dependency hashes",
     )?;
     let interface_hash = artifact_json_field_string(object, "interface_hash")?;
-    let result = ArtifactInterfaceUnit {
+    let result = artifact_model::ArtifactInterfaceUnit {
         package_name,
         exports,
         package_interface,

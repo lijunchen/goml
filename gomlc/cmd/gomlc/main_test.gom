@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::ast;
 use gomlc::core;
 use gomlc::go_backend;
@@ -428,7 +430,7 @@ fn collects_and_encodes_test_descriptors() -> unit {
     testing::assert_eq(collected.diagnostics.len(), 0);
     let exports = empty_artifact_package_exports();
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "alice::sample::zebra",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -437,7 +439,7 @@ fn collects_and_encodes_test_descriptors() -> unit {
         },
     );
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "alice::sample::alpha",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -473,7 +475,7 @@ fn collects_all_invalid_test_signature_diagnostics() -> unit {
     testing::assert_eq(collected.diagnostics.len(), 0);
     let exports = empty_artifact_package_exports();
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "alice::bad::invalid",
             type_params: Vec::["T"],
             constraints: Vec::new(),
@@ -554,7 +556,7 @@ fn labels_duplicate_test_ids_across_files() -> unit {
     testing::assert_eq(collected.diagnostics.len(), 0);
     let exports = empty_artifact_package_exports();
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "example::tests::duplicate",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -978,7 +980,7 @@ fn decodes_primitive_equality_intrinsic_id() -> unit {
 fn writes_interface_unit_shape_and_hash() -> unit {
     let exports = empty_artifact_package_exports();
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "audit::value::value",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -989,7 +991,7 @@ fn writes_interface_unit_shape_and_hash() -> unit {
     let artifact_unit = new_artifact_interface_unit(
         "audit::value",
         exports,
-        ArtifactPackageInterface {
+        artifact_model::ArtifactPackageInterface {
             package_name: "audit::value",
             name: "value",
             value_exports: Vec::[("audit::value::value", 0)],
@@ -1267,7 +1269,7 @@ fn writes_core_unit_from_checked_package() -> unit {
         deps,
     );
     let core_ir = core::lower_with_counter_and_types(checked, Ref::new(0), Vec::new(), Vec::new());
-    let core_unit = ArtifactCoreUnit {
+    let core_unit = artifact_model::ArtifactCoreUnit {
         package_name: "audit::value",
         declared_name: "value",
         interface_hash: interface_unit.interface_hash,
@@ -1312,7 +1314,7 @@ fn validates_artifact_main_entrypoints() -> unit {
         Ok(()) => testing::fail("expected missing main error"),
     };
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "example::app::main",
             type_params: Vec::["T"],
             constraints: Vec::new(),
@@ -1326,7 +1328,7 @@ fn validates_artifact_main_entrypoints() -> unit {
     };
     let exports = empty_artifact_package_exports();
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "example::app::main",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -1348,7 +1350,7 @@ fn validates_artifact_main_entrypoints() -> unit {
 fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
     let exports = empty_artifact_package_exports();
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "example::app::main",
             type_params: Vec::["T"],
             constraints: Vec::new(),
@@ -1370,7 +1372,7 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
         rhs: tast::Type::Int32,
     };
     exports.functions.push(
-        ArtifactFnScheme {
+        artifact_model::ArtifactFnScheme {
             name: "audit::identity",
             type_params: Vec::["T"],
             constraints: Vec::[function_constraint],
@@ -1406,15 +1408,15 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
         rhs: tast::Type::Int32,
     };
     exports.trait_impls.push(
-        ArtifactTraitImpl {
+        artifact_model::ArtifactTraitImpl {
             trait_ref,
             for_ty: tast::Type::Con { name: "audit::Numbers" },
-            definition: ArtifactImplDef {
+            definition: artifact_model::ArtifactImplDef {
                 params: Vec::new(),
                 constraints: Vec::[impl_constraint],
                 associated_types: Vec::[("Item", tast::Type::Int32)],
                 methods: Vec::[
-                    ArtifactFnScheme {
+                    artifact_model::ArtifactFnScheme {
                         name: "read",
                         type_params: Vec::new(),
                         constraints: Vec::[method_constraint],

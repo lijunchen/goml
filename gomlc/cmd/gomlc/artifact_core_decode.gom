@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::ast;
 use gomlc::core;
 use gomlc::tast;
@@ -11,7 +13,7 @@ struct ArtifactCoreDecodeContext {
     structs: Vec[tast::StructDef],
 }
 
-fn artifact_core_decode_context(value: ArtifactPackageExports) -> ArtifactCoreDecodeContext {
+fn artifact_core_decode_context(value: artifact_model::ArtifactPackageExports) -> ArtifactCoreDecodeContext {
     let types = ArtifactDecodeContext {
         enum_names: value.enum_type_names,
         struct_names: value.struct_type_names,

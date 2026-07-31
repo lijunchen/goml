@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::anf;
 use gomlc::ast;
 use gomlc::core;
@@ -39,8 +41,8 @@ pub enum SourceCompilation {
 struct PackageCompilation {
     hir_file: hir::File,
     core_value: core::File,
-    interface_unit: ArtifactInterfaceUnit,
-    exports: ArtifactPackageExports,
+    interface_unit: artifact_model::ArtifactInterfaceUnit,
+    exports: artifact_model::ArtifactPackageExports,
 }
 
 struct DiagnosticPosition {
@@ -69,8 +71,8 @@ struct StandardLibrary {
 
 struct ArtifactStandardPackage {
     core_value: core::File,
-    interface_unit: ArtifactInterfaceUnit,
-    environment_exports: ArtifactPackageExports,
+    interface_unit: artifact_model::ArtifactInterfaceUnit,
+    environment_exports: artifact_model::ArtifactPackageExports,
 }
 
 struct ArtifactStandardLibrary {
@@ -357,7 +359,7 @@ fn builtin_hir_files() -> Vec[hir::File] {
     files
 }
 
-fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
+fn builtin_artifact_interface_unit() -> artifact_model::ArtifactInterfaceUnit {
     let builtin_files = builtin_hir_files();
     let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
     let traits: Vec[tast::TraitInfo] = Vec::[];

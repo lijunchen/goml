@@ -1,13 +1,15 @@
 package main;
 
+use gomlc::artifact_model;
+
 use std::bytes;
 use std::testing;
 
-fn binary_interface_fixture() -> ArtifactInterfaceUnit {
+fn binary_interface_fixture() -> artifact_model::ArtifactInterfaceUnit {
     new_artifact_interface_unit(
         "audit::value",
         empty_artifact_package_exports(),
-        ArtifactPackageInterface {
+        artifact_model::ArtifactPackageInterface {
             package_name: "audit::value",
             name: "value",
             value_exports: Vec::new(),

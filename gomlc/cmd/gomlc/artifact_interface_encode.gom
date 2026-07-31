@@ -1,84 +1,12 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::hash;
 use gomlc::tast;
 
-struct ArtifactFnScheme {
-    name: string,
-    type_params: Vec[string],
-    constraints: Vec[tast::TypePredicate],
-    ty: tast::Type,
-    body: tast::Callable,
-}
-
-struct ArtifactAssociatedTypeDef {
-    name: string,
-    bounds: Vec[tast::TraitRef],
-}
-
-struct ArtifactTraitDef {
-    name: string,
-    params: Vec[string],
-    predicates: Vec[tast::TypePredicate],
-    supertraits: Vec[tast::TraitRef],
-    associated_types: Vec[ArtifactAssociatedTypeDef],
-    methods: Vec[ArtifactFnScheme],
-}
-
-struct ArtifactImplDef {
-    params: Vec[string],
-    constraints: Vec[tast::TypePredicate],
-    associated_types: Vec[(string, tast::Type)],
-    methods: Vec[ArtifactFnScheme],
-    valid: bool,
-}
-
-struct ArtifactTraitImpl {
-    trait_ref: tast::TraitRef,
-    for_ty: tast::Type,
-    definition: ArtifactImplDef,
-}
-
-enum ArtifactInherentImplKey {
-    Exact(tast::Type),
-    Constr(string),
-}
-
-struct ArtifactInherentImpl {
-    key: ArtifactInherentImplKey,
-    definition: ArtifactImplDef,
-}
-
-struct ArtifactPackageExports {
-    enum_type_names: Vec[string],
-    struct_type_names: Vec[string],
-    type_aliases: Vec[tast::TypeAliasInfo],
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    traits: Vec[ArtifactTraitDef],
-    trait_impls: Vec[ArtifactTraitImpl],
-    inherent_impls: Vec[ArtifactInherentImpl],
-    functions: Vec[ArtifactFnScheme],
-    constants: Vec[tast::ConstantScheme],
-}
-
-struct ArtifactPackageInterface {
-    package_name: string,
-    name: string,
-    value_exports: Vec[(string, int)],
-    enum_variants: Vec[(string, Vec[string])],
-}
-
-struct ArtifactInterfaceUnit {
-    package_name: string,
-    exports: ArtifactPackageExports,
-    package_interface: ArtifactPackageInterface,
-    deps: Vec[(string, string)],
-    interface_hash: string,
-}
-
-fn empty_artifact_package_exports() -> ArtifactPackageExports {
-    ArtifactPackageExports {
+fn empty_artifact_package_exports() -> artifact_model::ArtifactPackageExports {
+    artifact_model::ArtifactPackageExports {
         enum_type_names: Vec::[],
         struct_type_names: Vec::[],
         type_aliases: Vec::[],
@@ -92,7 +20,7 @@ fn empty_artifact_package_exports() -> ArtifactPackageExports {
     }
 }
 
-fn artifact_exports_type_context(value: ArtifactPackageExports) -> ArtifactTypeContext {
+fn artifact_exports_type_context(value: artifact_model::ArtifactPackageExports) -> ArtifactTypeContext {
     let enum_names = value.enum_type_names;
     let struct_names = value.struct_type_names;
     for definition in value.enums {
@@ -201,7 +129,7 @@ fn artifact_json_trait_refs(
 fn artifact_json_fn_scheme(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
-    value: ArtifactFnScheme,
+    value: artifact_model::ArtifactFnScheme,
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "type_params");
@@ -218,7 +146,7 @@ fn artifact_json_fn_scheme(
 fn artifact_json_methods(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
-    values: Vec[ArtifactFnScheme],
+    values: Vec[artifact_model::ArtifactFnScheme],
 ) -> unit {
     artifact_json_begin_object(writer);
     for value in values {
@@ -231,7 +159,7 @@ fn artifact_json_methods(
 fn artifact_json_trait_def(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
-    value: ArtifactTraitDef,
+    value: artifact_model::ArtifactTraitDef,
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "params");
@@ -258,7 +186,7 @@ fn artifact_json_trait_def(
 fn artifact_json_impl_def(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
-    value: ArtifactImplDef,
+    value: artifact_model::ArtifactImplDef,
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "params");
@@ -282,7 +210,7 @@ fn artifact_json_impl_def(
 fn artifact_json_trait_impl_key(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
-    value: ArtifactTraitImpl,
+    value: artifact_model::ArtifactTraitImpl,
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "trait_ref");
@@ -295,7 +223,7 @@ fn artifact_json_trait_impl_key(
 fn artifact_json_inherent_impl_key(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
-    value: ArtifactInherentImplKey,
+    value: artifact_model::ArtifactInherentImplKey,
 ) -> unit {
     artifact_json_begin_object(writer);
     match value {
@@ -314,7 +242,7 @@ fn artifact_json_inherent_impl_key(
 fn artifact_json_package_exports(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
-    value: ArtifactPackageExports,
+    value: artifact_model::ArtifactPackageExports,
 ) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "type_env");
@@ -416,7 +344,7 @@ fn artifact_json_string_map(writer: ArtifactJsonWriter, values: Vec[(string, str
     artifact_json_end_object(writer)
 }
 
-fn artifact_json_package_interface(writer: ArtifactJsonWriter, value: ArtifactPackageInterface) -> unit {
+fn artifact_json_package_interface(writer: ArtifactJsonWriter, value: artifact_model::ArtifactPackageInterface) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "package");
     artifact_json_string(writer, value.package_name);
@@ -442,7 +370,7 @@ fn artifact_json_package_interface(writer: ArtifactJsonWriter, value: ArtifactPa
 fn artifact_json_interface_hash_view(
     writer: ArtifactJsonWriter,
     context: ArtifactTypeContext,
-    value: ArtifactInterfaceUnit,
+    value: artifact_model::ArtifactInterfaceUnit,
 ) -> unit {
     artifact_json_begin_object(writer);
     if writer.binary_mode < 2 {
@@ -464,7 +392,7 @@ fn artifact_json_interface_hash_view(
     artifact_json_end_object(writer)
 }
 
-fn artifact_interface_hash(value: ArtifactInterfaceUnit) -> string {
+fn artifact_interface_hash(value: artifact_model::ArtifactInterfaceUnit) -> string {
     let writer = new_artifact_json_writer(false);
     artifact_json_interface_hash_view(writer, artifact_exports_type_context(value.exports), value);
     hash::sha256_hex(artifact_json_finish(writer))
@@ -472,11 +400,11 @@ fn artifact_interface_hash(value: ArtifactInterfaceUnit) -> string {
 
 fn new_artifact_interface_unit(
     package_name: string,
-    exports: ArtifactPackageExports,
-    package_interface: ArtifactPackageInterface,
+    exports: artifact_model::ArtifactPackageExports,
+    package_interface: artifact_model::ArtifactPackageInterface,
     deps: Vec[(string, string)],
-) -> ArtifactInterfaceUnit {
-    let value = ArtifactInterfaceUnit {
+) -> artifact_model::ArtifactInterfaceUnit {
+    let value = artifact_model::ArtifactInterfaceUnit {
         package_name,
         exports,
         package_interface,
@@ -484,7 +412,7 @@ fn new_artifact_interface_unit(
         interface_hash: "",
     };
     let interface_hash = artifact_interface_hash(value);
-    ArtifactInterfaceUnit {
+    artifact_model::ArtifactInterfaceUnit {
         package_name: value.package_name,
         exports: value.exports,
         package_interface: value.package_interface,
@@ -493,7 +421,7 @@ fn new_artifact_interface_unit(
     }
 }
 
-fn artifact_json_interface_unit(writer: ArtifactJsonWriter, value: ArtifactInterfaceUnit) -> unit {
+fn artifact_json_interface_unit(writer: ArtifactJsonWriter, value: artifact_model::ArtifactInterfaceUnit) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "format_version");
     artifact_json_number(writer, "17");
@@ -516,7 +444,7 @@ fn artifact_json_interface_unit(writer: ArtifactJsonWriter, value: ArtifactInter
     artifact_json_end_object(writer)
 }
 
-fn encode_artifact_interface_unit(value: ArtifactInterfaceUnit, pretty: bool) -> string {
+fn encode_artifact_interface_unit(value: artifact_model::ArtifactInterfaceUnit, pretty: bool) -> string {
     let writer = new_artifact_json_writer(pretty);
     artifact_json_interface_unit(writer, value);
     artifact_json_finish(writer)

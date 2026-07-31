@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::anf;
 use gomlc::ast;
 use gomlc::core;
@@ -37,14 +39,14 @@ struct ArtifactCompilation {
 }
 
 struct ArtifactCompiledPackage {
-    interface_unit: ArtifactInterfaceUnit,
-    core_unit: ArtifactCoreUnit,
+    interface_unit: artifact_model::ArtifactInterfaceUnit,
+    core_unit: artifact_model::ArtifactCoreUnit,
 }
 
 struct PackageWorld {
     counter: Ref[int],
     builtins: core::File,
-    builtin_interface: ArtifactInterfaceUnit,
+    builtin_interface: artifact_model::ArtifactInterfaceUnit,
     standard: ArtifactStandardLibrary,
 }
 
@@ -845,7 +847,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
             let interface_unit = new_artifact_interface_unit(
                 command.package_name,
                 empty_artifact_package_exports(),
-                ArtifactPackageInterface {
+                artifact_model::ArtifactPackageInterface {
                     package_name: command.package_name,
                     name: "main",
                     value_exports: Vec::[],
@@ -855,7 +857,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
             );
             ArtifactCompiledPackage {
                 interface_unit,
-                core_unit: ArtifactCoreUnit {
+                core_unit: artifact_model::ArtifactCoreUnit {
                     package_name: command.package_name,
                     declared_name: "main",
                     interface_hash: interface_unit.interface_hash,
@@ -1057,7 +1059,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     for compilation in compilations {
         package_cores.push(compilation.core_value)
     };
-    let tests: Vec[TestDescriptor] = Vec::[];
+    let tests: Vec[artifact_model::ArtifactTestDescriptor] = Vec::[];
     for package_name in command.packages {
         match artifact_find_core_unit(core_units, package_name) {
             Some(core_unit) => for test in core_unit.tests {

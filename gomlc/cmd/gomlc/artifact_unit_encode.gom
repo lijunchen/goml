@@ -1,19 +1,10 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::core;
 
-struct ArtifactCoreUnit {
-    package_name: string,
-    declared_name: string,
-    interface_hash: string,
-    exports: ArtifactPackageExports,
-    core_ir: core::File,
-    deps: Vec[(string, string)],
-    sources: Vec[string],
-    tests: Vec[TestDescriptor],
-}
-
-fn artifact_json_test_descriptor(writer: ArtifactJsonWriter, value: TestDescriptor) -> unit {
+fn artifact_json_test_descriptor(writer: ArtifactJsonWriter, value: artifact_model::ArtifactTestDescriptor) -> unit {
     artifact_json_begin_object(writer);
     artifact_json_name(writer, "id");
     artifact_json_string(writer, value.id);
@@ -39,7 +30,7 @@ fn artifact_json_test_descriptor(writer: ArtifactJsonWriter, value: TestDescript
     artifact_json_end_object(writer)
 }
 
-fn artifact_json_tests(writer: ArtifactJsonWriter, values: Vec[TestDescriptor]) -> unit {
+fn artifact_json_tests(writer: ArtifactJsonWriter, values: Vec[artifact_model::ArtifactTestDescriptor]) -> unit {
     artifact_json_begin_array(writer);
     for value in values {
         artifact_json_test_descriptor(writer, value)
@@ -47,7 +38,7 @@ fn artifact_json_tests(writer: ArtifactJsonWriter, values: Vec[TestDescriptor]) 
     artifact_json_end_array(writer)
 }
 
-fn artifact_json_core_unit(writer: ArtifactJsonWriter, value: ArtifactCoreUnit) -> unit {
+fn artifact_json_core_unit(writer: ArtifactJsonWriter, value: artifact_model::ArtifactCoreUnit) -> unit {
     let context = artifact_exports_type_context(value.exports);
     artifact_json_begin_object(writer);
     if writer.binary_mode < 2 {
@@ -77,7 +68,7 @@ fn artifact_json_core_unit(writer: ArtifactJsonWriter, value: ArtifactCoreUnit) 
     artifact_json_end_object(writer)
 }
 
-fn encode_artifact_core_unit(value: ArtifactCoreUnit, pretty: bool) -> string {
+fn encode_artifact_core_unit(value: artifact_model::ArtifactCoreUnit, pretty: bool) -> string {
     let writer = new_artifact_json_writer(pretty);
     artifact_json_core_unit(writer, value);
     artifact_json_finish(writer)

@@ -1,8 +1,10 @@
 package main;
 
+use gomlc::artifact_model;
+
 use std::bytes;
 
-fn artifact_binary_core_sections(value: ArtifactCoreUnit) -> Result[
+fn artifact_binary_core_sections(value: artifact_model::ArtifactCoreUnit) -> Result[
     Vec[ArtifactBinarySection],
     string,
 ] {
@@ -30,7 +32,7 @@ fn artifact_binary_core_sections(value: ArtifactCoreUnit) -> Result[
     )
 }
 
-fn encode_artifact_core_binary(value: ArtifactCoreUnit) -> Result[bytes::Bytes, string] {
+fn encode_artifact_core_binary(value: artifact_model::ArtifactCoreUnit) -> Result[bytes::Bytes, string] {
     let sections = artifact_binary_core_sections(value)?;
     encode_artifact_binary_container(2, sections)
 }
@@ -62,7 +64,7 @@ fn artifact_binary_validate_core_sections(value: ArtifactBinaryContainer) -> Res
     Result::Ok(())
 }
 
-fn decode_artifact_core_binary(data: bytes::Bytes) -> Result[ArtifactCoreUnit, string] {
+fn decode_artifact_core_binary(data: bytes::Bytes) -> Result[artifact_model::ArtifactCoreUnit, string] {
     let container = decode_artifact_binary_container(data)?;
     if container.kind != 2 {
         return Result::Err("binary artifact is not Core")

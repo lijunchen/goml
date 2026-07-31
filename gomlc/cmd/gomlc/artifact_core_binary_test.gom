@@ -1,11 +1,13 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::core;
 use gomlc::tast;
 use std::bytes;
 use std::testing;
 
-fn binary_core_fixture() -> ArtifactCoreUnit {
+fn binary_core_fixture() -> artifact_model::ArtifactCoreUnit {
     let core_ir = empty_core_file();
     core_ir.functions.push(
         core::Function {
@@ -35,7 +37,7 @@ fn binary_core_fixture() -> ArtifactCoreUnit {
             },
         },
     );
-    ArtifactCoreUnit {
+    artifact_model::ArtifactCoreUnit {
         package_name: "audit::value",
         declared_name: "value",
         interface_hash: "0123456789abcdef",

@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_model;
+
 use gomlc::ast;
 use gomlc::parser;
 use gomlc::strings;
@@ -9,18 +11,6 @@ use std::text;
 struct ParsedTestAttribute {
     name: string,
     args: Option[string],
-}
-
-struct TestDescriptor {
-    id: string,
-    package_name: string,
-    symbol: string,
-    display_name: string,
-    source_path: string,
-    start: int,
-    end: int,
-    ignored: bool,
-    ignore_reason: Option[string],
 }
 
 struct TestCandidate {
@@ -39,7 +29,7 @@ struct TestCandidateCollection {
 }
 
 struct TestValidation {
-    tests: Vec[TestDescriptor],
+    tests: Vec[artifact_model::ArtifactTestDescriptor],
     diagnostics: Vec[tast::Diagnostic],
 }
 
@@ -351,7 +341,7 @@ fn test_string_less(left: string, right: string) -> bool {
     left.byte_len() < right.byte_len()
 }
 
-fn sort_test_descriptors(values: Vec[TestDescriptor]) -> Vec[TestDescriptor] {
+fn sort_test_descriptors(values: Vec[artifact_model::ArtifactTestDescriptor]) -> Vec[artifact_model::ArtifactTestDescriptor] {
     for index in 1..values.len() {
         let current = values[index];
         let mut destination = index;
@@ -443,7 +433,7 @@ fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: V
     TestCandidateCollection { candidates, diagnostics }
 }
 
-fn find_test_scheme(exports: ArtifactPackageExports, symbol: string) -> Option[ArtifactFnScheme] {
+fn find_test_scheme(exports: artifact_model::ArtifactPackageExports, symbol: string) -> Option[artifact_model::ArtifactFnScheme] {
     for function in exports.functions {
         if function.name == symbol {
             return Option::Some(function)
@@ -468,9 +458,9 @@ fn find_valid_test_candidate(values: Vec[TestCandidate], name: string) -> Option
 fn validate_package_tests(
     package_name: string,
     candidates: Vec[TestCandidate],
-    exports: ArtifactPackageExports,
+    exports: artifact_model::ArtifactPackageExports,
 ) -> TestValidation {
-    let tests: Vec[TestDescriptor] = Vec::[];
+    let tests: Vec[artifact_model::ArtifactTestDescriptor] = Vec::[];
     let valid_candidates: Vec[TestCandidate] = Vec::[];
     let diagnostics: Vec[tast::Diagnostic] = Vec::[];
     for candidate in candidates {
@@ -563,7 +553,7 @@ fn validate_package_tests(
                 ),
                 None => {
                     tests.push(
-                        TestDescriptor {
+                        artifact_model::ArtifactTestDescriptor {
                             id: symbol,
                             package_name,
                             symbol,
@@ -638,7 +628,7 @@ fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
-fn encode_test_manifest(values: Vec[TestDescriptor]) -> string {
+fn encode_test_manifest(values: Vec[artifact_model::ArtifactTestDescriptor]) -> string {
     let builder = text::StringBuilder::new();
     builder.write_char('[');
     for index in 0..values.len() {
@@ -686,7 +676,7 @@ fn encode_test_manifest(values: Vec[TestDescriptor]) -> string {
     builder.finish()
 }
 
-fn test_link_cases(values: Vec[TestDescriptor]) -> Vec[(string, string)] {
+fn test_link_cases(values: Vec[artifact_model::ArtifactTestDescriptor]) -> Vec[(string, string)] {
     let result: Vec[(string, string)] = Vec::[];
     for value in values {
         result.push((value.id, value.symbol))
