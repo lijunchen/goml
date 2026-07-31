@@ -50,10 +50,10 @@ fn artifact_decode_numeric_primitive(kind: string, value: ArtifactValue) -> Resu
     tast::Primitive,
     string,
 ] {
-    let value = match artifact_decode_primitive_payload(value) {
-        Ok(value) => artifact_json_number_value(value, "numeric primitive")?,
-        Err(error) => return Result::Err(error),
-    };
+    let value = artifact_json_number_value(
+        artifact_decode_primitive_payload(value)?,
+        "numeric primitive",
+    )?;
     match kind {
         "Int" => Result::Ok(tast::Primitive::Int { value }),
         "Int8" => Result::Ok(tast::Primitive::Int8 { value }),
@@ -103,10 +103,10 @@ fn artifact_decode_primitive(value: ArtifactValue) -> Result[tast::Primitive, st
             Err(error) => Result::Err(error),
         }
     } else if kind == "Char" {
-        let value = match artifact_decode_primitive_payload(payload) {
-            Ok(value) => artifact_json_string_value(value, "character primitive")?,
-            Err(error) => return Result::Err(error),
-        };
+        let value = artifact_json_string_value(
+            artifact_decode_primitive_payload(payload)?,
+            "character primitive",
+        )?;
         if value.len() != 1 {
             Result::Err(artifact_decode_error("single character primitive"))
         } else {
@@ -141,13 +141,12 @@ fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: Artifa
         let payload = artifact_json_object(object[0].1, "enum constructor")?;
         let type_name = artifact_json_field_string(payload, "type_name")?;
         let variant = artifact_json_field_string(payload, "variant")?;
-        let index = match artifact_json_required_field(payload, "index") {
-            Ok(value) => match artifact_json_number_value(value, "enum constructor index") {
-                Ok(value) => artifact_parse_nonnegative_int(value)?,
-                Err(error) => return Result::Err(error),
-            },
-            Err(error) => return Result::Err(error),
-        };
+        let index = artifact_parse_nonnegative_int(
+            artifact_json_number_value(
+                artifact_json_required_field(payload, "index")?,
+                "enum constructor index",
+            )?,
+        )?;
         Result::Ok(
             tast::Constructor {
                 name: type_name + "::" + variant,
