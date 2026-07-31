@@ -1,0 +1,4 @@
+struct Pair{left:int32,right:int32}
+enum Maybe{None,Some(int32)}
+fn classify(value:Maybe,numbers:Vec[int32])->string{let selected=if true{1}else{2};while selected<0{break};for number in numbers{let _=number;};match value{whole @ Maybe::Some(inner) if inner>10=>"large",Maybe::Some(0|1)=>"small",Maybe::Some(2..=9)=>"middle",Maybe::None=>"none",}}
+fn arrays(values:[int32;4])->int32{let [first,middle @ ..,last]=values;let tuple=(first,last);let vector=Vec::[first,last];let table=HashMap::{"first"=>first,"last"=>last};let closure=|value:int32|value+table.get("first").unwrap_or(0);closure(tuple.0)+vector[1]+array_get(middle,0)}
