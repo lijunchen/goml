@@ -108,7 +108,7 @@ goml fmt
 goml fmt --check
 ```
 
-`goml fmt` searches upward for `goml.toml`, recursively collects source files, and invokes `gomlfmt` once for the complete module. It skips the configured build target directory, `_artifact`, `_bootstrap`, hidden directories, and nested modules. `--check` does not write files.
+`goml fmt` searches upward for `goml.toml` and uses the same package graphs as module builds and tests. It formats the current module's production files, internal `*_test.gom` files, and black-box `tests` packages, while excluding external dependencies. Package discovery excludes `testdata`, the configured build target directory, hidden directories, and nested modules. `--check` does not write files.
 
 The formatter executable is resolved from `--formatter`, `GOMLFMT`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`.
 

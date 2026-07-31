@@ -1458,7 +1458,7 @@ goml fmt --check
 
 Test source code cannot be used to fix a production package that itself fails inspection.
 
-`goml fmt` formats every `.gom` file in the module. It can be run from any nested package directory. It excludes build output, hidden directories, and nested modules. `goml fmt --check` only checks formatting and exits unsuccessfully when any source file would change.
+`goml fmt` formats the current module's production files, internal tests, and black-box test packages using the same package graphs as builds and tests. It can be run from any nested package directory. Package discovery excludes `testdata`, build output, hidden directories, nested modules, and external dependencies. `goml fmt --check` only checks formatting and exits unsuccessfully when any source file would change.
 
 Run the test using:
 
