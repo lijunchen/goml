@@ -43,98 +43,98 @@ type Option__string_Some struct {
 func (_ Option__string_Some) isOption__string() {}
 
 func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
-    var retv117 _goml_m_Option_____o_string_c_string_q_
-    var jp119 _goml_m_Option_____o_string_c_string_q_
+    var retv161 _goml_m_Option_____o_string_c_string_q_
+    var jp163 _goml_m_Option_____o_string_c_string_q_
     if ok__0 {
-        var t120 Tuple2_6string_6string = Tuple2_6string_6string{
+        var t164 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "left",
             _1: "right",
         }
-        var t121 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
-            _0: t120,
+        var t165 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
+            _0: t164,
         }
-        jp119 = t121
+        jp163 = t165
     } else {
-        jp119 = _goml_m_Option_____o_string_c_string_q__None{}
+        jp163 = _goml_m_Option_____o_string_c_string_q__None{}
     }
-    retv117 = jp119
-    return retv117
+    retv161 = jp163
+    return retv161
 }
 
 func pair(ok__1 bool) _goml_m_Option_____o_string_c_string_q_ {
-    var retv123 _goml_m_Option_____o_string_c_string_q_
-    var t124 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__1)
-    retv123 = t124
-    return retv123
+    var retv167 _goml_m_Option_____o_string_c_string_q_
+    var t168 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__1)
+    retv167 = t168
+    return retv167
 }
 
 func describe(ok__2 bool) Option__string {
-    var retv126 Option__string
-    var mtmp108 _goml_m_Option_____o_string_c_string_q_ = pair(ok__2)
-    var jp128 Tuple2_6string_6string
-    switch mtmp108.(type) {
+    var retv170 Option__string
+    var mtmp152 _goml_m_Option_____o_string_c_string_q_ = pair(ok__2)
+    var jp172 Tuple2_6string_6string
+    switch mtmp152.(type) {
     case _goml_m_Option_____o_string_c_string_q__None:
-        retv126 = Option__string_None{}
-        return retv126
+        retv170 = Option__string_None{}
+        return retv170
     case _goml_m_Option_____o_string_c_string_q__Some:
-        var x109 Tuple2_6string_6string = mtmp108.(_goml_m_Option_____o_string_c_string_q__Some)._0
-        var try_value__16 Tuple2_6string_6string = x109
-        jp128 = try_value__16
-        var mtmp110 Tuple2_6string_6string = jp128
-        var x111 string = mtmp110._0
-        var x112 string = mtmp110._1
-        var after__4 string = x112
-        var before__3 string = x111
-        var t129 string = before__3 + ":"
-        var t130 string = t129 + after__4
-        var t131 Option__string = Option__string_Some{
-            _0: t130,
+        var x153 Tuple2_6string_6string = mtmp152.(_goml_m_Option_____o_string_c_string_q__Some)._0
+        var try_value__16 Tuple2_6string_6string = x153
+        jp172 = try_value__16
+        var mtmp154 Tuple2_6string_6string = jp172
+        var x155 string = mtmp154._0
+        var x156 string = mtmp154._1
+        var after__4 string = x156
+        var before__3 string = x155
+        var t173 string = before__3 + ":"
+        var t174 string = t173 + after__4
+        var t175 Option__string = Option__string_Some{
+            _0: t174,
         }
-        retv126 = t131
-        return retv126
+        retv170 = t175
+        return retv170
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(opt__5 Option__string) string {
-    var retv133 string
-    var jp135 string
+    var retv177 string
+    var jp179 string
     switch opt__5.(type) {
     case Option__string_None:
-        jp135 = "none"
+        jp179 = "none"
     case Option__string_Some:
-        var x113 string = opt__5.(Option__string_Some)._0
-        var value__6 string = x113
-        var t136 string = "some " + value__6
-        jp135 = t136
+        var x157 string = opt__5.(Option__string_Some)._0
+        var value__6 string = x157
+        var t180 string = "some " + value__6
+        jp179 = t180
     default:
         panic("non-exhaustive match")
     }
-    retv133 = jp135
-    return retv133
+    retv177 = jp179
+    return retv177
 }
 
 func main0() struct{} {
-    var t138 Option__string = describe(true)
-    var t139 string = show(t138)
-    println__T_string(t139)
-    var t140 Option__string = describe(false)
-    var t141 string = show(t140)
-    println__T_string(t141)
+    var t182 Option__string = describe(true)
+    var t183 string = show(t182)
+    println__T_string(t183)
+    var t184 Option__string = describe(false)
+    var t185 string = show(t184)
+    println__T_string(t185)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t143 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t143)
+    var t187 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t187)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv146 string
-    retv146 = self__38
-    return retv146
+    var retv190 string
+    retv190 = self__38
+    return retv190
 }
 
 func main() {

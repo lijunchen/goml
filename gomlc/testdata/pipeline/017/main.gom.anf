@@ -1,54 +1,54 @@
 fn trait_impl#ToString#(int,int)#to_string(self/0: (int, int)) -> string {
-  join ret111(retv112: string) -> string {
-    retv112
+  join ret155(retv156: string) -> string {
+    retv156
   } in
-  jump ret111("(?, ?)")
+  jump ret155("(?, ?)")
 }
 
 fn main() -> unit {
-  join ret113() -> unit {
+  join ret157() -> unit {
     ()
   } in
   let x/1 = 123 in
-  let t114 = trait_impl#ToString#int#to_string(x/1) in
-  let mtmp108 = println__T_string(t114) in
+  let t158 = trait_impl#ToString#int#to_string(x/1) in
+  let mtmp152 = println__T_string(t158) in
   let x/2 = true in
-  let t115 = trait_impl#ToString#bool#to_string(x/2) in
-  let mtmp109 = println__T_string(t115) in
+  let t159 = trait_impl#ToString#bool#to_string(x/2) in
+  let mtmp153 = println__T_string(t159) in
   let x/3 = (3, 4) in
-  let t116 = trait_impl#ToString#(int,int)#to_string(x/3) in
-  let mtmp110 = println__T_string(t116) in
-  jump ret113()
+  let t160 = trait_impl#ToString#(int,int)#to_string(x/3) in
+  let mtmp154 = println__T_string(t160) in
+  jump ret157()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret117() -> unit {
+  join ret161() -> unit {
     ()
   } in
-  let t118 = trait_impl#ToString#string#to_string(value/1) in
-  let t119 = @runtime(core.string_println)(t118) in
-  jump ret117()
+  let t162 = trait_impl#ToString#string#to_string(value/1) in
+  let t163 = @runtime(core.string_println)(t162) in
+  jump ret161()
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret120(retv121: string) -> string {
-    retv121
+  join ret164(retv165: string) -> string {
+    retv165
   } in
-  let t122 = @runtime(core.int_to_string)(self/40) in
-  jump ret120(t122)
+  let t166 = @runtime(core.int_to_string)(self/40) in
+  jump ret164(t166)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret123(retv124: string) -> string {
-    retv124
+  join ret167(retv168: string) -> string {
+    retv168
   } in
-  let t125 = @runtime(core.bool_to_string)(self/37) in
-  jump ret123(t125)
+  let t169 = @runtime(core.bool_to_string)(self/37) in
+  jump ret167(t169)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret126(retv127: string) -> string {
-    retv127
+  join ret170(retv171: string) -> string {
+    retv171
   } in
-  jump ret126(self/38)
+  jump ret170(self/38)
 }

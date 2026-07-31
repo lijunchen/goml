@@ -101,10 +101,10 @@ fn inherent#string#string#to_bytes(self/24: string) -> Vec[uint8] {
 }
 
 fn inherent#string#string#chars(self/25: string) -> FnIterator[char] {
-  let index/26 = inherent#Ref#Ref[int]#new(0) in
+  let index/26 = @intrinsic(ref.new)(0) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
     {
-      let mtmp7 = inherent#string#string#decode_at(self/25, inherent#Ref#Ref[int]#get(index/26)) in
+      let mtmp7 = inherent#string#string#decode_at(self/25, @intrinsic(ref.get)(index/26)) in
       match mtmp7 {
         Option::None => {
           Option::None
@@ -124,7 +124,11 @@ fn inherent#string#string#chars(self/25: string) -> FnIterator[char] {
                     {
                       let value/28 = x10 in
                       {
-                        let _wild12 = inherent#Ref#Ref[int]#set(index/26, (inherent#Ref#Ref[int]#get(index/26) + width/29)) in
+                        let _wild14 = {
+                          let compound_old12 = @intrinsic(ref.get)(index/26) in
+                          let compound_value13 = width/29 in
+                          @intrinsic(ref.set)(index/26, (compound_old12 + compound_value13))
+                        } in
                         Option::Some(value/28)
                       }
                     }
@@ -140,31 +144,31 @@ fn inherent#string#string#chars(self/25: string) -> FnIterator[char] {
 }
 
 fn inherent#string#string#char_indices(self/30: string) -> FnIterator[(int, char)] {
-  let index/31 = inherent#Ref#Ref[int]#new(0) in
+  let index/31 = @intrinsic(ref.new)(0) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let current/32 = inherent#Ref#Ref[int]#get(index/31) in
+    let current/32 = @intrinsic(ref.get)(index/31) in
     {
-      let mtmp13 = inherent#string#string#decode_at(self/30, current/32) in
-      match mtmp13 {
+      let mtmp15 = inherent#string#string#decode_at(self/30, current/32) in
+      match mtmp15 {
         Option::None => {
           Option::None
         },
-        Option::Some(x14) => {
+        Option::Some(x16) => {
           {
-            let x14 = Option::Some._0(mtmp13) in
+            let x16 = Option::Some._0(mtmp15) in
             {
-              let decoded/33 = x14 in
+              let decoded/33 = x16 in
               {
-                let mtmp15 = decoded/33 in
+                let mtmp17 = decoded/33 in
                 {
-                  let x16 = mtmp15.0 in
-                  let x17 = mtmp15.1 in
+                  let x18 = mtmp17.0 in
+                  let x19 = mtmp17.1 in
                   {
-                    let width/35 = x17 in
+                    let width/35 = x19 in
                     {
-                      let value/34 = x16 in
+                      let value/34 = x18 in
                       {
-                        let _wild18 = inherent#Ref#Ref[int]#set(index/31, (current/32 + width/35)) in
+                        let _wild20 = @intrinsic(ref.set)(index/31, (current/32 + width/35)) in
                         Option::Some((current/32, value/34))
                       }
                     }
@@ -390,16 +394,16 @@ fn trait_impl#Iterator#FnIterator[T]#next[T](self/102: FnIterator[T]) -> Option[
 
 fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](self/103: MapIterator[A, B, I]) -> Option[B] {
   {
-    let mtmp19 = trait_call[Iterator::next](MapIterator.iterator(self/103)) in
-    match mtmp19 {
+    let mtmp21 = trait_call[Iterator::next](MapIterator.iterator(self/103)) in
+    match mtmp21 {
       Option::None => {
         Option::None
       },
-      Option::Some(x20) => {
+      Option::Some(x22) => {
         {
-          let x20 = Option::Some._0(mtmp19) in
+          let x22 = Option::Some._0(mtmp21) in
           {
-            let value/104 = x20 in
+            let value/104 = x22 in
             Option::Some(MapIterator.map_fn(self/103)(value/104))
           }
         }
@@ -409,19 +413,19 @@ fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](self/103: MapIterator[A,
 }
 
 fn trait_impl#Iterator#FilterIterator[T,I]#next[T, I](self/105: FilterIterator[T, I]) -> Option[T] {
-  let _wild24 = while true {
+  let _wild26 = while true {
       {
-        let _wild23 = {
-          let mtmp21 = trait_call[Iterator::next](FilterIterator.iterator(self/105)) in
-          match mtmp21 {
+        let _wild25 = {
+          let mtmp23 = trait_call[Iterator::next](FilterIterator.iterator(self/105)) in
+          match mtmp23 {
             Option::None => {
               return Option::None
             },
-            Option::Some(x22) => {
+            Option::Some(x24) => {
               {
-                let x22 = Option::Some._0(mtmp21) in
+                let x24 = Option::Some._0(mtmp23) in
                 {
-                  let value/106 = x22 in
+                  let value/106 = x24 in
                   if FilterIterator.predicate(self/105)(value/106) {
                       {
                         return Option::Some(value/106)
@@ -445,7 +449,7 @@ fn trait_impl#Iterator#TakeIterator[I]#next[I](self/107: TakeIterator[I]) -> Opt
   let remaining/108 = inherent#Ref#Ref[int]#get(TakeIterator.remaining(self/107)) in
   if (remaining/108 > 0) {
       {
-        let _wild25 = inherent#Ref#Ref[int]#set(TakeIterator.remaining(self/107), (remaining/108 - 1)) in
+        let _wild27 = inherent#Ref#Ref[int]#set(TakeIterator.remaining(self/107), (remaining/108 - 1)) in
         trait_call[Iterator::next](TakeIterator.iterator(self/107))
       }
   } else {
@@ -481,21 +485,23 @@ fn iterator_take(iterator/114: I, count/115: int) -> TakeIterator[I] {
 }
 
 fn iterator_fold(iterator/117: I, initial/118: A, combine/119: (A, T) -> A) -> A {
-  let accumulator/120 = inherent#Ref#Ref[A]#new(initial/118) in
-  let _wild29 = while true {
+  let accumulator/120 = initial/118 in
+  let _wild32 = while true {
       {
-        let _wild28 = {
-          let mtmp26 = trait_call[Iterator::next](iterator/117) in
-          match mtmp26 {
+        let _wild31 = {
+          let mtmp28 = trait_call[Iterator::next](iterator/117) in
+          match mtmp28 {
             Option::None => {
               break
             },
-            Option::Some(x27) => {
+            Option::Some(x29) => {
               {
-                let x27 = Option::Some._0(mtmp26) in
+                let x29 = Option::Some._0(mtmp28) in
                 {
-                  let value/121 = x27 in
-                  inherent#Ref#Ref[A]#set(accumulator/120, combine/119(inherent#Ref#Ref[A]#get(accumulator/120), value/121))
+                  let value/121 = x29 in
+                  {
+                    let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
+                  }
                 }
               }
             },
@@ -503,24 +509,24 @@ fn iterator_fold(iterator/117: I, initial/118: A, combine/119: (A, T) -> A) -> A
         } in
       }
   } in
-  inherent#Ref#Ref[A]#get(accumulator/120)
+  accumulator/120
 }
 
 fn iterator_collect(iterator/122: I) -> Vec[T] {
   let values/123 = inherent#Vec#Vec[T]#new() in
-  let _wild33 = while true {
+  let _wild36 = while true {
       {
-        let _wild32 = {
-          let mtmp30 = trait_call[Iterator::next](iterator/122) in
-          match mtmp30 {
+        let _wild35 = {
+          let mtmp33 = trait_call[Iterator::next](iterator/122) in
+          match mtmp33 {
             Option::None => {
               break
             },
-            Option::Some(x31) => {
+            Option::Some(x34) => {
               {
-                let x31 = Option::Some._0(mtmp30) in
+                let x34 = Option::Some._0(mtmp33) in
                 {
-                  let value/124 = x31 in
+                  let value/124 = x34 in
                   inherent#Vec#Vec[T]#push(values/123, value/124)
                 }
               }
@@ -546,14 +552,18 @@ fn inherent#Vec#Vec[T]#push[T](self/126: Vec[T], elem/127: T) -> unit {
 
 fn inherent#Vec#Vec[T]#pushed[T](self/128: Vec[T], elem/129: T) -> Vec[T] {
   let result/130 = inherent#Vec#Vec[T]#new() in
-  let index/131 = inherent#Ref#Ref[int]#new(0) in
-  let _wild36 = while (inherent#Ref#Ref[int]#get(index/131) < inherent#Vec#Vec[T]#len(self/128)) {
+  let index/131 = 0 in
+  let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len(self/128)) {
       {
-        let _wild34 = inherent#Vec#Vec[T]#push(result/130, inherent#Vec#Vec[T]#get(self/128, inherent#Ref#Ref[int]#get(index/131))) in
-        let _wild35 = inherent#Ref#Ref[int]#set(index/131, (inherent#Ref#Ref[int]#get(index/131) + 1)) in
+        let _wild37 = inherent#Vec#Vec[T]#push(result/130, @intrinsic(vec.get)(self/128, index/131)) in
+        let _wild40 = {
+          let compound_old38 = index/131 in
+          let compound_value39 = 1 in
+          index/131 = (compound_old38 + compound_value39)
+        } in
       }
   } in
-  let _wild37 = inherent#Vec#Vec[T]#push(result/130, elem/129) in
+  let _wild42 = inherent#Vec#Vec[T]#push(result/130, elem/129) in
   result/130
 }
 
@@ -597,7 +607,7 @@ fn inherent#Vec#Vec[T]#last[T](self/145: Vec[T]) -> Option[T] {
       }
   } else {
       {
-        Option::Some(inherent#Vec#Vec[T]#get(self/145, (len/146 - 1)))
+        Option::Some(@intrinsic(vec.get)(self/145, (len/146 - 1)))
       }
   }
 }
@@ -610,32 +620,50 @@ fn inherent#Vec#Vec[T]#pop[T](self/147: Vec[T]) -> Option[T] {
       }
   } else {
       {
-        let value/149 = inherent#Vec#Vec[T]#get(self/147, (len/148 - 1)) in
-        let _wild38 = inherent#Vec#Vec[T]#truncate(self/147, (len/148 - 1)) in
+        let value/149 = @intrinsic(vec.get)(self/147, (len/148 - 1)) in
+        let _wild43 = inherent#Vec#Vec[T]#truncate(self/147, (len/148 - 1)) in
         Option::Some(value/149)
       }
   }
 }
 
 fn inherent#Vec#Vec[T]#swap[T](self/150: Vec[T], left/151: int, right/152: int) -> unit {
-  let value/153 = inherent#Vec#Vec[T]#get(self/150, left/151) in
-  let _wild39 = inherent#Vec#Vec[T]#set(self/150, left/151, inherent#Vec#Vec[T]#get(self/150, right/152)) in
-  inherent#Vec#Vec[T]#set(self/150, right/152, value/153)
+  let value/153 = @intrinsic(vec.get)(self/150, left/151) in
+  let _wild48 = {
+    let place_root44 = self/150 in
+    let index45 = left/151 in
+    let place46 = @intrinsic(vec.get)(place_root44, index45) in
+    let value47 = @intrinsic(vec.get)(self/150, right/152) in
+    @intrinsic(vec.set)(place_root44, index45, value47)
+  } in
+  let _wild53 = {
+    let place_root49 = self/150 in
+    let index50 = right/152 in
+    let place51 = @intrinsic(vec.get)(place_root49, index50) in
+    let value52 = value/153 in
+    @intrinsic(vec.set)(place_root49, index50, value52)
+  } in
 }
 
 fn inherent#Vec#Vec[T]#swap_remove[T](self/154: Vec[T], index/155: int) -> T {
   let len/156 = inherent#Vec#Vec[T]#len(self/154) in
-  let value/157 = inherent#Vec#Vec[T]#get(self/154, index/155) in
-  let _wild41 = if ((index/155 + 1) < len/156) {
+  let value/157 = @intrinsic(vec.get)(self/154, index/155) in
+  let _wild59 = if ((index/155 + 1) < len/156) {
       {
-        let _wild40 = inherent#Vec#Vec[T]#set(self/154, index/155, inherent#Vec#Vec[T]#get(self/154, (len/156 - 1))) in
+        let _wild58 = {
+          let place_root54 = self/154 in
+          let index55 = index/155 in
+          let place56 = @intrinsic(vec.get)(place_root54, index55) in
+          let value57 = @intrinsic(vec.get)(self/154, (len/156 - 1)) in
+          @intrinsic(vec.set)(place_root54, index55, value57)
+        } in
       }
   } else {
       {
         ()
       }
   } in
-  let _wild42 = inherent#Vec#Vec[T]#truncate(self/154, (len/156 - 1)) in
+  let _wild60 = inherent#Vec#Vec[T]#truncate(self/154, (len/156 - 1)) in
   value/157
 }
 
@@ -647,17 +675,33 @@ fn inherent#Vec#Vec[T]#insert[T](self/158: Vec[T], index/159: int, value/160: T)
       }
   } else {
       {
-        let mtmp43 = inherent#Vec#Vec[T]#get(self/158, index/159) in
+        let mtmp61 = @intrinsic(vec.get)(self/158, index/159) in
         {
-          let _wild44 = inherent#Vec#Vec[T]#push(self/158, inherent#Vec#Vec[T]#get(self/158, (len/161 - 1))) in
-          let current/162 = inherent#Ref#Ref[int]#new((len/161 - 1)) in
-          let _wild47 = while (inherent#Ref#Ref[int]#get(current/162) > index/159) {
+          let _wild62 = inherent#Vec#Vec[T]#push(self/158, @intrinsic(vec.get)(self/158, (len/161 - 1))) in
+          let current/162 = (len/161 - 1) in
+          let _wild71 = while (current/162 > index/159) {
               {
-                let _wild45 = inherent#Vec#Vec[T]#set(self/158, inherent#Ref#Ref[int]#get(current/162), inherent#Vec#Vec[T]#get(self/158, (inherent#Ref#Ref[int]#get(current/162) - 1))) in
-                let _wild46 = inherent#Ref#Ref[int]#set(current/162, (inherent#Ref#Ref[int]#get(current/162) - 1)) in
+                let _wild67 = {
+                  let place_root63 = self/158 in
+                  let index64 = current/162 in
+                  let place65 = @intrinsic(vec.get)(place_root63, index64) in
+                  let value66 = @intrinsic(vec.get)(self/158, (current/162 - 1)) in
+                  @intrinsic(vec.set)(place_root63, index64, value66)
+                } in
+                let _wild70 = {
+                  let compound_old68 = current/162 in
+                  let compound_value69 = 1 in
+                  current/162 = (compound_old68 - compound_value69)
+                } in
               }
           } in
-          inherent#Vec#Vec[T]#set(self/158, index/159, value/160)
+          let _wild76 = {
+            let place_root72 = self/158 in
+            let index73 = index/159 in
+            let place74 = @intrinsic(vec.get)(place_root72, index73) in
+            let value75 = value/160 in
+            @intrinsic(vec.set)(place_root72, index73, value75)
+          } in
         }
       }
   }
@@ -665,38 +709,60 @@ fn inherent#Vec#Vec[T]#insert[T](self/158: Vec[T], index/159: int, value/160: T)
 
 fn inherent#Vec#Vec[T]#remove[T](self/163: Vec[T], index/164: int) -> T {
   let len/165 = inherent#Vec#Vec[T]#len(self/163) in
-  let value/166 = inherent#Vec#Vec[T]#get(self/163, index/164) in
-  let current/167 = inherent#Ref#Ref[int]#new(index/164) in
-  let _wild50 = while ((inherent#Ref#Ref[int]#get(current/167) + 1) < len/165) {
+  let value/166 = @intrinsic(vec.get)(self/163, index/164) in
+  let current/167 = index/164 in
+  let _wild85 = while ((current/167 + 1) < len/165) {
       {
-        let _wild48 = inherent#Vec#Vec[T]#set(self/163, inherent#Ref#Ref[int]#get(current/167), inherent#Vec#Vec[T]#get(self/163, (inherent#Ref#Ref[int]#get(current/167) + 1))) in
-        let _wild49 = inherent#Ref#Ref[int]#set(current/167, (inherent#Ref#Ref[int]#get(current/167) + 1)) in
+        let _wild81 = {
+          let place_root77 = self/163 in
+          let index78 = current/167 in
+          let place79 = @intrinsic(vec.get)(place_root77, index78) in
+          let value80 = @intrinsic(vec.get)(self/163, (current/167 + 1)) in
+          @intrinsic(vec.set)(place_root77, index78, value80)
+        } in
+        let _wild84 = {
+          let compound_old82 = current/167 in
+          let compound_value83 = 1 in
+          current/167 = (compound_old82 + compound_value83)
+        } in
       }
   } in
-  let _wild51 = inherent#Vec#Vec[T]#truncate(self/163, (len/165 - 1)) in
+  let _wild86 = inherent#Vec#Vec[T]#truncate(self/163, (len/165 - 1)) in
   value/166
 }
 
 fn inherent#Vec#Vec[T]#reverse[T](self/168: Vec[T]) -> unit {
-  let left/169 = inherent#Ref#Ref[int]#new(0) in
-  let right/170 = inherent#Ref#Ref[int]#new((inherent#Vec#Vec[T]#len(self/168) - 1)) in
-  while (inherent#Ref#Ref[int]#get(left/169) < inherent#Ref#Ref[int]#get(right/170)) {
+  let left/169 = 0 in
+  let right/170 = (inherent#Vec#Vec[T]#len(self/168) - 1) in
+  while (left/169 < right/170) {
       {
-        let _wild52 = inherent#Vec#Vec[T]#swap(self/168, inherent#Ref#Ref[int]#get(left/169), inherent#Ref#Ref[int]#get(right/170)) in
-        let _wild53 = inherent#Ref#Ref[int]#set(left/169, (inherent#Ref#Ref[int]#get(left/169) + 1)) in
-        let _wild54 = inherent#Ref#Ref[int]#set(right/170, (inherent#Ref#Ref[int]#get(right/170) - 1)) in
+        let _wild87 = inherent#Vec#Vec[T]#swap(self/168, left/169, right/170) in
+        let _wild90 = {
+          let compound_old88 = left/169 in
+          let compound_value89 = 1 in
+          left/169 = (compound_old88 + compound_value89)
+        } in
+        let _wild93 = {
+          let compound_old91 = right/170 in
+          let compound_value92 = 1 in
+          right/170 = (compound_old91 - compound_value92)
+        } in
       }
   }
 }
 
 fn inherent#Vec#Vec[T]#extend[T](self/171: Vec[T], other/172: Vec[T]) -> unit {
   let len/173 = inherent#Vec#Vec[T]#len(other/172) in
-  let _wild55 = inherent#Vec#Vec[T]#reserve(self/171, len/173) in
-  let index/174 = inherent#Ref#Ref[int]#new(0) in
-  while (inherent#Ref#Ref[int]#get(index/174) < len/173) {
+  let _wild94 = inherent#Vec#Vec[T]#reserve(self/171, len/173) in
+  let index/174 = 0 in
+  while (index/174 < len/173) {
       {
-        let _wild56 = inherent#Vec#Vec[T]#push(self/171, inherent#Vec#Vec[T]#get(other/172, inherent#Ref#Ref[int]#get(index/174))) in
-        let _wild57 = inherent#Ref#Ref[int]#set(index/174, (inherent#Ref#Ref[int]#get(index/174) + 1)) in
+        let _wild95 = inherent#Vec#Vec[T]#push(self/171, @intrinsic(vec.get)(other/172, index/174)) in
+        let _wild98 = {
+          let compound_old96 = index/174 in
+          let compound_value97 = 1 in
+          index/174 = (compound_old96 + compound_value97)
+        } in
       }
   }
 }
@@ -706,14 +772,14 @@ fn inherent#Vec#Vec[T]#slice[T](self/175: Vec[T], start/176: int, end/177: int) 
 }
 
 fn inherent#Vec#Vec[T]#iter[T](self/178: Vec[T]) -> FnIterator[T] {
-  let index/179 = inherent#Ref#Ref[int]#new(0) in
+  let index/179 = @intrinsic(ref.new)(0) in
   let len/180 = inherent#Vec#Vec[T]#len(self/178) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let current/181 = inherent#Ref#Ref[int]#get(index/179) in
+    let current/181 = @intrinsic(ref.get)(index/179) in
     if (current/181 < len/180) {
         {
-          let value/182 = inherent#Vec#Vec[T]#get(self/178, current/181) in
-          let _wild58 = inherent#Ref#Ref[int]#set(index/179, (current/181 + 1)) in
+          let value/182 = @intrinsic(vec.get)(self/178, current/181) in
+          let _wild99 = @intrinsic(ref.set)(index/179, (current/181 + 1)) in
           Option::Some(value/182)
         }
     } else {
@@ -741,14 +807,14 @@ fn inherent#Slice#Slice[T]#sub[T](self/187: Slice[T], start/188: int, end/189: i
 }
 
 fn inherent#Slice#Slice[T]#iter[T](self/190: Slice[T]) -> FnIterator[T] {
-  let index/191 = inherent#Ref#Ref[int]#new(0) in
+  let index/191 = @intrinsic(ref.new)(0) in
   let len/192 = inherent#Slice#Slice[T]#len(self/190) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let current/193 = inherent#Ref#Ref[int]#get(index/191) in
+    let current/193 = @intrinsic(ref.get)(index/191) in
     if (current/193 < len/192) {
         {
           let value/194 = inherent#Slice#Slice[T]#get(self/190, current/193) in
-          let _wild59 = inherent#Ref#Ref[int]#set(index/191, (current/193 + 1)) in
+          let _wild100 = @intrinsic(ref.set)(index/191, (current/193 + 1)) in
           Option::Some(value/194)
         }
     } else {
@@ -812,14 +878,14 @@ fn inherent#Channel#Channel[T]#send[T](self/212: Channel[T], value/213: T) -> un
 }
 
 fn inherent#Channel#Channel[T]#recv[T](self/214: Channel[T]) -> Option[T] {
-  let mtmp60 = @intrinsic(channel.recv)(self/214) in
+  let mtmp101 = @intrinsic(channel.recv)(self/214) in
   {
-    let x61 = mtmp60.0 in
-    let x62 = mtmp60.1 in
+    let x102 = mtmp101.0 in
+    let x103 = mtmp101.1 in
     {
-      let ok/216 = x62 in
+      let ok/216 = x103 in
       {
-        let value/215 = x61 in
+        let value/215 = x102 in
         {
           if ok/216 {
               {
@@ -841,12 +907,12 @@ fn inherent#Channel#Channel[T]#close[T](self/217: Channel[T]) -> unit {
 }
 
 fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator[int] {
-  let current/220 = inherent#Ref#Ref[int]#new(start/218) in
+  let current/220 = @intrinsic(ref.new)(start/218) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let value/221 = inherent#Ref#Ref[int]#get(current/220) in
+    let value/221 = @intrinsic(ref.get)(current/220) in
     if (value/221 < end/219) {
         {
-          let _wild63 = inherent#Ref#Ref[int]#set(current/220, (value/221 + 1)) in
+          let _wild104 = @intrinsic(ref.set)(current/220, (value/221 + 1)) in
           Option::Some(value/221)
         }
     } else {
@@ -914,20 +980,20 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
           }
       } else {
           {
-            let _wild67 = {
-              let for_iter64 = trait_call[IntoIterator::into_iter](range(0, ((inherent#string#string#byte_len(self/233) - inherent#string#string#byte_len(expected/234)) + 1))) in
+            let _wild108 = {
+              let for_iter105 = trait_call[IntoIterator::into_iter](range(0, ((inherent#string#string#byte_len(self/233) - inherent#string#string#byte_len(expected/234)) + 1))) in
               while true {
                   {
-                    let for_next65 = trait_call[Iterator::next](for_iter64) in
-                    match for_next65 {
+                    let for_next106 = trait_call[Iterator::next](for_iter105) in
+                    match for_next106 {
                       Option::None => {
                         break
                       },
-                      Option::Some(x66) => {
+                      Option::Some(x107) => {
                         {
-                          let x66 = Option::Some._0(for_next65) in
+                          let x107 = Option::Some._0(for_next106) in
                           {
-                            let start/235 = x66 in
+                            let start/235 = x107 in
                             {
                               let end/236 = (start/235 + inherent#string#string#byte_len(expected/234)) in
                               if if if inherent#string#string#is_char_boundary(self/233, start/235) {
@@ -963,19 +1029,19 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
 
 fn trait_impl#Iterator#EnumerateIterator[I]#next[I](self/237: EnumerateIterator[I]) -> Option[(int, I::Item)] {
   {
-    let mtmp68 = trait_call[Iterator::next](EnumerateIterator.iterator(self/237)) in
-    match mtmp68 {
+    let mtmp109 = trait_call[Iterator::next](EnumerateIterator.iterator(self/237)) in
+    match mtmp109 {
       Option::None => {
         Option::None
       },
-      Option::Some(x69) => {
+      Option::Some(x110) => {
         {
-          let x69 = Option::Some._0(mtmp68) in
+          let x110 = Option::Some._0(mtmp109) in
           {
-            let value/238 = x69 in
+            let value/238 = x110 in
             {
               let index/239 = inherent#Ref#Ref[int]#get(EnumerateIterator.index(self/237)) in
-              let _wild70 = inherent#Ref#Ref[int]#set(EnumerateIterator.index(self/237), (index/239 + 1)) in
+              let _wild111 = inherent#Ref#Ref[int]#set(EnumerateIterator.index(self/237), (index/239 + 1)) in
               Option::Some((index/239, value/238))
             }
           }
@@ -987,27 +1053,27 @@ fn trait_impl#Iterator#EnumerateIterator[I]#next[I](self/237: EnumerateIterator[
 
 fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](self/240: ZipIterator[A, B]) -> Option[(A::Item, B::Item)] {
   {
-    let mtmp71 = trait_call[Iterator::next](ZipIterator.left(self/240)) in
-    match mtmp71 {
+    let mtmp112 = trait_call[Iterator::next](ZipIterator.left(self/240)) in
+    match mtmp112 {
       Option::None => {
         Option::None
       },
-      Option::Some(x72) => {
+      Option::Some(x113) => {
         {
-          let x72 = Option::Some._0(mtmp71) in
+          let x113 = Option::Some._0(mtmp112) in
           {
-            let left/241 = x72 in
+            let left/241 = x113 in
             {
-              let mtmp73 = trait_call[Iterator::next](ZipIterator.right(self/240)) in
-              match mtmp73 {
+              let mtmp114 = trait_call[Iterator::next](ZipIterator.right(self/240)) in
+              match mtmp114 {
                 Option::None => {
                   Option::None
                 },
-                Option::Some(x74) => {
+                Option::Some(x115) => {
                   {
-                    let x74 = Option::Some._0(mtmp73) in
+                    let x115 = Option::Some._0(mtmp114) in
                     {
-                      let right/242 = x74 in
+                      let right/242 = x115 in
                       Option::Some((left/241, right/242))
                     }
                   }
@@ -1022,20 +1088,20 @@ fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](self/240: ZipIterator[A, B]) 
 }
 
 fn trait_impl#Iterator#SkipIterator[I]#next[I](self/243: SkipIterator[I]) -> Option[I::Item] {
-  let _wild78 = while (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) > 0) {
+  let _wild119 = while (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) > 0) {
       {
         {
-          let mtmp75 = trait_call[Iterator::next](SkipIterator.iterator(self/243)) in
-          match mtmp75 {
+          let mtmp116 = trait_call[Iterator::next](SkipIterator.iterator(self/243)) in
+          match mtmp116 {
             Option::None => {
               {
-                let _wild77 = inherent#Ref#Ref[int]#set(SkipIterator.remaining(self/243), 0) in
+                let _wild118 = inherent#Ref#Ref[int]#set(SkipIterator.remaining(self/243), 0) in
                 return Option::None
               }
             },
-            Option::Some(x76) => {
+            Option::Some(x117) => {
               {
-                let x76 = Option::Some._0(mtmp75) in
+                let x117 = Option::Some._0(mtmp116) in
                 inherent#Ref#Ref[int]#set(SkipIterator.remaining(self/243), (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) - 1))
               }
             },
@@ -1047,19 +1113,19 @@ fn trait_impl#Iterator#SkipIterator[I]#next[I](self/243: SkipIterator[I]) -> Opt
 }
 
 fn trait_impl#Iterator#ChainIterator[T,A,B]#next[T, A, B](self/244: ChainIterator[T, A, B]) -> Option[T] {
-  let _wild81 = if trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244)), false) {
+  let _wild122 = if trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244)), false) {
       {
         {
-          let mtmp79 = trait_call[Iterator::next](ChainIterator.first(self/244)) in
-          match mtmp79 {
+          let mtmp120 = trait_call[Iterator::next](ChainIterator.first(self/244)) in
+          match mtmp120 {
             Option::None => {
               inherent#Ref#Ref[bool]#set(ChainIterator.first_done(self/244), true)
             },
-            Option::Some(x80) => {
+            Option::Some(x121) => {
               {
-                let x80 = Option::Some._0(mtmp79) in
+                let x121 = Option::Some._0(mtmp120) in
                 {
-                  let value/245 = x80 in
+                  let value/245 = x121 in
                   return Option::Some(value/245)
                 }
               }
@@ -1100,19 +1166,19 @@ fn iterator_chain(first/251: A, second/252: B) -> ChainIterator[T, A, B] {
 }
 
 fn iterator_find(iterator/253: I, predicate/254: (T) -> bool) -> Option[T] {
-  let _wild84 = while true {
+  let _wild125 = while true {
       {
         {
-          let mtmp82 = trait_call[Iterator::next](iterator/253) in
-          match mtmp82 {
+          let mtmp123 = trait_call[Iterator::next](iterator/253) in
+          match mtmp123 {
             Option::None => {
               return Option::None
             },
-            Option::Some(x83) => {
+            Option::Some(x124) => {
               {
-                let x83 = Option::Some._0(mtmp82) in
+                let x124 = Option::Some._0(mtmp123) in
                 {
-                  let value/255 = x83 in
+                  let value/255 = x124 in
                   if predicate/254(value/255) {
                       {
                         return Option::Some(value/255)
@@ -1134,14 +1200,14 @@ fn iterator_find(iterator/253: I, predicate/254: (T) -> bool) -> Option[T] {
 
 fn iterator_any(iterator/256: I, predicate/257: (T) -> bool) -> bool {
   {
-    let mtmp85 = iterator_find(iterator/256, predicate/257) in
-    match mtmp85 {
+    let mtmp126 = iterator_find(iterator/256, predicate/257) in
+    match mtmp126 {
       Option::None => {
         false
       },
-      Option::Some(x86) => {
+      Option::Some(x127) => {
         {
-          let x86 = Option::Some._0(mtmp85) in
+          let x127 = Option::Some._0(mtmp126) in
           true
         }
       },
@@ -1154,26 +1220,32 @@ fn iterator_all(iterator/258: I, predicate/259: (T) -> bool) -> bool {
 }
 
 fn iterator_count(iterator/261: I) -> int {
-  let count/262 = inherent#Ref#Ref[int]#new(0) in
-  let _wild89 = while true {
+  let count/262 = 0 in
+  let _wild133 = while true {
       {
         {
-          let mtmp87 = trait_call[Iterator::next](iterator/261) in
-          match mtmp87 {
+          let mtmp128 = trait_call[Iterator::next](iterator/261) in
+          match mtmp128 {
             Option::None => {
               break
             },
-            Option::Some(x88) => {
+            Option::Some(x129) => {
               {
-                let x88 = Option::Some._0(mtmp87) in
-                inherent#Ref#Ref[int]#set(count/262, (inherent#Ref#Ref[int]#get(count/262) + 1))
+                let x129 = Option::Some._0(mtmp128) in
+                {
+                  let _wild132 = {
+                    let compound_old130 = count/262 in
+                    let compound_value131 = 1 in
+                    count/262 = (compound_old130 + compound_value131)
+                  } in
+                }
               }
             },
           }
         }
       }
   } in
-  inherent#Ref#Ref[int]#get(count/262)
+  count/262
 }
 
 fn inherent#Option#Option[T]#is_some[T](self/263: Option[T]) -> bool {
@@ -1181,9 +1253,9 @@ fn inherent#Option#Option[T]#is_some[T](self/263: Option[T]) -> bool {
     Option::None => {
       false
     },
-    Option::Some(x90) => {
+    Option::Some(x134) => {
       {
-        let x90 = Option::Some._0(self/263) in
+        let x134 = Option::Some._0(self/263) in
         true
       }
     },
@@ -1199,11 +1271,11 @@ fn inherent#Option#Option[T]#unwrap_or[T](self/265: Option[T], fallback/266: T) 
     Option::None => {
       fallback/266
     },
-    Option::Some(x91) => {
+    Option::Some(x135) => {
       {
-        let x91 = Option::Some._0(self/265) in
+        let x135 = Option::Some._0(self/265) in
         {
-          let value/267 = x91 in
+          let value/267 = x135 in
           value/267
         }
       }
@@ -1216,11 +1288,11 @@ fn inherent#Option#Option[T]#unwrap_or_else[T](self/268: Option[T], fallback/269
     Option::None => {
       fallback/269()
     },
-    Option::Some(x92) => {
+    Option::Some(x136) => {
       {
-        let x92 = Option::Some._0(self/268) in
+        let x136 = Option::Some._0(self/268) in
         {
-          let value/270 = x92 in
+          let value/270 = x136 in
           value/270
         }
       }
@@ -1230,15 +1302,15 @@ fn inherent#Option#Option[T]#unwrap_or_else[T](self/268: Option[T], fallback/269
 
 fn inherent#Result#Result[T,E]#is_ok[T, E](self/271: Result[T, E]) -> bool {
   match self/271 {
-    Result::Ok(x93) => {
+    Result::Ok(x137) => {
       {
-        let x93 = Result::Ok._0(self/271) in
+        let x137 = Result::Ok._0(self/271) in
         true
       }
     },
-    Result::Err(x94) => {
+    Result::Err(x138) => {
       {
-        let x94 = Result::Err._0(self/271) in
+        let x138 = Result::Err._0(self/271) in
         false
       }
     },
@@ -1251,18 +1323,18 @@ fn inherent#Result#Result[T,E]#is_err[T, E](self/272: Result[T, E]) -> bool {
 
 fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/273: Result[T, E], fallback/274: T) -> T {
   match self/273 {
-    Result::Ok(x95) => {
+    Result::Ok(x139) => {
       {
-        let x95 = Result::Ok._0(self/273) in
+        let x139 = Result::Ok._0(self/273) in
         {
-          let value/275 = x95 in
+          let value/275 = x139 in
           value/275
         }
       }
     },
-    Result::Err(x96) => {
+    Result::Err(x140) => {
       {
-        let x96 = Result::Err._0(self/273) in
+        let x140 = Result::Err._0(self/273) in
         fallback/274
       }
     },
@@ -1271,20 +1343,20 @@ fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/273: Result[T, E], fallback/
 
 fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](self/276: Result[T, E], fallback/277: (E) -> T) -> T {
   match self/276 {
-    Result::Ok(x97) => {
+    Result::Ok(x141) => {
       {
-        let x97 = Result::Ok._0(self/276) in
+        let x141 = Result::Ok._0(self/276) in
         {
-          let value/278 = x97 in
+          let value/278 = x141 in
           value/278
         }
       }
     },
-    Result::Err(x98) => {
+    Result::Err(x142) => {
       {
-        let x98 = Result::Err._0(self/276) in
+        let x142 = Result::Err._0(self/276) in
         {
-          let error/279 = x98 in
+          let error/279 = x142 in
           fallback/277(error/279)
         }
       }
@@ -1297,11 +1369,11 @@ fn inherent#Option#Option[T]#map[T, U](self/280: Option[T], map_fn/281: (T) -> U
     Option::None => {
       Option::None
     },
-    Option::Some(x99) => {
+    Option::Some(x143) => {
       {
-        let x99 = Option::Some._0(self/280) in
+        let x143 = Option::Some._0(self/280) in
         {
-          let value/282 = x99 in
+          let value/282 = x143 in
           Option::Some(map_fn/281(value/282))
         }
       }
@@ -1314,11 +1386,11 @@ fn inherent#Option#Option[T]#and_then[T, U](self/283: Option[T], next/284: (T) -
     Option::None => {
       Option::None
     },
-    Option::Some(x100) => {
+    Option::Some(x144) => {
       {
-        let x100 = Option::Some._0(self/283) in
+        let x144 = Option::Some._0(self/283) in
         {
-          let value/285 = x100 in
+          let value/285 = x144 in
           next/284(value/285)
         }
       }
@@ -1331,11 +1403,11 @@ fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> R
     Option::None => {
       Result::Err(error/287)
     },
-    Option::Some(x101) => {
+    Option::Some(x145) => {
       {
-        let x101 = Option::Some._0(self/286) in
+        let x145 = Option::Some._0(self/286) in
         {
-          let value/288 = x101 in
+          let value/288 = x145 in
           Result::Ok(value/288)
         }
       }
@@ -1345,20 +1417,20 @@ fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> R
 
 fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
   match self/289 {
-    Result::Ok(x102) => {
+    Result::Ok(x146) => {
       {
-        let x102 = Result::Ok._0(self/289) in
+        let x146 = Result::Ok._0(self/289) in
         {
-          let value/291 = x102 in
+          let value/291 = x146 in
           Result::Ok(map_fn/290(value/291))
         }
       }
     },
-    Result::Err(x103) => {
+    Result::Err(x147) => {
       {
-        let x103 = Result::Err._0(self/289) in
+        let x147 = Result::Err._0(self/289) in
         {
-          let error/292 = x103 in
+          let error/292 = x147 in
           Result::Err(error/292)
         }
       }
@@ -1368,20 +1440,20 @@ fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: 
 
 fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
   match self/293 {
-    Result::Ok(x104) => {
+    Result::Ok(x148) => {
       {
-        let x104 = Result::Ok._0(self/293) in
+        let x148 = Result::Ok._0(self/293) in
         {
-          let value/295 = x104 in
+          let value/295 = x148 in
           Result::Ok(value/295)
         }
       }
     },
-    Result::Err(x105) => {
+    Result::Err(x149) => {
       {
-        let x105 = Result::Err._0(self/293) in
+        let x149 = Result::Err._0(self/293) in
         {
-          let error/296 = x105 in
+          let error/296 = x149 in
           Result::Err(map_fn/294(error/296))
         }
       }
@@ -1391,20 +1463,20 @@ fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/2
 
 fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
   match self/297 {
-    Result::Ok(x106) => {
+    Result::Ok(x150) => {
       {
-        let x106 = Result::Ok._0(self/297) in
+        let x150 = Result::Ok._0(self/297) in
         {
-          let value/299 = x106 in
+          let value/299 = x150 in
           next/298(value/299)
         }
       }
     },
-    Result::Err(x107) => {
+    Result::Err(x151) => {
       {
-        let x107 = Result::Err._0(self/297) in
+        let x151 = Result::Err._0(self/297) in
         {
-          let error/300 = x107 in
+          let error/300 = x151 in
           Result::Err(error/300)
         }
       }
@@ -1413,14 +1485,14 @@ fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/29
 }
 
 fn point32_to_string(p/0: Point) -> string {
-  let mtmp108 = p/0 in
+  let mtmp152 = p/0 in
   {
-    let x109 = Point.x(mtmp108) in
-    let x110 = Point.y(mtmp108) in
+    let x153 = Point.x(mtmp152) in
+    let x154 = Point.y(mtmp152) in
     {
-      let y/2 = x110 in
+      let y/2 = x154 in
       {
-        let x/1 = x109 in
+        let x/1 = x153 in
         {
           (((("Point { x: " + inherent#int32#int32#to_string(x/1)) + ", y: ") + inherent#int32#int32#to_string(y/2)) + " }")
         }
@@ -1444,17 +1516,17 @@ fn color_to_string(c/3: Color) -> string {
 }
 
 fn line_to_string(l/4: Line) -> string {
-  let mtmp111 = l/4 in
+  let mtmp155 = l/4 in
   {
-    let x112 = Line.from(mtmp111) in
-    let x113 = Line.to(mtmp111) in
-    let x114 = Line.color(mtmp111) in
+    let x156 = Line.from(mtmp155) in
+    let x157 = Line.to(mtmp155) in
+    let x158 = Line.color(mtmp155) in
     {
-      let color/7 = x114 in
+      let color/7 = x158 in
       {
-        let to/6 = x113 in
+        let to/6 = x157 in
         {
-          let from/5 = x112 in
+          let from/5 = x156 in
           {
             (((((("Line { from: " + point32_to_string(from/5)) + ", to: ") + point32_to_string(to/6)) + ", color: ") + color_to_string(color/7)) + " }")
           }
@@ -1466,11 +1538,11 @@ fn line_to_string(l/4: Line) -> string {
 
 fn point_type(p/8: Point) -> string {
   {
-    let x115 = Point.x(p/8) in
-    let x116 = Point.y(p/8) in
-    match x115 {
+    let x159 = Point.x(p/8) in
+    let x160 = Point.y(p/8) in
+    match x159 {
       0 => {
-        match x116 {
+        match x160 {
           0 => {
             {
               "origin"
@@ -1482,11 +1554,11 @@ fn point_type(p/8: Point) -> string {
             }
           },
           _ => {
-            let y/9 = x116 in
+            let y/9 = x160 in
             {
               {
-                let mtmp117 = (0 < y/9) in
-                match mtmp117 {
+                let mtmp161 = (0 < y/9) in
+                match mtmp161 {
                   true => {
                     "above"
                   },
@@ -1500,7 +1572,7 @@ fn point_type(p/8: Point) -> string {
         }
       },
       1 => {
-        match x116 {
+        match x160 {
           0 => {
             {
               "right"
@@ -1516,7 +1588,7 @@ fn point_type(p/8: Point) -> string {
 
 fn main() -> unit {
   let p0/10 = Point { x: 0, y: 0 } in
-  let mtmp118 = println(point_type(p0/10)) in
+  let mtmp162 = println(point_type(p0/10)) in
   {
     let p1/11 = Point { x: 10, y: 10 } in
     let line/12 = Line { from: p0/10, to: p1/11, color: Color::Red } in

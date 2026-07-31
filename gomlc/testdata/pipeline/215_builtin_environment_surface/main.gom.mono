@@ -4,20 +4,20 @@ fn main() -> unit {
   let unsigned/2 = 9 in
   let text/3 = (((@runtime(core.int_to_string)(native/0) + @runtime(core.int8_to_string)(small/1)) + @runtime(core.uint8_to_string)(unsigned/2)) + @runtime(core.string_byte_slice)("abcd", 1, 3)) in
   let value/4 = @intrinsic(ref.new)(1) in
-  let _wild108 = @intrinsic(ref.set)(value/4, 2) in
+  let _wild152 = @intrinsic(ref.set)(value/4, 2) in
   let same/5 = @intrinsic(ref.ptr_eq)(value/4, value/4) in
-  let mtmp109 = @intrinsic(ref.ptr_hash)(value/4) in
+  let mtmp153 = @intrinsic(ref.ptr_hash)(value/4) in
   {
     let values/6 = @intrinsic(vec.new)() in
-    let _wild110 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
-    let _wild111 = @intrinsic(vec.push)(values/6, 3) in
-    let _wild112 = @intrinsic(vec.set)(values/6, 1, 4) in
+    let _wild154 = @intrinsic(vec.push)(values/6, @intrinsic(ref.get)(value/4)) in
+    let _wild155 = @intrinsic(vec.push)(values/6, 3) in
+    let _wild156 = @intrinsic(vec.set)(values/6, 1, 4) in
     let values_slice/7 = @intrinsic(slice.new)(values/6, 0, @intrinsic(vec.len)(values/6)) in
     let nested/8 = @intrinsic(slice.sub)(values_slice/7, 0, @intrinsic(slice.len)(values_slice/7)) in
     let channel/9 = @intrinsic(channel.new)(1) in
-    let _wild113 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
+    let _wild157 = @intrinsic(channel.send)(channel/9, @intrinsic(slice.get)(nested/8, 1)) in
     let received/10 = @intrinsic(channel.recv)(channel/9) in
-    let _wild114 = @intrinsic(channel.close)(channel/9) in
+    let _wild158 = @intrinsic(channel.close)(channel/9) in
     let total/13 = iterator_fold__A_int__I_FnIterator[int]__T_int(range(0, 3), 0, |sum/11, item/12| {
       (sum/11 + item/12)
     }) in
@@ -26,21 +26,23 @@ fn main() -> unit {
 }
 
 fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int, initial/118: int, combine/119: (int, int) -> int) -> int {
-  let accumulator/120 = inherent#Ref#Ref[T]#new__T_int(initial/118) in
-  let _wild29 = while true {
+  let accumulator/120 = initial/118 in
+  let _wild32 = while true {
       {
-        let _wild28 = {
-          let mtmp26 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
-          match mtmp26 {
+        let _wild31 = {
+          let mtmp28 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
+          match mtmp28 {
             Option__int::None => {
               break
             },
-            Option__int::Some(x27) => {
+            Option__int::Some(x29) => {
               {
-                let x27 = Option__int::Some._0(mtmp26) in
+                let x29 = Option__int::Some._0(mtmp28) in
                 {
-                  let value/121 = x27 in
-                  inherent#Ref#Ref[T]#set__T_int(accumulator/120, combine/119(inherent#Ref#Ref[T]#get__T_int(accumulator/120), value/121))
+                  let value/121 = x29 in
+                  {
+                    let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
+                  }
                 }
               }
             },
@@ -48,7 +50,7 @@ fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int,
         } in
       }
   } in
-  inherent#Ref#Ref[T]#get__T_int(accumulator/120)
+  accumulator/120
 }
 
 fn range(start/222: int, end/223: int) -> FnIterator__int {
@@ -71,29 +73,17 @@ fn inherent#int#int#to_string(self/5: int) -> string {
   @runtime(core.int_to_string)(self/5)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/207)
-}
-
 fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
   FnIterator__int.next_fn(self/102)()
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/208)
-}
-
-fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  @intrinsic(ref.set)(self/209, value/210)
-}
-
 fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator__int {
-  let current/220 = inherent#Ref#Ref[T]#new__T_int(start/218) in
+  let current/220 = @intrinsic(ref.new)(start/218) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(|| {
-    let value/221 = inherent#Ref#Ref[T]#get__T_int(current/220) in
+    let value/221 = @intrinsic(ref.get)(current/220) in
     if (value/221 < end/219) {
         {
-          let _wild63 = inherent#Ref#Ref[T]#set__T_int(current/220, (value/221 + 1)) in
+          let _wild104 = @intrinsic(ref.set)(current/220, (value/221 + 1)) in
           Option__int::Some(value/221)
         }
     } else {

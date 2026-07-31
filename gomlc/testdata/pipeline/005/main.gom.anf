@@ -1,56 +1,56 @@
 fn main() -> unit {
-  join ret110() -> unit {
+  join ret154() -> unit {
     ()
   } in
   let a/0 = (Tag_2, Tag_0) in
-  let x108 = a/0.0 in
-  let x109 = a/0.1 in
-  join k111() -> unit {
-    jump ret110()
+  let x152 = a/0.0 in
+  let x153 = a/0.1 in
+  join k155() -> unit {
+    jump ret154()
   } in
-  match x109 {
+  match x153 {
     Tag_0 => {
-      join k112() -> unit {
-        jump k111()
+      join k156() -> unit {
+        jump k155()
       } in
-      match x108 {
+      match x152 {
         Tag_0 => {
-          let t113 = print__T_int(1) in
-          jump k112()
+          let t157 = print__T_int(1) in
+          jump k156()
         },
         _ => {
-          let t114 = print__T_int(3) in
-          jump k112()
+          let t158 = print__T_int(3) in
+          jump k156()
         },
       }
     },
     Tag_1 => {
-      join k115() -> unit {
-        jump k111()
+      join k159() -> unit {
+        jump k155()
       } in
-      match x108 {
+      match x152 {
         Tag_0 => {
-          let t116 = print__T_int(0) in
-          jump k115()
+          let t160 = print__T_int(0) in
+          jump k159()
         },
         _ => {
-          let t117 = print__T_int(3) in
-          jump k115()
+          let t161 = print__T_int(3) in
+          jump k159()
         },
       }
     },
     Tag_2 => {
-      join k118() -> unit {
-        jump k111()
+      join k162() -> unit {
+        jump k155()
       } in
-      match x108 {
+      match x152 {
         Tag_2 => {
-          let t119 = print__T_int(2) in
-          jump k118()
+          let t163 = print__T_int(2) in
+          jump k162()
         },
         _ => {
-          let t120 = print__T_int(3) in
-          jump k118()
+          let t164 = print__T_int(3) in
+          jump k162()
         },
       }
     },
@@ -58,18 +58,18 @@ fn main() -> unit {
 }
 
 fn print__T_int(value/0: int) -> unit {
-  join ret121() -> unit {
+  join ret165() -> unit {
     ()
   } in
-  let t122 = trait_impl#ToString#int#to_string(value/0) in
-  let t123 = @runtime(core.string_print)(t122) in
-  jump ret121()
+  let t166 = trait_impl#ToString#int#to_string(value/0) in
+  let t167 = @runtime(core.string_print)(t166) in
+  jump ret165()
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret124(retv125: string) -> string {
-    retv125
+  join ret168(retv169: string) -> string {
+    retv169
   } in
-  let t126 = @runtime(core.int_to_string)(self/40) in
-  jump ret124(t126)
+  let t170 = @runtime(core.int_to_string)(self/40) in
+  jump ret168(t170)
 }

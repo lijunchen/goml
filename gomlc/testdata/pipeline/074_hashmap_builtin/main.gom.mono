@@ -19,30 +19,30 @@ fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
 
 fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
   {
-    let mtmp108 = (self/6, other/7) in
+    let mtmp152 = (self/6, other/7) in
     {
-      let x109 = mtmp108.0 in
-      let x110 = mtmp108.1 in
-      match x110 {
+      let x153 = mtmp152.0 in
+      let x154 = mtmp152.1 in
+      match x154 {
         Key::A => {
-          match x109 {
+          match x153 {
             Key::A => {
               true
             },
             _ => false,
           }
         },
-        Key::B(x111) => {
+        Key::B(x155) => {
           {
-            let x111 = Key::B._0(x110) in
-            match x109 {
-              Key::B(x115) => {
+            let x155 = Key::B._0(x154) in
+            match x153 {
+              Key::B(x159) => {
                 {
-                  let x115 = Key::B._0(x109) in
+                  let x159 = Key::B._0(x153) in
                   {
-                    let __l1_0/8 = x115 in
+                    let __l1_0/8 = x159 in
                     {
-                      let __r1_0/9 = x111 in
+                      let __r1_0/9 = x155 in
                       if true {
                           trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9)
                       } else {
@@ -56,17 +56,17 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
             }
           }
         },
-        Key::P(x112) => {
+        Key::P(x156) => {
           {
-            let x112 = Key::P._0(x110) in
-            match x109 {
-              Key::P(x118) => {
+            let x156 = Key::P._0(x154) in
+            match x153 {
+              Key::P(x162) => {
                 {
-                  let x118 = Key::P._0(x109) in
+                  let x162 = Key::P._0(x153) in
                   {
-                    let __l2_0/10 = x118 in
+                    let __l2_0/10 = x162 in
                     {
-                      let __r2_0/11 = x112 in
+                      let __r2_0/11 = x156 in
                       if true {
                           trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11)
                       } else {
@@ -93,11 +93,11 @@ fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
         h/13
       }
     },
-    Key::B(x119) => {
+    Key::B(x163) => {
       {
-        let x119 = Key::B._0(self/12) in
+        let x163 = Key::B._0(self/12) in
         {
-          let __field1_0/14 = x119 in
+          let __field1_0/14 = x163 in
           {
             let h/15 = (14695981039346656037 + 2) in
             let h/16 = ((h/15 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/14)) in
@@ -106,11 +106,11 @@ fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
         }
       }
     },
-    Key::P(x120) => {
+    Key::P(x164) => {
       {
-        let x120 = Key::P._0(self/12) in
+        let x164 = Key::P._0(self/12) in
         {
-          let __field2_0/17 = x120 in
+          let __field2_0/17 = x164 in
           {
             let h/18 = (14695981039346656037 + 3) in
             let h/19 = ((h/18 * 1099511628211) + trait_impl#Hash#Point#hash(__field2_0/17)) in
@@ -127,11 +127,11 @@ fn print_opt_int(x/20: Option__int32) -> unit {
     Option__int32::None => {
       println__T_string("none")
     },
-    Option__int32::Some(x121) => {
+    Option__int32::Some(x165) => {
       {
-        let x121 = Option__int32::Some._0(x/20) in
+        let x165 = Option__int32::Some._0(x/20) in
         {
-          let v/21 = x121 in
+          let v/21 = x165 in
           println__T_int32(v/21)
         }
       }
@@ -141,28 +141,28 @@ fn print_opt_int(x/20: Option__int32) -> unit {
 
 fn main() -> unit {
   let m1/22 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() in
-  let _wild122 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m1/22, Key::A, 10) in
-  let _wild123 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m1/22, Key::B(1), 20) in
-  let _wild124 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m1/22)) in
-  let _wild125 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m1/22, Key::A)) in
-  let _wild126 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m1/22, Key::B(1))) in
-  let _wild127 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m1/22, Key::B(1)) in
-  let _wild128 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m1/22, Key::B(1))) in
-  let _wild129 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m1/22)) in
+  let _wild166 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m1/22, Key::A, 10) in
+  let _wild167 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m1/22, Key::B(1), 20) in
+  let _wild168 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m1/22)) in
+  let _wild169 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m1/22, Key::A)) in
+  let _wild170 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m1/22, Key::B(1))) in
+  let _wild171 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m1/22, Key::B(1)) in
+  let _wild172 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m1/22, Key::B(1))) in
+  let _wild173 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m1/22)) in
   let m2/23 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Point]__V_int32() in
   let p1/24 = inherent#Ref#Ref[T]#new__T_Point(Point { x: 1, y: 2 }) in
   let p2/25 = inherent#Ref#Ref[T]#new__T_Point(Point { x: 1, y: 2 }) in
-  let _wild130 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Point]__V_int32(m2/23, p1/24, 99) in
-  let _wild131 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(m2/23, p1/24)) in
-  let _wild132 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(m2/23, p2/25)) in
-  let _wild133 = inherent#Ref#Ref[T]#set__T_Point(p1/24, Point { x: 9, y: 8 }) in
-  let _wild134 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(m2/23, p1/24)) in
-  let _wild135 = println__T_bool(trait_impl#Eq#Ref[Point]#eq(p1/24, p2/25)) in
+  let _wild174 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Point]__V_int32(m2/23, p1/24, 99) in
+  let _wild175 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(m2/23, p1/24)) in
+  let _wild176 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(m2/23, p2/25)) in
+  let _wild177 = inherent#Ref#Ref[T]#set__T_Point(p1/24, Point { x: 9, y: 8 }) in
+  let _wild178 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(m2/23, p1/24)) in
+  let _wild179 = println__T_bool(trait_impl#Eq#Ref[Point]#eq(p1/24, p2/25)) in
   let m3/26 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Key]__V_int32() in
   let k1/27 = inherent#Ref#Ref[T]#new__T_Key(Key::B(7)) in
   let k2/28 = k1/27 in
-  let _wild136 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Key]__V_int32(m3/26, k1/27, 123) in
-  let _wild137 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Key]__V_int32(m3/26, k2/28)) in
+  let _wild180 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Key]__V_int32(m3/26, k1/27, 123) in
+  let _wild181 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Key]__V_int32(m3/26, k2/28)) in
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {

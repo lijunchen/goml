@@ -6,41 +6,41 @@ type Point struct {
 }
 
 func make_point(base__0 int32) Point {
-    var retv109 Point
-    var t110 int32 = base__0 + 1
-    var t111 Point = Point{
+    var retv153 Point
+    var t154 int32 = base__0 + 1
+    var t155 Point = Point{
         x: base__0,
-        y: t110,
+        y: t154,
     }
-    retv109 = t111
-    return retv109
+    retv153 = t155
+    return retv153
 }
 
 func sum_point(p__1 Point) int32 {
-    var retv113 int32
-    var t114 int32 = p__1.x
-    var t115 int32 = p__1.y
-    var t116 int32 = t114 + t115
-    retv113 = t116
-    return retv113
+    var retv157 int32
+    var t158 int32 = p__1.x
+    var t159 int32 = p__1.y
+    var t160 int32 = t158 + t159
+    retv157 = t160
+    return retv157
 }
 
 func main0() int32 {
-    var retv118 int32
+    var retv162 int32
     var p__2 Point = make_point(5)
-    var t119 int32 = p__2.x
-    var t120 int32 = t119 + 1
-    var t121 int32 = p__2.y
-    var t122 int32 = t121 - 2
+    var t163 int32 = p__2.x
+    var t164 int32 = t163 + 1
+    var t165 int32 = p__2.y
+    var t166 int32 = t165 - 2
     var shifted__3 Point = Point{
-        x: t120,
-        y: t122,
+        x: t164,
+        y: t166,
     }
-    var t123 int32 = shifted__3.x
-    var t124 int32 = sum_point(shifted__3)
-    var t125 int32 = t123 + t124
-    retv118 = t125
-    return retv118
+    var t167 int32 = shifted__3.x
+    var t168 int32 = sum_point(shifted__3)
+    var t169 int32 = t167 + t168
+    retv162 = t169
+    return retv162
 }
 
 func main() {

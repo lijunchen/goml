@@ -27,11 +27,17 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Byt
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
-  inherent#Vec#Vec[T]#get__T_uint8(std::bytes::Bytes.values(self/6), index/7)
+  @intrinsic(vec.get)(std::bytes::Bytes.values(self/6), index/7)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
-  inherent#Vec#Vec[T]#set__T_uint8(std::bytes::Bytes.values(self/8), index/9, value/10)
+  let _wild5 = let place_root0 = self/8 in
+  let place1 = std::bytes::Bytes.values(place_root0) in
+  let index2 = index/9 in
+  let place3 = @intrinsic(vec.get)(place1, index2) in
+  let value4 = value/10 in
+  @intrinsic(vec.set)(place1, index2, value4) in
+  ()
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
@@ -63,11 +69,11 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Byte
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result__string__string {
-  let mtmp0 = @runtime(core.string_from_utf8)(std::bytes::Bytes.values(self/23)) in
-  let x1 = mtmp0.0 in
-  let x2 = mtmp0.1 in
-  let value/25 = x2 in
-  let valid/24 = x1 in
+  let mtmp6 = @runtime(core.string_from_utf8)(std::bytes::Bytes.values(self/23)) in
+  let x7 = mtmp6.0 in
+  let x8 = mtmp6.1 in
+  let value/25 = x8 in
+  let valid/24 = x7 in
   if valid/24 {
       Result__string__string::Ok(value/25)
   } else {
@@ -281,13 +287,13 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
 
 fn show_unit(result/0: Result__unit__string) -> string {
   match result/0 {
-    Result__unit__string::Ok(x108) => {
-      let x108 = Result__unit__string::Ok._0(result/0) in
+    Result__unit__string::Ok(x152) => {
+      let x152 = Result__unit__string::Ok._0(result/0) in
       "ok"
     },
-    Result__unit__string::Err(x109) => {
-      let x109 = Result__unit__string::Err._0(result/0) in
-      let err/1 = x109 in
+    Result__unit__string::Err(x153) => {
+      let x153 = Result__unit__string::Err._0(result/0) in
+      let err/1 = x153 in
       ("err " + err/1)
     },
   }
@@ -295,25 +301,25 @@ fn show_unit(result/0: Result__unit__string) -> string {
 
 fn show_string(result/2: Result__string__string) -> string {
   match result/2 {
-    Result__string__string::Ok(x110) => {
-      let x110 = Result__string__string::Ok._0(result/2) in
-      let value/3 = x110 in
+    Result__string__string::Ok(x154) => {
+      let x154 = Result__string__string::Ok._0(result/2) in
+      let value/3 = x154 in
       value/3
     },
-    Result__string__string::Err(x111) => {
-      let x111 = Result__string__string::Err._0(result/2) in
-      let err/4 = x111 in
+    Result__string__string::Err(x155) => {
+      let x155 = Result__string__string::Err._0(result/2) in
+      let err/4 = x155 in
       ("err " + err/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild112 = std::io::println__T_string(@runtime(core.string_byte_slice)("a你好z", 1, 7)) in
-  let _wild113 = std::io::eprint__T_string("") in
-  let _wild114 = std::io::eprintln__T_string("") in
-  let _wild115 = std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
-  let _wild116 = std::io::println__T_string(show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))) in
+  let _wild156 = std::io::println__T_string(@runtime(core.string_byte_slice)("a你好z", 1, 7)) in
+  let _wild157 = std::io::eprint__T_string("") in
+  let _wild158 = std::io::eprintln__T_string("") in
+  let _wild159 = std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
+  let _wild160 = std::io::println__T_string(show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))) in
   std::io::println__T_string(show_string(std::fs::read_file("goml-self-host/nested/output.txt")))
 }
 
@@ -341,14 +347,6 @@ fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/139: Vec[uint8]) -> bool {
   trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len__T_uint8(self/139), 0)
 }
 
-fn inherent#Vec#Vec[T]#get__T_uint8(self/132: Vec[uint8], index/133: int) -> uint8 {
-  @intrinsic(vec.get)(self/132, index/133)
-}
-
-fn inherent#Vec#Vec[T]#set__T_uint8(self/134: Vec[uint8], index/135: int, elem/136: uint8) -> unit {
-  @intrinsic(vec.set)(self/134, index/135, elem/136)
-}
-
 fn inherent#Vec#Vec[T]#push__T_uint8(self/126: Vec[uint8], elem/127: uint8) -> unit {
   @intrinsic(vec.push)(self/126, elem/127)
 }
@@ -358,8 +356,8 @@ fn inherent#Vec#Vec[T]#pop__T_uint8(self/147: Vec[uint8]) -> Option__uint8 {
   if trait_impl#Eq#int#eq(len/148, 0) {
       Option__uint8::None
   } else {
-      let value/149 = inherent#Vec#Vec[T]#get__T_uint8(self/147, (len/148 - 1)) in
-      let _wild38 = inherent#Vec#Vec[T]#truncate__T_uint8(self/147, (len/148 - 1)) in
+      let value/149 = @intrinsic(vec.get)(self/147, (len/148 - 1)) in
+      let _wild43 = inherent#Vec#Vec[T]#truncate__T_uint8(self/147, (len/148 - 1)) in
       Option__uint8::Some(value/149)
   }
 }

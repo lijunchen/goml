@@ -1,100 +1,100 @@
 fn cut_pair(ok/0: bool) -> Option__(string,string) {
-  join ret116(retv117: Option__(string,string)) -> Option__(string,string) {
-    retv117
+  join ret160(retv161: Option__(string,string)) -> Option__(string,string) {
+    retv161
   } in
-  join k118(jp119: Option__(string,string)) -> Option__(string,string) {
-    jump ret116(jp119)
+  join k162(jp163: Option__(string,string)) -> Option__(string,string) {
+    jump ret160(jp163)
   } in
   if ok/0 {
-    let t120 = ("left", "right") in
-    let t121 = Option__(string,string)::Some(t120) in
-    jump k118(t121)
+    let t164 = ("left", "right") in
+    let t165 = Option__(string,string)::Some(t164) in
+    jump k162(t165)
   } else {
-    jump k118(Tag_0)
+    jump k162(Tag_0)
   }
 }
 
 fn pair(ok/1: bool) -> Option__(string,string) {
-  join ret122(retv123: Option__(string,string)) -> Option__(string,string) {
-    retv123
+  join ret166(retv167: Option__(string,string)) -> Option__(string,string) {
+    retv167
   } in
-  let t124 = cut_pair(ok/1) in
-  jump ret122(t124)
+  let t168 = cut_pair(ok/1) in
+  jump ret166(t168)
 }
 
 fn describe(ok/2: bool) -> Option__string {
-  join ret125(retv126: Option__string) -> Option__string {
-    retv126
+  join ret169(retv170: Option__string) -> Option__string {
+    retv170
   } in
-  let mtmp108 = pair(ok/2) in
-  join k127(jp128: (string, string)) -> Option__string {
-    let mtmp110 = jp128 in
-    let x111 = mtmp110.0 in
-    let x112 = mtmp110.1 in
-    let after/4 = x112 in
-    let before/3 = x111 in
-    let t129 = (before/3 + ":") in
-    let t130 = (t129 + after/4) in
-    let t131 = Option__string::Some(t130) in
-    jump ret125(t131)
+  let mtmp152 = pair(ok/2) in
+  join k171(jp172: (string, string)) -> Option__string {
+    let mtmp154 = jp172 in
+    let x155 = mtmp154.0 in
+    let x156 = mtmp154.1 in
+    let after/4 = x156 in
+    let before/3 = x155 in
+    let t173 = (before/3 + ":") in
+    let t174 = (t173 + after/4) in
+    let t175 = Option__string::Some(t174) in
+    jump ret169(t175)
   } in
-  match mtmp108 {
+  match mtmp152 {
     Tag_0 => {
-      jump ret125(Tag_0)
+      jump ret169(Tag_0)
     },
     Tag_1 => {
-      let x109 = Option__(string,string)::Some._0(mtmp108) in
-      let try_value/16 = x109 in
-      jump k127(try_value/16)
+      let x153 = Option__(string,string)::Some._0(mtmp152) in
+      let try_value/16 = x153 in
+      jump k171(try_value/16)
     },
   }
 }
 
 fn show(opt/5: Option__string) -> string {
-  join ret132(retv133: string) -> string {
-    retv133
+  join ret176(retv177: string) -> string {
+    retv177
   } in
-  join k134(jp135: string) -> string {
-    jump ret132(jp135)
+  join k178(jp179: string) -> string {
+    jump ret176(jp179)
   } in
   match opt/5 {
     Tag_0 => {
-      jump k134("none")
+      jump k178("none")
     },
     Tag_1 => {
-      let x113 = Option__string::Some._0(opt/5) in
-      let value/6 = x113 in
-      let t136 = ("some " + value/6) in
-      jump k134(t136)
+      let x157 = Option__string::Some._0(opt/5) in
+      let value/6 = x157 in
+      let t180 = ("some " + value/6) in
+      jump k178(t180)
     },
   }
 }
 
 fn main() -> unit {
-  join ret137() -> unit {
+  join ret181() -> unit {
     ()
   } in
-  let t138 = describe(true) in
-  let t139 = show(t138) in
-  let _wild114 = println__T_string(t139) in
-  let t140 = describe(false) in
-  let t141 = show(t140) in
-  let _wild115 = println__T_string(t141) in
-  jump ret137()
+  let t182 = describe(true) in
+  let t183 = show(t182) in
+  let _wild158 = println__T_string(t183) in
+  let t184 = describe(false) in
+  let t185 = show(t184) in
+  let _wild159 = println__T_string(t185) in
+  jump ret181()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret142() -> unit {
+  join ret186() -> unit {
     ()
   } in
-  let t143 = trait_impl#ToString#string#to_string(value/1) in
-  let t144 = @runtime(core.string_println)(t143) in
-  jump ret142()
+  let t187 = trait_impl#ToString#string#to_string(value/1) in
+  let t188 = @runtime(core.string_println)(t187) in
+  jump ret186()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret145(retv146: string) -> string {
-    retv146
+  join ret189(retv190: string) -> string {
+    retv190
   } in
-  jump ret145(self/38)
+  jump ret189(self/38)
 }

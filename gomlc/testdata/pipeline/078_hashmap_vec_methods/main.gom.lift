@@ -1,23 +1,23 @@
 fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
-  let mtmp108 = (self/0, other/1) in
-  let x109 = mtmp108.0 in
-  let x110 = mtmp108.1 in
-  match x110 {
+  let mtmp152 = (self/0, other/1) in
+  let x153 = mtmp152.0 in
+  let x154 = mtmp152.1 in
+  match x154 {
     Key::A => {
-      match x109 {
+      match x153 {
         Key::A => {
           true
         },
         _ => false,
       }
     },
-    Key::B(x111) => {
-      let x111 = Key::B._0(x110) in
-      match x109 {
-        Key::B(x113) => {
-          let x113 = Key::B._0(x109) in
-          let __l1_0/2 = x113 in
-          let __r1_0/3 = x111 in
+    Key::B(x155) => {
+      let x155 = Key::B._0(x154) in
+      match x153 {
+        Key::B(x157) => {
+          let x157 = Key::B._0(x153) in
+          let __l1_0/2 = x157 in
+          let __r1_0/3 = x155 in
           if true {
               trait_impl#Eq#int32#eq(__l1_0/2, __r1_0/3)
           } else {
@@ -36,9 +36,9 @@ fn trait_impl#Hash#Key#hash(self/4: Key) -> uint64 {
       let h/5 = (14695981039346656037 + 1) in
       h/5
     },
-    Key::B(x114) => {
-      let x114 = Key::B._0(self/4) in
-      let __field1_0/6 = x114 in
+    Key::B(x158) => {
+      let x158 = Key::B._0(self/4) in
+      let __field1_0/6 = x158 in
       let h/7 = (14695981039346656037 + 2) in
       let h/8 = ((h/7 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/6)) in
       h/8
@@ -51,9 +51,9 @@ fn print_opt_int(x/9: Option__int32) -> unit {
     Option__int32::None => {
       println__T_string("none")
     },
-    Option__int32::Some(x115) => {
-      let x115 = Option__int32::Some._0(x/9) in
-      let v/10 = x115 in
+    Option__int32::Some(x159) => {
+      let x159 = Option__int32::Some._0(x/9) in
+      let v/10 = x159 in
       println__T_int32(v/10)
     },
   }
@@ -61,22 +61,22 @@ fn print_opt_int(x/9: Option__int32) -> unit {
 
 fn main() -> unit {
   let v/11 = inherent#Vec#Vec[T]#new__T_int() in
-  let _wild116 = inherent#Vec#Vec[T]#push__T_int(v/11, 10) in
-  let _wild117 = inherent#Vec#Vec[T]#push__T_int(v/11, 20) in
-  let _wild118 = inherent#Vec#Vec[T]#push__T_int(v/11, 30) in
-  let _wild119 = println__T_int(inherent#Vec#Vec[T]#get__T_int(v/11, 0)) in
-  let _wild120 = println__T_int(inherent#Vec#Vec[T]#get__T_int(v/11, 1)) in
-  let _wild121 = println__T_int(inherent#Vec#Vec[T]#get__T_int(v/11, 2)) in
-  let _wild122 = println__T_int(inherent#Vec#Vec[T]#len__T_int(v/11)) in
+  let _wild160 = inherent#Vec#Vec[T]#push__T_int(v/11, 10) in
+  let _wild161 = inherent#Vec#Vec[T]#push__T_int(v/11, 20) in
+  let _wild162 = inherent#Vec#Vec[T]#push__T_int(v/11, 30) in
+  let _wild163 = println__T_int(inherent#Vec#Vec[T]#get__T_int(v/11, 0)) in
+  let _wild164 = println__T_int(inherent#Vec#Vec[T]#get__T_int(v/11, 1)) in
+  let _wild165 = println__T_int(inherent#Vec#Vec[T]#get__T_int(v/11, 2)) in
+  let _wild166 = println__T_int(inherent#Vec#Vec[T]#len__T_int(v/11)) in
   let m/12 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() in
-  let _wild123 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, Key::A, 10) in
-  let _wild124 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, Key::B(1), 20) in
-  let _wild125 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12)) in
-  let _wild126 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m/12, Key::A)) in
-  let _wild127 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, Key::B(1))) in
-  let _wild128 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m/12, Key::B(1)) in
-  let _wild129 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, Key::B(1))) in
-  let _wild130 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12)) in
+  let _wild167 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, Key::A, 10) in
+  let _wild168 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, Key::B(1), 20) in
+  let _wild169 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12)) in
+  let _wild170 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m/12, Key::A)) in
+  let _wild171 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, Key::B(1))) in
+  let _wild172 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m/12, Key::B(1)) in
+  let _wild173 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, Key::B(1))) in
+  let _wild174 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12)) in
   ()
 }
 

@@ -101,10 +101,10 @@ fn inherent#string#string#to_bytes(self/24: string) -> Vec[uint8] {
 }
 
 fn inherent#string#string#chars(self/25: string) -> FnIterator[char] {
-  let index/26 = inherent#Ref#Ref[int]#new(0) in
+  let index/26 = @intrinsic(ref.new)(0) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
     {
-      let mtmp7 = inherent#string#string#decode_at(self/25, inherent#Ref#Ref[int]#get(index/26)) in
+      let mtmp7 = inherent#string#string#decode_at(self/25, @intrinsic(ref.get)(index/26)) in
       match mtmp7 {
         Option::None => {
           Option::None
@@ -124,7 +124,11 @@ fn inherent#string#string#chars(self/25: string) -> FnIterator[char] {
                     {
                       let value/28 = x10 in
                       {
-                        let _wild12 = inherent#Ref#Ref[int]#set(index/26, (inherent#Ref#Ref[int]#get(index/26) + width/29)) in
+                        let _wild14 = {
+                          let compound_old12 = @intrinsic(ref.get)(index/26) in
+                          let compound_value13 = width/29 in
+                          @intrinsic(ref.set)(index/26, (compound_old12 + compound_value13))
+                        } in
                         Option::Some(value/28)
                       }
                     }
@@ -140,31 +144,31 @@ fn inherent#string#string#chars(self/25: string) -> FnIterator[char] {
 }
 
 fn inherent#string#string#char_indices(self/30: string) -> FnIterator[(int, char)] {
-  let index/31 = inherent#Ref#Ref[int]#new(0) in
+  let index/31 = @intrinsic(ref.new)(0) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let current/32 = inherent#Ref#Ref[int]#get(index/31) in
+    let current/32 = @intrinsic(ref.get)(index/31) in
     {
-      let mtmp13 = inherent#string#string#decode_at(self/30, current/32) in
-      match mtmp13 {
+      let mtmp15 = inherent#string#string#decode_at(self/30, current/32) in
+      match mtmp15 {
         Option::None => {
           Option::None
         },
-        Option::Some(x14) => {
+        Option::Some(x16) => {
           {
-            let x14 = Option::Some._0(mtmp13) in
+            let x16 = Option::Some._0(mtmp15) in
             {
-              let decoded/33 = x14 in
+              let decoded/33 = x16 in
               {
-                let mtmp15 = decoded/33 in
+                let mtmp17 = decoded/33 in
                 {
-                  let x16 = mtmp15.0 in
-                  let x17 = mtmp15.1 in
+                  let x18 = mtmp17.0 in
+                  let x19 = mtmp17.1 in
                   {
-                    let width/35 = x17 in
+                    let width/35 = x19 in
                     {
-                      let value/34 = x16 in
+                      let value/34 = x18 in
                       {
-                        let _wild18 = inherent#Ref#Ref[int]#set(index/31, (current/32 + width/35)) in
+                        let _wild20 = @intrinsic(ref.set)(index/31, (current/32 + width/35)) in
                         Option::Some((current/32, value/34))
                       }
                     }
@@ -390,16 +394,16 @@ fn trait_impl#Iterator#FnIterator[T]#next[T](self/102: FnIterator[T]) -> Option[
 
 fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](self/103: MapIterator[A, B, I]) -> Option[B] {
   {
-    let mtmp19 = trait_call[Iterator::next](MapIterator.iterator(self/103)) in
-    match mtmp19 {
+    let mtmp21 = trait_call[Iterator::next](MapIterator.iterator(self/103)) in
+    match mtmp21 {
       Option::None => {
         Option::None
       },
-      Option::Some(x20) => {
+      Option::Some(x22) => {
         {
-          let x20 = Option::Some._0(mtmp19) in
+          let x22 = Option::Some._0(mtmp21) in
           {
-            let value/104 = x20 in
+            let value/104 = x22 in
             Option::Some(MapIterator.map_fn(self/103)(value/104))
           }
         }
@@ -409,19 +413,19 @@ fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](self/103: MapIterator[A,
 }
 
 fn trait_impl#Iterator#FilterIterator[T,I]#next[T, I](self/105: FilterIterator[T, I]) -> Option[T] {
-  let _wild24 = while true {
+  let _wild26 = while true {
       {
-        let _wild23 = {
-          let mtmp21 = trait_call[Iterator::next](FilterIterator.iterator(self/105)) in
-          match mtmp21 {
+        let _wild25 = {
+          let mtmp23 = trait_call[Iterator::next](FilterIterator.iterator(self/105)) in
+          match mtmp23 {
             Option::None => {
               return Option::None
             },
-            Option::Some(x22) => {
+            Option::Some(x24) => {
               {
-                let x22 = Option::Some._0(mtmp21) in
+                let x24 = Option::Some._0(mtmp23) in
                 {
-                  let value/106 = x22 in
+                  let value/106 = x24 in
                   if FilterIterator.predicate(self/105)(value/106) {
                       {
                         return Option::Some(value/106)
@@ -445,7 +449,7 @@ fn trait_impl#Iterator#TakeIterator[I]#next[I](self/107: TakeIterator[I]) -> Opt
   let remaining/108 = inherent#Ref#Ref[int]#get(TakeIterator.remaining(self/107)) in
   if (remaining/108 > 0) {
       {
-        let _wild25 = inherent#Ref#Ref[int]#set(TakeIterator.remaining(self/107), (remaining/108 - 1)) in
+        let _wild27 = inherent#Ref#Ref[int]#set(TakeIterator.remaining(self/107), (remaining/108 - 1)) in
         trait_call[Iterator::next](TakeIterator.iterator(self/107))
       }
   } else {
@@ -481,21 +485,23 @@ fn iterator_take(iterator/114: I, count/115: int) -> TakeIterator[I] {
 }
 
 fn iterator_fold(iterator/117: I, initial/118: A, combine/119: (A, T) -> A) -> A {
-  let accumulator/120 = inherent#Ref#Ref[A]#new(initial/118) in
-  let _wild29 = while true {
+  let accumulator/120 = initial/118 in
+  let _wild32 = while true {
       {
-        let _wild28 = {
-          let mtmp26 = trait_call[Iterator::next](iterator/117) in
-          match mtmp26 {
+        let _wild31 = {
+          let mtmp28 = trait_call[Iterator::next](iterator/117) in
+          match mtmp28 {
             Option::None => {
               break
             },
-            Option::Some(x27) => {
+            Option::Some(x29) => {
               {
-                let x27 = Option::Some._0(mtmp26) in
+                let x29 = Option::Some._0(mtmp28) in
                 {
-                  let value/121 = x27 in
-                  inherent#Ref#Ref[A]#set(accumulator/120, combine/119(inherent#Ref#Ref[A]#get(accumulator/120), value/121))
+                  let value/121 = x29 in
+                  {
+                    let _wild30 = accumulator/120 = combine/119(accumulator/120, value/121) in
+                  }
                 }
               }
             },
@@ -503,24 +509,24 @@ fn iterator_fold(iterator/117: I, initial/118: A, combine/119: (A, T) -> A) -> A
         } in
       }
   } in
-  inherent#Ref#Ref[A]#get(accumulator/120)
+  accumulator/120
 }
 
 fn iterator_collect(iterator/122: I) -> Vec[T] {
   let values/123 = inherent#Vec#Vec[T]#new() in
-  let _wild33 = while true {
+  let _wild36 = while true {
       {
-        let _wild32 = {
-          let mtmp30 = trait_call[Iterator::next](iterator/122) in
-          match mtmp30 {
+        let _wild35 = {
+          let mtmp33 = trait_call[Iterator::next](iterator/122) in
+          match mtmp33 {
             Option::None => {
               break
             },
-            Option::Some(x31) => {
+            Option::Some(x34) => {
               {
-                let x31 = Option::Some._0(mtmp30) in
+                let x34 = Option::Some._0(mtmp33) in
                 {
-                  let value/124 = x31 in
+                  let value/124 = x34 in
                   inherent#Vec#Vec[T]#push(values/123, value/124)
                 }
               }
@@ -546,14 +552,18 @@ fn inherent#Vec#Vec[T]#push[T](self/126: Vec[T], elem/127: T) -> unit {
 
 fn inherent#Vec#Vec[T]#pushed[T](self/128: Vec[T], elem/129: T) -> Vec[T] {
   let result/130 = inherent#Vec#Vec[T]#new() in
-  let index/131 = inherent#Ref#Ref[int]#new(0) in
-  let _wild36 = while (inherent#Ref#Ref[int]#get(index/131) < inherent#Vec#Vec[T]#len(self/128)) {
+  let index/131 = 0 in
+  let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len(self/128)) {
       {
-        let _wild34 = inherent#Vec#Vec[T]#push(result/130, inherent#Vec#Vec[T]#get(self/128, inherent#Ref#Ref[int]#get(index/131))) in
-        let _wild35 = inherent#Ref#Ref[int]#set(index/131, (inherent#Ref#Ref[int]#get(index/131) + 1)) in
+        let _wild37 = inherent#Vec#Vec[T]#push(result/130, @intrinsic(vec.get)(self/128, index/131)) in
+        let _wild40 = {
+          let compound_old38 = index/131 in
+          let compound_value39 = 1 in
+          index/131 = (compound_old38 + compound_value39)
+        } in
       }
   } in
-  let _wild37 = inherent#Vec#Vec[T]#push(result/130, elem/129) in
+  let _wild42 = inherent#Vec#Vec[T]#push(result/130, elem/129) in
   result/130
 }
 
@@ -597,7 +607,7 @@ fn inherent#Vec#Vec[T]#last[T](self/145: Vec[T]) -> Option[T] {
       }
   } else {
       {
-        Option::Some(inherent#Vec#Vec[T]#get(self/145, (len/146 - 1)))
+        Option::Some(@intrinsic(vec.get)(self/145, (len/146 - 1)))
       }
   }
 }
@@ -610,32 +620,50 @@ fn inherent#Vec#Vec[T]#pop[T](self/147: Vec[T]) -> Option[T] {
       }
   } else {
       {
-        let value/149 = inherent#Vec#Vec[T]#get(self/147, (len/148 - 1)) in
-        let _wild38 = inherent#Vec#Vec[T]#truncate(self/147, (len/148 - 1)) in
+        let value/149 = @intrinsic(vec.get)(self/147, (len/148 - 1)) in
+        let _wild43 = inherent#Vec#Vec[T]#truncate(self/147, (len/148 - 1)) in
         Option::Some(value/149)
       }
   }
 }
 
 fn inherent#Vec#Vec[T]#swap[T](self/150: Vec[T], left/151: int, right/152: int) -> unit {
-  let value/153 = inherent#Vec#Vec[T]#get(self/150, left/151) in
-  let _wild39 = inherent#Vec#Vec[T]#set(self/150, left/151, inherent#Vec#Vec[T]#get(self/150, right/152)) in
-  inherent#Vec#Vec[T]#set(self/150, right/152, value/153)
+  let value/153 = @intrinsic(vec.get)(self/150, left/151) in
+  let _wild48 = {
+    let place_root44 = self/150 in
+    let index45 = left/151 in
+    let place46 = @intrinsic(vec.get)(place_root44, index45) in
+    let value47 = @intrinsic(vec.get)(self/150, right/152) in
+    @intrinsic(vec.set)(place_root44, index45, value47)
+  } in
+  let _wild53 = {
+    let place_root49 = self/150 in
+    let index50 = right/152 in
+    let place51 = @intrinsic(vec.get)(place_root49, index50) in
+    let value52 = value/153 in
+    @intrinsic(vec.set)(place_root49, index50, value52)
+  } in
 }
 
 fn inherent#Vec#Vec[T]#swap_remove[T](self/154: Vec[T], index/155: int) -> T {
   let len/156 = inherent#Vec#Vec[T]#len(self/154) in
-  let value/157 = inherent#Vec#Vec[T]#get(self/154, index/155) in
-  let _wild41 = if ((index/155 + 1) < len/156) {
+  let value/157 = @intrinsic(vec.get)(self/154, index/155) in
+  let _wild59 = if ((index/155 + 1) < len/156) {
       {
-        let _wild40 = inherent#Vec#Vec[T]#set(self/154, index/155, inherent#Vec#Vec[T]#get(self/154, (len/156 - 1))) in
+        let _wild58 = {
+          let place_root54 = self/154 in
+          let index55 = index/155 in
+          let place56 = @intrinsic(vec.get)(place_root54, index55) in
+          let value57 = @intrinsic(vec.get)(self/154, (len/156 - 1)) in
+          @intrinsic(vec.set)(place_root54, index55, value57)
+        } in
       }
   } else {
       {
         ()
       }
   } in
-  let _wild42 = inherent#Vec#Vec[T]#truncate(self/154, (len/156 - 1)) in
+  let _wild60 = inherent#Vec#Vec[T]#truncate(self/154, (len/156 - 1)) in
   value/157
 }
 
@@ -647,17 +675,33 @@ fn inherent#Vec#Vec[T]#insert[T](self/158: Vec[T], index/159: int, value/160: T)
       }
   } else {
       {
-        let mtmp43 = inherent#Vec#Vec[T]#get(self/158, index/159) in
+        let mtmp61 = @intrinsic(vec.get)(self/158, index/159) in
         {
-          let _wild44 = inherent#Vec#Vec[T]#push(self/158, inherent#Vec#Vec[T]#get(self/158, (len/161 - 1))) in
-          let current/162 = inherent#Ref#Ref[int]#new((len/161 - 1)) in
-          let _wild47 = while (inherent#Ref#Ref[int]#get(current/162) > index/159) {
+          let _wild62 = inherent#Vec#Vec[T]#push(self/158, @intrinsic(vec.get)(self/158, (len/161 - 1))) in
+          let current/162 = (len/161 - 1) in
+          let _wild71 = while (current/162 > index/159) {
               {
-                let _wild45 = inherent#Vec#Vec[T]#set(self/158, inherent#Ref#Ref[int]#get(current/162), inherent#Vec#Vec[T]#get(self/158, (inherent#Ref#Ref[int]#get(current/162) - 1))) in
-                let _wild46 = inherent#Ref#Ref[int]#set(current/162, (inherent#Ref#Ref[int]#get(current/162) - 1)) in
+                let _wild67 = {
+                  let place_root63 = self/158 in
+                  let index64 = current/162 in
+                  let place65 = @intrinsic(vec.get)(place_root63, index64) in
+                  let value66 = @intrinsic(vec.get)(self/158, (current/162 - 1)) in
+                  @intrinsic(vec.set)(place_root63, index64, value66)
+                } in
+                let _wild70 = {
+                  let compound_old68 = current/162 in
+                  let compound_value69 = 1 in
+                  current/162 = (compound_old68 - compound_value69)
+                } in
               }
           } in
-          inherent#Vec#Vec[T]#set(self/158, index/159, value/160)
+          let _wild76 = {
+            let place_root72 = self/158 in
+            let index73 = index/159 in
+            let place74 = @intrinsic(vec.get)(place_root72, index73) in
+            let value75 = value/160 in
+            @intrinsic(vec.set)(place_root72, index73, value75)
+          } in
         }
       }
   }
@@ -665,38 +709,60 @@ fn inherent#Vec#Vec[T]#insert[T](self/158: Vec[T], index/159: int, value/160: T)
 
 fn inherent#Vec#Vec[T]#remove[T](self/163: Vec[T], index/164: int) -> T {
   let len/165 = inherent#Vec#Vec[T]#len(self/163) in
-  let value/166 = inherent#Vec#Vec[T]#get(self/163, index/164) in
-  let current/167 = inherent#Ref#Ref[int]#new(index/164) in
-  let _wild50 = while ((inherent#Ref#Ref[int]#get(current/167) + 1) < len/165) {
+  let value/166 = @intrinsic(vec.get)(self/163, index/164) in
+  let current/167 = index/164 in
+  let _wild85 = while ((current/167 + 1) < len/165) {
       {
-        let _wild48 = inherent#Vec#Vec[T]#set(self/163, inherent#Ref#Ref[int]#get(current/167), inherent#Vec#Vec[T]#get(self/163, (inherent#Ref#Ref[int]#get(current/167) + 1))) in
-        let _wild49 = inherent#Ref#Ref[int]#set(current/167, (inherent#Ref#Ref[int]#get(current/167) + 1)) in
+        let _wild81 = {
+          let place_root77 = self/163 in
+          let index78 = current/167 in
+          let place79 = @intrinsic(vec.get)(place_root77, index78) in
+          let value80 = @intrinsic(vec.get)(self/163, (current/167 + 1)) in
+          @intrinsic(vec.set)(place_root77, index78, value80)
+        } in
+        let _wild84 = {
+          let compound_old82 = current/167 in
+          let compound_value83 = 1 in
+          current/167 = (compound_old82 + compound_value83)
+        } in
       }
   } in
-  let _wild51 = inherent#Vec#Vec[T]#truncate(self/163, (len/165 - 1)) in
+  let _wild86 = inherent#Vec#Vec[T]#truncate(self/163, (len/165 - 1)) in
   value/166
 }
 
 fn inherent#Vec#Vec[T]#reverse[T](self/168: Vec[T]) -> unit {
-  let left/169 = inherent#Ref#Ref[int]#new(0) in
-  let right/170 = inherent#Ref#Ref[int]#new((inherent#Vec#Vec[T]#len(self/168) - 1)) in
-  while (inherent#Ref#Ref[int]#get(left/169) < inherent#Ref#Ref[int]#get(right/170)) {
+  let left/169 = 0 in
+  let right/170 = (inherent#Vec#Vec[T]#len(self/168) - 1) in
+  while (left/169 < right/170) {
       {
-        let _wild52 = inherent#Vec#Vec[T]#swap(self/168, inherent#Ref#Ref[int]#get(left/169), inherent#Ref#Ref[int]#get(right/170)) in
-        let _wild53 = inherent#Ref#Ref[int]#set(left/169, (inherent#Ref#Ref[int]#get(left/169) + 1)) in
-        let _wild54 = inherent#Ref#Ref[int]#set(right/170, (inherent#Ref#Ref[int]#get(right/170) - 1)) in
+        let _wild87 = inherent#Vec#Vec[T]#swap(self/168, left/169, right/170) in
+        let _wild90 = {
+          let compound_old88 = left/169 in
+          let compound_value89 = 1 in
+          left/169 = (compound_old88 + compound_value89)
+        } in
+        let _wild93 = {
+          let compound_old91 = right/170 in
+          let compound_value92 = 1 in
+          right/170 = (compound_old91 - compound_value92)
+        } in
       }
   }
 }
 
 fn inherent#Vec#Vec[T]#extend[T](self/171: Vec[T], other/172: Vec[T]) -> unit {
   let len/173 = inherent#Vec#Vec[T]#len(other/172) in
-  let _wild55 = inherent#Vec#Vec[T]#reserve(self/171, len/173) in
-  let index/174 = inherent#Ref#Ref[int]#new(0) in
-  while (inherent#Ref#Ref[int]#get(index/174) < len/173) {
+  let _wild94 = inherent#Vec#Vec[T]#reserve(self/171, len/173) in
+  let index/174 = 0 in
+  while (index/174 < len/173) {
       {
-        let _wild56 = inherent#Vec#Vec[T]#push(self/171, inherent#Vec#Vec[T]#get(other/172, inherent#Ref#Ref[int]#get(index/174))) in
-        let _wild57 = inherent#Ref#Ref[int]#set(index/174, (inherent#Ref#Ref[int]#get(index/174) + 1)) in
+        let _wild95 = inherent#Vec#Vec[T]#push(self/171, @intrinsic(vec.get)(other/172, index/174)) in
+        let _wild98 = {
+          let compound_old96 = index/174 in
+          let compound_value97 = 1 in
+          index/174 = (compound_old96 + compound_value97)
+        } in
       }
   }
 }
@@ -706,14 +772,14 @@ fn inherent#Vec#Vec[T]#slice[T](self/175: Vec[T], start/176: int, end/177: int) 
 }
 
 fn inherent#Vec#Vec[T]#iter[T](self/178: Vec[T]) -> FnIterator[T] {
-  let index/179 = inherent#Ref#Ref[int]#new(0) in
+  let index/179 = @intrinsic(ref.new)(0) in
   let len/180 = inherent#Vec#Vec[T]#len(self/178) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let current/181 = inherent#Ref#Ref[int]#get(index/179) in
+    let current/181 = @intrinsic(ref.get)(index/179) in
     if (current/181 < len/180) {
         {
-          let value/182 = inherent#Vec#Vec[T]#get(self/178, current/181) in
-          let _wild58 = inherent#Ref#Ref[int]#set(index/179, (current/181 + 1)) in
+          let value/182 = @intrinsic(vec.get)(self/178, current/181) in
+          let _wild99 = @intrinsic(ref.set)(index/179, (current/181 + 1)) in
           Option::Some(value/182)
         }
     } else {
@@ -741,14 +807,14 @@ fn inherent#Slice#Slice[T]#sub[T](self/187: Slice[T], start/188: int, end/189: i
 }
 
 fn inherent#Slice#Slice[T]#iter[T](self/190: Slice[T]) -> FnIterator[T] {
-  let index/191 = inherent#Ref#Ref[int]#new(0) in
+  let index/191 = @intrinsic(ref.new)(0) in
   let len/192 = inherent#Slice#Slice[T]#len(self/190) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let current/193 = inherent#Ref#Ref[int]#get(index/191) in
+    let current/193 = @intrinsic(ref.get)(index/191) in
     if (current/193 < len/192) {
         {
           let value/194 = inherent#Slice#Slice[T]#get(self/190, current/193) in
-          let _wild59 = inherent#Ref#Ref[int]#set(index/191, (current/193 + 1)) in
+          let _wild100 = @intrinsic(ref.set)(index/191, (current/193 + 1)) in
           Option::Some(value/194)
         }
     } else {
@@ -812,14 +878,14 @@ fn inherent#Channel#Channel[T]#send[T](self/212: Channel[T], value/213: T) -> un
 }
 
 fn inherent#Channel#Channel[T]#recv[T](self/214: Channel[T]) -> Option[T] {
-  let mtmp60 = @intrinsic(channel.recv)(self/214) in
+  let mtmp101 = @intrinsic(channel.recv)(self/214) in
   {
-    let x61 = mtmp60.0 in
-    let x62 = mtmp60.1 in
+    let x102 = mtmp101.0 in
+    let x103 = mtmp101.1 in
     {
-      let ok/216 = x62 in
+      let ok/216 = x103 in
       {
-        let value/215 = x61 in
+        let value/215 = x102 in
         {
           if ok/216 {
               {
@@ -841,12 +907,12 @@ fn inherent#Channel#Channel[T]#close[T](self/217: Channel[T]) -> unit {
 }
 
 fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator[int] {
-  let current/220 = inherent#Ref#Ref[int]#new(start/218) in
+  let current/220 = @intrinsic(ref.new)(start/218) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let value/221 = inherent#Ref#Ref[int]#get(current/220) in
+    let value/221 = @intrinsic(ref.get)(current/220) in
     if (value/221 < end/219) {
         {
-          let _wild63 = inherent#Ref#Ref[int]#set(current/220, (value/221 + 1)) in
+          let _wild104 = @intrinsic(ref.set)(current/220, (value/221 + 1)) in
           Option::Some(value/221)
         }
     } else {
@@ -914,20 +980,20 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
           }
       } else {
           {
-            let _wild67 = {
-              let for_iter64 = trait_call[IntoIterator::into_iter](range(0, ((inherent#string#string#byte_len(self/233) - inherent#string#string#byte_len(expected/234)) + 1))) in
+            let _wild108 = {
+              let for_iter105 = trait_call[IntoIterator::into_iter](range(0, ((inherent#string#string#byte_len(self/233) - inherent#string#string#byte_len(expected/234)) + 1))) in
               while true {
                   {
-                    let for_next65 = trait_call[Iterator::next](for_iter64) in
-                    match for_next65 {
+                    let for_next106 = trait_call[Iterator::next](for_iter105) in
+                    match for_next106 {
                       Option::None => {
                         break
                       },
-                      Option::Some(x66) => {
+                      Option::Some(x107) => {
                         {
-                          let x66 = Option::Some._0(for_next65) in
+                          let x107 = Option::Some._0(for_next106) in
                           {
-                            let start/235 = x66 in
+                            let start/235 = x107 in
                             {
                               let end/236 = (start/235 + inherent#string#string#byte_len(expected/234)) in
                               if if if inherent#string#string#is_char_boundary(self/233, start/235) {
@@ -963,19 +1029,19 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
 
 fn trait_impl#Iterator#EnumerateIterator[I]#next[I](self/237: EnumerateIterator[I]) -> Option[(int, I::Item)] {
   {
-    let mtmp68 = trait_call[Iterator::next](EnumerateIterator.iterator(self/237)) in
-    match mtmp68 {
+    let mtmp109 = trait_call[Iterator::next](EnumerateIterator.iterator(self/237)) in
+    match mtmp109 {
       Option::None => {
         Option::None
       },
-      Option::Some(x69) => {
+      Option::Some(x110) => {
         {
-          let x69 = Option::Some._0(mtmp68) in
+          let x110 = Option::Some._0(mtmp109) in
           {
-            let value/238 = x69 in
+            let value/238 = x110 in
             {
               let index/239 = inherent#Ref#Ref[int]#get(EnumerateIterator.index(self/237)) in
-              let _wild70 = inherent#Ref#Ref[int]#set(EnumerateIterator.index(self/237), (index/239 + 1)) in
+              let _wild111 = inherent#Ref#Ref[int]#set(EnumerateIterator.index(self/237), (index/239 + 1)) in
               Option::Some((index/239, value/238))
             }
           }
@@ -987,27 +1053,27 @@ fn trait_impl#Iterator#EnumerateIterator[I]#next[I](self/237: EnumerateIterator[
 
 fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](self/240: ZipIterator[A, B]) -> Option[(A::Item, B::Item)] {
   {
-    let mtmp71 = trait_call[Iterator::next](ZipIterator.left(self/240)) in
-    match mtmp71 {
+    let mtmp112 = trait_call[Iterator::next](ZipIterator.left(self/240)) in
+    match mtmp112 {
       Option::None => {
         Option::None
       },
-      Option::Some(x72) => {
+      Option::Some(x113) => {
         {
-          let x72 = Option::Some._0(mtmp71) in
+          let x113 = Option::Some._0(mtmp112) in
           {
-            let left/241 = x72 in
+            let left/241 = x113 in
             {
-              let mtmp73 = trait_call[Iterator::next](ZipIterator.right(self/240)) in
-              match mtmp73 {
+              let mtmp114 = trait_call[Iterator::next](ZipIterator.right(self/240)) in
+              match mtmp114 {
                 Option::None => {
                   Option::None
                 },
-                Option::Some(x74) => {
+                Option::Some(x115) => {
                   {
-                    let x74 = Option::Some._0(mtmp73) in
+                    let x115 = Option::Some._0(mtmp114) in
                     {
-                      let right/242 = x74 in
+                      let right/242 = x115 in
                       Option::Some((left/241, right/242))
                     }
                   }
@@ -1022,20 +1088,20 @@ fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](self/240: ZipIterator[A, B]) 
 }
 
 fn trait_impl#Iterator#SkipIterator[I]#next[I](self/243: SkipIterator[I]) -> Option[I::Item] {
-  let _wild78 = while (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) > 0) {
+  let _wild119 = while (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) > 0) {
       {
         {
-          let mtmp75 = trait_call[Iterator::next](SkipIterator.iterator(self/243)) in
-          match mtmp75 {
+          let mtmp116 = trait_call[Iterator::next](SkipIterator.iterator(self/243)) in
+          match mtmp116 {
             Option::None => {
               {
-                let _wild77 = inherent#Ref#Ref[int]#set(SkipIterator.remaining(self/243), 0) in
+                let _wild118 = inherent#Ref#Ref[int]#set(SkipIterator.remaining(self/243), 0) in
                 return Option::None
               }
             },
-            Option::Some(x76) => {
+            Option::Some(x117) => {
               {
-                let x76 = Option::Some._0(mtmp75) in
+                let x117 = Option::Some._0(mtmp116) in
                 inherent#Ref#Ref[int]#set(SkipIterator.remaining(self/243), (inherent#Ref#Ref[int]#get(SkipIterator.remaining(self/243)) - 1))
               }
             },
@@ -1047,19 +1113,19 @@ fn trait_impl#Iterator#SkipIterator[I]#next[I](self/243: SkipIterator[I]) -> Opt
 }
 
 fn trait_impl#Iterator#ChainIterator[T,A,B]#next[T, A, B](self/244: ChainIterator[T, A, B]) -> Option[T] {
-  let _wild81 = if trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244)), false) {
+  let _wild122 = if trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244)), false) {
       {
         {
-          let mtmp79 = trait_call[Iterator::next](ChainIterator.first(self/244)) in
-          match mtmp79 {
+          let mtmp120 = trait_call[Iterator::next](ChainIterator.first(self/244)) in
+          match mtmp120 {
             Option::None => {
               inherent#Ref#Ref[bool]#set(ChainIterator.first_done(self/244), true)
             },
-            Option::Some(x80) => {
+            Option::Some(x121) => {
               {
-                let x80 = Option::Some._0(mtmp79) in
+                let x121 = Option::Some._0(mtmp120) in
                 {
-                  let value/245 = x80 in
+                  let value/245 = x121 in
                   return Option::Some(value/245)
                 }
               }
@@ -1100,19 +1166,19 @@ fn iterator_chain(first/251: A, second/252: B) -> ChainIterator[T, A, B] {
 }
 
 fn iterator_find(iterator/253: I, predicate/254: (T) -> bool) -> Option[T] {
-  let _wild84 = while true {
+  let _wild125 = while true {
       {
         {
-          let mtmp82 = trait_call[Iterator::next](iterator/253) in
-          match mtmp82 {
+          let mtmp123 = trait_call[Iterator::next](iterator/253) in
+          match mtmp123 {
             Option::None => {
               return Option::None
             },
-            Option::Some(x83) => {
+            Option::Some(x124) => {
               {
-                let x83 = Option::Some._0(mtmp82) in
+                let x124 = Option::Some._0(mtmp123) in
                 {
-                  let value/255 = x83 in
+                  let value/255 = x124 in
                   if predicate/254(value/255) {
                       {
                         return Option::Some(value/255)
@@ -1134,14 +1200,14 @@ fn iterator_find(iterator/253: I, predicate/254: (T) -> bool) -> Option[T] {
 
 fn iterator_any(iterator/256: I, predicate/257: (T) -> bool) -> bool {
   {
-    let mtmp85 = iterator_find(iterator/256, predicate/257) in
-    match mtmp85 {
+    let mtmp126 = iterator_find(iterator/256, predicate/257) in
+    match mtmp126 {
       Option::None => {
         false
       },
-      Option::Some(x86) => {
+      Option::Some(x127) => {
         {
-          let x86 = Option::Some._0(mtmp85) in
+          let x127 = Option::Some._0(mtmp126) in
           true
         }
       },
@@ -1154,26 +1220,32 @@ fn iterator_all(iterator/258: I, predicate/259: (T) -> bool) -> bool {
 }
 
 fn iterator_count(iterator/261: I) -> int {
-  let count/262 = inherent#Ref#Ref[int]#new(0) in
-  let _wild89 = while true {
+  let count/262 = 0 in
+  let _wild133 = while true {
       {
         {
-          let mtmp87 = trait_call[Iterator::next](iterator/261) in
-          match mtmp87 {
+          let mtmp128 = trait_call[Iterator::next](iterator/261) in
+          match mtmp128 {
             Option::None => {
               break
             },
-            Option::Some(x88) => {
+            Option::Some(x129) => {
               {
-                let x88 = Option::Some._0(mtmp87) in
-                inherent#Ref#Ref[int]#set(count/262, (inherent#Ref#Ref[int]#get(count/262) + 1))
+                let x129 = Option::Some._0(mtmp128) in
+                {
+                  let _wild132 = {
+                    let compound_old130 = count/262 in
+                    let compound_value131 = 1 in
+                    count/262 = (compound_old130 + compound_value131)
+                  } in
+                }
               }
             },
           }
         }
       }
   } in
-  inherent#Ref#Ref[int]#get(count/262)
+  count/262
 }
 
 fn inherent#Option#Option[T]#is_some[T](self/263: Option[T]) -> bool {
@@ -1181,9 +1253,9 @@ fn inherent#Option#Option[T]#is_some[T](self/263: Option[T]) -> bool {
     Option::None => {
       false
     },
-    Option::Some(x90) => {
+    Option::Some(x134) => {
       {
-        let x90 = Option::Some._0(self/263) in
+        let x134 = Option::Some._0(self/263) in
         true
       }
     },
@@ -1199,11 +1271,11 @@ fn inherent#Option#Option[T]#unwrap_or[T](self/265: Option[T], fallback/266: T) 
     Option::None => {
       fallback/266
     },
-    Option::Some(x91) => {
+    Option::Some(x135) => {
       {
-        let x91 = Option::Some._0(self/265) in
+        let x135 = Option::Some._0(self/265) in
         {
-          let value/267 = x91 in
+          let value/267 = x135 in
           value/267
         }
       }
@@ -1216,11 +1288,11 @@ fn inherent#Option#Option[T]#unwrap_or_else[T](self/268: Option[T], fallback/269
     Option::None => {
       fallback/269()
     },
-    Option::Some(x92) => {
+    Option::Some(x136) => {
       {
-        let x92 = Option::Some._0(self/268) in
+        let x136 = Option::Some._0(self/268) in
         {
-          let value/270 = x92 in
+          let value/270 = x136 in
           value/270
         }
       }
@@ -1230,15 +1302,15 @@ fn inherent#Option#Option[T]#unwrap_or_else[T](self/268: Option[T], fallback/269
 
 fn inherent#Result#Result[T,E]#is_ok[T, E](self/271: Result[T, E]) -> bool {
   match self/271 {
-    Result::Ok(x93) => {
+    Result::Ok(x137) => {
       {
-        let x93 = Result::Ok._0(self/271) in
+        let x137 = Result::Ok._0(self/271) in
         true
       }
     },
-    Result::Err(x94) => {
+    Result::Err(x138) => {
       {
-        let x94 = Result::Err._0(self/271) in
+        let x138 = Result::Err._0(self/271) in
         false
       }
     },
@@ -1251,18 +1323,18 @@ fn inherent#Result#Result[T,E]#is_err[T, E](self/272: Result[T, E]) -> bool {
 
 fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/273: Result[T, E], fallback/274: T) -> T {
   match self/273 {
-    Result::Ok(x95) => {
+    Result::Ok(x139) => {
       {
-        let x95 = Result::Ok._0(self/273) in
+        let x139 = Result::Ok._0(self/273) in
         {
-          let value/275 = x95 in
+          let value/275 = x139 in
           value/275
         }
       }
     },
-    Result::Err(x96) => {
+    Result::Err(x140) => {
       {
-        let x96 = Result::Err._0(self/273) in
+        let x140 = Result::Err._0(self/273) in
         fallback/274
       }
     },
@@ -1271,20 +1343,20 @@ fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/273: Result[T, E], fallback/
 
 fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](self/276: Result[T, E], fallback/277: (E) -> T) -> T {
   match self/276 {
-    Result::Ok(x97) => {
+    Result::Ok(x141) => {
       {
-        let x97 = Result::Ok._0(self/276) in
+        let x141 = Result::Ok._0(self/276) in
         {
-          let value/278 = x97 in
+          let value/278 = x141 in
           value/278
         }
       }
     },
-    Result::Err(x98) => {
+    Result::Err(x142) => {
       {
-        let x98 = Result::Err._0(self/276) in
+        let x142 = Result::Err._0(self/276) in
         {
-          let error/279 = x98 in
+          let error/279 = x142 in
           fallback/277(error/279)
         }
       }
@@ -1297,11 +1369,11 @@ fn inherent#Option#Option[T]#map[T, U](self/280: Option[T], map_fn/281: (T) -> U
     Option::None => {
       Option::None
     },
-    Option::Some(x99) => {
+    Option::Some(x143) => {
       {
-        let x99 = Option::Some._0(self/280) in
+        let x143 = Option::Some._0(self/280) in
         {
-          let value/282 = x99 in
+          let value/282 = x143 in
           Option::Some(map_fn/281(value/282))
         }
       }
@@ -1314,11 +1386,11 @@ fn inherent#Option#Option[T]#and_then[T, U](self/283: Option[T], next/284: (T) -
     Option::None => {
       Option::None
     },
-    Option::Some(x100) => {
+    Option::Some(x144) => {
       {
-        let x100 = Option::Some._0(self/283) in
+        let x144 = Option::Some._0(self/283) in
         {
-          let value/285 = x100 in
+          let value/285 = x144 in
           next/284(value/285)
         }
       }
@@ -1331,11 +1403,11 @@ fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> R
     Option::None => {
       Result::Err(error/287)
     },
-    Option::Some(x101) => {
+    Option::Some(x145) => {
       {
-        let x101 = Option::Some._0(self/286) in
+        let x145 = Option::Some._0(self/286) in
         {
-          let value/288 = x101 in
+          let value/288 = x145 in
           Result::Ok(value/288)
         }
       }
@@ -1345,20 +1417,20 @@ fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> R
 
 fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
   match self/289 {
-    Result::Ok(x102) => {
+    Result::Ok(x146) => {
       {
-        let x102 = Result::Ok._0(self/289) in
+        let x146 = Result::Ok._0(self/289) in
         {
-          let value/291 = x102 in
+          let value/291 = x146 in
           Result::Ok(map_fn/290(value/291))
         }
       }
     },
-    Result::Err(x103) => {
+    Result::Err(x147) => {
       {
-        let x103 = Result::Err._0(self/289) in
+        let x147 = Result::Err._0(self/289) in
         {
-          let error/292 = x103 in
+          let error/292 = x147 in
           Result::Err(error/292)
         }
       }
@@ -1368,20 +1440,20 @@ fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: 
 
 fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
   match self/293 {
-    Result::Ok(x104) => {
+    Result::Ok(x148) => {
       {
-        let x104 = Result::Ok._0(self/293) in
+        let x148 = Result::Ok._0(self/293) in
         {
-          let value/295 = x104 in
+          let value/295 = x148 in
           Result::Ok(value/295)
         }
       }
     },
-    Result::Err(x105) => {
+    Result::Err(x149) => {
       {
-        let x105 = Result::Err._0(self/293) in
+        let x149 = Result::Err._0(self/293) in
         {
-          let error/296 = x105 in
+          let error/296 = x149 in
           Result::Err(map_fn/294(error/296))
         }
       }
@@ -1391,20 +1463,20 @@ fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/2
 
 fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
   match self/297 {
-    Result::Ok(x106) => {
+    Result::Ok(x150) => {
       {
-        let x106 = Result::Ok._0(self/297) in
+        let x150 = Result::Ok._0(self/297) in
         {
-          let value/299 = x106 in
+          let value/299 = x150 in
           next/298(value/299)
         }
       }
     },
-    Result::Err(x107) => {
+    Result::Err(x151) => {
       {
-        let x107 = Result::Err._0(self/297) in
+        let x151 = Result::Err._0(self/297) in
         {
-          let error/300 = x107 in
+          let error/300 = x151 in
           Result::Err(error/300)
         }
       }
@@ -1441,11 +1513,18 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Byt
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
-  inherent#Vec#Vec[uint8]#get(std::bytes::Bytes.values(self/6), index/7)
+  @intrinsic(vec.get)(std::bytes::Bytes.values(self/6), index/7)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
-  inherent#Vec#Vec[uint8]#set(std::bytes::Bytes.values(self/8), index/9, value/10)
+  let _wild5 = {
+    let place_root0 = self/8 in
+    let place1 = std::bytes::Bytes.values(place_root0) in
+    let index2 = index/9 in
+    let place3 = @intrinsic(vec.get)(place1, index2) in
+    let value4 = value/10 in
+    @intrinsic(vec.set)(place1, index2, value4)
+  } in
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
@@ -1477,14 +1556,14 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Byte
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result[string, string] {
-  let mtmp0 = @runtime(core.string_from_utf8)(std::bytes::Bytes.values(self/23)) in
+  let mtmp6 = @runtime(core.string_from_utf8)(std::bytes::Bytes.values(self/23)) in
   {
-    let x1 = mtmp0.0 in
-    let x2 = mtmp0.1 in
+    let x7 = mtmp6.0 in
+    let x8 = mtmp6.1 in
     {
-      let value/25 = x2 in
+      let value/25 = x8 in
       {
-        let valid/24 = x1 in
+        let valid/24 = x7 in
         {
           if valid/24 {
               {
@@ -1643,25 +1722,29 @@ fn std::text::find_from(value/19: string, expected/20: string, start/21: int) ->
           } else {
               {
                 let limit/22 = (inherent#string#string#byte_len(value/19) - inherent#string#string#byte_len(expected/20)) in
-                let index/23 = inherent#Ref#Ref[int]#new(start/21) in
-                let _wild13 = while (inherent#Ref#Ref[int]#get(index/23) <= limit/22) {
+                let index/23 = start/21 in
+                let _wild16 = while (index/23 <= limit/22) {
                     {
-                      let end/24 = (inherent#Ref#Ref[int]#get(index/23) + inherent#string#string#byte_len(expected/20)) in
-                      if if if inherent#string#string#is_char_boundary(value/19, inherent#Ref#Ref[int]#get(index/23)) {
+                      let end/24 = (index/23 + inherent#string#string#byte_len(expected/20)) in
+                      if if if inherent#string#string#is_char_boundary(value/19, index/23) {
                           inherent#string#string#is_char_boundary(value/19, end/24)
                       } else {
                           false
                       } {
-                          trait_impl#Eq#string#eq(inherent#string#string#byte_slice(value/19, inherent#Ref#Ref[int]#get(index/23), end/24), expected/20)
+                          trait_impl#Eq#string#eq(inherent#string#string#byte_slice(value/19, index/23, end/24), expected/20)
                       } else {
                           false
                       } {
                           {
-                            return Option::Some(inherent#Ref#Ref[int]#get(index/23))
+                            return Option::Some(index/23)
                           }
                       } else {
                           {
-                            inherent#Ref#Ref[int]#set(index/23, (inherent#Ref#Ref[int]#get(index/23) + 1))
+                            let _wild15 = {
+                              let compound_old13 = index/23 in
+                              let compound_value14 = 1 in
+                              index/23 = (compound_old13 + compound_value14)
+                            } in
                           }
                       }
                     }
@@ -1678,31 +1761,39 @@ fn std::text::find(value/25: string, expected/26: string) -> Option[int] {
 }
 
 fn std::text::trim_start(value/27: string) -> string {
-  let start/28 = inherent#Ref#Ref[int]#new(0) in
-  let _wild14 = while if (inherent#Ref#Ref[int]#get(start/28) < inherent#string#string#byte_len(value/27)) {
-      std::text::is_ascii_whitespace_byte(inherent#string#string#byte_get(value/27, inherent#Ref#Ref[int]#get(start/28)))
+  let start/28 = 0 in
+  let _wild20 = while if (start/28 < inherent#string#string#byte_len(value/27)) {
+      std::text::is_ascii_whitespace_byte(inherent#string#string#byte_get(value/27, start/28))
   } else {
       false
   } {
       {
-        inherent#Ref#Ref[int]#set(start/28, (inherent#Ref#Ref[int]#get(start/28) + 1))
+        let _wild19 = {
+          let compound_old17 = start/28 in
+          let compound_value18 = 1 in
+          start/28 = (compound_old17 + compound_value18)
+        } in
       }
   } in
-  inherent#string#string#byte_slice(value/27, inherent#Ref#Ref[int]#get(start/28), inherent#string#string#byte_len(value/27))
+  inherent#string#string#byte_slice(value/27, start/28, inherent#string#string#byte_len(value/27))
 }
 
 fn std::text::trim_end(value/29: string) -> string {
-  let end/30 = inherent#Ref#Ref[int]#new(inherent#string#string#byte_len(value/29)) in
-  let _wild15 = while if (inherent#Ref#Ref[int]#get(end/30) > 0) {
-      std::text::is_ascii_whitespace_byte(inherent#string#string#byte_get(value/29, (inherent#Ref#Ref[int]#get(end/30) - 1)))
+  let end/30 = inherent#string#string#byte_len(value/29) in
+  let _wild24 = while if (end/30 > 0) {
+      std::text::is_ascii_whitespace_byte(inherent#string#string#byte_get(value/29, (end/30 - 1)))
   } else {
       false
   } {
       {
-        inherent#Ref#Ref[int]#set(end/30, (inherent#Ref#Ref[int]#get(end/30) - 1))
+        let _wild23 = {
+          let compound_old21 = end/30 in
+          let compound_value22 = 1 in
+          end/30 = (compound_old21 - compound_value22)
+        } in
       }
   } in
-  inherent#string#string#byte_slice(value/29, 0, inherent#Ref#Ref[int]#get(end/30))
+  inherent#string#string#byte_slice(value/29, 0, end/30)
 }
 
 fn std::text::trim(value/31: string) -> string {
@@ -1711,9 +1802,9 @@ fn std::text::trim(value/31: string) -> string {
 
 fn std::text::split(value/32: string, separator/33: string) -> Vec[string] {
   let result/34 = inherent#Vec#Vec[string]#new() in
-  let _wild17 = if trait_impl#Eq#int#eq(inherent#string#string#byte_len(separator/33), 0) {
+  let _wild26 = if trait_impl#Eq#int#eq(inherent#string#string#byte_len(separator/33), 0) {
       {
-        let _wild16 = inherent#Vec#Vec[string]#push(result/34, value/32) in
+        let _wild25 = inherent#Vec#Vec[string]#push(result/34, value/32) in
         return result/34
       }
   } else {
@@ -1721,27 +1812,26 @@ fn std::text::split(value/32: string, separator/33: string) -> Vec[string] {
         ()
       }
   } in
-  let start/35 = inherent#Ref#Ref[int]#new(0) in
-  let done/36 = inherent#Ref#Ref[bool]#new(false) in
-  let _wild22 = while trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(done/36), false) {
+  let start/35 = 0 in
+  let _wild32 = while true {
       {
         {
-          let mtmp18 = std::text::find_from(value/32, separator/33, inherent#Ref#Ref[int]#get(start/35)) in
-          match mtmp18 {
+          let mtmp27 = std::text::find_from(value/32, separator/33, start/35) in
+          match mtmp27 {
             Option::None => {
               {
-                let _wild20 = inherent#Vec#Vec[string]#push(result/34, inherent#string#string#byte_slice(value/32, inherent#Ref#Ref[int]#get(start/35), inherent#string#string#byte_len(value/32))) in
-                inherent#Ref#Ref[bool]#set(done/36, true)
+                let _wild29 = inherent#Vec#Vec[string]#push(result/34, inherent#string#string#byte_slice(value/32, start/35, inherent#string#string#byte_len(value/32))) in
+                break
               }
             },
-            Option::Some(x19) => {
+            Option::Some(x28) => {
               {
-                let x19 = Option::Some._0(mtmp18) in
+                let x28 = Option::Some._0(mtmp27) in
                 {
-                  let index/37 = x19 in
+                  let index/36 = x28 in
                   {
-                    let _wild21 = inherent#Vec#Vec[string]#push(result/34, inherent#string#string#byte_slice(value/32, inherent#Ref#Ref[int]#get(start/35), index/37)) in
-                    inherent#Ref#Ref[int]#set(start/35, (index/37 + inherent#string#string#byte_len(separator/33)))
+                    let _wild30 = inherent#Vec#Vec[string]#push(result/34, inherent#string#string#byte_slice(value/32, start/35, index/36)) in
+                    let _wild31 = start/35 = (index/36 + inherent#string#string#byte_len(separator/33)) in
                   }
                 }
               }
@@ -1753,25 +1843,25 @@ fn std::text::split(value/32: string, separator/33: string) -> Vec[string] {
   result/34
 }
 
-fn std::text::split_once(value/38: string, separator/39: string) -> Option[(string, string)] {
-  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(separator/39), 0) {
+fn std::text::split_once(value/37: string, separator/38: string) -> Option[(string, string)] {
+  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(separator/38), 0) {
       {
         Option::None
       }
   } else {
       {
         {
-          let mtmp23 = std::text::find(value/38, separator/39) in
-          match mtmp23 {
+          let mtmp33 = std::text::find(value/37, separator/38) in
+          match mtmp33 {
             Option::None => {
               Option::None
             },
-            Option::Some(x24) => {
+            Option::Some(x34) => {
               {
-                let x24 = Option::Some._0(mtmp23) in
+                let x34 = Option::Some._0(mtmp33) in
                 {
-                  let index/40 = x24 in
-                  Option::Some((inherent#string#string#byte_slice(value/38, 0, index/40), inherent#string#string#byte_slice(value/38, (index/40 + inherent#string#string#byte_len(separator/39)), inherent#string#string#byte_len(value/38))))
+                  let index/39 = x34 in
+                  Option::Some((inherent#string#string#byte_slice(value/37, 0, index/39), inherent#string#string#byte_slice(value/37, (index/39 + inherent#string#string#byte_len(separator/38)), inherent#string#string#byte_len(value/37))))
                 }
               }
             },
@@ -1781,15 +1871,15 @@ fn std::text::split_once(value/38: string, separator/39: string) -> Option[(stri
   }
 }
 
-fn std::text::lines(value/41: string) -> Vec[string] {
-  let result/42 = std::text::split(value/41, "\n") in
-  let _wild26 = if if (inherent#Vec#Vec[string]#len(result/42) > 0) {
-      trait_impl#Eq#string#eq(inherent#Vec#Vec[string]#get(result/42, (inherent#Vec#Vec[string]#len(result/42) - 1)), "")
+fn std::text::lines(value/40: string) -> Vec[string] {
+  let result/41 = std::text::split(value/40, "\n") in
+  let _wild36 = if if (inherent#Vec#Vec[string]#len(result/41) > 0) {
+      trait_impl#Eq#string#eq(@intrinsic(vec.get)(result/41, (inherent#Vec#Vec[string]#len(result/41) - 1)), "")
   } else {
       false
   } {
       {
-        let mtmp25 = inherent#Vec#Vec[string]#pop(result/42) in
+        let mtmp35 = inherent#Vec#Vec[string]#pop(result/41) in
         {
           ()
         }
@@ -1799,24 +1889,30 @@ fn std::text::lines(value/41: string) -> Vec[string] {
         ()
       }
   } in
-  let _wild31 = {
-    let for_index27 = 0 in
-    let for_limit28 = inherent#Vec#Vec[string]#len(result/42) in
-    while (for_index27 < for_limit28) {
+  let _wild46 = {
+    let for_index37 = 0 in
+    let for_limit38 = inherent#Vec#Vec[string]#len(result/41) in
+    while (for_index37 < for_limit38) {
         {
-          let for_item29 = for_index27 in
-          let _wild30 = for_index27 = (for_index27 + 1) in
+          let for_item39 = for_index37 in
+          let _wild40 = for_index37 = (for_index37 + 1) in
           {
-            let index/43 = for_item29 in
+            let index/42 = for_item39 in
             {
-              let line/44 = inherent#Vec#Vec[string]#get(result/42, index/43) in
-              if if (inherent#string#string#byte_len(line/44) > 0) {
-                  trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(line/44, (inherent#string#string#byte_len(line/44) - 1)), 13)
+              let line/43 = @intrinsic(vec.get)(result/41, index/42) in
+              if if (inherent#string#string#byte_len(line/43) > 0) {
+                  trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(line/43, (inherent#string#string#byte_len(line/43) - 1)), 13)
               } else {
                   false
               } {
                   {
-                    inherent#Vec#Vec[string]#set(result/42, index/43, inherent#string#string#byte_slice(line/44, 0, (inherent#string#string#byte_len(line/44) - 1)))
+                    let _wild45 = {
+                      let place_root41 = result/41 in
+                      let index42 = index/42 in
+                      let place43 = @intrinsic(vec.get)(place_root41, index42) in
+                      let value44 = inherent#string#string#byte_slice(line/43, 0, (inherent#string#string#byte_len(line/43) - 1)) in
+                      @intrinsic(vec.set)(place_root41, index42, value44)
+                    } in
                   }
               } else {
                   {
@@ -1828,39 +1924,38 @@ fn std::text::lines(value/41: string) -> Vec[string] {
         }
     }
   } in
-  result/42
+  result/41
 }
 
-fn std::text::replace(value/45: string, expected/46: string, replacement/47: string) -> string {
-  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(expected/46), 0) {
+fn std::text::replace(value/44: string, expected/45: string, replacement/46: string) -> string {
+  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(expected/45), 0) {
       {
-        value/45
+        value/44
       }
   } else {
       {
-        let builder/48 = inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(inherent#string#string#byte_len(value/45)) in
-        let start/49 = inherent#Ref#Ref[int]#new(0) in
-        let done/50 = inherent#Ref#Ref[bool]#new(false) in
-        let _wild37 = while trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(done/50), false) {
+        let builder/47 = inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(inherent#string#string#byte_len(value/44)) in
+        let start/48 = 0 in
+        let _wild53 = while true {
             {
               {
-                let mtmp32 = std::text::find_from(value/45, expected/46, inherent#Ref#Ref[int]#get(start/49)) in
-                match mtmp32 {
+                let mtmp47 = std::text::find_from(value/44, expected/45, start/48) in
+                match mtmp47 {
                   Option::None => {
                     {
-                      let _wild34 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, inherent#string#string#byte_slice(value/45, inherent#Ref#Ref[int]#get(start/49), inherent#string#string#byte_len(value/45))) in
-                      inherent#Ref#Ref[bool]#set(done/50, true)
+                      let _wild49 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, inherent#string#string#byte_slice(value/44, start/48, inherent#string#string#byte_len(value/44))) in
+                      break
                     }
                   },
-                  Option::Some(x33) => {
+                  Option::Some(x48) => {
                     {
-                      let x33 = Option::Some._0(mtmp32) in
+                      let x48 = Option::Some._0(mtmp47) in
                       {
-                        let index/51 = x33 in
+                        let index/49 = x48 in
                         {
-                          let _wild35 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, inherent#string#string#byte_slice(value/45, inherent#Ref#Ref[int]#get(start/49), index/51)) in
-                          let _wild36 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, replacement/47) in
-                          inherent#Ref#Ref[int]#set(start/49, (index/51 + inherent#string#string#byte_len(expected/46)))
+                          let _wild50 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, inherent#string#string#byte_slice(value/44, start/48, index/49)) in
+                          let _wild51 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/47, replacement/46) in
+                          let _wild52 = start/48 = (index/49 + inherent#string#string#byte_len(expected/45)) in
                         }
                       }
                     }
@@ -1869,114 +1964,85 @@ fn std::text::replace(value/45: string, expected/46: string, replacement/47: str
               }
             }
         } in
-        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/48)
+        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/47)
       }
   }
 }
 
-fn std::text::join(values/52: Vec[string], separator/53: string) -> string {
-  let builder/54 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
-  let _wild43 = {
-    let for_index38 = 0 in
-    let for_limit39 = inherent#Vec#Vec[string]#len(values/52) in
-    while (for_index38 < for_limit39) {
+fn std::text::join(values/50: Vec[string], separator/51: string) -> string {
+  let builder/52 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
+  let _wild59 = {
+    let for_index54 = 0 in
+    let for_limit55 = inherent#Vec#Vec[string]#len(values/50) in
+    while (for_index54 < for_limit55) {
         {
-          let for_item40 = for_index38 in
-          let _wild41 = for_index38 = (for_index38 + 1) in
+          let for_item56 = for_index54 in
+          let _wild57 = for_index54 = (for_index54 + 1) in
           {
-            let index/55 = for_item40 in
+            let index/53 = for_item56 in
             {
-              let _wild42 = if (index/55 > 0) {
+              let _wild58 = if (index/53 > 0) {
                   {
-                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/54, separator/53)
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/52, separator/51)
                   }
               } else {
                   {
                     ()
                   }
               } in
-              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/54, inherent#Vec#Vec[string]#get(values/52, index/55))
+              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/52, @intrinsic(vec.get)(values/50, index/53))
             }
           }
         }
     }
   } in
-  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/54)
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/52)
 }
 
-fn std::text::repeat(value/56: string, count/57: int) -> string {
-  if if (count/57 <= 0) {
+fn std::text::repeat(value/54: string, count/55: int) -> string {
+  if if (count/55 <= 0) {
       true
   } else {
-      trait_impl#Eq#int#eq(inherent#string#string#byte_len(value/56), 0)
+      trait_impl#Eq#int#eq(inherent#string#string#byte_len(value/54), 0)
   } {
       {
         ""
       }
   } else {
       {
-        let builder/58 = inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity((inherent#string#string#byte_len(value/56) * count/57)) in
-        let _wild48 = {
-          let for_index44 = 0 in
-          let for_limit45 = count/57 in
-          while (for_index44 < for_limit45) {
+        let builder/56 = inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity((inherent#string#string#byte_len(value/54) * count/55)) in
+        let _wild64 = {
+          let for_index60 = 0 in
+          let for_limit61 = count/55 in
+          while (for_index60 < for_limit61) {
               {
-                let for_item46 = for_index44 in
-                let _wild47 = for_index44 = (for_index44 + 1) in
+                let for_item62 = for_index60 in
+                let _wild63 = for_index60 = (for_index60 + 1) in
                 {
-                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/58, value/56)
+                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/56, value/54)
                 }
               }
           }
         } in
-        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/58)
+        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/56)
       }
   }
 }
 
-fn std::text::is_ascii(value/59: string) -> bool {
-  let ascii/60 = inherent#Ref#Ref[bool]#new(true) in
-  let index/61 = inherent#Ref#Ref[int]#new(0) in
-  let _wild49 = while if inherent#Ref#Ref[bool]#get(ascii/60) {
-      (inherent#Ref#Ref[int]#get(index/61) < inherent#string#string#byte_len(value/59))
-  } else {
-      false
-  } {
-      {
-        if (inherent#string#string#byte_get(value/59, inherent#Ref#Ref[int]#get(index/61)) > 127) {
-            {
-              inherent#Ref#Ref[bool]#set(ascii/60, false)
-            }
-        } else {
-            {
-              inherent#Ref#Ref[int]#set(index/61, (inherent#Ref#Ref[int]#get(index/61) + 1))
-            }
-        }
-      }
-  } in
-  inherent#Ref#Ref[bool]#get(ascii/60)
-}
-
-fn std::text::to_ascii_lowercase(value/62: string) -> string {
-  let values/63 = inherent#string#string#to_bytes(value/62) in
-  let _wild54 = {
-    let for_index50 = 0 in
-    let for_limit51 = inherent#Vec#Vec[uint8]#len(values/63) in
-    while (for_index50 < for_limit51) {
+fn std::text::is_ascii(value/57: string) -> bool {
+  let _wild69 = {
+    let for_index65 = 0 in
+    let for_limit66 = inherent#string#string#byte_len(value/57) in
+    while (for_index65 < for_limit66) {
         {
-          let for_item52 = for_index50 in
-          let _wild53 = for_index50 = (for_index50 + 1) in
+          let for_item67 = for_index65 in
+          let _wild68 = for_index65 = (for_index65 + 1) in
           {
-            let index/64 = for_item52 in
+            let index/58 = for_item67 in
             {
-              let current/65 = inherent#Vec#Vec[uint8]#get(values/63, index/64) in
-              if if (current/65 >= 65) {
-                  (current/65 <= 90)
-              } else {
-                  false
-              } {
+              if (inherent#string#string#byte_get(value/57, index/58) > 127) {
                   {
-                    inherent#Vec#Vec[uint8]#set(values/63, index/64, (current/65 + 32))
+                    return false
                   }
               } else {
                   {
@@ -1988,39 +2054,35 @@ fn std::text::to_ascii_lowercase(value/62: string) -> string {
         }
     }
   } in
-  let mtmp55 = @runtime(core.string_from_utf8)(values/63) in
-  {
-    let x56 = mtmp55.0 in
-    let x57 = mtmp55.1 in
-    {
-      let result/66 = x57 in
-      {
-        result/66
-      }
-    }
-  }
+  true
 }
 
-fn std::text::to_ascii_uppercase(value/67: string) -> string {
-  let values/68 = inherent#string#string#to_bytes(value/67) in
-  let _wild62 = {
-    let for_index58 = 0 in
-    let for_limit59 = inherent#Vec#Vec[uint8]#len(values/68) in
-    while (for_index58 < for_limit59) {
+fn std::text::to_ascii_lowercase(value/59: string) -> string {
+  let values/60 = inherent#string#string#to_bytes(value/59) in
+  let _wild79 = {
+    let for_index70 = 0 in
+    let for_limit71 = inherent#Vec#Vec[uint8]#len(values/60) in
+    while (for_index70 < for_limit71) {
         {
-          let for_item60 = for_index58 in
-          let _wild61 = for_index58 = (for_index58 + 1) in
+          let for_item72 = for_index70 in
+          let _wild73 = for_index70 = (for_index70 + 1) in
           {
-            let index/69 = for_item60 in
+            let index/61 = for_item72 in
             {
-              let current/70 = inherent#Vec#Vec[uint8]#get(values/68, index/69) in
-              if if (current/70 >= 97) {
-                  (current/70 <= 122)
+              let current/62 = @intrinsic(vec.get)(values/60, index/61) in
+              if if (current/62 >= 65) {
+                  (current/62 <= 90)
               } else {
                   false
               } {
                   {
-                    inherent#Vec#Vec[uint8]#set(values/68, index/69, (current/70 - 32))
+                    let _wild78 = {
+                      let place_root74 = values/60 in
+                      let index75 = index/61 in
+                      let place76 = @intrinsic(vec.get)(place_root74, index75) in
+                      let value77 = (current/62 + (97 - 65)) in
+                      @intrinsic(vec.set)(place_root74, index75, value77)
+                    } in
                   }
               } else {
                   {
@@ -2032,14 +2094,64 @@ fn std::text::to_ascii_uppercase(value/67: string) -> string {
         }
     }
   } in
-  let mtmp63 = @runtime(core.string_from_utf8)(values/68) in
+  let mtmp80 = @runtime(core.string_from_utf8)(values/60) in
   {
-    let x64 = mtmp63.0 in
-    let x65 = mtmp63.1 in
+    let x81 = mtmp80.0 in
+    let x82 = mtmp80.1 in
     {
-      let result/71 = x65 in
+      let result/63 = x82 in
       {
-        result/71
+        result/63
+      }
+    }
+  }
+}
+
+fn std::text::to_ascii_uppercase(value/64: string) -> string {
+  let values/65 = inherent#string#string#to_bytes(value/64) in
+  let _wild92 = {
+    let for_index83 = 0 in
+    let for_limit84 = inherent#Vec#Vec[uint8]#len(values/65) in
+    while (for_index83 < for_limit84) {
+        {
+          let for_item85 = for_index83 in
+          let _wild86 = for_index83 = (for_index83 + 1) in
+          {
+            let index/66 = for_item85 in
+            {
+              let current/67 = @intrinsic(vec.get)(values/65, index/66) in
+              if if (current/67 >= 97) {
+                  (current/67 <= 122)
+              } else {
+                  false
+              } {
+                  {
+                    let _wild91 = {
+                      let place_root87 = values/65 in
+                      let index88 = index/66 in
+                      let place89 = @intrinsic(vec.get)(place_root87, index88) in
+                      let value90 = (current/67 - (97 - 65)) in
+                      @intrinsic(vec.set)(place_root87, index88, value90)
+                    } in
+                  }
+              } else {
+                  {
+                    ()
+                  }
+              }
+            }
+          }
+        }
+    }
+  } in
+  let mtmp93 = @runtime(core.string_from_utf8)(values/65) in
+  {
+    let x94 = mtmp93.0 in
+    let x95 = mtmp93.1 in
+    {
+      let result/68 = x95 in
+      {
+        result/68
       }
     }
   }
@@ -2050,7 +2162,7 @@ fn std::json::json_parser(input/0: string) -> std::json::JsonParser {
 }
 
 fn std::json::json_error(value/1: std::json::JsonParser, message/2: string) -> string {
-  ((message/2 + " at byte ") + inherent#int#int#to_string(inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/1))))
+  ((("" + message/2) + " at byte ") + inherent#int#int#to_string(inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/1))))
 }
 
 fn std::json::json_whitespace(value/3: uint8) -> bool {
@@ -2097,7 +2209,7 @@ fn std::json::hex_digit(value/5: uint8) -> Option[uint32] {
           false
       } {
           {
-            Option::Some(((value/5 - 55) as uint32))
+            Option::Some((((value/5 - 65) + 10) as uint32))
           }
       } else {
           if if (value/5 >= 97) {
@@ -2106,7 +2218,7 @@ fn std::json::hex_digit(value/5: uint8) -> Option[uint32] {
               false
           } {
               {
-                Option::Some(((value/5 - 87) as uint32))
+                Option::Some((((value/5 - 97) + 10) as uint32))
               }
           } else {
               {
@@ -2124,8 +2236,8 @@ fn std::json::parse_hex_quad(value/6: std::json::JsonParser) -> Result[uint32, s
       }
   } else {
       {
-        let result/7 = inherent#Ref#Ref[uint32]#new((0 as uint32)) in
-        let _wild6 = {
+        let result/7 = (0 as uint32) in
+        let _wild7 = {
           let for_index0 = 0 in
           let for_limit1 = 4 in
           while (for_index0 < for_limit1) {
@@ -2149,7 +2261,7 @@ fn std::json::parse_hex_quad(value/6: std::json::JsonParser) -> Result[uint32, s
                             {
                               let digit/9 = x5 in
                               {
-                                inherent#Ref#Ref[uint32]#set(result/7, ((inherent#Ref#Ref[uint32]#get(result/7) * 16) + digit/9))
+                                let _wild6 = result/7 = ((result/7 * 16) + digit/9) in
                               }
                             }
                           }
@@ -2161,26 +2273,26 @@ fn std::json::parse_hex_quad(value/6: std::json::JsonParser) -> Result[uint32, s
               }
           }
         } in
-        let _wild7 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/6), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/6)) + 4)) in
-        Result::Ok(inherent#Ref#Ref[uint32]#get(result/7))
+        let _wild8 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/6), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/6)) + 4)) in
+        Result::Ok(result/7)
       }
   }
 }
 
 fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::text::StringBuilder, codepoint/12: uint32) -> Result[unit, string] {
   {
-    let mtmp8 = char_from_uint32(codepoint/12) in
-    match mtmp8 {
+    let mtmp9 = char_from_uint32(codepoint/12) in
+    match mtmp9 {
       Option::None => {
         Result::Err(std::json::json_error(value/10, "invalid unicode codepoint"))
       },
-      Option::Some(x9) => {
+      Option::Some(x10) => {
         {
-          let x9 = Option::Some._0(mtmp8) in
+          let x10 = Option::Some._0(mtmp9) in
           {
-            let character/13 = x9 in
+            let character/13 = x10 in
             {
-              let _wild10 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/11, character/13) in
+              let _wild11 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/11, character/13) in
               Result::Ok(())
             }
           }
@@ -2191,31 +2303,31 @@ fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::
 }
 
 fn std::json::parse_unicode_escape(value/14: std::json::JsonParser, builder/15: std::text::StringBuilder) -> Result[unit, string] {
-  let first/18 = {
-    let mtmp11 = std::json::parse_hex_quad(value/14) in
-    match mtmp11 {
-      Result::Ok(x12) => {
+  let first/16 = {
+    let mtmp12 = std::json::parse_hex_quad(value/14) in
+    match mtmp12 {
+      Result::Ok(x13) => {
         {
-          let x12 = Result::Ok._0(mtmp11) in
+          let x13 = Result::Ok._0(mtmp12) in
           {
-            let codepoint/16 = x12 in
-            codepoint/16
+            let try_value/192 = x13 in
+            try_value/192
           }
         }
       },
-      Result::Err(x13) => {
+      Result::Err(x14) => {
         {
-          let x13 = Result::Err._0(mtmp11) in
+          let x14 = Result::Err._0(mtmp12) in
           {
-            let error/17 = x13 in
-            return Result::Err(error/17)
+            let try_residual/192 = x14 in
+            return Result::Err(try_residual/192)
           }
         }
       },
     }
   } in
-  if if (first/18 >= 55296) {
-      (first/18 <= 56319)
+  if if (first/16 >= 55296) {
+      (first/16 <= 56319)
   } else {
       false
   } {
@@ -2234,49 +2346,49 @@ fn std::json::parse_unicode_escape(value/14: std::json::JsonParser, builder/15: 
             }
         } else {
             {
-              let _wild14 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/14), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/14)) + 2)) in
-              let second/21 = {
-                let mtmp15 = std::json::parse_hex_quad(value/14) in
-                match mtmp15 {
-                  Result::Ok(x16) => {
+              let _wild15 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/14), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/14)) + 2)) in
+              let second/17 = {
+                let mtmp16 = std::json::parse_hex_quad(value/14) in
+                match mtmp16 {
+                  Result::Ok(x17) => {
                     {
-                      let x16 = Result::Ok._0(mtmp15) in
+                      let x17 = Result::Ok._0(mtmp16) in
                       {
-                        let codepoint/19 = x16 in
-                        codepoint/19
+                        let try_value/254 = x17 in
+                        try_value/254
                       }
                     }
                   },
-                  Result::Err(x17) => {
+                  Result::Err(x18) => {
                     {
-                      let x17 = Result::Err._0(mtmp15) in
+                      let x18 = Result::Err._0(mtmp16) in
                       {
-                        let error/20 = x17 in
-                        return Result::Err(error/20)
+                        let try_residual/254 = x18 in
+                        return Result::Err(try_residual/254)
                       }
                     }
                   },
                 }
               } in
-              if if (second/21 < 56320) {
+              if if (second/17 < 56320) {
                   true
               } else {
-                  (second/21 > 57343)
+                  (second/17 > 57343)
               } {
                   {
                     Result::Err(std::json::json_error(value/14, "invalid low surrogate"))
                   }
               } else {
                   {
-                    std::json::write_codepoint(value/14, builder/15, (((65536 + ((first/18 - 55296) * 1024)) + second/21) - 56320))
+                    std::json::write_codepoint(value/14, builder/15, (((65536 + ((first/16 - 55296) * 1024)) + second/17) - 56320))
                   }
               }
             }
         }
       }
   } else {
-      if if (first/18 >= 56320) {
-          (first/18 <= 57343)
+      if if (first/16 >= 56320) {
+          (first/16 <= 57343)
       } else {
           false
       } {
@@ -2285,98 +2397,98 @@ fn std::json::parse_unicode_escape(value/14: std::json::JsonParser, builder/15: 
           }
       } else {
           {
-            std::json::write_codepoint(value/14, builder/15, first/18)
+            std::json::write_codepoint(value/14, builder/15, first/16)
           }
       }
   }
 }
 
-fn std::json::parse_json_string(value/22: std::json::JsonParser) -> Result[string, string] {
-  let _wild18 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/22))) {
+fn std::json::parse_json_string(value/18: std::json::JsonParser) -> Result[string, string] {
+  let _wild19 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/18))) {
       true
   } else {
-      (!trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))), 34))
+      (!trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/18), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18))), 34))
   } {
       {
-        return Result::Err(std::json::json_error(value/22, "expected string"))
+        return Result::Err(std::json::json_error(value/18, "expected string"))
       }
   } else {
       {
-        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1))
+        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/18), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) + 1))
       }
   } in
-  let builder/23 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
-  let segment/24 = inherent#Ref#Ref[int]#new(inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) in
-  let _wild33 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/22))) {
+  let builder/19 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
+  let segment/20 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) in
+  let _wild35 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/18))) {
       {
-        let byte/25 = inherent#string#string#byte_get(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) in
-        if trait_impl#Eq#uint8#eq(byte/25, 34) {
+        let byte/21 = inherent#string#string#byte_get(std::json::JsonParser.input(value/18), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18))) in
+        if trait_impl#Eq#uint8#eq(byte/21, 34) {
             {
-              let _wild19 = if (inherent#Ref#Ref[int]#get(segment/24) < inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) {
+              let _wild20 = if (segment/20 < inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18))) {
                   {
-                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/23, inherent#string#string#byte_slice(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(segment/24), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))))
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/19, inherent#string#string#byte_slice(std::json::JsonParser.input(value/18), segment/20, inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18))))
                   }
               } else {
                   {
                     ()
                   }
               } in
-              let _wild20 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1)) in
-              return Result::Ok(inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/23))
+              let _wild21 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/18), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) + 1)) in
+              return Result::Ok(inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/19))
             }
         } else {
-            if trait_impl#Eq#uint8#eq(byte/25, 92) {
+            if trait_impl#Eq#uint8#eq(byte/21, 92) {
                 {
-                  let _wild21 = if (inherent#Ref#Ref[int]#get(segment/24) < inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) {
+                  let _wild22 = if (segment/20 < inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18))) {
                       {
-                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/23, inherent#string#string#byte_slice(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(segment/24), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))))
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/19, inherent#string#string#byte_slice(std::json::JsonParser.input(value/18), segment/20, inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18))))
                       }
                   } else {
                       {
                         ()
                       }
                   } in
-                  let _wild22 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1)) in
-                  let _wild23 = if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/22))) {
+                  let _wild23 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/18), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) + 1)) in
+                  let _wild24 = if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/18))) {
                       {
-                        return Result::Err(std::json::json_error(value/22, "incomplete escape"))
+                        return Result::Err(std::json::json_error(value/18, "incomplete escape"))
                       }
                   } else {
                       {
                         ()
                       }
                   } in
-                  let escape/26 = inherent#string#string#byte_get(std::json::JsonParser.input(value/22), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22))) in
-                  let _wild24 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1)) in
-                  let _wild32 = if trait_impl#Eq#uint8#eq(escape/26, 34) {
+                  let escape/22 = inherent#string#string#byte_get(std::json::JsonParser.input(value/18), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18))) in
+                  let _wild25 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/18), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) + 1)) in
+                  let _wild33 = if trait_impl#Eq#uint8#eq(escape/22, 34) {
                       {
-                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '"')
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '"')
                       }
                   } else {
-                      if trait_impl#Eq#uint8#eq(escape/26, 92) {
+                      if trait_impl#Eq#uint8#eq(escape/22, 92) {
                           {
-                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\\')
+                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '\\')
                           }
                       } else {
-                          if trait_impl#Eq#uint8#eq(escape/26, 47) {
+                          if trait_impl#Eq#uint8#eq(escape/22, 47) {
                               {
-                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '/')
+                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '/')
                               }
                           } else {
-                              if trait_impl#Eq#uint8#eq(escape/26, 98) {
+                              if trait_impl#Eq#uint8#eq(escape/22, 98) {
                                   {
                                     {
-                                      let mtmp25 = char_from_uint32(8) in
-                                      match mtmp25 {
+                                      let mtmp26 = char_from_uint32(8) in
+                                      match mtmp26 {
                                         Option::None => {
                                           ()
                                         },
-                                        Option::Some(x26) => {
+                                        Option::Some(x27) => {
                                           {
-                                            let x26 = Option::Some._0(mtmp25) in
+                                            let x27 = Option::Some._0(mtmp26) in
                                             {
-                                              let character/27 = x26 in
-                                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, character/27)
+                                              let character/23 = x27 in
+                                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, character/23)
                                             }
                                           }
                                         },
@@ -2384,20 +2496,20 @@ fn std::json::parse_json_string(value/22: std::json::JsonParser) -> Result[strin
                                     }
                                   }
                               } else {
-                                  if trait_impl#Eq#uint8#eq(escape/26, 102) {
+                                  if trait_impl#Eq#uint8#eq(escape/22, 102) {
                                       {
                                         {
-                                          let mtmp27 = char_from_uint32(12) in
-                                          match mtmp27 {
+                                          let mtmp28 = char_from_uint32(12) in
+                                          match mtmp28 {
                                             Option::None => {
                                               ()
                                             },
-                                            Option::Some(x28) => {
+                                            Option::Some(x29) => {
                                               {
-                                                let x28 = Option::Some._0(mtmp27) in
+                                                let x29 = Option::Some._0(mtmp28) in
                                                 {
-                                                  let character/28 = x28 in
-                                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, character/28)
+                                                  let character/24 = x29 in
+                                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, character/24)
                                                 }
                                               }
                                             },
@@ -2405,42 +2517,41 @@ fn std::json::parse_json_string(value/22: std::json::JsonParser) -> Result[strin
                                         }
                                       }
                                   } else {
-                                      if trait_impl#Eq#uint8#eq(escape/26, 110) {
+                                      if trait_impl#Eq#uint8#eq(escape/22, 110) {
                                           {
-                                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\n')
+                                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '\n')
                                           }
                                       } else {
-                                          if trait_impl#Eq#uint8#eq(escape/26, 114) {
+                                          if trait_impl#Eq#uint8#eq(escape/22, 114) {
                                               {
-                                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\r')
+                                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '\r')
                                               }
                                           } else {
-                                              if trait_impl#Eq#uint8#eq(escape/26, 116) {
+                                              if trait_impl#Eq#uint8#eq(escape/22, 116) {
                                                   {
-                                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/23, '\t')
+                                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '\t')
                                                   }
                                               } else {
-                                                  if trait_impl#Eq#uint8#eq(escape/26, 117) {
+                                                  if trait_impl#Eq#uint8#eq(escape/22, 117) {
                                                       {
                                                         {
-                                                          let mtmp29 = std::json::parse_unicode_escape(value/22, builder/23) in
-                                                          match mtmp29 {
-                                                            Result::Ok(x30) => {
+                                                          let mtmp30 = std::json::parse_unicode_escape(value/18, builder/19) in
+                                                          match mtmp30 {
+                                                            Result::Ok(x31) => {
                                                               {
-                                                                let x30 = Result::Ok._0(mtmp29) in
-                                                                match x30 {
-                                                                  () => {
-                                                                    ()
-                                                                  },
+                                                                let x31 = Result::Ok._0(mtmp30) in
+                                                                {
+                                                                  let try_value/565 = x31 in
+                                                                  try_value/565
                                                                 }
                                                               }
                                                             },
-                                                            Result::Err(x31) => {
+                                                            Result::Err(x32) => {
                                                               {
-                                                                let x31 = Result::Err._0(mtmp29) in
+                                                                let x32 = Result::Err._0(mtmp30) in
                                                                 {
-                                                                  let error/29 = x31 in
-                                                                  return Result::Err(error/29)
+                                                                  let try_residual/565 = x32 in
+                                                                  return Result::Err(try_residual/565)
                                                                 }
                                                               }
                                                             },
@@ -2449,7 +2560,7 @@ fn std::json::parse_json_string(value/22: std::json::JsonParser) -> Result[strin
                                                       }
                                                   } else {
                                                       {
-                                                        return Result::Err(std::json::json_error(value/22, "invalid escape"))
+                                                        return Result::Err(std::json::json_error(value/18, "invalid escape"))
                                                       }
                                                   }
                                               }
@@ -2460,73 +2571,73 @@ fn std::json::parse_json_string(value/22: std::json::JsonParser) -> Result[strin
                           }
                       }
                   } in
-                  inherent#Ref#Ref[int]#set(segment/24, inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)))
+                  let _wild34 = segment/20 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) in
                 }
             } else {
-                if (byte/25 < 32) {
+                if (byte/21 < 32) {
                     {
-                      return Result::Err(std::json::json_error(value/22, "unescaped control character"))
+                      return Result::Err(std::json::json_error(value/18, "unescaped control character"))
                     }
                 } else {
                     {
-                      inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/22), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/22)) + 1))
+                      inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/18), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/18)) + 1))
                     }
                 }
             }
         }
       }
   } in
-  Result::Err(std::json::json_error(value/22, "unterminated string"))
+  Result::Err(std::json::json_error(value/18, "unterminated string"))
 }
 
-fn std::json::json_digit(value/30: uint8) -> bool {
-  if (value/30 >= 48) {
-      (value/30 <= 57)
+fn std::json::json_digit(value/25: uint8) -> bool {
+  if (value/25 >= 48) {
+      (value/25 <= 57)
   } else {
       false
   }
 }
 
-fn std::json::parse_digits(value/31: std::json::JsonParser) -> bool {
-  let start/32 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31)) in
-  let _wild34 = while if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/31))) {
-      std::json::json_digit(inherent#string#string#byte_get(std::json::JsonParser.input(value/31), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31))))
+fn std::json::parse_digits(value/26: std::json::JsonParser) -> bool {
+  let start/27 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/26)) in
+  let _wild36 = while if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/26)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/26))) {
+      std::json::json_digit(inherent#string#string#byte_get(std::json::JsonParser.input(value/26), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/26))))
   } else {
       false
   } {
       {
-        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/31), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31)) + 1))
+        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/26), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/26)) + 1))
       }
   } in
-  (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/31)) > start/32)
+  (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/26)) > start/27)
 }
 
-fn std::json::parse_json_number(value/33: std::json::JsonParser) -> Result[std::json::Value, string] {
-  let start/34 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) in
-  let _wild35 = if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 45) {
+fn std::json::parse_json_number(value/28: std::json::JsonParser) -> Result[std::json::Value, string] {
+  let start/29 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) in
+  let _wild37 = if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/28), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28))), 45) {
       {
-        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1))
+        inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/28), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) + 1))
       }
   } else {
       {
         ()
       }
   } in
-  let _wild37 = if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
+  let _wild39 = if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/28))) {
       {
-        return Result::Err(std::json::json_error(value/33, "incomplete number"))
+        return Result::Err(std::json::json_error(value/28, "incomplete number"))
       }
   } else {
-      if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 48) {
+      if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/28), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28))), 48) {
           {
-            let _wild36 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
-            if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
-                std::json::json_digit(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))))
+            let _wild38 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/28), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) + 1)) in
+            if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/28))) {
+                std::json::json_digit(inherent#string#string#byte_get(std::json::JsonParser.input(value/28), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28))))
             } else {
                 false
             } {
                 {
-                  return Result::Err(std::json::json_error(value/33, "invalid leading zero"))
+                  return Result::Err(std::json::json_error(value/28, "invalid leading zero"))
                 }
             } else {
                 {
@@ -2535,9 +2646,9 @@ fn std::json::parse_json_number(value/33: std::json::JsonParser) -> Result[std::
             }
           }
       } else {
-          if (!std::json::parse_digits(value/33)) {
+          if (!std::json::parse_digits(value/28)) {
               {
-                return Result::Err(std::json::json_error(value/33, "expected number"))
+                return Result::Err(std::json::json_error(value/28, "expected number"))
               }
           } else {
               {
@@ -2546,16 +2657,16 @@ fn std::json::parse_json_number(value/33: std::json::JsonParser) -> Result[std::
           }
       }
   } in
-  let _wild39 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
-      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 46)
+  let _wild41 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/28))) {
+      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/28), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28))), 46)
   } else {
       false
   } {
       {
-        let _wild38 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
-        if (!std::json::parse_digits(value/33)) {
+        let _wild40 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/28), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) + 1)) in
+        if (!std::json::parse_digits(value/28)) {
             {
-              return Result::Err(std::json::json_error(value/33, "missing fraction digits"))
+              return Result::Err(std::json::json_error(value/28, "missing fraction digits"))
             }
         } else {
             {
@@ -2568,37 +2679,37 @@ fn std::json::parse_json_number(value/33: std::json::JsonParser) -> Result[std::
         ()
       }
   } in
-  let _wild42 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
-      if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 101) {
+  let _wild44 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/28))) {
+      if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/28), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28))), 101) {
           true
       } else {
-          trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 69)
+          trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/28), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28))), 69)
       }
   } else {
       false
   } {
       {
-        let _wild40 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
-        let _wild41 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
-            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 43) {
+        let _wild42 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/28), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) + 1)) in
+        let _wild43 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/28))) {
+            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/28), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28))), 43) {
                 true
             } else {
-                trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 45)
+                trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/28), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28))), 45)
             }
         } else {
             false
         } {
             {
-              inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1))
+              inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/28), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) + 1))
             }
         } else {
             {
               ()
             }
         } in
-        if (!std::json::parse_digits(value/33)) {
+        if (!std::json::parse_digits(value/28)) {
             {
-              return Result::Err(std::json::json_error(value/33, "missing exponent digits"))
+              return Result::Err(std::json::json_error(value/28, "missing exponent digits"))
             }
         } else {
             {
@@ -2611,244 +2722,246 @@ fn std::json::parse_json_number(value/33: std::json::JsonParser) -> Result[std::
         ()
       }
   } in
-  Result::Ok(std::json::Value::Number(inherent#string#string#byte_slice(std::json::JsonParser.input(value/33), start/34, inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)))))
+  Result::Ok(std::json::Value::Number(inherent#string#string#byte_slice(std::json::JsonParser.input(value/28), start/29, inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)))))
 }
 
-fn std::json::parse_json_literal(value/35: std::json::JsonParser, expected/36: string, result/37: std::json::Value) -> Result[std::json::Value, string] {
-  if if ((inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/35)) + inherent#string#string#byte_len(expected/36)) <= inherent#string#string#byte_len(std::json::JsonParser.input(value/35))) {
-      trait_impl#Eq#string#eq(inherent#string#string#byte_slice(std::json::JsonParser.input(value/35), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/35)), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/35)) + inherent#string#string#byte_len(expected/36))), expected/36)
+fn std::json::parse_json_literal(value/30: std::json::JsonParser, expected/31: string, result/32: std::json::Value) -> Result[std::json::Value, string] {
+  if if ((inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/30)) + inherent#string#string#byte_len(expected/31)) <= inherent#string#string#byte_len(std::json::JsonParser.input(value/30))) {
+      trait_impl#Eq#string#eq(inherent#string#string#byte_slice(std::json::JsonParser.input(value/30), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/30)), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/30)) + inherent#string#string#byte_len(expected/31))), expected/31)
   } else {
       false
   } {
       {
-        let _wild43 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/35), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/35)) + inherent#string#string#byte_len(expected/36))) in
-        Result::Ok(result/37)
+        let _wild45 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/30), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/30)) + inherent#string#string#byte_len(expected/31))) in
+        Result::Ok(result/32)
       }
   } else {
       {
-        Result::Err(std::json::json_error(value/35, "invalid literal"))
+        Result::Err(std::json::json_error(value/30, "invalid literal"))
       }
   }
 }
 
-fn std::json::parse_json_array(value/38: std::json::JsonParser) -> Result[std::json::Value, string] {
-  let _wild44 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/38), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) + 1)) in
-  let _wild45 = std::json::skip_json_whitespace(value/38) in
-  let result/39 = inherent#Vec#Vec[std::json::Value]#new() in
-  let _wild47 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/38))) {
-      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/38), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38))), 93)
+fn std::json::parse_json_array(value/33: std::json::JsonParser) -> Result[std::json::Value, string] {
+  let _wild46 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
+  let _wild47 = std::json::skip_json_whitespace(value/33) in
+  let result/34 = inherent#Vec#Vec[std::json::Value]#new() in
+  let _wild49 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
+      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 93)
   } else {
       false
   } {
       {
-        let _wild46 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/38), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) + 1)) in
-        return Result::Ok(std::json::Value::Array(result/39))
+        let _wild48 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
+        return Result::Ok(std::json::Value::Array(result/34))
       }
   } else {
       {
         ()
       }
   } in
-  let _wild55 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/38))) {
+  let _wild57 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
       {
-        let _wild51 = {
-          let mtmp48 = std::json::parse_json_value(value/38) in
-          match mtmp48 {
-            Result::Ok(x49) => {
+        let item/35 = {
+          let mtmp50 = std::json::parse_json_value(value/33) in
+          match mtmp50 {
+            Result::Ok(x51) => {
               {
-                let x49 = Result::Ok._0(mtmp48) in
+                let x51 = Result::Ok._0(mtmp50) in
                 {
-                  let item/40 = x49 in
-                  inherent#Vec#Vec[std::json::Value]#push(result/39, item/40)
+                  let try_value/1062 = x51 in
+                  try_value/1062
                 }
               }
             },
-            Result::Err(x50) => {
+            Result::Err(x52) => {
               {
-                let x50 = Result::Err._0(mtmp48) in
+                let x52 = Result::Err._0(mtmp50) in
                 {
-                  let error/41 = x50 in
-                  return Result::Err(error/41)
+                  let try_residual/1062 = x52 in
+                  return Result::Err(try_residual/1062)
                 }
               }
             },
           }
         } in
-        let _wild52 = std::json::skip_json_whitespace(value/38) in
-        if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/38))) {
+        let _wild53 = inherent#Vec#Vec[std::json::Value]#push(result/34, item/35) in
+        let _wild54 = std::json::skip_json_whitespace(value/33) in
+        if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/33))) {
             {
-              return Result::Err(std::json::json_error(value/38, "unterminated array"))
+              return Result::Err(std::json::json_error(value/33, "unterminated array"))
             }
         } else {
-            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/38), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38))), 93) {
+            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 93) {
                 {
-                  let _wild53 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/38), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) + 1)) in
-                  return Result::Ok(std::json::Value::Array(result/39))
+                  let _wild55 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
+                  return Result::Ok(std::json::Value::Array(result/34))
                 }
             } else {
-                if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/38), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38))), 44) {
+                if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/33), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33))), 44) {
                     {
-                      let _wild54 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/38), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/38)) + 1)) in
-                      std::json::skip_json_whitespace(value/38)
+                      let _wild56 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/33), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/33)) + 1)) in
+                      std::json::skip_json_whitespace(value/33)
                     }
                 } else {
                     {
-                      return Result::Err(std::json::json_error(value/38, "expected array separator"))
+                      return Result::Err(std::json::json_error(value/33, "expected array separator"))
                     }
                 }
             }
         }
       }
   } in
-  Result::Err(std::json::json_error(value/38, "unterminated array"))
+  Result::Err(std::json::json_error(value/33, "unterminated array"))
 }
 
-fn std::json::parse_json_object(value/42: std::json::JsonParser) -> Result[std::json::Value, string] {
-  let _wild56 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1)) in
-  let _wild57 = std::json::skip_json_whitespace(value/42) in
-  let result/43 = inherent#Vec#Vec[(string,std::json::Value)]#new() in
-  let _wild59 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/42))) {
-      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/42), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42))), 125)
+fn std::json::parse_json_object(value/36: std::json::JsonParser) -> Result[std::json::Value, string] {
+  let _wild58 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/36), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) + 1)) in
+  let _wild59 = std::json::skip_json_whitespace(value/36) in
+  let result/37 = inherent#Vec#Vec[(string,std::json::Value)]#new() in
+  let _wild61 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/36))) {
+      trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/36), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36))), 125)
   } else {
       false
   } {
       {
-        let _wild58 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1)) in
-        return Result::Ok(std::json::Value::Object(result/43))
+        let _wild60 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/36), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) + 1)) in
+        return Result::Ok(std::json::Value::Object(result/37))
       }
   } else {
       {
         ()
       }
   } in
-  let _wild73 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/42))) {
+  let _wild75 = while (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) < inherent#string#string#byte_len(std::json::JsonParser.input(value/36))) {
       {
-        let name/46 = {
-          let mtmp60 = std::json::parse_json_string(value/42) in
-          match mtmp60 {
-            Result::Ok(x61) => {
+        let name/38 = {
+          let mtmp62 = std::json::parse_json_string(value/36) in
+          match mtmp62 {
+            Result::Ok(x63) => {
               {
-                let x61 = Result::Ok._0(mtmp60) in
+                let x63 = Result::Ok._0(mtmp62) in
                 {
-                  let name/44 = x61 in
-                  name/44
+                  let try_value/1217 = x63 in
+                  try_value/1217
                 }
               }
             },
-            Result::Err(x62) => {
+            Result::Err(x64) => {
               {
-                let x62 = Result::Err._0(mtmp60) in
+                let x64 = Result::Err._0(mtmp62) in
                 {
-                  let error/45 = x62 in
-                  return Result::Err(error/45)
+                  let try_residual/1217 = x64 in
+                  return Result::Err(try_residual/1217)
                 }
               }
             },
           }
         } in
-        let _wild63 = std::json::skip_json_whitespace(value/42) in
-        let _wild64 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/42))) {
+        let _wild65 = std::json::skip_json_whitespace(value/36) in
+        let _wild66 = if if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/36))) {
             true
         } else {
-            (!trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/42), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42))), 58))
+            (!trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/36), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36))), 58))
         } {
             {
-              return Result::Err(std::json::json_error(value/42, "expected object colon"))
+              return Result::Err(std::json::json_error(value/36, "expected object colon"))
             }
         } else {
             {
-              inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1))
+              inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/36), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) + 1))
             }
         } in
-        let _wild65 = std::json::skip_json_whitespace(value/42) in
-        let _wild69 = {
-          let mtmp66 = std::json::parse_json_value(value/42) in
-          match mtmp66 {
-            Result::Ok(x67) => {
+        let _wild67 = std::json::skip_json_whitespace(value/36) in
+        let item/39 = {
+          let mtmp68 = std::json::parse_json_value(value/36) in
+          match mtmp68 {
+            Result::Ok(x69) => {
               {
-                let x67 = Result::Ok._0(mtmp66) in
+                let x69 = Result::Ok._0(mtmp68) in
                 {
-                  let item/47 = x67 in
-                  inherent#Vec#Vec[(string,std::json::Value)]#push(result/43, (name/46, item/47))
+                  let try_value/1266 = x69 in
+                  try_value/1266
                 }
               }
             },
-            Result::Err(x68) => {
+            Result::Err(x70) => {
               {
-                let x68 = Result::Err._0(mtmp66) in
+                let x70 = Result::Err._0(mtmp68) in
                 {
-                  let error/48 = x68 in
-                  return Result::Err(error/48)
+                  let try_residual/1266 = x70 in
+                  return Result::Err(try_residual/1266)
                 }
               }
             },
           }
         } in
-        let _wild70 = std::json::skip_json_whitespace(value/42) in
-        if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/42))) {
+        let _wild71 = inherent#Vec#Vec[(string,std::json::Value)]#push(result/37, (name/38, item/39)) in
+        let _wild72 = std::json::skip_json_whitespace(value/36) in
+        if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/36))) {
             {
-              return Result::Err(std::json::json_error(value/42, "unterminated object"))
+              return Result::Err(std::json::json_error(value/36, "unterminated object"))
             }
         } else {
-            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/42), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42))), 125) {
+            if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/36), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36))), 125) {
                 {
-                  let _wild71 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1)) in
-                  return Result::Ok(std::json::Value::Object(result/43))
+                  let _wild73 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/36), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) + 1)) in
+                  return Result::Ok(std::json::Value::Object(result/37))
                 }
             } else {
-                if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/42), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42))), 44) {
+                if trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(std::json::JsonParser.input(value/36), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36))), 44) {
                     {
-                      let _wild72 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/42), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/42)) + 1)) in
-                      std::json::skip_json_whitespace(value/42)
+                      let _wild74 = inherent#Ref#Ref[int]#set(std::json::JsonParser.index(value/36), (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/36)) + 1)) in
+                      std::json::skip_json_whitespace(value/36)
                     }
                 } else {
                     {
-                      return Result::Err(std::json::json_error(value/42, "expected object separator"))
+                      return Result::Err(std::json::json_error(value/36, "expected object separator"))
                     }
                 }
             }
         }
       }
   } in
-  Result::Err(std::json::json_error(value/42, "unterminated object"))
+  Result::Err(std::json::json_error(value/36, "unterminated object"))
 }
 
-fn std::json::parse_json_value(value/49: std::json::JsonParser) -> Result[std::json::Value, string] {
-  let _wild74 = std::json::skip_json_whitespace(value/49) in
-  if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/49)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/49))) {
+fn std::json::parse_json_value(value/40: std::json::JsonParser) -> Result[std::json::Value, string] {
+  let _wild76 = std::json::skip_json_whitespace(value/40) in
+  if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/40)) >= inherent#string#string#byte_len(std::json::JsonParser.input(value/40))) {
       {
-        Result::Err(std::json::json_error(value/49, "expected JSON value"))
+        Result::Err(std::json::json_error(value/40, "expected JSON value"))
       }
   } else {
       {
         {
-          let mtmp75 = inherent#string#string#byte_get(std::json::JsonParser.input(value/49), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/49))) in
-          match mtmp75 {
+          let mtmp77 = inherent#string#string#byte_get(std::json::JsonParser.input(value/40), inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/40))) in
+          match mtmp77 {
             123 => {
-              std::json::parse_json_object(value/49)
+              std::json::parse_json_object(value/40)
             },
             91 => {
-              std::json::parse_json_array(value/49)
+              std::json::parse_json_array(value/40)
             },
             34 => {
               {
-                let mtmp76 = std::json::parse_json_string(value/49) in
-                match mtmp76 {
-                  Result::Ok(x77) => {
+                let mtmp78 = std::json::parse_json_string(value/40) in
+                match mtmp78 {
+                  Result::Ok(x79) => {
                     {
-                      let x77 = Result::Ok._0(mtmp76) in
+                      let x79 = Result::Ok._0(mtmp78) in
                       {
-                        let text/50 = x77 in
-                        Result::Ok(std::json::Value::String(text/50))
+                        let text/41 = x79 in
+                        Result::Ok(std::json::Value::String(text/41))
                       }
                     }
                   },
-                  Result::Err(x78) => {
+                  Result::Err(x80) => {
                     {
-                      let x78 = Result::Err._0(mtmp76) in
+                      let x80 = Result::Err._0(mtmp78) in
                       {
-                        let error/51 = x78 in
-                        Result::Err(error/51)
+                        let error/42 = x80 in
+                        Result::Err(error/42)
                       }
                     }
                   },
@@ -2856,27 +2969,27 @@ fn std::json::parse_json_value(value/49: std::json::JsonParser) -> Result[std::j
               }
             },
             116 => {
-              std::json::parse_json_literal(value/49, "true", std::json::Value::Bool(true))
+              std::json::parse_json_literal(value/40, "true", std::json::Value::Bool(true))
             },
             102 => {
-              std::json::parse_json_literal(value/49, "false", std::json::Value::Bool(false))
+              std::json::parse_json_literal(value/40, "false", std::json::Value::Bool(false))
             },
             110 => {
-              std::json::parse_json_literal(value/49, "null", std::json::Value::Null)
+              std::json::parse_json_literal(value/40, "null", std::json::Value::Null)
             },
             _ => {
-              let byte/52 = mtmp75 in
-              if if trait_impl#Eq#uint8#eq(byte/52, 45) {
+              let byte/43 = mtmp77 in
+              if if trait_impl#Eq#uint8#eq(byte/43, 45) {
                   true
               } else {
-                  std::json::json_digit(byte/52)
+                  std::json::json_digit(byte/43)
               } {
                   {
-                    std::json::parse_json_number(value/49)
+                    std::json::parse_json_number(value/40)
                   }
               } else {
                   {
-                    Result::Err(std::json::json_error(value/49, "unexpected JSON token"))
+                    Result::Err(std::json::json_error(value/40, "unexpected JSON token"))
                   }
               }
             },
@@ -2886,139 +2999,139 @@ fn std::json::parse_json_value(value/49: std::json::JsonParser) -> Result[std::j
   }
 }
 
-fn std::json::parse(input/53: string) -> Result[std::json::Value, string] {
-  let parser/54 = std::json::json_parser(input/53) in
-  let result/57 = {
-    let mtmp79 = std::json::parse_json_value(parser/54) in
-    match mtmp79 {
-      Result::Ok(x80) => {
+fn std::json::parse(input/44: string) -> Result[std::json::Value, string] {
+  let parser/45 = std::json::json_parser(input/44) in
+  let result/46 = {
+    let mtmp81 = std::json::parse_json_value(parser/45) in
+    match mtmp81 {
+      Result::Ok(x82) => {
         {
-          let x80 = Result::Ok._0(mtmp79) in
+          let x82 = Result::Ok._0(mtmp81) in
           {
-            let value/55 = x80 in
-            value/55
+            let try_value/1443 = x82 in
+            try_value/1443
           }
         }
       },
-      Result::Err(x81) => {
+      Result::Err(x83) => {
         {
-          let x81 = Result::Err._0(mtmp79) in
+          let x83 = Result::Err._0(mtmp81) in
           {
-            let error/56 = x81 in
-            return Result::Err(error/56)
+            let try_residual/1443 = x83 in
+            return Result::Err(try_residual/1443)
           }
         }
       },
     }
   } in
-  let _wild82 = std::json::skip_json_whitespace(parser/54) in
-  if trait_impl#Eq#int#eq(inherent#Ref#Ref[int]#get(std::json::JsonParser.index(parser/54)), inherent#string#string#byte_len(input/53)) {
+  let _wild84 = std::json::skip_json_whitespace(parser/45) in
+  if trait_impl#Eq#int#eq(inherent#Ref#Ref[int]#get(std::json::JsonParser.index(parser/45)), inherent#string#string#byte_len(input/44)) {
       {
-        Result::Ok(result/57)
+        Result::Ok(result/46)
       }
   } else {
       {
-        Result::Err(std::json::json_error(parser/54, "trailing JSON data"))
+        Result::Err(std::json::json_error(parser/45, "trailing JSON data"))
       }
   }
 }
 
-fn std::json::json_hex_digit(value/58: uint8) -> char {
-  inherent#string#string#get("0123456789abcdef", (value/58 as int))
+fn std::json::json_hex_digit(value/47: uint8) -> char {
+  inherent#string#string#get("0123456789abcdef", (value/47 as int))
 }
 
-fn std::json::write_json_string(builder/59: std::text::StringBuilder, value/60: string) -> unit {
-  let _wild83 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, '"') in
-  let start/61 = inherent#Ref#Ref[int]#new(0) in
-  let _wild92 = {
-    let for_index84 = 0 in
-    let for_limit85 = inherent#string#string#byte_len(value/60) in
-    while (for_index84 < for_limit85) {
+fn std::json::write_json_string(builder/48: std::text::StringBuilder, value/49: string) -> unit {
+  let _wild85 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/48, '"') in
+  let start/50 = 0 in
+  let _wild95 = {
+    let for_index86 = 0 in
+    let for_limit87 = inherent#string#string#byte_len(value/49) in
+    while (for_index86 < for_limit87) {
         {
-          let for_item86 = for_index84 in
-          let _wild87 = for_index84 = (for_index84 + 1) in
+          let for_item88 = for_index86 in
+          let _wild89 = for_index86 = (for_index86 + 1) in
           {
-            let index/62 = for_item86 in
+            let index/51 = for_item88 in
             {
-              let byte/63 = inherent#string#string#byte_get(value/60, index/62) in
-              if if if if if if if if trait_impl#Eq#uint8#eq(byte/63, 34) {
+              let byte/52 = inherent#string#string#byte_get(value/49, index/51) in
+              if if if if if if if if trait_impl#Eq#uint8#eq(byte/52, 34) {
                   true
               } else {
-                  trait_impl#Eq#uint8#eq(byte/63, 92)
+                  trait_impl#Eq#uint8#eq(byte/52, 92)
               } {
                   true
               } else {
-                  trait_impl#Eq#uint8#eq(byte/63, 8)
+                  trait_impl#Eq#uint8#eq(byte/52, 8)
               } {
                   true
               } else {
-                  trait_impl#Eq#uint8#eq(byte/63, 9)
+                  trait_impl#Eq#uint8#eq(byte/52, 9)
               } {
                   true
               } else {
-                  trait_impl#Eq#uint8#eq(byte/63, 10)
+                  trait_impl#Eq#uint8#eq(byte/52, 10)
               } {
                   true
               } else {
-                  trait_impl#Eq#uint8#eq(byte/63, 12)
+                  trait_impl#Eq#uint8#eq(byte/52, 12)
               } {
                   true
               } else {
-                  trait_impl#Eq#uint8#eq(byte/63, 13)
+                  trait_impl#Eq#uint8#eq(byte/52, 13)
               } {
                   true
               } else {
-                  (byte/63 < 32)
+                  (byte/52 < 32)
               } {
                   {
-                    let _wild88 = if (inherent#Ref#Ref[int]#get(start/61) < index/62) {
+                    let _wild90 = if (start/50 < index/51) {
                         {
-                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, inherent#string#string#byte_slice(value/60, inherent#Ref#Ref[int]#get(start/61), index/62))
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, inherent#string#string#byte_slice(value/49, start/50, index/51))
                         }
                     } else {
                         {
                           ()
                         }
                     } in
-                    let _wild91 = if trait_impl#Eq#uint8#eq(byte/63, 34) {
+                    let _wild93 = if trait_impl#Eq#uint8#eq(byte/52, 34) {
                         {
-                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\\"")
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\\"")
                         }
                     } else {
-                        if trait_impl#Eq#uint8#eq(byte/63, 92) {
+                        if trait_impl#Eq#uint8#eq(byte/52, 92) {
                             {
-                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\\\")
+                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\\\")
                             }
                         } else {
-                            if trait_impl#Eq#uint8#eq(byte/63, 8) {
+                            if trait_impl#Eq#uint8#eq(byte/52, 8) {
                                 {
-                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\b")
+                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\b")
                                 }
                             } else {
-                                if trait_impl#Eq#uint8#eq(byte/63, 9) {
+                                if trait_impl#Eq#uint8#eq(byte/52, 9) {
                                     {
-                                      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\t")
+                                      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\t")
                                     }
                                 } else {
-                                    if trait_impl#Eq#uint8#eq(byte/63, 10) {
+                                    if trait_impl#Eq#uint8#eq(byte/52, 10) {
                                         {
-                                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\n")
+                                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\n")
                                         }
                                     } else {
-                                        if trait_impl#Eq#uint8#eq(byte/63, 12) {
+                                        if trait_impl#Eq#uint8#eq(byte/52, 12) {
                                             {
-                                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\f")
+                                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\f")
                                             }
                                         } else {
-                                            if trait_impl#Eq#uint8#eq(byte/63, 13) {
+                                            if trait_impl#Eq#uint8#eq(byte/52, 13) {
                                                 {
-                                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\r")
+                                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\r")
                                                 }
                                             } else {
                                                 {
-                                                  let _wild89 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, "\\u00") in
-                                                  let _wild90 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, std::json::json_hex_digit((byte/63 / 16))) in
-                                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, std::json::json_hex_digit((byte/63 % 16)))
+                                                  let _wild91 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\u00") in
+                                                  let _wild92 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/48, std::json::json_hex_digit((byte/52 / 16))) in
+                                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/48, std::json::json_hex_digit((byte/52 % 16)))
                                                 }
                                             }
                                         }
@@ -3027,7 +3140,7 @@ fn std::json::write_json_string(builder/59: std::text::StringBuilder, value/60: 
                             }
                         }
                     } in
-                    inherent#Ref#Ref[int]#set(start/61, (index/62 + 1))
+                    let _wild94 = start/50 = (index/51 + 1) in
                   }
               } else {
                   {
@@ -3039,126 +3152,134 @@ fn std::json::write_json_string(builder/59: std::text::StringBuilder, value/60: 
         }
     }
   } in
-  let _wild93 = if (inherent#Ref#Ref[int]#get(start/61) < inherent#string#string#byte_len(value/60)) {
+  let _wild96 = if (start/50 < inherent#string#string#byte_len(value/49)) {
       {
-        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/59, inherent#string#string#byte_slice(value/60, inherent#Ref#Ref[int]#get(start/61), inherent#string#string#byte_len(value/60)))
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, inherent#string#string#byte_slice(value/49, start/50, inherent#string#string#byte_len(value/49)))
       }
   } else {
       {
         ()
       }
   } in
-  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/59, '"')
+  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/48, '"')
 }
 
-fn std::json::write_json_value(builder/64: std::text::StringBuilder, value/65: std::json::Value) -> unit {
-  match value/65 {
-    std::json::Value::Object(x94) => {
+fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: std::json::Value) -> unit {
+  match value/54 {
+    std::json::Value::Object(x97) => {
       {
-        let x94 = std::json::Value::Object._0(value/65) in
+        let x97 = std::json::Value::Object._0(value/54) in
         {
-          let fields/66 = x94 in
+          let fields/55 = x97 in
           {
-            let _wild99 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, '{') in
-            let index/67 = inherent#Ref#Ref[int]#new(0) in
-            let _wild109 = {
-              let for_source100 = fields/66 in
-              let for_limit101 = @intrinsic(vec.len)(for_source100) in
-              let for_index102 = 0 in
-              while (for_index102 < for_limit101) {
+            let _wild102 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/53, '{') in
+            let index/56 = 0 in
+            let _wild115 = {
+              let for_source103 = fields/55 in
+              let for_limit104 = @intrinsic(vec.len)(for_source103) in
+              let for_index105 = 0 in
+              while (for_index105 < for_limit104) {
                   {
-                    let for_item103 = @intrinsic(vec.get)(for_source100, for_index102) in
-                    let _wild104 = for_index102 = (for_index102 + 1) in
+                    let for_item106 = @intrinsic(vec.get)(for_source103, for_index105) in
+                    let _wild107 = for_index105 = (for_index105 + 1) in
                     {
-                      let field/68 = for_item103 in
+                      let field/57 = for_item106 in
                       {
-                        let _wild105 = if (inherent#Ref#Ref[int]#get(index/67) > 0) {
+                        let _wild108 = if (index/56 > 0) {
                             {
-                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ',')
+                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/53, ',')
                             }
                         } else {
                             {
                               ()
                             }
                         } in
-                        let _wild106 = std::json::write_json_string(builder/64, field/68.0) in
-                        let _wild107 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ':') in
-                        let _wild108 = std::json::write_json_value(builder/64, field/68.1) in
-                        inherent#Ref#Ref[int]#set(index/67, (inherent#Ref#Ref[int]#get(index/67) + 1))
+                        let _wild109 = std::json::write_json_string(builder/53, field/57.0) in
+                        let _wild110 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/53, ':') in
+                        let _wild111 = std::json::write_json_value(builder/53, field/57.1) in
+                        let _wild114 = {
+                          let compound_old112 = index/56 in
+                          let compound_value113 = 1 in
+                          index/56 = (compound_old112 + compound_value113)
+                        } in
                       }
                     }
                   }
               }
             } in
-            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, '}')
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/53, '}')
           }
         }
       }
     },
-    std::json::Value::Array(x95) => {
+    std::json::Value::Array(x98) => {
       {
-        let x95 = std::json::Value::Array._0(value/65) in
+        let x98 = std::json::Value::Array._0(value/54) in
         {
-          let items/69 = x95 in
+          let items/58 = x98 in
           {
-            let _wild110 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, '[') in
-            let index/70 = inherent#Ref#Ref[int]#new(0) in
-            let _wild118 = {
-              let for_source111 = items/69 in
-              let for_limit112 = @intrinsic(vec.len)(for_source111) in
-              let for_index113 = 0 in
-              while (for_index113 < for_limit112) {
+            let _wild116 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/53, '[') in
+            let index/59 = 0 in
+            let _wild127 = {
+              let for_source117 = items/58 in
+              let for_limit118 = @intrinsic(vec.len)(for_source117) in
+              let for_index119 = 0 in
+              while (for_index119 < for_limit118) {
                   {
-                    let for_item114 = @intrinsic(vec.get)(for_source111, for_index113) in
-                    let _wild115 = for_index113 = (for_index113 + 1) in
+                    let for_item120 = @intrinsic(vec.get)(for_source117, for_index119) in
+                    let _wild121 = for_index119 = (for_index119 + 1) in
                     {
-                      let item/71 = for_item114 in
+                      let item/60 = for_item120 in
                       {
-                        let _wild116 = if (inherent#Ref#Ref[int]#get(index/70) > 0) {
+                        let _wild122 = if (index/59 > 0) {
                             {
-                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ',')
+                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/53, ',')
                             }
                         } else {
                             {
                               ()
                             }
                         } in
-                        let _wild117 = std::json::write_json_value(builder/64, item/71) in
-                        inherent#Ref#Ref[int]#set(index/70, (inherent#Ref#Ref[int]#get(index/70) + 1))
+                        let _wild123 = std::json::write_json_value(builder/53, item/60) in
+                        let _wild126 = {
+                          let compound_old124 = index/59 in
+                          let compound_value125 = 1 in
+                          index/59 = (compound_old124 + compound_value125)
+                        } in
                       }
                     }
                   }
               }
             } in
-            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/64, ']')
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/53, ']')
           }
         }
       }
     },
-    std::json::Value::String(x96) => {
+    std::json::Value::String(x99) => {
       {
-        let x96 = std::json::Value::String._0(value/65) in
+        let x99 = std::json::Value::String._0(value/54) in
         {
-          let text/72 = x96 in
-          std::json::write_json_string(builder/64, text/72)
+          let text/61 = x99 in
+          std::json::write_json_string(builder/53, text/61)
         }
       }
     },
-    std::json::Value::Number(x97) => {
+    std::json::Value::Number(x100) => {
       {
-        let x97 = std::json::Value::Number._0(value/65) in
+        let x100 = std::json::Value::Number._0(value/54) in
         {
-          let number/73 = x97 in
-          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, number/73)
+          let number/62 = x100 in
+          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, number/62)
         }
       }
     },
-    std::json::Value::Bool(x98) => {
+    std::json::Value::Bool(x101) => {
       {
-        let x98 = std::json::Value::Bool._0(value/65) in
+        let x101 = std::json::Value::Bool._0(value/54) in
         {
-          let value/74 = x98 in
-          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, if value/74 {
+          let value/63 = x101 in
+          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, if value/63 {
               {
                 "true"
               }
@@ -3171,40 +3292,39 @@ fn std::json::write_json_value(builder/64: std::text::StringBuilder, value/65: s
       }
     },
     std::json::Value::Null => {
-      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/64, "null")
+      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, "null")
     },
   }
 }
 
-fn std::json::encode(value/75: std::json::Value) -> string {
-  let builder/76 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
-  let _wild119 = std::json::write_json_value(builder/76, value/75) in
-  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/76)
+fn std::json::encode(value/64: std::json::Value) -> string {
+  let builder/65 = inherent#std::text::StringBuilder#std::text::StringBuilder#new() in
+  let _wild128 = std::json::write_json_value(builder/65, value/64) in
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/65)
 }
 
-fn std::json::field(value/77: std::json::Value, name/78: string) -> Option[std::json::Value] {
-  match value/77 {
-    std::json::Value::Object(x120) => {
+fn std::json::field(value/66: std::json::Value, name/67: string) -> Option[std::json::Value] {
+  match value/66 {
+    std::json::Value::Object(x129) => {
       {
-        let x120 = std::json::Value::Object._0(value/77) in
+        let x129 = std::json::Value::Object._0(value/66) in
         {
-          let fields/79 = x120 in
+          let fields/68 = x129 in
           {
-            let result/80 = inherent#Ref#Ref[Option[std::json::Value]]#new(Option::None) in
-            let _wild130 = {
-              let for_source125 = fields/79 in
-              let for_limit126 = @intrinsic(vec.len)(for_source125) in
-              let for_index127 = 0 in
-              while (for_index127 < for_limit126) {
+            let _wild139 = {
+              let for_source134 = fields/68 in
+              let for_limit135 = @intrinsic(vec.len)(for_source134) in
+              let for_index136 = 0 in
+              while (for_index136 < for_limit135) {
                   {
-                    let for_item128 = @intrinsic(vec.get)(for_source125, for_index127) in
-                    let _wild129 = for_index127 = (for_index127 + 1) in
+                    let for_item137 = @intrinsic(vec.get)(for_source134, for_index136) in
+                    let _wild138 = for_index136 = (for_index136 + 1) in
                     {
-                      let field/81 = for_item128 in
+                      let field/69 = for_item137 in
                       {
-                        if trait_impl#Eq#string#eq(field/81.0, name/78) {
+                        if trait_impl#Eq#string#eq(field/69.0, name/67) {
                             {
-                              inherent#Ref#Ref[Option[std::json::Value]]#set(result/80, Option::Some(field/81.1))
+                              return Option::Some(field/69.1)
                             }
                         } else {
                             {
@@ -3216,7 +3336,7 @@ fn std::json::field(value/77: std::json::Value, name/78: string) -> Option[std::
                   }
               }
             } in
-            inherent#Ref#Ref[Option[std::json::Value]]#get(result/80)
+            Option::None
           }
         }
       }
@@ -3225,14 +3345,14 @@ fn std::json::field(value/77: std::json::Value, name/78: string) -> Option[std::
   }
 }
 
-fn std::json::as_string(value/82: std::json::Value) -> Option[string] {
-  match value/82 {
-    std::json::Value::String(x133) => {
+fn std::json::as_string(value/70: std::json::Value) -> Option[string] {
+  match value/70 {
+    std::json::Value::String(x142) => {
       {
-        let x133 = std::json::Value::String._0(value/82) in
+        let x142 = std::json::Value::String._0(value/70) in
         {
-          let text/83 = x133 in
-          Option::Some(text/83)
+          let text/71 = x142 in
+          Option::Some(text/71)
         }
       }
     },
@@ -3240,15 +3360,15 @@ fn std::json::as_string(value/82: std::json::Value) -> Option[string] {
   }
 }
 
-fn std::json::parse_json_int_text(value/84: string) -> Option[int] {
-  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(value/84), 0) {
+fn std::json::parse_json_int_text(value/72: string) -> Option[int] {
+  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(value/72), 0) {
       {
         Option::None
       }
   } else {
       {
-        let negative/85 = trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(value/84, 0), 45) in
-        let index/86 = inherent#Ref#Ref[int]#new(if negative/85 {
+        let negative/73 = trait_impl#Eq#uint8#eq(inherent#string#string#byte_get(value/72, 0), 45) in
+        let index/74 = if negative/73 {
             {
               1
             }
@@ -3256,9 +3376,9 @@ fn std::json::parse_json_int_text(value/84: string) -> Option[int] {
             {
               0
             }
-        }) in
-        let result/87 = inherent#Ref#Ref[int]#new(0) in
-        let _wild136 = if trait_impl#Eq#int#eq(inherent#Ref#Ref[int]#get(index/86), inherent#string#string#byte_len(value/84)) {
+        } in
+        let result/75 = 0 in
+        let _wild145 = if trait_impl#Eq#int#eq(index/74, inherent#string#string#byte_len(value/72)) {
             {
               return Option::None
             }
@@ -3267,46 +3387,50 @@ fn std::json::parse_json_int_text(value/84: string) -> Option[int] {
               ()
             }
         } in
-        let _wild138 = while (inherent#Ref#Ref[int]#get(index/86) < inherent#string#string#byte_len(value/84)) {
+        let _wild151 = while (index/74 < inherent#string#string#byte_len(value/72)) {
             {
-              let byte/88 = inherent#string#string#byte_get(value/84, inherent#Ref#Ref[int]#get(index/86)) in
-              let _wild137 = if if (byte/88 < 48) {
+              let byte/76 = inherent#string#string#byte_get(value/72, index/74) in
+              let _wild147 = if if (byte/76 < 48) {
                   true
               } else {
-                  (byte/88 > 57)
+                  (byte/76 > 57)
               } {
                   {
                     return Option::None
                   }
               } else {
                   {
-                    inherent#Ref#Ref[int]#set(result/87, ((inherent#Ref#Ref[int]#get(result/87) * 10) + ((byte/88 - 48) as int)))
+                    let _wild146 = result/75 = ((result/75 * 10) + ((byte/76 - 48) as int)) in
                   }
               } in
-              inherent#Ref#Ref[int]#set(index/86, (inherent#Ref#Ref[int]#get(index/86) + 1))
+              let _wild150 = {
+                let compound_old148 = index/74 in
+                let compound_value149 = 1 in
+                index/74 = (compound_old148 + compound_value149)
+              } in
             }
         } in
-        Option::Some(if negative/85 {
+        Option::Some(if negative/73 {
             {
-              (0 - inherent#Ref#Ref[int]#get(result/87))
+              (0 - result/75)
             }
         } else {
             {
-              inherent#Ref#Ref[int]#get(result/87)
+              result/75
             }
         })
       }
   }
 }
 
-fn std::json::as_int(value/89: std::json::Value) -> Option[int] {
-  match value/89 {
-    std::json::Value::Number(x142) => {
+fn std::json::as_int(value/77: std::json::Value) -> Option[int] {
+  match value/77 {
+    std::json::Value::Number(x155) => {
       {
-        let x142 = std::json::Value::Number._0(value/89) in
+        let x155 = std::json::Value::Number._0(value/77) in
         {
-          let number/90 = x142 in
-          std::json::parse_json_int_text(number/90)
+          let number/78 = x155 in
+          std::json::parse_json_int_text(number/78)
         }
       }
     },
@@ -3314,14 +3438,14 @@ fn std::json::as_int(value/89: std::json::Value) -> Option[int] {
   }
 }
 
-fn std::json::as_bool(value/91: std::json::Value) -> Option[bool] {
-  match value/91 {
-    std::json::Value::Bool(x148) => {
+fn std::json::as_bool(value/79: std::json::Value) -> Option[bool] {
+  match value/79 {
+    std::json::Value::Bool(x161) => {
       {
-        let x148 = std::json::Value::Bool._0(value/91) in
+        let x161 = std::json::Value::Bool._0(value/79) in
         {
-          let result/92 = x148 in
-          Option::Some(result/92)
+          let result/80 = x161 in
+          Option::Some(result/80)
         }
       }
     },
@@ -3329,14 +3453,14 @@ fn std::json::as_bool(value/91: std::json::Value) -> Option[bool] {
   }
 }
 
-fn std::json::as_array(value/93: std::json::Value) -> Option[Vec[std::json::Value]] {
-  match value/93 {
-    std::json::Value::Array(x150) => {
+fn std::json::as_array(value/81: std::json::Value) -> Option[Vec[std::json::Value]] {
+  match value/81 {
+    std::json::Value::Array(x163) => {
       {
-        let x150 = std::json::Value::Array._0(value/93) in
+        let x163 = std::json::Value::Array._0(value/81) in
         {
-          let items/94 = x150 in
-          Option::Some(items/94)
+          let items/82 = x163 in
+          Option::Some(items/82)
         }
       }
     },
@@ -3344,30 +3468,30 @@ fn std::json::as_array(value/93: std::json::Value) -> Option[Vec[std::json::Valu
   }
 }
 
-fn std::json::object(fields/95: Vec[(string, std::json::Value)]) -> std::json::Value {
-  std::json::Value::Object(fields/95)
+fn std::json::object(fields/83: Vec[(string, std::json::Value)]) -> std::json::Value {
+  std::json::Value::Object(fields/83)
 }
 
 fn main() -> unit {
   let value/2 = {
-    let mtmp108 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
-    match mtmp108 {
-      Result::Ok(x109) => {
+    let mtmp152 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
+    match mtmp152 {
+      Result::Ok(x153) => {
         {
-          let x109 = Result::Ok._0(mtmp108) in
+          let x153 = Result::Ok._0(mtmp152) in
           {
-            let value/0 = x109 in
+            let value/0 = x153 in
             value/0
           }
         }
       },
-      Result::Err(x110) => {
+      Result::Err(x154) => {
         {
-          let x110 = Result::Err._0(mtmp108) in
+          let x154 = Result::Err._0(mtmp152) in
           {
-            let error/1 = x110 in
+            let error/1 = x154 in
             {
-              let _wild111 = println(error/1) in
+              let _wild155 = println(error/1) in
               return
             }
           }
@@ -3375,28 +3499,28 @@ fn main() -> unit {
       },
     }
   } in
-  let _wild116 = {
-    let mtmp112 = std::json::field(value/2, "name") in
-    match mtmp112 {
+  let _wild160 = {
+    let mtmp156 = std::json::field(value/2, "name") in
+    match mtmp156 {
       Option::None => {
         println("missing name")
       },
-      Option::Some(x113) => {
+      Option::Some(x157) => {
         {
-          let x113 = Option::Some._0(mtmp112) in
+          let x157 = Option::Some._0(mtmp156) in
           {
-            let field/3 = x113 in
+            let field/3 = x157 in
             {
-              let mtmp114 = std::json::as_string(field/3) in
-              match mtmp114 {
+              let mtmp158 = std::json::as_string(field/3) in
+              match mtmp158 {
                 Option::None => {
                   println("invalid name")
                 },
-                Option::Some(x115) => {
+                Option::Some(x159) => {
                   {
-                    let x115 = Option::Some._0(mtmp114) in
+                    let x159 = Option::Some._0(mtmp158) in
                     {
-                      let name/4 = x115 in
+                      let name/4 = x159 in
                       println(name/4)
                     }
                   }
@@ -3408,28 +3532,28 @@ fn main() -> unit {
       },
     }
   } in
-  let _wild121 = {
-    let mtmp117 = std::json::field(value/2, "version") in
-    match mtmp117 {
+  let _wild165 = {
+    let mtmp161 = std::json::field(value/2, "version") in
+    match mtmp161 {
       Option::None => {
         println("missing version")
       },
-      Option::Some(x118) => {
+      Option::Some(x162) => {
         {
-          let x118 = Option::Some._0(mtmp117) in
+          let x162 = Option::Some._0(mtmp161) in
           {
-            let field/5 = x118 in
+            let field/5 = x162 in
             {
-              let mtmp119 = std::json::as_int(field/5) in
-              match mtmp119 {
+              let mtmp163 = std::json::as_int(field/5) in
+              match mtmp163 {
                 Option::None => {
                   println("invalid version")
                 },
-                Option::Some(x120) => {
+                Option::Some(x164) => {
                   {
-                    let x120 = Option::Some._0(mtmp119) in
+                    let x164 = Option::Some._0(mtmp163) in
                     {
-                      let version/6 = x120 in
+                      let version/6 = x164 in
                       println(version/6)
                     }
                   }
@@ -3441,28 +3565,28 @@ fn main() -> unit {
       },
     }
   } in
-  let _wild126 = {
-    let mtmp122 = std::json::field(value/2, "stable") in
-    match mtmp122 {
+  let _wild170 = {
+    let mtmp166 = std::json::field(value/2, "stable") in
+    match mtmp166 {
       Option::None => {
         println("missing stable")
       },
-      Option::Some(x123) => {
+      Option::Some(x167) => {
         {
-          let x123 = Option::Some._0(mtmp122) in
+          let x167 = Option::Some._0(mtmp166) in
           {
-            let field/7 = x123 in
+            let field/7 = x167 in
             {
-              let mtmp124 = std::json::as_bool(field/7) in
-              match mtmp124 {
+              let mtmp168 = std::json::as_bool(field/7) in
+              match mtmp168 {
                 Option::None => {
                   println("invalid stable")
                 },
-                Option::Some(x125) => {
+                Option::Some(x169) => {
                   {
-                    let x125 = Option::Some._0(mtmp124) in
+                    let x169 = Option::Some._0(mtmp168) in
                     {
-                      let stable/8 = x125 in
+                      let stable/8 = x169 in
                       println(stable/8)
                     }
                   }

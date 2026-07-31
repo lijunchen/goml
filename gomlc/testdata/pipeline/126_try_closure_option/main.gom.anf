@@ -1,106 +1,106 @@
 fn maybe_value(flag/0: bool) -> Option__int32 {
-  join ret114(retv115: Option__int32) -> Option__int32 {
-    retv115
+  join ret158(retv159: Option__int32) -> Option__int32 {
+    retv159
   } in
-  join k116(jp117: Option__int32) -> Option__int32 {
-    jump ret114(jp117)
+  join k160(jp161: Option__int32) -> Option__int32 {
+    jump ret158(jp161)
   } in
   if flag/0 {
-    let t118 = Option__int32::Some(4) in
-    jump k116(t118)
+    let t162 = Option__int32::Some(4) in
+    jump k160(t162)
   } else {
-    jump k116(Tag_0)
+    jump k160(Tag_0)
   }
 }
 
 fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
-  join ret119(retv120: Option__int32) -> Option__int32 {
-    retv120
+  join ret163(retv164: Option__int32) -> Option__int32 {
+    retv164
   } in
   let run/4 = closure_env_run_0 { flag_0: flag/2, base_1: base/1 } in
-  let t121 = inherent#closure_env_run_0#closure_env_run_0#apply(run/4) in
-  jump ret119(t121)
+  let t165 = inherent#closure_env_run_0#closure_env_run_0#apply(run/4) in
+  jump ret163(t165)
 }
 
 fn show(opt/5: Option__int32) -> string {
-  join ret122(retv123: string) -> string {
-    retv123
+  join ret166(retv167: string) -> string {
+    retv167
   } in
-  join k124(jp125: string) -> string {
-    jump ret122(jp125)
+  join k168(jp169: string) -> string {
+    jump ret166(jp169)
   } in
   match opt/5 {
     Tag_0 => {
-      jump k124("none")
+      jump k168("none")
     },
     Tag_1 => {
-      let x110 = Option__int32::Some._0(opt/5) in
-      let value/6 = x110 in
-      let t126 = inherent#int32#int32#to_string(value/6) in
-      let t127 = ("some=" + t126) in
-      jump k124(t127)
+      let x154 = Option__int32::Some._0(opt/5) in
+      let value/6 = x154 in
+      let t170 = inherent#int32#int32#to_string(value/6) in
+      let t171 = ("some=" + t170) in
+      jump k168(t171)
     },
   }
 }
 
 fn main() -> unit {
-  join ret128() -> unit {
+  join ret172() -> unit {
     ()
   } in
-  let t129 = with_base(3, true) in
-  let t130 = show(t129) in
-  let _wild111 = println__T_string(t130) in
-  let t131 = with_base(3, false) in
-  let t132 = show(t131) in
-  let _wild112 = println__T_string(t132) in
-  jump ret128()
+  let t173 = with_base(3, true) in
+  let t174 = show(t173) in
+  let _wild155 = println__T_string(t174) in
+  let t175 = with_base(3, false) in
+  let t176 = show(t175) in
+  let _wild156 = println__T_string(t176) in
+  jump ret172()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret133(retv134: string) -> string {
-    retv134
+  join ret177(retv178: string) -> string {
+    retv178
   } in
-  let t135 = @runtime(core.int32_to_string)(self/6) in
-  jump ret133(t135)
+  let t179 = @runtime(core.int32_to_string)(self/6) in
+  jump ret177(t179)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret136() -> unit {
+  join ret180() -> unit {
     ()
   } in
-  let t137 = trait_impl#ToString#string#to_string(value/1) in
-  let t138 = @runtime(core.string_println)(t137) in
-  jump ret136()
+  let t181 = trait_impl#ToString#string#to_string(value/1) in
+  let t182 = @runtime(core.string_println)(t181) in
+  jump ret180()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret139(retv140: string) -> string {
-    retv140
+  join ret183(retv184: string) -> string {
+    retv184
   } in
-  jump ret139(self/38)
+  jump ret183(self/38)
 }
 
-fn inherent#closure_env_run_0#closure_env_run_0#apply(env113: closure_env_run_0) -> Option__int32 {
-  join ret141(retv142: Option__int32) -> Option__int32 {
-    retv142
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env157: closure_env_run_0) -> Option__int32 {
+  join ret185(retv186: Option__int32) -> Option__int32 {
+    retv186
   } in
-  let flag/2 = closure_env_run_0.flag_0(env113) in
-  let base/1 = closure_env_run_0.base_1(env113) in
-  let mtmp108 = maybe_value(flag/2) in
-  join k143(jp144: int32) -> Option__int32 {
-    let value/3 = jp144 in
-    let t145 = (value/3 + base/1) in
-    let t146 = Option__int32::Some(t145) in
-    jump ret141(t146)
+  let flag/2 = closure_env_run_0.flag_0(env157) in
+  let base/1 = closure_env_run_0.base_1(env157) in
+  let mtmp152 = maybe_value(flag/2) in
+  join k187(jp188: int32) -> Option__int32 {
+    let value/3 = jp188 in
+    let t189 = (value/3 + base/1) in
+    let t190 = Option__int32::Some(t189) in
+    jump ret185(t190)
   } in
-  match mtmp108 {
+  match mtmp152 {
     Tag_0 => {
-      jump ret141(Tag_0)
+      jump ret185(Tag_0)
     },
     Tag_1 => {
-      let x109 = Option__int32::Some._0(mtmp108) in
-      let try_value/11 = x109 in
-      jump k143(try_value/11)
+      let x153 = Option__int32::Some._0(mtmp152) in
+      let try_value/11 = x153 in
+      jump k187(try_value/11)
     },
   }
 }

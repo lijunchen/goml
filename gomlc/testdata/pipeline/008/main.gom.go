@@ -35,17 +35,17 @@ func main0() struct{} {
     }
     switch t__0.(type) {
     case A:
-        var t112 string = _goml_m_inherent_i_int_i_int_i_to__string(1)
-        println__T_string(t112)
+        var t156 string = _goml_m_inherent_i_int_i_int_i_to__string(1)
+        println__T_string(t156)
     case B:
-        var x108 bool = t__0.(B)._0
-        switch x108 {
+        var x152 bool = t__0.(B)._0
+        switch x152 {
         case true:
-            var t116 string = _goml_m_inherent_i_int_i_int_i_to__string(2)
-            println__T_string(t116)
+            var t160 string = _goml_m_inherent_i_int_i_int_i_to__string(2)
+            println__T_string(t160)
         case false:
-            var t118 string = _goml_m_inherent_i_int_i_int_i_to__string(3)
-            println__T_string(t118)
+            var t162 string = _goml_m_inherent_i_int_i_int_i_to__string(3)
+            println__T_string(t162)
         default:
             panic("non-exhaustive match")
         }
@@ -56,22 +56,22 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t121 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t121)
+    var t165 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t165)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv124 string
-    var t125 string = _goml_runtime_core_int_to_string(self__5)
-    retv124 = t125
-    return retv124
+    var retv168 string
+    var t169 string = _goml_runtime_core_int_to_string(self__5)
+    retv168 = t169
+    return retv168
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv127 string
-    retv127 = self__38
-    return retv127
+    var retv171 string
+    retv171 = self__38
+    return retv171
 }
 
 func main() {

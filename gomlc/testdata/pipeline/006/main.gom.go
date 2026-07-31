@@ -27,11 +27,11 @@ func main0() struct{} {
         _0: true,
         _1: false,
     }
-    var x108 bool = a__0._0
-    var x109 bool = a__0._1
-    switch x108 {
+    var x152 bool = a__0._0
+    var x153 bool = a__0._1
+    switch x152 {
     case true:
-        var b__1 bool = x109
+        var b__1 bool = x153
         print__T_bool(b__1)
     case false:
     default:
@@ -41,11 +41,11 @@ func main0() struct{} {
         _0: true,
         _1: true,
     }
-    var x111 bool = c__2._0
-    var x112 bool = c__2._1
-    switch x111 {
+    var x155 bool = c__2._0
+    var x156 bool = c__2._1
+    switch x155 {
     case true:
-        var d__3 bool = x112
+        var d__3 bool = x156
         print__T_bool(d__3)
     case false:
     default:
@@ -55,16 +55,16 @@ func main0() struct{} {
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t119 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
-    _goml_runtime_core_string_print(t119)
+    var t163 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
+    _goml_runtime_core_string_print(t163)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv122 string
-    var t123 string = _goml_runtime_core_bool_to_string(self__37)
-    retv122 = t123
-    return retv122
+    var retv166 string
+    var t167 string = _goml_runtime_core_bool_to_string(self__37)
+    retv166 = t167
+    return retv166
 }
 
 func main() {

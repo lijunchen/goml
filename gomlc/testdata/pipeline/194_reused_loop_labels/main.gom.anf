@@ -1,116 +1,116 @@
 fn main() -> unit {
-  join ret111() -> unit {
+  join ret155() -> unit {
     ()
   } in
   let running/0 = inherent#Ref#Ref[T]#new__T_bool(true) in
-  join exit112() -> unit {
-    let _wild110 = () in
-    let t113 = @runtime(core.string_println)("ok") in
-    jump ret111()
+  join exit156() -> unit {
+    let _wild154 = () in
+    let t157 = @runtime(core.string_println)("ok") in
+    jump ret155()
   } in
   joinrec {
-    join loop114() -> unit {
-      let t115 = inherent#Ref#Ref[T]#get__T_bool(running/0) in
-      if t115 {
+    join loop158() -> unit {
+      let t159 = inherent#Ref#Ref[T]#get__T_bool(running/0) in
+      if t159 {
         let event/1 = Tag_0 in
-        join k116() -> unit {
-          let _wild108 = () in
+        join k160() -> unit {
+          let _wild152 = () in
           let scanning/3 = inherent#Ref#Ref[T]#new__T_bool(false) in
-          join exit117() -> unit {
-            let _wild109 = () in
-            let t118 = inherent#Ref#Ref[T]#set__T_bool(running/0, false) in
-            jump loop114()
+          join exit161() -> unit {
+            let _wild153 = () in
+            let t162 = inherent#Ref#Ref[T]#set__T_bool(running/0, false) in
+            jump loop158()
           } in
           joinrec {
-            join loop119() -> unit {
-              let t120 = inherent#Ref#Ref[T]#get__T_bool(scanning/3) in
-              if t120 {
-                jump loop119()
+            join loop163() -> unit {
+              let t164 = inherent#Ref#Ref[T]#get__T_bool(scanning/3) in
+              if t164 {
+                jump loop163()
               } else {
-                jump exit117()
+                jump exit161()
               }
             } in
           } in
-          jump loop119()
+          jump loop163()
         } in
         match event/1 {
           Tag_0 => {
             let scanning/2 = inherent#Ref#Ref[T]#new__T_bool(false) in
-            join exit121() -> unit {
-              jump k116()
+            join exit165() -> unit {
+              jump k160()
             } in
             joinrec {
-              join loop122() -> unit {
-                let t123 = inherent#Ref#Ref[T]#get__T_bool(scanning/2) in
-                if t123 {
-                  jump loop122()
+              join loop166() -> unit {
+                let t167 = inherent#Ref#Ref[T]#get__T_bool(scanning/2) in
+                if t167 {
+                  jump loop166()
                 } else {
-                  jump exit121()
+                  jump exit165()
                 }
               } in
             } in
-            jump loop122()
+            jump loop166()
           },
           Tag_1 => {
-            jump k116()
+            jump k160()
           },
           Tag_2 => {
-            jump k116()
+            jump k160()
           },
           Tag_3 => {
-            jump k116()
+            jump k160()
           },
         }
       } else {
-        jump exit112()
+        jump exit156()
       }
     } in
   } in
-  jump loop114()
+  jump loop158()
 }
 
 fn inherent#Ref#Ref[T]#new__T_bool(value/207: bool) -> Ref[bool] {
-  join ret124(retv125: Ref[bool]) -> Ref[bool] {
-    retv125
+  join ret168(retv169: Ref[bool]) -> Ref[bool] {
+    retv169
   } in
-  let t126 = @intrinsic(ref.new)(value/207) in
-  jump ret124(t126)
+  let t170 = @intrinsic(ref.new)(value/207) in
+  jump ret168(t170)
 }
 
 fn inherent#Ref#Ref[T]#get__T_bool(self/208: Ref[bool]) -> bool {
-  join ret127(retv128: bool) -> bool {
-    retv128
+  join ret171(retv172: bool) -> bool {
+    retv172
   } in
-  let t129 = @intrinsic(ref.get)(self/208) in
-  jump ret127(t129)
+  let t173 = @intrinsic(ref.get)(self/208) in
+  jump ret171(t173)
 }
 
 fn inherent#Ref#Ref[T]#set__T_bool(self/209: Ref[bool], value/210: bool) -> unit {
-  join ret130() -> unit {
+  join ret174() -> unit {
     ()
   } in
-  let t131 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret130()
+  let t175 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret174()
 }
 
 fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
-  join ret132(retv133: bool) -> bool {
-    retv133
+  join ret176(retv177: bool) -> bool {
+    retv177
   } in
-  let t134 = @intrinsic(eq.primitive)(self/53, other/54) in
-  jump ret132(t134)
+  let t178 = @intrinsic(eq.primitive)(self/53, other/54) in
+  jump ret176(t178)
 }
 
 fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {
-  join ret135(retv136: uint64) -> uint64 {
-    retv136
+  join ret179(retv180: uint64) -> uint64 {
+    retv180
   } in
-  join k137(jp138: uint64) -> uint64 {
-    jump ret135(jp138)
+  join k181(jp182: uint64) -> uint64 {
+    jump ret179(jp182)
   } in
   if self/82 {
-    jump k137(1)
+    jump k181(1)
   } else {
-    jump k137(0)
+    jump k181(0)
   }
 }

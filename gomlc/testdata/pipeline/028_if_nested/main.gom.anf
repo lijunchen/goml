@@ -1,59 +1,59 @@
 fn classify(x/0: int32) -> string {
-  join ret114(retv115: string) -> string {
-    retv115
+  join ret158(retv159: string) -> string {
+    retv159
   } in
-  let t118 = (x/0 < 0) in
-  join k116(jp117: string) -> string {
-    jump ret114(jp117)
+  let t162 = (x/0 < 0) in
+  join k160(jp161: string) -> string {
+    jump ret158(jp161)
   } in
-  if t118 {
-    jump k116("negative")
+  if t162 {
+    jump k160("negative")
   } else {
-    let t121 = (0 < x/0) in
-    join k119(jp120: string) -> string {
-      jump k116(jp120)
+    let t165 = (0 < x/0) in
+    join k163(jp164: string) -> string {
+      jump k160(jp164)
     } in
-    if t121 {
-      jump k119("positive")
+    if t165 {
+      jump k163("positive")
     } else {
-      jump k119("zero")
+      jump k163("zero")
     }
   }
 }
 
 fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
-  join ret122(retv123: string) -> string {
-    retv123
+  join ret166(retv167: string) -> string {
+    retv167
   } in
-  let t126 = (a/1 < b/2) in
-  join k124(jp125: string) -> string {
-    jump ret122(jp125)
+  let t170 = (a/1 < b/2) in
+  join k168(jp169: string) -> string {
+    jump ret166(jp169)
   } in
-  if t126 {
-    let t129 = (b/2 < c/3) in
-    join k127(jp128: string) -> string {
-      jump k124(jp128)
+  if t170 {
+    let t173 = (b/2 < c/3) in
+    join k171(jp172: string) -> string {
+      jump k168(jp172)
     } in
-    if t129 {
-      jump k127("ascending")
+    if t173 {
+      jump k171("ascending")
     } else {
-      jump k127("peak")
+      jump k171("peak")
     }
   } else {
-    let t132 = (a/1 < c/3) in
-    join k130(jp131: string) -> string {
-      jump k124(jp131)
+    let t176 = (a/1 < c/3) in
+    join k174(jp175: string) -> string {
+      jump k168(jp175)
     } in
-    if t132 {
-      jump k130("valley")
+    if t176 {
+      jump k174("valley")
     } else {
-      jump k130("flat")
+      jump k174("flat")
     }
   }
 }
 
 fn main() -> unit {
-  join ret133() -> unit {
+  join ret177() -> unit {
     ()
   } in
   let first/4 = classify(-42) in
@@ -62,27 +62,27 @@ fn main() -> unit {
   let shape1/7 = triangle_type(1, 2, 3) in
   let shape2/8 = triangle_type(3, 2, 1) in
   let shape3/9 = triangle_type(2, 3, 2) in
-  let mtmp108 = println__T_string(first/4) in
-  let mtmp109 = println__T_string(second/5) in
-  let mtmp110 = println__T_string(third/6) in
-  let mtmp111 = println__T_string(shape1/7) in
-  let mtmp112 = println__T_string(shape2/8) in
-  let mtmp113 = println__T_string(shape3/9) in
-  jump ret133()
+  let mtmp152 = println__T_string(first/4) in
+  let mtmp153 = println__T_string(second/5) in
+  let mtmp154 = println__T_string(third/6) in
+  let mtmp155 = println__T_string(shape1/7) in
+  let mtmp156 = println__T_string(shape2/8) in
+  let mtmp157 = println__T_string(shape3/9) in
+  jump ret177()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret134() -> unit {
+  join ret178() -> unit {
     ()
   } in
-  let t135 = trait_impl#ToString#string#to_string(value/1) in
-  let t136 = @runtime(core.string_println)(t135) in
-  jump ret134()
+  let t179 = trait_impl#ToString#string#to_string(value/1) in
+  let t180 = @runtime(core.string_println)(t179) in
+  jump ret178()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret137(retv138: string) -> string {
-    retv138
+  join ret181(retv182: string) -> string {
+    retv182
   } in
-  jump ret137(self/38)
+  jump ret181(self/38)
 }

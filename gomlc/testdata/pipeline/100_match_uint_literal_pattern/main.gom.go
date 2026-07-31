@@ -11,30 +11,30 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var x__0 uint8 = 5
-    var jp111 string
+    var jp155 string
     switch x__0 {
     case 0:
-        jp111 = "zero"
+        jp155 = "zero"
     case 1:
-        jp111 = "one"
+        jp155 = "one"
     default:
-        jp111 = "other"
+        jp155 = "other"
     }
-    var y__1 string = jp111
+    var y__1 string = jp155
     println__T_string(y__1)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t113 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t113)
+    var t157 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t157)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv116 string
-    retv116 = self__38
-    return retv116
+    var retv160 string
+    retv160 = self__38
+    return retv160
 }
 
 func main() {

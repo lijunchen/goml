@@ -22,68 +22,68 @@ type RightSource struct {
 }
 
 func _goml_m_trait__impl_i_Mark_i_int32_i_marked(self__0 int32) string {
-    var retv110 string
-    var t111 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    var t112 string = "m" + t111
-    retv110 = t112
-    return retv110
+    var retv154 string
+    var t155 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
+    var t156 string = "m" + t155
+    retv154 = t156
+    return retv154
 }
 
 func _goml_m_trait__impl_i_Source_i_LeftSource_i_get(self__1 LeftSource) int32 {
-    var retv114 int32
-    var t115 int32 = self__1.value
-    retv114 = t115
-    return retv114
+    var retv158 int32
+    var t159 int32 = self__1.value
+    retv158 = t159
+    return retv158
 }
 
 func _goml_m_trait__impl_i_Source_i_RightSource_i_get(self__2 RightSource) int32 {
-    var retv117 int32
-    var t118 int32 = self__2.value
-    retv117 = t118
-    return retv117
+    var retv161 int32
+    var t162 int32 = self__2.value
+    retv161 = t162
+    return retv161
 }
 
 func main0() struct{} {
-    var t120 LeftSource = LeftSource{
+    var t164 LeftSource = LeftSource{
         value: 3,
     }
-    var t121 RightSource = RightSource{
+    var t165 RightSource = RightSource{
         value: 4,
     }
-    var t122 string = combine__A_LeftSource__B_RightSource(t120, t121)
-    println__T_string(t122)
+    var t166 string = combine__A_LeftSource__B_RightSource(t164, t165)
+    println__T_string(t166)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv124 string
-    var t125 string = _goml_runtime_core_int32_to_string(self__6)
-    retv124 = t125
-    return retv124
+    var retv168 string
+    var t169 string = _goml_runtime_core_int32_to_string(self__6)
+    retv168 = t169
+    return retv168
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t127 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t127)
+    var t171 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t171)
     return struct{}{}
 }
 
 func combine__A_LeftSource__B_RightSource(left__3 LeftSource, right__4 RightSource) string {
-    var retv130 string
-    var t131 int32 = _goml_m_trait__impl_i_Source_i_LeftSource_i_get(left__3)
-    var t132 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(t131)
-    var t133 string = t132 + ":"
-    var t134 int32 = _goml_m_trait__impl_i_Source_i_RightSource_i_get(right__4)
-    var t135 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(t134)
-    var t136 string = t133 + t135
-    retv130 = t136
-    return retv130
+    var retv174 string
+    var t175 int32 = _goml_m_trait__impl_i_Source_i_LeftSource_i_get(left__3)
+    var t176 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(t175)
+    var t177 string = t176 + ":"
+    var t178 int32 = _goml_m_trait__impl_i_Source_i_RightSource_i_get(right__4)
+    var t179 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(t178)
+    var t180 string = t177 + t179
+    retv174 = t180
+    return retv174
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv138 string
-    retv138 = self__38
-    return retv138
+    var retv182 string
+    retv182 = self__38
+    return retv182
 }
 
 func main() {

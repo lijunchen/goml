@@ -25,9 +25,9 @@ fn print_opt_string(value/8: Option__string) -> unit {
     Option__string::None => {
       println__T_string("none")
     },
-    Option__string::Some(x108) => {
-      let x108 = Option__string::Some._0(value/8) in
-      let text/9 = x108 in
+    Option__string::Some(x152) => {
+      let x152 = Option__string::Some._0(value/8) in
+      let text/9 = x152 in
       println__T_string(text/9)
     },
   }
@@ -38,9 +38,9 @@ fn print_opt_int(value/10: Option__int32) -> unit {
     Option__int32::None => {
       println__T_string("none")
     },
-    Option__int32::Some(x109) => {
-      let x109 = Option__int32::Some._0(value/10) in
-      let number/11 = x109 in
+    Option__int32::Some(x153) => {
+      let x153 = Option__int32::Some._0(value/10) in
+      let number/11 = x153 in
       println__T_int32(number/11)
     },
   }
@@ -49,54 +49,54 @@ fn print_opt_int(value/10: Option__int32) -> unit {
 fn float_zero_contracts() -> unit {
   let zero32/12 = 0 in
   let negative_zero32/13 = (-zero32/12) in
-  let _wild110 = println__T_string(trait_impl#ToString#bool#to_string(trait_impl#Eq#uint64#eq(trait_impl#Hash#float32#hash(zero32/12), trait_impl#Hash#float32#hash(negative_zero32/13)))) in
+  let _wild154 = println__T_string(trait_impl#ToString#bool#to_string(trait_impl#Eq#uint64#eq(trait_impl#Hash#float32#hash(zero32/12), trait_impl#Hash#float32#hash(negative_zero32/13)))) in
   let values32/14 = inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() in
-  let _wild111 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, zero32/12, "f32") in
-  let _wild112 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, negative_zero32/13)) in
-  let _wild113 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, negative_zero32/13, "f32-updated") in
-  let _wild114 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14)) in
-  let _wild115 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, zero32/12)) in
-  let _wild116 = inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(values32/14, negative_zero32/13) in
-  let _wild117 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14)) in
+  let _wild155 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, zero32/12, "f32") in
+  let _wild156 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, negative_zero32/13)) in
+  let _wild157 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, negative_zero32/13, "f32-updated") in
+  let _wild158 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14)) in
+  let _wild159 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, zero32/12)) in
+  let _wild160 = inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(values32/14, negative_zero32/13) in
+  let _wild161 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(values32/14)) in
   let zero64/15 = 0 in
   let negative_zero64/16 = (-zero64/15) in
-  let _wild118 = println__T_string(trait_impl#ToString#bool#to_string(trait_impl#Eq#uint64#eq(trait_impl#Hash#float64#hash(zero64/15), trait_impl#Hash#float64#hash(negative_zero64/16)))) in
+  let _wild162 = println__T_string(trait_impl#ToString#bool#to_string(trait_impl#Eq#uint64#eq(trait_impl#Hash#float64#hash(zero64/15), trait_impl#Hash#float64#hash(negative_zero64/16)))) in
   let values64/17 = inherent#HashMap#HashMap[K,V]#new__K_float64__V_string() in
-  let _wild119 = inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(values64/17, zero64/15, "f64") in
-  let _wild120 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(values64/17, negative_zero64/16)) in
+  let _wild163 = inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(values64/17, zero64/15, "f64") in
+  let _wild164 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(values64/17, negative_zero64/16)) in
   let derived/18 = inherent#HashMap#HashMap[K,V]#new__K_FloatKey__V_string() in
-  let _wild121 = inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(derived/18, FloatKey { value: zero64/15 }, "derived") in
-  let _wild122 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(derived/18, FloatKey { value: negative_zero64/16 })) in
+  let _wild165 = inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(derived/18, FloatKey { value: zero64/15 }, "derived") in
+  let _wild166 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(derived/18, FloatKey { value: negative_zero64/16 })) in
   ()
 }
 
 fn collision_contracts() -> unit {
   let values/19 = inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() in
-  let _wild123 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 1 }, 10) in
-  let _wild124 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 2 }, 20) in
-  let _wild125 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 3 }, 30) in
-  let _wild126 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, CollisionKey { value: 2 }) in
-  let _wild127 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 1 })) in
-  let _wild128 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 2 })) in
-  let _wild129 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 3 })) in
-  let _wild130 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 4 }, 40) in
-  let _wild131 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19)) in
-  let _wild132 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 4 })) in
-  let _wild133 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 4 }, 41) in
-  let _wild134 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19)) in
-  let _wild135 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 4 })) in
-  let _wild136 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, CollisionKey { value: 99 }) in
-  let _wild137 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, CollisionKey { value: 99 }) in
-  let _wild138 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19)) in
+  let _wild167 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 1 }, 10) in
+  let _wild168 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 2 }, 20) in
+  let _wild169 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 3 }, 30) in
+  let _wild170 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, CollisionKey { value: 2 }) in
+  let _wild171 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 1 })) in
+  let _wild172 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 2 })) in
+  let _wild173 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 3 })) in
+  let _wild174 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 4 }, 40) in
+  let _wild175 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19)) in
+  let _wild176 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 4 })) in
+  let _wild177 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, CollisionKey { value: 4 }, 41) in
+  let _wild178 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19)) in
+  let _wild179 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, CollisionKey { value: 4 })) in
+  let _wild180 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, CollisionKey { value: 99 }) in
+  let _wild181 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, CollisionKey { value: 99 }) in
+  let _wild182 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19)) in
   let index/20 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild142 = while (inherent#Ref#Ref[T]#get__T_int32(index/20) < 2000) {
+  let _wild186 = while (inherent#Ref#Ref[T]#get__T_int32(index/20) < 2000) {
       let key/21 = CollisionKey { value: (1000 + inherent#Ref#Ref[T]#get__T_int32(index/20)) } in
-      let _wild139 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, key/21, inherent#Ref#Ref[T]#get__T_int32(index/20)) in
-      let _wild140 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, key/21) in
-      let _wild141 = inherent#Ref#Ref[T]#set__T_int32(index/20, (inherent#Ref#Ref[T]#get__T_int32(index/20) + 1)) in
+      let _wild183 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, key/21, inherent#Ref#Ref[T]#get__T_int32(index/20)) in
+      let _wild184 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, key/21) in
+      let _wild185 = inherent#Ref#Ref[T]#set__T_int32(index/20, (inherent#Ref#Ref[T]#get__T_int32(index/20) + 1)) in
       ()
   } in
-  let _wild143 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19)) in
+  let _wild187 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19)) in
   ()
 }
 
@@ -105,21 +105,21 @@ fn reference_contracts() -> unit {
   let key/23 = inherent#Ref#Ref[T]#new__T_CollisionKey(CollisionKey { value: 1 }) in
   let alias/24 = key/23 in
   let equal_value/25 = inherent#Ref#Ref[T]#new__T_CollisionKey(CollisionKey { value: 1 }) in
-  let _wild144 = inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(values/22, key/23, "identity") in
-  let _wild145 = println__T_bool(trait_impl#Eq#Ref[CollisionKey]#eq(key/23, alias/24)) in
-  let _wild146 = println__T_bool(trait_impl#Eq#Ref[CollisionKey]#eq(key/23, equal_value/25)) in
-  let _wild147 = println__T_bool(trait_impl#Eq#uint64#eq(trait_impl#Hash#Ref[CollisionKey]#hash(key/23), trait_impl#Hash#Ref[CollisionKey]#hash(alias/24))) in
-  let _wild148 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, alias/24)) in
-  let _wild149 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, equal_value/25)) in
-  let _wild150 = inherent#Ref#Ref[T]#set__T_CollisionKey(key/23, CollisionKey { value: 99 }) in
-  let _wild151 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, key/23)) in
+  let _wild188 = inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(values/22, key/23, "identity") in
+  let _wild189 = println__T_bool(trait_impl#Eq#Ref[CollisionKey]#eq(key/23, alias/24)) in
+  let _wild190 = println__T_bool(trait_impl#Eq#Ref[CollisionKey]#eq(key/23, equal_value/25)) in
+  let _wild191 = println__T_bool(trait_impl#Eq#uint64#eq(trait_impl#Hash#Ref[CollisionKey]#hash(key/23), trait_impl#Hash#Ref[CollisionKey]#hash(alias/24))) in
+  let _wild192 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, alias/24)) in
+  let _wild193 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, equal_value/25)) in
+  let _wild194 = inherent#Ref#Ref[T]#set__T_CollisionKey(key/23, CollisionKey { value: 99 }) in
+  let _wild195 = print_opt_string(inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(values/22, key/23)) in
   ()
 }
 
 fn main() -> unit {
-  let _wild152 = float_zero_contracts() in
-  let _wild153 = collision_contracts() in
-  let _wild154 = reference_contracts() in
+  let _wild196 = float_zero_contracts() in
+  let _wild197 = collision_contracts() in
+  let _wild198 = reference_contracts() in
   ()
 }
 

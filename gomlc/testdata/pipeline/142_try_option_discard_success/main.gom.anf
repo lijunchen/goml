@@ -1,86 +1,86 @@
 fn cut_pair(ok/0: bool) -> Option__(string,string) {
-  join ret114(retv115: Option__(string,string)) -> Option__(string,string) {
-    retv115
+  join ret158(retv159: Option__(string,string)) -> Option__(string,string) {
+    retv159
   } in
-  join k116(jp117: Option__(string,string)) -> Option__(string,string) {
-    jump ret114(jp117)
+  join k160(jp161: Option__(string,string)) -> Option__(string,string) {
+    jump ret158(jp161)
   } in
   if ok/0 {
-    let t118 = ("left", "right") in
-    let t119 = Option__(string,string)::Some(t118) in
-    jump k116(t119)
+    let t162 = ("left", "right") in
+    let t163 = Option__(string,string)::Some(t162) in
+    jump k160(t163)
   } else {
-    jump k116(Tag_0)
+    jump k160(Tag_0)
   }
 }
 
 fn check(ok/1: bool) -> Option__string {
-  join ret120(retv121: Option__string) -> Option__string {
-    retv121
+  join ret164(retv165: Option__string) -> Option__string {
+    retv165
   } in
-  let mtmp108 = cut_pair(ok/1) in
-  join k122(jp123: (string, string)) -> Option__string {
-    let mtmp110 = jp123 in
-    let t124 = Option__string::Some("ok") in
-    jump ret120(t124)
+  let mtmp152 = cut_pair(ok/1) in
+  join k166(jp167: (string, string)) -> Option__string {
+    let mtmp154 = jp167 in
+    let t168 = Option__string::Some("ok") in
+    jump ret164(t168)
   } in
-  match mtmp108 {
+  match mtmp152 {
     Tag_0 => {
-      jump ret120(Tag_0)
+      jump ret164(Tag_0)
     },
     Tag_1 => {
-      let x109 = Option__(string,string)::Some._0(mtmp108) in
-      let try_value/13 = x109 in
-      jump k122(try_value/13)
+      let x153 = Option__(string,string)::Some._0(mtmp152) in
+      let try_value/13 = x153 in
+      jump k166(try_value/13)
     },
   }
 }
 
 fn show(opt/2: Option__string) -> string {
-  join ret125(retv126: string) -> string {
-    retv126
+  join ret169(retv170: string) -> string {
+    retv170
   } in
-  join k127(jp128: string) -> string {
-    jump ret125(jp128)
+  join k171(jp172: string) -> string {
+    jump ret169(jp172)
   } in
   match opt/2 {
     Tag_0 => {
-      jump k127("none")
+      jump k171("none")
     },
     Tag_1 => {
-      let x111 = Option__string::Some._0(opt/2) in
-      let value/3 = x111 in
-      let t129 = ("some " + value/3) in
-      jump k127(t129)
+      let x155 = Option__string::Some._0(opt/2) in
+      let value/3 = x155 in
+      let t173 = ("some " + value/3) in
+      jump k171(t173)
     },
   }
 }
 
 fn main() -> unit {
-  join ret130() -> unit {
+  join ret174() -> unit {
     ()
   } in
-  let t131 = check(true) in
-  let t132 = show(t131) in
-  let _wild112 = println__T_string(t132) in
-  let t133 = check(false) in
-  let t134 = show(t133) in
-  let _wild113 = println__T_string(t134) in
-  jump ret130()
+  let t175 = check(true) in
+  let t176 = show(t175) in
+  let _wild156 = println__T_string(t176) in
+  let t177 = check(false) in
+  let t178 = show(t177) in
+  let _wild157 = println__T_string(t178) in
+  jump ret174()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret135() -> unit {
+  join ret179() -> unit {
     ()
   } in
-  let t136 = trait_impl#ToString#string#to_string(value/1) in
-  let t137 = @runtime(core.string_println)(t136) in
-  jump ret135()
+  let t180 = trait_impl#ToString#string#to_string(value/1) in
+  let t181 = @runtime(core.string_println)(t180) in
+  jump ret179()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret138(retv139: string) -> string {
-    retv139
+  join ret182(retv183: string) -> string {
+    retv183
   } in
-  jump ret138(self/38)
+  jump ret182(self/38)
 }

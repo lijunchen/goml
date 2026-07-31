@@ -1,52 +1,52 @@
 fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
-  join ret110(retv111: int32) -> int32 {
-    retv111
+  join ret154(retv155: int32) -> int32 {
+    retv155
   } in
-  join k112(jp113: int32) -> int32 {
-    jump ret110(jp113)
+  join k156(jp157: int32) -> int32 {
+    jump ret154(jp157)
   } in
   if flag/0 {
-    jump k112(x/1)
+    jump k156(x/1)
   } else {
-    jump k112(y/2)
+    jump k156(y/2)
   }
 }
 
 fn main() -> unit {
-  join ret114() -> unit {
+  join ret158() -> unit {
     ()
   } in
   let yes/3 = choose(true, 10, 99) in
   let no/4 = choose(false, 10, 99) in
-  let t115 = inherent#int32#int32#to_string(yes/3) in
-  let t116 = ("yes=" + t115) in
-  let mtmp108 = println__T_string(t116) in
-  let t117 = inherent#int32#int32#to_string(no/4) in
-  let t118 = ("no=" + t117) in
-  let mtmp109 = println__T_string(t118) in
-  jump ret114()
+  let t159 = inherent#int32#int32#to_string(yes/3) in
+  let t160 = ("yes=" + t159) in
+  let mtmp152 = println__T_string(t160) in
+  let t161 = inherent#int32#int32#to_string(no/4) in
+  let t162 = ("no=" + t161) in
+  let mtmp153 = println__T_string(t162) in
+  jump ret158()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret119() -> unit {
+  join ret163() -> unit {
     ()
   } in
-  let t120 = trait_impl#ToString#string#to_string(value/1) in
-  let t121 = @runtime(core.string_println)(t120) in
-  jump ret119()
+  let t164 = trait_impl#ToString#string#to_string(value/1) in
+  let t165 = @runtime(core.string_println)(t164) in
+  jump ret163()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret122(retv123: string) -> string {
-    retv123
+  join ret166(retv167: string) -> string {
+    retv167
   } in
-  let t124 = @runtime(core.int32_to_string)(self/6) in
-  jump ret122(t124)
+  let t168 = @runtime(core.int32_to_string)(self/6) in
+  jump ret166(t168)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret125(retv126: string) -> string {
-    retv126
+  join ret169(retv170: string) -> string {
+    retv170
   } in
-  jump ret125(self/38)
+  jump ret169(self/38)
 }
