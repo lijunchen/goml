@@ -115,15 +115,15 @@ fn cli_argument_name(argument: string) -> string {
     } else {
         ()
     };
-    let end = Ref::new(argument.byte_len());
+    let mut end = argument.byte_len();
     for index in 0..argument.byte_len() {
-        if end.get() == argument.byte_len() && argument.byte_get(index) == 61 {
-            end.set(index)
+        if end == argument.byte_len() && argument.byte_get(index) == 61 {
+            end = index;
         } else {
             ()
         }
     };
-    argument.byte_slice(0, end.get())
+    argument.byte_slice(0, end)
 }
 
 fn cli_help_argument(argument: string) -> bool {
@@ -156,27 +156,23 @@ fn cli_edit_distance(left: string, right: string) -> int {
     for index in 0..right.byte_len() + 1 {
         initial.push(index)
     };
-    let previous = Ref::new(initial);
+    let mut previous = initial;
     for left_index in 0..left.byte_len() {
         let current = Vec::new();
         current.push(left_index + 1);
         for right_index in 0..right.byte_len() {
             let substitution = if left.byte_get(left_index) == right.byte_get(right_index) {
-                previous.get()[right_index]
+                previous[right_index]
             } else {
-                previous.get()[right_index] + 1
+                previous[right_index] + 1
             };
             current.push(
-                cli_minimum(
-                    current[right_index] + 1,
-                    previous.get()[right_index + 1] + 1,
-                    substitution,
-                ),
+                cli_minimum(current[right_index] + 1, previous[right_index + 1] + 1, substitution),
             )
         };
-        previous.set(current)
+        previous = current;
     };
-    previous.get()[right.byte_len()]
+    previous[right.byte_len()]
 }
 
 fn similar_cli_argument(command: string, argument: string) -> Option[string] {
@@ -223,19 +219,19 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
         candidates.push("--help")
     };
     let name = cli_argument_name(argument);
-    let best: Ref[Option[string]] = Ref::new(Option::None);
-    let distance = Ref::new(2147483647);
+    let mut best: Option[string] = Option::None;
+    let mut distance = 2147483647;
     for candidate in candidates {
         let candidate_distance = cli_edit_distance(name, candidate);
-        if candidate_distance < distance.get() {
-            distance.set(candidate_distance);
-            best.set(Option::Some(candidate))
+        if candidate_distance < distance {
+            distance = candidate_distance;
+            best = Option::Some(candidate);
         } else {
             ()
         }
     };
-    if distance.get() <= 3 {
-        best.get()
+    if distance <= 3 {
+        best
     } else {
         Option::None
     }
@@ -453,47 +449,47 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
     for _ in 0..right.byte_len() {
         right_matches.push(false)
     };
-    let matches = Ref::new(0);
+    let mut matches = 0;
     for left_index in 0..left.byte_len() {
         let start = cli_maximum(left_index - window, 0);
         let end = cli_minimum(left_index + window + 1, right.byte_len(), right.byte_len());
-        let right_index = Ref::new(start);
-        while right_index.get() < end {
-            let index = right_index.get();
+        let mut right_index = start;
+        while right_index < end {
+            let index = right_index;
             if !(right_matches[index]) && left.byte_get(left_index) == right.byte_get(index) {
                 left_matches[left_index] = true;
                 right_matches[index] = true;
-                matches.set(matches.get() + 1);
+                matches = matches + 1;
                 break
             } else {
-                right_index.set(index + 1)
+                right_index = index + 1;
             }
         }
     };
-    if matches.get() == 0 {
+    if matches == 0 {
         return Option::None
     } else {
         ()
     };
-    let right_index = Ref::new(0);
-    let mismatches = Ref::new(0);
+    let mut right_index = 0;
+    let mut mismatches = 0;
     for left_index in 0..left.byte_len() {
         if left_matches[left_index] {
-            while !(right_matches[right_index.get()]) {
-                right_index.set(right_index.get() + 1)
+            while !(right_matches[right_index]) {
+                right_index = right_index + 1;
             };
-            if left.byte_get(left_index) != right.byte_get(right_index.get()) {
-                mismatches.set(mismatches.get() + 1)
+            if left.byte_get(left_index) != right.byte_get(right_index) {
+                mismatches = mismatches + 1;
             } else {
                 ()
             };
-            right_index.set(right_index.get() + 1)
+            right_index = right_index + 1;
         } else {
             ()
         }
     };
-    let matched = matches.get();
-    let transpositions = mismatches.get() / 2;
+    let matched = matches;
+    let transpositions = mismatches / 2;
     let numerator = matched * matched * right.byte_len() + matched * matched * left.byte_len()
         + (matched - transpositions) * left.byte_len() * right.byte_len();
     let denominator = 3 * left.byte_len() * right.byte_len() * matched;
@@ -526,14 +522,14 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
     };
     for index in 1..similar.len() {
         let value = similar[index];
-        let target = Ref::new(index);
-        while target.get() > 0
-            && similar[target.get() - 1].numerator * value.denominator
-                > value.numerator * similar[target.get() - 1].denominator {
-            similar[target.get()] = similar[target.get() - 1];
-            target.set(target.get() - 1)
+        let mut target = index;
+        while target > 0
+            && similar[target - 1].numerator * value.denominator
+                > value.numerator * similar[target - 1].denominator {
+            similar[target] = similar[target - 1];
+            target = target - 1;
         };
-        similar[target.get()] = value;
+        similar[target] = value;
     };
     let result = Vec::new();
     for value in similar {

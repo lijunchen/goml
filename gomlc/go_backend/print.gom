@@ -48,9 +48,9 @@ fn hex_digit(value: uint8) -> char {
 
 fn write_string_literal(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"');
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
         if byte == 34 {
             builder.write_string("\\\"")
         } else if byte == 92 {
@@ -67,9 +67,9 @@ fn write_string_literal(builder: text::StringBuilder, value: string) -> unit {
             builder.write_char(hex_digit(byte % 16))
         } else {
             let width = utf8_width(byte);
-            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+            builder.write_string(value.byte_slice(index, index + width))
         };
-        index.set(index.get() + utf8_width(byte))
+        index = index + utf8_width(byte);
     };
     builder.write_char('"')
 }

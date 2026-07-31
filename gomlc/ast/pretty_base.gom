@@ -15,41 +15,41 @@ fn pretty_newline(builder: text::StringBuilder, indent: int) -> unit {
 }
 
 fn pretty_write_path(builder: text::StringBuilder, value: Path) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for segment in value.segments {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string("::")
         } else {
             ()
         };
         builder.write_string(segment.ident);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
 fn pretty_write_strings(builder: text::StringBuilder, values: Vec[string], separator: string) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         builder.write_string(value);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
 fn pretty_write_types(builder: text::StringBuilder, values: Vec[TypeExpr], separator: string) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         pretty_write_type(builder, value);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -119,26 +119,26 @@ fn pretty_write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit
 }
 
 fn pretty_write_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef], separator: string) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         pretty_write_trait_ref(builder, value);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
 fn pretty_find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Option[Vec[TraitRef]] {
-    let index = Ref::new(values.len() - 1);
-    while index.get() >= 0 {
-        let value = values[index.get()];
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
         if value.0 == name {
             return Option::Some(value.1)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -161,9 +161,9 @@ fn pretty_write_bounded_generics(
 ) -> unit {
     if generics.len() > 0 {
         builder.write_char('[');
-        let index = Ref::new(0);
+        let mut index = 0;
         for generic in generics {
-            if index.get() > 0 {
+            if index > 0 {
                 builder.write_string(", ")
             } else {
                 ()
@@ -178,7 +178,7 @@ fn pretty_write_bounded_generics(
                 },
                 None => (),
             };
-            index.set(index.get() + 1)
+            index = index + 1;
         };
         builder.write_char(']')
     } else {
@@ -189,9 +189,9 @@ fn pretty_write_bounded_generics(
 fn pretty_write_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
     if values.len() > 0 {
         builder.write_string(" where ");
-        let index = Ref::new(0);
+        let mut index = 0;
         for value in values {
-            if index.get() > 0 {
+            if index > 0 {
                 builder.write_string(", ")
             } else {
                 ()
@@ -208,7 +208,7 @@ fn pretty_write_predicates(builder: text::StringBuilder, values: Vec[Predicate])
                     pretty_write_type(builder, rhs)
                 },
             };
-            index.set(index.get() + 1)
+            index = index + 1;
         }
     } else {
         ()
@@ -216,15 +216,15 @@ fn pretty_write_predicates(builder: text::StringBuilder, values: Vec[Predicate])
 }
 
 fn pretty_write_attributes(builder: text::StringBuilder, values: Vec[Attribute]) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_char('\n')
         } else {
             ()
         };
         builder.write_string(value.text);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -281,9 +281,9 @@ fn pretty_write_control_escape(builder: text::StringBuilder, value: uint8) -> un
 
 fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"');
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
         if byte == 34 {
             builder.write_string("\\\"")
         } else if byte == 92 {
@@ -300,9 +300,9 @@ fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> un
             pretty_write_control_escape(builder, byte)
         } else {
             let width = pretty_utf8_width(byte);
-            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+            builder.write_string(value.byte_slice(index, index + width))
         };
-        index.set(index.get() + pretty_utf8_width(byte))
+        index = index + pretty_utf8_width(byte);
     };
     builder.write_char('"')
 }
@@ -345,9 +345,9 @@ fn pretty_write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) 
     builder.write_string(value.name);
     pretty_write_generics(builder, value.generics);
     builder.write_string(" {");
-    let index = Ref::new(0);
+    let mut index = 0;
     for variant in value.variants {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_char(',')
         } else {
             ()
@@ -363,9 +363,9 @@ fn pretty_write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) 
             },
             Struct(fields) => {
                 builder.write_string(" { ");
-                let field_index = Ref::new(0);
+                let mut field_index = 0;
                 for field in fields {
-                    if field_index.get() > 0 {
+                    if field_index > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -373,12 +373,12 @@ fn pretty_write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) 
                     builder.write_string(field.0);
                     builder.write_string(": ");
                     pretty_write_type(builder, field.1);
-                    field_index.set(field_index.get() + 1)
+                    field_index = field_index + 1;
                 };
                 builder.write_string(" }")
             },
         };
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     pretty_newline(builder, indent);
     builder.write_char('}')
@@ -475,9 +475,9 @@ fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: 
     builder.write_string(value.name);
     pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
-    let index = Ref::new(0);
+    let mut index = 0;
     for param in value.params {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(", ")
         } else {
             ()
@@ -485,7 +485,7 @@ fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: 
         builder.write_string(param.0);
         builder.write_string(": ");
         pretty_write_type(builder, param.1);
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     builder.write_char(')');
     match value.ret_ty {
@@ -507,9 +507,9 @@ fn pretty_write_extern(builder: text::StringBuilder, value: ExternFunction) -> u
     builder.write_string(value.name);
     pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
-    let index = Ref::new(0);
+    let mut index = 0;
     for param in value.params {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(", ")
         } else {
             ()
@@ -517,7 +517,7 @@ fn pretty_write_extern(builder: text::StringBuilder, value: ExternFunction) -> u
         builder.write_string(param.0);
         builder.write_string(": ");
         pretty_write_type(builder, param.1);
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     builder.write_char(')');
     match value.ret_ty {

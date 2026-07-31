@@ -278,19 +278,19 @@ fn attribute(parser: Parser) -> unit {
 }
 
 fn attribute_body(parser: Parser) -> unit {
-    let depth = Ref::new(1);
-    while depth.get() > 0 && parser.eof() == false {
+    let mut depth = 1;
+    while depth > 0 && parser.eof() == false {
         if parser.at(lexer::TokenKind::LBracket) {
-            depth.set(depth.get() + 1);
+            depth += 1;
             parser.advance()
         } else if parser.at(lexer::TokenKind::RBracket) {
-            depth.set(depth.get() - 1);
+            depth -= 1;
             parser.advance()
         } else {
             parser.advance()
         }
     };
-    if depth.get() > 0 {
+    if depth > 0 {
         parser.error("unterminated attribute")
     } else {
         ()
@@ -857,7 +857,7 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                 Option::None
             },
             Some(initial) => {
-                let lhs = Ref::new(initial);
+                let mut lhs = initial;
                 while parser.eof() == false {
                     if parser.at(lexer::TokenKind::Arrow) {
                         let left_bp = 5;
@@ -865,20 +865,20 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                         if left_bp < min_bp {
                             break
                         } else {
-                            let marker = lhs.get().precede(parser);
+                            let marker = lhs.precede(parser);
                             parser.expect(lexer::TokenKind::Arrow);
                             if marker_is_none(type_expr_bp(parser, right_bp)) {
                                 parser.error("expected a return type")
                             } else {
                                 ()
                             };
-                            lhs.set(marker.completed(parser, cst::NodeKind::TYPE_FUNC))
+                            lhs = marker.completed(parser, cst::NodeKind::TYPE_FUNC);
                         }
                     } else {
                         break
                     }
                 };
-                let result = lhs.get();
+                let result = lhs;
                 parser.leave_type();
                 Option::Some(result)
             },
@@ -1043,12 +1043,12 @@ fn block(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
     let previous = parser.set_struct_literals_allowed(true);
-    let trailing_expr_seen = Ref::new(false);
-    let parsing = Ref::new(true);
-    while parsing.get() && parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
-        if trailing_expr_seen.get() {
+    let mut trailing_expr_seen = false;
+    let mut parsing = true;
+    while parsing && parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
+        if trailing_expr_seen {
             parser.advance_with_error("expected `}` after block expression");
-            parsing.set(false)
+            parsing = false;
         } else if parser.at(lexer::TokenKind::LetKeyword) {
             let _ = let_stmt(parser);
             ()
@@ -1077,17 +1077,20 @@ fn block(parser: Parser) -> unit {
                             let _ = wrap_expr_stmt(parser, expr_marker);
                             ()
                         } else {
-                            trailing_expr_seen.set(true)
+                            trailing_expr_seen = true;
                         },
                     }
                 },
-                None => parsing.set(false),
+                None => {
+                    parsing = false;
+                    ()
+                },
             }
         } else if parser.eat(lexer::TokenKind::Semi) {
             ()
         } else if is_block_recovery(parser.peek()) {
             parser.error("expected `}` to close block");
-            parsing.set(false)
+            parsing = false;
         } else {
             parser.advance_with_error("expected a statement or expression")
         }

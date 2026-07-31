@@ -15,28 +15,28 @@ fn newline(builder: text::StringBuilder, indent: int) -> unit {
 }
 
 fn write_joined_strings(builder: text::StringBuilder, values: Vec[string], separator: string) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         builder.write_string(value);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
 fn write_types(builder: text::StringBuilder, values: Vec[TypeExpr], separator: string) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         write_type(builder, value);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -111,15 +111,15 @@ fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
 }
 
 fn write_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef], separator: string) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         write_trait_ref(builder, value);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -134,13 +134,13 @@ fn write_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
 }
 
 fn find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Option[Vec[TraitRef]] {
-    let index = Ref::new(values.len() - 1);
-    while index.get() >= 0 {
-        let value = values[index.get()];
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
         if value.0 == name {
             return Option::Some(value.1)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -153,9 +153,9 @@ fn write_bounded_generics(
 ) -> unit {
     if generics.len() > 0 {
         builder.write_char('[');
-        let index = Ref::new(0);
+        let mut index = 0;
         for generic in generics {
-            if index.get() > 0 {
+            if index > 0 {
                 builder.write_string(", ")
             } else {
                 ()
@@ -172,7 +172,7 @@ fn write_bounded_generics(
                 },
                 None => (),
             };
-            index.set(index.get() + 1)
+            index = index + 1;
         };
         builder.write_char(']')
     } else {
@@ -183,9 +183,9 @@ fn write_bounded_generics(
 fn write_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
     if values.len() > 0 {
         builder.write_string(" where ");
-        let index = Ref::new(0);
+        let mut index = 0;
         for value in values {
-            if index.get() > 0 {
+            if index > 0 {
                 builder.write_string(", ")
             } else {
                 ()
@@ -202,7 +202,7 @@ fn write_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> uni
                     write_type(builder, rhs)
                 },
             };
-            index.set(index.get() + 1)
+            index = index + 1;
         }
     } else {
         ()
@@ -302,11 +302,11 @@ fn hex_digit(value: uint8) -> char {
 }
 
 fn decimal_byte(value: string) -> uint8 {
-    let result = Ref::new(0);
+    let mut result = 0;
     for index in 0..value.byte_len() {
-        result.set(result.get() * 10 + (value.byte_get(index) - 48) as int)
+        result = result * 10 + (value.byte_get(index) - 48) as int;
     };
-    result.get() as uint8
+    result as uint8
 }
 
 fn write_byte_literal(builder: text::StringBuilder, value: string) -> unit {
@@ -330,9 +330,9 @@ fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
 
 fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"');
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
         if byte == 34 {
             builder.write_string("\\\"")
         } else if byte == 92 {
@@ -349,17 +349,17 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
             write_control_escape(builder, byte)
         } else {
             let width = utf8_width(byte);
-            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+            builder.write_string(value.byte_slice(index, index + width))
         };
-        index.set(index.get() + utf8_width(byte))
+        index = index + utf8_width(byte);
     };
     builder.write_char('"')
 }
 
 fn write_interpolated_text(builder: text::StringBuilder, value: string) -> unit {
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
         if byte == 34 {
             builder.write_string("\\\"")
         } else if byte == 92 {
@@ -376,9 +376,9 @@ fn write_interpolated_text(builder: text::StringBuilder, value: string) -> unit 
             builder.write_string("}}")
         } else {
             let width = utf8_width(byte);
-            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+            builder.write_string(value.byte_slice(index, index + width))
         };
-        index.set(index.get() + utf8_width(byte))
+        index = index + utf8_width(byte);
     }
 }
 
@@ -414,15 +414,15 @@ fn binary_symbol(value: ast::BinaryOp) -> string {
 }
 
 fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], separator: string, indent: int) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         write_expr(builder, value, indent);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -591,9 +591,9 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                 } {
                 builder.write_char('}')
             } else {
-                let index = Ref::new(0);
+                let mut index = 0;
                 for field in fields {
-                    if index.get() > 0 {
+                    if index > 0 {
                         builder.write_char(',')
                     } else {
                         ()
@@ -602,11 +602,11 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                     builder.write_string(field.0);
                     builder.write_string(": ");
                     write_expr(builder, field.1, indent + 4);
-                    index.set(index.get() + 1)
+                    index = index + 1;
                 };
                 match base {
                     Some(value) => {
-                        if index.get() > 0 {
+                        if index > 0 {
                             builder.write_char(',')
                         } else {
                             ()
@@ -638,9 +638,9 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
         },
         HashMapLiteral { entries } => {
             builder.write_string("HashMap::{");
-            let index = Ref::new(0);
+            let mut index = 0;
             for entry in entries {
-                if index.get() > 0 {
+                if index > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
@@ -648,15 +648,15 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                 write_expr(builder, entry.0, indent);
                 builder.write_string(" => ");
                 write_expr(builder, entry.1, indent);
-                index.set(index.get() + 1)
+                index = index + 1;
             };
             builder.write_char('}')
         },
         Closure { params, body } => {
             builder.write_char('|');
-            let index = Ref::new(0);
+            let mut index = 0;
             for param in params {
-                if index.get() > 0 {
+                if index > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
@@ -669,7 +669,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                     },
                     None => (),
                 };
-                index.set(index.get() + 1)
+                index = index + 1;
             };
             builder.write_string("| ");
             write_expr(builder, body, indent)
@@ -814,15 +814,15 @@ fn pat_is_or(value: Pat) -> bool {
 }
 
 fn write_pats(builder: text::StringBuilder, values: Vec[Pat], separator: string, indent: int) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(separator)
         } else {
             ()
         };
         write_pat(builder, value, indent);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -862,9 +862,9 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
                 builder.write_string(" {}")
             } else {
                 builder.write_string(" { ");
-                let index = Ref::new(0);
+                let mut index = 0;
                 for field in fields {
-                    if index.get() > 0 {
+                    if index > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -872,10 +872,10 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
                     builder.write_string(field.0);
                     builder.write_string(": ");
                     write_pat(builder, field.1, indent);
-                    index.set(index.get() + 1)
+                    index = index + 1;
                 };
                 if has_rest {
-                    if index.get() > 0 {
+                    if index > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -894,19 +894,19 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
         },
         Array { prefix, rest, suffix } => {
             builder.write_char('[');
-            let count = Ref::new(0);
+            let mut count = 0;
             for value in prefix {
-                if count.get() > 0 {
+                if count > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
                 };
                 write_pat(builder, value, indent);
-                count.set(count.get() + 1)
+                count = count + 1;
             };
             match rest {
                 Some(value) => {
-                    if count.get() > 0 {
+                    if count > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -918,18 +918,18 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
                         },
                         None => builder.write_string(".."),
                     };
-                    count.set(count.get() + 1)
+                    count = count + 1;
                 },
                 None => (),
             };
             for value in suffix {
-                if count.get() > 0 {
+                if count > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
                 };
                 write_pat(builder, value, indent);
-                count.set(count.get() + 1)
+                count = count + 1;
             };
             builder.write_char(']')
         },
@@ -966,9 +966,9 @@ fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) -> unit
     builder.write_string(value.name);
     write_generics(builder, value.generics);
     builder.write_string(" {");
-    let index = Ref::new(0);
+    let mut index = 0;
     for variant in value.variants {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_char(',')
         } else {
             ()
@@ -984,9 +984,9 @@ fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) -> unit
             },
             Struct(fields) => {
                 builder.write_string(" { ");
-                let field_index = Ref::new(0);
+                let mut field_index = 0;
                 for field in fields {
-                    if field_index.get() > 0 {
+                    if field_index > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -994,12 +994,12 @@ fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) -> unit
                     builder.write_string(field.0);
                     builder.write_string(": ");
                     write_type(builder, field.1);
-                    field_index.set(field_index.get() + 1)
+                    field_index = field_index + 1;
                 };
                 builder.write_string(" }")
             },
         };
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     newline(builder, indent);
     builder.write_char('}')
@@ -1073,9 +1073,9 @@ fn write_function(builder: text::StringBuilder, value: Function, indent: int) ->
     builder.write_string(value.name);
     write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
-    let index = Ref::new(0);
+    let mut index = 0;
     for param in value.params {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(", ")
         } else {
             ()
@@ -1083,7 +1083,7 @@ fn write_function(builder: text::StringBuilder, value: Function, indent: int) ->
         write_local_debug(builder, param.0);
         builder.write_string(": ");
         write_type(builder, param.1);
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     builder.write_char(')');
     match value.ret_ty {
@@ -1104,9 +1104,9 @@ fn write_extern(builder: text::StringBuilder, value: ExternFunction) -> unit {
     builder.write_string(value.name);
     write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
-    let index = Ref::new(0);
+    let mut index = 0;
     for param in value.params {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(", ")
         } else {
             ()
@@ -1114,7 +1114,7 @@ fn write_extern(builder: text::StringBuilder, value: ExternFunction) -> unit {
         builder.write_string(param.0);
         builder.write_string(": ");
         write_type(builder, param.1);
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     builder.write_char(')');
     match value.ret_ty {
@@ -1211,16 +1211,16 @@ fn encode_file(value: File) -> string {
     newline(builder, 0);
     builder.write_string("file ");
     builder.write_string(value.path);
-    let index = Ref::new(0);
+    let mut index = 0;
     for item in value.items {
-        if index.get() == 0 {
+        if index == 0 {
             newline(builder, 2)
         } else {
             newline(builder, 4);
             newline(builder, 4)
         };
         write_item(builder, item, 4);
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     builder.finish()
 }

@@ -84,35 +84,35 @@ fn input_peek(parser: Parser) -> lexer::TokenKind {
 }
 
 fn input_nth(parser: Parser, offset: int) -> lexer::TokenKind {
-    let index = Ref::new(parser.cursor.get());
-    let remaining = Ref::new(offset);
-    while index.get() < parser.tokens.len() {
-        let kind = parser.tokens[index.get()].kind;
+    let mut index = parser.cursor.get();
+    let mut remaining = offset;
+    while index < parser.tokens.len() {
+        let kind = parser.tokens[index].kind;
         if lexer::token_is_trivia(kind) {
             ()
-        } else if remaining.get() == 0 {
+        } else if remaining == 0 {
             return kind
         } else {
-            remaining.set(remaining.get() - 1)
+            remaining = remaining - 1;
         };
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     lexer::TokenKind::Eof
 }
 
 fn input_nth_text(parser: Parser, offset: int) -> string {
-    let index = Ref::new(parser.cursor.get());
-    let remaining = Ref::new(offset);
-    while index.get() < parser.tokens.len() {
-        let token = parser.tokens[index.get()];
+    let mut index = parser.cursor.get();
+    let mut remaining = offset;
+    while index < parser.tokens.len() {
+        let token = parser.tokens[index];
         if lexer::token_is_trivia(token.kind) {
             ()
-        } else if remaining.get() == 0 {
+        } else if remaining == 0 {
             return token.text
         } else {
-            remaining.set(remaining.get() - 1)
+            remaining = remaining - 1;
         };
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     ""
 }
@@ -202,45 +202,45 @@ impl Parser {
 
     pub fn bracket_is_followed_by_colon_colon(self: Parser, offset: int) -> bool {
         input_eat_trivia(self);
-        let index = Ref::new(self.cursor.get());
-        let remaining = Ref::new(offset);
-        while index.get() < self.tokens.len() {
-            let kind = self.tokens[index.get()].kind;
+        let mut index = self.cursor.get();
+        let mut remaining = offset;
+        while index < self.tokens.len() {
+            let kind = self.tokens[index].kind;
             if lexer::token_is_trivia(kind) {
-                index.set(index.get() + 1)
-            } else if remaining.get() > 0 {
-                remaining.set(remaining.get() - 1);
-                index.set(index.get() + 1)
+                index = index + 1;
+            } else if remaining > 0 {
+                remaining = remaining - 1;
+                index = index + 1;
             } else {
                 break
             }
         };
-        if index.get() >= self.tokens.len()
-            || !token_is(self.tokens[index.get()].kind, lexer::TokenKind::LBracket) {
+        if index >= self.tokens.len()
+            || !token_is(self.tokens[index].kind, lexer::TokenKind::LBracket) {
             false
         } else {
-            let depth = Ref::new(0);
-            while index.get() < self.tokens.len() {
-                let kind = self.tokens[index.get()].kind;
+            let mut depth = 0;
+            while index < self.tokens.len() {
+                let kind = self.tokens[index].kind;
                 if token_is(kind, lexer::TokenKind::LBracket) {
-                    depth.set(depth.get() + 1)
+                    depth += 1;
                 } else if token_is(kind, lexer::TokenKind::RBracket) {
-                    depth.set(depth.get() - 1);
-                    if depth.get() == 0 {
-                        index.set(index.get() + 1);
-                        while index.get() < self.tokens.len()
-                            && lexer::token_is_trivia(self.tokens[index.get()].kind) {
-                            index.set(index.get() + 1)
+                    depth -= 1;
+                    if depth == 0 {
+                        index = index + 1;
+                        while index < self.tokens.len()
+                            && lexer::token_is_trivia(self.tokens[index].kind) {
+                            index = index + 1;
                         };
-                        return index.get() < self.tokens.len()
-                            && token_is(self.tokens[index.get()].kind, lexer::TokenKind::ColonColon)
+                        return index < self.tokens.len()
+                            && token_is(self.tokens[index].kind, lexer::TokenKind::ColonColon)
                     } else {
                         ()
                     }
                 } else {
                     ()
                 };
-                index.set(index.get() + 1)
+                index = index + 1;
             };
             false
         }
@@ -467,11 +467,11 @@ fn element_byte_len(element: cst::CstElement) -> int {
 fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
     match stack.pop() {
         Some(value) => {
-            let byte_len = Ref::new(0);
+            let mut byte_len = 0;
             for child in value.children {
-                byte_len.set(byte_len.get() + element_byte_len(child))
+                byte_len = byte_len + element_byte_len(child);
             };
-            let complete = cst::node(value.kind, value.children, byte_len.get());
+            let complete = cst::node(value.kind, value.children, byte_len);
             if stack.len() > 0 {
                 stack[stack.len() - 1].children.push(cst::CstElement::Node(complete))
             } else {
@@ -498,29 +498,29 @@ fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
 }
 
 fn build_tree(parser: Parser) -> cst::ParseResult {
-    let cursor = Ref::new(0);
+    let mut cursor = 0;
     let stack: Vec[cst::CstNode] = Vec::new();
     let roots: Vec[cst::CstNode] = Vec::new();
-    let index = Ref::new(0);
-    while index.get() < parser.events.len() {
-        let event = parser.events[index.get()];
-        parser.events[index.get()] = event_tombstone();
+    let mut index = 0;
+    while index < parser.events.len() {
+        let event = parser.events[index];
+        parser.events[index] = event_tombstone();
         match event {
             Open { kind, forward_parent } => {
                 let kinds: Vec[cst::NodeKind] = Vec::new();
                 kinds.push(kind);
-                let event_index = Ref::new(index.get());
-                let parent = Ref::new(forward_parent);
+                let mut event_index = index;
+                let mut parent = forward_parent;
                 while true {
-                    match parent.get() {
+                    match parent {
                         Some(distance) => {
-                            event_index.set(event_index.get() + distance);
-                            let parent_event = parser.events[event_index.get()];
-                            parser.events[event_index.get()] = event_tombstone();
+                            event_index = event_index + distance;
+                            let parent_event = parser.events[event_index];
+                            parser.events[event_index] = event_tombstone();
                             match event_open(parent_event) {
                                 Some((parent_kind, next)) => {
                                     kinds.push(parent_kind);
-                                    parent.set(next)
+                                    parent = next;
                                 },
                                 None => break,
                             }
@@ -528,29 +528,29 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                         None => break,
                     }
                 };
-                let kind_index = Ref::new(kinds.len() - 1);
-                while kind_index.get() >= 0 {
-                    let current = kinds[kind_index.get()];
+                let mut kind_index = kinds.len() - 1;
+                while kind_index >= 0 {
+                    let current = kinds[kind_index];
                     if cst::node_kind_equal(current, cst::NodeKind::TombStone) == false {
                         stack.push(cst::node(current, Vec::new(), 0))
                     } else {
                         ()
                     };
-                    kind_index.set(kind_index.get() - 1)
+                    kind_index = kind_index - 1;
                 }
             },
             Close => finish_node(stack, roots),
             Advance => {
-                if cursor.get() < parser.tokens.len() {
-                    push_token(stack, parser.tokens[cursor.get()]);
-                    cursor.set(cursor.get() + 1)
+                if cursor < parser.tokens.len() {
+                    push_token(stack, parser.tokens[cursor]);
+                    cursor = cursor + 1;
                 } else {
                     ()
                 }
             },
             Error(message) => {
-                let range = if cursor.get() < parser.tokens.len() {
-                    let token = parser.tokens[cursor.get()];
+                let range = if cursor < parser.tokens.len() {
+                    let token = parser.tokens[cursor];
                     (token.start, token.end)
                 } else if parser.tokens.len() > 0 {
                     let token = parser.tokens[parser.tokens.len() - 1];
@@ -562,12 +562,11 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 parser.diagnostics.push(cst::diagnostic(message, start, end))
             },
         };
-        while cursor.get() < parser.tokens.len()
-            && lexer::token_is_trivia(parser.tokens[cursor.get()].kind) {
-            push_token(stack, parser.tokens[cursor.get()]);
-            cursor.set(cursor.get() + 1)
+        while cursor < parser.tokens.len() && lexer::token_is_trivia(parser.tokens[cursor].kind) {
+            push_token(stack, parser.tokens[cursor]);
+            cursor = cursor + 1;
         };
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     let root = if roots.len() > 0 {
         roots[0]

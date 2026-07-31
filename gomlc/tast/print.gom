@@ -60,9 +60,9 @@ fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
 
 fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"');
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
         if byte == 34 {
             builder.write_string("\\\"")
         } else if byte == 92 {
@@ -79,9 +79,9 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
             write_control_escape(builder, byte)
         } else {
             let width = utf8_width(byte);
-            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+            builder.write_string(value.byte_slice(index, index + width))
         };
-        index.set(index.get() + utf8_width(byte))
+        index = index + utf8_width(byte);
     };
     builder.write_char('"')
 }
@@ -110,15 +110,15 @@ fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
 }
 
 fn write_types(builder: text::StringBuilder, values: Vec[Type]) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(", ")
         } else {
             ()
         };
         write_type(builder, value);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -386,15 +386,15 @@ fn write_callable(builder: text::StringBuilder, value: Callable) -> unit {
 }
 
 fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], indent: int) -> unit {
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in values {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string(", ")
         } else {
             ()
         };
         write_expr(builder, value, indent);
-        index.set(index.get() + 1)
+        index = index + 1;
     }
 }
 
@@ -733,19 +733,19 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
         },
         Array { prefix, rest, suffix, ty: _ } => {
             builder.write_char('[');
-            let count = Ref::new(0);
+            let mut count = 0;
             for value in prefix {
-                if count.get() > 0 {
+                if count > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
                 };
                 write_pat(builder, value, indent);
-                count.set(count.get() + 1)
+                count = count + 1;
             };
             match rest {
                 Some(value) => {
-                    if count.get() > 0 {
+                    if count > 0 {
                         builder.write_string(", ")
                     } else {
                         ()
@@ -757,18 +757,18 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
                         },
                         None => builder.write_string(".."),
                     };
-                    count.set(count.get() + 1)
+                    count = count + 1;
                 },
                 None => (),
             };
             for value in suffix {
-                if count.get() > 0 {
+                if count > 0 {
                     builder.write_string(", ")
                 } else {
                     ()
                 };
                 write_pat(builder, value, indent);
-                count.set(count.get() + 1)
+                count = count + 1;
             };
             builder.write_char(']')
         },

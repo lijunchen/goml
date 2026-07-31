@@ -66,17 +66,15 @@ fn array_literal(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
     let previous = parser.set_struct_literals_allowed(true);
-    let parsing = Ref::new(
-        parser.at(lexer::TokenKind::RBracket) == false && parser.eof() == false
-            && expect_expr_with_message(parser, "expected an expression in array literal"),
-    );
-    while parsing.get() && parser.at(lexer::TokenKind::Comma) {
+    let mut parsing = parser.at(lexer::TokenKind::RBracket) == false && parser.eof() == false
+        && expect_expr_with_message(parser, "expected an expression in array literal");
+    while parsing && parser.at(lexer::TokenKind::Comma) {
         parser.expect(lexer::TokenKind::Comma);
         if parser.at(lexer::TokenKind::RBracket) {
-            parsing.set(false)
+            parsing = false;
         } else if expect_expr_with_message(parser, "expected an expression in array literal")
             == false {
-            parsing.set(false)
+            parsing = false;
         } else {
             ()
         }
@@ -103,18 +101,18 @@ fn vec_literal(parser: Parser) -> MarkerClosed {
     parser.expect(lexer::TokenKind::ColonColon);
     parser.expect(lexer::TokenKind::LBracket);
     let previous = parser.set_struct_literals_allowed(true);
-    let parsing = Ref::new(parser.at(lexer::TokenKind::RBracket) == false);
-    while parsing.get() && parser.eof() == false {
+    let mut parsing = parser.at(lexer::TokenKind::RBracket) == false;
+    while parsing && parser.eof() == false {
         if expect_expr_with_message(parser, "expected an expression in Vec literal") == false {
-            parsing.set(false)
+            parsing = false;
         } else if parser.eat(lexer::TokenKind::Comma) {
             if parser.at(lexer::TokenKind::RBracket) {
-                parsing.set(false)
+                parsing = false;
             } else {
                 ()
             }
         } else {
-            parsing.set(false)
+            parsing = false;
         }
     };
     parser.expect(lexer::TokenKind::RBracket);
@@ -137,17 +135,17 @@ fn hashmap_literal(parser: Parser) -> MarkerClosed {
     parser.expect(lexer::TokenKind::ColonColon);
     parser.expect(lexer::TokenKind::LBrace);
     let previous = parser.set_struct_literals_allowed(true);
-    let parsing = Ref::new(parser.at(lexer::TokenKind::RBrace) == false);
-    while parsing.get() && parser.eof() == false {
+    let mut parsing = parser.at(lexer::TokenKind::RBrace) == false;
+    while parsing && parser.eof() == false {
         hashmap_literal_entry(parser);
         if parser.eat(lexer::TokenKind::Comma) {
             if parser.at(lexer::TokenKind::RBrace) {
-                parsing.set(false)
+                parsing = false;
             } else {
                 ()
             }
         } else {
-            parsing.set(false)
+            parsing = false;
         }
     };
     parser.expect(lexer::TokenKind::RBrace);
@@ -429,32 +427,35 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
 }
 
 fn path_has_type_args(parser: Parser) -> bool {
-    let index = Ref::new(1);
-    while token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
-        && token_is(parser.nth(index.get() + 1), lexer::TokenKind::Ident) {
-        index.set(index.get() + 2)
+    let mut index = 1;
+    while token_is(parser.nth(index), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(index + 1), lexer::TokenKind::Ident) {
+        index = index + 2;
     };
-    token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
-        && token_is(parser.nth(index.get() + 1), lexer::TokenKind::LBracket)
+    token_is(parser.nth(index), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(index + 1), lexer::TokenKind::LBracket)
 }
 
 fn path_has_legacy_type_args(parser: Parser) -> bool {
-    let index = Ref::new(1);
-    while token_is(parser.nth(index.get()), lexer::TokenKind::ColonColon)
-        && token_is(parser.nth(index.get() + 1), lexer::TokenKind::Ident) {
-        index.set(index.get() + 2)
+    let mut index = 1;
+    while token_is(parser.nth(index), lexer::TokenKind::ColonColon)
+        && token_is(parser.nth(index + 1), lexer::TokenKind::Ident) {
+        index = index + 2;
     };
-    if token_is(parser.nth(index.get()), lexer::TokenKind::LBracket) == false {
+    if token_is(parser.nth(index), lexer::TokenKind::LBracket) == false {
         false
     } else {
-        let depth = Ref::new(0);
+        let mut depth = 0;
         while true {
-            match parser.nth(index.get()) {
-                LBracket => depth.set(depth.get() + 1),
+            match parser.nth(index) {
+                LBracket => {
+                    depth += 1;
+                    ()
+                },
                 RBracket => {
-                    depth.set(depth.get() - 1);
-                    if depth.get() == 0 {
-                        return token_is(parser.nth(index.get() + 1), lexer::TokenKind::ColonColon)
+                    depth -= 1;
+                    if depth == 0 {
+                        return token_is(parser.nth(index + 1), lexer::TokenKind::ColonColon)
                     } else {
                         ()
                     }
@@ -462,7 +463,7 @@ fn path_has_legacy_type_args(parser: Parser) -> bool {
                 Eof => return false,
                 _ => (),
             };
-            index.set(index.get() + 1)
+            index = index + 1;
         };
         false
     }
@@ -716,15 +717,15 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                 Option::None
             },
             Some(value) => {
-                let lhs = Ref::new(value);
-                let parsed_range = Ref::new(false);
-                let parsed_comparison = Ref::new(false);
+                let mut lhs = value;
+                let mut parsed_range = false;
+                let mut parsed_comparison = false;
                 while parser.eof() == false {
                     let operator = parser.peek();
                     if token_is(operator, lexer::TokenKind::DotDot) {
                         if min_bp > 0 {
                             break
-                        } else if parsed_range.get() {
+                        } else if parsed_range {
                             parser.advance_with_error("range expressions cannot be chained");
                             expect_expr_bp_with_message(
                                 parser,
@@ -732,25 +733,25 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                 "expected a range endpoint after `..`",
                             );
                         } else {
-                            let marker = lhs.get().precede(parser);
+                            let marker = lhs.precede(parser);
                             parser.advance();
                             expect_expr_bp_with_message(
                                 parser,
                                 1,
                                 "expected a range endpoint after `..`",
                             );
-                            lhs.set(marker.completed(parser, cst::NodeKind::EXPR_RANGE));
-                            parsed_range.set(true)
+                            lhs = marker.completed(parser, cst::NodeKind::EXPR_RANGE);
+                            parsed_range = true;
                         }
                     } else if token_is(operator, lexer::TokenKind::AsKeyword) {
                         let left_bp = 17;
                         if left_bp < min_bp {
                             break
                         } else {
-                            let marker = lhs.get().precede(parser);
+                            let marker = lhs.precede(parser);
                             parser.advance();
                             type_expr(parser);
-                            lhs.set(marker.completed(parser, cst::NodeKind::EXPR_CAST))
+                            lhs = marker.completed(parser, cst::NodeKind::EXPR_CAST);
                         }
                     } else {
                         match postfix_binding_power(operator) {
@@ -758,11 +759,11 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                 if left_bp < min_bp {
                                     break
                                 } else if parser.at(lexer::TokenKind::LParen) {
-                                    let marker = lhs.get().precede(parser);
+                                    let marker = lhs.precede(parser);
                                     arg_list(parser);
-                                    lhs.set(marker.completed(parser, cst::NodeKind::EXPR_CALL))
+                                    lhs = marker.completed(parser, cst::NodeKind::EXPR_CALL);
                                 } else if parser.at(lexer::TokenKind::LBracket) {
-                                    let marker = lhs.get().precede(parser);
+                                    let marker = lhs.precede(parser);
                                     parser.expect(lexer::TokenKind::LBracket);
                                     let previous = parser.set_struct_literals_allowed(true);
                                     if is_expr_first(parser.peek()) {
@@ -777,11 +778,11 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                     };
                                     parser.expect(lexer::TokenKind::RBracket);
                                     parser.set_struct_literals_allowed(previous);
-                                    lhs.set(marker.completed(parser, cst::NodeKind::EXPR_INDEX))
+                                    lhs = marker.completed(parser, cst::NodeKind::EXPR_INDEX);
                                 } else if parser.at(lexer::TokenKind::Question) {
-                                    let marker = lhs.get().precede(parser);
+                                    let marker = lhs.precede(parser);
                                     parser.advance();
-                                    lhs.set(marker.completed(parser, cst::NodeKind::EXPR_TRY))
+                                    lhs = marker.completed(parser, cst::NodeKind::EXPR_TRY);
                                 } else {
                                     parser.advance_with_error(
                                         "unexpected postfix operator "
@@ -793,7 +794,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                 Some((left_bp, right_bp)) => {
                                     if left_bp < min_bp {
                                         break
-                                    } else if is_comparison(operator) && parsed_comparison.get() {
+                                    } else if is_comparison(operator) && parsed_comparison {
                                         parser.advance_with_error(
                                             "comparison operators cannot be chained",
                                         );
@@ -803,18 +804,16 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                             "expected a right-hand side for comparison operator",
                                         );
                                     } else {
-                                        let marker = lhs.get().precede(parser);
+                                        let marker = lhs.precede(parser);
                                         parser.advance();
                                         expect_expr_bp_with_message(
                                             parser,
                                             right_bp,
                                             "expected a right-hand side for binary operator",
                                         );
-                                        lhs.set(
-                                            marker.completed(parser, cst::NodeKind::EXPR_BINARY),
-                                        );
+                                        lhs = marker.completed(parser, cst::NodeKind::EXPR_BINARY);
                                         if is_comparison(operator) {
-                                            parsed_comparison.set(true)
+                                            parsed_comparison = true;
                                         } else {
                                             ()
                                         }
@@ -825,7 +824,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                         }
                     }
                 };
-                let result = lhs.get();
+                let result = lhs;
                 parser.leave_expr();
                 Option::Some(result)
             },

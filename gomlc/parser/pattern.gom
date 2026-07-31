@@ -206,19 +206,19 @@ fn ident_pattern(parser: Parser) -> MarkerClosed {
 fn array_pattern(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
-    let has_rest = Ref::new(false);
+    let mut has_rest = false;
     while parser.eof() == false && parser.at(lexer::TokenKind::RBracket) == false {
         let bound_rest = parser.at(lexer::TokenKind::Ident)
             && token_is(parser.nth(1), lexer::TokenKind::At)
             && token_is(parser.nth(2), lexer::TokenKind::DotDot);
         if parser.at(lexer::TokenKind::DotDot) || bound_rest {
-            if has_rest.get() {
+            if has_rest {
                 parser.error("array pattern can contain at most one `..`")
             } else {
                 ()
             };
             let _ = rest_pattern(parser);
-            has_rest.set(true)
+            has_rest = true;
         } else if is_pattern_first(parser.peek()) {
             let _ = pattern(parser);
         } else {
@@ -256,16 +256,16 @@ fn rest_pattern(parser: Parser) -> MarkerClosed {
 fn struct_pattern_field_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
-    let has_rest = Ref::new(false);
+    let mut has_rest = false;
     while parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
         if parser.at(lexer::TokenKind::DotDot) {
-            if has_rest.get() {
+            if has_rest {
                 parser.error("struct pattern can contain at most one `..`")
             } else {
                 ()
             };
             let _ = rest_pattern(parser);
-            has_rest.set(true);
+            has_rest = true;
             parser.eat(lexer::TokenKind::Comma);
             if parser.at(lexer::TokenKind::RBrace) == false {
                 parser.error("`..` must be the last item in a struct pattern")
