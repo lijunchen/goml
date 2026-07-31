@@ -4,7 +4,7 @@ use gomlc::core;
 
 fn parse_digits(value: string, start: int) -> int {
     let result = Ref::new(0);
-    for index in range(start, value.byte_len()) {
+    for index in start..value.byte_len() {
         let byte = value.byte_get(index);
         let digit = if byte == 48 {
             0
@@ -33,7 +33,7 @@ fn parse_digits(value: string, start: int) -> int {
 }
 
 fn trailing_number(value: string) -> Option[int] {
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 47 {
             return Option::None
         } else {

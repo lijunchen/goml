@@ -4,7 +4,7 @@ use gomlc::lexer;
 
 fn whitespace_newlines(value: string) -> int {
     let count: Ref[int] = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 10 {
             count.set(count.get() + 1)
         } else {

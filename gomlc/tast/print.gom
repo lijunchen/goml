@@ -4,7 +4,7 @@ use gomlc::ast;
 use std::text;
 
 fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char(' ')
     }
 }
@@ -410,7 +410,7 @@ fn write_constructor_expr(
             builder.write_string(" {}")
         } else {
             builder.write_string(" { ");
-            for index in range(0, args.len()) {
+            for index in 0..args.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -528,7 +528,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                 builder.write_string("||")
             } else {
                 builder.write_char('|');
-                for index in range(0, params.len()) {
+                for index in 0..params.len() {
                     if index > 0 {
                         builder.write_string(", ")
                     } else {
@@ -661,7 +661,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
 }
 
 fn write_pats(builder: text::StringBuilder, values: Vec[Pat], indent: int) -> unit {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
@@ -690,7 +690,7 @@ fn write_constructor_pat(
             builder.write_string(" {}")
         } else {
             builder.write_string(" { ");
-            for index in range(0, args.len()) {
+            for index in 0..args.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -784,7 +784,7 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
             }
         },
         Or { pats: values, ty: _ } => {
-            for index in range(0, values.len()) {
+            for index in 0..values.len() {
                 if index > 0 {
                     builder.write_string(" | ")
                 } else {
@@ -828,7 +828,7 @@ fn write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
 fn write_generics_from(builder: text::StringBuilder, values: Vec[string], start: int) -> unit {
     if start < values.len() {
         builder.write_char('[');
-        for index in range(start, values.len()) {
+        for index in start..values.len() {
             if index > start {
                 builder.write_string(", ")
             } else {
@@ -845,7 +845,7 @@ fn write_generics_from(builder: text::StringBuilder, values: Vec[string], start:
 fn write_predicates_from(builder: text::StringBuilder, values: Vec[TypePredicate], start: int) -> unit {
     if start < values.len() {
         builder.write_string(" where ");
-        for index in range(start, values.len()) {
+        for index in start..values.len() {
             if index > start {
                 builder.write_string(", ")
             } else {
@@ -880,7 +880,7 @@ fn write_function_from(
     builder.write_string(value.name);
     write_generics_from(builder, value.generics, generic_start);
     builder.write_char('(');
-    for index in range(0, value.params.len()) {
+    for index in 0..value.params.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
@@ -979,7 +979,7 @@ pub fn write_constant(builder: text::StringBuilder, value: Constant) -> unit {
 
 fn encode_file(value: File) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, value.constants.len()) {
+    for index in 0..value.constants.len() {
         if index > 0 {
             builder.write_char('\n')
         } else {
@@ -992,7 +992,7 @@ fn encode_file(value: File) -> string {
     } else {
         ()
     };
-    for index in range(0, value.items.len()) {
+    for index in 0..value.items.len() {
         if index > 0 {
             builder.write_string("\n\n")
         } else {

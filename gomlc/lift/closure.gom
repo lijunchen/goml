@@ -223,7 +223,7 @@ fn ascii_alphanumeric(value: uint8) -> bool {
 }
 
 fn primary_name(value: string) -> string {
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 47 {
             return value.byte_slice(0, index)
         } else {
@@ -238,7 +238,7 @@ fn sanitize_name(value: string) -> Option[string] {
     let builder = text::StringBuilder::new();
     let pending_separator = Ref::new(false);
     let wrote = Ref::new(false);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if ascii_alphanumeric(byte) {
             if pending_separator.get() && wrote.get() {
@@ -292,7 +292,7 @@ fn fresh_name(state: State, prefix: string) -> string {
 }
 
 fn trailing_number(value: string) -> Option[int] {
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 47 {
             return Option::None
         } else {
@@ -324,7 +324,7 @@ fn trailing_number(value: string) -> Option[int] {
 
 fn parse_digits(value: string, start: int) -> int {
     let result = Ref::new(0);
-    for index in range(start, value.byte_len()) {
+    for index in start..value.byte_len() {
         let byte = value.byte_get(index);
         let digit = if byte == 48 {
             0
@@ -746,7 +746,7 @@ fn collect_captured_block(
         added.set(added.get() + 1)
     };
     collect_captured_optional(value.tail, bound, captured, scope);
-    for _ in range(0, added.get()) {
+    for _ in 0..added.get() {
         let _ = bound.pop();
     }
 }
@@ -856,7 +856,7 @@ fn prepend_captures(
     constructor: tast::Constructor,
 ) -> core::Block {
     let stmts = Vec::new();
-    for index in range(0, captures.len()) {
+    for index in 0..captures.len() {
         let capture = captures[index];
         stmts.push(
             core::LetStmt {
@@ -895,7 +895,7 @@ fn transform_closure(
             let closure_scope = copy_scope(outer_scope);
             let lowered_params = Vec::new();
             let bound = Vec::new();
-            for index in range(0, params.len()) {
+            for index in 0..params.len() {
                 let param = params[index];
                 let param_ty = signature.0[index];
                 closure_scope.push(
@@ -926,7 +926,7 @@ fn transform_closure(
             let fields = Vec::new();
             let struct_fields: Vec[(string, tast::Type)] = Vec::new();
             let captured_args = Vec::new();
-            for index in range(0, captures.len()) {
+            for index in 0..captures.len() {
                 let capture = captures[index];
                 let field_name = make_field_name(capture.name, index);
                 fields.push(field_name);

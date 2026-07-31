@@ -22,7 +22,7 @@ fn artifact_builtin_interface_hash(world: PackageWorld) -> string {
 fn artifact_find_interface_unit(values: Vec[ArtifactInterfaceUnit], package_name: string) -> Option[
     ArtifactInterfaceUnit,
 ] {
-    for offset in range(0, values.len()) {
+    for offset in 0..values.len() {
         let value = values[values.len() - 1 - offset];
         if value.package_name == package_name {
             return Option::Some(value)
@@ -535,7 +535,7 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
     string,
 ] {
     let names = Vec::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let value = values[index];
         match value.ast {
             Some(file) => if !file.package_explicit {
@@ -583,7 +583,7 @@ fn artifact_validate_entrypoint(
 fn artifact_find_function(functions: Vec[ArtifactFnScheme], name: string) -> Option[
     ArtifactFnScheme,
 ] {
-    for offset in range(0, functions.len()) {
+    for offset in 0..functions.len() {
         let function = functions[functions.len() - 1 - offset];
         if function.name == name {
             return Option::Some(function)
@@ -666,7 +666,7 @@ fn artifact_use_has_explicit_alias(value: ast::LowerResult, package_name: string
 fn artifact_declared_package_alias(units: Vec[ArtifactInterfaceUnit], package_name: string) -> Option[
     string,
 ] {
-    for offset in range(0, units.len()) {
+    for offset in 0..units.len() {
         let interface_unit = units[units.len() - 1 - offset];
         if interface_unit.package_name == package_name
             && interface_unit.package_interface.name != "" {
@@ -683,9 +683,9 @@ fn artifact_apply_declared_package_aliases(
     sources: Vec[ast::LowerResult],
     units: Vec[ArtifactInterfaceUnit],
 ) -> unit {
-    for file_index in range(0, files.len()) {
+    for file_index in 0..files.len() {
         let file = files[file_index];
-        for alias_index in range(0, file.import_aliases.len()) {
+        for alias_index in 0..file.import_aliases.len() {
             let alias = file.import_aliases[alias_index];
             if artifact_use_has_explicit_alias(sources[file_index], alias.package_name) {
                 ()
@@ -718,7 +718,7 @@ fn standard_internal_import_diagnostics(
     package_name: string,
 ) -> Vec[tast::Diagnostic] {
     let diagnostics = Vec::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         match values[index].ast {
             Some(file) => for use_decl in file.uses {
                 let import_name = import_path_text(use_decl.path);
@@ -794,7 +794,7 @@ fn compile_artifact_package(
     fail_on_typer_diagnostics(parser_diagnostics, "", "");
     let ast_values = ast::lower_package(parsed);
     let lower_diagnostics: Vec[tast::Diagnostic] = Vec::new();
-    for index in range(0, ast_values.len()) {
+    for index in 0..ast_values.len() {
         for diagnostic in ast_diagnostics(
             ast_values[index].diagnostics,
             "lower",
@@ -816,7 +816,7 @@ fn compile_artifact_package(
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     let derive_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     let source_needs = Ref::new(no_standard_needs());
-    for index in range(0, ast_values.len()) {
+    for index in 0..ast_values.len() {
         let ast_value = ast_values[index];
         source_needs.set(merge_standard_needs(source_needs.get(), source_standard_needs(ast_value)));
         let expanded = hir::expand_derives(
@@ -991,7 +991,7 @@ fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[ArtifactCoreUnit],
 fn artifact_find_core_unit(values: Vec[ArtifactCoreUnit], package_name: string) -> Option[
     ArtifactCoreUnit,
 ] {
-    for offset in range(0, values.len()) {
+    for offset in 0..values.len() {
         let value = values[values.len() - 1 - offset];
         if value.package_name == package_name {
             return Option::Some(value)

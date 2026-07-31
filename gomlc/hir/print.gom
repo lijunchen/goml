@@ -4,7 +4,7 @@ use gomlc::ast;
 use std::text;
 
 fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char(' ')
     }
 }
@@ -303,7 +303,7 @@ fn hex_digit(value: uint8) -> char {
 
 fn decimal_byte(value: string) -> uint8 {
     let result = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         result.set(result.get() * 10 + (value.byte_get(index) - 48) as int)
     };
     result.get() as uint8

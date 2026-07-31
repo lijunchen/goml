@@ -116,7 +116,7 @@ fn cli_argument_name(argument: string) -> string {
         ()
     };
     let end = Ref::new(argument.byte_len());
-    for index in range(0, argument.byte_len()) {
+    for index in 0..argument.byte_len() {
         if end.get() == argument.byte_len() && argument.byte_get(index) == 61 {
             end.set(index)
         } else {
@@ -153,14 +153,14 @@ fn cli_maximum(left: int, right: int) -> int {
 
 fn cli_edit_distance(left: string, right: string) -> int {
     let initial = Vec::new();
-    for index in range(0, right.byte_len() + 1) {
+    for index in 0..right.byte_len() + 1 {
         initial.push(index)
     };
     let previous = Ref::new(initial);
-    for left_index in range(0, left.byte_len()) {
+    for left_index in 0..left.byte_len() {
         let current = Vec::new();
         current.push(left_index + 1);
-        for right_index in range(0, right.byte_len()) {
+        for right_index in 0..right.byte_len() {
             let substitution = if left.byte_get(left_index) == right.byte_get(right_index) {
                 previous.get()[right_index]
             } else {
@@ -447,14 +447,14 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
     let window = cli_maximum(cli_maximum(left.byte_len(), right.byte_len()) / 2 - 1, 0);
     let left_matches = Vec::new();
     let right_matches = Vec::new();
-    for _ in range(0, left.byte_len()) {
+    for _ in 0..left.byte_len() {
         left_matches.push(false)
     };
-    for _ in range(0, right.byte_len()) {
+    for _ in 0..right.byte_len() {
         right_matches.push(false)
     };
     let matches = Ref::new(0);
-    for left_index in range(0, left.byte_len()) {
+    for left_index in 0..left.byte_len() {
         let start = cli_maximum(left_index - window, 0);
         let end = cli_minimum(left_index + window + 1, right.byte_len(), right.byte_len());
         let right_index = Ref::new(start);
@@ -477,7 +477,7 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
     };
     let right_index = Ref::new(0);
     let mismatches = Ref::new(0);
-    for left_index in range(0, left.byte_len()) {
+    for left_index in 0..left.byte_len() {
         if left_matches[left_index] {
             while !(right_matches[right_index.get()]) {
                 right_index.set(right_index.get() + 1)
@@ -524,7 +524,7 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
             None => (),
         }
     };
-    for index in range(1, similar.len()) {
+    for index in 1..similar.len() {
         let value = similar[index];
         let target = Ref::new(index);
         while target.get() > 0
@@ -554,7 +554,7 @@ fn similar_subcommand_tip(values: Vec[string]) -> string {
                 "\n\n  tip: some similar subcommands exist: "
             },
         );
-        for index in range(0, values.len()) {
+        for index in 0..values.len() {
             if index > 0 {
                 builder.write_string(", ")
             } else {

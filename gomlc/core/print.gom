@@ -5,7 +5,7 @@ use gomlc::tast;
 use std::text;
 
 fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char(' ')
     }
 }
@@ -61,7 +61,7 @@ fn write_exprs(
     mono_style: bool,
     flatten_blocks: bool,
 ) -> unit {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
@@ -85,7 +85,7 @@ fn write_constructor(
             builder.write_string(" {}")
         } else if constructor.fields.len() == args.len() {
             builder.write_string(" { ");
-            for index in range(0, args.len()) {
+            for index in 0..args.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -127,7 +127,7 @@ fn write_block_contents(
             None => builder.write_string("()"),
         }
     } else {
-        for index in range(0, value.stmts.len()) {
+        for index in 0..value.stmts.len() {
             if index > 0 {
                 newline(builder, indent)
             } else {
@@ -211,7 +211,7 @@ fn write_expr(
         Closure { params, body, ty: _ } => {
             builder.write_char('|');
             if params.len() > 0 {
-                for index in range(0, params.len()) {
+                for index in 0..params.len() {
                     if index > 0 {
                         builder.write_string(", ")
                     } else {
@@ -404,7 +404,7 @@ fn write_function(
     builder.write_string(value.name);
     if value.generics.len() > 0 {
         builder.write_char('[');
-        for index in range(0, value.generics.len()) {
+        for index in 0..value.generics.len() {
             if index > 0 {
                 builder.write_string(", ")
             } else {
@@ -417,7 +417,7 @@ fn write_function(
         ()
     };
     builder.write_char('(');
-    for index in range(0, value.params.len()) {
+    for index in 0..value.params.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
@@ -439,7 +439,7 @@ fn write_function(
 
 fn encode_with_style(value: File, mono_style: bool, flatten_blocks: bool) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, value.constants.len()) {
+    for index in 0..value.constants.len() {
         if index > 0 {
             builder.write_char('\n')
         } else {
@@ -452,7 +452,7 @@ fn encode_with_style(value: File, mono_style: bool, flatten_blocks: bool) -> str
     } else {
         ()
     };
-    for index in range(0, value.functions.len()) {
+    for index in 0..value.functions.len() {
         if index > 0 {
             builder.write_string("\n\n")
         } else {

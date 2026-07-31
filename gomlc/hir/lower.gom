@@ -151,7 +151,7 @@ fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec
         for alias in aliases {
             if alias.alias == target[0] {
                 let expanded = copy_strings(alias.target);
-                for index in range(1, target.len()) {
+                for index in 1..target.len() {
                     expanded.push(target[index])
                 };
                 return Option::Some(expanded)
@@ -191,9 +191,9 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
             },
         }
     };
-    for index in range(0, aliases.len()) {
+    for index in 0..aliases.len() {
         let current = aliases[index];
-        for previous_index in range(0, index) {
+        for previous_index in 0..index {
             let previous = aliases[previous_index];
             if join_segments(previous.target) == join_segments(current.target) {
                 diagnostics.push("Duplicate package use " + join_segments(current.target))
@@ -240,7 +240,7 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
                 for segment in alias.target {
                     result.push(segment)
                 };
-                for index in range(1, values.len()) {
+                for index in 1..values.len() {
                     result.push(values[index])
                 };
                 return result
@@ -257,7 +257,7 @@ fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     if ctx.qualify_imports && values.len() > 0 && vecs::contains(ctx.nominal_types, values[0]) {
         let result: Vec[string] = Vec::new();
         result.push(full_name(ctx.package_name, values[0]));
-        for index in range(1, values.len()) {
+        for index in 1..values.len() {
             result.push(values[index])
         };
         result
@@ -279,7 +279,7 @@ fn static_member(
 ) -> ExprKind {
     let owner_parts: Vec[string] = Vec::new();
     if parts.len() > 1 {
-        for index in range(0, parts.len() - 1) {
+        for index in 0..parts.len() - 1 {
             owner_parts.push(parts[index])
         }
     } else {
@@ -406,7 +406,7 @@ fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
             parts[0]
         } else {
             let names: Vec[string] = Vec::new();
-            for index in range(1, parts.len() - 1) {
+            for index in 1..parts.len() - 1 {
                 names.push(parts[index])
             };
             join_segments(names)
@@ -601,7 +601,7 @@ fn sort_pattern_names(values: Vec[string]) -> Vec[string] {
     for value in values {
         sorted.push(value)
     };
-    for index in range(1, sorted.len()) {
+    for index in 1..sorted.len() {
         let value = sorted[index];
         let target = Ref::new(index);
         while target.get() > 0 && value < sorted[target.get() - 1] {
@@ -776,10 +776,10 @@ fn lower_pattern_inner(
                 let base_seen = copy_bindings(state.seen);
                 result.push(lower_pattern_inner(ctx, values[0], env, state));
                 let expected: Vec[(string, LocalId)] = Vec::new();
-                for index in range(base_seen.len(), state.seen.len()) {
+                for index in base_seen.len()..state.seen.len() {
                     expected.push(state.seen[index])
                 };
-                for index in range(1, values.len()) {
+                for index in 1..values.len() {
                     let branch_env = copy_bindings(base_env);
                     let branch_state = PatternState {
                         seen: copy_bindings(base_seen),
@@ -787,7 +787,7 @@ fn lower_pattern_inner(
                     };
                     result.push(lower_pattern_inner(ctx, values[index], branch_env, branch_state));
                     let actual: Vec[(string, LocalId)] = Vec::new();
-                    for binding_index in range(base_seen.len(), branch_state.seen.len()) {
+                    for binding_index in base_seen.len()..branch_state.seen.len() {
                         actual.push(branch_state.seen[binding_index])
                     };
                     match pattern_binding_mismatch(expected, actual) {

@@ -264,7 +264,7 @@ fn place_field_get(
     match struct_place_details(ctx, parent_ty) {
         Some((constructor, fields)) => {
             let field_index = Ref::new(0);
-            for index in range(0, fields.len()) {
+            for index in 0..fields.len() {
                 if fields[index].0 == field_name {
                     field_index.set(index)
                 } else {
@@ -286,7 +286,7 @@ fn rebuild_tuple(parent: Expr, parent_ty: tast::Type, index: int, value: Expr) -
     match tast::resolve_type(parent_ty) {
         Tuple { items: types } => {
             let items: Vec[Expr] = Vec::new();
-            for item_index in range(0, types.len()) {
+            for item_index in 0..types.len() {
                 if item_index == index {
                     items.push(value)
                 } else {
@@ -311,7 +311,7 @@ fn rebuild_struct(
     match struct_place_details(ctx, parent_ty) {
         Some((constructor, fields)) => {
             let args: Vec[Expr] = Vec::new();
-            for index in range(0, fields.len()) {
+            for index in 0..fields.len() {
                 let field = fields[index];
                 if field.0 == field_name {
                     args.push(value)
@@ -483,7 +483,7 @@ fn lower_index_assignment(
             );
             let final_action: Ref[Option[Expr]] = Ref::new(Option::None);
             let stopped = Ref::new(false);
-            for offset in range(0, evaluated.len()) {
+            for offset in 0..evaluated.len() {
                 if stopped.get() {
                     ()
                 } else {

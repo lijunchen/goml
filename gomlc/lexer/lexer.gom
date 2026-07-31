@@ -253,7 +253,7 @@ fn valid_digits(source: string, start: int, end: int) -> bool {
     } else {
         ()
     };
-    for index in range(start, end) {
+    for index in start..end {
         if byte_at(source, index) == 95
             && (index == start || index + 1 >= end || !is_ascii_digit(byte_at(source, index - 1))
                 || !is_ascii_digit(byte_at(source, index + 1))) {
@@ -282,7 +282,7 @@ fn scan_prefixed_integer(source: string, start: int, base: int) -> (TokenKind, i
     };
     let end = index;
     let mut valid = end > start + 2;
-    for position in range(start + 2, end) {
+    for position in start + 2..end {
         let value = byte_at(source, position);
         if value == 95 {
             if position == start + 2 || position + 1 >= end

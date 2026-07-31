@@ -59,7 +59,7 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
     let result = Vec::new();
     while remaining.len() > 0 {
         let candidate = Ref::new(-1);
-        for index in range(0, remaining.len()) {
+        for index in 0..remaining.len() {
             let value = remaining[index];
             if package_node_is_ready(value, remaining)
                 && (candidate.get() < 0
@@ -83,7 +83,7 @@ fn order_artifact_compilations(values: Vec[ArtifactCompilation]) -> Result[
     string,
 ] {
     let nodes = Vec::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let value = values[index];
         nodes.push(
             PackageOrderNode {

@@ -133,7 +133,7 @@ fn normalized_array_length(value: string) -> Option[string] {
     } else if normalized.byte_len() > maximum.byte_len() {
         Option::None
     } else {
-        for cursor in range(0, normalized.byte_len()) {
+        for cursor in 0..normalized.byte_len() {
             let left = normalized.byte_get(cursor);
             let right = maximum.byte_get(cursor);
             if left < right {

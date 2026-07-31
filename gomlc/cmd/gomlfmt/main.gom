@@ -30,7 +30,7 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
     let mut check = false;
     let paths: Vec[string] = Vec::new();
     let mut positional = false;
-    for index in range(1, args.len()) {
+    for index in 1..args.len() {
         let argument = args[index];
         if !positional && argument == "--" {
             positional = true;

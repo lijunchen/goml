@@ -535,7 +535,7 @@ fn short_type_name(value: string) -> string {
 }
 
 fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken] {
-    for distance in range(0, value.syntax.tokens.len()) {
+    for distance in 0..value.syntax.tokens.len() {
         let token = value.syntax.tokens[value.syntax.tokens.len() - 1 - distance];
         if token.end <= offset && !lexer::token_is_trivia(token.kind) {
             return Option::Some(token)
@@ -548,7 +548,7 @@ fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken]
 
 fn reference_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[tast::Type] {
     let facts = value.checked.typeck_results.references;
-    for distance in range(0, facts.len()) {
+    for distance in 0..facts.len() {
         let fact = facts[facts.len() - 1 - distance];
         if fact.source_path == value.source_path && fact.span.start <= token.start
             && fact.span.end >= token.end {
@@ -565,7 +565,7 @@ fn reference_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[ta
 
 fn local_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[tast::Type] {
     let facts = value.checked.typeck_results.locals;
-    for distance in range(0, facts.len()) {
+    for distance in 0..facts.len() {
         let fact = facts[facts.len() - 1 - distance];
         if fact.source_path == value.source_path && fact.local.hint == token.text {
             match fact.span {
@@ -901,7 +901,7 @@ fn completion_scope_kind(value: cst::NodeKind) -> bool {
 
 fn containing_completion_scope(syntax: SyntaxIndex, span: ast::Span) -> Option[SyntaxNode] {
     let best = Ref::new(-1);
-    for candidate in range(0, syntax.nodes.len()) {
+    for candidate in 0..syntax.nodes.len() {
         let node = syntax.nodes[candidate];
         let node_width = node.end - node.start;
         if completion_scope_kind(node.kind) && node.start <= span.start && node.end >= span.end
@@ -933,7 +933,7 @@ fn local_visible_at(syntax: SyntaxIndex, span: ast::Span, offset: int) -> bool {
 }
 
 fn local_completion_index(values: Vec[CompletionItem], label: string) -> Option[int] {
-    for offset in range(0, values.len()) {
+    for offset in 0..values.len() {
         let index = values.len() - 1 - offset;
         if values[index].label == label {
             return Option::Some(index)

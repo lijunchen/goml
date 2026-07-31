@@ -2318,7 +2318,7 @@ fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
 
 fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
     let separator = Ref::new(-1);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if separator.get() < 0 && value.byte_get(index) == 35 {
             separator.set(index)
         } else {
@@ -2396,7 +2396,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                 if metadata.trait_ref.name == trait_name
                     && contains_method(result, method_name) == false {
                     let params: Vec[tast::Type] = Vec::new();
-                    for index in range(1, function.params.len()) {
+                    for index in 1..function.params.len() {
                         params.push(function.params[index].1)
                     };
                     result.push(
@@ -2641,7 +2641,7 @@ fn dyn_coercion_items(
                 Expr::Cast { expr: Expr::Var { name: "self" }, ty: lower_type(coercion.for_ty) }
             },
         );
-        for index in range(0, method.params.len()) {
+        for index in 0..method.params.len() {
             let name = "p" + index.to_string();
             wrapper_params.push((name, lower_type(method.params[index])));
             wrapper_args.push(Expr::Var { name })

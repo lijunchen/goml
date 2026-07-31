@@ -3,7 +3,7 @@ package go_backend;
 use std::text;
 
 fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char(' ')
     }
 }
@@ -121,7 +121,7 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
         },
         Func { params, ret_ty } => {
             builder.write_string("func(");
-            for index in range(0, params.len()) {
+            for index in 0..params.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -140,7 +140,7 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
         },
         Multi { items: values } => {
             builder.write_char('(');
-            for index in range(0, values.len()) {
+            for index in 0..values.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -191,7 +191,7 @@ fn write_binary(builder: text::StringBuilder, value: BinaryOp) -> unit {
 }
 
 fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], indent: int) -> unit {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
@@ -308,7 +308,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
         },
         FuncLit { params, ret_ty, body } => {
             builder.write_string("func(");
-            for index in range(0, params.len()) {
+            for index in 0..params.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -381,7 +381,7 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
             write_expr(builder, expr, indent)
         },
         MultiAssign { names, value: expr } => {
-            for index in range(0, names.len()) {
+            for index in 0..names.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -432,7 +432,7 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
         },
         Range { names, expr, body } => {
             builder.write_string("for ");
-            for index in range(0, names.len()) {
+            for index in 0..names.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -549,7 +549,7 @@ fn write_interface(builder: text::StringBuilder, value: InterfaceDef) -> unit {
         newline(builder, 4);
         builder.write_string(method.name);
         builder.write_char('(');
-        for index in range(0, method.params.len()) {
+        for index in 0..method.params.len() {
             if index > 0 {
                 builder.write_string(", ")
             } else {
@@ -617,7 +617,7 @@ fn write_function(builder: text::StringBuilder, value: Function) -> unit {
     builder.write_string("func ");
     builder.write_string(value.name);
     builder.write_char('(');
-    for index in range(0, value.params.len()) {
+    for index in 0..value.params.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
@@ -662,7 +662,7 @@ fn write_method(builder: text::StringBuilder, value: Method) -> unit {
     builder.write_string(") ");
     builder.write_string(value.name);
     builder.write_char('(');
-    for index in range(0, value.params.len()) {
+    for index in 0..value.params.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {

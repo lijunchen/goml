@@ -44,7 +44,7 @@ fn artifact_binary_write_u32(writer: ArtifactBinaryWriter, value: uint32) -> uni
 }
 
 fn artifact_binary_write_u64(writer: ArtifactBinaryWriter, value: uint64) -> unit {
-    for index in range(0, 8) {
+    for index in 0..8 {
         writer.data.push(((value >> (index * 8)) & 255) as uint8)
     }
 }
@@ -75,13 +75,13 @@ fn artifact_binary_write_bool(writer: ArtifactBinaryWriter, value: bool) -> unit
 
 fn artifact_binary_write_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> unit {
     artifact_binary_write_uleb128(writer, value.len() as uint64);
-    for index in range(0, value.len()) {
+    for index in 0..value.len() {
         writer.data.push(value.get(index))
     }
 }
 
 fn artifact_binary_write_raw_bytes(writer: ArtifactBinaryWriter, value: bytes::Bytes) -> unit {
-    for index in range(0, value.len()) {
+    for index in 0..value.len() {
         writer.data.push(value.get(index))
     }
 }
@@ -112,7 +112,7 @@ fn artifact_binary_patch_u64(writer: ArtifactBinaryWriter, offset: int, value: u
     if offset < 0 || offset + 8 > writer.data.len() {
         Result::Err("binary patch offset out of bounds")
     } else {
-        for index in range(0, 8) {
+        for index in 0..8 {
             writer.data.set(offset + index, ((value >> (index * 8)) & 255) as uint8)
         };
         Result::Ok(())
@@ -174,7 +174,7 @@ fn artifact_binary_read_u64(reader: ArtifactBinaryReader) -> Result[uint64, stri
         let offset = reader.offset.get();
         reader.offset.set(offset + 8);
         let value = Ref::new(0 as uint64);
-        for index in range(0, 8) {
+        for index in 0..8 {
             value.set(value.get() | ((reader.data.get(offset + index) as uint64) << (index * 8)))
         };
         Result::Ok(value.get())
@@ -235,7 +235,7 @@ fn artifact_binary_read_bytes(reader: ArtifactBinaryReader) -> Result[bytes::Byt
     } else {
         let offset = reader.offset.get();
         let result = bytes::Bytes::with_capacity(length);
-        for index in range(0, length) {
+        for index in 0..length {
             result.push(reader.data.get(offset + index))
         };
         reader.offset.set(offset + length);
@@ -252,7 +252,7 @@ fn artifact_binary_read_raw_bytes(reader: ArtifactBinaryReader, length: int) -> 
     } else {
         let offset = reader.offset.get();
         let result = bytes::Bytes::with_capacity(length);
-        for index in range(0, length) {
+        for index in 0..length {
             result.push(reader.data.get(offset + index))
         };
         reader.offset.set(offset + length);

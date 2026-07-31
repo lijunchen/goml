@@ -60,7 +60,7 @@ fn trim_test_text(value: string) -> string {
 }
 
 fn find_test_byte(value: string, expected: uint8) -> Option[int] {
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == expected {
             return Option::Some(index)
         } else {
@@ -199,7 +199,7 @@ fn collect_function_test(
     let test_attrs = named_test_attributes(function.attrs, "test");
     let ignore_attrs = named_test_attributes(function.attrs, "ignore");
     if test_attrs.len() > 1 {
-        for index in range(1, test_attrs.len()) {
+        for index in 1..test_attrs.len() {
             let attribute = test_attrs[index];
             diagnostics.push(
                 package_test_diagnostic(
@@ -214,7 +214,7 @@ fn collect_function_test(
         ()
     };
     if ignore_attrs.len() > 1 {
-        for index in range(1, ignore_attrs.len()) {
+        for index in 1..ignore_attrs.len() {
             let attribute = ignore_attrs[index];
             diagnostics.push(
                 package_test_diagnostic(
@@ -341,7 +341,7 @@ fn test_string_less(left: string, right: string) -> bool {
     } else {
         right.byte_len()
     };
-    for index in range(0, common) {
+    for index in 0..common {
         if left.byte_get(index) < right.byte_get(index) {
             return true
         } else if left.byte_get(index) > right.byte_get(index) {
@@ -354,7 +354,7 @@ fn test_string_less(left: string, right: string) -> bool {
 }
 
 fn sort_test_descriptors(values: Vec[TestDescriptor]) -> Vec[TestDescriptor] {
-    for index in range(1, values.len()) {
+    for index in 1..values.len() {
         let current = values[index];
         let destination = Ref::new(index);
         while destination.get() > 0
@@ -370,7 +370,7 @@ fn sort_test_descriptors(values: Vec[TestDescriptor]) -> Vec[TestDescriptor] {
 fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: Vec[string]) -> TestCandidateCollection {
     let candidates: Vec[TestCandidate] = Vec::new();
     let diagnostics: Vec[tast::Diagnostic] = Vec::new();
-    for file_index in range(0, files.len()) {
+    for file_index in 0..files.len() {
         let source_path = if file_index < source_paths.len() {
             source_paths[file_index]
         } else {
@@ -643,7 +643,7 @@ fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {
 fn encode_test_manifest(values: Vec[TestDescriptor]) -> string {
     let builder = text::StringBuilder::new();
     builder.write_char('[');
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let value = values[index];
         if index > 0 {
             builder.write_char(',')

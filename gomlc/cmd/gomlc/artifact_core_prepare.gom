@@ -30,7 +30,7 @@ fn artifact_core_function_matches_scheme(value: core::Function, scheme: Artifact
             || !artifact_core_types_equal(value.ret_ty, function_type.ret_ty) {
             false
         } else {
-            for index in range(0, value.params.len()) {
+            for index in 0..value.params.len() {
                 if !artifact_core_types_equal(value.params[index].1, function_type.params[index]) {
                     return false
                 } else {
@@ -45,7 +45,7 @@ fn artifact_core_function_matches_scheme(value: core::Function, scheme: Artifact
 
 fn artifact_core_method_name(value: string) -> Option[string] {
     let separator = Ref::new(-1);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 35 {
             separator.set(index)
         } else {
@@ -293,7 +293,7 @@ fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[ArtifactCor
 fn artifact_prepare_core_units(world: PackageWorld, values: Vec[ArtifactCoreUnit]) -> unit {
     let definitions = artifact_link_struct_definitions(world, values);
     for value in values {
-        for index in range(0, value.core_ir.functions.len()) {
+        for index in 0..value.core_ir.functions.len() {
             let function = artifact_prepare_core_function_metadata(
                 value.core_ir.functions[index],
                 value.exports,
@@ -338,7 +338,7 @@ fn artifact_prepare_world_core(
     exports: ArtifactPackageExports,
     definitions: Vec[tast::StructDef],
 ) -> unit {
-    for index in range(0, value.functions.len()) {
+    for index in 0..value.functions.len() {
         let function = artifact_prepare_core_function_metadata(value.functions[index], exports);
         value.functions[index] = function;
         artifact_prepare_core_block(function.body, definitions)

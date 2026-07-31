@@ -54,7 +54,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
     let digits: Vec[int] = Vec::new();
     digits.push(0);
     let found = Ref::new(false);
-    for index in range(start, value.byte_len()) {
+    for index in start..value.byte_len() {
         let source = value.byte_get(index);
         if source == b'_' {
             if index == start || index + 1 >= value.byte_len()
@@ -69,7 +69,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
                 Some(part) => if part < base {
                     found.set(true);
                     let carry = Ref::new(part);
-                    for position in range(0, digits.len()) {
+                    for position in 0..digits.len() {
                         let current = digits[position] * base + carry.get();
                         digits[position] = current % 10;
                         carry.set(current / 10)
@@ -89,7 +89,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
         Option::None
     } else {
         let builder = text::StringBuilder::with_capacity(digits.len());
-        for offset in range(0, digits.len()) {
+        for offset in 0..digits.len() {
             builder.write_string(decimal_digit(digits[digits.len() - offset - 1]))
         };
         Option::Some(builder.finish())

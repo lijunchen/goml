@@ -185,7 +185,7 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> Artif
 
 fn artifact_method_constraints(value: tast::Function, start: int) -> Vec[tast::TypePredicate] {
     let result = Vec::new();
-    for index in range(start, value.predicates.len()) {
+    for index in start..value.predicates.len() {
         result.push(value.predicates[index])
     };
     result
@@ -193,7 +193,7 @@ fn artifact_method_constraints(value: tast::Function, start: int) -> Vec[tast::T
 
 fn artifact_method_scheme(value: tast::Function, owner_generic_count: int, constraint_start: int) -> ArtifactFnScheme {
     let type_params = Vec::new();
-    for index in range(owner_generic_count, value.generics.len()) {
+    for index in owner_generic_count..value.generics.len() {
         type_params.push(value.generics[index])
     };
     ArtifactFnScheme {
@@ -545,7 +545,7 @@ fn artifact_package_interface(
     };
     let function_names = sort_artifact_names(function_names);
     let value_exports = Vec::new();
-    for index in range(0, function_names.len()) {
+    for index in 0..function_names.len() {
         value_exports.push((function_names[index], index))
     };
     let enum_names = Vec::new();

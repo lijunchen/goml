@@ -20,7 +20,7 @@ fn self_type_occurrences(value: LocatedNode) -> int {
 }
 
 fn record_disallowed_self_type(ctx: LowerCtx, value: LocatedNode) -> unit {
-    for _ in range(0, self_type_occurrences(value)) {
+    for _ in 0..self_type_occurrences(value) {
         ctx.invalid_self_type_spans.push(type_head_span(value))
     }
 }
@@ -354,7 +354,7 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
             } else {
                 ()
             };
-            for index in range(0, params.len()) {
+            for index in 0..params.len() {
                 let param = params[index];
                 if param.0 == "self" && (index != 0 || !ast_type_is_self(param.1)) {
                     push_error(

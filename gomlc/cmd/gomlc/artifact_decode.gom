@@ -128,7 +128,7 @@ fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
         Result::Err(artifact_decode_error("nonnegative integer"))
     } else {
         let result = Ref::new(0);
-        for index in range(0, value.byte_len()) {
+        for index in 0..value.byte_len() {
             let byte = value.byte_get(index);
             if byte < 48 || byte > 57 {
                 return Result::Err(artifact_decode_error("nonnegative integer"))

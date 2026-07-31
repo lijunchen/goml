@@ -31,7 +31,7 @@ fn artifact_binary_bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> bool 
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
+        for index in 0..left.len() {
             if left.get(index) != right.get(index) {
                 return false
             } else {
@@ -55,7 +55,7 @@ fn artifact_binary_hex_value(value: uint8) -> uint8 {
 fn artifact_binary_sha256(value: bytes::Bytes) -> bytes::Bytes {
     let text = go_backend::sha256_bytes_hex(value);
     let result = bytes::Bytes::with_capacity(32);
-    for index in range(0, 32) {
+    for index in 0..32 {
         result.push(
             (artifact_binary_hex_value(text.byte_get(index * 2)) << 4)
                 | artifact_binary_hex_value(text.byte_get(index * 2 + 1)),
@@ -68,7 +68,7 @@ fn artifact_binary_section_insert_index(
     values: Vec[ArtifactBinarySection],
     value: ArtifactBinarySection,
 ) -> int {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if value.id < values[index].id {
             return index
         } else {
@@ -126,7 +126,7 @@ fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinarySec
     };
     let payload = bytes::Bytes::new();
     for section in sections {
-        for index in range(0, section.data.len()) {
+        for index in 0..section.data.len() {
             payload.push(section.data.get(index))
         }
     };
@@ -241,7 +241,7 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
     let section_offsets = Vec::with_capacity(section_count);
     let section_lengths = Vec::with_capacity(section_count);
     let section_hashes = Vec::with_capacity(section_count);
-    for _ in range(0, section_count) {
+    for _ in 0..section_count {
         let id = artifact_binary_read_u16(reader)?;
         if section_ids.len() > 0 && id <= section_ids[section_ids.len() - 1] {
             return Result::Err("binary artifact section directory is not sorted")
@@ -273,7 +273,7 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
         section_hashes.push(hash)
     };
     let payload = bytes::Bytes::with_capacity(payload_length);
-    for index in range(0, payload_length) {
+    for index in 0..payload_length {
         payload.push(data.get(payload_offset + index))
     };
     if !artifact_binary_bytes_equal(payload_hash, artifact_binary_sha256(payload)) {
@@ -283,7 +283,7 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
     };
     let result = Vec::new();
     let previous_end = Ref::new(payload_offset);
-    for index in range(0, section_count) {
+    for index in 0..section_count {
         let offset = section_offsets[index];
         let length = section_lengths[index];
         if offset != previous_end.get() || length > data.len() - offset {
@@ -292,7 +292,7 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
             ()
         };
         let section_data = bytes::Bytes::with_capacity(length);
-        for item in range(0, length) {
+        for item in 0..length {
             section_data.push(data.get(offset + item))
         };
         if !artifact_binary_bytes_equal(section_hashes[index], artifact_binary_sha256(section_data)) {
@@ -322,7 +322,7 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
 fn artifact_binary_find_section(value: ArtifactBinaryContainer, id: uint16) -> Option[
     ArtifactBinarySection,
 ] {
-    for offset in range(0, value.sections.len()) {
+    for offset in 0..value.sections.len() {
         let section = value.sections[value.sections.len() - 1 - offset];
         if section.id == id {
             return Option::Some(section)

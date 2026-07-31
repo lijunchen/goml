@@ -4,7 +4,7 @@ use gomlc::vecs;
 use std::text;
 
 fn pretty_write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char(' ')
     }
 }
@@ -412,7 +412,7 @@ fn pretty_write_trait_method(builder: text::StringBuilder, value: TraitMethodSig
     builder.write_string(value.name);
     pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
     builder.write_char('(');
-    for index in range(0, value.params.len()) {
+    for index in 0..value.params.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {

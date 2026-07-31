@@ -73,7 +73,7 @@ fn type_lists_match(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
+        for index in 0..left.len() {
             if encode_type(left[index]) != encode_type(right[index]) {
                 return false
             } else {
@@ -376,7 +376,7 @@ fn tag_only_const_specs(
 ) -> Vec[ConstSpec] {
     let specs: Vec[ConstSpec] = Vec::new();
     let owner_go_name = go_user_type_name(instance.name);
-    for index in range(0, definition.variants.len()) {
+    for index in 0..definition.variants.len() {
         let variant = definition.variants[index];
         let variant_name = variant_go_name(
             instance.name,
@@ -485,11 +485,11 @@ fn emit_enum_instance(
                         InterfaceMethod { name: marker, params: Vec::new(), ret_ty: Option::None },
                     );
                     items.push(Item::Interface(InterfaceDef { name: owner_go_name, methods }));
-                    for index in range(0, definition.variants.len()) {
+                    for index in 0..definition.variants.len() {
                         let variant = definition.variants[index];
                         let fields: Vec[(string, Type)] = Vec::new();
                         let field_types = fields_by_variant[index];
-                        for field_index in range(0, field_types.len()) {
+                        for field_index in 0..field_types.len() {
                             fields.push(
                                 (
                                     "_" + field_index.to_string(),
@@ -718,7 +718,7 @@ pub fn find_variant_info(variants: VariantInfos, owner_ty: tast::Type, tag: int)
 fn last_separator(value: string) -> int {
     let result = Ref::new(-1);
     if value.byte_len() > 1 {
-        for index in range(0, value.byte_len() - 1) {
+        for index in 0..value.byte_len() - 1 {
             if strings::starts_with_at(value, index, "::") {
                 result.set(index)
             } else {

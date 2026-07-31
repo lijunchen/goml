@@ -81,7 +81,7 @@ fn node_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
 
 fn path_prefix(values: Vec[SyntaxToken], end: int) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, end + 1) {
+    for index in 0..end + 1 {
         if index > 0 {
             builder.write_string("::")
         } else {
@@ -201,7 +201,7 @@ fn symbol_definitions(
 }
 
 fn identifier_index_at(identifiers: Vec[SyntaxToken], offset: int) -> Option[int] {
-    for distance in range(0, identifiers.len()) {
+    for distance in 0..identifiers.len() {
         let index = identifiers.len() - 1 - distance;
         let token = identifiers[index];
         if token.start <= offset && offset < token.end {
@@ -315,7 +315,7 @@ fn containing_struct_literal(value: Analysis, offset: int) -> Option[SyntaxNode]
 
 fn struct_literal_owner(value: Analysis, literal: SyntaxNode) -> Option[string] {
     let best = Ref::new(-1);
-    for candidate in range(0, value.syntax.nodes.len()) {
+    for candidate in 0..value.syntax.nodes.len() {
         let node = value.syntax.nodes[candidate];
         if cst::node_kind_equal(node.kind, cst::NodeKind::PATH) && node.start >= literal.start
             && node.end <= literal.end
@@ -383,7 +383,7 @@ fn struct_field_definitions(value: Analysis, offset: int) -> Vec[DefinitionResul
 
 fn local_definition_span(value: Analysis, local: hir::LocalId) -> Option[DefinitionResult] {
     let facts = value.checked.typeck_results.locals;
-    for distance in range(0, facts.len()) {
+    for distance in 0..facts.len() {
         let fact = facts[facts.len() - 1 - distance];
         if same_local(fact.local, local) {
             match fact.span {

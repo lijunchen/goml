@@ -24,7 +24,7 @@ pub fn path_to_uri(value: string) -> string {
     };
     let builder = text::StringBuilder::new();
     builder.write_string("file://");
-    for index in range(0, absolute.byte_len()) {
+    for index in 0..absolute.byte_len() {
         let byte = absolute.byte_get(index);
         if uri_unreserved(byte) || byte == 47 || byte == 58 {
             builder.write_string(absolute.byte_slice(index, index + 1))

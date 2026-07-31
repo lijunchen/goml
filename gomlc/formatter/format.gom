@@ -27,7 +27,7 @@ fn canonical_file_ending(value: string) -> string {
 }
 
 fn format_next_non_trivia(tokens: Vec[lexer::Token], start: int) -> Option[lexer::TokenKind] {
-    for index in range(start, tokens.len()) {
+    for index in start..tokens.len() {
         if lexer::token_is_trivia(tokens[index].kind) {
             ()
         } else {
@@ -48,7 +48,7 @@ fn format_token_signature(source: string) -> string {
     let tokens = lexer::lex(source);
     let output = text::StringBuilder::new();
     let in_where: Ref[bool] = Ref::new(false);
-    for index in range(0, tokens.len()) {
+    for index in 0..tokens.len() {
         let token = tokens[index];
         let optional_comma = lexer::token_kind_equal(token.kind, lexer::TokenKind::Comma)
             && match format_next_non_trivia(tokens, index + 1) {

@@ -37,7 +37,7 @@ fn render_mode_flat(mode: RenderMode) -> bool {
 }
 
 fn string_contains_newline(value: string) -> bool {
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 10 {
             return true
         } else {
@@ -120,7 +120,7 @@ fn flat_width(value: Doc, broken_groups: HashMap[int, unit], limit: int) -> int 
 
 fn write_indent(value: Renderer) -> unit {
     if value.line_start.get() {
-        for _ in range(0, value.indent_level.get()) {
+        for _ in 0..value.indent_level.get() {
             value.output.write_string("    ")
         };
         value.column.set(value.indent_level.get() * 4);
@@ -142,7 +142,7 @@ fn write_text(value: Renderer, content: string, width: int) -> unit {
 
 fn raw_last_line_width(content: string) -> int {
     let start: Ref[int] = Ref::new(0);
-    for index in range(0, content.byte_len()) {
+    for index in 0..content.byte_len() {
         if content.byte_get(index) == 10 {
             start.set(index + 1)
         } else {

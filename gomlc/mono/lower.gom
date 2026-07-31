@@ -312,7 +312,7 @@ fn type_instance_parameters(ctx: TypeCtx, name: string) -> Vec[string] {
 fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[tast::Type]) -> Vec[TypeBinding] {
     let result: Vec[TypeBinding] = Vec::new();
     let params = type_instance_parameters(ctx, name);
-    for index in range(0, params.len()) {
+    for index in 0..params.len() {
         if index < args.len() {
             result.push(TypeBinding { name: params[index], ty: args[index] })
         } else {
@@ -343,7 +343,7 @@ fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[t
     string,
 ] {
     let params = type_instance_parameters(ctx, name);
-    for offset in range(0, ctx.active_instances.len()) {
+    for offset in 0..ctx.active_instances.len() {
         let active = ctx.active_instances[ctx.active_instances.len() - offset - 1];
         if active.base_name == name {
             let common = if active.args.len() < args.len() {
@@ -351,7 +351,7 @@ fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[t
             } else {
                 args.len()
             };
-            for index in range(0, common) {
+            for index in 0..common {
                 let previous = expand_specialized_type_aliases(ctx, active.args[index]);
                 let next = expand_specialized_type_aliases(ctx, args[index]);
                 if mono_type_contains_recursive_growth(next, previous) {
@@ -477,7 +477,7 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
 fn constructor_variant(name: string) -> string {
     let separator = Ref::new(-1);
     if name.byte_len() > 1 {
-        for index in range(0, name.byte_len() - 1) {
+        for index in 0..name.byte_len() - 1 {
             if strings::starts_with_at(name, index, "::") {
                 separator.set(index)
             } else {
@@ -542,7 +542,7 @@ fn trait_impl_name(reference: tast::TraitRef, for_type: tast::Type, method_name:
     } else {
         let builder = text::StringBuilder::new();
         builder.write_char('[');
-        for index in range(0, reference.args.len()) {
+        for index in 0..reference.args.len() {
             if index > 0 {
                 builder.write_char(',')
             } else {
@@ -819,7 +819,7 @@ fn collect_type_names(ctx: TypeCtx, value: tast::Type) -> unit {
 fn constructor_owner(name: string) -> string {
     let separator = Ref::new(-1);
     if name.byte_len() > 1 {
-        for index in range(0, name.byte_len() - 1) {
+        for index in 0..name.byte_len() - 1 {
             if strings::starts_with_at(name, index, "::") {
                 separator.set(index)
             } else {

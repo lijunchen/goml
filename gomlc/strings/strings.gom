@@ -6,7 +6,7 @@ fn region_matches(value: string, start: int, expected: string) -> bool {
     if start < 0 || start + expected.byte_len() > value.byte_len() {
         false
     } else {
-        for offset in range(0, expected.byte_len()) {
+        for offset in 0..expected.byte_len() {
             if value.byte_get(start + offset) != expected.byte_get(offset) {
                 return false
             } else {
@@ -33,7 +33,7 @@ pub fn find(value: string, expected: string) -> Option[int] {
     if expected.byte_len() > value.byte_len() {
         Option::None
     } else {
-        for start in range(0, value.byte_len() - expected.byte_len() + 1) {
+        for start in 0..value.byte_len() - expected.byte_len() + 1 {
             if region_matches(value, start, expected) {
                 return Option::Some(start)
             } else {
@@ -88,7 +88,7 @@ pub fn contains(value: string, expected: string) -> bool {
 
 pub fn join(values: Vec[string], separator: string) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(separator)
         } else {

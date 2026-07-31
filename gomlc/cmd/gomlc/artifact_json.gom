@@ -217,7 +217,7 @@ fn artifact_value_finish(writer: ArtifactJsonWriter) -> Result[ArtifactValue, st
 
 fn artifact_json_indent(value: ArtifactJsonWriter) -> unit {
     if value.pretty {
-        for _ in range(0, value.depth.get()) {
+        for _ in 0..value.depth.get() {
             value.builder.write_string("  ")
         }
     } else {
@@ -258,7 +258,7 @@ fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: uint8) -> unit {
 
 fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> unit {
     let start = Ref::new(0);
-    for index in range(0, input.byte_len()) {
+    for index in 0..input.byte_len() {
         let byte = input.byte_get(index);
         if byte == 34 || byte == 92 || byte == 8 || byte == 9 || byte == 10 || byte == 12
             || byte == 13

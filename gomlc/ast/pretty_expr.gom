@@ -4,7 +4,7 @@ use std::text;
 
 fn pretty_decimal_byte(value: string) -> uint8 {
     let result = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         result.set(result.get() * 10 + (value.byte_get(index) - 48) as int)
     };
     result.get() as uint8
@@ -111,7 +111,7 @@ fn pretty_write_path_expr(
         pretty_write_path(builder, path)
     } else {
         let last = path.segments.len() - 1;
-        for index in range(0, last) {
+        for index in 0..last {
             if index > 0 {
                 builder.write_string("::")
             } else {

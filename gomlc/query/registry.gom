@@ -25,7 +25,7 @@ struct ResolvedModule {
 fn quoted_values(value: string) -> Vec[string] {
     let result = Vec::new();
     let start = Ref::new(Option::None);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         if value.byte_get(index) == 34 {
             match start.get() {
                 Some(offset) => {
@@ -77,7 +77,7 @@ fn decimal_number(value: string) -> Option[int] {
         Option::None
     } else {
         let result = Ref::new(0);
-        for index in range(0, value.byte_len()) {
+        for index in 0..value.byte_len() {
             let byte = value.byte_get(index);
             if byte < 48 || byte > 57 {
                 return Option::None
@@ -92,7 +92,7 @@ fn decimal_number(value: string) -> Option[int] {
 fn parse_sem_version(value: string) -> Option[SemVersion] {
     let parts = Vec::new();
     let start = Ref::new(0);
-    for index in range(0, value.byte_len() + 1) {
+    for index in 0..value.byte_len() + 1 {
         if index == value.byte_len() || value.byte_get(index) == 46 {
             parts.push(value.byte_slice(start.get(), index));
             start.set(index + 1)
@@ -339,7 +339,7 @@ fn external_package_directory(module: ResolvedModule, package_name: string) -> O
         let suffix = package_name.byte_slice(module.name.byte_len() + 2, package_name.byte_len());
         let directory = Ref::new(module.root);
         let start = Ref::new(0);
-        for index in range(0, suffix.byte_len() + 1) {
+        for index in 0..suffix.byte_len() + 1 {
             let separator = index == suffix.byte_len()
                 || (index + 1 < suffix.byte_len() && suffix.byte_get(index) == 58
                     && suffix.byte_get(index + 1) == 58);

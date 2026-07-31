@@ -115,7 +115,7 @@ fn ordered_rest_value(
                 Some(length) => length - suffix_len,
                 None => prefix_len,
             };
-            for index in range(prefix_len, end) {
+            for index in prefix_len..end {
                 items.push(place_index_read(value, container_ty, ordered_int(index), elem_ty))
             };
             Expr::Array { items, ty: rest_ty }
@@ -216,7 +216,7 @@ fn lower_ordered_array_pattern(
                     },
                     None => (),
                 };
-                for offset in range(0, suffix.len()) {
+                for offset in 0..suffix.len() {
                     let index = suffix.len() - 1 - offset;
                     let item = place_index_read(
                         value,
@@ -235,7 +235,7 @@ fn lower_ordered_array_pattern(
                         ),
                     )
                 };
-                for offset in range(0, prefix.len()) {
+                for offset in 0..prefix.len() {
                     let index = prefix.len() - 1 - offset;
                     let item = place_index_read(value, container_ty, ordered_int(index), elem_ty);
                     next.set(
@@ -300,7 +300,7 @@ fn lower_ordered_pattern(
         },
         Or { pats: patterns, ty: _ } => {
             let next = Ref::new(failure);
-            for offset in range(0, patterns.len()) {
+            for offset in 0..patterns.len() {
                 let index = patterns.len() - 1 - offset;
                 next.set(
                     lower_ordered_pattern(
@@ -353,7 +353,7 @@ fn lower_ordered_pattern(
         Tuple { items, ty: tuple_ty } => match tast::resolve_type(tuple_ty) {
             Tuple { items: types } => {
                 let next = Ref::new(success);
-                for offset in range(0, items.len()) {
+                for offset in 0..items.len() {
                     let index = items.len() - 1 - offset;
                     next.set(
                         lower_ordered_pattern(
@@ -372,7 +372,7 @@ fn lower_ordered_pattern(
         },
         Constr { constructor, args, ty: pattern_ty } => {
             let next = Ref::new(success);
-            for offset in range(0, args.len()) {
+            for offset in 0..args.len() {
                 let index = args.len() - 1 - offset;
                 let arg = args[index];
                 next.set(
@@ -430,7 +430,7 @@ fn lower_ordered_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], t
     let source_name = gensym(ctx, "match");
     let source_var = Expr::Var { name: source_name, ty: source_ty };
     let next = Ref::new(missing_expr(ty));
-    for offset in range(0, arms.len()) {
+    for offset in 0..arms.len() {
         let index = arms.len() - 1 - offset;
         let arm = arms[index];
         let body = lower_expr(ctx, arm.body);

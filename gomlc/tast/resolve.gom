@@ -66,7 +66,7 @@ fn add_name_index(
 
 fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, int] {
     let result: HashMap[string, int] = HashMap::{};
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let name = if short {
             short_name(values[index].name)
         } else {
@@ -94,7 +94,7 @@ fn index_struct_name(ctx: Checker, value: StructInfo, index: int) -> unit {
 
 fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, int] {
     let result: HashMap[string, int] = HashMap::{};
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let name = if short {
             short_name(values[index].name)
         } else {
@@ -264,7 +264,7 @@ fn resolve_named_constructor(ctx: Checker, enum_name: string, variant_name: stri
 ] {
     match find_enum_by_name(ctx, enum_name) {
         Some(value) => {
-            for index in range(0, value.variants.len()) {
+            for index in 0..value.variants.len() {
                 if value.variants[index].name == variant_name {
                     return resolve_user_constructor(ctx, value, index)
                 } else {
@@ -384,7 +384,7 @@ fn resolve_contextual_constructor(ctx: Checker, name: string, expected: Type) ->
     match pattern_expected_owner(ctx, expected) {
         Some(owner) => match find_expected_enum(ctx, owner) {
             Some(value) => {
-                for index in range(0, value.variants.len()) {
+                for index in 0..value.variants.len() {
                     if value.variants[index].name == name {
                         return resolve_user_constructor(ctx, value, index)
                     } else {
@@ -483,7 +483,7 @@ fn instantiate_named_variant(
 }
 
 fn resolve_named_variant_in(ctx: Checker, value: EnumInfo, variant_name: string) -> NamedFieldConstructorResolution {
-    for index in range(0, value.variants.len()) {
+    for index in 0..value.variants.len() {
         let variant = value.variants[index];
         if variant.name == variant_name {
             return match enum_variant_named_fields(variant.fields) {
@@ -528,7 +528,7 @@ fn resolve_named_field_constructor(ctx: Checker, name: string) -> NamedFieldCons
     };
     let candidates: Vec[(EnumInfo, int)] = Vec::new();
     for value in ctx.enums {
-        for index in range(0, value.variants.len()) {
+        for index in 0..value.variants.len() {
             if value.variants[index].name == name {
                 candidates.push((value, index))
             } else {
@@ -599,7 +599,7 @@ fn nominal_arguments(value: Type) -> Vec[Type] {
 fn substitutions_for_nominal(params: Vec[string], value: Type) -> Vec[TypeSubst] {
     let args = nominal_arguments(value);
     let result: Vec[TypeSubst] = Vec::new();
-    for index in range(0, params.len()) {
+    for index in 0..params.len() {
         if index < args.len() {
             result.push(TypeSubst { name: params[index], ty: args[index] })
         } else {
@@ -615,7 +615,7 @@ fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type
         Some(owner) => match find_struct_by_name(ctx, owner) {
             Some(info) => {
                 let substitutions = substitutions_for_nominal(info.generics, receiver);
-                for offset in range(0, info.fields.len()) {
+                for offset in 0..info.fields.len() {
                     let field = info.fields[info.fields.len() - 1 - offset];
                     if field.0 == name {
                         return Option::Some(substitute_type(field.1, substitutions))
@@ -632,7 +632,7 @@ fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type
 }
 
 fn find_named_field(values: Vec[(string, hir::Expr)], name: string) -> Option[hir::Expr] {
-    for offset in range(0, values.len()) {
+    for offset in 0..values.len() {
         let value = values[values.len() - 1 - offset];
         if value.0 == name {
             return Option::Some(value.1)
@@ -668,7 +668,7 @@ fn call_type_lists_compatible(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
+        for index in 0..left.len() {
             if !call_types_compatible(left[index], right[index]) {
                 return false
             } else {
@@ -815,7 +815,7 @@ fn instantiate_method_candidate(
     let predicates = substitute_predicates(value.function.predicates, substitutions);
     let owner_declared = Vec::new();
     let method_declared = Vec::new();
-    for index in range(0, predicates.len()) {
+    for index in 0..predicates.len() {
         if index < value.owner_predicate_count {
             owner_declared.push(predicates[index])
         } else {
@@ -906,7 +906,7 @@ fn method_matches_call(
                 normalize_type(ctx, params[0]),
                 normalize_type(ctx, receiver),
             );
-            for index in range(0, args.len()) {
+            for index in 0..args.len() {
                 if !call_types_compatible(
                     normalize_type(ctx, params[index + 1]),
                     normalize_type(ctx, args[index]),
@@ -1242,7 +1242,7 @@ fn predicate_message_present(
     message: string,
     span: Option[ast::Span],
 ) -> bool {
-    for index in range(0, messages.len()) {
+    for index in 0..messages.len() {
         if messages[index] == message && optional_spans_equal(spans[index], span) {
             return true
         } else {
@@ -1267,7 +1267,7 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
             },
         }
     };
-    for _ in range(0, ctx.required_predicates.len() + 1) {
+    for _ in 0..ctx.required_predicates.len() + 1 {
         for requirement in ctx.required_predicates {
             let _ = predicates_satisfied_at(ctx, Vec::[requirement.predicate], 0);
         };
@@ -1576,8 +1576,8 @@ fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
 }
 
 fn validate_impl_overlaps(ctx: Checker) -> unit {
-    for left in range(0, ctx.impls.len()) {
-        for right in range(left + 1, ctx.impls.len()) {
+    for left in 0..ctx.impls.len() {
+        for right in left + 1..ctx.impls.len() {
             let left_impl = ctx.impls[left];
             let right_impl = ctx.impls[right];
             if impls_overlap(ctx, left_impl, right_impl) {
@@ -2302,7 +2302,7 @@ fn resolve_dyn_method(
             None => {
                 let resolved: Vec[ResolvedCallable] = Vec::new();
                 let candidates = Vec::new();
-                for index in range(1, applications.len()) {
+                for index in 1..applications.len() {
                     match resolve_trait_reference_method(
                         ctx,
                         applications[index],
@@ -2421,7 +2421,7 @@ fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
 }
 
 fn find_trait(ctx: Checker, name: string) -> Option[TraitInfo] {
-    for offset in range(0, ctx.traits.len()) {
+    for offset in 0..ctx.traits.len() {
         let value = ctx.traits[ctx.traits.len() - 1 - offset];
         if names_match(value.name, name) {
             return Option::Some(value)
@@ -2433,7 +2433,7 @@ fn find_trait(ctx: Checker, name: string) -> Option[TraitInfo] {
 }
 
 fn find_trait_method(value: TraitInfo, name: string) -> Option[TraitMethodInfo] {
-    for offset in range(0, value.methods.len()) {
+    for offset in 0..value.methods.len() {
         let method = value.methods[value.methods.len() - 1 - offset];
         if method.name == name {
             return Option::Some(method)
@@ -3004,7 +3004,7 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
 }
 
 fn parameter_types_contain_from(values: Vec[Type], start: int, expected: string) -> bool {
-    for index in range(start, values.len()) {
+    for index in start..values.len() {
         if type_contains_parameter(values[index], expected) {
             return true
         } else {
@@ -3204,7 +3204,7 @@ fn expand_type_alias_inner(ctx: Checker, value: Type, stack: Vec[string], report
                         Type::Error
                     } else {
                         let substitutions = Vec::new();
-                        for index in range(0, alias.generics.len()) {
+                        for index in 0..alias.generics.len() {
                             substitutions.push(
                                 TypeSubst { name: alias.generics[index], ty: expanded_args[index] },
                             )

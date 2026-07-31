@@ -133,7 +133,7 @@ fn artifact_json_primitive(writer: ArtifactJsonWriter, value: tast::Primitive, t
 fn artifact_constructor_separator(value: string) -> int {
     let result = Ref::new(-1);
     if value.byte_len() > 1 {
-        for index in range(0, value.byte_len() - 1) {
+        for index in 0..value.byte_len() - 1 {
             if strings::starts_with_at(value, index, "::") {
                 result.set(index)
             } else {

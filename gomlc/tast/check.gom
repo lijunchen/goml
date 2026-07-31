@@ -51,7 +51,7 @@ fn parse_char_literal(value: string) -> Option[char] {
         }
     } else if value.byte_len() == 6 && value.byte_get(1) == 117 {
         let code = Ref::new(0);
-        for index in range(2, 6) {
+        for index in 2..6 {
             match char_hex_value(value.byte_get(index)) {
                 Some(digit) => code.set(code.get() * 16 + digit),
                 None => return Option::None,
@@ -93,7 +93,7 @@ fn decimal_digit(value: uint8) -> string {
 
 fn increment_decimal(value: string) -> string {
     let digits: Vec[uint8] = Vec::with_capacity(value.byte_len() + 1);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         digits.push(value.byte_get(index))
     };
     let index = Ref::new(digits.len() - 1);
@@ -129,7 +129,7 @@ fn increment_decimal(value: string) -> string {
 
 fn repeated_zeros(count: int) -> string {
     let builder = text::StringBuilder::with_capacity(count);
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char('0')
     };
     builder.finish()
@@ -174,7 +174,7 @@ fn float_decimal(value: string) -> Option[FloatDecimal] {
     };
     let builder = text::StringBuilder::with_capacity(value.byte_len() - start);
     let decimal_position = Ref::new(-1);
-    for index in range(start, value.byte_len()) {
+    for index in start..value.byte_len() {
         let byte = value.byte_get(index);
         if byte == 46 && decimal_position.get() < 0 {
             decimal_position.set(builder.len())
@@ -274,7 +274,7 @@ fn shortest_float32_literal(value: float64) -> string {
             } else {
                 9
             };
-            for precision in range(1, limit + 1) {
+            for precision in 1..limit + 1 {
                 let coefficient = parts.digits.byte_slice(0, precision);
                 let rounded_coefficient = increment_decimal(coefficient);
                 let power = parts.exponent - precision;
@@ -342,7 +342,7 @@ fn decimal_magnitude_fits(value: string, limit: string) -> bool {
     } else if value.byte_len() > limit.byte_len() {
         false
     } else {
-        for index in range(0, value.byte_len()) {
+        for index in 0..value.byte_len() {
             if value.byte_get(index) < limit.byte_get(index) {
                 return true
             } else if value.byte_get(index) > limit.byte_get(index) {
@@ -974,7 +974,7 @@ fn check_name_ref_inner(ctx: Checker, value: hir::NameRef) -> Expr {
                                 Option::None,
                             );
                             let params: Vec[Type] = Vec::new();
-                            for _ in range(0, value.arity) {
+                            for _ in 0..value.arity {
                                 params.push(fresh_type(ctx.counter, VarKind::Any))
                             };
                             Expr::Callable {
@@ -1038,7 +1038,7 @@ fn resolved_constructor_value_expr(ctx: Checker, info: ResolvedConstructor) -> E
     } else if !(info.named) {
         let params: Vec[ClosureParam] = Vec::new();
         let args: Vec[Expr] = Vec::new();
-        for index in range(0, info.fields.len()) {
+        for index in 0..info.fields.len() {
             let name = "ctor_arg_" + index.to_string();
             let ty = info.fields[index];
             params.push(ClosureParam { name, ty });
@@ -1229,7 +1229,7 @@ fn check_resolved_constructor_expr(
         ()
     };
     let values: Vec[Expr] = Vec::new();
-    for index in range(0, args.len()) {
+    for index in 0..args.len() {
         let expected = if index < info.fields.len() {
             Option::Some(info.fields[index])
         } else {
@@ -1272,7 +1272,7 @@ fn check_constructor_expr(
 }
 
 fn named_expr_field_before(values: Vec[(string, hir::Expr)], end: int, name: string) -> bool {
-    for index in range(0, end) {
+    for index in 0..end {
         if values[index].0 == name {
             return true
         } else {
@@ -1331,7 +1331,7 @@ fn check_struct_update_expr(
             };
             let stmts: Vec[Stmt] = Vec::new();
             let checked_fields: Vec[(string, string, Type)] = Vec::new();
-            for index in range(0, fields.len()) {
+            for index in 0..fields.len() {
                 let provided = fields[index];
                 if named_expr_field_before(fields, index, provided.0) {
                     push_diagnostic_at(
@@ -1455,7 +1455,7 @@ fn check_struct_expr(
                 Some(ty) => expect_type(ctx, info.ty, ty),
                 None => (),
             };
-            for index in range(0, fields.len()) {
+            for index in 0..fields.len() {
                 let provided = fields[index];
                 if named_expr_field_before(fields, index, provided.0) {
                     push_diagnostic_at(
@@ -1583,7 +1583,7 @@ fn check_positional_struct_expr(
         ()
     };
     let values: Vec[Expr] = Vec::new();
-    for index in range(0, args.len()) {
+    for index in 0..args.len() {
         let expected = if index < info.fields.len() {
             Option::Some(info.fields[index].1)
         } else {
@@ -1613,7 +1613,7 @@ fn check_tuple_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]
         Some(ty) => expect_type(ctx, Type::Tuple { items: types }, ty),
         None => (),
     };
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         items.push(check_expr(ctx, values[index], Option::Some(types[index])))
     };
     coerce_expr(ctx, Expr::Tuple { items, ty: Type::Tuple { items: types } }, expected)
@@ -1881,7 +1881,7 @@ fn callable_parts(ctx: Checker, value: Type, arity: int) -> (Vec[Type], Type) {
         Func { params, ret_ty } => (params, ret_ty),
         Var(variable) => {
             let params: Vec[Type] = Vec::new();
-            for _ in range(0, arity) {
+            for _ in 0..arity {
                 params.push(fresh_unresolved_inference(ctx))
             };
             let ret_ty = fresh_unresolved_inference(ctx);
@@ -1913,7 +1913,7 @@ fn normalize_function_expr(ctx: Checker, value: Expr) -> Expr {
 }
 
 fn array_wildcard_length(params: Vec[Type], values: Vec[Expr]) -> Option[int] {
-    for offset in range(0, params.len()) {
+    for offset in 0..params.len() {
         let index = params.len() - 1 - offset;
         if index < values.len() {
             match (prune(params[index]), prune(expr_type(values[index]))) {
@@ -2041,7 +2041,7 @@ fn arity_diagnostic_type(value: Type) -> Type {
 }
 
 fn trait_arguments_match(params: Vec[Type], values: Vec[Expr]) -> bool {
-    for index in range(1, values.len()) {
+    for index in 1..values.len() {
         if index < params.len() && !call_types_compatible(params[index], expr_type(values[index])) {
             return false
         } else {
@@ -3044,7 +3044,7 @@ fn hir_or_pattern_binding_mismatch(value: hir::Pat) -> bool {
         Or { pats } => {
             if pats.len() > 0 {
                 let expected = hir_pattern_locals(pats[0]);
-                for index in range(1, pats.len()) {
+                for index in 1..pats.len() {
                     if !hir_local_sets_match(expected, hir_pattern_locals(pats[index])) {
                         return true
                     } else {
@@ -3117,7 +3117,7 @@ fn tast_or_pattern_binding_mismatch(value: Pat) -> bool {
         Or { pats, ty: _ } => {
             if pats.len() > 0 {
                 let expected = tast_pattern_binding_count(pats[0]);
-                for index in range(1, pats.len()) {
+                for index in 1..pats.len() {
                     if tast_pattern_binding_count(pats[index]) != expected {
                         return true
                     } else {
@@ -3188,7 +3188,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
         ()
     };
     let analysis_arms: Vec[Arm] = Vec::new();
-    for index in range(0, typed_arms.len()) {
+    for index in 0..typed_arms.len() {
         let arm = typed_arms[index];
         analysis_arms.push(
             Arm {
@@ -3204,7 +3204,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
     };
     let useful_arms = match_useful_arms(ctx, analysis_arms);
     let invalid_coverage_seen = Ref::new(false);
-    for index in range(0, useful_arms.len()) {
+    for index in 0..useful_arms.len() {
         if follows_invalid_coverage[index] || invalid_coverage_seen.get() || !(useful_arms[index]) {
             push_warning_at(ctx, "Unreachable match arm", Option::Some(pattern_spans[index]))
         } else {
@@ -3241,7 +3241,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
 }
 
 fn diagnostics_invalidate_coverage(ctx: Checker, start: int) -> bool {
-    for index in range(start, ctx.diagnostics.len()) {
+    for index in start..ctx.diagnostics.len() {
         let message = ctx.diagnostics[index].message;
         if strings::starts_with(message, "Or-pattern alternatives")
             || (strings::starts_with(message, "Constructor ")
@@ -3297,7 +3297,7 @@ fn try_type_parts(value: Type) -> Option[(string, Vec[Type])] {
 fn user_try_variant_tag(ctx: Checker, name: string, variant: string) -> Option[int] {
     match find_enum_by_name(ctx, name) {
         Some(definition) => {
-            for index in range(0, definition.variants.len()) {
+            for index in 0..definition.variants.len() {
                 if definition.variants[index].name == variant {
                     return Option::Some(index)
                 } else {
@@ -3327,7 +3327,7 @@ fn try_variant_fields(ctx: Checker, enum_name: string, variant_name: string, arg
 ] {
     match find_enum_by_name(ctx, enum_name) {
         Some(info) => {
-            for offset in range(0, info.variants.len()) {
+            for offset in 0..info.variants.len() {
                 let variant = info.variants[info.variants.len() - 1 - offset];
                 if variant.name == variant_name {
                     let fields: Vec[Type] = Vec::new();
@@ -3528,7 +3528,7 @@ fn check_try_expr(ctx: Checker, index: int, source: hir::Expr, span: ast::Span) 
         check_expr(ctx, source, expected)
     };
     if numeric_source {
-        for constraint_index in range(constraint_start, ctx.numeric_literal_constraints.len()) {
+        for constraint_index in constraint_start..ctx.numeric_literal_constraints.len() {
             let constraint = ctx.numeric_literal_constraints[constraint_index];
             ctx.numeric_literal_constraints.set(
                 constraint_index,
@@ -3541,7 +3541,7 @@ fn check_try_expr(ctx: Checker, index: int, source: hir::Expr, span: ast::Span) 
                 },
             )
         };
-        for constraint_index in range(coercion_start, ctx.coercion_constraints.len()) {
+        for constraint_index in coercion_start..ctx.coercion_constraints.len() {
             let constraint = ctx.coercion_constraints[constraint_index];
             ctx.coercion_constraints.set(
                 constraint_index,
@@ -4660,7 +4660,7 @@ fn check_constructor_pattern(
                         + args.len().to_string(),
                 )
             } else {
-                for index in range(0, args.len()) {
+                for index in 0..args.len() {
                     values.push(check_pattern(ctx, args[index], info.fields[index]))
                 }
             };
@@ -4727,7 +4727,7 @@ fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
 }
 
 fn named_pattern_field_before(values: Vec[(string, hir::Pat)], end: int, name: string) -> bool {
-    for index in range(0, end) {
+    for index in 0..end {
         if values[index].0 == name {
             return true
         } else {
@@ -4764,7 +4764,7 @@ fn check_struct_pattern(
             } else {
                 ()
             };
-            for index in range(0, fields.len()) {
+            for index in 0..fields.len() {
                 if named_pattern_field_before(fields, index, fields[index].0) {
                     push_diagnostic(
                         ctx,
@@ -4957,7 +4957,7 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 };
                 expect_type(ctx, expected, Type::Tuple { items: types });
                 let items: Vec[Pat] = Vec::new();
-                for index in range(0, values.len()) {
+                for index in 0..values.len() {
                     items.push(check_pattern(ctx, values[index], types[index]))
                 };
                 Pat::Tuple { items, ty: expected }

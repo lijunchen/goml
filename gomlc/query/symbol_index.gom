@@ -263,7 +263,7 @@ fn symbol_name_ends_with(value: string, expected: string) -> bool {
 }
 
 pub fn find_symbol(index: SymbolIndex, qualified_name: string) -> Option[Symbol] {
-    for offset in range(0, index.symbols.len()) {
+    for offset in 0..index.symbols.len() {
         let symbol = index.symbols[index.symbols.len() - 1 - offset];
         if symbol.qualified_name == qualified_name {
             return Option::Some(symbol)

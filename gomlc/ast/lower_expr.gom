@@ -142,7 +142,7 @@ fn unicode_escape_character(value: string, start: int) -> Option[char] {
         ()
     };
     let code = Ref::new(0);
-    for cursor in range(start, start + 4) {
+    for cursor in start..start + 4 {
         match hex_value(value.byte_get(cursor)) {
             Some(part) => code.set(code.get() * 16 + part),
             None => return Option::None,

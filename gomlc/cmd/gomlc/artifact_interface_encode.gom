@@ -398,7 +398,7 @@ fn artifact_json_package_exports(
 }
 
 fn artifact_json_string_map(writer: ArtifactJsonWriter, values: Vec[(string, string)]) -> unit {
-    for index in range(1, values.len()) {
+    for index in 1..values.len() {
         let current = values[index];
         let destination = Ref::new(index);
         while destination.get() > 0

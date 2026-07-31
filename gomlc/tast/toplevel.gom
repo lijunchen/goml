@@ -182,7 +182,7 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
                     match deferred_method_name(callable) {
                         Some(name) => if args.len() > 0 {
                             let arg_types: Vec[Type] = Vec::new();
-                            for index in range(1, args.len()) {
+                            for index in 1..args.len() {
                                 arg_types.push(expr_type(args[index]))
                             };
                             match resolve_method(
@@ -1008,7 +1008,7 @@ fn validate_method_signature(
     owner_predicate_count: int,
 ) -> unit {
     let actual_method_generics = Vec::new();
-    for index in range(owner_generic_count, actual.generics.len()) {
+    for index in owner_generic_count..actual.generics.len() {
         actual_method_generics.push(actual.generics[index])
     };
     if expected.generics.len() != actual_method_generics.len() {
@@ -1027,7 +1027,7 @@ fn validate_method_signature(
     } else {
         actual_method_generics.len()
     };
-    for index in range(0, generic_count) {
+    for index in 0..generic_count {
         substitutions.push(
             TypeSubst {
                 name: expected.generics[index],
@@ -1056,7 +1056,7 @@ fn validate_method_signature(
     } else {
         actual.params.len()
     };
-    for index in range(0, common) {
+    for index in 0..common {
         let expected_ty = expected_params[index];
         let actual_ty = normalize_type(ctx, actual.params[index].1);
         if !type_matches(ctx, expected_ty, actual_ty) {
@@ -1089,7 +1089,7 @@ fn validate_method_signature(
         expected_predicates.push(substitute_predicate(predicate, substitutions))
     };
     let actual_predicates: Vec[TypePredicate] = Vec::new();
-    for index in range(owner_predicate_count, actual.predicates.len()) {
+    for index in owner_predicate_count..actual.predicates.len() {
         actual_predicates.push(actual.predicates[index])
     };
     if !type_predicate_sets_equal(expected_predicates, actual_predicates) {
@@ -1153,7 +1153,7 @@ fn contains_associated_type(values: Vec[AssociatedTypeInfo], name: string) -> bo
 }
 
 fn impl_associated_type(values: Vec[(string, Type)], name: string) -> Option[Type] {
-    for offset in range(0, values.len()) {
+    for offset in 0..values.len() {
         let value = values[values.len() - 1 - offset];
         if value.0 == name {
             return Option::Some(value.1)
@@ -1639,7 +1639,7 @@ fn by_value_type_has_cycle(ctx: Checker, value: Type, active: Vec[string]) -> bo
 }
 
 fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
-    for index in range(0, struct_count) {
+    for index in 0..struct_count {
         let info = ctx.structs[index];
         let active = Vec::[info.name];
         for field in info.fields {
@@ -1694,7 +1694,7 @@ fn cycle_text(values: Vec[string]) -> string {
 }
 
 fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
-    for index in range(0, trait_count) {
+    for index in 0..trait_count {
         let info = ctx.traits[index];
         for reference in info.supertraits {
             let path = Vec::[short_name(info.name), short_name(reference.name)];
@@ -1713,21 +1713,21 @@ fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
 }
 
 fn validate_local_definitions(ctx: Checker, enum_count: int, struct_count: int, trait_count: int) -> unit {
-    for index in range(0, enum_count) {
+    for index in 0..enum_count {
         for variant in ctx.enums[index].variants {
             for field in enum_variant_field_types(variant.fields) {
                 validate_signature_type(ctx, field)
             }
         }
     };
-    for index in range(0, struct_count) {
+    for index in 0..struct_count {
         for field in ctx.structs[index].fields {
             validate_signature_type(ctx, field.1)
         }
     };
     validate_struct_sizes(ctx, struct_count);
     validate_supertrait_cycles(ctx, trait_count);
-    for index in range(0, trait_count) {
+    for index in 0..trait_count {
         let info = ctx.traits[index];
         for predicate in info.predicates {
             match predicate {
@@ -1805,7 +1805,7 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
 }
 
 fn declaration_name_index(values: Vec[string], expected: string) -> int {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if values[index] == expected {
             return index
         } else {
@@ -2109,7 +2109,7 @@ fn validate_cross_file_declaration_names(
                 None => (),
             }
         };
-        for index in range(0, local_nominal_names.len()) {
+        for index in 0..local_nominal_names.len() {
             let name = local_nominal_names[index];
             let kind = local_nominal_kinds[index];
             let previous = declaration_name_index(nominal_names, name);
@@ -2136,7 +2136,7 @@ fn validate_cross_file_declaration_names(
                 )
             }
         };
-        for index in range(0, local_function_names.len()) {
+        for index in 0..local_function_names.len() {
             let name = local_function_names[index];
             let kind = local_function_kinds[index];
             let previous = declaration_name_index(function_names, name);
@@ -2237,7 +2237,7 @@ fn move_diagnostics_before(values: Vec[Diagnostic], message: string, anchor: str
             }
         };
         let result: Vec[Diagnostic] = Vec::new();
-        for index in range(0, values.len()) {
+        for index in 0..values.len() {
             let value = values[index];
             if value.message == message {
                 ()
@@ -2257,7 +2257,7 @@ fn move_diagnostics_before(values: Vec[Diagnostic], message: string, anchor: str
 }
 
 fn diagnostic_message_index(values: Vec[Diagnostic], message: string) -> int {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if values[index].message == message {
             return index
         } else {
@@ -2300,7 +2300,7 @@ fn order_extern_diagnostics(ctx: Checker) -> Vec[Diagnostic] {
 fn attach_diagnostic_span(ctx: Checker, message: string, span: Option[ast::Span]) -> unit {
     match span {
         Some(span) => {
-            for index in range(0, ctx.diagnostics.len()) {
+            for index in 0..ctx.diagnostics.len() {
                 let value = ctx.diagnostics[index];
                 if value.message == message && value.source_path == ctx.source_path {
                     ctx.diagnostics.set(
@@ -2376,7 +2376,7 @@ fn attach_type_diagnostic_span(ctx: Checker, value: hir::TypeExpr, span: Option[
 }
 
 fn attach_trait_ref_diagnostic_spans(ctx: Checker, value: hir::TraitRef) -> unit {
-    for index in range(0, value.args.len()) {
+    for index in 0..value.args.len() {
         attach_type_diagnostic_span(
             ctx,
             value.args[index],
@@ -2424,7 +2424,7 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             member_type_args,
             member_type_arg_spans,
         } => {
-            for index in range(0, owner_type_args.len()) {
+            for index in 0..owner_type_args.len() {
                 attach_type_diagnostic_span(
                     ctx,
                     owner_type_args[index],
@@ -2435,7 +2435,7 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
                     },
                 )
             };
-            for index in range(0, member_type_args.len()) {
+            for index in 0..member_type_args.len() {
                 attach_type_diagnostic_span(
                     ctx,
                     member_type_args[index],
@@ -2530,7 +2530,7 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                 match variant.fields {
                     Unit => (),
                     Tuple(types) => {
-                        for index in range(0, types.len()) {
+                        for index in 0..types.len() {
                             attach_type_diagnostic_span(
                                 ctx,
                                 types[index],
@@ -2543,7 +2543,7 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                         }
                     },
                     Struct(values) => {
-                        for index in range(0, values.len()) {
+                        for index in 0..values.len() {
                             attach_type_diagnostic_span(
                                 ctx,
                                 values[index].1,
@@ -2558,7 +2558,7 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                 }
             },
             StructDef(value) => if value.generics.len() == 0 {
-                for index in range(0, value.fields.len()) {
+                for index in 0..value.fields.len() {
                     attach_type_diagnostic_span(
                         ctx,
                         value.fields[index].1,
@@ -2631,7 +2631,7 @@ fn check_file_with_package(
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     };
-    for index in range(0, ctx.constants.len()) {
+    for index in 0..ctx.constants.len() {
         let constant = ctx.constants[index];
         ctx.constants.set(
             index,
@@ -2695,7 +2695,7 @@ fn check_file_with_package(
     } else {
         Vec::new()
     };
-    for index in range(0, local_enum_count) {
+    for index in 0..local_enum_count {
         let value = ctx.enums[index];
         let variants: Vec[EnumVariantDef] = Vec::new();
         for variant in value.variants {
@@ -2704,7 +2704,7 @@ fn check_file_with_package(
         enums.push(EnumDef { name: value.name, generics: value.generics, variants })
     };
     let structs: Vec[StructDef] = Vec::new();
-    for index in range(0, local_struct_count) {
+    for index in 0..local_struct_count {
         let value = ctx.structs[index];
         structs.push(
             StructDef {
@@ -2830,9 +2830,9 @@ pub fn check_package_files_for_link_with_environments(
     let diagnostics: Vec[Diagnostic] = Vec::new();
     let typeck_results = empty_typeck_results();
     let valid = Ref::new(true);
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         let package_files: Vec[hir::File] = Vec::new();
-        for other in range(0, values.len()) {
+        for other in 0..values.len() {
             if other != index {
                 package_files.push(values[other])
             } else {

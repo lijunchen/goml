@@ -170,7 +170,7 @@ fn unify_types(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
+        for index in 0..left.len() {
             if !unify(left[index], right[index]) {
                 return false
             } else {
@@ -270,7 +270,7 @@ fn type_mismatch_text(left: Type, right: Type) -> string {
 }
 
 fn first_type_list_error(left: Vec[Type], right: Vec[Type]) -> Option[string] {
-    for index in range(0, left.len()) {
+    for index in 0..left.len() {
         match first_unification_error(left[index], right[index]) {
             Some(message) => return Option::Some(message),
             None => (),
@@ -471,7 +471,7 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
+        for index in 0..left.len() {
             if !types_equal(left[index], right[index]) {
                 return false
             } else {
@@ -653,7 +653,7 @@ fn unify_parameter_alias_lists(left: Vec[Type], right: Vec[Type], substitutions:
     if left.len() != right.len() {
         false
     } else {
-        for index in range(0, left.len()) {
+        for index in 0..left.len() {
             if !unify_parameter_aliases(left[index], right[index], substitutions) {
                 return false
             } else {
@@ -748,7 +748,7 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
 
 fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int {
     let result = Ref::new(-1);
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if result.get() < 0 && types_equal(values[index].projection, projection) {
             result.set(index)
         } else {
@@ -881,7 +881,7 @@ fn projection_equality(ctx: Checker, base: Type, name: string, qualifier: Option
 }
 
 fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
-    for offset in range(0, value.associated_types.len()) {
+    for offset in 0..value.associated_types.len() {
         let associated = value.associated_types[value.associated_types.len() - 1 - offset];
         if associated.0 == name {
             return Option::Some(associated.1)
@@ -1125,7 +1125,7 @@ fn normalize_callable(ctx: Checker, value: Callable) -> Callable {
 }
 
 fn find_substitution(values: Vec[TypeSubst], name: string) -> Option[Type] {
-    for offset in range(0, values.len()) {
+    for offset in 0..values.len() {
         let value = values[values.len() - 1 - offset];
         if value.name == name {
             return Option::Some(value.ty)
@@ -1193,7 +1193,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
 
 pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Type {
     let substitutions: Vec[TypeSubst] = Vec::new();
-    for index in range(0, names.len()) {
+    for index in 0..names.len() {
         if index < args.len() {
             substitutions.push(TypeSubst { name: names[index], ty: args[index] })
         } else {
@@ -1207,7 +1207,7 @@ fn instantiate_substitutions(counter: Ref[int], params: Vec[string], explicit: V
     TypeSubst,
 ] {
     let result: Vec[TypeSubst] = Vec::new();
-    for index in range(0, params.len()) {
+    for index in 0..params.len() {
         result.push(
             TypeSubst {
                 name: params[index],
@@ -1388,7 +1388,7 @@ fn nominal_type(name: string, args: Vec[Type]) -> Type {
 
 fn parse_array_length(value: string) -> int {
     let result = Ref::new(0);
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if byte >= 48 && byte <= 57 {
             result.set(result.get() * 10 + (byte - 48) as int)

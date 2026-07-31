@@ -71,7 +71,7 @@ fn derive_targets(value: string) -> Vec[string] {
     let result: Vec[string] = Vec::new();
     let derive_start = Ref::new(-1);
     if value.byte_len() >= 6 {
-        for index in range(0, value.byte_len() - 5) {
+        for index in 0..value.byte_len() - 5 {
             if strings::starts_with_at(value, index, "derive") {
                 derive_start.set(index + 6)
             } else {
@@ -228,7 +228,7 @@ fn concat_parts(parts: Vec[ast::Expr]) -> ast::Expr {
         string_expr("")
     } else {
         let result = Ref::new(parts[0]);
-        for index in range(1, parts.len()) {
+        for index in 1..parts.len() {
             result.set(
                 ast::Expr::Binary {
                     op: ast::BinaryOp::Add,
@@ -343,7 +343,7 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
     for variant in value.variants {
         let fields = enum_field_types(variant.fields);
         let bindings: Vec[string] = Vec::new();
-        for index in range(0, fields.len()) {
+        for index in 0..fields.len() {
             bindings.push("__field" + index.to_string())
         };
         let parts: Vec[ast::Expr] = Vec::new();
@@ -353,7 +353,7 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
             },
             Tuple(_) => {
                 parts.push(string_expr(value.name + "::" + variant.name + "("));
-                for index in range(0, fields.len()) {
+                for index in 0..fields.len() {
                     if index > 0 {
                         parts.push(string_expr(", "))
                     } else {
@@ -365,7 +365,7 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
             },
             Struct(named) => {
                 parts.push(string_expr(value.name + "::" + variant.name + " { "));
-                for index in range(0, named.len()) {
+                for index in 0..named.len() {
                     if index > 0 {
                         parts.push(string_expr(", "))
                     } else {
@@ -412,7 +412,7 @@ fn struct_eq_body(value: ast::StructDef) -> ast::Expr {
 
 fn variant_bindings(prefix: string, variant: int, count: int) -> Vec[string] {
     let result: Vec[string] = Vec::new();
-    for index in range(0, count) {
+    for index in 0..count {
         result.push(prefix + variant.to_string() + "_" + index.to_string())
     };
     result
@@ -444,7 +444,7 @@ fn enum_variant_pat(path: ast::Path, fields: ast::EnumVariantFields, bindings: V
     match fields {
         Struct(fields) => {
             let patterns: Vec[(string, ast::Pat)] = Vec::new();
-            for index in range(0, fields.len()) {
+            for index in 0..fields.len() {
                 patterns.push(
                     (fields[index].0, ast::Pat::Var { name: bindings[index], span: dummy_span() }),
                 )
@@ -473,7 +473,7 @@ fn enum_eq_body(value: ast::EnumDef) -> ast::Expr {
             enum_variant_pat(two_segment_path(value.name, variant.name), variant.fields, right),
         );
         let body = Ref::new(bool_expr(true));
-        for index in range(0, left.len()) {
+        for index in 0..left.len() {
             let args: Vec[ast::Expr] = Vec::new();
             args.push(var_expr(left[index]));
             args.push(var_expr(right[index]));
@@ -543,7 +543,7 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
     let variant_index = Ref::new(0);
     for variant in value.variants {
         let bindings: Vec[string] = Vec::new();
-        for field_index in range(0, enum_field_types(variant.fields).len()) {
+        for field_index in 0..enum_field_types(variant.fields).len() {
             bindings.push(
                 "__field" + variant_index.get().to_string() + "_" + field_index.to_string(),
             )

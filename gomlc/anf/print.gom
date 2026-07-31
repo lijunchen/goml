@@ -5,7 +5,7 @@ use gomlc::tast;
 use std::text;
 
 fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in range(0, count) {
+    for _ in 0..count {
         builder.write_char(' ')
     }
 }
@@ -69,7 +69,7 @@ fn write_imm(builder: text::StringBuilder, value: Imm) -> unit {
 }
 
 fn write_imms(builder: text::StringBuilder, values: Vec[Imm]) -> unit {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
@@ -86,7 +86,7 @@ fn write_constructor(builder: text::StringBuilder, constructor: tast::Constructo
             builder.write_string(" {}")
         } else if constructor.fields.len() == args.len() {
             builder.write_string(" { ");
-            for index in range(0, args.len()) {
+            for index in 0..args.len() {
                 if index > 0 {
                     builder.write_string(", ")
                 } else {
@@ -213,7 +213,7 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
 }
 
 fn write_params(builder: text::StringBuilder, values: Vec[(string, tast::Type)]) -> unit {
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         if index > 0 {
             builder.write_string(", ")
         } else {
@@ -344,7 +344,7 @@ fn write_function(builder: text::StringBuilder, value: Function) -> unit {
 
 pub fn encode(value: File) -> string {
     let builder = text::StringBuilder::new();
-    for index in range(0, value.constants.len()) {
+    for index in 0..value.constants.len() {
         if index > 0 {
             builder.write_char('\n')
         } else {
@@ -357,7 +357,7 @@ pub fn encode(value: File) -> string {
     } else {
         ()
     };
-    for index in range(0, value.functions.len()) {
+    for index in 0..value.functions.len() {
         if index > 0 {
             builder.write_string("\n\n")
         } else {

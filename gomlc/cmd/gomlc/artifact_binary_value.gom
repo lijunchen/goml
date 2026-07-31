@@ -50,7 +50,7 @@ fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTab
 fn artifact_binary_string_table_from_values(values: Vec[string]) -> ArtifactBinaryStringTable {
     let values = sort_artifact_names(values);
     let indexes: HashMap[string, int] = HashMap::{};
-    for index in range(0, values.len()) {
+    for index in 0..values.len() {
         indexes[values[index]] = index;
     };
     ArtifactBinaryStringTable { values, indexes }
@@ -85,7 +85,7 @@ fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
     };
     let values = Vec::with_capacity(count);
     let indexes: HashMap[string, int] = HashMap::{};
-    for index in range(0, count) {
+    for index in 0..count {
         let value = artifact_binary_read_string(reader)?;
         if indexes.contains(value) {
             return Result::Err("duplicate binary artifact string")
@@ -235,7 +235,7 @@ fn artifact_binary_decode_value_at(
                 ()
             };
             let values = Vec::with_capacity(count);
-            for _ in range(0, count) {
+            for _ in 0..count {
                 match artifact_binary_decode_value_at(reader, table, depth + 1) {
                     Ok(value) => values.push(value),
                     Err(error) => return Result::Err(error),
@@ -256,7 +256,7 @@ fn artifact_binary_decode_value_at(
             } else {
                 Option::None
             };
-            for _ in range(0, count) {
+            for _ in 0..count {
                 let name = artifact_binary_decode_string_id(reader, table)?;
                 let duplicate = match names {
                     Some(value) => value.contains(name),

@@ -193,7 +193,7 @@ fn signature_parameters(value: Analysis, fact: tast::CallFact, types: Vec[tast::
         None => 0,
     };
     let result = Vec::new();
-    for index in range(type_start, types.len()) {
+    for index in type_start..types.len() {
         let type_text = tast::diagnostic_type_text(types[index]);
         let name = match names {
             Some(values) => {
@@ -236,7 +236,7 @@ fn active_parameter(fact: tast::CallFact, offset: int) -> int {
 pub fn signature_help(value: Analysis, offset: int) -> Option[SignatureResult] {
     let calls = value.checked.typeck_results.calls;
     let best = Ref::new(-1);
-    for candidate in range(0, calls.len()) {
+    for candidate in 0..calls.len() {
         let fact = calls[candidate];
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact.span.start <= offset

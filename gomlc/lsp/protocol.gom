@@ -85,7 +85,7 @@ fn ascii_prefix_equal_case_insensitive(value: string, expected: string) -> bool 
     if value.byte_len() < expected.byte_len() {
         false
     } else {
-        for index in range(0, expected.byte_len()) {
+        for index in 0..expected.byte_len() {
             if ascii_lower(value.byte_get(index)) != ascii_lower(expected.byte_get(index)) {
                 return false
             } else {
@@ -112,7 +112,7 @@ fn decimal_length(value: string) -> Result[int, string] {
     } else {
         ()
     };
-    for index in range(0, value.byte_len()) {
+    for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if byte < 48 || byte > 57 {
             return Result::Err("invalid Content-Length")

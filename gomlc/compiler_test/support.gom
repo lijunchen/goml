@@ -101,7 +101,7 @@ fn bytes_text(value: bytes::Bytes) -> string {
 fn assert_bytes(actual: bytes::Bytes, expected: Vec[uint8]) -> unit {
     let values = actual.to_vec();
     testing::assert(values.len() == expected.len());
-    for index in range(0, expected.len()) {
+    for index in 0..expected.len() {
         testing::assert(values[index] == expected[index])
     }
 }

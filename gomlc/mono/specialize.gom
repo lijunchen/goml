@@ -66,7 +66,7 @@ fn unify_types(templates: Vec[tast::Type], actuals: Vec[tast::Type], bindings: V
     if templates.len() != actuals.len() {
         false
     } else {
-        for index in range(0, templates.len()) {
+        for index in 0..templates.len() {
             if unify_type(templates[index], actuals[index], bindings) {
                 ()
             } else {
@@ -1089,9 +1089,9 @@ fn complete_function_bindings_up_to(
     generic_count: int,
     predicate_count: int,
 ) -> unit {
-    for _ in range(0, generic_count + 1) {
+    for _ in 0..generic_count + 1 {
         let previous_len = bindings.len();
-        for index in range(0, predicate_count) {
+        for index in 0..predicate_count {
             let predicate = value.predicates[index];
             match predicate {
                 Trait { for_ty, trait_ref: reference } => {
@@ -1153,7 +1153,7 @@ fn predicates_are_satisfied_up_to(
     bindings: Vec[TypeBinding],
     predicate_count: int,
 ) -> bool {
-    for index in range(0, predicate_count) {
+    for index in 0..predicate_count {
         let predicate = value.predicates[index];
         match predicate {
             Trait { for_ty, trait_ref: reference } => {
@@ -1227,7 +1227,7 @@ fn complete_bindings_up_to(
     predicate_count: int,
 ) -> bool {
     complete_function_bindings_up_to(ctx, value, bindings, generic_count, predicate_count);
-    for index in range(0, generic_count) {
+    for index in 0..generic_count {
         let generic = value.generics[index];
         match find_binding(bindings, generic) {
             Some(ty) => if type_is_concrete(ty) {

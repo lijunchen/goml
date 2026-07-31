@@ -15,7 +15,7 @@ fn smallest_node_containing_span(syntax: SyntaxIndex, span: ast::Span, kind: cst
     SyntaxNode,
 ] {
     let best = Ref::new(-1);
-    for candidate in range(0, syntax.nodes.len()) {
+    for candidate in 0..syntax.nodes.len() {
         let node = syntax.nodes[candidate];
         let node_width = node.end - node.start;
         if cst::node_kind_equal(node.kind, kind) && node.start <= span.start && node.end >= span.end
