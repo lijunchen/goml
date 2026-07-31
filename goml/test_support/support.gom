@@ -161,7 +161,7 @@ pub fn run(args: Vec[string], directory: string) -> process::Output {
 }
 
 pub fn project_command(command: string, target: string, extra: Vec[string], directory: string) -> process::Output {
-    let args = Vec::new().pushed(command);
+    let args = Vec::[command];
     if command == "run" && target != "" {
         args.push(target)
     } else {

@@ -941,8 +941,8 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
 fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
     let ctx = TypeCtx {
         instances: Vec::new(),
-        instance_index: HashMap::new(),
-        used_names: HashMap::new(),
+        instance_index: HashMap::{},
+        used_names: HashMap::{},
         enums: value.enums,
         structs: value.structs,
         active_instances: Vec::new(),

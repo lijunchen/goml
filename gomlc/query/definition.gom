@@ -94,10 +94,7 @@ fn path_prefix(values: Vec[SyntaxToken], end: int) -> string {
 
 fn containing_use(value: Analysis, node: SyntaxNode) -> bool {
     let current = Ref::new(node.parent);
-    while match current.get() {
-        Some(_) => true,
-        None => false,
-    } {
+    while current.get().is_some() {
         match current.get() {
             Some(id) => {
                 let parent = value.syntax.nodes[id];

@@ -86,7 +86,7 @@ fn dependency_interfaces(graph: Graph, package_name: string, output_root: string
     string,
 ] {
     let names = Vec::new();
-    collect_dependencies(graph, package_name, HashMap::new(), names)?;
+    collect_dependencies(graph, package_name, HashMap::{}, names)?;
     let result = Vec::new();
     for name in util::sorted_unique(names) {
         result.push(extension(package_artifact_base(output_root, graph, name), "interface"))
@@ -137,7 +137,7 @@ fn compiler_world_path(context: Context) -> Option[string] {
 fn commands_with_world(context: Context, commands: Vec[Command]) -> Vec[Command] {
     match compiler_world_path(context) {
         Some(output) => {
-            let result = Vec::new().pushed(Command::PrepareWorld { output });
+            let result = Vec::[Command::PrepareWorld { output }];
             for command in commands {
                 result.push(command)
             };
@@ -405,12 +405,12 @@ fn append_test_group(
     commands: Vec[Command],
     groups: Vec[TestGroup],
 ) -> unit {
-    let test_packages = HashMap::new();
+    let test_packages: HashMap[string, bool] = HashMap::{};
     for graph in graphs {
         test_packages[graph.entry_package] = true;
     };
     let input_cores = Vec::new();
-    let added = HashMap::new();
+    let added: HashMap[string, bool] = HashMap::{};
     for package_name in context.graph.order {
         let root = if test_packages.contains(package_name) {
             output_root
@@ -469,7 +469,7 @@ fn append_test_group(
 pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     let dependency_root = path::join(path::join(context.artifact_root, "test"), "base");
     let commands = compile_commands(context, dependency_root, "build", "build")?;
-    let compiled_dependencies = HashMap::new();
+    let compiled_dependencies: HashMap[string, bool] = HashMap::{};
     for package_name in context.graph.order {
         compiled_dependencies[package_name] = true;
     };
@@ -574,10 +574,7 @@ fn display_args(program: string, args: Vec[string]) -> string {
 
 fn command_args(value: Command) -> (string, Vec[string]) {
     match value {
-        PrepareWorld { output } => (
-            "gomlc",
-            Vec::new().pushed("prepare-world").pushed("--output").pushed(output),
-        ),
+        PrepareWorld { output } => ("gomlc", Vec::["prepare-world", "--output", output]),
         Compile { subcommand, package_name, input_files, interface_files, output, world } => {
             let args = Vec::new();
             args.push(subcommand);
@@ -646,10 +643,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             };
             ("gomlc", args)
         },
-        GoBuild { input, output } => (
-            "go",
-            Vec::new().pushed("build").pushed("-o").pushed(output).pushed(input),
-        ),
+        GoBuild { input, output } => ("go", Vec::["build", "-o", output, input]),
     }
 }
 
@@ -821,13 +815,13 @@ fn discard_prepared_command(context: Context, cache: Option[PreparedCache]) -> u
 }
 
 fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
-    let producers: HashMap[string, Vec[int]] = HashMap::new();
+    let producers: HashMap[string, Vec[int]] = HashMap::{};
     for index in range(0, commands.len()) {
         match cache_spec(commands[index]) {
             Some(spec) => for output in spec.outputs {
                 match producers[output] {
                     Some(values) => values.push(index),
-                    None => producers.set(output, Vec::new().pushed(index)),
+                    None => producers.set(output, Vec::[index]),
                 }
             },
             None => (),

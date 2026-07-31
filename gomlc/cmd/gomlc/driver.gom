@@ -334,9 +334,7 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
             traits.push(value)
         }
     };
-    for name in Vec::new().pushed("Iterator").pushed("IntoIterator").pushed("Eq").pushed("Hash").pushed(
-        "ToString",
-    ) {
+    for name in Vec::["Iterator", "IntoIterator", "Eq", "Hash", "ToString"] {
         match tast::builtin_trait_info(name) {
             Some(value) => traits.push(value),
             None => fail("error[compile]: missing builtin trait " + name),
@@ -348,39 +346,82 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
         type_aliases: signatures.type_aliases,
         constants: signatures.constants,
     };
-    let contract_functions = Vec::new().pushed("array_get").pushed("array_set").pushed(
+    let contract_functions = Vec::[
+        "array_get",
+        "array_set",
         "unit_to_string",
-    ).pushed("bool_to_string").pushed("string_len").pushed("string_get").pushed("string_byte_get").pushed(
+        "bool_to_string",
+        "string_len",
+        "string_get",
+        "string_byte_get",
         "string_byte_slice",
-    ).pushed("string_is_char_boundary").pushed("string_decode_utf8_at").pushed("string_to_bytes").pushed(
+        "string_is_char_boundary",
+        "string_decode_utf8_at",
+        "string_to_bytes",
         "string_from_utf8",
-    ).pushed("string_concat").pushed("string_print").pushed("string_println").pushed(
+        "string_concat",
+        "string_print",
+        "string_println",
         "char_to_string",
-    ).pushed("char_from_uint32_raw").pushed("int_to_string").pushed("int8_to_string").pushed(
+        "char_from_uint32_raw",
+        "int_to_string",
+        "int8_to_string",
         "int16_to_string",
-    ).pushed("int32_to_string").pushed("int64_to_string").pushed("uint_to_string").pushed(
+        "int32_to_string",
+        "int64_to_string",
+        "uint_to_string",
         "uint8_to_string",
-    ).pushed("uint16_to_string").pushed("uint32_to_string").pushed("uint64_to_string").pushed(
+        "uint16_to_string",
+        "uint32_to_string",
+        "uint64_to_string",
         "float32_to_string",
-    ).pushed("float64_to_string").pushed("string_parse_float32").pushed("string_parse_float64").pushed(
+        "float64_to_string",
+        "string_parse_float32",
+        "string_parse_float64",
         "int_hash",
-    ).pushed("int8_hash").pushed("int16_hash").pushed("int32_hash").pushed("int64_hash").pushed(
+        "int8_hash",
+        "int16_hash",
+        "int32_hash",
+        "int64_hash",
         "uint_hash",
-    ).pushed("uint8_hash").pushed("uint16_hash").pushed("uint32_hash").pushed("float32_hash").pushed(
+        "uint8_hash",
+        "uint16_hash",
+        "uint32_hash",
+        "float32_hash",
         "float64_hash",
-    ).pushed("string_hash").pushed("char_hash").pushed("vec_new").pushed("vec_with_capacity").pushed(
+        "string_hash",
+        "char_hash",
+        "vec_new",
+        "vec_with_capacity",
         "vec_push",
-    ).pushed("vec_get").pushed("vec_set").pushed("vec_len").pushed("vec_capacity").pushed(
+        "vec_get",
+        "vec_set",
+        "vec_len",
+        "vec_capacity",
         "vec_reserve",
-    ).pushed("vec_truncate").pushed("slice").pushed("slice_get").pushed("slice_len").pushed(
+        "vec_truncate",
+        "slice",
+        "slice_get",
+        "slice_len",
         "slice_sub",
-    ).pushed("__goml_primitive_eq").pushed("hashmap_new").pushed("hashmap_get").pushed(
+        "__goml_primitive_eq",
+        "hashmap_new",
+        "hashmap_get",
         "hashmap_set",
-    ).pushed("hashmap_remove").pushed("hashmap_len").pushed("hashmap_contains").pushed(
+        "hashmap_remove",
+        "hashmap_len",
+        "hashmap_contains",
         "hashmap_entries",
-    ).pushed("channel_new").pushed("channel_send").pushed("channel_recv").pushed("channel_close").pushed(
+        "channel_new",
+        "channel_send",
+        "channel_recv",
+        "channel_close",
         "ref",
-    ).pushed("ref_get").pushed("ref_set").pushed("ptr_eq").pushed("ptr_hash");
+        "ref_get",
+        "ref_set",
+        "ptr_eq",
+        "ptr_hash",
+    ];
     let functions = Vec::new();
     for name in contract_functions {
         match tast::builtin_function_scheme(name) {
@@ -491,7 +532,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         env_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
     let fs_hir_dependencies: Vec[hir::File] = Vec::new();
     fs_hir_dependencies.push(host.hir_file);
@@ -506,7 +547,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         fs_hir_dependencies,
         fs_core_dependencies,
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(bytes).pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
     );
     let io_hir_dependencies: Vec[hir::File] = Vec::new();
     io_hir_dependencies.push(host.hir_file);
@@ -521,7 +562,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         io_hir_dependencies,
         io_core_dependencies,
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(bytes).pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
     );
     let path_hir_dependencies: Vec[hir::File] = Vec::new();
     path_hir_dependencies.push(host.hir_file);
@@ -533,7 +574,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         path_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
     let process_hir_dependencies: Vec[hir::File] = Vec::new();
     process_hir_dependencies.push(host.hir_file);
@@ -548,7 +589,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         process_hir_dependencies,
         process_core_dependencies,
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(bytes).pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
     );
     let testing_hir_dependencies: Vec[hir::File] = Vec::new();
     testing_hir_dependencies.push(host.hir_file);
@@ -560,7 +601,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         testing_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
     let text_hir_dependencies: Vec[hir::File] = Vec::new();
     text_hir_dependencies.push(bytes.hir_file);
@@ -574,7 +615,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         text_hir_dependencies,
         text_core_dependencies,
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(bytes)),
+        standard_artifact_deps(builtin_hash, Vec::[bytes]),
     );
     let json_hir_dependencies: Vec[hir::File] = Vec::new();
     json_hir_dependencies.push(text.hir_file);
@@ -588,7 +629,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         json_hir_dependencies,
         json_core_dependencies,
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(text)),
+        standard_artifact_deps(builtin_hash, Vec::[text]),
     );
     let num_hir_dependencies: Vec[hir::File] = Vec::new();
     num_hir_dependencies.push(host.hir_file);
@@ -600,7 +641,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         num_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
     let time_hir_dependencies: Vec[hir::File] = Vec::new();
     time_hir_dependencies.push(host.hir_file);
@@ -612,18 +653,34 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         time_hir_dependencies,
         Vec::new(),
         builtins,
-        standard_artifact_deps(builtin_hash, Vec::new().pushed(host)),
+        standard_artifact_deps(builtin_hash, Vec::[host]),
     );
-    let root_hir_dependencies = Vec::new().pushed(bytes.hir_file).pushed(collections.hir_file).pushed(
+    let root_hir_dependencies = Vec::[
+        bytes.hir_file,
+        collections.hir_file,
         env.hir_file,
-    ).pushed(fs.hir_file).pushed(io.hir_file).pushed(num.hir_file).pushed(path.hir_file).pushed(
+        fs.hir_file,
+        io.hir_file,
+        num.hir_file,
+        path.hir_file,
         process.hir_file,
-    ).pushed(text.hir_file).pushed(json.hir_file).pushed(time.hir_file);
-    let root_core_dependencies = Vec::new().pushed(bytes.core_value).pushed(collections.core_value).pushed(
+        text.hir_file,
+        json.hir_file,
+        time.hir_file,
+    ];
+    let root_core_dependencies = Vec::[
+        bytes.core_value,
+        collections.core_value,
         env.core_value,
-    ).pushed(fs.core_value).pushed(io.core_value).pushed(num.core_value).pushed(path.core_value).pushed(
+        fs.core_value,
+        io.core_value,
+        num.core_value,
+        path.core_value,
         process.core_value,
-    ).pushed(text.core_value).pushed(json.core_value).pushed(time.core_value);
+        text.core_value,
+        json.core_value,
+        time.core_value,
+    ];
     let root = compile_standard_package(
         stdlib::root_source(),
         "lib.gom",
@@ -634,9 +691,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         builtins,
         standard_artifact_deps(
             builtin_hash,
-            Vec::new().pushed(bytes).pushed(collections).pushed(env).pushed(fs).pushed(io).pushed(
-                num,
-            ).pushed(path).pushed(process).pushed(text).pushed(json).pushed(time),
+            Vec::[bytes, collections, env, fs, io, num, path, process, text, json, time],
         ),
     );
     StandardLibrary {

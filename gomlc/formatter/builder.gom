@@ -54,10 +54,7 @@ fn parts() -> Parts {
 }
 
 fn option_token_kind_some(value: Option[lexer::TokenKind]) -> bool {
-    match value {
-        Some(_) => true,
-        None => false,
-    }
+    value.is_some()
 }
 
 fn kind_is(kind: lexer::TokenKind, expected: lexer::TokenKind) -> bool {

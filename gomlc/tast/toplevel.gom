@@ -887,9 +887,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
             Some(reference) => if hir_type_uses_self_projection(associated.1) {
                 append_predicates(
                     predicates,
-                    Vec::new().pushed(
-                        TypePredicate::Trait { for_ty: for_type, trait_ref: reference },
-                    ),
+                    Vec::[TypePredicate::Trait { for_ty: for_type, trait_ref: reference }],
                 )
             } else {
                 predicates
@@ -1410,7 +1408,7 @@ fn validate_trait_impl_requirements(
     };
     for predicate in substitute_predicates(info.predicates, substitutions) {
         let predicate = resolve_impl_alias_predicate(ctx, predicate);
-        if predicates_satisfied_at(ctx, Vec::new().pushed(predicate), 0) {
+        if predicates_satisfied_at(ctx, Vec::[predicate], 0) {
             ()
         } else {
             push_diagnostic(
@@ -1643,7 +1641,7 @@ fn by_value_type_has_cycle(ctx: Checker, value: Type, active: Vec[string]) -> bo
 fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
     for index in range(0, struct_count) {
         let info = ctx.structs[index];
-        let active = Vec::new().pushed(info.name);
+        let active = Vec::[info.name];
         for field in info.fields {
             if by_value_type_has_cycle(ctx, field.1, active) {
                 push_diagnostic(
@@ -1699,7 +1697,7 @@ fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
     for index in range(0, trait_count) {
         let info = ctx.traits[index];
         for reference in info.supertraits {
-            let path = Vec::new().pushed(short_name(info.name)).pushed(short_name(reference.name));
+            let path = Vec::[short_name(info.name), short_name(reference.name)];
             if supertrait_path(ctx, reference.name, info.name, Vec::new(), path) {
                 push_diagnostic_at(
                     ctx,
@@ -1777,32 +1775,30 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
     result.push(
         EnumDef {
             name: "Option",
-            generics: Vec::new().pushed("T"),
-            variants: Vec::new().pushed(
+            generics: Vec::["T"],
+            variants: Vec::[
                 EnumVariantDef { name: "None", fields: EnumVariantFields::Unit },
-            ).pushed(
                 EnumVariantDef {
                     name: "Some",
-                    fields: EnumVariantFields::Tuple(Vec::new().pushed(Type::Param { name: "T" })),
+                    fields: EnumVariantFields::Tuple(Vec::[Type::Param { name: "T" }]),
                 },
-            ),
+            ],
         },
     );
     result.push(
         EnumDef {
             name: "Result",
-            generics: Vec::new().pushed("T").pushed("E"),
-            variants: Vec::new().pushed(
+            generics: Vec::["T", "E"],
+            variants: Vec::[
                 EnumVariantDef {
                     name: "Ok",
-                    fields: EnumVariantFields::Tuple(Vec::new().pushed(Type::Param { name: "T" })),
+                    fields: EnumVariantFields::Tuple(Vec::[Type::Param { name: "T" }]),
                 },
-            ).pushed(
                 EnumVariantDef {
                     name: "Err",
-                    fields: EnumVariantFields::Tuple(Vec::new().pushed(Type::Param { name: "E" })),
+                    fields: EnumVariantFields::Tuple(Vec::[Type::Param { name: "E" }]),
                 },
-            ),
+            ],
         },
     );
     result

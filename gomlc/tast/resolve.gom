@@ -65,7 +65,7 @@ fn add_name_index(
 }
 
 fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, int] {
-    let result: HashMap[string, int] = HashMap::new();
+    let result: HashMap[string, int] = HashMap::{};
     for index in range(0, values.len()) {
         let name = if short {
             short_name(values[index].name)
@@ -93,7 +93,7 @@ fn index_struct_name(ctx: Checker, value: StructInfo, index: int) -> unit {
 }
 
 fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, int] {
-    let result: HashMap[string, int] = HashMap::new();
+    let result: HashMap[string, int] = HashMap::{};
     for index in range(0, values.len()) {
         let name = if short {
             short_name(values[index].name)
@@ -205,13 +205,7 @@ fn pattern_owner_is_builtin_enum(ctx: Checker, name: string) -> bool {
 }
 
 fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {
-    match find_struct_by_name(ctx, name) {
-        Some(_) => true,
-        None => match find_enum_by_name(ctx, name) {
-            Some(_) => true,
-            None => false,
-        },
-    }
+    find_struct_by_name(ctx, name).is_some() || find_enum_by_name(ctx, name).is_some()
 }
 
 fn find_variant(value: EnumInfo, index: int) -> Option[EnumVariantInfo] {
@@ -691,10 +685,7 @@ fn variable_accepts_type(variable: Ref[TypeVar], value: Type) -> bool {
         Unbound { id: _, kind } => match prune(value) {
             Var(other) => match other.get() {
                 Link(inner) => variable_accepts_type(variable, inner),
-                Unbound { id: _, kind: other_kind } => match merge_var_kind(kind, other_kind) {
-                    Some(_) => true,
-                    None => false,
-                },
+                Unbound { id: _, kind: other_kind } => merge_var_kind(kind, other_kind).is_some(),
             },
             Param { name: _ } | Projection { for_ty: _, name: _, trait_ref: _ } => true,
             other => kind_accepts(kind, other),
@@ -1285,7 +1276,7 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
     };
     for _ in range(0, ctx.required_predicates.len() + 1) {
         for requirement in ctx.required_predicates {
-            let _ = predicates_satisfied_at(ctx, Vec::new().pushed(requirement.predicate), 0);
+            let _ = predicates_satisfied_at(ctx, Vec::[requirement.predicate], 0);
         };
     };
     let messages: Vec[string] = Vec::new();
@@ -1302,7 +1293,7 @@ fn resolve_required_predicates(ctx: Checker) -> bool {
             Equality { lhs: _, rhs: _ } => (),
         };
         if predicate_contains_error(requirement.predicate)
-            || predicates_satisfied_at(ctx, Vec::new().pushed(requirement.predicate), 0) {
+            || predicates_satisfied_at(ctx, Vec::[requirement.predicate], 0) {
             ()
         } else {
             let message = predicate_requirement_message(
@@ -1697,10 +1688,7 @@ fn deferred_method_candidate(
     let candidate_ty = Ref::new(Type::Error);
     for value in ctx.methods {
         if value.function.name == name && method_trait_in_scope(ctx, value)
-            && match value.trait_ref {
-                Some(_) => true,
-                None => false,
-            } {
+            && value.trait_ref.is_some() {
             let candidate = instantiate_method_candidate(ctx, value, Vec::new(), method_explicit);
             if method_matches_call(ctx, candidate.callable, receiver, args, expected) {
                 matches.set(matches.get() + 1);
@@ -1916,13 +1904,7 @@ fn resolve_builtin_container_method(
 }
 
 fn builtin_method_type_parameter(ctx: Checker, name: string, parameter: string, explicit: Vec[Type]) -> Type {
-    validate_explicit_method_type_arguments(
-        ctx,
-        name,
-        "method",
-        Vec::new().pushed(parameter),
-        explicit,
-    );
+    validate_explicit_method_type_arguments(ctx, name, "method", Vec::[parameter], explicit);
     if explicit.len() == 1 {
         explicit[0]
     } else {
@@ -2368,10 +2350,7 @@ fn resolve_dyn_method(
                         Option::Some(
                             ResolvedCallable {
                                 callable: Callable::Function("<error>"),
-                                ty: Type::Func {
-                                    params: Vec::new().pushed(receiver),
-                                    ret_ty: Type::Error,
-                                },
+                                ty: Type::Func { params: Vec::[receiver], ret_ty: Type::Error },
                                 predicates: Vec::new(),
                             },
                         )
@@ -2564,9 +2543,7 @@ pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
                 predicates: Vec::new(),
                 supertraits: Vec::new(),
                 associated_types: Vec::new(),
-                methods: Vec::new().pushed(
-                    builtin_trait_method("eq", two_types(self_ty, self_ty), Type::Bool),
-                ),
+                methods: Vec::[builtin_trait_method("eq", two_types(self_ty, self_ty), Type::Bool)],
             },
         )
     } else if name == "Hash" {
@@ -2577,9 +2554,7 @@ pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
                 predicates: Vec::new(),
                 supertraits: Vec::new(),
                 associated_types: Vec::new(),
-                methods: Vec::new().pushed(
-                    builtin_trait_method("hash", one_type(self_ty), Type::Uint64),
-                ),
+                methods: Vec::[builtin_trait_method("hash", one_type(self_ty), Type::Uint64)],
             },
         )
     } else if name == "ToString" {
@@ -2590,9 +2565,7 @@ pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
                 predicates: Vec::new(),
                 supertraits: Vec::new(),
                 associated_types: Vec::new(),
-                methods: Vec::new().pushed(
-                    builtin_trait_method("to_string", one_type(self_ty), Type::String),
-                ),
+                methods: Vec::[builtin_trait_method("to_string", one_type(self_ty), Type::String)],
             },
         )
     } else {
@@ -2675,7 +2648,7 @@ fn trait_ref_closure(ctx: Checker, reference: TraitRef) -> Vec[TraitRef] {
 fn trait_substitutions(ctx: Checker, info: TraitInfo, reference: TraitRef, self_ty: Option[Type]) -> Vec[
     TypeSubst,
 ] {
-    let params = append_names(info.generics, Vec::new().pushed("Self"));
+    let params = append_names(info.generics, Vec::["Self"]);
     let explicit: Vec[Type] = Vec::new();
     for arg in reference.args {
         explicit.push(arg)
@@ -3392,7 +3365,7 @@ fn expand_type_alias_predicates(ctx: Checker, values: Vec[TypePredicate], report
 }
 
 fn normalized_type_alias_target(ctx: Checker, value: TypeAliasInfo) -> Type {
-    expand_type_alias_inner(ctx, value.ty, Vec::new().pushed(value.name), false)
+    expand_type_alias_inner(ctx, value.ty, Vec::[value.name], false)
 }
 
 fn resolve_signature_type(ctx: Checker, value: Type, predicates: Vec[TypePredicate], report: bool) -> Type {

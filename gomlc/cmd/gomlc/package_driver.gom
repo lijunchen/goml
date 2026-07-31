@@ -851,7 +851,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
                     value_exports: Vec::new(),
                     enum_variants: Vec::new(),
                 },
-                Vec::new().pushed(("builtin", artifact_builtin_interface_hash(world))),
+                Vec::[("builtin", artifact_builtin_interface_hash(world))],
             );
             ArtifactCompiledPackage {
                 interface_unit,
@@ -861,7 +861,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
                     interface_hash: interface_unit.interface_hash,
                     exports: empty_artifact_package_exports(),
                     core_ir: empty_core_file(),
-                    deps: Vec::new().pushed(("builtin", artifact_builtin_interface_hash(world))),
+                    deps: Vec::[("builtin", artifact_builtin_interface_hash(world))],
                     sources: Vec::new(),
                     tests: Vec::new(),
                 },
@@ -924,7 +924,7 @@ fn run_link_command(args: Vec[string]) -> unit {
             Vec::new()
         },
     };
-    let roots = Vec::new().pushed(command.entry);
+    let roots = Vec::[command.entry];
     let core_units = match artifact_reachable_core_units(roots, core_units) {
         Ok(value) => value,
         Err(error) => {

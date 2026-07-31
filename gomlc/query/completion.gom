@@ -1019,19 +1019,47 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
         },
         None => (),
     };
-    let keywords = Vec::new().pushed("array").pushed("bool").pushed("char").pushed("dyn").pushed(
+    let keywords = Vec::[
+        "array",
+        "bool",
+        "char",
+        "dyn",
         "else",
-    ).pushed("enum").pushed("extern").pushed("false").pushed("float32").pushed("float64").pushed(
+        "enum",
+        "extern",
+        "false",
+        "float32",
+        "float64",
         "fn",
-    ).pushed("for").pushed("go").pushed("if").pushed("impl").pushed("in").pushed("int8").pushed(
+        "for",
+        "go",
+        "if",
+        "impl",
+        "in",
+        "int8",
         "int16",
-    ).pushed("int32").pushed("int64").pushed("let").pushed("match").pushed("package").pushed("pub").pushed(
+        "int32",
+        "int64",
+        "let",
+        "match",
+        "package",
+        "pub",
         "return",
-    ).pushed("string").pushed("struct").pushed("trait").pushed("true").pushed("type").pushed("uint").pushed(
+        "string",
+        "struct",
+        "trait",
+        "true",
+        "type",
+        "uint",
         "uint8",
-    ).pushed("uint16").pushed("uint32").pushed("uint64").pushed("unit").pushed("use").pushed(
+        "uint16",
+        "uint32",
+        "uint64",
+        "unit",
+        "use",
         "while",
-    ).pushed("_");
+        "_",
+    ];
     for keyword in keywords {
         push_completion(
             result,

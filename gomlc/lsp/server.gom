@@ -676,7 +676,7 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
 pub fn handle_payload(server: Server, payload: string) -> Result[Vec[json::Value], string] {
     match json::parse(payload) {
         Ok(value) => Result::Ok(handle_json(server, value)),
-        Err(error) => Result::Ok(Vec::new().pushed(rpc_error(json::Value::Null, -32700, error))),
+        Err(error) => Result::Ok(Vec::[rpc_error(json::Value::Null, -32700, error)]),
     }
 }
 

@@ -52,7 +52,7 @@ fn coverage_wild(ty: Type) -> CoveragePat {
 }
 
 fn coverage_one(value: CoveragePat) -> Vec[CoveragePat] {
-    Vec::new().pushed(value)
+    Vec::[value]
 }
 
 fn coverage_copy(values: Vec[CoveragePat]) -> Vec[CoveragePat] {
@@ -73,13 +73,13 @@ fn coverage_join(left: Vec[CoveragePat], right: Vec[CoveragePat]) -> Vec[Coverag
 
 fn coverage_lists_at(values: Vec[Pat], index: int) -> Vec[Vec[CoveragePat]] {
     if index >= values.len() {
-        Vec::new().pushed(Vec::new())
+        Vec::[Vec::new()]
     } else {
         let result = Vec::new();
         let suffixes = coverage_lists_at(values, index + 1);
         for alternative in coverage_patterns(values[index]) {
             for suffix in suffixes {
-                let row = Vec::new().pushed(alternative);
+                let row = Vec::[alternative];
                 for value in suffix {
                     row.push(value)
                 };
@@ -622,26 +622,11 @@ fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstru
     let result = Vec::new();
     if short_name(name) == "Option" && args.len() == 1 {
         result.push(CoverageConstructor { key: coverage_enum_key(name, 0), fields: Vec::new() });
-        result.push(
-            CoverageConstructor {
-                key: coverage_enum_key(name, 1),
-                fields: Vec::new().pushed(args[0]),
-            },
-        );
+        result.push(CoverageConstructor { key: coverage_enum_key(name, 1), fields: Vec::[args[0]] });
         Option::Some(result)
     } else if short_name(name) == "Result" && args.len() == 2 {
-        result.push(
-            CoverageConstructor {
-                key: coverage_enum_key(name, 0),
-                fields: Vec::new().pushed(args[0]),
-            },
-        );
-        result.push(
-            CoverageConstructor {
-                key: coverage_enum_key(name, 1),
-                fields: Vec::new().pushed(args[1]),
-            },
-        );
+        result.push(CoverageConstructor { key: coverage_enum_key(name, 0), fields: Vec::[args[0]] });
+        result.push(CoverageConstructor { key: coverage_enum_key(name, 1), fields: Vec::[args[1]] });
         Option::Some(result)
     } else {
         Option::None
@@ -650,26 +635,23 @@ fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstru
 
 fn coverage_domain_uncached(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstructor]] {
     match prune(ty) {
-        Unit => Option::Some(
-            Vec::new().pushed(CoverageConstructor { key: "unit", fields: Vec::new() }),
-        ),
+        Unit => Option::Some(Vec::[CoverageConstructor { key: "unit", fields: Vec::new() }]),
         Bool => Option::Some(
-            Vec::new().pushed(CoverageConstructor { key: "bool:false", fields: Vec::new() }).pushed(
+            Vec::[
+                CoverageConstructor { key: "bool:false", fields: Vec::new() },
                 CoverageConstructor { key: "bool:true", fields: Vec::new() },
-            ),
+            ],
         ),
         Tuple { items: values } => Option::Some(
-            Vec::new().pushed(
-                CoverageConstructor { key: "tuple:" + values.len().to_string(), fields: values },
-            ),
+            Vec::[CoverageConstructor { key: "tuple:" + values.len().to_string(), fields: values }],
         ),
         Array { len: length, elem: element } => Option::Some(
-            Vec::new().pushed(
+            Vec::[
                 CoverageConstructor {
                     key: "array:" + length.to_string(),
                     fields: coverage_repeat(element, length),
                 },
-            ),
+            ],
         ),
         Con { name } | App { ty: Con { name }, args: _ } => {
             match find_enum_by_name(ctx, name) {
@@ -684,9 +666,7 @@ fn coverage_domain_uncached(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstr
                                 fields.push(substitute_type(field.1, substitutions))
                             };
                             Option::Some(
-                                Vec::new().pushed(
-                                    CoverageConstructor { key: "struct:" + info.name, fields },
-                                ),
+                                Vec::[CoverageConstructor { key: "struct:" + info.name, fields }],
                             )
                         },
                         None => Option::None,
@@ -1275,7 +1255,7 @@ fn coverage_witness_suffix(values: Vec[CoverageWitness], start: int) -> Vec[Cove
 fn coverage_prepend_witness(head: CoverageWitness, tail: Vec[CoverageWitness]) -> Vec[
     CoverageWitness,
 ] {
-    let result = Vec::new().pushed(head);
+    let result = Vec::[head];
     for value in tail {
         result.push(value)
     };
@@ -1599,7 +1579,7 @@ fn coverage_witness_text(ctx: Checker, value: CoverageWitness) -> string {
 
 fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
     if arms.len() == 0 && contains_unbound_type_variable(ty) {
-        return Vec::new().pushed("_")
+        return Vec::["_"]
     } else {
         ()
     };
@@ -1612,7 +1592,7 @@ fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
     for arm in arms {
         if coverage_guard(arm.guard) {
             for pattern in coverage_patterns(arm.pat) {
-                matrix.push(Vec::new().pushed(pattern))
+                matrix.push(Vec::[pattern])
             }
         } else {
             ()
@@ -1620,11 +1600,11 @@ fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
     };
     let witnesses = Vec::new();
     while witnesses.len() < 8 {
-        match coverage_find_witness(ctx, matrix, Vec::new().pushed(coverage_wild(witness_ty))) {
+        match coverage_find_witness(ctx, matrix, Vec::[coverage_wild(witness_ty)]) {
             Some(values) => if values.len() > 0 {
                 let witness = values[0];
                 witnesses.push(coverage_witness_text(ctx, witness));
-                matrix.push(Vec::new().pushed(coverage_witness_pat(witness)))
+                matrix.push(Vec::[coverage_witness_pat(witness)])
             } else {
                 return witnesses
             },
@@ -1654,13 +1634,13 @@ fn match_is_exhaustive(ctx: Checker, ty: Type, arms: Vec[Arm]) -> bool {
     for arm in arms {
         if coverage_guard_may_match(arm.guard) {
             for pattern in coverage_patterns(arm.pat) {
-                matrix.push(Vec::new().pushed(pattern))
+                matrix.push(Vec::[pattern])
             }
         } else {
             ()
         }
     };
-    !coverage_useful(ctx, matrix, Vec::new().pushed(coverage_wild(ty)))
+    !coverage_useful(ctx, matrix, Vec::[coverage_wild(ty)])
 }
 
 fn match_useful_arms(ctx: Checker, arms: Vec[Arm]) -> Vec[bool] {
@@ -1671,7 +1651,7 @@ fn match_useful_arms(ctx: Checker, arms: Vec[Arm]) -> Vec[bool] {
         result.push(coverage_guard(arm.guard) && coverage_patterns_useful(ctx, matrix, patterns));
         if coverage_guard(arm.guard) {
             for pattern in patterns {
-                matrix.push(Vec::new().pushed(pattern))
+                matrix.push(Vec::[pattern])
             }
         } else {
             ()
@@ -1682,7 +1662,7 @@ fn match_useful_arms(ctx: Checker, arms: Vec[Arm]) -> Vec[bool] {
 
 fn coverage_patterns_useful(ctx: Checker, matrix: Vec[Vec[CoveragePat]], patterns: Vec[CoveragePat]) -> bool {
     for pattern in patterns {
-        if coverage_useful(ctx, matrix, Vec::new().pushed(pattern)) {
+        if coverage_useful(ctx, matrix, Vec::[pattern]) {
             return true
         } else {
             ()
@@ -1694,7 +1674,7 @@ fn coverage_patterns_useful(ctx: Checker, matrix: Vec[Vec[CoveragePat]], pattern
 fn pattern_is_irrefutable(ctx: Checker, value: Pat) -> bool {
     let matrix = Vec::new();
     for pattern in coverage_patterns(value) {
-        matrix.push(Vec::new().pushed(pattern))
+        matrix.push(Vec::[pattern])
     };
-    !coverage_useful(ctx, matrix, Vec::new().pushed(coverage_wild(pat_type(value))))
+    !coverage_useful(ctx, matrix, Vec::[coverage_wild(pat_type(value))])
 }

@@ -12,7 +12,7 @@ struct DceResult {
 }
 
 fn new_dce_names() -> DceNames {
-    DceNames { values: Vec::new(), present: HashMap::new() }
+    DceNames { values: Vec::new(), present: HashMap::{} }
 }
 
 fn contains_name(values: DceNames, expected: string) -> bool {
@@ -39,10 +39,7 @@ fn add_names(target: DceNames, values: DceNames) -> unit {
 }
 
 fn copy_names(values: DceNames) -> DceNames {
-    let result = DceNames {
-        values: Vec::with_capacity(values.present.len()),
-        present: HashMap::new(),
-    };
+    let result = DceNames { values: Vec::with_capacity(values.present.len()), present: HashMap::{} };
     add_names(result, values);
     result
 }

@@ -644,7 +644,7 @@ fn lower_bool_pattern_rows(
     ty: tast::Type,
 ) -> Expr {
     let arms: Vec[Arm] = Vec::new();
-    for expected in Vec::new().pushed(true).pushed(false) {
+    for expected in Vec::[true, false] {
         arms.push(
             Arm {
                 lhs: bool_expr(expected),

@@ -24,11 +24,7 @@ fn artifact_binary_directory_entry_size() -> int {
 }
 
 fn artifact_binary_magic() -> bytes::Bytes {
-    bytes::Bytes::from_vec(
-        Vec::new().pushed(71).pushed(79).pushed(77).pushed(76).pushed(65).pushed(82).pushed(84).pushed(
-            0,
-        ),
-    )
+    bytes::Bytes::from_vec(Vec::[71, 79, 77, 76, 65, 82, 84, 0])
 }
 
 fn artifact_binary_bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> bool {

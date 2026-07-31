@@ -79,7 +79,7 @@ fn project_build_loads_transitive_public_type_interfaces() -> unit {
 
 #[test]
 fn version_prints_crate_version() -> unit {
-    let output = test_support::run(Vec::new().pushed("version"), test_support::module_root());
+    let output = test_support::run(Vec::["version"], test_support::module_root());
     test_support::assert_success(output);
     testing::assert_eq(test_support::stdout(output), "goml " + version::current() + "\n")
 }
@@ -116,7 +116,7 @@ fn project_check_resolves_compiler_from_path() -> unit {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
-            test_support::run(Vec::new().pushed("version"), root)
+            test_support::run(Vec::["version"], root)
         },
     };
     test_support::assert_success(output);
@@ -149,7 +149,7 @@ fn project_uses_manifest_and_cli_target_directories() -> unit {
     let override_output = test_support::project_command(
         "check",
         "",
-        Vec::new().pushed("--target-dir").pushed("cli output"),
+        Vec::["--target-dir", "cli output"],
         root,
     );
     test_support::assert_success(override_output);
@@ -173,14 +173,11 @@ fn project_clean_removes_only_module_artifacts() -> unit {
     test_support::write_file(path::join(artifact_root, "cache/entry"), "cached");
     let override_root = path::join(root, "alternate");
     test_support::write_file(path::join(override_root, "cache/entry"), "cached");
-    let override_output = test_support::run(
-        Vec::new().pushed("clean").pushed("--target-dir").pushed("alternate"),
-        nested,
-    );
+    let override_output = test_support::run(Vec::["clean", "--target-dir", "alternate"], nested);
     test_support::assert_success(override_output);
     testing::assert(!fs::exists(override_root));
     testing::assert(fs::exists(artifact_root));
-    let output = test_support::run(Vec::new().pushed("clean"), nested);
+    let output = test_support::run(Vec::["clean"], nested);
     test_support::assert_success(output);
     testing::assert(!fs::exists(artifact_root));
     testing::assert(fs::is_file(path::join(root, "main.gom")))
@@ -197,7 +194,7 @@ fn project_clean_rejects_module_directory() -> unit {
         path::join(root, "main.gom"),
         "package main;\n\nfn main() -> unit {}\n",
     );
-    let output = test_support::run(Vec::new().pushed("clean"), root);
+    let output = test_support::run(Vec::["clean"], root);
     test_support::assert_failure(output);
     test_support::assert_contains(
         test_support::stderr(output),
@@ -241,7 +238,7 @@ fn project_module_path_may_contain_tests_segment() -> unit {
 fn project_check_dry_run_prints_compiler_check_commands() -> unit {
     let root = test_support::workspace("check_dry_run");
     test_support::write_basic_project(root, "demo");
-    let output = test_support::project_command("check", "", Vec::new().pushed("--dry-run"), root);
+    let output = test_support::project_command("check", "", Vec::["--dry-run"], root);
     test_support::assert_success(output);
     let stdout = test_support::stdout(output);
     test_support::assert_contains(
@@ -255,7 +252,7 @@ fn project_check_dry_run_prints_compiler_check_commands() -> unit {
 fn project_build_dry_run_prints_compiler_build_and_link_commands() -> unit {
     let root = test_support::workspace("build_dry_run");
     test_support::write_basic_project(root, "demo");
-    let output = test_support::project_command("build", "", Vec::new().pushed("--dry-run"), root);
+    let output = test_support::project_command("build", "", Vec::["--dry-run"], root);
     test_support::assert_success(output);
     let stdout = test_support::stdout(output);
     test_support::assert_contains(
@@ -279,7 +276,7 @@ fn project_run_dry_run_prints_the_complete_plan_without_tools() -> unit {
     let output = test_support::project_command(
         "run",
         "",
-        Vec::new().pushed("--dry-run").pushed("--").pushed("alpha").pushed("two words"),
+        Vec::["--dry-run", "--", "alpha", "two words"],
         root,
     );
     test_support::assert_success(output);
@@ -300,7 +297,7 @@ fn project_build_creates_and_runs_the_native_binary() -> unit {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
-            test_support::run(Vec::new().pushed("version"), root)
+            test_support::run(Vec::["version"], root)
         },
     };
     test_support::assert_success(output);
@@ -309,11 +306,17 @@ fn project_build_creates_and_runs_the_native_binary() -> unit {
 
 #[test]
 fn project_check_and_build_work_for_complex_dependency_fixtures() -> unit {
-    let projects = Vec::new().pushed("project001").pushed("project002").pushed("project003").pushed(
+    let projects = Vec::[
+        "project001",
+        "project002",
+        "project003",
         "project004",
-    ).pushed("project005").pushed("project006").pushed("project007_trait_impl_orphan_ok").pushed(
+        "project005",
+        "project006",
+        "project007_trait_impl_orphan_ok",
         "project008_trait_bounds_across_packages",
-    ).pushed("project009_builtin_option_result");
+        "project009_builtin_option_result",
+    ];
     for project_name in projects {
         let root = path::join(
             path::join(test_support::repository_root(), "gomlc/testdata/module"),
@@ -323,7 +326,7 @@ fn project_check_and_build_work_for_complex_dependency_fixtures() -> unit {
             path::join(test_support::module_root(), "_artifact/complex-fixtures"),
             project_name,
         );
-        let extra = Vec::new().pushed("--target-dir").pushed(target);
+        let extra = Vec::["--target-dir", target];
         test_support::assert_success(
             test_support::project_command("check", root, extra, test_support::module_root()),
         );
@@ -404,17 +407,13 @@ fn project_build_links_every_main_package() -> unit {
         fs::is_file(path::join(root, "_artifact/build/pkg/alice/app/cmd/client/goml_generated.go")),
     );
     let rejected = test_support::run(
-        Vec::new().pushed("build").pushed("cmd/server").pushed("--compiler").pushed(
-            test_support::gomlc_binary(),
-        ),
+        Vec::["build", "cmd/server", "--compiler", test_support::gomlc_binary()],
         root,
     );
     test_support::assert_failure(rejected);
     test_support::assert_contains(test_support::stderr(rejected), "unexpected argument");
     let rejected = test_support::run(
-        Vec::new().pushed("check").pushed("cmd/server").pushed("--compiler").pushed(
-            test_support::gomlc_binary(),
-        ),
+        Vec::["check", "cmd/server", "--compiler", test_support::gomlc_binary()],
         root,
     );
     test_support::assert_failure(rejected);
@@ -472,35 +471,25 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
         path::join(root, "math/math_test.gom"),
         "package math;\n\nuse std::testing;\n\n#[test]\nfn add_works() -> unit { testing::assert_eq(add(2, 3), 5) }\n\n#[test]\nfn private_helper_works() -> unit { testing::assert_eq(double(4), 8) }\n\n#[test]\n#[ignore(\"later\")]\nfn ignored_case() -> unit { testing::assert(true) }\n",
     );
-    let check = test_support::project_command("check", "", Vec::new().pushed("--dry-run"), root);
+    let check = test_support::project_command("check", "", Vec::["--dry-run"], root);
     test_support::assert_success(check);
     test_support::assert_not_contains(test_support::stdout(check), "math_test.gom");
-    let tested = test_support::project_command(
-        "test",
-        "",
-        Vec::new().pushed("--jobs").pushed("2"),
-        root,
-    );
+    let tested = test_support::project_command("test", "", Vec::["--jobs", "2"], root);
     test_support::assert_success(tested);
     let stdout = test_support::stdout(tested);
     test_support::assert_contains(stdout, "demo::math::add_works ... ok");
     test_support::assert_contains(stdout, "demo::math::private_helper_works ... ok");
     test_support::assert_contains(stdout, "2 passed; 0 failed; 1 ignored");
-    let listed = test_support::project_command("test", "", Vec::new().pushed("--list"), root);
+    let listed = test_support::project_command("test", "", Vec::["--list"], root);
     test_support::assert_success(listed);
     test_support::assert_contains(test_support::stdout(listed), "demo::math::ignored_case: ignored");
-    let included = test_support::project_command(
-        "test",
-        "",
-        Vec::new().pushed("--include-ignored"),
-        root,
-    );
+    let included = test_support::project_command("test", "", Vec::["--include-ignored"], root);
     test_support::assert_success(included);
     test_support::assert_contains(test_support::stdout(included), "3 passed; 0 failed; 0 ignored");
     let json = test_support::project_command(
         "test",
         "",
-        Vec::new().pushed("add_works").pushed("--format").pushed("json"),
+        Vec::["add_works", "--format", "json"],
         root,
     );
     test_support::assert_success(json);
@@ -623,7 +612,7 @@ fn project_commands_report_build_progress_on_stderr() -> unit {
         test_support::stderr(cached),
         "[####################] 4/4 finished",
     );
-    let dry_run = test_support::project_command("build", "", Vec::new().pushed("--dry-run"), root);
+    let dry_run = test_support::project_command("build", "", Vec::["--dry-run"], root);
     test_support::assert_success(dry_run);
     testing::assert_eq(test_support::stderr(dry_run), "")
 }
@@ -640,21 +629,16 @@ fn project_test_supports_nocapture_and_timeouts() -> unit {
         path::join(root, "checks/checks_test.gom"),
         "package checks;\n\nuse std::io;\n\n#[test]\nfn output() -> unit { io::println(\"uncaptured marker\") }\n\n#[test]\n#[ignore(\"timeout case\")]\nfn timeout() -> unit { while true { () } }\n",
     );
-    let captured = test_support::project_command("test", "", Vec::new().pushed("output"), root);
+    let captured = test_support::project_command("test", "", Vec::["output"], root);
     test_support::assert_success(captured);
     test_support::assert_not_contains(test_support::stdout(captured), "uncaptured marker");
-    let uncaptured = test_support::project_command(
-        "test",
-        "",
-        Vec::new().pushed("output").pushed("--nocapture"),
-        root,
-    );
+    let uncaptured = test_support::project_command("test", "", Vec::["output", "--nocapture"], root);
     test_support::assert_success(uncaptured);
     test_support::assert_contains(test_support::stdout(uncaptured), "uncaptured marker");
     let timed_out = test_support::project_command(
         "test",
         "",
-        Vec::new().pushed("timeout").pushed("--ignored").pushed("--timeout").pushed("20ms"),
+        Vec::["timeout", "--ignored", "--timeout", "20ms"],
         root,
     );
     test_support::assert_failure(timed_out);
@@ -662,7 +646,7 @@ fn project_test_supports_nocapture_and_timeouts() -> unit {
     let invalid = test_support::project_command(
         "test",
         "",
-        Vec::new().pushed("--nocapture").pushed("--format").pushed("json"),
+        Vec::["--nocapture", "--format", "json"],
         root,
     );
     test_support::assert_failure(invalid);
@@ -696,7 +680,7 @@ fn project_test_runs_and_aggregates_tests_from_all_packages() -> unit {
         path::join(root, "b/tests/b_test.gom"),
         "package tests;\nuse demo::b;\nuse std::testing;\n#[test]\nfn external_b() -> unit { testing::assert_eq(b::value(), 2) }\n",
     );
-    let planned = test_support::project_command("test", "", Vec::new().pushed("--dry-run"), root);
+    let planned = test_support::project_command("test", "", Vec::["--dry-run"], root);
     test_support::assert_success(planned);
     let plan = test_support::stdout(planned);
     test_support::assert_not_contains(plan, "_artifact/check/");
@@ -737,14 +721,9 @@ fn project_test_runs_parent_black_box_tests() -> unit {
         path::join(root, "math/tests/math_test.gom"),
         "package tests;\n\nuse demo::math;\nuse std::testing;\n\n#[test]\nfn black_box() -> unit { testing::assert_eq(math::public_value(), 42) }\n",
     );
-    let checked = test_support::project_command("check", "", Vec::new().pushed("--tests"), root);
+    let checked = test_support::project_command("check", "", Vec::["--tests"], root);
     test_support::assert_success(checked);
-    let tested = test_support::project_command(
-        "test",
-        "",
-        Vec::new().pushed("--kind").pushed("external"),
-        root,
-    );
+    let tested = test_support::project_command("test", "", Vec::["--kind", "external"], root);
     test_support::assert_success(tested);
     test_support::assert_contains(
         test_support::stdout(tested),
@@ -781,7 +760,7 @@ fn project_test_dry_run_and_invalid_signature_diagnostics() -> unit {
         path::join(root, "value/value_test.gom"),
         "package value;\n\n#[test]\nfn invalid[T](value: T) -> bool { true }\n",
     );
-    let dry_run = test_support::project_command("test", "", Vec::new().pushed("--dry-run"), root);
+    let dry_run = test_support::project_command("test", "", Vec::["--dry-run"], root);
     test_support::assert_success(dry_run);
     test_support::assert_contains(
         test_support::stdout(dry_run),
@@ -871,7 +850,7 @@ fn test_sources_cannot_repair_a_broken_normal_package() -> unit {
 fn new_creates_a_buildable_project() -> unit {
     let base = test_support::workspace("new_project_command");
     let output = test_support::run(
-        Vec::new().pushed("new").pushed("hello").pushed("--path").pushed(base),
+        Vec::["new", "hello", "--path", base],
         test_support::module_root(),
     );
     test_support::assert_success(output);
@@ -948,19 +927,24 @@ fn local_registry(root: string) -> string {
         path::join(registry, "alice/appdep/0.1.0/lib.gom"),
         "package appdep;\npub fn marker() -> string { \"appdep\" }\n",
     );
-    registry_command("git", Vec::new().pushed("init"), registry);
+    registry_command("git", Vec::["init"], registry);
     registry_command(
         "git",
-        Vec::new().pushed("-c").pushed("user.name=goml").pushed("-c").pushed(
-            "user.email=goml@example.invalid",
-        ).pushed("add").pushed("."),
+        Vec::["-c", "user.name=goml", "-c", "user.email=goml@example.invalid", "add", "."],
         registry,
     );
     registry_command(
         "git",
-        Vec::new().pushed("-c").pushed("user.name=goml").pushed("-c").pushed(
+        Vec::[
+            "-c",
+            "user.name=goml",
+            "-c",
             "user.email=goml@example.invalid",
-        ).pushed("commit").pushed("--allow-empty").pushed("-m").pushed("registry"),
+            "commit",
+            "--allow-empty",
+            "-m",
+            "registry",
+        ],
         registry,
     );
     registry
@@ -987,17 +971,13 @@ fn registry_commands_update_add_and_remove() -> unit {
     let root = test_support::workspace("registry_commands");
     let registry = local_registry(root);
     let home = path::join(root, "home");
-    let updated = run_with_home(
-        Vec::new().pushed("update").pushed("--local-registry").pushed(registry),
-        root,
-        home,
-    );
+    let updated = run_with_home(Vec::["update", "--local-registry", registry], root, home);
     test_support::assert_success(updated);
     testing::assert(fs::is_file(path::join(home, "cache/registry/index.toml")));
     let project = path::join(root, "project");
     test_support::write_basic_project(project, "demo");
     let added = run_with_home(
-        Vec::new().pushed("add").pushed("alice::http").pushed("--local-registry").pushed(registry),
+        Vec::["add", "alice::http", "--local-registry", registry],
         project,
         home,
     );
@@ -1007,9 +987,7 @@ fn registry_commands_update_add_and_remove() -> unit {
         "\"alice::http\" = \"1.2.0\"",
     );
     let removed = run_with_home(
-        Vec::new().pushed("remove").pushed("alice::http").pushed("--local-registry").pushed(
-            registry,
-        ),
+        Vec::["remove", "alice::http", "--local-registry", registry],
         project,
         home,
     );
@@ -1026,11 +1004,7 @@ fn cached_registry_dependencies_build_with_mvs_layout() -> unit {
     let registry = local_registry(root);
     let home = path::join(root, "home");
     test_support::assert_success(
-        run_with_home(
-            Vec::new().pushed("update").pushed("--local-registry").pushed(registry),
-            root,
-            home,
-        ),
+        run_with_home(Vec::["update", "--local-registry", registry], root, home),
     );
     let project = path::join(root, "project");
     test_support::write_file(
@@ -1042,7 +1016,7 @@ fn cached_registry_dependencies_build_with_mvs_layout() -> unit {
         "package main;\nuse alice::http;\nuse alice::appdep;\nfn main() -> unit { println(http::version() + \":\" + appdep::marker()) }\n",
     );
     let built = run_with_home(
-        Vec::new().pushed("build").pushed("--compiler").pushed(test_support::gomlc_binary()),
+        Vec::["build", "--compiler", test_support::gomlc_binary()],
         project,
         home,
     );

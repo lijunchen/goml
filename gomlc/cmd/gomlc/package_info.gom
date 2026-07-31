@@ -103,7 +103,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
     } else if inputs.len() == 0 {
         Result::Err(
             missing_required_arguments_error_with_usage(
-                Vec::new().pushed("--input <INPUT>..."),
+                Vec::["--input <INPUT>..."],
                 required_command_usage("package-info"),
             ),
         )

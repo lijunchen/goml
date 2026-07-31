@@ -915,26 +915,25 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
                 trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
             };
             if owner == "EnumerateIterator" {
-                Option::Some(Type::Tuple { items: Vec::new().pushed(Type::Int).pushed(item) })
+                Option::Some(Type::Tuple { items: Vec::[Type::Int, item] })
             } else {
                 Option::Some(item)
             }
         } else if owner == "ZipIterator" && args.len() == 2 {
             Option::Some(
                 Type::Tuple {
-                    items: Vec::new().pushed(
+                    items: Vec::[
                         Type::Projection {
                             for_ty: args[0],
                             name: "Item",
                             trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
                         },
-                    ).pushed(
                         Type::Projection {
                             for_ty: args[1],
                             name: "Item",
                             trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::new() }),
                         },
-                    ),
+                    ],
                 },
             )
         } else if owner == "ChainIterator" && args.len() == 3 {

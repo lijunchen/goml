@@ -1669,8 +1669,8 @@ fn ensure_runtime_trait_impl(
 }
 
 fn ensure_eq_hash_impls(ctx: SpecializeCtx, ty: tast::Type) -> unit {
-    ensure_runtime_trait_impl(ctx, "Eq", "eq", Vec::new().pushed(ty).pushed(ty), tast::Type::Bool);
-    ensure_runtime_trait_impl(ctx, "Hash", "hash", Vec::new().pushed(ty), tast::Type::Uint64)
+    ensure_runtime_trait_impl(ctx, "Eq", "eq", Vec::[ty, ty], tast::Type::Bool);
+    ensure_runtime_trait_impl(ctx, "Hash", "hash", Vec::[ty], tast::Type::Uint64)
 }
 
 fn ensure_runtime_trait_impls_for_types(ctx: SpecializeCtx, values: Vec[tast::Type]) -> unit {
@@ -1897,7 +1897,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
         trait_method_index,
         trait_method_names,
         instances: Vec::new(),
-        instance_index: HashMap::new(),
+        instance_index: HashMap::{},
         work: Vec::new(),
         used_names,
         active: Ref::new(Option::None),

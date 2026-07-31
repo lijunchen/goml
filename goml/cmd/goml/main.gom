@@ -245,38 +245,23 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             index.set(index.get() + 1)
         } else {
             let parsed_target_dir = option_value(args, index, argument, "--target-dir")?;
-            if match parsed_target_dir {
-                Some(_) => true,
-                None => false,
-            } {
-                if match target_dir.get() {
-                    Some(_) => true,
-                    None => false,
-                } {
+            if parsed_target_dir.is_some() {
+                if target_dir.get().is_some() {
                     return Result::Err("--target-dir cannot be repeated")
                 } else {
                     target_dir.set(parsed_target_dir)
                 }
             } else {
                 let parsed_compiler = option_value(args, index, argument, "--compiler")?;
-                if match parsed_compiler {
-                    Some(_) => true,
-                    None => false,
-                } {
-                    if match compiler.get() {
-                        Some(_) => true,
-                        None => false,
-                    } {
+                if parsed_compiler.is_some() {
+                    if compiler.get().is_some() {
                         return Result::Err("--compiler cannot be repeated")
                     } else {
                         compiler.set(parsed_compiler)
                     }
                 } else if command == "test" {
                     let parsed_timeout = option_value(args, index, argument, "--timeout")?;
-                    if match parsed_timeout {
-                        Some(_) => true,
-                        None => false,
-                    } {
+                    if parsed_timeout.is_some() {
                         let value = match parsed_timeout {
                             Some(value) => value,
                             None => "30s",
@@ -287,10 +272,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         }
                     } else {
                         let parsed_jobs = option_value(args, index, argument, "--jobs")?;
-                        if match parsed_jobs {
-                            Some(_) => true,
-                            None => false,
-                        } {
+                        if parsed_jobs.is_some() {
                             let value = match parsed_jobs {
                                 Some(value) => value,
                                 None => "1",
@@ -304,10 +286,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             }
                         } else {
                             let parsed_kind = option_value(args, index, argument, "--kind")?;
-                            if match parsed_kind {
-                                Some(_) => true,
-                                None => false,
-                            } {
+                            if parsed_kind.is_some() {
                                 let value = match parsed_kind {
                                     Some(value) => value,
                                     None => "all",
@@ -329,10 +308,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                     },
                                     None => if util::starts_with(argument, "-") {
                                         return Result::Err("unknown option " + argument)
-                                    } else if match test_filter.get() {
-                                        Some(_) => true,
-                                        None => false,
-                                    } {
+                                    } else if test_filter.get().is_some() {
                                         return Result::Err("unexpected argument " + argument)
                                     } else {
                                         test_filter.set(Option::Some(argument));

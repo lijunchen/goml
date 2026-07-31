@@ -77,17 +77,22 @@ fn world_add_standard_sections(sections: Vec[ArtifactBinarySection], value: Arti
     unit,
     string,
 ] {
-    let packages: Vec[(uint16, ArtifactStandardPackage)] = Vec::new().pushed(
+    let packages: Vec[(uint16, ArtifactStandardPackage)] = Vec::[
         (10 as uint16, value.root),
-    ).pushed((12 as uint16, value.host)).pushed((14 as uint16, value.bytes)).pushed(
+        (12 as uint16, value.host),
+        (14 as uint16, value.bytes),
         (16 as uint16, value.collections),
-    ).pushed((18 as uint16, value.env)).pushed((20 as uint16, value.fs)).pushed(
+        (18 as uint16, value.env),
+        (20 as uint16, value.fs),
         (22 as uint16, value.io),
-    ).pushed((24 as uint16, value.json)).pushed((26 as uint16, value.path)).pushed(
+        (24 as uint16, value.json),
+        (26 as uint16, value.path),
         (28 as uint16, value.process),
-    ).pushed((30 as uint16, value.testing)).pushed((32 as uint16, value.text)).pushed(
+        (30 as uint16, value.testing),
+        (32 as uint16, value.text),
         (34 as uint16, value.num),
-    ).pushed((36 as uint16, value.time));
+        (36 as uint16, value.time),
+    ];
     for package_value in packages {
         world_add_package_sections(sections, package_value.0, package_value.1)?
     };
@@ -105,28 +110,26 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
             value.builtins,
         ),
     )?;
-    let sections = Vec::new().pushed(
+    let sections = Vec::[
         ArtifactBinarySection {
             id: 1,
             version: 1,
             flags: artifact_binary_required_section_flag(),
             data: world_metadata(value.counter.get()),
         },
-    ).pushed(
         ArtifactBinarySection {
             id: 2,
             version: 1,
             flags: artifact_binary_required_section_flag(),
             data: builtin_interface,
         },
-    ).pushed(
         ArtifactBinarySection {
             id: 3,
             version: 1,
             flags: artifact_binary_required_section_flag(),
             data: builtin_core,
         },
-    );
+    ];
     world_add_standard_sections(sections, value.standard)?;
     encode_artifact_binary_container(3, sections)
 }
@@ -280,7 +283,7 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
     match output.get() {
         Some(value) => Result::Ok(value),
         None => {
-            let missing: Vec[string] = Vec::new().pushed("--output <OUTPUT>");
+            let missing: Vec[string] = Vec::["--output <OUTPUT>"];
             Result::Err(missing_required_arguments_error("prepare-world", missing))
         },
     }

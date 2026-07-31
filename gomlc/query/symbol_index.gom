@@ -143,10 +143,7 @@ fn parent_with_kind(
     second: cst::NodeKind,
 ) -> Option[SyntaxNode] {
     let current = Ref::new(node.parent);
-    while match current.get() {
-        Some(_) => true,
-        None => false,
-    } {
+    while current.get().is_some() {
         match current.get() {
             Some(id) => {
                 let parent = syntax.nodes[id];

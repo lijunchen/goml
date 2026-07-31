@@ -266,10 +266,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                             Pat::Struct {
                                 name: path,
                                 fields,
-                                has_rest: match first_child(list, cst::NodeKind::PATTERN_REST) {
-                                    Some(_) => true,
-                                    None => false,
-                                },
+                                has_rest: first_child(list, cst::NodeKind::PATTERN_REST).is_some(),
                                 span: node_span(node),
                             },
                         )

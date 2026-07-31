@@ -227,7 +227,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                 kind: "prepare-world",
                 args: command_args(value).1,
                 inputs: Vec::new(),
-                outputs: Vec::new().pushed(output),
+                outputs: Vec::[output],
                 anchor: output,
             },
         ),
@@ -243,7 +243,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                 Some(value) => inputs.push(value),
                 None => (),
             };
-            let outputs = Vec::new().pushed(path::with_extension(output, "interface"));
+            let outputs = Vec::[path::with_extension(output, "interface")];
             if subcommand == "build" || subcommand == "test-build" {
                 outputs.push(path::with_extension(output, "core"))
             } else {
@@ -273,7 +273,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                     kind: "link",
                     args: command_args(value).1,
                     inputs,
-                    outputs: Vec::new().pushed(output),
+                    outputs: Vec::[output],
                     anchor: output,
                 },
             )
@@ -292,7 +292,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
                     kind: "test-link",
                     args: command_args(value).1,
                     inputs,
-                    outputs: Vec::new().pushed(output).pushed(manifest),
+                    outputs: Vec::[output, manifest],
                     anchor: output,
                 },
             )
@@ -301,8 +301,8 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             CacheSpec {
                 kind: "go-build",
                 args: command_args(value).1,
-                inputs: Vec::new().pushed(input),
-                outputs: Vec::new().pushed(output),
+                inputs: Vec::[input],
+                outputs: Vec::[output],
                 anchor: output,
             },
         ),

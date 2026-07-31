@@ -827,7 +827,7 @@ fn resolves_external_registry_packages_with_mvs() -> unit {
     let http = registry + "/alice/http/1.0.0";
     let shared_one = registry + "/alice/shared/1.0.0";
     let shared_two = registry + "/alice/shared/2.0.0";
-    for directory in Vec::new().pushed(project).pushed(http).pushed(shared_one).pushed(shared_two) {
+    for directory in Vec::[project, http, shared_one, shared_two] {
         match fs::create_dir_all(directory) {
             Ok(()) => (),
             Err(error) => testing::fail(error),

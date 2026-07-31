@@ -8,7 +8,7 @@ struct ArtifactBinaryStringTable {
 }
 
 fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
-    ArtifactBinaryStringTable { values: Vec::new(), indexes: HashMap::new() }
+    ArtifactBinaryStringTable { values: Vec::new(), indexes: HashMap::{} }
 }
 
 fn artifact_binary_collect_string(seen: HashMap[string, unit], values: Vec[string], value: string) -> unit {
@@ -41,7 +41,7 @@ fn artifact_binary_collect_value_strings(
 }
 
 fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
-    let seen: HashMap[string, unit] = HashMap::new();
+    let seen: HashMap[string, unit] = HashMap::{};
     let values = Vec::new();
     artifact_binary_collect_value_strings(seen, values, value);
     artifact_binary_string_table_from_values(values)
@@ -49,7 +49,7 @@ fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTab
 
 fn artifact_binary_string_table_from_values(values: Vec[string]) -> ArtifactBinaryStringTable {
     let values = sort_artifact_names(values);
-    let indexes: HashMap[string, int] = HashMap::new();
+    let indexes: HashMap[string, int] = HashMap::{};
     for index in range(0, values.len()) {
         indexes[values[index]] = index;
     };
@@ -84,7 +84,7 @@ fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
         ()
     };
     let values = Vec::with_capacity(count);
-    let indexes: HashMap[string, int] = HashMap::new();
+    let indexes: HashMap[string, int] = HashMap::{};
     for index in range(0, count) {
         let value = artifact_binary_read_string(reader)?;
         if indexes.contains(value) {
@@ -252,7 +252,7 @@ fn artifact_binary_decode_value_at(
             };
             let fields = Vec::with_capacity(count);
             let names: Option[HashMap[string, unit]] = if count > 32 {
-                Option::Some(HashMap::new())
+                Option::Some(HashMap::{})
             } else {
                 Option::None
             };

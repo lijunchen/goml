@@ -22,7 +22,7 @@ fn compile_command(name: string, interface_files: Vec[string], output: string) -
     Command::Compile {
         subcommand: "build",
         package_name: name,
-        input_files: Vec::new().pushed(name + ".gom"),
+        input_files: Vec::[name + ".gom"],
         interface_files,
         output,
         world: Option::None,
@@ -31,16 +31,17 @@ fn compile_command(name: string, interface_files: Vec[string], output: string) -
 
 #[test]
 fn build_graph_tracks_compile_link_and_go_dependencies() -> unit {
-    let commands = Vec::new().pushed(compile_command("a", Vec::new(), "out/a")).pushed(
-        compile_command("b", Vec::new().pushed("out/a.interface"), "out/b"),
-    ).pushed(
+    let commands = Vec::[
+        compile_command("a", Vec::new(), "out/a"),
+        compile_command("b", Vec::["out/a.interface"], "out/b"),
         Command::Link {
-            input_cores: Vec::new().pushed("out/a.core").pushed("out/b.core"),
+            input_cores: Vec::["out/a.core", "out/b.core"],
             output: "out/main.go",
             entry_package: "b",
             world: Option::None,
         },
-    ).pushed(Command::GoBuild { input: "out/main.go", output: "out/main" });
+        Command::GoBuild { input: "out/main.go", output: "out/main" },
+    ];
     let graph = match build_graph(commands) {
         Ok(value) => value,
         Err(message) => {
@@ -65,14 +66,12 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
     let command = Command::Compile {
         subcommand: "check",
         package_name: "a",
-        input_files: Vec::new().pushed("a.gom"),
+        input_files: Vec::["a.gom"],
         interface_files: Vec::new(),
         output: "out/a",
         world: Option::Some(world),
     };
-    let graph = match build_graph(
-        Vec::new().pushed(Command::PrepareWorld { output: world }).pushed(command),
-    ) {
+    let graph = match build_graph(Vec::[Command::PrepareWorld { output: world }, command]) {
         Ok(value) => value,
         Err(message) => {
             testing::fail(message);
@@ -87,9 +86,10 @@ fn build_graph_tracks_compiler_world_dependencies() -> unit {
 #[test]
 fn build_graph_serializes_duplicate_outputs() -> unit {
     let graph = match build_graph(
-        Vec::new().pushed(compile_command("a", Vec::new(), "out/shared")).pushed(
+        Vec::[
+            compile_command("a", Vec::new(), "out/shared"),
             compile_command("b", Vec::new(), "out/shared"),
-        ),
+        ],
     ) {
         Ok(value) => value,
         Err(message) => {
@@ -105,9 +105,10 @@ fn build_graph_serializes_duplicate_outputs() -> unit {
 #[test]
 fn build_graph_exposes_dependency_cycles() -> unit {
     let graph = match build_graph(
-        Vec::new().pushed(compile_command("a", Vec::new().pushed("out/b.interface"), "out/a")).pushed(
-            compile_command("b", Vec::new().pushed("out/a.interface"), "out/b"),
-        ),
+        Vec::[
+            compile_command("a", Vec::["out/b.interface"], "out/a"),
+            compile_command("b", Vec::["out/a.interface"], "out/b"),
+        ],
     ) {
         Ok(value) => value,
         Err(message) => {

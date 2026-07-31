@@ -785,7 +785,7 @@ fn discover_graph(
     let entry_package = package_name_for_directory(module_dir, module_path, entry_dir)?;
     let packages = Vec::new();
     let pending = Vec::new();
-    let seen: HashMap[string, bool] = HashMap::new();
+    let seen: HashMap[string, bool] = HashMap::{};
     pending.push(entry_package);
     while pending.len() > 0 {
         let package_name = pending.remove(0);
@@ -1003,7 +1003,7 @@ fn internal_test_graph(context: Context, package_value: Package, test_package: P
     string,
 ] {
     let packages = Vec::new();
-    let seen: HashMap[string, bool] = HashMap::new();
+    let seen: HashMap[string, bool] = HashMap::{};
     for current in context.graph.packages {
         if current.name == package_value.name {
             packages.push(test_package)

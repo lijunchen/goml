@@ -505,7 +505,7 @@ fn bool_arm(arms: Vec[tast::Arm], expected: bool) -> Option[tast::Arm] {
 
 fn lower_bool_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty: tast::Type) -> Expr {
     let result: Vec[Arm] = Vec::new();
-    for expected in Vec::new().pushed(true).pushed(false) {
+    for expected in Vec::[true, false] {
         let body = match bool_arm(arms, expected) {
             Some(arm) => bind_match_pattern(
                 source_name,

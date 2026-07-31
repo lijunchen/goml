@@ -30,9 +30,10 @@ fn probe_bound_value(state: State) -> bool {
 }
 
 fn probe_linear_expr(state: State, value: core::Expr) -> bool {
-    match try_imm(value) {
-        Some(_) => true,
-        None => match value {
+    if try_imm(value).is_some() {
+        true
+    } else {
+        match value {
             ConstrGet { expr, constructor: _, field_index: _, ty: _ } | Unary { op: _, expr, ty: _ } | Cast {
                 expr,
                 ty: _,
@@ -69,6 +70,6 @@ fn probe_linear_expr(state: State, value: core::Expr) -> bool {
                     && probe_bound_value(state)
             },
             _ => false,
-        },
+        }
     }
 }

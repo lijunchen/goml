@@ -41,13 +41,23 @@ fn standard_source_path(relative: string) -> string {
 
 fn standard_library_children(package_name: string) -> Vec[string] {
     if package_name == "std" {
-        Vec::new().pushed("bytes").pushed("collections").pushed("env").pushed("fs").pushed(
+        Vec::[
+            "bytes",
+            "collections",
+            "env",
+            "fs",
             "internal",
-        ).pushed("io").pushed("json").pushed("num").pushed("path").pushed("process").pushed(
+            "io",
+            "json",
+            "num",
+            "path",
+            "process",
             "testing",
-        ).pushed("text").pushed("time")
+            "text",
+            "time",
+        ]
     } else if package_name == "std::internal" {
-        Vec::new().pushed("host")
+        Vec::["host"]
     } else {
         Vec::new()
     }

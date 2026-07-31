@@ -13,25 +13,24 @@ fn binary_interface_fixture() -> ArtifactInterfaceUnit {
             value_exports: Vec::new(),
             enum_variants: Vec::new(),
         },
-        Vec::new().pushed(("builtin", "0123456789abcdef")),
+        Vec::[("builtin", "0123456789abcdef")],
     )
 }
 
 #[test]
 fn binary_artifact_value_round_trips_value_shapes() -> unit {
     let value = ArtifactValue::Object(
-        Vec::new().pushed(("null", ArtifactValue::Null)).pushed(
+        Vec::[
+            ("null", ArtifactValue::Null),
             ("false", ArtifactValue::Bool(false)),
-        ).pushed(("true", ArtifactValue::Bool(true))).pushed(
+            ("true", ArtifactValue::Bool(true)),
             ("number", ArtifactValue::Number("-12.5e2")),
-        ).pushed(("string", ArtifactValue::String("hello"))).pushed(
+            ("string", ArtifactValue::String("hello")),
             (
                 "array",
-                ArtifactValue::Array(
-                    Vec::new().pushed(ArtifactValue::Number("1")).pushed(ArtifactValue::String("x")),
-                ),
+                ArtifactValue::Array(Vec::[ArtifactValue::Number("1"), ArtifactValue::String("x")]),
             ),
-        ),
+        ],
     );
     let table = artifact_binary_string_table(value);
     testing::assert_eq(artifact_binary_string_id(table, "-12.5e2"), -1);

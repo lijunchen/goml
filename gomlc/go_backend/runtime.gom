@@ -1324,17 +1324,17 @@ fn hashmap_hash_expr(key: tast::Type, value: Expr) -> Expr {
                     expr: Expr::Field { expr: value, field_name: "vtable" },
                     field_name: "hash",
                 },
-                args: Vec::new().pushed(Expr::Field { expr: value, field_name: "data" }),
+                args: Vec::[Expr::Field { expr: value, field_name: "data" }],
             }
         } else {
             Expr::Call {
                 func: Expr::Var { name: hashmap_trait_impl_name("Hash", key, "hash") },
-                args: Vec::new().pushed(value),
+                args: Vec::[value],
             }
         },
         _ => Expr::Call {
             func: Expr::Var { name: hashmap_trait_impl_name("Hash", key, "hash") },
-            args: Vec::new().pushed(value),
+            args: Vec::[value],
         },
     }
 }
@@ -2607,15 +2607,13 @@ fn is_enum_dyn_receiver(
     value: tast::Type,
 ) -> bool {
     match tast::resolve_type(value) {
-        Con { name } => match find_enum(enums, name) {
-            Some(_) => true,
-            None => match instance_by_name(instances, name) {
-                Some(instance) => match find_enum(enums, instance.base_name) {
-                    Some(_) => true,
-                    None => false,
-                },
+        Con { name } => if find_enum(enums, name).is_some() {
+            true
+        } else {
+            match instance_by_name(instances, name) {
+                Some(instance) => find_enum(enums, instance.base_name).is_some(),
                 None => false,
-            },
+            }
         },
         _ => false,
     }

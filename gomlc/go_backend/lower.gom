@@ -84,7 +84,7 @@ fn function_type_names(
     enums: Vec[tast::EnumDef],
     instances: Vec[core::TypeInstance],
 ) -> HashMap[string, unit] {
-    let result: HashMap[string, unit] = HashMap::new();
+    let result: HashMap[string, unit] = HashMap::{};
     for definition in structs {
         let name = go_user_type_name(definition.name);
         result[name] = ();
@@ -210,7 +210,7 @@ fn build_function_names(
     };
     let entry_name = entry_wrapper_name(functions, structs, enums, instances, resolved);
     let result = FunctionNames {
-        by_source: HashMap::new(),
+        by_source: HashMap::{},
         reserved: resolved.reserved,
         variant_names: resolved.variant_names,
     };
@@ -680,7 +680,7 @@ fn compile_channel_callable(key: string, function_ty: tast::Type) -> Expr {
                 stmts.push(Stmt::Var { name: "ok", ty: Type::Bool, value: Option::None });
                 stmts.push(
                     Stmt::MultiAssign {
-                        names: Vec::new().pushed("value").pushed("ok"),
+                        names: Vec::["value", "ok"],
                         value: Expr::Receive { channel: vars[0] },
                     },
                 );
