@@ -38,6 +38,23 @@ git push origin v0.1.1
 
 The main branch CI verifies the stage2/stage3 fixed point and complete test suite. The Release workflow requires a successful main branch CI for the tagged commit, verifies the version, previous release, and stage0, rebuilds stage2, and tests the extracted release archive before publishing.
 
+Release archives use a complete toolchain prefix:
+
+```text
+goml-X.Y.Z-linux-amd64/
+├── bin/
+│   ├── goml
+│   ├── gomlc
+│   ├── gomlfmt
+│   └── gomllsp
+└── lib/
+    ├── builtin_contract.gom
+    ├── builtin_prelude.gom
+    └── std/
+```
+
+The compiler resolves `lib` relative to its executable. The archive must preserve this layout.
+
 ## Advance stage0
 
 The release is built by the previous release as stage0. After publishing, read the new archive checksum from its `SHA256SUMS`, then advance stage0:

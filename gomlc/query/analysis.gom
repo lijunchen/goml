@@ -87,12 +87,8 @@ fn dependency_sources(
     package_name: string,
     overrides: Vec[SourceOverride],
 ) -> Result[Vec[SourceFile], string] {
-    match standard_library_source(package_name) {
-        Some(file) => {
-            let files = Vec::new();
-            files.push(file);
-            Result::Ok(files)
-        },
+    match standard_library_sources(package_name)? {
+        Some(files) => Result::Ok(files),
         None => if is_local_package(module_path, package_name) {
             match dependency_project(module_root, module_path, package_name, overrides) {
                 Ok(project) => Result::Ok(project.files),
@@ -204,7 +200,12 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
     for diagnostic in diagnostics {
         checked.diagnostics.push(diagnostic)
     };
-    append_builtin_navigation_source(all_sources);
+    match append_builtin_navigation_sources(all_sources) {
+        Ok(_) => (),
+        Err(error) => checked.diagnostics.push(
+            query_diagnostic("", "resources", error, Option::None),
+        ),
+    };
     ProjectCheck { checked, sources: all_sources, environments }
 }
 

@@ -3,6 +3,7 @@ package core;
 use gomlc::ast;
 use gomlc::hir;
 use gomlc::parser;
+use gomlc::resources;
 use gomlc::tast;
 
 fn non_root(value: Function) -> Function {
@@ -18,10 +19,30 @@ fn non_root(value: Function) -> Function {
     }
 }
 
-pub fn lower_builtins(counter: Ref[int]) -> File {
-    lower_with_counter(
-        tast::check(hir::lower(ast::lower(parser::parse(builtin_source())), "builtin_contract.gom")),
-        counter,
+pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
+    let sources = resources::builtin_sources()?;
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    for source in sources {
+        inputs.push((ast::lower(parser::parse(source.source)), source.path))
+    };
+    let hir_files = Vec::new();
+    for lowered in hir::lower_package_files(inputs, "builtin") {
+        match lowered.hir {
+            Some(file) => hir_files.push(file),
+            None => return Result::Err("failed to lower builtin source " + lowered.source_path),
+        }
+    };
+    let checked = tast::check_builtin_package_files(hir_files);
+    if checked.tast.is_none() {
+        return Result::Err("failed to typecheck builtin package")
+    } else {
+        ()
+    };
+    Result::Ok(
+        lower_with_counter(
+            checked,
+            counter,
+        ),
     )
 }
 

@@ -2013,7 +2013,7 @@ The parser will do some error recovery for commas and semicolons, but the code a
 After building stage 1, verify a standalone source file from the repository root:
 
 ```sh
-bin/stage1/gomlc run-single path/to/main.gom
+stage1/bin/gomlc run-single path/to/main.gom
 ```
 
 For a project, run the installed driver from anywhere inside its module:

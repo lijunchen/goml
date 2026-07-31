@@ -12,7 +12,7 @@ The file extension for goml source files is `.gom`.
 
 ## Project Snapshot
 - The self-hosted frontend lowers through `lexer → parser → CST → AST → HIR → typed AST → Core → Mono → Lift → ANF` before emitting Go.
-- `gomlc/` contains the compiler, query engine, language server, standard-library generator, and compiler tests.
+- `gomlc/` contains the compiler, query engine, language server, toolchain resource loader, and compiler tests.
 - `goml/` contains the `goml` project driver, registry client, dependency resolver, and CLI tests.
 - `bootstrap/stage0.env` pins the released Linux amd64 binary stage0 used to start a cold bootstrap.
 - Regression fixtures and all generated golden files live in `gomlc/testdata`.
@@ -133,9 +133,9 @@ Key functions in the emitter:
 ## Project Structure & Module Organization
 - Self-hosted compiler module in `gomlc/`.
 - Self-hosted project driver module in `goml/`.
-- Standard-library navigation sources and builtin prelude in `stdlib/`.
+- Standard-library and builtin sources in `stdlib/`; every toolchain loads them from its executable-relative `lib/` directory.
 - Binary bootstrap scripts and stage0 metadata in `bootstrap/`.
-- Ignored executable outputs in `bin/stage1`, `bin/stage2`, and `bin/stage3`.
+- Ignored toolchain outputs in `stage1`, `stage2`, and `stage3`, with executables below each stage's `bin` directory and compiler resources below `lib`.
 - VS Code extension in `editors/vscode/`.
 - CI and development recipes in `.justfile`. Build artifacts are written below `_bootstrap/` and each module's `_artifact/`.
 
@@ -290,7 +290,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - `docs/goml.md` is the canonical user-facing language guide. Every change to syntax, language semantics, builtins, or public standard-library APIs must update the relevant prose, examples, limitations, comparison table, and informal grammar in that file in the same change.
 - Implement new syntax, builtins, standard-library APIs, traits, or type-system capabilities without using them in compiler or driver sources. Tests and fixtures may use the new capability immediately.
 - Release the implementation and advance stage0 to that release before using the new capability in compiler or driver sources.
-- Introduce a standard-library capability in two phases. First add its public source, embedded source, dependency selection, navigation, documentation, and external tests while retaining any compiler-owned fallback. After releasing and advancing stage0, migrate compiler and driver consumers and remove the fallback.
+- Introduce a standard-library capability in two phases. First add its public source, toolchain resource packaging, dependency selection, navigation, documentation, and external tests while retaining any compiler-owned fallback. After releasing and advancing stage0, migrate compiler and driver consumers and remove the fallback.
 - Syntax removal or incompatible syntax changes require a transition release that accepts both old and new forms. Advance stage0, migrate self-hosted sources, then remove the old form in a later release.
 - Driver protocols, compiler CLI contracts, and other bootstrap-facing interfaces require at least one release of compatibility overlap. A transition release must allow the old stage0 driver to use the new compiler before the old protocol is removed.
 - Artifact formats may change without backward compatibility only when each clean bootstrap stage consumes artifacts produced within that stage. Cache and external dependency diagnostics must remain recoverable.
@@ -322,7 +322,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   - `main.gom` - the input source file
   - `main.gom.cst`, `main.gom.ast`, `main.gom.hir`, `main.gom.tast`, `main.gom.core`, `main.gom.mono`, `main.gom.anf`, `main.gom.go` - expected IR outputs at each compilation stage
   - `main.gom.out` - expected execution output
-- You can quick check a test case with: `bin/stage2/gomlc run-single gomlc/testdata/pipeline/001/main.gom`
+- You can quick check a test case with: `stage2/bin/gomlc run-single gomlc/testdata/pipeline/001/main.gom`
 - You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running `just update-golden`.
 - When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `gomlc/testdata/pipeline/` with a `main.gom` file, then run `just update-golden` to generate the expected outputs.
 

@@ -112,7 +112,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
 
 fn package_world() -> PackageWorld {
     let counter = Ref::new(0);
-    let builtins = core::lower_builtins(counter);
+    let builtins = lower_builtin_core(counter);
     let builtin_interface = builtin_artifact_interface_unit();
     let standard = artifact_standard_library(
         compile_standard_library(builtins, builtin_interface.interface_hash),

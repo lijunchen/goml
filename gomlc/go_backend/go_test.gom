@@ -11,6 +11,22 @@ use gomlc::strings;
 use gomlc::tast;
 use std::testing;
 
+fn test_builtins(counter: Ref[int]) -> core::File {
+    match core::lower_builtins(counter) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            core::File {
+                functions: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+                type_instances: Vec::new(),
+                constants: Vec::new(),
+            }
+        },
+    }
+}
+
 fn lower_source(source: string) -> File {
     lower(
         anf::lower(
@@ -27,7 +43,7 @@ fn lower_source(source: string) -> File {
 
 fn lower_linked_source(source: string) -> File {
     let counter = Ref::new(0);
-    let builtins = core::lower_builtins(counter);
+    let builtins = test_builtins(counter);
     let user = core::lower_with_counter_and_types(
         tast::check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
         counter,

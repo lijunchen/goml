@@ -2839,12 +2839,42 @@ pub fn check_package_files_for_link_with_dependencies(
     values: Vec[hir::File],
     dependencies: Vec[hir::File],
 ) -> CheckResult {
-    check_package_files_for_link_with_environments(values, dependency_environments(dependencies))
+    check_package_files_for_link_with_environments_options(
+        values,
+        dependency_environments(dependencies),
+        false,
+        false,
+    )
+}
+
+pub fn check_builtin_package_files(values: Vec[hir::File]) -> CheckResult {
+    check_package_files_for_link_with_environments_options(values, Vec::new(), false, true)
+}
+
+pub fn check_package_files_for_link_with_dependencies_allowing_externs(
+    values: Vec[hir::File],
+    dependencies: Vec[hir::File],
+) -> CheckResult {
+    check_package_files_for_link_with_environments_options(
+        values,
+        dependency_environments(dependencies),
+        true,
+        false,
+    )
 }
 
 pub fn check_package_files_for_link_with_environments(
     values: Vec[hir::File],
     dependencies: Vec[DependencyEnvironment],
+) -> CheckResult {
+    check_package_files_for_link_with_environments_options(values, dependencies, false, false)
+}
+
+fn check_package_files_for_link_with_environments_options(
+    values: Vec[hir::File],
+    dependencies: Vec[DependencyEnvironment],
+    allow_externs: bool,
+    include_builtin_types: bool,
 ) -> CheckResult {
     let items: Vec[Item] = Vec::new();
     let enums: Vec[EnumDef] = Vec::new();
@@ -2867,9 +2897,9 @@ pub fn check_package_files_for_link_with_environments(
             package_files,
             dependencies,
             Vec::new(),
-            false,
+            include_builtin_types && index == 0,
             index == 0,
-            false,
+            allow_externs,
         );
         for diagnostic in checked.diagnostics {
             diagnostics.push(diagnostic)

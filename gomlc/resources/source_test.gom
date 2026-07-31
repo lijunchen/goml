@@ -1,0 +1,32 @@
+package resources;
+
+use std::testing;
+
+#[test]
+fn loads_builtin_sources_from_toolchain_lib() -> unit {
+    match builtin_sources() {
+        Ok(values) => {
+            testing::assert_eq(values.len(), 2);
+            testing::assert(values[0].source.len() > 0);
+            testing::assert(values[1].source.len() > 0)
+        },
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn loads_multifile_standard_package() -> unit {
+    match standard_sources("std::collections") {
+        Ok(Some(values)) => testing::assert_eq(values.len(), 9),
+        Ok(None) => testing::fail("expected standard package"),
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn ignores_unknown_standard_package() -> unit {
+    match standard_sources("example::unknown") {
+        Ok(value) => testing::assert(value.is_none()),
+        Err(error) => testing::fail(error),
+    }
+}
