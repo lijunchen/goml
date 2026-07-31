@@ -1,0 +1,64 @@
+package main;
+fn unwrap_or_negative(value: Option[int]) -> int {
+    let Some(result) = value else {
+        return -1;
+    };
+    result
+}
+
+fn count_to(limit: int) -> int {
+    let counter = Ref::new(0);
+    loop {
+        let current = counter.get();
+        if current >= limit {
+            {
+                break current;
+            }
+        } else {
+            ()
+        };
+        counter.set(current + 1);
+    }
+}
+
+fn loop_option(value: Option[int]) -> int {
+    loop {
+        let Some(item) = value else {
+            break -2;
+        };
+        break item;
+    }
+}
+
+fn nested_loop_value() -> int {
+    loop {
+        loop {
+            break;
+        };
+        break 7;
+    }
+}
+
+fn never_returns() -> int {
+    loop {}
+}
+
+fn matches_raw_path(value: string) -> bool {
+    match value {
+        "C:\\tmp" => true,
+        _ => false,
+    }
+}
+
+fn main() {
+    string_println("C:\\tmp\\\"quoted\\\"");
+    string_println(f"{"}"}");
+    println(unwrap_or_negative(Option::Some(11)).to_string());
+    println(unwrap_or_negative(Option::None).to_string());
+    println(count_to(4).to_string());
+    println(loop_option(Option::Some(9)).to_string());
+    println(loop_option(Option::None).to_string());
+    println(nested_loop_value().to_string());
+    println(matches_raw_path("C:\\tmp").to_string());
+}
+
