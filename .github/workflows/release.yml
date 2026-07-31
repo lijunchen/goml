@@ -106,6 +106,7 @@ jobs:
           "$smoke_root/$package/goml" test
           "$smoke_root/$package/gomlfmt" -w ./*.gom
           "$smoke_root/$package/gomlfmt" --check ./*.gom
+          "$smoke_root/$package/goml" fmt --check
           bash "$GITHUB_WORKSPACE/tools/release/lsp_smoke.sh" "$smoke_root/$package/gomllsp" "$RELEASE_VERSION"
       - uses: actions/upload-artifact@v4
         with:
