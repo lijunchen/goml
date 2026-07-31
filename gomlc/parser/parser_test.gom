@@ -113,6 +113,16 @@ fn parses_practical_expression_syntax() -> unit {
 }
 
 #[test]
+fn parses_raw_strings_let_else_and_value_loops() -> unit {
+    let source = "enum Choice { Value(int), Empty } fn choose(value: Choice) -> int { let Value(item) = value else { return -1; }; loop { break item; } } fn raw() -> string { r#\"quoted \"text\"\"# }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_RAW_STR), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_LOOP), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BREAK), 1)
+}
+
+#[test]
 fn postfix_expressions_bind_tighter_than_prefix_operators() -> unit {
     let source = "fn main() -> bool { let values = Vec::[false]; !values[0] }";
     let result = parse(source);

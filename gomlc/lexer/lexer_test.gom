@@ -210,3 +210,14 @@ fn rejects_invalid_string_and_char_literals_like_logos() -> unit {
     testing::assert_eq(multiline.get(1).text, "\\");
     testing::assert_eq(multiline.get(4).text, "\";")
 }
+
+#[test]
+fn lexes_raw_strings_and_preserves_delimiters() -> unit {
+    let source = "r\"plain \\\\ text\" r##\"quoted \"text\" and #\nnext\"## r#\"unterminated";
+    let tokens = lex(source);
+    assert_token(tokens, 0, TokenKind::RawStr, "r\"plain \\\\ text\"", 0, 16);
+    testing::assert(token_kind_equal(tokens.get(2).kind, TokenKind::RawStr));
+    testing::assert_eq(tokens.get(2).text, "r##\"quoted \"text\" and #\nnext\"##");
+    testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(4).text, "r#\"unterminated")
+}

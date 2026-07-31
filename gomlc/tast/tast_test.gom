@@ -39,6 +39,33 @@ fn has_diagnostic(values: Vec[Diagnostic], expected: string) -> bool {
     found.get()
 }
 
+#[test]
+fn checks_let_else_and_value_break_restrictions() -> unit {
+    let source = "enum Choice { Value(int), Empty } fn non_exit(value: Choice) -> int { let Value(item) = value else { 0 }; item } fn while_value() { while true { break 1; }; } fn irrefutable() { let item = 1 else { return; }; }";
+    let diagnostics = checked_diagnostics(source);
+    testing::assert(
+        has_diagnostic(
+            diagnostics,
+            "`let else` branch must exit the surrounding control flow",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(diagnostics, "`break` with a value is only allowed in `loop`"),
+    );
+    testing::assert(has_diagnostic(diagnostics, "`let else` requires a refutable pattern"))
+}
+
+#[test]
+fn checks_value_break_types_across_loop_paths() -> unit {
+    let source = "fn choose(flag: bool) -> int { loop { if flag { break 1; } else { break \"wrong\"; }; } }";
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(source),
+            "Type mismatch: expected string, found int",
+        ),
+    )
+}
+
 fn dependency_hir(source: string, package_name: string) -> hir::File {
     let result = hir::lower_package(ast::lower(parser::parse(source)), "package.gom", package_name);
     testing::assert_eq(result.diagnostics.len(), 0);

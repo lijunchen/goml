@@ -666,6 +666,13 @@ fn filters_completion_scope_and_suggests_keywords() -> unit {
         ),
         None => testing::fail("expected keyword prefix"),
     };
+    let loop_source = "fn main() -> unit { lo }";
+    match last_substring(loop_source, "lo") {
+        Some(offset) => testing::assert(
+            has_completion(completions(analyze("main.gom", loop_source), offset + 2), "loop"),
+        ),
+        None => testing::fail("expected loop keyword prefix"),
+    };
     let call_source = "fn use_value(value: int32) -> unit { () } fn main() -> unit { use_value( }";
     match last_substring(call_source, "use_value(") {
         Some(offset) => testing::assert_eq(

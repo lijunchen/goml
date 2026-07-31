@@ -457,6 +457,17 @@ fn emits_breaking_while_loops() -> unit {
 }
 
 #[test]
+fn emits_value_and_infinite_loops_without_expanding_continuations() -> unit {
+    let source = "fn choose(flag: bool) -> int { loop { if flag { break 7; } else { continue; }; } } fn spin() -> int { loop {} } fn main() -> unit { if false { println(choose(true)); println(spin()); }; }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "func choose(flag__0 bool) int {"));
+    testing::assert(string_contains(output, "Loop_loop_expr"));
+    testing::assert(string_contains(output, " = 7\n            break Loop_loop_expr"));
+    testing::assert(string_contains(output, "func spin() int {\n    for {"));
+    testing::assert(!string_contains(output, "panic(\"unreachable\")"))
+}
+
+#[test]
 fn preserves_loop_carried_assignments() -> unit {
     let source = "fn main() -> unit { let mut i = 0; while i < 3 { println(i); i = i + 1; } }";
     testing::assert(string_contains(encode(lower_source(source)), "\n            i__0 = "))
