@@ -694,8 +694,8 @@ fn looks_like_struct_literal(parser: Parser) -> bool {
 
 fn postfix_binding_power(kind: lexer::TokenKind) -> Option[int] {
     match kind {
-        LParen | LBracket => Option::Some(21),
-        Question => Option::Some(22),
+        LParen | LBracket => Option::Some(25),
+        Question => Option::Some(26),
         _ => Option::None,
     }
 }
@@ -724,7 +724,7 @@ fn infix_binding_power(kind: lexer::TokenKind) -> Option[(int, int)] {
         Plus | Minus => Option::Some((13, 14)),
         Star | Slash | Percent =>
             Option::Some((15, 16)),
-        Dot => Option::Some((23, 24)),
+        Dot => Option::Some((27, 28)),
         _ => Option::None,
     }
 }

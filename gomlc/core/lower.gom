@@ -894,6 +894,7 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
         VecType { elem: _ } => "vec.get",
         Slice { elem: _ } => "slice.get",
         HashMap { key: _, value: _ } => "hashmap.get",
+        String => "core.string_get",
         _ => "compiler.missing",
     };
     let params: Vec[tast::Type] = Vec::new();
