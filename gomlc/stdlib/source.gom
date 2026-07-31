@@ -1199,7 +1199,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let mut position = (hash & mask as uint64) as int;
         let mut perturb = hash;
         let mut first_deleted = -1;
-        while true {
+        loop {
             let dense_index = indices[position];
             if dense_index == -1 {
                 return IndexMapProbe::Vacant(
@@ -2459,7 +2459,7 @@ pub fn split(value: string, separator: string) -> Vec[string] {
         ()
     };
     let mut start = 0;
-    while true {
+    loop {
         match find_from(value, separator, start) {
             Some(index) => {
                 result.push(value.byte_slice(start, index));
@@ -2514,7 +2514,7 @@ pub fn replace(value: string, expected: string, replacement: string) -> string {
     } else {
         let builder = StringBuilder::with_capacity(value.byte_len());
         let mut start = 0;
-        while true {
+        loop {
             match find_from(value, expected, start) {
                 Some(index) => {
                     builder.write_string(value.byte_slice(start, index));

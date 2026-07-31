@@ -61,7 +61,7 @@ pub fn split(value: string, separator: string) -> Vec[string] {
         ()
     };
     let mut start = 0;
-    while true {
+    loop {
         match find_from(value, separator, start) {
             Some(index) => {
                 result.push(value.byte_slice(start, index));
@@ -116,7 +116,7 @@ pub fn replace(value: string, expected: string, replacement: string) -> string {
     } else {
         let builder = StringBuilder::with_capacity(value.byte_len());
         let mut start = 0;
-        while true {
+        loop {
             match find_from(value, expected, start) {
                 Some(index) => {
                     builder.write_string(value.byte_slice(start, index));
