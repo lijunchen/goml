@@ -126,10 +126,7 @@ fn validate_target_dir(value: string) -> Result[unit, string] {
 }
 
 pub fn load(path: string) -> Result[Manifest, string] {
-    let source = match fs::read_file(path) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let source = fs::read_file(path)?;
     let section = Ref::new("");
     let module_path: Ref[Option[string]] = Ref::new(Option::None);
     let target_dir = Ref::new("_artifact");
@@ -156,19 +153,13 @@ pub fn load(path: string) -> Result[Manifest, string] {
                 ()
             };
             let key = util::trim(line.byte_slice(0, equals.get()));
-            let value = match parse_string(line.byte_slice(equals.get() + 1, line.byte_len())) {
-                Ok(value) => value,
-                Err(message) => return Result::Err(message),
-            };
+            let value = parse_string(line.byte_slice(equals.get() + 1, line.byte_len()))?;
             if section.get() == "module" && key == "path" {
                 module_path.set(Option::Some(value))
             } else if section.get() == "build" && key == "target-dir" {
                 target_dir.set(value)
             } else if section.get() == "dependencies" {
-                let name = match parse_string(key) {
-                    Ok(value) => value,
-                    Err(message) => return Result::Err(message),
-                };
+                let name = parse_string(key)?;
                 dependencies.push(Dependency { name, version: value })
             } else {
                 ()
@@ -179,10 +170,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
         Some(value) => value,
         None => return Result::Err("goml.toml is missing [module].path"),
     };
-    match validate_module_path(module_path) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    validate_module_path(module_path)?;
     match validate_target_dir(target_dir.get()) {
         Ok(()) => Result::Ok(Manifest { module_path, target_dir: target_dir.get(), dependencies }),
         Err(message) => Result::Err(message),

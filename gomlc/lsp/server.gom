@@ -49,10 +49,7 @@ fn text_document_uri(value: json::Value) -> Result[string, string] {
 }
 
 fn request_document(server: Server, params: json::Value) -> Result[Document, string] {
-    let uri = match text_document_uri(params) {
-        Ok(uri) => uri,
-        Err(error) => return Result::Err(error),
-    };
+    let uri = text_document_uri(params)?;
     match server_document(server, uri) {
         Some(document) => Result::Ok(document),
         None => Result::Err("document is not open: " + uri),
@@ -160,19 +157,10 @@ fn join_strings(values: Vec[string], separator: string) -> string {
 }
 
 fn hover_response(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let document = match request_document(server, params) {
-        Ok(document) => document,
-        Err(error) => return Result::Err(error),
-    };
-    let position = match request_position(params) {
-        Ok(position) => position,
-        Err(error) => return Result::Err(error),
-    };
+    let document = request_document(server, params)?;
+    let position = request_position(params)?;
     let analysis = document_analysis(server, document);
-    let offset = match request_offset(document, position) {
-        Ok(offset) => offset,
-        Err(error) => return Result::Err(error),
-    };
+    let offset = request_offset(document, position)?;
     let sections = Vec::new();
     match query::hover(analysis, offset) {
         Some(hover) => sections.push("```goml\n" + hover.contents + "\n```"),
@@ -228,19 +216,10 @@ fn completion_kind(value: query::CompletionKind) -> int {
 }
 
 fn completion_response(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let document = match request_document(server, params) {
-        Ok(document) => document,
-        Err(error) => return Result::Err(error),
-    };
-    let position = match request_position(params) {
-        Ok(position) => position,
-        Err(error) => return Result::Err(error),
-    };
+    let document = request_document(server, params)?;
+    let position = request_position(params)?;
     let analysis = document_analysis(server, document);
-    let offset = match request_offset(document, position) {
-        Ok(offset) => offset,
-        Err(error) => return Result::Err(error),
-    };
+    let offset = request_offset(document, position)?;
     let result = Vec::new();
     for item in query::completions(analysis, offset) {
         let fields = Vec::new();
@@ -253,19 +232,10 @@ fn completion_response(server: Server, params: json::Value) -> Result[json::Valu
 }
 
 fn signature_response(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let document = match request_document(server, params) {
-        Ok(document) => document,
-        Err(error) => return Result::Err(error),
-    };
-    let position = match request_position(params) {
-        Ok(position) => position,
-        Err(error) => return Result::Err(error),
-    };
+    let document = request_document(server, params)?;
+    let position = request_position(params)?;
     let analysis = document_analysis(server, document);
-    let offset = match request_offset(document, position) {
-        Ok(offset) => offset,
-        Err(error) => return Result::Err(error),
-    };
+    let offset = request_offset(document, position)?;
     match query::signature_help(analysis, offset) {
         Some(signature) => {
             let parameters = Vec::new();
@@ -294,25 +264,13 @@ fn signature_response(server: Server, params: json::Value) -> Result[json::Value
 }
 
 fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let document = match request_document(server, params) {
-        Ok(document) => document,
-        Err(error) => return Result::Err(error),
-    };
+    let document = request_document(server, params)?;
     let requested_range = match required_field(params, "range") {
-        Ok(value) => match parse_range(value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Ok(value) => parse_range(value)?,
         Err(error) => return Result::Err(error),
     };
-    let range_start = match request_offset(document, requested_range.start) {
-        Ok(offset) => offset,
-        Err(error) => return Result::Err(error),
-    };
-    let range_end = match request_offset(document, requested_range.end) {
-        Ok(offset) => offset,
-        Err(error) => return Result::Err(error),
-    };
+    let range_start = request_offset(document, requested_range.start)?;
+    let range_end = request_offset(document, requested_range.end)?;
     let analysis = document_analysis(server, document);
     let result = Vec::new();
     for hint in query::inlay_hints(analysis) {
@@ -341,19 +299,10 @@ fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, st
 }
 
 fn definition_response(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let document = match request_document(server, params) {
-        Ok(document) => document,
-        Err(error) => return Result::Err(error),
-    };
-    let position = match request_position(params) {
-        Ok(position) => position,
-        Err(error) => return Result::Err(error),
-    };
+    let document = request_document(server, params)?;
+    let position = request_position(params)?;
     let analysis = document_analysis(server, document);
-    let offset = match request_offset(document, position) {
-        Ok(offset) => offset,
-        Err(error) => return Result::Err(error),
-    };
+    let offset = request_offset(document, position)?;
     let locations = Vec::new();
     for definition in query::goto_definitions(analysis, offset) {
         match source_for_path(analysis, definition.source_path) {
@@ -391,10 +340,7 @@ fn test_kind_name(value: query::TestItemKind) -> string {
 }
 
 fn code_lens_response(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let document = match request_document(server, params) {
-        Ok(document) => document,
-        Err(error) => return Result::Err(error),
-    };
+    let document = request_document(server, params)?;
     let result = Vec::new();
     for item in query::test_items(document.path, document.text) {
         let arguments = Vec::new();
@@ -419,21 +365,12 @@ fn code_lens_response(server: Server, params: json::Value) -> Result[json::Value
 
 fn fix_action(diagnostic: json::Value, fix: json::Value) -> Option[json::Value] {
     let uri = match json::field(fix, "uri") {
-        Some(value) => match json::as_string(value) {
-            Some(value) => value,
-            None => return Option::None,
-        },
+        Some(value) => json::as_string(value)?,
         None => return Option::None,
     };
-    let range = match json::field(fix, "range") {
-        Some(value) => value,
-        None => return Option::None,
-    };
+    let range = json::field(fix, "range")?;
     let replacement = match json::field(fix, "replacement") {
-        Some(value) => match json::as_string(value) {
-            Some(value) => value,
-            None => return Option::None,
-        },
+        Some(value) => json::as_string(value)?,
         None => return Option::None,
     };
     let title = match json::field(fix, "title") {
@@ -468,10 +405,7 @@ fn fix_action(diagnostic: json::Value, fix: json::Value) -> Option[json::Value] 
 }
 
 fn code_action_response(params: json::Value) -> Result[json::Value, string] {
-    let context = match required_field(params, "context") {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let context = required_field(params, "context")?;
     let diagnostics = match required_field(context, "diagnostics") {
         Ok(Array(values)) => values,
         Ok(_) => return Result::Err("field diagnostics must be an array"),
@@ -581,22 +515,10 @@ fn publish_all_diagnostics(server: Server) -> Vec[json::Value] {
 }
 
 fn did_open(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let text_document = match text_document(params) {
-        Ok(document) => document,
-        Err(error) => return Result::Err(error),
-    };
-    let uri = match required_string_field(text_document, "uri") {
-        Ok(uri) => uri,
-        Err(error) => return Result::Err(error),
-    };
-    let path = match uri_to_path(uri) {
-        Ok(path) => path,
-        Err(error) => return Result::Err(error),
-    };
-    let text = match required_string_field(text_document, "text") {
-        Ok(text) => text,
-        Err(error) => return Result::Err(error),
-    };
+    let text_document = text_document(params)?;
+    let uri = required_string_field(text_document, "uri")?;
+    let path = uri_to_path(uri)?;
+    let text = required_string_field(text_document, "text")?;
     let document = Document {
         uri,
         path,
@@ -608,14 +530,8 @@ fn did_open(server: Server, params: json::Value) -> Result[json::Value, string] 
 }
 
 fn did_change(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let uri = match text_document_uri(params) {
-        Ok(uri) => uri,
-        Err(error) => return Result::Err(error),
-    };
-    let text_document = match text_document(params) {
-        Ok(document) => document,
-        Err(error) => return Result::Err(error),
-    };
+    let uri = text_document_uri(params)?;
+    let text_document = text_document(params)?;
     let version = optional_int_field(text_document, "version", 0);
     let changes = match required_field(params, "contentChanges") {
         Ok(changes) => match json::as_array(changes) {
@@ -631,10 +547,7 @@ fn did_change(server: Server, params: json::Value) -> Result[json::Value, string
     } else {
         ()
     };
-    let text = match required_string_field(changes[changes.len() - 1], "text") {
-        Ok(text) => text,
-        Err(error) => return Result::Err(error),
-    };
+    let text = required_string_field(changes[changes.len() - 1], "text")?;
     change_document(server, uri, text, version);
     match server_document(server, uri) {
         Some(document) => {
@@ -645,10 +558,7 @@ fn did_change(server: Server, params: json::Value) -> Result[json::Value, string
 }
 
 fn did_close(server: Server, params: json::Value) -> Result[json::Value, string] {
-    let uri = match text_document_uri(params) {
-        Ok(uri) => uri,
-        Err(error) => return Result::Err(error),
-    };
+    let uri = text_document_uri(params)?;
     close_document(server, uri);
     let diagnostic_params = Vec::new();
     push_json_field(diagnostic_params, "uri", json::Value::String(uri));
@@ -659,10 +569,7 @@ fn did_close(server: Server, params: json::Value) -> Result[json::Value, string]
 }
 
 fn did_save(server: Server, params: json::Value) -> Result[unit, string] {
-    let uri = match text_document_uri(params) {
-        Ok(uri) => uri,
-        Err(error) => return Result::Err(error),
-    };
+    let uri = text_document_uri(params)?;
     match server_document(server, uri) {
         Some(_) => {
             invalidate_analyses(server);
@@ -776,16 +683,10 @@ pub fn handle_payload(server: Server, payload: string) -> Result[Vec[json::Value
 pub fn run_server() -> Result[unit, string] {
     let server = new_server();
     while server_running(server) {
-        let payload = match read_rpc_payload() {
-            Ok(payload) => payload,
-            Err(error) => return Result::Err(error),
-        };
+        let payload = read_rpc_payload()?;
         match handle_payload(server, payload) {
             Ok(messages) => for message in messages {
-                match write_rpc_message(message) {
-                    Ok(()) => (),
-                    Err(error) => return Result::Err(error),
-                }
+                write_rpc_message(message)?
             },
             Err(error) => return Result::Err(error),
         }

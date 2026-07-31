@@ -77,32 +77,17 @@ fn required_bool(value: json::Value, name: string) -> Result[bool, string] {
 }
 
 fn load_tests(group: Group) -> Result[Vec[Test], string] {
-    let source = match fs::read_file(group.manifest_path) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
-    let root = match json::parse(source) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let source = fs::read_file(group.manifest_path)?;
+    let root = json::parse(source)?;
     let values = match json::as_array(root) {
         Some(value) => value,
         None => return Result::Err("test manifest must be an array"),
     };
     let result = Vec::new();
     for value in values {
-        let id = match required_string(value, "id") {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
-        let display_name = match required_string(value, "display_name") {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
-        let ignored = match required_bool(value, "ignored") {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let id = required_string(value, "id")?;
+        let display_name = required_string(value, "display_name")?;
+        let ignored = required_bool(value, "ignored")?;
         let ignore_reason = match json::field(value, "ignore_reason") {
             Some(value) => json::as_string(value),
             None => Option::None,
@@ -397,10 +382,7 @@ fn report_json(values: Vec[Execution]) -> int {
 pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[unit, string] {
     let loaded = Vec::new();
     for group in groups {
-        let values = match load_tests(group) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let values = load_tests(group)?;
         for value in values {
             loaded.push(value)
         }

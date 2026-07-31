@@ -110,10 +110,7 @@ fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
     let index = Ref::new(2);
     while index.get() < args.len() {
         let argument = args[index.get()];
-        let parsed = match option_value(args, index, argument, "--target-dir") {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let parsed = option_value(args, index, argument, "--target-dir")?;
         match parsed {
             Some(value) => match target_dir.get() {
                 Some(_) => {
@@ -147,10 +144,7 @@ fn parse_fmt(args: Vec[string]) -> Result[FmtArgs, string] {
                 index.set(index.get() + 1)
             }
         } else {
-            let parsed = match option_value(args, index, argument, "--formatter") {
-                Ok(value) => value,
-                Err(message) => return Result::Err(message),
-            };
+            let parsed = option_value(args, index, argument, "--formatter")?;
             match parsed {
                 Some(value) => match formatter.get() {
                     Some(_) => {
@@ -250,10 +244,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             flags[argument] = ();
             index.set(index.get() + 1)
         } else {
-            let parsed_target_dir = match option_value(args, index, argument, "--target-dir") {
-                Ok(value) => value,
-                Err(message) => return Result::Err(message),
-            };
+            let parsed_target_dir = option_value(args, index, argument, "--target-dir")?;
             if match parsed_target_dir {
                 Some(_) => true,
                 None => false,
@@ -267,10 +258,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                     target_dir.set(parsed_target_dir)
                 }
             } else {
-                let parsed_compiler = match option_value(args, index, argument, "--compiler") {
-                    Ok(value) => value,
-                    Err(message) => return Result::Err(message),
-                };
+                let parsed_compiler = option_value(args, index, argument, "--compiler")?;
                 if match parsed_compiler {
                     Some(_) => true,
                     None => false,
@@ -284,10 +272,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         compiler.set(parsed_compiler)
                     }
                 } else if command == "test" {
-                    let parsed_timeout = match option_value(args, index, argument, "--timeout") {
-                        Ok(value) => value,
-                        Err(message) => return Result::Err(message),
-                    };
+                    let parsed_timeout = option_value(args, index, argument, "--timeout")?;
                     if match parsed_timeout {
                         Some(_) => true,
                         None => false,
@@ -301,10 +286,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             Err(message) => return Result::Err(message),
                         }
                     } else {
-                        let parsed_jobs = match option_value(args, index, argument, "--jobs") {
-                            Ok(value) => value,
-                            Err(message) => return Result::Err(message),
-                        };
+                        let parsed_jobs = option_value(args, index, argument, "--jobs")?;
                         if match parsed_jobs {
                             Some(_) => true,
                             None => false,
@@ -321,10 +303,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                 Err(message) => return Result::Err(message),
                             }
                         } else {
-                            let parsed_kind = match option_value(args, index, argument, "--kind") {
-                                Ok(value) => value,
-                                Err(message) => return Result::Err(message),
-                            };
+                            let parsed_kind = option_value(args, index, argument, "--kind")?;
                             if match parsed_kind {
                                 Some(_) => true,
                                 None => false,
@@ -339,15 +318,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                     return Result::Err("--kind must be internal, external, or all")
                                 }
                             } else {
-                                let parsed_format = match option_value(
-                                    args,
-                                    index,
-                                    argument,
-                                    "--format",
-                                ) {
-                                    Ok(value) => value,
-                                    Err(message) => return Result::Err(message),
-                                };
+                                let parsed_format = option_value(args, index, argument, "--format")?;
                                 match parsed_format {
                                     Some(value) => if value == "json" {
                                         test_formats.push(value)
@@ -372,10 +343,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         }
                     }
                 } else {
-                    let parsed_jobs = match option_value(args, index, argument, "--jobs") {
-                        Ok(value) => value,
-                        Err(message) => return Result::Err(message),
-                    };
+                    let parsed_jobs = option_value(args, index, argument, "--jobs")?;
                     match parsed_jobs {
                         Some(value) => match util::parse_positive_int(value) {
                             Ok(value) => build_jobs.set(value),
@@ -434,10 +402,7 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
     } else {
         project::load_context(args.target_dir, args.compiler)
     };
-    let context = match context_result {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let context = context_result?;
     let plan = if args.command == "check" {
         project::check_plan(context, args.include_tests)
     } else if args.command == "build" {
@@ -447,14 +412,8 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
     } else {
         project::test_plan(context, args.test_kind)
     };
-    let plan = match plan {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
-    match project::execute_plan(context, plan, args.dry_run, args.build_jobs) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    let plan = plan?;
+    project::execute_plan(context, plan, args.dry_run, args.build_jobs)?;
     if args.command == "run" {
         match plan.executable {
             Some(executable) => project::run_executable(

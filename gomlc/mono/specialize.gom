@@ -1352,10 +1352,7 @@ fn trait_method_bindings(
     ret_ty: tast::Type,
 ) -> Option[Vec[TypeBinding]] {
     let bindings = Vec::new();
-    let metadata = match function.trait_impl {
-        Some(value) => value,
-        None => return Option::None,
-    };
+    let metadata = function.trait_impl?;
     if metadata.trait_ref.args.len() != reference.args.len()
         || !unify_type(metadata.for_ty, actual_types[0], bindings)
         || !unify_types(metadata.trait_ref.args, reference.args, bindings) {

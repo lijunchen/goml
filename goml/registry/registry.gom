@@ -95,10 +95,7 @@ fn quoted_values(value: string) -> Vec[string] {
 }
 
 fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
-    let source = match fs::read_file(path::join(root, "index.toml")) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let source = fs::read_file(path::join(root, "index.toml"))?;
     let entries = Vec::new();
     let current: Ref[Option[string]] = Ref::new(Option::None);
     for original in util::split_lines(source) {
@@ -209,25 +206,13 @@ pub fn module_directory(root: string, name: string, version: string) -> Result[s
 }
 
 pub fn validate(root: string) -> Result[unit, string] {
-    let entries = match load_index(root) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let entries = load_index(root)?;
     for entry in entries {
-        match validate_coordinate(entry.name) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        };
-        let latest = match parse_sem_version(entry.latest) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        validate_coordinate(entry.name)?;
+        let latest = parse_sem_version(entry.latest)?;
         let latest_matches: Vec[string] = Vec::new();
         for version in entry.versions {
-            let parsed = match parse_sem_version(version) {
-                Ok(value) => value,
-                Err(message) => return Result::Err(message),
-            };
+            let parsed = parse_sem_version(version)?;
             if version_equal(parsed, latest) {
                 latest_matches.push(version)
             } else {
@@ -256,14 +241,8 @@ pub fn validate(root: string) -> Result[unit, string] {
 }
 
 pub fn latest_version(root: string, name: string) -> Result[string, string] {
-    match validate_coordinate(name) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
-    let entries = match load_index(root) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    validate_coordinate(name)?;
+    let entries = load_index(root)?;
     match find_entry(entries, name) {
         Some(entry) => match parse_sem_version(entry.latest) {
             Ok(_) => Result::Ok(entry.latest),
@@ -274,18 +253,9 @@ pub fn latest_version(root: string, name: string) -> Result[string, string] {
 }
 
 pub fn select_version(root: string, name: string, minimum: string) -> Result[string, string] {
-    match validate_coordinate(name) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
-    let minimum_value = match parse_sem_version(minimum) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
-    let entries = match load_index(root) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    validate_coordinate(name)?;
+    let minimum_value = parse_sem_version(minimum)?;
+    let entries = load_index(root)?;
     let entry = match find_entry(entries, name) {
         Some(value) => value,
         None => return Result::Err("module " + name + " not found in registry index"),
@@ -293,10 +263,7 @@ pub fn select_version(root: string, name: string, minimum: string) -> Result[str
     let selected: Ref[Option[string]] = Ref::new(Option::None);
     let selected_value: Ref[Option[SemVersion]] = Ref::new(Option::None);
     for version in entry.versions {
-        let parsed = match parse_sem_version(version) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let parsed = parse_sem_version(version)?;
         if !version_less(parsed, minimum_value)
             && match selected_value.get() {
                 Some(current) => version_less(parsed, current),
@@ -356,40 +323,25 @@ fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[int] {
 }
 
 pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModule], string] {
-    let root_manifest = match manifest::load(path::join(module_root, "goml.toml")) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let root_manifest = manifest::load(path::join(module_root, "goml.toml"))?;
     let queue = root_manifest.dependencies;
     let cursor = Ref::new(0);
     let selected = Vec::new();
     while cursor.get() < queue.len() {
         let requirement = queue[cursor.get()];
         cursor.set(cursor.get() + 1);
-        let version = match select_version(root, requirement.name, requirement.version) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
-        let parsed = match parse_sem_version(version) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let version = select_version(root, requirement.name, requirement.version)?;
+        let parsed = parse_sem_version(version)?;
         let update = match selected_index(selected, requirement.name) {
             Some(index) => {
-                let current = match parse_sem_version(selected[index].version) {
-                    Ok(value) => value,
-                    Err(message) => return Result::Err(message),
-                };
+                let current = parse_sem_version(selected[index].version)?;
                 version_less(current, parsed)
             },
             None => true,
         };
         if update {
             let directory = module_directory_unchecked(root, requirement.name, version);
-            let module_manifest = match manifest::load(path::join(directory, "goml.toml")) {
-                Ok(value) => value,
-                Err(message) => return Result::Err(message),
-            };
+            let module_manifest = manifest::load(path::join(directory, "goml.toml"))?;
             if module_manifest.module_path != requirement.name {
                 return Result::Err(
                     "registry module " + requirement.name + " declares module path "
@@ -419,10 +371,7 @@ pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModul
 }
 
 pub fn resolve(module_root: string) -> Result[Vec[ResolvedModule], string] {
-    let root = match cached_root() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let root = cached_root()?;
     if !fs::is_dir(root) {
         return Result::Err("registry cache not found at " + root + "; run `goml update` first")
     } else {

@@ -1169,10 +1169,7 @@ fn match_block_target(arms: Vec[anf::Arm], default: Option[anf::Block]) -> Optio
     } else {
         ()
     };
-    let expected = match block_target(arms[0].body) {
-        Some(value) => value,
-        None => return Option::None,
-    };
+    let expected = block_target(arms[0].body)?;
     for index in range(1, arms.len()) {
         match block_target(arms[index].body) {
             Some(value) => if value == expected {
@@ -1671,10 +1668,7 @@ fn match_tail_target_through_joins(
     } else {
         ()
     };
-    let expected = match block_tail_target_through_joins(arms[0].body, joins, visited) {
-        Some(value) => value,
-        None => return Option::None,
-    };
+    let expected = block_tail_target_through_joins(arms[0].body, joins, visited)?;
     for index in range(1, arms.len()) {
         match block_tail_target_through_joins(arms[index].body, joins, visited) {
             Some(value) => if value == expected {

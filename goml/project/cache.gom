@@ -332,10 +332,7 @@ fn command_fingerprint(context: Context, compiler: string, spec: CacheSpec) -> R
     };
     builder.write_char('\n');
     for input in spec.inputs {
-        let digest = match file_digest(context.graph.module_dir, input) {
-            Ok(value) => value,
-            Err(message) => return Result::Err(message),
-        };
+        let digest = file_digest(context.graph.module_dir, input)?;
         builder.write_string(input.byte_len().to_string());
         builder.write_char(':');
         builder.write_string(input);
@@ -366,10 +363,7 @@ fn cache_is_fresh(context: Context, spec: CacheSpec, fingerprint: string) -> Res
     } else {
         ()
     };
-    let source = match fs::read_file(record_path) {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let source = fs::read_file(record_path)?;
     let lines = util::split(source, "\n");
     if lines.len() != spec.outputs.len() + 1 || lines[0] != fingerprint {
         return Result::Ok(false)
@@ -400,15 +394,9 @@ fn remove_cache_file(value: string) -> Result[unit, string] {
 }
 
 fn prepare_cache_execution(context: Context, spec: CacheSpec) -> Result[unit, string] {
-    match remove_cache_file(cache_path(context.graph.module_dir, spec)) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    remove_cache_file(cache_path(context.graph.module_dir, spec))?;
     for output in spec.outputs {
-        match remove_cache_file(absolute_from_module(context.graph.module_dir, output)) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        }
+        remove_cache_file(absolute_from_module(context.graph.module_dir, output))?
     };
     Result::Ok(())
 }
@@ -449,10 +437,7 @@ fn store_cache(context: Context, spec: CacheSpec, compiler: string, before: stri
     };
     let record_path = cache_path(context.graph.module_dir, spec);
     match path::parent(record_path) {
-        Some(parent) => match fs::create_dir_all(parent) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        },
+        Some(parent) => fs::create_dir_all(parent)?,
         None => return Result::Err("fingerprint path has no parent directory"),
     };
     fs::write_file(record_path, builder.finish())

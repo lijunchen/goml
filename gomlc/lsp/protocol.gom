@@ -179,17 +179,11 @@ pub fn parse_position(value: json::Value) -> Result[Position, string] {
 
 pub fn parse_range(value: json::Value) -> Result[Range, string] {
     let start = match json::field(value, "start") {
-        Some(value) => match parse_position(value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Some(value) => parse_position(value)?,
         None => return Result::Err("range has no start"),
     };
     let end = match json::field(value, "end") {
-        Some(value) => match parse_position(value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(error),
-        },
+        Some(value) => parse_position(value)?,
         None => return Result::Err("range has no end"),
     };
     Result::Ok(Range { start, end })

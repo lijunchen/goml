@@ -116,10 +116,7 @@ fn sorted_unique_package_inputs(values: Vec[string]) -> Vec[string] {
 }
 
 fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, string] {
-    let extracted = match extract_world_args(args) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let extracted = extract_world_args(args)?;
     let args = extracted.args;
     let package_name: Ref[Option[string]] = Ref::new(Option::None);
     let output: Ref[Option[string]] = Ref::new(Option::None);
@@ -315,10 +312,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
 }
 
 fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string] {
-    let extracted = match extract_world_args(args) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let extracted = extract_world_args(args)?;
     let args = extracted.args;
     let entry: Ref[Option[string]] = Ref::new(Option::None);
     let output: Ref[Option[string]] = Ref::new(Option::None);
@@ -466,10 +460,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
 }
 
 fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs, string] {
-    let extracted = match extract_world_args(args) {
-        Ok(value) => value,
-        Err(error) => return Result::Err(error),
-    };
+    let extracted = extract_world_args(args)?;
     let args = extracted.args;
     let output: Ref[Option[string]] = Ref::new(Option::None);
     let manifest: Ref[Option[string]] = Ref::new(Option::None);

@@ -49,14 +49,8 @@ pub fn home_directory() -> Result[string, string] {
 }
 
 pub fn print_home() -> Result[unit, string] {
-    let home = match home_directory() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
-    match ensure_home_layout() {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    let home = home_directory()?;
+    ensure_home_layout()?;
     let bin = path::join(home, "bin");
     let lib = path::join(home, "lib");
     let std = path::join(lib, "std");
@@ -70,20 +64,14 @@ pub fn print_home() -> Result[unit, string] {
 }
 
 pub fn ensure_home_layout() -> Result[unit, string] {
-    let home = match home_directory() {
-        Ok(value) => value,
-        Err(message) => return Result::Err(message),
-    };
+    let home = home_directory()?;
     for directory in Vec::[
         home,
         path::join(home, "bin"),
         path::join(home, "lib"),
         path::join(home, "cache"),
     ] {
-        match create_directory(directory) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(message),
-        }
+        create_directory(directory)?
     };
     Result::Ok(())
 }
@@ -128,10 +116,7 @@ fn ensure_project_directory(value: string) -> Result[unit, string] {
     if fs::is_file(value) {
         return Result::Err("target directory " + value + " already exists and is not empty")
     } else if fs::is_dir(value) {
-        let entries = match fs::read_dir(value) {
-            Ok(entries) => entries,
-            Err(message) => return Result::Err(message),
-        };
+        let entries = fs::read_dir(value)?;
         if entries.len() > 0 {
             return Result::Err("target directory " + value + " already exists and is not empty")
         } else {
@@ -143,28 +128,13 @@ fn ensure_project_directory(value: string) -> Result[unit, string] {
 }
 
 pub fn new_project(name: string, base: string) -> Result[unit, string] {
-    match validate_project_name(name) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    validate_project_name(name)?;
     let project = path::join(base, name);
-    match ensure_project_directory(project) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    ensure_project_directory(project)?;
     let lib = path::join(project, "lib");
-    match create_directory(lib) {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
-    match write_file(path::join(project, "goml.toml"), "[module]\npath = \"" + name + "\"\n") {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
-    match write_file(path::join(project, ".gitignore"), "/_artifact/\n") {
-        Ok(()) => (),
-        Err(message) => return Result::Err(message),
-    };
+    create_directory(lib)?;
+    write_file(path::join(project, "goml.toml"), "[module]\npath = \"" + name + "\"\n")?;
+    write_file(path::join(project, ".gitignore"), "/_artifact/\n")?;
     match write_file(
         path::join(project, "main.gom"),
         "package main;\n\nuse " + name
