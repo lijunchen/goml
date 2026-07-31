@@ -1,0 +1,45 @@
+package main;
+fn answer() -> int {
+    return {
+        let base = 40;
+        base + 2
+    };
+}
+
+fn loop_answer() -> int {
+    loop {
+        break {
+            let base = 6;
+            base * 7
+        };
+    }
+}
+
+fn main() -> unit {
+    let plain: Vec[byte] = b"\x41\x0a\x42";
+    let empty = b"";
+    let raw = b"\x72\x61\x77\x20\x5c\x6e\x20\x62\x79\x74\x65\x73";
+    let quoted = b"\x71\x75\x6f\x74\x65\x64\x20\x22\x74\x65\x78\x74\x22\x20\x61\x6e\x64\x20\x23";
+    let nested = {
+        let value = answer();
+        value + loop_answer()
+    };
+    println(plain.len().to_string());
+    println(empty.len().to_string());
+    println(plain.get(0) as int.to_string());
+    println(plain.get(1) as int.to_string());
+    println(plain.get(2) as int.to_string());
+    println(raw.len().to_string());
+    println(quoted.len().to_string());
+    println(nested.to_string());
+    if {
+        true
+    } {
+        {
+            println("block condition")
+        }
+    } else {
+        ()
+    }
+}
+
