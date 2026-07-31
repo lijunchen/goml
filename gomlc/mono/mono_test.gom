@@ -86,11 +86,11 @@ fn retains_linked_monomorphic_inherent_methods() -> unit {
 fn queues_inherent_callees_after_call_arguments() -> unit {
     let output = encode(
         lower_linked_source(
-            "fn main() -> unit { for character in \"x\".chars() { println(character) } }",
+            "fn main() -> unit { let value = Ref::new(0); let iterator: FnIterator[int] = FnIterator::from_fn(|| { let _ = value.get(); Option::None }); let _ = iterator; }",
         ),
     );
     let get_index = string_index(output, "fn inherent#Ref#Ref[T]#get__T_int");
-    let from_fn_index = string_index(output, "fn inherent#FnIterator#FnIterator[T]#from_fn__T_char");
+    let from_fn_index = string_index(output, "fn inherent#FnIterator#FnIterator[T]#from_fn__T_int");
     testing::assert(get_index >= 0);
     testing::assert(from_fn_index > get_index)
 }
