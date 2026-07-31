@@ -1,0 +1,152 @@
+package main;
+
+use std::fs;
+use std::path;
+use std::testing;
+
+fn args(values: Vec[string]) -> Vec[string] {
+    let result = Vec::["gomlfmt"];
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+#[test]
+fn parses_formatter_modes() -> unit {
+    match parse_options(args(Vec::["-w", "-l", "first.gom", "second.gom"])) {
+        Ok(options) => {
+            testing::assert(options.write);
+            testing::assert(options.list);
+            testing::assert(!options.check);
+            testing::assert_eq(options.paths.len(), 2)
+        },
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn defaults_to_stdin() -> unit {
+    match parse_options(args(Vec::[])) {
+        Ok(options) => {
+            testing::assert_eq(options.paths.len(), 1);
+            testing::assert_eq(options.paths[0], "-")
+        },
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn rejects_ambiguous_multiple_file_output() -> unit {
+    match parse_options(args(Vec::["first.gom", "second.gom"])) {
+        Ok(_) => testing::fail("multiple stdout files accepted"),
+        Err(error) => testing::assert_eq(
+            error,
+            "multiple files require -w, -l, or --check",
+        ),
+    }
+}
+
+#[test]
+fn rejects_writing_stdin() -> unit {
+    match parse_options(args(Vec::["-w", "-"])) {
+        Ok(_) => testing::fail("stdin write accepted"),
+        Err(error) => testing::assert_eq(
+            error,
+            "-w cannot be used with stdin",
+        ),
+    }
+}
+
+fn test_file(name: string) -> string {
+    let root = "../_artifact/test-work/gomlfmt";
+    match fs::create_dir_all(root) {
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
+    };
+    path::join(root, name)
+}
+
+fn write_test_file(path_value: string, content: string) -> unit {
+    match fs::write_file(path_value, content) {
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
+    }
+}
+
+fn read_test_file(path_value: string) -> string {
+    match fs::read_file(path_value) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            ""
+        },
+    }
+}
+
+#[test]
+fn writes_only_after_all_files_format_successfully() -> unit {
+    let valid = test_file("atomic-valid.gom");
+    let invalid = test_file("atomic-invalid.gom");
+    let original = "package main;\nfn main( )->unit{()}\n";
+    write_test_file(valid, original);
+    write_test_file(invalid, "package main;\nfn broken( {");
+    let code = run(Options {
+        write: true,
+        list: false,
+        check: false,
+        paths: Vec::[valid, invalid],
+    });
+    testing::assert_eq(code, 2);
+    testing::assert_eq(read_test_file(valid), original)
+}
+
+#[test]
+fn writes_and_checks_formatted_files() -> unit {
+    let file = test_file("write-check.gom");
+    write_test_file(file, "package main;\nfn main( )->unit{()}\n");
+    testing::assert_eq(
+        run(Options {
+            write: false,
+            list: false,
+            check: true,
+            paths: Vec::[file],
+        }),
+        1,
+    );
+    testing::assert_eq(
+        run(Options {
+            write: true,
+            list: false,
+            check: false,
+            paths: Vec::[file],
+        }),
+        0,
+    );
+    testing::assert_eq(
+        run(Options {
+            write: false,
+            list: false,
+            check: true,
+            paths: Vec::[file],
+        }),
+        0,
+    )
+}
+
+#[test]
+fn list_mode_does_not_modify_files() -> unit {
+    let file = test_file("list.gom");
+    let original = "package main;\nfn main( )->unit{()}\n";
+    write_test_file(file, original);
+    testing::assert_eq(
+        run(Options {
+            write: false,
+            list: true,
+            check: false,
+            paths: Vec::[file],
+        }),
+        0,
+    );
+    testing::assert_eq(read_test_file(file), original)
+}
