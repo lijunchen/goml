@@ -50,15 +50,15 @@ pub fn parse_sem_version(value: string) -> Result[SemVersion, string] {
     } else {
         ()
     };
-    let major = match decimal_number(parts.get(0)) {
+    let major = match decimal_number(parts[0]) {
         Some(value) => value,
         None => return Result::Err("invalid semver `" + value + "`"),
     };
-    let minor = match decimal_number(parts.get(1)) {
+    let minor = match decimal_number(parts[1]) {
         Some(value) => value,
         None => return Result::Err("invalid semver `" + value + "`"),
     };
-    let patch = match decimal_number(parts.get(2)) {
+    let patch = match decimal_number(parts[2]) {
         Some(value) => value,
         None => return Result::Err("invalid semver `" + value + "`"),
     };
@@ -111,9 +111,9 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
             if values.len() != 1 {
                 return Result::Err("invalid registry module table " + line)
             } else {
-                current.set(Option::Some(values.get(0)));
+                current.set(Option::Some(values[0]));
                 entries.push(RegistryEntry {
-                    name: values.get(0),
+                    name: values[0],
                     latest: "",
                     versions: Vec::new(),
                 })
@@ -126,16 +126,16 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
                         return Result::Err("invalid registry latest value")
                     } else {
                         let index = entries.len() - 1;
-                        let entry = entries.get(index);
+                        let entry = entries[index];
                         entries.set(index, RegistryEntry {
                             name: entry.name,
-                            latest: values.get(0),
+                            latest: values[0],
                             versions: entry.versions,
                         })
                     }
                 } else if util::starts_with(line, "versions") {
                     let index = entries.len() - 1;
-                    let entry = entries.get(index);
+                    let entry = entries[index];
                     entries.set(index, RegistryEntry {
                         name: entry.name,
                         latest: entry.latest,
@@ -184,15 +184,15 @@ fn valid_identifier(value: string) -> bool {
 pub fn validate_coordinate(value: string) -> Result[unit, string] {
     let parts = util::split(value, "::");
     if parts.len() != 2
-        || !valid_identifier(parts.get(0))
-        || !valid_identifier(parts.get(1))
+        || !valid_identifier(parts[0])
+        || !valid_identifier(parts[1])
     {
         Result::Err(
             "invalid module coordinate `"
                 + value
                 + "`: expected owner::module",
         )
-    } else if parts.get(0) == "std" {
+    } else if parts[0] == "std" {
         Result::Err(
             "invalid module coordinate `" + value + "`: owner std is reserved",
         )
@@ -221,7 +221,7 @@ fn module_directory_unchecked(
     version: string,
 ) -> string {
     let parts = util::split(name, "::");
-    path::join(path::join(path::join(root, parts.get(0)), parts.get(1)), version)
+    path::join(path::join(path::join(root, parts[0]), parts[1]), version)
 }
 
 pub fn module_directory(
@@ -403,7 +403,7 @@ fn selected_index(
     name: string,
 ) -> Option[int] {
     for index in range(0, values.len()) {
-        if values.get(index).name == name {
+        if values[index].name == name {
             return Option::Some(index)
         } else {
             ()
@@ -427,7 +427,7 @@ pub fn resolve_at(
     let cursor = Ref::new(0);
     let selected = Vec::new();
     while cursor.get() < queue.len() {
-        let requirement = queue.get(cursor.get());
+        let requirement = queue[cursor.get()];
         cursor.set(cursor.get() + 1);
         let version = match select_version(
             root,
@@ -444,7 +444,7 @@ pub fn resolve_at(
         let update = match selected_index(selected, requirement.name) {
             Some(index) => {
                 let current = match parse_sem_version(
-                    selected.get(index).version,
+                    selected[index].version,
                 ) {
                     Ok(value) => value,
                     Err(message) => return Result::Err(message),
@@ -545,8 +545,8 @@ pub fn artifact_prefix(module: ResolvedModule) -> string {
     path::join(
         path::join(
             path::join(
-                path::join("deps", parts.get(0)),
-                parts.get(1),
+                path::join("deps", parts[0]),
+                parts[1],
             ),
             module.version,
         ),

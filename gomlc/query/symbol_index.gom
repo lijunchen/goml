@@ -109,7 +109,7 @@ fn owner_name_token(
     if cst::node_kind_equal(node.kind, cst::NodeKind::IMPL) {
         let index = Ref::new(syntax.nodes.len() - 1);
         while index.get() >= 0 {
-            let candidate = syntax.nodes.get(index.get());
+            let candidate = syntax.nodes[index.get()];
             if match candidate.parent {
                 Some(parent) => parent == node.id,
                 None => false,
@@ -181,7 +181,7 @@ fn parent_with_kind(
     } {
         match current.get() {
             Some(id) => {
-                let parent = syntax.nodes.get(id);
+                let parent = syntax.nodes[id];
                 if cst::node_kind_equal(parent.kind, first)
                     || cst::node_kind_equal(parent.kind, second)
                 {
@@ -365,7 +365,7 @@ pub fn find_symbol(
     qualified_name: string,
 ) -> Option[Symbol] {
     for offset in range(0, index.symbols.len()) {
-        let symbol = index.symbols.get(index.symbols.len() - 1 - offset);
+        let symbol = index.symbols[index.symbols.len() - 1 - offset];
         if symbol.qualified_name == qualified_name {
             return Option::Some(symbol)
         } else {
@@ -387,7 +387,7 @@ pub fn find_symbol(
         }
     };
     if suffixes.len() == 1 {
-        Option::Some(suffixes.get(0))
+        Option::Some(suffixes[0])
     } else {
         Option::None
     }

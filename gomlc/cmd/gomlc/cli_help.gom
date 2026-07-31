@@ -147,19 +147,19 @@ fn cli_edit_distance(left: string, right: string) -> int {
         current.push(left_index + 1);
         for right_index in range(0, right.byte_len()) {
             let substitution = if left.byte_get(left_index) == right.byte_get(right_index) {
-                previous.get().get(right_index)
+                previous.get()[right_index]
             } else {
-                previous.get().get(right_index) + 1
+                previous.get()[right_index] + 1
             };
             current.push(cli_minimum(
-                current.get(right_index) + 1,
-                previous.get().get(right_index + 1) + 1,
+                current[right_index] + 1,
+                previous.get()[right_index + 1] + 1,
                 substitution,
             ))
         };
         previous.set(current)
     };
-    previous.get().get(right.byte_len())
+    previous.get()[right.byte_len()]
 }
 
 fn similar_cli_argument(command: string, argument: string) -> Option[string] {
@@ -532,11 +532,11 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
         let right_index = Ref::new(start);
         while right_index.get() < end {
             let index = right_index.get();
-            if !right_matches.get(index)
+            if !(right_matches[index])
                 && left.byte_get(left_index) == right.byte_get(index)
             {
-                left_matches.set(left_index, true);
-                right_matches.set(index, true);
+                left_matches[left_index] = true;
+                right_matches[index] = true;
                 matches.set(matches.get() + 1);
                 break
             } else {
@@ -552,8 +552,8 @@ fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
     let right_index = Ref::new(0);
     let mismatches = Ref::new(0);
     for left_index in range(0, left.byte_len()) {
-        if left_matches.get(left_index) {
-            while !right_matches.get(right_index.get()) {
+        if left_matches[left_index] {
+            while !(right_matches[right_index.get()]) {
                 right_index.set(right_index.get() + 1)
             };
             if left.byte_get(left_index) != right.byte_get(right_index.get()) {
@@ -613,16 +613,16 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
         }
     };
     for index in range(1, similar.len()) {
-        let value = similar.get(index);
+        let value = similar[index];
         let target = Ref::new(index);
         while target.get() > 0
-            && similar.get(target.get() - 1).numerator * value.denominator
-                > value.numerator * similar.get(target.get() - 1).denominator
+            && similar[target.get() - 1].numerator * value.denominator
+                > value.numerator * similar[target.get() - 1].denominator
         {
-            similar.set(target.get(), similar.get(target.get() - 1));
+            similar[target.get()] = similar[target.get() - 1];
             target.set(target.get() - 1)
         };
-        similar.set(target.get(), value)
+        similar[target.get()] = value;
     };
     let result = Vec::new();
     for value in similar {
@@ -648,7 +648,7 @@ fn similar_subcommand_tip(values: Vec[string]) -> string {
                 ()
             };
             builder.write_char('\'');
-            builder.write_string(values.get(index));
+            builder.write_string(values[index]);
             builder.write_char('\'')
         };
         builder.finish()
@@ -689,12 +689,12 @@ fn run_help_command(args: Vec[string]) -> unit {
     if args.len() == 2 {
         print_cli_help(top_level_help())
     } else if args.len() == 3 {
-        match command_help(args.get(2)) {
+        match command_help(args[2]) {
             Some(help) => print_cli_help(help),
-            None => fail_unknown_subcommand(args.get(2)),
+            None => fail_unknown_subcommand(args[2]),
         }
     } else {
-        let command = args.get(2);
+        let command = args[2];
         match command_help(command) {
             Some(_) => {
                 let usage = if command == "help" {
@@ -709,7 +709,7 @@ fn run_help_command(args: Vec[string]) -> unit {
                 };
                 fail_cli(
                     "error: unrecognized subcommand '"
-                        + args.get(3)
+                        + args[3]
                         + "'\n\nUsage: "
                         + usage
                         + footer,

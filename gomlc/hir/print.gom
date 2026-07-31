@@ -151,7 +151,7 @@ fn find_bounds(
 ) -> Option[Vec[TraitRef]] {
     let index = Ref::new(values.len() - 1);
     while index.get() >= 0 {
-        let value = values.get(index.get());
+        let value = values[index.get()];
         if value.0 == name {
             return Option::Some(value.1)
         } else {

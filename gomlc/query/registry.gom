@@ -59,8 +59,8 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
             let values = quoted_values(line);
             if values.len() >= 2 {
                 result.push(DependencyRequirement {
-                    name: values.get(0),
-                    version: values.get(1),
+                    name: values[0],
+                    version: values[1],
                 })
             } else {
                 ()
@@ -108,9 +108,9 @@ fn parse_sem_version(value: string) -> Option[SemVersion] {
     if parts.len() != 3 {
         Option::None
     } else {
-        match decimal_number(parts.get(0)) {
-            Some(major) => match decimal_number(parts.get(1)) {
-                Some(minor) => match decimal_number(parts.get(2)) {
+        match decimal_number(parts[0]) {
+            Some(major) => match decimal_number(parts[1]) {
+                Some(minor) => match decimal_number(parts[2]) {
                     Some(patch) => Option::Some(SemVersion {
                         major,
                         minor,
@@ -199,7 +199,7 @@ fn registry_versions(
             selected.set(
                 strings::starts_with(line, "[modules.")
                     && names.len() > 0
-                    && names.get(0) == module_name,
+                    && names[0] == module_name,
             )
         } else if selected.get()
             && strings::starts_with(line, "versions")
@@ -306,7 +306,7 @@ fn selected_module_index(
 ) -> Option[int] {
     let index = Ref::new(values.len() - 1);
     while index.get() >= 0 {
-        if values.get(index.get()).name == name {
+        if values[index.get()].name == name {
             return Option::Some(index.get())
         } else {
             index.set(index.get() - 1)
@@ -330,7 +330,7 @@ fn resolve_external_modules_at(
     let cursor = Ref::new(0);
     let selected = Vec::new();
     while cursor.get() < queue.len() {
-        let requirement = queue.get(cursor.get());
+        let requirement = queue[cursor.get()];
         cursor.set(cursor.get() + 1);
         let version = match select_registry_version(
             registry,
@@ -350,7 +350,7 @@ fn resolve_external_modules_at(
             requirement.name,
         ) {
             Some(index) => match parse_sem_version(
-                selected.get(index).version,
+                selected[index].version,
             ) {
                 Some(current) => sem_version_less(current, parsed),
                 None => true,

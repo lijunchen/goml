@@ -83,7 +83,7 @@ fn artifact_json_required_field(
     if matches.len() != 1 {
         Result::Err(artifact_decode_error("field " + name))
     } else {
-        Result::Ok(matches.get(0))
+        Result::Ok(matches[0])
     }
 }
 
@@ -102,7 +102,7 @@ fn artifact_json_optional_field(
     if matches.len() > 1 {
         Result::Err(artifact_decode_error("field " + name))
     } else if matches.len() == 1 {
-        Result::Ok(Option::Some(matches.get(0)))
+        Result::Ok(Option::Some(matches[0]))
     } else {
         Result::Ok(Option::None)
     }
@@ -300,8 +300,8 @@ fn artifact_decode_type(
             } else {
                 ()
             };
-            let kind = fields.get(0).0;
-            let payload = fields.get(0).1;
+            let kind = fields[0].0;
+            let payload = fields[0].1;
             if kind == "TEnum" {
                 artifact_decode_named_type(context, payload, "name", true)
             } else if kind == "TStruct" {
@@ -499,8 +499,8 @@ fn artifact_decode_predicate(
     };
     if fields.len() != 1 {
         Result::Err(artifact_decode_error("type predicate variant"))
-    } else if fields.get(0).0 == "Trait" {
-        let payload = match artifact_json_object(fields.get(0).1, "trait predicate") {
+    } else if fields[0].0 == "Trait" {
+        let payload = match artifact_json_object(fields[0].1, "trait predicate") {
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         };
@@ -521,8 +521,8 @@ fn artifact_decode_predicate(
             },
             Err(error) => Result::Err(error),
         }
-    } else if fields.get(0).0 == "Equality" {
-        let payload = match artifact_json_object(fields.get(0).1, "equality predicate") {
+    } else if fields[0].0 == "Equality" {
+        let payload = match artifact_json_object(fields[0].1, "equality predicate") {
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         };

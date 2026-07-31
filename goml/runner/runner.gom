@@ -129,7 +129,7 @@ fn selected(test: Test, options: Options) -> bool {
 
 fn test_insert_index(values: Vec[Test], value: Test) -> int {
     for index in range(0, values.len()) {
-        if value.display_name < values.get(index).display_name {
+        if value.display_name < values[index].display_name {
             return index
         } else {
             ()
@@ -303,7 +303,7 @@ fn execution_insert_index(
     value: Execution,
 ) -> int {
     for index in range(0, values.len()) {
-        if value.index < values.get(index).index {
+        if value.index < values[index].index {
             return index
         } else {
             ()
@@ -462,7 +462,7 @@ pub fn run(
     let work = Channel::new(selected_tests.len());
     let results = Channel::new(selected_tests.len());
     for index in range(0, selected_tests.len()) {
-        work.send((index, selected_tests.get(index)))
+        work.send((index, selected_tests[index]))
     };
     work.close();
     let worker_count = if options.jobs < selected_tests.len() {

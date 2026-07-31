@@ -82,7 +82,7 @@ fn contains_offset(start: int, end: int, offset: int) -> bool {
 pub fn token_at(index: SyntaxIndex, offset: int) -> Option[SyntaxToken] {
     let cursor = Ref::new(index.tokens.len() - 1);
     while cursor.get() >= 0 {
-        let token = index.tokens.get(cursor.get());
+        let token = index.tokens[cursor.get()];
         if contains_offset(token.start, token.end, offset)
             && !lexer::token_is_trivia(token.kind)
         {
@@ -97,13 +97,13 @@ pub fn token_at(index: SyntaxIndex, offset: int) -> Option[SyntaxToken] {
 pub fn node_at(index: SyntaxIndex, offset: int) -> Option[SyntaxNode] {
     let best = Ref::new(-1);
     for candidate in range(0, index.nodes.len()) {
-        let node = index.nodes.get(candidate);
+        let node = index.nodes[candidate];
         let node_width = node.end - node.start;
         if contains_offset(node.start, node.end, offset)
             && (best.get() < 0
                 || node_width
-                    <= index.nodes.get(best.get()).end
-                        - index.nodes.get(best.get()).start)
+                    <= index.nodes[best.get()].end
+                        - index.nodes[best.get()].start)
         {
             best.set(candidate)
         } else {
@@ -111,7 +111,7 @@ pub fn node_at(index: SyntaxIndex, offset: int) -> Option[SyntaxNode] {
         }
     };
     if best.get() >= 0 {
-        Option::Some(index.nodes.get(best.get()))
+        Option::Some(index.nodes[best.get()])
     } else {
         Option::None
     }
@@ -124,15 +124,15 @@ pub fn node_at_kind(
 ) -> Option[SyntaxNode] {
     let best = Ref::new(-1);
     for candidate in range(0, index.nodes.len()) {
-        let node = index.nodes.get(candidate);
+        let node = index.nodes[candidate];
         let node_width = node.end - node.start;
         if cst::node_kind_equal(node.kind, kind)
             && node.start <= offset
             && offset < node.end
             && (best.get() < 0
                 || node_width
-                    < index.nodes.get(best.get()).end
-                        - index.nodes.get(best.get()).start)
+                    < index.nodes[best.get()].end
+                        - index.nodes[best.get()].start)
         {
             best.set(candidate)
         } else {
@@ -140,7 +140,7 @@ pub fn node_at_kind(
         }
     };
     if best.get() >= 0 {
-        Option::Some(index.nodes.get(best.get()))
+        Option::Some(index.nodes[best.get()])
     } else {
         Option::None
     }
@@ -152,7 +152,7 @@ pub fn parent_node(
 ) -> Option[SyntaxNode] {
     match node.parent {
         Some(parent) => if parent >= 0 && parent < index.nodes.len() {
-            Option::Some(index.nodes.get(parent))
+            Option::Some(index.nodes[parent])
         } else {
             Option::None
         },

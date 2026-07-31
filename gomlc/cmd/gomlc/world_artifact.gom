@@ -357,7 +357,7 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
     let output: Ref[Option[string]] = Ref::new(Option::None);
     let index = Ref::new(2);
     while index.get() < args.len() {
-        let argument = args.get(index.get());
+        let argument = args[index.get()];
         if cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if argument == "--output" {
@@ -367,14 +367,14 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
                     "--output <OUTPUT>",
                 ))
             } else if index.get() + 1 >= args.len()
-                || cli_option(args.get(index.get() + 1))
+                || cli_option(args[index.get() + 1])
             {
                 return Result::Err(value_required_error(
                     "--output <OUTPUT>",
                     Option::None,
                 ))
             } else {
-                output.set(Option::Some(args.get(index.get() + 1)));
+                output.set(Option::Some(args[index.get() + 1]));
                 index.set(index.get() + 2)
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {

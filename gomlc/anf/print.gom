@@ -79,7 +79,7 @@ fn write_imms(builder: text::StringBuilder, values: Vec[Imm]) -> unit {
         } else {
             ()
         };
-        write_imm(builder, values.get(index))
+        write_imm(builder, values[index])
     }
 }
 
@@ -100,9 +100,9 @@ fn write_constructor(
                 } else {
                     ()
                 };
-                builder.write_string(constructor.fields.get(index));
+                builder.write_string(constructor.fields[index]);
                 builder.write_string(": ");
-                write_imm(builder, args.get(index))
+                write_imm(builder, args[index])
             };
             builder.write_string(" }")
         } else if args.len() > 0 {
@@ -141,7 +141,7 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
             if constructor.is_struct && index < constructor.fields.len() {
                 builder.write_string(constructor.name);
                 builder.write_char('.');
-                builder.write_string(constructor.fields.get(index))
+                builder.write_string(constructor.fields[index])
             } else {
                 builder.write_string(constructor.name);
                 builder.write_string("._");
@@ -230,7 +230,7 @@ fn write_params(
         } else {
             ()
         };
-        let value = values.get(index);
+        let value = values[index];
         builder.write_string(value.0);
         builder.write_string(": ");
         tast::write_type(builder, value.1)
@@ -365,7 +365,7 @@ pub fn encode(value: File) -> string {
         } else {
             ()
         };
-        tast::write_constant(builder, value.constants.get(index))
+        tast::write_constant(builder, value.constants[index])
     };
     if value.constants.len() > 0 && value.functions.len() > 0 {
         builder.write_string("\n\n")
@@ -378,7 +378,7 @@ pub fn encode(value: File) -> string {
         } else {
             ()
         };
-        write_function(builder, value.functions.get(index))
+        write_function(builder, value.functions[index])
     };
     builder.finish()
 }

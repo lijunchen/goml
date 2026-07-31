@@ -139,12 +139,12 @@ fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> unit {
 
 fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
     let path = if values.len() > 0 {
-        values.get(0).path
+        values[0].path
     } else {
         "<unknown>"
     };
     let source_path = if values.len() > 0 {
-        values.get(0).source_path
+        values[0].source_path
     } else {
         "<unknown>"
     };
@@ -506,15 +506,15 @@ fn artifact_string_less(left: string, right: string) -> bool {
 
 fn sort_artifact_names(values: Vec[string]) -> Vec[string] {
     for index in range(1, values.len()) {
-        let current = values.get(index);
+        let current = values[index];
         let destination = Ref::new(index);
         while destination.get() > 0
-            && artifact_string_less(current, values.get(destination.get() - 1))
+            && artifact_string_less(current, values[destination.get() - 1])
         {
-            values.set(destination.get(), values.get(destination.get() - 1));
+            values[destination.get()] = values[destination.get() - 1];
             destination.set(destination.get() - 1)
         };
-        values.set(destination.get(), current)
+        values[destination.get()] = current;
     };
     values
 }
@@ -527,7 +527,7 @@ fn join_artifact_names(values: Vec[string]) -> string {
         } else {
             ()
         };
-        builder.write_string(values.get(index))
+        builder.write_string(values[index])
     };
     builder.finish()
 }
@@ -805,7 +805,7 @@ fn core_function_ret_type(
     name: string,
 ) -> Option[tast::Type] {
     for offset in range(0, functions.len()) {
-        let function = functions.get(functions.len() - 1 - offset);
+        let function = functions[functions.len() - 1 - offset];
         if function.name == name {
             return Option::Some(function.ret_ty)
         } else {
@@ -956,7 +956,7 @@ fn run_package_command(
     let command = match parse_package_command_args(args) {
         Ok(value) => value,
         Err(error) => {
-            handle_cli_parse_error(args.get(1), error);
+            handle_cli_parse_error(args[1], error);
             PackageCommandArgs {
                 package_name: "main",
                 inputs: Vec::new(),
@@ -1120,7 +1120,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     } else {
         ()
     };
-    let entry = entries.get(entries.len() - 1);
+    let entry = entries[entries.len() - 1];
     let linked_dependencies = selected_link_standard_core(world.standard, needs);
     append_core_files(linked_dependencies, dependencies);
     let linked = core::link_with_dependencies(

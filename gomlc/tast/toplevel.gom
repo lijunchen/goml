@@ -191,11 +191,11 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
                         Some(name) => if args.len() > 0 {
                             let arg_types: Vec[Type] = Vec::new();
                             for index in range(1, args.len()) {
-                                arg_types.push(expr_type(args.get(index)))
+                                arg_types.push(expr_type(args[index]))
                             };
                             match resolve_method(
                                 ctx,
-                                expr_type(args.get(0)),
+                                expr_type(args[0]),
                                 name,
                                 arg_types,
                                 Option::Some(ty),
@@ -483,7 +483,7 @@ fn check_function(
         let index = params.len();
         let previous_span = ctx.current_span.get();
         ctx.current_span.set(if index < value.param_type_spans.len() {
-            Option::Some(value.param_type_spans.get(index))
+            Option::Some(value.param_type_spans[index])
         } else {
             Option::None
         });
@@ -1119,7 +1119,7 @@ fn validate_method_signature(
 ) -> unit {
     let actual_method_generics = Vec::new();
     for index in range(owner_generic_count, actual.generics.len()) {
-        actual_method_generics.push(actual.generics.get(index))
+        actual_method_generics.push(actual.generics[index])
     };
     if expected.generics.len() != actual_method_generics.len() {
         push_diagnostic(
@@ -1145,9 +1145,9 @@ fn validate_method_signature(
     };
     for index in range(0, generic_count) {
         substitutions.push(TypeSubst {
-            name: expected.generics.get(index),
+            name: expected.generics[index],
             ty: Type::Param {
-                name: actual_method_generics.get(index),
+                name: actual_method_generics[index],
             },
         })
     };
@@ -1179,8 +1179,8 @@ fn validate_method_signature(
         actual.params.len()
     };
     for index in range(0, common) {
-        let expected_ty = expected_params.get(index);
-        let actual_ty = normalize_type(ctx, actual.params.get(index).1);
+        let expected_ty = expected_params[index];
+        let actual_ty = normalize_type(ctx, actual.params[index].1);
         if !type_matches(ctx, expected_ty, actual_ty) {
             push_diagnostic(ctx,
                 "Trait "
@@ -1222,7 +1222,7 @@ fn validate_method_signature(
     };
     let actual_predicates: Vec[TypePredicate] = Vec::new();
     for index in range(owner_predicate_count, actual.predicates.len()) {
-        actual_predicates.push(actual.predicates.get(index))
+        actual_predicates.push(actual.predicates[index])
     };
     if !type_predicate_sets_equal(
         expected_predicates,
@@ -1300,7 +1300,7 @@ fn impl_associated_type(
     name: string,
 ) -> Option[Type] {
     for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+        let value = values[values.len() - 1 - offset];
         if value.0 == name {
             return Option::Some(value.1)
         } else {
@@ -1856,7 +1856,7 @@ fn by_value_type_has_cycle(
 
 fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
     for index in range(0, struct_count) {
-        let info = ctx.structs.get(index);
+        let info = ctx.structs[index];
         let active = Vec::new().pushed(info.name);
         for field in info.fields {
             if by_value_type_has_cycle(ctx, field.1, active) {
@@ -1918,7 +1918,7 @@ fn cycle_text(values: Vec[string]) -> string {
 
 fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
     for index in range(0, trait_count) {
-        let info = ctx.traits.get(index);
+        let info = ctx.traits[index];
         for reference in info.supertraits {
             let path = Vec::new()
                 .pushed(short_name(info.name))
@@ -1950,21 +1950,21 @@ fn validate_local_definitions(
     trait_count: int,
 ) -> unit {
     for index in range(0, enum_count) {
-        for variant in ctx.enums.get(index).variants {
+        for variant in ctx.enums[index].variants {
             for field in enum_variant_field_types(variant.fields) {
                 validate_signature_type(ctx, field)
             }
         }
     };
     for index in range(0, struct_count) {
-        for field in ctx.structs.get(index).fields {
+        for field in ctx.structs[index].fields {
             validate_signature_type(ctx, field.1)
         }
     };
     validate_struct_sizes(ctx, struct_count);
     validate_supertrait_cycles(ctx, trait_count);
     for index in range(0, trait_count) {
-        let info = ctx.traits.get(index);
+        let info = ctx.traits[index];
         for predicate in info.predicates {
             match predicate {
                 Trait { for_ty, trait_ref: reference } => {
@@ -2048,7 +2048,7 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
 
 fn declaration_name_index(values: Vec[string], expected: string) -> int {
     for index in range(0, values.len()) {
-        if values.get(index) == expected {
+        if values[index] == expected {
             return index
         } else {
             ()
@@ -2229,7 +2229,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 if index < 0 {
                     nominal_names.push(value.0);
                     nominal_kinds.push(value.1)
-                } else if nominal_kinds.get(index) == value.1 {
+                } else if nominal_kinds[index] == value.1 {
                     push_declaration_diagnostic(
                         ctx,
                         (if value.1 == 1 {
@@ -2247,7 +2247,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                         ctx,
                         mixed_nominal_declaration_message(
                             value.0,
-                            nominal_kinds.get(index),
+                            nominal_kinds[index],
                             value.1,
                         ),
                     )
@@ -2267,7 +2267,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
                 if index < 0 {
                     function_names.push(value.0);
                     function_kinds.push(value.1)
-                } else if function_kinds.get(index) == value.1 {
+                } else if function_kinds[index] == value.1 {
                     push_declaration_diagnostic(
                         ctx,
                         value_kind_name(value.1)
@@ -2388,13 +2388,13 @@ fn validate_cross_file_declaration_names(
             }
         };
         for index in range(0, local_nominal_names.len()) {
-            let name = local_nominal_names.get(index);
-            let kind = local_nominal_kinds.get(index);
+            let name = local_nominal_names[index];
+            let kind = local_nominal_kinds[index];
             let previous = declaration_name_index(nominal_names, name);
             if previous < 0 {
                 nominal_names.push(name);
                 nominal_kinds.push(kind)
-            } else if nominal_kinds.get(previous) == kind {
+            } else if nominal_kinds[previous] == kind {
                 push_global_diagnostic(
                     ctx,
                     (if kind == 1 {
@@ -2412,20 +2412,20 @@ fn validate_cross_file_declaration_names(
                     ctx,
                     mixed_nominal_declaration_message(
                         name,
-                        nominal_kinds.get(previous),
+                        nominal_kinds[previous],
                         kind,
                     ),
                 )
             }
         };
         for index in range(0, local_function_names.len()) {
-            let name = local_function_names.get(index);
-            let kind = local_function_kinds.get(index);
+            let name = local_function_names[index];
+            let kind = local_function_kinds[index];
             let previous = declaration_name_index(function_names, name);
             if previous < 0 {
                 function_names.push(name);
                 function_kinds.push(kind)
-            } else if function_kinds.get(previous) == kind {
+            } else if function_kinds[previous] == kind {
                 push_global_diagnostic(
                     ctx,
                     value_kind_name(kind)
@@ -2532,7 +2532,7 @@ fn move_diagnostics_before(
         };
         let result: Vec[Diagnostic] = Vec::new();
         for index in range(0, values.len()) {
-            let value = values.get(index);
+            let value = values[index];
             if value.message == message {
                 ()
             } else {
@@ -2555,7 +2555,7 @@ fn diagnostic_message_index(
     message: string,
 ) -> int {
     for index in range(0, values.len()) {
-        if values.get(index).message == message {
+        if values[index].message == message {
             return index
         } else {
             ()
@@ -2603,7 +2603,7 @@ fn attach_diagnostic_span(
     match span {
         Some(span) => {
             for index in range(0, ctx.diagnostics.len()) {
-                let value = ctx.diagnostics.get(index);
+                let value = ctx.diagnostics[index];
                 if value.message == message
                     && value.source_path == ctx.source_path
                 {
@@ -2698,9 +2698,9 @@ fn attach_trait_ref_diagnostic_spans(
     for index in range(0, value.args.len()) {
         attach_type_diagnostic_span(
             ctx,
-            value.args.get(index),
+            value.args[index],
             if index < value.arg_spans.len() {
-                value.arg_spans.get(index)
+                value.arg_spans[index]
             } else {
                 Option::None
             },
@@ -2749,9 +2749,9 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             for index in range(0, owner_type_args.len()) {
                 attach_type_diagnostic_span(
                     ctx,
-                    owner_type_args.get(index),
+                    owner_type_args[index],
                     if index < owner_type_arg_spans.len() {
-                        owner_type_arg_spans.get(index)
+                        owner_type_arg_spans[index]
                     } else {
                         Option::None
                     },
@@ -2760,9 +2760,9 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             for index in range(0, member_type_args.len()) {
                 attach_type_diagnostic_span(
                     ctx,
-                    member_type_args.get(index),
+                    member_type_args[index],
                     if index < member_type_arg_spans.len() {
-                        member_type_arg_spans.get(index)
+                        member_type_arg_spans[index]
                     } else {
                         Option::None
                     },
@@ -2858,9 +2858,9 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                         for index in range(0, types.len()) {
                             attach_type_diagnostic_span(
                                 ctx,
-                                types.get(index),
+                                types[index],
                                 if index < variant.field_type_spans.len() {
-                                    Option::Some(variant.field_type_spans.get(index))
+                                    Option::Some(variant.field_type_spans[index])
                                 } else {
                                     Option::None
                                 },
@@ -2871,9 +2871,9 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                         for index in range(0, values.len()) {
                             attach_type_diagnostic_span(
                                 ctx,
-                                values.get(index).1,
+                                values[index].1,
                                 if index < variant.field_type_spans.len() {
-                                    Option::Some(variant.field_type_spans.get(index))
+                                    Option::Some(variant.field_type_spans[index])
                                 } else {
                                     Option::None
                                 },
@@ -2886,9 +2886,9 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                 for index in range(0, value.fields.len()) {
                     attach_type_diagnostic_span(
                         ctx,
-                        value.fields.get(index).1,
+                        value.fields[index].1,
                         if index < value.field_type_spans.len() {
-                            Option::Some(value.field_type_spans.get(index))
+                            Option::Some(value.field_type_spans[index])
                         } else {
                             Option::None
                         },
@@ -2965,7 +2965,7 @@ fn check_file_with_package(
         append_dependency_environment(ctx, dependency)
     };
     for index in range(0, ctx.constants.len()) {
-        let constant = ctx.constants.get(index);
+        let constant = ctx.constants[index];
         ctx.constants.set(index, ConstantScheme {
             def_id: constant.def_id,
             name: constant.name,
@@ -3044,7 +3044,7 @@ fn check_file_with_package(
         Vec::new()
     };
     for index in range(0, local_enum_count) {
-        let value = ctx.enums.get(index);
+        let value = ctx.enums[index];
         let variants: Vec[EnumVariantDef] = Vec::new();
         for variant in value.variants {
             variants.push(EnumVariantDef {
@@ -3060,7 +3060,7 @@ fn check_file_with_package(
     };
     let structs: Vec[StructDef] = Vec::new();
     for index in range(0, local_struct_count) {
-        let value = ctx.structs.get(index);
+        let value = ctx.structs[index];
         structs.push(StructDef {
             name: value.name,
             generics: value.generics,
@@ -3198,13 +3198,13 @@ pub fn check_package_files_for_link_with_environments(
         let package_files: Vec[hir::File] = Vec::new();
         for other in range(0, values.len()) {
             if other != index {
-                package_files.push(values.get(other))
+                package_files.push(values[other])
             } else {
                 ()
             }
         };
         let checked = check_file_with_package(
-            values.get(index),
+            values[index],
             package_files,
             dependencies,
             Vec::new(),
@@ -3235,7 +3235,7 @@ pub fn check_package_files_for_link_with_environments(
         }
     };
     let diagnostic_source = if values.len() > 0 {
-        values.get(0).source_path
+        values[0].source_path
     } else {
         "<unknown>"
     };

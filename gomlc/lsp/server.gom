@@ -197,7 +197,7 @@ fn source_for_path(
 ) -> Option[string] {
     let index = Ref::new(analysis.sources.len() - 1);
     while index.get() >= 0 {
-        let source = analysis.sources.get(index.get());
+        let source = analysis.sources[index.get()];
         if source.path == source_path {
             return Option::Some(source.source)
         } else {
@@ -241,7 +241,7 @@ fn join_strings(values: Vec[string], separator: string) -> string {
         } else {
             ()
         };
-        builder.write_string(values.get(index))
+        builder.write_string(values[index])
     };
     builder.finish()
 }
@@ -555,7 +555,7 @@ fn definition_response(
     if locations.len() == 0 {
         Result::Ok(json::Value::Null)
     } else if locations.len() == 1 {
-        Result::Ok(locations.get(0))
+        Result::Ok(locations[0])
     } else {
         Result::Ok(json::Value::Array(locations))
     }
@@ -915,7 +915,7 @@ fn did_change(server: Server, params: json::Value) -> Result[json::Value, string
         ()
     };
     let text = match required_string_field(
-        changes.get(changes.len() - 1),
+        changes[changes.len() - 1],
         "text",
     ) {
         Ok(text) => text,

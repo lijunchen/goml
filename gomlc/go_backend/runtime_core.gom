@@ -48,7 +48,7 @@ fn core_tuple_type3(first: tast::Type, second: tast::Type, third: tast::Type) ->
 fn core_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
     let fields: Vec[(string, Expr)] = Vec::new();
     for index in range(0, values.len()) {
-        fields.push(("_" + index.to_string(), values.get(index)))
+        fields.push(("_" + index.to_string(), values[index]))
     };
     Expr::StructLiteral { ty, fields }
 }

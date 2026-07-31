@@ -727,12 +727,12 @@ fn visit_package(
     output: Vec[string],
     name: string,
 ) -> Result[unit, string] {
-    match states.get(name) {
+    match states[name] {
         Some(1) => return Result::Err("package dependency cycle at " + name),
         Some(2) => return Result::Ok(()),
         _ => (),
     };
-    states.set(name, 1);
+    states[name] = 1;
     let package_value = match find_package(packages, name) {
         Some(value) => value,
         None => return Result::Err("missing package " + name),
@@ -743,7 +743,7 @@ fn visit_package(
             Err(message) => return Result::Err(message),
         }
     };
-    states.set(name, 2);
+    states[name] = 2;
     output.push(name);
     Result::Ok(())
 }
@@ -821,7 +821,7 @@ fn collect_package_directories(
         }
     };
     if test_directories.len() > 0 {
-        let value = test_directories.get(test_directories.len() - 1);
+        let value = test_directories[test_directories.len() - 1];
         let files = match black_box_test_files(value) {
             Ok(value) => value,
             Err(message) => return Result::Err(message),
@@ -958,7 +958,7 @@ fn discover_module_graph(
     };
     let entry_package = match find_package(packages, module_path) {
         Some(_) => module_path,
-        None => order.get(0),
+        None => order[0],
     };
     Result::Ok(Graph {
         module_dir,
@@ -1006,7 +1006,7 @@ fn discover_graph(
                 Ok(value) => value,
                 Err(message) => return Result::Err(message),
             };
-            seen.set(package_name, true);
+            seen[package_name] = true;
             for dependency in package_value.imports {
                 if !seen.contains(dependency) {
                     pending.push(dependency)
@@ -1290,7 +1290,7 @@ fn internal_test_graph(
         } else {
             packages.push(current)
         };
-        seen.set(current.name, true)
+        seen[current.name] = true;
     };
     let pending = Vec::new();
     for dependency in test_package.imports {
@@ -1316,7 +1316,7 @@ fn internal_test_graph(
                 Ok(value) => value,
                 Err(message) => return Result::Err(message),
             };
-            seen.set(package_name, true);
+            seen[package_name] = true;
             for dependency in current.imports {
                 if !seen.contains(dependency) {
                     pending.push(dependency)

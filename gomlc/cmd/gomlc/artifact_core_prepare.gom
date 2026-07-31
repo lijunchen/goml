@@ -39,8 +39,8 @@ fn artifact_core_function_matches_scheme(
         } else {
             for index in range(0, value.params.len()) {
                 if !artifact_core_types_equal(
-                    value.params.get(index).1,
-                    function_type.params.get(index),
+                    value.params[index].1,
+                    function_type.params[index],
                 ) {
                     return false
                 } else {
@@ -331,10 +331,10 @@ fn artifact_prepare_core_units(
     for value in values {
         for index in range(0, value.core_ir.functions.len()) {
             let function = artifact_prepare_core_function_metadata(
-                value.core_ir.functions.get(index),
+                value.core_ir.functions[index],
                 value.exports,
             );
-            value.core_ir.functions.set(index, function);
+            value.core_ir.functions[index] = function;
             artifact_prepare_core_block(function.body, definitions)
         }
     }
@@ -377,10 +377,10 @@ fn artifact_prepare_world_core(
 ) -> unit {
     for index in range(0, value.functions.len()) {
         let function = artifact_prepare_core_function_metadata(
-            value.functions.get(index),
+            value.functions[index],
             exports,
         );
-        value.functions.set(index, function);
+        value.functions[index] = function;
         artifact_prepare_core_block(function.body, definitions)
     }
 }

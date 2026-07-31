@@ -115,7 +115,7 @@ fn item_parameter_names(
             };
             let index = Ref::new(block.methods.len() - 1);
             while index.get() >= 0 {
-                let method = block.methods.get(index.get());
+                let method = block.methods[index.get()];
                 if method.name == expected {
                     return Option::Some(function_parameter_names(method))
                 } else {
@@ -137,7 +137,7 @@ fn item_parameter_names(
             };
             let index = Ref::new(definition.method_sigs.len() - 1);
             while index.get() >= 0 {
-                let method = definition.method_sigs.get(index.get());
+                let method = definition.method_sigs[index.get()];
                 if method.name == expected {
                     let names = Vec::new();
                     for parameter in method.params {
@@ -184,14 +184,14 @@ fn signature_parameter_names(
     let expected_owner = signature_target_owner(fact.target);
     let source_index = Ref::new(value.sources.len() - 1);
     while source_index.get() >= 0 {
-        let source = value.sources.get(source_index.get());
+        let source = value.sources[source_index.get()];
         let lowered = ast::lower(parser::parse(source.source));
         match lowered.ast {
             Some(file) => {
                 let item_index = Ref::new(file.items.len() - 1);
                 while item_index.get() >= 0 {
                     match item_parameter_names(
-                        file.items.get(item_index.get()),
+                        file.items[item_index.get()],
                         expected,
                         expected_owner,
                     ) {
@@ -233,12 +233,12 @@ fn signature_parameters(
     };
     let result = Vec::new();
     for index in range(type_start, types.len()) {
-        let type_text = tast::diagnostic_type_text(types.get(index));
+        let type_text = tast::diagnostic_type_text(types[index]);
         let name = match names {
             Some(values) => {
                 let name_index = index - type_start + name_start;
                 if name_index < values.len() {
-                    values.get(name_index)
+                    values[name_index]
                 } else {
                     ""
                 }
@@ -277,15 +277,15 @@ pub fn signature_help(
     let calls = value.checked.typeck_results.calls;
     let best = Ref::new(-1);
     for candidate in range(0, calls.len()) {
-        let fact = calls.get(candidate);
+        let fact = calls[candidate];
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path
             && fact.span.start <= offset
             && offset < fact.span.end
             && (best.get() < 0
                 || fact_width
-                    <= calls.get(best.get()).span.end
-                        - calls.get(best.get()).span.start)
+                    <= calls[best.get()].span.end
+                        - calls[best.get()].span.start)
         {
             best.set(candidate)
         } else {
@@ -293,7 +293,7 @@ pub fn signature_help(
         }
     };
     match if best.get() >= 0 {
-        Option::Some(calls.get(best.get()))
+        Option::Some(calls[best.get()])
     } else {
         Option::None
     } {

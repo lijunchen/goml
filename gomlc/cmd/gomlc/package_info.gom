@@ -14,7 +14,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
     let index = Ref::new(2);
     let positional = Ref::new(false);
     while index.get() < args.len() {
-        let argument = args.get(index.get());
+        let argument = args[index.get()];
         if positional.get() == false && argument == "--" {
             positional.set(true);
             index.set(index.get() + 1)
@@ -41,8 +41,8 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
         } else if argument == "--input" {
             index.set(index.get() + 1);
             let previous_len = inputs.len();
-            while index.get() < args.len() && !cli_option(args.get(index.get())) {
-                inputs.push(args.get(index.get()));
+            while index.get() < args.len() && !cli_option(args[index.get()]) {
+                inputs.push(args[index.get()]);
                 index.set(index.get() + 1)
             };
             if inputs.len() == previous_len {
@@ -66,14 +66,14 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
             } else {
                 inputs.push(value);
                 index.set(index.get() + 1);
-                while index.get() < args.len() && !cli_option(args.get(index.get())) {
-                    inputs.push(args.get(index.get()));
+                while index.get() < args.len() && !cli_option(args[index.get()]) {
+                    inputs.push(args[index.get()]);
                     index.set(index.get() + 1)
                 }
             }
         } else if argument == "--format" {
             if index.get() + 1 >= args.len()
-                || cli_option(args.get(index.get() + 1))
+                || cli_option(args[index.get() + 1])
             {
                 return Result::Err(value_required_error(
                     "--format <FORMAT>",
@@ -85,7 +85,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
                     "--format <FORMAT>",
                 ))
             } else {
-                format.set(Option::Some(args.get(index.get() + 1)));
+                format.set(Option::Some(args[index.get() + 1]));
                 index.set(index.get() + 2)
             }
         } else if option_string_present(inline_cli_value(argument, "--format")) {

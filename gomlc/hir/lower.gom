@@ -137,21 +137,21 @@ fn last_string(values: Vec[string]) -> Option[string] {
     if values.len() == 0 {
         Option::None
     } else {
-        Option::Some(values.get(values.len() - 1))
+        Option::Some(values[values.len() - 1])
     }
 }
 
 fn starts_with_std(values: Vec[string]) -> bool {
-    values.len() > 1 && values.get(0) == "std"
+    values.len() > 1 && values[0] == "std"
 }
 
 fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec[string]] {
     if target.len() > 1 {
         for alias in aliases {
-            if alias.alias == target.get(0) {
+            if alias.alias == target[0] {
                 let expanded = copy_strings(alias.target);
                 for index in range(1, target.len()) {
-                    expanded.push(target.get(index))
+                    expanded.push(target[index])
                 };
                 return Option::Some(expanded)
             } else {
@@ -197,9 +197,9 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
         }
     };
     for index in range(0, aliases.len()) {
-        let current = aliases.get(index);
+        let current = aliases[index];
         for previous_index in range(0, index) {
-            let previous = aliases.get(previous_index);
+            let previous = aliases[previous_index];
             if join_segments(previous.target) == join_segments(current.target) {
                 diagnostics.push(
                     "Duplicate package use " + join_segments(current.target),
@@ -251,13 +251,13 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
         values
     } else {
         for alias in ctx.aliases {
-            if alias.alias == values.get(0) {
+            if alias.alias == values[0] {
                 let result: Vec[string] = Vec::new();
                 for segment in alias.target {
                     result.push(segment)
                 };
                 for index in range(1, values.len()) {
-                    result.push(values.get(index))
+                    result.push(values[index])
                 };
                 return result
             } else {
@@ -272,12 +272,12 @@ fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = expand_segments(ctx, path);
     if ctx.qualify_imports
         && values.len() > 0
-        && vecs::contains(ctx.nominal_types, values.get(0))
+        && vecs::contains(ctx.nominal_types, values[0])
     {
         let result: Vec[string] = Vec::new();
-        result.push(full_name(ctx.package_name, values.get(0)));
+        result.push(full_name(ctx.package_name, values[0]));
         for index in range(1, values.len()) {
-            result.push(values.get(index))
+            result.push(values[index])
         };
         result
     } else {
@@ -299,7 +299,7 @@ fn static_member(
     let owner_parts: Vec[string] = Vec::new();
     if parts.len() > 1 {
         for index in range(0, parts.len() - 1) {
-            owner_parts.push(parts.get(index))
+            owner_parts.push(parts[index])
         }
     } else {
         ()
@@ -320,12 +320,12 @@ fn static_member(
 fn ast_type_head_span(value: ast::TypeExpr) -> Option[ast::Span] {
     match value {
         Con { path } => if path.segments.len() > 0 {
-            Option::Some(path.segments.get(0).span)
+            Option::Some(path.segments[0].span)
         } else {
             Option::None
         },
         Dyn { trait_path } => if trait_path.segments.len() > 0 {
-            Option::Some(trait_path.segments.get(0).span)
+            Option::Some(trait_path.segments[0].span)
         } else {
             Option::None
         },
@@ -338,7 +338,7 @@ fn find_binding(values: Vec[(string, LocalId)], name: string) -> Option[LocalId]
     let index = Ref::new(values.len());
     while index.get() > 0 {
         index.set(index.get() - 1);
-        let entry = values.get(index.get());
+        let entry = values[index.get()];
         if entry.0 == name {
             return Option::Some(entry.1)
         } else {
@@ -351,7 +351,7 @@ fn find_binding(values: Vec[(string, LocalId)], name: string) -> Option[LocalId]
 fn find_definition(ctx: LowerCtx, name: string) -> Option[DefId] {
     let index = Ref::new(ctx.definitions.len() - 1);
     while index.get() >= 0 {
-        let entry = ctx.definitions.get(index.get());
+        let entry = ctx.definitions[index.get()];
         if entry.0 == name {
             return Option::Some(entry.1)
         } else {
@@ -383,7 +383,7 @@ fn fresh_method(ctx: LowerCtx) -> DefId {
 fn enum_variant(info: EnumInfo, name: string) -> Option[int] {
     let index = Ref::new(info.variants.len() - 1);
     while index.get() >= 0 {
-        if info.variants.get(index.get()) == name {
+        if info.variants[index.get()] == name {
             return Option::Some(index.get())
         } else {
             index.set(index.get() - 1)
@@ -409,42 +409,42 @@ fn has_local_variant(ctx: LowerCtx, enum_name: string, variant_name: string) -> 
 fn constructor_ref(ctx: LowerCtx, path: ast::Path) -> Option[ConstructorRef] {
     let parts = expand_segments(ctx, path);
     if parts.len() == 2
-        && !has_local_variant(ctx, parts.get(0), parts.get(1))
-        && ((parts.get(0) == "Option"
-                && (parts.get(1) == "Some" || parts.get(1) == "None"))
-            || (parts.get(0) == "Result"
-                && (parts.get(1) == "Ok" || parts.get(1) == "Err"))) {
+        && !has_local_variant(ctx, parts[0], parts[1])
+        && ((parts[0] == "Option"
+                && (parts[1] == "Some" || parts[1] == "None"))
+            || (parts[0] == "Result"
+                && (parts[1] == "Ok" || parts[1] == "Err"))) {
         Option::Some(ConstructorRef::Unresolved(join_segments(parts)))
     } else if parts.len() == 1 {
         let matches: Vec[(DefId, int)] = Vec::new();
         for info in ctx.enums {
-            match enum_variant(info, parts.get(0)) {
+            match enum_variant(info, parts[0]) {
                 Some(index) => matches.push((info.def_id, index)),
                 None => (),
             }
         };
         if matches.len() == 1 {
-            let value = matches.get(0);
+            let value = matches[0];
             Option::Some(ConstructorRef::Resolved { enum_def: value.0, variant_index: value.1 })
         } else {
             Option::None
         }
     } else {
-        let variant = parts.get(parts.len() - 1);
+        let variant = parts[parts.len() - 1];
         let enum_name = if parts.len() == 2 {
-            parts.get(0)
+            parts[0]
         } else {
             let names: Vec[string] = Vec::new();
             for index in range(1, parts.len() - 1) {
-                names.push(parts.get(index))
+                names.push(parts[index])
             };
             join_segments(names)
         };
-        let package_matches = parts.len() == 2 || parts.get(0) == ctx.package_name;
+        let package_matches = parts.len() == 2 || parts[0] == ctx.package_name;
         if package_matches {
             let index = Ref::new(ctx.enums.len() - 1);
             while index.get() >= 0 {
-                let info = ctx.enums.get(index.get());
+                let info = ctx.enums[index.get()];
                 if info.name == enum_name {
                     match enum_variant(info, variant) {
                         Some(variant_index) => return Option::Some(
@@ -477,7 +477,7 @@ fn pattern_head_span(path: ast::Path) -> ast::Span {
     if path.segments.len() == 0 {
         ast::span(0, 0)
     } else {
-        path.segments.get(path.segments.len() - 1).span
+        path.segments[path.segments.len() - 1].span
     }
 }
 
@@ -485,7 +485,7 @@ fn pattern_head(ctx: LowerCtx, path: ast::Path) -> PatternHead {
     let span = pattern_head_span(path);
     if path.segments.len() == 1 {
         PatternHead::Contextual {
-            name: path.segments.get(0).ident,
+            name: path.segments[0].ident,
             span,
         }
     } else {
@@ -537,10 +537,10 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         Con { path } => {
             let parts = qualified_segments(ctx, path);
             if parts.len() == 2
-                && (parts.get(0) == "Self" || vecs::contains(type_params, parts.get(0))) {
+                && (parts[0] == "Self" || vecs::contains(type_params, parts[0])) {
                 TypeExpr::Projection {
-                    base: TypeExpr::Con { name: parts.get(0) },
-                    associated: parts.get(1),
+                    base: TypeExpr::Con { name: parts[0] },
+                    associated: parts[1],
                 }
             } else {
                 TypeExpr::Con { name: join_segments(parts) }
@@ -593,8 +593,8 @@ fn lower_impl_trait_ref(
     type_params: Vec[string],
 ) -> TraitRef {
     let parts = expand_segments(ctx, value.path);
-    let name = if parts.len() == 1 && vecs::contains(ctx.traits, parts.get(0)) {
-        full_name(ctx.package_name, parts.get(0))
+    let name = if parts.len() == 1 && vecs::contains(ctx.traits, parts[0]) {
+        full_name(ctx.package_name, parts[0])
     } else {
         join_segments(parts)
     };
@@ -656,13 +656,13 @@ fn sort_pattern_names(values: Vec[string]) -> Vec[string] {
         sorted.push(value)
     };
     for index in range(1, sorted.len()) {
-        let value = sorted.get(index);
+        let value = sorted[index];
         let target = Ref::new(index);
-        while target.get() > 0 && value < sorted.get(target.get() - 1) {
-            sorted.set(target.get(), sorted.get(target.get() - 1));
+        while target.get() > 0 && value < sorted[target.get() - 1] {
+            sorted[target.get()] = sorted[target.get() - 1];
             target.set(target.get() - 1)
         };
-        sorted.set(target.get(), value)
+        sorted[target.get()] = value;
     };
     sorted
 }
@@ -846,10 +846,10 @@ fn lower_pattern_inner(
             } else {
                 let base_env = copy_bindings(env);
                 let base_seen = copy_bindings(state.seen);
-                result.push(lower_pattern_inner(ctx, values.get(0), env, state));
+                result.push(lower_pattern_inner(ctx, values[0], env, state));
                 let expected: Vec[(string, LocalId)] = Vec::new();
                 for index in range(base_seen.len(), state.seen.len()) {
-                    expected.push(state.seen.get(index))
+                    expected.push(state.seen[index])
                 };
                 for index in range(1, values.len()) {
                     let branch_env = copy_bindings(base_env);
@@ -859,7 +859,7 @@ fn lower_pattern_inner(
                     };
                     result.push(lower_pattern_inner(
                         ctx,
-                        values.get(index),
+                        values[index],
                         branch_env,
                         branch_state,
                     ));
@@ -868,7 +868,7 @@ fn lower_pattern_inner(
                         base_seen.len(),
                         branch_state.seen.len(),
                     ) {
-                        actual.push(branch_state.seen.get(binding_index))
+                        actual.push(branch_state.seen[binding_index])
                     };
                     match pattern_binding_mismatch(expected, actual) {
                         Some(message) => ctx.diagnostics.push(Diagnostic {
@@ -984,7 +984,7 @@ fn lower_expr_value(
                     None => {
                         let parts = qualified_segments(ctx, path);
                         if parts.len() == 1 {
-                            let name = parts.get(0);
+                            let name = parts[0];
                             ExprKind::NameRef {
                                 name_ref: match find_binding(env, name) {
                                                                 Some(local) => NameRef::Local(local),

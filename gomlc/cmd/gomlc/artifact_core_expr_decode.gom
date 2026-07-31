@@ -135,8 +135,8 @@ fn artifact_decode_core_expr(
     } else {
         ()
     };
-    let kind = variant.get(0).0;
-    let object = match artifact_json_object(variant.get(0).1, "Core expression payload") {
+    let kind = variant[0].0;
+    let object = match artifact_json_object(variant[0].1, "Core expression payload") {
         Ok(value) => value,
         Err(error) => return Result::Err(error),
     };
@@ -641,11 +641,11 @@ fn artifact_decode_core_params(
         } else {
             ()
         };
-        let name = match artifact_json_string_value(pair.get(0), "Core parameter name") {
+        let name = match artifact_json_string_value(pair[0], "Core parameter name") {
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         };
-        let ty = match artifact_decode_type(context.types, pair.get(1)) {
+        let ty = match artifact_decode_type(context.types, pair[1]) {
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         };
@@ -741,9 +741,9 @@ fn artifact_decode_const_expr(
     } else {
         ()
     };
-    let kind = variant.get(0).0;
+    let kind = variant[0].0;
     let object = match artifact_json_object(
-        variant.get(0).1,
+        variant[0].1,
         "constant expression payload",
     ) {
         Ok(value) => value,

@@ -15,7 +15,7 @@ fn lower_wrapped_branch(
         None => {
             let values = expr_children(node);
             if values.len() > 0 {
-                lower_expr(ctx, values.get(0))
+                lower_expr(ctx, values[0])
             } else {
                 push_error(ctx, node_span(node), missing_message);
                 Option::None
@@ -29,13 +29,13 @@ fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
     if patterns.len() == 0 {
         Option::None
     } else {
-        match lower_pat(ctx, patterns.get(0)) {
+        match lower_pat(ctx, patterns[0]) {
             Some(pat) => {
                 let guard = match first_child(node, cst::NodeKind::MATCH_ARM_GUARD) {
                     Some(guard_node) => {
                         let values = expr_children(guard_node);
                         if values.len() > 0 {
-                            lower_expr(ctx, values.get(0))
+                            lower_expr(ctx, values[0])
                         } else {
                             Option::None
                         }
@@ -44,7 +44,7 @@ fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
                 };
                 let values = expr_children(node);
                 let body = if values.len() > 0 {
-                    lower_expr(ctx, values.get(0))
+                    lower_expr(ctx, values[0])
                 } else {
                     match first_child(node, cst::NodeKind::BLOCK) {
                         Some(block_node) => match lower_block(ctx, block_node) {
@@ -83,7 +83,7 @@ fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
             push_error(ctx, node_span(node), "MatchExpr has no expr");
             Option::None
         } else {
-            match lower_expr(ctx, values.get(0)) {
+            match lower_expr(ctx, values[0]) {
                 Some(scrutinee) => match first_child(node, cst::NodeKind::MATCH_ARM_LIST) {
                     Some(list) => {
                         let arms: Vec[Arm] = Vec::new();
@@ -114,7 +114,7 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
             Some(condition_node) => {
                 let patterns = pattern_children(condition_node);
                 let let_pat = if patterns.len() > 0 {
-                    lower_pat(ctx, patterns.get(0))
+                    lower_pat(ctx, patterns[0])
                 } else {
                     Option::None
                 };
@@ -123,7 +123,7 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                     push_error(ctx, node_span(node), "If expression missing condition");
                     Option::None
                 } else {
-                    match lower_expr(ctx, values.get(0)) {
+                    match lower_expr(ctx, values[0]) {
                         Some(cond) => match first_child(node, cst::NodeKind::EXPR_IF_THEN) {
                             Some(then_node) => match lower_wrapped_branch(
                                 ctx,
@@ -198,7 +198,7 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
             Some(condition_node) => {
                 let patterns = pattern_children(condition_node);
                 let let_pat = if patterns.len() > 0 {
-                    lower_pat(ctx, patterns.get(0))
+                    lower_pat(ctx, patterns[0])
                 } else {
                     Option::None
                 };
@@ -207,7 +207,7 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                     push_error(ctx, node_span(node), "While expression missing condition");
                     Option::None
                 } else {
-                    match lower_expr(ctx, values.get(0)) {
+                    match lower_expr(ctx, values[0]) {
                         Some(cond) => match first_child(node, cst::NodeKind::EXPR_WHILE_BODY) {
                             Some(body_node) => match lower_wrapped_branch(
                                 ctx,
@@ -271,8 +271,8 @@ fn lower_for_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
             push_error(ctx, node_span(node), "For expression missing iterator");
             Option::None
         } else {
-            match lower_pat(ctx, patterns.get(0)) {
-                Some(pat) => match lower_expr(ctx, values.get(0)) {
+            match lower_pat(ctx, patterns[0]) {
+                Some(pat) => match lower_expr(ctx, values[0]) {
                     Some(iterator) => match first_child(node, cst::NodeKind::BLOCK) {
                         Some(block_node) => match lower_block(ctx, block_node) {
                             Some(block) => Option::Some(Expr::For {
@@ -302,7 +302,7 @@ fn lower_return_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
     } else {
         let values = expr_children(node);
         let value = if values.len() > 0 {
-            lower_expr(ctx, values.get(0))
+            lower_expr(ctx, values[0])
         } else {
             Option::None
         };
@@ -319,7 +319,7 @@ fn lower_go_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
             push_error(ctx, node_span(node), "go statement missing expression");
             Option::None
         } else {
-            match lower_expr(ctx, values.get(0)) {
+            match lower_expr(ctx, values[0]) {
                 Some(value) => Option::Some(Expr::Go { expr: value, span: node_span(node) }),
                 None => Option::None,
             }

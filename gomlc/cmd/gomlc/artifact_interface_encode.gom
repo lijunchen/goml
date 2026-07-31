@@ -402,18 +402,18 @@ fn artifact_json_string_map(
     values: Vec[(string, string)],
 ) -> unit {
     for index in range(1, values.len()) {
-        let current = values.get(index);
+        let current = values[index];
         let destination = Ref::new(index);
         while destination.get() > 0
             && artifact_string_less(
                 current.0,
-                values.get(destination.get() - 1).0,
+                values[destination.get() - 1].0,
             )
         {
-            values.set(destination.get(), values.get(destination.get() - 1));
+            values[destination.get()] = values[destination.get() - 1];
             destination.set(destination.get() - 1)
         };
-        values.set(destination.get(), current)
+        values[destination.get()] = current;
     };
     artifact_json_begin_object(writer);
     for value in values {

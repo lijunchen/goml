@@ -67,7 +67,7 @@ fn write_exprs(
         } else {
             ()
         };
-        write_expr(builder, values.get(index), indent, mono_style, flatten_blocks)
+        write_expr(builder, values[index], indent, mono_style, flatten_blocks)
     }
 }
 
@@ -91,11 +91,11 @@ fn write_constructor(
                 } else {
                     ()
                 };
-                builder.write_string(constructor.fields.get(index));
+                builder.write_string(constructor.fields[index]);
                 builder.write_string(": ");
                 write_expr(
                     builder,
-                    args.get(index),
+                    args[index],
                     indent,
                     mono_style,
                     flatten_blocks,
@@ -139,7 +139,7 @@ fn write_block_contents(
             } else {
                 ()
             };
-            let stmt = value.stmts.get(index);
+            let stmt = value.stmts[index];
             builder.write_string("let ");
             builder.write_string(stmt.name);
             builder.write_string(" = ");
@@ -236,7 +236,7 @@ fn write_expr(
                     } else {
                         ()
                     };
-                    let param = params.get(index);
+                    let param = params[index];
                     builder.write_string(param.name);
                     if mono_style {
                         ()
@@ -348,7 +348,7 @@ fn write_expr(
             builder.write_string(constructor.name);
             builder.write_char('.');
             if constructor.is_struct && field_index < constructor.fields.len() {
-                builder.write_string(constructor.fields.get(field_index))
+                builder.write_string(constructor.fields[field_index])
             } else {
                 builder.write_char('_');
                 builder.write_string(field_index.to_string())
@@ -459,7 +459,7 @@ fn write_function(
             } else {
                 ()
             };
-            builder.write_string(value.generics.get(index))
+            builder.write_string(value.generics[index])
         };
         builder.write_char(']')
     } else {
@@ -472,7 +472,7 @@ fn write_function(
         } else {
             ()
         };
-        let param = value.params.get(index);
+        let param = value.params[index];
         builder.write_string(param.0);
         builder.write_string(": ");
         tast::write_type(builder, param.1)
@@ -494,7 +494,7 @@ fn encode_with_style(value: File, mono_style: bool, flatten_blocks: bool) -> str
         } else {
             ()
         };
-        tast::write_constant(builder, value.constants.get(index))
+        tast::write_constant(builder, value.constants[index])
     };
     if value.constants.len() > 0 && value.functions.len() > 0 {
         builder.write_string("\n\n")
@@ -509,7 +509,7 @@ fn encode_with_style(value: File, mono_style: bool, flatten_blocks: bool) -> str
         };
         write_function(
             builder,
-            value.functions.get(index),
+            value.functions[index],
             mono_style,
             flatten_blocks,
         )

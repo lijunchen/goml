@@ -123,13 +123,13 @@ fn find_type_instance(
     base_name: string,
     args: Vec[tast::Type],
 ) -> Option[TypeInstance] {
-    ctx.instance_index.get(type_instance_lookup_key(base_name, args))
+    ctx.instance_index[type_instance_lookup_key(base_name, args)]
 }
 
 fn find_type_instance_by_name(ctx: TypeCtx, name: string) -> Option[TypeInstance] {
     let index = Ref::new(ctx.instances.len() - 1);
     while index.get() >= 0 {
-        let instance = ctx.instances.get(index.get());
+        let instance = ctx.instances[index.get()];
         if instance.name == name {
             return Option::Some(instance)
         } else {
@@ -147,7 +147,7 @@ fn add_used_type_name(ctx: TypeCtx, name: string) -> unit {
     if type_name_is_used(ctx, name) {
         ()
     } else {
-        ctx.used_names.set(name, ())
+        ctx.used_names[name] = ();
     }
 }
 
@@ -163,7 +163,7 @@ fn type_instance_base_name(name: string, args: Vec[tast::Type]) -> string {
 
 fn unique_type_name(ctx: TypeCtx, base: string) -> string {
     if !type_name_is_used(ctx, base) {
-        ctx.used_names.set(base, ());
+        ctx.used_names[base] = ();
         base
     } else {
         let index = Ref::new(1);
@@ -172,7 +172,7 @@ fn unique_type_name(ctx: TypeCtx, base: string) -> string {
             index.set(index.get() + 1);
             candidate.set(base + "__mono" + index.get().to_string())
         };
-        ctx.used_names.set(candidate.get(), ());
+        ctx.used_names[candidate.get()] = ();
         candidate.get()
     }
 }
@@ -323,7 +323,7 @@ fn expand_specialized_type_aliases(ctx: TypeCtx, value: tast::Type) -> tast::Typ
 fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[tast::EnumDef] {
     let index = Ref::new(ctx.enums.len() - 1);
     while index.get() >= 0 {
-        let value = ctx.enums.get(index.get());
+        let value = ctx.enums[index.get()];
         if value.name == name {
             return Option::Some(value)
         } else {
@@ -336,7 +336,7 @@ fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[tast::EnumDef] {
 fn find_generic_struct(ctx: TypeCtx, name: string) -> Option[tast::StructDef] {
     let index = Ref::new(ctx.structs.len() - 1);
     while index.get() >= 0 {
-        let value = ctx.structs.get(index.get());
+        let value = ctx.structs[index.get()];
         if value.name == name {
             return Option::Some(value)
         } else {
@@ -366,8 +366,8 @@ fn type_instance_bindings(
     for index in range(0, params.len()) {
         if index < args.len() {
             result.push(TypeBinding {
-                name: params.get(index),
-                ty: args.get(index),
+                name: params[index],
+                ty: args[index],
             })
         } else {
             ()
@@ -407,9 +407,9 @@ fn recursive_type_specialization_message(
 ) -> Option[string] {
     let params = type_instance_parameters(ctx, name);
     for offset in range(0, ctx.active_instances.len()) {
-        let active = ctx.active_instances.get(
-            ctx.active_instances.len() - offset - 1,
-        );
+        let active = ctx.active_instances[
+            ctx.active_instances.len() - offset - 1
+        ];
         if active.base_name == name {
             let common = if active.args.len() < args.len() {
                 active.args.len()
@@ -419,12 +419,12 @@ fn recursive_type_specialization_message(
             for index in range(0, common) {
                 let previous = expand_specialized_type_aliases(
                     ctx,
-                    active.args.get(index),
+                    active.args[index],
                 );
-                let next = expand_specialized_type_aliases(ctx, args.get(index));
+                let next = expand_specialized_type_aliases(ctx, args[index]);
                 if mono_type_contains_recursive_growth(next, previous) {
                     let parameter = if index < params.len() {
-                        params.get(index)
+                        params[index]
                     } else {
                         "#" + index.to_string()
                     };
@@ -632,7 +632,7 @@ fn trait_impl_name(
             } else {
                 ()
             };
-            builder.write_string(compact_type(reference.args.get(index)))
+            builder.write_string(compact_type(reference.args[index]))
         };
         builder.write_string("]@");
         builder.write_string(compact_type(for_type));

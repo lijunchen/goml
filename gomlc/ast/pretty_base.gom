@@ -149,7 +149,7 @@ fn pretty_find_bounds(
 ) -> Option[Vec[TraitRef]] {
     let index = Ref::new(values.len() - 1);
     while index.get() >= 0 {
-        let value = values.get(index.get());
+        let value = values[index.get()];
         if value.0 == name {
             return Option::Some(value.1)
         } else {
@@ -443,7 +443,7 @@ fn pretty_write_trait_method(
         } else {
             ()
         };
-        let param = value.params.get(index);
+        let param = value.params[index];
         builder.write_string(param.0);
         builder.write_string(": ");
         pretty_write_type(builder, param.1)

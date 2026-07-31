@@ -488,7 +488,7 @@ fn hidden_cell_type(value: tast::Type) -> tast::Type {
 fn hidden_cell_inner(cells: Vec[(string, tast::Type)], name: string) -> Option[tast::Type] {
     let index = Ref::new(cells.len() - 1);
     while index.get() >= 0 {
-        let value = cells.get(index.get());
+        let value = cells[index.get()];
         if value.0 == name {
             return Option::Some(value.1)
         } else {

@@ -220,7 +220,7 @@ fn artifact_method_constraints(
 ) -> Vec[tast::TypePredicate] {
     let result = Vec::new();
     for index in range(start, value.predicates.len()) {
-        result.push(value.predicates.get(index))
+        result.push(value.predicates[index])
     };
     result
 }
@@ -232,7 +232,7 @@ fn artifact_method_scheme(
 ) -> ArtifactFnScheme {
     let type_params = Vec::new();
     for index in range(owner_generic_count, value.generics.len()) {
-        type_params.push(value.generics.get(index))
+        type_params.push(value.generics[index])
     };
     ArtifactFnScheme {
         name: value.name,
@@ -624,7 +624,7 @@ fn artifact_package_interface(
     let function_names = sort_artifact_names(function_names);
     let value_exports = Vec::new();
     for index in range(0, function_names.len()) {
-        value_exports.push((function_names.get(index), index))
+        value_exports.push((function_names[index], index))
     };
     let enum_names = Vec::new();
     for definition in exports.enums {

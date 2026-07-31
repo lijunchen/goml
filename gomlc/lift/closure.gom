@@ -42,7 +42,7 @@ fn copy_scope(values: Vec[ScopeEntry]) -> Vec[ScopeEntry] {
 fn find_scope(values: Vec[ScopeEntry], name: string) -> Option[ScopeEntry] {
     let index = Ref::new(values.len() - 1);
     while index.get() >= 0 {
-        let value = values.get(index.get());
+        let value = values[index.get()];
         if value.name == name {
             return Option::Some(value)
         } else {
@@ -887,7 +887,7 @@ fn prepend_captures(
 ) -> core::Block {
     let stmts = Vec::new();
     for index in range(0, captures.len()) {
-        let capture = captures.get(index);
+        let capture = captures[index];
         stmts.push(core::LetStmt {
             name: capture.name,
             value: core::Expr::ConstrGet {
@@ -927,8 +927,8 @@ fn transform_closure(
             let lowered_params = Vec::new();
             let bound = Vec::new();
             for index in range(0, params.len()) {
-                let param = params.get(index);
-                let param_ty = signature.0.get(index);
+                let param = params[index];
+                let param_ty = signature.0[index];
                 closure_scope.push(ScopeEntry {
                     name: param.name,
                     ty: param_ty,
@@ -956,7 +956,7 @@ fn transform_closure(
             let struct_fields: Vec[(string, tast::Type)] = Vec::new();
             let captured_args = Vec::new();
             for index in range(0, captures.len()) {
-                let capture = captures.get(index);
+                let capture = captures[index];
                 let field_name = make_field_name(capture.name, index);
                 fields.push(field_name);
                 struct_fields.push((field_name, capture.ty));

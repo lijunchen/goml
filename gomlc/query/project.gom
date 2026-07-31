@@ -204,7 +204,7 @@ fn override_source(
 ) -> Option[string] {
     let index = Ref::new(overrides.len() - 1);
     while index.get() >= 0 {
-        let value = overrides.get(index.get());
+        let value = overrides[index.get()];
         if same_path(value.path, source_path) {
             return Option::Some(value.source)
         } else {

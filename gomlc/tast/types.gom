@@ -182,7 +182,7 @@ fn unify_types(left: Vec[Type], right: Vec[Type]) -> bool {
         false
     } else {
         for index in range(0, left.len()) {
-            if !unify(left.get(index), right.get(index)) {
+            if !unify(left[index], right[index]) {
                 return false
             } else {
                 ()
@@ -294,7 +294,7 @@ fn type_mismatch_text(left: Type, right: Type) -> string {
 
 fn first_type_list_error(left: Vec[Type], right: Vec[Type]) -> Option[string] {
     for index in range(0, left.len()) {
-        match first_unification_error(left.get(index), right.get(index)) {
+        match first_unification_error(left[index], right[index]) {
             Some(message) => return Option::Some(message),
             None => (),
         }
@@ -492,7 +492,7 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
         false
     } else {
         for index in range(0, left.len()) {
-            if !types_equal(left.get(index), right.get(index)) {
+            if !types_equal(left[index], right[index]) {
                 return false
             } else {
                 ()
@@ -697,7 +697,7 @@ fn unify_parameter_alias_lists(
         false
     } else {
         for index in range(0, left.len()) {
-            if !unify_parameter_aliases(left.get(index), right.get(index), substitutions) {
+            if !unify_parameter_aliases(left[index], right[index], substitutions) {
                 return false
             } else {
                 ()
@@ -792,7 +792,7 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
 fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int {
     let result = Ref::new(-1);
     for index in range(0, values.len()) {
-        if result.get() < 0 && types_equal(values.get(index).projection, projection) {
+        if result.get() < 0 && types_equal(values[index].projection, projection) {
             result.set(index)
         } else {
             ()
@@ -809,7 +809,7 @@ fn projection_alias(
     if index < 0 {
         Option::None
     } else {
-        Option::Some(values.get(index).ty)
+        Option::Some(values[index].ty)
     }
 }
 
@@ -822,10 +822,10 @@ fn set_projection_alias(
     if index < 0 {
         values.push(ProjectionAlias { projection, ty });
         true
-    } else if types_equal(values.get(index).ty, ty) {
+    } else if types_equal(values[index].ty, ty) {
         false
     } else {
-        values.set(index, ProjectionAlias { projection, ty });
+        values[index] = ProjectionAlias { projection, ty };
         true
     }
 }
@@ -954,9 +954,9 @@ fn projection_equality(
 
 fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
     for offset in range(0, value.associated_types.len()) {
-        let associated = value.associated_types.get(
-            value.associated_types.len() - 1 - offset,
-        );
+        let associated = value.associated_types[
+            value.associated_types.len() - 1 - offset
+        ];
         if associated.0 == name {
             return Option::Some(associated.1)
         } else {
@@ -969,14 +969,14 @@ fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
 fn builtin_iterator_item(base: Type) -> Option[Type] {
     match prune(base) {
         App { ty: Con { name: owner }, args } => if owner == "FnIterator" && args.len() == 1 {
-            Option::Some(args.get(0))
+            Option::Some(args[0])
         } else if owner == "MapIterator" && args.len() == 3 {
-            Option::Some(args.get(1))
+            Option::Some(args[1])
         } else if owner == "FilterIterator" && args.len() == 2 {
-            Option::Some(args.get(0))
+            Option::Some(args[0])
         } else if owner == "TakeIterator" && args.len() == 1 {
             Option::Some(Type::Projection {
-                for_ty: args.get(0),
+                for_ty: args[0],
                 name: "Item",
                 trait_ref: Option::Some(TraitRef {
                                     name: "Iterator",
@@ -987,7 +987,7 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
             && args.len() == 1
         {
             let item = Type::Projection {
-                for_ty: args.get(0),
+                for_ty: args[0],
                 name: "Item",
                 trait_ref: Option::Some(TraitRef {
                                     name: "Iterator",
@@ -1005,7 +1005,7 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
             Option::Some(Type::Tuple {
                 items: Vec::new()
                     .pushed(Type::Projection {
-                        for_ty: args.get(0),
+                        for_ty: args[0],
                         name: "Item",
                         trait_ref: Option::Some(TraitRef {
                                             name: "Iterator",
@@ -1013,7 +1013,7 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
                                         }),
                     })
                     .pushed(Type::Projection {
-                        for_ty: args.get(1),
+                        for_ty: args[1],
                         name: "Item",
                         trait_ref: Option::Some(TraitRef {
                                             name: "Iterator",
@@ -1022,7 +1022,7 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
                     }),
             })
         } else if owner == "ChainIterator" && args.len() == 3 {
-            Option::Some(args.get(0))
+            Option::Some(args[0])
         } else {
             Option::None
         },
@@ -1125,7 +1125,7 @@ fn impl_projection(
         }
     };
     if candidates.len() == 1 {
-        Option::Some(candidates.get(0))
+        Option::Some(candidates[0])
     } else {
         Option::None
     }
@@ -1218,7 +1218,7 @@ fn normalize_callable(ctx: Checker, value: Callable) -> Callable {
 
 fn find_substitution(values: Vec[TypeSubst], name: string) -> Option[Type] {
     for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+        let value = values[values.len() - 1 - offset];
         if value.name == name {
             return Option::Some(value.ty)
         } else {
@@ -1288,8 +1288,8 @@ pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Ty
     for index in range(0, names.len()) {
         if index < args.len() {
             substitutions.push(TypeSubst {
-                name: names.get(index),
-                ty: args.get(index),
+                name: names[index],
+                ty: args[index],
             })
         } else {
             ()
@@ -1306,9 +1306,9 @@ fn instantiate_substitutions(
     let result: Vec[TypeSubst] = Vec::new();
     for index in range(0, params.len()) {
         result.push(TypeSubst {
-            name: params.get(index),
+            name: params[index],
             ty: if index < explicit.len() {
-                explicit.get(index)
+                explicit[index]
             } else {
                 fresh_type(counter, VarKind::Any)
             },
@@ -1478,15 +1478,15 @@ fn type_constructor_name(value: Type) -> Option[string] {
 
 fn nominal_type(name: string, args: Vec[Type]) -> Type {
     if name == "Vec" && args.len() == 1 {
-        Type::VecType { elem: args.get(0) }
+        Type::VecType { elem: args[0] }
     } else if name == "Slice" && args.len() == 1 {
-        Type::Slice { elem: args.get(0) }
+        Type::Slice { elem: args[0] }
     } else if name == "Ref" && args.len() == 1 {
-        Type::RefType { elem: args.get(0) }
+        Type::RefType { elem: args[0] }
     } else if name == "HashMap" && args.len() == 2 {
-        Type::HashMap { key: args.get(0), value: args.get(1) }
+        Type::HashMap { key: args[0], value: args[1] }
     } else if name == "Channel" && args.len() == 1 {
-        Type::Channel { elem: args.get(0) }
+        Type::Channel { elem: args[0] }
     } else if args.len() == 0 {
         Type::Con { name }
     } else {

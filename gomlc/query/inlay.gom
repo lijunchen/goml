@@ -18,15 +18,15 @@ fn smallest_node_containing_span(
 ) -> Option[SyntaxNode] {
     let best = Ref::new(-1);
     for candidate in range(0, syntax.nodes.len()) {
-        let node = syntax.nodes.get(candidate);
+        let node = syntax.nodes[candidate];
         let node_width = node.end - node.start;
         if cst::node_kind_equal(node.kind, kind)
             && node.start <= span.start
             && node.end >= span.end
             && (best.get() < 0
                 || node_width
-                    < syntax.nodes.get(best.get()).end
-                        - syntax.nodes.get(best.get()).start)
+                    < syntax.nodes[best.get()].end
+                        - syntax.nodes[best.get()].start)
         {
             best.set(candidate)
         } else {
@@ -34,7 +34,7 @@ fn smallest_node_containing_span(
         }
     };
     if best.get() >= 0 {
-        Option::Some(syntax.nodes.get(best.get()))
+        Option::Some(syntax.nodes[best.get()])
     } else {
         Option::None
     }

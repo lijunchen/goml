@@ -42,7 +42,7 @@ fn path_last(path: Path) -> Option[string] {
     if path.segments.len() == 0 {
         Option::None
     } else {
-        Option::Some(path.segments.get(path.segments.len() - 1).ident)
+        Option::Some(path.segments[path.segments.len() - 1].ident)
     }
 }
 
@@ -191,7 +191,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                     if types.len() == 0 {
                         Option::Some(TypeExpr::Unit)
                     } else if types.len() == 1 {
-                        Option::Some(types.get(0))
+                        Option::Some(types[0])
                     } else {
                         Option::Some(TypeExpr::Tuple { items: types })
                     }
@@ -244,7 +244,7 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                         strip_suffix(length_token.token.text, ""),
                     ) {
                         Some(length) => if types.len() > 0 {
-                            match lower_ty(ctx, types.get(0)) {
+                            match lower_ty(ctx, types[0]) {
                                 Some(element) => Option::Some(TypeExpr::Array {
                                     len: length,
                                     elem: element,
@@ -272,9 +272,9 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                     push_error(ctx, node_span(node), "Function type missing return type");
                     Option::None
                 } else {
-                    match lower_ty(ctx, types.get(1)) {
+                    match lower_ty(ctx, types[1]) {
                         Some(ret_ty) => {
-                            let param_node = types.get(0);
+                            let param_node = types[0];
                             let params = if cst::node_kind_equal(node_kind(param_node), cst::NodeKind::TYPE_TUPLE) {
                                 match first_child(param_node, cst::NodeKind::TYPE_LIST) {
                                     Some(list) => lower_type_list(ctx, list),
@@ -363,13 +363,13 @@ fn lower_where_clause(ctx: LowerCtx, node: LocatedNode) -> Vec[Predicate] {
             if types.len() == 0 {
                 push_error(ctx, node_span(predicate), "Where predicate is missing a type")
             } else {
-                match lower_ty(ctx, types.get(0)) {
+                match lower_ty(ctx, types[0]) {
                     Some(lhs) => match first_child(predicate, cst::NodeKind::TRAIT_SET) {
                         Some(set) => for trait_ref in lower_trait_set(ctx, set) {
                             result.push(Predicate::Trait { ty: lhs, trait_ref })
                         },
                         None => if types.len() > 1 {
-                            match lower_ty(ctx, types.get(1)) {
+                            match lower_ty(ctx, types[1]) {
                                 Some(rhs) => result.push(Predicate::Equality { lhs, rhs }),
                                 None => (),
                             }

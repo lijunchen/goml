@@ -240,7 +240,7 @@ fn lower_arg_list(ctx: LowerCtx, node: LocatedNode) -> Vec[Expr] {
         Some(list) => for arg in children_of_kind(list, cst::NodeKind::ARG) {
             let values = expr_children(arg);
             if values.len() > 0 {
-                match lower_expr(ctx, values.get(0)) {
+                match lower_expr(ctx, values[0]) {
                     Some(value) => args.push(value),
                     None => (),
                 }
@@ -276,7 +276,7 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
         push_error(ctx, node_span(node), "CallExpr has no function name");
         Option::None
     } else {
-        let callee = callees.get(0);
+        let callee = callees[0];
         if cst::node_kind_equal(node_kind(callee), cst::NodeKind::EXPR_IDENT) {
             match lower_ident_parts(ctx, callee) {
                 Some(parts) => match path_last(parts.path) {
@@ -336,7 +336,7 @@ fn lower_prefix_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         push_error(ctx, node_span(node), "Prefix expression missing operand");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(inner) => {
                 let op = if has_token(node, lexer::TokenKind::Minus) {
                     Option::Some(UnaryOp::Neg)
@@ -371,8 +371,8 @@ fn lower_cast_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
     if values.len() == 0 || types.len() == 0 {
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Some(value) => match lower_ty(ctx, types.get(0)) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
+            Some(value) => match lower_ty(ctx, types[0]) {
                 Some(ty) => apply_trailing_args(
                     ctx,
                     Expr::Cast { expr: value, ty, span: node_span(node) },
@@ -395,8 +395,8 @@ fn lower_index_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         push_error(ctx, node_span(node), "Index expression missing index");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
-            Some(base) => match lower_expr(ctx, values.get(1)) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
+            Some(base) => match lower_expr(ctx, values[1]) {
                 Some(index) => apply_trailing_args(
                     ctx,
                     Expr::Index { base, index, span: node_span(node) },
@@ -416,7 +416,7 @@ fn lower_try_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
         push_error(ctx, node_span(node), "Try expression missing operand");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(value) => apply_trailing_args(
                 ctx,
                 Expr::Try { expr: value, span: node_span(node) },
@@ -437,8 +437,8 @@ fn lower_range_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         push_error(ctx, node_span(node), "Range expression missing end");
         Option::None
     } else {
-        match lower_expr(ctx, values.get(0)) {
-            Some(start) => match lower_expr(ctx, values.get(1)) {
+        match lower_expr(ctx, values[0]) {
+            Some(start) => match lower_expr(ctx, values[1]) {
                 Some(end) => apply_trailing_args(
                     ctx,
                     Expr::Range { start, end, span: node_span(node) },
@@ -461,13 +461,13 @@ fn lower_binary_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         push_error(ctx, node_span(node), "Binary expression missing rhs");
         Option::None
     } else {
-        match lower_expr_with_args(ctx, values.get(0), Vec::new()) {
+        match lower_expr_with_args(ctx, values[0], Vec::new()) {
             Some(lhs) => match binary_operator_token(node) {
                 Some(operator) => if lexer::token_kind_equal(operator.token.kind, lexer::TokenKind::Dot) {
-                    lower_dot_expr(ctx, node, lhs, values.get(1), trailing_args)
+                    lower_dot_expr(ctx, node, lhs, values[1], trailing_args)
                 } else {
                     match binary_operator(operator.token.kind) {
-                        Some(op) => match lower_expr_with_args(ctx, values.get(1), trailing_args) {
+                        Some(op) => match lower_expr_with_args(ctx, values[1], trailing_args) {
                             Some(rhs) => Option::Some(Expr::Binary {
                                 op,
                                 lhs,
@@ -529,7 +529,7 @@ fn lower_dot_expr(
                     let field = Expr::Field {
                         expr: lhs,
                         field_name: parts.path.segments
-                            .get(parts.path.segments.len() - 1)
+                            [parts.path.segments.len() - 1]
                             .ident,
                         method_type_args: parts.member_type_args,
                         span: node_span(node),

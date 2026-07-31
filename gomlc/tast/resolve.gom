@@ -56,9 +56,9 @@ fn add_name_index(
     name: string,
     index: int,
 ) -> unit {
-    exact.set(name, index);
+    exact[name] = index;
     let short_name = short_name(name);
-    match short.get(short_name) {
+    match short[short_name] {
         Some(_) => short.set(short_name, -1),
         None => short.set(short_name, index),
     }
@@ -68,15 +68,15 @@ fn enum_name_index(values: Vec[EnumInfo], short: bool) -> HashMap[string, int] {
     let result: HashMap[string, int] = HashMap::new();
     for index in range(0, values.len()) {
         let name = if short {
-            short_name(values.get(index).name)
+            short_name(values[index].name)
         } else {
-            values.get(index).name
+            values[index].name
         };
-        match result.get(name) {
+        match result[name] {
             Some(_) => if short {
-                result.set(name, -1)
+                result[name] = -1;
             } else {
-                result.set(name, index)
+                result[name] = index;
             },
             None => result.set(name, index),
         }
@@ -106,15 +106,15 @@ fn struct_name_index(values: Vec[StructInfo], short: bool) -> HashMap[string, in
     let result: HashMap[string, int] = HashMap::new();
     for index in range(0, values.len()) {
         let name = if short {
-            short_name(values.get(index).name)
+            short_name(values[index].name)
         } else {
-            values.get(index).name
+            values[index].name
         };
-        match result.get(name) {
+        match result[name] {
             Some(_) => if short {
-                result.set(name, -1)
+                result[name] = -1;
             } else {
-                result.set(name, index)
+                result[name] = index;
             },
             None => result.set(name, index),
         }
@@ -134,11 +134,11 @@ fn find_enum_by_def(ctx: Checker, id: hir::DefId) -> Option[EnumInfo] {
 }
 
 fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
-    match ctx.enum_names.get(name) {
-        Some(index) => Option::Some(ctx.enums.get(index)),
-        None => match ctx.enum_short_names.get(short_name(name)) {
+    match ctx.enum_names[name] {
+        Some(index) => Option::Some(ctx.enums[index]),
+        None => match ctx.enum_short_names[short_name(name)] {
             Some(index) => if index >= 0 {
-                Option::Some(ctx.enums.get(index))
+                Option::Some(ctx.enums[index])
             } else {
                 Option::None
             },
@@ -159,11 +159,11 @@ fn find_enum_by_exact_name(ctx: Checker, name: string) -> Option[EnumInfo] {
 }
 
 fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
-    match ctx.struct_names.get(name) {
-        Some(index) => Option::Some(ctx.structs.get(index)),
-        None => match ctx.struct_short_names.get(short_name(name)) {
+    match ctx.struct_names[name] {
+        Some(index) => Option::Some(ctx.structs[index]),
+        None => match ctx.struct_short_names[short_name(name)] {
             Some(index) => if index >= 0 {
-                Option::Some(ctx.structs.get(index))
+                Option::Some(ctx.structs[index])
             } else {
                 Option::None
             },
@@ -229,7 +229,7 @@ fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {
 
 fn find_variant(value: EnumInfo, index: int) -> Option[EnumVariantInfo] {
     if index >= 0 && index < value.variants.len() {
-        Option::Some(value.variants.get(index))
+        Option::Some(value.variants[index])
     } else {
         Option::None
     }
@@ -286,7 +286,7 @@ fn resolve_named_constructor(
     match find_enum_by_name(ctx, enum_name) {
         Some(value) => {
             for index in range(0, value.variants.len()) {
-                if value.variants.get(index).name == variant_name {
+                if value.variants[index].name == variant_name {
                     return resolve_user_constructor(ctx, value, index)
                 } else {
                     ()
@@ -417,7 +417,7 @@ fn resolve_contextual_constructor(
         Some(owner) => match find_expected_enum(ctx, owner) {
             Some(value) => {
                 for index in range(0, value.variants.len()) {
-                    if value.variants.get(index).name == name {
+                    if value.variants[index].name == name {
                         return resolve_user_constructor(ctx, value, index)
                     } else {
                         ()
@@ -509,7 +509,7 @@ fn instantiate_named_variant(
         fields.push((field.0, substitute_type(field.1, substitutions)));
         names.push(field.0)
     };
-    let variant = value.variants.get(variant_index);
+    let variant = value.variants[variant_index];
     ResolvedStruct {
         constructor: Constructor {
             name: value.name + "::" + variant.name,
@@ -529,7 +529,7 @@ fn resolve_named_variant_in(
     variant_name: string,
 ) -> NamedFieldConstructorResolution {
     for index in range(0, value.variants.len()) {
-        let variant = value.variants.get(index);
+        let variant = value.variants[index];
         if variant.name == variant_name {
             return match enum_variant_named_fields(variant.fields) {
                 Some(fields) => NamedFieldConstructorResolution::Found(
@@ -586,7 +586,7 @@ fn resolve_named_field_constructor(
     let candidates: Vec[(EnumInfo, int)] = Vec::new();
     for value in ctx.enums {
         for index in range(0, value.variants.len()) {
-            if value.variants.get(index).name == name {
+            if value.variants[index].name == name {
                 candidates.push((value, index))
             } else {
                 ()
@@ -598,9 +598,9 @@ fn resolve_named_field_constructor(
     } else if candidates.len() == 0 {
         NamedFieldConstructorResolution::Missing
     } else {
-        let candidate = candidates.get(0);
+        let candidate = candidates[0];
         let value = candidate.0;
-        let variant = value.variants.get(candidate.1);
+        let variant = value.variants[candidate.1];
         match enum_variant_named_fields(variant.fields) {
             Some(fields) => NamedFieldConstructorResolution::Found(
                 instantiate_named_variant(
@@ -684,8 +684,8 @@ fn substitutions_for_nominal(
     for index in range(0, params.len()) {
         if index < args.len() {
             result.push(TypeSubst {
-                name: params.get(index),
-                ty: args.get(index),
+                name: params[index],
+                ty: args[index],
             })
         } else {
             ()
@@ -701,7 +701,7 @@ fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type
             Some(info) => {
                 let substitutions = substitutions_for_nominal(info.generics, receiver);
                 for offset in range(0, info.fields.len()) {
-                    let field = info.fields.get(info.fields.len() - 1 - offset);
+                    let field = info.fields[info.fields.len() - 1 - offset];
                     if field.0 == name {
                         return Option::Some(substitute_type(field.1, substitutions))
                     } else {
@@ -718,7 +718,7 @@ fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type
 
 fn find_named_field(values: Vec[(string, hir::Expr)], name: string) -> Option[hir::Expr] {
     for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+        let value = values[values.len() - 1 - offset];
         if value.0 == name {
             return Option::Some(value.1)
         } else {
@@ -754,7 +754,7 @@ fn call_type_lists_compatible(left: Vec[Type], right: Vec[Type]) -> bool {
         false
     } else {
         for index in range(0, left.len()) {
-            if !call_types_compatible(left.get(index), right.get(index)) {
+            if !call_types_compatible(left[index], right[index]) {
                 return false
             } else {
                 ()
@@ -928,9 +928,9 @@ fn instantiate_method_candidate(
     let method_declared = Vec::new();
     for index in range(0, predicates.len()) {
         if index < value.owner_predicate_count {
-            owner_declared.push(predicates.get(index))
+            owner_declared.push(predicates[index])
         } else {
-            method_declared.push(predicates.get(index))
+            method_declared.push(predicates[index])
         }
     };
     let owner_predicates = expand_implied_predicates(ctx, owner_declared);
@@ -1015,13 +1015,13 @@ fn method_matches_call(
     match prune(value.ty) {
         Func { params, ret_ty } => if params.len() == args.len() + 1 {
             let matches = Ref::new(call_types_compatible(
-                normalize_type(ctx, params.get(0)),
+                normalize_type(ctx, params[0]),
                 normalize_type(ctx, receiver),
             ));
             for index in range(0, args.len()) {
                 if !call_types_compatible(
-                    normalize_type(ctx, params.get(index + 1)),
-                    normalize_type(ctx, args.get(index)),
+                    normalize_type(ctx, params[index + 1]),
+                    normalize_type(ctx, args[index]),
                 ) {
                     matches.set(false)
                 } else {
@@ -1389,8 +1389,8 @@ fn predicate_message_present(
     span: Option[ast::Span],
 ) -> bool {
     for index in range(0, messages.len()) {
-        if messages.get(index) == message
-            && optional_spans_equal(spans.get(index), span)
+        if messages[index] == message
+            && optional_spans_equal(spans[index], span)
         {
             return true
         } else {
@@ -1541,23 +1541,23 @@ fn builtin_iterator_bound_satisfied(
         App { ty: Con { name }, args } => if name == "FnIterator" && args.len() == 1 {
             true
         } else if name == "MapIterator" && args.len() == 3 {
-            let iterator = args.get(2);
+            let iterator = args[2];
             trait_bound_satisfied_at(ctx, iterator, iterator_trait_ref(), depth + 1)
                 && unify(
                     normalize_type(ctx, iterator_item_type(iterator)),
-                    normalize_type(ctx, args.get(0)),
+                    normalize_type(ctx, args[0]),
                 )
         } else if name == "FilterIterator" && args.len() == 2 {
-            let iterator = args.get(1);
+            let iterator = args[1];
             trait_bound_satisfied_at(ctx, iterator, iterator_trait_ref(), depth + 1)
                 && unify(
                     normalize_type(ctx, iterator_item_type(iterator)),
-                    normalize_type(ctx, args.get(0)),
+                    normalize_type(ctx, args[0]),
                 )
         } else if name == "TakeIterator" && args.len() == 1 {
             trait_bound_satisfied_at(
                 ctx,
-                args.get(0),
+                args[0],
                 iterator_trait_ref(),
                 depth + 1,
             )
@@ -1566,25 +1566,25 @@ fn builtin_iterator_bound_satisfied(
         {
             trait_bound_satisfied_at(
                 ctx,
-                args.get(0),
+                args[0],
                 iterator_trait_ref(),
                 depth + 1,
             )
         } else if name == "ZipIterator" && args.len() == 2 {
             trait_bound_satisfied_at(
                 ctx,
-                args.get(0),
+                args[0],
                 iterator_trait_ref(),
                 depth + 1,
             ) && trait_bound_satisfied_at(
                 ctx,
-                args.get(1),
+                args[1],
                 iterator_trait_ref(),
                 depth + 1,
             )
         } else if name == "ChainIterator" && args.len() == 3 {
-            let first = args.get(1);
-            let second = args.get(2);
+            let first = args[1];
+            let second = args[2];
             trait_bound_satisfied_at(ctx, first, iterator_trait_ref(), depth + 1)
                 && trait_bound_satisfied_at(
                     ctx,
@@ -1594,11 +1594,11 @@ fn builtin_iterator_bound_satisfied(
                 )
                 && unify(
                     normalize_type(ctx, iterator_item_type(first)),
-                    normalize_type(ctx, args.get(0)),
+                    normalize_type(ctx, args[0]),
                 )
                 && unify(
                     normalize_type(ctx, iterator_item_type(second)),
-                    normalize_type(ctx, args.get(0)),
+                    normalize_type(ctx, args[0]),
                 )
         } else {
             false
@@ -1854,8 +1854,8 @@ fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
 fn validate_impl_overlaps(ctx: Checker) -> unit {
     for left in range(0, ctx.impls.len()) {
         for right in range(left + 1, ctx.impls.len()) {
-            let left_impl = ctx.impls.get(left);
-            let right_impl = ctx.impls.get(right);
+            let left_impl = ctx.impls[left];
+            let right_impl = ctx.impls[right];
             if impls_overlap(ctx, left_impl, right_impl) {
                 if !vecs::contains(ctx.invalid_impl_origins, right_impl.origin) {
                     ctx.invalid_impl_origins.push(right_impl.origin)
@@ -2005,7 +2005,7 @@ fn deferred_method_candidate(
     if matches.get() > 1 {
         match prune(candidate_ty.get()) {
             Func { params, ret_ty } => {
-                params.set(0, receiver);
+                params[0] = receiver;
                 Option::Some(ResolvedCallable {
                     callable: Callable::Function(
                         "__goml_deferred_method:" + name,
@@ -2089,7 +2089,7 @@ fn resolve_user_method_for_call(
         trait_methods
     };
     if matches.len() == 1 {
-        Option::Some(matches.get(0))
+        Option::Some(matches[0])
     } else {
         if matches.len() > 1 {
             push_diagnostic(ctx, "ambiguous method: " + name)
@@ -2286,7 +2286,7 @@ fn builtin_method_type_parameter(
         explicit,
     );
     if explicit.len() == 1 {
-        explicit.get(0)
+        explicit[0]
     } else {
         fresh_type(ctx.counter, VarKind::Any)
     }
@@ -2505,7 +2505,7 @@ fn resolve_option_result_method(
         resolve_option_method(
             ctx,
             receiver,
-            args.get(0),
+            args[0],
             name,
             explicit,
         )
@@ -2513,8 +2513,8 @@ fn resolve_option_result_method(
         resolve_result_method(
             ctx,
             receiver,
-            args.get(0),
-            args.get(1),
+            args[0],
+            args[1],
             name,
             explicit,
         )
@@ -2831,7 +2831,7 @@ fn resolve_dyn_method(
     } else {
         match resolve_trait_reference_method(
             ctx,
-            applications.get(0),
+            applications[0],
             name,
             Option::Some(receiver),
             method_explicit,
@@ -2843,14 +2843,14 @@ fn resolve_dyn_method(
                 for index in range(1, applications.len()) {
                     match resolve_trait_reference_method(
                         ctx,
-                        applications.get(index),
+                        applications[index],
                         name,
                         Option::Some(receiver),
                         method_explicit,
                     ) {
                         Some(value) => {
                             candidates.push(short_name(
-                                applications.get(index).name,
+                                applications[index].name,
                             ));
                             resolved.push(dyn_method_callable(owner, name, value))
                         },
@@ -2858,7 +2858,7 @@ fn resolve_dyn_method(
                     }
                 };
                 if resolved.len() == 1 {
-                    Option::Some(resolved.get(0))
+                    Option::Some(resolved[0])
                 } else {
                     if resolved.len() > 1 {
                         push_diagnostic(
@@ -2953,8 +2953,8 @@ fn hashmap_option_shape_is_valid(ctx: Checker) -> bool {
                     empty.set(empty.get() + 1)
                 } else if fields.len() == 1
                     && types_equal(
-                        fields.get(0),
-                        Type::Param { name: info.generics.get(0) },
+                        fields[0],
+                        Type::Param { name: info.generics[0] },
                     )
                 {
                     payload.set(payload.get() + 1)
@@ -3002,7 +3002,7 @@ fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
 
 fn find_trait(ctx: Checker, name: string) -> Option[TraitInfo] {
     for offset in range(0, ctx.traits.len()) {
-        let value = ctx.traits.get(ctx.traits.len() - 1 - offset);
+        let value = ctx.traits[ctx.traits.len() - 1 - offset];
         if names_match(value.name, name) {
             return Option::Some(value)
         } else {
@@ -3014,7 +3014,7 @@ fn find_trait(ctx: Checker, name: string) -> Option[TraitInfo] {
 
 fn find_trait_method(value: TraitInfo, name: string) -> Option[TraitMethodInfo] {
     for offset in range(0, value.methods.len()) {
-        let method = value.methods.get(value.methods.len() - 1 - offset);
+        let method = value.methods[value.methods.len() - 1 - offset];
         if method.name == name {
             return Option::Some(method)
         } else {
@@ -3212,7 +3212,7 @@ fn trait_ref_closure(ctx: Checker, reference: TraitRef) -> Vec[TraitRef] {
     result.push(reference);
     let index = Ref::new(0);
     while index.get() < result.len() {
-        let current = result.get(index.get());
+        let current = result[index.get()];
         index.set(index.get() + 1);
         match find_trait(ctx, current.name) {
             Some(info) => if info.generics.len() == current.args.len() {
@@ -3351,7 +3351,7 @@ fn resolve_projection_type(
                     if matches.len() == 1 {
                         Option::Some(resolve_projection_trait_ref(
                             ctx,
-                            matches.get(0),
+                            matches[0],
                             candidates,
                             report,
                         ))
@@ -3709,7 +3709,7 @@ fn parameter_types_contain_from(
     expected: string,
 ) -> bool {
     for index in range(start, values.len()) {
-        if type_contains_parameter(values.get(index), expected) {
+        if type_contains_parameter(values[index], expected) {
             return true
         } else {
             ()
@@ -3752,7 +3752,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
                     Option::None,
                 )
             } else {
-                if !types_equal(method.params.get(0), Type::Param { name: "Self" }) {
+                if !types_equal(method.params[0], Type::Param { name: "Self" }) {
                     push_diagnostic_at(ctx,
                         "Trait "
                             + info.name
@@ -3951,8 +3951,8 @@ fn expand_type_alias_inner(
                         let substitutions = Vec::new();
                         for index in range(0, alias.generics.len()) {
                             substitutions.push(TypeSubst {
-                                name: alias.generics.get(index),
-                                ty: expanded_args.get(index),
+                                name: alias.generics[index],
+                                ty: expanded_args[index],
                             })
                         };
                         let next = Vec::new();
@@ -4204,7 +4204,7 @@ fn expand_implied_predicates(
     };
     let index = Ref::new(0);
     while index.get() < result.len() {
-        let predicate = result.get(index.get());
+        let predicate = result[index.get()];
         index.set(index.get() + 1);
         match predicate {
             Trait { for_ty, trait_ref: reference } => {
@@ -4293,7 +4293,7 @@ fn resolve_predicate_method(
         }
     };
     if resolved.len() == 1 {
-        Option::Some(resolved.get(0))
+        Option::Some(resolved[0])
     } else {
         if resolved.len() > 1 {
             push_diagnostic(
@@ -4450,7 +4450,7 @@ fn resolve_trait_static(
                             }
                         };
                         if resolved.len() == 1 {
-                            Option::Some(resolved.get(0))
+                            Option::Some(resolved[0])
                         } else {
                             if resolved.len() > 1 {
                                 push_diagnostic(ctx, "ambiguous method: " + name)
@@ -4619,7 +4619,7 @@ fn resolve_builtin_static(
             } else if owner_name == "FnIterator"
                 && args.len() == 1
                 && name == "from_fn" {
-                let item = args.get(0);
+                let item = args[0];
                 Option::Some(ResolvedCallable {
                     callable: Callable::InherentMethod {
                         receiver_ty: Type::Con { name: owner_name },

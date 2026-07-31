@@ -117,7 +117,7 @@ fn pretty_write_path_expr(
             } else {
                 ()
             };
-            builder.write_string(path.segments.get(index).ident)
+            builder.write_string(path.segments[index].ident)
         };
         builder.write_string("::");
         builder.write_char('[');
@@ -125,7 +125,7 @@ fn pretty_write_path_expr(
         builder.write_char(']');
         if last > 0 {
             builder.write_string("::");
-            builder.write_string(path.segments.get(last).ident)
+            builder.write_string(path.segments[last].ident)
         } else {
             ()
         }

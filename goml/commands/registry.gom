@@ -123,12 +123,12 @@ fn option_local_registry(
     args: Vec[string],
     index: Ref[int],
 ) -> Result[Option[string], string] {
-    let argument = args.get(index.get());
+    let argument = args[index.get()];
     if argument == "--local-registry" {
         if index.get() + 1 >= args.len() {
             Result::Err("--local-registry requires a value")
         } else {
-            let value = args.get(index.get() + 1);
+            let value = args[index.get() + 1];
             index.set(index.get() + 2);
             Result::Ok(Option::Some(value))
         }
@@ -161,7 +161,7 @@ fn registry_argument(args: Vec[string]) -> Result[Option[string], string] {
                 None => value.set(Option::Some(registry)),
             },
             None => return Result::Err(
-                "unexpected argument " + args.get(index.get()),
+                "unexpected argument " + args[index.get()],
             ),
         }
     };
@@ -357,7 +357,7 @@ fn upsert_dependency(
         }
     };
     if !dependency_section_exists {
-        if result.len() > 0 && result.get(result.len() - 1) != "" {
+        if result.len() > 0 && result[result.len() - 1] != "" {
             result.push("")
         } else {
             ()
@@ -437,8 +437,8 @@ fn remove_dependency_line(
         ()
     };
     while result.len() > 1
-        && result.get(result.len() - 1) == ""
-        && result.get(result.len() - 2) == ""
+        && result[result.len() - 1] == ""
+        && result[result.len() - 2] == ""
     {
         let _ = result.remove(result.len() - 1);
         ()
@@ -488,7 +488,7 @@ fn dependency_command_args(
                 None => local.set(Option::Some(value)),
             },
             None => {
-                let argument = args.get(index.get());
+                let argument = args[index.get()];
                 if util::starts_with(argument, "-") {
                     return Result::Err("unknown option " + argument)
                 } else {
@@ -524,7 +524,7 @@ pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
     } else {
         ()
     };
-    let name = parts.get(0);
+    let name = parts[0];
     match registry::validate_coordinate(name) {
         Ok(()) => (),
         Err(message) => return Result::Err(message),
@@ -534,7 +534,7 @@ pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
         Err(message) => return Result::Err(message),
     };
     let version = if parts.len() == 2 {
-        match registry::select_version(root, name, parts.get(1)) {
+        match registry::select_version(root, name, parts[1]) {
             Ok(value) => value,
             Err(message) => return Result::Err(message),
         }

@@ -22,7 +22,7 @@ fn artifact_binary_collect_string(
     if seen.contains(value) {
         ()
     } else {
-        seen.set(value, ());
+        seen[value] = ();
         values.push(value)
     }
 }
@@ -62,7 +62,7 @@ fn artifact_binary_string_table_from_values(
     let values = sort_artifact_names(values);
     let indexes: HashMap[string, int] = HashMap::new();
     for index in range(0, values.len()) {
-        indexes.set(values.get(index), index)
+        indexes[values[index]] = index;
     };
     ArtifactBinaryStringTable { values, indexes }
 }
@@ -71,7 +71,7 @@ fn artifact_binary_string_id(
     table: ArtifactBinaryStringTable,
     value: string,
 ) -> int {
-    match table.indexes.get(value) {
+    match table.indexes[value] {
         Some(value) => value,
         None => -1,
     }
@@ -111,11 +111,11 @@ fn decode_artifact_binary_string_table(
         if indexes.contains(value) {
             return Result::Err("duplicate binary artifact string")
         } else if index > 0
-            && !artifact_string_less(values.get(index - 1), value)
+            && !artifact_string_less(values[index - 1], value)
         {
             return Result::Err("binary artifact string table is not sorted")
         } else {
-            indexes.set(value, index);
+            indexes[value] = index;
             values.push(value)
         }
     };
@@ -154,7 +154,7 @@ fn artifact_binary_decode_string_id(
             "string table index out of bounds",
         ))
     } else {
-        Result::Ok(table.values.get(id))
+        Result::Ok(table.values[id])
     }
 }
 

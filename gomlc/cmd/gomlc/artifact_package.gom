@@ -24,7 +24,7 @@ fn artifact_find_interface_unit(
     package_name: string,
 ) -> Option[ArtifactInterfaceUnit] {
     for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+        let value = values[values.len() - 1 - offset];
         if value.package_name == package_name {
             return Option::Some(value)
         } else {
@@ -573,19 +573,19 @@ fn artifact_declared_package_name(
 ) -> Result[string, string] {
     let names = Vec::new();
     for index in range(0, values.len()) {
-        let value = values.get(index);
+        let value = values[index];
         match value.ast {
             Some(file) => if !file.package_explicit {
                 return Result::Err(
-                    paths.get(index) + " must declare `package <name>;`",
+                    paths[index] + " must declare `package <name>;`",
                 )
             } else {
                 if names.len() > 0 {
-                    let name = names.get(0);
+                    let name = names[0];
                     if name != file.package_name {
                         return Result::Err(
                             "package mismatch in "
-                                + paths.get(index)
+                                + paths[index]
                                 + ": expected "
                                 + name
                                 + ", found "
@@ -603,7 +603,7 @@ fn artifact_declared_package_name(
         }
     };
     if names.len() > 0 {
-        Result::Ok(names.get(0))
+        Result::Ok(names[0])
     } else {
         Result::Err("package has no valid source files")
     }
@@ -622,7 +622,7 @@ fn artifact_validate_entrypoint(
     if diagnostics.len() == 0 {
         Result::Ok(())
     } else {
-        Result::Err(diagnostics.get(0))
+        Result::Err(diagnostics[0])
     }
 }
 
@@ -631,7 +631,7 @@ fn artifact_find_function(
     name: string,
 ) -> Option[ArtifactFnScheme] {
     for offset in range(0, functions.len()) {
-        let function = functions.get(functions.len() - 1 - offset);
+        let function = functions[functions.len() - 1 - offset];
         if function.name == name {
             return Option::Some(function)
         } else {
@@ -720,7 +720,7 @@ fn artifact_declared_package_alias(
     package_name: string,
 ) -> Option[string] {
     for offset in range(0, units.len()) {
-        let interface_unit = units.get(units.len() - 1 - offset);
+        let interface_unit = units[units.len() - 1 - offset];
         if interface_unit.package_name == package_name
             && interface_unit.package_interface.name != ""
         {
@@ -738,11 +738,11 @@ fn artifact_apply_declared_package_aliases(
     units: Vec[ArtifactInterfaceUnit],
 ) -> unit {
     for file_index in range(0, files.len()) {
-        let file = files.get(file_index);
+        let file = files[file_index];
         for alias_index in range(0, file.import_aliases.len()) {
-            let alias = file.import_aliases.get(alias_index);
+            let alias = file.import_aliases[alias_index];
             if artifact_use_has_explicit_alias(
-                sources.get(file_index),
+                sources[file_index],
                 alias.package_name,
             ) {
                 ()
@@ -782,7 +782,7 @@ fn standard_internal_import_diagnostics(
 ) -> Vec[tast::Diagnostic] {
     let diagnostics = Vec::new();
     for index in range(0, values.len()) {
-        match values.get(index).ast {
+        match values[index].ast {
             Some(file) => for use_decl in file.uses {
                 let import_name = import_path_text(use_decl.path);
                 if disallowed_standard_internal_import(package_name, import_name) {
@@ -790,7 +790,7 @@ fn standard_internal_import_diagnostics(
                         severity: tast::DiagnosticSeverity::Error,
                         stage: "typer",
                         message: "package " + import_name + " is internal to std",
-                        source_path: paths.get(index),
+                        source_path: paths[index],
                         span: Option::None,
                         primary_label: Option::None,
                         secondary_labels: Vec::new(),
@@ -862,9 +862,9 @@ fn compile_artifact_package(
     let lower_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for index in range(0, ast_values.len()) {
         for diagnostic in ast_diagnostics(
-            ast_values.get(index).diagnostics,
+            ast_values[index].diagnostics,
             "lower",
-            command.inputs.get(index),
+            command.inputs[index],
         ) {
             lower_diagnostics.push(diagnostic)
         }
@@ -892,7 +892,7 @@ fn compile_artifact_package(
     let derive_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     let source_needs = Ref::new(no_standard_needs());
     for index in range(0, ast_values.len()) {
-        let ast_value = ast_values.get(index);
+        let ast_value = ast_values[index];
         source_needs.set(merge_standard_needs(
             source_needs.get(),
             source_standard_needs(ast_value),
@@ -906,13 +906,13 @@ fn compile_artifact_package(
         for diagnostic in ast_diagnostics(
             expanded.diagnostics,
             "derive",
-            command.inputs.get(index),
+            command.inputs[index],
         ) {
             derive_diagnostics.push(diagnostic)
         };
         hir_inputs.push((
             expanded,
-            command.inputs.get(index),
+            command.inputs[index],
         ))
     };
     fail_on_typer_diagnostics(derive_diagnostics, "", "");
@@ -1134,7 +1134,7 @@ fn artifact_find_core_unit(
     package_name: string,
 ) -> Option[ArtifactCoreUnit] {
     for offset in range(0, values.len()) {
-        let value = values.get(values.len() - 1 - offset);
+        let value = values[values.len() - 1 - offset];
         if value.package_name == package_name {
             return Option::Some(value)
         } else {

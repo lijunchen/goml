@@ -42,7 +42,7 @@ struct SpecializeCtx {
 fn find_binding(values: Vec[TypeBinding], name: string) -> Option[tast::Type] {
     let index = Ref::new(values.len() - 1);
     while index.get() >= 0 {
-        let value = values.get(index.get());
+        let value = values[index.get()];
         if value.name == name {
             return Option::Some(value.ty)
         } else {
@@ -71,7 +71,7 @@ fn unify_types(
         false
     } else {
         for index in range(0, templates.len()) {
-            if unify_type(templates.get(index), actuals.get(index), bindings) {
+            if unify_type(templates[index], actuals[index], bindings) {
                 ()
             } else {
                 return false
@@ -368,7 +368,7 @@ fn function_is_generic(value: core::Function) -> bool {
 }
 
 fn find_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
-    ctx.function_index.get(name)
+    ctx.function_index[name]
 }
 
 fn hash_segments(value: string) -> Vec[string] {
@@ -377,8 +377,8 @@ fn hash_segments(value: string) -> Vec[string] {
 
 fn inherent_method_key(name: string) -> Option[(string, string)] {
     let segments = hash_segments(name);
-    if segments.len() == 4 && segments.get(0) == "inherent" {
-        Option::Some((segments.get(1), segments.get(3)))
+    if segments.len() == 4 && segments[0] == "inherent" {
+        Option::Some((segments[1], segments[3]))
     } else {
         Option::None
     }
@@ -393,12 +393,12 @@ fn add_indexed_function(
     key: string,
     function: core::Function,
 ) -> unit {
-    match index.get(key) {
+    match index[key] {
         Some(functions) => functions.push(function),
         None => {
             let functions = Vec::new();
             functions.push(function);
-            index.set(key, functions)
+            index[key] = functions;
         },
     }
 }
@@ -407,7 +407,7 @@ fn indexed_functions(
     index: FunctionIndex,
     key: string,
 ) -> Vec[core::Function] {
-    match index.get(key) {
+    match index[key] {
         Some(functions) => functions,
         None => Vec::new(),
     }
@@ -418,9 +418,9 @@ fn find_generic_inherent_function(
     name: string,
 ) -> Option[core::Function] {
     match inherent_method_key(name) {
-        Some(key) => ctx.generic_inherent_index.get(
-            lookup_pair_key(key.0, key.1),
-        ),
+        Some(key) => ctx.generic_inherent_index[
+            lookup_pair_key(key.0, key.1)
+        ],
         None => Option::None,
     }
 }
@@ -434,8 +434,8 @@ fn find_callee_function(ctx: SpecializeCtx, name: string) -> Option[core::Functi
 
 fn trait_impl_method_name(name: string) -> Option[string] {
     let segments = hash_segments(name);
-    if segments.len() == 4 && segments.get(0) == "trait_impl" {
-        Option::Some(segments.get(3))
+    if segments.len() == 4 && segments[0] == "trait_impl" {
+        Option::Some(segments[3])
     } else {
         Option::None
     }
@@ -446,7 +446,7 @@ fn trait_instance_name(
     function: core::Function,
     bindings: Vec[TypeBinding],
 ) -> Option[string] {
-    match (function.trait_impl, ctx.trait_method_names.get(function.name)) {
+    match (function.trait_impl, ctx.trait_method_names[function.name]) {
         (Some(metadata), Some(method_name)) => Option::Some(
             trait_impl_name(
                 substitute_trait_ref(metadata.trait_ref, bindings),
@@ -481,7 +481,7 @@ fn find_instance(
     original_name: string,
     bindings: Vec[TypeBinding],
 ) -> Option[Instance] {
-    ctx.instance_index.get(instance_lookup_key(original_name, bindings))
+    ctx.instance_index[instance_lookup_key(original_name, bindings)]
 }
 
 fn name_is_used(ctx: SpecializeCtx, name: string) -> bool {
@@ -512,7 +512,7 @@ fn sorted_bindings(values: Vec[TypeBinding]) -> Vec[TypeBinding] {
     for value in values {
         let index = Ref::new(0);
         while index.get() < result.len()
-            && !string_precedes(value.name, result.get(index.get()).name)
+            && !string_precedes(value.name, result[index.get()].name)
         {
             index.set(index.get() + 1)
         };
@@ -575,7 +575,7 @@ fn instance_base_name(
 
 fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
     if !name_is_used(ctx, base) {
-        ctx.used_names.set(base, ());
+        ctx.used_names[base] = ();
         base
     } else {
         let index = Ref::new(1);
@@ -584,7 +584,7 @@ fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
             index.set(index.get() + 1);
             candidate.set(base + "__mono" + index.get().to_string())
         };
-        ctx.used_names.set(candidate.get(), ());
+        ctx.used_names[candidate.get()] = ();
         candidate.get()
     }
 }
@@ -848,7 +848,7 @@ fn recursive_specialization_from(
                         ctx,
                         name,
                         bindings,
-                        ctx.instance_index.get(parent),
+                        ctx.instance_index[parent],
                     ),
                     None => Option::None,
                 },
@@ -1084,7 +1084,7 @@ fn normalize_projection(
                             reference,
                         );
                         if values.len() == 1 {
-                            Option::Some(values.get(0))
+                            Option::Some(values[0])
                         } else {
                             Option::None
                         }
@@ -1274,7 +1274,7 @@ fn complete_function_bindings_up_to(
     for _ in range(0, generic_count + 1) {
         let previous_len = bindings.len();
         for index in range(0, predicate_count) {
-            let predicate = value.predicates.get(index);
+            let predicate = value.predicates[index];
             match predicate {
                 Trait { for_ty, trait_ref: reference } => {
                     let for_ty = substitute_type(for_ty, bindings);
@@ -1287,7 +1287,7 @@ fn complete_function_bindings_up_to(
                             bindings,
                         );
                         if selections.len() == 1 {
-                            let selection = selections.get(0);
+                            let selection = selections[0];
                             unify_types(
                                 reference.args,
                                 selection.reference.args,
@@ -1349,7 +1349,7 @@ fn predicates_are_satisfied_up_to(
     predicate_count: int,
 ) -> bool {
     for index in range(0, predicate_count) {
-        let predicate = value.predicates.get(index);
+        let predicate = value.predicates[index];
         match predicate {
             Trait { for_ty, trait_ref: reference } => {
                 let for_ty = substitute_type(for_ty, bindings);
@@ -1455,7 +1455,7 @@ fn complete_bindings_up_to(
         predicate_count,
     );
     for index in range(0, generic_count) {
-        let generic = value.generics.get(index);
+        let generic = value.generics[index];
         match find_binding(bindings, generic) {
             Some(ty) => if type_is_concrete(ty) {
                 ()
@@ -1610,7 +1610,7 @@ fn trait_method_bindings(
         None => return Option::None,
     };
     if metadata.trait_ref.args.len() != reference.args.len()
-        || !unify_type(metadata.for_ty, actual_types.get(0), bindings)
+        || !unify_type(metadata.for_ty, actual_types[0], bindings)
         || !unify_types(
             metadata.trait_ref.args,
             reference.args,
@@ -2236,8 +2236,8 @@ fn specialize(
     let trait_method_names: HashMap[string, string] = HashMap::{};
     let used_names: HashMap[string, unit] = HashMap::{};
     for function in value.functions {
-        function_index.set(function.name, function);
-        used_names.set(function.name, ());
+        function_index[function.name] = function;
+        used_names[function.name] = ();
         if function_is_generic(function) {
             match inherent_method_key(function.name) {
                 Some(key) => generic_inherent_index.set(
@@ -2258,7 +2258,7 @@ fn specialize(
                 );
                 match trait_impl_method_name(function.name) {
                     Some(method_name) => {
-                        trait_method_names.set(function.name, method_name);
+                        trait_method_names[function.name] = method_name;
                         add_indexed_function(
                             trait_method_index,
                             lookup_pair_key(metadata.trait_ref.name, method_name),
@@ -2297,7 +2297,7 @@ fn specialize(
     let index = Ref::new(0);
     while true {
         while index.get() < ctx.work.len() {
-            let instance = ctx.work.get(index.get());
+            let instance = ctx.work[index.get()];
             index.set(index.get() + 1);
             match find_function(ctx, instance.original_name) {
                 Some(function) => {

@@ -95,14 +95,14 @@ fn lower_constant(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     ) {
         (Some(name), type_count, value_count) => {
             if type_count > 0 && value_count > 0 {
-                match lower_ty(ctx, types.get(0)) {
-                    Some(ty) => match lower_expr(ctx, values.get(0)) {
+                match lower_ty(ctx, types[0]) {
+                    Some(ty) => match lower_expr(ctx, values[0]) {
                         Some(value) => Option::Some(Item::Constant(Constant {
                             attrs: lower_attributes(node),
                             visibility: lower_visibility(node),
                             name: name.token.text,
                             ty,
-                            ty_span: type_head_span(types.get(0)),
+                            ty_span: type_head_span(types[0]),
                             value,
                         })),
                         None => Option::None,
@@ -125,7 +125,7 @@ fn lower_type_alias(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     let types = type_children(node);
     match (first_token(node, lexer::TokenKind::Ident), types.len()) {
         (Some(name), count) => if count > 0 {
-            match lower_ty(ctx, types.get(0)) {
+            match lower_ty(ctx, types[0]) {
                 Some(ty) => {
                     let (generics, _) = lower_generics(ctx, node);
                     Option::Some(Item::TypeAlias(TypeAlias {
@@ -134,7 +134,7 @@ fn lower_type_alias(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
                         name: name.token.text,
                         generics,
                         ty,
-                        ty_span: type_head_span(types.get(0)),
+                        ty_span: type_head_span(types[0]),
                     }))
                 },
                 None => Option::None,
@@ -212,10 +212,10 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                             let types = type_children(field);
                                             match field_name {
                                                 Some(name) => if types.len() > 0 {
-                                                    match lower_ty(ctx, types.get(0)) {
+                                                    match lower_ty(ctx, types[0]) {
                                                         Some(ty) => {
                                                             field_type_spans.push(type_head_span(
-                                                                types.get(0),
+                                                                types[0],
                                                             ));
                                                             named.push((
                                                                 name.token.text,
@@ -282,7 +282,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                     let types = type_children(field);
                     match field_name {
                         Some(name) => if types.len() > 0 {
-                            let type_node = types.get(0);
+                            let type_node = types[0];
                             match lower_ty(ctx, type_node) {
                                 Some(ty) => {
                                     field_type_spans.push(type_head_span(type_node));
@@ -332,7 +332,7 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                 },
             };
             if params.len() > 0 {
-                let first = params.get(0);
+                let first = params[0];
                 if ast_type_is_self(first.1) && first.0 != "self" {
                     push_error(
                         ctx,
@@ -346,7 +346,7 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                 ()
             };
             for index in range(0, params.len()) {
-                let param = params.get(index);
+                let param = params[index];
                 if param.0 == "self" && (index != 0 || !ast_type_is_self(param.1)) {
                     push_error(
                         ctx,
@@ -361,7 +361,7 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
             let ret_ty = if returns.len() == 0 {
                 Option::Some(TypeExpr::Unit)
             } else {
-                lower_ty(ctx, returns.get(0))
+                lower_ty(ctx, returns[0])
             };
             match ret_ty {
                 Some(value) => Option::Some(TraitMethodSignature {
@@ -388,7 +388,7 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
 fn ast_type_is_self(value: TypeExpr) -> bool {
     match value {
         Con { path } => {
-            path.segments.len() == 1 && path.segments.get(0).ident == "Self"
+            path.segments.len() == 1 && path.segments[0].ident == "Self"
         },
         _ => false,
     }
@@ -477,7 +477,7 @@ fn lower_param(
                     },
                 }
             } else {
-                match lower_ty(ctx, types.get(0)) {
+                match lower_ty(ctx, types[0]) {
                     Some(ty) => Option::Some((name_token.token.text, ty)),
                     None => {
                         push_error(
@@ -525,7 +525,7 @@ fn lower_param_type_spans(node: LocatedNode) -> Vec[Span] {
         Some(list) => for param in children_of_kind(list, cst::NodeKind::PARAM) {
             let types = type_children(param);
             if types.len() > 0 {
-                result.push(type_head_span(types.get(0)))
+                result.push(type_head_span(types[0]))
             } else {
                 ()
             }
@@ -548,7 +548,7 @@ fn lower_function(
                         let (generics, generic_bounds) = lower_generics(ctx, node);
                         let returns = type_children(node);
                         let ret_ty = if returns.len() > 0 {
-                            lower_ty(ctx, returns.get(0))
+                            lower_ty(ctx, returns[0])
                         } else {
                             Option::None
                         };
@@ -563,7 +563,7 @@ fn lower_function(
                             param_type_spans: lower_param_type_spans(node),
                             ret_ty,
                             ret_ty_span: if returns.len() > 0 {
-                                Option::Some(type_head_span(returns.get(0)))
+                                Option::Some(type_head_span(returns[0]))
                             } else {
                                 Option::None
                             },
@@ -601,13 +601,13 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
     } else {
         let has_for = has_token(node, lexer::TokenKind::ForKeyword);
         let trait_ref = if has_for {
-            lower_trait_ref(ctx, types.get(0))
+            lower_trait_ref(ctx, types[0])
         } else {
             Option::None
         };
         let target_index = if has_for { types.len() - 1 } else { types.len() - 1 };
-        record_disallowed_self_type(ctx, types.get(target_index));
-        match lower_ty(ctx, types.get(target_index)) {
+        record_disallowed_self_type(ctx, types[target_index]);
+        match lower_ty(ctx, types[target_index]) {
             Some(for_type) => {
                 let associated_types: Vec[(string, TypeExpr)] = Vec::new();
                 for associated in children_of_kind(node, cst::NodeKind::IMPL_ASSOCIATED_TYPE) {
@@ -615,7 +615,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                     let associated_ty = type_children(associated);
                     match name {
                         Some(name_token) => if associated_ty.len() > 0 {
-                            match lower_ty(ctx, associated_ty.get(0)) {
+                            match lower_ty(ctx, associated_ty[0]) {
                                 Some(ty) => associated_types.push((name_token.token.text, ty)),
                                 None => (),
                             }
@@ -655,7 +655,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                     associated_types,
                     trait_ref,
                     for_type,
-                    for_type_span: type_head_span(types.get(target_index)),
+                    for_type_span: type_head_span(types[target_index]),
                     methods,
                 })
             },
@@ -687,7 +687,7 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     } else {
         let strings = tokens_of_kind(node, lexer::TokenKind::Str);
         if strings.len() > 0 {
-            push_error(ctx, token_span(strings.get(0)), "Extern function declarations should not specify a language string")
+            push_error(ctx, token_span(strings[0]), "Extern function declarations should not specify a language string")
         } else {
             ()
         };
@@ -696,7 +696,7 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
                 let (generics, generic_bounds) = lower_generics(ctx, node);
                 let returns = type_children(node);
                 let ret_ty = if returns.len() > 0 {
-                    lower_ty(ctx, returns.get(0))
+                    lower_ty(ctx, returns[0])
                 } else {
                     Option::None
                 };

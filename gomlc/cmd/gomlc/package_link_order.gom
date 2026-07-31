@@ -63,12 +63,12 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
     while remaining.len() > 0 {
         let candidate = Ref::new(-1);
         for index in range(0, remaining.len()) {
-            let value = remaining.get(index);
+            let value = remaining[index];
             if package_node_is_ready(value, remaining)
                 && (candidate.get() < 0
                     || artifact_string_less(
                         value.name,
-                        remaining.get(candidate.get()).name,
+                        remaining[candidate.get()].name,
                     ))
             {
                 candidate.set(index)
@@ -90,7 +90,7 @@ fn order_artifact_compilations(
 ) -> Result[Vec[ArtifactCompilation], string] {
     let nodes = Vec::new();
     for index in range(0, values.len()) {
-        let value = values.get(index);
+        let value = values[index];
         nodes.push(PackageOrderNode {
             name: value.package_name,
             dependencies: value.dependency_names,
@@ -101,7 +101,7 @@ fn order_artifact_compilations(
         Ok(order) => {
             let result = Vec::new();
             for index in order {
-                result.push(values.get(index))
+                result.push(values[index])
             };
             Result::Ok(result)
         },

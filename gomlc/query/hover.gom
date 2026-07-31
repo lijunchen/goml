@@ -98,10 +98,10 @@ fn symbol_hover_type(
         Function => {
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
-                let environment = value.environments.get(environment_index.get());
+                let environment = value.environments[environment_index.get()];
                 let function_index = Ref::new(environment.functions.len() - 1);
                 while function_index.get() >= 0 {
-                    let function = environment.functions.get(function_index.get());
+                    let function = environment.functions[function_index.get()];
                     if function.name == symbol.qualified_name
                         || short_type_name(function.name) == symbol.name
                     {
@@ -121,10 +121,10 @@ fn symbol_hover_type(
         Method => {
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
-                let environment = value.environments.get(environment_index.get());
+                let environment = value.environments[environment_index.get()];
                 let method_index = Ref::new(environment.methods.len() - 1);
                 while method_index.get() >= 0 {
-                    let method = environment.methods.get(method_index.get());
+                    let method = environment.methods[method_index.get()];
                     if method_matches_symbol(method, symbol) {
                         return hover_function_text(
                             method.method_generics,
@@ -143,17 +143,17 @@ fn symbol_hover_type(
             let owner = symbol_owner(symbol.qualified_name);
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
-                let environment = value.environments.get(environment_index.get());
+                let environment = value.environments[environment_index.get()];
                 let definition_index = Ref::new(environment.structs.len() - 1);
                 while definition_index.get() >= 0 {
-                    let definition = environment.structs.get(definition_index.get());
+                    let definition = environment.structs[definition_index.get()];
                     if definition.name == owner
                         || short_type_name(definition.name)
                             == short_type_name(owner)
                     {
                         let field_index = Ref::new(definition.fields.len() - 1);
                         while field_index.get() >= 0 {
-                            let field = definition.fields.get(field_index.get());
+                            let field = definition.fields[field_index.get()];
                             if field.0 == symbol.name {
                                 return hover_text(field.1)
                             } else {
@@ -175,10 +175,10 @@ fn symbol_hover_type(
         Constant => {
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
-                let environment = value.environments.get(environment_index.get());
+                let environment = value.environments[environment_index.get()];
                 let constant_index = Ref::new(environment.constants.len() - 1);
                 while constant_index.get() >= 0 {
-                    let constant = environment.constants.get(constant_index.get());
+                    let constant = environment.constants[constant_index.get()];
                     if constant.name == symbol.qualified_name
                         || short_type_name(constant.name) == symbol.name
                     {
@@ -194,10 +194,10 @@ fn symbol_hover_type(
         TypeAlias => {
             let environment_index = Ref::new(value.environments.len() - 1);
             while environment_index.get() >= 0 {
-                let environment = value.environments.get(environment_index.get());
+                let environment = value.environments[environment_index.get()];
                 let alias_index = Ref::new(environment.type_aliases.len() - 1);
                 while alias_index.get() >= 0 {
-                    let alias = environment.type_aliases.get(alias_index.get());
+                    let alias = environment.type_aliases[alias_index.get()];
                     if alias.name == symbol.qualified_name
                         || short_type_name(alias.name) == symbol.name
                     {
@@ -220,7 +220,7 @@ fn symbol_at_offset(value: Analysis, offset: int) -> Option[Symbol] {
     let symbols = build_symbol_index(value).symbols;
     let index = Ref::new(symbols.len() - 1);
     while index.get() >= 0 {
-        let symbol = symbols.get(index.get());
+        let symbol = symbols[index.get()];
         if symbol.source_path == value.source_path
             && symbol.span.start <= offset
             && offset < symbol.span.end

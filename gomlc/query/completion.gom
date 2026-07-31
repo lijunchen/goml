@@ -187,7 +187,7 @@ fn path_text(value: ast::Path) -> string {
 
 fn last_path_segment(value: ast::Path) -> string {
     if value.segments.len() > 0 {
-        value.segments.get(value.segments.len() - 1).ident
+        value.segments[value.segments.len() - 1].ident
     } else {
         ""
     }
@@ -199,7 +199,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
         Some(file) => {
             let index = Ref::new(file.uses.len() - 1);
             while index.get() >= 0 {
-                let use_decl = file.uses.get(index.get());
+                let use_decl = file.uses[index.get()];
                 let candidate = match use_decl.alias {
                     Some(name) => name,
                     None => last_path_segment(use_decl.path),
@@ -661,9 +661,9 @@ fn short_type_name(value: string) -> string {
 
 fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken] {
     for distance in range(0, value.syntax.tokens.len()) {
-        let token = value.syntax.tokens.get(
-            value.syntax.tokens.len() - 1 - distance,
-        );
+        let token = value.syntax.tokens[
+            value.syntax.tokens.len() - 1 - distance
+        ];
         if token.end <= offset && !lexer::token_is_trivia(token.kind) {
             return Option::Some(token)
         } else {
@@ -679,7 +679,7 @@ fn reference_receiver_fallback(
 ) -> Option[tast::Type] {
     let facts = value.checked.typeck_results.references;
     for distance in range(0, facts.len()) {
-        let fact = facts.get(facts.len() - 1 - distance);
+        let fact = facts[facts.len() - 1 - distance];
         if fact.source_path == value.source_path
             && fact.span.start <= token.start
             && fact.span.end >= token.end
@@ -701,7 +701,7 @@ fn local_receiver_fallback(
 ) -> Option[tast::Type] {
     let facts = value.checked.typeck_results.locals;
     for distance in range(0, facts.len()) {
-        let fact = facts.get(facts.len() - 1 - distance);
+        let fact = facts[facts.len() - 1 - distance];
         if fact.source_path == value.source_path
             && fact.local.hint == token.text
         {
@@ -799,7 +799,7 @@ fn parameter_explicit_type(
 ) -> Option[string] {
     let index = Ref::new(parameters.len() - 1);
     while index.get() >= 0 {
-        let parameter = parameters.get(index.get());
+        let parameter = parameters[index.get()];
         if parameter.0 == name {
             return explicit_type_name(parameter.1)
         } else {
@@ -886,7 +886,7 @@ fn file_parameter_explicit_type(
 ) -> Option[string] {
     let item_index = Ref::new(file.items.len() - 1);
     while item_index.get() >= 0 {
-        match file.items.get(item_index.get()) {
+        match file.items[item_index.get()] {
             Function(function) => match parameter_explicit_type(
                 function.params,
                 name,
@@ -898,7 +898,7 @@ fn file_parameter_explicit_type(
                 let method_index = Ref::new(block.methods.len() - 1);
                 while method_index.get() >= 0 {
                     match parameter_explicit_type(
-                        block.methods.get(method_index.get()).params,
+                        block.methods[method_index.get()].params,
                         name,
                     ) {
                         Some(value) => return Option::Some(value),
@@ -1131,15 +1131,15 @@ fn containing_completion_scope(
 ) -> Option[SyntaxNode] {
     let best = Ref::new(-1);
     for candidate in range(0, syntax.nodes.len()) {
-        let node = syntax.nodes.get(candidate);
+        let node = syntax.nodes[candidate];
         let node_width = node.end - node.start;
         if completion_scope_kind(node.kind)
             && node.start <= span.start
             && node.end >= span.end
             && (best.get() < 0
                 || node_width
-                    < syntax.nodes.get(best.get()).end
-                        - syntax.nodes.get(best.get()).start)
+                    < syntax.nodes[best.get()].end
+                        - syntax.nodes[best.get()].start)
         {
             best.set(candidate)
         } else {
@@ -1147,7 +1147,7 @@ fn containing_completion_scope(
         }
     };
     if best.get() >= 0 {
-        Option::Some(syntax.nodes.get(best.get()))
+        Option::Some(syntax.nodes[best.get()])
     } else {
         Option::None
     }
@@ -1176,7 +1176,7 @@ fn local_completion_index(
 ) -> Option[int] {
     for offset in range(0, values.len()) {
         let index = values.len() - 1 - offset;
-        if values.get(index).label == label {
+        if values[index].label == label {
             return Option::Some(index)
         } else {
             ()

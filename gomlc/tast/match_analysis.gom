@@ -77,7 +77,7 @@ fn coverage_lists_at(values: Vec[Pat], index: int) -> Vec[Vec[CoveragePat]] {
     } else {
         let result = Vec::new();
         let suffixes = coverage_lists_at(values, index + 1);
-        for alternative in coverage_patterns(values.get(index)) {
+        for alternative in coverage_patterns(values[index]) {
             for suffix in suffixes {
                 let row = Vec::new().pushed(alternative);
                 for value in suffix {
@@ -229,24 +229,24 @@ fn coverage_decrement_magnitude(value: string) -> string {
     };
     let index = Ref::new(digits.len() - 1);
     while index.get() >= 0 {
-        let digit = digits.get(index.get());
+        let digit = digits[index.get()];
         if digit == 48 {
-            digits.set(index.get(), 57 as uint8)
+            digits[index.get()] = 57 as uint8;
         } else {
-            digits.set(index.get(), digit - 1);
+            digits[index.get()] = digit - 1;
             break
         };
         index.set(index.get() - 1)
     };
     let start = Ref::new(0);
     while start.get() + 1 < digits.len()
-        && digits.get(start.get()) == 48
+        && digits[start.get()] == 48
     {
         start.set(start.get() + 1)
     };
     let builder = text::StringBuilder::with_capacity(digits.len() - start.get());
     for position in range(start.get(), digits.len()) {
-        builder.write_string(coverage_decimal_byte(digits.get(position)))
+        builder.write_string(coverage_decimal_byte(digits[position]))
     };
     builder.finish()
 }
@@ -466,7 +466,7 @@ fn coverage_fixed_array(
             };
             for index in range(0, prefix_values.len()) {
                 if index < length {
-                    fields.set(index, prefix_values.get(index))
+                    fields[index] = prefix_values[index];
                 } else {
                     ()
                 }
@@ -474,7 +474,7 @@ fn coverage_fixed_array(
             for offset in range(0, suffix_values.len()) {
                 let target = length - suffix_values.len() + offset;
                 if target >= 0 && target < length {
-                    fields.set(target, suffix_values.get(offset))
+                    fields[target] = suffix_values[offset];
                 } else {
                     ()
                 }
@@ -636,8 +636,8 @@ fn coverage_substitutions(names: Vec[string], ty: Type) -> Vec[TypeSubst] {
     for index in range(0, names.len()) {
         if index < args.len() {
             result.push(TypeSubst {
-                name: names.get(index),
-                ty: args.get(index),
+                name: names[index],
+                ty: args[index],
             })
         } else {
             ()
@@ -651,7 +651,7 @@ fn coverage_enum_domain(info: EnumInfo, ty: Type) -> Vec[CoverageConstructor] {
     let substitutions = coverage_substitutions(info.generics, ty);
     for index in range(0, info.variants.len()) {
         let fields = Vec::new();
-        for field in enum_variant_field_types(info.variants.get(index).fields) {
+        for field in enum_variant_field_types(info.variants[index].fields) {
             fields.push(substitute_type(field, substitutions))
         };
         result.push(CoverageConstructor {
@@ -672,17 +672,17 @@ fn coverage_builtin_domain(name: string, ty: Type) -> Option[Vec[CoverageConstru
         });
         result.push(CoverageConstructor {
             key: coverage_enum_key(name, 1),
-            fields: Vec::new().pushed(args.get(0)),
+            fields: Vec::new().pushed(args[0]),
         });
         Option::Some(result)
     } else if short_name(name) == "Result" && args.len() == 2 {
         result.push(CoverageConstructor {
             key: coverage_enum_key(name, 0),
-            fields: Vec::new().pushed(args.get(0)),
+            fields: Vec::new().pushed(args[0]),
         });
         result.push(CoverageConstructor {
             key: coverage_enum_key(name, 1),
-            fields: Vec::new().pushed(args.get(1)),
+            fields: Vec::new().pushed(args[1]),
         });
         Option::Some(result)
     } else {
@@ -755,11 +755,11 @@ fn coverage_type_key(value: Type) -> string {
 fn coverage_domain(ctx: Checker, ty: Type) -> Option[Vec[CoverageConstructor]] {
     let resolved = prune(ty);
     let key = coverage_type_key(resolved);
-    match ctx.coverage_domains.get(key) {
+    match ctx.coverage_domains[key] {
         Some(value) => Option::Some(value),
         None => match coverage_domain_uncached(ctx, resolved) {
             Some(value) => {
-                ctx.coverage_domains.set(key, value);
+                ctx.coverage_domains[key] = value;
                 Option::Some(value)
             },
             None => Option::None,
@@ -831,7 +831,7 @@ fn coverage_type_inhabited_at(
 fn coverage_type_inhabited(ctx: Checker, ty: Type) -> bool {
     let resolved = prune(ty);
     let key = coverage_type_key(resolved);
-    match ctx.coverage_inhabited.get(key) {
+    match ctx.coverage_inhabited[key] {
         Some(value) => value,
         None => {
             let value = coverage_type_inhabited_at(
@@ -840,7 +840,7 @@ fn coverage_type_inhabited(ctx: Checker, ty: Type) -> bool {
                 Vec::new(),
                 0,
             );
-            ctx.coverage_inhabited.set(key, value);
+            ctx.coverage_inhabited[key] = value;
             value
         },
     }
@@ -865,7 +865,7 @@ fn coverage_present(matrix: Vec[Vec[CoveragePat]]) -> Vec[string] {
     let result = Vec::new();
     for row in matrix {
         if row.len() > 0 {
-            match row.get(0).constructor {
+            match row[0].constructor {
                 Some(value) => if !vecs::contains(result, value.key) {
                     result.push(value.key)
                 } else {
@@ -883,7 +883,7 @@ fn coverage_present(matrix: Vec[Vec[CoveragePat]]) -> Vec[string] {
 fn coverage_tail(row: Vec[CoveragePat]) -> Vec[CoveragePat] {
     let result = Vec::new();
     for index in range(1, row.len()) {
-        result.push(row.get(index))
+        result.push(row[index])
     };
     result
 }
@@ -903,9 +903,9 @@ fn coverage_specialize(
     let result = Vec::new();
     for row in matrix {
         if row.len() > 0 {
-            let fields = match row.get(0).constructor {
+            let fields = match row[0].constructor {
                 Some(value) => if value.key == constructor.key {
-                    Option::Some(row.get(0).fields)
+                    Option::Some(row[0].fields)
                 } else {
                     Option::None
                 },
@@ -926,7 +926,7 @@ fn coverage_default(matrix: Vec[Vec[CoveragePat]]) -> Vec[Vec[CoveragePat]] {
     let result = Vec::new();
     for row in matrix {
         if row.len() > 0 {
-            match row.get(0).constructor {
+            match row[0].constructor {
                 None => result.push(coverage_tail(row)),
                 Some(_) => (),
             }
@@ -992,12 +992,12 @@ fn coverage_sequence_specialize_pattern(
         match pattern.sequence {
             Some(shape) => {
                 for index in range(0, shape.prefix) {
-                    fields.set(index, pattern.fields.get(index))
+                    fields[index] = pattern.fields[index];
                 };
                 for offset in range(0, shape.suffix) {
                     fields.set(
                         length - offset - 1,
-                        pattern.fields.get(shape.prefix + shape.suffix - offset - 1),
+                        pattern.fields[shape.prefix + shape.suffix - offset - 1],
                     )
                 }
             },
@@ -1015,7 +1015,7 @@ fn coverage_sequence_specialize_row(
     if row.len() == 0 {
         Option::None
     } else {
-        match coverage_sequence_specialize_pattern(row.get(0), length, element) {
+        match coverage_sequence_specialize_pattern(row[0], length, element) {
             Some(fields) => Option::Some(coverage_join(fields, coverage_tail(row))),
             None => Option::None,
         }
@@ -1028,14 +1028,14 @@ fn coverage_useful_sequence(
     candidate: Vec[CoveragePat],
     element: Type,
 ) -> bool {
-    let head = candidate.get(0);
+    let head = candidate[0];
     let tail = coverage_tail(candidate);
     let max_prefix = Ref::new(0);
     let max_suffix = Ref::new(0);
     let exact_lengths = Vec::new();
     for row in matrix {
         if row.len() > 0 {
-            match row.get(0).sequence {
+            match row[0].sequence {
                 Some(shape) => if shape.has_rest {
                     if shape.prefix > max_prefix.get() {
                         max_prefix.set(shape.prefix)
@@ -1125,7 +1125,7 @@ fn coverage_number_position(
     value: CoverageNumber,
 ) -> (int, bool) {
     for index in range(0, values.len()) {
-        let comparison = coverage_number_compare(value, values.get(index));
+        let comparison = coverage_number_compare(value, values[index]);
         if comparison < 0 {
             return (index, false)
         } else if comparison == 0 {
@@ -1216,9 +1216,9 @@ fn coverage_scalar_specialize(
     let result = Vec::new();
     for row in matrix {
         if row.len() > 0 {
-            let matches = match row.get(0).constructor {
+            let matches = match row[0].constructor {
                 None => true,
-                Some(_) => match row.get(0).scalar {
+                Some(_) => match row[0].scalar {
                     Some(value) => coverage_scalar_contains(value, atom),
                     None => false,
                 },
@@ -1241,7 +1241,7 @@ fn coverage_useful_scalar(
     candidate: Vec[CoveragePat],
     domains: Vec[CoverageScalar],
 ) -> bool {
-    let head = candidate.get(0);
+    let head = candidate[0];
     let tail = coverage_tail(candidate);
     for interval in coverage_scalar_candidate_intervals(head, domains) {
         let boundaries = Vec::new();
@@ -1250,7 +1250,7 @@ fn coverage_useful_scalar(
         let boundaries = Ref::new(sorted);
         for row in matrix {
             if row.len() > 0 {
-                match row.get(0).scalar {
+                match row[0].scalar {
                     Some(value) => match coverage_scalar_intersection(
                         value,
                         interval,
@@ -1276,8 +1276,8 @@ fn coverage_useful_scalar(
         for index in range(0, boundaries.get().len() - 1) {
             let atom = CoverageScalar {
                 kind: interval.kind,
-                lo: boundaries.get().get(index),
-                hi: coverage_number_decrement(boundaries.get().get(index + 1)),
+                lo: boundaries.get()[index],
+                hi: coverage_number_decrement(boundaries.get()[index + 1]),
             };
             if coverage_number_compare(atom.lo, atom.hi) <= 0
                 && coverage_useful(
@@ -1303,7 +1303,7 @@ fn coverage_useful(
     if candidate.len() == 0 {
         matrix.len() == 0
     } else {
-        let head = candidate.get(0);
+        let head = candidate[0];
         let tail = coverage_tail(candidate);
         match coverage_sequence_element(head.ty) {
             Some(element) => coverage_useful_sequence(
@@ -1386,7 +1386,7 @@ fn coverage_witness_prefix(
 ) -> Vec[CoverageWitness] {
     let result = Vec::new();
     for index in range(0, count) {
-        result.push(values.get(index))
+        result.push(values[index])
     };
     result
 }
@@ -1397,7 +1397,7 @@ fn coverage_witness_suffix(
 ) -> Vec[CoverageWitness] {
     let result = Vec::new();
     for index in range(start, values.len()) {
-        result.push(values.get(index))
+        result.push(values[index])
     };
     result
 }
@@ -1419,7 +1419,7 @@ fn coverage_find_scalar_witness(
     candidate: Vec[CoveragePat],
     domains: Vec[CoverageScalar],
 ) -> Option[Vec[CoverageWitness]] {
-    let head = candidate.get(0);
+    let head = candidate[0];
     let tail = coverage_tail(candidate);
     for interval in coverage_scalar_candidate_intervals(head, domains) {
         let boundaries = Vec::new();
@@ -1431,7 +1431,7 @@ fn coverage_find_scalar_witness(
         let boundaries = Ref::new(sorted);
         for row in matrix {
             if row.len() > 0 {
-                match row.get(0).scalar {
+                match row[0].scalar {
                     Some(value) => match coverage_scalar_intersection(
                         value,
                         interval,
@@ -1457,8 +1457,8 @@ fn coverage_find_scalar_witness(
         for index in range(0, boundaries.get().len() - 1) {
             let atom = CoverageScalar {
                 kind: interval.kind,
-                lo: boundaries.get().get(index),
-                hi: coverage_number_decrement(boundaries.get().get(index + 1)),
+                lo: boundaries.get()[index],
+                hi: coverage_number_decrement(boundaries.get()[index + 1]),
             };
             if coverage_number_compare(atom.lo, atom.hi) <= 0 {
                 match coverage_find_witness(
@@ -1498,7 +1498,7 @@ fn coverage_find_witness(
     if candidate.len() == 0 {
         if matrix.len() == 0 { Option::Some(Vec::new()) } else { Option::None }
     } else {
-        let head = candidate.get(0);
+        let head = candidate[0];
         let tail = coverage_tail(candidate);
         match coverage_sequence_element(head.ty) {
             Some(_) => if coverage_useful(ctx, matrix, candidate) {
@@ -1595,7 +1595,7 @@ fn coverage_find_witness(
                                             }
                                         };
                                         let witness = if missing.len() > 0 {
-                                            let constructor = missing.get(0);
+                                            let constructor = missing[0];
                                             let fields = Vec::new();
                                             for ty in constructor.fields {
                                                 fields.push(coverage_witness_wild(ty))
@@ -1708,7 +1708,7 @@ fn coverage_enum_witness_text(
     match find_enum_by_name(ctx, name) {
         Some(info) => for index in range(0, info.variants.len()) {
             if constructor.key == coverage_enum_key(info.name, index) {
-                variant.set(info.variants.get(index).name)
+                variant.set(info.variants[index].name)
             } else {
                 ()
             }
@@ -1784,7 +1784,7 @@ fn match_witnesses(ctx: Checker, ty: Type, arms: Vec[Arm]) -> Vec[string] {
             Vec::new().pushed(coverage_wild(witness_ty)),
         ) {
             Some(values) => if values.len() > 0 {
-                let witness = values.get(0);
+                let witness = values[0];
                 witnesses.push(coverage_witness_text(ctx, witness));
                 matrix.push(Vec::new().pushed(coverage_witness_pat(witness)))
             } else {

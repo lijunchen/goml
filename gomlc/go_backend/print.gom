@@ -127,7 +127,7 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
                 } else {
                     ()
                 };
-                write_type(builder, params.get(index))
+                write_type(builder, params[index])
             };
             builder.write_char(')');
             match ret_ty {
@@ -146,7 +146,7 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
                 } else {
                     ()
                 };
-                write_type(builder, values.get(index))
+                write_type(builder, values[index])
             };
             builder.write_char(')')
         },
@@ -193,7 +193,7 @@ fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], indent: int) -> 
         } else {
             ()
         };
-        write_expr(builder, values.get(index), indent)
+        write_expr(builder, values[index], indent)
     }
 }
 
@@ -304,7 +304,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                 } else {
                     ()
                 };
-                let param = params.get(index);
+                let param = params[index];
                 builder.write_string(param.0);
                 builder.write_char(' ');
                 write_type(builder, param.1)
@@ -377,7 +377,7 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
                 } else {
                     ()
                 };
-                builder.write_string(names.get(index))
+                builder.write_string(names[index])
             };
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
@@ -428,7 +428,7 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
                 } else {
                     ()
                 };
-                builder.write_string(names.get(index))
+                builder.write_string(names[index])
             };
             builder.write_string(" := range ");
             write_expr(builder, expr, indent);
@@ -545,7 +545,7 @@ fn write_interface(builder: text::StringBuilder, value: InterfaceDef) -> unit {
             } else {
                 ()
             };
-            write_type(builder, method.params.get(index))
+            write_type(builder, method.params[index])
         };
         builder.write_char(')');
         match method.ret_ty {
@@ -613,7 +613,7 @@ fn write_function(builder: text::StringBuilder, value: Function) -> unit {
         } else {
             ()
         };
-        let param = value.params.get(index);
+        let param = value.params[index];
         builder.write_string(param.0);
         builder.write_char(' ');
         write_type(builder, param.1)
@@ -658,7 +658,7 @@ fn write_method(builder: text::StringBuilder, value: Method) -> unit {
         } else {
             ()
         };
-        let param = value.params.get(index);
+        let param = value.params[index];
         builder.write_string(param.0);
         builder.write_char(' ');
         write_type(builder, param.1)

@@ -82,7 +82,7 @@ fn artifact_binary_section_insert_index(
     value: ArtifactBinarySection,
 ) -> int {
     for index in range(0, values.len()) {
-        if value.id < values.get(index).id {
+        if value.id < values[index].id {
             return index
         } else {
             ()
@@ -320,7 +320,7 @@ fn decode_artifact_binary_container(
             Err(error) => return Result::Err(error),
         };
         if section_ids.len() > 0
-            && id <= section_ids.get(section_ids.len() - 1)
+            && id <= section_ids[section_ids.len() - 1]
         {
             return Result::Err(
                 "binary artifact section directory is not sorted",
@@ -393,8 +393,8 @@ fn decode_artifact_binary_container(
     let result = Vec::new();
     let previous_end = Ref::new(payload_offset);
     for index in range(0, section_count) {
-        let offset = section_offsets.get(index);
-        let length = section_lengths.get(index);
+        let offset = section_offsets[index];
+        let length = section_lengths[index];
         if offset != previous_end.get()
             || length > data.len() - offset
         {
@@ -407,7 +407,7 @@ fn decode_artifact_binary_container(
             section_data.push(data.get(offset + item))
         };
         if !artifact_binary_bytes_equal(
-            section_hashes.get(index),
+            section_hashes[index],
             artifact_binary_sha256(section_data),
         ) {
             return Result::Err("binary artifact section checksum mismatch")
@@ -415,9 +415,9 @@ fn decode_artifact_binary_container(
             ()
         };
         result.push(ArtifactBinarySection {
-            id: section_ids.get(index),
-            version: section_versions.get(index),
-            flags: section_flags.get(index),
+            id: section_ids[index],
+            version: section_versions[index],
+            flags: section_flags[index],
             data: section_data,
         });
         previous_end.set(offset + length)
@@ -439,7 +439,7 @@ fn artifact_binary_find_section(
     id: uint16,
 ) -> Option[ArtifactBinarySection] {
     for offset in range(0, value.sections.len()) {
-        let section = value.sections.get(value.sections.len() - 1 - offset);
+        let section = value.sections[value.sections.len() - 1 - offset];
         if section.id == id {
             return Option::Some(section)
         } else {

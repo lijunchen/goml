@@ -101,7 +101,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     let positional = Ref::new(false);
     let index = Ref::new(2);
     while index.get() < args.len() {
-        let argument = args.get(index.get());
+        let argument = args[index.get()];
         if positional.get() == false && argument == "--" {
             positional.set(true);
             index.set(index.get() + 1)
@@ -133,7 +133,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                     argument,
                 ))
             } else {
-                seen.set(argument, ());
+                seen[argument] = ();
                 used_dumps.push(argument);
                 index.set(index.get() + 1)
             }
@@ -279,9 +279,9 @@ fn run_canonical_stage(args: Vec[string]) -> unit {
     if args.len() != 4 {
         fail("usage: gomlc __canonical-stage <STAGE> <FILE>")
     } else {
-        let source_path = args.get(3);
+        let source_path = args[3];
         io::print(canonical_stage_output(
-            args.get(2),
+            args[2],
             source_path,
             read_source(source_path),
         ))
@@ -291,12 +291,12 @@ fn run_canonical_stage(args: Vec[string]) -> unit {
 fn run_stage(args: Vec[string]) -> unit {
     if args.len() != 3 {
         fail("usage: gomlc <lex|cst|ast|hir|tast|core|mono|lift|anf|go> <FILE>")
-    } else if args.get(1) == "lex" {
-        io::print(lexer::encode_tokens(lexer::lex(read_source(args.get(2)))))
+    } else if args[1] == "lex" {
+        io::print(lexer::encode_tokens(lexer::lex(read_source(args[2]))))
     } else {
-        let source_path = args.get(2);
+        let source_path = args[2];
         io::print(pipeline_stage_output(
-            args.get(1),
+            args[1],
             source_path,
             read_source(source_path),
         ))
@@ -307,10 +307,10 @@ fn main() -> unit {
     let args = env::args();
     if args.len() == 1 {
         fail_cli(top_level_help())
-    } else if cli_help_argument(args.get(1)) {
+    } else if cli_help_argument(args[1]) {
         print_cli_help(top_level_help())
-    } else if option_string_present(inline_cli_value(args.get(1), "--help")) {
-        let value = match inline_cli_value(args.get(1), "--help") {
+    } else if option_string_present(inline_cli_value(args[1], "--help")) {
+        let value = match inline_cli_value(args[1], "--help") {
             Some(value) => value,
             None => "",
         };
@@ -319,59 +319,59 @@ fn main() -> unit {
             "--help",
             "gomlc --help <COMMAND>",
         ))
-    } else if args.get(1) == "--" {
+    } else if args[1] == "--" {
         if args.len() == 2 {
             fail_cli(top_level_help())
         } else {
-            fail_unknown_subcommand(args.get(2))
+            fail_unknown_subcommand(args[2])
         }
-    } else if args.get(1) == "help" {
+    } else if args[1] == "help" {
         run_help_command(args)
-    } else if args.get(1) == "version" {
+    } else if args[1] == "version" {
         run_version(args)
-    } else if args.get(1) == "prepare-world" {
+    } else if args[1] == "prepare-world" {
         run_prepare_world(args)
-    } else if args.get(1) == "check" {
+    } else if args[1] == "check" {
         run_package_command(args, false, false)
-    } else if args.get(1) == "test-check" {
+    } else if args[1] == "test-check" {
         run_package_command(args, false, true)
-    } else if args.get(1) == "build" {
+    } else if args[1] == "build" {
         run_package_command(args, true, false)
-    } else if args.get(1) == "test-build" {
+    } else if args[1] == "test-build" {
         run_package_command(args, true, true)
-    } else if args.get(1) == "link" {
+    } else if args[1] == "link" {
         run_link_command(args)
-    } else if args.get(1) == "test-link" {
+    } else if args[1] == "test-link" {
         run_test_link_command(args)
-    } else if args.get(1) == "package-info" {
+    } else if args[1] == "package-info" {
         run_package_info(args)
-    } else if args.get(1) == "__canonical-stage" {
+    } else if args[1] == "__canonical-stage" {
         run_canonical_stage(args)
-    } else if args.get(1) == "__builtin-interface" {
+    } else if args[1] == "__builtin-interface" {
         if args.len() == 2 {
             io::print(builtin_artifact_json())
         } else {
             fail("usage: gomlc __builtin-interface")
         }
-    } else if args.get(1) == "__test-diagnostics" {
+    } else if args[1] == "__test-diagnostics" {
         run_test_diagnostics(args)
-    } else if args.get(1) == "run-single" {
+    } else if args[1] == "run-single" {
         match parse_run_args(args) {
             Ok(run_args) => run_single(run_args),
             Err(error) => handle_cli_parse_error("run-single", error),
         }
-    } else if is_debug_stage(args.get(1)) {
+    } else if is_debug_stage(args[1]) {
         run_stage(args)
-    } else if cli_option(args.get(1)) {
-        match similar_cli_argument("", args.get(1)) {
+    } else if cli_option(args[1]) {
+        match similar_cli_argument("", args[1]) {
             Some(similar) => fail_cli(unexpected_similar_argument_error(
-                args.get(1),
+                args[1],
                 similar,
                 similar_cli_argument_usage("", similar),
             )),
-            None => fail_cli(unexpected_argument_error("", args.get(1), false)),
+            None => fail_cli(unexpected_argument_error("", args[1], false)),
         }
     } else {
-        fail_unknown_subcommand(args.get(1))
+        fail_unknown_subcommand(args[1])
     }
 }

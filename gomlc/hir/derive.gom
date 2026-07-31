@@ -254,12 +254,12 @@ fn concat_parts(parts: Vec[ast::Expr]) -> ast::Expr {
     if parts.len() == 0 {
         string_expr("")
     } else {
-        let result = Ref::new(parts.get(0));
+        let result = Ref::new(parts[0]);
         for index in range(1, parts.len()) {
             result.set(ast::Expr::Binary {
                 op: ast::BinaryOp::Add,
                 lhs: result.get(),
-                rhs: parts.get(index),
+                rhs: parts[index],
                 span: dummy_span(),
             })
         };
@@ -399,8 +399,8 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
                         ()
                     };
                     parts.push(call_to_string(
-                        var_expr(bindings.get(index)),
-                        fields.get(index),
+                        var_expr(bindings[index]),
+                        fields[index],
                     ))
                 };
                 parts.push(string_expr(")"))
@@ -413,10 +413,10 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
                     } else {
                         ()
                     };
-                    parts.push(string_expr(named.get(index).0 + ": "));
+                    parts.push(string_expr(named[index].0 + ": "));
                     parts.push(call_to_string(
-                        var_expr(bindings.get(index)),
-                        named.get(index).1,
+                        var_expr(bindings[index]),
+                        named[index].1,
                     ))
                 };
                 parts.push(string_expr(" }"))
@@ -491,8 +491,8 @@ fn enum_variant_pat(
             let patterns: Vec[(string, ast::Pat)] = Vec::new();
             for index in range(0, fields.len()) {
                 patterns.push((
-                    fields.get(index).0,
-                    ast::Pat::Var { name: bindings.get(index), span: dummy_span() },
+                    fields[index].0,
+                    ast::Pat::Var { name: bindings[index], span: dummy_span() },
                 ))
             };
             ast::Pat::Struct { name: path, fields: patterns, has_rest: false, span: dummy_span() }
@@ -525,8 +525,8 @@ fn enum_eq_body(value: ast::EnumDef) -> ast::Expr {
         let body = Ref::new(bool_expr(true));
         for index in range(0, left.len()) {
             let args: Vec[ast::Expr] = Vec::new();
-            args.push(var_expr(left.get(index)));
-            args.push(var_expr(right.get(index)));
+            args.push(var_expr(left[index]));
+            args.push(var_expr(right[index]));
             body.set(ast::Expr::Binary {
                 op: ast::BinaryOp::And,
                 lhs: body.get(),

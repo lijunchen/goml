@@ -72,8 +72,8 @@ pub fn normalize_integer(value: string) -> Option[string] {
                     found.set(true);
                     let carry = Ref::new(part);
                     for position in range(0, digits.len()) {
-                        let current = digits.get(position) * base + carry.get();
-                        digits.set(position, current % 10);
+                        let current = digits[position] * base + carry.get();
+                        digits[position] = current % 10;
                         carry.set(current / 10)
                     };
                     while carry.get() > 0 {
@@ -93,7 +93,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
         let builder = text::StringBuilder::with_capacity(digits.len());
         for offset in range(0, digits.len()) {
             builder.write_string(decimal_digit(
-                digits.get(digits.len() - offset - 1),
+                digits[digits.len() - offset - 1],
             ))
         };
         Option::Some(builder.finish())

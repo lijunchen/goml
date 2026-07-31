@@ -209,12 +209,12 @@ pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
     let base = Ref::new(".");
     let index = Ref::new(2);
     while index.get() < args.len() {
-        let argument = args.get(index.get());
+        let argument = args[index.get()];
         if argument == "--path" {
             if index.get() + 1 >= args.len() {
                 return Result::Err("--path requires a value")
             } else {
-                base.set(args.get(index.get() + 1));
+                base.set(args[index.get() + 1]);
                 index.set(index.get() + 2)
             }
         } else if util::starts_with(argument, "--path=") {

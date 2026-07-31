@@ -97,8 +97,8 @@ fn artifact_decode_primitive(value: ArtifactValue) -> Result[tast::Primitive, st
     } else {
         ()
     };
-    let kind = object.get(0).0;
-    let payload = object.get(0).1;
+    let kind = object[0].0;
+    let payload = object[0].1;
     if kind == "Unit" {
         match artifact_decode_primitive_payload(payload) {
             Ok(Null) => Result::Ok(tast::Primitive::Unit),
@@ -149,8 +149,8 @@ fn artifact_decode_constructor(
     };
     if object.len() != 1 {
         Result::Err(artifact_decode_error("constructor variant"))
-    } else if object.get(0).0 == "Struct" {
-        let payload = match artifact_json_object(object.get(0).1, "struct constructor") {
+    } else if object[0].0 == "Struct" {
+        let payload = match artifact_json_object(object[0].1, "struct constructor") {
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         };
@@ -163,8 +163,8 @@ fn artifact_decode_constructor(
             }),
             Err(error) => Result::Err(error),
         }
-    } else if object.get(0).0 == "Enum" {
-        let payload = match artifact_json_object(object.get(0).1, "enum constructor") {
+    } else if object[0].0 == "Enum" {
+        let payload = match artifact_json_object(object[0].1, "enum constructor") {
             Ok(value) => value,
             Err(error) => return Result::Err(error),
         };

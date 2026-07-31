@@ -157,7 +157,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                     }
                 };
                 if has_token(node, lexer::TokenKind::Comma) == false && pats.len() == 1 {
-                    Option::Some(pats.get(0))
+                    Option::Some(pats[0])
                 } else {
                     Option::Some(Pat::Tuple { items: pats, span: value_span })
                 }
@@ -167,9 +167,9 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 let names = tokens_of_kind(node, lexer::TokenKind::Ident);
                 let pats = pattern_children(node);
                 if names.len() > 0 && pats.len() > 0 {
-                    match lower_pat_inner(ctx, pats.get(0)) {
+                    match lower_pat_inner(ctx, pats[0]) {
                         Some(pat) => Option::Some(Pat::Alias {
-                            name: names.get(0).token.text,
+                            name: names[0].token.text,
                             pat,
                             span: value_span,
                         }),
@@ -197,8 +197,8 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             PATTERN_RANGE => {
                 let children = pattern_children(node);
                 if children.len() >= 2 {
-                    match lower_pat_inner(ctx, children.get(0)) {
-                        Some(start) => match lower_pat_inner(ctx, children.get(1)) {
+                    match lower_pat_inner(ctx, children[0]) {
+                        Some(start) => match lower_pat_inner(ctx, children[1]) {
                             Some(end) => Option::Some(Pat::Range {
                                 start,
                                 end,
@@ -237,7 +237,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                             Some(name_token) => {
                                 let patterns = pattern_children(field);
                                 if patterns.len() > 0 {
-                                    match lower_pat_inner(ctx, patterns.get(0)) {
+                                    match lower_pat_inner(ctx, patterns[0]) {
                                         Some(pat) => fields.push((name_token.token.text, pat)),
                                         None => valid.set(false),
                                     }

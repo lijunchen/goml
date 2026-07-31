@@ -135,7 +135,7 @@ fn artifact_binary_stream_before_value(value: ArtifactJsonWriter) -> unit {
     if value.binary_scopes.len() == 0 {
         ()
     } else {
-        let scope = value.binary_scopes.get(value.binary_scopes.len() - 1);
+        let scope = value.binary_scopes[value.binary_scopes.len() - 1];
         if scope.object {
             ()
         } else {
@@ -208,9 +208,9 @@ fn artifact_captured_push(
     if writer.captured_containers.len() == 0 {
         writer.captured_values.push(value)
     } else {
-        match writer.captured_containers.get(
-            writer.captured_containers.len() - 1,
-        ) {
+        match writer.captured_containers[
+            writer.captured_containers.len() - 1
+        ] {
             Object { fields, name } => {
                 match name.get() {
                     Some(name_value) => {
@@ -233,7 +233,7 @@ fn artifact_value_finish(
     } else if writer.captured_values.len() != 1 {
         Result::Err("captured artifact must contain one value")
     } else {
-        Result::Ok(writer.captured_values.get(0))
+        Result::Ok(writer.captured_values[0])
     }
 }
 
@@ -261,8 +261,8 @@ fn artifact_json_before_value(value: ArtifactJsonWriter) -> unit {
         value.after_name.set(false)
     } else if value.first_values.len() > 0 {
         let index = value.first_values.len() - 1;
-        if value.first_values.get(index) {
-            value.first_values.set(index, false)
+        if value.first_values[index] {
+            value.first_values[index] = false;
         } else {
             value.builder.write_char(',')
         };
@@ -431,7 +431,7 @@ fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
             name,
         )
     } else if value.binary_mode == 3 {
-        let scope = value.binary_scopes.get(value.binary_scopes.len() - 1);
+        let scope = value.binary_scopes[value.binary_scopes.len() - 1];
         scope.count.set(scope.count.get() + 1);
         artifact_binary_stream_error(
             value,
@@ -442,9 +442,9 @@ fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
             ),
         )
     } else if value.capture {
-        match value.captured_containers.get(
-            value.captured_containers.len() - 1,
-        ) {
+        match value.captured_containers[
+            value.captured_containers.len() - 1
+        ] {
             Object { name: captured, .. } => {
                 captured.set(Option::Some(name))
             },
@@ -452,8 +452,8 @@ fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
         }
     } else {
         let index = value.first_values.len() - 1;
-        if value.first_values.get(index) {
-            value.first_values.set(index, false)
+        if value.first_values[index] {
+            value.first_values[index] = false;
         } else {
             value.builder.write_char(',')
         };

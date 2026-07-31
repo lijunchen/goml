@@ -138,14 +138,14 @@ pub fn join(values: Vec[string], separator: string) -> string {
         } else {
             ()
         };
-        builder.write_string(values.get(index))
+        builder.write_string(values[index])
     };
     builder.finish()
 }
 
 fn string_insert_index(values: Vec[string], value: string) -> int {
     for index in range(0, values.len()) {
-        if value < values.get(index) {
+        if value < values[index] {
             return index
         } else {
             ()
@@ -170,7 +170,7 @@ pub fn sorted(values: Vec[string]) -> Vec[string] {
 pub fn sorted_unique(values: Vec[string]) -> Vec[string] {
     let result = Vec::new();
     for value in sorted(values) {
-        if result.len() == 0 || result.get(result.len() - 1) != value {
+        if result.len() == 0 || result[result.len() - 1] != value {
             result.push(value)
         } else {
             ()

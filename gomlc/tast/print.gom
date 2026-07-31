@@ -426,12 +426,12 @@ fn write_constructor_expr(
                     ()
                 };
                 if index < constructor.fields.len() {
-                    builder.write_string(constructor.fields.get(index));
+                    builder.write_string(constructor.fields[index]);
                     builder.write_string(": ")
                 } else {
                     ()
                 };
-                write_expr(builder, args.get(index), indent)
+                write_expr(builder, args[index], indent)
             };
             builder.write_string(" }")
         }
@@ -543,7 +543,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                     } else {
                         ()
                     };
-                    let param = params.get(index);
+                    let param = params[index];
                     builder.write_string(param.name);
                     builder.write_string(": ");
                     write_type(builder, param.ty)
@@ -676,7 +676,7 @@ fn write_pats(builder: text::StringBuilder, values: Vec[Pat], indent: int) -> un
         } else {
             ()
         };
-        write_pat(builder, values.get(index), indent)
+        write_pat(builder, values[index], indent)
     }
 }
 
@@ -706,12 +706,12 @@ fn write_constructor_pat(
                     ()
                 };
                 if index < constructor.fields.len() {
-                    builder.write_string(constructor.fields.get(index));
+                    builder.write_string(constructor.fields[index]);
                     builder.write_string(": ")
                 } else {
                     ()
                 };
-                write_pat(builder, args.get(index), indent)
+                write_pat(builder, args[index], indent)
             };
             builder.write_string(" }")
         }
@@ -799,7 +799,7 @@ fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
                 } else {
                     ()
                 };
-                write_pat(builder, values.get(index), indent)
+                write_pat(builder, values[index], indent)
             }
         },
         Range { start, end, inclusive, ty: _ } => {
@@ -841,7 +841,7 @@ fn write_generics_from(
             } else {
                 ()
             };
-            builder.write_string(values.get(index))
+            builder.write_string(values[index])
         };
         builder.write_char(']')
     } else {
@@ -862,7 +862,7 @@ fn write_predicates_from(
             } else {
                 ()
             };
-            match values.get(index) {
+            match values[index] {
                 Trait { for_ty, trait_ref } => {
                     write_type(builder, for_ty);
                     builder.write_string(": ");
@@ -897,7 +897,7 @@ fn write_function_from(
         } else {
             ()
         };
-        let param = value.params.get(index);
+        let param = value.params[index];
         builder.write_string(param.0);
         builder.write_string(": ");
         write_type(builder, param.1)
@@ -1002,7 +1002,7 @@ fn encode_file(value: File) -> string {
         } else {
             ()
         };
-        write_constant(builder, value.constants.get(index))
+        write_constant(builder, value.constants[index])
     };
     if value.constants.len() > 0 && value.items.len() > 0 {
         builder.write_string("\n\n")
@@ -1015,7 +1015,7 @@ fn encode_file(value: File) -> string {
         } else {
             ()
         };
-        write_item(builder, value.items.get(index))
+        write_item(builder, value.items[index])
     };
     builder.finish()
 }

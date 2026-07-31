@@ -20,7 +20,7 @@ fn name_present(values: NameSet, expected: string) -> bool {
 
 fn add_reachable(values: NameSet, value: string) -> unit {
     if values.present.contains(value) == false {
-        values.present.set(value, ());
+        values.present[value] = ();
         values.values.push(value)
     } else {
         ()

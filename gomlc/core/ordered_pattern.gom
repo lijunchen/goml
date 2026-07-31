@@ -266,7 +266,7 @@ fn lower_ordered_array_pattern(
                     );
                     next.set(lower_ordered_pattern(
                         ctx,
-                        suffix.get(index),
+                        suffix[index],
                         item,
                         next.get(),
                         failure,
@@ -283,7 +283,7 @@ fn lower_ordered_array_pattern(
                     );
                     next.set(lower_ordered_pattern(
                         ctx,
-                        prefix.get(index),
+                        prefix[index],
                         item,
                         next.get(),
                         failure,
@@ -345,7 +345,7 @@ fn lower_ordered_pattern(
                 let index = patterns.len() - 1 - offset;
                 next.set(lower_ordered_pattern(
                     ctx,
-                    patterns.get(index),
+                    patterns[index],
                     value,
                     success,
                     next.get(),
@@ -401,8 +401,8 @@ fn lower_ordered_pattern(
                     let index = items.len() - 1 - offset;
                     next.set(lower_ordered_pattern(
                         ctx,
-                        items.get(index),
-                        Expr::Proj { tuple: value, index, ty: types.get(index) },
+                        items[index],
+                        Expr::Proj { tuple: value, index, ty: types[index] },
                         next.get(),
                         failure,
                         result_ty,
@@ -416,7 +416,7 @@ fn lower_ordered_pattern(
             let next = Ref::new(success);
             for offset in range(0, args.len()) {
                 let index = args.len() - 1 - offset;
-                let arg = args.get(index);
+                let arg = args[index];
                 next.set(lower_ordered_pattern(
                     ctx,
                     arg,
@@ -475,7 +475,7 @@ fn lower_ordered_match(
     let next = Ref::new(missing_expr(ty));
     for offset in range(0, arms.len()) {
         let index = arms.len() - 1 - offset;
-        let arm = arms.get(index);
+        let arm = arms[index];
         let body = lower_expr(ctx, arm.body);
         let success = match arm.guard {
             Some(guard) => ordered_if(

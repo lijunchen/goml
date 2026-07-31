@@ -1115,9 +1115,9 @@ fn option_variant_names(value: tast::EnumDef) -> Option[(string, string)] {
         }
     };
     if named_some.len() > 0 && named_none.len() > 0 {
-        Option::Some((named_some.get(0), named_none.get(0)))
+        Option::Some((named_some[0], named_none[0]))
     } else if payloads.len() == 1 && empties.len() == 1 {
-        Option::Some((payloads.get(0), empties.get(0)))
+        Option::Some((payloads[0], empties[0]))
     } else {
         Option::None
     }
@@ -2057,8 +2057,8 @@ fn hash_segments(value: string) -> Vec[string] {
 
 fn trait_impl_method_name(value: string) -> Option[string] {
     let segments = hash_segments(value);
-    if segments.len() == 4 && segments.get(0) == "trait_impl" {
-        Option::Some(segments.get(3))
+    if segments.len() == 4 && segments[0] == "trait_impl" {
+        Option::Some(segments[3])
     } else {
         Option::None
     }
@@ -2175,7 +2175,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                 {
                     let params: Vec[tast::Type] = Vec::new();
                     for index in range(1, function.params.len()) {
-                        params.push(function.params.get(index).1)
+                        params.push(function.params[index].1)
                     };
                     result.push(DynMethod {
                         name: method_name,
@@ -2330,7 +2330,7 @@ fn find_dyn_impl_name(
 ) -> string {
     let index = Ref::new(functions.len() - 1);
     while index.get() >= 0 {
-        let function = functions.get(index.get());
+        let function = functions[index.get()];
         match (function.trait_impl, trait_impl_method_name(function.name)) {
             (Some(metadata), Some(candidate_method)) => {
                 if metadata.trait_ref.name == trait_name
@@ -2382,7 +2382,7 @@ fn sorted_dyn_coercions(values: Vec[DynCoercion]) -> Vec[DynCoercion] {
     for value in values {
         let index = Ref::new(0);
         while index.get() < result.len()
-            && !dyn_coercion_precedes(value, result.get(index.get()))
+            && !dyn_coercion_precedes(value, result[index.get()])
         {
             index.set(index.get() + 1)
         };
@@ -2438,7 +2438,7 @@ fn dyn_coercion_items(
         });
         for index in range(0, method.params.len()) {
             let name = "p" + index.to_string();
-            wrapper_params.push((name, lower_type(method.params.get(index))));
+            wrapper_params.push((name, lower_type(method.params[index])));
             wrapper_args.push(Expr::Var { name })
         };
         let wrapper_stmts: Vec[Stmt] = Vec::new();
