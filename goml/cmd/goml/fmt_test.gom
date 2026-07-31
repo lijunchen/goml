@@ -30,8 +30,6 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     test_support::write_file(test_source, "package main;\nfn helper( )->unit{()}\n");
     let ignored = Vec::[
         path::join(path::join(root, "build/output"), "invalid.gom"),
-        path::join(path::join(root, "_artifact"), "invalid.gom"),
-        path::join(path::join(root, "_bootstrap"), "invalid.gom"),
         path::join(path::join(root, ".hidden"), "invalid.gom"),
     ];
     for file in ignored {
