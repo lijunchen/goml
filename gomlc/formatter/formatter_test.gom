@@ -76,7 +76,7 @@ fn token_kind_signature(source: string, expected: lexer::TokenKind) -> string {
 
 fn literal_token(kind: lexer::TokenKind) -> bool {
     match kind {
-        Float | IntLit | Str | RawStr | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | ByteCharLit => true,
+        Float | IntLit | Str | RawStr | MultilineStr | FStringStart | FStringText | FStringExprStart | FStringExprEnd | FStringEnd | CharLit | ByteCharLit | ByteStr | RawByteStr => true,
         _ => false,
     }
 }
@@ -318,6 +318,19 @@ fn normalizes_line_endings_and_empty_input() -> unit {
 #[test]
 fn preserves_tokens_literals_comments_and_ast() -> unit {
     let source = "fn sample() -> unit { // 注释\nlet value = Vec::[0xFF_FF, 1_000,]; let ch = '\\u0041'; let byte = b'\\xFF'; let text = f\"值={value.get(0)}\"; () }\n";
+    let formatted = match format_source(source) {
+        Ok(value) => value,
+        Err(_) => {
+            testing::fail("format failed");
+            ""
+        },
+    };
+    assert_format_invariants(source, formatted)
+}
+
+#[test]
+fn formats_block_and_byte_string_expressions_losslessly() -> unit {
+    let source = "fn bytes()->Vec[byte]{let plain=b\"A\\n\\xFF\";let raw=br#\"first\nsecond\"#;{let selected=raw;selected}}\n";
     let formatted = match format_source(source) {
         Ok(value) => value,
         Err(_) => {

@@ -123,6 +123,27 @@ fn parses_raw_strings_let_else_and_value_loops() -> unit {
 }
 
 #[test]
+fn parses_block_expressions_and_byte_strings() -> unit {
+    let source = "fn value() -> int { return { let base = 40; base + 2 }; } fn main() -> unit { let bytes: Vec[byte] = b\"A\\n\\x42\"; let raw = br#\"raw \\\\ bytes\"#; let nested = consume({ let item = value(); item }); if ({ true }) { let _ = nested; } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BLOCK), 3);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BYTE_STRING), 2)
+}
+
+#[test]
+fn keeps_control_flow_body_braces_out_of_header_expressions() -> unit {
+    let source = "fn main() -> unit { while break { () } if return { () } for _ in return { () } match return { _ => () } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_BLOCK), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_WHILE), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_IF), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_FOR), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_MATCH), 1)
+}
+
+#[test]
 fn postfix_expressions_bind_tighter_than_prefix_operators() -> unit {
     let source = "fn main() -> bool { let values = Vec::[false]; !values[0] }";
     let result = parse(source);

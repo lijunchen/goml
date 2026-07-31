@@ -66,6 +66,16 @@ fn checks_value_break_types_across_loop_paths() -> unit {
     )
 }
 
+#[test]
+fn checks_block_and_byte_string_types() -> unit {
+    let valid = checked_diagnostics(
+        "fn answer() -> int { { let base = 40; base + 2 } } fn main() -> unit { let empty = b\"\"; let bytes: Vec[byte] = br#\"raw\"#; let _ = empty.len() + bytes.len(); }",
+    );
+    testing::assert_eq(valid.len(), 0);
+    let invalid = checked_diagnostics("fn wrong() -> Vec[int] { b\"value\" }");
+    testing::assert(invalid.len() > 0)
+}
+
 fn dependency_hir(source: string, package_name: string) -> hir::File {
     let result = hir::lower_package(ast::lower(parser::parse(source)), "package.gom", package_name);
     testing::assert_eq(result.diagnostics.len(), 0);

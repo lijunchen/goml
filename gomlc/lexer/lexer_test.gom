@@ -132,7 +132,7 @@ fn lexes_radix_and_byte_literals() -> unit {
     };
     testing::assert_eq(
         builder.finish(),
-        "IntLit:0b1010 IntLit:0B1_001 IntLit:0o755 IntLit:0O7_0 IntLit:0xff IntLit:0XCA_FE ByteCharLit:b'A' ByteCharLit:b'\\n' ByteCharLit:b'\\xFF' UnsupportedByteStr:b\"text\" Error:0b102 Error:0x_1 Error:0o7_ Error:b'é'",
+        "IntLit:0b1010 IntLit:0B1_001 IntLit:0o755 IntLit:0O7_0 IntLit:0xff IntLit:0XCA_FE ByteCharLit:b'A' ByteCharLit:b'\\n' ByteCharLit:b'\\xFF' ByteStr:b\"text\" Error:0b102 Error:0x_1 Error:0o7_ Error:b'é'",
     )
 }
 
@@ -220,4 +220,46 @@ fn lexes_raw_strings_and_preserves_delimiters() -> unit {
     testing::assert_eq(tokens.get(2).text, "r##\"quoted \"text\" and #\nnext\"##");
     testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::Error));
     testing::assert_eq(tokens.get(4).text, "r#\"unterminated")
+}
+
+#[test]
+fn lexes_byte_strings_and_raw_byte_strings() -> unit {
+    let source = "b\"A\\n\\xFF\" br#\"raw \\\\ text\"# br##\"quoted \"text\" and #\nnext\"##";
+    let tokens = lex(source);
+    assert_token(tokens, 0, TokenKind::ByteStr, "b\"A\\n\\xFF\"", 0, 10);
+    testing::assert(token_kind_equal(tokens.get(2).kind, TokenKind::RawByteStr));
+    testing::assert_eq(tokens.get(2).text, "br#\"raw \\\\ text\"#");
+    testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::RawByteStr));
+    testing::assert_eq(tokens.get(4).text, "br##\"quoted \"text\" and #\nnext\"##")
+}
+
+#[test]
+fn rejects_invalid_byte_strings() -> unit {
+    let tokens = lex("b\"é\" b\"\\u0041\" br#\"é\"# br#\"unterminated");
+    testing::assert(token_kind_equal(tokens.get(0).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(0).text, "b\"é\"");
+    testing::assert(token_kind_equal(tokens.get(2).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(2).text, "b\"\\u0041\"");
+    testing::assert(token_kind_equal(tokens.get(4).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(4).text, "br#\"é\"#");
+    testing::assert(token_kind_equal(tokens.get(6).kind, TokenKind::Error));
+    testing::assert_eq(tokens.get(6).text, "br#\"unterminated")
+}
+
+#[test]
+fn skips_raw_byte_string_braces_in_interpolation() -> unit {
+    let tokens = lex("f\"{br#\"}\"#}\"");
+    let errors = Ref::new(0);
+    let raw_bytes = Ref::new(0);
+    for token in tokens {
+        if token_kind_equal(token.kind, TokenKind::Error) {
+            errors.set(errors.get() + 1)
+        } else if token_kind_equal(token.kind, TokenKind::RawByteStr) {
+            raw_bytes.set(raw_bytes.get() + 1)
+        } else {
+            ()
+        }
+    };
+    testing::assert_eq(errors.get(), 0);
+    testing::assert_eq(raw_bytes.get(), 1)
 }
