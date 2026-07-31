@@ -177,9 +177,8 @@ fn parse_duration(value: string) -> Result[int, string] {
     } else {
         return Result::Err("duration must end in ms, s, or m")
     };
-    let parsed = match util::parse_positive_int(parts.0) {
-        Ok(value) => value,
-        Err(_) => return Result::Err(f"invalid duration `{value}`"),
+    let Ok(parsed) = util::parse_positive_int(parts.0) else {
+        return Result::Err(f"invalid duration `{value}`")
     };
     let duration = parsed * parts.1;
     if duration / parts.1 != parsed {

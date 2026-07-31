@@ -444,9 +444,8 @@ fn local_import(sources: Vec[ModuleSource], current_module: string, import_path:
     if import_path == "std" || util::starts_with(import_path, "std::") {
         Result::Ok(Option::None)
     } else {
-        let current = match source_by_name(sources, current_module) {
-            Some(value) => value,
-            None => return Result::Err("missing module source " + current_module),
+        let Some(current) = source_by_name(sources, current_module) else {
+            return Result::Err("missing module source " + current_module)
         };
         let prefix = current_module + "::";
         if util::starts_with(import_path, prefix) {
@@ -535,9 +534,8 @@ fn extend_package_with_info(
     test_files: Vec[string],
     info: Vec[PackageInfoFile],
 ) -> Result[Package, string] {
-    let source = match source_for_package(sources, package_value.name) {
-        Some(value) => value,
-        None => return Result::Err("invalid package " + package_value.name),
+    let Some(source) = source_for_package(sources, package_value.name) else {
+        return Result::Err("invalid package " + package_value.name)
     };
     let test_package = package_from_info(
         sources,
@@ -580,13 +578,11 @@ fn load_package(
     include_entry_tests: bool,
     entry_package: string,
 ) -> Result[Package, string] {
-    let source = match source_for_package(sources, package_name) {
-        Some(value) => value,
-        None => return Result::Err("invalid package " + package_name),
+    let Some(source) = source_for_package(sources, package_name) else {
+        return Result::Err("invalid package " + package_name)
     };
-    let directory = match package_directory_in_source(source, package_name) {
-        Some(value) => value,
-        None => return Result::Err("invalid package " + package_name),
+    let Some(directory) = package_directory_in_source(source, package_name) else {
+        return Result::Err("invalid package " + package_name)
     };
     let files = source_files(directory, include_entry_tests && package_name == entry_package)?;
     if files.len() == 0 {
@@ -621,9 +617,8 @@ fn visit_package(
         _ => (),
     };
     states[name] = 1;
-    let package_value = match find_package(packages, name) {
-        Some(value) => value,
-        None => return Result::Err("missing package " + name),
+    let Some(package_value) = find_package(packages, name) else {
+        return Result::Err("missing package " + name)
     };
     for dependency in package_value.imports {
         visit_package(packages, states, output, dependency)?
@@ -752,9 +747,8 @@ fn discover_module_graph(
     for item in package_files {
         let directory = item.0;
         let files = item.1;
-        let source = match source_for_package_directory(sources, directory) {
-            Some(value) => value,
-            None => return Result::Err("package directory has no module source " + directory),
+        let Some(source) = source_for_package_directory(sources, directory) else {
+            return Result::Err("package directory has no module source " + directory)
         };
         let package_name = package_name_for_directory(source.directory, source.name, directory)?;
         let info = select_package_info(module_dir, all_info, files)?;
@@ -1075,9 +1069,8 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
     let package_files = Vec::new();
     let all_files = Vec::new();
     for package_name in util::sorted(names) {
-        let package_value = match find_package(context.graph.packages, package_name) {
-            Some(value) => value,
-            None => return Result::Err("missing package " + package_name),
+        let Some(package_value) = find_package(context.graph.packages, package_name) else {
+            return Result::Err("missing package " + package_name)
         };
         let files = source_files(package_value.directory, true)?;
         let test_files = Vec::new();
@@ -1126,9 +1119,8 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
         }
     };
     for target_package in util::sorted(names) {
-        let package_value = match find_package(context.graph.packages, target_package) {
-            Some(value) => value,
-            None => return Result::Err("missing package " + target_package),
+        let Some(package_value) = find_package(context.graph.packages, target_package) else {
+            return Result::Err("missing package " + target_package)
         };
         let tests_dir = path::join(package_value.directory, "tests");
         if !fs::exists(tests_dir) {
@@ -1148,9 +1140,8 @@ pub fn external_test_graphs(context: Context) -> Result[Vec[ExternalTest], strin
                     true,
                     context.graph.sources,
                 )?;
-                let test_package = match find_package(graph.packages, graph.entry_package) {
-                    Some(value) => value,
-                    None => return Result::Err("missing black-box test package"),
+                let Some(test_package) = find_package(graph.packages, graph.entry_package) else {
+                    return Result::Err("missing black-box test package")
                 };
                 if test_package.declared_name != "tests" {
                     return Result::Err(tests_dir + " must declare package tests;")

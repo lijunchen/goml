@@ -18,9 +18,8 @@ struct BuildGraph {
 }
 
 fn package_artifact_base(root: string, graph: Graph, package_name: string) -> string {
-    let package_value = match package_by_name(graph, package_name) {
-        Some(value) => value,
-        None => return path::join(root, package_name),
+    let Some(package_value) = package_by_name(graph, package_name) else {
+        return path::join(root, package_name)
     };
     let mut result = path::join(root, package_value.artifact_prefix);
     for segment in util::split(package_name, "::") {
@@ -65,9 +64,8 @@ fn collect_dependencies(
     seen: HashMap[string, bool],
     result: Vec[string],
 ) -> Result[unit, string] {
-    let package_value = match package_by_name(graph, package_name) {
-        Some(value) => value,
-        None => return Result::Err(f"missing package {package_name}"),
+    let Some(package_value) = package_by_name(graph, package_name) else {
+        return Result::Err(f"missing package {package_name}")
     };
     for dependency in package_value.imports {
         if seen.contains(dependency) {
@@ -156,9 +154,8 @@ fn compile_package_command(
     command: string,
     world: Option[string],
 ) -> Result[Command, string] {
-    let package_value = match package_by_name(graph, package_name) {
-        Some(value) => value,
-        None => return Result::Err(f"missing package {package_name}"),
+    let Some(package_value) = package_by_name(graph, package_name) else {
+        return Result::Err(f"missing package {package_name}")
     };
     let inputs = Vec::new();
     for file in package_value.files {
@@ -292,9 +289,8 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
     let commands = compile_commands(context, output_root, "build", "build")?;
     let entries = Vec::new();
     for package_name in context.graph.order {
-        let package_value = match package_by_name(context.graph, package_name) {
-            Some(value) => value,
-            None => return Result::Err(f"missing package {package_name}"),
+        let Some(package_value) = package_by_name(context.graph, package_name) else {
+            return Result::Err(f"missing package {package_name}")
         };
         if package_value.declared_name == "main" {
             entries.push(package_name)
@@ -975,9 +971,8 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         while pending.len() > 0 || running > 0 {
             let blocked = Vec::new();
             for index in pending {
-                let node = match build_node(graph.nodes, index) {
-                    Some(value) => value,
-                    None => return Result::Err(f"build graph omitted node {index}"),
+                let Some(node) = build_node(graph.nodes, index) else {
+                    return Result::Err(f"build graph omitted node {index}")
                 };
                 if running < worker_count && !build_node_ready(node, completed_nodes) {
                     blocked.push(index)
