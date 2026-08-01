@@ -1,9 +1,9 @@
-package main;
+package wire;
 
 use std::bytes;
 use std::text;
 
-enum ArtifactValue {
+pub enum ArtifactValue {
     Null,
     Bool(bool),
     Number(string),
@@ -26,7 +26,7 @@ struct ArtifactBinaryValueScope {
     count_offset: int,
 }
 
-struct ArtifactJsonWriter {
+pub struct ArtifactJsonWriter {
     builder: text::StringBuilder,
     pretty: bool,
     capture: bool,
@@ -45,7 +45,7 @@ struct ArtifactJsonWriter {
     binary_error: Ref[Option[string]],
 }
 
-fn new_artifact_json_writer(pretty: bool) -> ArtifactJsonWriter {
+pub fn new_artifact_json_writer(pretty: bool) -> ArtifactJsonWriter {
     ArtifactJsonWriter {
         builder: text::StringBuilder::new(),
         pretty,
@@ -66,7 +66,7 @@ fn new_artifact_json_writer(pretty: bool) -> ArtifactJsonWriter {
     }
 }
 
-fn new_artifact_value_writer() -> ArtifactJsonWriter {
+pub fn new_artifact_value_writer() -> ArtifactJsonWriter {
     ArtifactJsonWriter {
         builder: text::StringBuilder::new(),
         pretty: false,
@@ -87,7 +87,7 @@ fn new_artifact_value_writer() -> ArtifactJsonWriter {
     }
 }
 
-fn new_artifact_binary_string_collector() -> ArtifactJsonWriter {
+pub fn new_artifact_binary_string_collector() -> ArtifactJsonWriter {
     ArtifactJsonWriter {
         builder: text::StringBuilder::new(),
         pretty: false,
@@ -108,7 +108,7 @@ fn new_artifact_binary_string_collector() -> ArtifactJsonWriter {
     }
 }
 
-fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> ArtifactJsonWriter {
+pub fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> ArtifactJsonWriter {
     ArtifactJsonWriter {
         builder: text::StringBuilder::new(),
         pretty: false,
@@ -171,11 +171,11 @@ fn artifact_binary_stream_end_container(value: ArtifactJsonWriter) -> unit {
     )
 }
 
-fn artifact_binary_collected_string_table(value: ArtifactJsonWriter) -> ArtifactBinaryStringTable {
+pub fn artifact_binary_collected_string_table(value: ArtifactJsonWriter) -> ArtifactBinaryStringTable {
     artifact_binary_string_table_from_values(value.binary_strings)
 }
 
-fn artifact_binary_stream_finish(value: ArtifactJsonWriter) -> Result[bytes::Bytes, string] {
+pub fn artifact_binary_stream_finish(value: ArtifactJsonWriter) -> Result[bytes::Bytes, string] {
     match value.binary_error.get() {
         Some(error) => Result::Err(error),
         None => if value.binary_scopes.is_empty() {
@@ -205,7 +205,7 @@ fn artifact_captured_push(writer: ArtifactJsonWriter, value: ArtifactValue) -> u
     }
 }
 
-fn artifact_value_finish(writer: ArtifactJsonWriter) -> Result[ArtifactValue, string] {
+pub fn artifact_value_finish(writer: ArtifactJsonWriter) -> Result[ArtifactValue, string] {
     if !writer.captured_containers.is_empty() {
         Result::Err("unfinished captured artifact value")
     } else if writer.captured_values.len() != 1 {
@@ -305,7 +305,7 @@ fn artifact_json_write_quoted(value: ArtifactJsonWriter, input: string) -> unit 
     value.builder.write_char('"')
 }
 
-fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
     if value.binary_mode == 2 {
         ()
     } else if value.binary_mode == 3 {
@@ -323,7 +323,7 @@ fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
     if value.binary_mode == 2 {
         ()
     } else if value.binary_mode == 3 {
@@ -348,7 +348,7 @@ fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
     if value.binary_mode == 2 {
         ()
     } else if value.binary_mode == 3 {
@@ -364,7 +364,7 @@ fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
     if value.binary_mode == 2 {
         ()
     } else if value.binary_mode == 3 {
@@ -389,7 +389,7 @@ fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
+pub fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
     if value.binary_mode == 2 {
         artifact_binary_collect_string(value.binary_seen, value.binary_strings, name)
     } else if value.binary_mode == 3 {
@@ -424,7 +424,7 @@ fn artifact_json_name(value: ArtifactJsonWriter, name: string) -> unit {
     }
 }
 
-fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> unit {
+pub fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> unit {
     if value.binary_mode == 2 {
         artifact_binary_collect_string(value.binary_seen, value.binary_strings, input)
     } else if value.binary_mode == 3 {
@@ -442,7 +442,7 @@ fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> unit {
     }
 }
 
-fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> unit {
+pub fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> unit {
     if value.binary_mode == 2 {
         ()
     } else if value.binary_mode == 3 {
@@ -457,7 +457,7 @@ fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> unit {
     }
 }
 
-fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> unit {
+pub fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> unit {
     if value.binary_mode == 2 {
         ()
     } else if value.binary_mode == 3 {
@@ -484,7 +484,7 @@ fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> unit {
     }
 }
 
-fn artifact_json_null(value: ArtifactJsonWriter) -> unit {
+pub fn artifact_json_null(value: ArtifactJsonWriter) -> unit {
     if value.binary_mode == 2 {
         ()
     } else if value.binary_mode == 3 {
@@ -498,6 +498,10 @@ fn artifact_json_null(value: ArtifactJsonWriter) -> unit {
     }
 }
 
-fn artifact_json_finish(value: ArtifactJsonWriter) -> string {
+pub fn artifact_json_binary_mode(value: ArtifactJsonWriter) -> uint8 {
+    value.binary_mode
+}
+
+pub fn artifact_json_finish(value: ArtifactJsonWriter) -> string {
     value.builder.finish()
 }

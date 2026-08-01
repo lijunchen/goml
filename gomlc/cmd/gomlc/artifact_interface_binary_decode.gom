@@ -1,17 +1,19 @@
 package main;
 
+use gomlc::artifact_wire as wire;
+
 use gomlc::artifact_model;
 
 use gomlc::tast;
 use std::bytes;
 
 struct ArtifactInterfaceBinaryReader {
-    reader: ArtifactBinaryReader,
-    table: ArtifactBinaryStringTable,
+    reader: wire::ArtifactBinaryReader,
+    table: wire::ArtifactBinaryStringTable,
 }
 
-fn new_artifact_interface_binary_reader(data: bytes::Bytes, table: ArtifactBinaryStringTable) -> ArtifactInterfaceBinaryReader {
-    ArtifactInterfaceBinaryReader { reader: new_artifact_binary_reader(data), table }
+fn new_artifact_interface_binary_reader(data: bytes::Bytes, table: wire::ArtifactBinaryStringTable) -> ArtifactInterfaceBinaryReader {
+    ArtifactInterfaceBinaryReader { reader: wire::new_artifact_binary_reader(data), table }
 }
 
 fn artifact_interface_binary_error(expected: string) -> string {
@@ -22,7 +24,7 @@ fn artifact_interface_binary_read_tag(reader: ArtifactInterfaceBinaryReader) -> 
     uint8,
     string,
 ] {
-    artifact_binary_read_u8(reader.reader)
+    wire::artifact_binary_read_u8(reader.reader)
 }
 
 fn artifact_interface_binary_expect_tag(
@@ -46,7 +48,7 @@ fn artifact_interface_binary_read_count(
     expected: string,
 ) -> Result[int, string] {
     artifact_interface_binary_expect_tag(reader, tag, expected)?;
-    let count = artifact_binary_read_u32(reader.reader)? as int;
+    let count = wire::artifact_binary_read_u32(reader.reader)? as int;
     if count > 10000000 {
         Result::Err(artifact_interface_binary_error(expected))
     } else {
@@ -80,7 +82,7 @@ fn artifact_interface_binary_field(reader: ArtifactInterfaceBinaryReader, expect
     unit,
     string,
 ] {
-    match artifact_binary_decode_string_id(reader.reader, reader.table) {
+    match wire::artifact_binary_decode_string_id(reader.reader, reader.table) {
         Ok(value) => if value == expected {
             Result::Ok(())
         } else {
@@ -95,7 +97,7 @@ fn artifact_interface_binary_string(reader: ArtifactInterfaceBinaryReader, expec
     string,
 ] {
     match artifact_interface_binary_expect_tag(reader, 4, expected) {
-        Ok(()) => artifact_binary_decode_string_id(reader.reader, reader.table),
+        Ok(()) => wire::artifact_binary_decode_string_id(reader.reader, reader.table),
         Err(error) => Result::Err(error),
     }
 }
@@ -105,7 +107,7 @@ fn artifact_interface_binary_number(reader: ArtifactInterfaceBinaryReader, expec
     string,
 ] {
     match artifact_interface_binary_expect_tag(reader, 3, expected) {
-        Ok(()) => artifact_binary_read_string(reader.reader),
+        Ok(()) => wire::artifact_binary_read_string(reader.reader),
         Err(error) => Result::Err(error),
     }
 }
@@ -175,12 +177,12 @@ fn artifact_interface_binary_optional_trait_ref(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Option[tast::TraitRef], string] {
-    let offset = reader.reader.offset.get();
+    let offset = wire::artifact_binary_reader_offset(reader.reader);
     let tag = artifact_interface_binary_read_tag(reader)?;
     if tag == 0 {
         Result::Ok(Option::None)
     } else {
-        reader.reader.offset.set(offset);
+        wire::artifact_binary_reader_set_offset(reader.reader, offset);
         match artifact_interface_binary_trait_ref(reader, context) {
             Ok(value) => Result::Ok(Option::Some(value)),
             Err(error) => Result::Err(error),
@@ -229,20 +231,20 @@ fn artifact_interface_binary_type(
 ) -> Result[tast::Type, string] {
     let tag = artifact_interface_binary_read_tag(reader)?;
     if tag == 4 {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         return artifact_interface_binary_simple_type(name)
     } else if tag != 6 {
         return Result::Err(artifact_interface_binary_error("type"))
     } else {
         ()
     };
-    let count = artifact_binary_read_u32(reader.reader)?;
+    let count = wire::artifact_binary_read_u32(reader.reader)?;
     if count != 1 {
         return Result::Err(artifact_interface_binary_error("type variant"))
     } else {
         ()
     };
-    let kind = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+    let kind = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
     if kind == "TEnum" || kind == "TStruct" {
         let name = artifact_interface_binary_named_string(reader, "name", "named type")?;
         if kind == "TEnum" {
@@ -349,7 +351,7 @@ fn artifact_interface_binary_predicate(
     context: ArtifactDecodeContext,
 ) -> Result[tast::TypePredicate, string] {
     artifact_interface_binary_object(reader, 1, "type predicate")?;
-    let kind = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+    let kind = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
     artifact_interface_binary_object(reader, 2, "type predicate payload")?;
     if kind == "Trait" {
         artifact_interface_binary_field(reader, "for_ty")?;
@@ -404,19 +406,19 @@ fn artifact_interface_binary_enum_fields(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[tast::EnumVariantFields, string] {
-    let offset = reader.reader.offset.get();
+    let offset = wire::artifact_binary_reader_offset(reader.reader);
     let tag = artifact_interface_binary_read_tag(reader)?;
     if tag == 4 {
-        let value = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let value = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         if value == "Unit" {
             Result::Ok(tast::EnumVariantFields::Unit)
         } else {
             Result::Err(artifact_interface_binary_error("enum variant fields"))
         }
     } else {
-        reader.reader.offset.set(offset);
+        wire::artifact_binary_reader_set_offset(reader.reader, offset);
         artifact_interface_binary_object(reader, 1, "enum variant fields")?;
-        let kind = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let kind = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         if kind == "Tuple" {
             match artifact_interface_binary_type_array(reader, context, "enum tuple fields") {
                 Ok(value) => {
@@ -565,7 +567,7 @@ fn artifact_interface_binary_fn_map(
     let count = artifact_interface_binary_read_count(reader, 6, "function map")?;
     let result = Vec::with_capacity(count);
     for _ in 0..count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         result.push(artifact_interface_binary_fn_scheme(reader, context, name)?)
     };
     Result::Ok(result)
@@ -578,7 +580,7 @@ fn artifact_interface_binary_associated_type_defs(
     let count = artifact_interface_binary_read_count(reader, 6, "associated type definitions")?;
     let result = Vec::with_capacity(count);
     for _ in 0..count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         artifact_interface_binary_object(reader, 1, "associated type definition")?;
         artifact_interface_binary_field(reader, "bounds")?;
         let bounds = artifact_interface_binary_trait_refs(reader, context)?;
@@ -615,7 +617,7 @@ fn artifact_interface_binary_associated_types(
     let count = artifact_interface_binary_read_count(reader, 6, "associated types")?;
     let result = Vec::with_capacity(count);
     for _ in 0..count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         result.push((name, artifact_interface_binary_type(reader, context)?))
     };
     Result::Ok(result)
@@ -668,7 +670,7 @@ fn artifact_interface_binary_inherent_key(
     context: ArtifactDecodeContext,
 ) -> Result[artifact_model::ArtifactInherentImplKey, string] {
     artifact_interface_binary_object(reader, 1, "inherent implementation key")?;
-    let kind = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+    let kind = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
     if kind == "Exact" {
         match artifact_interface_binary_type(reader, context) {
             Ok(value) => {
@@ -720,21 +722,21 @@ fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryRead
     let enum_count = artifact_interface_binary_read_count(reader, 6, "enum map")?;
     let enums = Vec::with_capacity(enum_count);
     for _ in 0..enum_count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         enums.push(artifact_interface_binary_enum_def(reader, context, name)?)
     };
     artifact_interface_binary_field(reader, "structs")?;
     let struct_count = artifact_interface_binary_read_count(reader, 6, "struct map")?;
     let structs = Vec::with_capacity(struct_count);
     for _ in 0..struct_count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         structs.push(artifact_interface_binary_struct_def(reader, context, name)?)
     };
     artifact_interface_binary_field(reader, "aliases")?;
     let alias_count = artifact_interface_binary_read_count(reader, 6, "type alias map")?;
     let type_aliases = Vec::with_capacity(alias_count);
     for _ in 0..alias_count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         type_aliases.push(artifact_interface_binary_type_alias(reader, context, name)?)
     };
     artifact_interface_binary_field(reader, "trait_env")?;
@@ -743,7 +745,7 @@ fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryRead
     let trait_count = artifact_interface_binary_read_count(reader, 6, "trait definitions")?;
     let traits = Vec::with_capacity(trait_count);
     for _ in 0..trait_count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         traits.push(artifact_interface_binary_trait_def(reader, context, name)?)
     };
     artifact_interface_binary_field(reader, "trait_impls")?;
@@ -758,7 +760,7 @@ fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryRead
     let constant_count = artifact_interface_binary_read_count(reader, 6, "constant map")?;
     let constants = Vec::with_capacity(constant_count);
     for _ in 0..constant_count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         artifact_interface_binary_object(reader, 1, "constant scheme")?;
         artifact_interface_binary_field(reader, "ty")?;
         let ty = artifact_interface_binary_type(reader, context)?;
@@ -793,7 +795,7 @@ fn artifact_interface_binary_package_interface(reader: ArtifactInterfaceBinaryRe
     let value_count = artifact_interface_binary_read_count(reader, 6, "value exports")?;
     let value_exports = Vec::with_capacity(value_count);
     for _ in 0..value_count {
-        let export_name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let export_name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         let number = artifact_interface_binary_number(reader, "value export index")?;
         value_exports.push((export_name, artifact_parse_nonnegative_int(number)?))
     };
@@ -801,7 +803,7 @@ fn artifact_interface_binary_package_interface(reader: ArtifactInterfaceBinaryRe
     let enum_count = artifact_interface_binary_read_count(reader, 6, "enum variants")?;
     let enum_variants = Vec::with_capacity(enum_count);
     for _ in 0..enum_count {
-        let enum_name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let enum_name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         enum_variants.push(
             (enum_name, artifact_interface_binary_string_array(reader, "enum variant names")?),
         )
@@ -816,7 +818,7 @@ fn artifact_interface_binary_string_map(reader: ArtifactInterfaceBinaryReader, e
     let count = artifact_interface_binary_read_count(reader, 6, expected)?;
     let result = Vec::with_capacity(count);
     for _ in 0..count {
-        let name = artifact_binary_decode_string_id(reader.reader, reader.table)?;
+        let name = wire::artifact_binary_decode_string_id(reader.reader, reader.table)?;
         result.push((name, artifact_interface_binary_string(reader, expected)?))
     };
     Result::Ok(result)
@@ -838,7 +840,7 @@ fn artifact_interface_binary_version_field(
     }
 }
 
-fn decode_artifact_interface_binary_value(table: ArtifactBinaryStringTable, data: bytes::Bytes) -> Result[
+fn decode_artifact_interface_binary_value(table: wire::ArtifactBinaryStringTable, data: bytes::Bytes) -> Result[
     artifact_model::ArtifactInterfaceUnit,
     string,
 ] {
@@ -856,7 +858,7 @@ fn decode_artifact_interface_binary_value(table: ArtifactBinaryStringTable, data
     let deps = artifact_interface_binary_string_map(reader, "dependency hashes")?;
     artifact_interface_binary_field(reader, "interface_hash")?;
     let interface_hash = artifact_interface_binary_string(reader, "interface hash")?;
-    if artifact_binary_reader_remaining(reader.reader) != 0 {
+    if wire::artifact_binary_reader_remaining(reader.reader) != 0 {
         return Result::Err("trailing bytes in binary artifact value")
     } else {
         ()

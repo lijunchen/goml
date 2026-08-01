@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_wire as wire;
+
 use gomlc::artifact_model;
 
 use gomlc::ast;
@@ -845,18 +847,18 @@ fn orders_link_inputs_by_dependencies_and_name() -> unit {
 }
 
 fn sample_artifact_json(pretty: bool) -> string {
-    let writer = new_artifact_json_writer(pretty);
-    artifact_json_begin_object(writer);
-    artifact_json_name(writer, "text");
-    artifact_json_string(writer, "quote \" slash \\ line\n tab\t zero\u0000 é");
-    artifact_json_name(writer, "values");
-    artifact_json_begin_array(writer);
-    artifact_json_number(writer, "12");
-    artifact_json_bool(writer, true);
-    artifact_json_null(writer);
-    artifact_json_end_array(writer);
-    artifact_json_end_object(writer);
-    artifact_json_finish(writer)
+    let writer = wire::new_artifact_json_writer(pretty);
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, "text");
+    wire::artifact_json_string(writer, "quote \" slash \\ line\n tab\t zero\u0000 é");
+    wire::artifact_json_name(writer, "values");
+    wire::artifact_json_begin_array(writer);
+    wire::artifact_json_number(writer, "12");
+    wire::artifact_json_bool(writer, true);
+    wire::artifact_json_null(writer);
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_end_object(writer);
+    wire::artifact_json_finish(writer)
 }
 
 #[test]
@@ -888,13 +890,13 @@ fn writes_artifact_type_shapes() -> unit {
         trait_ref: Option::Some(tast::TraitRef { name: "Iterator", args: Vec::new() }),
     };
     let value = tast::Type::Func { params: Vec::[option], ret_ty: projection };
-    let writer = new_artifact_json_writer(false);
+    let writer = wire::new_artifact_json_writer(false);
     artifact_json_type(writer, context, value);
     testing::assert_eq(
-        artifact_json_finish(writer),
+        wire::artifact_json_finish(writer),
         "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}",
     );
-    let writer = new_artifact_json_writer(false);
+    let writer = wire::new_artifact_json_writer(false);
     artifact_json_type_predicate(
         writer,
         context,
@@ -904,7 +906,7 @@ fn writes_artifact_type_shapes() -> unit {
         },
     );
     testing::assert_eq(
-        artifact_json_finish(writer),
+        wire::artifact_json_finish(writer),
         "{\"Equality\":{\"lhs\":{\"TStruct\":{\"name\":\"Box\"}},\"rhs\":\"TInt32\"}}",
     )
 }
@@ -937,33 +939,33 @@ fn writes_core_file_shape() -> unit {
         type_instances: Vec::new(),
         constants: Vec::new(),
     };
-    let writer = new_artifact_json_writer(false);
+    let writer = wire::new_artifact_json_writer(false);
     artifact_json_core_file(writer, artifact_type_context(Vec::new(), Vec::new()), value);
     testing::assert_eq(
-        artifact_json_finish(writer),
+        wire::artifact_json_finish(writer),
         "{\"toplevels\":[{\"name\":\"audit::answer\",\"root\":true,\"generics\":[],\"trait_impl\":null,\"params\":[],\"ret_ty\":\"TInt32\",\"body\":{\"stmts\":[],\"tail\":{\"EPrim\":{\"value\":{\"Int32\":{\"value\":41}},\"ty\":\"TInt32\"}}}}],\"constants\":[]}",
     )
 }
 
 #[test]
 fn writes_callable_body_shapes() -> unit {
-    let writer = new_artifact_json_writer(false);
+    let writer = wire::new_artifact_json_writer(false);
     let primitive = artifact_callable(tast::Callable::Intrinsic("eq.primitive"));
-    artifact_json_begin_array(writer);
-    artifact_json_string(writer, primitive.name);
+    wire::artifact_json_begin_array(writer);
+    wire::artifact_json_string(writer, primitive.name);
     artifact_json_callable_body(writer, primitive);
     let intrinsic = artifact_callable(tast::Callable::Intrinsic("ref.new"));
-    artifact_json_string(writer, intrinsic.name);
+    wire::artifact_json_string(writer, intrinsic.name);
     artifact_json_callable_body(writer, intrinsic);
     let runtime = artifact_callable(tast::Callable::Runtime("core.char_from_uint32"));
-    artifact_json_string(writer, runtime.name);
+    wire::artifact_json_string(writer, runtime.name);
     artifact_json_callable_body(writer, runtime);
     let host = artifact_callable(tast::Callable::Runtime("std.path.file_name"));
-    artifact_json_string(writer, host.name);
+    wire::artifact_json_string(writer, host.name);
     artifact_json_callable_body(writer, host);
-    artifact_json_end_array(writer);
+    wire::artifact_json_end_array(writer);
     testing::assert_eq(
-        artifact_json_finish(writer),
+        wire::artifact_json_finish(writer),
         "[\"__goml_primitive_eq\",{\"kind\":\"intrinsic\",\"id\":\"primitive_eq\"},\"ref\",{\"kind\":\"intrinsic\",\"id\":\"ref_new\"},\"char_from_uint32_raw\",{\"kind\":\"runtime\",\"id\":\"char_from_uint32\"},\"std::internal::host::path_file_name\",{\"kind\":\"runtime\",\"id\":\"std_path_file_name\"}]",
     )
 }
@@ -1536,13 +1538,13 @@ fn decodes_artifact_type_shapes() -> unit {
             name: "Item",
         },
     };
-    let value_writer = new_artifact_value_writer();
+    let value_writer = wire::new_artifact_value_writer();
     artifact_json_type(value_writer, artifact_type_context(Vec::["Option"], Vec::new()), type_value);
-    let type_value = match artifact_value_finish(value_writer) {
+    let type_value = match wire::artifact_value_finish(value_writer) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
-            ArtifactValue::Null
+            wire::ArtifactValue::Null
         },
     };
     let decoded = match artifact_decode_type(context, type_value) {
@@ -1552,13 +1554,13 @@ fn decodes_artifact_type_shapes() -> unit {
             tast::Type::Error
         },
     };
-    let writer = new_artifact_json_writer(false);
+    let writer = wire::new_artifact_json_writer(false);
     artifact_json_type(
         writer,
         artifact_type_context(context.enum_names, context.struct_names),
         decoded,
     );
-    testing::assert_eq(artifact_json_finish(writer), type_json);
+    testing::assert_eq(wire::artifact_json_finish(writer), type_json);
     testing::assert_eq(context.enum_names.len(), 1);
     testing::assert_eq(context.enum_names.get(0), "Option");
     let predicate_json = "{\"Equality\":{\"lhs\":{\"TStruct\":{\"name\":\"Box\"}},\"rhs\":\"TInt32\"}}";
@@ -1566,17 +1568,17 @@ fn decodes_artifact_type_shapes() -> unit {
         lhs: tast::Type::Con { name: "Box" },
         rhs: tast::Type::Int32,
     };
-    let value_writer = new_artifact_value_writer();
+    let value_writer = wire::new_artifact_value_writer();
     artifact_json_type_predicate(
         value_writer,
         artifact_type_context(Vec::new(), Vec::["Box"]),
         predicate_value,
     );
-    let predicate_value = match artifact_value_finish(value_writer) {
+    let predicate_value = match wire::artifact_value_finish(value_writer) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
-            ArtifactValue::Null
+            wire::ArtifactValue::Null
         },
     };
     let predicate = match artifact_decode_predicate(context, predicate_value) {
@@ -1586,13 +1588,13 @@ fn decodes_artifact_type_shapes() -> unit {
             tast::TypePredicate::Equality { lhs: tast::Type::Error, rhs: tast::Type::Error }
         },
     };
-    let writer = new_artifact_json_writer(false);
+    let writer = wire::new_artifact_json_writer(false);
     artifact_json_type_predicate(
         writer,
         artifact_type_context(context.enum_names, context.struct_names),
         predicate,
     );
-    testing::assert_eq(artifact_json_finish(writer), predicate_json)
+    testing::assert_eq(wire::artifact_json_finish(writer), predicate_json)
 }
 
 #[test]
@@ -1661,7 +1663,7 @@ fn compiler_world_artifact_round_trips() -> unit {
             bytes::Bytes::new()
         },
     };
-    testing::assert_eq(artifact_binary_bytes_equal(first, second), true);
+    testing::assert_eq(wire::artifact_binary_bytes_equal(first, second), true);
     match decode_package_world(first) {
         Ok(decoded) => {
             testing::assert_eq(

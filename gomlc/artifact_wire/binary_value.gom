@@ -1,8 +1,8 @@
-package main;
+package wire;
 
 use std::bytes;
 
-struct ArtifactBinaryStringTable {
+pub struct ArtifactBinaryStringTable {
     values: Vec[string],
     indexes: HashMap[string, int],
 }
@@ -40,7 +40,7 @@ fn artifact_binary_collect_value_strings(
     }
 }
 
-fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
+pub fn artifact_binary_string_table(value: ArtifactValue) -> ArtifactBinaryStringTable {
     let seen: HashMap[string, unit] = HashMap::{};
     let values: Vec[string] = Vec::[];
     artifact_binary_collect_value_strings(seen, values, value);
@@ -56,14 +56,14 @@ fn artifact_binary_string_table_from_values(values: Vec[string]) -> ArtifactBina
     ArtifactBinaryStringTable { values, indexes }
 }
 
-fn artifact_binary_string_id(table: ArtifactBinaryStringTable, value: string) -> int {
+pub fn artifact_binary_string_id(table: ArtifactBinaryStringTable, value: string) -> int {
     match table.indexes[value] {
         Some(value) => value,
         None => -1,
     }
 }
 
-fn encode_artifact_binary_string_table(table: ArtifactBinaryStringTable) -> bytes::Bytes {
+pub fn encode_artifact_binary_string_table(table: ArtifactBinaryStringTable) -> bytes::Bytes {
     let writer = new_artifact_binary_writer();
     artifact_binary_write_uleb128(writer, table.values.len() as uint64);
     for value in table.values {
@@ -72,7 +72,7 @@ fn encode_artifact_binary_string_table(table: ArtifactBinaryStringTable) -> byte
     artifact_binary_writer_finish(writer)
 }
 
-fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
+pub fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
     ArtifactBinaryStringTable,
     string,
 ] {
@@ -117,7 +117,7 @@ fn artifact_binary_encode_string_id(
     }
 }
 
-fn artifact_binary_decode_string_id(reader: ArtifactBinaryReader, table: ArtifactBinaryStringTable) -> Result[
+pub fn artifact_binary_decode_string_id(reader: ArtifactBinaryReader, table: ArtifactBinaryStringTable) -> Result[
     string,
     string,
 ] {
@@ -193,7 +193,7 @@ fn artifact_binary_encode_value_at(
     }
 }
 
-fn encode_artifact_binary_value(table: ArtifactBinaryStringTable, value: ArtifactValue) -> Result[
+pub fn encode_artifact_binary_value(table: ArtifactBinaryStringTable, value: ArtifactValue) -> Result[
     bytes::Bytes,
     string,
 ] {
@@ -276,7 +276,7 @@ fn artifact_binary_decode_value_at(
     }
 }
 
-fn decode_artifact_binary_value(table: ArtifactBinaryStringTable, data: bytes::Bytes) -> Result[
+pub fn decode_artifact_binary_value(table: ArtifactBinaryStringTable, data: bytes::Bytes) -> Result[
     ArtifactValue,
     string,
 ] {

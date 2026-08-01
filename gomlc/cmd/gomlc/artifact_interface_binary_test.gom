@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_wire as wire;
+
 use gomlc::artifact_model;
 
 use std::bytes;
@@ -21,31 +23,31 @@ fn binary_interface_fixture() -> artifact_model::ArtifactInterfaceUnit {
 
 #[test]
 fn binary_artifact_value_round_trips_value_shapes() -> unit {
-    let value = ArtifactValue::Object(
+    let value = wire::ArtifactValue::Object(
         Vec::[
-            ("null", ArtifactValue::Null),
-            ("false", ArtifactValue::Bool(false)),
-            ("true", ArtifactValue::Bool(true)),
-            ("number", ArtifactValue::Number("-12.5e2")),
-            ("string", ArtifactValue::String("hello")),
+            ("null", wire::ArtifactValue::Null),
+            ("false", wire::ArtifactValue::Bool(false)),
+            ("true", wire::ArtifactValue::Bool(true)),
+            ("number", wire::ArtifactValue::Number("-12.5e2")),
+            ("string", wire::ArtifactValue::String("hello")),
             (
                 "array",
-                ArtifactValue::Array(Vec::[ArtifactValue::Number("1"), ArtifactValue::String("x")]),
+                wire::ArtifactValue::Array(Vec::[wire::ArtifactValue::Number("1"), wire::ArtifactValue::String("x")]),
             ),
         ],
     );
-    let table = artifact_binary_string_table(value);
-    testing::assert_eq(artifact_binary_string_id(table, "-12.5e2"), -1);
-    let encoded = match encode_artifact_binary_value(table, value) {
+    let table = wire::artifact_binary_string_table(value);
+    testing::assert_eq(wire::artifact_binary_string_id(table, "-12.5e2"), -1);
+    let encoded = match wire::encode_artifact_binary_value(table, value) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    match decode_artifact_binary_value(table, encoded) {
-        Ok(decoded) => match encode_artifact_binary_value(table, decoded) {
-            Ok(reencoded) => testing::assert(artifact_binary_bytes_equal(encoded, reencoded)),
+    match wire::decode_artifact_binary_value(table, encoded) {
+        Ok(decoded) => match wire::encode_artifact_binary_value(table, decoded) {
+            Ok(reencoded) => testing::assert(wire::artifact_binary_bytes_equal(encoded, reencoded)),
             Err(error) => testing::fail(error),
         },
         Err(error) => testing::fail(error),
@@ -68,7 +70,7 @@ fn binary_interface_artifact_is_deterministic() -> unit {
             bytes::Bytes::new()
         },
     };
-    testing::assert_eq(artifact_binary_bytes_equal(first, second), true);
+    testing::assert_eq(wire::artifact_binary_bytes_equal(first, second), true);
     match decode_artifact_interface_binary(first) {
         Ok(value) => testing::assert_eq(
             encode_artifact_interface_unit(value, false),
@@ -107,14 +109,14 @@ fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
         },
     };
     sections.push(
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: 99,
             version: 1,
             flags: artifact_binary_required_section_flag(),
             data: bytes::Bytes::new(),
         },
     );
-    let encoded = match encode_artifact_binary_container(1, sections) {
+    let encoded = match wire::encode_artifact_binary_container(1, sections) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);

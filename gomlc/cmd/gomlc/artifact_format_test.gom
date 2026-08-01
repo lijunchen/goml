@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_wire as wire;
+
 use std::bytes;
 use std::testing;
 
@@ -10,7 +12,7 @@ fn artifact_readers_accept_only_gaf() -> unit {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
-            artifact_binary_magic()
+            wire::artifact_binary_magic()
         },
     };
     match decode_artifact_interface_bytes(interface_data) {
@@ -26,7 +28,7 @@ fn artifact_readers_accept_only_gaf() -> unit {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
-            artifact_binary_magic()
+            wire::artifact_binary_magic()
         },
     };
     match decode_artifact_core_bytes(core_data) {

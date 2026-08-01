@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_wire as wire;
+
 use gomlc::artifact_model;
 
 use gomlc::core;
@@ -7,14 +9,14 @@ use std::bytes;
 use std::fs;
 
 fn world_metadata(counter: int) -> bytes::Bytes {
-    let writer = new_artifact_binary_writer();
-    artifact_binary_write_u64(writer, counter as uint64);
-    artifact_binary_writer_finish(writer)
+    let writer = wire::new_artifact_binary_writer();
+    wire::artifact_binary_write_u64(writer, counter as uint64);
+    wire::artifact_binary_writer_finish(writer)
 }
 
 fn world_decode_counter(data: bytes::Bytes) -> Result[int, string] {
-    let reader = new_artifact_binary_reader(data);
-    let value = artifact_binary_read_u64(reader)?;
+    let reader = wire::new_artifact_binary_reader(data);
+    let value = wire::artifact_binary_read_u64(reader)?;
     if value > 2147483647 {
         Result::Err("world artifact counter exceeds supported size")
     } else {
@@ -42,7 +44,7 @@ fn world_core_unit(
 }
 
 fn world_add_package_sections(
-    sections: Vec[ArtifactBinarySection],
+    sections: Vec[wire::ArtifactBinarySection],
     section_id: uint16,
     value: ArtifactStandardPackage,
 ) -> Result[unit, string] {
@@ -57,7 +59,7 @@ fn world_add_package_sections(
         ),
     )?;
     sections.push(
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: section_id,
             version: 1,
             flags: artifact_binary_required_section_flag(),
@@ -65,7 +67,7 @@ fn world_add_package_sections(
         },
     );
     sections.push(
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: section_id + 1,
             version: 1,
             flags: artifact_binary_required_section_flag(),
@@ -75,7 +77,7 @@ fn world_add_package_sections(
     Result::Ok(())
 }
 
-fn world_add_standard_sections(sections: Vec[ArtifactBinarySection], value: ArtifactStandardLibrary) -> Result[
+fn world_add_standard_sections(sections: Vec[wire::ArtifactBinarySection], value: ArtifactStandardLibrary) -> Result[
     unit,
     string,
 ] {
@@ -113,19 +115,19 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
         ),
     )?;
     let sections = Vec::[
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: 1,
             version: 1,
             flags: artifact_binary_required_section_flag(),
             data: world_metadata(value.counter.get()),
         },
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: 2,
             version: 1,
             flags: artifact_binary_required_section_flag(),
             data: builtin_interface,
         },
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: 3,
             version: 1,
             flags: artifact_binary_required_section_flag(),
@@ -133,14 +135,14 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
         },
     ];
     world_add_standard_sections(sections, value.standard)?;
-    encode_artifact_binary_container(3, sections)
+    wire::encode_artifact_binary_container(3, sections)
 }
 
-fn world_required_section(value: ArtifactBinaryContainer, id: uint16) -> Result[
-    ArtifactBinarySection,
+fn world_required_section(value: wire::ArtifactBinaryContainer, id: uint16) -> Result[
+    wire::ArtifactBinarySection,
     string,
 ] {
-    match artifact_binary_find_section(value, id) {
+    match wire::artifact_binary_find_section(value, id) {
         Some(section) => if section.version != 1
             || section.flags != artifact_binary_required_section_flag() {
             Result::Err("invalid world artifact section")
@@ -151,7 +153,7 @@ fn world_required_section(value: ArtifactBinaryContainer, id: uint16) -> Result[
     }
 }
 
-fn world_decode_package(value: ArtifactBinaryContainer, section_id: uint16, expected_name: string) -> Result[
+fn world_decode_package(value: wire::ArtifactBinaryContainer, section_id: uint16, expected_name: string) -> Result[
     ArtifactStandardPackage,
     string,
 ] {
@@ -174,7 +176,7 @@ fn world_decode_package(value: ArtifactBinaryContainer, section_id: uint16, expe
 }
 
 fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
-    let container = decode_artifact_binary_container(data)?;
+    let container = wire::decode_artifact_binary_container(data)?;
     if container.kind != 3 {
         return Result::Err("binary artifact is not a compiler world")
     } else {

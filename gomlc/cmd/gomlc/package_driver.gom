@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_wire as wire;
+
 use gomlc::artifact_model;
 
 use gomlc::anf;
@@ -390,37 +392,6 @@ fn trait_impl_exposed_private_names(
     result
 }
 
-fn artifact_string_less(left: string, right: string) -> bool {
-    let common = if left.byte_len() < right.byte_len() {
-        left.byte_len()
-    } else {
-        right.byte_len()
-    };
-    for index in 0..common {
-        if left.byte_get(index) < right.byte_get(index) {
-            return true
-        } else if left.byte_get(index) > right.byte_get(index) {
-            return false
-        } else {
-            ()
-        }
-    };
-    left.byte_len() < right.byte_len()
-}
-
-fn sort_artifact_names(values: Vec[string]) -> Vec[string] {
-    for index in 1..values.len() {
-        let current = values[index];
-        let mut destination = index;
-        while destination > 0 && artifact_string_less(current, values[destination - 1]) {
-            values[destination] = values[destination - 1];
-            destination = destination - 1;
-        };
-        values[destination] = current;
-    };
-    values
-}
-
 fn join_artifact_names(values: Vec[string]) -> string {
     let builder = text::StringBuilder::new();
     for index in 0..values.len() {
@@ -442,7 +413,7 @@ fn validate_public_trait_impls(value: hir::File, package_name: string, public_na
         match item {
             ImplBlock(value) => match value.trait_ref {
                 Some(trait_ref) => if trait_impl_header_is_public(value, package_name, public_names) {
-                    let private_names = sort_artifact_names(
+                    let private_names = wire::sort_artifact_names(
                         trait_impl_exposed_private_names(value, package_name, public_names),
                     );
                     if !private_names.is_empty() {
@@ -482,7 +453,7 @@ fn function_exposed_private_names(
         Some(ret_ty) => collect_private_type_names(result, package_name, public_names, ret_ty),
         None => (),
     };
-    sort_artifact_names(result)
+    wire::sort_artifact_names(result)
 }
 
 fn validate_public_fields_and_inherent_methods(
@@ -506,7 +477,7 @@ fn validate_public_fields_and_inherent_methods(
                             return Result::Err(
                                 "Public field " + value.name + "." + field.0
                                     + " exposes private type "
-                                    + join_artifact_names(sort_artifact_names(private_names)),
+                                    + join_artifact_names(wire::sort_artifact_names(private_names)),
                             )
                         } else {
                             ()

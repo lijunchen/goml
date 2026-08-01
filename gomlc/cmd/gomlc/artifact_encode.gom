@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_wire as wire;
+
 use gomlc::tast;
 use gomlc::vecs;
 
@@ -13,78 +15,78 @@ fn artifact_type_context(enum_names: Vec[string], struct_names: Vec[string]) -> 
 }
 
 fn artifact_json_type_array(
-    writer: ArtifactJsonWriter,
+    writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     values: Vec[tast::Type],
 ) -> unit {
-    artifact_json_begin_array(writer);
+    wire::artifact_json_begin_array(writer);
     for value in values {
         artifact_json_type(writer, context, value)
     };
-    artifact_json_end_array(writer)
+    wire::artifact_json_end_array(writer)
 }
 
-fn artifact_json_named_type(writer: ArtifactJsonWriter, kind: string, field: string, value: string) -> unit {
-    artifact_json_begin_object(writer);
-    artifact_json_name(writer, kind);
-    artifact_json_begin_object(writer);
-    artifact_json_name(writer, field);
-    artifact_json_string(writer, value);
-    artifact_json_end_object(writer);
-    artifact_json_end_object(writer)
+fn artifact_json_named_type(writer: wire::ArtifactJsonWriter, kind: string, field: string, value: string) -> unit {
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, kind);
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, field);
+    wire::artifact_json_string(writer, value);
+    wire::artifact_json_end_object(writer);
+    wire::artifact_json_end_object(writer)
 }
 
 fn artifact_json_trait_ref(
-    writer: ArtifactJsonWriter,
+    writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: tast::TraitRef,
 ) -> unit {
-    artifact_json_begin_object(writer);
-    artifact_json_name(writer, "name");
-    artifact_json_string(writer, value.name);
-    artifact_json_name(writer, "args");
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, "name");
+    wire::artifact_json_string(writer, value.name);
+    wire::artifact_json_name(writer, "args");
     artifact_json_type_array(writer, context, value.args);
-    artifact_json_end_object(writer)
+    wire::artifact_json_end_object(writer)
 }
 
 fn artifact_json_optional_trait_ref(
-    writer: ArtifactJsonWriter,
+    writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: Option[tast::TraitRef],
 ) -> unit {
     match value {
         Some(value) => artifact_json_trait_ref(writer, context, value),
-        None => artifact_json_null(writer),
+        None => wire::artifact_json_null(writer),
     }
 }
 
-fn artifact_json_type(writer: ArtifactJsonWriter, context: ArtifactTypeContext, input: tast::Type) -> unit {
+fn artifact_json_type(writer: wire::ArtifactJsonWriter, context: ArtifactTypeContext, input: tast::Type) -> unit {
     match tast::resolve_type(input) {
-        Unit => artifact_json_string(writer, "TUnit"),
-        Never => artifact_json_string(writer, "TNever"),
-        Bool => artifact_json_string(writer, "TBool"),
-        Int => artifact_json_string(writer, "TInt"),
-        Int8 => artifact_json_string(writer, "TInt8"),
-        Int16 => artifact_json_string(writer, "TInt16"),
-        Int32 => artifact_json_string(writer, "TInt32"),
-        Int64 => artifact_json_string(writer, "TInt64"),
-        Uint => artifact_json_string(writer, "TUint"),
-        Uint8 => artifact_json_string(writer, "TUint8"),
-        Uint16 => artifact_json_string(writer, "TUint16"),
-        Uint32 => artifact_json_string(writer, "TUint32"),
-        Uint64 => artifact_json_string(writer, "TUint64"),
-        Float32 => artifact_json_string(writer, "TFloat32"),
-        Float64 => artifact_json_string(writer, "TFloat64"),
-        String => artifact_json_string(writer, "TString"),
-        Char => artifact_json_string(writer, "TChar"),
+        Unit => wire::artifact_json_string(writer, "TUnit"),
+        Never => wire::artifact_json_string(writer, "TNever"),
+        Bool => wire::artifact_json_string(writer, "TBool"),
+        Int => wire::artifact_json_string(writer, "TInt"),
+        Int8 => wire::artifact_json_string(writer, "TInt8"),
+        Int16 => wire::artifact_json_string(writer, "TInt16"),
+        Int32 => wire::artifact_json_string(writer, "TInt32"),
+        Int64 => wire::artifact_json_string(writer, "TInt64"),
+        Uint => wire::artifact_json_string(writer, "TUint"),
+        Uint8 => wire::artifact_json_string(writer, "TUint8"),
+        Uint16 => wire::artifact_json_string(writer, "TUint16"),
+        Uint32 => wire::artifact_json_string(writer, "TUint32"),
+        Uint64 => wire::artifact_json_string(writer, "TUint64"),
+        Float32 => wire::artifact_json_string(writer, "TFloat32"),
+        Float64 => wire::artifact_json_string(writer, "TFloat64"),
+        String => wire::artifact_json_string(writer, "TString"),
+        Char => wire::artifact_json_string(writer, "TChar"),
         Tuple { items: values } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TTuple");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "typs");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TTuple");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "typs");
             artifact_json_type_array(writer, context, values);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         Con { name } => if vecs::contains(context.enum_names, name) {
             artifact_json_named_type(writer, "TEnum", "name", name)
@@ -93,35 +95,35 @@ fn artifact_json_type(writer: ArtifactJsonWriter, context: ArtifactTypeContext, 
         },
         Dyn { trait_name: name } => artifact_json_named_type(writer, "TDyn", "trait_name", name),
         Projection { for_ty, name, trait_ref } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TProjection");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "trait_ref");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TProjection");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "trait_ref");
             artifact_json_optional_trait_ref(writer, context, trait_ref);
-            artifact_json_name(writer, "for_ty");
+            wire::artifact_json_name(writer, "for_ty");
             artifact_json_type(writer, context, for_ty);
-            artifact_json_name(writer, "name");
-            artifact_json_string(writer, name);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_name(writer, "name");
+            wire::artifact_json_string(writer, name);
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         App { ty: base, args } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TApp");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "ty");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TApp");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "ty");
             artifact_json_type(writer, context, base);
-            artifact_json_name(writer, "args");
+            wire::artifact_json_name(writer, "args");
             artifact_json_type_array(writer, context, args);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         Array { len: length, elem: element } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TArray");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "len");
-            artifact_json_number(
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TArray");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "len");
+            wire::artifact_json_number(
                 writer,
                 if length < 0 {
                     "18446744073709551615"
@@ -129,99 +131,99 @@ fn artifact_json_type(writer: ArtifactJsonWriter, context: ArtifactTypeContext, 
                     length.to_string()
                 },
             );
-            artifact_json_name(writer, "elem");
+            wire::artifact_json_name(writer, "elem");
             artifact_json_type(writer, context, element);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         Slice { elem: element } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TSlice");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "elem");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TSlice");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "elem");
             artifact_json_type(writer, context, element);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         VecType { elem: element } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TVec");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "elem");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TVec");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "elem");
             artifact_json_type(writer, context, element);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         RefType { elem: element } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TRef");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "elem");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TRef");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "elem");
             artifact_json_type(writer, context, element);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         Channel { elem: element } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TChannel");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "elem");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TChannel");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "elem");
             artifact_json_type(writer, context, element);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         HashMap { key, value } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "THashMap");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "key");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "THashMap");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "key");
             artifact_json_type(writer, context, key);
-            artifact_json_name(writer, "value");
+            wire::artifact_json_name(writer, "value");
             artifact_json_type(writer, context, value);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         Param { name } => artifact_json_named_type(writer, "TParam", "name", name),
         Func { params, ret_ty } => {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "TFunc");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "params");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TFunc");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "params");
             artifact_json_type_array(writer, context, params);
-            artifact_json_name(writer, "ret_ty");
+            wire::artifact_json_name(writer, "ret_ty");
             artifact_json_type(writer, context, ret_ty);
-            artifact_json_end_object(writer);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer);
+            wire::artifact_json_end_object(writer)
         },
         Var(_) | Error => fail("error[compile]: unresolved type in compiler artifact"),
     }
 }
 
 fn artifact_json_type_predicate(
-    writer: ArtifactJsonWriter,
+    writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: tast::TypePredicate,
 ) -> unit {
-    artifact_json_begin_object(writer);
+    wire::artifact_json_begin_object(writer);
     match value {
         Trait { for_ty, trait_ref } => {
-            artifact_json_name(writer, "Trait");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "for_ty");
+            wire::artifact_json_name(writer, "Trait");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "for_ty");
             artifact_json_type(writer, context, for_ty);
-            artifact_json_name(writer, "trait_ref");
+            wire::artifact_json_name(writer, "trait_ref");
             artifact_json_trait_ref(writer, context, trait_ref);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer)
         },
         Equality { lhs: left, rhs: right } => {
-            artifact_json_name(writer, "Equality");
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "lhs");
+            wire::artifact_json_name(writer, "Equality");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "lhs");
             artifact_json_type(writer, context, left);
-            artifact_json_name(writer, "rhs");
+            wire::artifact_json_name(writer, "rhs");
             artifact_json_type(writer, context, right);
-            artifact_json_end_object(writer)
+            wire::artifact_json_end_object(writer)
         },
     };
-    artifact_json_end_object(writer)
+    wire::artifact_json_end_object(writer)
 }

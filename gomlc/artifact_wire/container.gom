@@ -1,19 +1,19 @@
-package main;
+package wire;
 
 use gomlc::hash;
 use std::collections;
 use std::bytes;
 
-struct ArtifactBinarySection {
-    id: uint16,
-    version: uint16,
-    flags: uint16,
-    data: bytes::Bytes,
+pub struct ArtifactBinarySection {
+    pub id: uint16,
+    pub version: uint16,
+    pub flags: uint16,
+    pub data: bytes::Bytes,
 }
 
-struct ArtifactBinaryContainer {
-    kind: uint8,
-    sections: Vec[ArtifactBinarySection],
+pub struct ArtifactBinaryContainer {
+    pub kind: uint8,
+    pub sections: Vec[ArtifactBinarySection],
 }
 
 fn artifact_binary_header_size() -> int {
@@ -24,11 +24,11 @@ fn artifact_binary_directory_entry_size() -> int {
     56
 }
 
-fn artifact_binary_magic() -> bytes::Bytes {
+pub fn artifact_binary_magic() -> bytes::Bytes {
     bytes::Bytes::from_vec(b"GOMLART\0")
 }
 
-fn artifact_binary_bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> bool {
+pub fn artifact_binary_bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> bool {
     if left.len() != right.len() {
         false
     } else {
@@ -99,7 +99,7 @@ fn artifact_binary_sections_valid(values: Vec[ArtifactBinarySection]) -> bool {
     true
 }
 
-fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinarySection]) -> Result[
+pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinarySection]) -> Result[
     bytes::Bytes,
     string,
 ] {
@@ -161,7 +161,7 @@ fn artifact_binary_checked_int(reader: ArtifactBinaryReader, value: uint64, name
     }
 }
 
-fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinaryContainer, string] {
+pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinaryContainer, string] {
     let reader = new_artifact_binary_reader(data);
     let magic = artifact_binary_read_raw_bytes(reader, 8)?;
     if !artifact_binary_bytes_equal(magic, artifact_binary_magic()) {
@@ -314,7 +314,7 @@ fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinary
     }
 }
 
-fn artifact_binary_find_section(value: ArtifactBinaryContainer, id: uint16) -> Option[
+pub fn artifact_binary_find_section(value: ArtifactBinaryContainer, id: uint16) -> Option[
     ArtifactBinarySection,
 ] {
     for offset in 0..value.sections.len() {

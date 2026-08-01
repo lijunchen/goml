@@ -1,11 +1,13 @@
 package main;
 
+use gomlc::artifact_wire as wire;
+
 use gomlc::core;
 use gomlc::tast;
 
 fn artifact_decode_core_type_field(
     context: ArtifactCoreDecodeContext,
-    object: Vec[(string, ArtifactValue)],
+    object: Vec[(string, wire::ArtifactValue)],
     name: string,
 ) -> Result[tast::Type, string] {
     let value = artifact_json_required_field(object, name)?;
@@ -14,7 +16,7 @@ fn artifact_decode_core_type_field(
 
 fn artifact_decode_core_expr_field(
     context: ArtifactCoreDecodeContext,
-    object: Vec[(string, ArtifactValue)],
+    object: Vec[(string, wire::ArtifactValue)],
     name: string,
 ) -> Result[core::Expr, string] {
     let value = artifact_json_required_field(object, name)?;
@@ -23,7 +25,7 @@ fn artifact_decode_core_expr_field(
 
 fn artifact_decode_core_exprs(
     context: ArtifactCoreDecodeContext,
-    value: ArtifactValue,
+    value: wire::ArtifactValue,
     expected: string,
 ) -> Result[Vec[core::Expr], string] {
     let values = artifact_json_array(value, expected)?;
@@ -36,14 +38,14 @@ fn artifact_decode_core_exprs(
 
 fn artifact_decode_core_expr_array_field(
     context: ArtifactCoreDecodeContext,
-    object: Vec[(string, ArtifactValue)],
+    object: Vec[(string, wire::ArtifactValue)],
     name: string,
 ) -> Result[Vec[core::Expr], string] {
     let value = artifact_json_required_field(object, name)?;
     artifact_decode_core_exprs(context, value, name)
 }
 
-fn artifact_decode_optional_core_expr(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_optional_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Option[core::Expr],
     string,
 ] {
@@ -53,7 +55,7 @@ fn artifact_decode_optional_core_expr(context: ArtifactCoreDecodeContext, value:
     }
 }
 
-fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[tast::ClosureParam],
     string,
 ] {
@@ -68,7 +70,7 @@ fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: Art
     Result::Ok(result)
 }
 
-fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[core::Arm],
     string,
 ] {
@@ -83,7 +85,7 @@ fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: Artifact
     Result::Ok(result)
 }
 
-fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Expr,
     string,
 ] {
@@ -183,7 +185,7 @@ fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: Artifact
     }
 }
 
-fn artifact_decode_core_index_field(object: Vec[(string, ArtifactValue)], name: string) -> Result[
+fn artifact_decode_core_index_field(object: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
     int,
     string,
 ] {
@@ -195,7 +197,7 @@ fn artifact_decode_core_index_field(object: Vec[(string, ArtifactValue)], name: 
 fn artifact_decode_core_expr_tail(
     context: ArtifactCoreDecodeContext,
     kind: string,
-    object: Vec[(string, ArtifactValue)],
+    object: Vec[(string, wire::ArtifactValue)],
 ) -> Result[core::Expr, string] {
     if kind == "EConstrGet" {
         let expr = artifact_decode_core_expr_field(context, object, "expr")?;
@@ -272,7 +274,7 @@ fn artifact_decode_core_expr_tail(
     }
 }
 
-fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Block,
     string,
 ] {
@@ -291,7 +293,7 @@ fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: Artifac
     Result::Ok(core::Block { stmts, tail })
 }
 
-fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Option[core::TraitImpl],
     string,
 ] {
@@ -319,7 +321,7 @@ fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value: Ar
     }
 }
 
-fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[(string, tast::Type)],
     string,
 ] {
@@ -339,7 +341,7 @@ fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: Artifa
     Result::Ok(result)
 }
 
-fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Function,
     string,
 ] {
@@ -372,14 +374,14 @@ fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: Arti
 
 fn artifact_decode_const_expr_field(
     context: ArtifactCoreDecodeContext,
-    object: Vec[(string, ArtifactValue)],
+    object: Vec[(string, wire::ArtifactValue)],
     name: string,
 ) -> Result[tast::ConstExpr, string] {
     let value = artifact_json_required_field(object, name)?;
     artifact_decode_const_expr(context, value)
 }
 
-fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::ConstExpr,
     string,
 ] {
@@ -420,7 +422,7 @@ fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: Artifac
     }
 }
 
-fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::Constant,
     string,
 ] {
@@ -431,7 +433,7 @@ fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: ArtifactV
     Result::Ok(tast::Constant { name, ty, value })
 }
 
-fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: ArtifactValue) -> Result[
+fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::File,
     string,
 ] {
