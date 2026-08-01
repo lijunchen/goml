@@ -1,6 +1,6 @@
 package main;
 
-use gomlc::artifact_codec as codec;
+use gomlc::artifact_interface_codec as interface_codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -817,9 +817,9 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
             } else {
                 fail("error[compile]: " + error)
             };
-            let interface_unit = codec::new_artifact_interface_unit(
+            let interface_unit = interface_codec::new_artifact_interface_unit(
                 command.package_name,
-                codec::empty_artifact_package_exports(),
+                interface_codec::empty_artifact_package_exports(),
                 artifact_model::ArtifactPackageInterface {
                     package_name: command.package_name,
                     name: "main",
@@ -834,7 +834,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
                     package_name: command.package_name,
                     declared_name: "main",
                     interface_hash: interface_unit.interface_hash,
-                    exports: codec::empty_artifact_package_exports(),
+                    exports: interface_codec::empty_artifact_package_exports(),
                     core_ir: empty_core_file(),
                     deps: Vec::[("builtin", artifact_builtin_interface_hash(world))],
                     sources: Vec::[],

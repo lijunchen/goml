@@ -1,4 +1,4 @@
-package codec;
+package type_codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -12,6 +12,14 @@ pub struct ArtifactTypeContext {
 
 pub fn artifact_type_context(enum_names: Vec[string], struct_names: Vec[string]) -> ArtifactTypeContext {
     ArtifactTypeContext { enum_names, struct_names }
+}
+
+pub fn artifact_json_string_array(writer: wire::ArtifactJsonWriter, values: Vec[string]) -> unit {
+    wire::artifact_json_begin_array(writer);
+    for value in values {
+        wire::artifact_json_string(writer, value)
+    };
+    wire::artifact_json_end_array(writer)
 }
 
 pub fn artifact_json_type_array(

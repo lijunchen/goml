@@ -1,8 +1,10 @@
-package codec;
+package interface_codec;
 
 use gomlc::artifact_wire as wire;
 
 use gomlc::artifact_model;
+use gomlc::artifact_type_codec as type_codec;
+use gomlc::artifact_callable_codec as callable_codec;
 
 use gomlc::hash;
 use gomlc::tast;
@@ -22,7 +24,7 @@ pub fn empty_artifact_package_exports() -> artifact_model::ArtifactPackageExport
     }
 }
 
-pub fn artifact_exports_type_context(value: artifact_model::ArtifactPackageExports) -> ArtifactTypeContext {
+pub fn artifact_exports_type_context(value: artifact_model::ArtifactPackageExports) -> type_codec::ArtifactTypeContext {
     let enum_names = value.enum_type_names;
     let struct_names = value.struct_type_names;
     for definition in value.enums {
@@ -31,19 +33,19 @@ pub fn artifact_exports_type_context(value: artifact_model::ArtifactPackageExpor
     for definition in value.structs {
         struct_names.push(definition.name)
     };
-    artifact_type_context(enum_names, struct_names)
+    type_codec::artifact_type_context(enum_names, struct_names)
 }
 
 pub fn artifact_json_type_pairs(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     values: Vec[(string, tast::Type)],
 ) -> unit {
     wire::artifact_json_begin_array(writer);
     for value in values {
         wire::artifact_json_begin_array(writer);
         wire::artifact_json_string(writer, value.0);
-        artifact_json_type(writer, context, value.1);
+        type_codec::artifact_json_type(writer, context, value.1);
         wire::artifact_json_end_array(writer)
     };
     wire::artifact_json_end_array(writer)
@@ -51,14 +53,14 @@ pub fn artifact_json_type_pairs(
 
 pub fn artifact_json_enum_def(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: tast::EnumDef,
 ) -> unit {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "name");
     wire::artifact_json_string(writer, value.name);
     wire::artifact_json_name(writer, "generics");
-    artifact_json_string_array(writer, value.generics);
+    type_codec::artifact_json_string_array(writer, value.generics);
     wire::artifact_json_name(writer, "variants");
     wire::artifact_json_begin_array(writer);
     for variant in value.variants {
@@ -71,7 +73,7 @@ pub fn artifact_json_enum_def(
             Tuple(fields) => {
                 wire::artifact_json_begin_object(writer);
                 wire::artifact_json_name(writer, "Tuple");
-                artifact_json_type_array(writer, context, fields);
+                type_codec::artifact_json_type_array(writer, context, fields);
                 wire::artifact_json_end_object(writer)
             },
             Struct(fields) => {
@@ -89,14 +91,14 @@ pub fn artifact_json_enum_def(
 
 pub fn artifact_json_struct_def(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: tast::StructDef,
 ) -> unit {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "name");
     wire::artifact_json_string(writer, value.name);
     wire::artifact_json_name(writer, "generics");
-    artifact_json_string_array(writer, value.generics);
+    type_codec::artifact_json_string_array(writer, value.generics);
     wire::artifact_json_name(writer, "fields");
     artifact_json_type_pairs(writer, context, value.fields);
     wire::artifact_json_name(writer, "has_hidden_fields");
@@ -106,48 +108,48 @@ pub fn artifact_json_struct_def(
 
 pub fn artifact_json_predicates(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     values: Vec[tast::TypePredicate],
 ) -> unit {
     wire::artifact_json_begin_array(writer);
     for value in values {
-        artifact_json_type_predicate(writer, context, value)
+        type_codec::artifact_json_type_predicate(writer, context, value)
     };
     wire::artifact_json_end_array(writer)
 }
 
 pub fn artifact_json_trait_refs(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     values: Vec[tast::TraitRef],
 ) -> unit {
     wire::artifact_json_begin_array(writer);
     for value in values {
-        artifact_json_trait_ref(writer, context, value)
+        type_codec::artifact_json_trait_ref(writer, context, value)
     };
     wire::artifact_json_end_array(writer)
 }
 
 pub fn artifact_json_fn_scheme(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: artifact_model::ArtifactFnScheme,
 ) -> unit {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "type_params");
-    artifact_json_string_array(writer, value.type_params);
+    type_codec::artifact_json_string_array(writer, value.type_params);
     wire::artifact_json_name(writer, "constraints");
     artifact_json_predicates(writer, context, value.constraints);
     wire::artifact_json_name(writer, "ty");
-    artifact_json_type(writer, context, value.ty);
+    type_codec::artifact_json_type(writer, context, value.ty);
     wire::artifact_json_name(writer, "body");
-    artifact_json_callable_body(writer, artifact_callable(value.body));
+    callable_codec::artifact_json_callable_body(writer, callable_codec::artifact_callable(value.body));
     wire::artifact_json_end_object(writer)
 }
 
 pub fn artifact_json_methods(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     values: Vec[artifact_model::ArtifactFnScheme],
 ) -> unit {
     wire::artifact_json_begin_object(writer);
@@ -160,12 +162,12 @@ pub fn artifact_json_methods(
 
 pub fn artifact_json_trait_def(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: artifact_model::ArtifactTraitDef,
 ) -> unit {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "params");
-    artifact_json_string_array(writer, value.params);
+    type_codec::artifact_json_string_array(writer, value.params);
     wire::artifact_json_name(writer, "predicates");
     artifact_json_predicates(writer, context, value.predicates);
     wire::artifact_json_name(writer, "supertraits");
@@ -187,19 +189,19 @@ pub fn artifact_json_trait_def(
 
 pub fn artifact_json_impl_def(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: artifact_model::ArtifactImplDef,
 ) -> unit {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "params");
-    artifact_json_string_array(writer, value.params);
+    type_codec::artifact_json_string_array(writer, value.params);
     wire::artifact_json_name(writer, "constraints");
     artifact_json_predicates(writer, context, value.constraints);
     wire::artifact_json_name(writer, "associated_types");
     wire::artifact_json_begin_object(writer);
     for associated in value.associated_types {
         wire::artifact_json_name(writer, associated.0);
-        artifact_json_type(writer, context, associated.1)
+        type_codec::artifact_json_type(writer, context, associated.1)
     };
     wire::artifact_json_end_object(writer);
     wire::artifact_json_name(writer, "methods");
@@ -211,27 +213,27 @@ pub fn artifact_json_impl_def(
 
 pub fn artifact_json_trait_impl_key(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: artifact_model::ArtifactTraitImpl,
 ) -> unit {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "trait_ref");
-    artifact_json_trait_ref(writer, context, value.trait_ref);
+    type_codec::artifact_json_trait_ref(writer, context, value.trait_ref);
     wire::artifact_json_name(writer, "for_ty");
-    artifact_json_type(writer, context, value.for_ty);
+    type_codec::artifact_json_type(writer, context, value.for_ty);
     wire::artifact_json_end_object(writer)
 }
 
 pub fn artifact_json_inherent_impl_key(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: artifact_model::ArtifactInherentImplKey,
 ) -> unit {
     wire::artifact_json_begin_object(writer);
     match value {
         Exact(value) => {
             wire::artifact_json_name(writer, "Exact");
-            artifact_json_type(writer, context, value)
+            type_codec::artifact_json_type(writer, context, value)
         },
         Constr(value) => {
             wire::artifact_json_name(writer, "Constr");
@@ -243,7 +245,7 @@ pub fn artifact_json_inherent_impl_key(
 
 pub fn artifact_json_package_exports(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: artifact_model::ArtifactPackageExports,
 ) -> unit {
     wire::artifact_json_begin_object(writer);
@@ -269,9 +271,9 @@ pub fn artifact_json_package_exports(
         wire::artifact_json_name(writer, alias.name);
         wire::artifact_json_begin_object(writer);
         wire::artifact_json_name(writer, "generics");
-        artifact_json_string_array(writer, alias.generics);
+        type_codec::artifact_json_string_array(writer, alias.generics);
         wire::artifact_json_name(writer, "ty");
-        artifact_json_type(writer, context, alias.ty);
+        type_codec::artifact_json_type(writer, context, alias.ty);
         wire::artifact_json_end_object(writer)
     };
     wire::artifact_json_end_object(writer);
@@ -319,7 +321,7 @@ pub fn artifact_json_package_exports(
         wire::artifact_json_name(writer, value.name);
         wire::artifact_json_begin_object(writer);
         wire::artifact_json_name(writer, "ty");
-        artifact_json_type(writer, context, value.ty);
+        type_codec::artifact_json_type(writer, context, value.ty);
         wire::artifact_json_end_object(writer)
     };
     wire::artifact_json_end_object(writer);
@@ -363,7 +365,7 @@ pub fn artifact_json_package_interface(writer: wire::ArtifactJsonWriter, value: 
     wire::artifact_json_begin_object(writer);
     for definition in value.enum_variants {
         wire::artifact_json_name(writer, definition.0);
-        artifact_json_string_array(writer, definition.1)
+        type_codec::artifact_json_string_array(writer, definition.1)
     };
     wire::artifact_json_end_object(writer);
     wire::artifact_json_end_object(writer)
@@ -371,7 +373,7 @@ pub fn artifact_json_package_interface(writer: wire::ArtifactJsonWriter, value: 
 
 pub fn artifact_json_interface_hash_view(
     writer: wire::ArtifactJsonWriter,
-    context: ArtifactTypeContext,
+    context: type_codec::ArtifactTypeContext,
     value: artifact_model::ArtifactInterfaceUnit,
 ) -> unit {
     wire::artifact_json_begin_object(writer);

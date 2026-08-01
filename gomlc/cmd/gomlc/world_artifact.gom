@@ -1,6 +1,7 @@
 package main;
 
-use gomlc::artifact_codec as codec;
+use gomlc::artifact_core_codec as core_codec;
+use gomlc::artifact_interface_codec as interface_codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -50,8 +51,8 @@ fn world_add_package_sections(
     section_id: uint16,
     value: ArtifactStandardPackage,
 ) -> Result[unit, string] {
-    let interface = codec::encode_artifact_interface_binary(value.interface_unit)?;
-    let core = codec::encode_artifact_core_binary(
+    let interface = interface_codec::encode_artifact_interface_binary(value.interface_unit)?;
+    let core = core_codec::encode_artifact_core_binary(
         world_core_unit(
             value.interface_unit.package_name,
             value.interface_unit.package_interface.name,
@@ -64,7 +65,7 @@ fn world_add_package_sections(
         wire::ArtifactBinarySection {
             id: section_id,
             version: 1,
-            flags: codec::artifact_binary_required_section_flag(),
+            flags: interface_codec::artifact_binary_required_section_flag(),
             data: interface,
         },
     );
@@ -72,7 +73,7 @@ fn world_add_package_sections(
         wire::ArtifactBinarySection {
             id: section_id + 1,
             version: 1,
-            flags: codec::artifact_binary_required_section_flag(),
+            flags: interface_codec::artifact_binary_required_section_flag(),
             data: core,
         },
     );
@@ -106,8 +107,8 @@ fn world_add_standard_sections(sections: Vec[wire::ArtifactBinarySection], value
 }
 
 fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
-    let builtin_interface = codec::encode_artifact_interface_binary(value.builtin_interface)?;
-    let builtin_core = codec::encode_artifact_core_binary(
+    let builtin_interface = interface_codec::encode_artifact_interface_binary(value.builtin_interface)?;
+    let builtin_core = core_codec::encode_artifact_core_binary(
         world_core_unit(
             "builtin",
             "builtin",
@@ -120,19 +121,19 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
         wire::ArtifactBinarySection {
             id: 1,
             version: 1,
-            flags: codec::artifact_binary_required_section_flag(),
+            flags: interface_codec::artifact_binary_required_section_flag(),
             data: world_metadata(value.counter.get()),
         },
         wire::ArtifactBinarySection {
             id: 2,
             version: 1,
-            flags: codec::artifact_binary_required_section_flag(),
+            flags: interface_codec::artifact_binary_required_section_flag(),
             data: builtin_interface,
         },
         wire::ArtifactBinarySection {
             id: 3,
             version: 1,
-            flags: codec::artifact_binary_required_section_flag(),
+            flags: interface_codec::artifact_binary_required_section_flag(),
             data: builtin_core,
         },
     ];
@@ -146,7 +147,7 @@ fn world_required_section(value: wire::ArtifactBinaryContainer, id: uint16) -> R
 ] {
     match wire::artifact_binary_find_section(value, id) {
         Some(section) => if section.version != 1
-            || section.flags != codec::artifact_binary_required_section_flag() {
+            || section.flags != interface_codec::artifact_binary_required_section_flag() {
             Result::Err("invalid world artifact section")
         } else {
             Result::Ok(section)
@@ -161,8 +162,8 @@ fn world_decode_package(value: wire::ArtifactBinaryContainer, section_id: uint16
 ] {
     let interface_section = world_required_section(value, section_id)?;
     let core_section = world_required_section(value, section_id + 1)?;
-    let interface = codec::decode_artifact_interface_binary(interface_section.data)?;
-    let core = codec::decode_artifact_core_binary(core_section.data)?;
+    let interface = interface_codec::decode_artifact_interface_binary(interface_section.data)?;
+    let core = core_codec::decode_artifact_core_binary(core_section.data)?;
     if interface.package_name != expected_name || core.package_name != expected_name
         || core.interface_hash != interface.interface_hash {
         Result::Err("world artifact package identity does not match")
@@ -188,8 +189,8 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let counter = Ref::new(world_decode_counter(counter_section.data)?);
     let builtin_interface_section = world_required_section(container, 2)?;
     let builtin_core_section = world_required_section(container, 3)?;
-    let builtin_interface = codec::decode_artifact_interface_binary(builtin_interface_section.data)?;
-    let builtin_core = codec::decode_artifact_core_binary(builtin_core_section.data)?;
+    let builtin_interface = interface_codec::decode_artifact_interface_binary(builtin_interface_section.data)?;
+    let builtin_core = core_codec::decode_artifact_core_binary(builtin_core_section.data)?;
     if builtin_interface.package_name != "builtin" || builtin_core.package_name != "builtin"
         || builtin_core.interface_hash != builtin_interface.interface_hash {
         return Result::Err("world artifact builtin identity does not match")
