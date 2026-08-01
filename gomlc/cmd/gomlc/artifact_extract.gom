@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_codec as codec;
+
 use gomlc::artifact_wire as wire;
 
 use gomlc::artifact_model;
@@ -31,7 +33,7 @@ fn artifact_local_trait_name(owner: string, name: string, trait_names: Vec[strin
     if strings::contains(name, "::") {
         name
     } else {
-        let separator = artifact_constructor_separator(owner);
+        let separator = codec::artifact_constructor_separator(owner);
         let candidate = if separator < 0 {
             name
         } else {
@@ -444,7 +446,7 @@ fn artifact_package_exports(
     enum_type_names: Vec[string],
     struct_type_names: Vec[string],
 ) -> artifact_model::ArtifactPackageExports {
-    let result = empty_artifact_package_exports();
+    let result = codec::empty_artifact_package_exports();
     for name in enum_type_names {
         artifact_add_type_name(result.enum_type_names, name)
     };

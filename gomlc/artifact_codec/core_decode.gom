@@ -1,4 +1,4 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -8,14 +8,14 @@ use gomlc::ast;
 use gomlc::core;
 use gomlc::tast;
 
-struct ArtifactCoreDecodeContext {
-    types: ArtifactDecodeContext,
-    struct_fields: Vec[(string, Vec[string])],
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
+pub struct ArtifactCoreDecodeContext {
+    pub types: ArtifactDecodeContext,
+    pub struct_fields: Vec[(string, Vec[string])],
+    pub enums: Vec[tast::EnumDef],
+    pub structs: Vec[tast::StructDef],
 }
 
-fn artifact_core_decode_context(value: artifact_model::ArtifactPackageExports) -> ArtifactCoreDecodeContext {
+pub fn artifact_core_decode_context(value: artifact_model::ArtifactPackageExports) -> ArtifactCoreDecodeContext {
     let types = ArtifactDecodeContext {
         enum_names: value.enum_type_names,
         struct_names: value.struct_type_names,
@@ -31,7 +31,7 @@ fn artifact_core_decode_context(value: artifact_model::ArtifactPackageExports) -
     ArtifactCoreDecodeContext { types, struct_fields, enums: value.enums, structs: value.structs }
 }
 
-fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: string) -> Vec[string] {
+pub fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: string) -> Vec[string] {
     let result: Vec[string] = Vec::[];
     for value in context.struct_fields {
         if value.0 == name {
@@ -45,12 +45,12 @@ fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: strin
     result
 }
 
-fn artifact_decode_primitive_payload(value: wire::ArtifactValue) -> Result[wire::ArtifactValue, string] {
+pub fn artifact_decode_primitive_payload(value: wire::ArtifactValue) -> Result[wire::ArtifactValue, string] {
     let object = artifact_json_object(value, "primitive payload")?;
     artifact_json_required_field(object, "value")
 }
 
-fn artifact_decode_numeric_primitive(kind: string, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_numeric_primitive(kind: string, value: wire::ArtifactValue) -> Result[
     tast::Primitive,
     string,
 ] {
@@ -75,7 +75,7 @@ fn artifact_decode_numeric_primitive(kind: string, value: wire::ArtifactValue) -
     }
 }
 
-fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primitive, string] {
+pub fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primitive, string] {
     let object = artifact_json_object(value, "primitive")?;
     if object.len() != 1 {
         return Result::Err(artifact_decode_error("primitive variant"))
@@ -121,7 +121,7 @@ fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primiti
     }
 }
 
-fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::Constructor,
     string,
 ] {
@@ -164,7 +164,7 @@ fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wire::
     }
 }
 
-fn artifact_decode_unary(value: string) -> Result[ast::UnaryOp, string] {
+pub fn artifact_decode_unary(value: string) -> Result[ast::UnaryOp, string] {
     match value {
         "Neg" => Result::Ok(ast::UnaryOp::Neg),
         "Not" => Result::Ok(ast::UnaryOp::Not),
@@ -173,7 +173,7 @@ fn artifact_decode_unary(value: string) -> Result[ast::UnaryOp, string] {
     }
 }
 
-fn artifact_decode_binary(value: string) -> Result[ast::BinaryOp, string] {
+pub fn artifact_decode_binary(value: string) -> Result[ast::BinaryOp, string] {
     match value {
         "Add" => Result::Ok(ast::BinaryOp::Add),
         "Sub" => Result::Ok(ast::BinaryOp::Sub),

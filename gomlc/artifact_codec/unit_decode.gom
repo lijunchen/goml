@@ -1,4 +1,4 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -6,7 +6,7 @@ use gomlc::artifact_model;
 
 use gomlc::vecs;
 
-fn artifact_decode_optional_string(value: wire::ArtifactValue, expected: string) -> Result[
+pub fn artifact_decode_optional_string(value: wire::ArtifactValue, expected: string) -> Result[
     Option[string],
     string,
 ] {
@@ -19,7 +19,7 @@ fn artifact_decode_optional_string(value: wire::ArtifactValue, expected: string)
     }
 }
 
-fn artifact_decode_test_descriptor(value: wire::ArtifactValue) -> Result[artifact_model::ArtifactTestDescriptor, string] {
+pub fn artifact_decode_test_descriptor(value: wire::ArtifactValue) -> Result[artifact_model::ArtifactTestDescriptor, string] {
     let object = artifact_json_object(value, "test descriptor")?;
     let id = artifact_json_field_string(object, "id")?;
     let package_name = artifact_json_field_string(object, "package")?;
@@ -51,7 +51,7 @@ fn artifact_decode_test_descriptor(value: wire::ArtifactValue) -> Result[artifac
     )
 }
 
-fn artifact_decode_tests(value: wire::ArtifactValue) -> Result[Vec[artifact_model::ArtifactTestDescriptor], string] {
+pub fn artifact_decode_tests(value: wire::ArtifactValue) -> Result[Vec[artifact_model::ArtifactTestDescriptor], string] {
     let values = artifact_json_array(value, "test descriptors")?;
     let result: Vec[artifact_model::ArtifactTestDescriptor] = Vec::[];
     for value in values {
@@ -60,7 +60,7 @@ fn artifact_decode_tests(value: wire::ArtifactValue) -> Result[Vec[artifact_mode
     Result::Ok(result)
 }
 
-fn artifact_test_descriptors_valid(package_name: string, values: Vec[artifact_model::ArtifactTestDescriptor]) -> bool {
+pub fn artifact_test_descriptors_valid(package_name: string, values: Vec[artifact_model::ArtifactTestDescriptor]) -> bool {
     let ids: Vec[string] = Vec::[];
     for value in values {
         if value.package_name != package_name || value.id == "" || value.symbol == ""
@@ -77,7 +77,7 @@ fn artifact_test_descriptors_valid(package_name: string, values: Vec[artifact_mo
     true
 }
 
-fn artifact_decode_core_value(value: wire::ArtifactValue) -> Result[artifact_model::ArtifactCoreUnit, string] {
+pub fn artifact_decode_core_value(value: wire::ArtifactValue) -> Result[artifact_model::ArtifactCoreUnit, string] {
     let object = artifact_json_object(value, "Core unit")?;
     let package_name = artifact_json_field_string(object, "package")?;
     let declared_name = artifact_json_field_string(object, "declared_name")?;

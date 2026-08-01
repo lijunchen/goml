@@ -1,11 +1,11 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
 use gomlc::core;
 use gomlc::tast;
 
-fn artifact_decode_core_type_field(
+pub fn artifact_decode_core_type_field(
     context: ArtifactCoreDecodeContext,
     object: Vec[(string, wire::ArtifactValue)],
     name: string,
@@ -14,7 +14,7 @@ fn artifact_decode_core_type_field(
     artifact_decode_type(context.types, value)
 }
 
-fn artifact_decode_core_expr_field(
+pub fn artifact_decode_core_expr_field(
     context: ArtifactCoreDecodeContext,
     object: Vec[(string, wire::ArtifactValue)],
     name: string,
@@ -23,7 +23,7 @@ fn artifact_decode_core_expr_field(
     artifact_decode_core_expr(context, value)
 }
 
-fn artifact_decode_core_exprs(
+pub fn artifact_decode_core_exprs(
     context: ArtifactCoreDecodeContext,
     value: wire::ArtifactValue,
     expected: string,
@@ -36,7 +36,7 @@ fn artifact_decode_core_exprs(
     Result::Ok(result)
 }
 
-fn artifact_decode_core_expr_array_field(
+pub fn artifact_decode_core_expr_array_field(
     context: ArtifactCoreDecodeContext,
     object: Vec[(string, wire::ArtifactValue)],
     name: string,
@@ -45,7 +45,7 @@ fn artifact_decode_core_expr_array_field(
     artifact_decode_core_exprs(context, value, name)
 }
 
-fn artifact_decode_optional_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_optional_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Option[core::Expr],
     string,
 ] {
@@ -55,7 +55,7 @@ fn artifact_decode_optional_core_expr(context: ArtifactCoreDecodeContext, value:
     }
 }
 
-fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[tast::ClosureParam],
     string,
 ] {
@@ -70,7 +70,7 @@ fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: wir
     Result::Ok(result)
 }
 
-fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[core::Arm],
     string,
 ] {
@@ -85,7 +85,7 @@ fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire::Ar
     Result::Ok(result)
 }
 
-fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Expr,
     string,
 ] {
@@ -185,7 +185,7 @@ fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::Ar
     }
 }
 
-fn artifact_decode_core_index_field(object: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
+pub fn artifact_decode_core_index_field(object: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
     int,
     string,
 ] {
@@ -194,7 +194,7 @@ fn artifact_decode_core_index_field(object: Vec[(string, wire::ArtifactValue)], 
     artifact_parse_nonnegative_int(value)
 }
 
-fn artifact_decode_core_expr_tail(
+pub fn artifact_decode_core_expr_tail(
     context: ArtifactCoreDecodeContext,
     kind: string,
     object: Vec[(string, wire::ArtifactValue)],
@@ -274,7 +274,7 @@ fn artifact_decode_core_expr_tail(
     }
 }
 
-fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Block,
     string,
 ] {
@@ -293,7 +293,7 @@ fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: wire::A
     Result::Ok(core::Block { stmts, tail })
 }
 
-fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Option[core::TraitImpl],
     string,
 ] {
@@ -321,7 +321,7 @@ fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value: wi
     }
 }
 
-fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[(string, tast::Type)],
     string,
 ] {
@@ -341,7 +341,7 @@ fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::
     Result::Ok(result)
 }
 
-fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Function,
     string,
 ] {
@@ -372,7 +372,7 @@ fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire
     )
 }
 
-fn artifact_decode_const_expr_field(
+pub fn artifact_decode_const_expr_field(
     context: ArtifactCoreDecodeContext,
     object: Vec[(string, wire::ArtifactValue)],
     name: string,
@@ -381,7 +381,7 @@ fn artifact_decode_const_expr_field(
     artifact_decode_const_expr(context, value)
 }
 
-fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::ConstExpr,
     string,
 ] {
@@ -422,7 +422,7 @@ fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::A
     }
 }
 
-fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::Constant,
     string,
 ] {
@@ -433,7 +433,7 @@ fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: wire::Art
     Result::Ok(tast::Constant { name, ty, value })
 }
 
-fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::File,
     string,
 ] {

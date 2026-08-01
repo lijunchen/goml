@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_codec as codec;
+
 use gomlc::artifact_wire as wire;
 
 use gomlc::artifact_model;
@@ -43,7 +45,7 @@ fn binary_core_fixture() -> artifact_model::ArtifactCoreUnit {
         package_name: "audit::value",
         declared_name: "value",
         interface_hash: "0123456789abcdef",
-        exports: empty_artifact_package_exports(),
+        exports: codec::empty_artifact_package_exports(),
         core_ir,
         deps: Vec::[("builtin", "fedcba9876543210")],
         sources: Vec::["value.gom"],
@@ -53,14 +55,14 @@ fn binary_core_fixture() -> artifact_model::ArtifactCoreUnit {
 
 #[test]
 fn binary_core_artifact_is_deterministic_and_independent() -> unit {
-    let first = match encode_artifact_core_binary(binary_core_fixture()) {
+    let first = match codec::encode_artifact_core_binary(binary_core_fixture()) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    let second = match encode_artifact_core_binary(binary_core_fixture()) {
+    let second = match codec::encode_artifact_core_binary(binary_core_fixture()) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
@@ -68,13 +70,13 @@ fn binary_core_artifact_is_deterministic_and_independent() -> unit {
         },
     };
     testing::assert_eq(wire::artifact_binary_bytes_equal(first, second), true);
-    match decode_artifact_core_binary(first) {
+    match codec::decode_artifact_core_binary(first) {
         Ok(value) => {
             testing::assert_eq(value.interface_hash, "0123456789abcdef");
             testing::assert_eq(value.declared_name, "value");
             testing::assert_eq(
-                encode_artifact_core_unit(value, false),
-                encode_artifact_core_unit(binary_core_fixture(), false),
+                codec::encode_artifact_core_unit(value, false),
+                codec::encode_artifact_core_unit(binary_core_fixture(), false),
             )
         },
         Err(error) => testing::fail(error),

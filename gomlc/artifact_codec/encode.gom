@@ -1,20 +1,20 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
 use gomlc::tast;
 use gomlc::vecs;
 
-struct ArtifactTypeContext {
-    enum_names: Vec[string],
-    struct_names: Vec[string],
+pub struct ArtifactTypeContext {
+    pub enum_names: Vec[string],
+    pub struct_names: Vec[string],
 }
 
-fn artifact_type_context(enum_names: Vec[string], struct_names: Vec[string]) -> ArtifactTypeContext {
+pub fn artifact_type_context(enum_names: Vec[string], struct_names: Vec[string]) -> ArtifactTypeContext {
     ArtifactTypeContext { enum_names, struct_names }
 }
 
-fn artifact_json_type_array(
+pub fn artifact_json_type_array(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     values: Vec[tast::Type],
@@ -26,7 +26,7 @@ fn artifact_json_type_array(
     wire::artifact_json_end_array(writer)
 }
 
-fn artifact_json_named_type(writer: wire::ArtifactJsonWriter, kind: string, field: string, value: string) -> unit {
+pub fn artifact_json_named_type(writer: wire::ArtifactJsonWriter, kind: string, field: string, value: string) -> unit {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, kind);
     wire::artifact_json_begin_object(writer);
@@ -36,7 +36,7 @@ fn artifact_json_named_type(writer: wire::ArtifactJsonWriter, kind: string, fiel
     wire::artifact_json_end_object(writer)
 }
 
-fn artifact_json_trait_ref(
+pub fn artifact_json_trait_ref(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: tast::TraitRef,
@@ -49,7 +49,7 @@ fn artifact_json_trait_ref(
     wire::artifact_json_end_object(writer)
 }
 
-fn artifact_json_optional_trait_ref(
+pub fn artifact_json_optional_trait_ref(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: Option[tast::TraitRef],
@@ -60,7 +60,7 @@ fn artifact_json_optional_trait_ref(
     }
 }
 
-fn artifact_json_type(writer: wire::ArtifactJsonWriter, context: ArtifactTypeContext, input: tast::Type) -> unit {
+pub fn artifact_json_type(writer: wire::ArtifactJsonWriter, context: ArtifactTypeContext, input: tast::Type) -> unit {
     match tast::resolve_type(input) {
         Unit => wire::artifact_json_string(writer, "TUnit"),
         Never => wire::artifact_json_string(writer, "TNever"),
@@ -199,7 +199,7 @@ fn artifact_json_type(writer: wire::ArtifactJsonWriter, context: ArtifactTypeCon
     }
 }
 
-fn artifact_json_type_predicate(
+pub fn artifact_json_type_predicate(
     writer: wire::ArtifactJsonWriter,
     context: ArtifactTypeContext,
     value: tast::TypePredicate,

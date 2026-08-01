@@ -1,23 +1,23 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
 use gomlc::tast;
 
-struct ArtifactDecodeContext {
-    enum_names: Vec[string],
-    struct_names: Vec[string],
+pub struct ArtifactDecodeContext {
+    pub enum_names: Vec[string],
+    pub struct_names: Vec[string],
 }
 
-fn new_artifact_decode_context() -> ArtifactDecodeContext {
+pub fn new_artifact_decode_context() -> ArtifactDecodeContext {
     ArtifactDecodeContext { enum_names: Vec::[], struct_names: Vec::[] }
 }
 
-fn artifact_decode_error(expected: string) -> string {
+pub fn artifact_decode_error(expected: string) -> string {
     "invalid compiler artifact: expected " + expected
 }
 
-fn artifact_json_object(value: wire::ArtifactValue, expected: string) -> Result[
+pub fn artifact_json_object(value: wire::ArtifactValue, expected: string) -> Result[
     Vec[(string, wire::ArtifactValue)],
     string,
 ] {
@@ -27,35 +27,35 @@ fn artifact_json_object(value: wire::ArtifactValue, expected: string) -> Result[
     }
 }
 
-fn artifact_json_array(value: wire::ArtifactValue, expected: string) -> Result[Vec[wire::ArtifactValue], string] {
+pub fn artifact_json_array(value: wire::ArtifactValue, expected: string) -> Result[Vec[wire::ArtifactValue], string] {
     match value {
         Array(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_string_value(value: wire::ArtifactValue, expected: string) -> Result[string, string] {
+pub fn artifact_json_string_value(value: wire::ArtifactValue, expected: string) -> Result[string, string] {
     match value {
         String(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_number_value(value: wire::ArtifactValue, expected: string) -> Result[string, string] {
+pub fn artifact_json_number_value(value: wire::ArtifactValue, expected: string) -> Result[string, string] {
     match value {
         Number(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_bool_value(value: wire::ArtifactValue, expected: string) -> Result[bool, string] {
+pub fn artifact_json_bool_value(value: wire::ArtifactValue, expected: string) -> Result[bool, string] {
     match value {
         Bool(value) => Result::Ok(value),
         _ => Result::Err(artifact_decode_error(expected)),
     }
 }
 
-fn artifact_json_required_field(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
+pub fn artifact_json_required_field(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
     wire::ArtifactValue,
     string,
 ] {
@@ -74,7 +74,7 @@ fn artifact_json_required_field(values: Vec[(string, wire::ArtifactValue)], name
     }
 }
 
-fn artifact_json_optional_field(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
+pub fn artifact_json_optional_field(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
     Option[wire::ArtifactValue],
     string,
 ] {
@@ -95,7 +95,7 @@ fn artifact_json_optional_field(values: Vec[(string, wire::ArtifactValue)], name
     }
 }
 
-fn artifact_json_field_string(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
+pub fn artifact_json_field_string(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
     string,
     string,
 ] {
@@ -105,7 +105,7 @@ fn artifact_json_field_string(values: Vec[(string, wire::ArtifactValue)], name: 
     }
 }
 
-fn artifact_json_field_array(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
+pub fn artifact_json_field_array(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
     Vec[wire::ArtifactValue],
     string,
 ] {
@@ -115,7 +115,7 @@ fn artifact_json_field_array(values: Vec[(string, wire::ArtifactValue)], name: s
     }
 }
 
-fn artifact_json_field_object(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
+pub fn artifact_json_field_object(values: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
     Vec[(string, wire::ArtifactValue)],
     string,
 ] {
@@ -125,7 +125,7 @@ fn artifact_json_field_object(values: Vec[(string, wire::ArtifactValue)], name: 
     }
 }
 
-fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
+pub fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
     if value.byte_len() == 0 {
         Result::Err(artifact_decode_error("nonnegative integer"))
     } else {
@@ -147,7 +147,7 @@ fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
     }
 }
 
-fn artifact_decode_string_array(value: wire::ArtifactValue, expected: string) -> Result[
+pub fn artifact_decode_string_array(value: wire::ArtifactValue, expected: string) -> Result[
     Vec[string],
     string,
 ] {
@@ -159,7 +159,7 @@ fn artifact_decode_string_array(value: wire::ArtifactValue, expected: string) ->
     Result::Ok(result)
 }
 
-fn artifact_decode_type_array(
+pub fn artifact_decode_type_array(
     context: ArtifactDecodeContext,
     value: wire::ArtifactValue,
     expected: string,
@@ -172,7 +172,7 @@ fn artifact_decode_type_array(
     Result::Ok(result)
 }
 
-fn artifact_decode_trait_ref(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_trait_ref(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::TraitRef,
     string,
 ] {
@@ -186,7 +186,7 @@ fn artifact_decode_trait_ref(context: ArtifactDecodeContext, value: wire::Artifa
     Result::Ok(tast::TraitRef { name, args })
 }
 
-fn artifact_decode_optional_trait_ref(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_optional_trait_ref(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     Option[tast::TraitRef],
     string,
 ] {
@@ -199,7 +199,7 @@ fn artifact_decode_optional_trait_ref(context: ArtifactDecodeContext, value: wir
     }
 }
 
-fn artifact_decode_named_type(
+pub fn artifact_decode_named_type(
     context: ArtifactDecodeContext,
     value: wire::ArtifactValue,
     field: string,
@@ -215,7 +215,7 @@ fn artifact_decode_named_type(
     Result::Ok(tast::Type::Con { name })
 }
 
-fn artifact_decode_element_type(
+pub fn artifact_decode_element_type(
     context: ArtifactDecodeContext,
     value: wire::ArtifactValue,
     expected: string,
@@ -227,7 +227,7 @@ fn artifact_decode_element_type(
     }
 }
 
-fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::Type,
     string,
 ] {
@@ -378,7 +378,7 @@ fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::ArtifactVal
     }
 }
 
-fn artifact_decode_predicate(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_predicate(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::TypePredicate,
     string,
 ] {

@@ -1,4 +1,4 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -6,19 +6,19 @@ use gomlc::artifact_model;
 
 use std::bytes;
 
-fn artifact_binary_required_section_flag() -> uint16 {
+pub fn artifact_binary_required_section_flag() -> uint16 {
     1
 }
 
-fn artifact_binary_string_table_section_id() -> uint16 {
+pub fn artifact_binary_string_table_section_id() -> uint16 {
     1
 }
 
-fn artifact_binary_value_section_id() -> uint16 {
+pub fn artifact_binary_value_section_id() -> uint16 {
     2
 }
 
-fn artifact_binary_interface_sections(value: artifact_model::ArtifactInterfaceUnit) -> Result[
+pub fn artifact_binary_interface_sections(value: artifact_model::ArtifactInterfaceUnit) -> Result[
     Vec[wire::ArtifactBinarySection],
     string,
 ] {
@@ -46,12 +46,12 @@ fn artifact_binary_interface_sections(value: artifact_model::ArtifactInterfaceUn
     )
 }
 
-fn encode_artifact_interface_binary(value: artifact_model::ArtifactInterfaceUnit) -> Result[bytes::Bytes, string] {
+pub fn encode_artifact_interface_binary(value: artifact_model::ArtifactInterfaceUnit) -> Result[bytes::Bytes, string] {
     let sections = artifact_binary_interface_sections(value)?;
     wire::encode_artifact_binary_container(1, sections)
 }
 
-fn artifact_binary_validate_interface_sections(value: wire::ArtifactBinaryContainer) -> Result[
+pub fn artifact_binary_validate_interface_sections(value: wire::ArtifactBinaryContainer) -> Result[
     unit,
     string,
 ] {
@@ -81,7 +81,7 @@ fn artifact_binary_validate_interface_sections(value: wire::ArtifactBinaryContai
     Result::Ok(())
 }
 
-fn decode_artifact_interface_binary(data: bytes::Bytes) -> Result[artifact_model::ArtifactInterfaceUnit, string] {
+pub fn decode_artifact_interface_binary(data: bytes::Bytes) -> Result[artifact_model::ArtifactInterfaceUnit, string] {
     let container = wire::decode_artifact_binary_container(data)?;
     if container.kind != 1 {
         return Result::Err("binary artifact is not an interface")

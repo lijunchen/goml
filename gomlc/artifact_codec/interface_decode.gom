@@ -1,4 +1,4 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -6,7 +6,7 @@ use gomlc::artifact_model;
 
 use gomlc::tast;
 
-fn artifact_intrinsic_key_from_id(value: string) -> Option[string] {
+pub fn artifact_intrinsic_key_from_id(value: string) -> Option[string] {
     match value {
         "primitive_eq" => Option::Some("eq.primitive"),
         "array_get" => Option::Some("array.get"),
@@ -45,7 +45,7 @@ fn artifact_intrinsic_key_from_id(value: string) -> Option[string] {
     }
 }
 
-fn artifact_runtime_key_from_id(value: string) -> Option[string] {
+pub fn artifact_runtime_key_from_id(value: string) -> Option[string] {
     match value {
         "std_env_args" => Option::Some("std.env.args"),
         "std_env_current_dir" => Option::Some("std.env.current_dir"),
@@ -101,7 +101,7 @@ fn artifact_runtime_key_from_id(value: string) -> Option[string] {
     }
 }
 
-fn artifact_decode_callable_body(name: string, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_callable_body(name: string, value: wire::ArtifactValue) -> Result[
     tast::Callable,
     string,
 ] {
@@ -127,7 +127,7 @@ fn artifact_decode_callable_body(name: string, value: wire::ArtifactValue) -> Re
     }
 }
 
-fn artifact_decode_predicates(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_predicates(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[tast::TypePredicate],
     string,
 ] {
@@ -139,7 +139,7 @@ fn artifact_decode_predicates(context: ArtifactDecodeContext, value: wire::Artif
     Result::Ok(result)
 }
 
-fn artifact_decode_trait_refs(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_trait_refs(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[tast::TraitRef],
     string,
 ] {
@@ -151,7 +151,7 @@ fn artifact_decode_trait_refs(context: ArtifactDecodeContext, value: wire::Artif
     Result::Ok(result)
 }
 
-fn artifact_decode_fn_scheme(context: ArtifactDecodeContext, name: string, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_fn_scheme(context: ArtifactDecodeContext, name: string, value: wire::ArtifactValue) -> Result[
     artifact_model::ArtifactFnScheme,
     string,
 ] {
@@ -172,7 +172,7 @@ fn artifact_decode_fn_scheme(context: ArtifactDecodeContext, name: string, value
     Result::Ok(artifact_model::ArtifactFnScheme { name, type_params, constraints, ty, body })
 }
 
-fn artifact_decode_fn_map(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_fn_map(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[artifact_model::ArtifactFnScheme],
     string,
 ] {
@@ -184,7 +184,7 @@ fn artifact_decode_fn_map(context: ArtifactDecodeContext, value: wire::ArtifactV
     Result::Ok(result)
 }
 
-fn artifact_decode_type_pairs(
+pub fn artifact_decode_type_pairs(
     context: ArtifactDecodeContext,
     value: wire::ArtifactValue,
     expected: string,
@@ -204,7 +204,7 @@ fn artifact_decode_type_pairs(
     Result::Ok(result)
 }
 
-fn artifact_decode_enum_variant_fields(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_enum_variant_fields(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::EnumVariantFields,
     string,
 ] {
@@ -240,7 +240,7 @@ fn artifact_decode_enum_variant_fields(context: ArtifactDecodeContext, value: wi
     }
 }
 
-fn artifact_decode_enum_def(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_enum_def(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::EnumDef,
     string,
 ] {
@@ -263,7 +263,7 @@ fn artifact_decode_enum_def(context: ArtifactDecodeContext, value: wire::Artifac
     Result::Ok(tast::EnumDef { name, generics, variants })
 }
 
-fn artifact_decode_struct_def(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_struct_def(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::StructDef,
     string,
 ] {
@@ -290,7 +290,7 @@ fn artifact_decode_struct_def(context: ArtifactDecodeContext, value: wire::Artif
     Result::Ok(tast::StructDef { name, generics, fields, public_fields, has_hidden_fields })
 }
 
-fn artifact_decode_type_alias(context: ArtifactDecodeContext, name: string, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_type_alias(context: ArtifactDecodeContext, name: string, value: wire::ArtifactValue) -> Result[
     tast::TypeAliasInfo,
     string,
 ] {
@@ -303,7 +303,7 @@ fn artifact_decode_type_alias(context: ArtifactDecodeContext, name: string, valu
     Result::Ok(tast::TypeAliasInfo { name, generics, ty })
 }
 
-fn artifact_decode_associated_type_defs(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_associated_type_defs(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[artifact_model::ArtifactAssociatedTypeDef],
     string,
 ] {
@@ -320,7 +320,7 @@ fn artifact_decode_associated_type_defs(context: ArtifactDecodeContext, value: w
     Result::Ok(result)
 }
 
-fn artifact_decode_trait_def(context: ArtifactDecodeContext, name: string, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_trait_def(context: ArtifactDecodeContext, name: string, value: wire::ArtifactValue) -> Result[
     artifact_model::ArtifactTraitDef,
     string,
 ] {
@@ -347,7 +347,7 @@ fn artifact_decode_trait_def(context: ArtifactDecodeContext, name: string, value
     )
 }
 
-fn artifact_decode_associated_types(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_associated_types(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[(string, tast::Type)],
     string,
 ] {
@@ -359,7 +359,7 @@ fn artifact_decode_associated_types(context: ArtifactDecodeContext, value: wire:
     Result::Ok(result)
 }
 
-fn artifact_decode_impl_def(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_impl_def(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     artifact_model::ArtifactImplDef,
     string,
 ] {
@@ -384,7 +384,7 @@ fn artifact_decode_impl_def(context: ArtifactDecodeContext, value: wire::Artifac
     Result::Ok(artifact_model::ArtifactImplDef { params, constraints, associated_types, methods, valid })
 }
 
-fn artifact_decode_trait_impls(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_trait_impls(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[artifact_model::ArtifactTraitImpl],
     string,
 ] {
@@ -409,7 +409,7 @@ fn artifact_decode_trait_impls(context: ArtifactDecodeContext, value: wire::Arti
     Result::Ok(result)
 }
 
-fn artifact_decode_inherent_impl_key(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_inherent_impl_key(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     artifact_model::ArtifactInherentImplKey,
     string,
 ] {
@@ -431,7 +431,7 @@ fn artifact_decode_inherent_impl_key(context: ArtifactDecodeContext, value: wire
     }
 }
 
-fn artifact_decode_inherent_impls(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_inherent_impls(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[artifact_model::ArtifactInherentImpl],
     string,
 ] {
@@ -451,7 +451,7 @@ fn artifact_decode_inherent_impls(context: ArtifactDecodeContext, value: wire::A
     Result::Ok(result)
 }
 
-fn artifact_decode_package_exports(value: wire::ArtifactValue) -> Result[artifact_model::ArtifactPackageExports, string] {
+pub fn artifact_decode_package_exports(value: wire::ArtifactValue) -> Result[artifact_model::ArtifactPackageExports, string] {
     let context = new_artifact_decode_context();
     let object = artifact_json_object(value, "package exports")?;
     let type_env = artifact_json_field_object(object, "type_env")?;
@@ -528,7 +528,7 @@ fn artifact_decode_package_exports(value: wire::ArtifactValue) -> Result[artifac
     )
 }
 
-fn artifact_decode_package_interface(value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_package_interface(value: wire::ArtifactValue) -> Result[
     artifact_model::ArtifactPackageInterface,
     string,
 ] {
@@ -549,7 +549,7 @@ fn artifact_decode_package_interface(value: wire::ArtifactValue) -> Result[
     Result::Ok(artifact_model::ArtifactPackageInterface { package_name, name, value_exports, enum_variants })
 }
 
-fn artifact_decode_string_map(value: wire::ArtifactValue, expected: string) -> Result[
+pub fn artifact_decode_string_map(value: wire::ArtifactValue, expected: string) -> Result[
     Vec[(string, string)],
     string,
 ] {
@@ -561,7 +561,7 @@ fn artifact_decode_string_map(value: wire::ArtifactValue, expected: string) -> R
     Result::Ok(result)
 }
 
-fn artifact_decode_interface_value(value: wire::ArtifactValue) -> Result[artifact_model::ArtifactInterfaceUnit, string] {
+pub fn artifact_decode_interface_value(value: wire::ArtifactValue) -> Result[artifact_model::ArtifactInterfaceUnit, string] {
     let object = artifact_json_object(value, "interface unit")?;
     let package_name = artifact_json_field_string(object, "package")?;
     let exports = artifact_decode_package_exports(artifact_json_required_field(object, "exports")?)?;

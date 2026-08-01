@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_codec as codec;
+
 use gomlc::artifact_model;
 
 use gomlc::ast;
@@ -14,7 +16,7 @@ struct ArtifactFunctionType {
 fn artifact_function_type_parts(value: tast::Type) -> Result[ArtifactFunctionType, string] {
     match tast::resolve_type(value) {
         Func { params, ret_ty } => Result::Ok(ArtifactFunctionType { params, ret_ty }),
-        _ => Result::Err(artifact_decode_error("function type in package exports")),
+        _ => Result::Err(codec::artifact_decode_error("function type in package exports")),
     }
 }
 

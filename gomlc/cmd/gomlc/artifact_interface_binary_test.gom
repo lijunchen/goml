@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_codec as codec;
+
 use gomlc::artifact_wire as wire;
 
 use gomlc::artifact_model;
@@ -8,9 +10,9 @@ use std::bytes;
 use std::testing;
 
 fn binary_interface_fixture() -> artifact_model::ArtifactInterfaceUnit {
-    new_artifact_interface_unit(
+    codec::new_artifact_interface_unit(
         "audit::value",
-        empty_artifact_package_exports(),
+        codec::empty_artifact_package_exports(),
         artifact_model::ArtifactPackageInterface {
             package_name: "audit::value",
             name: "value",
@@ -56,14 +58,14 @@ fn binary_artifact_value_round_trips_value_shapes() -> unit {
 
 #[test]
 fn binary_interface_artifact_is_deterministic() -> unit {
-    let first = match encode_artifact_interface_binary(binary_interface_fixture()) {
+    let first = match codec::encode_artifact_interface_binary(binary_interface_fixture()) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    let second = match encode_artifact_interface_binary(binary_interface_fixture()) {
+    let second = match codec::encode_artifact_interface_binary(binary_interface_fixture()) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
@@ -71,10 +73,10 @@ fn binary_interface_artifact_is_deterministic() -> unit {
         },
     };
     testing::assert_eq(wire::artifact_binary_bytes_equal(first, second), true);
-    match decode_artifact_interface_binary(first) {
+    match codec::decode_artifact_interface_binary(first) {
         Ok(value) => testing::assert_eq(
-            encode_artifact_interface_unit(value, false),
-            encode_artifact_interface_unit(binary_interface_fixture(), false),
+            codec::encode_artifact_interface_unit(value, false),
+            codec::encode_artifact_interface_unit(binary_interface_fixture(), false),
         ),
         Err(error) => testing::fail(error),
     }
@@ -83,17 +85,17 @@ fn binary_interface_artifact_is_deterministic() -> unit {
 #[test]
 fn binary_interface_artifact_streams_standard_type_data() -> unit {
     let value = package_world().standard.collections.interface_unit;
-    let encoded = match encode_artifact_interface_binary(value) {
+    let encoded = match codec::encode_artifact_interface_binary(value) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    match decode_artifact_interface_binary(encoded) {
+    match codec::decode_artifact_interface_binary(encoded) {
         Ok(decoded) => testing::assert_eq(
-            encode_artifact_interface_unit(decoded, false),
-            encode_artifact_interface_unit(value, false),
+            codec::encode_artifact_interface_unit(decoded, false),
+            codec::encode_artifact_interface_unit(value, false),
         ),
         Err(error) => testing::fail(error),
     }
@@ -101,7 +103,7 @@ fn binary_interface_artifact_streams_standard_type_data() -> unit {
 
 #[test]
 fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
-    let sections = match artifact_binary_interface_sections(binary_interface_fixture()) {
+    let sections = match codec::artifact_binary_interface_sections(binary_interface_fixture()) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
@@ -112,7 +114,7 @@ fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
         wire::ArtifactBinarySection {
             id: 99,
             version: 1,
-            flags: artifact_binary_required_section_flag(),
+            flags: codec::artifact_binary_required_section_flag(),
             data: bytes::Bytes::new(),
         },
     );
@@ -123,7 +125,7 @@ fn binary_interface_artifact_rejects_unknown_required_section() -> unit {
             bytes::Bytes::new()
         },
     };
-    match decode_artifact_interface_binary(encoded) {
+    match codec::decode_artifact_interface_binary(encoded) {
         Ok(_) => testing::fail("expected unknown required section rejection"),
         Err(_) => (),
     }

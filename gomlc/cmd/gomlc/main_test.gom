@@ -1,5 +1,7 @@
 package main;
 
+use gomlc::artifact_codec as codec;
+
 use gomlc::artifact_wire as wire;
 
 use gomlc::artifact_model;
@@ -430,7 +432,7 @@ fn collects_and_encodes_test_descriptors() -> unit {
     paths.push("sample/sample_test.gom");
     let collected = collect_package_test_candidates(files, paths);
     testing::assert_eq(collected.diagnostics.len(), 0);
-    let exports = empty_artifact_package_exports();
+    let exports = codec::empty_artifact_package_exports();
     exports.functions.push(
         artifact_model::ArtifactFnScheme {
             name: "alice::sample::zebra",
@@ -475,7 +477,7 @@ fn collects_all_invalid_test_signature_diagnostics() -> unit {
     paths.push("bad_test.gom");
     let collected = collect_package_test_candidates(files, paths);
     testing::assert_eq(collected.diagnostics.len(), 0);
-    let exports = empty_artifact_package_exports();
+    let exports = codec::empty_artifact_package_exports();
     exports.functions.push(
         artifact_model::ArtifactFnScheme {
             name: "alice::bad::invalid",
@@ -556,7 +558,7 @@ fn labels_duplicate_test_ids_across_files() -> unit {
     paths.push("second.gom");
     let collected = collect_package_test_candidates(files, paths);
     testing::assert_eq(collected.diagnostics.len(), 0);
-    let exports = empty_artifact_package_exports();
+    let exports = codec::empty_artifact_package_exports();
     exports.functions.push(
         artifact_model::ArtifactFnScheme {
             name: "example::tests::duplicate",
@@ -879,7 +881,7 @@ fn writes_pretty_artifact_json() -> unit {
 
 #[test]
 fn writes_artifact_type_shapes() -> unit {
-    let context = artifact_type_context(Vec::["Option"], Vec::["Box"]);
+    let context = codec::artifact_type_context(Vec::["Option"], Vec::["Box"]);
     let option = tast::Type::App {
         ty: tast::Type::Con { name: "Option" },
         args: Vec::[tast::Type::Int32],
@@ -891,13 +893,13 @@ fn writes_artifact_type_shapes() -> unit {
     };
     let value = tast::Type::Func { params: Vec::[option], ret_ty: projection };
     let writer = wire::new_artifact_json_writer(false);
-    artifact_json_type(writer, context, value);
+    codec::artifact_json_type(writer, context, value);
     testing::assert_eq(
         wire::artifact_json_finish(writer),
         "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}",
     );
     let writer = wire::new_artifact_json_writer(false);
-    artifact_json_type_predicate(
+    codec::artifact_json_type_predicate(
         writer,
         context,
         tast::TypePredicate::Equality {
@@ -940,7 +942,7 @@ fn writes_core_file_shape() -> unit {
         constants: Vec::new(),
     };
     let writer = wire::new_artifact_json_writer(false);
-    artifact_json_core_file(writer, artifact_type_context(Vec::new(), Vec::new()), value);
+    codec::artifact_json_core_file(writer, codec::artifact_type_context(Vec::new(), Vec::new()), value);
     testing::assert_eq(
         wire::artifact_json_finish(writer),
         "{\"toplevels\":[{\"name\":\"audit::answer\",\"root\":true,\"generics\":[],\"trait_impl\":null,\"params\":[],\"ret_ty\":\"TInt32\",\"body\":{\"stmts\":[],\"tail\":{\"EPrim\":{\"value\":{\"Int32\":{\"value\":41}},\"ty\":\"TInt32\"}}}}],\"constants\":[]}",
@@ -950,19 +952,19 @@ fn writes_core_file_shape() -> unit {
 #[test]
 fn writes_callable_body_shapes() -> unit {
     let writer = wire::new_artifact_json_writer(false);
-    let primitive = artifact_callable(tast::Callable::Intrinsic("eq.primitive"));
+    let primitive = codec::artifact_callable(tast::Callable::Intrinsic("eq.primitive"));
     wire::artifact_json_begin_array(writer);
     wire::artifact_json_string(writer, primitive.name);
-    artifact_json_callable_body(writer, primitive);
-    let intrinsic = artifact_callable(tast::Callable::Intrinsic("ref.new"));
+    codec::artifact_json_callable_body(writer, primitive);
+    let intrinsic = codec::artifact_callable(tast::Callable::Intrinsic("ref.new"));
     wire::artifact_json_string(writer, intrinsic.name);
-    artifact_json_callable_body(writer, intrinsic);
-    let runtime = artifact_callable(tast::Callable::Runtime("core.char_from_uint32"));
+    codec::artifact_json_callable_body(writer, intrinsic);
+    let runtime = codec::artifact_callable(tast::Callable::Runtime("core.char_from_uint32"));
     wire::artifact_json_string(writer, runtime.name);
-    artifact_json_callable_body(writer, runtime);
-    let host = artifact_callable(tast::Callable::Runtime("std.path.file_name"));
+    codec::artifact_json_callable_body(writer, runtime);
+    let host = codec::artifact_callable(tast::Callable::Runtime("std.path.file_name"));
     wire::artifact_json_string(writer, host.name);
-    artifact_json_callable_body(writer, host);
+    codec::artifact_json_callable_body(writer, host);
     wire::artifact_json_end_array(writer);
     testing::assert_eq(
         wire::artifact_json_finish(writer),
@@ -972,7 +974,7 @@ fn writes_callable_body_shapes() -> unit {
 
 #[test]
 fn decodes_primitive_equality_intrinsic_id() -> unit {
-    match artifact_intrinsic_key_from_id("primitive_eq") {
+    match codec::artifact_intrinsic_key_from_id("primitive_eq") {
         Some(value) => testing::assert_eq(value, "eq.primitive"),
         None => testing::fail("expected primitive equality intrinsic"),
     }
@@ -980,7 +982,7 @@ fn decodes_primitive_equality_intrinsic_id() -> unit {
 
 #[test]
 fn writes_interface_unit_shape_and_hash() -> unit {
-    let exports = empty_artifact_package_exports();
+    let exports = codec::empty_artifact_package_exports();
     exports.functions.push(
         artifact_model::ArtifactFnScheme {
             name: "audit::value::value",
@@ -990,7 +992,7 @@ fn writes_interface_unit_shape_and_hash() -> unit {
             body: tast::Callable::Function("audit::value::value"),
         },
     );
-    let artifact_unit = new_artifact_interface_unit(
+    let artifact_unit = codec::new_artifact_interface_unit(
         "audit::value",
         exports,
         artifact_model::ArtifactPackageInterface {
@@ -1005,21 +1007,21 @@ fn writes_interface_unit_shape_and_hash() -> unit {
         artifact_unit.interface_hash,
         "41d1a08b7d853e9b2827ff0521f0e4d8b933795d7379df841ca500536ee45867",
     );
-    let encoded = encode_artifact_interface_unit(artifact_unit, false);
+    let encoded = codec::encode_artifact_interface_unit(artifact_unit, false);
     testing::assert_eq(
         encoded,
         "{\"format_version\":17,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
             + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"41d1a08b7d853e9b2827ff0521f0e4d8b933795d7379df841ca500536ee45867\"}",
     );
-    let binary = match encode_artifact_interface_binary(artifact_unit) {
+    let binary = match codec::encode_artifact_interface_binary(artifact_unit) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    match decode_artifact_interface_binary(binary) {
-        Ok(value) => testing::assert_eq(encode_artifact_interface_unit(value, false), encoded),
+    match codec::decode_artifact_interface_binary(binary) {
+        Ok(value) => testing::assert_eq(codec::encode_artifact_interface_unit(value, false), encoded),
         Err(error) => testing::fail(error),
     }
 }
@@ -1073,7 +1075,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
     );
     testing::assert_eq(exports.functions.len(), 1);
     let package_interface = artifact_package_interface("audit::value", "value", exports);
-    let artifact_unit = new_artifact_interface_unit(
+    let artifact_unit = codec::new_artifact_interface_unit(
         "audit::value",
         exports,
         package_interface,
@@ -1133,7 +1135,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
         Vec::new(),
     );
     let package_interface = artifact_package_interface("demo::api", "api", exports);
-    let artifact_unit = new_artifact_interface_unit(
+    let artifact_unit = codec::new_artifact_interface_unit(
         "demo::api",
         exports,
         package_interface,
@@ -1143,17 +1145,17 @@ fn extracts_trait_interface_from_checked_package() -> unit {
         artifact_unit.interface_hash,
         "e35d9405108cc14072ed1ec5e5cb15c5230aff85d768b0504fb21b14e233c1b0",
     );
-    let encoded = encode_artifact_interface_unit(artifact_unit, false);
-    let binary = match encode_artifact_interface_binary(artifact_unit) {
+    let encoded = codec::encode_artifact_interface_unit(artifact_unit, false);
+    let binary = match codec::encode_artifact_interface_binary(artifact_unit) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    match decode_artifact_interface_binary(binary) {
+    match codec::decode_artifact_interface_binary(binary) {
         Ok(value) => {
-            testing::assert_eq(encode_artifact_interface_unit(value, false), encoded);
+            testing::assert_eq(codec::encode_artifact_interface_unit(value, false), encoded);
             let dependency = match artifact_dependency_environment_from_exports(value.exports) {
                 Ok(value) => value,
                 Err(error) => {
@@ -1264,7 +1266,7 @@ fn writes_core_unit_from_checked_package() -> unit {
     let deps = Vec::[
         ("builtin", "03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8"),
     ];
-    let interface_unit = new_artifact_interface_unit(
+    let interface_unit = codec::new_artifact_interface_unit(
         "audit::value",
         public_exports,
         artifact_package_interface("audit::value", "value", public_exports),
@@ -1281,20 +1283,20 @@ fn writes_core_unit_from_checked_package() -> unit {
         sources: Vec::["/tmp/gomlc-test-link-audit/value/value.gom"],
         tests: Vec::new(),
     };
-    let encoded = encode_artifact_core_unit(core_unit, false);
+    let encoded = codec::encode_artifact_core_unit(core_unit, false);
     testing::assert_eq(
         hash::sha256_hex(encoded),
         "51645ab8c570f0e0292a8967605f0b3fe56eee727ef49d7aaf46f9d1510feca3",
     );
-    let binary = match encode_artifact_core_binary(core_unit) {
+    let binary = match codec::encode_artifact_core_binary(core_unit) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    match decode_artifact_core_binary(binary) {
-        Ok(value) => testing::assert_eq(encode_artifact_core_unit(value, false), encoded),
+    match codec::decode_artifact_core_binary(binary) {
+        Ok(value) => testing::assert_eq(codec::encode_artifact_core_unit(value, false), encoded),
         Err(error) => testing::fail(error),
     }
 }
@@ -1310,7 +1312,7 @@ fn requires_explicit_package_declarations_for_artifacts() -> unit {
 
 #[test]
 fn validates_artifact_main_entrypoints() -> unit {
-    let exports = empty_artifact_package_exports();
+    let exports = codec::empty_artifact_package_exports();
     match artifact_validate_entrypoint("example::app", "main", exports) {
         Err(error) => testing::assert_eq(error, "main function is required"),
         Ok(()) => testing::fail("expected missing main error"),
@@ -1328,7 +1330,7 @@ fn validates_artifact_main_entrypoints() -> unit {
         Err(error) => testing::assert_eq(error, "main function must not have type parameters"),
         Ok(()) => testing::fail("expected generic main error"),
     };
-    let exports = empty_artifact_package_exports();
+    let exports = codec::empty_artifact_package_exports();
     exports.functions.push(
         artifact_model::ArtifactFnScheme {
             name: "example::app::main",
@@ -1350,7 +1352,7 @@ fn validates_artifact_main_entrypoints() -> unit {
 
 #[test]
 fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
-    let exports = empty_artifact_package_exports();
+    let exports = codec::empty_artifact_package_exports();
     exports.functions.push(
         artifact_model::ArtifactFnScheme {
             name: "example::app::main",
@@ -1368,7 +1370,7 @@ fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
 
 #[test]
 fn restores_core_metadata_from_artifact_exports() -> unit {
-    let exports = empty_artifact_package_exports();
+    let exports = codec::empty_artifact_package_exports();
     let function_constraint = tast::TypePredicate::Equality {
         lhs: tast::Type::Param { name: "T" },
         rhs: tast::Type::Int32,
@@ -1524,7 +1526,7 @@ fn parses_artifact_json_values() -> unit {
 #[test]
 fn decodes_artifact_type_shapes() -> unit {
     let type_json = "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}";
-    let context = new_artifact_decode_context();
+    let context = codec::new_artifact_decode_context();
     let type_value = tast::Type::Func {
         params: Vec::[
             tast::Type::App {
@@ -1539,7 +1541,7 @@ fn decodes_artifact_type_shapes() -> unit {
         },
     };
     let value_writer = wire::new_artifact_value_writer();
-    artifact_json_type(value_writer, artifact_type_context(Vec::["Option"], Vec::new()), type_value);
+    codec::artifact_json_type(value_writer, codec::artifact_type_context(Vec::["Option"], Vec::new()), type_value);
     let type_value = match wire::artifact_value_finish(value_writer) {
         Ok(value) => value,
         Err(error) => {
@@ -1547,7 +1549,7 @@ fn decodes_artifact_type_shapes() -> unit {
             wire::ArtifactValue::Null
         },
     };
-    let decoded = match artifact_decode_type(context, type_value) {
+    let decoded = match codec::artifact_decode_type(context, type_value) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
@@ -1555,9 +1557,9 @@ fn decodes_artifact_type_shapes() -> unit {
         },
     };
     let writer = wire::new_artifact_json_writer(false);
-    artifact_json_type(
+    codec::artifact_json_type(
         writer,
-        artifact_type_context(context.enum_names, context.struct_names),
+        codec::artifact_type_context(context.enum_names, context.struct_names),
         decoded,
     );
     testing::assert_eq(wire::artifact_json_finish(writer), type_json);
@@ -1569,9 +1571,9 @@ fn decodes_artifact_type_shapes() -> unit {
         rhs: tast::Type::Int32,
     };
     let value_writer = wire::new_artifact_value_writer();
-    artifact_json_type_predicate(
+    codec::artifact_json_type_predicate(
         value_writer,
-        artifact_type_context(Vec::new(), Vec::["Box"]),
+        codec::artifact_type_context(Vec::new(), Vec::["Box"]),
         predicate_value,
     );
     let predicate_value = match wire::artifact_value_finish(value_writer) {
@@ -1581,7 +1583,7 @@ fn decodes_artifact_type_shapes() -> unit {
             wire::ArtifactValue::Null
         },
     };
-    let predicate = match artifact_decode_predicate(context, predicate_value) {
+    let predicate = match codec::artifact_decode_predicate(context, predicate_value) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
@@ -1589,9 +1591,9 @@ fn decodes_artifact_type_shapes() -> unit {
         },
     };
     let writer = wire::new_artifact_json_writer(false);
-    artifact_json_type_predicate(
+    codec::artifact_json_type_predicate(
         writer,
-        artifact_type_context(context.enum_names, context.struct_names),
+        codec::artifact_type_context(context.enum_names, context.struct_names),
         predicate,
     );
     testing::assert_eq(wire::artifact_json_finish(writer), predicate_json)

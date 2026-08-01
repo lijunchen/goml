@@ -1,4 +1,4 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -6,7 +6,7 @@ use gomlc::artifact_model;
 
 use std::bytes;
 
-fn artifact_binary_core_sections(value: artifact_model::ArtifactCoreUnit) -> Result[
+pub fn artifact_binary_core_sections(value: artifact_model::ArtifactCoreUnit) -> Result[
     Vec[wire::ArtifactBinarySection],
     string,
 ] {
@@ -34,12 +34,12 @@ fn artifact_binary_core_sections(value: artifact_model::ArtifactCoreUnit) -> Res
     )
 }
 
-fn encode_artifact_core_binary(value: artifact_model::ArtifactCoreUnit) -> Result[bytes::Bytes, string] {
+pub fn encode_artifact_core_binary(value: artifact_model::ArtifactCoreUnit) -> Result[bytes::Bytes, string] {
     let sections = artifact_binary_core_sections(value)?;
     wire::encode_artifact_binary_container(2, sections)
 }
 
-fn artifact_binary_validate_core_sections(value: wire::ArtifactBinaryContainer) -> Result[unit, string] {
+pub fn artifact_binary_validate_core_sections(value: wire::ArtifactBinaryContainer) -> Result[unit, string] {
     for section in value.sections {
         if section.id == artifact_binary_string_table_section_id() {
             if section.version != 1 {
@@ -66,7 +66,7 @@ fn artifact_binary_validate_core_sections(value: wire::ArtifactBinaryContainer) 
     Result::Ok(())
 }
 
-fn decode_artifact_core_binary(data: bytes::Bytes) -> Result[artifact_model::ArtifactCoreUnit, string] {
+pub fn decode_artifact_core_binary(data: bytes::Bytes) -> Result[artifact_model::ArtifactCoreUnit, string] {
     let container = wire::decode_artifact_binary_container(data)?;
     if container.kind != 2 {
         return Result::Err("binary artifact is not Core")

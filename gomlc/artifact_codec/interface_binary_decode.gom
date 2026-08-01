@@ -1,4 +1,4 @@
-package main;
+package codec;
 
 use gomlc::artifact_wire as wire;
 
@@ -7,27 +7,27 @@ use gomlc::artifact_model;
 use gomlc::tast;
 use std::bytes;
 
-struct ArtifactInterfaceBinaryReader {
-    reader: wire::ArtifactBinaryReader,
-    table: wire::ArtifactBinaryStringTable,
+pub struct ArtifactInterfaceBinaryReader {
+    pub reader: wire::ArtifactBinaryReader,
+    pub table: wire::ArtifactBinaryStringTable,
 }
 
-fn new_artifact_interface_binary_reader(data: bytes::Bytes, table: wire::ArtifactBinaryStringTable) -> ArtifactInterfaceBinaryReader {
+pub fn new_artifact_interface_binary_reader(data: bytes::Bytes, table: wire::ArtifactBinaryStringTable) -> ArtifactInterfaceBinaryReader {
     ArtifactInterfaceBinaryReader { reader: wire::new_artifact_binary_reader(data), table }
 }
 
-fn artifact_interface_binary_error(expected: string) -> string {
+pub fn artifact_interface_binary_error(expected: string) -> string {
     artifact_decode_error(expected)
 }
 
-fn artifact_interface_binary_read_tag(reader: ArtifactInterfaceBinaryReader) -> Result[
+pub fn artifact_interface_binary_read_tag(reader: ArtifactInterfaceBinaryReader) -> Result[
     uint8,
     string,
 ] {
     wire::artifact_binary_read_u8(reader.reader)
 }
 
-fn artifact_interface_binary_expect_tag(
+pub fn artifact_interface_binary_expect_tag(
     reader: ArtifactInterfaceBinaryReader,
     expected_tag: uint8,
     expected: string,
@@ -42,7 +42,7 @@ fn artifact_interface_binary_expect_tag(
     }
 }
 
-fn artifact_interface_binary_read_count(
+pub fn artifact_interface_binary_read_count(
     reader: ArtifactInterfaceBinaryReader,
     tag: uint8,
     expected: string,
@@ -56,7 +56,7 @@ fn artifact_interface_binary_read_count(
     }
 }
 
-fn artifact_interface_binary_object(
+pub fn artifact_interface_binary_object(
     reader: ArtifactInterfaceBinaryReader,
     expected_count: int,
     expected: string,
@@ -71,14 +71,14 @@ fn artifact_interface_binary_object(
     }
 }
 
-fn artifact_interface_binary_array(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
+pub fn artifact_interface_binary_array(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
     int,
     string,
 ] {
     artifact_interface_binary_read_count(reader, 5, expected)
 }
 
-fn artifact_interface_binary_field(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
+pub fn artifact_interface_binary_field(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
     unit,
     string,
 ] {
@@ -92,7 +92,7 @@ fn artifact_interface_binary_field(reader: ArtifactInterfaceBinaryReader, expect
     }
 }
 
-fn artifact_interface_binary_string(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
+pub fn artifact_interface_binary_string(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
     string,
     string,
 ] {
@@ -102,7 +102,7 @@ fn artifact_interface_binary_string(reader: ArtifactInterfaceBinaryReader, expec
     }
 }
 
-fn artifact_interface_binary_number(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
+pub fn artifact_interface_binary_number(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
     string,
     string,
 ] {
@@ -112,7 +112,7 @@ fn artifact_interface_binary_number(reader: ArtifactInterfaceBinaryReader, expec
     }
 }
 
-fn artifact_interface_binary_bool(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
+pub fn artifact_interface_binary_bool(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
     bool,
     string,
 ] {
@@ -124,7 +124,7 @@ fn artifact_interface_binary_bool(reader: ArtifactInterfaceBinaryReader, expecte
     }
 }
 
-fn artifact_interface_binary_named_string(
+pub fn artifact_interface_binary_named_string(
     reader: ArtifactInterfaceBinaryReader,
     field: string,
     expected: string,
@@ -136,7 +136,7 @@ fn artifact_interface_binary_named_string(
     }
 }
 
-fn artifact_interface_binary_string_array(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
+pub fn artifact_interface_binary_string_array(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
     Vec[string],
     string,
 ] {
@@ -148,7 +148,7 @@ fn artifact_interface_binary_string_array(reader: ArtifactInterfaceBinaryReader,
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_type_array(
+pub fn artifact_interface_binary_type_array(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
     expected: string,
@@ -161,7 +161,7 @@ fn artifact_interface_binary_type_array(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_trait_ref(
+pub fn artifact_interface_binary_trait_ref(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[tast::TraitRef, string] {
@@ -173,7 +173,7 @@ fn artifact_interface_binary_trait_ref(
     Result::Ok(tast::TraitRef { name, args })
 }
 
-fn artifact_interface_binary_optional_trait_ref(
+pub fn artifact_interface_binary_optional_trait_ref(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Option[tast::TraitRef], string] {
@@ -190,7 +190,7 @@ fn artifact_interface_binary_optional_trait_ref(
     }
 }
 
-fn artifact_interface_binary_element_type(
+pub fn artifact_interface_binary_element_type(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
     expected: string,
@@ -202,7 +202,7 @@ fn artifact_interface_binary_element_type(
     }
 }
 
-fn artifact_interface_binary_simple_type(name: string) -> Result[tast::Type, string] {
+pub fn artifact_interface_binary_simple_type(name: string) -> Result[tast::Type, string] {
     match name {
         "TUnit" => Result::Ok(tast::Type::Unit),
         "TNever" => Result::Ok(tast::Type::Never),
@@ -225,7 +225,7 @@ fn artifact_interface_binary_simple_type(name: string) -> Result[tast::Type, str
     }
 }
 
-fn artifact_interface_binary_type(
+pub fn artifact_interface_binary_type(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[tast::Type, string] {
@@ -334,7 +334,7 @@ fn artifact_interface_binary_type(
     }
 }
 
-fn artifact_interface_binary_trait_refs(
+pub fn artifact_interface_binary_trait_refs(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Vec[tast::TraitRef], string] {
@@ -346,7 +346,7 @@ fn artifact_interface_binary_trait_refs(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_predicate(
+pub fn artifact_interface_binary_predicate(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[tast::TypePredicate, string] {
@@ -370,7 +370,7 @@ fn artifact_interface_binary_predicate(
     }
 }
 
-fn artifact_interface_binary_predicates(
+pub fn artifact_interface_binary_predicates(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Vec[tast::TypePredicate], string] {
@@ -382,7 +382,7 @@ fn artifact_interface_binary_predicates(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_type_pairs(
+pub fn artifact_interface_binary_type_pairs(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
     expected: string,
@@ -402,7 +402,7 @@ fn artifact_interface_binary_type_pairs(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_enum_fields(
+pub fn artifact_interface_binary_enum_fields(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[tast::EnumVariantFields, string] {
@@ -439,7 +439,7 @@ fn artifact_interface_binary_enum_fields(
     }
 }
 
-fn artifact_interface_binary_enum_def(
+pub fn artifact_interface_binary_enum_def(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
     map_name: string,
@@ -468,7 +468,7 @@ fn artifact_interface_binary_enum_def(
     Result::Ok(tast::EnumDef { name, generics, variants })
 }
 
-fn artifact_interface_binary_struct_def(
+pub fn artifact_interface_binary_struct_def(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
     map_name: string,
@@ -494,7 +494,7 @@ fn artifact_interface_binary_struct_def(
     Result::Ok(tast::StructDef { name, generics, fields, public_fields, has_hidden_fields })
 }
 
-fn artifact_interface_binary_type_alias(
+pub fn artifact_interface_binary_type_alias(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
     name: string,
@@ -509,7 +509,7 @@ fn artifact_interface_binary_type_alias(
     }
 }
 
-fn artifact_interface_binary_callable(reader: ArtifactInterfaceBinaryReader, name: string) -> Result[
+pub fn artifact_interface_binary_callable(reader: ArtifactInterfaceBinaryReader, name: string) -> Result[
     tast::Callable,
     string,
 ] {
@@ -543,7 +543,7 @@ fn artifact_interface_binary_callable(reader: ArtifactInterfaceBinaryReader, nam
     }
 }
 
-fn artifact_interface_binary_fn_scheme(
+pub fn artifact_interface_binary_fn_scheme(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
     name: string,
@@ -560,7 +560,7 @@ fn artifact_interface_binary_fn_scheme(
     Result::Ok(artifact_model::ArtifactFnScheme { name, type_params, constraints, ty, body })
 }
 
-fn artifact_interface_binary_fn_map(
+pub fn artifact_interface_binary_fn_map(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Vec[artifact_model::ArtifactFnScheme], string] {
@@ -573,7 +573,7 @@ fn artifact_interface_binary_fn_map(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_associated_type_defs(
+pub fn artifact_interface_binary_associated_type_defs(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Vec[artifact_model::ArtifactAssociatedTypeDef], string] {
@@ -589,7 +589,7 @@ fn artifact_interface_binary_associated_type_defs(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_trait_def(
+pub fn artifact_interface_binary_trait_def(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
     name: string,
@@ -610,7 +610,7 @@ fn artifact_interface_binary_trait_def(
     )
 }
 
-fn artifact_interface_binary_associated_types(
+pub fn artifact_interface_binary_associated_types(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Vec[(string, tast::Type)], string] {
@@ -623,7 +623,7 @@ fn artifact_interface_binary_associated_types(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_impl_def(
+pub fn artifact_interface_binary_impl_def(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[artifact_model::ArtifactImplDef, string] {
@@ -641,7 +641,7 @@ fn artifact_interface_binary_impl_def(
     Result::Ok(artifact_model::ArtifactImplDef { params, constraints, associated_types, methods, valid })
 }
 
-fn artifact_interface_binary_trait_impls(
+pub fn artifact_interface_binary_trait_impls(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Vec[artifact_model::ArtifactTraitImpl], string] {
@@ -665,7 +665,7 @@ fn artifact_interface_binary_trait_impls(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_inherent_key(
+pub fn artifact_interface_binary_inherent_key(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[artifact_model::ArtifactInherentImplKey, string] {
@@ -690,7 +690,7 @@ fn artifact_interface_binary_inherent_key(
     }
 }
 
-fn artifact_interface_binary_inherent_impls(
+pub fn artifact_interface_binary_inherent_impls(
     reader: ArtifactInterfaceBinaryReader,
     context: ArtifactDecodeContext,
 ) -> Result[Vec[artifact_model::ArtifactInherentImpl], string] {
@@ -710,7 +710,7 @@ fn artifact_interface_binary_inherent_impls(
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryReader) -> Result[
+pub fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryReader) -> Result[
     artifact_model::ArtifactPackageExports,
     string,
 ] {
@@ -782,7 +782,7 @@ fn artifact_interface_binary_package_exports(reader: ArtifactInterfaceBinaryRead
     )
 }
 
-fn artifact_interface_binary_package_interface(reader: ArtifactInterfaceBinaryReader) -> Result[
+pub fn artifact_interface_binary_package_interface(reader: ArtifactInterfaceBinaryReader) -> Result[
     artifact_model::ArtifactPackageInterface,
     string,
 ] {
@@ -811,7 +811,7 @@ fn artifact_interface_binary_package_interface(reader: ArtifactInterfaceBinaryRe
     Result::Ok(artifact_model::ArtifactPackageInterface { package_name, name, value_exports, enum_variants })
 }
 
-fn artifact_interface_binary_string_map(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
+pub fn artifact_interface_binary_string_map(reader: ArtifactInterfaceBinaryReader, expected: string) -> Result[
     Vec[(string, string)],
     string,
 ] {
@@ -824,7 +824,7 @@ fn artifact_interface_binary_string_map(reader: ArtifactInterfaceBinaryReader, e
     Result::Ok(result)
 }
 
-fn artifact_interface_binary_version_field(
+pub fn artifact_interface_binary_version_field(
     reader: ArtifactInterfaceBinaryReader,
     name: string,
     expected: string,
@@ -840,7 +840,7 @@ fn artifact_interface_binary_version_field(
     }
 }
 
-fn decode_artifact_interface_binary_value(table: wire::ArtifactBinaryStringTable, data: bytes::Bytes) -> Result[
+pub fn decode_artifact_interface_binary_value(table: wire::ArtifactBinaryStringTable, data: bytes::Bytes) -> Result[
     artifact_model::ArtifactInterfaceUnit,
     string,
 ] {
