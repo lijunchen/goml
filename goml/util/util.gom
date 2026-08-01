@@ -139,6 +139,28 @@ pub fn sorted_unique(values: Vec[string]) -> Vec[string] {
     result
 }
 
+pub fn progress_bar(completed: int, total: int) -> string {
+    let width = 20;
+    let filled = if total == 0 {
+        width
+    } else {
+        completed * width / total
+    };
+    let builder = text::StringBuilder::with_capacity(width + 2);
+    builder.write_char('[');
+    for index in 0..width {
+        builder.write_char(
+            if index < filled {
+                '#'
+            } else {
+                '-'
+            },
+        )
+    };
+    builder.write_char(']');
+    builder.finish()
+}
+
 pub fn parse_positive_int(value: string) -> Result[int, string] {
     let length = value.byte_len();
     if length == 0 {

@@ -273,6 +273,10 @@ fn ordered_executions(values: Vec[Execution]) -> Vec[Execution] {
     values
 }
 
+fn display_progress(completed: int, total: int, label: string) -> unit {
+    io::eprintln(f"{util::progress_bar(completed, total)} {completed}/{total} {label}")
+}
+
 fn report_text(values: Vec[Execution]) -> int {
     let mut passed = 0;
     let mut failed = 0;
@@ -399,9 +403,24 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
         go || worker(module_dir, options, work, results)
     };
     let executions: Vec[Execution] = Vec::[];
-    for _ in 0..selected_tests.len() {
+    let total = selected_tests.len();
+    let mut completed = 0;
+    display_progress(completed, total, "running tests");
+    for _ in 0..total {
         match results.recv() {
-            Some(value) => executions.push(value),
+            Some(value) => {
+                executions.push(value);
+                completed += 1;
+                display_progress(
+                    completed,
+                    total,
+                    if completed == total {
+                        "finished"
+                    } else {
+                        "running tests"
+                    },
+                )
+            },
             None => return Result::Err("test result channel closed early"),
         }
     };

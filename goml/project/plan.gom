@@ -749,30 +749,8 @@ fn progress_label(value: Command) -> string {
     }
 }
 
-fn progress_bar(completed: int, total: int) -> string {
-    let width = 20;
-    let filled = if total == 0 {
-        width
-    } else {
-        completed * width / total
-    };
-    let builder = text::StringBuilder::with_capacity(width + 2);
-    builder.write_char('[');
-    for index in 0..width {
-        builder.write_char(
-            if index < filled {
-                '#'
-            } else {
-                '-'
-            },
-        )
-    };
-    builder.write_char(']');
-    builder.finish()
-}
-
 fn display_progress(completed: int, total: int, label: string) -> unit {
-    io::eprintln(f"{progress_bar(completed, total)} {completed}/{total} {label}")
+    io::eprintln(f"{util::progress_bar(completed, total)} {completed}/{total} {label}")
 }
 
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
