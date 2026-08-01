@@ -1,9 +1,8 @@
 package main;
 
-use gomlc::artifact_type_codec as type_codec;
-
-use gomlc::artifact_model;
-
+use gomlc::artifact::tast_codec as tast_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use gomlc::ast;
 use gomlc::hir;
 use gomlc::tast;
@@ -16,7 +15,7 @@ struct ArtifactFunctionType {
 fn artifact_function_type_parts(value: tast::Type) -> Result[ArtifactFunctionType, string] {
     match tast::resolve_type(value) {
         Func { params, ret_ty } => Result::Ok(ArtifactFunctionType { params, ret_ty }),
-        _ => Result::Err(type_codec::artifact_decode_error("function type in package exports")),
+        _ => Result::Err(wire::artifact_decode_error("function type in package exports")),
     }
 }
 
@@ -116,7 +115,7 @@ fn artifact_dependency_trait_predicates(values: Vec[tast::TypePredicate]) -> Vec
 }
 
 fn artifact_dependency_function_scheme(
-    value: artifact_model::ArtifactFnScheme,
+    value: artifact::ArtifactFnScheme,
     inherited_type_params: Vec[string],
     inherited: Vec[tast::TypePredicate],
     callable: tast::Callable,
@@ -149,7 +148,7 @@ fn artifact_dependency_function_scheme(
     )
 }
 
-fn artifact_dependency_trait(value: artifact_model::ArtifactTraitDef) -> Result[tast::TraitInfo, string] {
+fn artifact_dependency_trait(value: artifact::ArtifactTraitDef) -> Result[tast::TraitInfo, string] {
     let associated_types: Vec[tast::AssociatedTypeInfo] = Vec::[];
     for associated in value.associated_types {
         let bounds: Vec[tast::TraitRef] = Vec::[];
@@ -211,7 +210,7 @@ fn artifact_dependency_struct(value: tast::StructDef) -> tast::StructInfo {
     }
 }
 
-fn artifact_dependency_inherent_for_type(value: artifact_model::ArtifactInherentImpl) -> tast::Type {
+fn artifact_dependency_inherent_for_type(value: artifact::ArtifactInherentImpl) -> tast::Type {
     match value.key {
         Exact(value) => value,
         Constr(name) => {
@@ -228,7 +227,7 @@ fn artifact_dependency_inherent_for_type(value: artifact_model::ArtifactInherent
     }
 }
 
-fn artifact_dependency_environment_from_exports(value: artifact_model::ArtifactPackageExports) -> Result[
+fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackageExports) -> Result[
     tast::DependencyEnvironment,
     string,
 ] {
@@ -247,9 +246,7 @@ fn artifact_dependency_environment_from_exports(value: artifact_model::ArtifactP
     let functions: Vec[tast::FunctionScheme] = Vec::[];
     for function in value.functions {
         let callable = function.body;
-        functions.push(
-            artifact_dependency_function_scheme(function, Vec::[], Vec::[], callable)?,
-        )
+        functions.push(artifact_dependency_function_scheme(function, Vec::[], Vec::[], callable)?)
     };
     let constants: Vec[tast::ConstantScheme] = Vec::[];
     for value in value.constants {

@@ -1,12 +1,9 @@
 package main;
 
-use gomlc::artifact_core_codec as core_codec;
-use gomlc::artifact_interface_codec as interface_codec;
-
-use gomlc::artifact_wire as wire;
-
-use gomlc::artifact_model;
-
+use gomlc::artifact::core_codec as core_codec;
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use gomlc::ast;
 use gomlc::strings;
 use gomlc::tast;
@@ -20,8 +17,8 @@ fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type)
     tast::Type::Func { params: types, ret_ty }
 }
 
-fn artifact_fn_scheme(value: tast::FunctionScheme) -> artifact_model::ArtifactFnScheme {
-    artifact_model::ArtifactFnScheme {
+fn artifact_fn_scheme(value: tast::FunctionScheme) -> artifact::ArtifactFnScheme {
+    artifact::ArtifactFnScheme {
         name: value.name,
         type_params: value.generics,
         constraints: value.predicates,
@@ -141,16 +138,16 @@ fn artifact_trait_definition_predicate(
     }
 }
 
-fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artifact_model::ArtifactTraitDef {
-    let associated_types: Vec[artifact_model::ArtifactAssociatedTypeDef] = Vec::[];
+fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artifact::ArtifactTraitDef {
+    let associated_types: Vec[artifact::ArtifactAssociatedTypeDef] = Vec::[];
     for associated in value.associated_types {
         let bounds: Vec[tast::TraitRef] = Vec::[];
         for bound in associated.bounds {
             bounds.push(artifact_trait_definition_ref(bound, value.name, trait_names))
         };
-        associated_types.push(artifact_model::ArtifactAssociatedTypeDef { name: associated.name, bounds })
+        associated_types.push(artifact::ArtifactAssociatedTypeDef { name: associated.name, bounds })
     };
-    let methods: Vec[artifact_model::ArtifactFnScheme] = Vec::[];
+    let methods: Vec[artifact::ArtifactFnScheme] = Vec::[];
     for method in value.methods {
         let constraints: Vec[tast::TypePredicate] = Vec::[];
         for predicate in method.predicates {
@@ -159,7 +156,7 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
             )
         };
         methods.push(
-            artifact_model::ArtifactFnScheme {
+            artifact::ArtifactFnScheme {
                 name: method.name,
                 type_params: method.generics,
                 constraints,
@@ -180,7 +177,7 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
     for supertrait in value.supertraits {
         supertraits.push(artifact_trait_definition_ref(supertrait, value.name, trait_names))
     };
-    artifact_model::ArtifactTraitDef {
+    artifact::ArtifactTraitDef {
         name: value.name,
         params: value.generics,
         predicates,
@@ -198,12 +195,12 @@ fn artifact_method_constraints(value: tast::Function, start: int) -> Vec[tast::T
     result
 }
 
-fn artifact_method_scheme(value: tast::Function, owner_generic_count: int, constraint_start: int) -> artifact_model::ArtifactFnScheme {
+fn artifact_method_scheme(value: tast::Function, owner_generic_count: int, constraint_start: int) -> artifact::ArtifactFnScheme {
     let type_params: Vec[string] = Vec::[];
     for index in owner_generic_count..value.generics.len() {
         type_params.push(value.generics[index])
     };
-    artifact_model::ArtifactFnScheme {
+    artifact::ArtifactFnScheme {
         name: value.name,
         type_params,
         constraints: artifact_method_constraints(value, constraint_start),
@@ -224,8 +221,8 @@ fn artifact_impl_methods(
     owner_generic_count: int,
     constraint_start: int,
     public_only: bool,
-) -> Vec[artifact_model::ArtifactFnScheme] {
-    let result: Vec[artifact_model::ArtifactFnScheme] = Vec::[];
+) -> Vec[artifact::ArtifactFnScheme] {
+    let result: Vec[artifact::ArtifactFnScheme] = Vec::[];
     for method in value.methods {
         if !public_only || artifact_method_is_public(method) {
             result.push(artifact_method_scheme(method, owner_generic_count, constraint_start))
@@ -236,7 +233,7 @@ fn artifact_impl_methods(
     result
 }
 
-fn artifact_trait_impl(value: tast::ImplBlock) -> artifact_model::ArtifactTraitImpl {
+fn artifact_trait_impl(value: tast::ImplBlock) -> artifact::ArtifactTraitImpl {
     let trait_ref = match value.trait_ref {
         Some(value) => value,
         None => {
@@ -244,10 +241,10 @@ fn artifact_trait_impl(value: tast::ImplBlock) -> artifact_model::ArtifactTraitI
             tast::TraitRef { name: "<error>", args: Vec::[] }
         },
     };
-    artifact_model::ArtifactTraitImpl {
+    artifact::ArtifactTraitImpl {
         trait_ref,
         for_ty: value.for_type,
-        definition: artifact_model::ArtifactImplDef {
+        definition: artifact::ArtifactImplDef {
             params: value.generics,
             constraints: value.predicates,
             associated_types: value.associated_types,
@@ -278,14 +275,14 @@ fn artifact_inherent_constructor(value: tast::Type) -> string {
     }
 }
 
-fn artifact_inherent_impl(value: tast::ImplBlock, public_only: bool) -> artifact_model::ArtifactInherentImpl {
-    artifact_model::ArtifactInherentImpl {
+fn artifact_inherent_impl(value: tast::ImplBlock, public_only: bool) -> artifact::ArtifactInherentImpl {
+    artifact::ArtifactInherentImpl {
         key: if !value.generics.is_empty() {
-            artifact_model::ArtifactInherentImplKey::Constr(artifact_inherent_constructor(value.for_type))
+            artifact::ArtifactInherentImplKey::Constr(artifact_inherent_constructor(value.for_type))
         } else {
-            artifact_model::ArtifactInherentImplKey::Exact(value.for_type)
+            artifact::ArtifactInherentImplKey::Exact(value.for_type)
         },
-        definition: artifact_model::ArtifactImplDef {
+        definition: artifact::ArtifactImplDef {
             params: value.generics,
             constraints: value.predicates,
             associated_types: Vec::[],
@@ -446,8 +443,8 @@ fn artifact_package_exports(
     public_only: bool,
     enum_type_names: Vec[string],
     struct_type_names: Vec[string],
-) -> artifact_model::ArtifactPackageExports {
-    let result = interface_codec::empty_artifact_package_exports();
+) -> artifact::ArtifactPackageExports {
+    let result = interface_codec::empty_exports();
     for name in enum_type_names {
         artifact_add_type_name(result.enum_type_names, name)
     };
@@ -544,8 +541,8 @@ fn artifact_relative_export_name(package_name: string, name: string) -> string {
 fn artifact_package_interface(
     package_name: string,
     declared_name: string,
-    exports: artifact_model::ArtifactPackageExports,
-) -> artifact_model::ArtifactPackageInterface {
+    exports: artifact::ArtifactPackageExports,
+) -> artifact::ArtifactPackageInterface {
     let function_names: Vec[string] = Vec::[];
     for function in exports.functions {
         function_names.push(function.name)
@@ -574,5 +571,10 @@ fn artifact_package_interface(
         };
         enum_variants.push((name, wire::sort_artifact_names(variants)))
     };
-    artifact_model::ArtifactPackageInterface { package_name, name: declared_name, value_exports, enum_variants }
+    artifact::ArtifactPackageInterface {
+        package_name,
+        name: declared_name,
+        value_exports,
+        enum_variants,
+    }
 }

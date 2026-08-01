@@ -1,37 +1,34 @@
 package core_codec;
 
-use gomlc::artifact_wire as wire;
-
-use gomlc::artifact_type_codec as type_codec;
-use gomlc::artifact_callable_codec as callable_codec;
-
+use gomlc::artifact::wire as wire;
+use gomlc::artifact::tast_codec as tast_codec;
 use gomlc::core;
 use gomlc::tast;
 
-pub fn artifact_decode_core_type_field(
+fn artifact_decode_core_type_field(
     context: ArtifactCoreDecodeContext,
     object: Vec[(string, wire::ArtifactValue)],
     name: string,
 ) -> Result[tast::Type, string] {
-    let value = type_codec::artifact_json_required_field(object, name)?;
-    type_codec::artifact_decode_type(context.types, value)
+    let value = wire::artifact_json_required_field(object, name)?;
+    tast_codec::artifact_decode_type(context.types, value)
 }
 
-pub fn artifact_decode_core_expr_field(
+fn artifact_decode_core_expr_field(
     context: ArtifactCoreDecodeContext,
     object: Vec[(string, wire::ArtifactValue)],
     name: string,
 ) -> Result[core::Expr, string] {
-    let value = type_codec::artifact_json_required_field(object, name)?;
+    let value = wire::artifact_json_required_field(object, name)?;
     artifact_decode_core_expr(context, value)
 }
 
-pub fn artifact_decode_core_exprs(
+fn artifact_decode_core_exprs(
     context: ArtifactCoreDecodeContext,
     value: wire::ArtifactValue,
     expected: string,
 ) -> Result[Vec[core::Expr], string] {
-    let values = type_codec::artifact_json_array(value, expected)?;
+    let values = wire::artifact_json_array(value, expected)?;
     let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(artifact_decode_core_expr(context, value)?)
@@ -39,48 +36,48 @@ pub fn artifact_decode_core_exprs(
     Result::Ok(result)
 }
 
-pub fn artifact_decode_core_expr_array_field(
+fn artifact_decode_core_expr_array_field(
     context: ArtifactCoreDecodeContext,
     object: Vec[(string, wire::ArtifactValue)],
     name: string,
 ) -> Result[Vec[core::Expr], string] {
-    let value = type_codec::artifact_json_required_field(object, name)?;
+    let value = wire::artifact_json_required_field(object, name)?;
     artifact_decode_core_exprs(context, value, name)
 }
 
-pub fn artifact_decode_optional_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
-    Option[core::Expr],
-    string,
-] {
+fn artifact_decode_optional_core_expr(
+    context: ArtifactCoreDecodeContext,
+    value: wire::ArtifactValue,
+) -> Result[Option[core::Expr], string] {
     match value {
         Null => Result::Ok(Option::None),
         other => Result::Ok(Option::Some(artifact_decode_core_expr(context, other)?)),
     }
 }
 
-pub fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[tast::ClosureParam],
     string,
 ] {
-    let values = type_codec::artifact_json_array(value, "closure parameters")?;
+    let values = wire::artifact_json_array(value, "closure parameters")?;
     let result: Vec[tast::ClosureParam] = Vec::[];
     for value in values {
-        let object = type_codec::artifact_json_object(value, "closure parameter")?;
-        let name = type_codec::artifact_json_field_string(object, "name")?;
+        let object = wire::artifact_json_object(value, "closure parameter")?;
+        let name = wire::artifact_json_field_string(object, "name")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         result.push(tast::ClosureParam { name, ty })
     };
     Result::Ok(result)
 }
 
-pub fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[core::Arm],
     string,
 ] {
-    let values = type_codec::artifact_json_array(value, "match arms")?;
+    let values = wire::artifact_json_array(value, "match arms")?;
     let result: Vec[core::Arm] = Vec::[];
     for value in values {
-        let object = type_codec::artifact_json_object(value, "match arm")?;
+        let object = wire::artifact_json_object(value, "match arm")?;
         let lhs = artifact_decode_core_expr_field(context, object, "lhs")?;
         let body = artifact_decode_core_expr_field(context, object, "body")?;
         result.push(core::Arm { lhs, body })
@@ -88,35 +85,35 @@ pub fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire
     Result::Ok(result)
 }
 
-pub fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Expr,
     string,
 ] {
-    let variant = type_codec::artifact_json_object(value, "Core expression")?;
+    let variant = wire::artifact_json_object(value, "Core expression")?;
     if variant.len() != 1 {
-        return Result::Err(type_codec::artifact_decode_error("Core expression variant"))
+        return Result::Err(wire::artifact_decode_error("Core expression variant"))
     } else {
         ()
     };
     let kind = variant[0].0;
-    let object = type_codec::artifact_json_object(variant[0].1, "Core expression payload")?;
+    let object = wire::artifact_json_object(variant[0].1, "Core expression payload")?;
     if kind == "EVar" {
-        let name = type_codec::artifact_json_field_string(object, "name")?;
+        let name = wire::artifact_json_field_string(object, "name")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Var { name, ty })
     } else if kind == "ECallable" {
-        let name = type_codec::artifact_json_field_string(object, "name")?;
-        let body = type_codec::artifact_json_required_field(object, "body")?;
-        let callable = callable_codec::artifact_decode_callable_body(name, body)?;
+        let name = wire::artifact_json_field_string(object, "name")?;
+        let body = wire::artifact_json_required_field(object, "body")?;
+        let callable = tast_codec::artifact_decode_callable_body(name, body)?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Callable { callable, ty })
     } else if kind == "EPrim" {
-        let value = type_codec::artifact_json_required_field(object, "value")?;
+        let value = wire::artifact_json_required_field(object, "value")?;
         let primitive = artifact_decode_primitive(value)?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Prim { value: primitive, ty })
     } else if kind == "EConstr" {
-        let value = type_codec::artifact_json_required_field(object, "constructor")?;
+        let value = wire::artifact_json_required_field(object, "constructor")?;
         let constructor = artifact_decode_constructor(context, value)?;
         let args = artifact_decode_core_expr_array_field(context, object, "args")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
@@ -130,21 +127,21 @@ pub fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire
             Result::Ok(core::Expr::Array { items, ty })
         }
     } else if kind == "EClosure" {
-        let value = type_codec::artifact_json_required_field(object, "params")?;
+        let value = wire::artifact_json_required_field(object, "params")?;
         let params = artifact_decode_closure_params(context, value)?;
         let body = artifact_decode_core_expr_field(context, object, "body")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Closure { params, body, ty })
     } else if kind == "EBlock" {
-        let value = type_codec::artifact_json_required_field(object, "block")?;
+        let value = wire::artifact_json_required_field(object, "block")?;
         let block = artifact_decode_core_block(context, value)?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Block { block, ty })
     } else if kind == "EMatch" {
         let expr = artifact_decode_core_expr_field(context, object, "expr")?;
-        let value = type_codec::artifact_json_required_field(object, "arms")?;
+        let value = wire::artifact_json_required_field(object, "arms")?;
         let arms = artifact_decode_core_arms(context, value)?;
-        let value = type_codec::artifact_json_required_field(object, "default")?;
+        let value = wire::artifact_json_required_field(object, "default")?;
         let default = artifact_decode_optional_core_expr(context, value)?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Match { expr, arms, default, ty })
@@ -166,7 +163,7 @@ pub fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire
     } else if kind == "EBreak" || kind == "EContinue" {
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         if kind == "EBreak" {
-            let value = match type_codec::artifact_json_optional_field(object, "value")? {
+            let value = match wire::artifact_json_optional_field(object, "value")? {
                 Some(value) => artifact_decode_optional_core_expr(context, value)?,
                 None => Option::None,
             };
@@ -175,7 +172,7 @@ pub fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire
             Result::Ok(core::Expr::Continue { ty })
         }
     } else if kind == "EReturn" {
-        let value = type_codec::artifact_json_required_field(object, "expr")?;
+        let value = wire::artifact_json_required_field(object, "expr")?;
         let expr = artifact_decode_optional_core_expr(context, value)?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Return { expr, ty })
@@ -188,29 +185,29 @@ pub fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire
     }
 }
 
-pub fn artifact_decode_core_index_field(object: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
+fn artifact_decode_core_index_field(object: Vec[(string, wire::ArtifactValue)], name: string) -> Result[
     int,
     string,
 ] {
-    let value = type_codec::artifact_json_required_field(object, name)?;
-    let value = type_codec::artifact_json_number_value(value, name)?;
-    type_codec::artifact_parse_nonnegative_int(value)
+    let value = wire::artifact_json_required_field(object, name)?;
+    let value = wire::artifact_json_number_value(value, name)?;
+    wire::artifact_parse_nonnegative_int(value)
 }
 
-pub fn artifact_decode_core_expr_tail(
+fn artifact_decode_core_expr_tail(
     context: ArtifactCoreDecodeContext,
     kind: string,
     object: Vec[(string, wire::ArtifactValue)],
 ) -> Result[core::Expr, string] {
     if kind == "EConstrGet" {
         let expr = artifact_decode_core_expr_field(context, object, "expr")?;
-        let value = type_codec::artifact_json_required_field(object, "constructor")?;
+        let value = wire::artifact_json_required_field(object, "constructor")?;
         let constructor = artifact_decode_constructor(context, value)?;
         let field_index = artifact_decode_core_index_field(object, "field_index")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::ConstrGet { expr, constructor, field_index, ty })
     } else if kind == "EUnary" {
-        let value = type_codec::artifact_json_field_string(object, "op")?;
+        let value = wire::artifact_json_field_string(object, "op")?;
         let op = artifact_decode_unary(value)?;
         let expr = artifact_decode_core_expr_field(context, object, "expr")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
@@ -220,14 +217,14 @@ pub fn artifact_decode_core_expr_tail(
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Cast { expr, ty })
     } else if kind == "EBinary" {
-        let value = type_codec::artifact_json_field_string(object, "op")?;
+        let value = wire::artifact_json_field_string(object, "op")?;
         let op = artifact_decode_binary(value)?;
         let lhs = artifact_decode_core_expr_field(context, object, "lhs")?;
         let rhs = artifact_decode_core_expr_field(context, object, "rhs")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Binary { op, lhs, rhs, ty })
     } else if kind == "EAssign" {
-        let name = type_codec::artifact_json_field_string(object, "name")?;
+        let name = wire::artifact_json_field_string(object, "name")?;
         let value = artifact_decode_core_expr_field(context, object, "value")?;
         let target_ty = artifact_decode_core_type_field(context, object, "target_ty")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
@@ -238,22 +235,22 @@ pub fn artifact_decode_core_expr_tail(
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Call { func, args, ty })
     } else if kind == "EToDyn" {
-        let trait_name = type_codec::artifact_json_field_string(object, "trait_name")?;
+        let trait_name = wire::artifact_json_field_string(object, "trait_name")?;
         let for_ty = artifact_decode_core_type_field(context, object, "for_ty")?;
         let expr = artifact_decode_core_expr_field(context, object, "expr")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::ToDyn { trait_name, for_ty, expr, ty })
     } else if kind == "EDynCall" {
-        let trait_name = type_codec::artifact_json_field_string(object, "trait_name")?;
-        let method_name = type_codec::artifact_json_field_string(object, "method_name")?;
+        let trait_name = wire::artifact_json_field_string(object, "trait_name")?;
+        let method_name = wire::artifact_json_field_string(object, "method_name")?;
         let receiver = artifact_decode_core_expr_field(context, object, "receiver")?;
         let args = artifact_decode_core_expr_array_field(context, object, "args")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::DynCall { trait_name, method_name, receiver, args, ty })
     } else if kind == "ETraitCall" {
-        let value = type_codec::artifact_json_required_field(object, "trait_ref")?;
-        let trait_ref = type_codec::artifact_decode_trait_ref(context.types, value)?;
-        let method_name = type_codec::artifact_json_field_string(object, "method_name")?;
+        let value = wire::artifact_json_required_field(object, "trait_ref")?;
+        let trait_ref = tast_codec::artifact_decode_trait_ref(context.types, value)?;
+        let method_name = wire::artifact_json_field_string(object, "method_name")?;
         let receiver = artifact_decode_core_expr_field(context, object, "receiver")?;
         let args = artifact_decode_core_expr_array_field(context, object, "args")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
@@ -273,39 +270,39 @@ pub fn artifact_decode_core_expr_tail(
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Proj { tuple, index, ty })
     } else {
-        Result::Err(type_codec::artifact_decode_error("Core expression kind"))
+        Result::Err(wire::artifact_decode_error("Core expression kind"))
     }
 }
 
-pub fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Block,
     string,
 ] {
-    let object = type_codec::artifact_json_object(value, "Core block")?;
-    let values = type_codec::artifact_json_field_array(object, "stmts")?;
+    let object = wire::artifact_json_object(value, "Core block")?;
+    let values = wire::artifact_json_field_array(object, "stmts")?;
     let stmts: Vec[core::LetStmt] = Vec::[];
     for value in values {
-        let statement = type_codec::artifact_json_object(value, "Core let statement")?;
-        let name = type_codec::artifact_json_field_string(statement, "name")?;
+        let statement = wire::artifact_json_object(value, "Core let statement")?;
+        let name = wire::artifact_json_field_string(statement, "name")?;
         let value = artifact_decode_core_expr_field(context, statement, "value")?;
         let ty = artifact_decode_core_type_field(context, statement, "ty")?;
         stmts.push(core::LetStmt { name, value, ty })
     };
-    let value = type_codec::artifact_json_required_field(object, "tail")?;
+    let value = wire::artifact_json_required_field(object, "tail")?;
     let tail = artifact_decode_optional_core_expr(context, value)?;
     Result::Ok(core::Block { stmts, tail })
 }
 
-pub fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Option[core::TraitImpl],
     string,
 ] {
     match value {
         Null => Result::Ok(Option::None),
         other => {
-            let object = type_codec::artifact_json_object(other, "Core trait implementation")?;
-            let value = type_codec::artifact_json_required_field(object, "trait_ref")?;
-            let trait_ref = type_codec::artifact_decode_trait_ref(context.types, value)?;
+            let object = wire::artifact_json_object(other, "Core trait implementation")?;
+            let value = wire::artifact_json_required_field(object, "trait_ref")?;
+            let trait_ref = tast_codec::artifact_decode_trait_ref(context.types, value)?;
             let for_ty = artifact_decode_core_type_field(context, object, "for_ty")?;
             let generic_count = artifact_decode_core_index_field(object, "generic_count")?;
             let predicate_count = artifact_decode_core_index_field(object, "predicate_count")?;
@@ -324,42 +321,42 @@ pub fn artifact_decode_core_trait_impl(context: ArtifactCoreDecodeContext, value
     }
 }
 
-pub fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     Vec[(string, tast::Type)],
     string,
 ] {
-    let values = type_codec::artifact_json_array(value, "Core function parameters")?;
+    let values = wire::artifact_json_array(value, "Core function parameters")?;
     let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
-        let pair = type_codec::artifact_json_array(value, "Core function parameter")?;
+        let pair = wire::artifact_json_array(value, "Core function parameter")?;
         if pair.len() != 2 {
-            return Result::Err(type_codec::artifact_decode_error("Core function parameter"))
+            return Result::Err(wire::artifact_decode_error("Core function parameter"))
         } else {
             ()
         };
-        let name = type_codec::artifact_json_string_value(pair[0], "Core parameter name")?;
-        let ty = type_codec::artifact_decode_type(context.types, pair[1])?;
+        let name = wire::artifact_json_string_value(pair[0], "Core parameter name")?;
+        let ty = tast_codec::artifact_decode_type(context.types, pair[1])?;
         result.push((name, ty))
     };
     Result::Ok(result)
 }
 
-pub fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Function,
     string,
 ] {
-    let object = type_codec::artifact_json_object(value, "Core function")?;
-    let name = type_codec::artifact_json_field_string(object, "name")?;
-    let value = type_codec::artifact_json_required_field(object, "root")?;
-    let root = type_codec::artifact_json_bool_value(value, "Core function root")?;
-    let value = type_codec::artifact_json_required_field(object, "generics")?;
-    let generics = type_codec::artifact_decode_string_array(value, "Core function generics")?;
-    let value = type_codec::artifact_json_required_field(object, "trait_impl")?;
+    let object = wire::artifact_json_object(value, "Core function")?;
+    let name = wire::artifact_json_field_string(object, "name")?;
+    let value = wire::artifact_json_required_field(object, "root")?;
+    let root = wire::artifact_json_bool_value(value, "Core function root")?;
+    let value = wire::artifact_json_required_field(object, "generics")?;
+    let generics = wire::artifact_decode_string_array(value, "Core function generics")?;
+    let value = wire::artifact_json_required_field(object, "trait_impl")?;
     let trait_impl = artifact_decode_core_trait_impl(context, value)?;
-    let value = type_codec::artifact_json_required_field(object, "params")?;
+    let value = wire::artifact_json_required_field(object, "params")?;
     let params = artifact_decode_core_params(context, value)?;
     let ret_ty = artifact_decode_core_type_field(context, object, "ret_ty")?;
-    let value = type_codec::artifact_json_required_field(object, "body")?;
+    let value = wire::artifact_json_required_field(object, "body")?;
     let body = artifact_decode_core_block(context, value)?;
     Result::Ok(
         core::Function {
@@ -375,37 +372,37 @@ pub fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: 
     )
 }
 
-pub fn artifact_decode_const_expr_field(
+fn artifact_decode_const_expr_field(
     context: ArtifactCoreDecodeContext,
     object: Vec[(string, wire::ArtifactValue)],
     name: string,
 ) -> Result[tast::ConstExpr, string] {
-    let value = type_codec::artifact_json_required_field(object, name)?;
+    let value = wire::artifact_json_required_field(object, name)?;
     artifact_decode_const_expr(context, value)
 }
 
-pub fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::ConstExpr,
     string,
 ] {
-    let variant = type_codec::artifact_json_object(value, "constant expression")?;
+    let variant = wire::artifact_json_object(value, "constant expression")?;
     if variant.len() != 1 {
-        return Result::Err(type_codec::artifact_decode_error("constant expression variant"))
+        return Result::Err(wire::artifact_decode_error("constant expression variant"))
     } else {
         ()
     };
     let kind = variant[0].0;
-    let object = type_codec::artifact_json_object(variant[0].1, "constant expression payload")?;
+    let object = wire::artifact_json_object(variant[0].1, "constant expression payload")?;
     let ty = artifact_decode_core_type_field(context, object, "ty")?;
     if kind == "CPrim" {
-        let value = type_codec::artifact_json_required_field(object, "value")?;
+        let value = wire::artifact_json_required_field(object, "value")?;
         let primitive = artifact_decode_primitive(value)?;
         Result::Ok(tast::ConstExpr::Prim { value: primitive, ty })
     } else if kind == "CRef" {
-        let name = type_codec::artifact_json_field_string(object, "name")?;
+        let name = wire::artifact_json_field_string(object, "name")?;
         Result::Ok(tast::ConstExpr::Ref { name, ty })
     } else if kind == "CUnary" {
-        let value = type_codec::artifact_json_field_string(object, "op")?;
+        let value = wire::artifact_json_field_string(object, "op")?;
         let op = artifact_decode_unary(value)?;
         let expr = artifact_decode_const_expr_field(context, object, "expr")?;
         Result::Ok(tast::ConstExpr::Unary { op, expr, ty })
@@ -413,7 +410,7 @@ pub fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wir
         let expr = artifact_decode_const_expr_field(context, object, "expr")?;
         Result::Ok(tast::ConstExpr::Cast { expr, ty })
     } else if kind == "CBinary" {
-        let value = type_codec::artifact_json_field_string(object, "op")?;
+        let value = wire::artifact_json_field_string(object, "op")?;
         let op = artifact_decode_binary(value)?;
         let lhs = artifact_decode_const_expr_field(context, object, "lhs")?;
         let rhs = artifact_decode_const_expr_field(context, object, "rhs")?;
@@ -421,32 +418,32 @@ pub fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wir
     } else if kind == "CError" {
         Result::Ok(tast::ConstExpr::Error { ty })
     } else {
-        Result::Err(type_codec::artifact_decode_error("constant expression"))
+        Result::Err(wire::artifact_decode_error("constant expression"))
     }
 }
 
-pub fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_constant(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::Constant,
     string,
 ] {
-    let object = type_codec::artifact_json_object(value, "constant")?;
-    let name = type_codec::artifact_json_field_string(object, "name")?;
+    let object = wire::artifact_json_object(value, "constant")?;
+    let name = wire::artifact_json_field_string(object, "name")?;
     let ty = artifact_decode_core_type_field(context, object, "ty")?;
     let value = artifact_decode_const_expr_field(context, object, "value")?;
     Result::Ok(tast::Constant { name, ty, value })
 }
 
-pub fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::File,
     string,
 ] {
-    let object = type_codec::artifact_json_object(value, "Core file")?;
-    let values = type_codec::artifact_json_field_array(object, "toplevels")?;
+    let object = wire::artifact_json_object(value, "Core file")?;
+    let values = wire::artifact_json_field_array(object, "toplevels")?;
     let functions: Vec[core::Function] = Vec::[];
     for value in values {
         functions.push(artifact_decode_core_function(context, value)?)
     };
-    let constant_values = type_codec::artifact_json_field_array(object, "constants")?;
+    let constant_values = wire::artifact_json_field_array(object, "constants")?;
     let constants: Vec[tast::Constant] = Vec::[];
     for value in constant_values {
         constants.push(artifact_decode_constant(context, value)?)

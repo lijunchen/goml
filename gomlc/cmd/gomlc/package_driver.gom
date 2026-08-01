@@ -1,11 +1,8 @@
 package main;
 
-use gomlc::artifact_interface_codec as interface_codec;
-
-use gomlc::artifact_wire as wire;
-
-use gomlc::artifact_model;
-
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use gomlc::anf;
 use gomlc::ast;
 use gomlc::core;
@@ -43,14 +40,14 @@ struct ArtifactCompilation {
 }
 
 struct ArtifactCompiledPackage {
-    interface_unit: artifact_model::ArtifactInterfaceUnit,
-    core_unit: artifact_model::ArtifactCoreUnit,
+    interface_unit: artifact::ArtifactInterfaceUnit,
+    core_unit: artifact::ArtifactCoreUnit,
 }
 
 struct PackageWorld {
     counter: Ref[int],
     builtins: core::File,
-    builtin_interface: artifact_model::ArtifactInterfaceUnit,
+    builtin_interface: artifact::ArtifactInterfaceUnit,
     standard: ArtifactStandardLibrary,
 }
 
@@ -817,10 +814,10 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
             } else {
                 fail("error[compile]: " + error)
             };
-            let interface_unit = interface_codec::new_artifact_interface_unit(
+            let interface_unit = interface_codec::new_unit(
                 command.package_name,
-                interface_codec::empty_artifact_package_exports(),
-                artifact_model::ArtifactPackageInterface {
+                interface_codec::empty_exports(),
+                artifact::ArtifactPackageInterface {
                     package_name: command.package_name,
                     name: "main",
                     value_exports: Vec::[],
@@ -830,11 +827,11 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
             );
             ArtifactCompiledPackage {
                 interface_unit,
-                core_unit: artifact_model::ArtifactCoreUnit {
+                core_unit: artifact::ArtifactCoreUnit {
                     package_name: command.package_name,
                     declared_name: "main",
                     interface_hash: interface_unit.interface_hash,
-                    exports: interface_codec::empty_artifact_package_exports(),
+                    exports: interface_codec::empty_exports(),
                     core_ir: empty_core_file(),
                     deps: Vec::[("builtin", artifact_builtin_interface_hash(world))],
                     sources: Vec::[],
@@ -1032,7 +1029,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     for compilation in compilations {
         package_cores.push(compilation.core_value)
     };
-    let tests: Vec[artifact_model::ArtifactTestDescriptor] = Vec::[];
+    let tests: Vec[artifact::ArtifactTestDescriptor] = Vec::[];
     for package_name in command.packages {
         match artifact_find_core_unit(core_units, package_name) {
             Some(core_unit) => for test in core_unit.tests {

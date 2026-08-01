@@ -1,23 +1,21 @@
 package core_codec;
 
-use gomlc::artifact_wire as wire;
-
-use gomlc::artifact_model;
-use gomlc::artifact_type_codec as type_codec;
-
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
+use gomlc::artifact::tast_codec as tast_codec;
 use gomlc::ast;
 use gomlc::core;
 use gomlc::tast;
 
-pub struct ArtifactCoreDecodeContext {
-    pub types: type_codec::ArtifactDecodeContext,
+struct ArtifactCoreDecodeContext {
+    pub types: tast_codec::ArtifactDecodeContext,
     pub struct_fields: Vec[(string, Vec[string])],
     pub enums: Vec[tast::EnumDef],
     pub structs: Vec[tast::StructDef],
 }
 
-pub fn artifact_core_decode_context(value: artifact_model::ArtifactPackageExports) -> ArtifactCoreDecodeContext {
-    let types = type_codec::ArtifactDecodeContext {
+fn artifact_core_decode_context(value: artifact::ArtifactPackageExports) -> ArtifactCoreDecodeContext {
+    let types = tast_codec::ArtifactDecodeContext {
         enum_names: value.enum_type_names,
         struct_names: value.struct_type_names,
     };
@@ -32,7 +30,7 @@ pub fn artifact_core_decode_context(value: artifact_model::ArtifactPackageExport
     ArtifactCoreDecodeContext { types, struct_fields, enums: value.enums, structs: value.structs }
 }
 
-pub fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: string) -> Vec[string] {
+fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: string) -> Vec[string] {
     let result: Vec[string] = Vec::[];
     for value in context.struct_fields {
         if value.0 == name {
@@ -46,16 +44,19 @@ pub fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: s
     result
 }
 
-pub fn artifact_decode_primitive_payload(value: wire::ArtifactValue) -> Result[wire::ArtifactValue, string] {
-    let object = type_codec::artifact_json_object(value, "primitive payload")?;
-    type_codec::artifact_json_required_field(object, "value")
+fn artifact_decode_primitive_payload(value: wire::ArtifactValue) -> Result[
+    wire::ArtifactValue,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "primitive payload")?;
+    wire::artifact_json_required_field(object, "value")
 }
 
-pub fn artifact_decode_numeric_primitive(kind: string, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_numeric_primitive(kind: string, value: wire::ArtifactValue) -> Result[
     tast::Primitive,
     string,
 ] {
-    let value = type_codec::artifact_json_number_value(
+    let value = wire::artifact_json_number_value(
         artifact_decode_primitive_payload(value)?,
         "numeric primitive",
     )?;
@@ -72,14 +73,14 @@ pub fn artifact_decode_numeric_primitive(kind: string, value: wire::ArtifactValu
         "UInt64" => Result::Ok(tast::Primitive::Uint64 { value }),
         "Float32" => Result::Ok(tast::Primitive::Float32 { value }),
         "Float64" => Result::Ok(tast::Primitive::Float64 { value }),
-        _ => Result::Err(type_codec::artifact_decode_error("numeric primitive kind")),
+        _ => Result::Err(wire::artifact_decode_error("numeric primitive kind")),
     }
 }
 
-pub fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primitive, string] {
-    let object = type_codec::artifact_json_object(value, "primitive")?;
+fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primitive, string] {
+    let object = wire::artifact_json_object(value, "primitive")?;
     if object.len() != 1 {
-        return Result::Err(type_codec::artifact_decode_error("primitive variant"))
+        return Result::Err(wire::artifact_decode_error("primitive variant"))
     } else {
         ()
     };
@@ -88,12 +89,12 @@ pub fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Pri
     if kind == "Unit" {
         match artifact_decode_primitive_payload(payload) {
             Ok(Null) => Result::Ok(tast::Primitive::Unit),
-            Ok(_) => Result::Err(type_codec::artifact_decode_error("unit primitive")),
+            Ok(_) => Result::Err(wire::artifact_decode_error("unit primitive")),
             Err(error) => Result::Err(error),
         }
     } else if kind == "Bool" {
         match artifact_decode_primitive_payload(payload) {
-            Ok(value) => match type_codec::artifact_json_bool_value(value, "boolean primitive") {
+            Ok(value) => match wire::artifact_json_bool_value(value, "boolean primitive") {
                 Ok(value) => Result::Ok(tast::Primitive::Bool { value }),
                 Err(error) => Result::Err(error),
             },
@@ -101,19 +102,19 @@ pub fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Pri
         }
     } else if kind == "String" {
         match artifact_decode_primitive_payload(payload) {
-            Ok(value) => match type_codec::artifact_json_string_value(value, "string primitive") {
+            Ok(value) => match wire::artifact_json_string_value(value, "string primitive") {
                 Ok(value) => Result::Ok(tast::Primitive::String { value }),
                 Err(error) => Result::Err(error),
             },
             Err(error) => Result::Err(error),
         }
     } else if kind == "Char" {
-        let value = type_codec::artifact_json_string_value(
+        let value = wire::artifact_json_string_value(
             artifact_decode_primitive_payload(payload)?,
             "character primitive",
         )?;
         if value.len() != 1 {
-            Result::Err(type_codec::artifact_decode_error("single character primitive"))
+            Result::Err(wire::artifact_decode_error("single character primitive"))
         } else {
             Result::Ok(tast::Primitive::Char { value: value.get(0) })
         }
@@ -122,16 +123,16 @@ pub fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Pri
     }
 }
 
-pub fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::Constructor,
     string,
 ] {
-    let object = type_codec::artifact_json_object(value, "constructor")?;
+    let object = wire::artifact_json_object(value, "constructor")?;
     if object.len() != 1 {
-        Result::Err(type_codec::artifact_decode_error("constructor variant"))
+        Result::Err(wire::artifact_decode_error("constructor variant"))
     } else if object[0].0 == "Struct" {
-        let payload = type_codec::artifact_json_object(object[0].1, "struct constructor")?;
-        match type_codec::artifact_json_field_string(payload, "type_name") {
+        let payload = wire::artifact_json_object(object[0].1, "struct constructor")?;
+        match wire::artifact_json_field_string(payload, "type_name") {
             Ok(name) => Result::Ok(
                 tast::Constructor {
                     name,
@@ -143,12 +144,12 @@ pub fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wi
             Err(error) => Result::Err(error),
         }
     } else if object[0].0 == "Enum" {
-        let payload = type_codec::artifact_json_object(object[0].1, "enum constructor")?;
-        let type_name = type_codec::artifact_json_field_string(payload, "type_name")?;
-        let variant = type_codec::artifact_json_field_string(payload, "variant")?;
-        let index = type_codec::artifact_parse_nonnegative_int(
-            type_codec::artifact_json_number_value(
-                type_codec::artifact_json_required_field(payload, "index")?,
+        let payload = wire::artifact_json_object(object[0].1, "enum constructor")?;
+        let type_name = wire::artifact_json_field_string(payload, "type_name")?;
+        let variant = wire::artifact_json_field_string(payload, "variant")?;
+        let index = wire::artifact_parse_nonnegative_int(
+            wire::artifact_json_number_value(
+                wire::artifact_json_required_field(payload, "index")?,
                 "enum constructor index",
             )?,
         )?;
@@ -161,20 +162,20 @@ pub fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wi
             },
         )
     } else {
-        Result::Err(type_codec::artifact_decode_error("constructor kind"))
+        Result::Err(wire::artifact_decode_error("constructor kind"))
     }
 }
 
-pub fn artifact_decode_unary(value: string) -> Result[ast::UnaryOp, string] {
+fn artifact_decode_unary(value: string) -> Result[ast::UnaryOp, string] {
     match value {
         "Neg" => Result::Ok(ast::UnaryOp::Neg),
         "Not" => Result::Ok(ast::UnaryOp::Not),
         "BitNot" => Result::Ok(ast::UnaryOp::BitNot),
-        _ => Result::Err(type_codec::artifact_decode_error("unary operator")),
+        _ => Result::Err(wire::artifact_decode_error("unary operator")),
     }
 }
 
-pub fn artifact_decode_binary(value: string) -> Result[ast::BinaryOp, string] {
+fn artifact_decode_binary(value: string) -> Result[ast::BinaryOp, string] {
     match value {
         "Add" => Result::Ok(ast::BinaryOp::Add),
         "Sub" => Result::Ok(ast::BinaryOp::Sub),
@@ -194,6 +195,6 @@ pub fn artifact_decode_binary(value: string) -> Result[ast::BinaryOp, string] {
         "GreaterEq" => Result::Ok(ast::BinaryOp::GreaterEq),
         "Eq" => Result::Ok(ast::BinaryOp::Eq),
         "NotEq" => Result::Ok(ast::BinaryOp::NotEq),
-        _ => Result::Err(type_codec::artifact_decode_error("binary operator")),
+        _ => Result::Err(wire::artifact_decode_error("binary operator")),
     }
 }

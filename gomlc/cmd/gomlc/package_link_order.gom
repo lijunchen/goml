@@ -1,7 +1,6 @@
 package main;
 
-use gomlc::artifact_wire as wire;
-
+use gomlc::artifact::wire as wire;
 use gomlc::hir;
 use gomlc::vecs;
 
@@ -64,7 +63,8 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
         for index in 0..remaining.len() {
             let value = remaining[index];
             if package_node_is_ready(value, remaining)
-                && (candidate < 0 || wire::artifact_string_less(value.name, remaining[candidate].name)) {
+                && (candidate < 0
+                    || wire::artifact_string_less(value.name, remaining[candidate].name)) {
                 candidate = index;
             } else {
                 ()

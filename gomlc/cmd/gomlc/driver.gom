@@ -1,11 +1,8 @@
 package main;
 
-use gomlc::artifact_interface_codec as interface_codec;
-
-use gomlc::artifact_wire as wire;
-
-use gomlc::artifact_model;
-
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use gomlc::anf;
 use gomlc::ast;
 use gomlc::core;
@@ -45,8 +42,8 @@ pub enum SourceCompilation {
 struct PackageCompilation {
     hir_file: hir::File,
     core_value: core::File,
-    interface_unit: artifact_model::ArtifactInterfaceUnit,
-    exports: artifact_model::ArtifactPackageExports,
+    interface_unit: artifact::ArtifactInterfaceUnit,
+    exports: artifact::ArtifactPackageExports,
 }
 
 struct DiagnosticPosition {
@@ -75,8 +72,8 @@ struct StandardLibrary {
 
 struct ArtifactStandardPackage {
     core_value: core::File,
-    interface_unit: artifact_model::ArtifactInterfaceUnit,
-    environment_exports: artifact_model::ArtifactPackageExports,
+    interface_unit: artifact::ArtifactInterfaceUnit,
+    environment_exports: artifact::ArtifactPackageExports,
 }
 
 struct ArtifactStandardLibrary {
@@ -277,12 +274,7 @@ fn compile_standard_package(
         Some(value) => value,
         None => {
             fail("error[compile]: missing typed standard package " + package_name);
-            tast::File {
-                items: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                constants: Vec::[],
-            }
+            tast::File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] }
         },
     };
     let enum_names: Vec[string] = Vec::[];
@@ -311,7 +303,7 @@ fn compile_standard_package(
         enum_names,
         struct_names,
     );
-    let interface_unit = interface_codec::new_artifact_interface_unit(
+    let interface_unit = interface_codec::new_unit(
         package_name,
         public_exports,
         artifact_package_interface(package_name, declared_name, public_exports),
@@ -363,7 +355,7 @@ fn builtin_hir_files() -> Vec[hir::File] {
     files
 }
 
-fn builtin_artifact_interface_unit() -> artifact_model::ArtifactInterfaceUnit {
+fn builtin_artifact_interface_unit() -> artifact::ArtifactInterfaceUnit {
     let builtin_files = builtin_hir_files();
     let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
     let traits: Vec[tast::TraitInfo] = Vec::[];
@@ -483,12 +475,7 @@ fn builtin_artifact_interface_unit() -> artifact_model::ArtifactInterfaceUnit {
         Some(file) => file,
         None => {
             fail("error[compile]: failed to typecheck builtin package");
-            tast::File {
-                items: Vec::[],
-                enums: Vec::[],
-                structs: Vec::[],
-                constants: Vec::[],
-            }
+            tast::File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] }
         },
     };
     let exports = artifact_package_exports(
@@ -500,7 +487,7 @@ fn builtin_artifact_interface_unit() -> artifact_model::ArtifactInterfaceUnit {
         Vec::[],
         Vec::[],
     );
-    interface_codec::new_artifact_interface_unit(
+    interface_codec::new_unit(
         "builtin",
         exports,
         artifact_package_interface("builtin", "builtin", exports),
@@ -1017,12 +1004,7 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
             line_end = line_end + 1;
         }
     };
-    DiagnosticPosition {
-        line,
-        column,
-        line_start,
-        line_end,
-    }
+    DiagnosticPosition { line, column, line_start, line_end }
 }
 
 fn repeat_char(value: char, count: int) -> string {

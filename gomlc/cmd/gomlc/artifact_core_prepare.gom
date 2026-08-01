@@ -1,7 +1,6 @@
 package main;
 
-use gomlc::artifact_model;
-
+use gomlc::artifact;
 use gomlc::core;
 use gomlc::tast;
 use std::text;
@@ -26,7 +25,7 @@ fn artifact_core_trait_refs_equal(left: tast::TraitRef, right: tast::TraitRef) -
     artifact_core_trait_ref_key(left) == artifact_core_trait_ref_key(right)
 }
 
-fn artifact_core_function_matches_scheme(value: core::Function, scheme: artifact_model::ArtifactFnScheme) -> bool {
+fn artifact_core_function_matches_scheme(value: core::Function, scheme: artifact::ArtifactFnScheme) -> bool {
     match artifact_function_type_parts(scheme.ty) {
         Ok(function_type) => if value.params.len() != function_type.params.len()
             || !artifact_core_types_equal(value.ret_ty, function_type.ret_ty) {
@@ -74,7 +73,10 @@ fn artifact_core_predicates(inherited: Vec[tast::TypePredicate], own: Vec[tast::
     result
 }
 
-fn artifact_prepare_core_function_metadata(value: core::Function, exports: artifact_model::ArtifactPackageExports) -> core::Function {
+fn artifact_prepare_core_function_metadata(
+    value: core::Function,
+    exports: artifact::ArtifactPackageExports,
+) -> core::Function {
     let mut predicates = value.predicates;
     for function in exports.functions {
         if function.name == value.name && artifact_core_function_matches_scheme(value, function) {
@@ -100,11 +102,10 @@ fn artifact_prepare_core_function_metadata(value: core::Function, exports: artif
                         Some(method_name) => for method in implementation.definition.methods {
                             if method.name == method_name
                                 && artifact_core_function_matches_scheme(value, method) {
-                                predicates =
-                                    artifact_core_predicates(
-                                        implementation.definition.constraints,
-                                        method.constraints,
-                                    );
+                                predicates = artifact_core_predicates(
+                                    implementation.definition.constraints,
+                                    method.constraints,
+                                );
                             } else {
                                 ()
                             }
@@ -133,11 +134,10 @@ fn artifact_prepare_core_function_metadata(value: core::Function, exports: artif
                         for method in implementation.definition.methods {
                             if method.name == method_name
                                 && artifact_core_function_matches_scheme(value, method) {
-                                predicates =
-                                    artifact_core_predicates(
-                                        implementation.definition.constraints,
-                                        method.constraints,
-                                    );
+                                predicates = artifact_core_predicates(
+                                    implementation.definition.constraints,
+                                    method.constraints,
+                                );
                             } else {
                                 ()
                             }
@@ -272,7 +272,7 @@ fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[tast::StructDe
     }
 }
 
-fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact_model::ArtifactCoreUnit]) -> Vec[
+fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact::ArtifactCoreUnit]) -> Vec[
     tast::StructDef,
 ] {
     let mut result: Vec[tast::StructDef] = Vec::[];
@@ -295,7 +295,7 @@ fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact_mo
     result
 }
 
-fn artifact_prepare_core_units(world: PackageWorld, values: Vec[artifact_model::ArtifactCoreUnit]) -> unit {
+fn artifact_prepare_core_units(world: PackageWorld, values: Vec[artifact::ArtifactCoreUnit]) -> unit {
     let definitions = artifact_link_struct_definitions(world, values);
     for value in values {
         for index in 0..value.core_ir.functions.len() {
@@ -340,7 +340,7 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef
 
 fn artifact_prepare_world_core(
     value: core::File,
-    exports: artifact_model::ArtifactPackageExports,
+    exports: artifact::ArtifactPackageExports,
     definitions: Vec[tast::StructDef],
 ) -> unit {
     for index in 0..value.functions.len() {

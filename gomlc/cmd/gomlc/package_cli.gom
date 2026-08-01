@@ -1,7 +1,6 @@
 package main;
 
-use gomlc::artifact_wire as wire;
-
+use gomlc::artifact::wire as wire;
 use gomlc::strings;
 use std::fs;
 use std::path;
@@ -146,8 +145,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                     selected_package_usage(command, interface_paths) + " --help",
                 ),
             )
-        } else if !positional && cli_value_option(command, argument)
-            && index + 1 < args.len()
+        } else if !positional && cli_value_option(command, argument) && index + 1 < args.len()
             && cli_option(args[index + 1])
             && !known_cli_option(command, args[index + 1]) {
             let usage = if option_string_present(package_name) || option_string_present(output)
@@ -339,8 +337,7 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                     command_usage(command) + " --help",
                 ),
             )
-        } else if !positional && cli_value_option(command, argument)
-            && index + 1 < args.len()
+        } else if !positional && cli_value_option(command, argument) && index + 1 < args.len()
             && cli_option(args[index + 1])
             && !known_cli_option(command, args[index + 1]) {
             return Result::Err(
@@ -487,8 +484,7 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                     command_usage(command) + " --help",
                 ),
             )
-        } else if !positional && cli_value_option(command, argument)
-            && index + 1 < args.len()
+        } else if !positional && cli_value_option(command, argument) && index + 1 < args.len()
             && cli_option(args[index + 1])
             && !known_cli_option(command, args[index + 1]) {
             return Result::Err(

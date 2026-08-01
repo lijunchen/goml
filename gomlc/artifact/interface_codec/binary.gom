@@ -1,24 +1,10 @@
 package interface_codec;
 
-use gomlc::artifact_wire as wire;
-
-use gomlc::artifact_model;
-
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use std::bytes;
 
-pub fn artifact_binary_required_section_flag() -> uint16 {
-    1
-}
-
-pub fn artifact_binary_string_table_section_id() -> uint16 {
-    1
-}
-
-pub fn artifact_binary_value_section_id() -> uint16 {
-    2
-}
-
-pub fn artifact_binary_interface_sections(value: artifact_model::ArtifactInterfaceUnit) -> Result[
+pub fn artifact_binary_interface_sections(value: artifact::ArtifactInterfaceUnit) -> Result[
     Vec[wire::ArtifactBinarySection],
     string,
 ] {
@@ -31,48 +17,48 @@ pub fn artifact_binary_interface_sections(value: artifact_model::ArtifactInterfa
     Result::Ok(
         Vec::[
             wire::ArtifactBinarySection {
-                id: artifact_binary_string_table_section_id(),
+                id: wire::string_table_section_id(),
                 version: 1,
-                flags: artifact_binary_required_section_flag(),
+                flags: wire::required_section_flag(),
                 data: wire::encode_artifact_binary_string_table(table),
             },
             wire::ArtifactBinarySection {
-                id: artifact_binary_value_section_id(),
+                id: wire::value_section_id(),
                 version: 4,
-                flags: artifact_binary_required_section_flag(),
+                flags: wire::required_section_flag(),
                 data: payload,
             },
         ],
     )
 }
 
-pub fn encode_artifact_interface_binary(value: artifact_model::ArtifactInterfaceUnit) -> Result[bytes::Bytes, string] {
+pub fn encode_binary(value: artifact::ArtifactInterfaceUnit) -> Result[bytes::Bytes, string] {
     let sections = artifact_binary_interface_sections(value)?;
     wire::encode_artifact_binary_container(1, sections)
 }
 
-pub fn artifact_binary_validate_interface_sections(value: wire::ArtifactBinaryContainer) -> Result[
+fn artifact_binary_validate_interface_sections(value: wire::ArtifactBinaryContainer) -> Result[
     unit,
     string,
 ] {
     for section in value.sections {
-        if section.id == artifact_binary_string_table_section_id() {
+        if section.id == wire::string_table_section_id() {
             if section.version != 1 {
                 return Result::Err("unsupported binary interface artifact section version")
-            } else if section.flags != artifact_binary_required_section_flag() {
+            } else if section.flags != wire::required_section_flag() {
                 return Result::Err("invalid binary interface artifact section flags")
             } else {
                 ()
             }
-        } else if section.id == artifact_binary_value_section_id() {
+        } else if section.id == wire::value_section_id() {
             if section.version != 4 {
                 return Result::Err("unsupported binary interface artifact section version")
-            } else if section.flags != artifact_binary_required_section_flag() {
+            } else if section.flags != wire::required_section_flag() {
                 return Result::Err("invalid binary interface artifact section flags")
             } else {
                 ()
             }
-        } else if section.flags & artifact_binary_required_section_flag() != 0 {
+        } else if section.flags & wire::required_section_flag() != 0 {
             return Result::Err("unsupported required binary interface artifact section")
         } else {
             ()
@@ -81,7 +67,7 @@ pub fn artifact_binary_validate_interface_sections(value: wire::ArtifactBinaryCo
     Result::Ok(())
 }
 
-pub fn decode_artifact_interface_binary(data: bytes::Bytes) -> Result[artifact_model::ArtifactInterfaceUnit, string] {
+pub fn decode_binary(data: bytes::Bytes) -> Result[artifact::ArtifactInterfaceUnit, string] {
     let container = wire::decode_artifact_binary_container(data)?;
     if container.kind != 1 {
         return Result::Err("binary artifact is not an interface")
@@ -91,7 +77,7 @@ pub fn decode_artifact_interface_binary(data: bytes::Bytes) -> Result[artifact_m
     artifact_binary_validate_interface_sections(container)?;
     let string_section = match wire::artifact_binary_find_section(
         container,
-        artifact_binary_string_table_section_id(),
+        wire::string_table_section_id(),
     ) {
         Some(value) => value,
         None => {
@@ -100,7 +86,7 @@ pub fn decode_artifact_interface_binary(data: bytes::Bytes) -> Result[artifact_m
     };
     let value_section = match wire::artifact_binary_find_section(
         container,
-        artifact_binary_value_section_id(),
+        wire::value_section_id(),
     ) {
         Some(value) => value,
         None => {

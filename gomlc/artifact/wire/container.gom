@@ -4,6 +4,18 @@ use gomlc::hash;
 use std::collections;
 use std::bytes;
 
+pub fn required_section_flag() -> uint16 {
+    1
+}
+
+pub fn string_table_section_id() -> uint16 {
+    1
+}
+
+pub fn value_section_id() -> uint16 {
+    2
+}
+
 pub struct ArtifactBinarySection {
     pub id: uint16,
     pub version: uint16,
@@ -65,10 +77,7 @@ fn artifact_binary_sha256(value: bytes::Bytes) -> bytes::Bytes {
     result
 }
 
-fn artifact_binary_section_compare(
-    left: ArtifactBinarySection,
-    right: ArtifactBinarySection,
-) -> int {
+fn artifact_binary_section_compare(left: ArtifactBinarySection, right: ArtifactBinarySection) -> int {
     if left.id < right.id {
         -1
     } else if left.id > right.id {
@@ -134,8 +143,8 @@ pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinar
     artifact_binary_write_u64(writer, artifact_binary_header_size() as uint64);
     artifact_binary_write_u64(writer, payload.len() as uint64);
     artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(payload));
-    let mut offset =
-        artifact_binary_header_size() + artifact_binary_directory_entry_size() * sections.len();
+    let mut offset = artifact_binary_header_size()
+        + artifact_binary_directory_entry_size() * sections.len();
     for section in sections {
         artifact_binary_write_u16(writer, section.id);
         artifact_binary_write_u16(writer, section.version);
@@ -161,7 +170,10 @@ fn artifact_binary_checked_int(reader: ArtifactBinaryReader, value: uint64, name
     }
 }
 
-pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[ArtifactBinaryContainer, string] {
+pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
+    ArtifactBinaryContainer,
+    string,
+] {
     let reader = new_artifact_binary_reader(data);
     let magic = artifact_binary_read_raw_bytes(reader, 8)?;
     if !artifact_binary_bytes_equal(magic, artifact_binary_magic()) {

@@ -117,10 +117,10 @@ fn artifact_binary_encode_string_id(
     }
 }
 
-pub fn artifact_binary_decode_string_id(reader: ArtifactBinaryReader, table: ArtifactBinaryStringTable) -> Result[
-    string,
-    string,
-] {
+pub fn artifact_binary_decode_string_id(
+    reader: ArtifactBinaryReader,
+    table: ArtifactBinaryStringTable,
+) -> Result[string, string] {
     let id = artifact_binary_read_length(reader)?;
     if id >= table.values.len() {
         Result::Err(artifact_binary_reader_error(reader, "string table index out of bounds"))

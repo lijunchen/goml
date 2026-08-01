@@ -1,33 +1,37 @@
 package main;
 
-use gomlc::artifact_core_codec as core_codec;
-use gomlc::artifact_interface_codec as interface_codec;
-
-use gomlc::artifact_model;
-
+use gomlc::artifact::core_codec as core_codec;
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact;
 use std::bytes;
 use std::fs;
 
-fn decode_artifact_interface_bytes(data: bytes::Bytes) -> Result[artifact_model::ArtifactInterfaceUnit, string] {
-    interface_codec::decode_artifact_interface_binary(data)
+fn decode_artifact_interface_bytes(data: bytes::Bytes) -> Result[
+    artifact::ArtifactInterfaceUnit,
+    string,
+] {
+    interface_codec::decode_binary(data)
 }
 
-fn decode_artifact_core_bytes(data: bytes::Bytes) -> Result[artifact_model::ArtifactCoreUnit, string] {
-    core_codec::decode_artifact_core_binary(data)
+fn decode_artifact_core_bytes(data: bytes::Bytes) -> Result[artifact::ArtifactCoreUnit, string] {
+    core_codec::decode_binary(data)
 }
 
-fn write_artifact_interface(path_value: string, value: artifact_model::ArtifactInterfaceUnit) -> Result[
+fn write_artifact_interface(path_value: string, value: artifact::ArtifactInterfaceUnit) -> Result[
     unit,
     string,
 ] {
-    match interface_codec::encode_artifact_interface_binary(value) {
+    match interface_codec::encode_binary(value) {
         Ok(data) => fs::write_bytes(path_value, data),
         Err(error) => Result::Err(error),
     }
 }
 
-fn write_artifact_core(path_value: string, value: artifact_model::ArtifactCoreUnit) -> Result[unit, string] {
-    match core_codec::encode_artifact_core_binary(value) {
+fn write_artifact_core(path_value: string, value: artifact::ArtifactCoreUnit) -> Result[
+    unit,
+    string,
+] {
+    match core_codec::encode_binary(value) {
         Ok(data) => fs::write_bytes(path_value, data),
         Err(error) => Result::Err(error),
     }

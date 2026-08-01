@@ -27,16 +27,16 @@ pub fn artifact_binary_writer_finish(writer: ArtifactBinaryWriter) -> bytes::Byt
     writer.data
 }
 
-pub fn artifact_binary_write_u8(writer: ArtifactBinaryWriter, value: uint8) -> unit {
+fn artifact_binary_write_u8(writer: ArtifactBinaryWriter, value: uint8) -> unit {
     writer.data.push(value)
 }
 
-pub fn artifact_binary_write_u16(writer: ArtifactBinaryWriter, value: uint16) -> unit {
+fn artifact_binary_write_u16(writer: ArtifactBinaryWriter, value: uint16) -> unit {
     writer.data.push((value & 255) as uint8);
     writer.data.push(((value >> 8) & 255) as uint8)
 }
 
-pub fn artifact_binary_write_u32(writer: ArtifactBinaryWriter, value: uint32) -> unit {
+fn artifact_binary_write_u32(writer: ArtifactBinaryWriter, value: uint32) -> unit {
     writer.data.push((value & 255) as uint8);
     writer.data.push(((value >> 8) & 255) as uint8);
     writer.data.push(((value >> 16) & 255) as uint8);
@@ -49,7 +49,7 @@ pub fn artifact_binary_write_u64(writer: ArtifactBinaryWriter, value: uint64) ->
     }
 }
 
-pub fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: uint64) -> unit {
+fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: uint64) -> unit {
     let mut remaining = value;
     while remaining >= 128 {
         writer.data.push(((remaining & 127) as uint8) | 128);
@@ -58,11 +58,11 @@ pub fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: uint64
     writer.data.push(remaining as uint8)
 }
 
-pub fn artifact_binary_write_zigzag(writer: ArtifactBinaryWriter, value: int64) -> unit {
+fn artifact_binary_write_zigzag(writer: ArtifactBinaryWriter, value: int64) -> unit {
     artifact_binary_write_uleb128(writer, ((value << 1) ^ (value >> 63)) as uint64)
 }
 
-pub fn artifact_binary_write_bool(writer: ArtifactBinaryWriter, value: bool) -> unit {
+fn artifact_binary_write_bool(writer: ArtifactBinaryWriter, value: bool) -> unit {
     artifact_binary_write_u8(
         writer,
         if value {
@@ -86,11 +86,11 @@ fn artifact_binary_write_raw_bytes(writer: ArtifactBinaryWriter, value: bytes::B
     }
 }
 
-pub fn artifact_binary_write_string(writer: ArtifactBinaryWriter, value: string) -> unit {
+fn artifact_binary_write_string(writer: ArtifactBinaryWriter, value: string) -> unit {
     artifact_binary_write_bytes(writer, bytes::Bytes::from_string(value))
 }
 
-pub fn artifact_binary_patch_u32(writer: ArtifactBinaryWriter, offset: int, value: uint32) -> Result[
+fn artifact_binary_patch_u32(writer: ArtifactBinaryWriter, offset: int, value: uint32) -> Result[
     unit,
     string,
 ] {
@@ -105,7 +105,7 @@ pub fn artifact_binary_patch_u32(writer: ArtifactBinaryWriter, offset: int, valu
     }
 }
 
-pub fn artifact_binary_patch_u64(writer: ArtifactBinaryWriter, offset: int, value: uint64) -> Result[
+fn artifact_binary_patch_u64(writer: ArtifactBinaryWriter, offset: int, value: uint64) -> Result[
     unit,
     string,
 ] {
@@ -145,7 +145,7 @@ pub fn artifact_binary_read_u8(reader: ArtifactBinaryReader) -> Result[uint8, st
     }
 }
 
-pub fn artifact_binary_read_u16(reader: ArtifactBinaryReader) -> Result[uint16, string] {
+fn artifact_binary_read_u16(reader: ArtifactBinaryReader) -> Result[uint16, string] {
     if artifact_binary_reader_remaining(reader) < 2 {
         Result::Err(artifact_binary_reader_error(reader, "unexpected end of input"))
     } else {
@@ -185,7 +185,7 @@ pub fn artifact_binary_read_u64(reader: ArtifactBinaryReader) -> Result[uint64, 
     }
 }
 
-pub fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[uint64, string] {
+fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[uint64, string] {
     let mut value = 0 as uint64;
     let mut index = 0;
     while index < 10 {
@@ -205,14 +205,14 @@ pub fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[uint
     Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))
 }
 
-pub fn artifact_binary_read_zigzag(reader: ArtifactBinaryReader) -> Result[int64, string] {
+fn artifact_binary_read_zigzag(reader: ArtifactBinaryReader) -> Result[int64, string] {
     match artifact_binary_read_uleb128(reader) {
         Ok(value) => Result::Ok(((value >> 1) as int64) ^ -((value & 1) as int64)),
         Err(error) => Result::Err(error),
     }
 }
 
-pub fn artifact_binary_read_bool(reader: ArtifactBinaryReader) -> Result[bool, string] {
+fn artifact_binary_read_bool(reader: ArtifactBinaryReader) -> Result[bool, string] {
     match artifact_binary_read_u8(reader) {
         Ok(0) => Result::Ok(false),
         Ok(1) => Result::Ok(true),
@@ -232,7 +232,7 @@ fn artifact_binary_read_length(reader: ArtifactBinaryReader) -> Result[int, stri
     }
 }
 
-pub fn artifact_binary_read_bytes(reader: ArtifactBinaryReader) -> Result[bytes::Bytes, string] {
+fn artifact_binary_read_bytes(reader: ArtifactBinaryReader) -> Result[bytes::Bytes, string] {
     let length = artifact_binary_read_length(reader)?;
     if length > artifact_binary_reader_remaining(reader) {
         Result::Err(artifact_binary_reader_error(reader, "byte sequence exceeds remaining input"))

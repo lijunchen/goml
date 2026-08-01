@@ -1,7 +1,6 @@
 package main;
 
-use gomlc::artifact_wire as wire;
-
+use gomlc::artifact::wire as wire;
 use gomlc::strings;
 use std::io;
 use std::text;
@@ -22,8 +21,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
             index += 1;
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
-        } else if !positional
-            && option_string_present(inline_cli_value(argument, "--help")) {
+        } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
             let value = match inline_cli_value(argument, "--help") {
                 Some(value) => value,
                 None => "",
