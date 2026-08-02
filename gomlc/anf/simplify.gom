@@ -635,6 +635,68 @@ fn substitute_join_imms(values: Vec[Imm], params: Vec[(string, tast::Type)], arg
     result
 }
 
+fn join_args_match(params: Vec[(string, tast::Type)], args: Vec[Imm]) -> bool {
+    if params.len() != args.len() {
+        return false
+    } else {
+        ()
+    };
+    for index in 0..args.len() {
+        if !tast::types_equal(imm_type(args[index]), params[index].1) {
+            return false
+        } else {
+            ()
+        }
+    };
+    true
+}
+
+fn join_rewrite_safe_term(value: Term, join: JoinBind) -> bool {
+    match value {
+        Jump { target, args, ret_ty: _ } => {
+            target != join.name || join_args_match(join.params, args)
+        },
+        If { then_, else_, .. } => {
+            join_rewrite_safe_block(then_, join) && join_rewrite_safe_block(else_, join)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                if !join_rewrite_safe_block(arm.body, join) {
+                    return false
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => join_rewrite_safe_block(body, join),
+                None => true,
+            }
+        },
+        Return(_) | Unreachable { .. } => true,
+    }
+}
+
+fn join_rewrite_safe_block(value: Block, join: JoinBind) -> bool {
+    for bind in value.binds {
+        match bind {
+            Let(_) => (),
+            Join(value) => if !join_rewrite_safe_block(value.body, join) {
+                return false
+            } else {
+                ()
+            },
+            JoinRec(values) => for value in values {
+                if !join_rewrite_safe_block(value.body, join) {
+                    return false
+                } else {
+                    ()
+                }
+            },
+        }
+    };
+    join_rewrite_safe_term(value.term, join)
+}
+
 fn rewrite_simple_join_term(value: Term, join: JoinBind) -> Term {
     match value {
         Jump { target, args, ret_ty } => if target == join.name {
@@ -753,7 +815,7 @@ fn simplify_join_binds(values: Vec[Bind], index: int, term: Term) -> Block {
                 };
                 if count_join_uses_block(rest, join.name) == 0 {
                     rest
-                } else if join_is_simple(join) {
+                } else if join_is_simple(join) && join_rewrite_safe_block(rest, join) {
                     rewrite_simple_join_block(rest, join)
                 } else {
                     prepend_simplified_bind(Bind::Join(join), rest)

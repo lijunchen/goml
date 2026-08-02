@@ -1,5 +1,6 @@
 package anf;
 
+use gomlc::strings;
 use gomlc::tast;
 
 struct JoinSignature {
@@ -34,9 +35,16 @@ fn find_join_signature(values: Vec[JoinSignature], name: string) -> Option[JoinS
 }
 
 fn verify_type(actual: tast::Type, expected: tast::Type, message: string) -> Result[unit, string] {
-    let compatible = match tast::resolve_type(actual) {
+    let actual_resolved = tast::resolve_type(actual);
+    let expected_resolved = tast::resolve_type(expected);
+    let compatible = match actual_resolved {
         Never | Error => true,
-        _ => match tast::resolve_type(expected) {
+        Con { name } => match expected_resolved {
+            Error => true,
+            Func { params: _, ret_ty: _ } => strings::starts_with(name, "closure_env_"),
+            _ => tast::types_equal(actual, expected),
+        },
+        _ => match expected_resolved {
             Error => true,
             _ => tast::types_equal(actual, expected),
         },
