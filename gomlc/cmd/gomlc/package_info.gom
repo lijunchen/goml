@@ -253,9 +253,7 @@ fn package_info_parse_use(scanner: PackageInfoScanner, source_path: string) -> R
         if package_info_consume_text(scanner, "{") {
             braced = true;
             if package_info_consume_text(scanner, "}") {
-                return Result::Err(
-                    package_info_error(source_path, "use item list cannot be empty"),
-                )
+                return Result::Err(package_info_error(source_path, "use item list cannot be empty"))
             } else {
                 ()
             };

@@ -139,12 +139,7 @@ fn std_env_args_item() -> Item {
             ),
         },
     );
-    std_function_item(
-        "std.env.args",
-        Vec::[],
-        lower_type(std_vec_type(tast::Type::String)),
-        stmts,
-    )
+    std_function_item("std.env.args", Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
 }
 
 fn std_string_result_item(key: string, function: string) -> Item {

@@ -271,12 +271,7 @@ fn place_field_get(
                     ()
                 }
             };
-            Expr::ConstrGet {
-                expr: parent,
-                constructor,
-                field_index,
-                ty: item_ty,
-            }
+            Expr::ConstrGet { expr: parent, constructor, field_index, ty: item_ty }
         },
         None => missing_expr(item_ty),
     }
@@ -470,16 +465,15 @@ fn lower_index_assignment(
             let value_ty = tast::expr_type(value);
             let value_name = gensym(ctx, "value");
             stmts.push(LetStmt { name: value_name, value: lower_expr(ctx, value), ty: value_ty });
-            let mut updated =
-                match op {
-                    Compound(operator) => Expr::Binary {
-                        op: operator,
-                        lhs: Expr::Var { name: current_name, ty: current_ty },
-                        rhs: Expr::Var { name: value_name, ty: value_ty },
-                        ty: current_ty,
-                    },
-                    Plain => Expr::Var { name: value_name, ty: value_ty },
-                };
+            let mut updated = match op {
+                Compound(operator) => Expr::Binary {
+                    op: operator,
+                    lhs: Expr::Var { name: current_name, ty: current_ty },
+                    rhs: Expr::Var { name: value_name, ty: value_ty },
+                    ty: current_ty,
+                },
+                Plain => Expr::Var { name: value_name, ty: value_ty },
+            };
             let mut final_action: Option[Expr] = Option::None;
             let mut stopped = false;
             for offset in 0..evaluated.len() {

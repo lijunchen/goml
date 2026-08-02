@@ -79,11 +79,10 @@ fn collect_dependencies(
     Result::Ok(())
 }
 
-fn mark_reachable(
-    graph: Graph,
-    package_name: string,
-    seen: HashMap[string, bool],
-) -> Result[unit, string] {
+fn mark_reachable(graph: Graph, package_name: string, seen: HashMap[string, bool]) -> Result[
+    unit,
+    string,
+] {
     if seen.contains(package_name) {
         return Result::Ok(())
     } else {
@@ -281,13 +280,7 @@ fn core_outputs(context: Context, output_root: string, packages: Vec[string]) ->
 
 pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string] {
     let output_root = path::join(context.artifact_root, "check");
-    let commands = compile_commands(
-        context,
-        output_root,
-        "check",
-        "check",
-        context.graph.order,
-    )?;
+    let commands = compile_commands(context, output_root, "check", "check", context.graph.order)?;
     if include_tests {
         let internal = internal_test_graphs(context)?;
         for graph in internal {
@@ -357,13 +350,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
     } else {
         reachable_packages(context.graph, entries)?
     };
-    let commands = compile_commands(
-        context,
-        output_root,
-        "build",
-        "build",
-        packages,
-    )?;
+    let commands = compile_commands(context, output_root, "build", "build", packages)?;
     for entry_package in util::sorted(entries) {
         let main_go = linked_go_output(output_root, context.graph, entry_package);
         let packages = reachable_packages(context.graph, Vec::[entry_package])?;
@@ -395,13 +382,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
 pub fn run_plan(context: Context) -> Result[Plan, string] {
     let output_root = path::join(context.artifact_root, "build");
     let packages = reachable_packages(context.graph, Vec::[context.graph.entry_package])?;
-    let commands = compile_commands(
-        context,
-        output_root,
-        "build",
-        "build",
-        packages,
-    )?;
+    let commands = compile_commands(context, output_root, "build", "build", packages)?;
     let main_go = linked_go_output(output_root, context.graph, context.graph.entry_package);
     let packages = reachable_packages(context.graph, Vec::[context.graph.entry_package])?;
     commands.push(
@@ -539,13 +520,7 @@ fn append_test_group(
 
 pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     let dependency_root = path::join(path::join(context.artifact_root, "test"), "base");
-    let commands = compile_commands(
-        context,
-        dependency_root,
-        "build",
-        "build",
-        context.graph.order,
-    )?;
+    let commands = compile_commands(context, dependency_root, "build", "build", context.graph.order)?;
     let compiled_dependencies: HashMap[string, bool] = HashMap::{};
     for package_name in context.graph.order {
         compiled_dependencies[package_name] = true;

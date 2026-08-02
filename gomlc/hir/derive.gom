@@ -165,11 +165,9 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
     }
 }
 
-fn derive_predicates(
-    field_types: Vec[ast::TypeExpr],
-    generics: Vec[string],
-    trait_name: string,
-) -> Vec[ast::Predicate] {
+fn derive_predicates(field_types: Vec[ast::TypeExpr], generics: Vec[string], trait_name: string) -> Vec[
+    ast::Predicate,
+] {
     let result: Vec[ast::Predicate] = Vec::[];
     let seen: Vec[string] = Vec::[];
     for ty in field_types {
@@ -208,10 +206,7 @@ fn supported_derive(value: string) -> bool {
     value == "ToString" || value == "Eq" || value == "Hash"
 }
 
-fn validate_derive_attributes(
-    attrs: Vec[ast::Attribute],
-    diagnostics: Vec[cst::Diagnostic],
-) -> unit {
+fn validate_derive_attributes(attrs: Vec[ast::Attribute], diagnostics: Vec[cst::Diagnostic]) -> unit {
     for attr in attrs {
         if attr.name == "derive" {
             for arg in attr.args {
@@ -241,14 +236,8 @@ fn validate_derive_attributes(
 fn validate_file_derives(value: ast::File, diagnostics: Vec[cst::Diagnostic]) -> unit {
     for item in value.items {
         match item {
-            StructDef(definition) => validate_derive_attributes(
-                definition.attrs,
-                diagnostics,
-            ),
-            EnumDef(definition) => validate_derive_attributes(
-                definition.attrs,
-                diagnostics,
-            ),
+            StructDef(definition) => validate_derive_attributes(definition.attrs, diagnostics),
+            EnumDef(definition) => validate_derive_attributes(definition.attrs, diagnostics),
             _ => (),
         }
     }
@@ -791,12 +780,7 @@ fn derive_enum_hash(value: ast::EnumDef) -> ast::ImplBlock {
         value.name,
         value.generics,
         enum_payload_types(value),
-        make_method(
-            "hash",
-            one_param("self", target),
-            ast::TypeExpr::Uint64,
-            enum_hash_body(value),
-        ),
+        make_method("hash", one_param("self", target), ast::TypeExpr::Uint64, enum_hash_body(value)),
     )
 }
 

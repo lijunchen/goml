@@ -31,8 +31,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             index += 1;
         } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
-        } else if !positional
-            && option_string_present(inline_cli_value(argument, "--help")) {
+        } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
             let value = match inline_cli_value(argument, "--help") {
                 Some(value) => value,
                 None => "",
@@ -40,8 +39,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             return Result::Err(
                 unexpected_value_error_with_usage(value, "--help", "gomlc version --help"),
             )
-        } else if !positional && cli_value_option("version", argument)
-            && index + 1 < args.len()
+        } else if !positional && cli_value_option("version", argument) && index + 1 < args.len()
             && cli_option(args[index + 1])
             && !known_cli_option("version", args[index + 1]) {
             return Result::Err(
@@ -68,8 +66,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                     Err(error) => return Result::Err(error),
                 }
             }
-        } else if !positional
-            && option_string_present(inline_cli_value(argument, "--format")) {
+        } else if !positional && option_string_present(inline_cli_value(argument, "--format")) {
             if option_string_present(format) {
                 return Result::Err(repeated_argument_error("version", "--format <FORMAT>"))
             } else {
@@ -116,8 +113,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
 
 fn trim_version_value(value: string) -> string {
     let mut end = value.byte_len();
-    while end > 0
-        && (value.byte_get(end - 1) == b'\n' || value.byte_get(end - 1) == b'\r') {
+    while end > 0 && (value.byte_get(end - 1) == b'\n' || value.byte_get(end - 1) == b'\r') {
         end -= 1;
     };
     value.byte_slice(0, end)

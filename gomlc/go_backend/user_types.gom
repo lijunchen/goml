@@ -594,7 +594,7 @@ pub fn emit_user_type_items(
             },
             None => match builtin_struct_instance(instance, instances) {
                 Some(definition) => {
-                if !vecs::contains(emitted, instance.name) {
+                    if !vecs::contains(emitted, instance.name) {
                         items.push(Item::Struct(definition));
                         emitted.push(instance.name)
                     } else {

@@ -98,8 +98,7 @@ fn ascii_prefix_equal_case_insensitive(value: string, expected: string) -> bool 
 
 fn header_line_content(value: string) -> string {
     let mut end = value.byte_len();
-    while end > 0
-        && (value.byte_get(end - 1) == b'\n' || value.byte_get(end - 1) == b'\r') {
+    while end > 0 && (value.byte_get(end - 1) == b'\n' || value.byte_get(end - 1) == b'\r') {
         end = end - 1;
     };
     value.byte_slice(0, end)

@@ -1625,16 +1625,17 @@ fn default_trait_method(
 ) -> Function {
     let generics = append_names(owner_generics, expected.generics);
     for generic in expected.generics {
-        substitutions.push(
-            TypeSubst { name: generic, ty: Type::Param { name: generic } },
-        )
+        substitutions.push(TypeSubst { name: generic, ty: Type::Param { name: generic } })
     };
     let params: Vec[(string, Type)] = Vec::[];
     let args: Vec[Expr] = Vec::[];
     let param_types: Vec[Type] = Vec::[];
     for index in 0..expected.params.len() {
         let name = "default_arg" + index.to_string();
-        let ty = resolve_impl_alias_type(ctx, substitute_type(expected.params[index], substitutions));
+        let ty = resolve_impl_alias_type(
+            ctx,
+            substitute_type(expected.params[index], substitutions),
+        );
         params.push((name, ty));
         args.push(Expr::Var { name, ty });
         param_types.push(ty)
@@ -2939,9 +2940,7 @@ fn default_trait_method_scheme(
     );
     let method_substitutions = substitutions;
     for generic in method.generics {
-        method_substitutions.push(
-            TypeSubst { name: generic, ty: Type::Param { name: generic } },
-        )
+        method_substitutions.push(TypeSubst { name: generic, ty: Type::Param { name: generic } })
     };
     let params: Vec[Type] = Vec::[];
     for param in method.params {

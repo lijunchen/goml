@@ -166,10 +166,7 @@ fn write_node_text(value: LocatedNode, builder: text::StringBuilder) -> unit {
     let mut cursor = value.start;
     for element in cst::node_children(value.node) {
         match element {
-            Node(child) => write_node_text(
-                LocatedNode { node: child, start: cursor },
-                builder,
-            ),
+            Node(child) => write_node_text(LocatedNode { node: child, start: cursor }, builder),
             Token(token) => builder.write_string(token.text),
         };
         cursor = cursor + cst::element_byte_len(element);

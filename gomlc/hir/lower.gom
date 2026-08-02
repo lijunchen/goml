@@ -256,7 +256,9 @@ fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
     let result: Vec[ImportAlias] = Vec::[];
     for use_decl in file.uses {
         if !use_decl.items.is_empty() {
-            result.push(ImportAlias { alias: "", package_name: join_segments(path_segments(use_decl.path)) })
+            result.push(
+                ImportAlias { alias: "", package_name: join_segments(path_segments(use_decl.path)) },
+            )
         } else {
             ()
         }
@@ -978,8 +980,8 @@ fn lower_expr_value(
                                     ctx,
                                     full_name(ctx.package_name, name),
                                 ) {
-                                        Some(def_id) => NameRef::Def(def_id),
-                                        None => NameRef::Other(name),
+                                    Some(def_id) => NameRef::Def(def_id),
+                                    None => NameRef::Other(name),
                                 },
                             }
                         } else {
@@ -1432,7 +1434,10 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
                 ret_ty: lower_type(ctx, method.ret_ty, method_type_params),
                 default_name: match method.body {
                     Some(_) => Option::Some(
-                        full_name(ctx.package_name, "trait_default#" + value.name + "#" + method.name),
+                        full_name(
+                            ctx.package_name,
+                            "trait_default#" + value.name + "#" + method.name,
+                        ),
                     ),
                     None => Option::None,
                 },

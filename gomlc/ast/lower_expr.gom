@@ -90,9 +90,7 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                                     None => (),
                                 }
                             };
-                            Option::Some(
-                                Stmt::Assign { target, op, value, span: node_span(node) },
-                            )
+                            Option::Some(Stmt::Assign { target, op, value, span: node_span(node) })
                         },
                         None => Option::None,
                     },
@@ -119,10 +117,7 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                 Option::None
             } else {
                 match lower_expr(ctx, values[0]) {
-                    Some(value) => Option::Some(Stmt::Defer {
-                        expr: value,
-                        span: node_span(node),
-                    }),
+                    Some(value) => Option::Some(Stmt::Defer { expr: value, span: node_span(node) }),
                     None => Option::None,
                 }
             }
@@ -323,12 +318,10 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
                 };
                 let mut marker = line_start;
                 while marker < line_end
-                    && (value.byte_get(marker) == b' '
-                        || value.byte_get(marker) == b'\t') {
+                    && (value.byte_get(marker) == b' ' || value.byte_get(marker) == b'\t') {
                     marker = marker + 1;
                 };
-                if marker + 2 > line_end
-                    || value.byte_slice(marker, marker + 2) != "\\\\" {
+                if marker + 2 > line_end || value.byte_slice(marker, marker + 2) != "\\\\" {
                     push_error(ctx, token_span(token), "Invalid multiline string content");
                     return Option::None
                 } else {
@@ -397,11 +390,7 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
         match first_child(node, cst::NodeKind::PATH) {
             Some(path_node) => match lower_path(ctx, path_node) {
                 Some(path) => Option::Some(
-                    LowerIdentParts {
-                        path,
-                        owner_type_args: Vec::[],
-                        member_type_args: Vec::[],
-                    },
+                    LowerIdentParts { path, owner_type_args: Vec::[], member_type_args: Vec::[] },
                 ),
                 None => Option::None,
             },
@@ -541,7 +530,7 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                             match first_token(field, lexer::TokenKind::Ident) {
                                 Some(name_token) => {
                                     let values = expr_children(field);
-                    if !values.is_empty() {
+                                    if !values.is_empty() {
                                         match lower_expr(ctx, values[0]) {
                                             Some(value) => fields.push(
                                                 (name_token.token.text, value),

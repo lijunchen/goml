@@ -114,13 +114,11 @@ fn use_decl(parser: Parser) -> unit {
 fn use_path(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::Ident);
-    while parser.at(lexer::TokenKind::ColonColon)
-        && parser.nth(1) == lexer::TokenKind::Ident {
+    while parser.at(lexer::TokenKind::ColonColon) && parser.nth(1) == lexer::TokenKind::Ident {
         parser.advance();
         parser.advance()
     };
-    if parser.at(lexer::TokenKind::ColonColon)
-        && parser.nth(1) == lexer::TokenKind::LBrace {
+    if parser.at(lexer::TokenKind::ColonColon) && parser.nth(1) == lexer::TokenKind::LBrace {
         parser.advance()
     } else {
         ()

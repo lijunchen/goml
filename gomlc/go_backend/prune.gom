@@ -326,7 +326,7 @@ pub fn prune_functions(value: File) -> File {
         for item in value.items {
             match item {
                 Global(global) => if name_present(reachable, global.name)
-                        && !name_present(expanded, global.name) {
+                    && !name_present(expanded, global.name) {
                     add_reachable(expanded, global.name);
                     collect_expr_names(reachable, global.value)
                 } else {
@@ -346,8 +346,7 @@ pub fn prune_functions(value: File) -> File {
         for item in value.items {
             match item {
                 ConstGroup(group) => for spec in group.specs {
-                    if name_present(reachable, spec.name)
-                        && !name_present(expanded, spec.name) {
+                    if name_present(reachable, spec.name) && !name_present(expanded, spec.name) {
                         add_reachable(expanded, spec.name);
                         collect_expr_names(reachable, spec.value)
                     } else {

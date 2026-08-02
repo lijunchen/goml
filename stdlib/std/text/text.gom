@@ -88,10 +88,7 @@ pub fn split_once(value: string, separator: string) -> Option[(string, string)] 
     } else {
         match find(value, separator) {
             Some(index) => Option::Some(
-                (
-                    value.byte_slice(0, index),
-                    value.byte_slice(index + separator_len, value_len),
-                ),
+                (value.byte_slice(0, index), value.byte_slice(index + separator_len, value_len)),
             ),
             None => Option::None,
         }

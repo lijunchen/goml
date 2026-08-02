@@ -42,13 +42,10 @@ fn raw_string_pattern_value(node: LocatedNode) -> Option[string] {
     match literal_value(node, lexer::TokenKind::RawStr) {
         Some(source) => {
             let mut hash_count = 0;
-            while 1 + hash_count < source.byte_len()
-                && source.byte_get(1 + hash_count) == b'#' {
+            while 1 + hash_count < source.byte_len() && source.byte_get(1 + hash_count) == b'#' {
                 hash_count = hash_count + 1;
             };
-            Option::Some(
-                source.byte_slice(hash_count + 2, source.byte_len() - hash_count - 1),
-            )
+            Option::Some(source.byte_slice(hash_count + 2, source.byte_len() - hash_count - 1))
         },
         None => Option::None,
     }

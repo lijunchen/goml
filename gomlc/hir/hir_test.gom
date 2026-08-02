@@ -341,9 +341,7 @@ fn rejects_invalid_derives() -> unit {
 fn derives_generic_impls_with_field_type_predicates() -> unit {
     let expanded = expand_derives(
         ast::lower(
-            parser::parse(
-                "#[derive(Eq)] struct Box[T, Marker] { first: Vec[T], second: Vec[T] }",
-            ),
+            parser::parse("#[derive(Eq)] struct Box[T, Marker] { first: Vec[T], second: Vec[T] }"),
         ),
     );
     testing::assert_eq(expanded.diagnostics.len(), 0);

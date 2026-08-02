@@ -105,10 +105,9 @@ fn expr_is_control(value: core::Expr) -> bool {
             arms: _,
             default: _,
             ty: _,
-        } | While { cond: _, body: _, ty: _ } | Loop { body: _, ty: _ } | Break { ty: _, .. } | Continue { ty: _ } | Return {
-            expr: _,
+        } | While { cond: _, body: _, ty: _ } | Loop { body: _, ty: _ } | Break { ty: _, .. } | Continue {
             ty: _,
-        } => true,
+        } | Return { expr: _, ty: _ } => true,
         _ => false,
     }
 }

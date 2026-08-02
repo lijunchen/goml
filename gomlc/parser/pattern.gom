@@ -68,8 +68,8 @@ fn range_pattern(parser: Parser) -> Option[MarkerClosed] {
         None => Option::None,
         Some(value) => {
             let kind = parser.peek();
-    if !token_is(kind, lexer::TokenKind::DotDot)
-        && !token_is(kind, lexer::TokenKind::DotDotEq) {
+            if !token_is(kind, lexer::TokenKind::DotDot)
+                && !token_is(kind, lexer::TokenKind::DotDotEq) {
                 Option::Some(value)
             } else {
                 let marker = value.precede(parser);

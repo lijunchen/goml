@@ -16,17 +16,9 @@ fn invalid_artifact_callable(value: string) -> ArtifactCallable {
 
 pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
     match value {
-        Function(value) => ArtifactCallable {
-            name: value,
-            kind: "goml",
-            id: Option::Some(value),
-        },
+        Function(value) => ArtifactCallable { name: value, kind: "goml", id: Option::Some(value) },
         LangItem { item: _, function_name } => {
-            ArtifactCallable {
-                name: function_name,
-                kind: "goml",
-                id: Option::Some(function_name),
-            }
+            ArtifactCallable { name: function_name, kind: "goml", id: Option::Some(function_name) }
         },
         Runtime(value) => match resources::runtime_abi_by_key(value) {
             Some(spec) => ArtifactCallable {

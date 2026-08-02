@@ -1020,14 +1020,10 @@ fn coverage_useful_sequence(
     false
 }
 
-fn coverage_scalar_boundaries(
-    matrix: Vec[Vec[CoveragePat]],
-    interval: CoverageScalar,
-) -> Vec[CoverageNumber] {
-    let boundaries: Vec[CoverageNumber] = Vec::[
-        interval.lo,
-        coverage_number_increment(interval.hi),
-    ];
+fn coverage_scalar_boundaries(matrix: Vec[Vec[CoveragePat]], interval: CoverageScalar) -> Vec[
+    CoverageNumber,
+] {
+    let boundaries: Vec[CoverageNumber] = Vec::[interval.lo, coverage_number_increment(interval.hi)];
     for row in matrix {
         if !row.is_empty() {
             match row[0].scalar {
@@ -1047,8 +1043,7 @@ fn coverage_scalar_boundaries(
     collections::sort_by(boundaries, coverage_number_compare);
     let result: Vec[CoverageNumber] = Vec::[];
     for value in boundaries {
-        if result.is_empty()
-            || !coverage_number_equal(result[result.len() - 1], value) {
+        if result.is_empty() || !coverage_number_equal(result[result.len() - 1], value) {
             result.push(value)
         } else {
             ()
@@ -1268,10 +1263,7 @@ fn coverage_find_scalar_witness(
                         coverage_prepend_witness(
                             CoverageWitness {
                                 constructor: Option::Some(
-                                    CoverageConstructor {
-                                        key: "scalar:witness",
-                                        fields: Vec::[],
-                                    },
+                                    CoverageConstructor { key: "scalar:witness", fields: Vec::[] },
                                 ),
                                 scalar: Option::Some(atom),
                                 fields: Vec::[],

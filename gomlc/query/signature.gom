@@ -157,11 +157,7 @@ fn signature_parameter_names(value: Analysis, fact: tast::CallFact) -> Option[Ve
             Some(file) => {
                 let mut item_index = file.items.len() - 1;
                 while item_index >= 0 {
-                    match item_parameter_names(
-                        file.items[item_index],
-                        expected,
-                        expected_owner,
-                    ) {
+                    match item_parameter_names(file.items[item_index], expected, expected_owner) {
                         Some(names) => return Option::Some(names),
                         None => {
                             item_index = item_index - 1;
@@ -243,8 +239,7 @@ pub fn signature_help(value: Analysis, offset: int) -> Option[SignatureResult] {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact.span.start <= offset
             && offset < fact.span.end
-            && (best < 0
-                || fact_width <= calls[best].span.end - calls[best].span.start) {
+            && (best < 0 || fact_width <= calls[best].span.end - calls[best].span.start) {
             best = candidate;
         } else {
             ()

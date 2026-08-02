@@ -224,26 +224,12 @@ fn lower_ordered_array_pattern(
                         ordered_suffix_index(fixed_len, len_expr, suffix.len(), index),
                         elem_ty,
                     );
-                    next = lower_ordered_pattern(
-                        ctx,
-                        suffix[index],
-                        item,
-                        next,
-                        failure,
-                        result_ty,
-                    );
+                    next = lower_ordered_pattern(ctx, suffix[index], item, next, failure, result_ty);
                 };
                 for offset in 0..prefix.len() {
                     let index = prefix.len() - 1 - offset;
                     let item = place_index_read(value, container_ty, ordered_int(index), elem_ty);
-                    next = lower_ordered_pattern(
-                        ctx,
-                        prefix[index],
-                        item,
-                        next,
-                        failure,
-                        result_ty,
-                    );
+                    next = lower_ordered_pattern(ctx, prefix[index], item, next, failure, result_ty);
                 };
                 match fixed_len {
                     Some(_) => next,
@@ -298,14 +284,7 @@ fn lower_ordered_pattern(
             let mut next = failure;
             for offset in 0..patterns.len() {
                 let index = patterns.len() - 1 - offset;
-                next = lower_ordered_pattern(
-                    ctx,
-                    patterns[index],
-                    value,
-                    success,
-                    next,
-                    result_ty,
-                );
+                next = lower_ordered_pattern(ctx, patterns[index], value, success, next, result_ty);
             };
             next
         },
