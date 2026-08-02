@@ -580,11 +580,20 @@ fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, co
     let parameter_binds: Vec[Bind] = Vec::with_capacity(callee.params.len());
     for index in 0..callee.params.len() {
         let param = callee.params[index];
-        let replacement = fresh_inline(counter, "inline");
-        names.push(InlineName { name: param.0, value: Imm::Var { name: replacement, ty: param.1 } });
-        parameter_binds.push(
-            Bind::Let(LetBind { name: replacement, value: Value::Imm(args[index]), ty: param.1 }),
-        )
+        match args[index] {
+            Prim { .. } => {
+                let replacement = fresh_inline(counter, "inline");
+                names.push(
+                    InlineName { name: param.0, value: Imm::Var { name: replacement, ty: param.1 } },
+                );
+                parameter_binds.push(
+                    Bind::Let(
+                        LetBind { name: replacement, value: Value::Imm(args[index]), ty: param.1 },
+                    ),
+                )
+            },
+            _ => names.push(InlineName { name: param.0, value: args[index] }),
+        }
     };
     let joins: Vec[InlineJoin] = Vec::[];
     collect_inline_block_names(callee.body, names, joins, counter);
