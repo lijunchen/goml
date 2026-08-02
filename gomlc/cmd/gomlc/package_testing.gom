@@ -2,15 +2,8 @@ package main;
 
 use gomlc::artifact;
 use gomlc::ast;
-use gomlc::parser;
-use gomlc::strings;
 use gomlc::tast;
 use std::text;
-
-struct ParsedTestAttribute {
-    name: string,
-    args: Option[string],
-}
 
 struct TestCandidate {
     name: string,
@@ -32,109 +25,16 @@ struct TestValidation {
     diagnostics: Vec[tast::Diagnostic],
 }
 
-fn test_ascii_whitespace(value: uint8) -> bool {
-    value == 32 || value == 9 || value == 10 || value == 13
-}
-
-fn trim_test_text(value: string) -> string {
-    let mut start = 0;
-    while start < value.byte_len() && test_ascii_whitespace(value.byte_get(start)) {
-        start = start + 1;
-    };
-    let mut end = value.byte_len();
-    while end > start && test_ascii_whitespace(value.byte_get(end - 1)) {
-        end = end - 1;
-    };
-    value.byte_slice(start, end)
-}
-
-fn find_test_byte(value: string, expected: uint8) -> Option[int] {
-    for index in 0..value.byte_len() {
-        if value.byte_get(index) == expected {
-            return Option::Some(index)
+fn named_test_attributes(values: Vec[ast::Attribute], expected: string) -> Vec[ast::Attribute] {
+    let result: Vec[ast::Attribute] = Vec::[];
+    for value in values {
+        if value.name == expected {
+            result.push(value)
         } else {
             ()
         }
     };
-    Option::None
-}
-
-fn parse_test_attribute(value: ast::Attribute) -> Option[ParsedTestAttribute] {
-    let normalized = trim_test_text(value.text);
-    if normalized.byte_len() < 3 || !strings::starts_with(normalized, "#[")
-        || !strings::ends_with(normalized, "]") {
-        Option::None
-    } else {
-        let inner = trim_test_text(normalized.byte_slice(2, normalized.byte_len() - 1));
-        match find_test_byte(inner, 40) {
-            Some(open) => {
-                let name = trim_test_text(inner.byte_slice(0, open));
-                let tail = trim_test_text(inner.byte_slice(open + 1, inner.byte_len()));
-                if name.byte_len() == 0 || tail.byte_len() == 0 || !strings::ends_with(tail, ")") {
-                    Option::None
-                } else {
-                    Option::Some(
-                        ParsedTestAttribute {
-                            name,
-                            args: Option::Some(
-                                trim_test_text(tail.byte_slice(0, tail.byte_len() - 1)),
-                            ),
-                        },
-                    )
-                }
-            },
-            None => if inner.byte_len() == 0 {
-                Option::None
-            } else {
-                Option::Some(ParsedTestAttribute { name: inner, args: Option::None })
-            },
-        }
-    }
-}
-
-fn test_attribute_name(value: ast::Attribute) -> Option[string] {
-    match parse_test_attribute(value) {
-        Some(parsed) => Option::Some(parsed.name),
-        None => Option::None,
-    }
-}
-
-fn named_test_attributes(values: Vec[ast::Attribute], expected: string) -> Vec[ast::Attribute] {
-    let result: Vec[ast::Attribute] = Vec::[];
-    for value in values {
-        match test_attribute_name(value) {
-            Some(name) => if name == expected {
-                result.push(value)
-            } else {
-                ()
-            },
-            None => (),
-        }
-    };
     result
-}
-
-fn parse_ignore_reason(value: string) -> Option[string] {
-    let source = "fn __ignore_reason() -> string { " + value + " }";
-    let lowered = ast::lower(parser::parse(source));
-    if !lowered.diagnostics.is_empty() {
-        Option::None
-    } else {
-        match lowered.ast {
-            Some(file) => if file.items.len() == 1 {
-                match file.items[0] {
-                    Function(function) => match function.body.tail {
-                        Some(String { value: reason, span: _ }) => Option::Some(reason),
-                        _ => Option::None,
-                    },
-                    _ => Option::None,
-                }
-            } else {
-                Option::None
-            },
-            None => Option::None,
-        }
-    }
 }
 
 fn test_symbol(package_name: string, name: string) -> string {
@@ -233,32 +133,27 @@ fn collect_function_test(
         ()
     };
     let test_attr = test_attrs[0];
-    let Some(parsed_test) = parse_test_attribute(test_attr) else {
+    if test_attr.has_argument_list {
+        diagnostics.push(
+            package_test_diagnostic(
+                "attribute",
+                "`#[test]` does not accept arguments",
+                source_path,
+                test_attr.span,
+            ),
+        );
         return
-    };
-    match parsed_test.args {
-        Some(_) => {
-            diagnostics.push(
-                package_test_diagnostic(
-                    "attribute",
-                    "`#[test]` does not accept arguments",
-                    source_path,
-                    test_attr.span,
-                ),
-            );
-            return
-        },
-        None => (),
+    } else {
+        ()
     };
     let ignore_reason = if !ignore_attrs.is_empty() {
         let ignore_attr = ignore_attrs[0];
-        let Some(parsed_ignore) = parse_test_attribute(ignore_attr) else {
-            return
-        };
-        match parsed_ignore.args {
-            Some(args) => match parse_ignore_reason(args) {
-                Some(reason) => Option::Some(reason),
-                None => {
+        if !ignore_attr.has_argument_list {
+            Option::None
+        } else if ignore_attr.args.len() == 1 {
+            match ignore_attr.args[0] {
+                String(reason) => Option::Some(reason),
+                Ident(_) => {
                     diagnostics.push(
                         package_test_diagnostic(
                             "attribute",
@@ -269,8 +164,17 @@ fn collect_function_test(
                     );
                     Option::None
                 },
-            },
-            None => Option::None,
+            }
+        } else {
+            diagnostics.push(
+                package_test_diagnostic(
+                    "attribute",
+                    "`#[ignore]` accepts either no arguments or one string reason",
+                    source_path,
+                    ignore_attr.span,
+                ),
+            );
+            Option::None
         }
     } else {
         Option::None
@@ -281,7 +185,7 @@ fn collect_function_test(
             source_path,
             start: test_attr.span.start,
             end: test_attr.span.end,
-            label_end: test_attr.span.start + trim_test_text(test_attr.text).byte_len(),
+            label_end: test_attr.span.end,
             ignored: !ignore_attrs.is_empty(),
             ignore_reason,
         },
@@ -295,29 +199,26 @@ fn reject_item_test_attributes(
     diagnostics: Vec[tast::Diagnostic],
 ) -> unit {
     for value in values {
-        match test_attribute_name(value) {
-            Some(name) => if name == "test" {
-                diagnostics.push(
-                    package_test_diagnostic(
-                        "attribute",
-                        "`#[test]` can only be applied to top-level functions, not " + target,
-                        source_path,
-                        value.span,
-                    ),
-                )
-            } else if name == "ignore" {
-                diagnostics.push(
-                    package_test_diagnostic(
-                        "attribute",
-                        "`#[ignore]` requires a top-level `#[test]` function",
-                        source_path,
-                        value.span,
-                    ),
-                )
-            } else {
-                ()
-            },
-            None => (),
+        if value.name == "test" {
+            diagnostics.push(
+                package_test_diagnostic(
+                    "attribute",
+                    "`#[test]` can only be applied to top-level functions, not " + target,
+                    source_path,
+                    value.span,
+                ),
+            )
+        } else if value.name == "ignore" {
+            diagnostics.push(
+                package_test_diagnostic(
+                    "attribute",
+                    "`#[ignore]` requires a top-level `#[test]` function",
+                    source_path,
+                    value.span,
+                ),
+            )
+        } else {
+            ()
         }
     }
 }

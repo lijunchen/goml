@@ -446,6 +446,7 @@ fn type_owner_name(value: tast::Type) -> string {
 fn callable_name(value: tast::Callable) -> string {
     match value {
         Function(name) | Runtime(name) | Intrinsic(name) => name,
+        LangItem { item: _, function_name } => function_name,
         TraitMethod { trait_ref, method_name } => {
             trait_ref.name + "::" + method_name
         },

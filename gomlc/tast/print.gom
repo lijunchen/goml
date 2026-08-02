@@ -356,6 +356,7 @@ pub fn binary_symbol(value: ast::BinaryOp) -> string {
 fn write_callable(builder: text::StringBuilder, value: Callable) -> unit {
     match value {
         Function(name) => builder.write_string(name),
+        LangItem { item: _, function_name } => builder.write_string(function_name),
         Runtime(name) => {
             builder.write_string("@runtime(");
             builder.write_string(name);

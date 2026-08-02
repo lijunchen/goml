@@ -324,12 +324,11 @@ fn normalized_float64_literal(value: string) -> string {
 }
 
 fn integer_magnitude(value: string) -> string {
-    let mut start =
-        if value.byte_len() > 0 && value.byte_get(0) == b'-' {
-            1
-        } else {
-            0
-        };
+    let mut start = if value.byte_len() > 0 && value.byte_get(0) == b'-' {
+        1
+    } else {
+        0
+    };
     while start + 1 < value.byte_len() && value.byte_get(start) == b'0' {
         start = start + 1;
     };
@@ -596,7 +595,7 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                                 ctx,
                                 actual,
                                 TraitRef { name: trait_name, args: Vec::[] },
-                                0,
+                                Vec::[],
                             ) {
                                 ()
                             } else {
@@ -2164,7 +2163,7 @@ fn apply_typed_call(
                     TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
                     "type predicate not satisfied",
                 )
-            } else if !trait_bound_satisfied_at(ctx, receiver_ty, reference, 0) {
+            } else if !trait_bound_satisfied_at(ctx, receiver_ty, reference, Vec::[]) {
                 push_diagnostic(
                     ctx,
                     predicate_requirement_message(
@@ -2191,7 +2190,7 @@ fn apply_typed_call(
                             ctx,
                             Type::Dyn { trait_name: owner },
                             reference,
-                            0,
+                            Vec::[],
                         ) {
                             Expr::Callable {
                                 callable: Callable::DynTraitMethod {
@@ -2584,8 +2583,13 @@ fn check_call_expr(
                         } else {
                             ()
                         };
-                        if names_match(owner, "HashMap") && member == "new" {
-                            require_hashmap_type(ctx, expr_type(result))
+                        if member == "new" {
+                            match resolve_type(expr_type(result)) {
+                                HashMap { key: _, value: _ } => {
+                                    require_hashmap_type(ctx, expr_type(result))
+                                },
+                                _ => (),
+                            }
                         } else {
                             ()
                         };
@@ -2837,7 +2841,7 @@ fn check_binary_expr(
                 ctx,
                 expr_type(left),
                 TraitRef { name: "Eq", args: Vec::[] },
-                0,
+                Vec::[],
             ) {
             push_diagnostic_at(
                 ctx,
@@ -3101,7 +3105,7 @@ fn tast_pattern_binding_count(value: Pat) -> int {
                 count = count + tast_pattern_binding_count(arg);
             };
             match rest {
-                    Some(value) => match value.binding {
+                Some(value) => match value.binding {
                     Some(_) => {
                         count = count + 1;
                     },
@@ -4028,7 +4032,7 @@ fn projected_into_iterator_item(ctx: Checker, iterator_ty: Type, preserve_projec
         ctx,
         iterator_ty,
         TraitRef { name: "Iterator", args: Vec::[] },
-        0,
+        Vec::[],
     ) {
         normalize_type(ctx, trait_projection(iterator_ty, "Item", "Iterator"))
     } else if preserve_projection {
@@ -4065,7 +4069,7 @@ fn check_for_expr(ctx: Checker, pat: hir::Pat, iterator_source: hir::Expr, body_
     let iterator = check_expr(ctx, iterator_source, Option::None);
     let source_ty = expr_type(iterator);
     let into_iterator_ref = TraitRef { name: "IntoIterator", args: Vec::[] };
-    if !trait_bound_satisfied_at(ctx, source_ty, into_iterator_ref, 0) {
+    if !trait_bound_satisfied_at(ctx, source_ty, into_iterator_ref, Vec::[]) {
         push_diagnostic_at(
             ctx,
             "for loop expects a type implementing IntoIterator, got " + type_text(source_ty),
@@ -4098,7 +4102,7 @@ fn check_for_expr(ctx: Checker, pat: hir::Pat, iterator_source: hir::Expr, body_
             ctx,
             source_ty,
             TraitRef { name: "Iterator", args: Vec::[] },
-            0,
+            Vec::[],
         ) {
         source_ty
     } else {
@@ -4156,7 +4160,14 @@ fn check_loop_expr(ctx: Checker, body_source: hir::Expr, expected: Option[Type])
     let body = check_expr(ctx, body_source, Option::Some(Type::Unit));
     let _ = ctx.loop_results.pop();
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
-    Expr::Loop { body, ty: if loop_result.has_break.get() { result_ty } else { Type::Never } }
+    Expr::Loop {
+        body,
+        ty: if loop_result.has_break.get() {
+            result_ty
+        } else {
+            Type::Never
+        },
+    }
 }
 
 fn check_break_expr(ctx: Checker, source: Option[hir::Expr]) -> Expr {
@@ -5165,10 +5176,11 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                     };
                     let syntactically_exits = hir_expr_always_exits_loop_control(source_else);
                     let checked_else = check_expr(ctx, source_else, Option::None);
-                    let exits = syntactically_exits || match resolve_type(expr_type(checked_else)) {
-                        Never => true,
-                        _ => false,
-                    };
+                    let exits = syntactically_exits
+                        || match resolve_type(expr_type(checked_else)) {
+                            Never => true,
+                            _ => false,
+                        };
                     if exits {
                         ()
                     } else {

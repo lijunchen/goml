@@ -443,7 +443,7 @@ fn artifact_interface_binary_enum_def(
     context: tast_codec::ArtifactDecodeContext,
     map_name: string,
 ) -> Result[tast::EnumDef, string] {
-    artifact_interface_binary_object(reader, 3, "enum definition")?;
+    artifact_interface_binary_object(reader, 4, "enum definition")?;
     artifact_interface_binary_field(reader, "name")?;
     let name = artifact_interface_binary_string(reader, "enum name")?;
     if name != map_name {
@@ -453,6 +453,20 @@ fn artifact_interface_binary_enum_def(
     };
     artifact_interface_binary_field(reader, "generics")?;
     let generics = artifact_interface_binary_string_array(reader, "enum generics")?;
+    artifact_interface_binary_field(reader, "option_variants")?;
+    let option_offset = wire::artifact_binary_reader_offset(reader.reader);
+    let option_tag = artifact_interface_binary_read_tag(reader)?;
+    let option_variants = if option_tag == 0 {
+        Option::None
+    } else {
+        wire::artifact_binary_reader_set_offset(reader.reader, option_offset);
+        let names = artifact_interface_binary_string_array(reader, "Option variant names")?;
+        if names.len() == 2 {
+            Option::Some((names[0], names[1]))
+        } else {
+            return Result::Err(artifact_interface_binary_error("Option variant names"))
+        }
+    };
     artifact_interface_binary_field(reader, "variants")?;
     let count = artifact_interface_binary_array(reader, "enum variants")?;
     let variants = Vec::with_capacity(count);
@@ -464,7 +478,7 @@ fn artifact_interface_binary_enum_def(
         let fields = artifact_interface_binary_enum_fields(reader, context)?;
         variants.push(tast::EnumVariantDef { name: variant_name, fields })
     };
-    Result::Ok(tast::EnumDef { name, generics, variants })
+    Result::Ok(tast::EnumDef { name, generics, variants, option_variants })
 }
 
 fn artifact_interface_binary_struct_def(

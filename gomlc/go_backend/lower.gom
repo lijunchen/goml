@@ -4,6 +4,7 @@ use gomlc::anf;
 use gomlc::ast;
 use gomlc::core;
 use gomlc::numeric;
+use gomlc::resources;
 use gomlc::strings;
 use gomlc::tast;
 use gomlc::vecs;
@@ -231,6 +232,7 @@ fn build_function_names(
 fn callable_name(env: LowerEnv, value: tast::Callable) -> string {
     match value {
         Function(name) => env_function_name(env, name),
+        LangItem { item: _, function_name } => env_function_name(env, function_name),
         Runtime(name) => runtime_hook_name(name),
         Intrinsic(name) => go_ident(name),
         TraitMethod { trait_ref: reference, method_name: name } => {
@@ -240,7 +242,7 @@ fn callable_name(env: LowerEnv, value: tast::Callable) -> string {
             go_ident("dyn#" + owner + "#" + dispatch + "#" + name)
         },
         InherentMethod { receiver_ty: owner, method_name: name } => {
-            go_ident("inherent#" + encode_type(owner) + "#" + name)
+            env_function_name(env, core::inherent_method_name(owner, name))
         },
     }
 }
@@ -353,21 +355,18 @@ fn is_closure_struct_name(value: string) -> bool {
 }
 
 fn closure_info_from_function(value: anf::Function) -> Option[ClosureInfo] {
-    let segments = hash_segments(value.name);
-    if segments.len() == 4 && segments[0] == "inherent" && segments[1] == segments[2]
-        && segments[3] == "apply"
-        && is_closure_struct_name(segments[1])
-        && !value.params.is_empty() {
-        match tast::resolve_type(value.params[0].1) {
-            Con { name } => {
-                if name == segments[1] {
+    match value.origin {
+        core::FunctionOrigin::Inherent { owner, method_name: "apply" } if !value.params.is_empty() => {
+            match (tast::resolve_type(owner), tast::resolve_type(value.params[0].1)) {
+                (Con { name: owner_name }, Con { name: param_name }) => if owner_name == param_name
+                    && is_closure_struct_name(owner_name) {
                     let params: Vec[tast::Type] = Vec::[];
                     for index in 1..value.params.len() {
                         params.push(value.params[index].1)
                     };
                     Option::Some(
                         ClosureInfo {
-                            struct_name: name,
+                            struct_name: owner_name,
                             apply_name: value.name,
                             params,
                             ret_ty: value.ret_ty,
@@ -375,12 +374,11 @@ fn closure_info_from_function(value: anf::Function) -> Option[ClosureInfo] {
                     )
                 } else {
                     Option::None
-                }
-            },
-            _ => Option::None,
-        }
-    } else {
-        Option::None
+                },
+                _ => Option::None,
+            }
+        },
+        _ => Option::None,
     }
 }
 
@@ -1697,24 +1695,22 @@ fn term_tail_target_through_joins(value: anf::Term, joins: Vec[anf::JoinBind], v
     string,
 ] {
     match value {
-        Jump { target, args, ret_ty: _ } => {
-            if args.is_empty() {
-                Option::Some(target)
-            } else if vecs::contains(visited, target) {
+        Jump { target, args: _, ret_ty: _ } => {
+            if vecs::contains(visited, target) {
                 Option::None
             } else {
                 match find_join(joins, target) {
-                    Some(join) => {
-                        visited.push(target);
-                        let result = block_tail_target_through_joins(join.body, joins, visited);
-                        let _ = visited.remove(visited.len() - 1);
-                        result
+                    Some(join) => match join.role {
+                        anf::JoinRole::LoopExit => Option::Some(target),
+                        anf::JoinRole::Return => Option::None,
+                        anf::JoinRole::Continuation => {
+                            visited.push(target);
+                            let result = block_tail_target_through_joins(join.body, joins, visited);
+                            let _ = visited.remove(visited.len() - 1);
+                            result
+                        },
                     },
-                    None => if strings::starts_with(target, "exit") {
-                        Option::Some(target)
-                    } else {
-                        Option::None
-                    },
+                    None => Option::None,
                 }
             }
         },
@@ -1814,8 +1810,10 @@ fn loop_branch_target(body: anf::Block, loop_name: string, joins: Vec[anf::JoinB
     }
 }
 
-fn loop_exit_target(value: anf::Block, loop_name: string) -> Option[string] {
-    let joins = scoped_joins(Vec::[], value);
+fn loop_exit_target(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBind]) -> Option[
+    string,
+] {
+    let joins = scoped_joins(parent, value);
     match value.term {
         If { cond: _, then_, else_, ret_ty: _ } => {
             let then_reaches = block_reaches_target(then_, loop_name, joins, Vec::[]);
@@ -1865,14 +1863,17 @@ fn loop_exit_target(value: anf::Block, loop_name: string) -> Option[string] {
     }
 }
 
-fn find_loop_exit(value: anf::Block, loop_name: string) -> Option[string] {
-    match loop_exit_target(value, loop_name) {
+fn find_loop_exit(value: anf::Block, loop_name: string, parent: Vec[anf::JoinBind]) -> Option[
+    string,
+] {
+    let joins = scoped_joins(parent, value);
+    match loop_exit_target(value, loop_name, joins) {
         Some(target) => Option::Some(target),
         None => {
             for bind in value.binds {
                 match bind {
                     Join(dispatch) => if all_paths_reach_or_terminate(value, dispatch.name) {
-                        match find_loop_exit(dispatch.body, loop_name) {
+                        match find_loop_exit(dispatch.body, loop_name, joins) {
                             Some(target) => return Option::Some(target),
                             None => (),
                         }
@@ -2349,7 +2350,7 @@ fn compile_joinrec_in_loop(
     let loop_names: Vec[string] = Vec::[];
     let single = values.len() == 1;
     for value in values {
-        match find_loop_exit(value.body, value.name) {
+        match find_loop_exit(value.body, value.name, env.joins) {
             Some(exit_name) => {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, exit_name, label);
@@ -2371,15 +2372,12 @@ fn compile_joinrec_in_loop(
                 };
                 loop_names.push(value.name)
             },
-            None => if single
-                && strings::starts_with(value.name, "loop_expr")
-                && block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
+            None => if single && block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, "", label);
                 stmts.push(loop_stmt(label, body));
                 loop_names.push(value.name)
-            } else if single
-                && !block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
+            } else if single && !block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
                 append_stmts(
                     stmts,
                     compile_loop_block(
@@ -2392,7 +2390,7 @@ fn compile_joinrec_in_loop(
                 );
                 loop_names.push(value.name)
             } else {
-                stmts.push(Stmt::Unreachable)
+                ()
             },
         }
     };
@@ -2466,7 +2464,7 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
     let loop_names: Vec[string] = Vec::[];
     let single = values.len() == 1;
     for value in values {
-        match find_loop_exit(value.body, value.name) {
+        match find_loop_exit(value.body, value.name, env.joins) {
             Some(exit_name) => {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, exit_name, label);
@@ -2479,19 +2477,16 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
                 };
                 loop_names.push(value.name)
             },
-            None => if single
-                && strings::starts_with(value.name, "loop_expr")
-                && block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
+            None => if single && block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
                 let label = fresh_loop_label(env, value.name);
                 let body = compile_loop_block(env, value.body, value.name, "", label);
                 stmts.push(loop_stmt(label, body));
                 loop_names.push(value.name)
-            } else if single
-                && !block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
+            } else if single && !block_reaches_target(value.body, value.name, Vec::[], Vec::[]) {
                 append_stmts(stmts, compile_block(env, value.body).stmts);
                 loop_names.push(value.name)
             } else {
-                stmts.push(Stmt::Unreachable)
+                ()
             },
         }
     };
@@ -3157,9 +3152,7 @@ fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(strin
             None => "main0",
         };
         stmts.push(
-            Stmt::Expr {
-                expr: Expr::Call { func: Expr::Var { name: entry_name }, args: Vec::[] },
-            },
+            Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: entry_name }, args: Vec::[] } },
         );
         items.push(
             Item::Function(
@@ -3175,10 +3168,81 @@ fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(strin
     prune_functions(File { items })
 }
 
-pub fn lower(value: anf::File) -> File {
-    lower_with_test_cases(value, false, Vec::[])
+fn validate_anf_term(value: anf::Term) -> Result[unit, string] {
+    match value {
+        If { cond: _, then_, else_, ret_ty: _ } => {
+            validate_anf_block(then_)?;
+            validate_anf_block(else_)
+        },
+        Match { scrutinee: _, arms, default, ret_ty: _ } => {
+            for arm in arms {
+                validate_anf_block(arm.body)?
+            };
+            match default {
+                Some(body) => validate_anf_block(body),
+                None => Result::Ok(()),
+            }
+        },
+        Return(_) | Jump { target: _, args: _, ret_ty: _ } | Unreachable { ty: _ } => {
+            Result::Ok(())
+        },
+    }
 }
 
-pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string)]) -> File {
-    lower_with_test_cases(value, true, test_cases)
+fn validate_anf_block(value: anf::Block) -> Result[unit, string] {
+    for bind in value.binds {
+        match bind {
+            Let(_) => (),
+            Join(join) => validate_anf_block(join.body)?,
+            JoinRec(joins) => {
+                if joins.len() != 1 {
+                    return Result::Err(
+                        "Go backend requires each recursive join group to contain exactly one join",
+                    )
+                } else {
+                    ()
+                };
+                validate_anf_block(joins[0].body)?
+            },
+        }
+    };
+    validate_anf_term(value.term)
+}
+
+fn validate_anf(value: anf::File) -> Result[unit, string] {
+    let runtime_hooks: Vec[string] = Vec::[];
+    let intrinsics: Vec[string] = Vec::[];
+    let missing_types = new_collected_types();
+    for function in value.functions {
+        match validate_anf_block(function.body) {
+            Ok(_) => (),
+            Err(error) => return Result::Err("in function " + function.name + ": " + error),
+        };
+        collect_runtime_block(runtime_hooks, missing_types, intrinsics, function.body)
+    };
+    for key in runtime_hooks {
+        if resources::runtime_abi_by_key(key).is_none() {
+            return Result::Err("unknown runtime hook " + key)
+        } else {
+            ()
+        }
+    };
+    for key in intrinsics {
+        if resources::intrinsic_abi_by_key(key).is_none() {
+            return Result::Err("unknown intrinsic " + key)
+        } else {
+            ()
+        }
+    };
+    Result::Ok(())
+}
+
+pub fn lower(value: anf::File) -> Result[File, string] {
+    validate_anf(value)?;
+    Result::Ok(lower_with_test_cases(value, false, Vec::[]))
+}
+
+pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string)]) -> Result[File, string] {
+    validate_anf(value)?;
+    Result::Ok(lower_with_test_cases(value, true, test_cases))
 }

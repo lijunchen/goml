@@ -124,8 +124,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 used_dumps.push(argument);
                 index += 1;
             }
-        } else if !positional
-            && inline_dump_argument_present(inline_dump_argument(argument)) {
+        } else if !positional && inline_dump_argument_present(inline_dump_argument(argument)) {
             match inline_dump_argument(argument) {
                 Some((name, value)) => return Result::Err(
                     unexpected_value_error("run-single", value, name, f"{name} <FILE>"),
@@ -231,7 +230,7 @@ fn canonical_stage_output(stage: string, source_path: string, source: string) ->
         let mono_value = lower_mono_or_fail(value.file);
         let lift_value = lift::lower_with_counter(mono_value, value.counter);
         let anf_value = anf::lower_with_counter(lift_value, value.counter);
-        go_backend::encode(go_backend::lower(anf_value))
+        go_backend::encode(lower_go_or_fail(go_backend::lower(anf_value)))
     } else {
         fail("unknown mode: " + stage);
         ""

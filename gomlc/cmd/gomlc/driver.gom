@@ -109,6 +109,16 @@ fn lower_builtin_core(counter: Ref[int]) -> core::File {
     }
 }
 
+fn lower_go_or_fail(value: Result[go_backend::File, string]) -> go_backend::File {
+    match value {
+        Ok(file) => file,
+        Err(error) => {
+            fail("error[compile]: " + error);
+            go_backend::File { items: Vec::[] }
+        },
+    }
+}
+
 fn artifact_standard_package_from_compilation(value: PackageCompilation) -> ArtifactStandardPackage {
     ArtifactStandardPackage {
         core_value: value.core_value,
@@ -518,367 +528,126 @@ fn standard_artifact_deps(builtin_hash: string, dependencies: Vec[PackageCompila
     result
 }
 
+fn required_standard_compilation(values: Vec[PackageCompilation], package_name: string) -> PackageCompilation {
+    for value in values {
+        if value.interface_unit.package_name == package_name {
+            return value
+        } else {
+            ()
+        }
+    };
+    fail("error[compile]: standard package dependency was not compiled: " + package_name);
+    values[0]
+}
+
 fn compile_standard_library(builtins: core::File, builtin_hash: string) -> StandardLibrary {
-    let host = compile_standard_package(
-        required_standard_sources("std::internal::host"),
-        "std::internal::host",
-        "host",
-        Vec::[],
-        Vec::[],
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[]),
-    );
-    let bytes = compile_standard_package(
-        required_standard_sources("std::bytes"),
-        "std::bytes",
-        "bytes",
-        Vec::[],
-        Vec::[],
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[]),
-    );
-    let collections = compile_standard_package(
-        required_standard_sources("std::collections"),
-        "std::collections",
-        "collections",
-        Vec::[],
-        Vec::[],
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[]),
-    );
-    let env_hir_dependencies: Vec[hir::File] = Vec::[];
-    env_hir_dependencies.push(host.hir_file);
-    let env = compile_standard_package(
-        required_standard_sources("std::env"),
-        "std::env",
-        "env",
-        env_hir_dependencies,
-        Vec::[],
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let fs_hir_dependencies: Vec[hir::File] = Vec::[];
-    fs_hir_dependencies.push(host.hir_file);
-    fs_hir_dependencies.push(bytes.hir_file);
-    let fs_core_dependencies: Vec[core::File] = Vec::[];
-    fs_core_dependencies.push(bytes.core_value);
-    let fs = compile_standard_package(
-        required_standard_sources("std::fs"),
-        "std::fs",
-        "fs",
-        fs_hir_dependencies,
-        fs_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
-    );
-    let io_hir_dependencies: Vec[hir::File] = Vec::[];
-    io_hir_dependencies.push(host.hir_file);
-    io_hir_dependencies.push(bytes.hir_file);
-    let io_core_dependencies: Vec[core::File] = Vec::[];
-    io_core_dependencies.push(bytes.core_value);
-    let io = compile_standard_package(
-        required_standard_sources("std::io"),
-        "std::io",
-        "io",
-        io_hir_dependencies,
-        io_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
-    );
-    let path_hir_dependencies: Vec[hir::File] = Vec::[];
-    path_hir_dependencies.push(host.hir_file);
-    let path = compile_standard_package(
-        required_standard_sources("std::path"),
-        "std::path",
-        "path",
-        path_hir_dependencies,
-        Vec::[],
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let process_hir_dependencies: Vec[hir::File] = Vec::[];
-    process_hir_dependencies.push(host.hir_file);
-    process_hir_dependencies.push(bytes.hir_file);
-    let process_core_dependencies: Vec[core::File] = Vec::[];
-    process_core_dependencies.push(bytes.core_value);
-    let process = compile_standard_package(
-        required_standard_sources("std::process"),
-        "std::process",
-        "process",
-        process_hir_dependencies,
-        process_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
-    );
-    let testing_hir_dependencies: Vec[hir::File] = Vec::[];
-    testing_hir_dependencies.push(host.hir_file);
-    let testing = compile_standard_package(
-        required_standard_sources("std::testing"),
-        "std::testing",
-        "testing",
-        testing_hir_dependencies,
-        Vec::[],
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let text_hir_dependencies: Vec[hir::File] = Vec::[];
-    text_hir_dependencies.push(bytes.hir_file);
-    let text_core_dependencies: Vec[core::File] = Vec::[];
-    text_core_dependencies.push(bytes.core_value);
-    let text = compile_standard_package(
-        required_standard_sources("std::text"),
-        "std::text",
-        "text",
-        text_hir_dependencies,
-        text_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[bytes]),
-    );
-    let json_hir_dependencies: Vec[hir::File] = Vec::[];
-    json_hir_dependencies.push(text.hir_file);
-    let json_core_dependencies: Vec[core::File] = Vec::[];
-    json_core_dependencies.push(text.core_value);
-    let json = compile_standard_package(
-        required_standard_sources("std::json"),
-        "std::json",
-        "json",
-        json_hir_dependencies,
-        json_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[text]),
-    );
-    let num_hir_dependencies: Vec[hir::File] = Vec::[];
-    num_hir_dependencies.push(host.hir_file);
-    let num = compile_standard_package(
-        required_standard_sources("std::num"),
-        "std::num",
-        "num",
-        num_hir_dependencies,
-        Vec::[],
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let time_hir_dependencies: Vec[hir::File] = Vec::[];
-    time_hir_dependencies.push(host.hir_file);
-    let time = compile_standard_package(
-        required_standard_sources("std::time"),
-        "std::time",
-        "time",
-        time_hir_dependencies,
-        Vec::[],
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let root_hir_dependencies = Vec::[
-        bytes.hir_file,
-        collections.hir_file,
-        env.hir_file,
-        fs.hir_file,
-        io.hir_file,
-        num.hir_file,
-        path.hir_file,
-        process.hir_file,
-        text.hir_file,
-        json.hir_file,
-        time.hir_file,
-    ];
-    let root_core_dependencies = Vec::[
-        bytes.core_value,
-        collections.core_value,
-        env.core_value,
-        fs.core_value,
-        io.core_value,
-        num.core_value,
-        path.core_value,
-        process.core_value,
-        text.core_value,
-        json.core_value,
-        time.core_value,
-    ];
-    let root = compile_standard_package(
-        required_standard_sources("std"),
-        "std",
-        "std",
-        root_hir_dependencies,
-        root_core_dependencies,
-        builtins,
-        standard_artifact_deps(
-            builtin_hash,
-            Vec::[bytes, collections, env, fs, io, num, path, process, text, json, time],
-        ),
-    );
+    let package_names: Vec[string] = Vec::[];
+    for spec in resources::standard_package_specs() {
+        package_names.push(spec.name)
+    };
+    let compiled: Vec[PackageCompilation] = Vec::[];
+    for package_name in resources::standard_package_closure(package_names) {
+        let spec = match resources::standard_package_spec(package_name) {
+            Some(value) => value,
+            None => {
+                fail("error[compile]: unknown standard package " + package_name);
+                resources::standard_package_specs()[0]
+            },
+        };
+        let dependencies: Vec[PackageCompilation] = Vec::[];
+        let hir_dependencies: Vec[hir::File] = Vec::[];
+        let core_dependencies: Vec[core::File] = Vec::[];
+        for dependency_name in spec.dependencies {
+            let dependency = required_standard_compilation(compiled, dependency_name);
+            dependencies.push(dependency);
+            hir_dependencies.push(dependency.hir_file)
+        };
+        for dependency_name in spec.link_dependencies {
+            core_dependencies.push(
+                required_standard_compilation(compiled, dependency_name).core_value,
+            )
+        };
+        compiled.push(
+            compile_standard_package(
+                required_standard_sources(spec.name),
+                spec.name,
+                spec.declared_name,
+                hir_dependencies,
+                core_dependencies,
+                builtins,
+                standard_artifact_deps(builtin_hash, dependencies),
+            ),
+        )
+    };
     StandardLibrary {
-        root,
-        host,
-        bytes,
-        collections,
-        env,
-        fs,
-        io,
-        json,
-        num,
-        path,
-        process,
-        testing,
-        text,
-        time,
+        root: required_standard_compilation(compiled, "std"),
+        host: required_standard_compilation(compiled, "std::internal::host"),
+        bytes: required_standard_compilation(compiled, "std::bytes"),
+        collections: required_standard_compilation(compiled, "std::collections"),
+        env: required_standard_compilation(compiled, "std::env"),
+        fs: required_standard_compilation(compiled, "std::fs"),
+        io: required_standard_compilation(compiled, "std::io"),
+        json: required_standard_compilation(compiled, "std::json"),
+        num: required_standard_compilation(compiled, "std::num"),
+        path: required_standard_compilation(compiled, "std::path"),
+        process: required_standard_compilation(compiled, "std::process"),
+        testing: required_standard_compilation(compiled, "std::testing"),
+        text: required_standard_compilation(compiled, "std::text"),
+        time: required_standard_compilation(compiled, "std::time"),
     }
 }
 
+fn standard_library_package(value: StandardLibrary, package_name: string) -> PackageCompilation {
+    match package_name {
+        "std" => value.root,
+        "std::internal::host" => value.host,
+        "std::bytes" => value.bytes,
+        "std::collections" => value.collections,
+        "std::env" => value.env,
+        "std::fs" => value.fs,
+        "std::io" => value.io,
+        "std::json" => value.json,
+        "std::num" => value.num,
+        "std::path" => value.path,
+        "std::process" => value.process,
+        "std::testing" => value.testing,
+        "std::text" => value.text,
+        "std::time" => value.time,
+        _ => {
+            fail("error[compile]: unknown standard package " + package_name);
+            value.root
+        },
+    }
+}
+
+fn direct_imported_standard_package_names(ast_value: ast::LowerResult) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    for spec in resources::standard_package_specs() {
+        if imports_package(ast_value, spec.name) {
+            result.push(spec.name)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
 fn selected_standard_hir(ast_value: ast::LowerResult, standard: StandardLibrary) -> Vec[hir::File] {
-    let needs_root = imports_package(ast_value, "std");
-    let needs_fs = needs_root || imports_package(ast_value, "std::fs");
-    let needs_io = needs_root || imports_package(ast_value, "std::io");
-    let needs_process = needs_root || imports_package(ast_value, "std::process");
-    let needs_json = needs_root || imports_package(ast_value, "std::json");
-    let needs_text = needs_root || needs_json || imports_package(ast_value, "std::text");
-    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_root || needs_fs || needs_io
-        || needs_process
-        || needs_text;
     let result: Vec[hir::File] = Vec::[];
-    if needs_bytes {
-        result.push(standard.bytes.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::collections") {
-        result.push(standard.collections.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::env") {
-        result.push(standard.env.hir_file)
-    } else {
-        ()
-    };
-    if needs_fs {
-        result.push(standard.fs.hir_file)
-    } else {
-        ()
-    };
-    if needs_io {
-        result.push(standard.io.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::path") {
-        result.push(standard.path.hir_file)
-    } else {
-        ()
-    };
-    if needs_process {
-        result.push(standard.process.hir_file)
-    } else {
-        ()
-    };
-    if imports_package(ast_value, "std::testing") {
-        result.push(standard.testing.hir_file)
-    } else {
-        ()
-    };
-    if needs_text {
-        result.push(standard.text.hir_file)
-    } else {
-        ()
-    };
-    if needs_json {
-        result.push(standard.json.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::num") {
-        result.push(standard.num.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::time") {
-        result.push(standard.time.hir_file)
-    } else {
-        ()
-    };
-    if needs_root {
-        result.push(standard.root.hir_file)
-    } else {
-        ()
+    for package_name in resources::standard_package_closure(
+        direct_imported_standard_package_names(ast_value),
+    ) {
+        result.push(standard_library_package(standard, package_name).hir_file)
     };
     result
 }
 
 fn selected_standard_core(ast_value: ast::LowerResult, standard: StandardLibrary) -> Vec[core::File] {
-    let needs_root = imports_package(ast_value, "std");
-    let needs_fs = needs_root || imports_package(ast_value, "std::fs");
-    let needs_io = needs_root || imports_package(ast_value, "std::io");
-    let needs_process = needs_root || imports_package(ast_value, "std::process");
-    let needs_json = needs_root || imports_package(ast_value, "std::json");
-    let needs_text = needs_root || needs_json || imports_package(ast_value, "std::text");
-    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_root || needs_fs || needs_io
-        || needs_process
-        || needs_text;
     let result: Vec[core::File] = Vec::[];
-    if needs_bytes {
-        result.push(standard.bytes.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::collections") {
-        result.push(standard.collections.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::env") {
-        result.push(standard.env.core_value)
-    } else {
-        ()
-    };
-    if needs_fs {
-        result.push(standard.fs.core_value)
-    } else {
-        ()
-    };
-    if needs_io {
-        result.push(standard.io.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::path") {
-        result.push(standard.path.core_value)
-    } else {
-        ()
-    };
-    if needs_process {
-        result.push(standard.process.core_value)
-    } else {
-        ()
-    };
-    if imports_package(ast_value, "std::testing") {
-        result.push(standard.testing.core_value)
-    } else {
-        ()
-    };
-    if needs_text {
-        result.push(standard.text.core_value)
-    } else {
-        ()
-    };
-    if needs_json {
-        result.push(standard.json.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::num") {
-        result.push(standard.num.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::time") {
-        result.push(standard.time.core_value)
-    } else {
-        ()
-    };
-    if needs_root {
-        result.push(standard.root.core_value)
-    } else {
-        ()
+    for package_name in resources::standard_package_link_closure(
+        direct_imported_standard_package_names(ast_value),
+    ) {
+        result.push(standard_library_package(standard, package_name).core_value)
     };
     result
 }
@@ -1579,7 +1348,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let mono_value = lower_mono_or_fail(core_value);
     let lift_value = lift::lower_with_counter(mono_value, counter);
     let anf_value = anf::lower_with_counter(lift_value, counter);
-    let go_value = go_backend::lower(anf_value);
+    let go_value = lower_go_or_fail(go_backend::lower(anf_value));
     Compilation {
         ast_value,
         hir_value,
@@ -1674,7 +1443,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
             let mono_value = mono_result.file;
             let lift_value = lift::lower_with_counter(mono_value, counter);
             let anf_value = anf::lower_with_counter(lift_value, counter);
-            let go_value = go_backend::lower(anf_value);
+            let go_value = lower_go_or_fail(go_backend::lower(anf_value));
             SourceCompilation::Compiled(
                 Compilation {
                     ast_value,

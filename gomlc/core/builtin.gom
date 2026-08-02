@@ -9,6 +9,7 @@ use gomlc::tast;
 fn non_root(value: Function) -> Function {
     Function {
         name: value.name,
+        origin: value.origin,
         root: false,
         generics: value.generics,
         predicates: value.predicates,
@@ -38,12 +39,7 @@ pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
     } else {
         ()
     };
-    Result::Ok(
-        lower_with_counter(
-            checked,
-            counter,
-        ),
-    )
+    Result::Ok(lower_with_counter(checked, counter))
 }
 
 pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: File) -> File {

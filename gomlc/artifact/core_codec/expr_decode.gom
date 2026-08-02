@@ -107,6 +107,47 @@ fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::Ar
         let callable = tast_codec::artifact_decode_callable_body(name, body)?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(core::Expr::Callable { callable, ty })
+    } else if kind == "ELangItemCallable" {
+        let item = wire::artifact_json_field_string(object, "item")?;
+        let function_name = wire::artifact_json_field_string(object, "function_name")?;
+        let ty = artifact_decode_core_type_field(context, object, "ty")?;
+        Result::Ok(
+            core::Expr::Callable { callable: tast::Callable::LangItem { item, function_name }, ty },
+        )
+    } else if kind == "ETraitCallable" {
+        let trait_ref = tast_codec::artifact_decode_trait_ref(
+            context.types,
+            wire::artifact_json_required_field(object, "trait_ref")?,
+        )?;
+        let method_name = wire::artifact_json_field_string(object, "method_name")?;
+        let ty = artifact_decode_core_type_field(context, object, "ty")?;
+        Result::Ok(
+            core::Expr::Callable {
+                callable: tast::Callable::TraitMethod { trait_ref, method_name },
+                ty,
+            },
+        )
+    } else if kind == "EDynTraitCallable" {
+        let trait_name = wire::artifact_json_field_string(object, "trait_name")?;
+        let dispatch_name = wire::artifact_json_field_string(object, "dispatch_name")?;
+        let method_name = wire::artifact_json_field_string(object, "method_name")?;
+        let ty = artifact_decode_core_type_field(context, object, "ty")?;
+        Result::Ok(
+            core::Expr::Callable {
+                callable: tast::Callable::DynTraitMethod { trait_name, dispatch_name, method_name },
+                ty,
+            },
+        )
+    } else if kind == "EInherentCallable" {
+        let receiver_ty = artifact_decode_core_type_field(context, object, "receiver_ty")?;
+        let method_name = wire::artifact_json_field_string(object, "method_name")?;
+        let ty = artifact_decode_core_type_field(context, object, "ty")?;
+        Result::Ok(
+            core::Expr::Callable {
+                callable: tast::Callable::InherentMethod { receiver_ty, method_name },
+                ty,
+            },
+        )
     } else if kind == "EPrim" {
         let value = wire::artifact_json_required_field(object, "value")?;
         let primitive = artifact_decode_primitive(value)?;
@@ -341,12 +382,43 @@ fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::
     Result::Ok(result)
 }
 
+fn artifact_decode_core_function_origin(
+    context: ArtifactCoreDecodeContext,
+    value: wire::ArtifactValue,
+) -> Result[core::FunctionOrigin, string] {
+    let object = wire::artifact_json_object(value, "Core function origin")?;
+    match wire::artifact_json_optional_field(object, "Source")? {
+        Some(_) => Result::Ok(core::FunctionOrigin::Source),
+        None => match wire::artifact_json_optional_field(object, "Inherent")? {
+            Some(value) => {
+                let inherent = wire::artifact_json_object(value, "Core inherent function origin")?;
+                let owner = artifact_decode_core_type_field(context, inherent, "owner")?;
+                let method_name = wire::artifact_json_field_string(inherent, "method_name")?;
+                Result::Ok(core::FunctionOrigin::Inherent { owner, method_name })
+            },
+            None => match wire::artifact_json_optional_field(object, "TraitImplementation")? {
+                Some(value) => Result::Ok(
+                    core::FunctionOrigin::TraitImplementation {
+                        method_name: wire::artifact_json_string_value(
+                            value,
+                            "Core trait implementation method name",
+                        )?,
+                    },
+                ),
+                None => Result::Err(wire::artifact_decode_error("Core function origin")),
+            },
+        },
+    }
+}
+
 fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
     core::Function,
     string,
 ] {
     let object = wire::artifact_json_object(value, "Core function")?;
     let name = wire::artifact_json_field_string(object, "name")?;
+    let value = wire::artifact_json_required_field(object, "origin")?;
+    let origin = artifact_decode_core_function_origin(context, value)?;
     let value = wire::artifact_json_required_field(object, "root")?;
     let root = wire::artifact_json_bool_value(value, "Core function root")?;
     let value = wire::artifact_json_required_field(object, "generics")?;
@@ -361,6 +433,7 @@ fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire
     Result::Ok(
         core::Function {
             name,
+            origin,
             root,
             generics,
             predicates: Vec::[],

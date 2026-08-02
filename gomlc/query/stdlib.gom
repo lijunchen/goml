@@ -3,27 +3,7 @@ package query;
 use gomlc::resources;
 
 fn standard_library_children(package_name: string) -> Vec[string] {
-    if package_name == "std" {
-        Vec::[
-            "bytes",
-            "collections",
-            "env",
-            "fs",
-            "internal",
-            "io",
-            "json",
-            "num",
-            "path",
-            "process",
-            "testing",
-            "text",
-            "time",
-        ]
-    } else if package_name == "std::internal" {
-        Vec::["host"]
-    } else {
-        Vec::[]
-    }
+    resources::standard_package_children(package_name)
 }
 
 fn standard_library_sources(package_name: string) -> Result[Option[Vec[SourceFile]], string] {
@@ -31,13 +11,7 @@ fn standard_library_sources(package_name: string) -> Result[Option[Vec[SourceFil
         Some(values) => {
             let result: Vec[SourceFile] = Vec::[];
             for value in values {
-                result.push(
-                    SourceFile {
-                        path: value.path,
-                        source: value.source,
-                        package_name,
-                    },
-                )
+                result.push(SourceFile { path: value.path, source: value.source, package_name })
             };
             Result::Ok(Option::Some(result))
         },

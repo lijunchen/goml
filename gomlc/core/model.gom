@@ -19,6 +19,7 @@ pub struct TypeInstance {
 
 pub struct Function {
     pub name: string,
+    pub origin: FunctionOrigin,
     pub root: bool,
     pub generics: Vec[string],
     pub predicates: Vec[tast::TypePredicate],
@@ -26,6 +27,17 @@ pub struct Function {
     pub params: Vec[(string, tast::Type)],
     pub ret_ty: tast::Type,
     pub body: Block,
+}
+
+pub enum FunctionOrigin {
+    Source,
+    Inherent {
+        owner: tast::Type,
+        method_name: string,
+    },
+    TraitImplementation {
+        method_name: string,
+    },
 }
 
 pub struct TraitImpl {
@@ -191,12 +203,15 @@ pub fn expr_type(value: Expr) -> tast::Type {
         } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Match { ty, .. } | If {
             ty,
             ..,
-        } | While { ty, .. } | Loop { ty, .. } | Break { ty, .. } | Continue { ty } | Return { ty, .. } | Go { ty, .. } | ConstrGet {
+        } | While { ty, .. } | Loop { ty, .. } | Break { ty, .. } | Continue { ty } | Return {
             ty,
             ..,
-        } | Unary { ty, .. } | Cast { ty, .. } | Binary { ty, .. } | Assign { ty, .. } | Call {
+        } | Go { ty, .. } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Binary {
             ty,
             ..,
-        } | ToDyn { ty, .. } | DynCall { ty, .. } | TraitCall { ty, .. } | Proj { ty, .. } => ty,
+        } | Assign { ty, .. } | Call { ty, .. } | ToDyn { ty, .. } | DynCall { ty, .. } | TraitCall {
+            ty,
+            ..,
+        } | Proj { ty, .. } => ty,
     }
 }

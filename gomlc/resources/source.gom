@@ -9,6 +9,266 @@ pub struct Source {
     pub source: string,
 }
 
+pub struct StandardPackageSpec {
+    pub name: string,
+    pub declared_name: string,
+    pub parent: string,
+    pub source_paths: Vec[string],
+    pub dependencies: Vec[string],
+    pub link_dependencies: Vec[string],
+}
+
+fn standard_package(
+    name: string,
+    declared_name: string,
+    parent: string,
+    source_paths: Vec[string],
+    dependencies: Vec[string],
+    link_dependencies: Vec[string],
+) -> StandardPackageSpec {
+    StandardPackageSpec {
+        name,
+        declared_name,
+        parent,
+        source_paths,
+        dependencies,
+        link_dependencies,
+    }
+}
+
+pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
+    Vec::[
+        standard_package(
+            "std",
+            "std",
+            "",
+            Vec::["std/lib.gom"],
+            Vec::[
+                "std::bytes",
+                "std::collections",
+                "std::env",
+                "std::fs",
+                "std::io",
+                "std::json",
+                "std::num",
+                "std::path",
+                "std::process",
+                "std::text",
+                "std::time",
+            ],
+            Vec::[
+                "std::bytes",
+                "std::collections",
+                "std::env",
+                "std::fs",
+                "std::io",
+                "std::json",
+                "std::num",
+                "std::path",
+                "std::process",
+                "std::text",
+                "std::time",
+            ],
+        ),
+        standard_package(
+            "std::bytes",
+            "bytes",
+            "std",
+            Vec::["std/bytes/bytes.gom"],
+            Vec::[],
+            Vec::[],
+        ),
+        standard_package(
+            "std::collections",
+            "collections",
+            "std",
+            Vec::[
+                "std/collections/algorithms.gom",
+                "std/collections/arena.gom",
+                "std/collections/bit_set.gom",
+                "std/collections/deque.gom",
+                "std/collections/hash_set.gom",
+                "std/collections/index_map.gom",
+                "std/collections/index_vec.gom",
+                "std/collections/interner.gom",
+                "std/collections/stack.gom",
+            ],
+            Vec::[],
+            Vec::[],
+        ),
+        standard_package(
+            "std::env",
+            "env",
+            "std",
+            Vec::["std/env/env.gom"],
+            Vec::["std::internal::host"],
+            Vec::[],
+        ),
+        standard_package(
+            "std::fs",
+            "fs",
+            "std",
+            Vec::["std/fs/fs.gom"],
+            Vec::["std::bytes", "std::internal::host"],
+            Vec::["std::bytes"],
+        ),
+        standard_package(
+            "std::internal::host",
+            "host",
+            "std::internal",
+            Vec::["std/internal/host/host.gom"],
+            Vec::[],
+            Vec::[],
+        ),
+        standard_package(
+            "std::io",
+            "io",
+            "std",
+            Vec::["std/io/io.gom"],
+            Vec::["std::bytes", "std::internal::host"],
+            Vec::["std::bytes"],
+        ),
+        standard_package(
+            "std::json",
+            "json",
+            "std",
+            Vec::["std/json/json.gom"],
+            Vec::["std::text"],
+            Vec::["std::text"],
+        ),
+        standard_package(
+            "std::num",
+            "num",
+            "std",
+            Vec::["std/num/num.gom"],
+            Vec::["std::internal::host"],
+            Vec::[],
+        ),
+        standard_package(
+            "std::path",
+            "path",
+            "std",
+            Vec::["std/path/path.gom"],
+            Vec::["std::internal::host"],
+            Vec::[],
+        ),
+        standard_package(
+            "std::process",
+            "process",
+            "std",
+            Vec::["std/process/process.gom"],
+            Vec::["std::bytes", "std::internal::host"],
+            Vec::["std::bytes"],
+        ),
+        standard_package(
+            "std::testing",
+            "testing",
+            "std",
+            Vec::["std/testing/testing.gom"],
+            Vec::["std::internal::host"],
+            Vec::[],
+        ),
+        standard_package(
+            "std::text",
+            "text",
+            "std",
+            Vec::["std/text/string_builder.gom", "std/text/text.gom"],
+            Vec::["std::bytes"],
+            Vec::["std::bytes"],
+        ),
+        standard_package(
+            "std::time",
+            "time",
+            "std",
+            Vec::["std/time/time.gom"],
+            Vec::["std::internal::host"],
+            Vec::[],
+        ),
+    ]
+}
+
+pub fn standard_package_spec(package_name: string) -> Option[StandardPackageSpec] {
+    for spec in standard_package_specs() {
+        if spec.name == package_name {
+            return Option::Some(spec)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+pub fn standard_package_children(package_name: string) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    for spec in standard_package_specs() {
+        if package_name == "std" && spec.name == "std::io" {
+            result.push("internal")
+        } else {
+            ()
+        };
+        if spec.parent == package_name {
+            result.push(spec.declared_name)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn add_standard_package_closure(result: Vec[string], package_name: string) -> unit {
+    for value in result {
+        if value == package_name {
+            return
+        } else {
+            ()
+        }
+    };
+    match standard_package_spec(package_name) {
+        Some(spec) => {
+            for dependency in spec.dependencies {
+                add_standard_package_closure(result, dependency)
+            };
+            result.push(package_name)
+        },
+        None => (),
+    }
+}
+
+pub fn standard_package_closure(package_names: Vec[string]) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    for package_name in package_names {
+        add_standard_package_closure(result, package_name)
+    };
+    result
+}
+
+fn add_standard_link_closure(result: Vec[string], package_name: string) -> unit {
+    for value in result {
+        if value == package_name {
+            return
+        } else {
+            ()
+        }
+    };
+    match standard_package_spec(package_name) {
+        Some(spec) => {
+            for dependency in spec.link_dependencies {
+                add_standard_link_closure(result, dependency)
+            };
+            result.push(package_name)
+        },
+        None => (),
+    }
+}
+
+pub fn standard_package_link_closure(package_names: Vec[string]) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    for package_name in package_names {
+        add_standard_link_closure(result, package_name)
+    };
+    result
+}
+
 pub fn toolchain_lib_dir() -> Result[string, string] {
     let executable = match env::current_exe() {
         Ok(value) => value,
@@ -45,51 +305,8 @@ pub fn builtin_sources() -> Result[Vec[Source], string] {
 }
 
 pub fn standard_sources(package_name: string) -> Result[Option[Vec[Source]], string] {
-    let relative_paths = if package_name == "std" {
-        Option::Some(Vec::["std/lib.gom"])
-    } else if package_name == "std::internal::host" {
-        Option::Some(Vec::["std/internal/host/host.gom"])
-    } else if package_name == "std::bytes" {
-        Option::Some(Vec::["std/bytes/bytes.gom"])
-    } else if package_name == "std::collections" {
-        Option::Some(
-            Vec::[
-                "std/collections/algorithms.gom",
-                "std/collections/arena.gom",
-                "std/collections/bit_set.gom",
-                "std/collections/deque.gom",
-                "std/collections/hash_set.gom",
-                "std/collections/index_map.gom",
-                "std/collections/index_vec.gom",
-                "std/collections/interner.gom",
-                "std/collections/stack.gom",
-            ],
-        )
-    } else if package_name == "std::env" {
-        Option::Some(Vec::["std/env/env.gom"])
-    } else if package_name == "std::fs" {
-        Option::Some(Vec::["std/fs/fs.gom"])
-    } else if package_name == "std::io" {
-        Option::Some(Vec::["std/io/io.gom"])
-    } else if package_name == "std::json" {
-        Option::Some(Vec::["std/json/json.gom"])
-    } else if package_name == "std::num" {
-        Option::Some(Vec::["std/num/num.gom"])
-    } else if package_name == "std::path" {
-        Option::Some(Vec::["std/path/path.gom"])
-    } else if package_name == "std::process" {
-        Option::Some(Vec::["std/process/process.gom"])
-    } else if package_name == "std::testing" {
-        Option::Some(Vec::["std/testing/testing.gom"])
-    } else if package_name == "std::text" {
-        Option::Some(Vec::["std/text/string_builder.gom", "std/text/text.gom"])
-    } else if package_name == "std::time" {
-        Option::Some(Vec::["std/time/time.gom"])
-    } else {
-        Option::None
-    };
-    match relative_paths {
-        Some(value) => match read_sources(value) {
+    match standard_package_spec(package_name) {
+        Some(value) => match read_sources(value.source_paths) {
             Ok(sources) => Result::Ok(Option::Some(sources)),
             Err(error) => Result::Err(error),
         },

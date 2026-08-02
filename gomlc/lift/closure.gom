@@ -983,6 +983,7 @@ fn transform_closure(
             state.generated.push(
                 core::Function {
                     name: apply_name,
+                    origin: core::FunctionOrigin::Inherent { owner: env_ty, method_name: "apply" },
                     root: true,
                     generics: Vec::[],
                     predicates: Vec::[],
@@ -1015,6 +1016,7 @@ fn transform_function(state: State, value: core::Function) -> core::Function {
     let context = sanitize_name(value.name);
     core::Function {
         name: value.name,
+        origin: value.origin,
         root: value.root,
         generics: value.generics,
         predicates: value.predicates,

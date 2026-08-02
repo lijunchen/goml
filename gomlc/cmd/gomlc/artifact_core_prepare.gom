@@ -44,19 +44,12 @@ fn artifact_core_function_matches_scheme(value: core::Function, scheme: artifact
     }
 }
 
-fn artifact_core_method_name(value: string) -> Option[string] {
-    let mut separator = -1;
-    for index in 0..value.byte_len() {
-        if value.byte_get(index) == b'#' {
-            separator = index;
-        } else {
-            ()
-        }
-    };
-    if separator < 0 {
-        Option::None
-    } else {
-        Option::Some(value.byte_slice(separator + 1, value.byte_len()))
+fn artifact_core_method_name(value: core::Function) -> Option[string] {
+    match value.origin {
+        core::FunctionOrigin::Inherent { owner: _, method_name } | core::FunctionOrigin::TraitImplementation {
+            method_name,
+        } => Option::Some(method_name),
+        core::FunctionOrigin::Source => Option::None,
     }
 }
 
@@ -90,7 +83,7 @@ fn artifact_prepare_core_function_metadata(
             let mut associated_types = metadata.associated_types;
             let mut generic_count = metadata.generic_count;
             let mut predicate_count = metadata.predicate_count;
-            let method_name = artifact_core_method_name(value.name);
+            let method_name = artifact_core_method_name(value);
             for implementation in exports.trait_impls {
                 if implementation.definition.valid
                     && artifact_core_trait_refs_equal(metadata.trait_ref, implementation.trait_ref)
@@ -127,7 +120,7 @@ fn artifact_prepare_core_function_metadata(
             )
         },
         None => {
-            let method_name = artifact_core_method_name(value.name);
+            let method_name = artifact_core_method_name(value);
             match method_name {
                 Some(method_name) => for implementation in exports.inherent_impls {
                     if implementation.definition.valid {
@@ -153,6 +146,7 @@ fn artifact_prepare_core_function_metadata(
     };
     core::Function {
         name: value.name,
+        origin: value.origin,
         root: value.root,
         generics: value.generics,
         predicates,

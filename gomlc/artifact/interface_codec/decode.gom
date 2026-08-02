@@ -133,6 +133,20 @@ fn artifact_decode_enum_def(context: tast_codec::ArtifactDecodeContext, value: w
         wire::artifact_json_required_field(object, "generics")?,
         "enum generics",
     )?;
+    let option_variants = match wire::artifact_json_optional_field(object, "option_variants")? {
+        Some(value) => match value {
+            Null => Option::None,
+            other => {
+                let names = wire::artifact_decode_string_array(other, "Option variant names")?;
+                if names.len() == 2 {
+                    Option::Some((names[0], names[1]))
+                } else {
+                    return Result::Err(wire::artifact_decode_error("Option variant names"))
+                }
+            },
+        },
+        None => Option::None,
+    };
     let values = wire::artifact_json_field_array(object, "variants")?;
     let variants: Vec[tast::EnumVariantDef] = Vec::[];
     for value in values {
@@ -142,7 +156,7 @@ fn artifact_decode_enum_def(context: tast_codec::ArtifactDecodeContext, value: w
         let fields = artifact_decode_enum_variant_fields(context, fields_value)?;
         variants.push(tast::EnumVariantDef { name: variant_name, fields })
     };
-    Result::Ok(tast::EnumDef { name, generics, variants })
+    Result::Ok(tast::EnumDef { name, generics, variants, option_variants })
 }
 
 fn artifact_decode_struct_def(

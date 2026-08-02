@@ -11,6 +11,7 @@ use gomlc::hir;
 use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
+use gomlc::resources;
 use gomlc::strings;
 use gomlc::tast;
 use gomlc::vecs;
@@ -69,30 +70,35 @@ fn no_standard_needs() -> StandardNeeds {
     }
 }
 
-fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
-    let needs_root = imports_package(value, "std");
-    let needs_fs = needs_root || imports_package(value, "std::fs");
-    let needs_io = needs_root || imports_package(value, "std::io");
-    let needs_process = needs_root || imports_package(value, "std::process");
-    let needs_json = needs_root || imports_package(value, "std::json");
-    let needs_text = needs_root || needs_json || imports_package(value, "std::text");
+fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeeds {
+    let closure = resources::standard_package_closure(package_names);
     StandardNeeds {
-        root: needs_root,
-        bytes: imports_package(value, "std::bytes") || needs_root || needs_fs || needs_io
-            || needs_process
-            || needs_text,
-        collections: needs_root || imports_package(value, "std::collections"),
-        env: needs_root || imports_package(value, "std::env"),
-        fs: needs_fs,
-        io: needs_io,
-        json: needs_json,
-        num: needs_root || imports_package(value, "std::num"),
-        path: needs_root || imports_package(value, "std::path"),
-        process: needs_process,
-        testing: imports_package(value, "std::testing"),
-        text: needs_text,
-        time: needs_root || imports_package(value, "std::time"),
+        root: vecs::contains(closure, "std"),
+        bytes: vecs::contains(closure, "std::bytes"),
+        collections: vecs::contains(closure, "std::collections"),
+        env: vecs::contains(closure, "std::env"),
+        fs: vecs::contains(closure, "std::fs"),
+        io: vecs::contains(closure, "std::io"),
+        json: vecs::contains(closure, "std::json"),
+        num: vecs::contains(closure, "std::num"),
+        path: vecs::contains(closure, "std::path"),
+        process: vecs::contains(closure, "std::process"),
+        testing: vecs::contains(closure, "std::testing"),
+        text: vecs::contains(closure, "std::text"),
+        time: vecs::contains(closure, "std::time"),
     }
+}
+
+fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
+    let package_names: Vec[string] = Vec::[];
+    for spec in resources::standard_package_specs() {
+        if imports_package(value, spec.name) {
+            package_names.push(spec.name)
+        } else {
+            ()
+        }
+    };
+    standard_needs_from_package_names(package_names)
 }
 
 fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNeeds {
@@ -661,6 +667,7 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
             functions.push(
                 core::Function {
                     name: "main",
+                    origin: core::FunctionOrigin::Source,
                     root: true,
                     generics: Vec::[],
                     predicates: Vec::[],
@@ -954,7 +961,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     let mono_value = lower_mono_or_fail(linked);
     let lift_value = lift::lower_with_counter(mono_value, world.counter);
     let anf_value = anf::lower_with_counter(lift_value, world.counter);
-    let go_source = go_backend::encode(go_backend::lower(anf_value));
+    let go_source = go_backend::encode(lower_go_or_fail(go_backend::lower(anf_value)));
     match ensure_parent(command.output) {
         Ok(()) => match fs::write_file(command.output, go_source) {
             Ok(()) => (),
@@ -1048,7 +1055,9 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     let mono_value = lower_mono_or_fail(linked);
     let lift_value = lift::lower_with_counter(mono_value, world.counter);
     let anf_value = anf::lower_with_counter(lift_value, world.counter);
-    let go_source = go_backend::encode(go_backend::lower_tests(anf_value, test_link_cases(tests)));
+    let go_source = go_backend::encode(
+        lower_go_or_fail(go_backend::lower_tests(anf_value, test_link_cases(tests))),
+    );
     match ensure_parent(command.output) {
         Ok(()) => match fs::write_file(command.output, go_source) {
             Ok(()) => (),

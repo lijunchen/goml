@@ -933,7 +933,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 predicates,
             );
             if base.diagnostics.len() > validation_start {
-            invalid = true;
+                invalid = true;
             } else {
                 ()
             };
@@ -960,7 +960,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 predicates.len(),
             );
             if base.diagnostics.len() > validation_start {
-            invalid = true;
+                invalid = true;
             } else {
                 ()
             }
@@ -1382,7 +1382,7 @@ fn validate_associated_type_bounds(
             Some(actual) => for bound in definition.bounds {
                 let bound = substitute_trait_ref(bound, substitutions);
                 let actual = normalize_type(ctx, actual);
-                if trait_bound_satisfied_at(ctx, actual, bound, 0) {
+                if trait_bound_satisfied_at(ctx, actual, bound, Vec::[]) {
                     ()
                 } else {
                     push_diagnostic(
@@ -1409,7 +1409,7 @@ fn validate_trait_impl_requirements(
 ) -> unit {
     for supertrait in info.supertraits {
         let supertrait = substitute_trait_ref(supertrait, substitutions);
-        if trait_bound_satisfied_at(ctx, for_type, supertrait, 0) {
+        if trait_bound_satisfied_at(ctx, for_type, supertrait, Vec::[]) {
             ()
         } else {
             push_diagnostic(
@@ -1422,7 +1422,7 @@ fn validate_trait_impl_requirements(
     };
     for predicate in substitute_predicates(info.predicates, substitutions) {
         let predicate = resolve_impl_alias_predicate(ctx, predicate);
-        if predicates_satisfied_at(ctx, Vec::[predicate], 0) {
+        if predicates_satisfied_at(ctx, Vec::[predicate], Vec::[]) {
             ()
         } else {
             push_diagnostic(
@@ -1797,6 +1797,7 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
                     fields: EnumVariantFields::Tuple(Vec::[Type::Param { name: "T" }]),
                 },
             ],
+            option_variants: Option::Some(("Some", "None")),
         },
     );
     result.push(
@@ -1813,9 +1814,57 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
                     fields: EnumVariantFields::Tuple(Vec::[Type::Param { name: "E" }]),
                 },
             ],
+            option_variants: Option::None,
         },
     );
     result
+}
+
+fn enum_option_variants(name: string, variants: Vec[EnumVariantDef]) -> Option[(string, string)] {
+    if name != "Option" {
+        return Option::None
+    } else {
+        ()
+    };
+    let some_name = Ref::new(Option::None);
+    let none_name = Ref::new(Option::None);
+    let payload_name = Ref::new(Option::None);
+    let empty_name = Ref::new(Option::None);
+    let payload_count = Ref::new(0);
+    let empty_count = Ref::new(0);
+    for variant in variants {
+        let fields = enum_variant_field_types(variant.fields);
+        if fields.len() == 1 {
+            payload_count.set(payload_count.get() + 1);
+            payload_name.set(Option::Some(variant.name));
+            if variant.name == "Some" {
+                some_name.set(Option::Some(variant.name))
+            } else {
+                ()
+            }
+        } else if fields.is_empty() {
+            empty_count.set(empty_count.get() + 1);
+            empty_name.set(Option::Some(variant.name));
+            if variant.name == "None" {
+                none_name.set(Option::Some(variant.name))
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    match (some_name.get(), none_name.get()) {
+        (Some(some), Some(none)) => Option::Some((some, none)),
+        _ => if payload_count.get() == 1 && empty_count.get() == 1 {
+            match (payload_name.get(), empty_name.get()) {
+                (Some(some), Some(none)) => Option::Some((some, none)),
+                _ => Option::None,
+            }
+        } else {
+            Option::None
+        },
+    }
 }
 
 fn declaration_name_index(values: Vec[string], expected: string) -> int {
@@ -2722,7 +2771,10 @@ fn check_file_with_package(
         for variant in value.variants {
             variants.push(EnumVariantDef { name: variant.name, fields: variant.fields })
         };
-        enums.push(EnumDef { name: value.name, generics: value.generics, variants })
+        let option_variants = enum_option_variants(value.name, variants);
+        enums.push(
+            EnumDef { name: value.name, generics: value.generics, variants, option_variants },
+        )
     };
     let structs: Vec[StructDef] = Vec::[];
     for index in 0..local_struct_count {

@@ -2,6 +2,7 @@ package go_backend;
 
 use gomlc::anf;
 use gomlc::core;
+use gomlc::resources;
 use gomlc::strings;
 use gomlc::tast;
 use gomlc::vecs;
@@ -505,96 +506,13 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
         ()
     };
     let ordered: Vec[string] = Vec::[];
-    ordered.push("core.unit_to_string");
-    ordered.push("core.bool_to_string");
-    ordered.push("core.string_len");
-    ordered.push("internal.string_decode_utf8_at_native");
-    ordered.push("core.string_get");
-    ordered.push("core.string_byte_get");
-    ordered.push("core.string_byte_slice");
-    ordered.push("core.string_is_char_boundary");
-    ordered.push("core.string_decode_utf8_at");
-    ordered.push("core.string_to_bytes");
-    ordered.push("core.string_from_utf8");
-    ordered.push("core.string_concat");
-    ordered.push("core.char_to_string");
-    ordered.push("core.char_from_uint32");
-    ordered.push("core.int_to_string");
-    ordered.push("core.int8_to_string");
-    ordered.push("core.int16_to_string");
-    ordered.push("core.int32_to_string");
-    ordered.push("core.int64_to_string");
-    ordered.push("core.uint_to_string");
-    ordered.push("core.uint8_to_string");
-    ordered.push("core.uint16_to_string");
-    ordered.push("core.uint32_to_string");
-    ordered.push("core.uint64_to_string");
-    ordered.push("core.float32_to_string");
-    ordered.push("core.float64_to_string");
-    ordered.push("core.string_parse_float32");
-    ordered.push("core.string_parse_float64");
-    ordered.push("core.int_hash");
-    ordered.push("core.int8_hash");
-    ordered.push("core.int16_hash");
-    ordered.push("core.int32_hash");
-    ordered.push("core.int64_hash");
-    ordered.push("core.char_hash");
-    ordered.push("core.uint_hash");
-    ordered.push("core.uint8_hash");
-    ordered.push("core.uint16_hash");
-    ordered.push("core.uint32_hash");
-    ordered.push("core.float32_hash");
-    ordered.push("core.float64_hash");
-    ordered.push("core.string_hash");
-    ordered.push("core.string_print");
-    ordered.push("core.string_println");
-    ordered.push("std.env.args");
-    ordered.push("std.env.current_dir");
-    ordered.push("std.env.current_exe");
-    ordered.push("std.env.var");
-    ordered.push("std.fs.read_file");
-    ordered.push("std.fs.write_file");
-    ordered.push("std.fs.read_bytes");
-    ordered.push("std.fs.write_bytes");
-    ordered.push("std.fs.create_dir_all");
-    ordered.push("std.fs.remove_file");
-    ordered.push("std.fs.remove_dir_all");
-    ordered.push("std.fs.file_exists");
-    ordered.push("std.fs.is_file");
-    ordered.push("std.fs.is_dir");
-    ordered.push("std.fs.canonicalize");
-    ordered.push("std.fs.read_dir");
-    ordered.push("std.fs.sha256_file");
-    ordered.push("std.io.print");
-    ordered.push("std.io.println");
-    ordered.push("std.io.eprint");
-    ordered.push("std.io.read_stdin");
-    ordered.push("std.io.read_stdin_exact");
-    ordered.push("std.io.write_stdout");
-    ordered.push("std.io.write_stderr");
-    ordered.push("std.path.join");
-    ordered.push("std.path.clean");
-    ordered.push("std.path.is_absolute");
-    ordered.push("std.path.parent");
-    ordered.push("std.path.file_name");
-    ordered.push("std.path.extension");
-    ordered.push("std.path.file_stem");
-    ordered.push("std.path.with_extension");
-    ordered.push("std.path.absolute");
-    ordered.push("std.process.exit");
-    ordered.push("std.process.look_path");
-    ordered.push("std.process.output");
-    ordered.push("std.process.output_timeout");
-    ordered.push("std.process.status");
-    ordered.push("std.process.status_timeout");
-    ordered.push("std.testing.fail");
-    ordered.push("std.num.parse_int");
-    ordered.push("std.num.parse_uint");
-    ordered.push("std.num.parse_float32");
-    ordered.push("std.num.parse_float64");
-    ordered.push("std.time.monotonic_nanoseconds");
-    ordered.push("std.time.unix_nanoseconds");
-    ordered.push("std.time.sleep_nanoseconds");
+    for key in resources::core_runtime_keys() {
+        ordered.push("core." + key)
+    };
+    for spec in resources::standard_runtime_abi_specs() {
+        ordered.push(spec.key)
+    };
+    ordered.insert(3, "internal.string_decode_utf8_at_native");
     for key in ordered {
         let needed = if key == "internal.string_decode_utf8_at_native" {
             vecs::contains(hooks, "core.string_get")
@@ -1223,40 +1141,6 @@ fn synthetic_option_items(value: tast::Type) -> Vec[Item] {
     result
 }
 
-fn option_variant_names(value: tast::EnumDef) -> Option[(string, string)] {
-    let named_some: Vec[string] = Vec::[];
-    let named_none: Vec[string] = Vec::[];
-    let payloads: Vec[string] = Vec::[];
-    let empties: Vec[string] = Vec::[];
-    for variant in value.variants {
-        let fields = tast::enum_variant_field_types(variant.fields);
-        if fields.len() == 1 {
-            payloads.push(variant.name);
-            if variant.name == "Some" {
-                named_some.push(variant.name)
-            } else {
-                ()
-            }
-        } else if fields.is_empty() {
-            empties.push(variant.name);
-            if variant.name == "None" {
-                named_none.push(variant.name)
-            } else {
-                ()
-            }
-        } else {
-            ()
-        }
-    };
-    if !named_some.is_empty() && !named_none.is_empty() {
-        Option::Some((named_some[0], named_none[0]))
-    } else if payloads.len() == 1 && empties.len() == 1 {
-        Option::Some((payloads[0], empties[0]))
-    } else {
-        Option::None
-    }
-}
-
 fn hashmap_option_info(
     value: tast::Type,
     instances: Vec[core::TypeInstance],
@@ -1269,7 +1153,7 @@ fn hashmap_option_info(
     match find_instance(instances, "Option", args) {
         Some(instance) => {
             let variants = match find_enum(enums, instance.base_name) {
-                Some(definition) => option_variant_names(definition),
+                Some(definition) => definition.option_variants,
                 None => Option::None,
             };
             let variants = match variants {
@@ -2293,16 +2177,10 @@ pub fn dyn_factory_name(names: DynHelperNames, trait_name: string, for_ty: tast:
     result
 }
 
-fn hash_segments(value: string) -> Vec[string] {
-    strings::split(value, "#")
-}
-
-fn trait_impl_method_name(value: string) -> Option[string] {
-    let segments = hash_segments(value);
-    if segments.len() == 4 && segments[0] == "trait_impl" {
-        Option::Some(segments[3])
-    } else {
-        Option::None
+fn trait_impl_method_name(value: anf::Function) -> Option[string] {
+    match value.origin {
+        core::FunctionOrigin::TraitImplementation { method_name } => Option::Some(method_name),
+        _ => Option::None,
     }
 }
 
@@ -2329,10 +2207,7 @@ fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
     if separator < 0 {
         (fallback, value)
     } else {
-        (
-            value.byte_slice(0, separator),
-            value.byte_slice(separator + 1, value.byte_len()),
-        )
+        (value.byte_slice(0, separator), value.byte_slice(separator + 1, value.byte_len()))
     }
 }
 
@@ -2392,10 +2267,9 @@ fn collect_dyn_call_methods(result: Vec[DynMethod], trait_name: string, block: a
 fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMethod] {
     let result: Vec[DynMethod] = Vec::[];
     for function in functions {
-        match (function.trait_impl, trait_impl_method_name(function.name)) {
+        match (function.trait_impl, trait_impl_method_name(function)) {
             (Some(metadata), Some(method_name)) => {
-                if metadata.trait_ref.name == trait_name
-                    && !contains_method(result, method_name) {
+                if metadata.trait_ref.name == trait_name && !contains_method(result, method_name) {
                     let params: Vec[tast::Type] = Vec::[];
                     for index in 1..function.params.len() {
                         params.push(function.params[index].1)
@@ -2549,7 +2423,7 @@ fn find_dyn_impl_name(
     let mut index = functions.len() - 1;
     while index >= 0 {
         let function = functions[index];
-        match (function.trait_impl, trait_impl_method_name(function.name)) {
+        match (function.trait_impl, trait_impl_method_name(function)) {
             (Some(metadata), Some(candidate_method)) => {
                 if metadata.trait_ref.name == trait_name
                     && encode_type(metadata.for_ty) == encode_type(for_ty)

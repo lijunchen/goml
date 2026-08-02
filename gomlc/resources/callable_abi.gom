@@ -1,0 +1,264 @@
+package resources;
+
+use gomlc::strings;
+
+pub struct CallableAbiSpec {
+    pub key: string,
+    pub source_name: string,
+    pub artifact_id: string,
+    pub legacy_ids: Vec[string],
+}
+
+fn callable_abi(key: string, source_name: string, artifact_id: string, legacy_ids: Vec[string]) -> CallableAbiSpec {
+    CallableAbiSpec { key, source_name, artifact_id, legacy_ids }
+}
+
+pub fn intrinsic_abi_specs() -> Vec[CallableAbiSpec] {
+    Vec::[
+        callable_abi("eq.primitive", "__goml_primitive_eq", "primitive_eq", Vec::[]),
+        callable_abi("array.get", "array_get", "array_get", Vec::[]),
+        callable_abi("array.set", "array_set", "array_set", Vec::[]),
+        callable_abi("ref.new", "ref", "ref_new", Vec::[]),
+        callable_abi("ref.get", "ref_get", "ref_get", Vec::[]),
+        callable_abi("ref.set", "ref_set", "ref_set", Vec::[]),
+        callable_abi("ref.ptr_eq", "ptr_eq", "ref_ptr_eq", Vec::[]),
+        callable_abi("ref.ptr_hash", "ptr_hash", "ref_ptr_hash", Vec::[]),
+        callable_abi("vec.new", "vec_new", "vec_new", Vec::[]),
+        callable_abi("vec.with_capacity", "vec_with_capacity", "vec_with_capacity", Vec::[]),
+        callable_abi("vec.push", "vec_push", "vec_push", Vec::[]),
+        callable_abi("vec.get", "vec_get", "vec_get", Vec::[]),
+        callable_abi("vec.set", "vec_set", "vec_set", Vec::[]),
+        callable_abi("vec.len", "vec_len", "vec_len", Vec::[]),
+        callable_abi("vec.capacity", "vec_capacity", "vec_capacity", Vec::[]),
+        callable_abi("vec.reserve", "vec_reserve", "vec_reserve", Vec::[]),
+        callable_abi("vec.truncate", "vec_truncate", "vec_truncate", Vec::[]),
+        callable_abi("slice.new", "slice", "slice_new", Vec::[]),
+        callable_abi("slice.get", "slice_get", "slice_get", Vec::[]),
+        callable_abi("slice.len", "slice_len", "slice_len", Vec::[]),
+        callable_abi("slice.sub", "slice_sub", "slice_sub", Vec::[]),
+        callable_abi("hashmap.new", "hashmap_new", "hash_map_new", Vec::["hashmap_new"]),
+        callable_abi("hashmap.get", "hashmap_get", "hash_map_get", Vec::["hashmap_get"]),
+        callable_abi("hashmap.set", "hashmap_set", "hash_map_set", Vec::["hashmap_set"]),
+        callable_abi("hashmap.remove", "hashmap_remove", "hash_map_remove", Vec::["hashmap_remove"]),
+        callable_abi("hashmap.len", "hashmap_len", "hash_map_len", Vec::["hashmap_len"]),
+        callable_abi(
+            "hashmap.contains",
+            "hashmap_contains",
+            "hash_map_contains",
+            Vec::["hashmap_contains"],
+        ),
+        callable_abi(
+            "hashmap.entries",
+            "hashmap_entries",
+            "hash_map_entries",
+            Vec::["hashmap_entries"],
+        ),
+        callable_abi("channel.new", "channel_new", "channel_new", Vec::[]),
+        callable_abi("channel.send", "channel_send", "channel_send", Vec::[]),
+        callable_abi("channel.recv", "channel_recv", "channel_recv", Vec::[]),
+        callable_abi("channel.close", "channel_close", "channel_close", Vec::[]),
+        callable_abi("compiler.missing", "missing", "missing", Vec::[]),
+    ]
+}
+
+pub fn standard_runtime_abi_specs() -> Vec[CallableAbiSpec] {
+    Vec::[
+        callable_abi("std.env.args", "args", "std_env_args", Vec::[]),
+        callable_abi("std.env.current_dir", "current_dir", "std_env_current_dir", Vec::[]),
+        callable_abi("std.env.current_exe", "current_exe", "std_env_current_exe", Vec::[]),
+        callable_abi("std.env.var", "env_var", "std_env_var", Vec::[]),
+        callable_abi("std.fs.read_file", "read_file", "std_fs_read_file", Vec::[]),
+        callable_abi("std.fs.write_file", "write_file", "std_fs_write_file", Vec::[]),
+        callable_abi("std.fs.read_bytes", "read_bytes", "std_fs_read_bytes", Vec::[]),
+        callable_abi("std.fs.write_bytes", "write_bytes", "std_fs_write_bytes", Vec::[]),
+        callable_abi("std.fs.create_dir_all", "create_dir_all", "std_fs_create_dir_all", Vec::[]),
+        callable_abi("std.fs.remove_file", "remove_file", "std_fs_remove_file", Vec::[]),
+        callable_abi("std.fs.remove_dir_all", "remove_dir_all", "std_fs_remove_dir_all", Vec::[]),
+        callable_abi("std.fs.file_exists", "file_exists", "std_fs_file_exists", Vec::[]),
+        callable_abi("std.fs.is_file", "is_file", "std_fs_is_file", Vec::[]),
+        callable_abi("std.fs.is_dir", "is_dir", "std_fs_is_dir", Vec::[]),
+        callable_abi("std.fs.canonicalize", "canonicalize", "std_fs_canonicalize", Vec::[]),
+        callable_abi("std.fs.read_dir", "read_dir", "std_fs_read_dir", Vec::[]),
+        callable_abi("std.fs.sha256_file", "sha256_file", "std_fs_sha256_file", Vec::[]),
+        callable_abi("std.io.print", "print", "std_io_print", Vec::[]),
+        callable_abi("std.io.println", "println", "std_io_println", Vec::[]),
+        callable_abi("std.io.eprint", "eprint", "std_io_eprint", Vec::[]),
+        callable_abi("std.io.read_stdin", "read_stdin", "std_io_read_stdin", Vec::[]),
+        callable_abi(
+            "std.io.read_stdin_exact",
+            "read_stdin_exact",
+            "std_io_read_stdin_exact",
+            Vec::[],
+        ),
+        callable_abi("std.io.write_stdout", "write_stdout", "std_io_write_stdout", Vec::[]),
+        callable_abi("std.io.write_stderr", "write_stderr", "std_io_write_stderr", Vec::[]),
+        callable_abi("std.path.join", "path_join", "std_path_join", Vec::[]),
+        callable_abi("std.path.clean", "path_clean", "std_path_clean", Vec::[]),
+        callable_abi("std.path.is_absolute", "path_is_absolute", "std_path_is_absolute", Vec::[]),
+        callable_abi("std.path.parent", "path_parent", "std_path_parent", Vec::[]),
+        callable_abi("std.path.file_name", "path_file_name", "std_path_file_name", Vec::[]),
+        callable_abi("std.path.extension", "path_extension", "std_path_extension", Vec::[]),
+        callable_abi("std.path.file_stem", "path_file_stem", "std_path_file_stem", Vec::[]),
+        callable_abi(
+            "std.path.with_extension",
+            "path_with_extension",
+            "std_path_with_extension",
+            Vec::[],
+        ),
+        callable_abi("std.path.absolute", "path_absolute", "std_path_absolute", Vec::[]),
+        callable_abi("std.process.exit", "exit", "std_process_exit", Vec::[]),
+        callable_abi("std.process.look_path", "process_look_path", "std_process_look_path", Vec::[]),
+        callable_abi("std.process.output", "process_output", "std_process_output", Vec::[]),
+        callable_abi(
+            "std.process.output_timeout",
+            "process_output_timeout",
+            "std_process_output_timeout",
+            Vec::[],
+        ),
+        callable_abi("std.process.status", "process_status", "std_process_status", Vec::[]),
+        callable_abi(
+            "std.process.status_timeout",
+            "process_status_timeout",
+            "std_process_status_timeout",
+            Vec::[],
+        ),
+        callable_abi("std.testing.fail", "test_fail", "std_testing_fail", Vec::[]),
+        callable_abi("std.num.parse_int", "parse_int", "std_num_parse_int", Vec::[]),
+        callable_abi("std.num.parse_uint", "parse_uint", "std_num_parse_uint", Vec::[]),
+        callable_abi("std.num.parse_float32", "parse_float32", "std_num_parse_float32", Vec::[]),
+        callable_abi("std.num.parse_float64", "parse_float64", "std_num_parse_float64", Vec::[]),
+        callable_abi(
+            "std.time.monotonic_nanoseconds",
+            "monotonic_nanoseconds",
+            "std_time_monotonic_nanoseconds",
+            Vec::[],
+        ),
+        callable_abi(
+            "std.time.unix_nanoseconds",
+            "unix_nanoseconds",
+            "std_time_unix_nanoseconds",
+            Vec::[],
+        ),
+        callable_abi(
+            "std.time.sleep_nanoseconds",
+            "sleep_nanoseconds",
+            "std_time_sleep_nanoseconds",
+            Vec::[],
+        ),
+    ]
+}
+
+pub fn core_runtime_keys() -> Vec[string] {
+    Vec::[
+        "unit_to_string",
+        "bool_to_string",
+        "string_len",
+        "string_get",
+        "string_byte_get",
+        "string_byte_slice",
+        "string_is_char_boundary",
+        "string_decode_utf8_at",
+        "string_to_bytes",
+        "string_from_utf8",
+        "string_concat",
+        "char_to_string",
+        "char_from_uint32",
+        "int_to_string",
+        "int8_to_string",
+        "int16_to_string",
+        "int32_to_string",
+        "int64_to_string",
+        "uint_to_string",
+        "uint8_to_string",
+        "uint16_to_string",
+        "uint32_to_string",
+        "uint64_to_string",
+        "float32_to_string",
+        "float64_to_string",
+        "string_parse_float32",
+        "string_parse_float64",
+        "int_hash",
+        "int8_hash",
+        "int16_hash",
+        "int32_hash",
+        "int64_hash",
+        "char_hash",
+        "uint_hash",
+        "uint8_hash",
+        "uint16_hash",
+        "uint32_hash",
+        "float32_hash",
+        "float64_hash",
+        "string_hash",
+        "string_print",
+        "string_println",
+    ]
+}
+
+fn abi_by_key(values: Vec[CallableAbiSpec], key: string) -> Option[CallableAbiSpec] {
+    for value in values {
+        if value.key == key {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn abi_by_id(values: Vec[CallableAbiSpec], id: string) -> Option[CallableAbiSpec] {
+    for value in values {
+        if value.artifact_id == id {
+            return Option::Some(value)
+        } else {
+            for legacy_id in value.legacy_ids {
+                if legacy_id == id {
+                    return Option::Some(value)
+                } else {
+                    ()
+                }
+            }
+        }
+    };
+    Option::None
+}
+
+pub fn intrinsic_abi_by_key(key: string) -> Option[CallableAbiSpec] {
+    abi_by_key(intrinsic_abi_specs(), key)
+}
+
+pub fn intrinsic_abi_by_id(id: string) -> Option[CallableAbiSpec] {
+    abi_by_id(intrinsic_abi_specs(), id)
+}
+
+pub fn runtime_abi_by_key(key: string) -> Option[CallableAbiSpec] {
+    if strings::starts_with(key, "core.") {
+        let id = key.byte_slice(5, key.byte_len());
+        for allowed in core_runtime_keys() {
+            if allowed == id {
+                let source_name = if id == "char_from_uint32" {
+                    id + "_raw"
+                } else {
+                    id
+                };
+                return Option::Some(callable_abi(key, source_name, id, Vec::[]))
+            } else {
+                ()
+            }
+        };
+        Option::None
+    } else {
+        abi_by_key(standard_runtime_abi_specs(), key)
+    }
+}
+
+pub fn runtime_abi_by_id(id: string) -> Option[CallableAbiSpec] {
+    for allowed in core_runtime_keys() {
+        if allowed == id {
+            return runtime_abi_by_key("core." + id)
+        } else {
+            ()
+        }
+    };
+    abi_by_id(standard_runtime_abi_specs(), id)
+}

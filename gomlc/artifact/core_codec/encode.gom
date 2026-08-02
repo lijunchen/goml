@@ -286,13 +286,51 @@ fn artifact_json_core_expr(
             wire::artifact_json_end_object(writer)
         },
         Callable { callable, ty } => {
-            wire::artifact_json_name(writer, "ECallable");
-            wire::artifact_json_begin_object(writer);
-            let callable = tast_codec::artifact_callable(callable);
-            wire::artifact_json_name(writer, "name");
-            wire::artifact_json_string(writer, callable.name);
-            wire::artifact_json_name(writer, "body");
-            tast_codec::artifact_json_callable_body(writer, callable);
+            match callable {
+                tast::Callable::LangItem { item, function_name } => {
+                    wire::artifact_json_name(writer, "ELangItemCallable");
+                    wire::artifact_json_begin_object(writer);
+                    wire::artifact_json_name(writer, "item");
+                    wire::artifact_json_string(writer, item);
+                    wire::artifact_json_name(writer, "function_name");
+                    wire::artifact_json_string(writer, function_name)
+                },
+                tast::Callable::TraitMethod { trait_ref, method_name } => {
+                    wire::artifact_json_name(writer, "ETraitCallable");
+                    wire::artifact_json_begin_object(writer);
+                    wire::artifact_json_name(writer, "trait_ref");
+                    tast_codec::artifact_json_trait_ref(writer, context, trait_ref);
+                    wire::artifact_json_name(writer, "method_name");
+                    wire::artifact_json_string(writer, method_name)
+                },
+                tast::Callable::DynTraitMethod { trait_name, dispatch_name, method_name } => {
+                    wire::artifact_json_name(writer, "EDynTraitCallable");
+                    wire::artifact_json_begin_object(writer);
+                    wire::artifact_json_name(writer, "trait_name");
+                    wire::artifact_json_string(writer, trait_name);
+                    wire::artifact_json_name(writer, "dispatch_name");
+                    wire::artifact_json_string(writer, dispatch_name);
+                    wire::artifact_json_name(writer, "method_name");
+                    wire::artifact_json_string(writer, method_name)
+                },
+                tast::Callable::InherentMethod { receiver_ty, method_name } => {
+                    wire::artifact_json_name(writer, "EInherentCallable");
+                    wire::artifact_json_begin_object(writer);
+                    wire::artifact_json_name(writer, "receiver_ty");
+                    tast_codec::artifact_json_type(writer, context, receiver_ty);
+                    wire::artifact_json_name(writer, "method_name");
+                    wire::artifact_json_string(writer, method_name)
+                },
+                other => {
+                    wire::artifact_json_name(writer, "ECallable");
+                    wire::artifact_json_begin_object(writer);
+                    let callable = tast_codec::artifact_callable(other);
+                    wire::artifact_json_name(writer, "name");
+                    wire::artifact_json_string(writer, callable.name);
+                    wire::artifact_json_name(writer, "body");
+                    tast_codec::artifact_json_callable_body(writer, callable)
+                },
+            };
             wire::artifact_json_name(writer, "ty");
             tast_codec::artifact_json_type(writer, context, ty);
             wire::artifact_json_end_object(writer)
@@ -624,6 +662,34 @@ fn artifact_json_core_params(
     wire::artifact_json_end_array(writer)
 }
 
+fn artifact_json_core_function_origin(
+    writer: wire::ArtifactJsonWriter,
+    context: tast_codec::ArtifactTypeContext,
+    value: core::FunctionOrigin,
+) -> unit {
+    wire::artifact_json_begin_object(writer);
+    match value {
+        Source => {
+            wire::artifact_json_name(writer, "Source");
+            wire::artifact_json_null(writer)
+        },
+        Inherent { owner, method_name } => {
+            wire::artifact_json_name(writer, "Inherent");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "owner");
+            tast_codec::artifact_json_type(writer, context, owner);
+            wire::artifact_json_name(writer, "method_name");
+            wire::artifact_json_string(writer, method_name);
+            wire::artifact_json_end_object(writer)
+        },
+        TraitImplementation { method_name } => {
+            wire::artifact_json_name(writer, "TraitImplementation");
+            wire::artifact_json_string(writer, method_name)
+        },
+    };
+    wire::artifact_json_end_object(writer)
+}
+
 fn artifact_json_core_function(
     writer: wire::ArtifactJsonWriter,
     context: tast_codec::ArtifactTypeContext,
@@ -632,6 +698,8 @@ fn artifact_json_core_function(
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "name");
     wire::artifact_json_string(writer, value.name);
+    wire::artifact_json_name(writer, "origin");
+    artifact_json_core_function_origin(writer, context, value.origin);
     wire::artifact_json_name(writer, "root");
     wire::artifact_json_bool(writer, value.root);
     wire::artifact_json_name(writer, "generics");

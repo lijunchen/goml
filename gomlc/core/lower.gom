@@ -9,7 +9,6 @@ struct Lowerer {
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     optimize_builtin_iterators: bool,
-    shadowed_range: bool,
 }
 
 struct EnumCase {
@@ -75,7 +74,7 @@ fn inherent_base(value: tast::Type) -> string {
     }
 }
 
-fn inherent_method_name(owner: tast::Type, name: string) -> string {
+pub fn inherent_method_name(owner: tast::Type, name: string) -> string {
     "inherent#" + inherent_base(owner) + "#" + compact_type(owner) + "#" + name
 }
 
@@ -369,7 +368,13 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
             ty: method_ty,
         } => {
             Expr::Call {
-                func: Expr::Var { name: inherent_method_name(owner, name), ty: method_ty },
+                func: Expr::Callable {
+                    callable: tast::Callable::InherentMethod {
+                        receiver_ty: owner,
+                        method_name: name,
+                    },
+                    ty: method_ty,
+                },
                 args,
                 ty,
             }
@@ -471,12 +476,7 @@ fn lower_generic_match(
             },
         }
     };
-    Expr::Match {
-        expr: Expr::Var { name: source_name, ty: source_ty },
-        arms: result,
-        default,
-        ty,
-    }
+    Expr::Match { expr: Expr::Var { name: source_name, ty: source_ty }, arms: result, default, ty }
 }
 
 fn pattern_matches_bool(value: tast::Pat, expected: bool) -> bool {
@@ -629,20 +629,6 @@ fn enum_match_cases(
     Option::Some(cases)
 }
 
-fn items_shadow_range(values: Vec[tast::Item]) -> bool {
-    for item in values {
-        match item {
-            Function(function) => if function.name == "range" {
-                return true
-            } else {
-                ()
-            },
-            ImplBlock(_) => (),
-        }
-    };
-    false
-}
-
 fn lower_enum_cases(
     ctx: Lowerer,
     source_name: string,
@@ -762,13 +748,13 @@ fn lower_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], ty: tast:
 fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type) -> Expr {
     let base_ty = tast::expr_type(base);
     let index_ty = tast::expr_type(index);
-    let key = match tast::resolve_type(base_ty) {
-        Array { len: _, elem: _ } => "array.get",
-        VecType { elem: _ } => "vec.get",
-        Slice { elem: _ } => "slice.get",
-        HashMap { key: _, value: _ } => "hashmap.get",
-        String => "core.string_get",
-        _ => "compiler.missing",
+    let callable = match tast::resolve_type(base_ty) {
+        Array { len: _, elem: _ } => tast::Callable::Intrinsic("array.get"),
+        VecType { elem: _ } => tast::Callable::Intrinsic("vec.get"),
+        Slice { elem: _ } => tast::Callable::Intrinsic("slice.get"),
+        HashMap { key: _, value: _ } => tast::Callable::Intrinsic("hashmap.get"),
+        String => tast::Callable::Runtime("core.string_get"),
+        _ => tast::Callable::Intrinsic("compiler.missing"),
     };
     let params: Vec[tast::Type] = Vec::[];
     params.push(base_ty);
@@ -777,10 +763,7 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
     args.push(lower_expr(ctx, base));
     args.push(lower_expr(ctx, index));
     Expr::Call {
-        func: Expr::Callable {
-            callable: tast::Callable::Intrinsic(key),
-            ty: tast::Type::Func { params, ret_ty: ty },
-        },
+        func: Expr::Callable { callable, ty: tast::Type::Func { params, ret_ty: ty } },
         args,
         ty,
     }
@@ -985,12 +968,12 @@ fn lower_direct_for(ctx: Lowerer, pattern: tast::Pat, iterator: tast::Expr, body
     Expr,
 ] {
     match iterator {
-        Call { func: Callable { callable: Function(name), ty: _ }, args, ty: _ } => if name
-            == "__goml_builtin_range"
-            || (name == "range" && !ctx.shadowed_range) {
+        Call {
+            func: Callable { callable: LangItem { item: "range", function_name: _ }, ty: _ },
+            args,
+            ty: _,
+        } => {
             direct_range_for(ctx, pattern, args, body)
-        } else {
-            Option::None
         },
         other => {
             let container_ty = tast::resolve_type(tast::expr_type(other));
@@ -1145,7 +1128,12 @@ fn lower_for(
 fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
     match value {
         Var { name, ty } => Expr::Var { name, ty },
-        Callable { callable: Function(name), ty } => Expr::Var { name, ty },
+        Callable { callable: Function(name), ty } | Callable {
+            callable: LangItem { item: _, function_name: name },
+            ty,
+        } => {
+            Expr::Var { name, ty }
+        },
         Callable { callable, ty } => Expr::Callable { callable, ty },
         Prim { value, ty } => Expr::Prim { value, ty },
         Constr { constructor, args, ty } => {
@@ -1313,9 +1301,7 @@ fn lower_pattern_continuation(
                         pattern: tast::Pat::Wild { ty: source_ty },
                     },
                 );
-                rows.push(
-                    PatternRow { columns: fallback_columns, bindings: Vec::[], body: value },
-                )
+                rows.push(PatternRow { columns: fallback_columns, bindings: Vec::[], body: value })
             },
             None => (),
         };
@@ -1420,6 +1406,7 @@ fn lower_block(ctx: Lowerer, value: tast::Block, ty: tast::Type) -> Block {
 fn lower_function(
     ctx: Lowerer,
     name: string,
+    origin: FunctionOrigin,
     trait_impl: Option[TraitImpl],
     value: tast::Function,
     retain_generics: bool,
@@ -1428,6 +1415,7 @@ fn lower_function(
     let body = lower_block(ctx, value.body, value.ret_ty);
     Function {
         name,
+        origin,
         root: true,
         generics: if retain_generics {
             value.generics
@@ -1455,7 +1443,6 @@ fn lower_file_with_types(
 ) -> File {
     let enums = value.enums;
     let structs = value.structs;
-    let shadowed_range = items_shadow_range(value.items);
     let all_enums: Vec[tast::EnumDef] = Vec::[];
     for definition in dependency_enums {
         all_enums.push(definition)
@@ -1475,13 +1462,19 @@ fn lower_file_with_types(
         enums: all_enums,
         structs: all_structs,
         optimize_builtin_iterators,
-        shadowed_range,
     };
     let functions: Vec[Function] = Vec::[];
     for item in value.items {
         match item {
             Function(function) => functions.push(
-                lower_function(ctx, function.name, Option::None, function, false),
+                lower_function(
+                    ctx,
+                    function.name,
+                    FunctionOrigin::Source,
+                    Option::None,
+                    function,
+                    false,
+                ),
             ),
             ImplBlock(block) => for method in block.methods {
                 let trait_impl = match block.trait_ref {
@@ -1504,7 +1497,14 @@ fn lower_file_with_types(
                     ),
                     None => inherent_method_name(block.for_type, method.name),
                 };
-                functions.push(lower_function(ctx, name, trait_impl, method, true))
+                let origin = match block.trait_ref {
+                    Some(_) => FunctionOrigin::TraitImplementation { method_name: method.name },
+                    None => FunctionOrigin::Inherent {
+                        owner: block.for_type,
+                        method_name: method.name,
+                    },
+                };
+                functions.push(lower_function(ctx, name, origin, trait_impl, method, true))
             },
         }
     };

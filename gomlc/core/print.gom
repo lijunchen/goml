@@ -25,6 +25,7 @@ fn dyn_method_name(value: string) -> string {
 fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
     match value {
         Function(name) => builder.write_string(name),
+        LangItem { item: _, function_name } => builder.write_string(function_name),
         Runtime(name) => {
             builder.write_string("@runtime(");
             builder.write_string(name);
@@ -47,9 +48,7 @@ fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
             builder.write_string(name)
         },
         InherentMethod { receiver_ty: owner, method_name: name } => {
-            tast::write_type(builder, owner);
-            builder.write_string("::");
-            builder.write_string(name)
+            builder.write_string(inherent_method_name(owner, name))
         },
     }
 }

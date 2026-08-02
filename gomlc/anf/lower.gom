@@ -12,6 +12,7 @@ fn lower_function(state: State, value: core::Function) -> Function {
         params.push((ret_value, value.ret_ty));
         JoinBind {
             name: ret_id,
+            role: JoinRole::Return,
             params,
             ret_ty: value.ret_ty,
             body: Block {
@@ -22,6 +23,7 @@ fn lower_function(state: State, value: core::Function) -> Function {
     } else {
         JoinBind {
             name: ret_id,
+            role: JoinRole::Return,
             params: Vec::[],
             ret_ty: value.ret_ty,
             body: Block { binds: no_binds(), term: Term::Return(unit_imm()) },
@@ -46,6 +48,7 @@ fn lower_function(state: State, value: core::Function) -> Function {
     };
     Function {
         name: value.name,
+        origin: value.origin,
         root: value.root,
         trait_impl: value.trait_impl,
         params: value.params,

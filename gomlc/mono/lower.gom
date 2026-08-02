@@ -993,16 +993,35 @@ fn lower_trait_impl(ctx: TypeCtx, value: Option[core::TraitImpl]) -> Option[core
     }
 }
 
+fn lower_function_origin(ctx: TypeCtx, value: core::FunctionOrigin) -> core::FunctionOrigin {
+    match value {
+        Source => core::FunctionOrigin::Source,
+        Inherent { owner, method_name } => core::FunctionOrigin::Inherent {
+            owner: collapse_type(ctx, owner),
+            method_name,
+        },
+        TraitImplementation { method_name } => {
+            core::FunctionOrigin::TraitImplementation { method_name }
+        },
+    }
+}
+
 fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
+    let original_trait_impl = function.trait_impl;
     let trait_impl = lower_trait_impl(ctx, function.trait_impl);
-    let name = match (trait_impl, trait_impl_method_name(function.name)) {
-        (Some(metadata), Some(method_name)) => {
-            trait_impl_name(metadata.trait_ref, metadata.for_ty, method_name)
+    let origin = lower_function_origin(ctx, function.origin);
+    let name = match (original_trait_impl, trait_impl, origin) {
+        (Some(original), Some(lowered), core::FunctionOrigin::TraitImplementation { method_name }) => if function.name
+            == trait_impl_name(original.trait_ref, original.for_ty, method_name) {
+            trait_impl_name(lowered.trait_ref, lowered.for_ty, method_name)
+        } else {
+            function.name
         },
         _ => function.name,
     };
     core::Function {
         name,
+        origin,
         root: function.root,
         generics: function.generics,
         predicates: function.predicates,

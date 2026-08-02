@@ -51,68 +51,22 @@ fn type_for_name(name: string) -> ast::TypeExpr {
 
 fn derives(attrs: Vec[ast::Attribute], name: string) -> bool {
     for attr in attrs {
-        for target in derive_targets(attr.text) {
-            if target == name {
-                return true
-            } else {
-                ()
-            }
-        }
-    };
-    false
-}
-
-fn derive_identifier_byte(value: uint8) -> bool {
-    (value >= 65 && value <= 90) || (value >= 97 && value <= 122) || (value >= 48 && value <= 57)
-        || value == 95
-}
-
-fn derive_targets(value: string) -> Vec[string] {
-    let result: Vec[string] = Vec::[];
-    let mut derive_start = -1;
-    if value.byte_len() >= 6 {
-        for index in 0..value.byte_len() - 5 {
-            if strings::starts_with_at(value, index, "derive") {
-                derive_start = index + 6;
-            } else {
-                ()
-            }
-        }
-    } else {
-        ()
-    };
-    if derive_start < 0 {
-        result
-    } else {
-        let mut open = -1;
-        let mut scan = derive_start;
-        while scan < value.byte_len() && open < 0 {
-            if value.byte_get(scan) == b'(' {
-                open = scan + 1;
-            } else {
-                ()
-            };
-            scan = scan + 1;
-        };
-        if open >= 0 {
-            let mut index = open;
-            while index < value.byte_len() && value.byte_get(index) != b')' {
-                if derive_identifier_byte(value.byte_get(index)) {
-                    let start = index;
-                    while index < value.byte_len()
-                        && derive_identifier_byte(value.byte_get(index)) {
-                        index = index + 1;
-                    };
-                    result.push(value.byte_slice(start, index))
-                } else {
-                    index = index + 1;
+        if attr.name == "derive" {
+            for arg in attr.args {
+                match arg {
+                    ast::AttributeArg::Ident(target) => if target == name {
+                        return true
+                    } else {
+                        ()
+                    },
+                    ast::AttributeArg::String(_) => (),
                 }
             }
         } else {
             ()
-        };
-        result
-    }
+        }
+    };
+    false
 }
 
 fn supported_derive(value: string) -> bool {
@@ -127,23 +81,34 @@ fn validate_derive_attributes(
     diagnostics: Vec[cst::Diagnostic],
 ) -> unit {
     for attr in attrs {
-        for target in derive_targets(attr.text) {
-            let message = if !supported_derive(target) {
-                Option::Some("unsupported derive target `" + target + "`")
-            } else if !generics.is_empty() {
-                Option::Some(
-                    "`#[derive(" + target + ")]` is not supported for generic " + kind + " `" + name
-                        + "`",
-                )
-            } else {
-                Option::None
-            };
-            match message {
-                Some(value) => diagnostics.push(
-                    cst::diagnostic(value, attr.span.start, attr.span.end),
-                ),
-                None => (),
+        if attr.name == "derive" {
+            for arg in attr.args {
+                match arg {
+                    ast::AttributeArg::Ident(target) => {
+                        let message = if !supported_derive(target) {
+                            Option::Some("unsupported derive target `" + target + "`")
+                        } else if !generics.is_empty() {
+                            Option::Some(
+                                "`#[derive(" + target + ")]` is not supported for generic " + kind
+                                    + " `"
+                                    + name
+                                    + "`",
+                            )
+                        } else {
+                            Option::None
+                        };
+                        match message {
+                            Some(value) => diagnostics.push(
+                                cst::diagnostic(value, attr.span.start, attr.span.end),
+                            ),
+                            None => (),
+                        }
+                    },
+                    ast::AttributeArg::String(_) => (),
+                }
             }
+        } else {
+            ()
         }
     }
 }
@@ -545,9 +510,7 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
     for variant in value.variants {
         let bindings: Vec[string] = Vec::[];
         for field_index in 0..enum_field_types(variant.fields).len() {
-            bindings.push(
-                "__field" + variant_index.to_string() + "_" + field_index.to_string(),
-            )
+            bindings.push("__field" + variant_index.to_string() + "_" + field_index.to_string())
         };
         let stmts: Vec[ast::Stmt] = Vec::[];
         stmts.push(
