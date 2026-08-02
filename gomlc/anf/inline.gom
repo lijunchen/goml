@@ -528,6 +528,69 @@ fn find_inline_function(values: Vec[Function], name: string) -> Option[Function]
     Option::None
 }
 
+fn inline_term_consumes(value: Term, name: string) -> bool {
+    match value {
+        If { cond: Var { name: present, ty: _ }, then_, else_, .. } => {
+            present == name && inline_block_returns(then_) && inline_block_returns(else_)
+        },
+        Match { scrutinee: Var { name: present, ty: _ }, arms, default, .. } => {
+            if present != name || arms.is_empty() {
+                return false
+            } else {
+                ()
+            };
+            for arm in arms {
+                if !inline_block_returns(arm.body) {
+                    return false
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => inline_block_returns(body),
+                None => true,
+            }
+        },
+        Return(_) | Jump { .. } | If { .. } | Match { .. } | Unreachable { .. } => false,
+    }
+}
+
+fn inline_term_returns(value: Term) -> bool {
+    match value {
+        Return(_) | Unreachable { .. } => true,
+        If { then_, else_, .. } => {
+            inline_block_returns(then_) && inline_block_returns(else_)
+        },
+        Match { arms, default, .. } => {
+            if arms.is_empty() {
+                return false
+            } else {
+                ()
+            };
+            for arm in arms {
+                if !inline_block_returns(arm.body) {
+                    return false
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => inline_block_returns(body),
+                None => true,
+            }
+        },
+        Jump { .. } => false,
+    }
+}
+
+fn inline_block_returns(value: Block) -> bool {
+    inline_term_returns(value.term)
+}
+
+fn inline_block_consumes(value: Block, name: string) -> bool {
+    inline_term_consumes(value.term, name)
+}
+
 fn inline_candidate(
     functions: Vec[Function],
     caller: string,
@@ -535,6 +598,7 @@ fn inline_candidate(
     args: Vec[Imm],
     ty: tast::Type,
     bind_ty: tast::Type,
+    recursive_consumer: bool,
     budget: Ref[int],
 ) -> Option[Function] {
     if name == caller {
@@ -544,7 +608,13 @@ fn inline_candidate(
     };
     let value = find_inline_function(functions, name)?;
     let cost = inline_block_cost(value.body);
-    if cost > 16 || cost > budget.get() || inline_block_has_joinrec(value.body)
+    let recursive = inline_block_has_joinrec(value.body);
+    let cost_limit = if recursive {
+        32
+    } else {
+        16
+    };
+    if cost > cost_limit || cost > budget.get() || recursive && !recursive_consumer
         || inline_block_calls(value.body, value.name)
         || !tast::types_equal(value.ret_ty, ty)
         || !tast::types_equal(value.ret_ty, bind_ty)
@@ -670,7 +740,16 @@ fn inline_binds(
         match bind {
             Let(value) => match value.value {
                 Call { func: Var { name, ty: _ }, args, ty } => {
-                    match inline_candidate(functions, caller, name, args, ty, value.ty, budget) {
+                    match inline_candidate(
+                        functions,
+                        caller,
+                        name,
+                        args,
+                        ty,
+                        value.ty,
+                        inline_block_consumes(rest, value.name),
+                        budget,
+                    ) {
                         Some(callee) => inline_call(value, callee, args, rest, counter),
                         None => prepend_inline_bind(Bind::Let(value), rest),
                     }
@@ -679,7 +758,16 @@ fn inline_binds(
                     func: Callable { callable: tast::Callable::Function(name), ty: _ },
                     args,
                     ty,
-                } => match inline_candidate(functions, caller, name, args, ty, value.ty, budget) {
+                } => match inline_candidate(
+                    functions,
+                    caller,
+                    name,
+                    args,
+                    ty,
+                    value.ty,
+                    inline_block_consumes(rest, value.name),
+                    budget,
+                ) {
                     Some(callee) => inline_call(value, callee, args, rest, counter),
                     None => prepend_inline_bind(Bind::Let(value), rest),
                 },
