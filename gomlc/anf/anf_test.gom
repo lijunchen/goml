@@ -397,6 +397,7 @@ fn exhausts_static_inline_budget() -> unit {
             args,
             tast::Type::String,
             tast::Type::String,
+            false,
             budget,
         ) {
             Some(_) => (),
@@ -411,6 +412,7 @@ fn exhausts_static_inline_budget() -> unit {
         args,
         tast::Type::String,
         tast::Type::String,
+        false,
         budget,
     ) {
         Some(_) => testing::fail("expected exhausted inline budget"),
@@ -497,4 +499,78 @@ fn invalidates_commuting_constructors_after_assignment() -> unit {
         Unknown => (),
         Dispatch { .. } => testing::fail("expected invalidated constructor"),
     }
+}
+
+fn encoded_function(output: string, name: string) -> string {
+    let marker = "fn " + name + "(";
+    let start = match strings::find(output, marker) {
+        Some(value) => value,
+        None => return "",
+    };
+    let suffix = output.byte_slice(start, output.byte_len());
+    let end = match strings::find(suffix, "\n}\n\n") {
+        Some(value) => value + 2,
+        None => suffix.byte_len(),
+    };
+    suffix.byte_slice(0, end)
+}
+
+#[test]
+fn fuses_recursive_join_consumers() -> unit {
+    let source = "fn find(wanted: int) -> Option[int] { let current = Ref::new(0); loop { let value = current.get(); if value >= 5 { return Option::None; } else if value == wanted { return Option::Some(value); } else { current.set(value + 1); }; }; Option::None } fn any(wanted: int) -> bool { match find(wanted) { Some(_) => true, None => false } }";
+    let lowered = lower_source(source);
+    match verify(lowered) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let any = encoded_function(encode(lowered), "any");
+    testing::assert(strings::contains(any, "joinrec"));
+    testing::assert(!strings::contains(any, "find("));
+    testing::assert(!strings::contains(any, "match "));
+    testing::assert(!strings::contains(any, "commute_field"))
+}
+
+#[test]
+fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
+    let arms: Vec[Arm] = Vec::[];
+    arms.push(
+        Arm {
+            lhs: Imm::Tag { index: 0, ty: tast::Type::Con { name: "Option__int" } },
+            body: Block {
+                binds: Vec::[],
+                term: Term::Return(
+                    Imm::Prim {
+                        value: tast::Primitive::Bool { value: false },
+                        ty: tast::Type::Bool,
+                    },
+                ),
+            },
+        },
+    );
+    arms.push(
+        Arm {
+            lhs: Imm::Tag { index: 1, ty: tast::Type::Con { name: "Option__int" } },
+            body: Block {
+                binds: Vec::[],
+                term: Term::Jump { target: "outer_loop", args: Vec::[], ret_ty: tast::Type::Bool },
+            },
+        },
+    );
+    testing::assert(
+        !inline_block_consumes(
+            Block {
+                binds: Vec::[],
+                term: Term::Match {
+                    scrutinee: Imm::Var {
+                        name: "result",
+                        ty: tast::Type::Con { name: "Option__int" },
+                    },
+                    arms,
+                    default: Option::None,
+                    ret_ty: tast::Type::Bool,
+                },
+            },
+            "result",
+        ),
+    )
 }
