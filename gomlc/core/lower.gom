@@ -1549,6 +1549,11 @@ fn remaining_tast_block(
     for current in index..stmts.len() {
         remaining.push(stmts[current])
     };
+    if ctx.cleanups.len() == cleanup_start {
+        return tast::Expr::Block { block: tast::Block { stmts: remaining, tail }, ty }
+    } else {
+        ()
+    };
     let tail = match tail {
         Some(value) => {
             let value_ty = tast::expr_type(value);
