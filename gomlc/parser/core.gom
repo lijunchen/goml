@@ -436,7 +436,6 @@ impl MarkerOpened {
 fn should_consume_on_expect_failure(kind: lexer::TokenKind) -> bool {
     !lexer::token_kind_equal(kind, lexer::TokenKind::FnKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::PubKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::ModKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::StructKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::EnumKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::TraitKeyword)
@@ -444,7 +443,6 @@ fn should_consume_on_expect_failure(kind: lexer::TokenKind) -> bool {
         && !lexer::token_kind_equal(kind, lexer::TokenKind::ExternKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::PackageKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::UseKeyword)
-        && !lexer::token_kind_equal(kind, lexer::TokenKind::ImportKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::LetKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::ReturnKeyword)
         && !lexer::token_kind_equal(kind, lexer::TokenKind::RBrace)

@@ -19,7 +19,7 @@ fn is_param_list_recovery(kind: lexer::TokenKind) -> bool {
 
 fn is_block_recovery(kind: lexer::TokenKind) -> bool {
     match kind {
-        Pound | PubKeyword | ModKeyword | FnKeyword | ExternKeyword | StructKeyword | EnumKeyword | TraitKeyword | ImplKeyword | TypeKeyword | ConstKeyword | PackageKeyword | UseKeyword | ImportKeyword => true,
+        Pound | PubKeyword | FnKeyword | ExternKeyword | StructKeyword | EnumKeyword | TraitKeyword | ImplKeyword | TypeKeyword | ConstKeyword | PackageKeyword | UseKeyword => true,
         _ => false,
     }
 }
@@ -44,12 +44,6 @@ fn parse_file(parser: Parser) -> unit {
             parser.advance_with_error("package declaration must appear at the top of the file")
         } else if parser.at(lexer::TokenKind::UseKeyword) {
             parser.advance_with_error("use declaration must appear before top-level items")
-        } else if parser.at_contextual("import") && parser.nth(1) == lexer::TokenKind::Ident {
-            removed_import_decl(parser)
-        } else if parser.at_contextual("mod") && parser.nth(1) == lexer::TokenKind::Ident {
-            parser.advance_with_error(
-                "module declarations have been removed; use a package instead",
-            )
         } else if parser.at(lexer::TokenKind::ExternKeyword) {
             extern_decl(parser)
         } else if parser.at(lexer::TokenKind::FnKeyword) {
@@ -157,34 +151,12 @@ fn use_item_list(parser: Parser) -> unit {
     ()
 }
 
-fn removed_import_decl(parser: Parser) -> unit {
-    let marker = parser.open();
-    parser.error("`import` has been removed; use `use` instead");
-    while !parser.eof() && !parser.at(lexer::TokenKind::Semi) {
-        parser.advance()
-    };
-    parser.eat(lexer::TokenKind::Semi);
-    let _ = parser.close(marker, cst::NodeKind::ErrorTree);
-    ()
-}
-
 fn item_with_attrs(parser: Parser, attrs: MarkerClosed) -> unit {
     let marker = attrs.precede(parser);
     if parser.at(lexer::TokenKind::PubKeyword) {
         public_item_with_marker(parser, marker)
     } else if parser.at(lexer::TokenKind::ExternKeyword) {
         extern_decl_with_marker(parser, marker)
-    } else if parser.at_contextual("mod") {
-        parser.error("module declarations have been removed; use a package instead");
-        parser.advance();
-        if parser.at(lexer::TokenKind::Ident) {
-            parser.advance()
-        } else {
-            ()
-        };
-        parser.expect(lexer::TokenKind::Semi);
-        let _ = parser.close(marker, cst::NodeKind::ErrorTree);
-        ()
     } else if parser.at(lexer::TokenKind::FnKeyword) {
         func_with_marker(parser, marker)
     } else if parser.at(lexer::TokenKind::EnumKeyword) {
@@ -220,17 +192,6 @@ fn public_item_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     parser.expect(lexer::TokenKind::PubKeyword);
     if parser.at(lexer::TokenKind::ExternKeyword) {
         extern_decl_with_marker(parser, marker)
-    } else if parser.at_contextual("mod") {
-        parser.error("public module declarations have been removed; packages are directory-based");
-        parser.advance();
-        if parser.at(lexer::TokenKind::Ident) {
-            parser.advance()
-        } else {
-            ()
-        };
-        parser.expect(lexer::TokenKind::Semi);
-        let _ = parser.close(marker, cst::NodeKind::ErrorTree);
-        ()
     } else if parser.at(lexer::TokenKind::FnKeyword) {
         func_with_marker(parser, marker)
     } else if parser.at(lexer::TokenKind::EnumKeyword) {
@@ -353,19 +314,9 @@ fn extern_decl(parser: Parser) -> unit {
 fn extern_decl_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     parser.expect(lexer::TokenKind::ExternKeyword);
     if !parser.eat(lexer::TokenKind::FnKeyword) {
-        let legacy_extern = parser.at(lexer::TokenKind::Str);
         parser.error("only `extern fn` declarations are supported");
         while !parser.eof() && !is_block_recovery(parser.peek()) {
             parser.advance()
-        };
-        if legacy_extern && parser.eat(lexer::TokenKind::TypeKeyword) {
-            if parser.at(lexer::TokenKind::Ident) {
-                parser.advance()
-            } else {
-                ()
-            }
-        } else {
-            ()
         };
         let _ = parser.close(marker, cst::NodeKind::ErrorTree);
         ()
@@ -818,13 +769,6 @@ fn where_predicate(parser: Parser) -> unit {
         } else {
             parser.advance_with_error("expected a type after '='")
         }
-    } else if parser.eat(lexer::TokenKind::EqEq) {
-        parser.error("`==` in where predicates has been replaced by `=`");
-        if is_type_first(parser.peek()) {
-            type_expr(parser)
-        } else {
-            parser.advance_with_error("expected a type after '=='")
-        }
     } else {
         parser.error("expected ':' or '=' in where predicate")
     };
@@ -1009,7 +953,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
             let empty = token_is(parser.nth(1), lexer::TokenKind::RParen);
             type_list(parser);
             if empty && !parser.at(lexer::TokenKind::Arrow) {
-                parser.error("`()` is a value and pattern; use `unit` as the unit type")
+                parser.error("empty parenthesized type must be followed by '->'")
             } else {
                 ()
             };

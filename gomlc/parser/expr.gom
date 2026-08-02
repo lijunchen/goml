@@ -176,14 +176,6 @@ fn ident_expression(parser: Parser) -> MarkerClosed {
         } else {
             ()
         }
-    } else if path_has_legacy_type_args(parser) {
-        parser.error("generic expression arguments must use `::[...]`");
-        let owner = parser.open();
-        parse_path_always(parser);
-        type_param_list(parser);
-        let _ = parser.close(owner, cst::NodeKind::TYPE_TAPP);
-        parser.expect(lexer::TokenKind::ColonColon);
-        parse_path_always(parser)
     } else {
         parse_path_always(parser)
     };
@@ -487,38 +479,6 @@ fn path_has_type_args(parser: Parser) -> bool {
     };
     token_is(parser.nth(index), lexer::TokenKind::ColonColon)
         && token_is(parser.nth(index + 1), lexer::TokenKind::LBracket)
-}
-
-fn path_has_legacy_type_args(parser: Parser) -> bool {
-    let mut index = 1;
-    while token_is(parser.nth(index), lexer::TokenKind::ColonColon)
-        && token_is(parser.nth(index + 1), lexer::TokenKind::Ident) {
-        index = index + 2;
-    };
-    if !token_is(parser.nth(index), lexer::TokenKind::LBracket) {
-        false
-    } else {
-        let mut depth = 0;
-        loop {
-            match parser.nth(index) {
-                LBracket => {
-                    depth += 1;
-                    ()
-                },
-                RBracket => {
-                    depth -= 1;
-                    if depth == 0 {
-                        return token_is(parser.nth(index + 1), lexer::TokenKind::ColonColon)
-                    } else {
-                        ()
-                    }
-                },
-                Eof => return false,
-                _ => (),
-            };
-            index = index + 1;
-        }
-    }
 }
 
 fn closure_expr(parser: Parser) -> MarkerClosed {
