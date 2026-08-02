@@ -37,7 +37,8 @@ impl Describe for Record[int32] {
   fn describe(self: Record[int32]) -> string {
       match self {
           Value(value) => "Value(" + value.to_string() + ")",
-          Pair(before, after) => {
+          Pair(before, after) =>
+            {
                 let prefix = "Pair(" + before.to_string();
                 prefix + ", " + after.to_string() + ")"
             },
@@ -50,7 +51,8 @@ impl Describe for Record[string] {
   fn describe(self: Record[string]) -> string {
       match self {
           Value(text) => "Value(" + text + ")",
-          Pair(before, after) => {
+          Pair(before, after) =>
+            {
                 let prefix = "Pair(" + before;
                 prefix + ", " + after + ")"
             },
@@ -113,28 +115,32 @@ fn gather(record: Record[int32]) -> Maybe[int32] {
     }
 }
 
-fn build_counter(label: string, start: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
+fn build_counter(label: string, start: int32) -> (
+  Tracker,
+  () -> Record[int32],
+  (int32) -> Record[int32],
+  () -> Record[string]
+) {
     let count = Ref::new(start);
     let toggled = Ref::new(false);
-    let tracker = Tracker {
-        label: label,
-        count: count,
-        toggled: toggled
-    };
-    let snapshot = || {
-        Value(count.get())
-    };
-    let bump = |delta: int32| {
-        let before = count.get();
-        let _ = count.set(before + delta);
-        Pair(before, count.get())
-    };
-    let flip = || {
-        let before = toggled.get();
-        let _ = toggled.set(!before);
-        let after = toggled.get();
-        Pair(before.to_string(), after.to_string())
-    };
+    let tracker = Tracker { label: label, count: count, toggled: toggled };
+    let snapshot =
+      || {
+          Value(count.get())
+      };
+    let bump =
+      |delta: int32| {
+          let before = count.get();
+          let _ = count.set(before + delta);
+          Pair(before, count.get())
+      };
+    let flip =
+      || {
+          let before = toggled.get();
+          let _ = toggled.set(!before);
+          let after = toggled.get();
+          Pair(before.to_string(), after.to_string())
+      };
     (tracker, snapshot, bump, flip)
 }
 
@@ -156,10 +162,11 @@ fn main() {
     let first_text = Describe::describe(first_record);
     let bumped_text = Describe::describe(bumped_record);
     let flipped_text = Describe::describe(flipped_record);
-    let summary = match stringified {
-        Some(text) => "Snapshot: " + text,
-        None => "Snapshot: none",
-    };
+    let summary =
+      match stringified {
+          Some(text) => "Snapshot: " + text,
+          None => "Snapshot: none",
+      };
     let pair_text = pair_join((first_result.to_string(), second_result.to_string()));
     let bool_text = order_check.to_string();
     let _ = println(tracker_info);

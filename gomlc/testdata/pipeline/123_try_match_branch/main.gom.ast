@@ -30,11 +30,12 @@ fn read_right(ok: bool) -> Result[int32, string] {
 }
 
 fn choose(choice: Choice) -> Result[int32, string] {
-    let value = match choice {
-        Choice::Left(ok) => read_left(ok)?,
-        Choice::Right(ok) => read_right(ok)? + 1,
-        Choice::Keep(value) => value,
-    };
+    let value =
+      match choice {
+          Choice::Left(ok) => read_left(ok)?,
+          Choice::Right(ok) => read_right(ok)? + 1,
+          Choice::Keep(value) => value,
+      };
     Result::Ok(value)
 }
 

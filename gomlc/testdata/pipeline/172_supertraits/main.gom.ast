@@ -38,12 +38,8 @@ fn describe[T, B: Child[T]](value: B) -> string {
 }
 
 fn main() -> unit {
-    println(describe(Box {
-            value: 5
-        }));
-    let value: Box[int32] = Box {
-        value: 6
-    };
+    println(describe(Box { value: 5 }));
+    let value: Box[int32] = Box { value: 6 };
     println(Child::[int32]::parent(value).to_string())
 }
 

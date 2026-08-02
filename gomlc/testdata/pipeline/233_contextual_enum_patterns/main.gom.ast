@@ -33,10 +33,12 @@ fn nested(value: Option[Result[int, string]]) -> string {
 
 fn optional_number(value: Option[int]) -> int {
     match value {
-        Some(number) => {
+        Some(number) =>
+          {
               number
           },
-        _ => {
+        _ =>
+          {
               0
           },
     }
@@ -54,7 +56,8 @@ fn take_once(value: Option[int]) -> int {
     let result = Ref::new(0);
     while true {
         match current.get() {
-            Some(number) => {
+            Some(number) =>
+              {
                   result.set(number);
                   current.set(Option::None);
               },
@@ -71,7 +74,8 @@ fn unbox(value: Boxed[int]) -> int {
 
 fn sum_boxed(values: Vec[Boxed[int]]) -> int {
     let result = Ref::new(0);
-    for Value(number) in values {
+    for Value(number) in
+      values {
         result.set(result.get() + number);
     };
     result.get()
@@ -81,10 +85,7 @@ fn main() -> unit {
     let boxed: Vec[Boxed[int]] = Vec::[Boxed::Value(19), Boxed::Value(23)];
     println(classify(First::Shared(7)));
     println(classify(First::Idle));
-    println(classify(First::Data {
-            value: 9,
-            label: "data"
-        }));
+    println(classify(First::Data { value: 9, label: "data" }));
     println(nested(Option::Some(Result::Ok(11))));
     println(nested(Option::Some(Result::Err("bad"))));
     println(nested(Option::None));

@@ -1,11 +1,13 @@
 package main;
 fn test_nested_match(x: (bool, bool), y: (bool, bool)) {
     match x {
-        (true, false) => match y {
+        (true, false) =>
+          match y {
               (false, true) => println("case1"),
               _ => println("case2"),
           },
-        _ => match y {
+        _ =>
+          match y {
               (false, true) => println("case3"),
               _ => println("case4"),
           },

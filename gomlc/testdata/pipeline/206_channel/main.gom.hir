@@ -5,7 +5,7 @@ file main.gom
   }
 
   fn roundtrip[T](local/1/0: Channel[T], local/1/1: T) -> Option[T] {
-      go || => channel/0.send(value/1);
+      go || channel/0.send(value/1);
       channel/0.recv()
   }
 

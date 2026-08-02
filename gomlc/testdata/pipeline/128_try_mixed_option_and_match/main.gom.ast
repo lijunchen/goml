@@ -25,10 +25,11 @@ fn maybe_secondary(flag: bool) -> Option[int32] {
 
 fn mixed(primary: bool, secondary: bool) -> Option[string] {
     let value = maybe_primary(primary)?;
-    let label = match maybe_secondary(secondary) {
-        Option::Some(extra) => "extra=" + extra.to_string(),
-        Option::None => "extra=none",
-    };
+    let label =
+      match maybe_secondary(secondary) {
+          Option::Some(extra) => "extra=" + extra.to_string(),
+          Option::None => "extra=none",
+      };
     Option::Some("value=" + value.to_string() + "," + label)
 }
 

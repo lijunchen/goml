@@ -3,8 +3,7 @@ trait Convert[T] {
   fn convert(self: Self) -> T;
 }
 
-struct Token {
-}
+struct Token {}
 
 impl Convert[int32] for Token {
   fn convert(self: Token) -> int32 {
@@ -26,8 +25,7 @@ trait Marker[T] {
   fn marker(self: Self) -> string;
 }
 
-struct Any {
-}
+struct Any {}
 
 impl[T] Marker[T] for Any {
   fn marker(self: Any) -> string {
@@ -42,10 +40,7 @@ struct Counter {
 
 impl Counter {
   fn new(start: int32, end: int32) -> Self {
-      Counter {
-          current: Ref::new(start),
-          end: end
-      }
+      Counter { current: Ref::new(start), end: end }
   }
 }
 
@@ -77,15 +72,23 @@ fn main() -> unit {
     let mapped = iterator_map(Counter::new(0, 8), |value: int32| value * 2);
     let filtered = iterator_filter(mapped, |value: int32| value > 4);
     let limited = iterator_take(filtered, 3);
-    for value in limited {
+    for value in
+      limited {
         println(value);
     };
-    let sum = iterator_fold(range(1, 5), 0, |total: int, value: int| {
-          total + value
-      });
+    let sum =
+      iterator_fold(
+        range(1, 5),
+        0,
+        |total: int, value: int| {
+            total + value
+        }
+      );
     println(sum);
-    let texts: Vec[string] = iterator_collect(iterator_map(range(1, 4), |value: int| "v" + value.to_string()));
-    for text in texts {
+    let texts: Vec[string] =
+      iterator_collect(iterator_map(range(1, 4), |value: int| "v" + value.to_string()));
+    for text in
+      texts {
         println(text);
     };
 }

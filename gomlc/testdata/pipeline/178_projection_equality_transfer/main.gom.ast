@@ -36,15 +36,13 @@ impl Source for RightSource {
   }
 }
 
-fn combine[A: Source, B: Source](left: A, right: B) -> string where A::Item = B::Item, B::Item: Mark {
+fn combine[A: Source, B: Source](left: A, right: B) -> string where
+  A::Item = B::Item,
+  B::Item: Mark {
     Source::get(left).marked() + ":" + Source::get(right).marked()
 }
 
 fn main() -> unit {
-    println(combine(LeftSource {
-            value: 3
-        }, RightSource {
-            value: 4
-        }));
+    println(combine(LeftSource { value: 3 }, RightSource { value: 4 }));
 }
 

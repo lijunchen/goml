@@ -12,10 +12,11 @@ fn maybe_value(flag: bool) -> Option[int32] {
 }
 
 fn with_base(base: int32, flag: bool) -> Option[int32] {
-    let run = || {
-        let value = maybe_value(flag)?;
-        Option::Some(value + base)
-    };
+    let run =
+      || {
+          let value = maybe_value(flag)?;
+          Option::Some(value + base)
+      };
     run()
 }
 

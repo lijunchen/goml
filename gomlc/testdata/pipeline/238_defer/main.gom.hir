@@ -53,11 +53,10 @@ file main.gom
   fn closure_cleanup() -> unit {
       defer println("closure:outer");
       let local/1/9 =
-        || =>
-          {
-              defer println("closure:inner");
-              println("closure:body")
-          };
+        || {
+            defer println("closure:inner");
+            println("closure:body")
+        };
       run/9();
       println("closure:after")
   }

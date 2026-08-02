@@ -20,10 +20,11 @@ fn main() -> unit {
     let empty = b"";
     let raw = b"\x72\x61\x77\x20\x5c\x6e\x20\x62\x79\x74\x65\x73";
     let quoted = b"\x71\x75\x6f\x74\x65\x64\x20\x22\x74\x65\x78\x74\x22\x20\x61\x6e\x64\x20\x23";
-    let nested = {
-        let value = answer();
-        value + loop_answer()
-    };
+    let nested =
+      {
+          let value = answer();
+          value + loop_answer()
+      };
     println(plain.len().to_string());
     println(empty.len().to_string());
     println(plain.get(0) as int.to_string());

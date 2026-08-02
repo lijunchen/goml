@@ -97,7 +97,8 @@ fn show_dyn(x: dyn Display) -> string {
 }
 
 fn call_via_closure(x: dyn Display, tag: string) -> string {
-    let f: (dyn Display, string) -> string = |v: dyn Display, t: string| Display::show_with(v, t, t);
+    let f: (dyn Display, string) -> string =
+      |v: dyn Display, t: string| Display::show_with(v, t, t);
     f(x, tag)
 }
 
@@ -111,23 +112,11 @@ fn bump_and_show(x: dyn Display, delta: int32) -> string {
 }
 
 fn main() -> unit {
-    let p1 = Point {
-        x: 1,
-        y: 2
-    };
-    let p2 = Point {
-        x: 3,
-        y: 4
-    };
-    let f1 = Flag {
-        value: true
-    };
-    let f2 = Flag {
-        value: false
-    };
-    let c = Counter {
-        cell: Ref::new(10)
-    };
+    let p1 = Point { x: 1, y: 2 };
+    let p2 = Point { x: 3, y: 4 };
+    let f1 = Flag { value: true };
+    let f2 = Flag { value: false };
+    let c = Counter { cell: Ref::new(10) };
     let dp1: dyn Display = p1;
     let dp2: dyn Display = p2;
     let df1: dyn Display = f1;
@@ -143,21 +132,23 @@ fn main() -> unit {
     v.push(df1);
     v.push(dc);
     let vlen = v.len();
-    let delta = match vlen {
-        2 => 3,
-        _ => 5,
-    };
+    let delta =
+      match vlen {
+          2 => 3,
+          _ => 5,
+      };
     let _ = println(s0);
     let _ = println(s1);
     let _ = println(s2);
     let i: Ref[int32] = Ref::new(0);
-    let _ = while i.get() < 3 {
-        {
-            let line = bump_and_show(dc, delta);
-            println(line);
-            let _ = i.set(i.get() + 1);
-        }
-    };
+    let _ =
+      while i.get() < 3 {
+          {
+              let line = bump_and_show(dc, delta);
+              println(line);
+              let _ = i.set(i.get() + 1);
+          }
+      };
     let _ = println("len:" + vlen.to_string());
     let _ = println("delta:" + delta.to_string());
     ()

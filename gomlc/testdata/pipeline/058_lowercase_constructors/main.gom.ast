@@ -14,10 +14,7 @@ fn make_some(value: int32) -> Maybe[int32] {
 }
 
 fn build_point(x: int32, y: int32) -> Point {
-    Point {
-        x: x,
-        y: y
-    }
+    Point { x: x, y: y }
 }
 
 fn magnitude(p: Point) -> int32 {
@@ -27,7 +24,8 @@ fn magnitude(p: Point) -> int32 {
 
 fn main() -> int32 {
     match make_some(5) {
-        Some(result) => {
+        Some(result) =>
+          {
               let pt = build_point(result, 7);
               match Some(pt.x) {
                   Some(value) => value + magnitude(pt),

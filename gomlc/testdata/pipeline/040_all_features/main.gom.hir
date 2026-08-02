@@ -122,25 +122,22 @@ file main.gom
       let local/1/45 = Ref::new(false);
       let local/1/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 };
       let local/1/47 =
-        || =>
-          {
-              ctor(def/1/1::v0)(count/44.get())
-          };
+        || {
+            ctor(def/1/1::v0)(count/44.get())
+        };
       let local/1/50 =
-        |local/1/48: int32| =>
-          {
-              let local/1/49 = count/44.get();
-              let _ = count/44.set(before/49 + delta/48);
-              ctor(def/1/1::v1)(before/49, count/44.get())
-          };
+        |local/1/48: int32| {
+            let local/1/49 = count/44.get();
+            let _ = count/44.set(before/49 + delta/48);
+            ctor(def/1/1::v1)(before/49, count/44.get())
+        };
       let local/1/53 =
-        || =>
-          {
-              let local/1/51 = toggled/45.get();
-              let _ = toggled/45.set(!before/51);
-              let local/1/52 = toggled/45.get();
-              ctor(def/1/1::v1)(before/51.to_string(), after/52.to_string())
-          };
+        || {
+            let local/1/51 = toggled/45.get();
+            let _ = toggled/45.set(!before/51);
+            let local/1/52 = toggled/45.get();
+            ctor(def/1/1::v1)(before/51.to_string(), after/52.to_string())
+        };
       (tracker/46, snapshot/47, bump/50, flip/53)
   }
 

@@ -32,12 +32,8 @@ fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item {
 }
 
 fn main() -> unit {
-    let direct: int32 = Value {
-        value: 41
-    }.pick();
+    let direct: int32 = Value { value: 41 }.pick();
     println(direct);
-    println(copy(Value {
-            value: 42
-        }));
+    println(copy(Value { value: 42 }));
 }
 

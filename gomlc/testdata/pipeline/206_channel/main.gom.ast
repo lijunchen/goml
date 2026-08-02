@@ -13,23 +13,31 @@ fn main() -> unit {
     buffered.send(10);
     buffered.send(20);
     buffered.close();
-    println(match buffered.recv() {
+    println(
+      match buffered.recv() {
           Option::Some(value) => value,
           Option::None => -1,
-      });
-    println(match buffered.recv() {
+      }
+    );
+    println(
+      match buffered.recv() {
           Option::Some(value) => value,
           Option::None => -1,
-      });
-    println(match buffered.recv() {
+      }
+    );
+    println(
+      match buffered.recv() {
           Option::Some(_) => "open",
           Option::None => "closed",
-      });
+      }
+    );
     let unbuffered = make_string_channel();
-    println(match roundtrip(unbuffered, "ready") {
+    println(
+      match roundtrip(unbuffered, "ready") {
           Option::Some(value) => value,
           Option::None => "closed",
-      });
+      }
+    );
     unbuffered.close();
 }
 

@@ -48,19 +48,22 @@ fn observed_at_exit() -> unit {
 
 fn pattern_cleanup(value: Option[int]) -> int {
     defer println("pattern:cleanup");
-    let Option::Some(number) = value else {
-        return 0;
-    };
+    let Option::Some(number) =
+      value else
+      {
+          return 0;
+      };
     let (left, right) = (number, 2);
     left + right
 }
 
 fn closure_cleanup() -> unit {
     defer println("closure:outer");
-    let run = || {
-        defer println("closure:inner");
-        println("closure:body")
-    };
+    let run =
+      || {
+          defer println("closure:inner");
+          println("closure:body")
+      };
     run();
     println("closure:after")
 }

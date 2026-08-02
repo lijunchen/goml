@@ -3,16 +3,15 @@ file main.gom
   fn countdown(local/1/0: int32) -> FnIterator[int32] {
       let local/1/1 = Ref::new(start/0);
       FnIterator::from_fn(
-        || =>
-          {
-              let local/1/2 = current/1.get();
-              if value/2 > 0 {
-                  current/1.set(value/2 - 1);
-                  Option::Some(value/2)
-              } else {
-                  Option::None
-              }
-          }
+        || {
+            let local/1/2 = current/1.get();
+            if value/2 > 0 {
+                current/1.set(value/2 - 1);
+                Option::Some(value/2)
+            } else {
+                Option::None
+            }
+        }
       )
   }
 

@@ -23,17 +23,15 @@ impl ToString for Message {
   fn to_string(self: Message) -> string {
       match self {
           Message::Quit => "Message::Quit",
-          Message::Move(__field0, __field1) => "Message::Move(" + __field0.to_string() + ", " + __field1.to_string() + ")",
+          Message::Move(__field0, __field1) =>
+            "Message::Move(" + __field0.to_string() + ", " + __field1.to_string() + ")",
           Message::Write(__field0) => "Message::Write(" + __field0 + ")",
       }
   }
 }
 
 fn main() -> unit {
-    let point = Point {
-        x: 4,
-        y: 7
-    };
+    let point = Point { x: 4, y: 7 };
     let summary = point.to_string();
     let mv = Message::Move(1, 2).to_string();
     let text = Message::Write("done").to_string();

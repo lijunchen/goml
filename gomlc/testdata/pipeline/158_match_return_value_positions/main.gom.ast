@@ -1,9 +1,10 @@
 package main;
 fn add_after_match(flag: bool) -> int32 {
-    let value = match flag {
-        true => return 5,
-        false => 7,
-    };
+    let value =
+      match flag {
+          true => return 5,
+          false => 7,
+      };
     value + 1
 }
 
@@ -15,13 +16,15 @@ fn receiver_after_match(flag: bool) -> string {
 }
 
 fn closure_after_match(flag: bool) -> int32 {
-    let f = |inner: bool| {
-        let value = match inner {
-            true => return 2,
-            false => 4,
-        };
-        value + 3
-    };
+    let f =
+      |inner: bool| {
+          let value =
+            match inner {
+                true => return 2,
+                false => 4,
+            };
+          value + 3
+      };
     f(flag)
 }
 

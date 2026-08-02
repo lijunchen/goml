@@ -1,12 +1,14 @@
 package main;
 fn print_chars(value: string) -> unit {
-    for character in value.chars() {
+    for character in
+      value.chars() {
         println(character)
     }
 }
 
 fn print_char_indices(value: string) -> unit {
-    for item in value.char_indices() {
+    for item in
+      value.char_indices() {
         let (index, character) = item;
         println(index.to_string() + ":" + character.to_string())
     }
@@ -27,7 +29,8 @@ fn main() {
     println(value.is_char_boundary(12));
     println(value.byte_slice(1, 7));
     match value.decode_at(7) {
-        Option::Some(decoded) => {
+        Option::Some(decoded) =>
+          {
               let (character, width) = decoded;
               println(character);
               println(width)
@@ -93,7 +96,8 @@ fn main() {
     println(entries.len());
     let seen_a = Ref::new(false);
     let seen_b = Ref::new(false);
-    for entry in entries {
+    for entry in
+      entries {
         let (key, item_value) = entry;
         if key == "a" && item_value == 1 {
             {

@@ -2,29 +2,34 @@ package main;
 use std::json;
 
 fn main() -> unit {
-    let value = match json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") {
-        Result::Ok(value) => value,
-        Result::Err(error) => {
-              println(error);
-              return
-          },
-    };
+    let value =
+      match json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") {
+          Result::Ok(value) => value,
+          Result::Err(error) =>
+            {
+                println(error);
+                return
+            },
+      };
     match json::field(value, "name") {
-        Option::Some(field) => match json::as_string(field) {
+        Option::Some(field) =>
+          match json::as_string(field) {
               Option::Some(name) => println(name),
               Option::None => println("invalid name"),
           },
         Option::None => println("missing name"),
     };
     match json::field(value, "version") {
-        Option::Some(field) => match json::as_int(field) {
+        Option::Some(field) =>
+          match json::as_int(field) {
               Option::Some(version) => println(version),
               Option::None => println("invalid version"),
           },
         Option::None => println("missing version"),
     };
     match json::field(value, "stable") {
-        Option::Some(field) => match json::as_bool(field) {
+        Option::Some(field) =>
+          match json::as_bool(field) {
               Option::Some(stable) => println(stable),
               Option::None => println("invalid stable"),
           },

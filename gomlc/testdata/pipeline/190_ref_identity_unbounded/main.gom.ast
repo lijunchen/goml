@@ -11,13 +11,9 @@ fn print_lookup(map: HashMap[Ref[Node], string], key: Ref[Node]) -> unit {
 }
 
 fn main() {
-    let first = Ref::new(Node {
-          value: 1
-      });
+    let first = Ref::new(Node { value: 1 });
     let alias = first;
-    let distinct = Ref::new(Node {
-          value: 1
-      });
+    let distinct = Ref::new(Node { value: 1 });
     println(Eq::eq(first, alias));
     println(Eq::eq(first, distinct));
     println(Hash::hash(first) == Hash::hash(alias));
@@ -25,9 +21,7 @@ fn main() {
     map.set(first, "first");
     print_lookup(map, alias);
     print_lookup(map, distinct);
-    first.set(Node {
-          value: 2
-      });
+    first.set(Node { value: 2 });
     print_lookup(map, first);
     map.set(distinct, "distinct");
     println(map.len());

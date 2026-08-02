@@ -17,22 +17,24 @@ fn maybe_num(flag: bool) -> Option[int32] {
 }
 
 fn nested(top: bool, mode: Mode, inner_flag: bool) -> Option[int32] {
-    let value = if top {
-        {
-            match mode {
-                Mode::Take => {
-                      let inner = maybe_num(inner_flag)?;
-                      inner + 1
-                  },
-                Mode::Skip => 20,
-            }
-        }
-    } else {
-        {
-            let inner = maybe_num(inner_flag)?;
-            inner + 2
-        }
-    };
+    let value =
+      if top {
+          {
+              match mode {
+                  Mode::Take =>
+                    {
+                        let inner = maybe_num(inner_flag)?;
+                        inner + 1
+                    },
+                  Mode::Skip => 20,
+              }
+          }
+      } else {
+          {
+              let inner = maybe_num(inner_flag)?;
+              inner + 2
+          }
+      };
     Option::Some(value)
 }
 

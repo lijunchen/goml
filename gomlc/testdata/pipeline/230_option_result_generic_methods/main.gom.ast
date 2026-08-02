@@ -3,7 +3,8 @@ fn main() {
     let some: Option[int] = Option::Some(3);
     let mapped = some.map(|value: int| value.to_string());
     println(mapped.unwrap_or("missing"));
-    let static_mapped = Option::[int]::map::[string](some, |value: int| "static:" + value.to_string());
+    let static_mapped =
+      Option::[int]::map::[string](some, |value: int| "static:" + value.to_string());
     println(static_mapped.unwrap_or("missing"));
     let chained = some.and_then::[string](|value: int| Option::Some("value:" + value.to_string()));
     println(chained.unwrap_or("missing"));

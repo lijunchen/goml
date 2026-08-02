@@ -19,15 +19,13 @@ fn make_numbers(builds: Ref[int32], conversions: Ref[int32]) -> Numbers {
     values.push(1);
     values.push(2);
     values.push(3);
-    Numbers {
-        values: values,
-        conversions: conversions
-    }
+    Numbers { values: values, conversions: conversions }
 }
 
 fn sum[S: IntoIterator](source: S) -> int32 where S::Item = int32 {
     let total = Ref::new(0);
-    for value in source {
+    for value in
+      source {
         total.set(total.get() + value);
     };
     total.get()

@@ -35,18 +35,10 @@ fn read_as[P, T](provider: P) -> T where P: Provider, P::Item = T {
 }
 
 fn main() -> unit {
-    println(read(Number {
-            value: 42
-        }).to_string());
-    let value: int32 = read_as(Number {
-          value: 7
-      });
+    println(read(Number { value: 42 }).to_string());
+    let value: int32 = read_as(Number { value: 7 });
     println(value.to_string());
-    println(read(Box {
-            value: "generic"
-        }));
-    println(Provider::get(Number {
-            value: 11
-        }).to_string())
+    println(read(Box { value: "generic" }));
+    println(Provider::get(Number { value: 11 }).to_string())
 }
 

@@ -72,7 +72,8 @@ impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {
   fn eq(self: GenericChoice[T, Marker], other: GenericChoice[T, Marker]) -> bool {
       match (self, other) {
           (GenericChoice::Empty, GenericChoice::Empty) => true,
-          (GenericChoice::Value(__l1_0), GenericChoice::Value(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
+          (GenericChoice::Value(__l1_0), GenericChoice::Value(__r1_0)) =>
+            true && Eq::eq(__l1_0, __r1_0),
           _ => false,
       }
   }
@@ -81,11 +82,13 @@ impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {
 impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
   fn hash(self: GenericChoice[T, Marker]) -> uint64 {
       match self {
-          GenericChoice::Empty => {
+          GenericChoice::Empty =>
+            {
                 let h: uint64 = 14695981039346656037 + 1;
                 h
             },
-          GenericChoice::Value(__field1_0) => {
+          GenericChoice::Value(__field1_0) =>
+            {
                 let h: uint64 = 14695981039346656037 + 2;
                 let h = h * 1099511628211 + Hash::hash(__field1_0);
                 h
@@ -95,19 +98,9 @@ impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
 }
 
 fn main() -> unit {
-    let wrapped = Wrapper {
-        value: NoTraits {
-            value: 1
-        }
-    };
-    let left: Generic[NoTraits, NoTraits] = Generic {
-        first: wrapped,
-        second: wrapped
-    };
-    let right: Generic[NoTraits, NoTraits] = Generic {
-        first: wrapped,
-        second: wrapped
-    };
+    let wrapped = Wrapper { value: NoTraits { value: 1 } };
+    let left: Generic[NoTraits, NoTraits] = Generic { first: wrapped, second: wrapped };
+    let right: Generic[NoTraits, NoTraits] = Generic { first: wrapped, second: wrapped };
     println(left.to_string());
     println(left == right);
     println(left.hash() == right.hash());

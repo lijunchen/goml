@@ -30,12 +30,9 @@ impl Describe for DefaultValue {
   }
 }
 
-impl Keep for DefaultValue {
+impl Keep for DefaultValue {}
 
-}
-
-struct OverrideValue {
-}
+struct OverrideValue {}
 
 impl Describe for OverrideValue {
   fn name(self: Self) -> string {
@@ -51,9 +48,7 @@ fn describe_dyn(value: dyn Describe) -> string {
 }
 
 fn main() {
-    let default_value = DefaultValue {
-        name: "value"
-    };
+    let default_value = DefaultValue { name: "value" };
     println(default_value.describe());
     println(default_value.keep("generic"));
     println(OverrideValue {}.describe());

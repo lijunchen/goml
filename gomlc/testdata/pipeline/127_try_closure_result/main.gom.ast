@@ -12,10 +12,11 @@ fn parse_text(ok: bool) -> Result[string, string] {
 }
 
 fn decorate(prefix: string, ok: bool) -> Result[string, string] {
-    let run = || {
-        let text = parse_text(ok)?;
-        Result::Ok(prefix + ":" + text)
-    };
+    let run =
+      || {
+          let text = parse_text(ok)?;
+          Result::Ok(prefix + ":" + text)
+      };
     run()
 }
 

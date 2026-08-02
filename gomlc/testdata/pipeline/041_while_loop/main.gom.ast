@@ -2,14 +2,15 @@ package main;
 fn sum_to(limit: int32) -> int32 {
     let acc = Ref::new(0);
     let i = Ref::new(0);
-    let _ = while i.get() < limit {
-        {
-            let current = i.get();
-            let _ = acc.set(acc.get() + current);
-            let _ = i.set(current + 1);
-            ()
-        }
-    };
+    let _ =
+      while i.get() < limit {
+          {
+              let current = i.get();
+              let _ = acc.set(acc.get() + current);
+              let _ = i.set(current + 1);
+              ()
+          }
+      };
     acc.get()
 }
 
@@ -17,23 +18,24 @@ fn sum_even(limit: int32) -> int32 {
     let acc = Ref::new(0);
     let i = Ref::new(0);
     let is_even = Ref::new(true);
-    let _ = while i.get() < limit {
-        {
-            let current = i.get();
-            let _ = i.set(current + 1);
-            let add_now = is_even.get();
-            let _ = is_even.set(!add_now);
-            if add_now {
-                {
-                    acc.set(acc.get() + current)
-                }
-            } else {
-                {
-                    ()
-                }
-            }
-        }
-    };
+    let _ =
+      while i.get() < limit {
+          {
+              let current = i.get();
+              let _ = i.set(current + 1);
+              let add_now = is_even.get();
+              let _ = is_even.set(!add_now);
+              if add_now {
+                  {
+                      acc.set(acc.get() + current)
+                  }
+              } else {
+                  {
+                      ()
+                  }
+              }
+          }
+      };
     acc.get()
 }
 

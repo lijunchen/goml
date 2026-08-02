@@ -67,64 +67,32 @@ fn float_zero_contracts() -> unit {
     values64.set(zero64, "f64");
     print_opt_string(values64.get(negative_zero64));
     let derived: HashMap[FloatKey, string] = HashMap::new();
-    derived.set(FloatKey {
-          value: zero64
-      }, "derived");
-    print_opt_string(derived.get(FloatKey {
-            value: negative_zero64
-        }));
+    derived.set(FloatKey { value: zero64 }, "derived");
+    print_opt_string(derived.get(FloatKey { value: negative_zero64 }));
 }
 
 fn collision_contracts() -> unit {
     let values: HashMap[CollisionKey, int32] = HashMap::new();
-    values.set(CollisionKey {
-          value: 1
-      }, 10);
-    values.set(CollisionKey {
-          value: 2
-      }, 20);
-    values.set(CollisionKey {
-          value: 3
-      }, 30);
-    values.remove(CollisionKey {
-          value: 2
-      });
-    print_opt_int(values.get(CollisionKey {
-            value: 1
-        }));
-    print_opt_int(values.get(CollisionKey {
-            value: 2
-        }));
-    print_opt_int(values.get(CollisionKey {
-            value: 3
-        }));
-    values.set(CollisionKey {
-          value: 4
-      }, 40);
+    values.set(CollisionKey { value: 1 }, 10);
+    values.set(CollisionKey { value: 2 }, 20);
+    values.set(CollisionKey { value: 3 }, 30);
+    values.remove(CollisionKey { value: 2 });
+    print_opt_int(values.get(CollisionKey { value: 1 }));
+    print_opt_int(values.get(CollisionKey { value: 2 }));
+    print_opt_int(values.get(CollisionKey { value: 3 }));
+    values.set(CollisionKey { value: 4 }, 40);
     println(values.len());
-    print_opt_int(values.get(CollisionKey {
-            value: 4
-        }));
-    values.set(CollisionKey {
-          value: 4
-      }, 41);
+    print_opt_int(values.get(CollisionKey { value: 4 }));
+    values.set(CollisionKey { value: 4 }, 41);
     println(values.len());
-    print_opt_int(values.get(CollisionKey {
-            value: 4
-        }));
-    values.remove(CollisionKey {
-          value: 99
-      });
-    values.remove(CollisionKey {
-          value: 99
-      });
+    print_opt_int(values.get(CollisionKey { value: 4 }));
+    values.remove(CollisionKey { value: 99 });
+    values.remove(CollisionKey { value: 99 });
     println(values.len());
     let index = Ref::new(0);
     while index.get() < 2000 {
         {
-            let key = CollisionKey {
-                value: 1000 + index.get()
-            };
+            let key = CollisionKey { value: 1000 + index.get() };
             values.set(key, index.get());
             values.remove(key);
             index.set(index.get() + 1);
@@ -135,22 +103,16 @@ fn collision_contracts() -> unit {
 
 fn reference_contracts() -> unit {
     let values: HashMap[Ref[CollisionKey], string] = HashMap::new();
-    let key = Ref::new(CollisionKey {
-          value: 1
-      });
+    let key = Ref::new(CollisionKey { value: 1 });
     let alias = key;
-    let equal_value = Ref::new(CollisionKey {
-          value: 1
-      });
+    let equal_value = Ref::new(CollisionKey { value: 1 });
     values.set(key, "identity");
     println(Eq::eq(key, alias));
     println(Eq::eq(key, equal_value));
     println(Hash::hash(key) == Hash::hash(alias));
     print_opt_string(values.get(alias));
     print_opt_string(values.get(equal_value));
-    key.set(CollisionKey {
-          value: 99
-      });
+    key.set(CollisionKey { value: 99 });
     print_opt_string(values.get(key));
 }
 

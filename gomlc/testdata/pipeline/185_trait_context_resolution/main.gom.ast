@@ -3,8 +3,7 @@ trait Put[T] {
   fn put(self: Self, arg1: T) -> string;
 }
 
-struct Target {
-}
+struct Target {}
 
 impl Put[int32] for Target {
   fn put(self: Target, value: int32) -> string {
@@ -23,8 +22,7 @@ trait Convert[T] {
   fn convert(self: Self) -> Self::Output;
 }
 
-struct Convertible {
-}
+struct Convertible {}
 
 impl Convert[int32] for Convertible {
   type Output = string;
@@ -101,11 +99,7 @@ fn main() -> unit {
     let number: int32 = Convertible {}.convert();
     println(text);
     println(number);
-    println(read(Number {
-            value: 8
-        }));
-    println(select_item(Selected {
-            value: 9
-        }));
+    println(read(Number { value: 8 }));
+    println(select_item(Selected { value: 9 }));
 }
 

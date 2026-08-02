@@ -13,7 +13,8 @@ fn summarize(event: FloatEvent) -> string {
 
 fn compare(values: (float32, float64)) -> string {
     match values {
-        (left, right) => {
+        (left, right) =>
+          {
               let limit32: float32 = 1;
               let limit64: float64 = 5;
               let less_left = left < limit32;
@@ -32,7 +33,9 @@ fn main() {
     let third = Sample64("f64=", third_value);
     let tuple: (float32, float64) = (0.75, 4);
     let tuple_other: (float32, float64) = (1.5, 7.25);
-    let message = summarize(first) + summarize(second) + summarize(third) + compare(tuple) + compare(tuple_other);
+    let message =
+      summarize(first) + summarize(second) + summarize(third) + compare(tuple) +
+        compare(tuple_other);
     let _ = println(message);
     ()
 }

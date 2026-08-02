@@ -41,16 +41,19 @@ impl Eq for Key {
 impl Hash for Key {
   fn hash(self: Key) -> uint64 {
       match self {
-          Key::A => {
+          Key::A =>
+            {
                 let h: uint64 = 14695981039346656037 + 1;
                 h
             },
-          Key::B(__field1_0) => {
+          Key::B(__field1_0) =>
+            {
                 let h: uint64 = 14695981039346656037 + 2;
                 let h = h * 1099511628211 + Hash::hash(__field1_0);
                 h
             },
-          Key::P(__field2_0) => {
+          Key::P(__field2_0) =>
+            {
                 let h: uint64 = 14695981039346656037 + 3;
                 let h = h * 1099511628211 + Hash::hash(__field2_0);
                 h
@@ -77,21 +80,12 @@ fn main() -> unit {
     println(m1.contains(Key::B(1)));
     println(m1.len());
     let m2 = HashMap::new();
-    let p1 = Ref::new(Point {
-          x: 1,
-          y: 2
-      });
-    let p2 = Ref::new(Point {
-          x: 1,
-          y: 2
-      });
+    let p1 = Ref::new(Point { x: 1, y: 2 });
+    let p2 = Ref::new(Point { x: 1, y: 2 });
     m2.set(p1, 99);
     print_opt_int(m2.get(p1));
     print_opt_int(m2.get(p2));
-    p1.set(Point {
-          x: 9,
-          y: 8
-      });
+    p1.set(Point { x: 9, y: 8 });
     print_opt_int(m2.get(p1));
     println(Eq::eq(p1, p2));
     let m3 = HashMap::new();
