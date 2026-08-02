@@ -1,0 +1,208 @@
+package anf;
+
+use gomlc::tast;
+
+struct JoinSignature {
+    name: string,
+    params: Vec[(string, tast::Type)],
+    ret_ty: tast::Type,
+}
+
+struct VerifyState {
+    join_names: HashMap[string, unit],
+}
+
+fn copy_join_signatures(values: Vec[JoinSignature]) -> Vec[JoinSignature] {
+    let result: Vec[JoinSignature] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn find_join_signature(values: Vec[JoinSignature], name: string) -> Option[JoinSignature] {
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
+        if value.name == name {
+            return Option::Some(value)
+        } else {
+            index = index - 1;
+        }
+    };
+    Option::None
+}
+
+fn verify_type(actual: tast::Type, expected: tast::Type, message: string) -> Result[unit, string] {
+    let compatible = match tast::resolve_type(actual) {
+        Never | Error => true,
+        _ => match tast::resolve_type(expected) {
+            Error => true,
+            _ => tast::types_equal(actual, expected),
+        },
+    };
+    if compatible {
+        Result::Ok(())
+    } else {
+        Result::Err(
+            message + ": expected " + tast::diagnostic_type_text(expected) + ", found "
+                + tast::diagnostic_type_text(actual),
+        )
+    }
+}
+
+fn verify_join_name(state: VerifyState, name: string) -> Result[unit, string] {
+    if state.join_names.contains(name) {
+        Result::Err("duplicate join " + name)
+    } else {
+        state.join_names[name] = ();
+        Result::Ok(())
+    }
+}
+
+fn join_signature(value: JoinBind) -> JoinSignature {
+    JoinSignature { name: value.name, params: value.params, ret_ty: value.ret_ty }
+}
+
+fn verify_jump(
+    target: string,
+    args: Vec[Imm],
+    ret_ty: tast::Type,
+    expected_ty: tast::Type,
+    joins: Vec[JoinSignature],
+) -> Result[unit, string] {
+    let signature = match find_join_signature(joins, target) {
+        Some(value) => value,
+        None => return Result::Err("jump to out-of-scope join " + target),
+    };
+    if args.len() != signature.params.len() {
+        return Result::Err("jump argument count does not match join " + target)
+    } else {
+        ()
+    };
+    for index in 0..args.len() {
+        verify_type(
+            imm_type(args[index]),
+            signature.params[index].1,
+            "jump argument type does not match join " + target,
+        )?
+    };
+    verify_type(ret_ty, signature.ret_ty, "jump result type does not match join " + target)?;
+    verify_type(ret_ty, expected_ty, "jump result type does not match its block")
+}
+
+fn verify_match_arm_type(scrutinee: Imm, arm: Arm) -> Result[unit, string] {
+    verify_type(
+        imm_type(arm.lhs),
+        imm_type(scrutinee),
+        "match arm type does not match its scrutinee",
+    )
+}
+
+fn verify_term(state: VerifyState, value: Term, expected_ty: tast::Type, joins: Vec[JoinSignature]) -> Result[
+    unit,
+    string,
+] {
+    match value {
+        Return(value) => verify_type(
+            imm_type(value),
+            expected_ty,
+            "return type does not match its block",
+        ),
+        Jump { target, args, ret_ty } => verify_jump(target, args, ret_ty, expected_ty, joins),
+        If { cond, then_, else_, ret_ty } => {
+            verify_type(imm_type(cond), tast::Type::Bool, "if condition is not bool")?;
+            verify_type(ret_ty, expected_ty, "if result type does not match its block")?;
+            verify_block(state, then_, ret_ty, copy_join_signatures(joins))?;
+            verify_block(state, else_, ret_ty, copy_join_signatures(joins))
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            verify_type(ret_ty, expected_ty, "match result type does not match its block")?;
+            for arm in arms {
+                verify_match_arm_type(scrutinee, arm)?;
+                verify_block(state, arm.body, ret_ty, copy_join_signatures(joins))?
+            };
+            match default {
+                Some(body) => verify_block(state, body, ret_ty, copy_join_signatures(joins)),
+                None => Result::Ok(()),
+            }
+        },
+        Unreachable { ty } => verify_type(
+            ty,
+            expected_ty,
+            "unreachable type does not match its block",
+        ),
+    }
+}
+
+fn verify_nonrecursive_join(state: VerifyState, value: JoinBind, joins: Vec[JoinSignature]) -> Result[
+    unit,
+    string,
+] {
+    verify_join_name(state, value.name)?;
+    verify_block(state, value.body, value.ret_ty, copy_join_signatures(joins))
+}
+
+fn verify_recursive_joins(state: VerifyState, values: Vec[JoinBind], joins: Vec[JoinSignature]) -> Result[
+    Vec[JoinSignature],
+    string,
+] {
+    if values.is_empty() {
+        return Result::Err("recursive join group is empty")
+    } else {
+        ()
+    };
+    let recursive = copy_join_signatures(joins);
+    for value in values {
+        verify_join_name(state, value.name)?;
+        recursive.push(join_signature(value))
+    };
+    for value in values {
+        verify_block(state, value.body, value.ret_ty, copy_join_signatures(recursive))?
+    };
+    Result::Ok(recursive)
+}
+
+fn verify_block(
+    state: VerifyState,
+    value: Block,
+    expected_ty: tast::Type,
+    parent_joins: Vec[JoinSignature],
+) -> Result[unit, string] {
+    let joins = copy_join_signatures(parent_joins);
+    for bind in value.binds {
+        match bind {
+            Let(value) => verify_type(
+                value_type(value.value),
+                value.ty,
+                "let binding type does not match " + value.name,
+            )?,
+            Join(value) => {
+                verify_nonrecursive_join(state, value, joins)?;
+                joins.push(join_signature(value))
+            },
+            JoinRec(values) => {
+                let recursive = verify_recursive_joins(state, values, joins)?;
+                for index in joins.len()..recursive.len() {
+                    joins.push(recursive[index])
+                }
+            },
+        }
+    };
+    verify_term(state, value.term, expected_ty, joins)
+}
+
+fn verify_function(value: Function) -> Result[unit, string] {
+    let state = VerifyState { join_names: HashMap::{} };
+    match verify_block(state, value.body, value.ret_ty, Vec::[]) {
+        Ok(_) => Result::Ok(()),
+        Err(message) => Result::Err("in function " + value.name + ": " + message),
+    }
+}
+
+pub fn verify(value: File) -> Result[unit, string] {
+    for function in value.functions {
+        verify_function(function)?
+    };
+    Result::Ok(())
+}

@@ -3210,6 +3210,7 @@ fn validate_anf_block(value: anf::Block) -> Result[unit, string] {
 }
 
 fn validate_anf(value: anf::File) -> Result[unit, string] {
+    anf::verify(value)?;
     let runtime_hooks: Vec[string] = Vec::[];
     let intrinsics: Vec[string] = Vec::[];
     let missing_types = new_collected_types();

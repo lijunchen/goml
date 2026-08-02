@@ -6,6 +6,7 @@ use gomlc::hir;
 use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
+use gomlc::strings;
 use gomlc::tast;
 use std::testing;
 
@@ -17,6 +18,148 @@ fn lower_source(source: string) -> File {
             ),
         ),
     )
+}
+
+fn verifier_file(body: Block, ret_ty: tast::Type) -> File {
+    let functions: Vec[Function] = Vec::[];
+    functions.push(
+        Function {
+            name: "verify_test",
+            origin: core::FunctionOrigin::Source,
+            root: true,
+            trait_impl: Option::None,
+            params: Vec::[],
+            ret_ty,
+            body,
+        },
+    );
+    File {
+        functions,
+        enums: Vec::[],
+        structs: Vec::[],
+        type_instances: Vec::[],
+        constants: Vec::[],
+    }
+}
+
+fn verifier_error_contains(result: Result[unit, string], expected: string) -> unit {
+    match result {
+        Ok(_) => testing::fail("expected ANF verification failure"),
+        Err(message) => testing::assert(strings::contains(message, expected)),
+    }
+}
+
+#[test]
+fn verifies_lowered_anf() -> unit {
+    match verify(lower_source("fn choose(flag: bool) -> int32 { if flag { 1 } else { 2 } }")) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    }
+}
+
+#[test]
+fn rejects_out_of_scope_join_jumps() -> unit {
+    verifier_error_contains(
+        verify(
+            verifier_file(
+                Block {
+                    binds: Vec::[],
+                    term: Term::Jump { target: "missing", args: Vec::[], ret_ty: tast::Type::Unit },
+                },
+                tast::Type::Unit,
+            ),
+        ),
+        "jump to out-of-scope join missing",
+    )
+}
+
+#[test]
+fn rejects_nonrecursive_self_jumps() -> unit {
+    let join = JoinBind {
+        name: "again",
+        role: JoinRole::Continuation,
+        params: Vec::[],
+        ret_ty: tast::Type::Unit,
+        body: Block {
+            binds: Vec::[],
+            term: Term::Jump { target: "again", args: Vec::[], ret_ty: tast::Type::Unit },
+        },
+    };
+    let binds: Vec[Bind] = Vec::[];
+    binds.push(Bind::Join(join));
+    verifier_error_contains(
+        verify(
+            verifier_file(
+                Block {
+                    binds,
+                    term: Term::Jump { target: "again", args: Vec::[], ret_ty: tast::Type::Unit },
+                },
+                tast::Type::Unit,
+            ),
+        ),
+        "jump to out-of-scope join again",
+    )
+}
+
+#[test]
+fn rejects_join_argument_mismatches() -> unit {
+    let params: Vec[(string, tast::Type)] = Vec::[];
+    params.push(("value", tast::Type::Int32));
+    let join = JoinBind {
+        name: "done",
+        role: JoinRole::Continuation,
+        params,
+        ret_ty: tast::Type::Int32,
+        body: Block {
+            binds: Vec::[],
+            term: Term::Return(Imm::Var { name: "value", ty: tast::Type::Int32 }),
+        },
+    };
+    let binds: Vec[Bind] = Vec::[];
+    binds.push(Bind::Join(join));
+    verifier_error_contains(
+        verify(
+            verifier_file(
+                Block {
+                    binds,
+                    term: Term::Jump { target: "done", args: Vec::[], ret_ty: tast::Type::Int32 },
+                },
+                tast::Type::Int32,
+            ),
+        ),
+        "jump argument count does not match join done",
+    )
+}
+
+#[test]
+fn accepts_recursive_self_jumps() -> unit {
+    let joins: Vec[JoinBind] = Vec::[];
+    joins.push(
+        JoinBind {
+            name: "loop",
+            role: JoinRole::Continuation,
+            params: Vec::[],
+            ret_ty: tast::Type::Unit,
+            body: Block {
+                binds: Vec::[],
+                term: Term::Jump { target: "loop", args: Vec::[], ret_ty: tast::Type::Unit },
+            },
+        },
+    );
+    let binds: Vec[Bind] = Vec::[];
+    binds.push(Bind::JoinRec(joins));
+    match verify(
+        verifier_file(
+            Block {
+                binds,
+                term: Term::Jump { target: "loop", args: Vec::[], ret_ty: tast::Type::Unit },
+            },
+            tast::Type::Unit,
+        ),
+    ) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    }
 }
 
 #[test]
