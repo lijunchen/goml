@@ -1,0 +1,24 @@
+package main;
+
+use tests::default_trait_methods::api;
+use api::Describe;
+
+struct Value {
+    name: string,
+}
+
+impl api::Describe for Value {
+    fn name(self: Self) -> string {
+        self.name
+    }
+}
+
+fn render(value: dyn api::Describe) -> string {
+    value.describe()
+}
+
+fn main() -> unit {
+    let value = Value { name: "value" };
+    println(value.describe());
+    println(render(value))
+}

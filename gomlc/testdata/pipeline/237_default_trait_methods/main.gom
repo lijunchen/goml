@@ -1,0 +1,50 @@
+trait Describe {
+    fn name(self: Self) -> string;
+
+    fn describe(self: Self) -> string {
+        "default:" + self.name()
+    }
+
+}
+
+trait Keep {
+    fn keep[T](self: Self, value: T) -> T {
+        value
+    }
+}
+
+struct DefaultValue {
+    name: string,
+}
+
+impl Describe for DefaultValue {
+    fn name(self: Self) -> string {
+        self.name
+    }
+}
+
+impl Keep for DefaultValue {}
+
+struct OverrideValue {}
+
+impl Describe for OverrideValue {
+    fn name(self: Self) -> string {
+        "override-name"
+    }
+
+    fn describe(self: Self) -> string {
+        "override"
+    }
+}
+
+fn describe_dyn(value: dyn Describe) -> string {
+    value.describe()
+}
+
+fn main() {
+    let default_value = DefaultValue { name: "value" };
+    string_println(default_value.describe());
+    string_println(default_value.keep("generic"));
+    string_println(OverrideValue {}.describe());
+    string_println(describe_dyn(default_value));
+}
