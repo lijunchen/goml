@@ -304,11 +304,11 @@ fn simplifies_linear_aliases_and_tuple_projections() -> unit {
 }
 
 #[test]
-fn simplifies_if_continuation_and_return_joins() -> unit {
+fn simplifies_if_joins_after_inlining() -> unit {
     let source = "fn choose(flag: bool, x: int32, y: int32) -> int32 { if flag { x } else { y } } fn main() { let yes = choose(true, 10, 99); let no = choose(false, 10, 99); let _ = println(\"yes=\" + yes.to_string()); let _ = println(\"no=\" + no.to_string()); () }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {\n  if flag/0 {\n    x/1\n  } else {\n    y/2\n  }\n}\n\nfn main() -> unit {\n  let yes/3 = choose(true, 10, 99) in\n  let no/4 = choose(false, 10, 99) in\n  let t7 = inherent#int32#int32#to_string(yes/3) in\n  let t8 = (\"yes=\" + t7) in\n  let mtmp0 = println(t8) in\n  let t9 = inherent#int32#int32#to_string(no/4) in\n  let t10 = (\"no=\" + t9) in\n  let mtmp1 = println(t10) in\n  ()\n}",
+        "fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {\n  if flag/0 {\n    x/1\n  } else {\n    y/2\n  }\n}\n\nfn main() -> unit {\n  join inline_cont12(yes/3: int32) -> unit {\n    join inline_cont11(no/4: int32) -> unit {\n      let t7 = inherent#int32#int32#to_string(yes/3) in\n      let t8 = (\"yes=\" + t7) in\n      let mtmp0 = println(t8) in\n      let t9 = inherent#int32#int32#to_string(no/4) in\n      let t10 = (\"no=\" + t9) in\n      let mtmp1 = println(t10) in\n      ()\n    } in\n    jump inline_cont11(99)\n  } in\n  jump inline_cont12(10)\n}",
     )
 }
 
@@ -355,4 +355,66 @@ fn retains_failed_linear_probe_names() -> unit {
         encode(lower_source(source)),
         "fn main() -> unit {\n  let x/0 = inherent#Ref#Ref[int]#new(0) in\n  let result/1 = inherent#Ref#Ref[string]#new(\"\") in\n  join exit5() -> unit {\n    let _wild2 = () in\n    let t6 = inherent#Ref#Ref[string]#get(result/1) in\n    let _wild3 = println(t6) in\n    ()\n  } in\n  joinrec {\n    join loop7() -> unit {\n      let t8 = inherent#Ref#Ref[int]#get(x/0) in\n      let t9 = (t8 < 5) in\n      if t9 {\n        let current/2 = inherent#Ref#Ref[int]#get(x/0) in\n        let t11 = inherent#Ref#Ref[string]#get(result/1) in\n        join k12(jp13: string) -> unit {\n          let t14 = (t11 + jp13) in\n          let t15 = (t14 + \" \") in\n          let _wild0 = inherent#Ref#Ref[string]#set(result/1, t15) in\n          let t16 = (current/2 + 1) in\n          let _wild1 = inherent#Ref#Ref[int]#set(x/0, t16) in\n          jump loop7()\n        } in\n        match current/2 {\n          0 => {\n            jump k12(\"zero\")\n          },\n          1 => {\n            jump k12(\"one\")\n          },\n          2 => {\n            jump k12(\"two\")\n          },\n          _ => {\n            jump k12(\"many\")\n          },\n        }\n      } else {\n        jump exit5()\n      }\n    } in\n  } in\n  jump loop7()\n}",
     )
+}
+
+#[test]
+fn inlines_small_static_calls() -> unit {
+    let file = lower_source(
+        "fn id(value: string) -> string { value } fn main() -> unit { let value = id(\"ok\"); println(value) }",
+    );
+    match verify(file) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let output = encode(file);
+    testing::assert(!strings::contains(output, "let value/1 = id("));
+    testing::assert(strings::contains(output, "jump inline_cont"))
+}
+
+#[test]
+fn respects_static_inline_limits() -> unit {
+    let source = "fn recurse(value: int32) -> int32 { if value == 0 { 0 } else { recurse(value - 1) } } fn large(value: int32) -> int32 { let a0 = value + 1; let a1 = a0 + 1; let a2 = a1 + 1; let a3 = a2 + 1; let a4 = a3 + 1; let a5 = a4 + 1; let a6 = a5 + 1; let a7 = a6 + 1; let a8 = a7 + 1; let a9 = a8 + 1; let a10 = a9 + 1; let a11 = a10 + 1; let a12 = a11 + 1; let a13 = a12 + 1; let a14 = a13 + 1; let a15 = a14 + 1; a15 } fn main() -> unit { println(recurse(3)); println(large(0)); }";
+    let output = encode(lower_source(source));
+    testing::assert(strings::contains(output, "recurse(3)"));
+    testing::assert(strings::contains(output, "large(0)"))
+}
+
+#[test]
+fn exhausts_static_inline_budget() -> unit {
+    let file = lower_source("fn id(value: string) -> string { value }");
+    let callee = match find_inline_function(file.functions, "id") {
+        Some(value) => value,
+        None => return testing::fail("missing inline candidate"),
+    };
+    let args: Vec[Imm] = Vec::[];
+    args.push(Imm::Prim { value: tast::Primitive::String { value: "x" }, ty: tast::Type::String });
+    let budget = Ref::new(2);
+    for _ in 0..2 {
+        match inline_candidate(
+            file.functions,
+            "caller",
+            "id",
+            args,
+            tast::Type::String,
+            tast::Type::String,
+            budget,
+        ) {
+            Some(_) => (),
+            None => testing::fail("expected inline candidate"),
+        }
+    };
+    testing::assert_eq(budget.get(), 0);
+    match inline_candidate(
+        file.functions,
+        "caller",
+        "id",
+        args,
+        tast::Type::String,
+        tast::Type::String,
+        budget,
+    ) {
+        Some(_) => testing::fail("expected exhausted inline budget"),
+        None => (),
+    };
+    testing::assert_eq(inline_block_cost(callee.body), 1)
 }
