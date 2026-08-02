@@ -11,8 +11,12 @@ fn main() -> unit {
                     ()
                 }
             };
-            let _ : unit = (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])));
-            (Ref[int]::set : (Ref[int], int) -> unit)((i/0 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) + 1);
+            let _ : unit =
+              (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])));
+            (Ref[int]::set : (Ref[int], int) -> unit)(
+              (i/0 : Ref[int]),
+              (Ref[int]::get : (Ref[int]) -> int)((i/0 : Ref[int])) + 1
+            );
         }
     };
     let _ : unit = (println : (string) -> unit)("done");

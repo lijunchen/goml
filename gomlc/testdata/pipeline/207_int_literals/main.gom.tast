@@ -19,30 +19,51 @@ fn main() -> unit {
     let default_float/3: float64 = 0.5;
     let small/4: uint8 = 41;
     let inferred/5: [uint8; 2] = [(small/4 : uint8), 2];
-    let branch/6: uint8 = if true {
-        {
-            1
-        }
-    } else {
-        {
-            (small/4 : uint8)
-        }
-    };
+    let branch/6: uint8 =
+      if true {
+          {
+              1
+          }
+      } else {
+          {
+              (small/4 : uint8)
+          }
+      };
     let values/7: [uint16; 2] = [10, 20];
     let delayed/8: Ref[uint32] = (Ref[uint32]::new : (uint32) -> Ref[uint32])(0);
     let byte/9: uint8 = (string::byte_get : (string, int) -> uint8)("A", 0);
     (println : (string) -> unit)((int::to_string : (int) -> string)((default_integer/2 : int) + 2));
-    (println : (string) -> unit)((ToString::to_string : (float64) -> string)((default_float/3 : float64)));
-    (println : (string) -> unit)((ToString::to_string : (uint8) -> string)((increment : (uint8) -> uint8)((small/4 : uint8))));
-    (println : (string) -> unit)((ToString::to_string : (uint8) -> string)((inferred/5 : [uint8; 2])[1]));
+    (println : (string) -> unit)(
+      (ToString::to_string : (float64) -> string)((default_float/3 : float64))
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (uint8) -> string)((increment : (uint8) -> uint8)((small/4 : uint8)))
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (uint8) -> string)((inferred/5 : [uint8; 2])[1])
+    );
     (println : (string) -> unit)((ToString::to_string : (uint8) -> string)((branch/6 : uint8)));
-    (println : (string) -> unit)((ToString::to_string : (uint16) -> string)((values/7 : [uint16; 2])[1]));
-    (println : (string) -> unit)((ToString::to_string : (float32) -> string)((one_float32 : () -> float32)()));
-    (println : (string) -> unit)((ToString::to_string : (int16) -> string)((two_int16 : () -> int16)()));
-    (println : (string) -> unit)((ToString::to_string : (uint32) -> string)((read_uint32 : (Ref[uint32]) -> uint32)((delayed/8 : Ref[uint32]))));
+    (println : (string) -> unit)(
+      (ToString::to_string : (uint16) -> string)((values/7 : [uint16; 2])[1])
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (float32) -> string)((one_float32 : () -> float32)())
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (int16) -> string)((two_int16 : () -> int16)())
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (uint32) -> string)(
+        (read_uint32 : (Ref[uint32]) -> uint32)((delayed/8 : Ref[uint32]))
+      )
+    );
     (println : (string) -> unit)((ToString::to_string : (bool) -> string)((byte/9 : uint8) == 65));
-    (println : (string) -> unit)(match (byte/9 : uint8) {
-        65 => "byte",
-        _ : uint8 => "other",
-    });
+    (println : (
+      string
+    ) -> unit)(
+      match (byte/9 : uint8) {
+          65 => "byte",
+          _ : uint8 => "other",
+      }
+    );
 }

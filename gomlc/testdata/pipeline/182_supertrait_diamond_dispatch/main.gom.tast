@@ -1,29 +1,31 @@
-impl Base for Value{
+impl Base for Value {
   fn base(self/0: Value) -> string {
       "B"
   }
 }
 
-impl Left for Value{
+impl Left for Value {
   fn left(self/1: Value) -> string {
       "L"
   }
 }
 
-impl Right for Value{
+impl Right for Value {
   fn right(self/2: Value) -> string {
       "R"
   }
 }
 
-impl Diamond for Value{
+impl Diamond for Value {
   fn diamond(self/3: Value) -> string {
       "D"
   }
 }
 
 fn describe[T](value/4: T) -> string where T: Diamond, T: Left, T: Right, T: Base {
-    (Base::base : (T) -> string)((value/4 : T)) + (Left::left : (T) -> string)((value/4 : T)) + (Right::right : (T) -> string)((value/4 : T)) + (Diamond::diamond : (T) -> string)((value/4 : T))
+    (Base::base : (T) -> string)((value/4 : T)) + (Left::left : (T) -> string)((value/4 : T)) +
+      (Right::right : (T) -> string)((value/4 : T)) +
+      (Diamond::diamond : (T) -> string)((value/4 : T))
 }
 
 fn main() -> unit {

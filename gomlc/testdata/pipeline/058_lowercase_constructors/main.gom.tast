@@ -13,10 +13,12 @@ fn magnitude(p/3: Point) -> int32 {
 
 fn main() -> int32 {
     match (make_some : (int32) -> Maybe[int32])(5) {
-        Maybe::Some(result/6: int32) => {
+        Maybe::Some(result/6: int32) =>
+          {
               let pt/7: Point = (build_point : (int32, int32) -> Point)((result/6 : int32), 7);
               match Maybe::Some((pt/7 : Point).x) {
-                  Maybe::Some(value/8: int32) => (value/8 : int32) + (magnitude : (Point) -> int32)((pt/7 : Point)),
+                  Maybe::Some(value/8: int32) =>
+                    (value/8 : int32) + (magnitude : (Point) -> int32)((pt/7 : Point)),
                   Maybe::None => 0,
               }
           },

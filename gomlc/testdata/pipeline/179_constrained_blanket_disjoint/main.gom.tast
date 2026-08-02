@@ -1,16 +1,16 @@
-impl Mark for int32{
+impl Mark for int32 {
   fn mark(self/0: int32) -> string {
       (int32::to_string : (int32) -> string)((self/0 : int32))
   }
 }
 
-impl[T] Label for Box[T] where T: Mark{
+impl[T] Label for Box[T] where T: Mark {
   fn label(self/1: Box[T]) -> string {
       "blanket:" + (Mark::mark : (T) -> string)((self/1 : Box[T]).value)
   }
 }
 
-impl Label for Box[string]{
+impl Label for Box[string] {
   fn label(self/2: Box[string]) -> string {
       "string:" + (self/2 : Box[string]).value
   }

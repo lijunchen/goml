@@ -1,14 +1,16 @@
 fn list_length[T](xs/0: List[T]) -> int32 {
     match (xs/0 : List[T]) {
         List::Nil => 0,
-        List::Cons(_ : T, tail/1: List[T]) => 1 + (list_length : (List[T]) -> int32)((tail/1 : List[T])),
+        List::Cons(_ : T, tail/1: List[T]) =>
+          1 + (list_length : (List[T]) -> int32)((tail/1 : List[T])),
     }
 }
 
 fn int_list_length(xs/2: List[int32]) -> int32 {
     match (xs/2 : List[int32]) {
         List::Nil => 0,
-        List::Cons(_ : int32, tail/3: List[int32]) => 1 + (int_list_length : (List[int32]) -> int32)((tail/3 : List[int32])),
+        List::Cons(_ : int32, tail/3: List[int32]) =>
+          1 + (int_list_length : (List[int32]) -> int32)((tail/3 : List[int32])),
     }
 }
 

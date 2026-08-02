@@ -118,7 +118,8 @@ fn casts() -> unit {
     (show_i64 : (int64) -> unit)((max_u32/19 : uint32) as int64);
     (show_u32 : (uint32) -> unit)('A' as uint32);
     match (char_from_uint32 : (uint32) -> Option[char])(128512) {
-        Option::Some(value/21: char) => (println : (string) -> unit)((char::to_string : (char) -> string)((value/21 : char))),
+        Option::Some(value/21: char) =>
+          (println : (string) -> unit)((char::to_string : (char) -> string)((value/21 : char))),
         Option::None => (println : (string) -> unit)("invalid"),
     };
     (show_u32 : (uint32) -> unit)((three_hundred/20 : uint16) as uint8 as uint32)

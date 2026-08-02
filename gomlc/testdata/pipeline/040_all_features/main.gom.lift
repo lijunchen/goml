@@ -112,10 +112,12 @@ fn gather(record/39: Record__int32) -> Maybe__int32 {
   }
 }
 
-fn build_counter(
-  label/42: string,
-  start/43: int32
-) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
+fn build_counter(label/42: string, start/43: int32) -> (
+  Tracker,
+  () -> Record__int32,
+  (int32) -> Record__int32,
+  () -> Record__string
+) {
   let count/44 = inherent#Ref#Ref[T]#new__T_int32(start/43) in
   let toggled/45 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in

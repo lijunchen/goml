@@ -6,7 +6,7 @@ fn trait_default#Keep#keep[Self, T](self/1: Self, value/2: T) -> T where Self: K
     (value/2 : T)
 }
 
-impl Describe for DefaultValue{
+impl Describe for DefaultValue {
   fn name(self/3: DefaultValue) -> string {
       (self/3 : DefaultValue).name
   }
@@ -15,13 +15,16 @@ impl Describe for DefaultValue{
   }
 }
 
-impl Keep for DefaultValue{
+impl Keep for DefaultValue {
   fn keep[T](default_arg0: DefaultValue, default_arg1: T) -> T {
-      (trait_default#Keep#keep : (DefaultValue, T) -> T)((default_arg0 : DefaultValue), (default_arg1 : T))
+      (trait_default#Keep#keep : (DefaultValue, T) -> T)(
+        (default_arg0 : DefaultValue),
+        (default_arg1 : T)
+      )
   }
 }
 
-impl Describe for OverrideValue{
+impl Describe for OverrideValue {
   fn name(self/4: OverrideValue) -> string {
       "override-name"
   }
@@ -36,8 +39,18 @@ fn describe_dyn(value/6: dyn Describe) -> string {
 
 fn main() -> unit {
     let default_value/7: DefaultValue = DefaultValue { name: "value" };
-    (println : (string) -> unit)((Describe::describe : (DefaultValue) -> string)((default_value/7 : DefaultValue)));
-    (println : (string) -> unit)((Keep::keep : (DefaultValue, string) -> string)((default_value/7 : DefaultValue), "generic"));
-    (println : (string) -> unit)((Describe::describe : (OverrideValue) -> string)(OverrideValue {}));
-    (println : (string) -> unit)((describe_dyn : (dyn Describe) -> string)(to_dyn[Describe]{DefaultValue}((default_value/7 : DefaultValue))));
+    (println : (string) -> unit)(
+      (Describe::describe : (DefaultValue) -> string)((default_value/7 : DefaultValue))
+    );
+    (println : (string) -> unit)(
+      (Keep::keep : (DefaultValue, string) -> string)((default_value/7 : DefaultValue), "generic")
+    );
+    (println : (string) -> unit)(
+      (Describe::describe : (OverrideValue) -> string)(OverrideValue {})
+    );
+    (println : (string) -> unit)(
+      (describe_dyn : (dyn Describe) -> string)(
+        to_dyn[Describe]{DefaultValue}((default_value/7 : DefaultValue))
+      )
+    );
 }

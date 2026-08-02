@@ -11,10 +11,11 @@ fn split_host_port(ok/0: bool) -> Result[(string, string), string] {
 }
 
 fn render(ok/1: bool) -> Result[string, string] {
-    let (host/2: string, port/3: string) = match (split_host_port : (bool) -> Result[(string, string), string])((ok/1 : bool)) {
-        Result::Ok(try_value/14: (string, string)) => (try_value/14 : (string, string)),
-        Result::Err(try_residual/14: string) => return Result::Err((try_residual/14 : string)),
-    };
+    let (host/2: string, port/3: string) =
+      match (split_host_port : (bool) -> Result[(string, string), string])((ok/1 : bool)) {
+          Result::Ok(try_value/14: (string, string)) => (try_value/14 : (string, string)),
+          Result::Err(try_residual/14: string) => return Result::Err((try_residual/14 : string)),
+      };
     Result::Ok((host/2 : string) + ":" + (port/3 : string))
 }
 
@@ -26,6 +27,12 @@ fn show(res/4: Result[string, string]) -> string {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((show : (Result[string, string]) -> string)((render : (bool) -> Result[string, string])(true)));
-    (println : (string) -> unit)((show : (Result[string, string]) -> string)((render : (bool) -> Result[string, string])(false)));
+    (println : (string) -> unit)(
+      (show : (Result[string, string]) -> string)((render : (bool) -> Result[string, string])(true))
+    );
+    (println : (string) -> unit)(
+      (show : (Result[string, string]) -> string)(
+        (render : (bool) -> Result[string, string])(false)
+      )
+    );
 }

@@ -20,6 +20,12 @@ fn show_string(x/2: Light[string]) -> string {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((show_int : (Light[int32]) -> string)((flip : (Light[int32]) -> Light[int32])(Light::Red)));
-    (println : (string) -> unit)((show_string : (Light[string]) -> string)((flip : (Light[string]) -> Light[string])(Light::Green)));
+    (println : (string) -> unit)(
+      (show_int : (Light[int32]) -> string)((flip : (Light[int32]) -> Light[int32])(Light::Red))
+    );
+    (println : (string) -> unit)(
+      (show_string : (Light[string]) -> string)(
+        (flip : (Light[string]) -> Light[string])(Light::Green)
+      )
+    );
 }

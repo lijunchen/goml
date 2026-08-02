@@ -1,4 +1,4 @@
-impl[T] Maybe[T]{
+impl[T] Maybe[T] {
   fn map[U](self/0: Maybe[T], map_fn/1: (T) -> U) -> Maybe[U] {
       match (self/0 : Maybe[T]) {
           Maybe::Some(value/2: T) => Maybe::Some((map_fn/1 : (T) -> U)((value/2 : T))),
@@ -9,7 +9,10 @@ impl[T] Maybe[T]{
 
 fn main() -> unit {
     let value/3: Maybe[int] = Maybe::Some(3);
-    match (Maybe[int]::map : (Maybe[int], (int) -> string) -> Maybe[string])((value/3 : Maybe[int]), |item/4: int| => (int::to_string : (int) -> string)((item/4 : int))) {
+    match (Maybe[int]::map : (Maybe[int], (int) -> string) -> Maybe[string])(
+      (value/3 : Maybe[int]),
+      |item/4: int| => (int::to_string : (int) -> string)((item/4 : int))
+    ) {
         Maybe::Some(text/5: string) => (println : (string) -> unit)((text/5 : string)),
         Maybe::None => (println : (string) -> unit)("none"),
     }

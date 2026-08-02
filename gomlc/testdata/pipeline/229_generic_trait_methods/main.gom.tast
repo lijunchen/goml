@@ -1,4 +1,4 @@
-impl RenderValue for Prefix{
+impl RenderValue for Prefix {
   fn render[V](self/0: Prefix, value/1: V) -> string where V: ToString {
       (self/0 : Prefix).value + (ToString::to_string : (V) -> string)((value/1 : V))
   }
@@ -9,10 +9,12 @@ fn render_generic[T](renderer/2: T) -> string where T: RenderValue {
 }
 
 fn main() -> unit {
-    let direct/3: string = (RenderValue::render : (Prefix, string) -> string)(Prefix { value: "direct:" }, "ok");
+    let direct/3: string =
+      (RenderValue::render : (Prefix, string) -> string)(Prefix { value: "direct:" }, "ok");
     (println : (string) -> unit)((direct/3 : string));
     let generic/4: string = (render_generic : (Prefix) -> string)(Prefix { value: "generic:" });
     (println : (string) -> unit)((generic/4 : string));
-    let ufcs/5: string = (RenderValue::render : (Prefix, int) -> string)(Prefix { value: "ufcs:" }, 12);
+    let ufcs/5: string =
+      (RenderValue::render : (Prefix, int) -> string)(Prefix { value: "ufcs:" }, 12);
     (println : (string) -> unit)((ufcs/5 : string));
 }

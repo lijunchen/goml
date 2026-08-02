@@ -21,18 +21,20 @@ fn early(x/0: int32) -> int32 {
 }
 
 fn closure_early(x/1: int32) -> int32 {
-    let f/3: (int32) -> int32 = |y/2: int32| => {
-        if (y/2 : int32) > 5 {
-            {
-                return (y/2 : int32)
-            }
-        } else {
-            {
-                ()
-            }
+    let f/3: (int32) -> int32 =
+      |y/2: int32| =>
+        {
+            if (y/2 : int32) > 5 {
+                {
+                    return (y/2 : int32)
+                }
+            } else {
+                {
+                    ()
+                }
+            };
+            (y/2 : int32) + 10
         };
-        (y/2 : int32) + 10
-    };
     (f/3 : (int32) -> int32)((x/1 : int32))
 }
 

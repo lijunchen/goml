@@ -1,10 +1,10 @@
-impl Provider for Number{
+impl Provider for Number {
   fn get(self/0: Number) -> int32 {
       (self/0 : Number).value
   }
 }
 
-impl[T] Provider for Box[T] where T: ToString{
+impl[T] Provider for Box[T] where T: ToString {
   fn get(self/1: Box[T]) -> T {
       (self/1 : Box[T]).value
   }
@@ -19,9 +19,15 @@ fn read_as[P, T](provider/3: P) -> T where P: Provider, P::Item = T, P::Item: To
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((read : (Number) -> int32)(Number { value: 42 })));
+    (println : (string) -> unit)(
+      (int32::to_string : (int32) -> string)((read : (Number) -> int32)(Number { value: 42 }))
+    );
     let value/4: int32 = (read_as : (Number) -> int32)(Number { value: 7 });
     (println : (string) -> unit)((int32::to_string : (int32) -> string)((value/4 : int32)));
     (println : (string) -> unit)((read : (Box[string]) -> string)(Box { value: "generic" }));
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((Provider::get : (Number) -> int32)(Number { value: 11 })))
+    (println : (string) -> unit)(
+      (int32::to_string : (int32) -> string)(
+        (Provider::get : (Number) -> int32)(Number { value: 11 })
+      )
+    )
 }

@@ -397,9 +397,9 @@ fn trait_impl#Iterator#FnIterator[T]#next[T](self/102: FnIterator[T]) -> Option[
   FnIterator.next_fn(self/102)()
 }
 
-fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](
-  self/103: MapIterator[A, B, I]
-) -> Option[B] {
+fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](self/103: MapIterator[A, B, I]) -> Option[
+  B
+] {
   {
     let mtmp21 = trait_call[Iterator::next](MapIterator.iterator(self/103)) in
     match mtmp21 {
@@ -1102,9 +1102,9 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
   }
 }
 
-fn trait_impl#Iterator#EnumerateIterator[I]#next[I](
-  self/237: EnumerateIterator[I]
-) -> Option[(int, I::Item)] {
+fn trait_impl#Iterator#EnumerateIterator[I]#next[I](self/237: EnumerateIterator[I]) -> Option[
+  (int, I::Item)
+] {
   {
     let mtmp109 = trait_call[Iterator::next](EnumerateIterator.iterator(self/237)) in
     match mtmp109 {
@@ -1129,9 +1129,9 @@ fn trait_impl#Iterator#EnumerateIterator[I]#next[I](
   }
 }
 
-fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](
-  self/240: ZipIterator[A, B]
-) -> Option[(A::Item, B::Item)] {
+fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](self/240: ZipIterator[A, B]) -> Option[
+  (A::Item, B::Item)
+] {
   {
     let mtmp112 = trait_call[Iterator::next](ZipIterator.left(self/240)) in
     match mtmp112 {
@@ -1549,10 +1549,10 @@ fn inherent#Option#Option[T]#ok_or[T, E](self/291: Option[T], error/292: E) -> R
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](
-  self/294: Result[T, E],
-  map_fn/295: (T) -> U
-) -> Result[U, E] {
+fn inherent#Result#Result[T,E]#map[T, E, U](self/294: Result[T, E], map_fn/295: (T) -> U) -> Result[
+  U,
+  E
+] {
   match self/294 {
     Result::Ok(x149) => {
       {
@@ -1728,9 +1728,10 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Byte
   std::bytes::Bytes.values(self/22)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
-  self/23: std::bytes::Bytes
-) -> Result[string, string] {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result[
+  string,
+  string
+] {
   let mtmp6 = @runtime(core.string_from_utf8)(std::bytes::Bytes.values(self/23)) in
   {
     let x7 = mtmp6.0 in
@@ -3131,9 +3132,10 @@ fn std::json::parse_digits(value/26: std::json::JsonParser) -> bool {
   (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/26)) > start/27)
 }
 
-fn std::json::parse_json_number(
-  value/28: std::json::JsonParser
-) -> Result[std::json::Value, string] {
+fn std::json::parse_json_number(value/28: std::json::JsonParser) -> Result[
+  std::json::Value,
+  string
+] {
   let start/29 = inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/28)) in
   let _wild37 =
     if trait_call[Eq::eq](
@@ -3365,9 +3367,10 @@ fn std::json::parse_json_literal(
   }
 }
 
-fn std::json::parse_json_array(
-  value/33: std::json::JsonParser
-) -> Result[std::json::Value, string] {
+fn std::json::parse_json_array(value/33: std::json::JsonParser) -> Result[
+  std::json::Value,
+  string
+] {
   let _wild46 =
     inherent#Ref#Ref[int]#set(
       std::json::JsonParser.index(value/33),
@@ -3486,9 +3489,10 @@ fn std::json::parse_json_array(
   Result::Err(std::json::json_error(value/33, "unterminated array"))
 }
 
-fn std::json::parse_json_object(
-  value/36: std::json::JsonParser
-) -> Result[std::json::Value, string] {
+fn std::json::parse_json_object(value/36: std::json::JsonParser) -> Result[
+  std::json::Value,
+  string
+] {
   let _wild58 =
     inherent#Ref#Ref[int]#set(
       std::json::JsonParser.index(value/36),
@@ -3658,9 +3662,10 @@ fn std::json::parse_json_object(
   Result::Err(std::json::json_error(value/36, "unterminated object"))
 }
 
-fn std::json::parse_json_value(
-  value/40: std::json::JsonParser
-) -> Result[std::json::Value, string] {
+fn std::json::parse_json_value(value/40: std::json::JsonParser) -> Result[
+  std::json::Value,
+  string
+] {
   let _wild76 = std::json::skip_json_whitespace(value/40) in
   if (inherent#Ref#Ref[int]#get(std::json::JsonParser.index(value/40)) >=
     inherent#string#string#byte_len(std::json::JsonParser.input(value/40))) {

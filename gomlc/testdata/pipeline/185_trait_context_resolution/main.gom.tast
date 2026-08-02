@@ -1,28 +1,28 @@
-impl Put[int32] for Target{
+impl Put[int32] for Target {
   fn put(self/0: Target, value/1: int32) -> string {
       "number:" + (int32::to_string : (int32) -> string)((value/1 : int32))
   }
 }
 
-impl Put[string] for Target{
+impl Put[string] for Target {
   fn put(self/2: Target, value/3: string) -> string {
       "text:" + (value/3 : string)
   }
 }
 
-impl Convert[int32] for Convertible{
+impl Convert[int32] for Convertible {
   fn convert(self/4: Convertible) -> string {
       "converted"
   }
 }
 
-impl Convert[string] for Convertible{
+impl Convert[string] for Convertible {
   fn convert(self/5: Convertible) -> int32 {
       7
   }
 }
 
-impl Source[int32] for Number{
+impl Source[int32] for Number {
   fn get(self/6: Number) -> int32 {
       (self/6 : Number).value
   }
@@ -32,13 +32,13 @@ fn read[T, S](source/7: S) -> T where S: Source[T], S::Item = T {
     (Source[T]::get : (S) -> T)((source/7 : S))
 }
 
-impl[S, T] Select[T] for S where S: ItemSource, S::Item = T{
+impl[S, T] Select[T] for S where S: ItemSource, S::Item = T {
   fn select(self/8: S) -> T {
       (ItemSource::item : (S) -> T)((self/8 : S))
   }
 }
 
-impl ItemSource for Selected{
+impl ItemSource for Selected {
   fn item(self/9: Selected) -> int32 {
       (self/9 : Selected).value
   }
@@ -54,7 +54,9 @@ fn select_item[S](source/11: S) -> S::Item where S: ItemSource {
 
 fn main() -> unit {
     (println : (string) -> unit)((Put[int32]::put : (Target, int32) -> string)(Target {}, 3));
-    (println : (string) -> unit)((Put[string]::put : (Target, string) -> string)(Target {}, "goml"));
+    (println : (string) -> unit)(
+      (Put[string]::put : (Target, string) -> string)(Target {}, "goml")
+    );
     let text/12: string = (Convert[int32]::convert : (Convertible) -> string)(Convertible {});
     let number/13: int32 = (Convert[string]::convert : (Convertible) -> int32)(Convertible {});
     (println : (string) -> unit)((text/12 : string));

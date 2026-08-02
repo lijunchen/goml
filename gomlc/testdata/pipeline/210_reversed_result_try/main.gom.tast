@@ -11,10 +11,11 @@ fn parse(flag/0: bool) -> Result[int32, string] {
 }
 
 fn compute(flag/1: bool) -> Result[int32, string] {
-    let value/2: int32 = match (parse : (bool) -> Result[int32, string])((flag/1 : bool)) {
-        Result::Ok(try_value/12: int32) => (try_value/12 : int32),
-        Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
-    };
+    let value/2: int32 =
+      match (parse : (bool) -> Result[int32, string])((flag/1 : bool)) {
+          Result::Ok(try_value/12: int32) => (try_value/12 : int32),
+          Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
+      };
     Result::Ok((value/2 : int32) + 1)
 }
 
@@ -26,6 +27,10 @@ fn show(value/3: Result[int32, string]) -> string {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((compute : (bool) -> Result[int32, string])(true)));
-    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((compute : (bool) -> Result[int32, string])(false)))
+    (println : (string) -> unit)(
+      (show : (Result[int32, string]) -> string)((compute : (bool) -> Result[int32, string])(true))
+    );
+    (println : (string) -> unit)(
+      (show : (Result[int32, string]) -> string)((compute : (bool) -> Result[int32, string])(false))
+    )
 }

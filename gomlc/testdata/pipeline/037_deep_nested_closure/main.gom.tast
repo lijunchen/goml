@@ -1,20 +1,32 @@
 fn main() -> unit {
     let a/0: int32 = 10;
-    let f1/11: (int32) -> int32 = |x/1: int32| => {
-        let b/2: int32 = 20;
-        let f2/10: (int32) -> int32 = |y/3: int32| => {
-            let c/4: int32 = 30;
-            let f3/9: (int32) -> int32 = |z/5: int32| => {
-                let d/6: int32 = 40;
-                let f4/8: (int32) -> int32 = |w/7: int32| => {
-                    (a/0 : int32) + (b/2 : int32) + (c/4 : int32) + (d/6 : int32) + (x/1 : int32) + (y/3 : int32) + (z/5 : int32) + (w/7 : int32)
+    let f1/11: (int32) -> int32 =
+      |x/1: int32| =>
+        {
+            let b/2: int32 = 20;
+            let f2/10: (int32) -> int32 =
+              |y/3: int32| =>
+                {
+                    let c/4: int32 = 30;
+                    let f3/9: (int32) -> int32 =
+                      |z/5: int32| =>
+                        {
+                            let d/6: int32 = 40;
+                            let f4/8: (int32) -> int32 =
+                              |w/7: int32| =>
+                                {
+                                    (a/0 : int32) + (b/2 : int32) + (c/4 : int32) + (d/6 : int32) +
+                                      (x/1 : int32) +
+                                      (y/3 : int32) +
+                                      (z/5 : int32) +
+                                      (w/7 : int32)
+                                };
+                            (f4/8 : (int32) -> int32)(4)
+                        };
+                    (f3/9 : (int32) -> int32)(3)
                 };
-                (f4/8 : (int32) -> int32)(4)
-            };
-            (f3/9 : (int32) -> int32)(3)
+            (f2/10 : (int32) -> int32)(2)
         };
-        (f2/10 : (int32) -> int32)(2)
-    };
     let result/12: int32 = (f1/11 : (int32) -> int32)(1);
     (println : (int32) -> unit)((result/12 : int32))
 }

@@ -4,7 +4,8 @@ fn main() -> unit {
         {
             let event/1: Event = Event::Open;
             match (event/1 : Event) {
-                Event::Open => {
+                Event::Open =>
+                  {
                       let scanning/2: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
                       while (Ref[bool]::get : (Ref[bool]) -> bool)((scanning/2 : Ref[bool])) {
                           {}

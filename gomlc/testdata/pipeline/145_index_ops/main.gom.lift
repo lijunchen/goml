@@ -180,11 +180,9 @@ fn inherent#Vec#Vec[T]#pushed__T_int32(self/128: Vec[int32], elem/129: int32) ->
   result/130
 }
 
-fn inherent#Vec#Vec[T]#slice__T_int32(
-  self/175: Vec[int32],
-  start/176: int,
-  end/177: int
-) -> Slice[int32] {
+fn inherent#Vec#Vec[T]#slice__T_int32(self/175: Vec[int32], start/176: int, end/177: int) -> Slice[
+  int32
+] {
   @intrinsic(slice.new)(self/175, start/176, end/177)
 }
 
@@ -196,10 +194,9 @@ fn inherent#Vec#Vec[T]#new__T_[int32;2]() -> Vec[[int32; 2]] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_[int32;2](
-  self/128: Vec[[int32; 2]],
-  elem/129: [int32; 2]
-) -> Vec[[int32; 2]] {
+fn inherent#Vec#Vec[T]#pushed__T_[int32;2](self/128: Vec[[int32; 2]], elem/129: [int32; 2]) -> Vec[
+  [int32; 2]
+] {
   let result/130 =
     inherent#Vec#Vec[T]#with_capacity__T_[int32;2](
       (inherent#Vec#Vec[T]#len__T_[int32;2](self/128) + 1)

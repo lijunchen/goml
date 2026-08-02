@@ -1,27 +1,38 @@
-impl[T] Parent[T] for Box[T]{
+impl[T] Parent[T] for Box[T] {
   fn parent(self/0: Box[T]) -> T {
       (self/0 : Box[T]).value
   }
 }
 
-impl[T] Render for Box[T]{
+impl[T] Render for Box[T] {
   fn render(self/1: Box[T]) -> string {
       ":render"
   }
 }
 
-impl[T] Child[T] for Box[T] where T: ToString, T: Eq{
+impl[T] Child[T] for Box[T] where T: ToString, T: Eq {
   fn child(self/2: Box[T]) -> string {
       ":child"
   }
 }
 
-fn describe[T, B](value/3: B) -> string where B: Child[T], T: ToString, T: Eq, B: Parent[T], B: Render {
-    (ToString::to_string : (T) -> string)((Parent[T]::parent : (B) -> T)((value/3 : B))) + (Render::render : (B) -> string)((value/3 : B)) + (Child[T]::child : (B) -> string)((value/3 : B))
+fn describe[T, B](value/3: B) -> string where
+  B: Child[T],
+  T: ToString,
+  T: Eq,
+  B: Parent[T],
+  B: Render {
+    (ToString::to_string : (T) -> string)((Parent[T]::parent : (B) -> T)((value/3 : B))) +
+      (Render::render : (B) -> string)((value/3 : B)) +
+      (Child[T]::child : (B) -> string)((value/3 : B))
 }
 
 fn main() -> unit {
     (println : (string) -> unit)((describe : (Box[int]) -> string)(Box { value: 5 }));
     let value/4: Box[int32] = Box { value: 6 };
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((Parent[int32]::parent : (Box[int32]) -> int32)((value/4 : Box[int32]))))
+    (println : (string) -> unit)(
+      (int32::to_string : (int32) -> string)(
+        (Parent[int32]::parent : (Box[int32]) -> int32)((value/4 : Box[int32]))
+      )
+    )
 }

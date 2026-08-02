@@ -1,10 +1,10 @@
-impl A for S{
+impl A for S {
   fn pick(self/0: S) -> int32 {
       10
   }
 }
 
-impl B for S{
+impl B for S {
   fn pick(self/1: S) -> int32 {
       20
   }
@@ -19,6 +19,10 @@ fn pick_b[T](x/3: T) -> int32 where T: A, T: B {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((pick_a : (S) -> int32)(S {})));
-    (println : (string) -> unit)((int32::to_string : (int32) -> string)((pick_b : (S) -> int32)(S {})));
+    (println : (string) -> unit)(
+      (int32::to_string : (int32) -> string)((pick_a : (S) -> int32)(S {}))
+    );
+    (println : (string) -> unit)(
+      (int32::to_string : (int32) -> string)((pick_b : (S) -> int32)(S {}))
+    );
 }

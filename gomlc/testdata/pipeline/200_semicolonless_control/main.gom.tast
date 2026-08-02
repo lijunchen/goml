@@ -15,13 +15,21 @@ fn main() -> unit {
     let index/0: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
     while (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int])) < 2 {
         {
-            (println : (string) -> unit)((int::to_string : (int) -> string)((Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int]))));
-            (Ref[int]::set : (Ref[int], int) -> unit)((index/0 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int])) + 1)
+            (println : (string) -> unit)(
+              (int::to_string : (int) -> string)(
+                (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int]))
+              )
+            );
+            (Ref[int]::set : (Ref[int], int) -> unit)(
+              (index/0 : Ref[int]),
+              (Ref[int]::get : (Ref[int]) -> int)((index/0 : Ref[int])) + 1
+            )
         }
     };
     let values/1: Vec[string] = (Vec[string]::new : () -> Vec[string])();
     (Vec[string]::push : (Vec[string], string) -> unit)((values/1 : Vec[string]), "for");
-    for value/2: string in (values/1 : Vec[string]) {
+    for value/2: string in
+      (values/1 : Vec[string]) {
         (println : (string) -> unit)((value/2 : string))
     };
     (println : (string) -> unit)("done")

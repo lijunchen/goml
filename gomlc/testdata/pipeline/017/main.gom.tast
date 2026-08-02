@@ -1,4 +1,4 @@
-impl ToString for (int, int){
+impl ToString for (int, int) {
   fn to_string(self/0: (int, int)) -> string {
       "(?, ?)"
   }
@@ -6,10 +6,15 @@ impl ToString for (int, int){
 
 fn main() -> unit {
     let x/1: int = 123;
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : (int) -> string)((x/1 : int)));
+    let _ : unit =
+      (println : (string) -> unit)((ToString::to_string : (int) -> string)((x/1 : int)));
     let x/2: bool = true;
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : (bool) -> string)((x/2 : bool)));
+    let _ : unit =
+      (println : (string) -> unit)((ToString::to_string : (bool) -> string)((x/2 : bool)));
     let x/3: (int, int) = (3, 4);
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : ((int, int)) -> string)((x/3 : (int, int))));
+    let _ : unit =
+      (println : (string) -> unit)(
+        (ToString::to_string : ((int, int)) -> string)((x/3 : (int, int)))
+      );
     ()
 }

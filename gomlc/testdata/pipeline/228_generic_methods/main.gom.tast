@@ -1,4 +1,4 @@
-impl[T] Box[T]{
+impl[T] Box[T] {
   fn map[U](self/0: Box[T], map_fn/1: (T) -> U) -> Box[U] {
       Box { value: (map_fn/1 : (T) -> U)((self/0 : Box[T]).value) }
   }
@@ -10,14 +10,27 @@ impl[T] Box[T]{
 
 fn main() -> unit {
     let first/4: Box[int] = Box { value: 42 };
-    let text/6: Box[string] = (Box[int]::map : (Box[int], (int) -> string) -> Box[string])((first/4 : Box[int]), |value/5: int| => (int::to_string : (int) -> string)((value/5 : int)));
+    let text/6: Box[string] =
+      (Box[int]::map : (Box[int], (int) -> string) -> Box[string])(
+        (first/4 : Box[int]),
+        |value/5: int| => (int::to_string : (int) -> string)((value/5 : int))
+      );
     (println : (string) -> unit)((text/6 : Box[string]).value);
     let second/7: Box[int] = Box { value: 7 };
-    let explicit/9: Box[string] = (Box[int]::map : (Box[int], (int) -> string) -> Box[string])((second/7 : Box[int]), |value/8: int| => (int::to_string : (int) -> string)((value/8 : int)));
+    let explicit/9: Box[string] =
+      (Box[int]::map : (Box[int], (int) -> string) -> Box[string])(
+        (second/7 : Box[int]),
+        |value/8: int| => (int::to_string : (int) -> string)((value/8 : int))
+      );
     (println : (string) -> unit)((explicit/9 : Box[string]).value);
     let third/10: Box[int] = Box { value: 9 };
-    let static_call/12: Box[string] = (Box[int]::map : (Box[int], (int) -> string) -> Box[string])((third/10 : Box[int]), |value/11: int| => (int::to_string : (int) -> string)((value/11 : int)));
+    let static_call/12: Box[string] =
+      (Box[int]::map : (Box[int], (int) -> string) -> Box[string])(
+        (third/10 : Box[int]),
+        |value/11: int| => (int::to_string : (int) -> string)((value/11 : int))
+      );
     (println : (string) -> unit)((static_call/12 : Box[string]).value);
-    let rendered/13: string = (Box[string]::render : (Box[string], int) -> string)(Box { value: "value" }, 5);
+    let rendered/13: string =
+      (Box[string]::render : (Box[string], int) -> string)(Box { value: "value" }, 5);
     (println : (string) -> unit)((rendered/13 : string));
 }

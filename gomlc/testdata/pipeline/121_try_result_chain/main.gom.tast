@@ -11,18 +11,20 @@ fn parse_text(ok/0: bool) -> Result[string, string] {
 }
 
 fn normalize_text(ok/1: bool) -> Result[string, string] {
-    let text/2: string = match (parse_text : (bool) -> Result[string, string])((ok/1 : bool)) {
-        Result::Ok(try_value/12: string) => (try_value/12 : string),
-        Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
-    };
+    let text/2: string =
+      match (parse_text : (bool) -> Result[string, string])((ok/1 : bool)) {
+          Result::Ok(try_value/12: string) => (try_value/12 : string),
+          Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
+      };
     Result::Ok((text/2 : string) + "!")
 }
 
 fn decorate_text(ok/3: bool) -> Result[string, string] {
-    let text/4: string = match (normalize_text : (bool) -> Result[string, string])((ok/3 : bool)) {
-        Result::Ok(try_value/20: string) => (try_value/20 : string),
-        Result::Err(try_residual/20: string) => return Result::Err((try_residual/20 : string)),
-    };
+    let text/4: string =
+      match (normalize_text : (bool) -> Result[string, string])((ok/3 : bool)) {
+          Result::Ok(try_value/20: string) => (try_value/20 : string),
+          Result::Err(try_residual/20: string) => return Result::Err((try_residual/20 : string)),
+      };
     Result::Ok("[" + (text/4 : string) + "]")
 }
 
@@ -34,6 +36,14 @@ fn show(res/5: Result[string, string]) -> string {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((show : (Result[string, string]) -> string)((decorate_text : (bool) -> Result[string, string])(true)));
-    (println : (string) -> unit)((show : (Result[string, string]) -> string)((decorate_text : (bool) -> Result[string, string])(false)));
+    (println : (string) -> unit)(
+      (show : (Result[string, string]) -> string)(
+        (decorate_text : (bool) -> Result[string, string])(true)
+      )
+    );
+    (println : (string) -> unit)(
+      (show : (Result[string, string]) -> string)(
+        (decorate_text : (bool) -> Result[string, string])(false)
+      )
+    );
 }

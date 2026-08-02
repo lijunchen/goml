@@ -1,9 +1,11 @@
 fn unwrap_either(value/0: Either) -> int32 {
     match (value/0 : Either) {
-        whole/1 @ (Either::Left(shared/2: int32) | Either::Right(shared/2: int32)) => (shared/2 : int32) + match (whole/1 : Either) {
-              Either::Left(_ : int32) => 0,
-              Either::Right(_ : int32) => 1,
-          },
+        whole/1 @ (Either::Left(shared/2: int32) | Either::Right(shared/2: int32)) =>
+          (shared/2 : int32) +
+            match (whole/1 : Either) {
+                Either::Left(_ : int32) => 0,
+                Either::Right(_ : int32) => 1,
+            },
     }
 }
 
@@ -15,28 +17,36 @@ fn char_group(value/3: char) -> string {
 }
 
 fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> string {
-    let from_if/9: string = match (value/4 : Maybe) {
-        Maybe::Some(n/7: int32) => {
-              match (n/7 : int32) {
-                  0 | 1 => "small",
-                  2..=4 => "middle",
-                  x/8: int32 if (x/8 : int32) > 10 => "large",
-                  _ : int32 => "other",
-              }
-          },
-        _ : Maybe => {
-              "none"
-          },
-    };
-    let from_vec/12: string = match (numbers/5 : Vec[int32]) {
-        [] => "empty",
-        [first/10: int32, tail/11 @ ..] if (first/10 : int32) == (Slice[int32]::len : (Slice[int32]) -> int)((tail/11 : Slice[int32])) as int32 => "balanced",
-        [_ : int32, ..] => "nonempty",
-    };
-    let from_slice/15: string = match (view/6 : Slice[int32]) {
-        [first/13: int32, .., last/14: int32] if (first/13 : int32) == (last/14 : int32) => "same ends",
-        _ : Slice[int32] => "different ends",
-    };
+    let from_if/9: string =
+      match (value/4 : Maybe) {
+          Maybe::Some(n/7: int32) =>
+            {
+                match (n/7 : int32) {
+                    0 | 1 => "small",
+                    2..=4 => "middle",
+                    x/8: int32 if (x/8 : int32) > 10 => "large",
+                    _ : int32 => "other",
+                }
+            },
+          _ : Maybe =>
+            {
+                "none"
+            },
+      };
+    let from_vec/12: string =
+      match (numbers/5 : Vec[int32]) {
+          [] => "empty",
+          [first/10: int32, tail/11 @ ..] if (first/10 : int32) ==
+            (Slice[int32]::len : (Slice[int32]) -> int)((tail/11 : Slice[int32])) as int32 =>
+            "balanced",
+          [_ : int32, ..] => "nonempty",
+      };
+    let from_slice/15: string =
+      match (view/6 : Slice[int32]) {
+          [first/13: int32, .., last/14: int32] if (first/13 : int32) == (last/14 : int32) =>
+            "same ends",
+          _ : Slice[int32] => "different ends",
+      };
     (from_if/9 : string) + "/" + (from_vec/12 : string) + "/" + (from_slice/15 : string)
 }
 
@@ -46,38 +56,72 @@ fn main() -> unit {
     let values/18: [int; 4] = [1, 2, 3, 1];
     let [first/19: int, middle/20 @ .., last/21: int] = (values/18 : [int; 4]);
     (println : (int32) -> unit)((left/17 : int32));
-    (println : (int) -> unit)((first/19 : int) + (@intrinsic(array.get) : ([int; 2], int) -> int)((middle/20 : [int; 2]), 0) + (last/21 : int));
+    (println : (int) -> unit)(
+      (first/19 : int) +
+        (@intrinsic(array.get) : ([int; 2], int) -> int)((middle/20 : [int; 2]), 0) +
+        (last/21 : int)
+    );
     let numbers/22: Vec[int32] = (@intrinsic(vec.new) : () -> Vec[int32])();
     (@intrinsic(vec.push) : (Vec[int32], int32) -> unit)((numbers/22 : Vec[int32]), 1);
     (@intrinsic(vec.push) : (Vec[int32], int32) -> unit)((numbers/22 : Vec[int32]), 8);
-    let view/23: Slice[int32] = (@intrinsic(slice.new) : (Vec[int32], int, int) -> Slice[int32])((numbers/22 : Vec[int32]), 0, (Vec[int32]::len : (Vec[int32]) -> int)((numbers/22 : Vec[int32])));
-    (println : (string) -> unit)((describe : (Maybe, Vec[int32], Slice[int32]) -> string)(Maybe::Some(3), (numbers/22 : Vec[int32]), (view/23 : Slice[int32])));
+    let view/23: Slice[int32] =
+      (@intrinsic(slice.new) : (Vec[int32], int, int) -> Slice[int32])(
+        (numbers/22 : Vec[int32]),
+        0,
+        (Vec[int32]::len : (Vec[int32]) -> int)((numbers/22 : Vec[int32]))
+      );
+    (println : (string) -> unit)(
+      (describe : (Maybe, Vec[int32], Slice[int32]) -> string)(
+        Maybe::Some(3),
+        (numbers/22 : Vec[int32]),
+        (view/23 : Slice[int32])
+      )
+    );
     let empty/24: Vec[int32] = (@intrinsic(vec.new) : () -> Vec[int32])();
-    let empty_view/25: Slice[int32] = (@intrinsic(slice.new) : (Vec[int32], int, int) -> Slice[int32])((empty/24 : Vec[int32]), 0, 0);
-    (println : (string) -> unit)((describe : (Maybe, Vec[int32], Slice[int32]) -> string)(Maybe::None, (empty/24 : Vec[int32]), (empty_view/25 : Slice[int32])));
+    let empty_view/25: Slice[int32] =
+      (@intrinsic(slice.new) : (Vec[int32], int, int) -> Slice[int32])(
+        (empty/24 : Vec[int32]),
+        0,
+        0
+      );
+    (println : (string) -> unit)(
+      (describe : (Maybe, Vec[int32], Slice[int32]) -> string)(
+        Maybe::None,
+        (empty/24 : Vec[int32]),
+        (empty_view/25 : Slice[int32])
+      )
+    );
     let state/26: Ref[Maybe] = (Ref[Maybe]::new : (Maybe) -> Ref[Maybe])(Maybe::Some(7));
     while true {
         match (Ref[Maybe]::get : (Ref[Maybe]) -> Maybe)((state/26 : Ref[Maybe])) {
-            Maybe::Some(n/27: int32) => {
+            Maybe::Some(n/27: int32) =>
+              {
                   (println : (int32) -> unit)((n/27 : int32));
-                  (Ref[Maybe]::set : (Ref[Maybe], Maybe) -> unit)((state/26 : Ref[Maybe]), Maybe::None);
+                  (Ref[Maybe]::set : (Ref[Maybe], Maybe) -> unit)(
+                    (state/26 : Ref[Maybe]),
+                    Maybe::None
+                  );
               },
             _ : Maybe => break,
         }
     };
     match Maybe::Some(6) {
-        Maybe::Some(n/28: int32) => {
+        Maybe::Some(n/28: int32) =>
+          {
               (println : (int32) -> unit)((n/28 : int32));
           },
         _ : Maybe => (),
     };
-    let aliased/32: int32 = match Maybe::Some(5) {
-        whole/29 @ Maybe::Some(value/30: int32) => (value/30 : int32) + match (whole/29 : Maybe) {
-              Maybe::Some(inner/31: int32) => (inner/31 : int32),
-              Maybe::None => 0,
-          },
-        Maybe::None => 0,
-    };
+    let aliased/32: int32 =
+      match Maybe::Some(5) {
+          whole/29 @ Maybe::Some(value/30: int32) =>
+            (value/30 : int32) +
+              match (whole/29 : Maybe) {
+                  Maybe::Some(inner/31: int32) => (inner/31 : int32),
+                  Maybe::None => 0,
+              },
+          Maybe::None => 0,
+      };
     (println : (int32) -> unit)((aliased/32 : int32));
     (println : (int32) -> unit)((unwrap_either : (Either) -> int32)(Either::Right(11)));
     (println : (string) -> unit)((char_group : (char) -> string)('b'));

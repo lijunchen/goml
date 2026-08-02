@@ -3,7 +3,10 @@ fn main() -> unit {
     let i/1: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
     while (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])) < 20 {
         {
-            (Ref[int]::set : (Ref[int], int) -> unit)((i/1 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])) + 1);
+            (Ref[int]::set : (Ref[int], int) -> unit)(
+              (i/1 : Ref[int]),
+              (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])) + 1
+            );
             if (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])) > 5 {
                 {
                     break
@@ -13,11 +16,16 @@ fn main() -> unit {
                     ()
                 }
             };
-            (Ref[int]::set : (Ref[int], int) -> unit)((sum/0 : Ref[int]), (Ref[int]::get : (Ref[int]) -> int)((sum/0 : Ref[int])) + (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])));
+            (Ref[int]::set : (Ref[int], int) -> unit)(
+              (sum/0 : Ref[int]),
+              (Ref[int]::get : (Ref[int]) -> int)((sum/0 : Ref[int])) +
+                (Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int]))
+            );
         }
     };
     let _ : unit = (print : (string) -> unit)("sum: ");
-    let _ : unit = (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((sum/0 : Ref[int])));
+    let _ : unit =
+      (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((sum/0 : Ref[int])));
     let _ : unit = (print : (string) -> unit)("i at break: ");
     let _ : unit = (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((i/1 : Ref[int])));
 }

@@ -1,7 +1,9 @@
 fn unwrap_or_negative(value/0: Option[int]) -> int {
-    let Option::Some(result/1: int) = (value/0 : Option[int]) else {
-        return -1;
-    };
+    let Option::Some(result/1: int) =
+      (value/0 : Option[int]) else
+      {
+          return -1;
+      };
     (result/1 : int)
 }
 
@@ -22,9 +24,11 @@ fn count_to(limit/2: int) -> int {
 
 fn loop_option(value/5: Option[int]) -> int {
     loop {
-        let Option::Some(item/6: int) = (value/5 : Option[int]) else {
-            break -2;
-        };
+        let Option::Some(item/6: int) =
+          (value/5 : Option[int]) else
+          {
+              break -2;
+          };
         break (item/6 : int);
     }
 }
@@ -52,11 +56,25 @@ fn matches_raw_path(value/7: string) -> bool {
 fn main() -> unit {
     (println : (string) -> unit)("C:\\tmp\\\"quoted\\\"");
     (println : (string) -> unit)("" + "}");
-    (println : (string) -> unit)((int::to_string : (int) -> string)((unwrap_or_negative : (Option[int]) -> int)(Option::Some(11))));
-    (println : (string) -> unit)((int::to_string : (int) -> string)((unwrap_or_negative : (Option[int]) -> int)(Option::None)));
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)(
+        (unwrap_or_negative : (Option[int]) -> int)(Option::Some(11))
+      )
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)((unwrap_or_negative : (Option[int]) -> int)(Option::None))
+    );
     (println : (string) -> unit)((int::to_string : (int) -> string)((count_to : (int) -> int)(4)));
-    (println : (string) -> unit)((int::to_string : (int) -> string)((loop_option : (Option[int]) -> int)(Option::Some(9))));
-    (println : (string) -> unit)((int::to_string : (int) -> string)((loop_option : (Option[int]) -> int)(Option::None)));
-    (println : (string) -> unit)((int::to_string : (int) -> string)((nested_loop_value : () -> int)()));
-    (println : (string) -> unit)((ToString::to_string : (bool) -> string)((matches_raw_path : (string) -> bool)("C:\\tmp")));
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)((loop_option : (Option[int]) -> int)(Option::Some(9)))
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)((loop_option : (Option[int]) -> int)(Option::None))
+    );
+    (println : (string) -> unit)(
+      (int::to_string : (int) -> string)((nested_loop_value : () -> int)())
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)((matches_raw_path : (string) -> bool)("C:\\tmp"))
+    );
 }

@@ -1,6 +1,7 @@
 fn print_values(values/0: Vec[int32]) -> unit {
     (println : (int) -> unit)((Vec[int32]::len : (Vec[int32]) -> int)((values/0 : Vec[int32])));
-    for value/1: int32 in (values/0 : Vec[int32]) {
+    for value/1: int32 in
+      (values/0 : Vec[int32]) {
         (println : (int32) -> unit)((value/1 : int32))
     }
 }
@@ -10,15 +11,24 @@ fn main() -> unit {
     (Vec[int32]::push : (Vec[int32], int32) -> unit)((values/2 : Vec[int32]), 1);
     (Vec[int32]::push : (Vec[int32], int32) -> unit)((values/2 : Vec[int32]), 2);
     (Vec[int32]::push : (Vec[int32], int32) -> unit)((values/2 : Vec[int32]), 3);
-    (Vec[int32]::extend : (Vec[int32], Vec[int32]) -> unit)((values/2 : Vec[int32]), (values/2 : Vec[int32]));
+    (Vec[int32]::extend : (Vec[int32], Vec[int32]) -> unit)(
+      (values/2 : Vec[int32]),
+      (values/2 : Vec[int32])
+    );
     (print_values : (Vec[int32]) -> unit)((values/2 : Vec[int32]));
     let aliased/3: Vec[int32] = (Vec[int32]::new : () -> Vec[int32])();
     (Vec[int32]::push : (Vec[int32], int32) -> unit)((aliased/3 : Vec[int32]), 4);
     (Vec[int32]::push : (Vec[int32], int32) -> unit)((aliased/3 : Vec[int32]), 5);
     let same/4: Vec[int32] = (aliased/3 : Vec[int32]);
-    (Vec[int32]::extend : (Vec[int32], Vec[int32]) -> unit)((aliased/3 : Vec[int32]), (same/4 : Vec[int32]));
+    (Vec[int32]::extend : (Vec[int32], Vec[int32]) -> unit)(
+      (aliased/3 : Vec[int32]),
+      (same/4 : Vec[int32])
+    );
     (print_values : (Vec[int32]) -> unit)((aliased/3 : Vec[int32]));
     let empty/5: Vec[int32] = (Vec[int32]::new : () -> Vec[int32])();
-    (Vec[int32]::extend : (Vec[int32], Vec[int32]) -> unit)((empty/5 : Vec[int32]), (empty/5 : Vec[int32]));
+    (Vec[int32]::extend : (Vec[int32], Vec[int32]) -> unit)(
+      (empty/5 : Vec[int32]),
+      (empty/5 : Vec[int32])
+    );
     (print_values : (Vec[int32]) -> unit)((empty/5 : Vec[int32]))
 }

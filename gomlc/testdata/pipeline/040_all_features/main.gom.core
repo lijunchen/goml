@@ -397,9 +397,9 @@ fn trait_impl#Iterator#FnIterator[T]#next[T](self/102: FnIterator[T]) -> Option[
   FnIterator.next_fn(self/102)()
 }
 
-fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](
-  self/103: MapIterator[A, B, I]
-) -> Option[B] {
+fn trait_impl#Iterator#MapIterator[A,B,I]#next[A, B, I](self/103: MapIterator[A, B, I]) -> Option[
+  B
+] {
   {
     let mtmp21 = trait_call[Iterator::next](MapIterator.iterator(self/103)) in
     match mtmp21 {
@@ -1102,9 +1102,9 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
   }
 }
 
-fn trait_impl#Iterator#EnumerateIterator[I]#next[I](
-  self/237: EnumerateIterator[I]
-) -> Option[(int, I::Item)] {
+fn trait_impl#Iterator#EnumerateIterator[I]#next[I](self/237: EnumerateIterator[I]) -> Option[
+  (int, I::Item)
+] {
   {
     let mtmp109 = trait_call[Iterator::next](EnumerateIterator.iterator(self/237)) in
     match mtmp109 {
@@ -1129,9 +1129,9 @@ fn trait_impl#Iterator#EnumerateIterator[I]#next[I](
   }
 }
 
-fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](
-  self/240: ZipIterator[A, B]
-) -> Option[(A::Item, B::Item)] {
+fn trait_impl#Iterator#ZipIterator[A,B]#next[A, B](self/240: ZipIterator[A, B]) -> Option[
+  (A::Item, B::Item)
+] {
   {
     let mtmp112 = trait_call[Iterator::next](ZipIterator.left(self/240)) in
     match mtmp112 {
@@ -1549,10 +1549,10 @@ fn inherent#Option#Option[T]#ok_or[T, E](self/291: Option[T], error/292: E) -> R
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](
-  self/294: Result[T, E],
-  map_fn/295: (T) -> U
-) -> Result[U, E] {
+fn inherent#Result#Result[T,E]#map[T, E, U](self/294: Result[T, E], map_fn/295: (T) -> U) -> Result[
+  U,
+  E
+] {
   match self/294 {
     Result::Ok(x149) => {
       {
@@ -1822,10 +1822,12 @@ fn gather(record/39: Record[int32]) -> Maybe[int32] {
   }
 }
 
-fn build_counter(
-  label/42: string,
-  start/43: int32
-) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
+fn build_counter(label/42: string, start/43: int32) -> (
+  Tracker,
+  () -> Record[int32],
+  (int32) -> Record[int32],
+  () -> Record[string]
+) {
   let count/44 = inherent#Ref#Ref[int32]#new(start/43) in
   let toggled/45 = inherent#Ref#Ref[bool]#new(false) in
   let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in

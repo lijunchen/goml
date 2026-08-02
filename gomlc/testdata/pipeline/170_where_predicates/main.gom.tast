@@ -1,10 +1,13 @@
-impl Render for Vec[int32]{
+impl Render for Vec[int32] {
   fn render(self/0: Vec[int32]) -> string {
-      "items=" + (int::to_string : (int) -> string)((Vec[int32]::len : (Vec[int32]) -> int)((self/0 : Vec[int32])))
+      "items=" +
+        (int::to_string : (int) -> string)(
+          (Vec[int32]::len : (Vec[int32]) -> int)((self/0 : Vec[int32]))
+        )
   }
 }
 
-impl[T] Selected for Wrap[T] where Vec[T]: Render{
+impl[T] Selected for Wrap[T] where Vec[T]: Render {
   fn selected(self/1: Wrap[T]) -> string {
       "selected"
   }

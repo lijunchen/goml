@@ -11,10 +11,11 @@ fn parse_text(ok/0: bool) -> Result[string, string] {
 }
 
 fn check(ok/1: bool) -> Result[string, string] {
-    let _ : string = match (parse_text : (bool) -> Result[string, string])((ok/1 : bool)) {
-        Result::Ok(try_value/12: string) => (try_value/12 : string),
-        Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
-    };
+    let _ : string =
+      match (parse_text : (bool) -> Result[string, string])((ok/1 : bool)) {
+          Result::Ok(try_value/12: string) => (try_value/12 : string),
+          Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
+      };
     Result::Ok("ok")
 }
 
@@ -26,6 +27,10 @@ fn show(res/2: Result[string, string]) -> string {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((show : (Result[string, string]) -> string)((check : (bool) -> Result[string, string])(true)));
-    (println : (string) -> unit)((show : (Result[string, string]) -> string)((check : (bool) -> Result[string, string])(false)));
+    (println : (string) -> unit)(
+      (show : (Result[string, string]) -> string)((check : (bool) -> Result[string, string])(true))
+    );
+    (println : (string) -> unit)(
+      (show : (Result[string, string]) -> string)((check : (bool) -> Result[string, string])(false))
+    );
 }

@@ -11,10 +11,11 @@ fn step(ok/0: bool) -> Result[unit, string] {
 }
 
 fn run(ok/1: bool) -> Result[unit, string] {
-    let _ : unit = match (step : (bool) -> Result[unit, string])((ok/1 : bool)) {
-        Result::Ok(try_value/12: unit) => (try_value/12 : unit),
-        Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
-    };
+    let _ : unit =
+      match (step : (bool) -> Result[unit, string])((ok/1 : bool)) {
+          Result::Ok(try_value/12: unit) => (try_value/12 : unit),
+          Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
+      };
     Result::Ok(())
 }
 
@@ -26,6 +27,10 @@ fn show(res/2: Result[unit, string]) -> string {
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((show : (Result[unit, string]) -> string)((run : (bool) -> Result[unit, string])(true)));
-    (println : (string) -> unit)((show : (Result[unit, string]) -> string)((run : (bool) -> Result[unit, string])(false)));
+    (println : (string) -> unit)(
+      (show : (Result[unit, string]) -> string)((run : (bool) -> Result[unit, string])(true))
+    );
+    (println : (string) -> unit)(
+      (show : (Result[unit, string]) -> string)((run : (bool) -> Result[unit, string])(false))
+    );
 }

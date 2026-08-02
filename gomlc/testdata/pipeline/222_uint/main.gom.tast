@@ -19,9 +19,17 @@ fn main() -> unit {
     (println : (string) -> unit)((classify : (uint) -> string)((result/5 : uint)));
     (println : (bool) -> unit)((result/5 : uint) > (left/3 : uint));
     (println : (uint64) -> unit)((result/5 : uint) & 15 as uint64);
-    let values/6: HashMap[uint, string] = (HashMap[uint, string]::new : () -> HashMap[uint, string])();
-    (HashMap[uint, string]::set : (HashMap[uint, string], uint, string) -> unit)((values/6 : HashMap[uint, string]), (result/5 : uint), "stored");
-    match (HashMap[uint, string]::get : (HashMap[uint, string], uint) -> Option[string])((values/6 : HashMap[uint, string]), 42) {
+    let values/6: HashMap[uint, string] =
+      (HashMap[uint, string]::new : () -> HashMap[uint, string])();
+    (HashMap[uint, string]::set : (HashMap[uint, string], uint, string) -> unit)(
+      (values/6 : HashMap[uint, string]),
+      (result/5 : uint),
+      "stored"
+    );
+    match (HashMap[uint, string]::get : (HashMap[uint, string], uint) -> Option[string])(
+      (values/6 : HashMap[uint, string]),
+      42
+    ) {
         Option::Some(value/7: string) => (println : (string) -> unit)((value/7 : string)),
         Option::None => (println : (string) -> unit)("missing"),
     }

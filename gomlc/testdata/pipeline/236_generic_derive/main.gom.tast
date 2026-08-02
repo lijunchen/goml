@@ -1,72 +1,105 @@
-impl[T] ToString for Wrapper[T]{
+impl[T] ToString for Wrapper[T] {
   fn to_string(self/0: Wrapper[T]) -> string {
       "wrapped"
   }
 }
 
-impl[T] Eq for Wrapper[T]{
+impl[T] Eq for Wrapper[T] {
   fn eq(self/1: Wrapper[T], other/2: Wrapper[T]) -> bool {
       true
   }
 }
 
-impl[T] Hash for Wrapper[T]{
+impl[T] Hash for Wrapper[T] {
   fn hash(self/3: Wrapper[T]) -> uint64 {
       7
   }
 }
 
-impl[T, Marker] ToString for Generic[T, Marker] where Wrapper[T]: ToString{
+impl[T, Marker] ToString for Generic[T, Marker] where Wrapper[T]: ToString {
   fn to_string(self/4: Generic[T, Marker]) -> string {
-      let Generic { first: first/5: Wrapper[T], second: second/6: Wrapper[T] } = (self/4 : Generic[T, Marker]);
-      "Generic { " + "first: " + (ToString::to_string : (Wrapper[T]) -> string)((first/5 : Wrapper[T])) + ", " + "second: " + (ToString::to_string : (Wrapper[T]) -> string)((second/6 : Wrapper[T])) + " }"
+      let Generic { first: first/5: Wrapper[T], second: second/6: Wrapper[T] } =
+        (self/4 : Generic[T, Marker]);
+      "Generic { " + "first: " +
+        (ToString::to_string : (Wrapper[T]) -> string)((first/5 : Wrapper[T])) +
+        ", " +
+        "second: " +
+        (ToString::to_string : (Wrapper[T]) -> string)((second/6 : Wrapper[T])) +
+        " }"
   }
 }
 
-impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq{
+impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq {
   fn eq(self/7: Generic[T, Marker], other/8: Generic[T, Marker]) -> bool {
-      true && (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)((self/7 : Generic[T, Marker]).first, (other/8 : Generic[T, Marker]).first) && (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)((self/7 : Generic[T, Marker]).second, (other/8 : Generic[T, Marker]).second)
+      true &&
+        (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
+          (self/7 : Generic[T, Marker]).first,
+          (other/8 : Generic[T, Marker]).first
+        ) &&
+        (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
+          (self/7 : Generic[T, Marker]).second,
+          (other/8 : Generic[T, Marker]).second
+        )
   }
 }
 
-impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash{
+impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
   fn hash(self/9: Generic[T, Marker]) -> uint64 {
       let h/10: uint64 = 14695981039346656037;
-      let h/11: uint64 = (h/10 : uint64) * 1099511628211 + (Hash::hash : (Wrapper[T]) -> uint64)((self/9 : Generic[T, Marker]).first);
-      let h/12: uint64 = (h/11 : uint64) * 1099511628211 + (Hash::hash : (Wrapper[T]) -> uint64)((self/9 : Generic[T, Marker]).second);
+      let h/11: uint64 =
+        (h/10 : uint64) * 1099511628211 +
+          (Hash::hash : (Wrapper[T]) -> uint64)((self/9 : Generic[T, Marker]).first);
+      let h/12: uint64 =
+        (h/11 : uint64) * 1099511628211 +
+          (Hash::hash : (Wrapper[T]) -> uint64)((self/9 : Generic[T, Marker]).second);
       (h/12 : uint64)
   }
 }
 
-impl[T, Marker] ToString for GenericChoice[T, Marker] where Wrapper[T]: ToString{
+impl[T, Marker] ToString for GenericChoice[T, Marker] where Wrapper[T]: ToString {
   fn to_string(self/13: GenericChoice[T, Marker]) -> string {
       match (self/13 : GenericChoice[T, Marker]) {
           GenericChoice::Empty => "GenericChoice::Empty",
-          GenericChoice::Value(__field0/14: Wrapper[T]) => "GenericChoice::Value(" + (ToString::to_string : (Wrapper[T]) -> string)((__field0/14 : Wrapper[T])) + ")",
+          GenericChoice::Value(__field0/14: Wrapper[T]) =>
+            "GenericChoice::Value(" +
+              (ToString::to_string : (Wrapper[T]) -> string)((__field0/14 : Wrapper[T])) +
+              ")",
       }
   }
 }
 
-impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq{
+impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {
   fn eq(self/15: GenericChoice[T, Marker], other/16: GenericChoice[T, Marker]) -> bool {
       match ((self/15 : GenericChoice[T, Marker]), (other/16 : GenericChoice[T, Marker])) {
           (GenericChoice::Empty, GenericChoice::Empty) => true,
-          (GenericChoice::Value(__l1_0/17: Wrapper[T]), GenericChoice::Value(__r1_0/18: Wrapper[T])) => true && (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)((__l1_0/17 : Wrapper[T]), (__r1_0/18 : Wrapper[T])),
+          (
+            GenericChoice::Value(__l1_0/17: Wrapper[T]),
+            GenericChoice::Value(__r1_0/18: Wrapper[T])
+          ) =>
+            true &&
+              (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
+                (__l1_0/17 : Wrapper[T]),
+                (__r1_0/18 : Wrapper[T])
+              ),
           _ : (GenericChoice[T, Marker], GenericChoice[T, Marker]) => false,
       }
   }
 }
 
-impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash{
+impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
   fn hash(self/19: GenericChoice[T, Marker]) -> uint64 {
       match (self/19 : GenericChoice[T, Marker]) {
-          GenericChoice::Empty => {
+          GenericChoice::Empty =>
+            {
                 let h/20: uint64 = 14695981039346656037 + 1;
                 (h/20 : uint64)
             },
-          GenericChoice::Value(__field1_0/21: Wrapper[T]) => {
+          GenericChoice::Value(__field1_0/21: Wrapper[T]) =>
+            {
                 let h/22: uint64 = 14695981039346656037 + 2;
-                let h/23: uint64 = (h/22 : uint64) * 1099511628211 + (Hash::hash : (Wrapper[T]) -> uint64)((__field1_0/21 : Wrapper[T]));
+                let h/23: uint64 =
+                  (h/22 : uint64) * 1099511628211 +
+                    (Hash::hash : (Wrapper[T]) -> uint64)((__field1_0/21 : Wrapper[T]));
                 (h/23 : uint64)
             },
       }
@@ -75,15 +108,49 @@ impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash{
 
 fn main() -> unit {
     let wrapped/24: Wrapper[NoTraits] = Wrapper { value: NoTraits { value: 1 } };
-    let left/25: Generic[NoTraits, NoTraits] = Generic { first: (wrapped/24 : Wrapper[NoTraits]), second: (wrapped/24 : Wrapper[NoTraits]) };
-    let right/26: Generic[NoTraits, NoTraits] = Generic { first: (wrapped/24 : Wrapper[NoTraits]), second: (wrapped/24 : Wrapper[NoTraits]) };
-    (println : (string) -> unit)((ToString::to_string : (Generic[NoTraits, NoTraits]) -> string)((left/25 : Generic[NoTraits, NoTraits])));
-    (println : (bool) -> unit)((left/25 : Generic[NoTraits, NoTraits]) == (right/26 : Generic[NoTraits, NoTraits]));
-    (println : (bool) -> unit)((Hash::hash : (Generic[NoTraits, NoTraits]) -> uint64)((left/25 : Generic[NoTraits, NoTraits])) == (Hash::hash : (Generic[NoTraits, NoTraits]) -> uint64)((right/26 : Generic[NoTraits, NoTraits])));
+    let left/25: Generic[NoTraits, NoTraits] =
+      Generic { first: (wrapped/24 : Wrapper[NoTraits]), second: (wrapped/24 : Wrapper[NoTraits]) };
+    let right/26: Generic[NoTraits, NoTraits] =
+      Generic { first: (wrapped/24 : Wrapper[NoTraits]), second: (wrapped/24 : Wrapper[NoTraits]) };
+    (println : (string) -> unit)(
+      (ToString::to_string : (Generic[NoTraits, NoTraits]) -> string)(
+        (left/25 : Generic[NoTraits, NoTraits])
+      )
+    );
+    (println : (bool) -> unit)(
+      (left/25 : Generic[NoTraits, NoTraits]) == (right/26 : Generic[NoTraits, NoTraits])
+    );
+    (println : (bool) -> unit)(
+      (Hash::hash : (Generic[NoTraits, NoTraits]) -> uint64)(
+        (left/25 : Generic[NoTraits, NoTraits])
+      ) ==
+        (Hash::hash : (Generic[NoTraits, NoTraits]) -> uint64)(
+          (right/26 : Generic[NoTraits, NoTraits])
+        )
+    );
     let empty/27: GenericChoice[NoTraits, NoTraits] = GenericChoice::Empty;
-    let value/28: GenericChoice[NoTraits, NoTraits] = GenericChoice::Value((wrapped/24 : Wrapper[NoTraits]));
-    (println : (string) -> unit)((ToString::to_string : (GenericChoice[NoTraits, NoTraits]) -> string)((empty/27 : GenericChoice[NoTraits, NoTraits])));
-    (println : (string) -> unit)((ToString::to_string : (GenericChoice[NoTraits, NoTraits]) -> string)((value/28 : GenericChoice[NoTraits, NoTraits])));
-    (println : (bool) -> unit)((empty/27 : GenericChoice[NoTraits, NoTraits]) != (value/28 : GenericChoice[NoTraits, NoTraits]));
-    (println : (bool) -> unit)((Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> uint64)((value/28 : GenericChoice[NoTraits, NoTraits])) == (Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> uint64)((value/28 : GenericChoice[NoTraits, NoTraits])))
+    let value/28: GenericChoice[NoTraits, NoTraits] =
+      GenericChoice::Value((wrapped/24 : Wrapper[NoTraits]));
+    (println : (string) -> unit)(
+      (ToString::to_string : (GenericChoice[NoTraits, NoTraits]) -> string)(
+        (empty/27 : GenericChoice[NoTraits, NoTraits])
+      )
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (GenericChoice[NoTraits, NoTraits]) -> string)(
+        (value/28 : GenericChoice[NoTraits, NoTraits])
+      )
+    );
+    (println : (bool) -> unit)(
+      (empty/27 : GenericChoice[NoTraits, NoTraits]) !=
+        (value/28 : GenericChoice[NoTraits, NoTraits])
+    );
+    (println : (bool) -> unit)(
+      (Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> uint64)(
+        (value/28 : GenericChoice[NoTraits, NoTraits])
+      ) ==
+        (Hash::hash : (GenericChoice[NoTraits, NoTraits]) -> uint64)(
+          (value/28 : GenericChoice[NoTraits, NoTraits])
+        )
+    )
 }

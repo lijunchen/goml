@@ -4,13 +4,25 @@ fn main() -> unit {
     (Vec[int32]::push : (Vec[int32], int32) -> unit)((v/0 : Vec[int32]), 20);
     (Vec[int32]::push : (Vec[int32], int32) -> unit)((v/0 : Vec[int32]), 30);
     (Vec[int32]::push : (Vec[int32], int32) -> unit)((v/0 : Vec[int32]), 40);
-    let s/1: Slice[int32] = (Vec[int32]::slice : (Vec[int32], int, int) -> Slice[int32])((v/0 : Vec[int32]), 1, 4);
+    let s/1: Slice[int32] =
+      (Vec[int32]::slice : (Vec[int32], int, int) -> Slice[int32])((v/0 : Vec[int32]), 1, 4);
     (println : (int) -> unit)((Slice[int32]::len : (Slice[int32]) -> int)((s/1 : Slice[int32])));
-    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int) -> int32)((s/1 : Slice[int32]), 0));
-    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int) -> int32)((s/1 : Slice[int32]), 1));
-    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int) -> int32)((s/1 : Slice[int32]), 2));
-    let t/2: Slice[int32] = (Slice[int32]::sub : (Slice[int32], int, int) -> Slice[int32])((s/1 : Slice[int32]), 1, 3);
+    (println : (int32) -> unit)(
+      (Slice[int32]::get : (Slice[int32], int) -> int32)((s/1 : Slice[int32]), 0)
+    );
+    (println : (int32) -> unit)(
+      (Slice[int32]::get : (Slice[int32], int) -> int32)((s/1 : Slice[int32]), 1)
+    );
+    (println : (int32) -> unit)(
+      (Slice[int32]::get : (Slice[int32], int) -> int32)((s/1 : Slice[int32]), 2)
+    );
+    let t/2: Slice[int32] =
+      (Slice[int32]::sub : (Slice[int32], int, int) -> Slice[int32])((s/1 : Slice[int32]), 1, 3);
     (println : (int) -> unit)((Slice[int32]::len : (Slice[int32]) -> int)((t/2 : Slice[int32])));
-    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int) -> int32)((t/2 : Slice[int32]), 0));
-    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int) -> int32)((t/2 : Slice[int32]), 1));
+    (println : (int32) -> unit)(
+      (Slice[int32]::get : (Slice[int32], int) -> int32)((t/2 : Slice[int32]), 0)
+    );
+    (println : (int32) -> unit)(
+      (Slice[int32]::get : (Slice[int32], int) -> int32)((t/2 : Slice[int32]), 1)
+    );
 }

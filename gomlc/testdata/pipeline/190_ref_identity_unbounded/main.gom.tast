@@ -1,5 +1,7 @@
 fn print_lookup(map/0: HashMap[Ref[Node], string], key/1: Ref[Node]) -> unit {
-    match (HashMap[Ref[Node], string]::get : (HashMap[Ref[Node], string], Ref[Node]) -> Option[string])((map/0 : HashMap[Ref[Node], string]), (key/1 : Ref[Node])) {
+    match (HashMap[Ref[Node], string]::get : (HashMap[Ref[Node], string], Ref[Node]) -> Option[
+      string
+    ])((map/0 : HashMap[Ref[Node], string]), (key/1 : Ref[Node])) {
         Option::Some(value/2: string) => (println : (string) -> unit)((value/2 : string)),
         Option::None => (println : (string) -> unit)("missing"),
     }
@@ -9,17 +11,52 @@ fn main() -> unit {
     let first/3: Ref[Node] = (Ref[Node]::new : (Node) -> Ref[Node])(Node { value: 1 });
     let alias/4: Ref[Node] = (first/3 : Ref[Node]);
     let distinct/5: Ref[Node] = (Ref[Node]::new : (Node) -> Ref[Node])(Node { value: 1 });
-    (println : (bool) -> unit)((Eq::eq : (Ref[Node], Ref[Node]) -> bool)((first/3 : Ref[Node]), (alias/4 : Ref[Node])));
-    (println : (bool) -> unit)((Eq::eq : (Ref[Node], Ref[Node]) -> bool)((first/3 : Ref[Node]), (distinct/5 : Ref[Node])));
-    (println : (bool) -> unit)((Hash::hash : (Ref[Node]) -> uint64)((first/3 : Ref[Node])) == (Hash::hash : (Ref[Node]) -> uint64)((alias/4 : Ref[Node])));
-    let map/6: HashMap[Ref[Node], string] = (HashMap[Ref[Node], string]::new : () -> HashMap[Ref[Node], string])();
-    (HashMap[Ref[Node], string]::set : (HashMap[Ref[Node], string], Ref[Node], string) -> unit)((map/6 : HashMap[Ref[Node], string]), (first/3 : Ref[Node]), "first");
-    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)((map/6 : HashMap[Ref[Node], string]), (alias/4 : Ref[Node]));
-    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)((map/6 : HashMap[Ref[Node], string]), (distinct/5 : Ref[Node]));
+    (println : (bool) -> unit)(
+      (Eq::eq : (Ref[Node], Ref[Node]) -> bool)((first/3 : Ref[Node]), (alias/4 : Ref[Node]))
+    );
+    (println : (bool) -> unit)(
+      (Eq::eq : (Ref[Node], Ref[Node]) -> bool)((first/3 : Ref[Node]), (distinct/5 : Ref[Node]))
+    );
+    (println : (bool) -> unit)(
+      (Hash::hash : (Ref[Node]) -> uint64)((first/3 : Ref[Node])) ==
+        (Hash::hash : (Ref[Node]) -> uint64)((alias/4 : Ref[Node]))
+    );
+    let map/6: HashMap[Ref[Node], string] =
+      (HashMap[Ref[Node], string]::new : () -> HashMap[Ref[Node], string])();
+    (HashMap[Ref[Node], string]::set : (HashMap[Ref[Node], string], Ref[Node], string) -> unit)(
+      (map/6 : HashMap[Ref[Node], string]),
+      (first/3 : Ref[Node]),
+      "first"
+    );
+    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)(
+      (map/6 : HashMap[Ref[Node], string]),
+      (alias/4 : Ref[Node])
+    );
+    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)(
+      (map/6 : HashMap[Ref[Node], string]),
+      (distinct/5 : Ref[Node])
+    );
     (Ref[Node]::set : (Ref[Node], Node) -> unit)((first/3 : Ref[Node]), Node { value: 2 });
-    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)((map/6 : HashMap[Ref[Node], string]), (first/3 : Ref[Node]));
-    (HashMap[Ref[Node], string]::set : (HashMap[Ref[Node], string], Ref[Node], string) -> unit)((map/6 : HashMap[Ref[Node], string]), (distinct/5 : Ref[Node]), "distinct");
-    (println : (int) -> unit)((HashMap[Ref[Node], string]::len : (HashMap[Ref[Node], string]) -> int)((map/6 : HashMap[Ref[Node], string])));
-    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)((map/6 : HashMap[Ref[Node], string]), (first/3 : Ref[Node]));
-    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)((map/6 : HashMap[Ref[Node], string]), (distinct/5 : Ref[Node]))
+    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)(
+      (map/6 : HashMap[Ref[Node], string]),
+      (first/3 : Ref[Node])
+    );
+    (HashMap[Ref[Node], string]::set : (HashMap[Ref[Node], string], Ref[Node], string) -> unit)(
+      (map/6 : HashMap[Ref[Node], string]),
+      (distinct/5 : Ref[Node]),
+      "distinct"
+    );
+    (println : (int) -> unit)(
+      (HashMap[Ref[Node], string]::len : (HashMap[Ref[Node], string]) -> int)(
+        (map/6 : HashMap[Ref[Node], string])
+      )
+    );
+    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)(
+      (map/6 : HashMap[Ref[Node], string]),
+      (first/3 : Ref[Node])
+    );
+    (print_lookup : (HashMap[Ref[Node], string], Ref[Node]) -> unit)(
+      (map/6 : HashMap[Ref[Node], string]),
+      (distinct/5 : Ref[Node])
+    )
 }

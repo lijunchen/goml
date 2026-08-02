@@ -1,10 +1,12 @@
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
     match (x/0 : (bool, bool)) {
-        (true, false) => match (y/1 : (bool, bool)) {
+        (true, false) =>
+          match (y/1 : (bool, bool)) {
               (false, true) => (println : (string) -> unit)("case1"),
               _ : (bool, bool) => (println : (string) -> unit)("case2"),
           },
-        _ : (bool, bool) => match (y/1 : (bool, bool)) {
+        _ : (bool, bool) =>
+          match (y/1 : (bool, bool)) {
               (false, true) => (println : (string) -> unit)("case3"),
               _ : (bool, bool) => (println : (string) -> unit)("case4"),
           },
@@ -12,9 +14,13 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
 }
 
 fn main() -> unit {
-    let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (false, true));
-    let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (true, false));
-    let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (false, true));
-    let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (true, false));
+    let _ : unit =
+      (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (false, true));
+    let _ : unit =
+      (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (true, false));
+    let _ : unit =
+      (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (false, true));
+    let _ : unit =
+      (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (true, false));
     ()
 }
