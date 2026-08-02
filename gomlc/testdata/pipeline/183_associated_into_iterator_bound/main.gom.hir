@@ -1,35 +1,34 @@
 package main
 file main.gom
   trait Batch {
-      type Items: IntoIterator;
-      fn items(Self) -> Self::Items;
-    }
+    type Items: IntoIterator;
+    fn items(Self) -> Self::Items;
+  }
 
-    struct Numbers {
-        values: Vec[int32],
-    }
+  struct Numbers {
+      values: Vec[int32],
+  }
 
-    impl Batch for Numbers {
-      type Items = Vec[int32];
-      fn items(local/1/0: Numbers) -> Vec[int32] {
-          self/0.values
-      }
+  impl Batch for Numbers {
+    type Items = Vec[int32];
+    fn items(local/1/0: Numbers) -> Vec[int32] {
+        self/0.values
     }
+  }
 
-    fn count[B: Batch](local/1/1: B) -> int32 {
-        let local/1/2 = Ref::new(0);
-        for _ in Batch::items(batch/1) {
-            total/2.set(total/2.get() + 1);
-        };
-        total/2.get()
-    }
+  fn count[B: Batch](local/1/1: B) -> int32 {
+      let local/1/2 = Ref::new(0);
+      for _ in
+        Batch::items(batch/1) {
+          total/2.set(total/2.get() + 1);
+      };
+      total/2.get()
+  }
 
-    fn main() -> unit {
-        let local/1/3: Vec[int32] = Vec::new();
-        values/3.push(10);
-        values/3.push(20);
-        values/3.push(30);
-        println(def/1/3(Numbers {
-                values: values/3
-            }));
-    }
+  fn main() -> unit {
+      let local/1/3: Vec[int32] = Vec::new();
+      values/3.push(10);
+      values/3.push(20);
+      values/3.push(30);
+      println(def/1/3(Numbers { values: values/3 }));
+  }

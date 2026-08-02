@@ -1,162 +1,124 @@
 package main
 file main.gom
   #[derive(Hash, Eq)]
-struct FloatKey {
-        value: float64,
-    }
+  struct FloatKey {
+      value: float64,
+  }
 
-    impl Eq for FloatKey {
-      fn eq(local/1/0: FloatKey, local/1/1: FloatKey) -> bool {
-          true && Eq::eq(self/0.value, other/1.value)
+  impl Eq for FloatKey {
+    fn eq(local/1/0: FloatKey, local/1/1: FloatKey) -> bool {
+        true && Eq::eq(self/0.value, other/1.value)
+    }
+  }
+
+  impl Hash for FloatKey {
+    fn hash(local/1/2: FloatKey) -> uint64 {
+        let local/1/3: uint64 = 14695981039346656037;
+        let local/1/4 = h/3 * 1099511628211 + Hash::hash(self/2.value);
+        h/4
+    }
+  }
+
+  struct CollisionKey {
+      value: int32,
+  }
+
+  impl Eq for CollisionKey {
+    fn eq(local/1/5: CollisionKey, local/1/6: CollisionKey) -> bool {
+        self/5.value == other/6.value
+    }
+  }
+
+  impl Hash for CollisionKey {
+    fn hash(local/1/7: CollisionKey) -> uint64 {
+        1
+    }
+  }
+
+  fn print_opt_string(local/1/8: Option[string]) -> unit {
+      match value/8 {
+          Option::Some(local/1/9) => println(text/9),
+          Option::None => println("none"),
       }
-    }
+  }
 
-    impl Hash for FloatKey {
-      fn hash(local/1/2: FloatKey) -> uint64 {
-          let local/1/3: uint64 = 14695981039346656037;
-          let local/1/4 = h/3 * 1099511628211 + Hash::hash(self/2.value);
-          h/4
+  fn print_opt_int(local/1/10: Option[int32]) -> unit {
+      match value/10 {
+          Option::Some(local/1/11) => println(number/11),
+          Option::None => println("none"),
       }
-    }
+  }
 
-    struct CollisionKey {
-        value: int32,
-    }
+  fn float_zero_contracts() -> unit {
+      let local/1/12: float32 = 0;
+      let local/1/13 = -zero32/12;
+      println(Hash::hash(zero32/12) == Hash::hash(negative_zero32/13).to_string());
+      let local/1/14: HashMap[float32, string] = HashMap::new();
+      values32/14.set(zero32/12, "f32");
+      def/1/6(values32/14.get(negative_zero32/13));
+      values32/14.set(negative_zero32/13, "f32-updated");
+      println(values32/14.len());
+      def/1/6(values32/14.get(zero32/12));
+      values32/14.remove(negative_zero32/13);
+      println(values32/14.len());
+      let local/1/15: float64 = 0;
+      let local/1/16 = -zero64/15;
+      println(Hash::hash(zero64/15) == Hash::hash(negative_zero64/16).to_string());
+      let local/1/17: HashMap[float64, string] = HashMap::new();
+      values64/17.set(zero64/15, "f64");
+      def/1/6(values64/17.get(negative_zero64/16));
+      let local/1/18: HashMap[FloatKey, string] = HashMap::new();
+      derived/18.set(FloatKey { value: zero64/15 }, "derived");
+      def/1/6(derived/18.get(FloatKey { value: negative_zero64/16 }));
+  }
 
-    impl Eq for CollisionKey {
-      fn eq(local/1/5: CollisionKey, local/1/6: CollisionKey) -> bool {
-          self/5.value == other/6.value
-      }
-    }
+  fn collision_contracts() -> unit {
+      let local/1/19: HashMap[CollisionKey, int32] = HashMap::new();
+      values/19.set(CollisionKey { value: 1 }, 10);
+      values/19.set(CollisionKey { value: 2 }, 20);
+      values/19.set(CollisionKey { value: 3 }, 30);
+      values/19.remove(CollisionKey { value: 2 });
+      def/1/7(values/19.get(CollisionKey { value: 1 }));
+      def/1/7(values/19.get(CollisionKey { value: 2 }));
+      def/1/7(values/19.get(CollisionKey { value: 3 }));
+      values/19.set(CollisionKey { value: 4 }, 40);
+      println(values/19.len());
+      def/1/7(values/19.get(CollisionKey { value: 4 }));
+      values/19.set(CollisionKey { value: 4 }, 41);
+      println(values/19.len());
+      def/1/7(values/19.get(CollisionKey { value: 4 }));
+      values/19.remove(CollisionKey { value: 99 });
+      values/19.remove(CollisionKey { value: 99 });
+      println(values/19.len());
+      let local/1/20 = Ref::new(0);
+      while index/20.get() < 2000 {
+          {
+              let local/1/21 = CollisionKey { value: 1000 + index/20.get() };
+              values/19.set(key/21, index/20.get());
+              values/19.remove(key/21);
+              index/20.set(index/20.get() + 1);
+          }
+      };
+      println(values/19.len());
+  }
 
-    impl Hash for CollisionKey {
-      fn hash(local/1/7: CollisionKey) -> uint64 {
-          1
-      }
-    }
+  fn reference_contracts() -> unit {
+      let local/1/22: HashMap[Ref[CollisionKey], string] = HashMap::new();
+      let local/1/23 = Ref::new(CollisionKey { value: 1 });
+      let local/1/24 = key/23;
+      let local/1/25 = Ref::new(CollisionKey { value: 1 });
+      values/22.set(key/23, "identity");
+      println(Eq::eq(key/23, alias/24));
+      println(Eq::eq(key/23, equal_value/25));
+      println(Hash::hash(key/23) == Hash::hash(alias/24));
+      def/1/6(values/22.get(alias/24));
+      def/1/6(values/22.get(equal_value/25));
+      key/23.set(CollisionKey { value: 99 });
+      def/1/6(values/22.get(key/23));
+  }
 
-    fn print_opt_string(local/1/8: Option[string]) -> unit {
-        match value/8 {
-            Option::Some(local/1/9) => println(text/9),
-            Option::None => println("none"),
-        }
-    }
-
-    fn print_opt_int(local/1/10: Option[int32]) -> unit {
-        match value/10 {
-            Option::Some(local/1/11) => println(number/11),
-            Option::None => println("none"),
-        }
-    }
-
-    fn float_zero_contracts() -> unit {
-        let local/1/12: float32 = 0;
-        let local/1/13 = -zero32/12;
-        println(Hash::hash(zero32/12) == Hash::hash(negative_zero32/13).to_string());
-        let local/1/14: HashMap[float32, string] = HashMap::new();
-        values32/14.set(zero32/12, "f32");
-        def/1/6(values32/14.get(negative_zero32/13));
-        values32/14.set(negative_zero32/13, "f32-updated");
-        println(values32/14.len());
-        def/1/6(values32/14.get(zero32/12));
-        values32/14.remove(negative_zero32/13);
-        println(values32/14.len());
-        let local/1/15: float64 = 0;
-        let local/1/16 = -zero64/15;
-        println(Hash::hash(zero64/15) == Hash::hash(negative_zero64/16).to_string());
-        let local/1/17: HashMap[float64, string] = HashMap::new();
-        values64/17.set(zero64/15, "f64");
-        def/1/6(values64/17.get(negative_zero64/16));
-        let local/1/18: HashMap[FloatKey, string] = HashMap::new();
-        derived/18.set(FloatKey {
-              value: zero64/15
-          }, "derived");
-        def/1/6(derived/18.get(FloatKey {
-                value: negative_zero64/16
-            }));
-    }
-
-    fn collision_contracts() -> unit {
-        let local/1/19: HashMap[CollisionKey, int32] = HashMap::new();
-        values/19.set(CollisionKey {
-              value: 1
-          }, 10);
-        values/19.set(CollisionKey {
-              value: 2
-          }, 20);
-        values/19.set(CollisionKey {
-              value: 3
-          }, 30);
-        values/19.remove(CollisionKey {
-              value: 2
-          });
-        def/1/7(values/19.get(CollisionKey {
-                value: 1
-            }));
-        def/1/7(values/19.get(CollisionKey {
-                value: 2
-            }));
-        def/1/7(values/19.get(CollisionKey {
-                value: 3
-            }));
-        values/19.set(CollisionKey {
-              value: 4
-          }, 40);
-        println(values/19.len());
-        def/1/7(values/19.get(CollisionKey {
-                value: 4
-            }));
-        values/19.set(CollisionKey {
-              value: 4
-          }, 41);
-        println(values/19.len());
-        def/1/7(values/19.get(CollisionKey {
-                value: 4
-            }));
-        values/19.remove(CollisionKey {
-              value: 99
-          });
-        values/19.remove(CollisionKey {
-              value: 99
-          });
-        println(values/19.len());
-        let local/1/20 = Ref::new(0);
-        while index/20.get() < 2000 {
-            {
-                let local/1/21 = CollisionKey {
-                    value: 1000 + index/20.get()
-                };
-                values/19.set(key/21, index/20.get());
-                values/19.remove(key/21);
-                index/20.set(index/20.get() + 1);
-            }
-        };
-        println(values/19.len());
-    }
-
-    fn reference_contracts() -> unit {
-        let local/1/22: HashMap[Ref[CollisionKey], string] = HashMap::new();
-        let local/1/23 = Ref::new(CollisionKey {
-              value: 1
-          });
-        let local/1/24 = key/23;
-        let local/1/25 = Ref::new(CollisionKey {
-              value: 1
-          });
-        values/22.set(key/23, "identity");
-        println(Eq::eq(key/23, alias/24));
-        println(Eq::eq(key/23, equal_value/25));
-        println(Hash::hash(key/23) == Hash::hash(alias/24));
-        def/1/6(values/22.get(alias/24));
-        def/1/6(values/22.get(equal_value/25));
-        key/23.set(CollisionKey {
-              value: 99
-          });
-        def/1/6(values/22.get(key/23));
-    }
-
-    fn main() -> unit {
-        def/1/8();
-        def/1/9();
-        def/1/10();
-    }
+  fn main() -> unit {
+      def/1/8();
+      def/1/9();
+      def/1/10();
+  }

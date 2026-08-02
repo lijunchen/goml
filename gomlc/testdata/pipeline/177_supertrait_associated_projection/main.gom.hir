@@ -1,37 +1,35 @@
 package main
 file main.gom
   trait Child: Parent {
-      fn child(Self) -> unit;
-    }
+    fn child(Self) -> unit;
+  }
 
-    trait Parent {
-      type Item;
-      fn get(Self) -> Self::Item;
-    }
+  trait Parent {
+    type Item;
+    fn get(Self) -> Self::Item;
+  }
 
-    struct Count {
-        value: int32,
-    }
+  struct Count {
+      value: int32,
+  }
 
-    impl Parent for Count {
-      type Item = int32;
-      fn get(local/1/0: Count) -> int32 {
-          self/0.value
-      }
+  impl Parent for Count {
+    type Item = int32;
+    fn get(local/1/0: Count) -> int32 {
+        self/0.value
     }
+  }
 
-    impl Child for Count {
-      fn child(local/1/1: Count) -> unit {
-          ()
-      }
+  impl Child for Count {
+    fn child(local/1/1: Count) -> unit {
+        ()
     }
+  }
 
-    fn get_from_child[C: Child](local/1/2: C) -> C::Item {
-        Parent::get(value/2)
-    }
+  fn get_from_child[C: Child](local/1/2: C) -> C::Item {
+      Parent::get(value/2)
+  }
 
-    fn main() -> unit {
-        println(def/1/5(Count {
-                value: 42
-            }));
-    }
+  fn main() -> unit {
+      println(def/1/5(Count { value: 42 }));
+  }

@@ -1,9 +1,10 @@
 package main
 file main.gom
   fn sum_to(local/1/0: int32) -> int32 {
-        let local/1/1 = Ref::new(0);
-        let local/1/2 = Ref::new(0);
-        let _ = while i/2.get() < limit/0 {
+      let local/1/1 = Ref::new(0);
+      let local/1/2 = Ref::new(0);
+      let _ =
+        while i/2.get() < limit/0 {
             {
                 let local/1/3 = i/2.get();
                 let _ = acc/1.set(acc/1.get() + current/3);
@@ -11,14 +12,15 @@ file main.gom
                 ()
             }
         };
-        acc/1.get()
-    }
+      acc/1.get()
+  }
 
-    fn sum_even(local/1/4: int32) -> int32 {
-        let local/1/5 = Ref::new(0);
-        let local/1/6 = Ref::new(0);
-        let local/1/7 = Ref::new(true);
-        let _ = while i/6.get() < limit/4 {
+  fn sum_even(local/1/4: int32) -> int32 {
+      let local/1/5 = Ref::new(0);
+      let local/1/6 = Ref::new(0);
+      let local/1/7 = Ref::new(true);
+      let _ =
+        while i/6.get() < limit/4 {
             {
                 let local/1/8 = i/6.get();
                 let _ = i/6.set(current/8 + 1);
@@ -31,15 +33,15 @@ file main.gom
                 }
             }
         };
-        acc/5.get()
-    }
+      acc/5.get()
+  }
 
-    fn main() {
-        let local/1/10 = def/1/0(5);
-        let local/1/11 = def/1/1(6);
-        let _ = print("sum_to(5)=");
-        let _ = println(first/10);
-        let _ = print("sum_even(6)=");
-        let _ = println(evens/11);
-        ()
-    }
+  fn main() {
+      let local/1/10 = def/1/0(5);
+      let local/1/11 = def/1/1(6);
+      let _ = print("sum_to(5)=");
+      let _ = println(first/10);
+      let _ = print("sum_even(6)=");
+      let _ = println(evens/11);
+      ()
+  }

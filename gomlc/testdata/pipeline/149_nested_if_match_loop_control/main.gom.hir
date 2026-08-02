@@ -1,13 +1,14 @@
 package main
 file main.gom
   fn main() -> unit {
-        let local/1/0 = Ref::new(0);
-        let local/1/1 = Ref::new(0);
-        while i/0.get() < 7 {
-            {
-                let local/1/2 = i/0.get();
-                i/0.set(cur/2 + 1);
-                let _ = if cur/2 < 5 {
+      let local/1/0 = Ref::new(0);
+      let local/1/1 = Ref::new(0);
+      while i/0.get() < 7 {
+          {
+              let local/1/2 = i/0.get();
+              i/0.set(cur/2 + 1);
+              let _ =
+                if cur/2 < 5 {
                     match cur/2 {
                         1 => continue,
                         3 => continue,
@@ -19,8 +20,8 @@ file main.gom
                         _ => (),
                     }
                 };
-                sum/1.set(sum/1.get() + cur/2);
-            }
-        };
-        println(sum/1.get());
-    }
+              sum/1.set(sum/1.get() + cur/2);
+          }
+      };
+      println(sum/1.get());
+  }
