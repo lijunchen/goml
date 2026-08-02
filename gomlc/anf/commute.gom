@@ -1,0 +1,1049 @@
+package anf;
+
+use gomlc::tast;
+
+enum CommuteKnown {
+    Unknown,
+    Dispatch {
+        selector: Imm,
+        fields: Vec[Imm],
+        constructor: Option[tast::Constructor],
+    },
+}
+
+struct CommuteBinding {
+    name: string,
+    value: CommuteKnown,
+}
+
+struct CommuteField {
+    index: int,
+    ty: tast::Type,
+    constructor: tast::Constructor,
+    name: string,
+}
+
+struct CommuteArm {
+    selector: Imm,
+    target: string,
+    params: Vec[(string, tast::Type)],
+    fields: Vec[CommuteField],
+    keep_scrutinee: bool,
+    body: Block,
+}
+
+struct CommuteDefault {
+    target: string,
+    params: Vec[(string, tast::Type)],
+    fields: Vec[CommuteField],
+    keep_scrutinee: bool,
+    body: Block,
+}
+
+fn fresh_commute(counter: Ref[int], prefix: string) -> string {
+    let value = counter.get();
+    counter.set(value + 1);
+    prefix + value.to_string()
+}
+
+fn copy_commute_bindings(values: Vec[CommuteBinding]) -> Vec[CommuteBinding] {
+    let result: Vec[CommuteBinding] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn copy_commute_fields(values: Vec[CommuteField]) -> Vec[CommuteField] {
+    let result: Vec[CommuteField] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn find_commute_binding(values: Vec[CommuteBinding], name: string) -> CommuteKnown {
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
+        if value.name == name {
+            return value.value
+        } else {
+            index = index - 1;
+        }
+    };
+    CommuteKnown::Unknown
+}
+
+fn known_dispatch(value: Imm, known: Vec[CommuteBinding]) -> CommuteKnown {
+    match value {
+        Var { name, ty: _ } => find_commute_binding(known, name),
+        Tag { .. } | Prim { .. } => CommuteKnown::Dispatch {
+            selector: value,
+            fields: Vec::[],
+            constructor: Option::None,
+        },
+        Callable { .. } => CommuteKnown::Unknown,
+    }
+}
+
+fn invalidate_commute_dependents(known: Vec[CommuteBinding], name: string) -> unit {
+    let invalidated: Vec[string] = Vec::[];
+    for binding in known {
+        match binding.value {
+            Dispatch { selector: _, fields, constructor: _ } => if imms_use_name(fields, name) {
+                invalidated.push(binding.name)
+            } else {
+                ()
+            },
+            Unknown => (),
+        }
+    };
+    for binding in invalidated {
+        known.push(CommuteBinding { name: binding, value: CommuteKnown::Unknown })
+    }
+}
+
+fn invalidate_commute_name(known: Vec[CommuteBinding], name: string) -> unit {
+    invalidate_commute_dependents(known, name);
+    known.push(CommuteBinding { name, value: CommuteKnown::Unknown })
+}
+
+fn stabilize_commute_bindings(known: Vec[CommuteBinding], assigned: Vec[string]) -> unit {
+    for name in assigned {
+        invalidate_commute_name(known, name)
+    }
+}
+
+fn record_commute_binding(known: Vec[CommuteBinding], value: LetBind) -> unit {
+    match value.value {
+        Constr { constructor, args, ty } => match constructor.tag {
+            Some(index) => known.push(
+                CommuteBinding {
+                    name: value.name,
+                    value: CommuteKnown::Dispatch {
+                        selector: Imm::Tag { index, ty },
+                        fields: args,
+                        constructor: Option::Some(constructor),
+                    },
+                },
+            ),
+            None => known.push(CommuteBinding { name: value.name, value: CommuteKnown::Unknown }),
+        },
+        Imm(imm) => known.push(
+            CommuteBinding { name: value.name, value: known_dispatch(imm, known) },
+        ),
+        Assign { name, .. } => {
+            invalidate_commute_name(known, name);
+            known.push(CommuteBinding { name: value.name, value: CommuteKnown::Unknown })
+        },
+        _ => known.push(CommuteBinding { name: value.name, value: CommuteKnown::Unknown }),
+    }
+}
+
+fn collect_commute_assigned_term(result: Vec[string], value: Term) -> unit {
+    match value {
+        If { then_, else_, .. } => {
+            collect_commute_assigned_block(result, then_);
+            collect_commute_assigned_block(result, else_)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                collect_commute_assigned_block(result, arm.body)
+            };
+            match default {
+                Some(body) => collect_commute_assigned_block(result, body),
+                None => (),
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => (),
+    }
+}
+
+fn collect_commute_assigned_block(result: Vec[string], value: Block) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(value) => match value.value {
+                Assign { name, .. } => result.push(name),
+                _ => (),
+            },
+            Join(value) => collect_commute_assigned_block(result, value.body),
+            JoinRec(values) => for value in values {
+                collect_commute_assigned_block(result, value.body)
+            },
+        }
+    };
+    collect_commute_assigned_term(result, value.term)
+}
+
+fn shadow_commute_params(known: Vec[CommuteBinding], params: Vec[(string, tast::Type)]) -> Vec[
+    CommuteBinding,
+] {
+    let result = copy_commute_bindings(known);
+    for param in params {
+        result.push(CommuteBinding { name: param.0, value: CommuteKnown::Unknown })
+    };
+    result
+}
+
+fn imm_uses_name(value: Imm, name: string) -> bool {
+    match value {
+        Var { name: present, ty: _ } => present == name,
+        Callable { .. } | Prim { .. } | Tag { .. } => false,
+    }
+}
+
+fn imms_use_name(values: Vec[Imm], name: string) -> bool {
+    for value in values {
+        if imm_uses_name(value, name) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn value_uses_name(value: Value, name: string) -> bool {
+    match value {
+        Imm(value) => imm_uses_name(value, name),
+        Constr { args, .. } => imms_use_name(args, name),
+        Tuple { items, .. } | Array { items, .. } => imms_use_name(items, name),
+        ConstrGet { expr, .. } | Unary { expr, .. } | Cast { expr, .. } | ToDyn { expr, .. } => imm_uses_name(
+            expr,
+            name,
+        ),
+        Binary { lhs, rhs, .. } => imm_uses_name(lhs, name) || imm_uses_name(rhs, name),
+        Assign { name: target, value, .. } => target == name || imm_uses_name(value, name),
+        Call { func, args, .. } => imm_uses_name(func, name) || imms_use_name(args, name),
+        DynCall { receiver, args, .. } => {
+            imm_uses_name(receiver, name) || imms_use_name(args, name)
+        },
+        Go { closure, .. } => imm_uses_name(closure, name),
+        Proj { tuple, .. } => imm_uses_name(tuple, name),
+    }
+}
+
+fn term_uses_name(value: Term, name: string) -> bool {
+    match value {
+        Return(value) => imm_uses_name(value, name),
+        Jump { args, .. } => imms_use_name(args, name),
+        If { cond, then_, else_, .. } => {
+            imm_uses_name(cond, name) || block_uses_name(then_, name)
+                || block_uses_name(else_, name)
+        },
+        Match { scrutinee, arms, default, .. } => {
+            if imm_uses_name(scrutinee, name) {
+                return true
+            } else {
+                ()
+            };
+            for arm in arms {
+                if imm_uses_name(arm.lhs, name) || block_uses_name(arm.body, name) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => block_uses_name(body, name),
+                None => false,
+            }
+        },
+        Unreachable { .. } => false,
+    }
+}
+
+fn block_uses_name(value: Block, name: string) -> bool {
+    for bind in value.binds {
+        match bind {
+            Let(value) => if value_uses_name(value.value, name) {
+                return true
+            } else {
+                ()
+            },
+            Join(value) => if block_uses_name(value.body, name) {
+                return true
+            } else {
+                ()
+            },
+            JoinRec(values) => for value in values {
+                if block_uses_name(value.body, name) {
+                    return true
+                } else {
+                    ()
+                }
+            },
+        }
+    };
+    term_uses_name(value.term, name)
+}
+
+fn find_commute_field(
+    values: Vec[CommuteField],
+    constructor: tast::Constructor,
+    index: int,
+    ty: tast::Type,
+) -> Option[CommuteField] {
+    for value in values {
+        if value.index == index && constructors_equal(value.constructor, constructor)
+            && tast::types_equal(value.ty, ty) {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn collect_commute_value_fields(
+    result: Vec[CommuteField],
+    value: Value,
+    scrutinee: string,
+    counter: Ref[int],
+) -> unit {
+    match value {
+        ConstrGet { expr: Var { name, ty: _ }, constructor, field_index, ty } => {
+            if name == scrutinee
+                && find_commute_field(result, constructor, field_index, ty).is_none() {
+                result.push(
+                    CommuteField {
+                        index: field_index,
+                        ty,
+                        constructor,
+                        name: fresh_commute(counter, "commute_field"),
+                    },
+                )
+            } else {
+                ()
+            }
+        },
+        _ => (),
+    }
+}
+
+fn collect_commute_term_fields(
+    result: Vec[CommuteField],
+    value: Term,
+    scrutinee: string,
+    counter: Ref[int],
+) -> unit {
+    match value {
+        If { then_, else_, .. } => {
+            collect_commute_block_fields(result, then_, scrutinee, counter);
+            collect_commute_block_fields(result, else_, scrutinee, counter)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                collect_commute_block_fields(result, arm.body, scrutinee, counter)
+            };
+            match default {
+                Some(body) => collect_commute_block_fields(result, body, scrutinee, counter),
+                None => (),
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => (),
+    }
+}
+
+fn collect_commute_block_fields(
+    result: Vec[CommuteField],
+    value: Block,
+    scrutinee: string,
+    counter: Ref[int],
+) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(value) => collect_commute_value_fields(result, value.value, scrutinee, counter),
+            Join(value) => collect_commute_block_fields(result, value.body, scrutinee, counter),
+            JoinRec(values) => for value in values {
+                collect_commute_block_fields(result, value.body, scrutinee, counter)
+            },
+        }
+    };
+    collect_commute_term_fields(result, value.term, scrutinee, counter)
+}
+
+fn replace_commute_value(value: Value, fields: Vec[CommuteField], scrutinee: string) -> Value {
+    match value {
+        ConstrGet { expr: Var { name, ty: expr_ty }, constructor, field_index, ty } => {
+            if name == scrutinee {
+                match find_commute_field(fields, constructor, field_index, ty) {
+                    Some(field) => Value::Imm(Imm::Var { name: field.name, ty: field.ty }),
+                    None => Value::ConstrGet {
+                        expr: Imm::Var { name, ty: expr_ty },
+                        constructor,
+                        field_index,
+                        ty,
+                    },
+                }
+            } else {
+                Value::ConstrGet {
+                    expr: Imm::Var { name, ty: expr_ty },
+                    constructor,
+                    field_index,
+                    ty,
+                }
+            }
+        },
+        _ => value,
+    }
+}
+
+fn replace_commute_term(value: Term, fields: Vec[CommuteField], scrutinee: string) -> Term {
+    match value {
+        If { cond, then_, else_, ret_ty } => Term::If {
+            cond,
+            then_: replace_commute_block(then_, fields, scrutinee),
+            else_: replace_commute_block(else_, fields, scrutinee),
+            ret_ty,
+        },
+        Match { scrutinee: value, arms, default, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    Arm { lhs: arm.lhs, body: replace_commute_block(arm.body, fields, scrutinee) },
+                )
+            };
+            Term::Match {
+                scrutinee: value,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(replace_commute_block(body, fields, scrutinee)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Return(value) => Term::Return(value),
+        Jump { target, args, ret_ty } => Term::Jump { target, args, ret_ty },
+        Unreachable { ty } => Term::Unreachable { ty },
+    }
+}
+
+fn replace_commute_block(value: Block, fields: Vec[CommuteField], scrutinee: string) -> Block {
+    let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    for bind in value.binds {
+        match bind {
+            Let(value) => binds.push(
+                Bind::Let(
+                    LetBind {
+                        name: value.name,
+                        value: replace_commute_value(value.value, fields, scrutinee),
+                        ty: value.ty,
+                    },
+                ),
+            ),
+            Join(value) => binds.push(
+                Bind::Join(
+                    JoinBind {
+                        name: value.name,
+                        role: value.role,
+                        params: value.params,
+                        ret_ty: value.ret_ty,
+                        body: replace_commute_block(value.body, fields, scrutinee),
+                    },
+                ),
+            ),
+            JoinRec(joins) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(joins.len());
+                for value in joins {
+                    lowered.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: replace_commute_block(value.body, fields, scrutinee),
+                        },
+                    )
+                };
+                binds.push(Bind::JoinRec(lowered))
+            },
+        }
+    };
+    Block { binds, term: replace_commute_term(value.term, fields, scrutinee) }
+}
+
+fn commute_arm_params(
+    params: Vec[(string, tast::Type)],
+    scrutinee_index: int,
+    keep_scrutinee: bool,
+    fields: Vec[CommuteField],
+) -> Vec[(string, tast::Type)] {
+    let result: Vec[(string, tast::Type)] = Vec::[];
+    for index in 0..params.len() {
+        if index != scrutinee_index || keep_scrutinee {
+            result.push(params[index])
+        } else {
+            ()
+        }
+    };
+    for field in fields {
+        result.push((field.name, field.ty))
+    };
+    result
+}
+
+fn build_commute_arm(
+    value: Arm,
+    params: Vec[(string, tast::Type)],
+    scrutinee: string,
+    scrutinee_index: int,
+    counter: Ref[int],
+) -> CommuteArm {
+    let fields: Vec[CommuteField] = Vec::[];
+    if assigned_names(value.body).contains(scrutinee) {
+        ()
+    } else {
+        collect_commute_block_fields(fields, value.body, scrutinee, counter)
+    };
+    let body = replace_commute_block(value.body, fields, scrutinee);
+    let keep_scrutinee = block_uses_name(body, scrutinee);
+    CommuteArm {
+        selector: value.lhs,
+        target: fresh_commute(counter, "commute_arm"),
+        params: commute_arm_params(params, scrutinee_index, keep_scrutinee, fields),
+        fields,
+        keep_scrutinee,
+        body,
+    }
+}
+
+fn build_commute_default(
+    value: Block,
+    params: Vec[(string, tast::Type)],
+    scrutinee: string,
+    scrutinee_index: int,
+    counter: Ref[int],
+) -> CommuteDefault {
+    let fields: Vec[CommuteField] = Vec::[];
+    if assigned_names(value).contains(scrutinee) {
+        ()
+    } else {
+        collect_commute_block_fields(fields, value, scrutinee, counter)
+    };
+    let body = replace_commute_block(value, fields, scrutinee);
+    let keep_scrutinee = block_uses_name(body, scrutinee);
+    CommuteDefault {
+        target: fresh_commute(counter, "commute_default"),
+        params: commute_arm_params(params, scrutinee_index, keep_scrutinee, fields),
+        fields,
+        keep_scrutinee,
+        body,
+    }
+}
+
+fn find_commute_arm(values: Vec[CommuteArm], selector: Imm) -> Option[CommuteArm] {
+    for value in values {
+        if match_imms_equal(value.selector, selector) {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn commute_call_args(
+    args: Vec[Imm],
+    scrutinee_index: int,
+    keep_scrutinee: bool,
+    fields: Vec[CommuteField],
+    dispatch_fields: Vec[Imm],
+    constructor: Option[tast::Constructor],
+) -> Option[Vec[Imm]] {
+    let result: Vec[Imm] = Vec::[];
+    for index in 0..args.len() {
+        if index != scrutinee_index || keep_scrutinee {
+            result.push(args[index])
+        } else {
+            ()
+        }
+    };
+    for field in fields {
+        let present = constructor?;
+        if !constructors_equal(field.constructor, present) || field.index < 0
+            || field.index >= dispatch_fields.len()
+            || !tast::types_equal(imm_type(dispatch_fields[field.index]), field.ty) {
+            return Option::None
+        } else {
+            result.push(dispatch_fields[field.index])
+        }
+    };
+    Option::Some(result)
+}
+
+fn rewrite_commute_call(
+    args: Vec[Imm],
+    ret_ty: tast::Type,
+    scrutinee_index: int,
+    arms: Vec[CommuteArm],
+    default: Option[CommuteDefault],
+    known: Vec[CommuteBinding],
+) -> Option[Term] {
+    if scrutinee_index < 0 || scrutinee_index >= args.len() {
+        return Option::None
+    } else {
+        ()
+    };
+    match known_dispatch(args[scrutinee_index], known) {
+        Dispatch { selector, fields, constructor } => {
+            match find_commute_arm(arms, selector) {
+                Some(arm) => Option::Some(
+                    Term::Jump {
+                        target: arm.target,
+                        args: commute_call_args(
+                            args,
+                            scrutinee_index,
+                            arm.keep_scrutinee,
+                            arm.fields,
+                            fields,
+                            constructor,
+                        )?,
+                        ret_ty,
+                    },
+                ),
+                None => match default {
+                    Some(value) => Option::Some(
+                        Term::Jump {
+                            target: value.target,
+                            args: commute_call_args(
+                                args,
+                                scrutinee_index,
+                                value.keep_scrutinee,
+                                value.fields,
+                                fields,
+                                constructor,
+                            )?,
+                            ret_ty,
+                        },
+                    ),
+                    None => Option::None,
+                },
+            }
+        },
+        Unknown => Option::None,
+    }
+}
+
+fn rewrite_commute_term(
+    value: Term,
+    target: string,
+    scrutinee_index: int,
+    arms: Vec[CommuteArm],
+    default: Option[CommuteDefault],
+    known: Vec[CommuteBinding],
+    assigned: Vec[string],
+) -> Option[Term] {
+    match value {
+        Jump { target: present, args, ret_ty } => if present == target {
+            rewrite_commute_call(args, ret_ty, scrutinee_index, arms, default, known)
+        } else {
+            Option::Some(Term::Jump { target: present, args, ret_ty })
+        },
+        If { cond, then_, else_, ret_ty } => Option::Some(
+            Term::If {
+                cond,
+                then_: rewrite_commute_block(
+                    then_,
+                    target,
+                    scrutinee_index,
+                    arms,
+                    default,
+                    copy_commute_bindings(known),
+                    assigned,
+                )?,
+                else_: rewrite_commute_block(
+                    else_,
+                    target,
+                    scrutinee_index,
+                    arms,
+                    default,
+                    copy_commute_bindings(known),
+                    assigned,
+                )?,
+                ret_ty,
+            },
+        ),
+        Match { scrutinee, arms: values, default: fallback, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(values.len());
+            for value in values {
+                lowered.push(
+                    Arm {
+                        lhs: value.lhs,
+                        body: rewrite_commute_block(
+                            value.body,
+                            target,
+                            scrutinee_index,
+                            arms,
+                            default,
+                            copy_commute_bindings(known),
+                            assigned,
+                        )?,
+                    },
+                )
+            };
+            Option::Some(
+                Term::Match {
+                    scrutinee,
+                    arms: lowered,
+                    default: match fallback {
+                        Some(body) => Option::Some(
+                            rewrite_commute_block(
+                                body,
+                                target,
+                                scrutinee_index,
+                                arms,
+                                default,
+                                copy_commute_bindings(known),
+                                assigned,
+                            )?,
+                        ),
+                        None => Option::None,
+                    },
+                    ret_ty,
+                },
+            )
+        },
+        Return(value) => Option::Some(Term::Return(value)),
+        Unreachable { ty } => Option::Some(Term::Unreachable { ty }),
+    }
+}
+
+fn rewrite_commute_block(
+    value: Block,
+    target: string,
+    scrutinee_index: int,
+    arms: Vec[CommuteArm],
+    default: Option[CommuteDefault],
+    parent_known: Vec[CommuteBinding],
+    assigned: Vec[string],
+) -> Option[Block] {
+    let known = copy_commute_bindings(parent_known);
+    let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    for bind in value.binds {
+        match bind {
+            Let(value) => {
+                binds.push(Bind::Let(value));
+                record_commute_binding(known, value);
+                stabilize_commute_bindings(known, assigned)
+            },
+            Join(value) => binds.push(
+                Bind::Join(
+                    JoinBind {
+                        name: value.name,
+                        role: value.role,
+                        params: value.params,
+                        ret_ty: value.ret_ty,
+                        body: rewrite_commute_block(
+                            value.body,
+                            target,
+                            scrutinee_index,
+                            arms,
+                            default,
+                            shadow_commute_params(known, value.params),
+                            assigned,
+                        )?,
+                    },
+                ),
+            ),
+            JoinRec(joins) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(joins.len());
+                for value in joins {
+                    lowered.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: rewrite_commute_block(
+                                value.body,
+                                target,
+                                scrutinee_index,
+                                arms,
+                                default,
+                                shadow_commute_params(known, value.params),
+                                assigned,
+                            )?,
+                        },
+                    )
+                };
+                binds.push(Bind::JoinRec(lowered))
+            },
+        }
+    };
+    Option::Some(
+        Block {
+            binds,
+            term: rewrite_commute_term(
+                value.term,
+                target,
+                scrutinee_index,
+                arms,
+                default,
+                known,
+                assigned,
+            )?,
+        },
+    )
+}
+
+fn commute_scrutinee_param(params: Vec[(string, tast::Type)], value: Imm) -> Option[(string, int)] {
+    match value {
+        Var { name, ty: _ } => for index in 0..params.len() {
+            if params[index].0 == name {
+                return Option::Some((name, index))
+            } else {
+                ()
+            }
+        },
+        _ => (),
+    };
+    Option::None
+}
+
+fn prepend_commute_joins(
+    arms: Vec[CommuteArm],
+    default: Option[CommuteDefault],
+    ret_ty: tast::Type,
+    rest: Block,
+) -> Block {
+    let binds: Vec[Bind] = Vec::[];
+    for arm in arms {
+        binds.push(
+            Bind::Join(
+                JoinBind {
+                    name: arm.target,
+                    role: JoinRole::Continuation,
+                    params: arm.params,
+                    ret_ty,
+                    body: arm.body,
+                },
+            ),
+        )
+    };
+    match default {
+        Some(value) => binds.push(
+            Bind::Join(
+                JoinBind {
+                    name: value.target,
+                    role: JoinRole::Continuation,
+                    params: value.params,
+                    ret_ty,
+                    body: value.body,
+                },
+            ),
+        ),
+        None => (),
+    };
+    for bind in rest.binds {
+        binds.push(bind)
+    };
+    Block { binds, term: rest.term }
+}
+
+fn try_commute_join(value: JoinBind, rest: Block, known: Vec[CommuteBinding], counter: Ref[int]) -> Option[
+    Block,
+] {
+    match value.role {
+        JoinRole::Continuation => (),
+        JoinRole::Return | JoinRole::LoopExit => return Option::None,
+    };
+    if !value.body.binds.is_empty() || count_join_uses_block(rest, value.name) == 0 {
+        return Option::None
+    } else {
+        ()
+    };
+    match value.body.term {
+        Match { scrutinee, arms: values, default: fallback, ret_ty } => {
+            let scrutinee_param = commute_scrutinee_param(value.params, scrutinee)?;
+            let arms: Vec[CommuteArm] = Vec::with_capacity(values.len());
+            for arm in values {
+                arms.push(
+                    build_commute_arm(
+                        arm,
+                        value.params,
+                        scrutinee_param.0,
+                        scrutinee_param.1,
+                        counter,
+                    ),
+                )
+            };
+            let default = match fallback {
+                Some(body) => Option::Some(
+                    build_commute_default(
+                        body,
+                        value.params,
+                        scrutinee_param.0,
+                        scrutinee_param.1,
+                        counter,
+                    ),
+                ),
+                None => Option::None,
+            };
+            let assigned: Vec[string] = Vec::[];
+            collect_commute_assigned_block(assigned, rest);
+            let stable_known = copy_commute_bindings(known);
+            stabilize_commute_bindings(stable_known, assigned);
+            let rewritten = rewrite_commute_block(
+                rest,
+                value.name,
+                scrutinee_param.1,
+                arms,
+                default,
+                stable_known,
+                assigned,
+            )?;
+            Option::Some(prepend_commute_joins(arms, default, ret_ty, rewritten))
+        },
+        Return(_) | Jump { .. } | If { .. } | Unreachable { .. } => Option::None,
+    }
+}
+
+fn prepend_commute_bind(value: Bind, rest: Block) -> Block {
+    let binds: Vec[Bind] = Vec::with_capacity(rest.binds.len() + 1);
+    binds.push(value);
+    for bind in rest.binds {
+        binds.push(bind)
+    };
+    Block { binds, term: rest.term }
+}
+
+fn commute_binds(
+    binds: Vec[Bind],
+    index: int,
+    term: Term,
+    known: Vec[CommuteBinding],
+    counter: Ref[int],
+) -> Block {
+    if index >= binds.len() {
+        commute_term(term, known, counter)
+    } else {
+        match binds[index] {
+            Let(value) => {
+                let next_known = copy_commute_bindings(known);
+                record_commute_binding(next_known, value);
+                prepend_commute_bind(
+                    Bind::Let(value),
+                    commute_binds(binds, index + 1, term, next_known, counter),
+                )
+            },
+            Join(value) => {
+                let lowered = JoinBind {
+                    name: value.name,
+                    role: value.role,
+                    params: value.params,
+                    ret_ty: value.ret_ty,
+                    body: commute_block_with(
+                        value.body,
+                        shadow_commute_params(known, value.params),
+                        counter,
+                    ),
+                };
+                let rest = commute_binds(binds, index + 1, term, known, counter);
+                match try_commute_join(lowered, rest, known, counter) {
+                    Some(result) => result,
+                    None => prepend_commute_bind(Bind::Join(lowered), rest),
+                }
+            },
+            JoinRec(values) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    lowered.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: commute_block_with(
+                                value.body,
+                                shadow_commute_params(known, value.params),
+                                counter,
+                            ),
+                        },
+                    )
+                };
+                prepend_commute_bind(
+                    Bind::JoinRec(lowered),
+                    commute_binds(binds, index + 1, term, known, counter),
+                )
+            },
+        }
+    }
+}
+
+fn commute_term(value: Term, known: Vec[CommuteBinding], counter: Ref[int]) -> Block {
+    match value {
+        If { cond, then_, else_, ret_ty } => Block {
+            binds: Vec::[],
+            term: Term::If {
+                cond,
+                then_: commute_block_with(then_, copy_commute_bindings(known), counter),
+                else_: commute_block_with(else_, copy_commute_bindings(known), counter),
+                ret_ty,
+            },
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    Arm {
+                        lhs: arm.lhs,
+                        body: commute_block_with(arm.body, copy_commute_bindings(known), counter),
+                    },
+                )
+            };
+            Block {
+                binds: Vec::[],
+                term: Term::Match {
+                    scrutinee,
+                    arms: lowered,
+                    default: match default {
+                        Some(body) => Option::Some(
+                            commute_block_with(body, copy_commute_bindings(known), counter),
+                        ),
+                        None => Option::None,
+                    },
+                    ret_ty,
+                },
+            }
+        },
+        Return(value) => Block { binds: Vec::[], term: Term::Return(value) },
+        Jump { target, args, ret_ty } => Block {
+            binds: Vec::[],
+            term: Term::Jump { target, args, ret_ty },
+        },
+        Unreachable { ty } => Block { binds: Vec::[], term: Term::Unreachable { ty } },
+    }
+}
+
+fn commute_block_with(value: Block, known: Vec[CommuteBinding], counter: Ref[int]) -> Block {
+    commute_binds(value.binds, 0, value.term, known, counter)
+}
+
+fn commute_function(value: Function, counter: Ref[int]) -> Function {
+    Function {
+        name: value.name,
+        origin: value.origin,
+        root: value.root,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: commute_block_with(value.body, shadow_commute_params(Vec::[], value.params), counter),
+    }
+}
+
+pub fn commute(value: File, counter: Ref[int]) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(commute_function(function, counter))
+    };
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+    }
+}

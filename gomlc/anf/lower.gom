@@ -72,7 +72,8 @@ pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
         functions.push(lower_function(state, function))
     };
     let lowered = simplify(File { functions, enums, structs, type_instances, constants });
-    simplify(inline(lowered, counter))
+    let inlined = simplify(inline(lowered, counter));
+    simplify(commute(inlined, counter))
 }
 
 pub fn lower(value: core::File) -> File {
