@@ -1,50 +1,32 @@
 fn trait_impl#Label#string#label(self/0: string) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
-  } in
   let t158 = ("label:" + self/0) in
-  jump ret156(t158)
+  t158
 }
 
 fn trait_impl#Source#TextSource#get(self/1: TextSource) -> string {
-  join ret159(retv160: string) -> string {
-    retv160
-  } in
   let t161 = TextSource.value(self/1) in
-  jump ret159(t161)
+  t161
 }
 
 fn main() -> unit {
-  join ret162() -> unit {
-    ()
-  } in
   let t163 = TextSource { value: "goml" } in
   let t164 = render__S_TextSource(t163) in
   let _wild155 = println__T_string(t164) in
-  jump ret162()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret165() -> unit {
-    ()
-  } in
   let t166 = trait_impl#ToString#string#to_string(value/1) in
   let t167 = @runtime(core.string_println)(t166) in
-  jump ret165()
+  ()
 }
 
 fn render__S_TextSource(source/2: TextSource) -> string {
-  join ret168(retv169: string) -> string {
-    retv169
-  } in
   let t170 = trait_impl#Source#TextSource#get(source/2) in
   let t171 = trait_impl#Label#string#label(t170) in
-  jump ret168(t171)
+  t171
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  jump ret172(self/38)
+  self/38
 }

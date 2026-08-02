@@ -48,17 +48,13 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var retv160 string
     var t161 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    retv160 = t161
-    return retv160
+    return t161
 }
 
 func render(x__1 dyn__Display) string {
-    var retv163 string
     var t164 string = x__1.vtable.show(x__1.data)
-    retv163 = t164
-    return retv163
+    return t164
 }
 
 func main0() struct{} {
@@ -87,17 +83,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv173 string
     var t174 string = _goml_runtime_core_int32_to_string(self__6)
-    retv173 = t174
-    return retv173
+    return t174
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__dynDisplay() *_goml_vec_Dyn_Display {
-    var retv176 *_goml_vec_Dyn_Display
     var t177 *_goml_vec_Dyn_Display = vec_new__Vec_11Dyn_Display()
-    retv176 = t177
-    return retv176
+    return t177
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(self__126 *_goml_vec_Dyn_Display, elem__127 dyn__Display) struct{} {
@@ -106,10 +98,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(self__126 *_gom
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__dynDisplay(self__175 *_goml_vec_Dyn_Display, start__176 int, end__177 int) []dyn__Display {
-    var retv181 []dyn__Display
     var t182 []dyn__Display = self__175.items[start__176:end__177]
-    retv181 = t182
-    return retv181
+    return t182
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -119,16 +109,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__dynDisplay(self__187 []dyn__Display, start__188 int, end__189 int) []dyn__Display {
-    var retv187 []dyn__Display
     var t188 []dyn__Display = self__187[start__188:end__189]
-    retv187 = t188
-    return retv187
+    return t188
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv190 string
-    retv190 = self__38
-    return retv190
+    return self__38
 }
 
 func main() {

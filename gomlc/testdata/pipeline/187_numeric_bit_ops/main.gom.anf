@@ -1,71 +1,44 @@
 fn show_u8(value/0: uint8) -> unit {
-  join ret223() -> unit {
-    ()
-  } in
   let t224 = println__T_uint8(value/0) in
-  jump ret223()
+  ()
 }
 
 fn show_u16(value/1: uint16) -> unit {
-  join ret225() -> unit {
-    ()
-  } in
   let t226 = println__T_uint16(value/1) in
-  jump ret225()
+  ()
 }
 
 fn show_u32(value/2: uint32) -> unit {
-  join ret227() -> unit {
-    ()
-  } in
   let t228 = println__T_uint32(value/2) in
-  jump ret227()
+  ()
 }
 
 fn show_u64(value/3: uint64) -> unit {
-  join ret229() -> unit {
-    ()
-  } in
   let t230 = println__T_uint64(value/3) in
-  jump ret229()
+  ()
 }
 
 fn show_i8(value/4: int8) -> unit {
-  join ret231() -> unit {
-    ()
-  } in
   let t232 = println__T_int8(value/4) in
-  jump ret231()
+  ()
 }
 
 fn show_i16(value/5: int16) -> unit {
-  join ret233() -> unit {
-    ()
-  } in
   let t234 = println__T_int16(value/5) in
-  jump ret233()
+  ()
 }
 
 fn show_i32(value/6: int32) -> unit {
-  join ret235() -> unit {
-    ()
-  } in
   let t236 = println__T_int32(value/6) in
-  jump ret235()
+  ()
 }
 
 fn show_i64(value/7: int64) -> unit {
-  join ret237() -> unit {
-    ()
-  } in
   let t238 = println__T_int64(value/7) in
-  jump ret237()
+  ()
 }
 
 fn unsigned_ops() -> unit {
-  join ret239() -> unit {
-    ()
-  } in
   let t240 = (13 % 5) in
   let _wild155 = show_u8(t240) in
   let t241 = (12 & 10) in
@@ -124,13 +97,10 @@ fn unsigned_ops() -> unit {
   let _wild182 = show_u64(t267) in
   let t268 = (~0) in
   let t269 = show_u64(t268) in
-  jump ret239()
+  ()
 }
 
 fn signed_ops() -> unit {
-  join ret270() -> unit {
-    ()
-  } in
   let t271 = (-13 % 5) in
   let _wild183 = show_i8(t271) in
   let t272 = (-8 >> 2) in
@@ -167,13 +137,10 @@ fn signed_ops() -> unit {
   let _wild198 = show_i64(t288) in
   let t289 = (~4294967295) in
   let t290 = show_i64(t289) in
-  jump ret270()
+  ()
 }
 
 fn precedence() -> unit {
-  join ret291() -> unit {
-    ()
-  } in
   let t292 = (3 & 1) in
   let t293 = (2 ^ t292) in
   let t294 = (1 | t293) in
@@ -192,13 +159,10 @@ fn precedence() -> unit {
   let t303 = (~1) in
   let t304 = (t303 & 15) in
   let t305 = show_u8(t304) in
-  jump ret291()
+  ()
 }
 
 fn casts() -> unit {
-  join ret306() -> unit {
-    ()
-  } in
   let five_eleven/8 = 511 in
   let two_fifty_six/9 = 256 in
   let negative_one_i16/10 = -1 in
@@ -244,7 +208,7 @@ fn casts() -> unit {
     let t321 = (three_hundred/20 as uint8) in
     let t322 = (t321 as uint32) in
     let t323 = show_u32(t322) in
-    jump ret306()
+    ()
   } in
   match mtmp216 {
     Tag_0 => {
@@ -254,7 +218,7 @@ fn casts() -> unit {
     Tag_1 => {
       let x217 = Option__char::Some._0(mtmp216) in
       let value/21 = x217 in
-      let t325 = inherent#char#char#to_string(value/21) in
+      let t325 = inherent#char#char#to_string(x217) in
       let t326 = println__T_string(t325) in
       jump k320()
     },
@@ -262,222 +226,147 @@ fn casts() -> unit {
 }
 
 fn contextual(value/22: uint8) -> uint8 {
-  join ret327(retv328: uint8) -> uint8 {
-    retv328
-  } in
   let t329 = (~value/22) in
   let t330 = (t329 & 15) in
   let t331 = (1 << 4) in
   let t332 = (t331 % 31) in
   let t333 = (t330 | t332) in
-  jump ret327(t333)
+  t333
 }
 
 fn main() -> unit {
-  join ret334() -> unit {
-    ()
-  } in
   let _wild219 = unsigned_ops() in
   let _wild220 = signed_ops() in
   let _wild221 = precedence() in
   let _wild222 = casts() in
   let t335 = contextual(10) in
   let t336 = show_u8(t335) in
-  jump ret334()
+  ()
 }
 
 fn println__T_uint8(value/1: uint8) -> unit {
-  join ret337() -> unit {
-    ()
-  } in
   let t338 = trait_impl#ToString#uint8#to_string(value/1) in
   let t339 = @runtime(core.string_println)(t338) in
-  jump ret337()
+  ()
 }
 
 fn println__T_uint16(value/1: uint16) -> unit {
-  join ret340() -> unit {
-    ()
-  } in
   let t341 = trait_impl#ToString#uint16#to_string(value/1) in
   let t342 = @runtime(core.string_println)(t341) in
-  jump ret340()
+  ()
 }
 
 fn println__T_uint32(value/1: uint32) -> unit {
-  join ret343() -> unit {
-    ()
-  } in
   let t344 = trait_impl#ToString#uint32#to_string(value/1) in
   let t345 = @runtime(core.string_println)(t344) in
-  jump ret343()
+  ()
 }
 
 fn println__T_uint64(value/1: uint64) -> unit {
-  join ret346() -> unit {
-    ()
-  } in
   let t347 = trait_impl#ToString#uint64#to_string(value/1) in
   let t348 = @runtime(core.string_println)(t347) in
-  jump ret346()
+  ()
 }
 
 fn println__T_int8(value/1: int8) -> unit {
-  join ret349() -> unit {
-    ()
-  } in
   let t350 = trait_impl#ToString#int8#to_string(value/1) in
   let t351 = @runtime(core.string_println)(t350) in
-  jump ret349()
+  ()
 }
 
 fn println__T_int16(value/1: int16) -> unit {
-  join ret352() -> unit {
-    ()
-  } in
   let t353 = trait_impl#ToString#int16#to_string(value/1) in
   let t354 = @runtime(core.string_println)(t353) in
-  jump ret352()
+  ()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret355() -> unit {
-    ()
-  } in
   let t356 = trait_impl#ToString#int32#to_string(value/1) in
   let t357 = @runtime(core.string_println)(t356) in
-  jump ret355()
+  ()
 }
 
 fn println__T_int64(value/1: int64) -> unit {
-  join ret358() -> unit {
-    ()
-  } in
   let t359 = trait_impl#ToString#int64#to_string(value/1) in
   let t360 = @runtime(core.string_println)(t359) in
-  jump ret358()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret361() -> unit {
-    ()
-  } in
   let t362 = trait_impl#ToString#string#to_string(value/1) in
   let t363 = @runtime(core.string_println)(t362) in
-  jump ret361()
+  ()
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret364(retv365: bool) -> bool {
-    retv365
-  } in
   let t366 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret364(t366)
+  t366
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret367(retv368: string) -> string {
-    retv368
-  } in
   let t369 = @runtime(core.bool_to_string)(self/37) in
-  jump ret367(t369)
+  t369
 }
 
 fn char_from_uint32(value/2: uint32) -> Option__char {
-  join ret370(retv371: Option__char) -> Option__char {
-    retv371
-  } in
   let mtmp0 = @runtime(core.char_from_uint32)(value/2) in
   let x1 = mtmp0.0 in
   let x2 = mtmp0.1 in
   let value/4 = x2 in
   let valid/3 = x1 in
-  join k372(jp373: Option__char) -> Option__char {
-    jump ret370(jp373)
-  } in
-  if valid/3 {
-    let t374 = Option__char::Some(value/4) in
-    jump k372(t374)
+  if x1 {
+    let t374 = Option__char::Some(x2) in
+    t374
   } else {
-    jump k372(Tag_0)
+    Tag_0
   }
 }
 
 fn inherent#char#char#to_string(self/7: char) -> string {
-  join ret375(retv376: string) -> string {
-    retv376
-  } in
   let t377 = @runtime(core.char_to_string)(self/7) in
-  jump ret375(t377)
+  t377
 }
 
 fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
-  join ret378(retv379: string) -> string {
-    retv379
-  } in
   let t380 = @runtime(core.uint8_to_string)(self/45) in
-  jump ret378(t380)
+  t380
 }
 
 fn trait_impl#ToString#uint16#to_string(self/46: uint16) -> string {
-  join ret381(retv382: string) -> string {
-    retv382
-  } in
   let t383 = @runtime(core.uint16_to_string)(self/46) in
-  jump ret381(t383)
+  t383
 }
 
 fn trait_impl#ToString#uint32#to_string(self/47: uint32) -> string {
-  join ret384(retv385: string) -> string {
-    retv385
-  } in
   let t386 = @runtime(core.uint32_to_string)(self/47) in
-  jump ret384(t386)
+  t386
 }
 
 fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
-  join ret387(retv388: string) -> string {
-    retv388
-  } in
   let t389 = @runtime(core.uint64_to_string)(self/48) in
-  jump ret387(t389)
+  t389
 }
 
 fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
-  join ret390(retv391: string) -> string {
-    retv391
-  } in
   let t392 = @runtime(core.int8_to_string)(self/41) in
-  jump ret390(t392)
+  t392
 }
 
 fn trait_impl#ToString#int16#to_string(self/42: int16) -> string {
-  join ret393(retv394: string) -> string {
-    retv394
-  } in
   let t395 = @runtime(core.int16_to_string)(self/42) in
-  jump ret393(t395)
+  t395
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret396(retv397: string) -> string {
-    retv397
-  } in
   let t398 = @runtime(core.int32_to_string)(self/43) in
-  jump ret396(t398)
+  t398
 }
 
 fn trait_impl#ToString#int64#to_string(self/44: int64) -> string {
-  join ret399(retv400: string) -> string {
-    retv400
-  } in
   let t401 = @runtime(core.int64_to_string)(self/44) in
-  jump ret399(t401)
+  t401
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret402(retv403: string) -> string {
-    retv403
-  } in
-  jump ret402(self/38)
+  self/38
 }

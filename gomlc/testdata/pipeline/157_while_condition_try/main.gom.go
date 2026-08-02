@@ -61,42 +61,33 @@ type Option__int32_Some struct {
 func (_ Option__int32_Some) isOption__int32() {}
 
 func step_some(i__0 int32) Option__bool {
-    var retv169 Option__bool
     var t172 bool = i__0 < 3
-    var jp171 Option__bool
     if t172 {
         var t173 Option__bool = Option__bool_Some{
             _0: true,
         }
-        jp171 = t173
+        return t173
     } else {
         var t174 Option__bool = Option__bool_Some{
             _0: false,
         }
-        jp171 = t174
+        return t174
     }
-    retv169 = jp171
-    return retv169
 }
 
 func step_none(i__1 int32) Option__bool {
-    var retv176 Option__bool
     var t179 bool = i__1 < 2
-    var jp178 Option__bool
     if t179 {
         var t180 Option__bool = Option__bool_Some{
             _0: true,
         }
-        jp178 = t180
+        return t180
     } else {
-        jp178 = Option__bool_None{}
+        return Option__bool_None{}
     }
-    retv176 = jp178
-    return retv176
 }
 
 func run_some() Option__int32 {
-    var retv182 Option__int32
     var i__2 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     var total__3 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     Loop_loop186:
@@ -106,12 +97,10 @@ func run_some() Option__int32 {
         var jp189 bool
         switch mtmp155.(type) {
         case Option__bool_None:
-            retv182 = Option__int32_None{}
-            return retv182
+            return Option__int32_None{}
         case Option__bool_Some:
             var x156 bool = mtmp155.(Option__bool_Some)._0
-            var try_value__31 bool = x156
-            jp189 = try_value__31
+            jp189 = x156
             if jp189 {
                 var t190 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(total__3)
                 var t191 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__2)
@@ -132,12 +121,10 @@ func run_some() Option__int32 {
     var t185 Option__int32 = Option__int32_Some{
         _0: t184,
     }
-    retv182 = t185
-    return retv182
+    return t185
 }
 
 func run_none() Option__int32 {
-    var retv196 Option__int32
     var i__4 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     var total__5 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     Loop_loop200:
@@ -147,12 +134,10 @@ func run_none() Option__int32 {
         var jp203 bool
         switch mtmp160.(type) {
         case Option__bool_None:
-            retv196 = Option__int32_None{}
-            return retv196
+            return Option__int32_None{}
         case Option__bool_Some:
             var x161 bool = mtmp160.(Option__bool_Some)._0
-            var try_value__67 bool = x161
-            jp203 = try_value__67
+            jp203 = x161
             if jp203 {
                 var t204 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(total__5)
                 var t205 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__4)
@@ -173,27 +158,21 @@ func run_none() Option__int32 {
     var t199 Option__int32 = Option__int32_Some{
         _0: t198,
     }
-    retv196 = t199
-    return retv196
+    return t199
 }
 
 func show(x__6 Option__int32) string {
-    var retv210 string
-    var jp212 string
     switch x__6.(type) {
     case Option__int32_None:
-        jp212 = "none"
+        return "none"
     case Option__int32_Some:
         var x165 int32 = x__6.(Option__int32_Some)._0
-        var v__7 int32 = x165
-        var t213 string = _goml_m_inherent_i_int32_i_int32_i_to__string(v__7)
+        var t213 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x165)
         var t214 string = "some=" + t213
-        jp212 = t214
+        return t214
     default:
         panic("non-exhaustive match")
     }
-    retv210 = jp212
-    return retv210
 }
 
 func main0() struct{} {
@@ -207,17 +186,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__207 int32) *ref_int32_x {
-    var retv221 *ref_int32_x
     var t222 *ref_int32_x = ref__Ref_5int32(value__207)
-    retv221 = t222
-    return retv221
+    return t222
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__208 *ref_int32_x) int32 {
-    var retv224 int32
     var t225 int32 = ref_get__Ref_5int32(self__208)
-    retv224 = t225
-    return retv224
+    return t225
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__209 *ref_int32_x, value__210 int32) struct{} {
@@ -226,10 +201,8 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__209 *ref_int32_
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv229 string
     var t230 string = _goml_runtime_core_int32_to_string(self__6)
-    retv229 = t230
-    return retv229
+    return t230
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -239,9 +212,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv235 string
-    retv235 = self__38
-    return retv235
+    return self__38
 }
 
 func main() {

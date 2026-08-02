@@ -29,16 +29,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv164 string
     var t165 string = _goml_runtime_core_int_to_string(self__5)
-    retv164 = t165
-    return retv164
+    return t165
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv167 string
-    retv167 = self__38
-    return retv167
+    return self__38
 }
 
 func main() {

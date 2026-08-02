@@ -80,19 +80,15 @@ type Some struct {
 func (_ Some) isOption__int() {}
 
 func _goml_m_range(start__0 int32, end__1 int32) int32 {
-    var retv190 int32
     var t191 int32 = start__0 + end__1
-    retv190 = t191
-    return retv190
+    return t191
 }
 
 func endpoint(calls__2 *ref_int_x, value__3 int) int {
-    var retv193 int
     var t194 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(calls__2)
     var t195 int = t194 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(calls__2, t195)
-    retv193 = value__3
-    return retv193
+    return value__3
 }
 
 func main0() struct{} {
@@ -105,8 +101,7 @@ func main0() struct{} {
             var for_item158 int = for_index156
             var t229 int = for_index156 + 1
             for_index156 = t229
-            var value__4 int = for_item158
-            println__T_int(value__4)
+            println__T_int(for_item158)
             continue
         } else {
             break Loop_loop227
@@ -128,8 +123,7 @@ func main0() struct{} {
                 var t225 int = for_index162 + 1
                 for_index162 = t225
             }
-            var value__6 int = for_item165
-            println__T_int(value__6)
+            println__T_int(for_item165)
             continue
         } else {
             break Loop_loop220
@@ -150,8 +144,7 @@ func main0() struct{} {
                 var t218 int = for_index169 + 1
                 for_index169 = t218
             }
-            var value__7 int = for_item172
-            println__T_int(value__7)
+            println__T_int(for_item172)
             continue
         } else {
             break Loop_loop213
@@ -159,22 +152,20 @@ func main0() struct{} {
     }
     var maximum__8 int = 9223372036854775807
     var for_index176 int = maximum__8
-    var for_limit177 int = maximum__8
-    var for_done178 bool = for_index176 > for_limit177
+    var for_done178 bool = for_index176 > maximum__8
     Loop_loop206:
     for {
         var t207 bool = !for_done178
         if t207 {
             var for_item179 int = for_index176
-            var t209 bool = for_index176 == for_limit177
+            var t209 bool = for_index176 == maximum__8
             if t209 {
                 for_done178 = true
             } else {
                 var t211 int = for_index176 + 1
                 for_index176 = t211
             }
-            var value__9 int = for_item179
-            println__T_int(value__9)
+            println__T_int(for_item179)
             continue
         } else {
             break Loop_loop206
@@ -187,8 +178,7 @@ func main0() struct{} {
         println__T_string("missing")
     case Some:
         var x184 int = mtmp183.(Some)._0
-        var value__11 int = x184
-        println__T_int(value__11)
+        println__T_int(x184)
     default:
         panic("non-exhaustive match")
     }
@@ -200,10 +190,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv231 int
     var t232 int = ref_get__Ref_3int(self__208)
-    retv231 = t232
-    return retv231
+    return t232
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
@@ -218,14 +206,11 @@ func println__T_int(value__1 int) struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv239 *ref_int_x
     var t240 *ref_int_x = ref__Ref_3int(value__207)
-    retv239 = t240
-    return retv239
+    return t240
 }
 
 func __goml_builtin_range_inclusive(start__280 int, end__281 int) FnIterator__int {
-    var retv242 FnIterator__int
     var current__282 *ref_int_x = ref__Ref_3int(start__280)
     var finished__283 *ref_bool_x = ref__Ref_4bool(false)
     var t243 closure_env_goml_builtin_range_inclusive_0 = closure_env_goml_builtin_range_inclusive_0{
@@ -236,16 +221,13 @@ func __goml_builtin_range_inclusive(start__280 int, end__281 int) FnIterator__in
     var t244 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
         return _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(t243)
     })
-    retv242 = t244
-    return retv242
+    return t244
 }
 
 func _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(self__102 FnIterator__int) Option__int {
-    var retv246 Option__int
     var t247 func() Option__int = self__102.next_fn
     var t248 Option__int = t247()
-    retv246 = t248
-    return retv246
+    return t248
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -261,43 +243,32 @@ func println__T_int32(value__1 int32) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv256 string
     var t257 string = _goml_runtime_core_int_to_string(self__40)
-    retv256 = t257
-    return retv256
+    return t257
 }
 
 func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv259 bool
     var t260 bool = self__59 == other__60
-    retv259 = t260
-    return retv259
+    return t260
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__101 func() Option__int) FnIterator__int {
-    var retv262 FnIterator__int
     var t263 FnIterator__int = FnIterator__int{
         next_fn: next_fn__101,
     }
-    retv262 = t263
-    return retv262
+    return t263
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv265 string
-    retv265 = self__38
-    return retv265
+    return self__38
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv267 string
     var t268 string = _goml_runtime_core_int32_to_string(self__43)
-    retv267 = t268
-    return retv267
+    return t268
 }
 
 func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(env188 closure_env_goml_builtin_range_inclusive_0) Option__int {
-    var retv280 Option__int
     var finished__283 *ref_bool_x = env188.finished_0
     var current__282 *ref_int_x = env188.current_1
     var end__281 int = env188.end_2
@@ -310,9 +281,8 @@ func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_
         var t291 bool = t290 > end__281
         jp284 = t291
     }
-    var jp282 Option__int
     if jp284 {
-        jp282 = None{}
+        return None{}
     } else {
         var value__284 int = ref_get__Ref_3int(current__282)
         var t287 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(value__284, end__281)
@@ -325,10 +295,8 @@ func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_
         var t286 Option__int = Some{
             _0: value__284,
         }
-        jp282 = t286
+        return t286
     }
-    retv280 = jp282
-    return retv280
 }
 
 func main() {

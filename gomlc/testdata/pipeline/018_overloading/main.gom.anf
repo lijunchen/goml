@@ -1,41 +1,26 @@
 fn trait_impl#Arith#int32#add(self/0: int32, other/1: int32) -> int32 {
-  join ret159(retv160: int32) -> int32 {
-    retv160
-  } in
   let t161 = (self/0 + other/1) in
-  jump ret159(t161)
+  t161
 }
 
 fn trait_impl#Arith#int32#less(self/2: int32, other/3: int32) -> bool {
-  join ret162(retv163: bool) -> bool {
-    retv163
-  } in
   let t164 = (self/2 < other/3) in
-  jump ret162(t164)
+  t164
 }
 
 fn trait_impl#Output#int32#output(self/4: int32) -> unit {
-  join ret165() -> unit {
-    ()
-  } in
   let t166 = trait_impl#ToString#int32#to_string(self/4) in
   let t167 = println__T_string(t166) in
-  jump ret165()
+  ()
 }
 
 fn trait_impl#Output#bool#output(self/5: bool) -> unit {
-  join ret168() -> unit {
-    ()
-  } in
   let t169 = trait_impl#ToString#bool#to_string(self/5) in
   let t170 = println__T_string(t169) in
-  jump ret168()
+  ()
 }
 
 fn main() -> unit {
-  join ret171() -> unit {
-    ()
-  } in
   let a/7 = id__T_int32(1) in
   let b/8 = id__T_int32(2) in
   let c/9 = trait_impl#Arith#int32#add(a/7, b/8) in
@@ -46,58 +31,37 @@ fn main() -> unit {
   let mtmp156 = trait_impl#Output#bool#output(c/12) in
   let mtmp157 = id__T_string("abc") in
   let mtmp158 = id__T_bool(true) in
-  jump ret171()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret172() -> unit {
-    ()
-  } in
   let t173 = trait_impl#ToString#string#to_string(value/1) in
   let t174 = @runtime(core.string_println)(t173) in
-  jump ret172()
+  ()
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret175(retv176: string) -> string {
-    retv176
-  } in
   let t177 = @runtime(core.int32_to_string)(self/43) in
-  jump ret175(t177)
+  t177
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret178(retv179: string) -> string {
-    retv179
-  } in
   let t180 = @runtime(core.bool_to_string)(self/37) in
-  jump ret178(t180)
+  t180
 }
 
 fn id__T_int32(x/6: int32) -> int32 {
-  join ret181(retv182: int32) -> int32 {
-    retv182
-  } in
-  jump ret181(x/6)
+  x/6
 }
 
 fn id__T_string(x/6: string) -> string {
-  join ret183(retv184: string) -> string {
-    retv184
-  } in
-  jump ret183(x/6)
+  x/6
 }
 
 fn id__T_bool(x/6: bool) -> bool {
-  join ret185(retv186: bool) -> bool {
-    retv186
-  } in
-  jump ret185(x/6)
+  x/6
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret187(retv188: string) -> string {
-    retv188
-  } in
-  jump ret187(self/38)
+  self/38
 }

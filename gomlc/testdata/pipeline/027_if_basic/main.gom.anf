@@ -1,21 +1,12 @@
 fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
-  join ret157(retv158: int32) -> int32 {
-    retv158
-  } in
-  join k159(jp160: int32) -> int32 {
-    jump ret157(jp160)
-  } in
   if flag/0 {
-    jump k159(x/1)
+    x/1
   } else {
-    jump k159(y/2)
+    y/2
   }
 }
 
 fn main() -> unit {
-  join ret161() -> unit {
-    ()
-  } in
   let yes/3 = choose(true, 10, 99) in
   let no/4 = choose(false, 10, 99) in
   let t162 = inherent#int32#int32#to_string(yes/3) in
@@ -24,29 +15,20 @@ fn main() -> unit {
   let t164 = inherent#int32#int32#to_string(no/4) in
   let t165 = ("no=" + t164) in
   let mtmp156 = println__T_string(t165) in
-  jump ret161()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret166() -> unit {
-    ()
-  } in
   let t167 = trait_impl#ToString#string#to_string(value/1) in
   let t168 = @runtime(core.string_println)(t167) in
-  jump ret166()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
-  } in
   let t171 = @runtime(core.int32_to_string)(self/6) in
-  jump ret169(t171)
+  t171
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  jump ret172(self/38)
+  self/38
 }

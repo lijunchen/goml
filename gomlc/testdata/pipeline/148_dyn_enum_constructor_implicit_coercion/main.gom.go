@@ -50,36 +50,27 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var retv161 string
     var t162 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    retv161 = t162
-    return retv161
+    return t162
 }
 
 func render(value__1 Boxed) string {
-    var retv164 string
-    var jp166 string
     switch value__1.(type) {
     case One:
         var x155 dyn__Display = value__1.(One)._0
-        var inner__2 dyn__Display = x155
-        var t167 string = inner__2.vtable.show(inner__2.data)
-        jp166 = t167
+        var t167 string = x155.vtable.show(x155.data)
+        return t167
     case Pair:
         var x156 dyn__Display = value__1.(Pair)._0
         var x157 dyn__Display = value__1.(Pair)._1
-        var right__4 dyn__Display = x157
-        var left__3 dyn__Display = x156
-        var t168 string = left__3.vtable.show(left__3.data)
+        var t168 string = x156.vtable.show(x156.data)
         var t169 string = t168 + "-"
-        var t170 string = right__4.vtable.show(right__4.data)
+        var t170 string = x157.vtable.show(x157.data)
         var t171 string = t169 + t170
-        jp166 = t171
+        return t171
     default:
         panic("non-exhaustive match")
     }
-    retv164 = jp166
-    return retv164
 }
 
 func main0() struct{} {
@@ -113,10 +104,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv181 string
     var t182 string = _goml_runtime_core_int32_to_string(self__6)
-    retv181 = t182
-    return retv181
+    return t182
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -126,9 +115,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv187 string
-    retv187 = self__38
-    return retv187
+    return self__38
 }
 
 func main() {

@@ -64,130 +64,88 @@ type Move struct {
 func (_ Move) isMessage__string() {}
 
 func _goml_m_trait__impl_i_ToString_i_Key_i_to__string(self__0 Key) string {
-    var retv181 string
-    var jp183 string
     switch self__0.(type) {
     case Empty:
-        jp183 = "Key::Empty"
+        return "Key::Empty"
     case Point:
         var x155 int32 = self__0.(Point)._0
         var x156 int32 = self__0.(Point)._1
-        var __field1__2 int32 = x156
-        var __field0__1 int32 = x155
         var t184 string = "Key::Point { " + "x: "
-        var t185 string = _goml_m_inherent_i_int32_i_int32_i_to__string(__field0__1)
+        var t185 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x155)
         var t186 string = t184 + t185
         var t187 string = t186 + ", "
         var t188 string = t187 + "y: "
-        var t189 string = _goml_m_inherent_i_int32_i_int32_i_to__string(__field1__2)
+        var t189 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x156)
         var t190 string = t188 + t189
         var t191 string = t190 + " }"
-        jp183 = t191
+        return t191
     default:
         panic("non-exhaustive match")
     }
-    retv181 = jp183
-    return retv181
 }
 
 func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__3 Key, other__4 Key) bool {
-    var retv193 bool
-    var mtmp157 Tuple2_3Key_3Key = Tuple2_3Key_3Key{
-        _0: self__3,
-        _1: other__4,
-    }
-    var x158 Key = mtmp157._0
-    var x159 Key = mtmp157._1
-    var jp195 bool
-    switch x159.(type) {
+    switch other__4.(type) {
     case Empty:
-        var jp197 bool
-        switch x158.(type) {
+        switch self__3.(type) {
         case Empty:
-            jp197 = true
+            return true
         default:
-            jp197 = false
+            return false
         }
-        jp195 = jp197
     case Point:
-        var x160 int32 = x159.(Point)._0
-        var x161 int32 = x159.(Point)._1
-        var jp199 bool
-        switch x158.(type) {
+        var x160 int32 = other__4.(Point)._0
+        var x161 int32 = other__4.(Point)._1
+        switch self__3.(type) {
         case Point:
-            var x164 int32 = x158.(Point)._0
-            var x165 int32 = x158.(Point)._1
-            var __l1_1__6 int32 = x165
-            var __l1_0__5 int32 = x164
-            var __r1_1__8 int32 = x161
-            var __r1_0__7 int32 = x160
+            var x164 int32 = self__3.(Point)._0
+            var x165 int32 = self__3.(Point)._1
             var jp203 bool
-            if true {
-                var t205 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(__l1_0__5, __r1_0__7)
-                jp203 = t205
-            } else {
-                jp203 = false
-            }
-            var jp201 bool
+            var t205 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(x164, x160)
+            jp203 = t205
             if jp203 {
-                var t204 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(__l1_1__6, __r1_1__8)
-                jp201 = t204
+                var t204 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(x165, x161)
+                return t204
             } else {
-                jp201 = false
+                return false
             }
-            jp199 = jp201
         default:
-            jp199 = false
+            return false
         }
-        jp195 = jp199
     default:
         panic("non-exhaustive match")
     }
-    retv193 = jp195
-    return retv193
 }
 
 func score(value__16 Message__string) int32 {
-    var retv215 int32
-    var jp217 int32
     switch value__16.(type) {
     case Quit:
-        jp217 = 0
+        return 0
     case Write:
-        jp217 = 1
+        return 1
     case Move:
         var x169 int32 = value__16.(Move)._0
         var x170 int32 = value__16.(Move)._1
-        var vertical__18 int32 = x170
-        var x__17 int32 = x169
-        var t218 int32 = x__17 + vertical__18
-        jp217 = t218
+        var t218 int32 = x169 + x170
+        return t218
     default:
         panic("non-exhaustive match")
     }
-    retv215 = jp217
-    return retv215
 }
 
 func label(value__19 Message__string) string {
-    var retv220 string
-    var jp222 string
     switch value__19.(type) {
     case Quit:
-        jp222 = "quit"
+        return "quit"
     case Write:
         var x172 string = value__19.(Write)._0
-        var text__21 string = x172
-        jp222 = text__21
+        return x172
     case Move:
         var x175 string = value__19.(Move)._2
-        var label__20 string = x175
-        jp222 = label__20
+        return x175
     default:
         panic("non-exhaustive match")
     }
-    retv220 = jp222
-    return retv220
 }
 
 func main0() struct{} {
@@ -227,17 +185,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv232 string
     var t233 string = _goml_runtime_core_int32_to_string(self__6)
-    retv232 = t233
-    return retv232
+    return t233
 }
 
 func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__65 int32, other__66 int32) bool {
-    var retv235 bool
     var t236 bool = self__65 == other__66
-    retv235 = t236
-    return retv235
+    return t236
 }
 
 func println__T_int32(value__1 int32) struct{} {
@@ -259,23 +213,17 @@ func println__T_bool(value__1 bool) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv250 string
     var t251 string = _goml_runtime_core_int32_to_string(self__43)
-    retv250 = t251
-    return retv250
+    return t251
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv253 string
-    retv253 = self__38
-    return retv253
+    return self__38
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv255 string
     var t256 string = _goml_runtime_core_bool_to_string(self__37)
-    retv255 = t256
-    return retv255
+    return t256
 }
 
 func main() {

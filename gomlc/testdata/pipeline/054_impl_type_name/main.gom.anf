@@ -1,62 +1,44 @@
 fn trait_impl#TypeName#Point#type_name(self/0: Point) -> string {
-  join ret162(retv163: string) -> string {
-    retv163
-  } in
   let mtmp155 = self/0 in
-  let x156 = Point.x(mtmp155) in
-  let x157 = Point.y(mtmp155) in
+  let x156 = Point.x(self/0) in
+  let x157 = Point.y(self/0) in
   let y/2 = x157 in
   let x/1 = x156 in
-  let t164 = inherent#int32#int32#to_string(x/1) in
+  let t164 = inherent#int32#int32#to_string(x156) in
   let prefix/3 = ("Point(" + t164) in
   let t165 = (prefix/3 + ", ") in
-  let t166 = inherent#int32#int32#to_string(y/2) in
+  let t166 = inherent#int32#int32#to_string(x157) in
   let t167 = (t165 + t166) in
   let t168 = (t167 + ")") in
-  jump ret162(t168)
+  t168
 }
 
 fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
-  } in
-  join k171(jp172: string) -> string {
-    jump ret169(jp172)
-  } in
   match self/4 {
     Tag_0 => {
-      jump k171("Unit")
+      "Unit"
     },
     Tag_1 => {
       let x158 = Shape::Location._0(self/4) in
       let point/5 = x158 in
-      let t173 = trait_impl#TypeName#Point#type_name(point/5) in
+      let t173 = trait_impl#TypeName#Point#type_name(x158) in
       let t174 = ("Shape::" + t173) in
-      jump k171(t174)
+      t174
     },
   }
 }
 
 fn show_point(point/6: Point) -> string {
-  join ret175(retv176: string) -> string {
-    retv176
-  } in
   let t177 = trait_impl#TypeName#Point#type_name(point/6) in
-  jump ret175(t177)
+  t177
 }
 
 fn show_shape(shape/7: Shape) -> string {
-  join ret178(retv179: string) -> string {
-    retv179
-  } in
   let t180 = trait_impl#TypeName#Shape#type_name(shape/7) in
-  jump ret178(t180)
+  t180
 }
 
 fn main() -> unit {
-  join ret181() -> unit {
-    ()
-  } in
   let point/8 = Point { x: 7, y: 9 } in
   let t182 = show_point(point/8) in
   let mtmp159 = println__T_string(t182) in
@@ -67,29 +49,20 @@ fn main() -> unit {
   let location_shape/10 = Shape::Location(t184) in
   let t185 = show_shape(location_shape/10) in
   let mtmp161 = println__T_string(t185) in
-  jump ret181()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret186(retv187: string) -> string {
-    retv187
-  } in
   let t188 = @runtime(core.int32_to_string)(self/6) in
-  jump ret186(t188)
+  t188
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret189() -> unit {
-    ()
-  } in
   let t190 = trait_impl#ToString#string#to_string(value/1) in
   let t191 = @runtime(core.string_println)(t190) in
-  jump ret189()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret192(retv193: string) -> string {
-    retv193
-  } in
-  jump ret192(self/38)
+  self/38
 }

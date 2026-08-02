@@ -52,24 +52,18 @@ func print__T_int(value__0 int) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__36 struct{}) string {
-    var retv170 string
     var t171 string = _goml_runtime_core_unit_to_string(self__36)
-    retv170 = t171
-    return retv170
+    return t171
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv173 string
     var t174 string = _goml_runtime_core_bool_to_string(self__37)
-    retv173 = t174
-    return retv173
+    return t174
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv176 string
     var t177 string = _goml_runtime_core_int_to_string(self__40)
-    retv176 = t177
-    return retv176
+    return t177
 }
 
 func main() {

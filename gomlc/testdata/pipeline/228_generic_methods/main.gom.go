@@ -64,21 +64,17 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv172 string
     var t173 string = _goml_runtime_core_int_to_string(self__5)
-    retv172 = t173
-    return retv172
+    return t173
 }
 
 func _goml_m_inherent_i_Box_i_Box_l_T_r__i_map____T__int____U__string(self__0 Box__int, map_fn__1 func(int) string) Box__string {
-    var retv175 Box__string
     var t176 int = self__0.value
     var t177 string = map_fn__1(t176)
     var t178 Box__string = Box__string{
         value: t177,
     }
-    retv175 = t178
-    return retv175
+    return t178
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -88,45 +84,33 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_Box_i_Box_l_T_r__i_render____T__string____U__int(self__2 Box__string, value__3 int) string {
-    var retv183 string
     var t184 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__3)
     var t185 string = "value:" + t184
-    retv183 = t185
-    return retv183
+    return t185
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv187 string
-    retv187 = self__38
-    return retv187
+    return self__38
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv189 string
     var t190 string = _goml_runtime_core_int_to_string(self__40)
-    retv189 = t190
-    return retv189
+    return t190
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env160 closure_env_main_0, value__5 int) string {
-    var retv192 string
     var t193 string = _goml_m_inherent_i_int_i_int_i_to__string(value__5)
-    retv192 = t193
-    return retv192
+    return t193
 }
 
 func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env161 closure_env_main_1, value__8 int) string {
-    var retv195 string
     var t196 string = _goml_m_inherent_i_int_i_int_i_to__string(value__8)
-    retv195 = t196
-    return retv195
+    return t196
 }
 
 func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env162 closure_env_main_2, value__11 int) string {
-    var retv198 string
     var t199 string = _goml_m_inherent_i_int_i_int_i_to__string(value__11)
-    retv198 = t199
-    return retv198
+    return t199
 }
 
 func main() {

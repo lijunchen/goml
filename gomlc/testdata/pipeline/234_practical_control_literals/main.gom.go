@@ -55,24 +55,16 @@ type Some struct {
 func (_ Some) isOption__int() {}
 
 func unwrap_or_negative(value__0 Option__int) int {
-    var retv178 int
-    var mtmp155 Option__int = value__0
-    var jp180 int
-    switch mtmp155.(type) {
+    switch value__0.(type) {
     case Some:
-        var x156 int = mtmp155.(Some)._0
-        var result__1 int = x156
-        jp180 = result__1
-        retv178 = jp180
-        return retv178
+        var x156 int = value__0.(Some)._0
+        return x156
     default:
-        retv178 = -1
-        return retv178
+        return -1
     }
 }
 
 func count_to(limit__2 int) int {
-    var retv182 int
     var counter__3 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var jp184 int
     Loop_loop_expr185:
@@ -88,47 +80,35 @@ func count_to(limit__2 int) int {
             continue
         }
     }
-    retv182 = jp184
-    return retv182
+    return jp184
 }
 
 func loop_option(value__5 Option__int) int {
-    var retv190 int
     var jp192 int
-    var mtmp161 Option__int = value__5
-    switch mtmp161.(type) {
+    switch value__5.(type) {
     case Some:
-        var x162 int = mtmp161.(Some)._0
-        var item__6 int = x162
-        jp192 = item__6
-        retv190 = jp192
-        return retv190
+        var x162 int = value__5.(Some)._0
+        jp192 = x162
+        return jp192
     default:
         jp192 = -2
-        retv190 = jp192
-        return retv190
+        return jp192
     }
 }
 
 func nested_loop_value() int {
-    var retv196 int
     var jp198 int
     jp198 = 7
-    retv196 = jp198
-    return retv196
+    return jp198
 }
 
 func matches_raw_path(value__7 string) bool {
-    var retv208 bool
-    var jp210 bool
     switch value__7 {
     case "C:\\tmp":
-        jp210 = true
+        return true
     default:
-        jp210 = false
+        return false
     }
-    retv208 = jp210
-    return retv208
 }
 
 func main0() struct{} {
@@ -166,17 +146,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv230 *ref_int_x
     var t231 *ref_int_x = ref__Ref_3int(value__207)
-    retv230 = t231
-    return retv230
+    return t231
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv233 int
     var t234 int = ref_get__Ref_3int(self__208)
-    retv233 = t234
-    return retv233
+    return t234
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
@@ -191,23 +167,17 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv241 string
     var t242 string = _goml_runtime_core_int_to_string(self__5)
-    retv241 = t242
-    return retv241
+    return t242
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv244 string
     var t245 string = _goml_runtime_core_bool_to_string(self__37)
-    retv244 = t245
-    return retv244
+    return t245
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv247 string
-    retv247 = self__38
-    return retv247
+    return self__38
 }
 
 func main() {

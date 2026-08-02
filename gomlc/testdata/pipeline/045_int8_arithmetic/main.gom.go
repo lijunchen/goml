@@ -22,21 +22,15 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func a_value() int8 {
-    var retv167 int8
-    retv167 = 90
-    return retv167
+    return 90
 }
 
 func b_value() int8 {
-    var retv169 int8
-    retv169 = -20
-    return retv169
+    return -20
 }
 
 func c_value() int8 {
-    var retv171 int8
-    retv171 = 3
-    return retv171
+    return 3
 }
 
 func show_int8(label__0 string, value__1 int8) struct{} {
@@ -82,23 +76,17 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__41 int8) string {
-    var retv183 string
     var t184 string = _goml_runtime_core_int8_to_string(self__41)
-    retv183 = t184
-    return retv183
+    return t184
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv186 string
     var t187 string = _goml_runtime_core_bool_to_string(self__37)
-    retv186 = t187
-    return retv186
+    return t187
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv189 string
-    retv189 = self__38
-    return retv189
+    return self__38
 }
 
 func main() {

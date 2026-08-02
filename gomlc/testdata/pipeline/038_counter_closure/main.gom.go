@@ -46,7 +46,6 @@ type closure_env_reset_1 struct {
 }
 
 func make_counter() Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit {
-    var retv171 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit
     var cell__0 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     var next__2 closure_env_next_0 = closure_env_next_0{
         cell_0: cell__0,
@@ -62,26 +61,20 @@ func make_counter() Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit {
             return _goml_m_inherent_i_closure__env__reset__1_i_closure__env__reset__1_i_apply(reset__3)
         },
     }
-    retv171 = t172
-    return retv171
+    return t172
 }
 
 func main0() struct{} {
     var counter__4 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit = make_counter()
-    var mtmp157 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit = counter__4
-    var x158 func() int32 = mtmp157._0
-    var x159 func() struct{} = mtmp157._1
-    var reset__6 func() struct{} = x159
-    var next__5 func() int32 = x158
-    var first__7 int32 = next__5()
-    var second__8 int32 = next__5()
-    reset__6()
-    var third__9 int32 = next__5()
+    var x158 func() int32 = counter__4._0
+    var x159 func() struct{} = counter__4._1
+    var first__7 int32 = x158()
+    var second__8 int32 = x158()
+    x159()
+    var third__9 int32 = x158()
     var new_counter__10 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit = make_counter()
-    var mtmp161 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit = new_counter__10
-    var x162 func() int32 = mtmp161._0
-    var new_next__11 func() int32 = x162
-    var fourth__12 int32 = new_next__11()
+    var x162 func() int32 = new_counter__10._0
+    var fourth__12 int32 = x162()
     var t174 string = _goml_m_inherent_i_int32_i_int32_i_to__string(first__7)
     println__T_string(t174)
     var t175 string = _goml_m_inherent_i_int32_i_int32_i_to__string(second__8)
@@ -94,17 +87,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__207 int32) *ref_int32_x {
-    var retv179 *ref_int32_x
     var t180 *ref_int32_x = ref__Ref_5int32(value__207)
-    retv179 = t180
-    return retv179
+    return t180
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__208 *ref_int32_x) int32 {
-    var retv182 int32
     var t183 int32 = ref_get__Ref_5int32(self__208)
-    retv182 = t183
-    return retv182
+    return t183
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__209 *ref_int32_x, value__210 int32) struct{} {
@@ -119,26 +108,20 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv190 string
     var t191 string = _goml_runtime_core_int32_to_string(self__6)
-    retv190 = t191
-    return retv190
+    return t191
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv193 string
-    retv193 = self__38
-    return retv193
+    return self__38
 }
 
 func _goml_m_inherent_i_closure__env__next__0_i_closure__env__next__0_i_apply(env168 closure_env_next_0) int32 {
-    var retv201 int32
     var cell__0 *ref_int32_x = env168.cell_0
     var t202 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(cell__0)
     var next__1 int32 = t202 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(cell__0, next__1)
-    retv201 = next__1
-    return retv201
+    return next__1
 }
 
 func _goml_m_inherent_i_closure__env__reset__1_i_closure__env__reset__1_i_apply(env169 closure_env_reset_1) struct{} {

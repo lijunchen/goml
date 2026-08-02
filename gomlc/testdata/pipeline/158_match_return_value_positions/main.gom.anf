@@ -1,15 +1,12 @@
 fn add_after_match(flag/0: bool) -> int32 {
-  join ret162(retv163: int32) -> int32 {
-    retv163
-  } in
   join k164(jp165: int32) -> int32 {
     let value/1 = jp165 in
-    let t166 = (value/1 + 1) in
-    jump ret162(t166)
+    let t166 = (jp165 + 1) in
+    t166
   } in
   match flag/0 {
     true => {
-      jump ret162(5)
+      5
     },
     false => {
       jump k164(7)
@@ -18,16 +15,13 @@ fn add_after_match(flag/0: bool) -> int32 {
 }
 
 fn receiver_after_match(flag/2: bool) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
-  } in
   join k169(jp170: int) -> string {
     let t171 = inherent#int#int#to_string(jp170) in
-    jump ret167(t171)
+    t171
   } in
   match flag/2 {
     true => {
-      jump ret167("early")
+      "early"
     },
     false => {
       jump k169(7)
@@ -36,18 +30,12 @@ fn receiver_after_match(flag/2: bool) -> string {
 }
 
 fn closure_after_match(flag/3: bool) -> int32 {
-  join ret172(retv173: int32) -> int32 {
-    retv173
-  } in
   let f/6 = closure_env_f_0 {} in
   let t174 = inherent#closure_env_f_0#closure_env_f_0#apply(f/6, flag/3) in
-  jump ret172(t174)
+  t174
 }
 
 fn main() -> unit {
-  join ret175() -> unit {
-    ()
-  } in
   let t176 = add_after_match(false) in
   let _wild155 = println__T_int32(t176) in
   let t177 = add_after_match(true) in
@@ -60,62 +48,44 @@ fn main() -> unit {
   let _wild159 = println__T_int32(t180) in
   let t181 = closure_after_match(true) in
   let _wild160 = println__T_int32(t181) in
-  jump ret175()
+  ()
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret182(retv183: string) -> string {
-    retv183
-  } in
   let t184 = @runtime(core.int_to_string)(self/5) in
-  jump ret182(t184)
+  t184
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret185() -> unit {
-    ()
-  } in
   let t186 = trait_impl#ToString#int32#to_string(value/1) in
   let t187 = @runtime(core.string_println)(t186) in
-  jump ret185()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret188() -> unit {
-    ()
-  } in
   let t189 = trait_impl#ToString#string#to_string(value/1) in
   let t190 = @runtime(core.string_println)(t189) in
-  jump ret188()
+  ()
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret191(retv192: string) -> string {
-    retv192
-  } in
   let t193 = @runtime(core.int32_to_string)(self/43) in
-  jump ret191(t193)
+  t193
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
-  } in
-  jump ret194(self/38)
+  self/38
 }
 
 fn inherent#closure_env_f_0#closure_env_f_0#apply(env161: closure_env_f_0, inner/4: bool) -> int32 {
-  join ret196(retv197: int32) -> int32 {
-    retv197
-  } in
   join k198(jp199: int32) -> int32 {
     let value/5 = jp199 in
-    let t200 = (value/5 + 3) in
-    jump ret196(t200)
+    let t200 = (jp199 + 3) in
+    t200
   } in
   match inner/4 {
     true => {
-      jump ret196(2)
+      2
     },
     false => {
       jump k198(4)

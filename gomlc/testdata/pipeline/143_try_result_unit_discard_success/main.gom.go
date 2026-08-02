@@ -26,64 +26,49 @@ type Err struct {
 func (_ Err) isResult__unit__string() {}
 
 func step(ok__0 bool) Result__unit__string {
-    var retv164 Result__unit__string
-    var jp166 Result__unit__string
     if ok__0 {
         var t167 Result__unit__string = Ok{
             _0: struct{}{},
         }
-        jp166 = t167
+        return t167
     } else {
         var t168 Result__unit__string = Err{
             _0: "step failed",
         }
-        jp166 = t168
+        return t168
     }
-    retv164 = jp166
-    return retv164
 }
 
 func run(ok__1 bool) Result__unit__string {
-    var retv170 Result__unit__string
     var mtmp155 Result__unit__string = step(ok__1)
     switch mtmp155.(type) {
     case Ok:
         var t172 Result__unit__string = Ok{
             _0: struct{}{},
         }
-        retv170 = t172
-        return retv170
+        return t172
     case Err:
         var x157 string = mtmp155.(Err)._0
-        var try_residual__12 string = x157
         var t173 Result__unit__string = Err{
-            _0: try_residual__12,
+            _0: x157,
         }
-        retv170 = t173
-        return retv170
+        return t173
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(res__2 Result__unit__string) string {
-    var retv175 string
-    var jp177 string
     switch res__2.(type) {
     case Ok:
-        var jp179 string
-        jp179 = "ok unit"
-        jp177 = jp179
+        return "ok unit"
     case Err:
         var x160 string = res__2.(Err)._0
-        var err__3 string = x160
-        var t180 string = "err " + err__3
-        jp177 = t180
+        var t180 string = "err " + x160
+        return t180
     default:
         panic("non-exhaustive match")
     }
-    retv175 = jp177
-    return retv175
 }
 
 func main0() struct{} {
@@ -103,9 +88,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv190 string
-    retv190 = self__38
-    return retv190
+    return self__38
 }
 
 func main() {

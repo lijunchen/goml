@@ -1,44 +1,29 @@
 fn light_code(light/0: Light) -> int32 {
-  join ret158(retv159: int32) -> int32 {
-    retv159
-  } in
-  join k160(jp161: int32) -> int32 {
-    jump ret158(jp161)
-  } in
   match light/0 {
     Tag_0 => {
-      jump k160(10)
+      10
     },
     Tag_1 => {
-      jump k160(20)
+      20
     },
     Tag_2 => {
-      jump k160(30)
+      30
     },
   }
 }
 
 fn paint_code(paint/1: Paint) -> int32 {
-  join ret162(retv163: int32) -> int32 {
-    retv163
-  } in
-  join k164(jp165: int32) -> int32 {
-    jump ret162(jp165)
-  } in
   match paint/1 {
     Tag_0 => {
-      jump k164(1)
+      1
     },
     Tag_1 => {
-      jump k164(2)
+      2
     },
   }
 }
 
 fn main() -> unit {
-  join ret166() -> unit {
-    ()
-  } in
   let light/2 = Tag_0 in
   let paint/3 = Tag_0 in
   let t167 = light_code(light/2) in
@@ -53,29 +38,20 @@ fn main() -> unit {
   let t173 = paint_code(Tag_1) in
   let t174 = inherent#int32#int32#to_string(t173) in
   let t175 = println__T_string(t174) in
-  jump ret166()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret176() -> unit {
-    ()
-  } in
   let t177 = trait_impl#ToString#string#to_string(value/1) in
   let t178 = @runtime(core.string_println)(t177) in
-  jump ret176()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret179(retv180: string) -> string {
-    retv180
-  } in
   let t181 = @runtime(core.int32_to_string)(self/6) in
-  jump ret179(t181)
+  t181
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret182(retv183: string) -> string {
-    retv183
-  } in
-  jump ret182(self/38)
+  self/38
 }

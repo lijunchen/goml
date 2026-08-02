@@ -29,20 +29,8 @@ type Tuple3_4bool_4bool_18Tuple2_4bool_4bool struct {
 }
 
 func main0() struct{} {
-    var t163 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
-        _0: true,
-        _1: false,
-    }
-    var a__0 Tuple3_4bool_4bool_18Tuple2_4bool_4bool = Tuple3_4bool_4bool_18Tuple2_4bool_4bool{
-        _0: true,
-        _1: false,
-        _2: t163,
-    }
-    var x158 Tuple2_4bool_4bool = a__0._2
-    var x160 bool = x158._1
-    var w__4 bool = x160
-    var b__5 bool = w__4
-    print__T_bool(b__5)
+    var x160 bool = false
+    print__T_bool(x160)
     return struct{}{}
 }
 
@@ -53,10 +41,8 @@ func print__T_bool(value__0 bool) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv168 string
     var t169 string = _goml_runtime_core_bool_to_string(self__37)
-    retv168 = t169
-    return retv168
+    return t169
 }
 
 func main() {

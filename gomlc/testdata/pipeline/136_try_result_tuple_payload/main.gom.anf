@@ -1,99 +1,75 @@
 fn split_host_port(ok/0: bool) -> Result__(string,string)__string {
-  join ret165(retv166: Result__(string,string)__string) -> Result__(string,string)__string {
-    retv166
-  } in
-  join k167(jp168: Result__(string,string)__string) -> Result__(string,string)__string {
-    jump ret165(jp168)
-  } in
   if ok/0 {
     let t169 = ("example.com", "443") in
     let t170 = Result__(string,string)__string::Ok(t169) in
-    jump k167(t170)
+    t170
   } else {
     let t171 = Result__(string,string)__string::Err("missing port") in
-    jump k167(t171)
+    t171
   }
 }
 
 fn render(ok/1: bool) -> Result__string__string {
-  join ret172(retv173: Result__string__string) -> Result__string__string {
-    retv173
-  } in
   let mtmp155 = split_host_port(ok/1) in
   join k174(jp175: (string, string)) -> Result__string__string {
     let mtmp158 = jp175 in
-    let x159 = mtmp158.0 in
-    let x160 = mtmp158.1 in
+    let x159 = jp175.0 in
+    let x160 = jp175.1 in
     let port/3 = x160 in
     let host/2 = x159 in
-    let t176 = (host/2 + ":") in
-    let t177 = (t176 + port/3) in
+    let t176 = (x159 + ":") in
+    let t177 = (t176 + x160) in
     let t178 = Result__string__string::Ok(t177) in
-    jump ret172(t178)
+    t178
   } in
   match mtmp155 {
     Tag_0 => {
       let x156 = Result__(string,string)__string::Ok._0(mtmp155) in
       let try_value/14 = x156 in
-      jump k174(try_value/14)
+      jump k174(x156)
     },
     Tag_1 => {
       let x157 = Result__(string,string)__string::Err._0(mtmp155) in
       let try_residual/14 = x157 in
-      let t179 = Result__string__string::Err(try_residual/14) in
-      jump ret172(t179)
+      let t179 = Result__string__string::Err(x157) in
+      t179
     },
   }
 }
 
 fn show(res/4: Result__string__string) -> string {
-  join ret180(retv181: string) -> string {
-    retv181
-  } in
-  join k182(jp183: string) -> string {
-    jump ret180(jp183)
-  } in
   match res/4 {
     Tag_0 => {
       let x161 = Result__string__string::Ok._0(res/4) in
       let value/5 = x161 in
-      let t184 = ("ok " + value/5) in
-      jump k182(t184)
+      let t184 = ("ok " + x161) in
+      t184
     },
     Tag_1 => {
       let x162 = Result__string__string::Err._0(res/4) in
       let err/6 = x162 in
-      let t185 = ("err " + err/6) in
-      jump k182(t185)
+      let t185 = ("err " + x162) in
+      t185
     },
   }
 }
 
 fn main() -> unit {
-  join ret186() -> unit {
-    ()
-  } in
   let t187 = render(true) in
   let t188 = show(t187) in
   let _wild163 = println__T_string(t188) in
   let t189 = render(false) in
   let t190 = show(t189) in
   let _wild164 = println__T_string(t190) in
-  jump ret186()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret191() -> unit {
-    ()
-  } in
   let t192 = trait_impl#ToString#string#to_string(value/1) in
   let t193 = @runtime(core.string_println)(t192) in
-  jump ret191()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
-  } in
-  jump ret194(self/38)
+  self/38
 }

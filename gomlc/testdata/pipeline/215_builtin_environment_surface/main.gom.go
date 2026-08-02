@@ -217,7 +217,6 @@ func main0() struct{} {
 }
 
 func _goml_m_iterator__fold____A__int____I__FnIterator_l_int_r_____T__int(iterator__117 FnIterator__int, initial__118 int, combine__119 func(int, int) int) int {
-    var retv189 int
     var accumulator__120 int = initial__118
     Loop_loop_expr191:
     for {
@@ -227,23 +226,19 @@ func _goml_m_iterator__fold____A__int____I__FnIterator_l_int_r_____T__int(iterat
             break Loop_loop_expr191
         case Some:
             var x29 int = mtmp28.(Some)._0
-            var value__121 int = x29
-            var t193 int = combine__119(accumulator__120, value__121)
+            var t193 int = combine__119(accumulator__120, x29)
             accumulator__120 = t193
             continue
         default:
             panic("non-exhaustive match")
         }
     }
-    retv189 = accumulator__120
-    return retv189
+    return accumulator__120
 }
 
 func _goml_m_range(start__222 int, end__223 int) FnIterator__int {
-    var retv195 FnIterator__int
     var t196 FnIterator__int = __goml_builtin_range(start__222, end__223)
-    retv195 = t196
-    return retv195
+    return t196
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -253,36 +248,27 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv201 string
     var t202 string = _goml_runtime_core_bool_to_string(self__37)
-    retv201 = t202
-    return retv201
+    return t202
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv204 string
     var t205 string = _goml_runtime_core_int32_to_string(self__6)
-    retv204 = t205
-    return retv204
+    return t205
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv207 string
     var t208 string = _goml_runtime_core_int_to_string(self__5)
-    retv207 = t208
-    return retv207
+    return t208
 }
 
 func _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(self__102 FnIterator__int) Option__int {
-    var retv210 Option__int
     var t211 func() Option__int = self__102.next_fn
     var t212 Option__int = t211()
-    retv210 = t212
-    return retv210
+    return t212
 }
 
 func __goml_builtin_range(start__218 int, end__219 int) FnIterator__int {
-    var retv214 FnIterator__int
     var current__220 *ref_int_x = ref__Ref_3int(start__218)
     var t215 closure_env_goml_builtin_range_1 = closure_env_goml_builtin_range_1{
         current_0: current__220,
@@ -291,51 +277,40 @@ func __goml_builtin_range(start__218 int, end__219 int) FnIterator__int {
     var t216 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
         return _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(t215)
     })
-    retv214 = t216
-    return retv214
+    return t216
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv218 string
-    retv218 = self__38
-    return retv218
+    return self__38
 }
 
 func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__101 func() Option__int) FnIterator__int {
-    var retv220 FnIterator__int
     var t221 FnIterator__int = FnIterator__int{
         next_fn: next_fn__101,
     }
-    retv220 = t221
-    return retv220
+    return t221
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env162 closure_env_main_0, sum__11 int, item__12 int) int {
-    var retv235 int
     var t236 int = sum__11 + item__12
-    retv235 = t236
-    return retv235
+    return t236
 }
 
 func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(env163 closure_env_goml_builtin_range_1) Option__int {
-    var retv238 Option__int
     var current__220 *ref_int_x = env163.current_0
     var end__219 int = env163.end_1
     var value__221 int = ref_get__Ref_3int(current__220)
     var t241 bool = value__221 < end__219
-    var jp240 Option__int
     if t241 {
         var t242 int = value__221 + 1
         ref_set__Ref_3int(current__220, t242)
         var t243 Option__int = Some{
             _0: value__221,
         }
-        jp240 = t243
+        return t243
     } else {
-        jp240 = None{}
+        return None{}
     }
-    retv238 = jp240
-    return retv238
 }
 
 func main() {

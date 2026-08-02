@@ -55,22 +55,18 @@ func show64(label__3 string, value__4 float64) struct{} {
 }
 
 func lerp32(a__6 float32, b__7 float32, weight__8 float32) float32 {
-    var retv170 float32
     var delta__9 float32 = b__7 - a__6
     var t171 float32 = delta__9 * weight__8
     var t172 float32 = a__6 + t171
-    retv170 = t172
-    return retv170
+    return t172
 }
 
 func midpoint_energy(x__10 float64, y__11 float64) float64 {
-    var retv174 float64
     var t175 float64 = x__10 * x__10
     var t176 float64 = y__11 * y__11
     var sum__12 float64 = t175 + t176
     var t177 float64 = sum__12 / 2
-    retv174 = t177
-    return retv174
+    return t177
 }
 
 func main0() struct{} {
@@ -108,10 +104,8 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__49 float32) string {
-    var retv186 string
     var t187 string = _goml_runtime_core_float32_to_string(self__49)
-    retv186 = t187
-    return retv186
+    return t187
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -121,23 +115,17 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__50 float64) string {
-    var retv192 string
     var t193 string = _goml_runtime_core_float64_to_string(self__50)
-    retv192 = t193
-    return retv192
+    return t193
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv195 string
     var t196 string = _goml_runtime_core_bool_to_string(self__37)
-    retv195 = t196
-    return retv195
+    return t196
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv198 string
-    retv198 = self__38
-    return retv198
+    return self__38
 }
 
 func main() {

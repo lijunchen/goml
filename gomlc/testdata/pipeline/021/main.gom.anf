@@ -1,71 +1,47 @@
 fn match_int(n/0: int32) -> int32 {
-  join ret162(retv163: int32) -> int32 {
-    retv163
-  } in
-  join k164(jp165: int32) -> int32 {
-    jump ret162(jp165)
-  } in
   match n/0 {
     0 => {
-      jump k164(10)
+      10
     },
     1 => {
-      jump k164(20)
+      20
     },
     _ => {
-      jump k164(30)
+      30
     },
   }
 }
 
 fn wildcard_first(n/1: int32) -> int32 {
-  join ret166(retv167: int32) -> int32 {
-    retv167
-  } in
-  jump ret166(40)
+  40
 }
 
 fn wildcard_middle(n/2: int32) -> int32 {
-  join ret168(retv169: int32) -> int32 {
-    retv169
-  } in
-  join k170(jp171: int32) -> int32 {
-    jump ret168(jp171)
-  } in
   match n/2 {
     2 => {
-      jump k170(90)
+      90
     },
     3 => {
-      jump k170(100)
+      100
     },
     _ => {
-      jump k170(100)
+      100
     },
   }
 }
 
 fn repeated(n/3: int32) -> int32 {
-  join ret172(retv173: int32) -> int32 {
-    retv173
-  } in
-  join k174(jp175: int32) -> int32 {
-    jump ret172(jp175)
-  } in
   match n/3 {
     1 => {
-      jump k174(60)
+      60
     },
     _ => {
-      jump k174(80)
+      80
     },
   }
 }
 
 fn main() -> unit {
-  join ret176() -> unit {
-    ()
-  } in
   let t177 = match_int(0) in
   let t178 = inherent#int32#int32#to_string(t177) in
   let mtmp155 = println__T_string(t178) in
@@ -90,29 +66,20 @@ fn main() -> unit {
   let t191 = repeated(3) in
   let t192 = inherent#int32#int32#to_string(t191) in
   let t193 = println__T_string(t192) in
-  jump ret176()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret194() -> unit {
-    ()
-  } in
   let t195 = trait_impl#ToString#string#to_string(value/1) in
   let t196 = @runtime(core.string_println)(t195) in
-  jump ret194()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret197(retv198: string) -> string {
-    retv198
-  } in
   let t199 = @runtime(core.int32_to_string)(self/6) in
-  jump ret197(t199)
+  t199
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret200(retv201: string) -> string {
-    retv201
-  } in
-  jump ret200(self/38)
+  self/38
 }

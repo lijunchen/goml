@@ -1,94 +1,67 @@
 fn maybe_value(flag/0: bool) -> Option__int32 {
-  join ret159(retv160: Option__int32) -> Option__int32 {
-    retv160
-  } in
-  join k161(jp162: Option__int32) -> Option__int32 {
-    jump ret159(jp162)
-  } in
   if flag/0 {
     let t163 = Option__int32::Some(41) in
-    jump k161(t163)
+    t163
   } else {
-    jump k161(Tag_1)
+    Tag_1
   }
 }
 
 fn compute(flag/1: bool) -> Option__int32 {
-  join ret164(retv165: Option__int32) -> Option__int32 {
-    retv165
-  } in
   let mtmp155 = maybe_value(flag/1) in
   join k166(jp167: int32) -> Option__int32 {
     let value/2 = jp167 in
-    let t168 = (value/2 + 1) in
+    let t168 = (jp167 + 1) in
     let t169 = Option__int32::Some(t168) in
-    jump ret164(t169)
+    t169
   } in
   match mtmp155 {
     Tag_0 => {
       let x156 = Option__int32::Some._0(mtmp155) in
       let try_value/11 = x156 in
-      jump k166(try_value/11)
+      jump k166(x156)
     },
     Tag_1 => {
-      jump ret164(Tag_1)
+      Tag_1
     },
   }
 }
 
 fn show(value/3: Option__int32) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
-  } in
-  join k172(jp173: string) -> string {
-    jump ret170(jp173)
-  } in
   match value/3 {
     Tag_0 => {
       let x157 = Option__int32::Some._0(value/3) in
       let value/4 = x157 in
-      let t174 = inherent#int32#int32#to_string(value/4) in
-      jump k172(t174)
+      let t174 = inherent#int32#int32#to_string(x157) in
+      t174
     },
     Tag_1 => {
-      jump k172("none")
+      "none"
     },
   }
 }
 
 fn main() -> unit {
-  join ret175() -> unit {
-    ()
-  } in
   let t176 = compute(true) in
   let t177 = show(t176) in
   let _wild158 = println__T_string(t177) in
   let t178 = compute(false) in
   let t179 = show(t178) in
   let t180 = println__T_string(t179) in
-  jump ret175()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret181(retv182: string) -> string {
-    retv182
-  } in
   let t183 = @runtime(core.int32_to_string)(self/6) in
-  jump ret181(t183)
+  t183
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret184() -> unit {
-    ()
-  } in
   let t185 = trait_impl#ToString#string#to_string(value/1) in
   let t186 = @runtime(core.string_println)(t185) in
-  jump ret184()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret187(retv188: string) -> string {
-    retv188
-  } in
-  jump ret187(self/38)
+  self/38
 }

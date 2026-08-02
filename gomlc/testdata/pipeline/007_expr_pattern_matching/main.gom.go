@@ -42,61 +42,15 @@ type Mul struct {
 func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var t191 Expr = Add{
-        _0: Zero{},
-        _1: Zero{},
-    }
-    var a__0 Expr = Mul{
-        _0: t191,
-        _1: Zero{},
-    }
-    switch a__0.(type) {
-    case Add:
-        var x156 Expr = a__0.(Add)._0
-        var x157 Expr = a__0.(Add)._1
-        switch x157.(type) {
-        case Zero:
-            switch x156.(type) {
-            case Zero:
-                print__T_int(0)
-            case Succ:
-                print__T_int(2)
-            default:
-                print__T_int(5)
-            }
-        default:
-            switch x156.(type) {
-            case Succ:
-                print__T_int(2)
-            default:
-                print__T_int(6)
-            }
-        }
-    case Mul:
-        var x158 Expr = a__0.(Mul)._0
-        var x159 Expr = a__0.(Mul)._1
-        switch x158.(type) {
-        case Zero:
-            print__T_int(1)
-        case Add:
-            switch x159.(type) {
-            case Zero:
-                print__T_int(3)
-            default:
-                print__T_int(4)
-            }
-        default:
-            switch x159.(type) {
-            case Zero:
-                print__T_int(3)
-            default:
-                print__T_int(6)
-            }
-        }
+    var x159 Expr = Zero{}
+    switch x159.(type) {
+    case Zero:
+        print__T_int(3)
+        return struct{}{}
     default:
-        print__T_int(6)
+        print__T_int(4)
+        return struct{}{}
     }
-    return struct{}{}
 }
 
 func print__T_int(value__0 int) struct{} {
@@ -106,10 +60,8 @@ func print__T_int(value__0 int) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv214 string
     var t215 string = _goml_runtime_core_int_to_string(self__40)
-    retv214 = t215
-    return retv214
+    return t215
 }
 
 func main() {

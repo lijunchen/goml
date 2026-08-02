@@ -14,52 +14,38 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func match_int(n__0 int32) int32 {
-    var retv163 int32
-    var jp165 int32
     switch n__0 {
     case 0:
-        jp165 = 10
+        return 10
     case 1:
-        jp165 = 20
+        return 20
     default:
-        jp165 = 30
+        return 30
     }
-    retv163 = jp165
-    return retv163
 }
 
 func wildcard_first(n__1 int32) int32 {
-    var retv167 int32
-    retv167 = 40
-    return retv167
+    return 40
 }
 
 func wildcard_middle(n__2 int32) int32 {
-    var retv169 int32
-    var jp171 int32
     switch n__2 {
     case 2:
-        jp171 = 90
+        return 90
     case 3:
-        jp171 = 100
+        return 100
     default:
-        jp171 = 100
+        return 100
     }
-    retv169 = jp171
-    return retv169
 }
 
 func repeated(n__3 int32) int32 {
-    var retv173 int32
-    var jp175 int32
     switch n__3 {
     case 1:
-        jp175 = 60
+        return 60
     default:
-        jp175 = 80
+        return 80
     }
-    retv173 = jp175
-    return retv173
 }
 
 func main0() struct{} {
@@ -97,16 +83,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv198 string
     var t199 string = _goml_runtime_core_int32_to_string(self__6)
-    retv198 = t199
-    return retv198
+    return t199
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv201 string
-    retv201 = self__38
-    return retv201
+    return self__38
 }
 
 func main() {

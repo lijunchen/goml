@@ -20,8 +20,7 @@ func main0() struct{} {
     default:
         jp158 = "other"
     }
-    var y__1 string = jp158
-    println__T_string(y__1)
+    println__T_string(jp158)
     return struct{}{}
 }
 
@@ -32,9 +31,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv163 string
-    retv163 = self__38
-    return retv163
+    return self__38
 }
 
 func main() {

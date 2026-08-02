@@ -51,23 +51,17 @@ func println__T_int8(value__1 int8) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv170 string
-    retv170 = self__38
-    return retv170
+    return self__38
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv172 string
     var t173 string = _goml_runtime_core_int32_to_string(self__43)
-    retv172 = t173
-    return retv172
+    return t173
 }
 
 func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__41 int8) string {
-    var retv175 string
     var t176 string = _goml_runtime_core_int8_to_string(self__41)
-    retv175 = t176
-    return retv175
+    return t176
 }
 
 func main() {

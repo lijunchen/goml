@@ -1,25 +1,22 @@
 fn fetch(flag/0: bool) -> Option__int32 {
-  join ret162(retv163: Option__int32) -> Option__int32 {
-    retv163
-  } in
   let m/1 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
   join k164() -> Option__int32 {
     let _wild156 = () in
     let mtmp157 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
     join k165(jp166: int32) -> Option__int32 {
       let value/2 = jp166 in
-      let t167 = (value/2 + 1) in
+      let t167 = (jp166 + 1) in
       let t168 = Option__int32::Some(t167) in
-      jump ret162(t168)
+      t168
     } in
     match mtmp157 {
       Tag_0 => {
-        jump ret162(Tag_0)
+        Tag_0
       },
       Tag_1 => {
         let x158 = Option__int32::Some._0(mtmp157) in
         let try_value/18 = x158 in
-        jump k165(try_value/18)
+        jump k165(x158)
       },
     }
   } in
@@ -32,99 +29,66 @@ fn fetch(flag/0: bool) -> Option__int32 {
 }
 
 fn show(opt/3: Option__int32) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
-  } in
-  join k171(jp172: string) -> string {
-    jump ret169(jp172)
-  } in
   match opt/3 {
     Tag_0 => {
-      jump k171("none")
+      "none"
     },
     Tag_1 => {
       let x159 = Option__int32::Some._0(opt/3) in
       let value/4 = x159 in
-      let t173 = inherent#int32#int32#to_string(value/4) in
+      let t173 = inherent#int32#int32#to_string(x159) in
       let t174 = ("some=" + t173) in
-      jump k171(t174)
+      t174
     },
   }
 }
 
 fn main() -> unit {
-  join ret175() -> unit {
-    ()
-  } in
   let t176 = fetch(true) in
   let t177 = show(t176) in
   let _wild160 = println__T_string(t177) in
   let t178 = fetch(false) in
   let t179 = show(t178) in
   let _wild161 = println__T_string(t179) in
-  jump ret175()
+  ()
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {
-  join ret180(retv181: HashMap[string, int32]) -> HashMap[string, int32] {
-    retv181
-  } in
   let t182 = @intrinsic(hashmap.new)() in
-  jump ret180(t182)
+  t182
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(self/198: HashMap[string, int32], key/199: string, value/200: int32) -> unit {
-  join ret183() -> unit {
-    ()
-  } in
   let t184 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
-  jump ret183()
+  ()
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(self/196: HashMap[string, int32], key/197: string) -> Option__int32 {
-  join ret185(retv186: Option__int32) -> Option__int32 {
-    retv186
-  } in
   let t187 = @intrinsic(hashmap.get)(self/196, key/197) in
-  jump ret185(t187)
+  t187
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret188(retv189: string) -> string {
-    retv189
-  } in
   let t190 = @runtime(core.int32_to_string)(self/6) in
-  jump ret188(t190)
+  t190
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret191() -> unit {
-    ()
-  } in
   let t192 = trait_impl#ToString#string#to_string(value/1) in
   let t193 = @runtime(core.string_println)(t192) in
-  jump ret191()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
-  } in
-  jump ret194(self/38)
+  self/38
 }
 
 fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
-  join ret196(retv197: bool) -> bool {
-    retv197
-  } in
   let t198 = @intrinsic(eq.primitive)(self/55, other/56) in
-  jump ret196(t198)
+  t198
 }
 
 fn trait_impl#Hash#string#hash(self/83: string) -> uint64 {
-  join ret199(retv200: uint64) -> uint64 {
-    retv200
-  } in
   let t201 = @runtime(core.string_hash)(self/83) in
-  jump ret199(t201)
+  t201
 }

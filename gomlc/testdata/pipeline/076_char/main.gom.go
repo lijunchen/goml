@@ -31,8 +31,7 @@ func main0() struct{} {
     default:
         jp160 = "?"
     }
-    var out__2 string = jp160
-    println__T_string(out__2)
+    println__T_string(jp160)
     return struct{}{}
 }
 
@@ -43,16 +42,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_char_i_char_i_to__string(self__7 rune) string {
-    var retv165 string
     var t166 string = _goml_runtime_core_char_to_string(self__7)
-    retv165 = t166
-    return retv165
+    return t166
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv168 string
-    retv168 = self__38
-    return retv168
+    return self__38
 }
 
 func main() {

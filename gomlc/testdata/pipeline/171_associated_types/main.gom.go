@@ -22,10 +22,8 @@ type Box__string struct {
 }
 
 func _goml_m_trait__impl_i_Provider_i_Number_i_get(self__0 Number) int32 {
-    var retv159 int32
     var t160 int32 = self__0.value
-    retv159 = t160
-    return retv159
+    return t160
 }
 
 func main0() struct{} {
@@ -56,38 +54,28 @@ func main0() struct{} {
 }
 
 func read__P_Number(provider__2 Number) int32 {
-    var retv174 int32
     var t175 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(provider__2)
-    retv174 = t175
-    return retv174
+    return t175
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv177 string
     var t178 string = _goml_runtime_core_int32_to_string(self__6)
-    retv177 = t178
-    return retv177
+    return t178
 }
 
 func read_as__P_Number__T_int32(provider__3 Number) int32 {
-    var retv180 int32
     var t181 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(provider__3)
-    retv180 = t181
-    return retv180
+    return t181
 }
 
 func _goml_m_read____P__Box_l_string_r_(provider__2 Box__string) string {
-    var retv183 string
     var t184 string = _goml_m_trait__impl_i_Provider_i_Box____string_i_get(provider__2)
-    retv183 = t184
-    return retv183
+    return t184
 }
 
 func _goml_m_trait__impl_i_Provider_i_Box____string_i_get(self__1 Box__string) string {
-    var retv186 string
     var t187 string = self__1.value
-    retv186 = t187
-    return retv186
+    return t187
 }
 
 func main() {

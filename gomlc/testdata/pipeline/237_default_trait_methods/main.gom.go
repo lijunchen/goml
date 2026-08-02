@@ -41,30 +41,22 @@ func dyn__Describe__vtable__DefaultValue() *dyn__Describe_vtable {
 }
 
 func _goml_m_trait__impl_i_Describe_i_DefaultValue_i_name(self__3 DefaultValue) string {
-    var retv160 string
     var t161 string = self__3.name
-    retv160 = t161
-    return retv160
+    return t161
 }
 
 func _goml_m_trait__impl_i_Describe_i_DefaultValue_i_describe(default_arg0 DefaultValue) string {
-    var retv163 string
     var t164 string = _goml_m_trait__default_i_Describe_i_describe____Self__DefaultValue(default_arg0)
-    retv163 = t164
-    return retv163
+    return t164
 }
 
 func _goml_m_trait__impl_i_Describe_i_OverrideValue_i_describe(self__5 OverrideValue) string {
-    var retv168 string
-    retv168 = "override"
-    return retv168
+    return "override"
 }
 
 func describe_dyn(value__6 dyn__Describe) string {
-    var retv170 string
     var t171 string = value__6.vtable.describe(value__6.data)
-    retv170 = t171
-    return retv170
+    return t171
 }
 
 func main0() struct{} {
@@ -88,24 +80,18 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__default_i_Describe_i_describe____Self__DefaultValue(self__0 DefaultValue) string {
-    var retv180 string
     var t181 string = _goml_m_trait__impl_i_Describe_i_DefaultValue_i_name(self__0)
     var t182 string = "default:" + t181
-    retv180 = t182
-    return retv180
+    return t182
 }
 
 func _goml_m_trait__impl_i_Keep_i_DefaultValue_i_keep____mono1(default_arg0 DefaultValue, default_arg1 string) string {
-    var retv184 string
     var t185 string = _goml_m_trait__default_i_Keep_i_keep____Self__DefaultValue____T__string(default_arg0, default_arg1)
-    retv184 = t185
-    return retv184
+    return t185
 }
 
 func _goml_m_trait__default_i_Keep_i_keep____Self__DefaultValue____T__string(self__1 DefaultValue, value__2 string) string {
-    var retv187 string
-    retv187 = value__2
-    return retv187
+    return value__2
 }
 
 func main() {

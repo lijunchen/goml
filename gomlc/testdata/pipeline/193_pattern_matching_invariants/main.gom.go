@@ -66,57 +66,40 @@ type Only struct {
 func (_ Only) isSingle() {}
 
 func unwrap(value__5 Single) int32 {
-    var retv223 int32
-    var mtmp160 Single = value__5
-    var jp225 int32
-    switch mtmp160.(type) {
+    switch value__5.(type) {
     case Only:
-        var x161 int32 = mtmp160.(Only)._0
-        var inner__6 int32 = x161
-        jp225 = inner__6
+        var x161 int32 = value__5.(Only)._0
+        return x161
     default:
         panic("non-exhaustive match")
     }
-    retv223 = jp225
-    return retv223
 }
 
 func decide(flag__7 bool) int32 {
-    var retv227 int32
     switch flag__7 {
     case true:
-        retv227 = 1
+        return 1
     case false:
-        retv227 = 2
+        return 2
     default:
         panic("non-exhaustive match")
     }
-    return retv227
 }
 
 func signed_zero(value__8 float64) string {
-    var retv231 string
-    var jp233 string
     switch value__8 {
     case -0:
-        jp233 = "zero"
+        return "zero"
     default:
-        jp233 = "other"
+        return "other"
     }
-    retv231 = jp233
-    return retv231
 }
 
 func main0() struct{} {
     var t235 Single = Only{
         _0: 12,
     }
-    var mtmp162 Tuple1_6Single = Tuple1_6Single{
-        _0: t235,
-    }
-    var x163 Single = mtmp162._0
-    var single__9 Single = x163
-    var t236 int32 = unwrap(single__9)
+    var t236 int32 = unwrap(t235)
     println__T_int32(t236)
     var t237 int32 = decide(true)
     println__T_int32(t237)
@@ -138,16 +121,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv246 string
     var t247 string = _goml_runtime_core_int32_to_string(self__43)
-    retv246 = t247
-    return retv246
+    return t247
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv249 string
-    retv249 = self__38
-    return retv249
+    return self__38
 }
 
 func main() {

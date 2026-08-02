@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret156() -> unit {
-    ()
-  } in
   let t157 = Box__int { value: 5 } in
   let t158 = describe__B_Box[int]__T_int(t157) in
   let _wild155 = @runtime(core.string_println)(t158) in
@@ -9,64 +6,43 @@ fn main() -> unit {
   let t159 = trait_impl#Parent#[int32]@Box__int32#parent(value/4) in
   let t160 = inherent#int32#int32#to_string(t159) in
   let t161 = @runtime(core.string_println)(t160) in
-  jump ret156()
+  ()
 }
 
 fn describe__B_Box[int]__T_int(value/3: Box__int) -> string {
-  join ret162(retv163: string) -> string {
-    retv163
-  } in
   let t164 = trait_impl#Parent#[int]@Box__int#parent(value/3) in
   let t165 = trait_impl#ToString#int#to_string(t164) in
   let t166 = trait_impl#Render#Box__int#render(value/3) in
   let t167 = (t165 + t166) in
   let t168 = trait_impl#Child#[int]@Box__int#child(value/3) in
   let t169 = (t167 + t168) in
-  jump ret162(t169)
+  t169
 }
 
 fn trait_impl#Parent#[int32]@Box__int32#parent(self/0: Box__int32) -> int32 {
-  join ret170(retv171: int32) -> int32 {
-    retv171
-  } in
   let t172 = Box__int32.value(self/0) in
-  jump ret170(t172)
+  t172
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret173(retv174: string) -> string {
-    retv174
-  } in
   let t175 = @runtime(core.int32_to_string)(self/6) in
-  jump ret173(t175)
+  t175
 }
 
 fn trait_impl#Parent#[int]@Box__int#parent(self/0: Box__int) -> int {
-  join ret176(retv177: int) -> int {
-    retv177
-  } in
   let t178 = Box__int.value(self/0) in
-  jump ret176(t178)
+  t178
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret179(retv180: string) -> string {
-    retv180
-  } in
   let t181 = @runtime(core.int_to_string)(self/40) in
-  jump ret179(t181)
+  t181
 }
 
 fn trait_impl#Render#Box__int#render(self/1: Box__int) -> string {
-  join ret182(retv183: string) -> string {
-    retv183
-  } in
-  jump ret182(":render")
+  ":render"
 }
 
 fn trait_impl#Child#[int]@Box__int#child(self/2: Box__int) -> string {
-  join ret184(retv185: string) -> string {
-    retv185
-  } in
-  jump ret184(":child")
+  ":child"
 }

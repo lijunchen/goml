@@ -33,9 +33,7 @@ type dyn__Display struct {
 }
 
 func build() int32 {
-    var retv160 int32
-    retv160 = 9
-    return retv160
+    return 9
 }
 
 func main0() struct{} {
@@ -46,10 +44,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv166 string
     var t167 string = _goml_runtime_core_int32_to_string(self__6)
-    retv166 = t167
-    return retv166
+    return t167
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -59,9 +55,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv172 string
-    retv172 = self__38
-    return retv172
+    return self__38
 }
 
 func main() {

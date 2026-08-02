@@ -25,9 +25,7 @@ func print__T_string(value__0 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv163 string
-    retv163 = self__38
-    return retv163
+    return self__38
 }
 
 func main() {

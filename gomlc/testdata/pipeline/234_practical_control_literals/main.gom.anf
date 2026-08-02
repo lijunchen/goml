@@ -1,30 +1,21 @@
 fn unwrap_or_negative(value/0: Option__int) -> int {
-  join ret177(retv178: int) -> int {
-    retv178
-  } in
   let mtmp155 = value/0 in
-  join k179(jp180: int) -> int {
-    jump ret177(jp180)
-  } in
-  match mtmp155 {
+  match value/0 {
     Tag_1 => {
-      let x156 = Option__int::Some._0(mtmp155) in
+      let x156 = Option__int::Some._0(value/0) in
       let result/1 = x156 in
-      jump k179(result/1)
+      x156
     },
     _ => {
-      jump ret177(-1)
+      -1
     },
   }
 }
 
 fn count_to(limit/2: int) -> int {
-  join ret181(retv182: int) -> int {
-    retv182
-  } in
   let counter/3 = inherent#Ref#Ref[T]#new__T_int(0) in
   join exit183(jp184: int) -> int {
-    jump ret181(jp184)
+    jp184
   } in
   joinrec {
     join loop_expr185() -> int {
@@ -47,23 +38,17 @@ fn count_to(limit/2: int) -> int {
 }
 
 fn loop_option(value/5: Option__int) -> int {
-  join ret189(retv190: int) -> int {
-    retv190
-  } in
   join exit191(jp192: int) -> int {
-    jump ret189(jp192)
+    jp192
   } in
   joinrec {
     join loop_expr193() -> int {
       let mtmp161 = value/5 in
-      join k194() -> int {
-        unreachable
-      } in
-      match mtmp161 {
+      match value/5 {
         Tag_1 => {
-          let x162 = Option__int::Some._0(mtmp161) in
+          let x162 = Option__int::Some._0(value/5) in
           let item/6 = x162 in
-          jump exit191(item/6)
+          jump exit191(x162)
         },
         _ => {
           jump exit191(-2)
@@ -75,11 +60,8 @@ fn loop_option(value/5: Option__int) -> int {
 }
 
 fn nested_loop_value() -> int {
-  join ret195(retv196: int) -> int {
-    retv196
-  } in
   join exit197(jp198: int) -> int {
-    jump ret195(jp198)
+    jp198
   } in
   joinrec {
     join loop_expr199() -> int {
@@ -99,12 +81,6 @@ fn nested_loop_value() -> int {
 }
 
 fn never_returns() -> int {
-  join ret202(retv203: int) -> int {
-    retv203
-  } in
-  join exit204(jp205: never) -> int {
-    jump ret202(jp205)
-  } in
   joinrec {
     join loop_expr206() -> int {
       jump loop_expr206()
@@ -114,26 +90,17 @@ fn never_returns() -> int {
 }
 
 fn matches_raw_path(value/7: string) -> bool {
-  join ret207(retv208: bool) -> bool {
-    retv208
-  } in
-  join k209(jp210: bool) -> bool {
-    jump ret207(jp210)
-  } in
   match value/7 {
     "C:\\tmp" => {
-      jump k209(true)
+      true
     },
     _ => {
-      jump k209(false)
+      false
     },
   }
 }
 
 fn main() -> unit {
-  join ret211() -> unit {
-    ()
-  } in
   let _wild168 = @runtime(core.string_println)("C:\\tmp\\\"quoted\\\"") in
   let t212 = ("" + "}") in
   let _wild169 = @runtime(core.string_println)(t212) in
@@ -160,77 +127,50 @@ fn main() -> unit {
   let t227 = matches_raw_path("C:\\tmp") in
   let t228 = trait_impl#ToString#bool#to_string(t227) in
   let _wild176 = println__T_string(t228) in
-  jump ret211()
+  ()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  join ret229(retv230: Ref[int]) -> Ref[int] {
-    retv230
-  } in
   let t231 = @intrinsic(ref.new)(value/207) in
-  jump ret229(t231)
+  t231
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  join ret232(retv233: int) -> int {
-    retv233
-  } in
   let t234 = @intrinsic(ref.get)(self/208) in
-  jump ret232(t234)
+  t234
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  join ret235() -> unit {
-    ()
-  } in
   let t236 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret235()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret237() -> unit {
-    ()
-  } in
   let t238 = trait_impl#ToString#string#to_string(value/1) in
   let t239 = @runtime(core.string_println)(t238) in
-  jump ret237()
+  ()
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret240(retv241: string) -> string {
-    retv241
-  } in
   let t242 = @runtime(core.int_to_string)(self/5) in
-  jump ret240(t242)
+  t242
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret243(retv244: string) -> string {
-    retv244
-  } in
   let t245 = @runtime(core.bool_to_string)(self/37) in
-  jump ret243(t245)
+  t245
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret246(retv247: string) -> string {
-    retv247
-  } in
-  jump ret246(self/38)
+  self/38
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret248(retv249: bool) -> bool {
-    retv249
-  } in
   let t250 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret248(t250)
+  t250
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret251(retv252: uint64) -> uint64 {
-    retv252
-  } in
   let t253 = @runtime(core.int_hash)(self/85) in
-  jump ret251(t253)
+  t253
 }

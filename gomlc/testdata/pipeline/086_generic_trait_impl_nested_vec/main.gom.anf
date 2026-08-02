@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret157() -> unit {
-    ()
-  } in
   let a/1 = Wrap__int { value: 1 } in
   let b/2 = Wrap__string { value: "x" } in
   let t158 = trait_impl#Size#Wrap__int#size(a/1) in
@@ -10,43 +7,28 @@ fn main() -> unit {
   let t160 = trait_impl#Size#Wrap__string#size(b/2) in
   let t161 = inherent#int32#int32#to_string(t160) in
   let _wild156 = println__T_string(t161) in
-  jump ret157()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret162() -> unit {
-    ()
-  } in
   let t163 = trait_impl#ToString#string#to_string(value/1) in
   let t164 = @runtime(core.string_println)(t163) in
-  jump ret162()
+  ()
 }
 
 fn trait_impl#Size#Wrap__int#size(self/0: Wrap__int) -> int32 {
-  join ret165(retv166: int32) -> int32 {
-    retv166
-  } in
-  jump ret165(1)
+  1
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
-  } in
   let t169 = @runtime(core.int32_to_string)(self/6) in
-  jump ret167(t169)
+  t169
 }
 
 fn trait_impl#Size#Wrap__string#size(self/0: Wrap__string) -> int32 {
-  join ret170(retv171: int32) -> int32 {
-    retv171
-  } in
-  jump ret170(1)
+  1
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  jump ret172(self/38)
+  self/38
 }

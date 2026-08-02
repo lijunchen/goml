@@ -55,24 +55,18 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv165 string
     var t166 string = _goml_runtime_core_int_to_string(self__5)
-    retv165 = t166
-    return retv165
+    return t166
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv168 string
-    retv168 = self__38
-    return retv168
+    return self__38
 }
 
 func _goml_m_inherent_i_closure__env__get__0_i_closure__env__get__0_i_apply(env157 closure_env_get_0) int {
-    var retv176 int
     var x__0 *ref_int_x = env157.x_0
     var t177 int = ref_get__Ref_3int(x__0)
-    retv176 = t177
-    return retv176
+    return t177
 }
 
 func main() {

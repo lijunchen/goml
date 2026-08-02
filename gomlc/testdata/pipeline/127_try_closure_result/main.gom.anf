@@ -1,105 +1,78 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
-  join ret163(retv164: Result__string__string) -> Result__string__string {
-    retv164
-  } in
-  join k165(jp166: Result__string__string) -> Result__string__string {
-    jump ret163(jp166)
-  } in
   if ok/0 {
     let t167 = Result__string__string::Ok("body") in
-    jump k165(t167)
+    t167
   } else {
     let t168 = Result__string__string::Err("parse failed") in
-    jump k165(t168)
+    t168
   }
 }
 
 fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
-  join ret169(retv170: Result__string__string) -> Result__string__string {
-    retv170
-  } in
   let run/4 = closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 } in
   let t171 = inherent#closure_env_run_0#closure_env_run_0#apply(run/4) in
-  jump ret169(t171)
+  t171
 }
 
 fn show(res/5: Result__string__string) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  join k174(jp175: string) -> string {
-    jump ret172(jp175)
-  } in
   match res/5 {
     Tag_0 => {
       let x158 = Result__string__string::Ok._0(res/5) in
       let value/6 = x158 in
-      let t176 = ("ok " + value/6) in
-      jump k174(t176)
+      let t176 = ("ok " + x158) in
+      t176
     },
     Tag_1 => {
       let x159 = Result__string__string::Err._0(res/5) in
       let err/7 = x159 in
-      let t177 = ("err " + err/7) in
-      jump k174(t177)
+      let t177 = ("err " + x159) in
+      t177
     },
   }
 }
 
 fn main() -> unit {
-  join ret178() -> unit {
-    ()
-  } in
   let t179 = decorate("outer", true) in
   let t180 = show(t179) in
   let _wild160 = println__T_string(t180) in
   let t181 = decorate("outer", false) in
   let t182 = show(t181) in
   let _wild161 = println__T_string(t182) in
-  jump ret178()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret183() -> unit {
-    ()
-  } in
   let t184 = trait_impl#ToString#string#to_string(value/1) in
   let t185 = @runtime(core.string_println)(t184) in
-  jump ret183()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret186(retv187: string) -> string {
-    retv187
-  } in
-  jump ret186(self/38)
+  self/38
 }
 
 fn inherent#closure_env_run_0#closure_env_run_0#apply(env162: closure_env_run_0) -> Result__string__string {
-  join ret188(retv189: Result__string__string) -> Result__string__string {
-    retv189
-  } in
   let ok/2 = closure_env_run_0.ok_0(env162) in
   let prefix/1 = closure_env_run_0.prefix_1(env162) in
   let mtmp155 = parse_text(ok/2) in
   join k190(jp191: string) -> Result__string__string {
     let text/3 = jp191 in
     let t192 = (prefix/1 + ":") in
-    let t193 = (t192 + text/3) in
+    let t193 = (t192 + jp191) in
     let t194 = Result__string__string::Ok(t193) in
-    jump ret188(t194)
+    t194
   } in
   match mtmp155 {
     Tag_0 => {
       let x156 = Result__string__string::Ok._0(mtmp155) in
       let try_value/12 = x156 in
-      jump k190(try_value/12)
+      jump k190(x156)
     },
     Tag_1 => {
       let x157 = Result__string__string::Err._0(mtmp155) in
       let try_residual/12 = x157 in
-      let t195 = Result__string__string::Err(try_residual/12) in
-      jump ret188(t195)
+      let t195 = Result__string__string::Err(x157) in
+      t195
     },
   }
 }

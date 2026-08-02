@@ -26,13 +26,16 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
             switch x157 {
             case true:
                 println__T_string("case4")
+                return struct{}{}
             case false:
                 println__T_string("case3")
+                return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
         case false:
             println__T_string("case4")
+            return struct{}{}
         default:
             panic("non-exhaustive match")
         }
@@ -46,13 +49,16 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
                 switch x159 {
                 case true:
                     println__T_string("case2")
+                    return struct{}{}
                 case false:
                     println__T_string("case1")
+                    return struct{}{}
                 default:
                     panic("non-exhaustive match")
                 }
             case false:
                 println__T_string("case2")
+                return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
@@ -64,13 +70,16 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
                 switch x161 {
                 case true:
                     println__T_string("case4")
+                    return struct{}{}
                 case false:
                     println__T_string("case3")
+                    return struct{}{}
                 default:
                     panic("non-exhaustive match")
                 }
             case false:
                 println__T_string("case4")
+                return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
@@ -80,7 +89,6 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
 }
 
 func main0() struct{} {
@@ -130,9 +138,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv198 string
-    retv198 = self__38
-    return retv198
+    return self__38
 }
 
 func main() {

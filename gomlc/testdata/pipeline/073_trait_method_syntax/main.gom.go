@@ -18,13 +18,11 @@ type S struct {
 }
 
 func _goml_m_trait__impl_i_ToString_i_S_i_to__string(self__0 S) string {
-    var retv157 string
     var t158 int32 = self__0.value
     var t159 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t158)
     var t160 string = "S(" + t159
     var t161 string = t160 + ")"
-    retv157 = t161
-    return retv157
+    return t161
 }
 
 func main0() struct{} {
@@ -37,10 +35,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv165 string
     var t166 string = _goml_runtime_core_int32_to_string(self__6)
-    retv165 = t166
-    return retv165
+    return t166
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -50,9 +46,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv171 string
-    retv171 = self__38
-    return retv171
+    return self__38
 }
 
 func main() {

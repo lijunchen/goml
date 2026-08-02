@@ -98,17 +98,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv181 *ref_int_x
     var t182 *ref_int_x = ref__Ref_3int(value__207)
-    retv181 = t182
-    return retv181
+    return t182
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv184 int
     var t185 int = ref_get__Ref_3int(self__208)
-    retv184 = t185
-    return retv184
+    return t185
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -118,10 +114,8 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var retv190 string
     var t191 string = _goml_runtime_core_uint8_to_string(self__45)
-    retv190 = t191
-    return retv190
+    return t191
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
@@ -130,23 +124,17 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, v
 }
 
 func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__49 float32) string {
-    var retv195 string
     var t196 string = _goml_runtime_core_float32_to_string(self__49)
-    retv195 = t196
-    return retv195
+    return t196
 }
 
 func _goml_m_trait__impl_i_ToString_i_int64_i_to__string(self__44 int64) string {
-    var retv198 string
     var t199 string = _goml_runtime_core_int64_to_string(self__44)
-    retv198 = t199
-    return retv198
+    return t199
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv201 string
-    retv201 = self__38
-    return retv201
+    return self__38
 }
 
 func main() {

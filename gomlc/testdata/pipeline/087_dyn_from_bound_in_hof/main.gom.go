@@ -37,10 +37,8 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var retv158 string
     var t159 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    retv158 = t159
-    return retv158
+    return t159
 }
 
 func main0() struct{} {
@@ -52,10 +50,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv163 string
     var t164 string = _goml_runtime_core_int32_to_string(self__6)
-    retv163 = t164
-    return retv163
+    return t164
 }
 
 func mk_renderer__T_int32(x__1 int32) func() string {
@@ -80,17 +76,13 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv172 string
-    retv172 = self__38
-    return retv172
+    return self__38
 }
 
 func _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(env156 closure_env_mk_renderer_T_int32_0) string {
-    var retv174 string
     var d__2 dyn__Display = env156.d_0
     var t175 string = d__2.vtable.show(d__2.data)
-    retv174 = t175
-    return retv174
+    return t175
 }
 
 func main() {

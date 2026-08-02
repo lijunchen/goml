@@ -27,40 +27,29 @@ type Tuple2_5int32_5int32 struct {
 }
 
 func sum_pair(value__0 Tuple2_5int32_5int32) int32 {
-    var retv161 int32
     var t162 int32 = value__0._0
     var t163 int32 = value__0._1
     var t164 int32 = t162 + t163
-    retv161 = t164
-    return retv161
+    return t164
 }
 
 func classify(value__1 uint8) string {
-    var retv166 string
-    var match155 uint8 = value__1
-    var t169 bool = match155 == 10
-    var jp168 string
+    var t169 bool = value__1 == 10
     if t169 {
-        jp168 = "newline"
+        return "newline"
     } else {
-        var t172 bool = match155 >= 65
-        var jp171 string
+        var t172 bool = value__1 >= 65
         if t172 {
-            var t175 bool = match155 <= 90
-            var jp174 string
+            var t175 bool = value__1 <= 90
             if t175 {
-                jp174 = "uppercase"
+                return "uppercase"
             } else {
-                jp174 = "other"
+                return "other"
             }
-            jp171 = jp174
         } else {
-            jp171 = "other"
+            return "other"
         }
-        jp168 = jp171
     }
-    retv166 = jp168
-    return retv166
 }
 
 func main0() struct{} {
@@ -106,30 +95,22 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__48 uint64) string {
-    var retv194 string
     var t195 string = _goml_runtime_core_uint64_to_string(self__48)
-    retv194 = t195
-    return retv194
+    return t195
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv197 string
     var t198 string = _goml_runtime_core_int32_to_string(self__43)
-    retv197 = t198
-    return retv197
+    return t198
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var retv200 string
     var t201 string = _goml_runtime_core_uint8_to_string(self__45)
-    retv200 = t201
-    return retv200
+    return t201
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv203 string
-    retv203 = self__38
-    return retv203
+    return self__38
 }
 
 func main() {

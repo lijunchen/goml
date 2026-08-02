@@ -1,59 +1,38 @@
 fn trait_impl#Convert#[int32]@Value#convert(self/0: Value) -> string {
-  join ret157(retv158: string) -> string {
-    retv158
-  } in
-  jump ret157("int")
+  "int"
 }
 
 fn trait_impl#Convert#[string]@Value#convert(self/1: Value) -> int32 {
-  join ret159(retv160: int32) -> int32 {
-    retv160
-  } in
-  jump ret159(7)
+  7
 }
 
 fn main() -> unit {
-  join ret161() -> unit {
-    ()
-  } in
   let t162 = Value {} in
   let text/2 = trait_impl#Convert#[int32]@Value#convert(t162) in
   let t163 = Value {} in
   let number/3 = trait_impl#Convert#[string]@Value#convert(t163) in
   let _wild155 = println__T_string(text/2) in
   let _wild156 = println__T_int32(number/3) in
-  jump ret161()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret164() -> unit {
-    ()
-  } in
   let t165 = trait_impl#ToString#string#to_string(value/1) in
   let t166 = @runtime(core.string_println)(t165) in
-  jump ret164()
+  ()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret167() -> unit {
-    ()
-  } in
   let t168 = trait_impl#ToString#int32#to_string(value/1) in
   let t169 = @runtime(core.string_println)(t168) in
-  jump ret167()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
-  } in
-  jump ret170(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
   let t174 = @runtime(core.int32_to_string)(self/43) in
-  jump ret172(t174)
+  t174
 }

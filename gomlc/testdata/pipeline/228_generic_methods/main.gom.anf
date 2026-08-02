@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret163() -> unit {
-    ()
-  } in
   let first/4 = Box__int { value: 42 } in
   let t164 = closure_env_main_0 {} in
   let text/6 = inherent#Box#Box[T]#map__T_int__U_string(first/4, t164) in
@@ -20,81 +17,54 @@ fn main() -> unit {
   let t170 = Box__string { value: "value" } in
   let rendered/13 = inherent#Box#Box[T]#render__T_string__U_int(t170, 5) in
   let _wild159 = println__T_string(rendered/13) in
-  jump ret163()
+  ()
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
   let t173 = @runtime(core.int_to_string)(self/5) in
-  jump ret171(t173)
+  t173
 }
 
 fn inherent#Box#Box[T]#map__T_int__U_string(self/0: Box__int, map_fn/1: (int) -> string) -> Box__string {
-  join ret174(retv175: Box__string) -> Box__string {
-    retv175
-  } in
   let t176 = Box__int.value(self/0) in
   let t177 = map_fn/1(t176) in
   let t178 = Box__string { value: t177 } in
-  jump ret174(t178)
+  t178
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret179() -> unit {
-    ()
-  } in
   let t180 = trait_impl#ToString#string#to_string(value/1) in
   let t181 = @runtime(core.string_println)(t180) in
-  jump ret179()
+  ()
 }
 
 fn inherent#Box#Box[T]#render__T_string__U_int(self/2: Box__string, value/3: int) -> string {
-  join ret182(retv183: string) -> string {
-    retv183
-  } in
   let mtmp155 = self/2 in
   let t184 = trait_impl#ToString#int#to_string(value/3) in
   let t185 = ("value:" + t184) in
-  jump ret182(t185)
+  t185
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret186(retv187: string) -> string {
-    retv187
-  } in
-  jump ret186(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret188(retv189: string) -> string {
-    retv189
-  } in
   let t190 = @runtime(core.int_to_string)(self/40) in
-  jump ret188(t190)
+  t190
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(env160: closure_env_main_0, value/5: int) -> string {
-  join ret191(retv192: string) -> string {
-    retv192
-  } in
   let t193 = inherent#int#int#to_string(value/5) in
-  jump ret191(t193)
+  t193
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(env161: closure_env_main_1, value/8: int) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
-  } in
   let t196 = inherent#int#int#to_string(value/8) in
-  jump ret194(t196)
+  t196
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(env162: closure_env_main_2, value/11: int) -> string {
-  join ret197(retv198: string) -> string {
-    retv198
-  } in
   let t199 = inherent#int#int#to_string(value/11) in
-  jump ret197(t199)
+  t199
 }

@@ -1,86 +1,62 @@
 fn cut_pair(ok/0: bool) -> Option__(string,string) {
-  join ret161(retv162: Option__(string,string)) -> Option__(string,string) {
-    retv162
-  } in
-  join k163(jp164: Option__(string,string)) -> Option__(string,string) {
-    jump ret161(jp164)
-  } in
   if ok/0 {
     let t165 = ("left", "right") in
     let t166 = Option__(string,string)::Some(t165) in
-    jump k163(t166)
+    t166
   } else {
-    jump k163(Tag_0)
+    Tag_0
   }
 }
 
 fn check(ok/1: bool) -> Option__string {
-  join ret167(retv168: Option__string) -> Option__string {
-    retv168
-  } in
   let mtmp155 = cut_pair(ok/1) in
   join k169(jp170: (string, string)) -> Option__string {
     let mtmp157 = jp170 in
     let t171 = Option__string::Some("ok") in
-    jump ret167(t171)
+    t171
   } in
   match mtmp155 {
     Tag_0 => {
-      jump ret167(Tag_0)
+      Tag_0
     },
     Tag_1 => {
       let x156 = Option__(string,string)::Some._0(mtmp155) in
       let try_value/13 = x156 in
-      jump k169(try_value/13)
+      jump k169(x156)
     },
   }
 }
 
 fn show(opt/2: Option__string) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  join k174(jp175: string) -> string {
-    jump ret172(jp175)
-  } in
   match opt/2 {
     Tag_0 => {
-      jump k174("none")
+      "none"
     },
     Tag_1 => {
       let x158 = Option__string::Some._0(opt/2) in
       let value/3 = x158 in
-      let t176 = ("some " + value/3) in
-      jump k174(t176)
+      let t176 = ("some " + x158) in
+      t176
     },
   }
 }
 
 fn main() -> unit {
-  join ret177() -> unit {
-    ()
-  } in
   let t178 = check(true) in
   let t179 = show(t178) in
   let _wild159 = println__T_string(t179) in
   let t180 = check(false) in
   let t181 = show(t180) in
   let _wild160 = println__T_string(t181) in
-  jump ret177()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret182() -> unit {
-    ()
-  } in
   let t183 = trait_impl#ToString#string#to_string(value/1) in
   let t184 = @runtime(core.string_println)(t183) in
-  jump ret182()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret185(retv186: string) -> string {
-    retv186
-  } in
-  jump ret185(self/38)
+  self/38
 }

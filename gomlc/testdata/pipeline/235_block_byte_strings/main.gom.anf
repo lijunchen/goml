@@ -1,18 +1,12 @@
 fn answer() -> int {
-  join ret199(retv200: int) -> int {
-    retv200
-  } in
   let base/0 = 40 in
   let t201 = (base/0 + 2) in
-  jump ret199(t201)
+  t201
 }
 
 fn loop_answer() -> int {
-  join ret202(retv203: int) -> int {
-    retv203
-  } in
   join exit204(jp205: int) -> int {
-    jump ret202(jp205)
+    jp205
   } in
   joinrec {
     join loop_expr206() -> int {
@@ -25,9 +19,6 @@ fn loop_answer() -> int {
 }
 
 fn main() -> unit {
-  join ret208() -> unit {
-    ()
-  } in
   let vec_literal/251 = inherent#Vec#Vec[T]#new__T_uint8() in
   let _wild157 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/251, 65) in
   let _wild158 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/251, 10) in
@@ -74,95 +65,67 @@ fn main() -> unit {
   let t209 = loop_answer() in
   let t210 = (value/6 + t209) in
   let nested/7 = t210 in
-  let t211 = inherent#Vec#Vec[T]#len__T_uint8(plain/2) in
+  let t211 = inherent#Vec#Vec[T]#len__T_uint8(vec_literal/251) in
   let t212 = inherent#int#int#to_string(t211) in
   let _wild191 = println__T_string(t212) in
-  let t213 = inherent#Vec#Vec[T]#len__T_uint8(empty/3) in
+  let t213 = inherent#Vec#Vec[T]#len__T_uint8(vec_literal/279) in
   let t214 = inherent#int#int#to_string(t213) in
   let _wild192 = println__T_string(t214) in
-  let t215 = inherent#Vec#Vec[T]#get__T_uint8(plain/2, 0) in
+  let t215 = inherent#Vec#Vec[T]#get__T_uint8(vec_literal/251, 0) in
   let t216 = (t215 as int) in
   let t217 = inherent#int#int#to_string(t216) in
   let _wild193 = println__T_string(t217) in
-  let t218 = inherent#Vec#Vec[T]#get__T_uint8(plain/2, 1) in
+  let t218 = inherent#Vec#Vec[T]#get__T_uint8(vec_literal/251, 1) in
   let t219 = (t218 as int) in
   let t220 = inherent#int#int#to_string(t219) in
   let _wild194 = println__T_string(t220) in
-  let t221 = inherent#Vec#Vec[T]#get__T_uint8(plain/2, 2) in
+  let t221 = inherent#Vec#Vec[T]#get__T_uint8(vec_literal/251, 2) in
   let t222 = (t221 as int) in
   let t223 = inherent#int#int#to_string(t222) in
   let _wild195 = println__T_string(t223) in
-  let t224 = inherent#Vec#Vec[T]#len__T_uint8(raw/4) in
+  let t224 = inherent#Vec#Vec[T]#len__T_uint8(vec_literal/298) in
   let t225 = inherent#int#int#to_string(t224) in
   let _wild196 = println__T_string(t225) in
-  let t226 = inherent#Vec#Vec[T]#len__T_uint8(quoted/5) in
+  let t226 = inherent#Vec#Vec[T]#len__T_uint8(vec_literal/335) in
   let t227 = inherent#int#int#to_string(t226) in
   let _wild197 = println__T_string(t227) in
-  let t228 = inherent#int#int#to_string(nested/7) in
+  let t228 = inherent#int#int#to_string(t210) in
   let _wild198 = println__T_string(t228) in
-  join k229() -> unit {
-    jump ret208()
-  } in
-  if true {
-    let t230 = println__T_string("block condition") in
-    jump k229()
-  } else {
-    jump k229()
-  }
+  let t230 = println__T_string("block condition") in
+  ()
 }
 
 fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
-  join ret231(retv232: Vec[uint8]) -> Vec[uint8] {
-    retv232
-  } in
   let t233 = @intrinsic(vec.new)() in
-  jump ret231(t233)
+  t233
 }
 
 fn inherent#Vec#Vec[T]#push__T_uint8(self/126: Vec[uint8], elem/127: uint8) -> unit {
-  join ret234() -> unit {
-    ()
-  } in
   let t235 = @intrinsic(vec.push)(self/126, elem/127) in
-  jump ret234()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret236() -> unit {
-    ()
-  } in
   let t237 = trait_impl#ToString#string#to_string(value/1) in
   let t238 = @runtime(core.string_println)(t237) in
-  jump ret236()
+  ()
 }
 
 fn inherent#Vec#Vec[T]#len__T_uint8(self/137: Vec[uint8]) -> int {
-  join ret239(retv240: int) -> int {
-    retv240
-  } in
   let t241 = @intrinsic(vec.len)(self/137) in
-  jump ret239(t241)
+  t241
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret242(retv243: string) -> string {
-    retv243
-  } in
   let t244 = @runtime(core.int_to_string)(self/5) in
-  jump ret242(t244)
+  t244
 }
 
 fn inherent#Vec#Vec[T]#get__T_uint8(self/132: Vec[uint8], index/133: int) -> uint8 {
-  join ret245(retv246: uint8) -> uint8 {
-    retv246
-  } in
   let t247 = @intrinsic(vec.get)(self/132, index/133) in
-  jump ret245(t247)
+  t247
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret248(retv249: string) -> string {
-    retv249
-  } in
-  jump ret248(self/38)
+  self/38
 }

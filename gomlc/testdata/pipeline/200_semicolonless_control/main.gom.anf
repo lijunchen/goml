@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret167() -> unit {
-    ()
-  } in
   join k168() -> unit {
     let _wild155 = () in
     let mtmp156 = 1 in
@@ -13,22 +10,22 @@ fn main() -> unit {
         let values/1 = inherent#Vec#Vec[T]#new__T_string() in
         let _wild160 = inherent#Vec#Vec[T]#push__T_string(values/1, "for") in
         let for_source161 = values/1 in
-        let for_limit162 = @intrinsic(vec.len)(for_source161) in
+        let for_limit162 = @intrinsic(vec.len)(values/1) in
         let for_index163 = 0 in
         join exit171() -> unit {
           let _wild166 = () in
           let t172 = @runtime(core.string_println)("done") in
-          jump ret167()
+          ()
         } in
         joinrec {
           join loop173() -> unit {
             let t174 = (for_index163 < for_limit162) in
             if t174 {
-              let for_item164 = @intrinsic(vec.get)(for_source161, for_index163) in
+              let for_item164 = @intrinsic(vec.get)(values/1, for_index163) in
               let t175 = (for_index163 + 1) in
               let _wild165 = for_index163 = t175 in
               let value/2 = for_item164 in
-              let t176 = @runtime(core.string_println)(value/2) in
+              let t176 = @runtime(core.string_println)(for_item164) in
               jump loop173()
             } else {
               jump exit171()
@@ -66,75 +63,46 @@ fn main() -> unit {
       },
     }
   } in
-  if true {
-    let t186 = @runtime(core.string_println)("if") in
-    jump k168()
-  } else {
-    let t187 = @runtime(core.string_println)("else") in
-    jump k168()
-  }
+  let t186 = @runtime(core.string_println)("if") in
+  jump k168()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  join ret188(retv189: Ref[int]) -> Ref[int] {
-    retv189
-  } in
   let t190 = @intrinsic(ref.new)(value/207) in
-  jump ret188(t190)
+  t190
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  join ret191(retv192: int) -> int {
-    retv192
-  } in
   let t193 = @intrinsic(ref.get)(self/208) in
-  jump ret191(t193)
+  t193
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
-  } in
   let t196 = @runtime(core.int_to_string)(self/5) in
-  jump ret194(t196)
+  t196
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  join ret197() -> unit {
-    ()
-  } in
   let t198 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret197()
+  ()
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
-  join ret199(retv200: Vec[string]) -> Vec[string] {
-    retv200
-  } in
   let t201 = @intrinsic(vec.new)() in
-  jump ret199(t201)
+  t201
 }
 
 fn inherent#Vec#Vec[T]#push__T_string(self/126: Vec[string], elem/127: string) -> unit {
-  join ret202() -> unit {
-    ()
-  } in
   let t203 = @intrinsic(vec.push)(self/126, elem/127) in
-  jump ret202()
+  ()
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret204(retv205: bool) -> bool {
-    retv205
-  } in
   let t206 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret204(t206)
+  t206
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret207(retv208: uint64) -> uint64 {
-    retv208
-  } in
   let t209 = @runtime(core.int_hash)(self/85) in
-  jump ret207(t209)
+  t209
 }

@@ -46,13 +46,11 @@ func main0() struct{} {
         } else {
             var t199 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
             var t200 bool = t199 < 4
-            var jp198 bool
             if t200 {
-                jp198 = true
+                jp186 = true
             } else {
-                jp198 = false
+                jp186 = false
             }
-            jp186 = jp198
         }
         if jp186 {
             var t187 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(total__1)
@@ -116,24 +114,18 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv202 *ref_int_x
     var t203 *ref_int_x = ref__Ref_3int(value__207)
-    retv202 = t203
-    return retv202
+    return t203
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv205 int
     var t206 int = ref_get__Ref_3int(self__208)
-    retv205 = t206
-    return retv205
+    return t206
 }
 
 func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv208 bool
     var t209 bool = self__59 == other__60
-    retv208 = t209
-    return retv208
+    return t209
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
@@ -148,10 +140,8 @@ func println__T_int(value__1 int) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv216 string
     var t217 string = _goml_runtime_core_int_to_string(self__40)
-    retv216 = t217
-    return retv216
+    return t217
 }
 
 func main() {

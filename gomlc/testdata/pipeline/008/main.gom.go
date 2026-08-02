@@ -29,30 +29,19 @@ type B struct {
 func (_ B) isT() {}
 
 func main0() struct{} {
-    var t__0 T = B{
-        _0: true,
-        _1: struct{}{},
-    }
-    switch t__0.(type) {
-    case A:
-        var t159 string = _goml_m_inherent_i_int_i_int_i_to__string(1)
-        println__T_string(t159)
-    case B:
-        var x155 bool = t__0.(B)._0
-        switch x155 {
-        case true:
-            var t163 string = _goml_m_inherent_i_int_i_int_i_to__string(2)
-            println__T_string(t163)
-        case false:
-            var t165 string = _goml_m_inherent_i_int_i_int_i_to__string(3)
-            println__T_string(t165)
-        default:
-            panic("non-exhaustive match")
-        }
+    var x155 bool = true
+    switch x155 {
+    case true:
+        var t163 string = _goml_m_inherent_i_int_i_int_i_to__string(2)
+        println__T_string(t163)
+        return struct{}{}
+    case false:
+        var t165 string = _goml_m_inherent_i_int_i_int_i_to__string(3)
+        println__T_string(t165)
+        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -62,16 +51,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv171 string
     var t172 string = _goml_runtime_core_int_to_string(self__5)
-    retv171 = t172
-    return retv171
+    return t172
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv174 string
-    retv174 = self__38
-    return retv174
+    return self__38
 }
 
 func main() {

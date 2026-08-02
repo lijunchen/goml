@@ -131,30 +131,22 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv231 string
     var t232 string = _goml_runtime_core_bool_to_string(self__37)
-    retv231 = t232
-    return retv231
+    return t232
 }
 
 func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__65 int32, other__66 int32) bool {
-    var retv234 bool
     var t235 bool = self__65 == other__66
-    retv234 = t235
-    return retv234
+    return t235
 }
 
 func _goml_m_trait__impl_i_Eq_i_float64_i_eq(self__79 float64, other__80 float64) bool {
-    var retv237 bool
     var t238 bool = self__79 == other__80
-    retv237 = t238
-    return retv237
+    return t238
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv240 string
-    retv240 = self__38
-    return retv240
+    return self__38
 }
 
 func main() {

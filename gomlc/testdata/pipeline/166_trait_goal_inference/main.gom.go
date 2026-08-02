@@ -28,10 +28,8 @@ func vec_len__Vec_5int32(vec *_goml_vec_int32) int {
 }
 
 func _goml_m_trait__impl_i_Measure_i_Vec_l_int32_r__i_measure(self__0 *_goml_vec_int32) int {
-    var retv156 int
     var t157 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__0)
-    retv156 = t157
-    return retv156
+    return t157
 }
 
 func main0() struct{} {
@@ -43,10 +41,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__137 *_goml_vec_int32) int {
-    var retv163 int
     var t164 int = vec_len__Vec_5int32(self__137)
-    retv163 = t164
-    return retv163
+    return t164
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -56,23 +52,17 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_read__measure____T__Vec_l_int32_r_(value__1 *_goml_vec_int32) int {
-    var retv169 int
     var t170 int = _goml_m_trait__impl_i_Measure_i_Vec_l_int32_r__i_measure(value__1)
-    retv169 = t170
-    return retv169
+    return t170
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv172 string
     var t173 string = _goml_runtime_core_int_to_string(self__5)
-    retv172 = t173
-    return retv172
+    return t173
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv175 string
-    retv175 = self__38
-    return retv175
+    return self__38
 }
 
 func main() {

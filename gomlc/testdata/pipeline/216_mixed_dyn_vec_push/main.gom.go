@@ -66,17 +66,13 @@ func dyn__Show__vtable__int32() *dyn__Show_vtable {
 }
 
 func _goml_m_trait__impl_i_Show_i_int32_i_show(self__0 int32) string {
-    var retv159 string
     var t160 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    retv159 = t160
-    return retv159
+    return t160
 }
 
 func _goml_m_trait__impl_i_Show_i_Wrap_i_show(self__1 Wrap) string {
-    var retv162 string
     var t163 string = self__1.value
-    retv162 = t163
-    return retv162
+    return t163
 }
 
 func main0() struct{} {
@@ -105,17 +101,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv174 string
     var t175 string = _goml_runtime_core_int32_to_string(self__6)
-    retv174 = t175
-    return retv174
+    return t175
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__dynShow() *_goml_vec_Dyn_Show {
-    var retv177 *_goml_vec_Dyn_Show
     var t178 *_goml_vec_Dyn_Show = vec_new__Vec_8Dyn_Show()
-    retv177 = t178
-    return retv177
+    return t178
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynShow(self__126 *_goml_vec_Dyn_Show, elem__127 dyn__Show) struct{} {
@@ -130,9 +122,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv185 string
-    retv185 = self__38
-    return retv185
+    return self__38
 }
 
 func main() {

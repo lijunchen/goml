@@ -1,27 +1,18 @@
 fn show_int(label/0: string, value/1: int32) -> unit {
-  join ret167() -> unit {
-    ()
-  } in
   let t168 = inherent#int32#int32#to_string(value/1) in
   let t169 = (label/0 + t168) in
   let mtmp155 = println__T_string(t169) in
-  jump ret167()
+  ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  join ret170() -> unit {
-    ()
-  } in
   let t171 = trait_impl#ToString#bool#to_string(value/3) in
   let t172 = (label/2 + t171) in
   let mtmp156 = println__T_string(t172) in
-  jump ret170()
+  ()
 }
 
 fn main() -> unit {
-  join ret173() -> unit {
-    ()
-  } in
   let base/4 = 10 in
   let sum/5 = (base/4 + 5) in
   let diff/6 = (sum/5 - 3) in
@@ -36,15 +27,15 @@ fn main() -> unit {
     join k176(jp177: bool) -> unit {
       let or_result/10 = jp177 in
       let not_result/11 = (!false) in
-      let t188 = (!and_result/9) in
+      let t188 = (!jp175) in
       join k180(jp181: bool) -> unit {
         join k178(jp179: bool) -> unit {
           let mixed/12 = jp179 in
-          let mtmp163 = show_bool("and=", and_result/9) in
-          let mtmp164 = show_bool("or=", or_result/10) in
+          let mtmp163 = show_bool("and=", jp175) in
+          let mtmp164 = show_bool("or=", jp177) in
           let mtmp165 = show_bool("not=", not_result/11) in
-          let mtmp166 = show_bool("mixed=", mixed/12) in
-          jump ret173()
+          let mtmp166 = show_bool("mixed=", jp179) in
+          ()
         } in
         if jp181 {
           jump k178(true)
@@ -72,62 +63,39 @@ fn main() -> unit {
         let t190 = (sum/5 + t189) in
         let t191 = (prod/7 / 2) in
         let mtmp161 = (t190 - t191) in
-        join k192(jp193: bool) -> unit {
-          jump k180(jp193)
-        } in
         match mtmp161 {
           0 => {
-            jump k192(false)
+            jump k180(false)
           },
           _ => {
-            jump k192(true)
+            jump k180(true)
           },
         }
       } else {
         jump k180(false)
       }
     } in
-    if true {
-      jump k176(true)
-    } else {
-      jump k176(false)
-    }
+    jump k176(true)
   } in
-  if true {
-    jump k174(false)
-  } else {
-    jump k174(false)
-  }
+  jump k174(false)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret194() -> unit {
-    ()
-  } in
   let t195 = trait_impl#ToString#string#to_string(value/1) in
   let t196 = @runtime(core.string_println)(t195) in
-  jump ret194()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret197(retv198: string) -> string {
-    retv198
-  } in
   let t199 = @runtime(core.int32_to_string)(self/6) in
-  jump ret197(t199)
+  t199
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret200(retv201: string) -> string {
-    retv201
-  } in
   let t202 = @runtime(core.bool_to_string)(self/37) in
-  jump ret200(t202)
+  t202
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret203(retv204: string) -> string {
-    retv204
-  } in
-  jump ret203(self/38)
+  self/38
 }

@@ -30,23 +30,17 @@ func println__T_int32(value__1 int32) struct{} {
 }
 
 func apply__T_int32(value__2 int32) int32 {
-    var retv165 int32
     var t166 int32 = _goml_m_trait__impl_i_Extra_i_int32_i_extra(value__2)
-    retv165 = t166
-    return retv165
+    return t166
 }
 
 func _goml_m_trait__impl_i_Extra_i_int32_i_extra(self__1 int32) int32 {
-    var retv168 int32
-    retv168 = 42
-    return retv168
+    return 42
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv170 string
     var t171 string = _goml_runtime_core_int32_to_string(self__43)
-    retv170 = t171
-    return retv170
+    return t171
 }
 
 func main() {

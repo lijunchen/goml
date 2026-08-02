@@ -14,15 +14,11 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func choose(flag__0 bool, x__1 int32, y__2 int32) int32 {
-    var retv158 int32
-    var jp160 int32
     if flag__0 {
-        jp160 = x__1
+        return x__1
     } else {
-        jp160 = y__2
+        return y__2
     }
-    retv158 = jp160
-    return retv158
 }
 
 func main0() struct{} {
@@ -44,16 +40,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv170 string
     var t171 string = _goml_runtime_core_int32_to_string(self__6)
-    retv170 = t171
-    return retv170
+    return t171
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv173 string
-    retv173 = self__38
-    return retv173
+    return self__38
 }
 
 func main() {

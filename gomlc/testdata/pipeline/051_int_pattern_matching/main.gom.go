@@ -28,117 +28,87 @@ type PairData struct {
 }
 
 func is_special8(value__0 int8) bool {
-    var retv161 bool
-    var jp163 bool
     switch value__0 {
     case 5:
-        jp163 = true
+        return true
     case 7:
-        jp163 = true
+        return true
     default:
-        jp163 = false
+        return false
     }
-    retv161 = jp163
-    return retv161
 }
 
 func is_special16(value__1 int16) bool {
-    var retv165 bool
-    var jp167 bool
     switch value__1 {
     case 1024:
-        jp167 = true
+        return true
     case 2048:
-        jp167 = true
+        return true
     default:
-        jp167 = false
+        return false
     }
-    retv165 = jp167
-    return retv165
 }
 
 func is_special32(value__2 int32) bool {
-    var retv169 bool
-    var jp171 bool
     switch value__2 {
     case 4096:
-        jp171 = true
+        return true
     case 8192:
-        jp171 = true
+        return true
     default:
-        jp171 = false
+        return false
     }
-    retv169 = jp171
-    return retv169
 }
 
 func is_special64(value__3 int64) bool {
-    var retv173 bool
-    var jp175 bool
     switch value__3 {
     case 16384:
-        jp175 = true
+        return true
     case 32768:
-        jp175 = true
+        return true
     default:
-        jp175 = false
+        return false
     }
-    retv173 = jp175
-    return retv173
 }
 
 func match_tuple(values__4 Tuple2_4int8_5int16) bool {
-    var retv177 bool
     var x155 int8 = values__4._0
     var x156 int16 = values__4._1
-    var jp179 bool
     switch x156 {
     case 2:
-        var jp181 bool
         switch x155 {
         case 1:
-            jp181 = true
+            return true
         default:
-            jp181 = false
+            return false
         }
-        jp179 = jp181
     default:
-        jp179 = false
+        return false
     }
-    retv177 = jp179
-    return retv177
 }
 
 func match_struct(pair__5 PairData) bool {
-    var retv183 bool
     var x157 int32 = pair__5.head
     var x158 int64 = pair__5.tail
-    var jp185 bool
     switch x158 {
     case 200:
-        var jp187 bool
         switch x157 {
         case 100:
-            jp187 = true
+            return true
         default:
-            jp187 = false
+            return false
         }
-        jp185 = jp187
     case 300:
-        jp185 = true
+        return true
     default:
-        jp185 = false
+        return false
     }
-    retv183 = jp185
-    return retv183
 }
 
 func report(label__6 string, value__7 bool) string {
-    var retv189 string
     var t190 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__7)
     var t191 string = label__6 + t190
-    retv189 = t191
-    return retv189
+    return t191
 }
 
 func main0() struct{} {
@@ -191,10 +161,8 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv210 string
     var t211 string = _goml_runtime_core_bool_to_string(self__37)
-    retv210 = t211
-    return retv210
+    return t211
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -204,9 +172,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv216 string
-    retv216 = self__38
-    return retv216
+    return self__38
 }
 
 func main() {

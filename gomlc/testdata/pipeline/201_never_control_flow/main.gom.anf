@@ -1,26 +1,20 @@
 fn choose(flag/0: bool) -> int32 {
-  join ret161(retv162: int32) -> int32 {
-    retv162
-  } in
   join k163(jp164: int32) -> int32 {
     let value/1 = jp164 in
-    let t165 = (value/1 + 1) in
-    jump ret161(t165)
+    let t165 = (jp164 + 1) in
+    t165
   } in
   if flag/0 {
-    jump ret161(10)
+    10
   } else {
     jump k163(20)
   }
 }
 
 fn continue_branch() -> unit {
-  join ret166() -> unit {
-    ()
-  } in
   let count/2 = inherent#Ref#Ref[T]#new__T_int(0) in
   join exit167() -> unit {
-    jump ret166()
+    ()
   } in
   joinrec {
     join loop168() -> unit {
@@ -34,7 +28,7 @@ fn continue_branch() -> unit {
         let t177 = trait_impl#Eq#int#eq(t176, 1) in
         join k173(jp174: int) -> unit {
           let value/3 = jp174 in
-          let t175 = println__T_int(value/3) in
+          let t175 = println__T_int(jp174) in
           jump loop168()
         } in
         if t177 {
@@ -51,27 +45,20 @@ fn continue_branch() -> unit {
 }
 
 fn break_branch(stop/4: bool) -> unit {
-  join ret178() -> unit {
-    ()
-  } in
   join exit179() -> unit {
-    jump ret178()
+    ()
   } in
   joinrec {
     join loop180() -> unit {
-      if true {
-        join k181(jp182: int) -> unit {
-          let value/5 = jp182 in
-          let _wild156 = println__T_int(value/5) in
-          jump exit179()
-        } in
-        if stop/4 {
-          jump exit179()
-        } else {
-          jump k181(9)
-        }
-      } else {
+      join k181(jp182: int) -> unit {
+        let value/5 = jp182 in
+        let _wild156 = println__T_int(jp182) in
         jump exit179()
+      } in
+      if stop/4 {
+        jump exit179()
+      } else {
+        jump k181(9)
       }
     } in
   } in
@@ -79,9 +66,6 @@ fn break_branch(stop/4: bool) -> unit {
 }
 
 fn main() -> unit {
-  join ret183() -> unit {
-    ()
-  } in
   let t184 = choose(false) in
   let _wild157 = println__T_int32(t184) in
   let t185 = choose(true) in
@@ -89,79 +73,52 @@ fn main() -> unit {
   let _wild159 = continue_branch() in
   let _wild160 = break_branch(false) in
   let t186 = break_branch(true) in
-  jump ret183()
+  ()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  join ret187(retv188: Ref[int]) -> Ref[int] {
-    retv188
-  } in
   let t189 = @intrinsic(ref.new)(value/207) in
-  jump ret187(t189)
+  t189
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  join ret190(retv191: int) -> int {
-    retv191
-  } in
   let t192 = @intrinsic(ref.get)(self/208) in
-  jump ret190(t192)
+  t192
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  join ret193() -> unit {
-    ()
-  } in
   let t194 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret193()
+  ()
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret195(retv196: bool) -> bool {
-    retv196
-  } in
   let t197 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret195(t197)
+  t197
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret198() -> unit {
-    ()
-  } in
   let t199 = trait_impl#ToString#int#to_string(value/1) in
   let t200 = @runtime(core.string_println)(t199) in
-  jump ret198()
+  ()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret201() -> unit {
-    ()
-  } in
   let t202 = trait_impl#ToString#int32#to_string(value/1) in
   let t203 = @runtime(core.string_println)(t202) in
-  jump ret201()
+  ()
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret204(retv205: string) -> string {
-    retv205
-  } in
   let t206 = @runtime(core.int_to_string)(self/40) in
-  jump ret204(t206)
+  t206
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret207(retv208: string) -> string {
-    retv208
-  } in
   let t209 = @runtime(core.int32_to_string)(self/43) in
-  jump ret207(t209)
+  t209
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret210(retv211: uint64) -> uint64 {
-    retv211
-  } in
   let t212 = @runtime(core.int_hash)(self/85) in
-  jump ret210(t212)
+  t212
 }

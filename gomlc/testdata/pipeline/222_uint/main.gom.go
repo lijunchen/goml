@@ -142,26 +142,20 @@ type Some struct {
 func (_ Some) isOption__string() {}
 
 func combine(left__0 uint, right__1 uint) uint {
-    var retv164 uint
     var t165 uint = left__0 + right__1
     var t166 uint = t165 * 2
-    retv164 = t166
-    return retv164
+    return t166
 }
 
 func classify(value__2 uint) string {
-    var retv168 string
-    var jp170 string
     switch value__2 {
     case 0:
-        jp170 = "zero"
+        return "zero"
     case 42:
-        jp170 = "answer"
+        return "answer"
     default:
-        jp170 = "other"
+        return "other"
     }
-    retv168 = jp170
-    return retv168
 }
 
 func main0() struct{} {
@@ -186,14 +180,14 @@ func main0() struct{} {
     switch mtmp161.(type) {
     case None:
         println__T_string("missing")
+        return struct{}{}
     case Some:
         var x162 string = mtmp161.(Some)._0
-        var value__7 string = x162
-        println__T_string(value__7)
+        println__T_string(x162)
+        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
 }
 
 func println__T_uint(value__1 uint) struct{} {
@@ -209,10 +203,8 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__224 uint) string {
-    var retv187 string
     var t188 string = _goml_runtime_core_uint_to_string(self__224)
-    retv187 = t188
-    return retv187
+    return t188
 }
 
 func println__T_bool(value__1 bool) struct{} {
@@ -228,10 +220,8 @@ func println__T_uint64(value__1 uint64) struct{} {
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__uint____V__string() *hashmap_uint_string_x {
-    var retv196 *hashmap_uint_string_x
     var t197 *hashmap_uint_string_x = hashmap_new__HashMap_4uint_6string()
-    retv196 = t197
-    return retv196
+    return t197
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__uint____V__string(self__198 *hashmap_uint_string_x, key__199 uint, value__200 string) struct{} {
@@ -240,44 +230,32 @@ func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__uint____V__stri
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__uint____V__string(self__196 *hashmap_uint_string_x, key__197 uint) Option__string {
-    var retv201 Option__string
     var t202 Option__string = hashmap_get__HashMap_4uint_6string(self__196, key__197)
-    retv201 = t202
-    return retv201
+    return t202
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv204 string
-    retv204 = self__38
-    return retv204
+    return self__38
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv206 string
     var t207 string = _goml_runtime_core_bool_to_string(self__37)
-    retv206 = t207
-    return retv206
+    return t207
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__48 uint64) string {
-    var retv209 string
     var t210 string = _goml_runtime_core_uint64_to_string(self__48)
-    retv209 = t210
-    return retv209
+    return t210
 }
 
 func _goml_m_trait__impl_i_Eq_i_uint_i_eq(self__225 uint, other__226 uint) bool {
-    var retv212 bool
     var t213 bool = self__225 == other__226
-    retv212 = t213
-    return retv212
+    return t213
 }
 
 func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__227 uint) uint64 {
-    var retv215 uint64
     var t216 uint64 = _goml_runtime_core_uint_hash(self__227)
-    retv215 = t216
-    return retv215
+    return t216
 }
 
 func main() {

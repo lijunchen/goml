@@ -54,42 +54,35 @@ func main0() struct{} {
     switch mtmp156.(type) {
     case Maybe__string_None:
         println__T_string("none")
+        return struct{}{}
     case Maybe__string_Some:
         var x157 string = mtmp156.(Maybe__string_Some)._0
-        var text__5 string = x157
-        println__T_string(text__5)
+        println__T_string(x157)
+        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv165 string
     var t166 string = _goml_runtime_core_int_to_string(self__5)
-    retv165 = t166
-    return retv165
+    return t166
 }
 
 func _goml_m_inherent_i_Maybe_i_Maybe_l_T_r__i_map____T__int____U__string(self__0 Maybe__int, map_fn__1 func(int) string) Maybe__string {
-    var retv168 Maybe__string
-    var jp170 Maybe__string
     switch self__0.(type) {
     case Maybe__int_None:
-        jp170 = Maybe__string_None{}
+        return Maybe__string_None{}
     case Maybe__int_Some:
         var x155 int = self__0.(Maybe__int_Some)._0
-        var value__2 int = x155
-        var t171 string = map_fn__1(value__2)
+        var t171 string = map_fn__1(x155)
         var t172 Maybe__string = Maybe__string_Some{
             _0: t171,
         }
-        jp170 = t172
+        return t172
     default:
         panic("non-exhaustive match")
     }
-    retv168 = jp170
-    return retv168
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -99,16 +92,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv177 string
-    retv177 = self__38
-    return retv177
+    return self__38
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env158 closure_env_main_0, item__4 int) string {
-    var retv179 string
     var t180 string = _goml_m_inherent_i_int_i_int_i_to__string(item__4)
-    retv179 = t180
-    return retv179
+    return t180
 }
 
 func main() {

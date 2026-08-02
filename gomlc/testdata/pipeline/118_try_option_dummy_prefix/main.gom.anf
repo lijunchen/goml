@@ -1,95 +1,68 @@
 fn cut_prefix(case_id/0: int32) -> Option__string {
-  join ret160(retv161: Option__string) -> Option__string {
-    retv161
-  } in
   let t164 = trait_impl#Eq#int32#eq(case_id/0, 0) in
-  join k162(jp163: Option__string) -> Option__string {
-    jump ret160(jp163)
-  } in
   if t164 {
     let t165 = Option__string::Some("ml") in
-    jump k162(t165)
+    t165
   } else {
-    jump k162(Tag_0)
+    Tag_0
   }
 }
 
 fn trim_go(case_id/1: int32) -> Option__string {
-  join ret166(retv167: Option__string) -> Option__string {
-    retv167
-  } in
   let mtmp155 = cut_prefix(case_id/1) in
   join k168(jp169: string) -> Option__string {
     let suffix/2 = jp169 in
-    let t170 = (suffix/2 + "!") in
+    let t170 = (jp169 + "!") in
     let t171 = Option__string::Some(t170) in
-    jump ret166(t171)
+    t171
   } in
   match mtmp155 {
     Tag_0 => {
-      jump ret166(Tag_0)
+      Tag_0
     },
     Tag_1 => {
       let x156 = Option__string::Some._0(mtmp155) in
       let try_value/13 = x156 in
-      jump k168(try_value/13)
+      jump k168(x156)
     },
   }
 }
 
 fn show(opt/3: Option__string) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  join k174(jp175: string) -> string {
-    jump ret172(jp175)
-  } in
   match opt/3 {
     Tag_0 => {
-      jump k174("none")
+      "none"
     },
     Tag_1 => {
       let x157 = Option__string::Some._0(opt/3) in
       let value/4 = x157 in
-      let t176 = ("some " + value/4) in
-      jump k174(t176)
+      let t176 = ("some " + x157) in
+      t176
     },
   }
 }
 
 fn main() -> unit {
-  join ret177() -> unit {
-    ()
-  } in
   let t178 = trim_go(0) in
   let t179 = show(t178) in
   let _wild158 = println__T_string(t179) in
   let t180 = trim_go(1) in
   let t181 = show(t180) in
   let _wild159 = println__T_string(t181) in
-  jump ret177()
+  ()
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret182(retv183: bool) -> bool {
-    retv183
-  } in
   let t184 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret182(t184)
+  t184
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret185() -> unit {
-    ()
-  } in
   let t186 = trait_impl#ToString#string#to_string(value/1) in
   let t187 = @runtime(core.string_println)(t186) in
-  jump ret185()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret188(retv189: string) -> string {
-    retv189
-  } in
-  jump ret188(self/38)
+  self/38
 }

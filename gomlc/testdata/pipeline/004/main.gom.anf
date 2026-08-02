@@ -1,51 +1,36 @@
 fn main() -> bool {
-  join ret158(retv159: bool) -> bool {
-    retv159
-  } in
   let a/0 = (Tag_2, Tag_2) in
-  let x155 = a/0.0 in
-  let x156 = a/0.1 in
-  join k160(jp161: bool) -> bool {
-    jump ret158(jp161)
-  } in
+  let x155 = Tag_2 in
+  let x156 = Tag_2 in
   match x156 {
     Tag_0 => {
-      join k162(jp163: bool) -> bool {
-        jump k160(jp163)
-      } in
       match x155 {
         Tag_0 => {
-          jump k162(true)
+          true
         },
         _ => {
-          jump k162(false)
+          false
         },
       }
     },
     Tag_1 => {
-      join k164(jp165: bool) -> bool {
-        jump k160(jp165)
-      } in
       match x155 {
         Tag_0 => {
-          jump k164(true)
+          true
         },
         _ => {
-          jump k164(false)
+          false
         },
       }
     },
     Tag_2 => {
-      join k166(jp167: bool) -> bool {
-        jump k160(jp167)
-      } in
       match x155 {
         Tag_2 => {
           let mtmp157 = print__T_bool(true) in
-          jump k166(false)
+          false
         },
         _ => {
-          jump k166(false)
+          false
         },
       }
     },
@@ -53,18 +38,12 @@ fn main() -> bool {
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  join ret168() -> unit {
-    ()
-  } in
   let t169 = trait_impl#ToString#bool#to_string(value/0) in
   let t170 = @runtime(core.string_print)(t169) in
-  jump ret168()
+  ()
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
   let t173 = @runtime(core.bool_to_string)(self/37) in
-  jump ret171(t173)
+  t173
 }

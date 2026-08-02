@@ -1,52 +1,34 @@
 fn trait_impl#Ready#Worker#state(self/0: Worker) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
-  } in
   let t158 = Worker.name(self/0) in
   let t159 = (t158 + ":ready") in
-  jump ret156(t159)
+  t159
 }
 
 fn trait_impl#Service#[Worker]@Station#get(self/1: Station) -> Worker {
-  join ret160(retv161: Worker) -> Worker {
-    retv161
-  } in
   let t162 = Station.worker(self/1) in
-  jump ret160(t162)
+  t162
 }
 
 fn main() -> unit {
-  join ret163() -> unit {
-    ()
-  } in
   let t164 = Worker { name: "build" } in
   let t165 = Station { worker: t164 } in
   let t166 = describe__S_Station__T_Worker(t165) in
   let _wild155 = println__T_string(t166) in
-  jump ret163()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret167() -> unit {
-    ()
-  } in
   let t168 = trait_impl#ToString#string#to_string(value/1) in
   let t169 = @runtime(core.string_println)(t168) in
-  jump ret167()
+  ()
 }
 
 fn describe__S_Station__T_Worker(service/2: Station) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
-  } in
   let t172 = trait_impl#Service#[Worker]@Station#get(service/2) in
   let t173 = trait_impl#Ready#Worker#state(t172) in
-  jump ret170(t173)
+  t173
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret174(retv175: string) -> string {
-    retv175
-  } in
-  jump ret174(self/38)
+  self/38
 }

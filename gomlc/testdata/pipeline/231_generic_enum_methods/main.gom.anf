@@ -1,76 +1,52 @@
 fn main() -> unit {
-  join ret159() -> unit {
-    ()
-  } in
   let value/3 = Maybe__int::Some(3) in
   let t160 = closure_env_main_0 {} in
   let mtmp156 = inherent#Maybe#Maybe[T]#map__T_int__U_string(value/3, t160) in
-  join k161() -> unit {
-    jump ret159()
-  } in
   match mtmp156 {
     Tag_0 => {
       let t162 = println__T_string("none") in
-      jump k161()
+      ()
     },
     Tag_1 => {
       let x157 = Maybe__string::Some._0(mtmp156) in
       let text/5 = x157 in
-      let t163 = println__T_string(text/5) in
-      jump k161()
+      let t163 = println__T_string(x157) in
+      ()
     },
   }
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret164(retv165: string) -> string {
-    retv165
-  } in
   let t166 = @runtime(core.int_to_string)(self/5) in
-  jump ret164(t166)
+  t166
 }
 
 fn inherent#Maybe#Maybe[T]#map__T_int__U_string(self/0: Maybe__int, map_fn/1: (int) -> string) -> Maybe__string {
-  join ret167(retv168: Maybe__string) -> Maybe__string {
-    retv168
-  } in
-  join k169(jp170: Maybe__string) -> Maybe__string {
-    jump ret167(jp170)
-  } in
   match self/0 {
     Tag_0 => {
-      jump k169(Tag_0)
+      Tag_0
     },
     Tag_1 => {
       let x155 = Maybe__int::Some._0(self/0) in
       let value/2 = x155 in
-      let t171 = map_fn/1(value/2) in
+      let t171 = map_fn/1(x155) in
       let t172 = Maybe__string::Some(t171) in
-      jump k169(t172)
+      t172
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret173() -> unit {
-    ()
-  } in
   let t174 = trait_impl#ToString#string#to_string(value/1) in
   let t175 = @runtime(core.string_println)(t174) in
-  jump ret173()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
-  } in
-  jump ret176(self/38)
+  self/38
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(env158: closure_env_main_0, item/4: int) -> string {
-  join ret178(retv179: string) -> string {
-    retv179
-  } in
   let t180 = inherent#int#int#to_string(item/4) in
-  jump ret178(t180)
+  t180
 }

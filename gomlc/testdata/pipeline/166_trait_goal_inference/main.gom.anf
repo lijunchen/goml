@@ -1,58 +1,37 @@
 fn trait_impl#Measure#Vec[int32]#measure(self/0: Vec[int32]) -> int {
-  join ret155(retv156: int) -> int {
-    retv156
-  } in
   let t157 = inherent#Vec#Vec[T]#len__T_int32(self/0) in
-  jump ret155(t157)
+  t157
 }
 
 fn main() -> unit {
-  join ret158() -> unit {
-    ()
-  } in
   let values/2 = @intrinsic(vec.new)() in
   let t159 = read_measure__T_Vec[int32](values/2) in
   let t160 = inherent#int#int#to_string(t159) in
   let t161 = println__T_string(t160) in
-  jump ret158()
+  ()
 }
 
 fn inherent#Vec#Vec[T]#len__T_int32(self/137: Vec[int32]) -> int {
-  join ret162(retv163: int) -> int {
-    retv163
-  } in
   let t164 = @intrinsic(vec.len)(self/137) in
-  jump ret162(t164)
+  t164
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret165() -> unit {
-    ()
-  } in
   let t166 = trait_impl#ToString#string#to_string(value/1) in
   let t167 = @runtime(core.string_println)(t166) in
-  jump ret165()
+  ()
 }
 
 fn read_measure__T_Vec[int32](value/1: Vec[int32]) -> int {
-  join ret168(retv169: int) -> int {
-    retv169
-  } in
   let t170 = trait_impl#Measure#Vec[int32]#measure(value/1) in
-  jump ret168(t170)
+  t170
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
   let t173 = @runtime(core.int_to_string)(self/5) in
-  jump ret171(t173)
+  t173
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret174(retv175: string) -> string {
-    retv175
-  } in
-  jump ret174(self/38)
+  self/38
 }

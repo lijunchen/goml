@@ -29,35 +29,27 @@ const (
 )
 
 func light_code(light__0 Light) int32 {
-    var retv159 int32
-    var jp161 int32
     switch light__0 {
     case Light_Red:
-        jp161 = 10
+        return 10
     case Yellow:
-        jp161 = 20
+        return 20
     case Green:
-        jp161 = 30
+        return 30
     default:
         panic("non-exhaustive match")
     }
-    retv159 = jp161
-    return retv159
 }
 
 func paint_code(paint__1 Paint) int32 {
-    var retv163 int32
-    var jp165 int32
     switch paint__1 {
     case Paint_Red:
-        jp165 = 1
+        return 1
     case Blue:
-        jp165 = 2
+        return 2
     default:
         panic("non-exhaustive match")
     }
-    retv163 = jp165
-    return retv163
 }
 
 func main0() struct{} {
@@ -85,16 +77,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv180 string
     var t181 string = _goml_runtime_core_int32_to_string(self__6)
-    retv180 = t181
-    return retv180
+    return t181
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv183 string
-    retv183 = self__38
-    return retv183
+    return self__38
 }
 
 func main() {

@@ -18,18 +18,14 @@ type Station struct {
 }
 
 func _goml_m_trait__impl_i_Ready_i_Worker_i_state(self__0 Worker) string {
-    var retv157 string
     var t158 string = self__0.name
     var t159 string = t158 + ":ready"
-    retv157 = t159
-    return retv157
+    return t159
 }
 
 func _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(self__1 Station) Worker {
-    var retv161 Worker
     var t162 Worker = self__1.worker
-    retv161 = t162
-    return retv161
+    return t162
 }
 
 func main0() struct{} {
@@ -51,17 +47,13 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func describe__S_Station__T_Worker(service__2 Station) string {
-    var retv171 string
     var t172 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(service__2)
     var t173 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(t172)
-    retv171 = t173
-    return retv171
+    return t173
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv175 string
-    retv175 = self__38
-    return retv175
+    return self__38
 }
 
 func main() {

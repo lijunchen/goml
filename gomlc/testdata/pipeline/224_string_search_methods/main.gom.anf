@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret166() -> unit {
-    ()
-  } in
   let value/0 = "a你好z" in
   let t167 = inherent#string#string#starts_with(value/0, "a你") in
   let _wild155 = println__T_bool(t167) in
@@ -25,36 +22,27 @@ fn main() -> unit {
   let _wild164 = println__T_bool(t176) in
   let t177 = inherent#string#string#contains(value/0, "a你好z!") in
   let t178 = println__T_bool(t177) in
-  jump ret166()
+  ()
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join ret179() -> unit {
-    ()
-  } in
   let t180 = trait_impl#ToString#bool#to_string(value/1) in
   let t181 = @runtime(core.string_println)(t180) in
-  jump ret179()
+  ()
 }
 
 fn inherent#string#string#starts_with(self/228: string, prefix/229: string) -> bool {
-  join ret182(retv183: bool) -> bool {
-    retv183
-  } in
   let t191 = inherent#string#string#byte_len(prefix/229) in
   let t192 = inherent#string#string#byte_len(self/228) in
   let t193 = (t191 <= t192) in
   join k186(jp187: bool) -> bool {
-    join k184(jp185: bool) -> bool {
-      jump ret182(jp185)
-    } in
     if jp187 {
       let t188 = inherent#string#string#byte_len(prefix/229) in
       let t189 = inherent#string#string#byte_slice(self/228, 0, t188) in
       let t190 = trait_impl#Eq#string#eq(t189, prefix/229) in
-      jump k184(t190)
+      t190
     } else {
-      jump k184(false)
+      false
     }
   } in
   if t193 {
@@ -67,56 +55,38 @@ fn inherent#string#string#starts_with(self/228: string, prefix/229: string) -> b
 }
 
 fn inherent#string#string#ends_with(self/230: string, suffix/231: string) -> bool {
-  join ret196(retv197: bool) -> bool {
-    retv197
-  } in
   let t200 = inherent#string#string#byte_len(suffix/231) in
   let t201 = inherent#string#string#byte_len(self/230) in
   let t202 = (t200 > t201) in
-  join k198(jp199: bool) -> bool {
-    jump ret196(jp199)
-  } in
   if t202 {
-    jump k198(false)
+    false
   } else {
     let t203 = inherent#string#string#byte_len(self/230) in
     let t204 = inherent#string#string#byte_len(suffix/231) in
     let start/232 = (t203 - t204) in
     let t207 = inherent#string#string#is_char_boundary(self/230, start/232) in
-    join k205(jp206: bool) -> bool {
-      jump k198(jp206)
-    } in
     if t207 {
       let t208 = inherent#string#string#byte_len(self/230) in
       let t209 = inherent#string#string#byte_slice(self/230, start/232, t208) in
       let t210 = trait_impl#Eq#string#eq(t209, suffix/231) in
-      jump k205(t210)
+      t210
     } else {
-      jump k205(false)
+      false
     }
   }
 }
 
 fn inherent#string#string#contains(self/233: string, expected/234: string) -> bool {
-  join ret211(retv212: bool) -> bool {
-    retv212
-  } in
   let t215 = inherent#string#string#byte_len(expected/234) in
   let t216 = trait_impl#Eq#int#eq(t215, 0) in
-  join k213(jp214: bool) -> bool {
-    jump ret211(jp214)
-  } in
   if t216 {
-    jump k213(true)
+    true
   } else {
     let t219 = inherent#string#string#byte_len(expected/234) in
     let t220 = inherent#string#string#byte_len(self/233) in
     let t221 = (t219 > t220) in
-    join k217(jp218: bool) -> bool {
-      jump k213(jp218)
-    } in
     if t221 {
-      jump k217(false)
+      false
     } else {
       let t222 = inherent#string#string#byte_len(self/233) in
       let t223 = inherent#string#string#byte_len(expected/234) in
@@ -126,54 +96,44 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
       let for_iter105 = trait_impl#IntoIterator#FnIterator__int#into_iter(t226) in
       join exit227() -> bool {
         let _wild108 = () in
-        jump k217(false)
+        false
       } in
       joinrec {
         join loop228() -> bool {
-          if true {
-            let for_next106 = trait_impl#Iterator#FnIterator__int#next(for_iter105) in
-            join k229() -> bool {
-              jump loop228()
-            } in
-            match for_next106 {
-              Tag_0 => {
-                jump exit227()
-              },
-              Tag_1 => {
-                let x107 = Option__int::Some._0(for_next106) in
-                let start/235 = x107 in
-                let t230 = inherent#string#string#byte_len(expected/234) in
-                let end/236 = (start/235 + t230) in
-                let t238 = inherent#string#string#is_char_boundary(self/233, start/235) in
-                join k234(jp235: bool) -> bool {
-                  join k232(jp233: bool) -> bool {
-                    join k231() -> bool {
-                      jump k229()
-                    } in
-                    if jp233 {
-                      jump ret211(true)
-                    } else {
-                      jump k231()
-                    }
-                  } in
-                  if jp235 {
-                    let t236 = inherent#string#string#byte_slice(self/233, start/235, end/236) in
-                    let t237 = trait_impl#Eq#string#eq(t236, expected/234) in
-                    jump k232(t237)
+          let for_next106 = trait_impl#Iterator#FnIterator__int#next(for_iter105) in
+          match for_next106 {
+            Tag_0 => {
+              jump exit227()
+            },
+            Tag_1 => {
+              let x107 = Option__int::Some._0(for_next106) in
+              let start/235 = x107 in
+              let t230 = inherent#string#string#byte_len(expected/234) in
+              let end/236 = (x107 + t230) in
+              let t238 = inherent#string#string#is_char_boundary(self/233, x107) in
+              join k234(jp235: bool) -> bool {
+                join k232(jp233: bool) -> bool {
+                  if jp233 {
+                    true
                   } else {
-                    jump k232(false)
+                    jump loop228()
                   }
                 } in
-                if t238 {
-                  let t239 = inherent#string#string#is_char_boundary(self/233, end/236) in
-                  jump k234(t239)
+                if jp235 {
+                  let t236 = inherent#string#string#byte_slice(self/233, x107, end/236) in
+                  let t237 = trait_impl#Eq#string#eq(t236, expected/234) in
+                  jump k232(t237)
                 } else {
-                  jump k234(false)
+                  jump k232(false)
                 }
-              },
-            }
-          } else {
-            jump exit227()
+              } in
+              if t238 {
+                let t239 = inherent#string#string#is_char_boundary(self/233, end/236) in
+                jump k234(t239)
+              } else {
+                jump k234(false)
+              }
+            },
           }
         } in
       } in
@@ -183,112 +143,73 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret240(retv241: string) -> string {
-    retv241
-  } in
   let t242 = @runtime(core.bool_to_string)(self/37) in
-  jump ret240(t242)
+  t242
 }
 
 fn inherent#string#string#byte_len(self/9: string) -> int {
-  join ret243(retv244: int) -> int {
-    retv244
-  } in
   let t245 = @runtime(core.string_len)(self/9) in
-  jump ret243(t245)
+  t245
 }
 
 fn inherent#string#string#is_char_boundary(self/17: string, index/18: int) -> bool {
-  join ret246(retv247: bool) -> bool {
-    retv247
-  } in
   let t248 = @runtime(core.string_is_char_boundary)(self/17, index/18) in
-  jump ret246(t248)
+  t248
 }
 
 fn inherent#string#string#byte_slice(self/14: string, start/15: int, end/16: int) -> string {
-  join ret249(retv250: string) -> string {
-    retv250
-  } in
   let t251 = @runtime(core.string_byte_slice)(self/14, start/15, end/16) in
-  jump ret249(t251)
+  t251
 }
 
 fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
-  join ret252(retv253: bool) -> bool {
-    retv253
-  } in
   let t254 = @intrinsic(eq.primitive)(self/55, other/56) in
-  jump ret252(t254)
+  t254
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret255(retv256: bool) -> bool {
-    retv256
-  } in
   let t257 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret255(t257)
+  t257
 }
 
 fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator__int {
-  join ret258(retv259: FnIterator__int) -> FnIterator__int {
-    retv259
-  } in
   let current/220 = @intrinsic(ref.new)(start/218) in
   let t260 = closure_env_goml_builtin_range_0 { current_0: current/220, end_1: end/219 } in
   let t261 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(t260) in
-  jump ret258(t261)
+  t261
 }
 
 fn trait_impl#IntoIterator#FnIterator__int#into_iter(self/109: FnIterator__int) -> FnIterator__int {
-  join ret262(retv263: FnIterator__int) -> FnIterator__int {
-    retv263
-  } in
-  jump ret262(self/109)
+  self/109
 }
 
 fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
-  join ret264(retv265: Option__int) -> Option__int {
-    retv265
-  } in
   let t266 = FnIterator__int.next_fn(self/102) in
   let t267 = t266() in
-  jump ret264(t267)
+  t267
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(next_fn/101: () -> Option__int) -> FnIterator__int {
-  join ret268(retv269: FnIterator__int) -> FnIterator__int {
-    retv269
-  } in
   let t270 = FnIterator__int { next_fn: next_fn/101 } in
-  jump ret268(t270)
+  t270
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret271(retv272: uint64) -> uint64 {
-    retv272
-  } in
   let t273 = @runtime(core.int_hash)(self/85) in
-  jump ret271(t273)
+  t273
 }
 
 fn inherent#closure_env_goml_builtin_range_0#closure_env_goml_builtin_range_0#apply(env165: closure_env_goml_builtin_range_0) -> Option__int {
-  join ret274(retv275: Option__int) -> Option__int {
-    retv275
-  } in
   let current/220 = closure_env_goml_builtin_range_0.current_0(env165) in
   let end/219 = closure_env_goml_builtin_range_0.end_1(env165) in
   let value/221 = @intrinsic(ref.get)(current/220) in
   let t278 = (value/221 < end/219) in
-  join k276(jp277: Option__int) -> Option__int {
-    jump ret274(jp277)
-  } in
   if t278 {
     let t279 = (value/221 + 1) in
     let _wild104 = @intrinsic(ref.set)(current/220, t279) in
     let t280 = Option__int::Some(value/221) in
-    jump k276(t280)
+    t280
   } else {
-    jump k276(Tag_0)
+    Tag_0
   }
 }

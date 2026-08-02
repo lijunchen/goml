@@ -37,12 +37,10 @@ type Wrap__int32 struct {
 }
 
 func _goml_m_trait__impl_i_Render_i_Vec_l_int32_r__i_render(self__0 *_goml_vec_int32) string {
-    var retv161 string
     var t162 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__0)
     var t163 string = _goml_m_inherent_i_int_i_int_i_to__string(t162)
     var t164 string = "items=" + t163
-    retv161 = t164
-    return retv161
+    return t164
 }
 
 func main0() struct{} {
@@ -62,17 +60,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__137 *_goml_vec_int32) int {
-    var retv169 int
     var t170 int = vec_len__Vec_5int32(self__137)
-    retv169 = t170
-    return retv169
+    return t170
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv172 string
     var t173 string = _goml_runtime_core_int_to_string(self__5)
-    retv172 = t173
-    return retv172
+    return t173
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__126 *_goml_vec_int32, elem__127 int32) struct{} {
@@ -87,35 +81,25 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func render_all__T_int32(values__2 *_goml_vec_int32) string {
-    var retv180 string
     var t181 string = _goml_m_trait__impl_i_Render_i_Vec_l_int32_r__i_render(values__2)
-    retv180 = t181
-    return retv180
+    return t181
 }
 
 func same__T_string__U_string(value__3 string) string {
-    var retv183 string
-    retv183 = value__3
-    return retv183
+    return value__3
 }
 
 func _goml_m_require____T__Wrap_l_int32_r_(value__4 Wrap__int32) string {
-    var retv185 string
     var t186 string = _goml_m_trait__impl_i_Selected_i_Wrap____int32_i_selected(value__4)
-    retv185 = t186
-    return retv185
+    return t186
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv188 string
-    retv188 = self__38
-    return retv188
+    return self__38
 }
 
 func _goml_m_trait__impl_i_Selected_i_Wrap____int32_i_selected(self__1 Wrap__int32) string {
-    var retv190 string
-    retv190 = "selected"
-    return retv190
+    return "selected"
 }
 
 func main() {

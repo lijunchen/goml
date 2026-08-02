@@ -1,48 +1,30 @@
 fn a_value() -> int8 {
-  join ret166(retv167: int8) -> int8 {
-    retv167
-  } in
-  jump ret166(90)
+  90
 }
 
 fn b_value() -> int8 {
-  join ret168(retv169: int8) -> int8 {
-    retv169
-  } in
-  jump ret168(-20)
+  -20
 }
 
 fn c_value() -> int8 {
-  join ret170(retv171: int8) -> int8 {
-    retv171
-  } in
-  jump ret170(3)
+  3
 }
 
 fn show_int8(label/0: string, value/1: int8) -> unit {
-  join ret172() -> unit {
-    ()
-  } in
   let t173 = trait_impl#ToString#int8#to_string(value/1) in
   let t174 = (label/0 + t173) in
   let mtmp155 = println__T_string(t174) in
-  jump ret172()
+  ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  join ret175() -> unit {
-    ()
-  } in
   let t176 = trait_impl#ToString#bool#to_string(value/3) in
   let t177 = (label/2 + t176) in
   let mtmp156 = println__T_string(t177) in
-  jump ret175()
+  ()
 }
 
 fn main() -> unit {
-  join ret178() -> unit {
-    ()
-  } in
   let a/4 = a_value() in
   let b/5 = b_value() in
   let c/6 = c_value() in
@@ -61,37 +43,25 @@ fn main() -> unit {
   let mtmp163 = show_int8("quot=", quot/10) in
   let mtmp164 = show_int8("neg=", neg/11) in
   let mtmp165 = show_bool("b<a=", less/12) in
-  jump ret178()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret179() -> unit {
-    ()
-  } in
   let t180 = trait_impl#ToString#string#to_string(value/1) in
   let t181 = @runtime(core.string_println)(t180) in
-  jump ret179()
+  ()
 }
 
 fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
-  join ret182(retv183: string) -> string {
-    retv183
-  } in
   let t184 = @runtime(core.int8_to_string)(self/41) in
-  jump ret182(t184)
+  t184
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret185(retv186: string) -> string {
-    retv186
-  } in
   let t187 = @runtime(core.bool_to_string)(self/37) in
-  jump ret185(t187)
+  t187
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret188(retv189: string) -> string {
-    retv189
-  } in
-  jump ret188(self/38)
+  self/38
 }

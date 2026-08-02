@@ -1,48 +1,30 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
-  } in
   let t158 = inherent#int32#int32#to_string(self/0) in
-  jump ret156(t158)
+  t158
 }
 
 fn build() -> int32 {
-  join ret159(retv160: int32) -> int32 {
-    retv160
-  } in
-  jump ret159(9)
+  9
 }
 
 fn main() -> unit {
-  join ret161() -> unit {
-    ()
-  } in
   let t162 = build() in
   let t163 = inherent#int32#int32#to_string(t162) in
   let t164 = println__T_string(t163) in
-  jump ret161()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret165(retv166: string) -> string {
-    retv166
-  } in
   let t167 = @runtime(core.int32_to_string)(self/6) in
-  jump ret165(t167)
+  t167
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret168() -> unit {
-    ()
-  } in
   let t169 = trait_impl#ToString#string#to_string(value/1) in
   let t170 = @runtime(core.string_println)(t169) in
-  jump ret168()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
-  jump ret171(self/38)
+  self/38
 }

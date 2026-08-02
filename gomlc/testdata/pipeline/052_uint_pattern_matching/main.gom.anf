@@ -1,128 +1,89 @@
 fn is_flag8(value/0: uint8) -> bool {
-  join ret158(retv159: bool) -> bool {
-    retv159
-  } in
-  join k160(jp161: bool) -> bool {
-    jump ret158(jp161)
-  } in
   match value/0 {
     0 => {
-      jump k160(true)
+      true
     },
     200 => {
-      jump k160(true)
+      true
     },
     _ => {
-      jump k160(false)
+      false
     },
   }
 }
 
 fn is_flag16(value/1: uint16) -> bool {
-  join ret162(retv163: bool) -> bool {
-    retv163
-  } in
-  join k164(jp165: bool) -> bool {
-    jump ret162(jp165)
-  } in
   match value/1 {
     1024 => {
-      jump k164(true)
+      true
     },
     65000 => {
-      jump k164(true)
+      true
     },
     _ => {
-      jump k164(false)
+      false
     },
   }
 }
 
 fn is_flag32(value/2: uint32) -> bool {
-  join ret166(retv167: bool) -> bool {
-    retv167
-  } in
-  join k168(jp169: bool) -> bool {
-    jump ret166(jp169)
-  } in
   match value/2 {
     4000000000 => {
-      jump k168(true)
+      true
     },
     1234567890 => {
-      jump k168(true)
+      true
     },
     _ => {
-      jump k168(false)
+      false
     },
   }
 }
 
 fn is_flag64(value/3: uint64) -> bool {
-  join ret170(retv171: bool) -> bool {
-    retv171
-  } in
-  join k172(jp173: bool) -> bool {
-    jump ret170(jp173)
-  } in
   match value/3 {
     900000000 => {
-      jump k172(true)
+      true
     },
     600000000 => {
-      jump k172(true)
+      true
     },
     _ => {
-      jump k172(false)
+      false
     },
   }
 }
 
 fn match_struct(counter/4: Counter) -> bool {
-  join ret174(retv175: bool) -> bool {
-    retv175
-  } in
   let x155 = Counter.start(counter/4) in
   let x156 = Counter.end(counter/4) in
-  join k176(jp177: bool) -> bool {
-    jump ret174(jp177)
-  } in
   match x156 {
     900000000 => {
-      join k178(jp179: bool) -> bool {
-        jump k176(jp179)
-      } in
       match x155 {
         4000000000 => {
-          jump k178(true)
+          true
         },
         _ => {
-          jump k178(false)
+          false
         },
       }
     },
     600000000 => {
-      jump k176(true)
+      true
     },
     _ => {
-      jump k176(false)
+      false
     },
   }
 }
 
 fn report(label/5: string, value/6: bool) -> string {
-  join ret180(retv181: string) -> string {
-    retv181
-  } in
   let t182 = trait_impl#ToString#bool#to_string(value/6) in
   let t183 = (label/5 + t182) in
-  jump ret180(t183)
+  t183
 }
 
 fn main() -> unit {
-  join ret184() -> unit {
-    ()
-  } in
   let counter/7 = Counter { start: 4000000000, end: 900000000 } in
   let alt_counter/8 = Counter { start: 12, end: 600000000 } in
   let t185 = is_flag8(200) in
@@ -155,29 +116,20 @@ fn main() -> unit {
   let t212 = report(",struct_second=", t211) in
   let message/9 = (t210 + t212) in
   let mtmp157 = println__T_string(message/9) in
-  jump ret184()
+  ()
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret213(retv214: string) -> string {
-    retv214
-  } in
   let t215 = @runtime(core.bool_to_string)(self/37) in
-  jump ret213(t215)
+  t215
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret216() -> unit {
-    ()
-  } in
   let t217 = trait_impl#ToString#string#to_string(value/1) in
   let t218 = @runtime(core.string_println)(t217) in
-  jump ret216()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret219(retv220: string) -> string {
-    retv220
-  } in
-  jump ret219(self/38)
+  self/38
 }

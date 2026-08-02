@@ -24,33 +24,25 @@ const (
 )
 
 func show_int(x__1 Light__int32) string {
-    var retv158 string
-    var jp160 string
     switch x__1 {
     case Light__int32_Red:
-        jp160 = "ri"
+        return "ri"
     case Light__int32_Green:
-        jp160 = "gi"
+        return "gi"
     default:
         panic("non-exhaustive match")
     }
-    retv158 = jp160
-    return retv158
 }
 
 func show_string(x__2 Light__string) string {
-    var retv162 string
-    var jp164 string
     switch x__2 {
     case Light__string_Red:
-        jp164 = "rs"
+        return "rs"
     case Light__string_Green:
-        jp164 = "gs"
+        return "gs"
     default:
         panic("non-exhaustive match")
     }
-    retv162 = jp164
-    return retv162
 }
 
 func main0() struct{} {
@@ -70,39 +62,29 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func flip__T_int32(x__0 Light__int32) Light__int32 {
-    var retv174 Light__int32
-    var jp176 Light__int32
     switch x__0 {
     case Light__int32_Red:
-        jp176 = Light__int32_Green
+        return Light__int32_Green
     case Light__int32_Green:
-        jp176 = Light__int32_Red
+        return Light__int32_Red
     default:
         panic("non-exhaustive match")
     }
-    retv174 = jp176
-    return retv174
 }
 
 func flip__T_string(x__0 Light__string) Light__string {
-    var retv178 Light__string
-    var jp180 Light__string
     switch x__0 {
     case Light__string_Red:
-        jp180 = Light__string_Green
+        return Light__string_Green
     case Light__string_Green:
-        jp180 = Light__string_Red
+        return Light__string_Red
     default:
         panic("non-exhaustive match")
     }
-    retv178 = jp180
-    return retv178
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv182 string
-    retv182 = self__38
-    return retv182
+    return self__38
 }
 
 func main() {

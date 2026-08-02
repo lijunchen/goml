@@ -52,24 +52,18 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int16_i_to__string(self__42 int16) string {
-    var retv170 string
     var t171 string = _goml_runtime_core_int16_to_string(self__42)
-    retv170 = t171
-    return retv170
+    return t171
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv173 string
     var t174 string = _goml_runtime_core_int32_to_string(self__6)
-    retv173 = t174
-    return retv173
+    return t174
 }
 
 func _goml_m_trait__impl_i_ToString_i_int64_i_to__string(self__44 int64) string {
-    var retv176 string
     var t177 string = _goml_runtime_core_int64_to_string(self__44)
-    retv176 = t177
-    return retv176
+    return t177
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -79,9 +73,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv182 string
-    retv182 = self__38
-    return retv182
+    return self__38
 }
 
 func main() {

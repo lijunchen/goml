@@ -1,56 +1,41 @@
 fn main() -> unit {
-  join ret157() -> unit {
-    ()
-  } in
   let a/0 = (Tag_2, Tag_0) in
-  let x155 = a/0.0 in
-  let x156 = a/0.1 in
-  join k158() -> unit {
-    jump ret157()
-  } in
+  let x155 = Tag_2 in
+  let x156 = Tag_0 in
   match x156 {
     Tag_0 => {
-      join k159() -> unit {
-        jump k158()
-      } in
       match x155 {
         Tag_0 => {
           let t160 = print__T_int(1) in
-          jump k159()
+          ()
         },
         _ => {
           let t161 = print__T_int(3) in
-          jump k159()
+          ()
         },
       }
     },
     Tag_1 => {
-      join k162() -> unit {
-        jump k158()
-      } in
       match x155 {
         Tag_0 => {
           let t163 = print__T_int(0) in
-          jump k162()
+          ()
         },
         _ => {
           let t164 = print__T_int(3) in
-          jump k162()
+          ()
         },
       }
     },
     Tag_2 => {
-      join k165() -> unit {
-        jump k158()
-      } in
       match x155 {
         Tag_2 => {
           let t166 = print__T_int(2) in
-          jump k165()
+          ()
         },
         _ => {
           let t167 = print__T_int(3) in
-          jump k165()
+          ()
         },
       }
     },
@@ -58,18 +43,12 @@ fn main() -> unit {
 }
 
 fn print__T_int(value/0: int) -> unit {
-  join ret168() -> unit {
-    ()
-  } in
   let t169 = trait_impl#ToString#int#to_string(value/0) in
   let t170 = @runtime(core.string_print)(t169) in
-  jump ret168()
+  ()
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
   let t173 = @runtime(core.int_to_string)(self/40) in
-  jump ret171(t173)
+  t173
 }

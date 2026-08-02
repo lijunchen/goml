@@ -10,22 +10,18 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func classify(x__0 float64) string {
-    var retv161 string
-    var jp163 string
     switch x__0 {
     case 0:
-        jp163 = "zero"
+        return "zero"
     case 1:
-        jp163 = "one"
+        return "one"
     case -1:
-        jp163 = "minus one"
+        return "minus one"
     case 3.14:
-        jp163 = "pi"
+        return "pi"
     default:
-        jp163 = "other"
+        return "other"
     }
-    retv161 = jp163
-    return retv161
 }
 
 func main0() struct{} {
@@ -50,9 +46,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv175 string
-    retv175 = self__38
-    return retv175
+    return self__38
 }
 
 func main() {

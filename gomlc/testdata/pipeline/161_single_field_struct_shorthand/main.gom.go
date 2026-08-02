@@ -15,11 +15,7 @@ type Person struct {
 
 func main0() struct{} {
     var name__0 string = "Alice"
-    var p__1 Person = Person{
-        name: name__0,
-    }
-    var t157 string = p__1.name
-    println__T_string(t157)
+    println__T_string(name__0)
     return struct{}{}
 }
 
@@ -30,9 +26,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv162 string
-    retv162 = self__38
-    return retv162
+    return self__38
 }
 
 func main() {

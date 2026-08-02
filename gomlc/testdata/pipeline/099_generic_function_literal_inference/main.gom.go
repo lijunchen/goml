@@ -43,9 +43,7 @@ func main0() struct{} {
 }
 
 func identity__T_uint8(x__0 uint8) uint8 {
-    var retv163 uint8
-    retv163 = x__0
-    return retv163
+    return x__0
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -55,42 +53,30 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var retv168 string
     var t169 string = _goml_runtime_core_uint8_to_string(self__45)
-    retv168 = t169
-    return retv168
+    return t169
 }
 
 func identity__T_float32(x__0 float32) float32 {
-    var retv171 float32
-    retv171 = x__0
-    return retv171
+    return x__0
 }
 
 func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__49 float32) string {
-    var retv173 string
     var t174 string = _goml_runtime_core_float32_to_string(self__49)
-    retv173 = t174
-    return retv173
+    return t174
 }
 
 func identity__T_int64(x__0 int64) int64 {
-    var retv176 int64
-    retv176 = x__0
-    return retv176
+    return x__0
 }
 
 func _goml_m_trait__impl_i_ToString_i_int64_i_to__string(self__44 int64) string {
-    var retv178 string
     var t179 string = _goml_runtime_core_int64_to_string(self__44)
-    retv178 = t179
-    return retv178
+    return t179
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv181 string
-    retv181 = self__38
-    return retv181
+    return self__38
 }
 
 func main() {

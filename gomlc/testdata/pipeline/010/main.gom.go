@@ -19,21 +19,19 @@ type Tuple2_4bool_4bool struct {
 }
 
 func main0() struct{} {
-    var a__0 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
-        _0: true,
-        _1: true,
-    }
-    var x155 bool = a__0._0
-    var x156 bool = a__0._1
+    var x155 bool = true
+    var x156 bool = true
     switch x156 {
     case true:
         switch x155 {
         case true:
             var t160 string = _goml_m_inherent_i_int_i_int_i_to__string(789)
             println__T_string(t160)
+            return struct{}{}
         case false:
             var t162 string = _goml_m_inherent_i_int_i_int_i_to__string(456)
             println__T_string(t162)
+            return struct{}{}
         default:
             panic("non-exhaustive match")
         }
@@ -42,16 +40,17 @@ func main0() struct{} {
         case true:
             var t165 string = _goml_m_inherent_i_int_i_int_i_to__string(123)
             println__T_string(t165)
+            return struct{}{}
         case false:
             var t167 string = _goml_m_inherent_i_int_i_int_i_to__string(789)
             println__T_string(t167)
+            return struct{}{}
         default:
             panic("non-exhaustive match")
         }
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -61,16 +60,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv173 string
     var t174 string = _goml_runtime_core_int_to_string(self__5)
-    retv173 = t174
-    return retv173
+    return t174
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv176 string
-    retv176 = self__38
-    return retv176
+    return self__38
 }
 
 func main() {

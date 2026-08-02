@@ -1,7 +1,4 @@
 fn test_int_comparisons() -> unit {
-  join ret180() -> unit {
-    ()
-  } in
   let a/0 = 10 in
   let b/1 = 20 in
   let c/2 = 10 in
@@ -47,13 +44,10 @@ fn test_int_comparisons() -> unit {
   let t201 = trait_impl#ToString#bool#to_string(neq2/12) in
   let t202 = ("10 != 10: " + t201) in
   let mtmp164 = println__T_string(t202) in
-  jump ret180()
+  ()
 }
 
 fn test_float_comparisons() -> unit {
-  join ret203() -> unit {
-    ()
-  } in
   let x/13 = 3.14 in
   let y/14 = 2.71 in
   let z/15 = 3.14 in
@@ -99,57 +93,39 @@ fn test_float_comparisons() -> unit {
   let t224 = trait_impl#ToString#bool#to_string(neq2/25) in
   let t225 = ("3.14 != 3.14: " + t224) in
   let mtmp174 = println__T_string(t225) in
-  jump ret203()
+  ()
 }
 
 fn main() -> unit {
-  join ret226() -> unit {
-    ()
-  } in
   let mtmp175 = println__T_string("=== Integer Comparisons ===") in
   let mtmp176 = test_int_comparisons() in
   let mtmp177 = println__T_string("") in
   let mtmp178 = println__T_string("=== Float Comparisons ===") in
   let mtmp179 = test_float_comparisons() in
-  jump ret226()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret227() -> unit {
-    ()
-  } in
   let t228 = trait_impl#ToString#string#to_string(value/1) in
   let t229 = @runtime(core.string_println)(t228) in
-  jump ret227()
+  ()
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret230(retv231: string) -> string {
-    retv231
-  } in
   let t232 = @runtime(core.bool_to_string)(self/37) in
-  jump ret230(t232)
+  t232
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret233(retv234: bool) -> bool {
-    retv234
-  } in
   let t235 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret233(t235)
+  t235
 }
 
 fn trait_impl#Eq#float64#eq(self/79: float64, other/80: float64) -> bool {
-  join ret236(retv237: bool) -> bool {
-    retv237
-  } in
   let t238 = @intrinsic(eq.primitive)(self/79, other/80) in
-  jump ret236(t238)
+  t238
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret239(retv240: string) -> string {
-    retv240
-  } in
-  jump ret239(self/38)
+  self/38
 }

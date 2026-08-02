@@ -1,43 +1,31 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret160(retv161: string) -> string {
-    retv161
-  } in
   let t162 = inherent#int32#int32#to_string(self/0) in
-  jump ret160(t162)
+  t162
 }
 
 fn render(value/1: Boxed) -> string {
-  join ret163(retv164: string) -> string {
-    retv164
-  } in
-  join k165(jp166: string) -> string {
-    jump ret163(jp166)
-  } in
   match value/1 {
     Tag_0 => {
       let x155 = Boxed::One._0(value/1) in
       let inner/2 = x155 in
-      let t167 = dyn_call[Display::show](inner/2) in
-      jump k165(t167)
+      let t167 = dyn_call[Display::show](x155) in
+      t167
     },
     Tag_1 => {
       let x156 = Boxed::Pair._0(value/1) in
       let x157 = Boxed::Pair._1(value/1) in
       let right/4 = x157 in
       let left/3 = x156 in
-      let t168 = dyn_call[Display::show](left/3) in
+      let t168 = dyn_call[Display::show](x156) in
       let t169 = (t168 + "-") in
-      let t170 = dyn_call[Display::show](right/4) in
+      let t170 = dyn_call[Display::show](x157) in
       let t171 = (t169 + t170) in
-      jump k165(t171)
+      t171
     },
   }
 }
 
 fn main() -> unit {
-  join ret172() -> unit {
-    ()
-  } in
   let one/5 = 42 in
   let left/6 = 7 in
   let right/7 = 9 in
@@ -50,29 +38,20 @@ fn main() -> unit {
   let t178 = Boxed::Pair(t176, t177) in
   let t179 = render(t178) in
   let _wild159 = println__T_string(t179) in
-  jump ret172()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret180(retv181: string) -> string {
-    retv181
-  } in
   let t182 = @runtime(core.int32_to_string)(self/6) in
-  jump ret180(t182)
+  t182
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret183() -> unit {
-    ()
-  } in
   let t184 = trait_impl#ToString#string#to_string(value/1) in
   let t185 = @runtime(core.string_println)(t184) in
-  jump ret183()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret186(retv187: string) -> string {
-    retv187
-  } in
-  jump ret186(self/38)
+  self/38
 }

@@ -1,14 +1,8 @@
 fn trait_impl#ToString#(int,int)#to_string(self/0: (int, int)) -> string {
-  join ret158(retv159: string) -> string {
-    retv159
-  } in
-  jump ret158("(?, ?)")
+  "(?, ?)"
 }
 
 fn main() -> unit {
-  join ret160() -> unit {
-    ()
-  } in
   let x/1 = 123 in
   let t161 = trait_impl#ToString#int#to_string(x/1) in
   let mtmp155 = println__T_string(t161) in
@@ -18,37 +12,25 @@ fn main() -> unit {
   let x/3 = (3, 4) in
   let t163 = trait_impl#ToString#(int,int)#to_string(x/3) in
   let mtmp157 = println__T_string(t163) in
-  jump ret160()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret164() -> unit {
-    ()
-  } in
   let t165 = trait_impl#ToString#string#to_string(value/1) in
   let t166 = @runtime(core.string_println)(t165) in
-  jump ret164()
+  ()
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
-  } in
   let t169 = @runtime(core.int_to_string)(self/40) in
-  jump ret167(t169)
+  t169
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
-  } in
   let t172 = @runtime(core.bool_to_string)(self/37) in
-  jump ret170(t172)
+  t172
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret173(retv174: string) -> string {
-    retv174
-  } in
-  jump ret173(self/38)
+  self/38
 }

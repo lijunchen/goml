@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret160() -> unit {
-    ()
-  } in
   let x/0 = @intrinsic(ref.new)(0) in
   let inc/1 = closure_env_inc_0 { x_0: x/0 } in
   let get/2 = closure_env_get_1 { x_0: x/0 } in
@@ -9,66 +6,45 @@ fn main() -> unit {
   let t161 = inherent#closure_env_get_1#closure_env_get_1#apply(get/2) in
   let t162 = inherent#int#int#to_string(t161) in
   let _wild157 = println__T_string(t162) in
-  jump ret160()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret163() -> unit {
-    ()
-  } in
   let t164 = trait_impl#ToString#string#to_string(value/1) in
   let t165 = @runtime(core.string_println)(t164) in
-  jump ret163()
+  ()
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
-  } in
   let t168 = @runtime(core.int_to_string)(self/5) in
-  jump ret166(t168)
+  t168
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
-  } in
-  jump ret169(self/38)
+  self/38
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret171(retv172: bool) -> bool {
-    retv172
-  } in
   let t173 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret171(t173)
+  t173
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret174(retv175: uint64) -> uint64 {
-    retv175
-  } in
   let t176 = @runtime(core.int_hash)(self/85) in
-  jump ret174(t176)
+  t176
 }
 
 fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env158: closure_env_inc_0) -> int {
-  join ret177(retv178: int) -> int {
-    retv178
-  } in
   let x/0 = closure_env_inc_0.x_0(env158) in
   let t179 = @intrinsic(ref.get)(x/0) in
   let t180 = (t179 + 1) in
   let _wild155 = @intrinsic(ref.set)(x/0, t180) in
   let t181 = @intrinsic(ref.get)(x/0) in
-  jump ret177(t181)
+  t181
 }
 
 fn inherent#closure_env_get_1#closure_env_get_1#apply(env159: closure_env_get_1) -> int {
-  join ret182(retv183: int) -> int {
-    retv183
-  } in
   let x/0 = closure_env_get_1.x_0(env159) in
   let t184 = @intrinsic(ref.get)(x/0) in
-  jump ret182(t184)
+  t184
 }

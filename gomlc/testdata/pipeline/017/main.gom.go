@@ -27,9 +27,7 @@ type Tuple2_3int_3int struct {
 }
 
 func _goml_m_trait__impl_i_ToString_i__o_int_c_int_q__i_to__string(self__0 Tuple2_3int_3int) string {
-    var retv159 string
-    retv159 = "(?, ?)"
-    return retv159
+    return "(?, ?)"
 }
 
 func main0() struct{} {
@@ -55,23 +53,17 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv168 string
     var t169 string = _goml_runtime_core_int_to_string(self__40)
-    retv168 = t169
-    return retv168
+    return t169
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv171 string
     var t172 string = _goml_runtime_core_bool_to_string(self__37)
-    retv171 = t172
-    return retv171
+    return t172
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv174 string
-    retv174 = self__38
-    return retv174
+    return self__38
 }
 
 func main() {

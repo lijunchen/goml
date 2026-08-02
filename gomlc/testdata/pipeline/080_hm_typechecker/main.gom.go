@@ -323,15 +323,13 @@ type Result__Typ__string_Err struct {
 func (_ Result__Typ__string_Err) isResult__Typ__string() {}
 
 func state_new() CheckerState {
-    var retv352 CheckerState
     var t353 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     var t354 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(1)
     var t355 CheckerState = CheckerState{
         gensym_counter: t353,
         current_level: t354,
     }
-    retv352 = t355
-    return retv352
+    return t355
 }
 
 func reset_gensym(st__0 CheckerState) struct{} {
@@ -371,105 +369,92 @@ func leave_level(st__5 CheckerState) struct{} {
 }
 
 func min_i32(a__7 int32, b__8 int32) int32 {
-    var retv371 int32
     var t374 bool = a__7 < b__8
-    var jp373 int32
     if t374 {
-        jp373 = a__7
+        return a__7
     } else {
-        jp373 = b__8
+        return b__8
     }
-    retv371 = jp373
-    return retv371
 }
 
 func nth_letter(n__9 int32) rune {
-    var retv376 rune
-    var jp378 rune
     switch n__9 {
     case 0:
-        jp378 = 97
+        return 97
     case 1:
-        jp378 = 98
+        return 98
     case 2:
-        jp378 = 99
+        return 99
     case 3:
-        jp378 = 100
+        return 100
     case 4:
-        jp378 = 101
+        return 101
     case 5:
-        jp378 = 102
+        return 102
     case 6:
-        jp378 = 103
+        return 103
     case 7:
-        jp378 = 104
+        return 104
     case 8:
-        jp378 = 105
+        return 105
     case 9:
-        jp378 = 106
+        return 106
     case 10:
-        jp378 = 107
+        return 107
     case 11:
-        jp378 = 108
+        return 108
     case 12:
-        jp378 = 109
+        return 109
     case 13:
-        jp378 = 110
+        return 110
     case 14:
-        jp378 = 111
+        return 111
     case 15:
-        jp378 = 112
+        return 112
     case 16:
-        jp378 = 113
+        return 113
     case 17:
-        jp378 = 114
+        return 114
     case 18:
-        jp378 = 115
+        return 115
     case 19:
-        jp378 = 116
+        return 116
     case 20:
-        jp378 = 117
+        return 117
     case 21:
-        jp378 = 118
+        return 118
     case 22:
-        jp378 = 119
+        return 119
     case 23:
-        jp378 = 120
+        return 120
     case 24:
-        jp378 = 121
+        return 121
     case 25:
-        jp378 = 122
+        return 122
     default:
-        jp378 = 97
+        return 97
     }
-    retv376 = jp378
-    return retv376
 }
 
 func gensym(st__10 CheckerState) string {
-    var retv380 string
     var t381 *ref_int32_x = st__10.gensym_counter
     var n__11 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t381)
     var t382 *ref_int32_x = st__10.gensym_counter
     var t383 int32 = n__11 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t382, t383)
     var t386 bool = n__11 < 26
-    var jp385 string
     if t386 {
         var t387 rune = nth_letter(n__11)
         var t388 string = _goml_m_inherent_i_char_i_char_i_to__string(t387)
-        jp385 = t388
+        return t388
     } else {
         var t389 string = _goml_m_inherent_i_int32_i_int32_i_to__string(n__11)
         var t390 string = "t" + t389
-        jp385 = t390
+        return t390
     }
-    retv380 = jp385
-    return retv380
 }
 
 func newvar(st__12 CheckerState) Typ {
-    var retv392 Typ
     var name__13 string = gensym(st__12)
     var t393 *ref_int32_x = st__12.current_level
     var level__14 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t393)
@@ -481,104 +466,79 @@ func newvar(st__12 CheckerState) Typ {
     var t396 Typ = TVar{
         _0: t395,
     }
-    retv392 = t396
-    return retv392
+    return t396
 }
 
 func typ_is_arrow(ty__15 Typ) bool {
-    var retv398 bool
-    var jp400 bool
     switch ty__15.(type) {
     case TVar:
         var x161 *ref_Tv_x = ty__15.(TVar)._0
-        var tvref__16 *ref_Tv_x = x161
-        var mtmp165 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvref__16)
-        var jp402 bool
+        var mtmp165 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x161)
         switch mtmp165.(type) {
         case Link:
             var x168 Typ = mtmp165.(Link)._0
-            var inner__17 Typ = x168
-            var t403 bool = typ_is_arrow(inner__17)
-            jp402 = t403
+            var t403 bool = typ_is_arrow(x168)
+            return t403
         default:
-            jp402 = false
+            return false
         }
-        jp400 = jp402
     case TArrow:
-        jp400 = true
+        return true
     default:
-        jp400 = false
+        return false
     }
-    retv398 = jp400
-    return retv398
 }
 
 func typ_to_string(ty__18 Typ) string {
-    var retv405 string
-    var jp407 string
     switch ty__18.(type) {
     case TVar:
         var x169 *ref_Tv_x = ty__18.(TVar)._0
-        var tvref__20 *ref_Tv_x = x169
-        var mtmp173 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvref__20)
-        var jp409 string
+        var mtmp173 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x169)
         switch mtmp173.(type) {
         case Unbound:
             var x174 string = mtmp173.(Unbound)._0
-            var name__21 string = x174
-            var t410 string = "'" + name__21
-            jp409 = t410
+            var t410 string = "'" + x174
+            return t410
         case Link:
             var x176 Typ = mtmp173.(Link)._0
-            var inner__22 Typ = x176
-            var t411 string = typ_to_string(inner__22)
-            jp409 = t411
+            var t411 string = typ_to_string(x176)
+            return t411
         default:
             panic("non-exhaustive match")
         }
-        jp407 = jp409
     case QVar:
         var x170 string = ty__18.(QVar)._0
-        var name__19 string = x170
-        var t412 string = "'" + name__19
-        jp407 = t412
+        var t412 string = "'" + x170
+        return t412
     case TArrow:
         var x171 Typ = ty__18.(TArrow)._0
         var x172 Typ = ty__18.(TArrow)._1
-        var t2__24 Typ = x172
-        var t1__23 Typ = x171
-        var t417 bool = typ_is_arrow(t1__23)
+        var t417 bool = typ_is_arrow(x171)
         var jp414 string
         if t417 {
-            var t418 string = typ_to_string(t1__23)
+            var t418 string = typ_to_string(x171)
             var t419 string = "(" + t418
             var t420 string = t419 + ")"
             jp414 = t420
         } else {
-            var t421 string = typ_to_string(t1__23)
+            var t421 string = typ_to_string(x171)
             jp414 = t421
         }
-        var s1__25 string = jp414
-        var s2__26 string = typ_to_string(t2__24)
-        var t415 string = s1__25 + " -> "
+        var s2__26 string = typ_to_string(x172)
+        var t415 string = jp414 + " -> "
         var t416 string = t415 + s2__26
-        jp407 = t416
+        return t416
     default:
         panic("non-exhaustive match")
     }
-    retv405 = jp407
-    return retv405
 }
 
 func env_empty() *_goml_vec_EnvEntry {
-    var retv423 *_goml_vec_EnvEntry
     var env__27 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry()
-    retv423 = env__27
-    return retv423
+    return env__27
 }
 
 func env_lookup(env__28 *_goml_vec_EnvEntry, name__29 string) Option__Typ {
-    var retv425 Option__Typ
     var t426 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(env__28)
     var t427 int = t426 - 1
     var i__30 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(t427)
@@ -608,23 +568,22 @@ func env_lookup(env__28 *_goml_vec_EnvEntry, name__29 string) Option__Typ {
                 }
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_Typ_r_(found__31, t438)
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(done__32, true)
+                continue
             } else {
                 var t440 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__30)
                 var t441 int = t440 - 1
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(i__30, t441)
+                continue
             }
-            continue
         } else {
             break Loop_loop430
         }
     }
     var t429 Option__Typ = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_Typ_r_(found__31)
-    retv425 = t429
-    return retv425
+    return t429
 }
 
 func subst_lookup(subst__34 *_goml_vec_SubstEntry, name__35 string) Option__Typ {
-    var retv448 Option__Typ
     var t449 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(subst__34)
     var t450 int = t449 - 1
     var i__36 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(t450)
@@ -654,465 +613,363 @@ func subst_lookup(subst__34 *_goml_vec_SubstEntry, name__35 string) Option__Typ 
                 }
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_Typ_r_(found__37, t461)
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(done__38, true)
+                continue
             } else {
                 var t463 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__36)
                 var t464 int = t463 - 1
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(i__36, t464)
+                continue
             }
-            continue
         } else {
             break Loop_loop453
         }
     }
     var t452 Option__Typ = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_Typ_r_(found__37)
-    retv448 = t452
-    return retv448
+    return t452
 }
 
 func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__string {
-    var retv471 Result__unit__string
-    var jp473 Result__unit__string
     switch ty__42.(type) {
     case TVar:
         var x181 *ref_Tv_x = ty__42.(TVar)._0
-        var tvr2__43 *ref_Tv_x = x181
-        var t476 bool = ptr_eq__Ref_2Tv(tvr__41, tvr2__43)
-        var jp475 Result__unit__string
+        var t476 bool = ptr_eq__Ref_2Tv(tvr__41, x181)
         if t476 {
             var t477 Result__unit__string = Result__unit__string_Err{
                 _0: "occurs check",
             }
-            jp475 = t477
+            return t477
         } else {
-            var mtmp185 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvr2__43)
-            var jp479 Result__unit__string
+            var mtmp185 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x181)
             switch mtmp185.(type) {
             case Unbound:
                 var x186 string = mtmp185.(Unbound)._0
                 var x187 int32 = mtmp185.(Unbound)._1
-                var l2__45 int32 = x187
-                var name__44 string = x186
                 var mtmp189 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvr__41)
                 var jp481 int32
                 switch mtmp189.(type) {
                 case Unbound:
                     var x191 int32 = mtmp189.(Unbound)._1
-                    var l__46 int32 = x191
-                    var t484 int32 = min_i32(l__46, l2__45)
+                    var t484 int32 = min_i32(x191, x187)
                     jp481 = t484
                 default:
-                    jp481 = l2__45
+                    jp481 = x187
                 }
-                var min_level__47 int32 = jp481
                 var t482 Tv = Unbound{
-                    _0: name__44,
-                    _1: min_level__47,
+                    _0: x186,
+                    _1: jp481,
                 }
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(tvr2__43, t482)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(x181, t482)
                 var t483 Result__unit__string = Result__unit__string_Ok{
                     _0: struct{}{},
                 }
-                jp479 = t483
+                return t483
             case Link:
                 var x188 Typ = mtmp185.(Link)._0
-                var inner__48 Typ = x188
-                var t485 Result__unit__string = occurs(st__40, tvr__41, inner__48)
-                jp479 = t485
+                var t485 Result__unit__string = occurs(st__40, tvr__41, x188)
+                return t485
             default:
                 panic("non-exhaustive match")
             }
-            jp475 = jp479
         }
-        jp473 = jp475
     case TArrow:
         var x183 Typ = ty__42.(TArrow)._0
         var x184 Typ = ty__42.(TArrow)._1
-        var t2__50 Typ = x184
-        var t1__49 Typ = x183
-        var mtmp194 Result__unit__string = occurs(st__40, tvr__41, t1__49)
-        var jp487 Result__unit__string
+        var mtmp194 Result__unit__string = occurs(st__40, tvr__41, x183)
         switch mtmp194.(type) {
         case Result__unit__string_Ok:
-            var t488 Result__unit__string = occurs(st__40, tvr__41, t2__50)
-            jp487 = t488
+            var t488 Result__unit__string = occurs(st__40, tvr__41, x184)
+            return t488
         case Result__unit__string_Err:
             var x196 string = mtmp194.(Result__unit__string_Err)._0
-            var e__51 string = x196
             var t489 Result__unit__string = Result__unit__string_Err{
-                _0: e__51,
+                _0: x196,
             }
-            jp487 = t489
+            return t489
         default:
             panic("non-exhaustive match")
         }
-        jp473 = jp487
     default:
         var t490 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        jp473 = t490
+        return t490
     }
-    retv471 = jp473
-    return retv471
 }
 
 func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
-    var retv492 Result__unit__string
-    var mtmp197 Tuple2_3Typ_3Typ = Tuple2_3Typ_3Typ{
-        _0: t1__53,
-        _1: t2__54,
-    }
-    var x198 Typ = mtmp197._0
-    var x199 Typ = mtmp197._1
-    var jp494 Result__unit__string
-    switch x199.(type) {
+    switch t2__54.(type) {
     case TVar:
-        var x200 *ref_Tv_x = x199.(TVar)._0
-        var jp496 Result__unit__string
-        switch x198.(type) {
+        var x200 *ref_Tv_x = t2__54.(TVar)._0
+        switch t1__53.(type) {
         case TVar:
-            var x204 *ref_Tv_x = x198.(TVar)._0
-            var r1__55 *ref_Tv_x = x204
-            var r2__56 *ref_Tv_x = x200
-            var t499 bool = ptr_eq__Ref_2Tv(r1__55, r2__56)
-            var jp498 Result__unit__string
+            var x204 *ref_Tv_x = t1__53.(TVar)._0
+            var t499 bool = ptr_eq__Ref_2Tv(x204, x200)
             if t499 {
                 var t500 Result__unit__string = Result__unit__string_Ok{
                     _0: struct{}{},
                 }
-                jp498 = t500
+                return t500
             } else {
-                var mtmp208 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r1__55)
-                var jp502 Result__unit__string
+                var mtmp208 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x204)
                 switch mtmp208.(type) {
                 case Unbound:
-                    var mtmp212 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r2__56)
-                    var jp504 Result__unit__string
+                    var mtmp212 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x200)
                     switch mtmp212.(type) {
                     case Unbound:
                         var t505 Typ = TVar{
-                            _0: r2__56,
+                            _0: x200,
                         }
-                        var mtmp216 Result__unit__string = occurs(st__52, r1__55, t505)
-                        var jp507 Result__unit__string
+                        var mtmp216 Result__unit__string = occurs(st__52, x204, t505)
                         switch mtmp216.(type) {
                         case Result__unit__string_Ok:
                             var t508 Typ = TVar{
-                                _0: r2__56,
+                                _0: x200,
                             }
                             var t509 Tv = Link{
                                 _0: t508,
                             }
-                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r1__55, t509)
+                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(x204, t509)
                             var t510 Result__unit__string = Result__unit__string_Ok{
                                 _0: struct{}{},
                             }
-                            jp507 = t510
+                            return t510
                         case Result__unit__string_Err:
                             var x218 string = mtmp216.(Result__unit__string_Err)._0
-                            var e__59 string = x218
                             var t511 Result__unit__string = Result__unit__string_Err{
-                                _0: e__59,
+                                _0: x218,
                             }
-                            jp507 = t511
+                            return t511
                         default:
                             panic("non-exhaustive match")
                         }
-                        jp504 = jp507
                     case Link:
                         var x215 Typ = mtmp212.(Link)._0
-                        var inner__58 Typ = x215
                         var t512 Typ = TVar{
-                            _0: r1__55,
+                            _0: x204,
                         }
-                        var t513 Result__unit__string = unify(st__52, t512, inner__58)
-                        jp504 = t513
+                        var t513 Result__unit__string = unify(st__52, t512, x215)
+                        return t513
                     default:
                         panic("non-exhaustive match")
                     }
-                    jp502 = jp504
                 case Link:
                     var x211 Typ = mtmp208.(Link)._0
-                    var inner__57 Typ = x211
                     var t514 Typ = TVar{
-                        _0: r2__56,
+                        _0: x200,
                     }
-                    var t515 Result__unit__string = unify(st__52, inner__57, t514)
-                    jp502 = t515
+                    var t515 Result__unit__string = unify(st__52, x211, t514)
+                    return t515
                 default:
                     panic("non-exhaustive match")
                 }
-                jp498 = jp502
             }
-            jp496 = jp498
         default:
-            var r2__65 *ref_Tv_x = x200
-            var other__64 Typ = x198
-            var mtmp220 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r2__65)
-            var jp517 Result__unit__string
+            var mtmp220 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x200)
             switch mtmp220.(type) {
             case Unbound:
-                var mtmp224 Result__unit__string = occurs(st__52, r2__65, other__64)
-                var jp519 Result__unit__string
+                var mtmp224 Result__unit__string = occurs(st__52, x200, t1__53)
                 switch mtmp224.(type) {
                 case Result__unit__string_Ok:
                     var t520 Tv = Link{
-                        _0: other__64,
+                        _0: t1__53,
                     }
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r2__65, t520)
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(x200, t520)
                     var t521 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
-                    jp519 = t521
+                    return t521
                 case Result__unit__string_Err:
                     var x226 string = mtmp224.(Result__unit__string_Err)._0
-                    var e__67 string = x226
                     var t522 Result__unit__string = Result__unit__string_Err{
-                        _0: e__67,
+                        _0: x226,
                     }
-                    jp519 = t522
+                    return t522
                 default:
                     panic("non-exhaustive match")
                 }
-                jp517 = jp519
             case Link:
                 var x223 Typ = mtmp220.(Link)._0
-                var inner__66 Typ = x223
-                var t523 Result__unit__string = unify(st__52, other__64, inner__66)
-                jp517 = t523
+                var t523 Result__unit__string = unify(st__52, t1__53, x223)
+                return t523
             default:
                 panic("non-exhaustive match")
             }
-            jp496 = jp517
         }
-        jp494 = jp496
     case TArrow:
-        var x202 Typ = x199.(TArrow)._0
-        var x203 Typ = x199.(TArrow)._1
-        var jp525 Result__unit__string
-        switch x198.(type) {
+        var x202 Typ = t2__54.(TArrow)._0
+        var x203 Typ = t2__54.(TArrow)._1
+        switch t1__53.(type) {
         case TVar:
-            var x228 *ref_Tv_x = x198.(TVar)._0
-            var r1__60 *ref_Tv_x = x228
-            var other__61 Typ = x199
-            var mtmp232 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r1__60)
-            var jp527 Result__unit__string
+            var x228 *ref_Tv_x = t1__53.(TVar)._0
+            var mtmp232 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x228)
             switch mtmp232.(type) {
             case Unbound:
-                var mtmp236 Result__unit__string = occurs(st__52, r1__60, other__61)
-                var jp529 Result__unit__string
+                var mtmp236 Result__unit__string = occurs(st__52, x228, t2__54)
                 switch mtmp236.(type) {
                 case Result__unit__string_Ok:
                     var t530 Tv = Link{
-                        _0: other__61,
+                        _0: t2__54,
                     }
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r1__60, t530)
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(x228, t530)
                     var t531 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
-                    jp529 = t531
+                    return t531
                 case Result__unit__string_Err:
                     var x238 string = mtmp236.(Result__unit__string_Err)._0
-                    var e__63 string = x238
                     var t532 Result__unit__string = Result__unit__string_Err{
-                        _0: e__63,
+                        _0: x238,
                     }
-                    jp529 = t532
+                    return t532
                 default:
                     panic("non-exhaustive match")
                 }
-                jp527 = jp529
             case Link:
                 var x235 Typ = mtmp232.(Link)._0
-                var inner__62 Typ = x235
-                var t533 Result__unit__string = unify(st__52, inner__62, other__61)
-                jp527 = t533
+                var t533 Result__unit__string = unify(st__52, x235, t2__54)
+                return t533
             default:
                 panic("non-exhaustive match")
             }
-            jp525 = jp527
         case TArrow:
-            var x230 Typ = x198.(TArrow)._0
-            var x231 Typ = x198.(TArrow)._1
-            var a2__69 Typ = x231
-            var a1__68 Typ = x230
-            var b2__71 Typ = x203
-            var b1__70 Typ = x202
-            var mtmp240 Result__unit__string = unify(st__52, a1__68, b1__70)
-            var jp535 Result__unit__string
+            var x230 Typ = t1__53.(TArrow)._0
+            var x231 Typ = t1__53.(TArrow)._1
+            var mtmp240 Result__unit__string = unify(st__52, x230, x202)
             switch mtmp240.(type) {
             case Result__unit__string_Ok:
-                var t536 Result__unit__string = unify(st__52, a2__69, b2__71)
-                jp535 = t536
+                var t536 Result__unit__string = unify(st__52, x231, x203)
+                return t536
             case Result__unit__string_Err:
                 var x242 string = mtmp240.(Result__unit__string_Err)._0
-                var e__72 string = x242
                 var t537 Result__unit__string = Result__unit__string_Err{
-                    _0: e__72,
+                    _0: x242,
                 }
-                jp535 = t537
+                return t537
             default:
                 panic("non-exhaustive match")
             }
-            jp525 = jp535
         default:
             var t538 Result__unit__string = Result__unit__string_Err{
                 _0: "unify error",
             }
-            jp525 = t538
+            return t538
         }
-        jp494 = jp525
     default:
-        var jp540 Result__unit__string
-        switch x198.(type) {
+        switch t1__53.(type) {
         case TVar:
-            var x243 *ref_Tv_x = x198.(TVar)._0
-            var r1__60 *ref_Tv_x = x243
-            var other__61 Typ = x199
-            var mtmp247 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r1__60)
-            var jp542 Result__unit__string
+            var x243 *ref_Tv_x = t1__53.(TVar)._0
+            var mtmp247 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x243)
             switch mtmp247.(type) {
             case Unbound:
-                var mtmp251 Result__unit__string = occurs(st__52, r1__60, other__61)
-                var jp544 Result__unit__string
+                var mtmp251 Result__unit__string = occurs(st__52, x243, t2__54)
                 switch mtmp251.(type) {
                 case Result__unit__string_Ok:
                     var t545 Tv = Link{
-                        _0: other__61,
+                        _0: t2__54,
                     }
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r1__60, t545)
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(x243, t545)
                     var t546 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
-                    jp544 = t546
+                    return t546
                 case Result__unit__string_Err:
                     var x253 string = mtmp251.(Result__unit__string_Err)._0
-                    var e__63 string = x253
                     var t547 Result__unit__string = Result__unit__string_Err{
-                        _0: e__63,
+                        _0: x253,
                     }
-                    jp544 = t547
+                    return t547
                 default:
                     panic("non-exhaustive match")
                 }
-                jp542 = jp544
             case Link:
                 var x250 Typ = mtmp247.(Link)._0
-                var inner__62 Typ = x250
-                var t548 Result__unit__string = unify(st__52, inner__62, other__61)
-                jp542 = t548
+                var t548 Result__unit__string = unify(st__52, x250, t2__54)
+                return t548
             default:
                 panic("non-exhaustive match")
             }
-            jp540 = jp542
         default:
             var t549 Result__unit__string = Result__unit__string_Err{
                 _0: "unify error",
             }
-            jp540 = t549
+            return t549
         }
-        jp494 = jp540
     }
-    retv492 = jp494
-    return retv492
 }
 
 func gen(st__73 CheckerState, ty__74 Typ) Typ {
-    var retv551 Typ
-    var jp553 Typ
     switch ty__74.(type) {
     case TVar:
         var x255 *ref_Tv_x = ty__74.(TVar)._0
-        var tvref__75 *ref_Tv_x = x255
-        var mtmp259 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvref__75)
-        var jp555 Typ
+        var mtmp259 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x255)
         switch mtmp259.(type) {
         case Unbound:
             var x260 string = mtmp259.(Unbound)._0
             var x261 int32 = mtmp259.(Unbound)._1
-            var l__77 int32 = x261
-            var name__76 string = x260
             var t556 *ref_int32_x = st__73.current_level
             var cur__78 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t556)
-            var t559 bool = l__77 > cur__78
-            var jp558 Typ
+            var t559 bool = x261 > cur__78
             if t559 {
                 var t560 Typ = QVar{
-                    _0: name__76,
+                    _0: x260,
                 }
-                jp558 = t560
+                return t560
             } else {
                 var t561 Typ = TVar{
-                    _0: tvref__75,
+                    _0: x255,
                 }
-                jp558 = t561
+                return t561
             }
-            jp555 = jp558
         case Link:
             var x262 Typ = mtmp259.(Link)._0
-            var inner__79 Typ = x262
-            var t562 Typ = gen(st__73, inner__79)
-            jp555 = t562
+            var t562 Typ = gen(st__73, x262)
+            return t562
         default:
             panic("non-exhaustive match")
         }
-        jp553 = jp555
     case TArrow:
         var x257 Typ = ty__74.(TArrow)._0
         var x258 Typ = ty__74.(TArrow)._1
-        var t2__81 Typ = x258
-        var t1__80 Typ = x257
-        var t563 Typ = gen(st__73, t1__80)
-        var t564 Typ = gen(st__73, t2__81)
+        var t563 Typ = gen(st__73, x257)
+        var t564 Typ = gen(st__73, x258)
         var t565 Typ = TArrow{
             _0: t563,
             _1: t564,
         }
-        jp553 = t565
+        return t565
     default:
-        var other__82 Typ = ty__74
-        jp553 = other__82
+        return ty__74
     }
-    retv551 = jp553
-    return retv551
 }
 
 func inst_loop(st__83 CheckerState, subst__84 *_goml_vec_SubstEntry, ty__85 Typ) Tuple2_3Typ_16Vec_10SubstEntry {
-    var retv567 Tuple2_3Typ_16Vec_10SubstEntry
-    var jp569 Tuple2_3Typ_16Vec_10SubstEntry
     switch ty__85.(type) {
     case TVar:
         var x263 *ref_Tv_x = ty__85.(TVar)._0
-        var tvref__90 *ref_Tv_x = x263
-        var mtmp267 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvref__90)
-        var jp571 Tuple2_3Typ_16Vec_10SubstEntry
+        var mtmp267 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(x263)
         switch mtmp267.(type) {
         case Link:
             var x270 Typ = mtmp267.(Link)._0
-            var inner__91 Typ = x270
-            var t572 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst__84, inner__91)
-            jp571 = t572
+            var t572 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst__84, x270)
+            return t572
         default:
             var t573 Typ = TVar{
-                _0: tvref__90,
+                _0: x263,
             }
             var t574 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: t573,
                 _1: subst__84,
             }
-            jp571 = t574
+            return t574
         }
-        jp569 = jp571
     case QVar:
         var x264 string = ty__85.(QVar)._0
-        var name__86 string = x264
-        var mtmp271 Option__Typ = subst_lookup(subst__84, name__86)
-        var jp576 Tuple2_3Typ_16Vec_10SubstEntry
+        var mtmp271 Option__Typ = subst_lookup(subst__84, x264)
         switch mtmp271.(type) {
         case None:
             var tv__88 Typ = newvar(st__83)
             var t577 SubstEntry = SubstEntry{
-                name: name__86,
+                name: x264,
                 ty: tv__88,
             }
             var new_subst__89 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(subst__84, t577)
@@ -1120,286 +977,230 @@ func inst_loop(st__83 CheckerState, subst__84 *_goml_vec_SubstEntry, ty__85 Typ)
                 _0: tv__88,
                 _1: new_subst__89,
             }
-            jp576 = t578
+            return t578
         case Some:
             var x272 Typ = mtmp271.(Some)._0
-            var t__87 Typ = x272
             var t579 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
-                _0: t__87,
+                _0: x272,
                 _1: subst__84,
             }
-            jp576 = t579
+            return t579
         default:
             panic("non-exhaustive match")
         }
-        jp569 = jp576
     case TArrow:
         var x265 Typ = ty__85.(TArrow)._0
         var x266 Typ = ty__85.(TArrow)._1
-        var t2__93 Typ = x266
-        var t1__92 Typ = x265
-        var mtmp273 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst__84, t1__92)
+        var mtmp273 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst__84, x265)
         var x274 Typ = mtmp273._0
         var x275 *_goml_vec_SubstEntry = mtmp273._1
-        var subst1__95 *_goml_vec_SubstEntry = x275
-        var ty1__94 Typ = x274
-        var mtmp276 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst1__95, t2__93)
+        var mtmp276 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, x275, x266)
         var x277 Typ = mtmp276._0
         var x278 *_goml_vec_SubstEntry = mtmp276._1
-        var subst2__97 *_goml_vec_SubstEntry = x278
-        var ty2__96 Typ = x277
         var t580 Typ = TArrow{
-            _0: ty1__94,
-            _1: ty2__96,
+            _0: x274,
+            _1: x277,
         }
         var t581 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
             _0: t580,
-            _1: subst2__97,
+            _1: x278,
         }
-        jp569 = t581
+        return t581
     default:
         panic("non-exhaustive match")
     }
-    retv567 = jp569
-    return retv567
 }
 
 func inst(st__98 CheckerState, ty__99 Typ) Typ {
-    var retv583 Typ
     var subst0__100 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry()
     var mtmp279 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__98, subst0__100, ty__99)
     var x280 Typ = mtmp279._0
-    var t__101 Typ = x280
-    retv583 = t__101
-    return retv583
+    return x280
 }
 
 func typeof(st__102 CheckerState, env__103 *_goml_vec_EnvEntry, e__104 Exp) Result__Typ__string {
-    var retv585 Result__Typ__string
-    var jp587 Result__Typ__string
     switch e__104.(type) {
     case Var:
         var x282 string = e__104.(Var)._0
-        var x__105 string = x282
-        var mtmp290 Option__Typ = env_lookup(env__103, x__105)
-        var jp589 Result__Typ__string
+        var mtmp290 Option__Typ = env_lookup(env__103, x282)
         switch mtmp290.(type) {
         case None:
             var t590 Result__Typ__string = Result__Typ__string_Err{
                 _0: "unbound var",
             }
-            jp589 = t590
+            return t590
         case Some:
             var x291 Typ = mtmp290.(Some)._0
-            var ty__106 Typ = x291
-            var t591 Typ = inst(st__102, ty__106)
+            var t591 Typ = inst(st__102, x291)
             var t592 Result__Typ__string = Result__Typ__string_Ok{
                 _0: t591,
             }
-            jp589 = t592
+            return t592
         default:
             panic("non-exhaustive match")
         }
-        jp587 = jp589
     case App:
         var x283 Exp = e__104.(App)._0
         var x284 Exp = e__104.(App)._1
-        var e2__114 Exp = x284
-        var e1__113 Exp = x283
-        var mtmp292 Result__Typ__string = typeof(st__102, env__103, e1__113)
-        var jp594 Result__Typ__string
+        var mtmp292 Result__Typ__string = typeof(st__102, env__103, x283)
         switch mtmp292.(type) {
         case Result__Typ__string_Ok:
             var x293 Typ = mtmp292.(Result__Typ__string_Ok)._0
-            var ty_fun__116 Typ = x293
-            var mtmp295 Result__Typ__string = typeof(st__102, env__103, e2__114)
-            var jp596 Result__Typ__string
+            var mtmp295 Result__Typ__string = typeof(st__102, env__103, x284)
             switch mtmp295.(type) {
             case Result__Typ__string_Ok:
                 var x296 Typ = mtmp295.(Result__Typ__string_Ok)._0
-                var ty_arg__118 Typ = x296
                 var ty_res__119 Typ = newvar(st__102)
                 var arrow__120 Typ = TArrow{
-                    _0: ty_arg__118,
+                    _0: x296,
                     _1: ty_res__119,
                 }
-                var mtmp298 Result__unit__string = unify(st__102, ty_fun__116, arrow__120)
-                var jp598 Result__Typ__string
+                var mtmp298 Result__unit__string = unify(st__102, x293, arrow__120)
                 switch mtmp298.(type) {
                 case Result__unit__string_Ok:
                     var t599 Result__Typ__string = Result__Typ__string_Ok{
                         _0: ty_res__119,
                     }
-                    jp598 = t599
+                    return t599
                 case Result__unit__string_Err:
                     var x300 string = mtmp298.(Result__unit__string_Err)._0
-                    var e__121 string = x300
                     var t600 Result__Typ__string = Result__Typ__string_Err{
-                        _0: e__121,
+                        _0: x300,
                     }
-                    jp598 = t600
+                    return t600
                 default:
                     panic("non-exhaustive match")
                 }
-                jp596 = jp598
             case Result__Typ__string_Err:
                 var x297 string = mtmp295.(Result__Typ__string_Err)._0
-                var e__117 string = x297
                 var t601 Result__Typ__string = Result__Typ__string_Err{
-                    _0: e__117,
+                    _0: x297,
                 }
-                jp596 = t601
+                return t601
             default:
                 panic("non-exhaustive match")
             }
-            jp594 = jp596
         case Result__Typ__string_Err:
             var x294 string = mtmp292.(Result__Typ__string_Err)._0
-            var e__115 string = x294
             var t602 Result__Typ__string = Result__Typ__string_Err{
-                _0: e__115,
+                _0: x294,
             }
-            jp594 = t602
+            return t602
         default:
             panic("non-exhaustive match")
         }
-        jp587 = jp594
     case Lam:
         var x285 string = e__104.(Lam)._0
         var x286 Exp = e__104.(Lam)._1
-        var body__108 Exp = x286
-        var x__107 string = x285
         var ty_x__109 Typ = newvar(st__102)
         var t603 EnvEntry = EnvEntry{
-            name: x__107,
+            name: x285,
             ty: ty_x__109,
         }
         var env2__110 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(env__103, t603)
-        var mtmp301 Result__Typ__string = typeof(st__102, env2__110, body__108)
-        var jp605 Result__Typ__string
+        var mtmp301 Result__Typ__string = typeof(st__102, env2__110, x286)
         switch mtmp301.(type) {
         case Result__Typ__string_Ok:
             var x302 Typ = mtmp301.(Result__Typ__string_Ok)._0
-            var ty_e__111 Typ = x302
             var t606 Typ = TArrow{
                 _0: ty_x__109,
-                _1: ty_e__111,
+                _1: x302,
             }
             var t607 Result__Typ__string = Result__Typ__string_Ok{
                 _0: t606,
             }
-            jp605 = t607
+            return t607
         case Result__Typ__string_Err:
             var x303 string = mtmp301.(Result__Typ__string_Err)._0
-            var e__112 string = x303
             var t608 Result__Typ__string = Result__Typ__string_Err{
-                _0: e__112,
+                _0: x303,
             }
-            jp605 = t608
+            return t608
         default:
             panic("non-exhaustive match")
         }
-        jp587 = jp605
     case Let:
         var x287 string = e__104.(Let)._0
         var x288 Exp = e__104.(Let)._1
         var x289 Exp = e__104.(Let)._2
-        var e2__124 Exp = x289
-        var e1__123 Exp = x288
-        var x__122 string = x287
         enter_level(st__102)
-        var ty_e__125 Result__Typ__string = typeof(st__102, env__103, e1__123)
+        var ty_e__125 Result__Typ__string = typeof(st__102, env__103, x288)
         leave_level(st__102)
-        var jp610 Result__Typ__string
         switch ty_e__125.(type) {
         case Result__Typ__string_Ok:
             var x306 Typ = ty_e__125.(Result__Typ__string_Ok)._0
-            var ty1__127 Typ = x306
-            var t611 Typ = gen(st__102, ty1__127)
+            var t611 Typ = gen(st__102, x306)
             var t612 EnvEntry = EnvEntry{
-                name: x__122,
+                name: x287,
                 ty: t611,
             }
             var env2__128 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(env__103, t612)
-            var t613 Result__Typ__string = typeof(st__102, env2__128, e2__124)
-            jp610 = t613
+            var t613 Result__Typ__string = typeof(st__102, env2__128, x289)
+            return t613
         case Result__Typ__string_Err:
             var x307 string = ty_e__125.(Result__Typ__string_Err)._0
-            var e__126 string = x307
             var t614 Result__Typ__string = Result__Typ__string_Err{
-                _0: e__126,
+                _0: x307,
             }
-            jp610 = t614
+            return t614
         default:
             panic("non-exhaustive match")
         }
-        jp587 = jp610
     default:
         panic("non-exhaustive match")
     }
-    retv585 = jp587
-    return retv585
 }
 
 func exp_var(name__129 string) Exp {
-    var retv616 Exp
     var t617 Exp = Var{
         _0: name__129,
     }
-    retv616 = t617
-    return retv616
+    return t617
 }
 
 func exp_lam(name__130 string, body__131 Exp) Exp {
-    var retv619 Exp
     var t620 Exp = Lam{
         _0: name__130,
         _1: body__131,
     }
-    retv619 = t620
-    return retv619
+    return t620
 }
 
 func exp_app(a__132 Exp, b__133 Exp) Exp {
-    var retv622 Exp
     var t623 Exp = App{
         _0: a__132,
         _1: b__133,
     }
-    retv622 = t623
-    return retv622
+    return t623
 }
 
 func exp_let(name__134 string, a__135 Exp, b__136 Exp) Exp {
-    var retv625 Exp
     var t626 Exp = Let{
         _0: name__134,
         _1: a__135,
         _2: b__136,
     }
-    retv625 = t626
-    return retv625
+    return t626
 }
 
 func show_result(label__137 string, res__138 Result__Typ__string) struct{} {
     switch res__138.(type) {
     case Result__Typ__string_Ok:
         var x308 Typ = res__138.(Result__Typ__string_Ok)._0
-        var ty__139 Typ = x308
         var t629 string = label__137 + ": "
-        var t630 string = typ_to_string(ty__139)
+        var t630 string = typ_to_string(x308)
         var t631 string = t629 + t630
         println__T_string(t631)
+        return struct{}{}
     case Result__Typ__string_Err:
         var x309 string = res__138.(Result__Typ__string_Err)._0
-        var e__140 string = x309
         var t633 string = label__137 + ": "
-        var t634 string = t633 + e__140
+        var t634 string = t633 + x309
         println__T_string(t634)
+        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
 }
 
 func main0() struct{} {
@@ -1601,10 +1402,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__207 int32) *ref_int32_x {
-    var retv788 *ref_int32_x
     var t789 *ref_int32_x = ref__Ref_5int32(value__207)
-    retv788 = t789
-    return retv788
+    return t789
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__209 *ref_int32_x, value__210 int32) struct{} {
@@ -1613,94 +1412,68 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__209 *ref_int32_
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__208 *ref_int32_x) int32 {
-    var retv793 int32
     var t794 int32 = ref_get__Ref_5int32(self__208)
-    retv793 = t794
-    return retv793
+    return t794
 }
 
 func _goml_m_inherent_i_char_i_char_i_to__string(self__7 rune) string {
-    var retv796 string
     var t797 string = _goml_runtime_core_char_to_string(self__7)
-    retv796 = t797
-    return retv796
+    return t797
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv799 string
     var t800 string = _goml_runtime_core_int32_to_string(self__6)
-    retv799 = t800
-    return retv799
+    return t800
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(value__207 Tv) *ref_Tv_x {
-    var retv802 *ref_Tv_x
     var t803 *ref_Tv_x = ref__Ref_2Tv(value__207)
-    retv802 = t803
-    return retv802
+    return t803
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(self__208 *ref_Tv_x) Tv {
-    var retv805 Tv
     var t806 Tv = ref_get__Ref_2Tv(self__208)
-    retv805 = t806
-    return retv805
+    return t806
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry() *_goml_vec_EnvEntry {
-    var retv808 *_goml_vec_EnvEntry
     var t809 *_goml_vec_EnvEntry = vec_new__Vec_8EnvEntry()
-    retv808 = t809
-    return retv808
+    return t809
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(self__137 *_goml_vec_EnvEntry) int {
-    var retv811 int
     var t812 int = vec_len__Vec_8EnvEntry(self__137)
-    retv811 = t812
-    return retv811
+    return t812
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv814 *ref_int_x
     var t815 *ref_int_x = ref__Ref_3int(value__207)
-    retv814 = t815
-    return retv814
+    return t815
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_Typ_r_(value__207 Option__Typ) *ref_Option__Typ_x {
-    var retv817 *ref_Option__Typ_x
     var t818 *ref_Option__Typ_x = ref__Ref_11Option__Typ(value__207)
-    retv817 = t818
-    return retv817
+    return t818
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__207 bool) *ref_bool_x {
-    var retv820 *ref_bool_x
     var t821 *ref_bool_x = ref__Ref_4bool(value__207)
-    retv820 = t821
-    return retv820
+    return t821
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__208 *ref_bool_x) bool {
-    var retv823 bool
     var t824 bool = ref_get__Ref_4bool(self__208)
-    retv823 = t824
-    return retv823
+    return t824
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv826 int
     var t827 int = ref_get__Ref_3int(self__208)
-    retv826 = t827
-    return retv826
+    return t827
 }
 
 func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__55 string, other__56 string) bool {
-    var retv829 bool
     var t830 bool = self__55 == other__56
-    retv829 = t830
-    return retv829
+    return t830
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_Typ_r_(self__209 *ref_Option__Typ_x, value__210 Option__Typ) struct{} {
@@ -1719,17 +1492,13 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, v
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_Typ_r_(self__208 *ref_Option__Typ_x) Option__Typ {
-    var retv838 Option__Typ
     var t839 Option__Typ = ref_get__Ref_11Option__Typ(self__208)
-    retv838 = t839
-    return retv838
+    return t839
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(self__137 *_goml_vec_SubstEntry) int {
-    var retv841 int
     var t842 int = vec_len__Vec_10SubstEntry(self__137)
-    retv841 = t842
-    return retv841
+    return t842
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(self__209 *ref_Tv_x, value__210 Tv) struct{} {
@@ -1738,7 +1507,6 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(self__209 *ref_Tv_x, val
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__128 *_goml_vec_SubstEntry, elem__129 SubstEntry) *_goml_vec_SubstEntry {
-    var retv846 *_goml_vec_SubstEntry
     var t847 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(self__128)
     var t848 int = t847 + 1
     var result__130 *_goml_vec_SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__SubstEntry(t848)
@@ -1760,19 +1528,15 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__128 *_g
         }
     }
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(result__130, elem__129)
-    retv846 = result__130
-    return retv846
+    return result__130
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry() *_goml_vec_SubstEntry {
-    var retv857 *_goml_vec_SubstEntry
     var t858 *_goml_vec_SubstEntry = vec_new__Vec_10SubstEntry()
-    retv857 = t858
-    return retv857
+    return t858
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__128 *_goml_vec_EnvEntry, elem__129 EnvEntry) *_goml_vec_EnvEntry {
-    var retv860 *_goml_vec_EnvEntry
     var t861 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(self__128)
     var t862 int = t861 + 1
     var result__130 *_goml_vec_EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__EnvEntry(t862)
@@ -1794,8 +1558,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__128 *_gom
         }
     }
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(result__130, elem__129)
-    retv860 = result__130
-    return retv860
+    return result__130
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -1805,10 +1568,8 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__SubstEntry(capacity__125 int) *_goml_vec_SubstEntry {
-    var retv874 *_goml_vec_SubstEntry
     var t875 *_goml_vec_SubstEntry = vec_with_capacity__Vec_10SubstEntry(capacity__125)
-    retv874 = t875
-    return retv874
+    return t875
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(self__126 *_goml_vec_SubstEntry, elem__127 SubstEntry) struct{} {
@@ -1817,10 +1578,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(self__126 *_gom
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__EnvEntry(capacity__125 int) *_goml_vec_EnvEntry {
-    var retv879 *_goml_vec_EnvEntry
     var t880 *_goml_vec_EnvEntry = vec_with_capacity__Vec_8EnvEntry(capacity__125)
-    retv879 = t880
-    return retv879
+    return t880
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(self__126 *_goml_vec_EnvEntry, elem__127 EnvEntry) struct{} {
@@ -1829,9 +1588,7 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(self__126 *_goml_
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv884 string
-    retv884 = self__38
-    return retv884
+    return self__38
 }
 
 func main() {

@@ -134,10 +134,8 @@ type Result__unit__string_Err struct {
 func (_ Result__unit__string_Err) isResult__unit__string() {}
 
 func _goml_m_std_p_env_p_args() *_goml_vec_string {
-    var retv156 *_goml_vec_string
     var t157 *_goml_vec_string = _goml_runtime_std_env_args()
-    retv156 = t157
-    return retv156
+    return t157
 }
 
 func main0() struct{} {
@@ -156,23 +154,17 @@ func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__137 *_goml_vec_string) int {
-    var retv317 int
     var t318 int = vec_len__Vec_6string(self__137)
-    retv317 = t318
-    return retv317
+    return t318
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv320 string
     var t321 string = _goml_runtime_core_bool_to_string(self__37)
-    retv320 = t321
-    return retv320
+    return t321
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv326 string
-    retv326 = self__38
-    return retv326
+    return self__38
 }
 
 func main() {

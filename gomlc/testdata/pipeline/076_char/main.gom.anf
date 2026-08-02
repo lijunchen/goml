@@ -1,15 +1,12 @@
 fn main() -> unit {
-  join ret157() -> unit {
-    ()
-  } in
   let c/0 = 'A' in
   let t158 = inherent#char#char#to_string(c/0) in
   let _wild155 = println__T_string(t158) in
   let d/1 = 'b' in
   join k159(jp160: string) -> unit {
     let out/2 = jp160 in
-    let _wild156 = println__T_string(out/2) in
-    jump ret157()
+    let _wild156 = println__T_string(jp160) in
+    ()
   } in
   match d/1 {
     'a' => {
@@ -25,25 +22,16 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret161() -> unit {
-    ()
-  } in
   let t162 = trait_impl#ToString#string#to_string(value/1) in
   let t163 = @runtime(core.string_println)(t162) in
-  jump ret161()
+  ()
 }
 
 fn inherent#char#char#to_string(self/7: char) -> string {
-  join ret164(retv165: string) -> string {
-    retv165
-  } in
   let t166 = @runtime(core.char_to_string)(self/7) in
-  jump ret164(t166)
+  t166
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
-  } in
-  jump ret167(self/38)
+  self/38
 }

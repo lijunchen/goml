@@ -43,18 +43,14 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Named_i_Point_i_name(self__0 Point) string {
-    var retv160 string
-    retv160 = "point"
-    return retv160
+    return "point"
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__1 Point, prefix__2 string) string {
-    var retv162 string
     var t163 int32 = self__1.value
     var t164 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t163)
     var t165 string = prefix__2 + t164
-    retv162 = t165
-    return retv162
+    return t165
 }
 
 func render(value__3 dyn__Display) struct{} {
@@ -80,10 +76,8 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv173 string
     var t174 string = _goml_runtime_core_int32_to_string(self__6)
-    retv173 = t174
-    return retv173
+    return t174
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -93,9 +87,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv179 string
-    retv179 = self__38
-    return retv179
+    return self__38
 }
 
 func main() {

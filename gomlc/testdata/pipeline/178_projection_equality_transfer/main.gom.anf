@@ -1,72 +1,48 @@
 fn trait_impl#Mark#int32#marked(self/0: int32) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
-  } in
   let t158 = inherent#int32#int32#to_string(self/0) in
   let t159 = ("m" + t158) in
-  jump ret156(t159)
+  t159
 }
 
 fn trait_impl#Source#LeftSource#get(self/1: LeftSource) -> int32 {
-  join ret160(retv161: int32) -> int32 {
-    retv161
-  } in
   let t162 = LeftSource.value(self/1) in
-  jump ret160(t162)
+  t162
 }
 
 fn trait_impl#Source#RightSource#get(self/2: RightSource) -> int32 {
-  join ret163(retv164: int32) -> int32 {
-    retv164
-  } in
   let t165 = RightSource.value(self/2) in
-  jump ret163(t165)
+  t165
 }
 
 fn main() -> unit {
-  join ret166() -> unit {
-    ()
-  } in
   let t167 = LeftSource { value: 3 } in
   let t168 = RightSource { value: 4 } in
   let t169 = combine__A_LeftSource__B_RightSource(t167, t168) in
   let _wild155 = println__T_string(t169) in
-  jump ret166()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
-  } in
   let t172 = @runtime(core.int32_to_string)(self/6) in
-  jump ret170(t172)
+  t172
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret173() -> unit {
-    ()
-  } in
   let t174 = trait_impl#ToString#string#to_string(value/1) in
   let t175 = @runtime(core.string_println)(t174) in
-  jump ret173()
+  ()
 }
 
 fn combine__A_LeftSource__B_RightSource(left/3: LeftSource, right/4: RightSource) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
-  } in
   let t178 = trait_impl#Source#LeftSource#get(left/3) in
   let t179 = trait_impl#Mark#int32#marked(t178) in
   let t180 = (t179 + ":") in
   let t181 = trait_impl#Source#RightSource#get(right/4) in
   let t182 = trait_impl#Mark#int32#marked(t181) in
   let t183 = (t180 + t182) in
-  jump ret176(t183)
+  t183
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret184(retv185: string) -> string {
-    retv185
-  } in
-  jump ret184(self/38)
+  self/38
 }

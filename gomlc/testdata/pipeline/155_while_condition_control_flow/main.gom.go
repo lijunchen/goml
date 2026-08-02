@@ -65,16 +65,14 @@ func main0() struct{} {
         if t194 {
             var t197 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
             var t198 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t197, 1)
-            var jp196 bool
             if t198 {
-                jp196 = true
+                jp187 = true
             } else {
                 var t199 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(j__1)
                 var t200 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t199, 3)
                 var t201 bool = !t200
-                jp196 = t201
+                jp187 = t201
             }
-            jp187 = jp196
         } else {
             jp187 = false
         }
@@ -105,13 +103,11 @@ func main0() struct{} {
         case 1:
             var t183 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__4)
             var t184 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t183, 0)
-            var jp182 bool
             if t184 {
-                jp182 = true
+                jp175 = true
             } else {
-                jp182 = false
+                jp175 = false
             }
-            jp175 = jp182
         case 2:
             jp175 = true
         default:
@@ -136,17 +132,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv211 *ref_int_x
     var t212 *ref_int_x = ref__Ref_3int(value__207)
-    retv211 = t212
-    return retv211
+    return t212
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv214 int
     var t215 int = ref_get__Ref_3int(self__208)
-    retv214 = t215
-    return retv214
+    return t215
 }
 
 func println__T_int(value__1 int) struct{} {
@@ -161,17 +153,13 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, v
 }
 
 func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv222 bool
     var t223 bool = self__59 == other__60
-    retv222 = t223
-    return retv222
+    return t223
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv225 string
     var t226 string = _goml_runtime_core_int_to_string(self__40)
-    retv225 = t226
-    return retv225
+    return t226
 }
 
 func main() {

@@ -1,68 +1,50 @@
 fn configure(ok/0: bool) -> Result__unit__string {
-  join ret167(retv168: Result__unit__string) -> Result__unit__string {
-    retv168
-  } in
-  join k169(jp170: Result__unit__string) -> Result__unit__string {
-    jump ret167(jp170)
-  } in
   if ok/0 {
     let t171 = Result__unit__string::Ok(()) in
-    jump k169(t171)
+    t171
   } else {
     let t172 = Result__unit__string::Err("config failed") in
-    jump k169(t172)
+    t172
   }
 }
 
 fn read_duration(ok/1: bool) -> Result__string__string {
-  join ret173(retv174: Result__string__string) -> Result__string__string {
-    retv174
-  } in
-  join k175(jp176: Result__string__string) -> Result__string__string {
-    jump ret173(jp176)
-  } in
   if ok/1 {
     let t177 = Result__string__string::Ok("2s") in
-    jump k175(t177)
+    t177
   } else {
     let t178 = Result__string__string::Err("duration failed") in
-    jump k175(t178)
+    t178
   }
 }
 
 fn format_duration(value/2: string) -> string {
-  join ret179(retv180: string) -> string {
-    retv180
-  } in
   let t181 = ("duration=" + value/2) in
-  jump ret179(t181)
+  t181
 }
 
 fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result__string__string {
-  join ret182(retv183: Result__string__string) -> Result__string__string {
-    retv183
-  } in
   let mtmp155 = configure(config_ok/3) in
   join k184() -> Result__string__string {
     let _wild158 = () in
     let mtmp159 = read_duration(read_ok/4) in
     join k185(jp186: string) -> Result__string__string {
       let value/5 = jp186 in
-      let t187 = format_duration(value/5) in
+      let t187 = format_duration(jp186) in
       let t188 = Result__string__string::Ok(t187) in
-      jump ret182(t188)
+      t188
     } in
     match mtmp159 {
       Tag_0 => {
         let x160 = Result__string__string::Ok._0(mtmp159) in
         let try_value/27 = x160 in
-        jump k185(try_value/27)
+        jump k185(x160)
       },
       Tag_1 => {
         let x161 = Result__string__string::Err._0(mtmp159) in
         let try_residual/27 = x161 in
-        let t189 = Result__string__string::Err(try_residual/27) in
-        jump ret182(t189)
+        let t189 = Result__string__string::Err(x161) in
+        t189
       },
     }
   } in
@@ -75,39 +57,30 @@ fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result__string__s
     Tag_1 => {
       let x157 = Result__unit__string::Err._0(mtmp155) in
       let try_residual/23 = x157 in
-      let t190 = Result__string__string::Err(try_residual/23) in
-      jump ret182(t190)
+      let t190 = Result__string__string::Err(x157) in
+      t190
     },
   }
 }
 
 fn show(res/6: Result__string__string) -> string {
-  join ret191(retv192: string) -> string {
-    retv192
-  } in
-  join k193(jp194: string) -> string {
-    jump ret191(jp194)
-  } in
   match res/6 {
     Tag_0 => {
       let x162 = Result__string__string::Ok._0(res/6) in
       let value/7 = x162 in
-      let t195 = ("ok " + value/7) in
-      jump k193(t195)
+      let t195 = ("ok " + x162) in
+      t195
     },
     Tag_1 => {
       let x163 = Result__string__string::Err._0(res/6) in
       let err/8 = x163 in
-      let t196 = ("err " + err/8) in
-      jump k193(t196)
+      let t196 = ("err " + x163) in
+      t196
     },
   }
 }
 
 fn main() -> unit {
-  join ret197() -> unit {
-    ()
-  } in
   let t198 = configure_and_format(true, true) in
   let t199 = show(t198) in
   let _wild164 = println__T_string(t199) in
@@ -117,21 +90,15 @@ fn main() -> unit {
   let t202 = configure_and_format(false, true) in
   let t203 = show(t202) in
   let _wild166 = println__T_string(t203) in
-  jump ret197()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret204() -> unit {
-    ()
-  } in
   let t205 = trait_impl#ToString#string#to_string(value/1) in
   let t206 = @runtime(core.string_println)(t205) in
-  jump ret204()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret207(retv208: string) -> string {
-    retv208
-  } in
-  jump ret207(self/38)
+  self/38
 }

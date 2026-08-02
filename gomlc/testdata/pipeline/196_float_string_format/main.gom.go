@@ -48,10 +48,8 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__50 float64) string {
-    var retv176 string
     var t177 string = _goml_runtime_core_float64_to_string(self__50)
-    retv176 = t177
-    return retv176
+    return t177
 }
 
 func main() {

@@ -46,35 +46,23 @@ func main0() struct{} {
     show_int("prod=", prod__7)
     show_int("quot=", quot__8)
     var jp175 bool
-    if true {
-        jp175 = false
-    } else {
-        jp175 = false
-    }
-    var and_result__9 bool = jp175
+    jp175 = false
     var jp177 bool
-    if true {
-        jp177 = true
-    } else {
-        jp177 = false
-    }
-    var or_result__10 bool = jp177
+    jp177 = true
     var not_result__11 bool = !false
-    var t188 bool = !and_result__9
+    var t188 bool = !jp175
     var jp181 bool
     if t188 {
         var t189 int32 = prod__7 * base__4
         var t190 int32 = sum__5 + t189
         var t191 int32 = prod__7 / 2
         var mtmp161 int32 = t190 - t191
-        var jp193 bool
         switch mtmp161 {
         case 0:
-            jp193 = false
+            jp181 = false
         default:
-            jp193 = true
+            jp181 = true
         }
-        jp181 = jp193
     } else {
         jp181 = false
     }
@@ -96,11 +84,10 @@ func main0() struct{} {
         var t187 bool = !jp186
         jp179 = t187
     }
-    var mixed__12 bool = jp179
-    show_bool("and=", and_result__9)
-    show_bool("or=", or_result__10)
+    show_bool("and=", jp175)
+    show_bool("or=", jp177)
     show_bool("not=", not_result__11)
-    show_bool("mixed=", mixed__12)
+    show_bool("mixed=", jp179)
     return struct{}{}
 }
 
@@ -111,23 +98,17 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv198 string
     var t199 string = _goml_runtime_core_int32_to_string(self__6)
-    retv198 = t199
-    return retv198
+    return t199
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv201 string
     var t202 string = _goml_runtime_core_bool_to_string(self__37)
-    retv201 = t202
-    return retv201
+    return t202
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv204 string
-    retv204 = self__38
-    return retv204
+    return self__38
 }
 
 func main() {

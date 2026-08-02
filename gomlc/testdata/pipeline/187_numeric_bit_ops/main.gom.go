@@ -393,8 +393,7 @@ func casts() struct{} {
         println__T_string("invalid")
     case Some:
         var x217 rune = mtmp216.(Some)._0
-        var value__21 rune = x217
-        var t325 string = _goml_m_inherent_i_char_i_char_i_to__string(value__21)
+        var t325 string = _goml_m_inherent_i_char_i_char_i_to__string(x217)
         println__T_string(t325)
     default:
         panic("non-exhaustive match")
@@ -406,7 +405,6 @@ func casts() struct{} {
 }
 
 func contextual(value__22 uint8) uint8 {
-    var retv328 uint8
     var t329 uint8 = ^value__22
     var t330_rhs uint8 = 15
     var t330 uint8 = t329 & t330_rhs
@@ -416,8 +414,7 @@ func contextual(value__22 uint8) uint8 {
     var t332_rhs uint8 = 31
     var t332 uint8 = t331 % t332_rhs
     var t333 uint8 = t330 | t332
-    retv328 = t333
-    return retv328
+    return t333
 }
 
 func main0() struct{} {
@@ -485,106 +482,76 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv365 bool
     var t366 bool = self__59 == other__60
-    retv365 = t366
-    return retv365
+    return t366
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv368 string
     var t369 string = _goml_runtime_core_bool_to_string(self__37)
-    retv368 = t369
-    return retv368
+    return t369
 }
 
 func char_from_uint32(value__2 uint32) Option__char {
-    var retv371 Option__char
     var mtmp0 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__2)
     var x1 bool = mtmp0._0
     var x2 rune = mtmp0._1
-    var value__4 rune = x2
-    var valid__3 bool = x1
-    var jp373 Option__char
-    if valid__3 {
+    if x1 {
         var t374 Option__char = Some{
-            _0: value__4,
+            _0: x2,
         }
-        jp373 = t374
+        return t374
     } else {
-        jp373 = None{}
+        return None{}
     }
-    retv371 = jp373
-    return retv371
 }
 
 func _goml_m_inherent_i_char_i_char_i_to__string(self__7 rune) string {
-    var retv376 string
     var t377 string = _goml_runtime_core_char_to_string(self__7)
-    retv376 = t377
-    return retv376
+    return t377
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var retv379 string
     var t380 string = _goml_runtime_core_uint8_to_string(self__45)
-    retv379 = t380
-    return retv379
+    return t380
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint16_i_to__string(self__46 uint16) string {
-    var retv382 string
     var t383 string = _goml_runtime_core_uint16_to_string(self__46)
-    retv382 = t383
-    return retv382
+    return t383
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(self__47 uint32) string {
-    var retv385 string
     var t386 string = _goml_runtime_core_uint32_to_string(self__47)
-    retv385 = t386
-    return retv385
+    return t386
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__48 uint64) string {
-    var retv388 string
     var t389 string = _goml_runtime_core_uint64_to_string(self__48)
-    retv388 = t389
-    return retv388
+    return t389
 }
 
 func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__41 int8) string {
-    var retv391 string
     var t392 string = _goml_runtime_core_int8_to_string(self__41)
-    retv391 = t392
-    return retv391
+    return t392
 }
 
 func _goml_m_trait__impl_i_ToString_i_int16_i_to__string(self__42 int16) string {
-    var retv394 string
     var t395 string = _goml_runtime_core_int16_to_string(self__42)
-    retv394 = t395
-    return retv394
+    return t395
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv397 string
     var t398 string = _goml_runtime_core_int32_to_string(self__43)
-    retv397 = t398
-    return retv397
+    return t398
 }
 
 func _goml_m_trait__impl_i_ToString_i_int64_i_to__string(self__44 int64) string {
-    var retv400 string
     var t401 string = _goml_runtime_core_int64_to_string(self__44)
-    retv400 = t401
-    return retv400
+    return t401
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv403 string
-    retv403 = self__38
-    return retv403
+    return self__38
 }
 
 func main() {

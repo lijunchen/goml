@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret166() -> unit {
-    ()
-  } in
   let v/0 = inherent#Vec#Vec[T]#new__T_int32() in
   let _wild155 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
   let _wild156 = inherent#Vec#Vec[T]#push__T_int32(v/0, 20) in
@@ -23,87 +20,57 @@ fn main() -> unit {
   let _wild164 = println__T_int32(t172) in
   let t173 = inherent#Slice#Slice[T]#get__T_int32(t/2, 1) in
   let _wild165 = println__T_int32(t173) in
-  jump ret166()
+  ()
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
-  join ret174(retv175: Vec[int32]) -> Vec[int32] {
-    retv175
-  } in
   let t176 = @intrinsic(vec.new)() in
-  jump ret174(t176)
+  t176
 }
 
 fn inherent#Vec#Vec[T]#push__T_int32(self/126: Vec[int32], elem/127: int32) -> unit {
-  join ret177() -> unit {
-    ()
-  } in
   let t178 = @intrinsic(vec.push)(self/126, elem/127) in
-  jump ret177()
+  ()
 }
 
 fn inherent#Vec#Vec[T]#slice__T_int32(self/175: Vec[int32], start/176: int, end/177: int) -> Slice[int32] {
-  join ret179(retv180: Slice[int32]) -> Slice[int32] {
-    retv180
-  } in
   let t181 = @intrinsic(slice.new)(self/175, start/176, end/177) in
-  jump ret179(t181)
+  t181
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret182() -> unit {
-    ()
-  } in
   let t183 = trait_impl#ToString#int#to_string(value/1) in
   let t184 = @runtime(core.string_println)(t183) in
-  jump ret182()
+  ()
 }
 
 fn inherent#Slice#Slice[T]#len__T_int32(self/186: Slice[int32]) -> int {
-  join ret185(retv186: int) -> int {
-    retv186
-  } in
   let t187 = @intrinsic(slice.len)(self/186) in
-  jump ret185(t187)
+  t187
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret188() -> unit {
-    ()
-  } in
   let t189 = trait_impl#ToString#int32#to_string(value/1) in
   let t190 = @runtime(core.string_println)(t189) in
-  jump ret188()
+  ()
 }
 
 fn inherent#Slice#Slice[T]#get__T_int32(self/184: Slice[int32], index/185: int) -> int32 {
-  join ret191(retv192: int32) -> int32 {
-    retv192
-  } in
   let t193 = @intrinsic(slice.get)(self/184, index/185) in
-  jump ret191(t193)
+  t193
 }
 
 fn inherent#Slice#Slice[T]#sub__T_int32(self/187: Slice[int32], start/188: int, end/189: int) -> Slice[int32] {
-  join ret194(retv195: Slice[int32]) -> Slice[int32] {
-    retv195
-  } in
   let t196 = @intrinsic(slice.sub)(self/187, start/188, end/189) in
-  jump ret194(t196)
+  t196
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret197(retv198: string) -> string {
-    retv198
-  } in
   let t199 = @runtime(core.int_to_string)(self/40) in
-  jump ret197(t199)
+  t199
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret200(retv201: string) -> string {
-    retv201
-  } in
   let t202 = @runtime(core.int32_to_string)(self/43) in
-  jump ret200(t202)
+  t202
 }

@@ -1,7 +1,4 @@
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
-  join ret161(retv162: [int32; 3]) -> [int32; 3] {
-    retv162
-  } in
   let arr/1 = arr/0 in
   let place_root155 = arr/1 in
   let index156 = 1 in
@@ -10,49 +7,34 @@ fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
   let t163 = @intrinsic(array.set)(place_root155, index156, value158) in
   let t164 = arr/1 = t163 in
   let _wild159 = t164 in
-  jump ret161(arr/1)
+  arr/1
 }
 
 fn read_array(arr/2: [int32; 3]) -> int32 {
-  join ret165(retv166: int32) -> int32 {
-    retv166
-  } in
   let t167 = @intrinsic(array.get)(arr/2, 1) in
-  jump ret165(t167)
+  t167
 }
 
 fn main() -> unit {
-  join ret168() -> unit {
-    ()
-  } in
   let arr/3 = [1, 2, 3] in
   let updated/4 = update_array(arr/3) in
   let value/5 = read_array(updated/4) in
   let t169 = inherent#int32#int32#to_string(value/5) in
   let mtmp160 = println__T_string(t169) in
-  jump ret168()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret170() -> unit {
-    ()
-  } in
   let t171 = trait_impl#ToString#string#to_string(value/1) in
   let t172 = @runtime(core.string_println)(t171) in
-  jump ret170()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret173(retv174: string) -> string {
-    retv174
-  } in
   let t175 = @runtime(core.int32_to_string)(self/6) in
-  jump ret173(t175)
+  t175
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
-  } in
-  jump ret176(self/38)
+  self/38
 }

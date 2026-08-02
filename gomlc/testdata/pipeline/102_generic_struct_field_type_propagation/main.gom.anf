@@ -1,45 +1,30 @@
 fn main() -> unit {
-  join ret157() -> unit {
-    ()
-  } in
   let p/0 = Pair__uint8__float32 { first: 10, second: 3.14 } in
-  let t158 = Pair__uint8__float32.first(p/0) in
+  let t158 = 10 in
   let t159 = trait_impl#ToString#uint8#to_string(t158) in
   let _wild155 = println__T_string(t159) in
-  let t160 = Pair__uint8__float32.second(p/0) in
+  let t160 = 3.14 in
   let t161 = trait_impl#ToString#float32#to_string(t160) in
   let _wild156 = println__T_string(t161) in
-  jump ret157()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret162() -> unit {
-    ()
-  } in
   let t163 = trait_impl#ToString#string#to_string(value/1) in
   let t164 = @runtime(core.string_println)(t163) in
-  jump ret162()
+  ()
 }
 
 fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
-  join ret165(retv166: string) -> string {
-    retv166
-  } in
   let t167 = @runtime(core.uint8_to_string)(self/45) in
-  jump ret165(t167)
+  t167
 }
 
 fn trait_impl#ToString#float32#to_string(self/49: float32) -> string {
-  join ret168(retv169: string) -> string {
-    retv169
-  } in
   let t170 = @runtime(core.float32_to_string)(self/49) in
-  jump ret168(t170)
+  t170
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
-  jump ret171(self/38)
+  self/38
 }

@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret167() -> unit {
-    ()
-  } in
   let sum/0 = inherent#Ref#Ref[T]#new__T_int(0) in
   let i/1 = inherent#Ref#Ref[T]#new__T_int(1) in
   join exit168() -> unit {
@@ -16,7 +13,7 @@ fn main() -> unit {
       let mtmp165 = print__T_string("even sum: ") in
       let t171 = inherent#Ref#Ref[T]#get__T_int(even_sum/2) in
       let mtmp166 = println__T_int(t171) in
-      jump ret167()
+      ()
     } in
     joinrec {
       join loop172() -> unit {
@@ -80,74 +77,47 @@ fn main() -> unit {
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  join ret193(retv194: Ref[int]) -> Ref[int] {
-    retv194
-  } in
   let t195 = @intrinsic(ref.new)(value/207) in
-  jump ret193(t195)
+  t195
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  join ret196(retv197: int) -> int {
-    retv197
-  } in
   let t198 = @intrinsic(ref.get)(self/208) in
-  jump ret196(t198)
+  t198
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret199(retv200: bool) -> bool {
-    retv200
-  } in
   let t201 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret199(t201)
+  t201
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  join ret202() -> unit {
-    ()
-  } in
   let t203 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret202()
+  ()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  join ret204() -> unit {
-    ()
-  } in
   let t205 = trait_impl#ToString#string#to_string(value/0) in
   let t206 = @runtime(core.string_print)(t205) in
-  jump ret204()
+  ()
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret207() -> unit {
-    ()
-  } in
   let t208 = trait_impl#ToString#int#to_string(value/1) in
   let t209 = @runtime(core.string_println)(t208) in
-  jump ret207()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret210(retv211: string) -> string {
-    retv211
-  } in
-  jump ret210(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret212(retv213: string) -> string {
-    retv213
-  } in
   let t214 = @runtime(core.int_to_string)(self/40) in
-  jump ret212(t214)
+  t214
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret215(retv216: uint64) -> uint64 {
-    retv216
-  } in
   let t217 = @runtime(core.int_hash)(self/85) in
-  jump ret215(t217)
+  t217
 }

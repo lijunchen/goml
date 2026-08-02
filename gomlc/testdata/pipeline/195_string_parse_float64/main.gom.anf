@@ -1,49 +1,40 @@
 fn main() -> unit {
-  join ret169() -> unit {
-    ()
-  } in
   let mtmp155 = @runtime(core.string_parse_float64)("3.125") in
   let x156 = mtmp155.0 in
   let x157 = mtmp155.1 in
   let value/1 = x157 in
   let valid/0 = x156 in
-  let t170 = trait_impl#ToString#bool#to_string(valid/0) in
+  let t170 = trait_impl#ToString#bool#to_string(x156) in
   let _wild158 = @runtime(core.string_println)(t170) in
-  let t171 = trait_impl#ToString#float64#to_string(value/1) in
+  let t171 = trait_impl#ToString#float64#to_string(x157) in
   let _wild159 = @runtime(core.string_println)(t171) in
   let mtmp160 = @runtime(core.string_parse_float32)("3.14") in
   let x161 = mtmp160.0 in
   let x162 = mtmp160.1 in
   let rounded/3 = x162 in
   let rounded_valid/2 = x161 in
-  let t172 = trait_impl#ToString#bool#to_string(rounded_valid/2) in
+  let t172 = trait_impl#ToString#bool#to_string(x161) in
   let _wild163 = @runtime(core.string_println)(t172) in
-  let t173 = trait_impl#ToString#float64#to_string(rounded/3) in
+  let t173 = trait_impl#ToString#float64#to_string(x162) in
   let _wild164 = @runtime(core.string_println)(t173) in
   let mtmp165 = @runtime(core.string_parse_float64)("not-a-number") in
   let x166 = mtmp165.0 in
   let x167 = mtmp165.1 in
   let fallback/5 = x167 in
   let invalid/4 = x166 in
-  let t174 = trait_impl#ToString#bool#to_string(invalid/4) in
+  let t174 = trait_impl#ToString#bool#to_string(x166) in
   let _wild168 = @runtime(core.string_println)(t174) in
-  let t175 = trait_impl#ToString#float64#to_string(fallback/5) in
+  let t175 = trait_impl#ToString#float64#to_string(x167) in
   let t176 = @runtime(core.string_println)(t175) in
-  jump ret169()
+  ()
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret177(retv178: string) -> string {
-    retv178
-  } in
   let t179 = @runtime(core.bool_to_string)(self/37) in
-  jump ret177(t179)
+  t179
 }
 
 fn trait_impl#ToString#float64#to_string(self/50: float64) -> string {
-  join ret180(retv181: string) -> string {
-    retv181
-  } in
   let t182 = @runtime(core.float64_to_string)(self/50) in
-  jump ret180(t182)
+  t182
 }

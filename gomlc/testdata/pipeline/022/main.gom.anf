@@ -1,51 +1,33 @@
 fn match_string(s/0: string) -> int32 {
-  join ret160(retv161: int32) -> int32 {
-    retv161
-  } in
-  join k162(jp163: int32) -> int32 {
-    jump ret160(jp163)
-  } in
   match s/0 {
     "hello" => {
-      jump k162(1)
+      1
     },
     "world" => {
-      jump k162(2)
+      2
     },
     _ => {
-      jump k162(3)
+      3
     },
   }
 }
 
 fn wildcard_position(s/1: string) -> int32 {
-  join ret164(retv165: int32) -> int32 {
-    retv165
-  } in
-  jump ret164(4)
+  4
 }
 
 fn repeated_string(s/2: string) -> int32 {
-  join ret166(retv167: int32) -> int32 {
-    retv167
-  } in
-  join k168(jp169: int32) -> int32 {
-    jump ret166(jp169)
-  } in
   match s/2 {
     "hello" => {
-      jump k168(6)
+      6
     },
     _ => {
-      jump k168(8)
+      8
     },
   }
 }
 
 fn main() -> unit {
-  join ret170() -> unit {
-    ()
-  } in
   let t171 = match_string("hello") in
   let t172 = inherent#int32#int32#to_string(t171) in
   let mtmp155 = println__T_string(t172) in
@@ -64,29 +46,20 @@ fn main() -> unit {
   let t181 = repeated_string("mars") in
   let t182 = inherent#int32#int32#to_string(t181) in
   let t183 = println__T_string(t182) in
-  jump ret170()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret184() -> unit {
-    ()
-  } in
   let t185 = trait_impl#ToString#string#to_string(value/1) in
   let t186 = @runtime(core.string_println)(t185) in
-  jump ret184()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret187(retv188: string) -> string {
-    retv188
-  } in
   let t189 = @runtime(core.int32_to_string)(self/6) in
-  jump ret187(t189)
+  t189
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret190(retv191: string) -> string {
-    retv191
-  } in
-  jump ret190(self/38)
+  self/38
 }

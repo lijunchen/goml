@@ -23,22 +23,16 @@ func main0() struct{} {
 }
 
 func identity__T_string(value__0 string) string {
-    var retv162 string
-    retv162 = value__0
-    return retv162
+    return value__0
 }
 
 func identity__T_int32(value__0 int32) int32 {
-    var retv164 int32
-    retv164 = value__0
-    return retv164
+    return value__0
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv166 string
     var t167 string = _goml_runtime_core_int32_to_string(self__6)
-    retv166 = t167
-    return retv166
+    return t167
 }
 
 func main() {

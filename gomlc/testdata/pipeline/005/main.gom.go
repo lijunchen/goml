@@ -27,38 +27,39 @@ const (
 )
 
 func main0() struct{} {
-    var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
-        _0: Blue,
-        _1: Red,
-    }
-    var x155 Color = a__0._0
-    var x156 Color = a__0._1
+    var x155 Color = Blue
+    var x156 Color = Red
     switch x156 {
     case Red:
         switch x155 {
         case Red:
             print__T_int(1)
+            return struct{}{}
         default:
             print__T_int(3)
+            return struct{}{}
         }
     case Green:
         switch x155 {
         case Red:
             print__T_int(0)
+            return struct{}{}
         default:
             print__T_int(3)
+            return struct{}{}
         }
     case Blue:
         switch x155 {
         case Blue:
             print__T_int(2)
+            return struct{}{}
         default:
             print__T_int(3)
+            return struct{}{}
         }
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
 }
 
 func print__T_int(value__0 int) struct{} {
@@ -68,10 +69,8 @@ func print__T_int(value__0 int) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv172 string
     var t173 string = _goml_runtime_core_int_to_string(self__40)
-    retv172 = t173
-    return retv172
+    return t173
 }
 
 func main() {

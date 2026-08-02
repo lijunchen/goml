@@ -42,99 +42,75 @@ type Both struct {
 func (_ Both) isMixed() {}
 
 func match_mixed_pair(pair__0 Tuple2_5int32_6string) int32 {
-    var retv174 int32
     var x155 int32 = pair__0._0
     var x156 string = pair__0._1
-    var jp176 int32
     switch x156 {
     case "zero":
-        var jp178 int32
         switch x155 {
         case 0:
-            jp178 = 1
+            return 1
         default:
-            jp178 = 4
+            return 4
         }
-        jp176 = jp178
     case "one":
-        var jp180 int32
         switch x155 {
         case 0:
-            jp180 = 2
+            return 2
         case 1:
-            jp180 = 3
+            return 3
         default:
-            jp180 = 5
+            return 5
         }
-        jp176 = jp180
     default:
-        var jp182 int32
         switch x155 {
         case 0:
-            jp182 = 2
+            return 2
         default:
-            jp182 = 5
+            return 5
         }
-        jp176 = jp182
     }
-    retv174 = jp176
-    return retv174
 }
 
 func match_mixed_enum(value__1 Mixed) int32 {
-    var retv184 int32
-    var jp186 int32
     switch value__1.(type) {
     case OnlyInt:
         var x157 int32 = value__1.(OnlyInt)._0
-        var jp188 int32
         switch x157 {
         case 0:
-            jp188 = 6
+            return 6
         default:
-            jp188 = 7
+            return 7
         }
-        jp186 = jp188
     case OnlyStr:
         var x158 string = value__1.(OnlyStr)._0
-        var jp190 int32
         switch x158 {
         case "zero":
-            jp190 = 8
+            return 8
         default:
-            jp190 = 9
+            return 9
         }
-        jp186 = jp190
     case Both:
         var x159 int32 = value__1.(Both)._0
         var x160 string = value__1.(Both)._1
-        var jp192 int32
         switch x160 {
         case "zero":
-            var jp194 int32
             switch x159 {
             case 0:
-                jp194 = 10
+                return 10
             default:
-                jp194 = 12
+                return 12
             }
-            jp192 = jp194
         default:
-            var jp196 int32
             switch x159 {
             case 0:
-                jp196 = 11
+                return 11
             default:
-                jp196 = 13
+                return 13
             }
-            jp192 = jp196
         }
-        jp186 = jp192
     default:
         panic("non-exhaustive match")
     }
-    retv184 = jp186
-    return retv184
 }
 
 func main0() struct{} {
@@ -235,16 +211,12 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv242 string
     var t243 string = _goml_runtime_core_int32_to_string(self__6)
-    retv242 = t243
-    return retv242
+    return t243
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv245 string
-    retv245 = self__38
-    return retv245
+    return self__38
 }
 
 func main() {

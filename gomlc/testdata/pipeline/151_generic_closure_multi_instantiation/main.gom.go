@@ -60,36 +60,28 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv172 string
     var t173 string = _goml_runtime_core_int_to_string(self__40)
-    retv172 = t173
-    return retv172
+    return t173
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv175 string
-    retv175 = self__38
-    return retv175
+    return self__38
 }
 
 func _goml_m_inherent_i_closure__en_h7caa8560de0ac6116c19c6efbb6b4ada__int__0_i_apply(env157 closure_env_make_pairer_T_int_0, tag__1 string) string {
-    var retv177 string
     var x__0 int = env157.x_0
     var t178 string = tag__1 + ":"
     var t179 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x__0)
     var t180 string = t178 + t179
-    retv177 = t180
-    return retv177
+    return t180
 }
 
 func _goml_m_inherent_i_closure__en_h0926de79f2e12e90a6ce0e3536cf7f8d_ring__1_i_apply(env158 closure_env_make_pairer_T_string_1, tag__1 string) string {
-    var retv182 string
     var x__0 string = env158.x_0
     var t183 string = tag__1 + ":"
     var t184 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x__0)
     var t185 string = t183 + t184
-    retv182 = t185
-    return retv182
+    return t185
 }
 
 func main() {

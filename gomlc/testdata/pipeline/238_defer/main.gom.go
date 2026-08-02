@@ -73,34 +73,27 @@ type Some struct {
 func (_ Some) isOption__int() {}
 
 func early_return() int {
-    var retv206 int
     var defer_return155 int = 7
     println__T_string("return:inner")
     println__T_string("return:outer")
-    retv206 = defer_return155
-    return retv206
+    return defer_return155
 }
 
 func maybe(value__0 Option__int) Option__int {
-    var retv208 Option__int
     var jp210 int
     switch value__0.(type) {
     case None:
         var defer_return164 Option__int = None{}
         println__T_string("try:cleanup")
-        retv208 = defer_return164
-        return retv208
+        return defer_return164
     case Some:
         var x163 int = value__0.(Some)._0
-        var try_value__15 int = x163
-        jp210 = try_value__15
-        var number__1 int = jp210
+        jp210 = x163
         var defer_result166 Option__int = Some{
-            _0: number__1,
+            _0: jp210,
         }
         println__T_string("try:cleanup")
-        retv208 = defer_result166
-        return retv208
+        return defer_result166
     default:
         panic("non-exhaustive match")
     }
@@ -153,31 +146,17 @@ func observed_at_exit() struct{} {
 }
 
 func pattern_cleanup(value__5 Option__int) int {
-    var retv231 int
-    var mtmp177 Option__int = value__5
-    var jp233 int
-    switch mtmp177.(type) {
+    switch value__5.(type) {
     case Some:
-        var x179 int = mtmp177.(Some)._0
-        var number__6 int = x179
-        var mtmp180 Tuple2_3int_3int = Tuple2_3int_3int{
-            _0: number__6,
-            _1: 2,
-        }
-        var x181 int = mtmp180._0
-        var x182 int = mtmp180._1
-        var right__8 int = x182
-        var left__7 int = x181
-        var defer_tast_result178 int = left__7 + right__8
+        var x179 int = value__5.(Some)._0
+        var x182 int = 2
+        var defer_tast_result178 int = x179 + x182
         println__T_string("pattern:cleanup")
-        jp233 = defer_tast_result178
-        retv231 = jp233
-        return retv231
+        return defer_tast_result178
     default:
         var defer_return184 int = 0
         println__T_string("pattern:cleanup")
-        retv231 = defer_return184
-        return retv231
+        return defer_return184
     }
 }
 
@@ -220,17 +199,13 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv247 *ref_int_x
     var t248 *ref_int_x = ref__Ref_3int(value__207)
-    retv247 = t248
-    return retv247
+    return t248
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv250 int
     var t251 int = ref_get__Ref_3int(self__208)
-    retv250 = t251
-    return retv250
+    return t251
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
@@ -239,24 +214,18 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, v
 }
 
 func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv255 bool
     var t256 bool = self__59 == other__60
-    retv255 = t256
-    return retv255
+    return t256
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv258 string
     var t259 string = _goml_runtime_core_int_to_string(self__5)
-    retv258 = t259
-    return retv258
+    return t259
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__207 string) *ref_string_x {
-    var retv261 *ref_string_x
     var t262 *ref_string_x = ref__Ref_6string(value__207)
-    retv261 = t262
-    return retv261
+    return t262
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__209 *ref_string_x, value__210 string) struct{} {
@@ -265,16 +234,12 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__209 *ref_strin
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__208 *ref_string_x) string {
-    var retv266 string
     var t267 string = ref_get__Ref_6string(self__208)
-    retv266 = t267
-    return retv266
+    return t267
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv269 string
-    retv269 = self__38
-    return retv269
+    return self__38
 }
 
 func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env204 closure_env_run_0) struct{} {

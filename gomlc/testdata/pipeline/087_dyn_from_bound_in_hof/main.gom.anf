@@ -1,28 +1,19 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret157(retv158: string) -> string {
-    retv158
-  } in
   let t159 = inherent#int32#int32#to_string(self/0) in
-  jump ret157(t159)
+  t159
 }
 
 fn main() -> unit {
-  join ret160() -> unit {
-    ()
-  } in
   let value/3 = 42 in
   let f/4 = mk_renderer__T_int32(value/3) in
   let t161 = f/4() in
   let _wild155 = println__T_string(t161) in
-  jump ret160()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret162(retv163: string) -> string {
-    retv163
-  } in
   let t164 = @runtime(core.int32_to_string)(self/6) in
-  jump ret162(t164)
+  t164
 }
 
 fn mk_renderer__T_int32(x/1: int32) -> () -> string {
@@ -35,26 +26,17 @@ fn mk_renderer__T_int32(x/1: int32) -> () -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret168() -> unit {
-    ()
-  } in
   let t169 = trait_impl#ToString#string#to_string(value/1) in
   let t170 = @runtime(core.string_println)(t169) in
-  jump ret168()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
-  jump ret171(self/38)
+  self/38
 }
 
 fn inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply(env156: closure_env_mk_renderer_T_int32_0) -> string {
-  join ret173(retv174: string) -> string {
-    retv174
-  } in
   let d/2 = closure_env_mk_renderer_T_int32_0.d_0(env156) in
   let t175 = dyn_call[Display::show](d/2) in
-  jump ret173(t175)
+  t175
 }

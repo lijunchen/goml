@@ -119,17 +119,13 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__207 bool) *ref_bool_x {
-    var retv172 *ref_bool_x
     var t173 *ref_bool_x = ref__Ref_4bool(value__207)
-    retv172 = t173
-    return retv172
+    return t173
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__208 *ref_bool_x) bool {
-    var retv175 bool
     var t176 bool = ref_get__Ref_4bool(self__208)
-    retv175 = t176
-    return retv175
+    return t176
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__209 *ref_bool_x, value__210 bool) struct{} {

@@ -1,12 +1,9 @@
 fn main() -> unit {
-  join ret158() -> unit {
-    ()
-  } in
   let running/0 = inherent#Ref#Ref[T]#new__T_bool(true) in
   join exit159() -> unit {
     let _wild157 = () in
     let t160 = @runtime(core.string_println)("ok") in
-    jump ret158()
+    ()
   } in
   joinrec {
     join loop161() -> unit {
@@ -70,47 +67,29 @@ fn main() -> unit {
 }
 
 fn inherent#Ref#Ref[T]#new__T_bool(value/207: bool) -> Ref[bool] {
-  join ret171(retv172: Ref[bool]) -> Ref[bool] {
-    retv172
-  } in
   let t173 = @intrinsic(ref.new)(value/207) in
-  jump ret171(t173)
+  t173
 }
 
 fn inherent#Ref#Ref[T]#get__T_bool(self/208: Ref[bool]) -> bool {
-  join ret174(retv175: bool) -> bool {
-    retv175
-  } in
   let t176 = @intrinsic(ref.get)(self/208) in
-  jump ret174(t176)
+  t176
 }
 
 fn inherent#Ref#Ref[T]#set__T_bool(self/209: Ref[bool], value/210: bool) -> unit {
-  join ret177() -> unit {
-    ()
-  } in
   let t178 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret177()
+  ()
 }
 
 fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
-  join ret179(retv180: bool) -> bool {
-    retv180
-  } in
   let t181 = @intrinsic(eq.primitive)(self/53, other/54) in
-  jump ret179(t181)
+  t181
 }
 
 fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {
-  join ret182(retv183: uint64) -> uint64 {
-    retv183
-  } in
-  join k184(jp185: uint64) -> uint64 {
-    jump ret182(jp185)
-  } in
   if self/82 {
-    jump k184(1)
+    1
   } else {
-    jump k184(0)
+    0
   }
 }

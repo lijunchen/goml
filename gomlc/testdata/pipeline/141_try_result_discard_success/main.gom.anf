@@ -1,92 +1,68 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
-  join ret163(retv164: Result__string__string) -> Result__string__string {
-    retv164
-  } in
-  join k165(jp166: Result__string__string) -> Result__string__string {
-    jump ret163(jp166)
-  } in
   if ok/0 {
     let t167 = Result__string__string::Ok("ignored") in
-    jump k165(t167)
+    t167
   } else {
     let t168 = Result__string__string::Err("parse failed") in
-    jump k165(t168)
+    t168
   }
 }
 
 fn check(ok/1: bool) -> Result__string__string {
-  join ret169(retv170: Result__string__string) -> Result__string__string {
-    retv170
-  } in
   let mtmp155 = parse_text(ok/1) in
   join k171(jp172: string) -> Result__string__string {
     let mtmp158 = jp172 in
     let t173 = Result__string__string::Ok("ok") in
-    jump ret169(t173)
+    t173
   } in
   match mtmp155 {
     Tag_0 => {
       let x156 = Result__string__string::Ok._0(mtmp155) in
       let try_value/12 = x156 in
-      jump k171(try_value/12)
+      jump k171(x156)
     },
     Tag_1 => {
       let x157 = Result__string__string::Err._0(mtmp155) in
       let try_residual/12 = x157 in
-      let t174 = Result__string__string::Err(try_residual/12) in
-      jump ret169(t174)
+      let t174 = Result__string__string::Err(x157) in
+      t174
     },
   }
 }
 
 fn show(res/2: Result__string__string) -> string {
-  join ret175(retv176: string) -> string {
-    retv176
-  } in
-  join k177(jp178: string) -> string {
-    jump ret175(jp178)
-  } in
   match res/2 {
     Tag_0 => {
       let x159 = Result__string__string::Ok._0(res/2) in
       let value/3 = x159 in
-      let t179 = ("ok " + value/3) in
-      jump k177(t179)
+      let t179 = ("ok " + x159) in
+      t179
     },
     Tag_1 => {
       let x160 = Result__string__string::Err._0(res/2) in
       let err/4 = x160 in
-      let t180 = ("err " + err/4) in
-      jump k177(t180)
+      let t180 = ("err " + x160) in
+      t180
     },
   }
 }
 
 fn main() -> unit {
-  join ret181() -> unit {
-    ()
-  } in
   let t182 = check(true) in
   let t183 = show(t182) in
   let _wild161 = println__T_string(t183) in
   let t184 = check(false) in
   let t185 = show(t184) in
   let _wild162 = println__T_string(t185) in
-  jump ret181()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret186() -> unit {
-    ()
-  } in
   let t187 = trait_impl#ToString#string#to_string(value/1) in
   let t188 = @runtime(core.string_println)(t187) in
-  jump ret186()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret189(retv190: string) -> string {
-    retv190
-  } in
-  jump ret189(self/38)
+  self/38
 }

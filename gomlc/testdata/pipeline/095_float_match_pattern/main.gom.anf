@@ -1,33 +1,24 @@
 fn classify(x/0: float64) -> string {
-  join ret160(retv161: string) -> string {
-    retv161
-  } in
-  join k162(jp163: string) -> string {
-    jump ret160(jp163)
-  } in
   match x/0 {
     0 => {
-      jump k162("zero")
+      "zero"
     },
     1 => {
-      jump k162("one")
+      "one"
     },
     -1 => {
-      jump k162("minus one")
+      "minus one"
     },
     3.14 => {
-      jump k162("pi")
+      "pi"
     },
     _ => {
-      jump k162("other")
+      "other"
     },
   }
 }
 
 fn main() -> unit {
-  join ret164() -> unit {
-    ()
-  } in
   let t165 = classify(0) in
   let _wild155 = println__T_string(t165) in
   let t166 = classify(1) in
@@ -39,21 +30,15 @@ fn main() -> unit {
   let _wild158 = println__T_string(t169) in
   let t170 = classify(42) in
   let _wild159 = println__T_string(t170) in
-  jump ret164()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret171() -> unit {
-    ()
-  } in
   let t172 = trait_impl#ToString#string#to_string(value/1) in
   let t173 = @runtime(core.string_println)(t172) in
-  jump ret171()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret174(retv175: string) -> string {
-    retv175
-  } in
-  jump ret174(self/38)
+  self/38
 }

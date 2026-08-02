@@ -23,95 +23,71 @@ type Counter struct {
 }
 
 func is_flag8(value__0 uint8) bool {
-    var retv159 bool
-    var jp161 bool
     switch value__0 {
     case 0:
-        jp161 = true
+        return true
     case 200:
-        jp161 = true
+        return true
     default:
-        jp161 = false
+        return false
     }
-    retv159 = jp161
-    return retv159
 }
 
 func is_flag16(value__1 uint16) bool {
-    var retv163 bool
-    var jp165 bool
     switch value__1 {
     case 1024:
-        jp165 = true
+        return true
     case 65000:
-        jp165 = true
+        return true
     default:
-        jp165 = false
+        return false
     }
-    retv163 = jp165
-    return retv163
 }
 
 func is_flag32(value__2 uint32) bool {
-    var retv167 bool
-    var jp169 bool
     switch value__2 {
     case 4000000000:
-        jp169 = true
+        return true
     case 1234567890:
-        jp169 = true
+        return true
     default:
-        jp169 = false
+        return false
     }
-    retv167 = jp169
-    return retv167
 }
 
 func is_flag64(value__3 uint64) bool {
-    var retv171 bool
-    var jp173 bool
     switch value__3 {
     case 900000000:
-        jp173 = true
+        return true
     case 600000000:
-        jp173 = true
+        return true
     default:
-        jp173 = false
+        return false
     }
-    retv171 = jp173
-    return retv171
 }
 
 func match_struct(counter__4 Counter) bool {
-    var retv175 bool
     var x155 uint32 = counter__4.start
     var x156 uint64 = counter__4.end
-    var jp177 bool
     switch x156 {
     case 900000000:
-        var jp179 bool
         switch x155 {
         case 4000000000:
-            jp179 = true
+            return true
         default:
-            jp179 = false
+            return false
         }
-        jp177 = jp179
     case 600000000:
-        jp177 = true
+        return true
     default:
-        jp177 = false
+        return false
     }
-    retv175 = jp177
-    return retv175
 }
 
 func report(label__5 string, value__6 bool) string {
-    var retv181 string
     var t182 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__6)
     var t183 string = label__5 + t182
-    retv181 = t183
-    return retv181
+    return t183
 }
 
 func main0() struct{} {
@@ -157,10 +133,8 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv214 string
     var t215 string = _goml_runtime_core_bool_to_string(self__37)
-    retv214 = t215
-    return retv214
+    return t215
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -170,9 +144,7 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv220 string
-    retv220 = self__38
-    return retv220
+    return self__38
 }
 
 func main() {

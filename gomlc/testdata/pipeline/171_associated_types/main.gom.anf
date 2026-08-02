@@ -1,15 +1,9 @@
 fn trait_impl#Provider#Number#get(self/0: Number) -> int32 {
-  join ret158(retv159: int32) -> int32 {
-    retv159
-  } in
   let t160 = Number.value(self/0) in
-  jump ret158(t160)
+  t160
 }
 
 fn main() -> unit {
-  join ret161() -> unit {
-    ()
-  } in
   let t162 = Number { value: 42 } in
   let t163 = read__P_Number(t162) in
   let t164 = inherent#int32#int32#to_string(t163) in
@@ -25,45 +19,30 @@ fn main() -> unit {
   let t170 = trait_impl#Provider#Number#get(t169) in
   let t171 = inherent#int32#int32#to_string(t170) in
   let t172 = @runtime(core.string_println)(t171) in
-  jump ret161()
+  ()
 }
 
 fn read__P_Number(provider/2: Number) -> int32 {
-  join ret173(retv174: int32) -> int32 {
-    retv174
-  } in
   let t175 = trait_impl#Provider#Number#get(provider/2) in
-  jump ret173(t175)
+  t175
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
-  } in
   let t178 = @runtime(core.int32_to_string)(self/6) in
-  jump ret176(t178)
+  t178
 }
 
 fn read_as__P_Number__T_int32(provider/3: Number) -> int32 {
-  join ret179(retv180: int32) -> int32 {
-    retv180
-  } in
   let t181 = trait_impl#Provider#Number#get(provider/3) in
-  jump ret179(t181)
+  t181
 }
 
 fn read__P_Box[string](provider/2: Box__string) -> string {
-  join ret182(retv183: string) -> string {
-    retv183
-  } in
   let t184 = trait_impl#Provider#Box__string#get(provider/2) in
-  jump ret182(t184)
+  t184
 }
 
 fn trait_impl#Provider#Box__string#get(self/1: Box__string) -> string {
-  join ret185(retv186: string) -> string {
-    retv186
-  } in
   let t187 = Box__string.value(self/1) in
-  jump ret185(t187)
+  t187
 }

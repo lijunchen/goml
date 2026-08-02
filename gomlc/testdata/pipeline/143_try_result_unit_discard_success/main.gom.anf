@@ -1,28 +1,19 @@
 fn step(ok/0: bool) -> Result__unit__string {
-  join ret163(retv164: Result__unit__string) -> Result__unit__string {
-    retv164
-  } in
-  join k165(jp166: Result__unit__string) -> Result__unit__string {
-    jump ret163(jp166)
-  } in
   if ok/0 {
     let t167 = Result__unit__string::Ok(()) in
-    jump k165(t167)
+    t167
   } else {
     let t168 = Result__unit__string::Err("step failed") in
-    jump k165(t168)
+    t168
   }
 }
 
 fn run(ok/1: bool) -> Result__unit__string {
-  join ret169(retv170: Result__unit__string) -> Result__unit__string {
-    retv170
-  } in
   let mtmp155 = step(ok/1) in
   join k171() -> Result__unit__string {
     let mtmp158 = () in
     let t172 = Result__unit__string::Ok(()) in
-    jump ret169(t172)
+    t172
   } in
   match mtmp155 {
     Tag_0 => {
@@ -33,65 +24,47 @@ fn run(ok/1: bool) -> Result__unit__string {
     Tag_1 => {
       let x157 = Result__unit__string::Err._0(mtmp155) in
       let try_residual/12 = x157 in
-      let t173 = Result__unit__string::Err(try_residual/12) in
-      jump ret169(t173)
+      let t173 = Result__unit__string::Err(x157) in
+      t173
     },
   }
 }
 
 fn show(res/2: Result__unit__string) -> string {
-  join ret174(retv175: string) -> string {
-    retv175
-  } in
-  join k176(jp177: string) -> string {
-    jump ret174(jp177)
-  } in
   match res/2 {
     Tag_0 => {
       let x159 = Result__unit__string::Ok._0(res/2) in
-      join k178(jp179: string) -> string {
-        jump k176(jp179)
-      } in
       match x159 {
         () => {
-          jump k178("ok unit")
+          "ok unit"
         },
       }
     },
     Tag_1 => {
       let x160 = Result__unit__string::Err._0(res/2) in
       let err/3 = x160 in
-      let t180 = ("err " + err/3) in
-      jump k176(t180)
+      let t180 = ("err " + x160) in
+      t180
     },
   }
 }
 
 fn main() -> unit {
-  join ret181() -> unit {
-    ()
-  } in
   let t182 = run(true) in
   let t183 = show(t182) in
   let _wild161 = println__T_string(t183) in
   let t184 = run(false) in
   let t185 = show(t184) in
   let _wild162 = println__T_string(t185) in
-  jump ret181()
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret186() -> unit {
-    ()
-  } in
   let t187 = trait_impl#ToString#string#to_string(value/1) in
   let t188 = @runtime(core.string_println)(t187) in
-  jump ret186()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret189(retv190: string) -> string {
-    retv190
-  } in
-  jump ret189(self/38)
+  self/38
 }

@@ -1,61 +1,40 @@
 fn my_int_equal(x/0: int32, y/1: int32) -> bool {
-  join ret155(retv156: bool) -> bool {
-    retv156
-  } in
   let t159 = (x/0 < y/1) in
   let t160 = (!t159) in
-  join k157(jp158: bool) -> bool {
-    jump ret155(jp158)
-  } in
   if t160 {
     let t161 = (y/1 < x/0) in
     let t162 = (!t161) in
-    jump k157(t162)
+    t162
   } else {
-    jump k157(false)
+    false
   }
 }
 
 fn sum(n/2: int32) -> int32 {
-  join ret163(retv164: int32) -> int32 {
-    retv164
-  } in
   let t167 = my_int_equal(n/2, 1) in
-  join k165(jp166: int32) -> int32 {
-    jump ret163(jp166)
-  } in
   if t167 {
-    jump k165(1)
+    1
   } else {
     let t168 = (n/2 - 1) in
     let t169 = sum(t168) in
     let t170 = (n/2 + t169) in
-    jump k165(t170)
+    t170
   }
 }
 
 fn main() -> unit {
-  join ret171() -> unit {
-    ()
-  } in
   let t172 = sum(100) in
   let t173 = println__T_int32(t172) in
-  jump ret171()
+  ()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret174() -> unit {
-    ()
-  } in
   let t175 = trait_impl#ToString#int32#to_string(value/1) in
   let t176 = @runtime(core.string_println)(t175) in
-  jump ret174()
+  ()
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret177(retv178: string) -> string {
-    retv178
-  } in
   let t179 = @runtime(core.int32_to_string)(self/43) in
-  jump ret177(t179)
+  t179
 }

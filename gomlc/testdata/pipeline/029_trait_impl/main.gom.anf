@@ -1,51 +1,33 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  join ret159(retv160: string) -> string {
-    retv160
-  } in
-  jump ret159("Point")
+  "Point"
 }
 
 fn trait_impl#Display#Maybe__int32#show(self/1: Maybe__int32) -> string {
-  join ret161(retv162: string) -> string {
-    retv162
-  } in
-  join k163(jp164: string) -> string {
-    jump ret161(jp164)
-  } in
   match self/1 {
     Tag_0 => {
       let x155 = Maybe__int32::Just._0(self/1) in
       let value/2 = x155 in
-      let t165 = inherent#int32#int32#to_string(value/2) in
+      let t165 = inherent#int32#int32#to_string(x155) in
       let t166 = ("Just(" + t165) in
       let t167 = (t166 + ")") in
-      jump k163(t167)
+      t167
     },
     Tag_1 => {
-      jump k163("Nothing")
+      "Nothing"
     },
   }
 }
 
 fn make_maybe(flag/3: bool) -> Maybe__int32 {
-  join ret168(retv169: Maybe__int32) -> Maybe__int32 {
-    retv169
-  } in
-  join k170(jp171: Maybe__int32) -> Maybe__int32 {
-    jump ret168(jp171)
-  } in
   if flag/3 {
     let t172 = Maybe__int32::Just(42) in
-    jump k170(t172)
+    t172
   } else {
-    jump k170(Tag_1)
+    Tag_1
   }
 }
 
 fn main() -> unit {
-  join ret173() -> unit {
-    ()
-  } in
   let point/4 = Point { x: 1, y: 2 } in
   let some_number/5 = make_maybe(true) in
   let none_number/6 = make_maybe(false) in
@@ -55,29 +37,20 @@ fn main() -> unit {
   let mtmp157 = println__T_string(t175) in
   let t176 = trait_impl#Display#Maybe__int32#show(none_number/6) in
   let mtmp158 = println__T_string(t176) in
-  jump ret173()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret177(retv178: string) -> string {
-    retv178
-  } in
   let t179 = @runtime(core.int32_to_string)(self/6) in
-  jump ret177(t179)
+  t179
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret180() -> unit {
-    ()
-  } in
   let t181 = trait_impl#ToString#string#to_string(value/1) in
   let t182 = @runtime(core.string_println)(t181) in
-  jump ret180()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret183(retv184: string) -> string {
-    retv184
-  } in
-  jump ret183(self/38)
+  self/38
 }

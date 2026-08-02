@@ -115,34 +115,26 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv189 string
     var t190 string = _goml_runtime_core_int32_to_string(self__6)
-    retv189 = t190
-    return retv189
+    return t190
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv192 string
-    retv192 = self__38
-    return retv192
+    return self__38
 }
 
 func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env166 closure_env_f_0, x__2 int32) int32 {
-    var retv194 int32
     var y__0 int32 = env166.y_0
     var z__1 int32 = env166.z_1
     var t195 int32 = x__2 * y__0
     var t196 int32 = t195 * z__1
-    retv194 = t196
-    return retv194
+    return t196
 }
 
 func _goml_m_inherent_i_closure__en_he0443db01d9642f998bbe31aa65b7a79_base__1_i_apply(env167 closure_env_add_base_1, x__7 int32) int32 {
-    var retv198 int32
     var base__6 int32 = env167.base_0
     var t199 int32 = x__7 + base__6
-    retv198 = t199
-    return retv198
+    return t199
 }
 
 func _goml_m_inherent_i_closure__env__printer__2_i_closure__env__printer__2_i_apply(env168 closure_env_printer_2, prefix__10 string, value__11 int32) struct{} {
@@ -153,10 +145,8 @@ func _goml_m_inherent_i_closure__env__printer__2_i_closure__env__printer__2_i_ap
 }
 
 func _goml_m_inherent_i_closure__en_ha32319a3d33750b05233a1c4e08c6ec1_ture__4_i_apply(env170 closure_env_no_capture_4, z__16 int32) int32 {
-    var retv207 int32
     var t208 int32 = z__16 * 2
-    retv207 = t208
-    return retv207
+    return t208
 }
 
 func _goml_m_inherent_i_closure__en_h53641d12fbb745a3fbb1e4782f631152_oint__5_i_apply(env171 closure_env_play_list_and_point_5) struct{} {
@@ -165,26 +155,24 @@ func _goml_m_inherent_i_closure__en_h53641d12fbb745a3fbb1e4782f631152_oint__5_i_
     switch list123__19.(type) {
     case Nil:
         println__T_string("Empty list")
+        return struct{}{}
     case Cons:
         var x159 int32 = list123__19.(Cons)._0
-        var head__21 int32 = x159
-        var t212 string = _goml_m_inherent_i_int32_i_int32_i_to__string(head__21)
+        var t212 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x159)
         println__T_string(t212)
         var x162 int32 = point__20.x
         var x163 int32 = point__20.y
-        var y__24 int32 = x163
-        var x__23 int32 = x162
-        var t213 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__23)
+        var t213 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x162)
         var t214 string = "Point: (" + t213
         var t215 string = t214 + ", "
-        var t216 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__24)
+        var t216 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x163)
         var t217 string = t215 + t216
         var t218 string = t217 + ")"
         println__T_string(t218)
+        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
 }
 
 func main() {

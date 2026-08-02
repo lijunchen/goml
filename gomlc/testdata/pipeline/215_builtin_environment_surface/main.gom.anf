@@ -1,7 +1,4 @@
 fn main() -> unit {
-  join ret164() -> unit {
-    ()
-  } in
   let native/0 = 7 in
   let small/1 = 8 in
   let unsigned/2 = 9 in
@@ -44,17 +41,14 @@ fn main() -> unit {
   let t185 = inherent#int#int#to_string(total/13) in
   let t186 = (t184 + t185) in
   let t187 = println__T_string(t186) in
-  jump ret164()
+  ()
 }
 
 fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int, initial/118: int, combine/119: (int, int) -> int) -> int {
-  join ret188(retv189: int) -> int {
-    retv189
-  } in
   let accumulator/120 = initial/118 in
   join exit190() -> int {
     let _wild32 = () in
-    jump ret188(accumulator/120)
+    accumulator/120
   } in
   joinrec {
     join loop_expr191() -> int {
@@ -70,7 +64,7 @@ fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int,
         Tag_1 => {
           let x29 = Option__int::Some._0(mtmp28) in
           let value/121 = x29 in
-          let t193 = combine/119(accumulator/120, value/121) in
+          let t193 = combine/119(accumulator/120, x29) in
           let _wild30 = accumulator/120 = t193 in
           jump k192()
         },
@@ -81,137 +75,89 @@ fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int,
 }
 
 fn range(start/222: int, end/223: int) -> FnIterator__int {
-  join ret194(retv195: FnIterator__int) -> FnIterator__int {
-    retv195
-  } in
   let t196 = __goml_builtin_range(start/222, end/223) in
-  jump ret194(t196)
+  t196
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret197() -> unit {
-    ()
-  } in
   let t198 = trait_impl#ToString#string#to_string(value/1) in
   let t199 = @runtime(core.string_println)(t198) in
-  jump ret197()
+  ()
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret200(retv201: string) -> string {
-    retv201
-  } in
   let t202 = @runtime(core.bool_to_string)(self/37) in
-  jump ret200(t202)
+  t202
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret203(retv204: string) -> string {
-    retv204
-  } in
   let t205 = @runtime(core.int32_to_string)(self/6) in
-  jump ret203(t205)
+  t205
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret206(retv207: string) -> string {
-    retv207
-  } in
   let t208 = @runtime(core.int_to_string)(self/5) in
-  jump ret206(t208)
+  t208
 }
 
 fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
-  join ret209(retv210: Option__int) -> Option__int {
-    retv210
-  } in
   let t211 = FnIterator__int.next_fn(self/102) in
   let t212 = t211() in
-  jump ret209(t212)
+  t212
 }
 
 fn __goml_builtin_range(start/218: int, end/219: int) -> FnIterator__int {
-  join ret213(retv214: FnIterator__int) -> FnIterator__int {
-    retv214
-  } in
   let current/220 = @intrinsic(ref.new)(start/218) in
   let t215 = closure_env_goml_builtin_range_1 { current_0: current/220, end_1: end/219 } in
   let t216 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(t215) in
-  jump ret213(t216)
+  t216
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret217(retv218: string) -> string {
-    retv218
-  } in
-  jump ret217(self/38)
+  self/38
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(next_fn/101: () -> Option__int) -> FnIterator__int {
-  join ret219(retv220: FnIterator__int) -> FnIterator__int {
-    retv220
-  } in
   let t221 = FnIterator__int { next_fn: next_fn/101 } in
-  jump ret219(t221)
+  t221
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret222(retv223: bool) -> bool {
-    retv223
-  } in
   let t224 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret222(t224)
+  t224
 }
 
 fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret225(retv226: uint64) -> uint64 {
-    retv226
-  } in
   let t227 = @runtime(core.int32_hash)(self/88) in
-  jump ret225(t227)
+  t227
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret228(retv229: bool) -> bool {
-    retv229
-  } in
   let t230 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret228(t230)
+  t230
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret231(retv232: uint64) -> uint64 {
-    retv232
-  } in
   let t233 = @runtime(core.int_hash)(self/85) in
-  jump ret231(t233)
+  t233
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(env162: closure_env_main_0, sum/11: int, item/12: int) -> int {
-  join ret234(retv235: int) -> int {
-    retv235
-  } in
   let t236 = (sum/11 + item/12) in
-  jump ret234(t236)
+  t236
 }
 
 fn inherent#closure_env_goml_builtin_range_1#closure_env_goml_builtin_range_1#apply(env163: closure_env_goml_builtin_range_1) -> Option__int {
-  join ret237(retv238: Option__int) -> Option__int {
-    retv238
-  } in
   let current/220 = closure_env_goml_builtin_range_1.current_0(env163) in
   let end/219 = closure_env_goml_builtin_range_1.end_1(env163) in
   let value/221 = @intrinsic(ref.get)(current/220) in
   let t241 = (value/221 < end/219) in
-  join k239(jp240: Option__int) -> Option__int {
-    jump ret237(jp240)
-  } in
   if t241 {
     let t242 = (value/221 + 1) in
     let _wild104 = @intrinsic(ref.set)(current/220, t242) in
     let t243 = Option__int::Some(value/221) in
-    jump k239(t243)
+    t243
   } else {
-    jump k239(Tag_0)
+    Tag_0
   }
 }

@@ -21,30 +21,24 @@ func _goml_runtime_core_string_println(s string) struct{} {
 type closure_env_f_0 struct {}
 
 func early(x__0 int32) int32 {
-    var retv174 int32
     var t179 bool = x__0 < 0
     if t179 {
-        retv174 = 0
-        return retv174
+        return 0
     } else {
         var t178 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(x__0, 0)
         if t178 {
-            retv174 = 1
-            return retv174
+            return 1
         } else {
             var t177 int32 = x__0 + 2
-            retv174 = t177
-            return retv174
+            return t177
         }
     }
 }
 
 func closure_early(x__1 int32) int32 {
-    var retv181 int32
     var f__3 closure_env_f_0 = closure_env_f_0{}
     var t182 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__3, x__1)
-    retv181 = t182
-    return retv181
+    return t182
 }
 
 func unit_ret(flag__4 bool) struct{} {
@@ -78,10 +72,8 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__65 int32, other__66 int32) bool {
-    var retv192 bool
     var t193 bool = self__65 == other__66
-    retv192 = t193
-    return retv192
+    return t193
 }
 
 func println__T_string(value__1 string) struct{} {
@@ -103,28 +95,21 @@ func println__T_int32(value__1 int32) struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv204 string
-    retv204 = self__38
-    return retv204
+    return self__38
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv206 string
     var t207 string = _goml_runtime_core_int32_to_string(self__43)
-    retv206 = t207
-    return retv206
+    return t207
 }
 
 func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env172 closure_env_f_0, y__2 int32) int32 {
-    var retv209 int32
     var t212 bool = y__2 > 5
     if t212 {
-        retv209 = y__2
-        return retv209
+        return y__2
     } else {
         var t211 int32 = y__2 + 10
-        retv209 = t211
-        return retv209
+        return t211
     }
 }
 

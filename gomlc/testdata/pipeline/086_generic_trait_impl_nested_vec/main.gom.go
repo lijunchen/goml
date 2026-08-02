@@ -44,28 +44,20 @@ func println__T_string(value__1 string) struct{} {
 }
 
 func _goml_m_trait__impl_i_Size_i_Wrap____int_i_size(self__0 Wrap__int) int32 {
-    var retv166 int32
-    retv166 = 1
-    return retv166
+    return 1
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv168 string
     var t169 string = _goml_runtime_core_int32_to_string(self__6)
-    retv168 = t169
-    return retv168
+    return t169
 }
 
 func _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(self__0 Wrap__string) int32 {
-    var retv171 int32
-    retv171 = 1
-    return retv171
+    return 1
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv173 string
-    retv173 = self__38
-    return retv173
+    return self__38
 }
 
 func main() {

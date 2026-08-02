@@ -1,31 +1,22 @@
 fn step(i/0: int32) -> Option__int32 {
-  join ret164(retv165: Option__int32) -> Option__int32 {
-    retv165
-  } in
   let t168 = trait_impl#Eq#int32#eq(i/0, 2) in
-  join k166(jp167: Option__int32) -> Option__int32 {
-    jump ret164(jp167)
-  } in
   if t168 {
-    jump k166(Tag_0)
+    Tag_0
   } else {
     let t169 = (i/0 + 10) in
     let t170 = Option__int32::Some(t169) in
-    jump k166(t170)
+    t170
   }
 }
 
 fn accumulate(limit/1: int32) -> Option__int32 {
-  join ret171(retv172: Option__int32) -> Option__int32 {
-    retv172
-  } in
   let sum/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
   join exit173() -> Option__int32 {
     let _wild160 = () in
     let t174 = inherent#Ref#Ref[T]#get__T_int32(sum/2) in
     let t175 = Option__int32::Some(t174) in
-    jump ret171(t175)
+    t175
   } in
   joinrec {
     join loop176() -> Option__int32 {
@@ -42,18 +33,18 @@ fn accumulate(limit/1: int32) -> Option__int32 {
           join k181(jp182: int32) -> Option__int32 {
             let value/5 = jp182 in
             let t183 = inherent#Ref#Ref[T]#get__T_int32(sum/2) in
-            let t184 = (t183 + value/5) in
+            let t184 = (t183 + jp182) in
             let _wild159 = inherent#Ref#Ref[T]#set__T_int32(sum/2, t184) in
             jump loop176()
           } in
           match mtmp157 {
             Tag_0 => {
-              jump ret171(Tag_0)
+              Tag_0
             },
             Tag_1 => {
               let x158 = Option__int32::Some._0(mtmp157) in
               let try_value/43 = x158 in
-              jump k181(try_value/43)
+              jump k181(x158)
             },
           }
         } in
@@ -71,99 +62,66 @@ fn accumulate(limit/1: int32) -> Option__int32 {
 }
 
 fn show(opt/6: Option__int32) -> string {
-  join ret186(retv187: string) -> string {
-    retv187
-  } in
-  join k188(jp189: string) -> string {
-    jump ret186(jp189)
-  } in
   match opt/6 {
     Tag_0 => {
-      jump k188("none")
+      "none"
     },
     Tag_1 => {
       let x161 = Option__int32::Some._0(opt/6) in
       let value/7 = x161 in
-      let t190 = inherent#int32#int32#to_string(value/7) in
+      let t190 = inherent#int32#int32#to_string(x161) in
       let t191 = ("some=" + t190) in
-      jump k188(t191)
+      t191
     },
   }
 }
 
 fn main() -> unit {
-  join ret192() -> unit {
-    ()
-  } in
   let t193 = accumulate(2) in
   let t194 = show(t193) in
   let _wild162 = println__T_string(t194) in
   let t195 = accumulate(4) in
   let t196 = show(t195) in
   let _wild163 = println__T_string(t196) in
-  jump ret192()
+  ()
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret197(retv198: bool) -> bool {
-    retv198
-  } in
   let t199 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret197(t199)
+  t199
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {
-  join ret200(retv201: Ref[int32]) -> Ref[int32] {
-    retv201
-  } in
   let t202 = @intrinsic(ref.new)(value/207) in
-  jump ret200(t202)
+  t202
 }
 
 fn inherent#Ref#Ref[T]#get__T_int32(self/208: Ref[int32]) -> int32 {
-  join ret203(retv204: int32) -> int32 {
-    retv204
-  } in
   let t205 = @intrinsic(ref.get)(self/208) in
-  jump ret203(t205)
+  t205
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/209: Ref[int32], value/210: int32) -> unit {
-  join ret206() -> unit {
-    ()
-  } in
   let t207 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret206()
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret208(retv209: string) -> string {
-    retv209
-  } in
   let t210 = @runtime(core.int32_to_string)(self/6) in
-  jump ret208(t210)
+  t210
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret211() -> unit {
-    ()
-  } in
   let t212 = trait_impl#ToString#string#to_string(value/1) in
   let t213 = @runtime(core.string_println)(t212) in
-  jump ret211()
+  ()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret214(retv215: string) -> string {
-    retv215
-  } in
-  jump ret214(self/38)
+  self/38
 }
 
 fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret216(retv217: uint64) -> uint64 {
-    retv217
-  } in
   let t218 = @runtime(core.int32_hash)(self/88) in
-  jump ret216(t218)
+  t218
 }
