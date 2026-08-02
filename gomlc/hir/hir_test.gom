@@ -85,7 +85,7 @@ fn indents_multiline_calls_canonically() -> unit {
     let source = "struct Box { value: int32 } fn make(value: Box) -> Box { value } fn main() -> unit { let values = Vec::new().pushed(make(Box { value: 1 })).pushed(make(Box { value: 2 })); }";
     testing::assert_eq(
         encode(lower(ast::lower(parser::parse(source)), "main.gom")),
-        "package main\nfile main.gom\n  struct Box {\n        value: int32,\n    }\n\n    fn make(local/1/0: Box) -> Box {\n        value/0\n    }\n\n    fn main() -> unit {\n        let local/1/1 = Vec::new().pushed(def/1/1(Box {\n                  value: 1\n              })).pushed(def/1/1(Box {\n                value: 2\n            }));\n    }",
+        "package main\nfile main.gom\n  struct Box {\n      value: int32,\n  }\n\n  fn make(local/1/0: Box) -> Box {\n      value/0\n  }\n\n  fn main() -> unit {\n      let local/1/1 =\n        Vec::new().pushed(def/1/1(Box { value: 1 })).pushed(def/1/1(Box { value: 2 }));\n  }",
     )
 }
 
