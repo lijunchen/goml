@@ -223,23 +223,31 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
                                       } in
                                       if jp235 {
                                         join inline_cont363(t236: string) -> bool {
-                                          let inline362 = @intrinsic(eq.primitive)(t236, expected/234) in
+                                          let inline362 =
+                                            @intrinsic(eq.primitive)(t236, expected/234) in
                                           jump k232(inline362)
                                         } in
-                                        let inline364 = @runtime(core.string_byte_slice)(self/233, x107, end/236) in
+                                        let inline364 =
+                                          @runtime(core.string_byte_slice)(
+                                            self/233,
+                                            x107,
+                                            end/236
+                                          ) in
                                         jump inline_cont363(inline364)
                                       } else {
                                         jump k232(false)
                                       }
                                     } in
                                     if t238 {
-                                      let inline360 = @runtime(core.string_is_char_boundary)(self/233, end/236) in
+                                      let inline360 =
+                                        @runtime(core.string_is_char_boundary)(self/233, end/236) in
                                       jump k234(inline360)
                                     } else {
                                       jump k234(false)
                                     }
                                   } in
-                                  let inline366 = @runtime(core.string_is_char_boundary)(self/233, x107) in
+                                  let inline366 =
+                                    @runtime(core.string_is_char_boundary)(self/233, x107) in
                                   jump inline_cont365(inline366)
                                 } in
                                 let inline368 = @runtime(core.string_len)(expected/234) in
@@ -258,7 +266,8 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
                   } in
                   let inline374 = 0 in
                   let inline375 = @intrinsic(ref.new)(inline374) in
-                  let inline376 = closure_env_goml_builtin_range_0 { current_0: inline375, end_1: t225 } in
+                  let inline376 =
+                    closure_env_goml_builtin_range_0 { current_0: inline375, end_1: t225 } in
                   let inline377 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline376) in
                   jump inline_cont373(inline377)
                 } in
@@ -331,7 +340,9 @@ fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option
   t267
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(next_fn/101: () -> Option__int) -> FnIterator__int {
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
+  next_fn/101: () -> Option__int
+) -> FnIterator__int {
   let t270 = FnIterator__int { next_fn: next_fn/101 } in
   t270
 }
@@ -341,7 +352,9 @@ fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
   t273
 }
 
-fn inherent#closure_env_goml_builtin_range_0#closure_env_goml_builtin_range_0#apply(env165: closure_env_goml_builtin_range_0) -> Option__int {
+fn inherent#closure_env_goml_builtin_range_0#closure_env_goml_builtin_range_0#apply(
+  env165: closure_env_goml_builtin_range_0
+) -> Option__int {
   let current/220 = closure_env_goml_builtin_range_0.current_0(env165) in
   let end/219 = closure_env_goml_builtin_range_0.end_1(env165) in
   let value/221 = @intrinsic(ref.get)(current/220) in

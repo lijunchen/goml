@@ -60,7 +60,9 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
   jump inline_cont327(inline328)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
+  capacity/0: int
+) -> std::bytes::Bytes {
   join inline_cont329(t180: Vec[uint8]) -> std::bytes::Bytes {
     let t181 = std::bytes::Bytes { values: t180 } in
     t181
@@ -69,7 +71,9 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -
   jump inline_cont329(inline330)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[uint8]) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
+  values/1: Vec[uint8]
+) -> std::bytes::Bytes {
   let t184 = std::bytes::Bytes { values: values/1 } in
   t184
 }
@@ -102,13 +106,20 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Byt
   inline339
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
+  self/6: std::bytes::Bytes,
+  index/7: int
+) -> uint8 {
   let t203 = std::bytes::Bytes.values(self/6) in
   let t204 = @intrinsic(vec.get)(t203, index/7) in
   t204
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
+  self/8: std::bytes::Bytes,
+  index/9: int,
+  value/10: uint8
+) -> unit {
   let place_root0 = self/8 in
   let place1 = std::bytes::Bytes.values(self/8) in
   let index2 = index/9 in
@@ -119,7 +130,10 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, i
   ()
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
+  self/11: std::bytes::Bytes,
+  value/12: uint8
+) -> unit {
   let t208 = std::bytes::Bytes.values(self/11) in
   let inline341 = @intrinsic(vec.push)(t208, value/12) in
   ()
@@ -141,13 +155,19 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) 
   }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
+  self/14: std::bytes::Bytes,
+  additional/15: int
+) -> unit {
   let t215 = std::bytes::Bytes.values(self/14) in
   let inline351 = @intrinsic(vec.reserve)(t215, additional/15) in
   ()
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
+  self/16: std::bytes::Bytes,
+  len/17: int
+) -> unit {
   let t218 = std::bytes::Bytes.values(self/16) in
   let inline353 = @intrinsic(vec.truncate)(t218, len/17) in
   ()
@@ -159,7 +179,11 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes
   ()
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int, end/21: int) -> Slice[uint8] {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
+  self/19: std::bytes::Bytes,
+  start/20: int,
+  end/21: int
+) -> Slice[uint8] {
   let t225 = std::bytes::Bytes.values(self/19) in
   let inline357 = @intrinsic(slice.new)(t225, start/20, end/21) in
   inline357
@@ -170,7 +194,9 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Byte
   t229
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result__string__string {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
+  self/23: std::bytes::Bytes
+) -> Result__string__string {
   let t232 = std::bytes::Bytes.values(self/23) in
   let mtmp6 = @runtime(core.string_from_utf8)(t232) in
   let x7 = mtmp6.0 in
@@ -369,7 +395,11 @@ fn inherent#Vec#Vec[T]#clear__T_uint8(self/144: Vec[uint8]) -> unit {
   ()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/175: Vec[uint8], start/176: int, end/177: int) -> Slice[uint8] {
+fn inherent#Vec#Vec[T]#slice__T_uint8(
+  self/175: Vec[uint8],
+  start/176: int,
+  end/177: int
+) -> Slice[uint8] {
   let t312 = @intrinsic(slice.new)(self/175, start/176, end/177) in
   t312
 }

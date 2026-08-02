@@ -106,7 +106,8 @@ fn is_int_text(text/2: string) -> bool {
                                           jump inline_cont1013(inline1014)
                                         } in
                                         let inline1016 = true in
-                                        let inline1017 = @intrinsic(ref.set)(saw_digit/5, inline1016) in
+                                        let inline1017 =
+                                          @intrinsic(ref.set)(saw_digit/5, inline1016) in
                                         jump inline_cont1015(())
                                       } in
                                       let inline1019 = true in
@@ -1076,7 +1077,12 @@ fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Bi
   jump inline_cont1313(inline1314)
 }
 
-fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], global/89: Ref[Vec[Binding]]) -> Value {
+fn eval_list_sym(
+  name/86: string,
+  items/87: Vec[SExpr],
+  local/88: Vec[Binding],
+  global/89: Ref[Vec[Binding]]
+) -> Value {
   match name/86 {
     "begin" => {
       let t549 = eval_begin(items/87, 1, local/88, global/89) in
@@ -1177,7 +1183,8 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
                 let params_exprs/95 = x225 in
                 let params/96 = params_from_sexprs(x225) in
                 let body/97 = @intrinsic(vec.get)(items/87, 2) in
-                let t576 = Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
+                let t576 =
+                  Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
                 let t577 = Value::Func(t576) in
                 t577
               },
@@ -1240,7 +1247,12 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
   }
 }
 
-fn eval_begin(items/100: Vec[SExpr], start/101: int, local/102: Vec[Binding], global/103: Ref[Vec[Binding]]) -> Value {
+fn eval_begin(
+  items/100: Vec[SExpr],
+  start/101: int,
+  local/102: Vec[Binding],
+  global/103: Ref[Vec[Binding]]
+) -> Value {
   join inline_cont1362(i/104: Ref[int]) -> Value {
     join inline_cont1360(last/105: Ref[Value]) -> Value {
       join exit592() -> Value {
@@ -1366,7 +1378,12 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
   jump inline_cont1388(inline1390)
 }
 
-fn eval_args(items/112: Vec[SExpr], start/113: int, local/114: Vec[Binding], global/115: Ref[Vec[Binding]]) -> Vec[Value] {
+fn eval_args(
+  items/112: Vec[SExpr],
+  start/113: int,
+  local/114: Vec[Binding],
+  global/115: Ref[Vec[Binding]]
+) -> Vec[Value] {
   join inline_cont1411(i/116: Ref[int]) -> Vec[Value] {
     join inline_cont1409(acc/117: Vec[Value]) -> Vec[Value] {
       join inline_cont1407(args/118: Ref[Vec[Value]]) -> Vec[Value] {
@@ -1826,7 +1843,8 @@ fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
 fn main() -> unit {
   join inline_cont1519(t752: Vec[Binding]) -> unit {
     join inline_cont1517(global/148: Ref[Vec[Binding]]) -> unit {
-      let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
+      let program/149 =
+        "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
       let t753 = lex(program/149) in
       let exprs/150 = parse_program(t753) in
       let t754 = @intrinsic(vec.get)(exprs/150, 0) in
@@ -2171,7 +2189,10 @@ fn inherent#Vec#Vec[T]#len__T_SExpr(self/137: Vec[SExpr]) -> int {
   t883
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_Binding(self/128: Vec[Binding], elem/129: Binding) -> Vec[Binding] {
+fn inherent#Vec#Vec[T]#pushed__T_Binding(
+  self/128: Vec[Binding],
+  elem/129: Binding
+) -> Vec[Binding] {
   join inline_cont1549(t886: int) -> Vec[Binding] {
     let t887 = (t886 + 1) in
     join inline_cont1547(result/130: Vec[Binding]) -> Vec[Binding] {
@@ -2214,7 +2235,10 @@ fn inherent#Vec#Vec[T]#pushed__T_Binding(self/128: Vec[Binding], elem/129: Bindi
   jump inline_cont1549(inline1550)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[Binding](self/209: Ref[Vec[Binding]], value/210: Vec[Binding]) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[Binding](
+  self/209: Ref[Vec[Binding]],
+  value/210: Vec[Binding]
+) -> unit {
   let t896 = @intrinsic(ref.set)(self/209, value/210) in
   ()
 }
@@ -2277,7 +2301,10 @@ fn inherent#Vec#Vec[T]#pushed__T_string(self/128: Vec[string], elem/129: string)
   jump inline_cont1559(inline1560)
 }
 
-fn inherent#Ref#Ref[T]#set__T_Vec[string](self/209: Ref[Vec[string]], value/210: Vec[string]) -> unit {
+fn inherent#Ref#Ref[T]#set__T_Vec[string](
+  self/209: Ref[Vec[string]],
+  value/210: Vec[string]
+) -> unit {
   let t918 = @intrinsic(ref.set)(self/209, value/210) in
   ()
 }

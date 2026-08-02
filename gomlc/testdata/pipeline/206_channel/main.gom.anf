@@ -41,7 +41,11 @@ fn main() -> unit {
                         }
                       } in
                       let inline235 = "ready" in
-                      let inline236 = closure_env_roundtrip_T_string_0 { channel_0: unbuffered/5, value_1: inline235 } in
+                      let inline236 =
+                        closure_env_roundtrip_T_string_0 {
+                          channel_0: unbuffered/5,
+                          value_1: inline235
+                        } in
                       let inline237 = go inline236 in
                       let inline238 = inherent#Channel#Channel[T]#recv__T_string(unbuffered/5) in
                       jump inline_cont234(inline238)
@@ -211,7 +215,10 @@ fn trait_impl#ToString#string#to_string(self/38: string) -> string {
   self/38
 }
 
-fn inherent#Channel#Channel[T]#send__T_string(self/212: Channel[string], value/213: string) -> unit {
+fn inherent#Channel#Channel[T]#send__T_string(
+  self/212: Channel[string],
+  value/213: string
+) -> unit {
   let t218 = @intrinsic(channel.send)(self/212, value/213) in
   ()
 }
@@ -230,7 +237,9 @@ fn inherent#Channel#Channel[T]#recv__T_string(self/214: Channel[string]) -> Opti
   }
 }
 
-fn inherent#closure_env_roundtrip_T_string_0#closure_env_roundtrip_T_string_0#apply(env172: closure_env_roundtrip_T_string_0) -> unit {
+fn inherent#closure_env_roundtrip_T_string_0#closure_env_roundtrip_T_string_0#apply(
+  env172: closure_env_roundtrip_T_string_0
+) -> unit {
   let channel/0 = closure_env_roundtrip_T_string_0.channel_0(env172) in
   let value/1 = closure_env_roundtrip_T_string_0.value_1(env172) in
   let inline282 = @intrinsic(channel.send)(channel/0, value/1) in

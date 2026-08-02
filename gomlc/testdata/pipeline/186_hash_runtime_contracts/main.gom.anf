@@ -73,10 +73,17 @@ fn float_zero_contracts() -> unit {
   let t233 = trait_impl#ToString#bool#to_string(t232) in
   let _wild157 = println__T_string(t233) in
   let values32/14 = inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() in
-  let _wild158 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, zero32/12, "f32") in
-  let t234 = inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, negative_zero32/13) in
+  let _wild158 =
+    inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, zero32/12, "f32") in
+  let t234 =
+    inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, negative_zero32/13) in
   let _wild159 = print_opt_string(t234) in
-  let _wild160 = inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, negative_zero32/13, "f32-updated") in
+  let _wild160 =
+    inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(
+      values32/14,
+      negative_zero32/13,
+      "f32-updated"
+    ) in
   join inline_cont468(t235: int) -> unit {
     let _wild161 = println__T_int(t235) in
     join inline_cont466(t236: Option__string) -> unit {
@@ -117,7 +124,8 @@ fn float_zero_contracts() -> unit {
                                   jump inline_cont429(inline430)
                                 } in
                                 let inline432 = "derived" in
-                                let inline433 = @intrinsic(hashmap.set)(derived/18, t243, inline432) in
+                                let inline433 =
+                                  @intrinsic(hashmap.set)(derived/18, t243, inline432) in
                                 jump inline_cont431(())
                               } in
                               let inline435 = @intrinsic(hashmap.new)() in
@@ -136,11 +144,13 @@ fn float_zero_contracts() -> unit {
                               },
                             }
                           } in
-                          let inline442 = @intrinsic(hashmap.get)(values64/17, negative_zero64/16) in
+                          let inline442 =
+                            @intrinsic(hashmap.get)(values64/17, negative_zero64/16) in
                           jump inline_cont441(inline442)
                         } in
                         let inline444 = "f64" in
-                        let inline445 = @intrinsic(hashmap.set)(values64/17, zero64/15, inline444) in
+                        let inline445 =
+                          @intrinsic(hashmap.set)(values64/17, zero64/15, inline444) in
                         jump inline_cont443(())
                       } in
                       let inline447 = @intrinsic(hashmap.new)() in
@@ -248,10 +258,12 @@ fn collision_contracts() -> unit {
                                         let inline473 = @intrinsic(ref.get)(index/20) in
                                         jump inline_cont472(inline473)
                                       } in
-                                      let inline475 = @intrinsic(hashmap.remove)(values/19, key/21) in
+                                      let inline475 =
+                                        @intrinsic(hashmap.remove)(values/19, key/21) in
                                       jump inline_cont474(())
                                     } in
-                                    let inline477 = @intrinsic(hashmap.set)(values/19, key/21, t275) in
+                                    let inline477 =
+                                      @intrinsic(hashmap.set)(values/19, key/21, t275) in
                                     jump inline_cont476(())
                                   } in
                                   let inline479 = @intrinsic(ref.get)(index/20) in
@@ -324,7 +336,12 @@ fn reference_contracts() -> unit {
   let alias/24 = key/23 in
   let t280 = CollisionKey { value: 1 } in
   let equal_value/25 = inherent#Ref#Ref[T]#new__T_CollisionKey(t280) in
-  let _wild191 = inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(values/22, key/23, "identity") in
+  let _wild191 =
+    inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(
+      values/22,
+      key/23,
+      "identity"
+    ) in
   join inline_cont558(t281: bool) -> unit {
     join inline_cont555(_wild192: unit) -> unit {
       join inline_cont553(t282: bool) -> unit {
@@ -478,12 +495,19 @@ fn inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() -> HashMap[float32, 
   t317
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(self/198: HashMap[float32, string], key/199: float32, value/200: string) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(
+  self/198: HashMap[float32, string],
+  key/199: float32,
+  value/200: string
+) -> unit {
   let t319 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(self/196: HashMap[float32, string], key/197: float32) -> Option__string {
+fn inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(
+  self/196: HashMap[float32, string],
+  key/197: float32
+) -> Option__string {
   let t322 = @intrinsic(hashmap.get)(self/196, key/197) in
   t322
 }
@@ -497,12 +521,17 @@ fn println__T_int(value/1: int) -> unit {
   jump inline_cont563(inline564)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(self/203: HashMap[float32, string]) -> int {
+fn inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(
+  self/203: HashMap[float32, string]
+) -> int {
   let t328 = @intrinsic(hashmap.len)(self/203) in
   t328
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(self/201: HashMap[float32, string], key/202: float32) -> unit {
+fn inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(
+  self/201: HashMap[float32, string],
+  key/202: float32
+) -> unit {
   let t330 = @intrinsic(hashmap.remove)(self/201, key/202) in
   ()
 }
@@ -512,12 +541,19 @@ fn inherent#HashMap#HashMap[K,V]#new__K_float64__V_string() -> HashMap[float64, 
   t333
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(self/198: HashMap[float64, string], key/199: float64, value/200: string) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(
+  self/198: HashMap[float64, string],
+  key/199: float64,
+  value/200: string
+) -> unit {
   let t335 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(self/196: HashMap[float64, string], key/197: float64) -> Option__string {
+fn inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(
+  self/196: HashMap[float64, string],
+  key/197: float64
+) -> Option__string {
   let t338 = @intrinsic(hashmap.get)(self/196, key/197) in
   t338
 }
@@ -527,12 +563,19 @@ fn inherent#HashMap#HashMap[K,V]#new__K_FloatKey__V_string() -> HashMap[FloatKey
   t341
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(self/198: HashMap[FloatKey, string], key/199: FloatKey, value/200: string) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(
+  self/198: HashMap[FloatKey, string],
+  key/199: FloatKey,
+  value/200: string
+) -> unit {
   let t343 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(self/196: HashMap[FloatKey, string], key/197: FloatKey) -> Option__string {
+fn inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(
+  self/196: HashMap[FloatKey, string],
+  key/197: FloatKey
+) -> Option__string {
   let t346 = @intrinsic(hashmap.get)(self/196, key/197) in
   t346
 }
@@ -542,22 +585,34 @@ fn inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() -> HashMap[Colli
   t349
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(self/198: HashMap[CollisionKey, int32], key/199: CollisionKey, value/200: int32) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
+  self/198: HashMap[CollisionKey, int32],
+  key/199: CollisionKey,
+  value/200: int32
+) -> unit {
   let t351 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(self/201: HashMap[CollisionKey, int32], key/202: CollisionKey) -> unit {
+fn inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(
+  self/201: HashMap[CollisionKey, int32],
+  key/202: CollisionKey
+) -> unit {
   let t353 = @intrinsic(hashmap.remove)(self/201, key/202) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(self/196: HashMap[CollisionKey, int32], key/197: CollisionKey) -> Option__int32 {
+fn inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(
+  self/196: HashMap[CollisionKey, int32],
+  key/197: CollisionKey
+) -> Option__int32 {
   let t356 = @intrinsic(hashmap.get)(self/196, key/197) in
   t356
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(self/203: HashMap[CollisionKey, int32]) -> int {
+fn inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(
+  self/203: HashMap[CollisionKey, int32]
+) -> int {
   let t359 = @intrinsic(hashmap.len)(self/203) in
   t359
 }
@@ -587,7 +642,11 @@ fn inherent#Ref#Ref[T]#new__T_CollisionKey(value/207: CollisionKey) -> Ref[Colli
   t373
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(self/198: HashMap[Ref[CollisionKey], string], key/199: Ref[CollisionKey], value/200: string) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(
+  self/198: HashMap[Ref[CollisionKey], string],
+  key/199: Ref[CollisionKey],
+  value/200: string
+) -> unit {
   let t375 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
   ()
 }
@@ -601,7 +660,10 @@ fn println__T_bool(value/1: bool) -> unit {
   jump inline_cont565(inline566)
 }
 
-fn trait_impl#Eq#Ref[CollisionKey]#eq(self/96: Ref[CollisionKey], other/97: Ref[CollisionKey]) -> bool {
+fn trait_impl#Eq#Ref[CollisionKey]#eq(
+  self/96: Ref[CollisionKey],
+  other/97: Ref[CollisionKey]
+) -> bool {
   let t381 = @intrinsic(ref.ptr_eq)(self/96, other/97) in
   t381
 }
@@ -611,12 +673,18 @@ fn trait_impl#Hash#Ref[CollisionKey]#hash(self/98: Ref[CollisionKey]) -> uint64 
   t384
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(self/196: HashMap[Ref[CollisionKey], string], key/197: Ref[CollisionKey]) -> Option__string {
+fn inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(
+  self/196: HashMap[Ref[CollisionKey], string],
+  key/197: Ref[CollisionKey]
+) -> Option__string {
   let t387 = @intrinsic(hashmap.get)(self/196, key/197) in
   t387
 }
 
-fn inherent#Ref#Ref[T]#set__T_CollisionKey(self/209: Ref[CollisionKey], value/210: CollisionKey) -> unit {
+fn inherent#Ref#Ref[T]#set__T_CollisionKey(
+  self/209: Ref[CollisionKey],
+  value/210: CollisionKey
+) -> unit {
   let t389 = @intrinsic(ref.set)(self/209, value/210) in
   ()
 }

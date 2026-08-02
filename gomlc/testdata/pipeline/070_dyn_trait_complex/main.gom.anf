@@ -99,7 +99,11 @@ fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
   jump inline_cont328(inline329)
 }
 
-fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
+fn trait_impl#Display#Counter#show_with(
+  self/15: Counter,
+  prefix/16: string,
+  suffix/17: string
+) -> string {
   let t230 = (prefix/16 + "Counter(") in
   let t231 = Counter.cell(self/15) in
   join inline_cont332(t232: int32) -> string {
@@ -326,7 +330,10 @@ fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
   t292
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/126: Vec[dyn Display], elem/127: dyn Display) -> unit {
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(
+  self/126: Vec[dyn Display],
+  elem/127: dyn Display
+) -> unit {
   let t294 = @intrinsic(vec.push)(self/126, elem/127) in
   ()
 }
@@ -363,12 +370,19 @@ fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
   t311
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env169: closure_env_f_0, v/26: dyn Display, t/27: string) -> string {
+fn inherent#closure_env_f_0#closure_env_f_0#apply(
+  env169: closure_env_f_0,
+  v/26: dyn Display,
+  t/27: string
+) -> string {
   let t314 = dyn_call[Display::show_with](v/26, t/27, t/27) in
   t314
 }
 
-fn inherent#closure_env_make_renderer_1#closure_env_make_renderer_1#apply(env170: closure_env_make_renderer_1, x/30: dyn Display) -> string {
+fn inherent#closure_env_make_renderer_1#closure_env_make_renderer_1#apply(
+  env170: closure_env_make_renderer_1,
+  x/30: dyn Display
+) -> string {
   let tag/29 = closure_env_make_renderer_1.tag_0(env170) in
   let t317 = dyn_call[Display::show_with](x/30, tag/29, tag/29) in
   t317

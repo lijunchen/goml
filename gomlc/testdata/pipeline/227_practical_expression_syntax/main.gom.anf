@@ -142,7 +142,9 @@ fn main() -> unit {
                           join inline_cont352(_wild197: unit) -> unit {
                             join inline_cont350(vec_literal/1570: Vec[int]) -> unit {
                               let empty_values/18 = vec_literal/1570 in
-                              join inline_cont348(hashmap_literal/1623: HashMap[string, int]) -> unit {
+                              join inline_cont348(
+                                hashmap_literal/1623: HashMap[string, int]
+                              ) -> unit {
                                 let empty_table/19 = hashmap_literal/1623 in
                                 let t273 = ("" + "empty=") in
                                 join inline_cont346(t274: int) -> unit {
@@ -284,12 +286,19 @@ fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int() -> HashMap[string, int] 
   t305
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int(self/198: HashMap[string, int], key/199: string, value/200: int) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int(
+  self/198: HashMap[string, int],
+  key/199: string,
+  value/200: int
+) -> unit {
   let t307 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int(self/196: HashMap[string, int], key/197: string) -> Option__int {
+fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int(
+  self/196: HashMap[string, int],
+  key/197: string
+) -> Option__int {
   let t310 = @intrinsic(hashmap.get)(self/196, key/197) in
   t310
 }

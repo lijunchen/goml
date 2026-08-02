@@ -30,7 +30,8 @@ fn print_chars(value/0: string) -> unit {
     jump inline_cont585(t249)
   } in
   let inline587 = @intrinsic(ref.new)(0) in
-  let inline588 = closure_env_inherent_string_string_chars_0 { self_0: value/0, index_1: inline587 } in
+  let inline588 =
+    closure_env_inherent_string_string_chars_0 { self_0: value/0, index_1: inline587 } in
   let inline589 = inherent#FnIterator#FnIterator[T]#from_fn__T_char(inline588) in
   jump inline_cont586(inline589)
 }
@@ -82,7 +83,8 @@ fn print_char_indices(value/2: string) -> unit {
     jump inline_cont600(t255)
   } in
   let inline602 = @intrinsic(ref.new)(0) in
-  let inline603 = closure_env_inherent_string_string_char_indices_1 { index_0: inline602, self_1: value/2 } in
+  let inline603 =
+    closure_env_inherent_string_string_char_indices_1 { index_0: inline602, self_1: value/2 } in
   let inline604 = inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(inline603) in
   jump inline_cont601(inline604)
 }
@@ -359,7 +361,9 @@ fn inherent#string#string#chars(self/25: string) -> FnIterator__char {
   t329
 }
 
-fn trait_impl#IntoIterator#FnIterator__char#into_iter(self/109: FnIterator__char) -> FnIterator__char {
+fn trait_impl#IntoIterator#FnIterator__char#into_iter(
+  self/109: FnIterator__char
+) -> FnIterator__char {
   self/109
 }
 
@@ -380,16 +384,21 @@ fn println__T_char(value/1: char) -> unit {
 
 fn inherent#string#string#char_indices(self/30: string) -> FnIterator__(int,char) {
   let index/31 = @intrinsic(ref.new)(0) in
-  let t341 = closure_env_inherent_string_string_char_indices_1 { index_0: index/31, self_1: self/30 } in
+  let t341 =
+    closure_env_inherent_string_string_char_indices_1 { index_0: index/31, self_1: self/30 } in
   let t342 = inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(t341) in
   t342
 }
 
-fn trait_impl#IntoIterator#FnIterator__(int,char)#into_iter(self/109: FnIterator__(int,char)) -> FnIterator__(int,char) {
+fn trait_impl#IntoIterator#FnIterator__(int,char)#into_iter(
+  self/109: FnIterator__(int,char)
+) -> FnIterator__(int,char) {
   self/109
 }
 
-fn trait_impl#Iterator#FnIterator__(int,char)#next(self/102: FnIterator__(int,char)) -> Option__(int,char) {
+fn trait_impl#Iterator#FnIterator__(int,char)#next(
+  self/102: FnIterator__(int,char)
+) -> Option__(int,char) {
   let t347 = FnIterator__(int,char).next_fn(self/102) in
   let t348 = t347() in
   t348
@@ -552,7 +561,11 @@ fn inherent#Vec#Vec[T]#push__T_int32(self/126: Vec[int32], elem/127: int32) -> u
   ()
 }
 
-fn inherent#Vec#Vec[T]#insert__T_int32(self/158: Vec[int32], index/159: int, value/160: int32) -> unit {
+fn inherent#Vec#Vec[T]#insert__T_int32(
+  self/158: Vec[int32],
+  index/159: int,
+  value/160: int32
+) -> unit {
   join inline_cont678(len/161: int) -> unit {
     join inline_cont676(t428: bool) -> unit {
       if t428 {
@@ -807,12 +820,18 @@ fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int
   t500
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(self/198: HashMap[string, int32], key/199: string, value/200: int32) -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(
+  self/198: HashMap[string, int32],
+  key/199: string,
+  value/200: int32
+) -> unit {
   let t502 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
   ()
 }
 
-fn inherent#HashMap#HashMap[K,V]#entries__K_string__V_int32(self/206: HashMap[string, int32]) -> Vec[(string, int32)] {
+fn inherent#HashMap#HashMap[K,V]#entries__K_string__V_int32(
+  self/206: HashMap[string, int32]
+) -> Vec[(string, int32)] {
   let t505 = @intrinsic(hashmap.entries)(self/206) in
   t505
 }
@@ -822,7 +841,10 @@ fn inherent#Vec#Vec[T]#len__T_(string,int32)(self/137: Vec[(string, int32)]) -> 
   t508
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove__K_string__V_int32(self/201: HashMap[string, int32], key/202: string) -> unit {
+fn inherent#HashMap#HashMap[K,V]#remove__K_string__V_int32(
+  self/201: HashMap[string, int32],
+  key/202: string
+) -> unit {
   let t510 = @intrinsic(hashmap.remove)(self/201, key/202) in
   ()
 }
@@ -847,7 +869,9 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/208: Ref[bool]) -> bool {
   t521
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_char(next_fn/101: () -> Option__char) -> FnIterator__char {
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_char(
+  next_fn/101: () -> Option__char
+) -> FnIterator__char {
   let t524 = FnIterator__char { next_fn: next_fn/101 } in
   t524
 }
@@ -857,7 +881,9 @@ fn trait_impl#ToString#char#to_string(self/39: char) -> string {
   t527
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(next_fn/101: () -> Option__(int,char)) -> FnIterator__(int,char) {
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(
+  next_fn/101: () -> Option__(int,char)
+) -> FnIterator__(int,char) {
   let t530 = FnIterator__(int,char) { next_fn: next_fn/101 } in
   t530
 }
@@ -931,7 +957,9 @@ fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
   t563
 }
 
-fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_string_string_chars_0#apply(env246: closure_env_inherent_string_string_chars_0) -> Option__char {
+fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_string_string_chars_0#apply(
+  env246: closure_env_inherent_string_string_chars_0
+) -> Option__char {
   let self/25 = closure_env_inherent_string_string_chars_0.self_0(env246) in
   let index/26 = closure_env_inherent_string_string_chars_0.index_1(env246) in
   let t566 = @intrinsic(ref.get)(index/26) in
@@ -961,7 +989,9 @@ fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_stri
   }
 }
 
-fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inherent_string_string_char_indices_1#apply(env247: closure_env_inherent_string_string_char_indices_1) -> Option__(int,char) {
+fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inherent_string_string_char_indices_1#apply(
+  env247: closure_env_inherent_string_string_char_indices_1
+) -> Option__(int,char) {
   let index/31 = closure_env_inherent_string_string_char_indices_1.index_0(env247) in
   let self/30 = closure_env_inherent_string_string_char_indices_1.self_1(env247) in
   let current/32 = @intrinsic(ref.get)(index/31) in

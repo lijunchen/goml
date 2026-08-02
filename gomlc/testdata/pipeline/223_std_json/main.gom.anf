@@ -7,7 +7,9 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
   jump inline_cont1546(inline1547)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
+  capacity/0: int
+) -> std::bytes::Bytes {
   join inline_cont1548(t179: Vec[uint8]) -> std::bytes::Bytes {
     let t180 = std::bytes::Bytes { values: t179 } in
     t180
@@ -16,7 +18,9 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -
   jump inline_cont1548(inline1549)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[uint8]) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
+  values/1: Vec[uint8]
+) -> std::bytes::Bytes {
   let t183 = std::bytes::Bytes { values: values/1 } in
   t183
 }
@@ -49,13 +53,20 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Byt
   inline1558
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
+  self/6: std::bytes::Bytes,
+  index/7: int
+) -> uint8 {
   let t202 = std::bytes::Bytes.values(self/6) in
   let t203 = @intrinsic(vec.get)(t202, index/7) in
   t203
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
+  self/8: std::bytes::Bytes,
+  index/9: int,
+  value/10: uint8
+) -> unit {
   let place_root0 = self/8 in
   let place1 = std::bytes::Bytes.values(self/8) in
   let index2 = index/9 in
@@ -66,7 +77,10 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, i
   ()
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
+  self/11: std::bytes::Bytes,
+  value/12: uint8
+) -> unit {
   let t207 = std::bytes::Bytes.values(self/11) in
   let inline1560 = @intrinsic(vec.push)(t207, value/12) in
   ()
@@ -88,13 +102,19 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) 
   }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
+  self/14: std::bytes::Bytes,
+  additional/15: int
+) -> unit {
   let t214 = std::bytes::Bytes.values(self/14) in
   let inline1570 = @intrinsic(vec.reserve)(t214, additional/15) in
   ()
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
+  self/16: std::bytes::Bytes,
+  len/17: int
+) -> unit {
   let t217 = std::bytes::Bytes.values(self/16) in
   let inline1572 = @intrinsic(vec.truncate)(t217, len/17) in
   ()
@@ -106,7 +126,11 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes
   ()
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int, end/21: int) -> Slice[uint8] {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
+  self/19: std::bytes::Bytes,
+  start/20: int,
+  end/21: int
+) -> Slice[uint8] {
   let t224 = std::bytes::Bytes.values(self/19) in
   let inline1576 = @intrinsic(slice.new)(t224, start/20, end/21) in
   inline1576
@@ -117,7 +141,9 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Byte
   t228
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result__string__string {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
+  self/23: std::bytes::Bytes
+) -> Result__string__string {
   let t231 = std::bytes::Bytes.values(self/23) in
   let mtmp6 = @runtime(core.string_from_utf8)(t231) in
   let x7 = mtmp6.0 in
@@ -142,7 +168,9 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text
   jump inline_cont1577(inline1578)
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(capacity/0: int) -> std::text::StringBuilder {
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
+  capacity/0: int
+) -> std::text::StringBuilder {
   join inline_cont1579(t241: Vec[uint8]) -> std::text::StringBuilder {
     let t242 = std::text::StringBuilder { values: t241 } in
     t242
@@ -151,20 +179,27 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(capa
   jump inline_cont1579(inline1580)
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#len(self/1: std::text::StringBuilder) -> int {
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#len(
+  self/1: std::text::StringBuilder
+) -> int {
   let t245 = std::text::StringBuilder.values(self/1) in
   let inline1582 = @intrinsic(vec.len)(t245) in
   inline1582
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(self/2: std::text::StringBuilder) -> bool {
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(
+  self/2: std::text::StringBuilder
+) -> bool {
   let t249 = std::text::StringBuilder.values(self/2) in
   let inline1584 = @intrinsic(vec.len)(t249) in
   let inline1585 = trait_impl#Eq#int#eq(inline1584, 0) in
   inline1585
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/3: std::text::StringBuilder, value/4: string) -> unit {
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+  self/3: std::text::StringBuilder,
+  value/4: string
+) -> unit {
   join inline_cont1592(length/5: int) -> unit {
     let t252 = std::text::StringBuilder.values(self/3) in
     join inline_cont1590(_wild0: unit) -> unit {
@@ -202,19 +237,30 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/
   jump inline_cont1592(inline1593)
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(self/7: std::text::StringBuilder, value/8: char) -> unit {
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+  self/7: std::text::StringBuilder,
+  value/8: char
+) -> unit {
   join inline_cont1594(t261: string) -> unit {
-    let t262 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/7, t261) in
+    let t262 =
+      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/7, t261) in
     ()
   } in
   let inline1595 = @runtime(core.char_to_string)(value/8) in
   jump inline_cont1594(inline1595)
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/9: std::text::StringBuilder, value/10: std::bytes::Bytes) -> Result__unit__string {
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
+  self/9: std::text::StringBuilder,
+  value/10: std::bytes::Bytes
+) -> Result__unit__string {
   join commute_arm2435(commute_field2434: string) -> Result__unit__string {
     let x6 = commute_field2434 in
-    let _wild8 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/9, commute_field2434) in
+    let _wild8 =
+      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+        self/9,
+        commute_field2434
+      ) in
     let t267 = Result__unit__string::Ok(()) in
     t267
   } in
@@ -238,19 +284,28 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/9
   }
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(self/13: std::text::StringBuilder, value/14: string) -> unit {
-  let _wild9 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/13, value/14) in
-  let t270 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/13, "\n") in
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(
+  self/13: std::text::StringBuilder,
+  value/14: string
+) -> unit {
+  let _wild9 =
+    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/13, value/14) in
+  let t270 =
+    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/13, "\n") in
   ()
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(self/15: std::text::StringBuilder) -> unit {
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(
+  self/15: std::text::StringBuilder
+) -> unit {
   let t272 = std::text::StringBuilder.values(self/15) in
   let inline1606 = inherent#Vec#Vec[T]#truncate__T_uint8(t272, 0) in
   ()
 }
 
-fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/16: std::text::StringBuilder) -> string {
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(
+  self/16: std::text::StringBuilder
+) -> string {
   let t276 = std::text::StringBuilder.values(self/16) in
   let mtmp10 = @runtime(core.string_from_utf8)(t276) in
   let x11 = mtmp10.0 in
@@ -259,7 +314,9 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/16: st
   x12
 }
 
-fn trait_impl#ToString#std::text::StringBuilder#to_string(self/18: std::text::StringBuilder) -> string {
+fn trait_impl#ToString#std::text::StringBuilder#to_string(
+  self/18: std::text::StringBuilder
+) -> string {
   let inline1608 = std::text::StringBuilder.values(self/18) in
   let inline1609 = @runtime(core.string_from_utf8)(inline1608) in
   let inline1610 = inline1609.0 in
@@ -368,14 +425,16 @@ fn std::text::find_from(value/20: string, expected/21: string, start/22: int) ->
                               let inline1634 = @intrinsic(eq.primitive)(t323, expected/21) in
                               jump k316(inline1634)
                             } in
-                            let inline1636 = @runtime(core.string_byte_slice)(value/20, index/26, end/27) in
+                            let inline1636 =
+                              @runtime(core.string_byte_slice)(value/20, index/26, end/27) in
                             jump inline_cont1635(inline1636)
                           } else {
                             jump k316(false)
                           }
                         } in
                         if t325 {
-                          let inline1632 = @runtime(core.string_is_char_boundary)(value/20, end/27) in
+                          let inline1632 =
+                            @runtime(core.string_is_char_boundary)(value/20, end/27) in
                           jump k321(inline1632)
                         } else {
                           jump k321(false)
@@ -531,7 +590,8 @@ fn std::text::split(value/35: string, separator/36: string) -> Vec[string] {
                       let inline1664 = @intrinsic(vec.push)(vec_literal/1695, t369) in
                       jump exit366()
                     } in
-                    let inline1666 = @runtime(core.string_byte_slice)(value/35, start/40, value_len/39) in
+                    let inline1666 =
+                      @runtime(core.string_byte_slice)(value/35, start/40, value_len/39) in
                     jump inline_cont1665(inline1666)
                   },
                   Tag_1 => {
@@ -658,7 +718,8 @@ fn std::text::lines(value/47: string) -> Vec[string] {
                           jump loop389()
                         } in
                         let inline1715 = 0 in
-                        let inline1716 = @runtime(core.string_byte_slice)(line/50, inline1715, t396) in
+                        let inline1716 =
+                          @runtime(core.string_byte_slice)(line/50, inline1715, t396) in
                         jump inline_cont1714(inline1716)
                       } in
                       let inline1718 = @runtime(core.string_len)(line/50) in
@@ -757,7 +818,11 @@ fn std::text::replace(value/51: string, expected/52: string, replacement/53: str
                   Tag_0 => {
                     join inline_cont1728(t423: int) -> string {
                       join inline_cont1726(t424: string) -> string {
-                        let _wild49 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/54, t424) in
+                        let _wild49 =
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                            builder/54,
+                            t424
+                          ) in
                         jump exit419()
                       } in
                       let inline1727 = @runtime(core.string_byte_slice)(value/51, start/55, t423) in
@@ -770,8 +835,16 @@ fn std::text::replace(value/51: string, expected/52: string, replacement/53: str
                     let x48 = Option__int::Some._0(mtmp47) in
                     let index/56 = x48 in
                     join inline_cont1732(t425: string) -> string {
-                      let _wild50 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/54, t425) in
-                      let _wild51 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/54, replacement/53) in
+                      let _wild50 =
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                          builder/54,
+                          t425
+                        ) in
+                      let _wild51 =
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                          builder/54,
+                          replacement/53
+                        ) in
                       join inline_cont1730(t426: int) -> string {
                         let t427 = (x48 + t426) in
                         let _wild52 = start/55 = t427 in
@@ -841,11 +914,19 @@ fn std::text::join(values/57: Vec[string], separator/58: string) -> string {
                       join k439() -> string {
                         let _wild71 = () in
                         let t440 = @intrinsic(vec.get)(values/57, for_item69) in
-                        let t441 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/61, t440) in
+                        let t441 =
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                            builder/61,
+                            t440
+                          ) in
                         jump loop436()
                       } in
                       if t442 {
-                        let t443 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/61, separator/58) in
+                        let t443 =
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                            builder/61,
+                            separator/58
+                          ) in
                         jump k439()
                       } else {
                         jump k439()
@@ -940,7 +1021,11 @@ fn std::text::repeat(value/63: string, count/64: int) -> string {
                 let for_item75 = for_index73 in
                 let t465 = (for_index73 + 1) in
                 let _wild76 = for_index73 = t465 in
-                let t466 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/65, value/63) in
+                let t466 =
+                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                    builder/65,
+                    value/63
+                  ) in
                 jump loop463()
               } else {
                 jump exit461()
@@ -1404,7 +1489,11 @@ fn std::json::parse_hex_quad(value/6: std::json::JsonParser) -> Result__uint32__
   jump inline_cont1866(inline1867)
 }
 
-fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::text::StringBuilder, codepoint/12: uint32) -> Result__unit__string {
+fn std::json::write_codepoint(
+  value/10: std::json::JsonParser,
+  builder/11: std::text::StringBuilder,
+  codepoint/12: uint32
+) -> Result__unit__string {
   join commute_arm2441() -> Result__unit__string {
     join inline_cont1868(t615: string) -> Result__unit__string {
       let t616 = Result__unit__string::Err(t615) in
@@ -1426,7 +1515,11 @@ fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::
       t617
     } in
     let inline1877 = inherent#char#char#to_string(commute_field2442) in
-    let inline1878 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/11, inline1877) in
+    let inline1878 =
+      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+        builder/11,
+        inline1877
+      ) in
     jump inline_cont1876(())
   } in
   let inline1880 = @runtime(core.char_from_uint32)(codepoint/12) in
@@ -1442,7 +1535,10 @@ fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::
   }
 }
 
-fn std::json::parse_unicode_escape(value/14: std::json::JsonParser, builder/15: std::text::StringBuilder) -> Result__unit__string {
+fn std::json::parse_unicode_escape(
+  value/14: std::json::JsonParser,
+  builder/15: std::text::StringBuilder
+) -> Result__unit__string {
   let mtmp12 = std::json::parse_hex_quad(value/14) in
   join k620(jp621: uint32) -> Result__unit__string {
     let first/16 = jp621 in
@@ -1503,14 +1599,19 @@ fn std::json::parse_unicode_escape(value/14: std::json::JsonParser, builder/15: 
                             let inline1917 = char_from_uint32(t648) in
                             match inline1917 {
                               Tag_0 => {
-                                let inline1918 = std::json::json_error(value/14, "invalid unicode codepoint") in
+                                let inline1918 =
+                                  std::json::json_error(value/14, "invalid unicode codepoint") in
                                 let inline1919 = Result__unit__string::Err(inline1918) in
                                 inline1919
                               },
                               Tag_1 => {
                                 let inline1920 = Option__char::Some._0(inline1917) in
                                 let inline1921 = inline1920 in
-                                let inline1922 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/15, inline1920) in
+                                let inline1922 =
+                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                                    builder/15,
+                                    inline1920
+                                  ) in
                                 let inline1923 = Result__unit__string::Ok(()) in
                                 inline1923
                               },
@@ -1701,7 +1802,11 @@ fn std::json::parse_json_string(value/18: std::json::JsonParser) -> Result__stri
                   let t715 = std::json::JsonParser.index(value/18) in
                   join inline_cont1953(t716: int) -> Result__string__string {
                     join inline_cont1951(t717: string) -> Result__string__string {
-                      let t718 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/19, t717) in
+                      let t718 =
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                          builder/19,
+                          t717
+                        ) in
                       jump k704()
                     } in
                     let inline1952 = @runtime(core.string_byte_slice)(t714, segment/20, t716) in
@@ -1755,17 +1860,29 @@ fn std::json::parse_json_string(value/18: std::json::JsonParser) -> Result__stri
                     if t737 {
                       let inline1980 = '"' in
                       let inline1981 = inherent#char#char#to_string(inline1980) in
-                      let inline1982 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/19, inline1981) in
+                      let inline1982 =
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                          builder/19,
+                          inline1981
+                        ) in
                       jump k734()
                     } else {
                       let t740 = trait_impl#Eq#uint8#eq(escape/22, 92) in
                       if t740 {
-                        let t741 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '\\') in
+                        let t741 =
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                            builder/19,
+                            '\\'
+                          ) in
                         jump k734()
                       } else {
                         let t743 = trait_impl#Eq#uint8#eq(escape/22, 47) in
                         if t743 {
-                          let t744 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '/') in
+                          let t744 =
+                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                              builder/19,
+                              '/'
+                            ) in
                           jump k734()
                         } else {
                           let t746 = trait_impl#Eq#uint8#eq(escape/22, 98) in
@@ -1778,7 +1895,11 @@ fn std::json::parse_json_string(value/18: std::json::JsonParser) -> Result__stri
                               Tag_1 => {
                                 let x27 = Option__char::Some._0(mtmp26) in
                                 let character/23 = x27 in
-                                let t748 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, x27) in
+                                let t748 =
+                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                                    builder/19,
+                                    x27
+                                  ) in
                                 jump k734()
                               },
                             }
@@ -1793,29 +1914,46 @@ fn std::json::parse_json_string(value/18: std::json::JsonParser) -> Result__stri
                                 Tag_1 => {
                                   let x29 = Option__char::Some._0(mtmp28) in
                                   let character/24 = x29 in
-                                  let t752 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, x29) in
+                                  let t752 =
+                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                                      builder/19,
+                                      x29
+                                    ) in
                                   jump k734()
                                 },
                               }
                             } else {
                               let t754 = trait_impl#Eq#uint8#eq(escape/22, 110) in
                               if t754 {
-                                let t755 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '\n') in
+                                let t755 =
+                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                                    builder/19,
+                                    '\n'
+                                  ) in
                                 jump k734()
                               } else {
                                 let t757 = trait_impl#Eq#uint8#eq(escape/22, 114) in
                                 if t757 {
-                                  let t758 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '\r') in
+                                  let t758 =
+                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                                      builder/19,
+                                      '\r'
+                                    ) in
                                   jump k734()
                                 } else {
                                   let t760 = trait_impl#Eq#uint8#eq(escape/22, 116) in
                                   if t760 {
-                                    let t761 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/19, '\t') in
+                                    let t761 =
+                                      inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+                                        builder/19,
+                                        '\t'
+                                      ) in
                                     jump k734()
                                   } else {
                                     let t763 = trait_impl#Eq#uint8#eq(escape/22, 117) in
                                     if t763 {
-                                      let mtmp30 = std::json::parse_unicode_escape(value/18, builder/19) in
+                                      let mtmp30 =
+                                        std::json::parse_unicode_escape(value/18, builder/19) in
                                       match mtmp30 {
                                         Tag_0 => {
                                           let x31 = Result__unit__string::Ok._0(mtmp30) in
@@ -1830,7 +1968,8 @@ fn std::json::parse_json_string(value/18: std::json::JsonParser) -> Result__stri
                                         },
                                       }
                                     } else {
-                                      let t766 = std::json::json_error(value/18, "invalid escape") in
+                                      let t766 =
+                                        std::json::json_error(value/18, "invalid escape") in
                                       let t767 = Result__string__string::Err(t766) in
                                       t767
                                     }
@@ -1865,7 +2004,11 @@ fn std::json::parse_json_string(value/18: std::json::JsonParser) -> Result__stri
                   let t779 = std::json::JsonParser.index(value/18) in
                   join inline_cont1969(t780: int) -> Result__string__string {
                     join inline_cont1967(t781: string) -> Result__string__string {
-                      let t782 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/19, t781) in
+                      let t782 =
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                          builder/19,
+                          t781
+                        ) in
                       jump k721()
                     } in
                     let inline1968 = @runtime(core.string_byte_slice)(t778, segment/20, t780) in
@@ -2027,7 +2170,9 @@ fn std::json::parse_digits(value/26: std::json::JsonParser) -> bool {
   jump inline_cont2000(inline2001)
 }
 
-fn std::json::parse_json_number(value/28: std::json::JsonParser) -> Result__std::json::Value__string {
+fn std::json::parse_json_number(
+  value/28: std::json::JsonParser
+) -> Result__std::json::Value__string {
   let t845 = std::json::JsonParser.index(value/28) in
   let start/29 = inherent#Ref#Ref[T]#get__T_int(t845) in
   let t967 = std::json::JsonParser.input(value/28) in
@@ -2304,7 +2449,11 @@ fn std::json::parse_json_number(value/28: std::json::JsonParser) -> Result__std:
   }
 }
 
-fn std::json::parse_json_literal(value/30: std::json::JsonParser, expected/31: string, result/32: std::json::Value) -> Result__std::json::Value__string {
+fn std::json::parse_json_literal(
+  value/30: std::json::JsonParser,
+  expected/31: string,
+  result/32: std::json::Value
+) -> Result__std::json::Value__string {
   let t991 = std::json::JsonParser.index(value/30) in
   join inline_cont2080(t992: int) -> Result__std::json::Value__string {
     join inline_cont2078(t993: int) -> Result__std::json::Value__string {
@@ -2383,7 +2532,9 @@ fn std::json::parse_json_literal(value/30: std::json::JsonParser, expected/31: s
   jump inline_cont2080(inline2081)
 }
 
-fn std::json::parse_json_array(value/33: std::json::JsonParser) -> Result__std::json::Value__string {
+fn std::json::parse_json_array(
+  value/33: std::json::JsonParser
+) -> Result__std::json::Value__string {
   let t1009 = std::json::JsonParser.index(value/33) in
   let t1010 = std::json::JsonParser.index(value/33) in
   let t1011 = inherent#Ref#Ref[T]#get__T_int(t1010) in
@@ -2417,7 +2568,8 @@ fn std::json::parse_json_array(value/33: std::json::JsonParser) -> Result__std::
             let mtmp50 = std::json::parse_json_value(value/33) in
             join k1023(jp1024: std::json::Value) -> Result__std::json::Value__string {
               let item/35 = jp1024 in
-              let _wild53 = inherent#Vec#Vec[T]#push__T_std::json::Value(vec_literal/8961, jp1024) in
+              let _wild53 =
+                inherent#Vec#Vec[T]#push__T_std::json::Value(vec_literal/8961, jp1024) in
               let _wild54 = std::json::skip_json_whitespace(value/33) in
               let t1026 = std::json::JsonParser.index(value/33) in
               join inline_cont2133(t1027: int) -> Result__std::json::Value__string {
@@ -2448,7 +2600,9 @@ fn std::json::parse_json_array(value/33: std::json::JsonParser) -> Result__std::
                             let t1040 = std::json::JsonParser.index(value/33) in
                             join inline_cont2103(t1041: int) -> Result__std::json::Value__string {
                               let t1042 = (t1041 + 1) in
-                              join inline_cont2101(_wild55: unit) -> Result__std::json::Value__string {
+                              join inline_cont2101(
+                                _wild55: unit
+                              ) -> Result__std::json::Value__string {
                                 let t1043 = std::json::Value::Array(vec_literal/8961) in
                                 let t1044 = Result__std::json::Value__string::Ok(t1043) in
                                 t1044
@@ -2462,14 +2616,22 @@ fn std::json::parse_json_array(value/33: std::json::JsonParser) -> Result__std::
                             let t1046 = std::json::JsonParser.input(value/33) in
                             let t1047 = std::json::JsonParser.index(value/33) in
                             join inline_cont2122(t1048: int) -> Result__std::json::Value__string {
-                              join inline_cont2120(t1049: uint8) -> Result__std::json::Value__string {
-                                join inline_cont2117(t1050: bool) -> Result__std::json::Value__string {
+                              join inline_cont2120(
+                                t1049: uint8
+                              ) -> Result__std::json::Value__string {
+                                join inline_cont2117(
+                                  t1050: bool
+                                ) -> Result__std::json::Value__string {
                                   if t1050 {
                                     let t1051 = std::json::JsonParser.index(value/33) in
                                     let t1052 = std::json::JsonParser.index(value/33) in
-                                    join inline_cont2107(t1053: int) -> Result__std::json::Value__string {
+                                    join inline_cont2107(
+                                      t1053: int
+                                    ) -> Result__std::json::Value__string {
                                       let t1054 = (t1053 + 1) in
-                                      join inline_cont2105(_wild56: unit) -> Result__std::json::Value__string {
+                                      join inline_cont2105(
+                                        _wild56: unit
+                                      ) -> Result__std::json::Value__string {
                                         let t1055 = std::json::skip_json_whitespace(value/33) in
                                         jump loop1017()
                                       } in
@@ -2479,7 +2641,9 @@ fn std::json::parse_json_array(value/33: std::json::JsonParser) -> Result__std::
                                     let inline2108 = @intrinsic(ref.get)(t1052) in
                                     jump inline_cont2107(inline2108)
                                   } else {
-                                    join inline_cont2109(t1056: string) -> Result__std::json::Value__string {
+                                    join inline_cont2109(
+                                      t1056: string
+                                    ) -> Result__std::json::Value__string {
                                       let t1057 = Result__std::json::Value__string::Err(t1056) in
                                       t1057
                                     } in
@@ -2579,7 +2743,9 @@ fn std::json::parse_json_array(value/33: std::json::JsonParser) -> Result__std::
   }
 }
 
-fn std::json::parse_json_object(value/36: std::json::JsonParser) -> Result__std::json::Value__string {
+fn std::json::parse_json_object(
+  value/36: std::json::JsonParser
+) -> Result__std::json::Value__string {
   let t1079 = std::json::JsonParser.index(value/36) in
   let t1080 = std::json::JsonParser.index(value/36) in
   let t1081 = inherent#Ref#Ref[T]#get__T_int(t1080) in
@@ -2627,7 +2793,11 @@ fn std::json::parse_json_object(value/36: std::json::JsonParser) -> Result__std:
                   join k1096(jp1097: std::json::Value) -> Result__std::json::Value__string {
                     let item/39 = jp1097 in
                     let t1098 = (jp1094, jp1097) in
-                    let _wild71 = inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(vec_literal/10180, t1098) in
+                    let _wild71 =
+                      inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(
+                        vec_literal/10180,
+                        t1098
+                      ) in
                     let _wild72 = std::json::skip_json_whitespace(value/36) in
                     let t1100 = std::json::JsonParser.index(value/36) in
                     let t1101 = inherent#Ref#Ref[T]#get__T_int(t1100) in
@@ -2677,9 +2847,13 @@ fn std::json::parse_json_object(value/36: std::json::JsonParser) -> Result__std:
                               if t1124 {
                                 let t1125 = std::json::JsonParser.index(value/36) in
                                 let t1126 = std::json::JsonParser.index(value/36) in
-                                join inline_cont2179(t1127: int) -> Result__std::json::Value__string {
+                                join inline_cont2179(
+                                  t1127: int
+                                ) -> Result__std::json::Value__string {
                                   let t1128 = (t1127 + 1) in
-                                  join inline_cont2177(_wild74: unit) -> Result__std::json::Value__string {
+                                  join inline_cont2177(
+                                    _wild74: unit
+                                  ) -> Result__std::json::Value__string {
                                     let t1129 = std::json::skip_json_whitespace(value/36) in
                                     jump loop1087()
                                   } in
@@ -2689,7 +2863,8 @@ fn std::json::parse_json_object(value/36: std::json::JsonParser) -> Result__std:
                                 let inline2180 = @intrinsic(ref.get)(t1126) in
                                 jump inline_cont2179(inline2180)
                               } else {
-                                let t1130 = std::json::json_error(value/36, "expected object separator") in
+                                let t1130 =
+                                  std::json::json_error(value/36, "expected object separator") in
                                 let t1131 = Result__std::json::Value__string::Err(t1130) in
                                 t1131
                               }
@@ -2825,7 +3000,9 @@ fn std::json::parse_json_object(value/36: std::json::JsonParser) -> Result__std:
   }
 }
 
-fn std::json::parse_json_value(value/40: std::json::JsonParser) -> Result__std::json::Value__string {
+fn std::json::parse_json_value(
+  value/40: std::json::JsonParser
+) -> Result__std::json::Value__string {
   let _wild76 = std::json::skip_json_whitespace(value/40) in
   let t1176 = std::json::JsonParser.index(value/40) in
   join inline_cont2216(t1177: int) -> Result__std::json::Value__string {
@@ -3009,7 +3186,8 @@ fn std::json::json_hex_digit(value/47: uint8) -> char {
 }
 
 fn std::json::write_json_string(builder/48: std::text::StringBuilder, value/49: string) -> unit {
-  let _wild85 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/48, '"') in
+  let _wild85 =
+    inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/48, '"') in
   let start/50 = 0 in
   let for_index86 = 0 in
   let for_limit87 = inherent#string#string#byte_len(value/49) in
@@ -3019,13 +3197,18 @@ fn std::json::write_json_string(builder/48: std::text::StringBuilder, value/49: 
     let t1232 = (start/50 < t1231) in
     join k1229() -> unit {
       let _wild96 = () in
-      let t1230 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/48, '"') in
+      let t1230 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(builder/48, '"') in
       ()
     } in
     if t1232 {
       join inline_cont2298(t1233: int) -> unit {
         join inline_cont2296(t1234: string) -> unit {
-          let t1235 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, t1234) in
+          let t1235 =
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+              builder/48,
+              t1234
+            ) in
           jump k1229()
         } in
         let inline2297 = @runtime(core.string_byte_slice)(value/49, start/50, t1233) in
@@ -3066,84 +3249,150 @@ fn std::json::write_json_string(builder/48: std::text::StringBuilder, value/49: 
                                   jump loop1236()
                                 } in
                                 if t1245 {
-                                  let t1246 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\\"") in
+                                  let t1246 =
+                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                      builder/48,
+                                      "\\\""
+                                    ) in
                                   jump k1243()
                                 } else {
                                   join inline_cont2285(t1248: bool) -> unit {
                                     if t1248 {
-                                      let t1249 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\\\") in
+                                      let t1249 =
+                                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                          builder/48,
+                                          "\\\\"
+                                        ) in
                                       jump k1243()
                                     } else {
                                       join inline_cont2282(t1251: bool) -> unit {
                                         if t1251 {
-                                          let t1252 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\b") in
+                                          let t1252 =
+                                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                              builder/48,
+                                              "\\b"
+                                            ) in
                                           jump k1243()
                                         } else {
                                           join inline_cont2279(t1254: bool) -> unit {
                                             if t1254 {
-                                              let t1255 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\t") in
+                                              let t1255 =
+                                                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                                  builder/48,
+                                                  "\\t"
+                                                ) in
                                               jump k1243()
                                             } else {
                                               join inline_cont2276(t1257: bool) -> unit {
                                                 if t1257 {
-                                                  let t1258 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\n") in
+                                                  let t1258 =
+                                                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                                      builder/48,
+                                                      "\\n"
+                                                    ) in
                                                   jump k1243()
                                                 } else {
                                                   join inline_cont2273(t1260: bool) -> unit {
                                                     if t1260 {
-                                                      let t1261 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\f") in
+                                                      let t1261 =
+                                                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                                          builder/48,
+                                                          "\\f"
+                                                        ) in
                                                       jump k1243()
                                                     } else {
                                                       join inline_cont2270(t1263: bool) -> unit {
                                                         if t1263 {
-                                                          let t1264 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\r") in
+                                                          let t1264 =
+                                                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                                              builder/48,
+                                                              "\\r"
+                                                            ) in
                                                           jump k1243()
                                                         } else {
-                                                          let _wild91 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, "\\u00") in
+                                                          let _wild91 =
+                                                            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                                              builder/48,
+                                                              "\\u00"
+                                                            ) in
                                                           let t1265 = (byte/52 / 16) in
-                                                          join inline_cont2267(t1266: char) -> unit {
-                                                            join inline_cont2264(_wild92: unit) -> unit {
+                                                          join inline_cont2267(
+                                                            t1266: char
+                                                          ) -> unit {
+                                                            join inline_cont2264(
+                                                              _wild92: unit
+                                                            ) -> unit {
                                                               let t1267 = (byte/52 % 16) in
-                                                              join inline_cont2261(t1268: char) -> unit {
-                                                                let inline2259 = inherent#char#char#to_string(t1268) in
-                                                                let inline2260 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, inline2259) in
+                                                              join inline_cont2261(
+                                                                t1268: char
+                                                              ) -> unit {
+                                                                let inline2259 =
+                                                                  inherent#char#char#to_string(
+                                                                    t1268
+                                                                  ) in
+                                                                let inline2260 =
+                                                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                                                    builder/48,
+                                                                    inline2259
+                                                                  ) in
                                                                 jump k1243()
                                                               } in
                                                               let inline2262 = (t1267 as int) in
-                                                              let inline2263 = inherent#string#string#get("0123456789abcdef", inline2262) in
+                                                              let inline2263 =
+                                                                inherent#string#string#get(
+                                                                  "0123456789abcdef",
+                                                                  inline2262
+                                                                ) in
                                                               jump inline_cont2261(inline2263)
                                                             } in
-                                                            let inline2265 = inherent#char#char#to_string(t1266) in
-                                                            let inline2266 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, inline2265) in
+                                                            let inline2265 =
+                                                              inherent#char#char#to_string(t1266) in
+                                                            let inline2266 =
+                                                              inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                                                builder/48,
+                                                                inline2265
+                                                              ) in
                                                             jump inline_cont2264(())
                                                           } in
                                                           let inline2268 = (t1265 as int) in
-                                                          let inline2269 = inherent#string#string#get("0123456789abcdef", inline2268) in
+                                                          let inline2269 =
+                                                            inherent#string#string#get(
+                                                              "0123456789abcdef",
+                                                              inline2268
+                                                            ) in
                                                           jump inline_cont2267(inline2269)
                                                         }
                                                       } in
                                                       let inline2271 = 13 in
-                                                      let inline2272 = @intrinsic(eq.primitive)(byte/52, inline2271) in
+                                                      let inline2272 =
+                                                        @intrinsic(eq.primitive)(
+                                                          byte/52,
+                                                          inline2271
+                                                        ) in
                                                       jump inline_cont2270(inline2272)
                                                     }
                                                   } in
                                                   let inline2274 = 12 in
-                                                  let inline2275 = @intrinsic(eq.primitive)(byte/52, inline2274) in
+                                                  let inline2275 =
+                                                    @intrinsic(eq.primitive)(byte/52, inline2274) in
                                                   jump inline_cont2273(inline2275)
                                                 }
                                               } in
                                               let inline2277 = 10 in
-                                              let inline2278 = @intrinsic(eq.primitive)(byte/52, inline2277) in
+                                              let inline2278 =
+                                                @intrinsic(eq.primitive)(byte/52, inline2277) in
                                               jump inline_cont2276(inline2278)
                                             }
                                           } in
                                           let inline2280 = 9 in
-                                          let inline2281 = @intrinsic(eq.primitive)(byte/52, inline2280) in
+                                          let inline2281 =
+                                            @intrinsic(eq.primitive)(byte/52, inline2280) in
                                           jump inline_cont2279(inline2281)
                                         }
                                       } in
                                       let inline2283 = 8 in
-                                      let inline2284 = @intrinsic(eq.primitive)(byte/52, inline2283) in
+                                      let inline2284 =
+                                        @intrinsic(eq.primitive)(byte/52, inline2283) in
                                       jump inline_cont2282(inline2284)
                                     }
                                   } in
@@ -3158,10 +3407,15 @@ fn std::json::write_json_string(builder/48: std::text::StringBuilder, value/49: 
                             } in
                             if t1270 {
                               join inline_cont2256(t1271: string) -> unit {
-                                let t1272 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/48, t1271) in
+                                let t1272 =
+                                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                                    builder/48,
+                                    t1271
+                                  ) in
                                 jump k1242()
                               } in
-                              let inline2257 = @runtime(core.string_byte_slice)(value/49, start/50, for_item88) in
+                              let inline2257 =
+                                @runtime(core.string_byte_slice)(value/49, start/50, for_item88) in
                               jump inline_cont2256(inline2257)
                             } else {
                               jump k1242()
@@ -3239,7 +3493,10 @@ fn std::json::write_json_string(builder/48: std::text::StringBuilder, value/49: 
   jump loop1236()
 }
 
-fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: std::json::Value) -> unit {
+fn std::json::write_json_value(
+  builder/53: std::text::StringBuilder,
+  value/54: std::json::Value
+) -> unit {
   match value/54 {
     Tag_0 => {
       let x97 = std::json::Value::Object._0(value/54) in
@@ -3253,7 +3510,11 @@ fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: s
           let _wild115 = () in
           let inline2309 = '}' in
           let inline2310 = inherent#char#char#to_string(inline2309) in
-          let inline2311 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, inline2310) in
+          let inline2311 =
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+              builder/53,
+              inline2310
+            ) in
           ()
         } in
         joinrec {
@@ -3281,13 +3542,21 @@ fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: s
                 } in
                 let inline2305 = ':' in
                 let inline2306 = inherent#char#char#to_string(inline2305) in
-                let inline2307 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, inline2306) in
+                let inline2307 =
+                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                    builder/53,
+                    inline2306
+                  ) in
                 jump inline_cont2304(())
               } in
               if t1305 {
                 let inline2301 = ',' in
                 let inline2302 = inherent#char#char#to_string(inline2301) in
-                let inline2303 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, inline2302) in
+                let inline2303 =
+                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                    builder/53,
+                    inline2302
+                  ) in
                 jump k1300()
               } else {
                 jump k1300()
@@ -3301,7 +3570,11 @@ fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: s
       } in
       let inline2313 = '{' in
       let inline2314 = inherent#char#char#to_string(inline2313) in
-      let inline2315 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, inline2314) in
+      let inline2315 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+          builder/53,
+          inline2314
+        ) in
       jump inline_cont2312(())
     },
     Tag_1 => {
@@ -3316,7 +3589,11 @@ fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: s
           let _wild127 = () in
           let inline2321 = ']' in
           let inline2322 = inherent#char#char#to_string(inline2321) in
-          let inline2323 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, inline2322) in
+          let inline2323 =
+            inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+              builder/53,
+              inline2322
+            ) in
           ()
         } in
         joinrec {
@@ -3341,7 +3618,11 @@ fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: s
               if t1315 {
                 let inline2317 = ',' in
                 let inline2318 = inherent#char#char#to_string(inline2317) in
-                let inline2319 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, inline2318) in
+                let inline2319 =
+                  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                    builder/53,
+                    inline2318
+                  ) in
                 jump k1312()
               } else {
                 jump k1312()
@@ -3355,7 +3636,11 @@ fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: s
       } in
       let inline2325 = '[' in
       let inline2326 = inherent#char#char#to_string(inline2325) in
-      let inline2327 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, inline2326) in
+      let inline2327 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+          builder/53,
+          inline2326
+        ) in
       jump inline_cont2324(())
     },
     Tag_2 => {
@@ -3367,14 +3652,19 @@ fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: s
     Tag_3 => {
       let x100 = std::json::Value::Number._0(value/54) in
       let number/62 = x100 in
-      let t1318 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, x100) in
+      let t1318 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, x100) in
       ()
     },
     Tag_4 => {
       let x101 = std::json::Value::Bool._0(value/54) in
       let value/63 = x101 in
       join k1319(jp1320: string) -> unit {
-        let t1321 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, jp1320) in
+        let t1321 =
+          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+            builder/53,
+            jp1320
+          ) in
         ()
       } in
       if x101 {
@@ -3384,7 +3674,11 @@ fn std::json::write_json_value(builder/53: std::text::StringBuilder, value/54: s
       }
     },
     Tag_5 => {
-      let t1322 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/53, "null") in
+      let t1322 =
+        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+          builder/53,
+          "null"
+        ) in
       ()
     },
   }
@@ -3845,7 +4139,11 @@ fn inherent#Vec#Vec[T]#clear__T_uint8(self/144: Vec[uint8]) -> unit {
   ()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/175: Vec[uint8], start/176: int, end/177: int) -> Slice[uint8] {
+fn inherent#Vec#Vec[T]#slice__T_uint8(
+  self/175: Vec[uint8],
+  start/176: int,
+  end/177: int
+) -> Slice[uint8] {
   let t1450 = @intrinsic(slice.new)(self/175, start/176, end/177) in
   t1450
 }
@@ -3976,7 +4274,10 @@ fn inherent#Vec#Vec[T]#new__T_std::json::Value() -> Vec[std::json::Value] {
   t1513
 }
 
-fn inherent#Vec#Vec[T]#push__T_std::json::Value(self/126: Vec[std::json::Value], elem/127: std::json::Value) -> unit {
+fn inherent#Vec#Vec[T]#push__T_std::json::Value(
+  self/126: Vec[std::json::Value],
+  elem/127: std::json::Value
+) -> unit {
   let t1515 = @intrinsic(vec.push)(self/126, elem/127) in
   ()
 }
@@ -3986,7 +4287,10 @@ fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::j
   t1518
 }
 
-fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(self/126: Vec[(string, std::json::Value)], elem/127: (string, std::json::Value)) -> unit {
+fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(
+  self/126: Vec[(string, std::json::Value)],
+  elem/127: (string, std::json::Value)
+) -> unit {
   let t1520 = @intrinsic(vec.push)(self/126, elem/127) in
   ()
 }
