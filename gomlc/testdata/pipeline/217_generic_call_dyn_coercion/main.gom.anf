@@ -1,7 +1,7 @@
 fn trait_impl#Show#Wrap__int32#show(self/0: Wrap__int32) -> string {
   let t157 = Wrap__int32.value(self/0) in
-  let t158 = inherent#int32#int32#to_string(t157) in
-  t158
+  let inline179 = @runtime(core.int32_to_string)(t157) in
+  inline179
 }
 
 fn render(value/2: dyn Show) -> string {
@@ -11,11 +11,18 @@ fn render(value/2: dyn Show) -> string {
 
 fn main() -> unit {
   let value/3 = 42 in
-  let t163 = make_wrap__T_int32(value/3) in
-  let t164 = to_dyn[Show]{Wrap__int32}(t163) in
-  let t165 = render(t164) in
-  let t166 = println__T_string(t165) in
-  ()
+  join inline_cont185(t163: Wrap__int32) -> unit {
+    let t164 = to_dyn[Show]{Wrap__int32}(t163) in
+    join inline_cont183(t165: string) -> unit {
+      let inline181 = trait_impl#ToString#string#to_string(t165) in
+      let inline182 = @runtime(core.string_println)(inline181) in
+      ()
+    } in
+    let inline184 = dyn_call[Show::show](t164) in
+    jump inline_cont183(inline184)
+  } in
+  let inline186 = Wrap__int32 { value: value/3 } in
+  jump inline_cont185(inline186)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -24,9 +31,11 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t171 = trait_impl#ToString#string#to_string(value/1) in
-  let t172 = @runtime(core.string_println)(t171) in
-  ()
+  join inline_cont187(t171: string) -> unit {
+    let t172 = @runtime(core.string_println)(t171) in
+    ()
+  } in
+  jump inline_cont187(value/1)
 }
 
 fn make_wrap__T_int32(value/1: int32) -> Wrap__int32 {

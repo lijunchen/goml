@@ -1,31 +1,40 @@
 fn fetch(flag/0: bool) -> Option__int32 {
-  let m/1 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
-  join k164() -> Option__int32 {
-    let _wild156 = () in
-    let mtmp157 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
-    join k165(jp166: int32) -> Option__int32 {
-      let value/2 = jp166 in
-      let t167 = (jp166 + 1) in
-      let t168 = Option__int32::Some(t167) in
-      t168
+  join inline_cont209(m/1: HashMap[string, int32]) -> Option__int32 {
+    join k164() -> Option__int32 {
+      let _wild156 = () in
+      join inline_cont206(mtmp157: Option__int32) -> Option__int32 {
+        join k165(jp166: int32) -> Option__int32 {
+          let value/2 = jp166 in
+          let t167 = (jp166 + 1) in
+          let t168 = Option__int32::Some(t167) in
+          t168
+        } in
+        match mtmp157 {
+          Tag_0 => {
+            Tag_0
+          },
+          Tag_1 => {
+            let x158 = Option__int32::Some._0(mtmp157) in
+            let try_value/18 = x158 in
+            jump k165(x158)
+          },
+        }
+      } in
+      let inline207 = "a" in
+      let inline208 = @intrinsic(hashmap.get)(m/1, inline207) in
+      jump inline_cont206(inline208)
     } in
-    match mtmp157 {
-      Tag_0 => {
-        Tag_0
-      },
-      Tag_1 => {
-        let x158 = Option__int32::Some._0(mtmp157) in
-        let try_value/18 = x158 in
-        jump k165(x158)
-      },
+    if flag/0 {
+      let inline203 = "a" in
+      let inline204 = 7 in
+      let inline205 = @intrinsic(hashmap.set)(m/1, inline203, inline204) in
+      jump k164()
+    } else {
+      jump k164()
     }
   } in
-  if flag/0 {
-    let _wild155 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
-    jump k164()
-  } else {
-    jump k164()
-  }
+  let inline210 = @intrinsic(hashmap.new)() in
+  jump inline_cont209(inline210)
 }
 
 fn show(opt/3: Option__int32) -> string {
@@ -36,21 +45,55 @@ fn show(opt/3: Option__int32) -> string {
     Tag_1 => {
       let x159 = Option__int32::Some._0(opt/3) in
       let value/4 = x159 in
-      let t173 = inherent#int32#int32#to_string(x159) in
-      let t174 = ("some=" + t173) in
-      t174
+      join inline_cont211(t173: string) -> string {
+        let t174 = ("some=" + t173) in
+        t174
+      } in
+      let inline212 = @runtime(core.int32_to_string)(x159) in
+      jump inline_cont211(inline212)
     },
   }
 }
 
 fn main() -> unit {
   let t176 = fetch(true) in
-  let t177 = show(t176) in
-  let _wild160 = println__T_string(t177) in
-  let t178 = fetch(false) in
-  let t179 = show(t178) in
-  let _wild161 = println__T_string(t179) in
-  ()
+  join inline_cont224(t177: string) -> unit {
+    join inline_cont221(_wild160: unit) -> unit {
+      let t178 = fetch(false) in
+      join inline_cont216(t179: string) -> unit {
+        let inline214 = trait_impl#ToString#string#to_string(t179) in
+        let inline215 = @runtime(core.string_println)(inline214) in
+        ()
+      } in
+      match t178 {
+        Tag_0 => {
+          jump inline_cont216("none")
+        },
+        Tag_1 => {
+          let inline217 = Option__int32::Some._0(t178) in
+          let inline218 = inline217 in
+          let inline219 = inherent#int32#int32#to_string(inline217) in
+          let inline220 = ("some=" + inline219) in
+          jump inline_cont216(inline220)
+        },
+      }
+    } in
+    let inline222 = trait_impl#ToString#string#to_string(t177) in
+    let inline223 = @runtime(core.string_println)(inline222) in
+    jump inline_cont221(())
+  } in
+  match t176 {
+    Tag_0 => {
+      jump inline_cont224("none")
+    },
+    Tag_1 => {
+      let inline225 = Option__int32::Some._0(t176) in
+      let inline226 = inline225 in
+      let inline227 = inherent#int32#int32#to_string(inline225) in
+      let inline228 = ("some=" + inline227) in
+      jump inline_cont224(inline228)
+    },
+  }
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {
@@ -74,9 +117,11 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t192 = trait_impl#ToString#string#to_string(value/1) in
-  let t193 = @runtime(core.string_println)(t192) in
-  ()
+  join inline_cont229(t192: string) -> unit {
+    let t193 = @runtime(core.string_println)(t192) in
+    ()
+  } in
+  jump inline_cont229(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

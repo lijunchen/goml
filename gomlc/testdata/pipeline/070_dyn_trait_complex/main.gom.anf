@@ -1,27 +1,39 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
   let t173 = Point.x(self/0) in
-  let t174 = inherent#int32#int32#to_string(t173) in
-  let t175 = ("Point(" + t174) in
-  let t176 = (t175 + ",") in
-  let t177 = Point.y(self/0) in
-  let t178 = inherent#int32#int32#to_string(t177) in
-  let t179 = (t176 + t178) in
-  let t180 = (t179 + ")") in
-  t180
+  join inline_cont320(t174: string) -> string {
+    let t175 = ("Point(" + t174) in
+    let t176 = (t175 + ",") in
+    let t177 = Point.y(self/0) in
+    join inline_cont318(t178: string) -> string {
+      let t179 = (t176 + t178) in
+      let t180 = (t179 + ")") in
+      t180
+    } in
+    let inline319 = @runtime(core.int32_to_string)(t177) in
+    jump inline_cont318(inline319)
+  } in
+  let inline321 = @runtime(core.int32_to_string)(t173) in
+  jump inline_cont320(inline321)
 }
 
 fn trait_impl#Display#Point#show_with(self/1: Point, prefix/2: string, suffix/3: string) -> string {
   let t183 = (prefix/2 + "Point(") in
   let t184 = Point.x(self/1) in
-  let t185 = inherent#int32#int32#to_string(t184) in
-  let t186 = (t183 + t185) in
-  let t187 = (t186 + ",") in
-  let t188 = Point.y(self/1) in
-  let t189 = inherent#int32#int32#to_string(t188) in
-  let t190 = (t187 + t189) in
-  let t191 = (t190 + ")") in
-  let t192 = (t191 + suffix/3) in
-  t192
+  join inline_cont324(t185: string) -> string {
+    let t186 = (t183 + t185) in
+    let t187 = (t186 + ",") in
+    let t188 = Point.y(self/1) in
+    join inline_cont322(t189: string) -> string {
+      let t190 = (t187 + t189) in
+      let t191 = (t190 + ")") in
+      let t192 = (t191 + suffix/3) in
+      t192
+    } in
+    let inline323 = @runtime(core.int32_to_string)(t188) in
+    jump inline_cont322(inline323)
+  } in
+  let inline325 = @runtime(core.int32_to_string)(t184) in
+  jump inline_cont324(inline325)
 }
 
 fn trait_impl#Display#Point#tick(self/4: Point) -> unit {
@@ -74,40 +86,58 @@ fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
 
 fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
   let t223 = Counter.cell(self/14) in
-  let t224 = inherent#Ref#Ref[T]#get__T_int32(t223) in
-  let t225 = inherent#int32#int32#to_string(t224) in
-  let t226 = ("Counter(" + t225) in
-  let t227 = (t226 + ")") in
-  t227
+  join inline_cont328(t224: int32) -> string {
+    join inline_cont326(t225: string) -> string {
+      let t226 = ("Counter(" + t225) in
+      let t227 = (t226 + ")") in
+      t227
+    } in
+    let inline327 = @runtime(core.int32_to_string)(t224) in
+    jump inline_cont326(inline327)
+  } in
+  let inline329 = @intrinsic(ref.get)(t223) in
+  jump inline_cont328(inline329)
 }
 
 fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
   let t230 = (prefix/16 + "Counter(") in
   let t231 = Counter.cell(self/15) in
-  let t232 = inherent#Ref#Ref[T]#get__T_int32(t231) in
-  let t233 = inherent#int32#int32#to_string(t232) in
-  let t234 = (t230 + t233) in
-  let t235 = (t234 + ")") in
-  let t236 = (t235 + suffix/17) in
-  t236
+  join inline_cont332(t232: int32) -> string {
+    join inline_cont330(t233: string) -> string {
+      let t234 = (t230 + t233) in
+      let t235 = (t234 + ")") in
+      let t236 = (t235 + suffix/17) in
+      t236
+    } in
+    let inline331 = @runtime(core.int32_to_string)(t232) in
+    jump inline_cont330(inline331)
+  } in
+  let inline333 = @intrinsic(ref.get)(t231) in
+  jump inline_cont332(inline333)
 }
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
   let t238 = Counter.cell(self/18) in
-  let t239 = inherent#Ref#Ref[T]#get__T_int32(t238) in
-  let next/19 = (t239 + 1) in
-  let t240 = Counter.cell(self/18) in
-  let mtmp155 = inherent#Ref#Ref[T]#set__T_int32(t240, next/19) in
-  ()
+  join inline_cont336(t239: int32) -> unit {
+    let next/19 = (t239 + 1) in
+    let t240 = Counter.cell(self/18) in
+    let inline335 = @intrinsic(ref.set)(t240, next/19) in
+    ()
+  } in
+  let inline337 = @intrinsic(ref.get)(t238) in
+  jump inline_cont336(inline337)
 }
 
 fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: int32) -> int32 {
   let t243 = Counter.cell(self/20) in
-  let t244 = inherent#Ref#Ref[T]#get__T_int32(t243) in
-  let next/22 = (t244 + delta/21) in
-  let t245 = Counter.cell(self/20) in
-  let mtmp156 = inherent#Ref#Ref[T]#set__T_int32(t245, next/22) in
-  next/22
+  join inline_cont340(t244: int32) -> int32 {
+    let next/22 = (t244 + delta/21) in
+    let t245 = Counter.cell(self/20) in
+    let inline339 = @intrinsic(ref.set)(t245, next/22) in
+    next/22
+  } in
+  let inline341 = @intrinsic(ref.get)(t243) in
+  jump inline_cont340(inline341)
 }
 
 fn show_dyn(x/23: dyn Display) -> string {
@@ -117,8 +147,8 @@ fn show_dyn(x/23: dyn Display) -> string {
 
 fn call_via_closure(x/24: dyn Display, tag/25: string) -> string {
   let f/28 = closure_env_f_0 {} in
-  let t251 = inherent#closure_env_f_0#closure_env_f_0#apply(f/28, x/24, tag/25) in
-  t251
+  let inline343 = dyn_call[Display::show_with](x/24, tag/25, tag/25) in
+  inline343
 }
 
 fn make_renderer(tag/29: string) -> (dyn Display) -> string {
@@ -134,9 +164,12 @@ fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
   let t257 = dyn_call[Display::show_with](x/31, "[", "]") in
   let t258 = (t257 + ":") in
   let t259 = dyn_call[Display::bump](x/31, delta/32) in
-  let t260 = inherent#int32#int32#to_string(t259) in
-  let t261 = (t258 + t260) in
-  t261
+  join inline_cont344(t260: string) -> string {
+    let t261 = (t258 + t260) in
+    t261
+  } in
+  let inline345 = @runtime(core.int32_to_string)(t259) in
+  jump inline_cont344(inline345)
 }
 
 fn main() -> unit {
@@ -159,53 +192,113 @@ fn main() -> unit {
   let t265 = (t264 + "|") in
   let t266 = render_angle/44(df1/40) in
   let s2/47 = (t265 + t266) in
-  let v/48 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
-  let _wild158 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dp1/38) in
-  let _wild159 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, df1/40) in
-  let _wild160 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dc/42) in
-  let vlen/49 = inherent#Vec#Vec[T]#len__T_dynDisplay(v/48) in
-  join k267(jp268: int32) -> unit {
-    let delta/50 = jp268 in
-    let mtmp161 = println__T_string(s0/45) in
-    let mtmp162 = println__T_string(s1/46) in
-    let mtmp163 = println__T_string(s2/47) in
-    let i/51 = inherent#Ref#Ref[T]#new__T_int32(0) in
-    join exit269() -> unit {
-      let mtmp166 = () in
-      let t270 = inherent#int#int#to_string(vlen/49) in
-      let t271 = ("len:" + t270) in
-      let mtmp167 = println__T_string(t271) in
-      let t272 = inherent#int32#int32#to_string(jp268) in
-      let t273 = ("delta:" + t272) in
-      let mtmp168 = println__T_string(t273) in
-      ()
-    } in
-    joinrec {
-      join loop274() -> unit {
-        let t275 = inherent#Ref#Ref[T]#get__T_int32(i/51) in
-        let t276 = (t275 < 3) in
-        if t276 {
-          let line/52 = bump_and_show(dc/42, jp268) in
-          let _wild164 = println__T_string(line/52) in
-          let t277 = inherent#Ref#Ref[T]#get__T_int32(i/51) in
-          let t278 = (t277 + 1) in
-          let mtmp165 = inherent#Ref#Ref[T]#set__T_int32(i/51, t278) in
-          jump loop274()
-        } else {
-          jump exit269()
-        }
+  join inline_cont392(v/48: Vec[dyn Display]) -> unit {
+    join inline_cont390(_wild158: unit) -> unit {
+      join inline_cont388(_wild159: unit) -> unit {
+        join inline_cont386(_wild160: unit) -> unit {
+          join inline_cont384(vlen/49: int) -> unit {
+            join k267(jp268: int32) -> unit {
+              let delta/50 = jp268 in
+              join inline_cont381(mtmp161: unit) -> unit {
+                join inline_cont378(mtmp162: unit) -> unit {
+                  join inline_cont375(mtmp163: unit) -> unit {
+                    join inline_cont372(i/51: Ref[int32]) -> unit {
+                      join exit269() -> unit {
+                        let mtmp166 = () in
+                        join inline_cont370(t270: string) -> unit {
+                          let t271 = ("len:" + t270) in
+                          join inline_cont367(mtmp167: unit) -> unit {
+                            join inline_cont365(t272: string) -> unit {
+                              let t273 = ("delta:" + t272) in
+                              let inline363 = trait_impl#ToString#string#to_string(t273) in
+                              let inline364 = @runtime(core.string_println)(inline363) in
+                              ()
+                            } in
+                            let inline366 = @runtime(core.int32_to_string)(jp268) in
+                            jump inline_cont365(inline366)
+                          } in
+                          let inline368 = trait_impl#ToString#string#to_string(t271) in
+                          let inline369 = @runtime(core.string_println)(inline368) in
+                          jump inline_cont367(())
+                        } in
+                        let inline371 = @runtime(core.int_to_string)(vlen/49) in
+                        jump inline_cont370(inline371)
+                      } in
+                      joinrec {
+                        join loop274() -> unit {
+                          join inline_cont360(t275: int32) -> unit {
+                            let t276 = (t275 < 3) in
+                            if t276 {
+                              join inline_cont353(line/52: string) -> unit {
+                                join inline_cont350(_wild164: unit) -> unit {
+                                  join inline_cont348(t277: int32) -> unit {
+                                    let t278 = (t277 + 1) in
+                                    let inline347 = @intrinsic(ref.set)(i/51, t278) in
+                                    jump loop274()
+                                  } in
+                                  let inline349 = @intrinsic(ref.get)(i/51) in
+                                  jump inline_cont348(inline349)
+                                } in
+                                let inline351 = trait_impl#ToString#string#to_string(line/52) in
+                                let inline352 = @runtime(core.string_println)(inline351) in
+                                jump inline_cont350(())
+                              } in
+                              let inline354 = dyn_call[Display::tick](dc/42) in
+                              let inline355 = dyn_call[Display::show_with](dc/42, "[", "]") in
+                              let inline356 = (inline355 + ":") in
+                              let inline357 = dyn_call[Display::bump](dc/42, jp268) in
+                              let inline358 = inherent#int32#int32#to_string(inline357) in
+                              let inline359 = (inline356 + inline358) in
+                              jump inline_cont353(inline359)
+                            } else {
+                              jump exit269()
+                            }
+                          } in
+                          let inline361 = @intrinsic(ref.get)(i/51) in
+                          jump inline_cont360(inline361)
+                        } in
+                      } in
+                      jump loop274()
+                    } in
+                    let inline373 = 0 in
+                    let inline374 = @intrinsic(ref.new)(inline373) in
+                    jump inline_cont372(inline374)
+                  } in
+                  let inline376 = trait_impl#ToString#string#to_string(s2/47) in
+                  let inline377 = @runtime(core.string_println)(inline376) in
+                  jump inline_cont375(())
+                } in
+                let inline379 = trait_impl#ToString#string#to_string(s1/46) in
+                let inline380 = @runtime(core.string_println)(inline379) in
+                jump inline_cont378(())
+              } in
+              let inline382 = trait_impl#ToString#string#to_string(s0/45) in
+              let inline383 = @runtime(core.string_println)(inline382) in
+              jump inline_cont381(())
+            } in
+            match vlen/49 {
+              2 => {
+                jump k267(3)
+              },
+              _ => {
+                jump k267(5)
+              },
+            }
+          } in
+          let inline385 = @intrinsic(vec.len)(v/48) in
+          jump inline_cont384(inline385)
+        } in
+        let inline387 = @intrinsic(vec.push)(v/48, dc/42) in
+        jump inline_cont386(())
       } in
+      let inline389 = @intrinsic(vec.push)(v/48, df1/40) in
+      jump inline_cont388(())
     } in
-    jump loop274()
+    let inline391 = @intrinsic(vec.push)(v/48, dp1/38) in
+    jump inline_cont390(())
   } in
-  match vlen/49 {
-    2 => {
-      jump k267(3)
-    },
-    _ => {
-      jump k267(5)
-    },
-  }
+  let inline393 = @intrinsic(vec.new)() in
+  jump inline_cont392(inline393)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -244,9 +337,11 @@ fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/137: Vec[dyn Display]) -> int {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t299 = trait_impl#ToString#string#to_string(value/1) in
-  let t300 = @runtime(core.string_println)(t299) in
-  ()
+  join inline_cont394(t299: string) -> unit {
+    let t300 = @runtime(core.string_println)(t299) in
+    ()
+  } in
+  jump inline_cont394(value/1)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {

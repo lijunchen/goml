@@ -1,7 +1,10 @@
 fn trait_impl#Put#[int32]@Target#put(self/0: Target, value/1: int32) -> string {
-  let t163 = inherent#int32#int32#to_string(value/1) in
-  let t164 = ("number:" + t163) in
-  t164
+  join inline_cont215(t163: string) -> string {
+    let t164 = ("number:" + t163) in
+    t164
+  } in
+  let inline216 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont215(inline216)
 }
 
 fn trait_impl#Put#[string]@Target#put(self/2: Target, value/3: string) -> string {
@@ -29,24 +32,64 @@ fn trait_impl#ItemSource#Selected#item(self/9: Selected) -> int32 {
 
 fn main() -> unit {
   let t179 = Target {} in
-  let t180 = trait_impl#Put#[int32]@Target#put(t179, 3) in
-  let _wild155 = println__T_string(t180) in
-  let t181 = Target {} in
-  let t182 = trait_impl#Put#[string]@Target#put(t181, "goml") in
-  let _wild156 = println__T_string(t182) in
-  let t183 = Convertible {} in
-  let text/12 = trait_impl#Convert#[int32]@Convertible#convert(t183) in
-  let t184 = Convertible {} in
-  let number/13 = trait_impl#Convert#[string]@Convertible#convert(t184) in
-  let _wild157 = println__T_string(text/12) in
-  let _wild158 = println__T_int32(number/13) in
-  let t185 = Number { value: 8 } in
-  let t186 = read__S_Number__T_int32(t185) in
-  let _wild159 = println__T_int32(t186) in
-  let t187 = Selected { value: 9 } in
-  let t188 = select_item__S_Selected(t187) in
-  let _wild160 = println__T_int32(t188) in
-  ()
+  join inline_cont244(t180: string) -> unit {
+    join inline_cont241(_wild155: unit) -> unit {
+      let t181 = Target {} in
+      join inline_cont238(t182: string) -> unit {
+        join inline_cont235(_wild156: unit) -> unit {
+          let t183 = Convertible {} in
+          join inline_cont234(text/12: string) -> unit {
+            let t184 = Convertible {} in
+            join inline_cont233(number/13: int32) -> unit {
+              join inline_cont230(_wild157: unit) -> unit {
+                join inline_cont227(_wild158: unit) -> unit {
+                  let t185 = Number { value: 8 } in
+                  join inline_cont225(t186: int32) -> unit {
+                    join inline_cont222(_wild159: unit) -> unit {
+                      let t187 = Selected { value: 9 } in
+                      join inline_cont220(t188: int32) -> unit {
+                        let inline218 = trait_impl#ToString#int32#to_string(t188) in
+                        let inline219 = @runtime(core.string_println)(inline218) in
+                        ()
+                      } in
+                      let inline221 = invoke__S_Selected__T_int32(t187) in
+                      jump inline_cont220(inline221)
+                    } in
+                    let inline223 = trait_impl#ToString#int32#to_string(t186) in
+                    let inline224 = @runtime(core.string_println)(inline223) in
+                    jump inline_cont222(())
+                  } in
+                  let inline226 = trait_impl#Source#[int32]@Number#get(t185) in
+                  jump inline_cont225(inline226)
+                } in
+                let inline228 = trait_impl#ToString#int32#to_string(number/13) in
+                let inline229 = @runtime(core.string_println)(inline228) in
+                jump inline_cont227(())
+              } in
+              let inline231 = trait_impl#ToString#string#to_string(text/12) in
+              let inline232 = @runtime(core.string_println)(inline231) in
+              jump inline_cont230(())
+            } in
+            jump inline_cont233(7)
+          } in
+          jump inline_cont234("converted")
+        } in
+        let inline236 = trait_impl#ToString#string#to_string(t182) in
+        let inline237 = @runtime(core.string_println)(inline236) in
+        jump inline_cont235(())
+      } in
+      let inline239 = "goml" in
+      let inline240 = ("text:" + inline239) in
+      jump inline_cont238(inline240)
+    } in
+    let inline242 = trait_impl#ToString#string#to_string(t180) in
+    let inline243 = @runtime(core.string_println)(inline242) in
+    jump inline_cont241(())
+  } in
+  let inline245 = 3 in
+  let inline246 = inherent#int32#int32#to_string(inline245) in
+  let inline247 = ("number:" + inline246) in
+  jump inline_cont244(inline247)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -55,25 +98,30 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t193 = trait_impl#ToString#string#to_string(value/1) in
-  let t194 = @runtime(core.string_println)(t193) in
-  ()
+  join inline_cont248(t193: string) -> unit {
+    let t194 = @runtime(core.string_println)(t193) in
+    ()
+  } in
+  jump inline_cont248(value/1)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t196 = trait_impl#ToString#int32#to_string(value/1) in
-  let t197 = @runtime(core.string_println)(t196) in
-  ()
+  join inline_cont249(t196: string) -> unit {
+    let t197 = @runtime(core.string_println)(t196) in
+    ()
+  } in
+  let inline250 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont249(inline250)
 }
 
 fn read__S_Number__T_int32(source/7: Number) -> int32 {
-  let t200 = trait_impl#Source#[int32]@Number#get(source/7) in
-  t200
+  let inline252 = Number.value(source/7) in
+  inline252
 }
 
 fn select_item__S_Selected(source/11: Selected) -> int32 {
-  let t203 = invoke__S_Selected__T_int32(source/11) in
-  t203
+  let inline254 = trait_impl#Select#[int32]@Selected#select(source/11) in
+  inline254
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
@@ -86,11 +134,11 @@ fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
 }
 
 fn invoke__S_Selected__T_int32(source/10: Selected) -> int32 {
-  let t211 = trait_impl#Select#[int32]@Selected#select(source/10) in
-  t211
+  let inline256 = trait_impl#ItemSource#Selected#item(source/10) in
+  inline256
 }
 
 fn trait_impl#Select#[int32]@Selected#select(self/8: Selected) -> int32 {
-  let t214 = trait_impl#ItemSource#Selected#item(self/8) in
-  t214
+  let inline258 = Selected.value(self/8) in
+  inline258
 }

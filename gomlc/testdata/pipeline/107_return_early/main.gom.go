@@ -25,7 +25,10 @@ func early(x__0 int32) int32 {
     if t179 {
         return 0
     } else {
-        var t178 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(x__0, 0)
+        var t178 bool
+        var inline214 int32 = 0
+        var inline215 bool = x__0 == inline214
+        t178 = inline215
         if t178 {
             return 1
         } else {
@@ -35,62 +38,75 @@ func early(x__0 int32) int32 {
     }
 }
 
-func closure_early(x__1 int32) int32 {
-    var f__3 closure_env_f_0 = closure_env_f_0{}
-    var t182 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__3, x__1)
-    return t182
-}
-
-func unit_ret(flag__4 bool) struct{} {
-    if flag__4 {
-        return struct{}{}
-    } else {
-        println__T_string("after")
-        return struct{}{}
-    }
-}
-
 func main0() struct{} {
     print__T_string("e-1: ")
     var t186 int32 = early(-1)
-    println__T_int32(t186)
-    print__T_string("e0: ")
+    var inline272 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t186)
+    _goml_runtime_core_string_println(inline272)
+    var inline268 string = "e0: "
+    var inline269 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline268)
+    _goml_runtime_core_string_print(inline269)
     var t187 int32 = early(0)
-    println__T_int32(t187)
-    print__T_string("e3: ")
+    var inline265 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t187)
+    _goml_runtime_core_string_println(inline265)
+    var inline261 string = "e3: "
+    var inline262 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline261)
+    _goml_runtime_core_string_print(inline262)
     var t188 int32 = early(3)
-    println__T_int32(t188)
-    print__T_string("c7: ")
-    var t189 int32 = closure_early(7)
-    println__T_int32(t189)
-    print__T_string("c2: ")
-    var t190 int32 = closure_early(2)
-    println__T_int32(t190)
-    unit_ret(true)
-    unit_ret(false)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__65 int32, other__66 int32) bool {
-    var t193 bool = self__65 == other__66
-    return t193
+    var inline258 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t188)
+    _goml_runtime_core_string_println(inline258)
+    var inline254 string = "c7: "
+    var inline255 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline254)
+    _goml_runtime_core_string_print(inline255)
+    var t189 int32
+    var inline250 int32 = 7
+    var inline251 closure_env_f_0 = closure_env_f_0{}
+    var inline252 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline251, inline250)
+    t189 = inline252
+    var inline247 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t189)
+    _goml_runtime_core_string_println(inline247)
+    var inline243 string = "c2: "
+    var inline244 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline243)
+    _goml_runtime_core_string_print(inline244)
+    var t190 int32
+    var inline239 int32 = 2
+    var inline240 closure_env_f_0 = closure_env_f_0{}
+    var inline241 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(inline240, inline239)
+    t190 = inline241
+    var inline236 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t190)
+    _goml_runtime_core_string_println(inline236)
+    var inline231 bool = true
+    if inline231 {
+        var inline226 bool = false
+        if inline226 {
+            return struct{}{}
+        } else {
+            println__T_string("after")
+            return struct{}{}
+        }
+    } else {
+        println__T_string("after")
+        var inline226 bool = false
+        if inline226 {
+            return struct{}{}
+        } else {
+            println__T_string("after")
+            return struct{}{}
+        }
+    }
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t195 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    var t195 string
+    t195 = value__1
     _goml_runtime_core_string_println(t195)
     return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    var t198 string
+    t198 = value__0
     _goml_runtime_core_string_print(t198)
-    return struct{}{}
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t201 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t201)
     return struct{}{}
 }
 

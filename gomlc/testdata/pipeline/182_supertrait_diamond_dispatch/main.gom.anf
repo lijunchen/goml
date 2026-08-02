@@ -16,26 +16,46 @@ fn trait_impl#Diamond#Value#diamond(self/3: Value) -> string {
 
 fn main() -> unit {
   let t165 = Value {} in
-  let t166 = describe__T_Value(t165) in
-  let _wild155 = println__T_string(t166) in
-  ()
+  join inline_cont184(t166: string) -> unit {
+    let inline182 = trait_impl#ToString#string#to_string(t166) in
+    let inline183 = @runtime(core.string_println)(inline182) in
+    ()
+  } in
+  let inline185 = trait_impl#Base#Value#base(t165) in
+  let inline186 = trait_impl#Left#Value#left(t165) in
+  let inline187 = (inline185 + inline186) in
+  let inline188 = trait_impl#Right#Value#right(t165) in
+  let inline189 = (inline187 + inline188) in
+  let inline190 = trait_impl#Diamond#Value#diamond(t165) in
+  let inline191 = (inline189 + inline190) in
+  jump inline_cont184(inline191)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t168 = trait_impl#ToString#string#to_string(value/1) in
-  let t169 = @runtime(core.string_println)(t168) in
-  ()
+  join inline_cont192(t168: string) -> unit {
+    let t169 = @runtime(core.string_println)(t168) in
+    ()
+  } in
+  jump inline_cont192(value/1)
 }
 
 fn describe__T_Value(value/4: Value) -> string {
-  let t172 = trait_impl#Base#Value#base(value/4) in
-  let t173 = trait_impl#Left#Value#left(value/4) in
-  let t174 = (t172 + t173) in
-  let t175 = trait_impl#Right#Value#right(value/4) in
-  let t176 = (t174 + t175) in
-  let t177 = trait_impl#Diamond#Value#diamond(value/4) in
-  let t178 = (t176 + t177) in
-  t178
+  join inline_cont196(t172: string) -> string {
+    join inline_cont195(t173: string) -> string {
+      let t174 = (t172 + t173) in
+      join inline_cont194(t175: string) -> string {
+        let t176 = (t174 + t175) in
+        join inline_cont193(t177: string) -> string {
+          let t178 = (t176 + t177) in
+          t178
+        } in
+        jump inline_cont193("D")
+      } in
+      jump inline_cont194("R")
+    } in
+    jump inline_cont195("L")
+  } in
+  jump inline_cont196("B")
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

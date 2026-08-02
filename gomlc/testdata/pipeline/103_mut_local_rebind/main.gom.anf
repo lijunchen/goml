@@ -2,15 +2,21 @@ fn main() -> unit {
   let x/0 = 1 in
   let t158 = (x/0 + 1) in
   let _wild155 = x/0 = t158 in
-  let t159 = inherent#int#int#to_string(x/0) in
-  let _wild156 = println__T_string(t159) in
-  ()
+  join inline_cont171(t159: string) -> unit {
+    let inline169 = trait_impl#ToString#string#to_string(t159) in
+    let inline170 = @runtime(core.string_println)(inline169) in
+    ()
+  } in
+  let inline172 = @runtime(core.int_to_string)(x/0) in
+  jump inline_cont171(inline172)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t161 = trait_impl#ToString#string#to_string(value/1) in
-  let t162 = @runtime(core.string_println)(t161) in
-  ()
+  join inline_cont173(t161: string) -> unit {
+    let t162 = @runtime(core.string_println)(t161) in
+    ()
+  } in
+  jump inline_cont173(value/1)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {

@@ -37,13 +37,8 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var t158 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    return t158
-}
-
-func render(x__1 dyn__Display) string {
-    var t161 string = x__1.vtable.show(x__1.data)
-    return t161
+    var inline175 string = _goml_runtime_core_int32_to_string(self__0)
+    return inline175
 }
 
 func main0() struct{} {
@@ -52,19 +47,11 @@ func main0() struct{} {
         data: int32(value__2),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t165 string = render(t163)
-    println__T_string(t165)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t168 string = _goml_runtime_core_int32_to_string(self__6)
-    return t168
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t170 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t170)
+    var t165 string
+    var inline180 string = t163.vtable.show(t163.data)
+    t165 = inline180
+    var inline177 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t165)
+    _goml_runtime_core_string_println(inline177)
     return struct{}{}
 }
 

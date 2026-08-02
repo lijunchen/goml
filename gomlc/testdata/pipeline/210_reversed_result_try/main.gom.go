@@ -44,7 +44,18 @@ func parse(flag__0 bool) Result__int32__string {
 }
 
 func compute(flag__1 bool) Result__int32__string {
-    var mtmp155 Result__int32__string = parse(flag__1)
+    var mtmp155 Result__int32__string
+    if flag__1 {
+        var inline194 Result__int32__string = Ok{
+            _0: 41,
+        }
+        mtmp155 = inline194
+    } else {
+        var inline195 Result__int32__string = Err{
+            _0: "bad",
+        }
+        mtmp155 = inline195
+    }
     var jp170 int32
     switch mtmp155.(type) {
     case Err:
@@ -66,39 +77,79 @@ func compute(flag__1 bool) Result__int32__string {
     }
 }
 
-func show(value__3 Result__int32__string) string {
-    switch value__3.(type) {
+func main0() struct{} {
+    var t180 Result__int32__string = compute(true)
+    var t181 string
+    switch t180.(type) {
     case Err:
-        var x158 string = value__3.(Err)._0
-        return x158
+        var inline224 string = t180.(Err)._0
+        t181 = inline224
     case Ok:
-        var x159 int32 = value__3.(Ok)._0
-        var t178 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x159)
-        return t178
+        var inline226 int32 = t180.(Ok)._0
+        var inline228 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline226)
+        t181 = inline228
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t181)
+    _goml_runtime_core_string_println(inline221)
+    var t182 Result__int32__string
+    var inline208 bool = false
+    var inline209 Result__int32__string = parse(inline208)
+    var inline211 int32
+    switch inline209.(type) {
+    case Err:
+        var inline215 string = inline209.(Err)._0
+        var inline217 Result__int32__string = Err{
+            _0: inline215,
+        }
+        t182 = inline217
+        var t183 string
+        switch t182.(type) {
+        case Err:
+            var inline202 string = t182.(Err)._0
+            t183 = inline202
+        case Ok:
+            var inline204 int32 = t182.(Ok)._0
+            var inline206 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline204)
+            t183 = inline206
+        default:
+            panic("non-exhaustive match")
+        }
+        var inline199 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t183)
+        _goml_runtime_core_string_println(inline199)
+        return struct{}{}
+    case Ok:
+        var inline218 int32 = inline209.(Ok)._0
+        inline211 = inline218
+        var inline213 int32 = inline211 + 1
+        var inline214 Result__int32__string = Ok{
+            _0: inline213,
+        }
+        t182 = inline214
+        var t183 string
+        switch t182.(type) {
+        case Err:
+            var inline202 string = t182.(Err)._0
+            t183 = inline202
+        case Ok:
+            var inline204 int32 = t182.(Ok)._0
+            var inline206 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline204)
+            t183 = inline206
+        default:
+            panic("non-exhaustive match")
+        }
+        var inline199 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t183)
+        _goml_runtime_core_string_println(inline199)
+        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
 }
 
-func main0() struct{} {
-    var t180 Result__int32__string = compute(true)
-    var t181 string = show(t180)
-    println__T_string(t181)
-    var t182 Result__int32__string = compute(false)
-    var t183 string = show(t182)
-    println__T_string(t183)
-    return struct{}{}
-}
-
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
     var t187 string = _goml_runtime_core_int32_to_string(self__6)
     return t187
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t189)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

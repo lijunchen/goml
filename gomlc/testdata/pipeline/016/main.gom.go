@@ -93,7 +93,8 @@ func main0() struct{} {
         _1: List__int_Nil{},
     }
     var length__5 int32 = list_length__T_int(x__4)
-    println__T_int32(length__5)
+    var inline217 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__5)
+    _goml_runtime_core_string_println(inline217)
     var t172 List__int = List__int_Cons{
         _0: 2,
         _1: List__int_Nil{},
@@ -103,7 +104,8 @@ func main0() struct{} {
         _1: t172,
     }
     var length__7 int32 = list_length__T_int(x__6)
-    println__T_int32(length__7)
+    var inline214 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__7)
+    _goml_runtime_core_string_println(inline214)
     var t173 List__int32 = List__int32_Cons{
         _0: 2,
         _1: List__int32_Nil{},
@@ -117,13 +119,15 @@ func main0() struct{} {
         _1: t174,
     }
     var length__9 int32 = int_list_length(x__8)
-    println__T_int32(length__9)
+    var inline211 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__9)
+    _goml_runtime_core_string_println(inline211)
     var x__10 List__unit = List__unit_Cons{
         _0: struct{}{},
         _1: List__unit_Nil{},
     }
     var length__11 int32 = list_length__T_unit(x__10)
-    println__T_int32(length__11)
+    var inline208 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__11)
+    _goml_runtime_core_string_println(inline208)
     var t175 List__unit = List__unit_Cons{
         _0: struct{}{},
         _1: List__unit_Nil{},
@@ -133,7 +137,8 @@ func main0() struct{} {
         _1: t175,
     }
     var length__13 int32 = list_length__T_unit(x__12)
-    println__T_int32(length__13)
+    var inline205 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__13)
+    _goml_runtime_core_string_println(inline205)
     var t176 List__bool = List__bool_Cons{
         _0: false,
         _1: List__bool_Nil{},
@@ -143,7 +148,8 @@ func main0() struct{} {
         _1: t176,
     }
     var length__15 int32 = list_length__T_bool(x__14)
-    println__T_int32(length__15)
+    var inline202 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(length__15)
+    _goml_runtime_core_string_println(inline202)
     return struct{}{}
 }
 
@@ -159,12 +165,6 @@ func list_length__T_int(xs__0 List__int) int32 {
     default:
         panic("non-exhaustive match")
     }
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t184 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t184)
-    return struct{}{}
 }
 
 func list_length__T_unit(xs__0 List__unit) int32 {

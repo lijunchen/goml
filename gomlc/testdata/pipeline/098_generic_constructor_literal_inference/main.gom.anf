@@ -6,15 +6,21 @@ fn main() -> unit {
   } in
   let x155 = 42 in
   let v/1 = x155 in
-  let t159 = trait_impl#ToString#uint8#to_string(x155) in
-  let t160 = println__T_string(t159) in
-  jump k158()
+  join inline_cont173(t159: string) -> unit {
+    let inline171 = trait_impl#ToString#string#to_string(t159) in
+    let inline172 = @runtime(core.string_println)(inline171) in
+    jump k158()
+  } in
+  let inline174 = @runtime(core.uint8_to_string)(x155) in
+  jump inline_cont173(inline174)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t163 = trait_impl#ToString#string#to_string(value/1) in
-  let t164 = @runtime(core.string_println)(t163) in
-  ()
+  join inline_cont175(t163: string) -> unit {
+    let t164 = @runtime(core.string_println)(t163) in
+    ()
+  } in
+  jump inline_cont175(value/1)
 }
 
 fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {

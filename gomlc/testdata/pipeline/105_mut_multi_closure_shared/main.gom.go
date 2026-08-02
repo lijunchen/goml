@@ -42,47 +42,23 @@ type closure_env_get_1 struct {
 
 func main0() struct{} {
     var x__0 *ref_int_x = ref__Ref_3int(0)
-    var inc__1 closure_env_inc_0 = closure_env_inc_0{
-        x_0: x__0,
-    }
-    var get__2 closure_env_get_1 = closure_env_get_1{
-        x_0: x__0,
-    }
-    _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(inc__1)
-    var t161 int = _goml_m_inherent_i_closure__env__get__1_i_closure__env__get__1_i_apply(get__2)
-    var t162 string = _goml_m_inherent_i_int_i_int_i_to__string(t161)
-    println__T_string(t162)
+    var inline195 int = ref_get__Ref_3int(x__0)
+    var inline196 int = inline195 + 1
+    ref_set__Ref_3int(x__0, inline196)
+    ref_get__Ref_3int(x__0)
+    var t161 int
+    var inline192 int = ref_get__Ref_3int(x__0)
+    t161 = inline192
+    var t162 string
+    var inline189 string = _goml_runtime_core_int_to_string(t161)
+    t162 = inline189
+    var inline186 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t162)
+    _goml_runtime_core_string_println(inline186)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t164 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t164)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var t168 string = _goml_runtime_core_int_to_string(self__5)
-    return t168
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
     return self__38
-}
-
-func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env158 closure_env_inc_0) int {
-    var x__0 *ref_int_x = env158.x_0
-    var t179 int = ref_get__Ref_3int(x__0)
-    var t180 int = t179 + 1
-    ref_set__Ref_3int(x__0, t180)
-    var t181 int = ref_get__Ref_3int(x__0)
-    return t181
-}
-
-func _goml_m_inherent_i_closure__env__get__1_i_closure__env__get__1_i_apply(env159 closure_env_get_1) int {
-    var x__0 *ref_int_x = env159.x_0
-    var t184 int = ref_get__Ref_3int(x__0)
-    return t184
 }
 
 func main() {

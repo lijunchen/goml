@@ -8,24 +8,38 @@ fn trait_impl#Convert#[string]@Value#convert(self/1: Value) -> int32 {
 
 fn main() -> unit {
   let t162 = Value {} in
-  let text/2 = trait_impl#Convert#[int32]@Value#convert(t162) in
-  let t163 = Value {} in
-  let number/3 = trait_impl#Convert#[string]@Value#convert(t163) in
-  let _wild155 = println__T_string(text/2) in
-  let _wild156 = println__T_int32(number/3) in
-  ()
+  join inline_cont182(text/2: string) -> unit {
+    let t163 = Value {} in
+    join inline_cont181(number/3: int32) -> unit {
+      join inline_cont178(_wild155: unit) -> unit {
+        let inline176 = trait_impl#ToString#int32#to_string(number/3) in
+        let inline177 = @runtime(core.string_println)(inline176) in
+        ()
+      } in
+      let inline179 = trait_impl#ToString#string#to_string(text/2) in
+      let inline180 = @runtime(core.string_println)(inline179) in
+      jump inline_cont178(())
+    } in
+    jump inline_cont181(7)
+  } in
+  jump inline_cont182("int")
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t165 = trait_impl#ToString#string#to_string(value/1) in
-  let t166 = @runtime(core.string_println)(t165) in
-  ()
+  join inline_cont183(t165: string) -> unit {
+    let t166 = @runtime(core.string_println)(t165) in
+    ()
+  } in
+  jump inline_cont183(value/1)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t168 = trait_impl#ToString#int32#to_string(value/1) in
-  let t169 = @runtime(core.string_println)(t168) in
-  ()
+  join inline_cont184(t168: string) -> unit {
+    let t169 = @runtime(core.string_println)(t168) in
+    ()
+  } in
+  let inline185 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont184(inline185)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

@@ -11,21 +11,37 @@ fn main() -> unit {
   let step64/9 = 2000000000 in
   let remain64/10 = (big64/8 - step64/9) in
   let neg64/11 = (-step64/9) in
-  let t157 = trait_impl#ToString#int16#to_string(sum16/2) in
-  let t158 = (t157 + ", ") in
-  let t159 = trait_impl#ToString#int16#to_string(flipped16/3) in
-  let t160 = (t158 + t159) in
-  let t161 = (t160 + "; ") in
-  let t162 = inherent#int32#int32#to_string(diff32/7) in
-  let t163 = (t161 + t162) in
-  let t164 = (t163 + "; ") in
-  let t165 = trait_impl#ToString#int64#to_string(remain64/10) in
-  let t166 = (t164 + t165) in
-  let t167 = (t166 + "; ") in
-  let t168 = trait_impl#ToString#int64#to_string(neg64/11) in
-  let message/12 = (t167 + t168) in
-  let _wild155 = println__T_string(message/12) in
-  ()
+  join inline_cont194(t157: string) -> unit {
+    let t158 = (t157 + ", ") in
+    join inline_cont192(t159: string) -> unit {
+      let t160 = (t158 + t159) in
+      let t161 = (t160 + "; ") in
+      join inline_cont190(t162: string) -> unit {
+        let t163 = (t161 + t162) in
+        let t164 = (t163 + "; ") in
+        join inline_cont188(t165: string) -> unit {
+          let t166 = (t164 + t165) in
+          let t167 = (t166 + "; ") in
+          join inline_cont186(t168: string) -> unit {
+            let message/12 = (t167 + t168) in
+            let inline184 = trait_impl#ToString#string#to_string(message/12) in
+            let inline185 = @runtime(core.string_println)(inline184) in
+            ()
+          } in
+          let inline187 = @runtime(core.int64_to_string)(neg64/11) in
+          jump inline_cont186(inline187)
+        } in
+        let inline189 = @runtime(core.int64_to_string)(remain64/10) in
+        jump inline_cont188(inline189)
+      } in
+      let inline191 = @runtime(core.int32_to_string)(diff32/7) in
+      jump inline_cont190(inline191)
+    } in
+    let inline193 = @runtime(core.int16_to_string)(flipped16/3) in
+    jump inline_cont192(inline193)
+  } in
+  let inline195 = @runtime(core.int16_to_string)(sum16/2) in
+  jump inline_cont194(inline195)
 }
 
 fn trait_impl#ToString#int16#to_string(self/42: int16) -> string {
@@ -44,9 +60,11 @@ fn trait_impl#ToString#int64#to_string(self/44: int64) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t179 = trait_impl#ToString#string#to_string(value/1) in
-  let t180 = @runtime(core.string_println)(t179) in
-  ()
+  join inline_cont196(t179: string) -> unit {
+    let t180 = @runtime(core.string_println)(t179) in
+    ()
+  } in
+  jump inline_cont196(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

@@ -1,10 +1,19 @@
 fn main() -> unit {
-  let t157 = identity__T_string("direct") in
-  let _wild155 = @runtime(core.string_println)(t157) in
-  let t158 = identity__T_int32(42) in
-  let t159 = inherent#int32#int32#to_string(t158) in
-  let t160 = @runtime(core.string_println)(t159) in
-  ()
+  join inline_cont172(t157: string) -> unit {
+    let _wild155 = @runtime(core.string_println)(t157) in
+    join inline_cont170(t158: int32) -> unit {
+      join inline_cont168(t159: string) -> unit {
+        let t160 = @runtime(core.string_println)(t159) in
+        ()
+      } in
+      let inline169 = @runtime(core.int32_to_string)(t158) in
+      jump inline_cont168(inline169)
+    } in
+    let inline171 = 42 in
+    jump inline_cont170(inline171)
+  } in
+  let inline173 = "direct" in
+  jump inline_cont172(inline173)
 }
 
 fn identity__T_string(value/0: string) -> string {

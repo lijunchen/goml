@@ -22,7 +22,12 @@ fn toggle_signal(signal/1: Signal) -> Signal {
 
 fn main() -> Signal {
   let current/2 = Tag_0 in
-  let mtmp155 = color_is_red(current/2) in
-  let t166 = toggle_signal(Tag_0) in
-  t166
+  match current/2 {
+    Tag_0 => {
+      Tag_1
+    },
+    Tag_1 => {
+      Tag_1
+    },
+  }
 }

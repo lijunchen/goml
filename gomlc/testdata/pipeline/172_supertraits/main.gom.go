@@ -29,35 +29,23 @@ func main0() struct{} {
     var t157 Box__int = Box__int{
         value: 5,
     }
-    var t158 string = _goml_m_describe____B__Box_l_int_r_____T__int(t157)
+    var t158 string
+    var inline191 int = _goml_m_trait__impl_i_Parent_i__l_int_r__x40_Box____int_i_parent(t157)
+    var inline192 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline191)
+    var inline193 string = _goml_m_trait__impl_i_Render_i_Box____int_i_render(t157)
+    var inline194 string = inline192 + inline193
+    var inline195 string = _goml_m_trait__impl_i_Child_i__l_int_r__x40_Box____int_i_child(t157)
+    var inline196 string = inline194 + inline195
+    t158 = inline196
     _goml_runtime_core_string_println(t158)
-    var value__4 Box__int32 = Box__int32{
-        value: 6,
-    }
-    var t159 int32 = _goml_m_trait__impl_i_Parent_i__l_int32_r__x40_Box____int32_i_parent(value__4)
-    var t160 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t159)
+    var t159 int32
+    var inline189 int32 = 6
+    t159 = inline189
+    var t160 string
+    var inline187 string = _goml_runtime_core_int32_to_string(t159)
+    t160 = inline187
     _goml_runtime_core_string_println(t160)
     return struct{}{}
-}
-
-func _goml_m_describe____B__Box_l_int_r_____T__int(value__3 Box__int) string {
-    var t164 int = _goml_m_trait__impl_i_Parent_i__l_int_r__x40_Box____int_i_parent(value__3)
-    var t165 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t164)
-    var t166 string = _goml_m_trait__impl_i_Render_i_Box____int_i_render(value__3)
-    var t167 string = t165 + t166
-    var t168 string = _goml_m_trait__impl_i_Child_i__l_int_r__x40_Box____int_i_child(value__3)
-    var t169 string = t167 + t168
-    return t169
-}
-
-func _goml_m_trait__impl_i_Parent_i__l_int32_r__x40_Box____int32_i_parent(self__0 Box__int32) int32 {
-    var t172 int32 = self__0.value
-    return t172
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t175 string = _goml_runtime_core_int32_to_string(self__6)
-    return t175
 }
 
 func _goml_m_trait__impl_i_Parent_i__l_int_r__x40_Box____int_i_parent(self__0 Box__int) int {

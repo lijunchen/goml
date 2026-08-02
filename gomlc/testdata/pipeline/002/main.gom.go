@@ -70,22 +70,38 @@ func main0() struct{} {
     case true:
         switch x160 {
         case true:
-            var t169 string = _goml_m_inherent_i_int_i_int_i_to__string(3)
-            println__T_string(t169)
+            var t169 string
+            var inline201 int = 3
+            var inline202 string = _goml_runtime_core_int_to_string(inline201)
+            t169 = inline202
+            var inline198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t169)
+            _goml_runtime_core_string_println(inline198)
         case false:
-            var t171 string = _goml_m_inherent_i_int_i_int_i_to__string(1)
-            println__T_string(t171)
+            var t171 string
+            var inline207 int = 1
+            var inline208 string = _goml_runtime_core_int_to_string(inline207)
+            t171 = inline208
+            var inline204 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t171)
+            _goml_runtime_core_string_println(inline204)
         default:
             panic("non-exhaustive match")
         }
     case false:
         switch x160 {
         case true:
-            var t174 string = _goml_m_inherent_i_int_i_int_i_to__string(2)
-            println__T_string(t174)
+            var t174 string
+            var inline213 int = 2
+            var inline214 string = _goml_runtime_core_int_to_string(inline213)
+            t174 = inline214
+            var inline210 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t174)
+            _goml_runtime_core_string_println(inline210)
         case false:
-            var t176 string = _goml_m_inherent_i_int_i_int_i_to__string(0)
-            println__T_string(t176)
+            var t176 string
+            var inline219 int = 0
+            var inline220 string = _goml_runtime_core_int_to_string(inline219)
+            t176 = inline220
+            var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t176)
+            _goml_runtime_core_string_println(inline216)
         default:
             panic("non-exhaustive match")
         }
@@ -93,25 +109,12 @@ func main0() struct{} {
         panic("non-exhaustive match")
     }
     var c__4 struct{} = struct{}{}
-    var t166 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(c__4)
-    println__T_string(t166)
+    var t166 string
+    var inline225 string = _goml_runtime_core_unit_to_string(c__4)
+    t166 = inline225
+    var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t166)
+    _goml_runtime_core_string_println(inline222)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t187 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t187)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var t191 string = _goml_runtime_core_int_to_string(self__5)
-    return t191
-}
-
-func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__36 struct{}) string {
-    var t194 string = _goml_runtime_core_unit_to_string(self__36)
-    return t194
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

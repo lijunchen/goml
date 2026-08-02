@@ -10,21 +10,31 @@ fn trait_impl#Source#TextSource#get(self/1: TextSource) -> string {
 
 fn main() -> unit {
   let t163 = TextSource { value: "goml" } in
-  let t164 = render__S_TextSource(t163) in
-  let _wild155 = println__T_string(t164) in
-  ()
+  join inline_cont177(t164: string) -> unit {
+    let inline175 = trait_impl#ToString#string#to_string(t164) in
+    let inline176 = @runtime(core.string_println)(inline175) in
+    ()
+  } in
+  let inline178 = trait_impl#Source#TextSource#get(t163) in
+  let inline179 = trait_impl#Label#string#label(inline178) in
+  jump inline_cont177(inline179)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t166 = trait_impl#ToString#string#to_string(value/1) in
-  let t167 = @runtime(core.string_println)(t166) in
-  ()
+  join inline_cont180(t166: string) -> unit {
+    let t167 = @runtime(core.string_println)(t166) in
+    ()
+  } in
+  jump inline_cont180(value/1)
 }
 
 fn render__S_TextSource(source/2: TextSource) -> string {
-  let t170 = trait_impl#Source#TextSource#get(source/2) in
-  let t171 = trait_impl#Label#string#label(t170) in
-  t171
+  join inline_cont183(t170: string) -> string {
+    let inline182 = ("label:" + t170) in
+    inline182
+  } in
+  let inline184 = TextSource.value(source/2) in
+  jump inline_cont183(inline184)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

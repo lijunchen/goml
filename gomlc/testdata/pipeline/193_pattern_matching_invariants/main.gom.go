@@ -65,58 +65,34 @@ type Only struct {
 
 func (_ Only) isSingle() {}
 
-func unwrap(value__5 Single) int32 {
-    switch value__5.(type) {
-    case Only:
-        var x161 int32 = value__5.(Only)._0
-        return x161
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
-func decide(flag__7 bool) int32 {
-    switch flag__7 {
-    case true:
-        return 1
-    case false:
-        return 2
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
-func signed_zero(value__8 float64) string {
-    switch value__8 {
-    case -0:
-        return "zero"
-    default:
-        return "other"
-    }
-}
-
 func main0() struct{} {
-    var t235 Single = Only{
-        _0: 12,
+    var t236 int32
+    var inline265 int32 = 12
+    t236 = inline265
+    var inline261 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t236)
+    _goml_runtime_core_string_println(inline261)
+    var t237 int32
+    var inline259 bool = true
+    switch inline259 {
+    case true:
+        t237 = 1
+    case false:
+        t237 = 2
+    default:
+        panic("non-exhaustive match")
     }
-    var t236 int32 = unwrap(t235)
-    println__T_int32(t236)
-    var t237 int32 = decide(true)
-    println__T_int32(t237)
-    var t238 string = signed_zero(0)
-    println__T_string(t238)
-    return struct{}{}
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t240 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t240)
-    return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t243 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t243)
+    var inline256 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t237)
+    _goml_runtime_core_string_println(inline256)
+    var t238 string
+    var inline254 float64 = 0
+    switch inline254 {
+    case -0:
+        t238 = "zero"
+    default:
+        t238 = "other"
+    }
+    var inline251 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t238)
+    _goml_runtime_core_string_println(inline251)
     return struct{}{}
 }
 

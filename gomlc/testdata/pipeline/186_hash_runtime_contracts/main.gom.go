@@ -672,15 +672,17 @@ func (_ Option__int32_Some) isOption__int32() {}
 func _goml_m_trait__impl_i_Eq_i_FloatKey_i_eq(self__0 FloatKey, other__1 FloatKey) bool {
     var t206 float64 = self__0.value
     var t207 float64 = other__1.value
-    var t208 bool = _goml_m_trait__impl_i_Eq_i_float64_i_eq(t206, t207)
-    return t208
+    var inline405 bool = t206 == t207
+    return inline405
 }
 
 func _goml_m_trait__impl_i_Hash_i_FloatKey_i_hash(self__2 FloatKey) uint64 {
     var h__3 uint64 = 14695981039346656037
     var t211 uint64 = h__3 * 1099511628211
     var t212 float64 = self__2.value
-    var t213 uint64 = _goml_m_trait__impl_i_Hash_i_float64_i_hash(t212)
+    var t213 uint64
+    var inline407 uint64 = _goml_runtime_core_float64_hash(t212)
+    t213 = inline407
     var h__4 uint64 = t211 + t213
     return h__4
 }
@@ -688,8 +690,8 @@ func _goml_m_trait__impl_i_Hash_i_FloatKey_i_hash(self__2 FloatKey) uint64 {
 func _goml_m_trait__impl_i_Eq_i_CollisionKey_i_eq(self__5 CollisionKey, other__6 CollisionKey) bool {
     var t216 int32 = self__5.value
     var t217 int32 = other__6.value
-    var t218 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(t216, t217)
-    return t218
+    var inline409 bool = t216 == t217
+    return inline409
 }
 
 func _goml_m_trait__impl_i_Hash_i_CollisionKey_i_hash(self__7 CollisionKey) uint64 {
@@ -699,11 +701,14 @@ func _goml_m_trait__impl_i_Hash_i_CollisionKey_i_hash(self__7 CollisionKey) uint
 func print_opt_string(value__8 Option__string) struct{} {
     switch value__8.(type) {
     case Option__string_None:
-        println__T_string("none")
+        var inline411 string = "none"
+        var inline412 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline411)
+        _goml_runtime_core_string_println(inline412)
         return struct{}{}
     case Option__string_Some:
         var x155 string = value__8.(Option__string_Some)._0
-        println__T_string(x155)
+        var inline415 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x155)
+        _goml_runtime_core_string_println(inline415)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -713,11 +718,14 @@ func print_opt_string(value__8 Option__string) struct{} {
 func print_opt_int(value__10 Option__int32) struct{} {
     switch value__10.(type) {
     case Option__int32_None:
-        println__T_string("none")
+        var inline418 string = "none"
+        var inline419 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline418)
+        _goml_runtime_core_string_println(inline419)
         return struct{}{}
     case Option__int32_Some:
         var x156 int32 = value__10.(Option__int32_Some)._0
-        println__T_int32(x156)
+        var inline422 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(x156)
+        _goml_runtime_core_string_println(inline422)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -737,35 +745,78 @@ func float_zero_contracts() struct{} {
     var t234 Option__string = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__float32____V__string(values32__14, negative_zero32__13)
     print_opt_string(t234)
     _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__float32____V__string(values32__14, negative_zero32__13, "f32-updated")
-    var t235 int = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__float32____V__string(values32__14)
+    var t235 int
+    var inline469 int = hashmap_len__HashMap_7float32_6string(values32__14)
+    t235 = inline469
     println__T_int(t235)
-    var t236 Option__string = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__float32____V__string(values32__14, zero32__12)
+    var t236 Option__string
+    var inline467 Option__string = hashmap_get__HashMap_7float32_6string(values32__14, zero32__12)
+    t236 = inline467
     print_opt_string(t236)
-    _goml_m_inherent_i_HashMap_i_H_hb2a35d39f572745ebc511322f27baf02_32____V__string(values32__14, negative_zero32__13)
-    var t237 int = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__float32____V__string(values32__14)
-    println__T_int(t237)
+    hashmap_remove__HashMap_7float32_6string(values32__14, negative_zero32__13)
+    var t237 int
+    var inline463 int = hashmap_len__HashMap_7float32_6string(values32__14)
+    t237 = inline463
+    var inline460 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t237)
+    _goml_runtime_core_string_println(inline460)
     var zero64__15 float64 = 0
     var negative_zero64__16 float64 = -zero64__15
-    var t238 uint64 = _goml_m_trait__impl_i_Hash_i_float64_i_hash(zero64__15)
-    var t239 uint64 = _goml_m_trait__impl_i_Hash_i_float64_i_hash(negative_zero64__16)
-    var t240 bool = _goml_m_trait__impl_i_Eq_i_uint64_i_eq(t238, t239)
-    var t241 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t240)
-    println__T_string(t241)
-    var values64__17 *hashmap_float64_string_x = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__float64____V__string()
-    _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__float64____V__string(values64__17, zero64__15, "f64")
-    var t242 Option__string = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__float64____V__string(values64__17, negative_zero64__16)
-    print_opt_string(t242)
-    var derived__18 *hashmap_FloatKey_string_x = _goml_m_inherent_i_HashMap_i_H_h1c159dae3c6d467863c167e50033a837_ey____V__string()
+    var t238 uint64
+    var inline458 uint64 = _goml_runtime_core_float64_hash(zero64__15)
+    t238 = inline458
+    var t239 uint64
+    var inline456 uint64 = _goml_runtime_core_float64_hash(negative_zero64__16)
+    t239 = inline456
+    var t240 bool
+    var inline454 bool = t238 == t239
+    t240 = inline454
+    var t241 string
+    var inline452 string = _goml_runtime_core_bool_to_string(t240)
+    t241 = inline452
+    var inline449 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t241)
+    _goml_runtime_core_string_println(inline449)
+    var values64__17 *hashmap_float64_string_x
+    var inline447 *hashmap_float64_string_x = hashmap_new__HashMap_7float64_6string()
+    values64__17 = inline447
+    var inline444 string = "f64"
+    hashmap_set__HashMap_7float64_6string(values64__17, zero64__15, inline444)
+    var t242 Option__string
+    var inline442 Option__string = hashmap_get__HashMap_7float64_6string(values64__17, negative_zero64__16)
+    t242 = inline442
+    switch t242.(type) {
+    case Option__string_None:
+        println__T_string("none")
+    case Option__string_Some:
+        var inline438 string = t242.(Option__string_Some)._0
+        println__T_string(inline438)
+    default:
+        panic("non-exhaustive match")
+    }
+    var derived__18 *hashmap_FloatKey_string_x
+    var inline435 *hashmap_FloatKey_string_x = hashmap_new__HashMap_8FloatKey_6string()
+    derived__18 = inline435
     var t243 FloatKey = FloatKey{
         value: zero64__15,
     }
-    _goml_m_inherent_i_HashMap_i_H_hf4091da363de58b5e0b9eb8325b8ab3b_ey____V__string(derived__18, t243, "derived")
+    var inline432 string = "derived"
+    hashmap_set__HashMap_8FloatKey_6string(derived__18, t243, inline432)
     var t244 FloatKey = FloatKey{
         value: negative_zero64__16,
     }
-    var t245 Option__string = _goml_m_inherent_i_HashMap_i_H_h76ebf5daded74fd7da365b7b6585281d_ey____V__string(derived__18, t244)
-    print_opt_string(t245)
-    return struct{}{}
+    var t245 Option__string
+    var inline430 Option__string = hashmap_get__HashMap_8FloatKey_6string(derived__18, t244)
+    t245 = inline430
+    switch t245.(type) {
+    case Option__string_None:
+        println__T_string("none")
+        return struct{}{}
+    case Option__string_Some:
+        var inline426 string = t245.(Option__string_Some)._0
+        println__T_string(inline426)
+        return struct{}{}
+    default:
+        panic("non-exhaustive match")
+    }
 }
 
 func collision_contracts() struct{} {
@@ -810,53 +861,86 @@ func collision_contracts() struct{} {
     var t259 CollisionKey = CollisionKey{
         value: 4,
     }
-    var t260 Option__int32 = _goml_m_inherent_i_HashMap_i_H_hd089129fd747b5ac2054f800f07a211e_Key____V__int32(values__19, t259)
+    var t260 Option__int32
+    var inline517 Option__int32 = hashmap_get__HashMap_12CollisionKey_5int32(values__19, t259)
+    t260 = inline517
     print_opt_int(t260)
     var t261 CollisionKey = CollisionKey{
         value: 4,
     }
-    _goml_m_inherent_i_HashMap_i_H_h16eb43877a9769652cbdd61c4f534eec_Key____V__int32(values__19, t261, 41)
-    var t262 int = _goml_m_inherent_i_HashMap_i_H_h4aea484345d58a42435067138901add4_Key____V__int32(values__19)
-    println__T_int(t262)
+    var inline514 int32 = 41
+    hashmap_set__HashMap_12CollisionKey_5int32(values__19, t261, inline514)
+    var t262 int
+    var inline512 int = hashmap_len__HashMap_12CollisionKey_5int32(values__19)
+    t262 = inline512
+    var inline509 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t262)
+    _goml_runtime_core_string_println(inline509)
     var t263 CollisionKey = CollisionKey{
         value: 4,
     }
-    var t264 Option__int32 = _goml_m_inherent_i_HashMap_i_H_hd089129fd747b5ac2054f800f07a211e_Key____V__int32(values__19, t263)
-    print_opt_int(t264)
+    var t264 Option__int32
+    var inline507 Option__int32 = hashmap_get__HashMap_12CollisionKey_5int32(values__19, t263)
+    t264 = inline507
+    switch t264.(type) {
+    case Option__int32_None:
+        println__T_string("none")
+    case Option__int32_Some:
+        var inline503 int32 = t264.(Option__int32_Some)._0
+        println__T_int32(inline503)
+    default:
+        panic("non-exhaustive match")
+    }
     var t265 CollisionKey = CollisionKey{
         value: 99,
     }
-    _goml_m_inherent_i_HashMap_i_H_h28011e82243b31bd5417be204086ffb6_Key____V__int32(values__19, t265)
+    hashmap_remove__HashMap_12CollisionKey_5int32(values__19, t265)
     var t266 CollisionKey = CollisionKey{
         value: 99,
     }
-    _goml_m_inherent_i_HashMap_i_H_h28011e82243b31bd5417be204086ffb6_Key____V__int32(values__19, t266)
-    var t267 int = _goml_m_inherent_i_HashMap_i_H_h4aea484345d58a42435067138901add4_Key____V__int32(values__19)
-    println__T_int(t267)
-    var index__20 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
+    hashmap_remove__HashMap_12CollisionKey_5int32(values__19, t266)
+    var t267 int
+    var inline496 int = hashmap_len__HashMap_12CollisionKey_5int32(values__19)
+    t267 = inline496
+    var inline493 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t267)
+    _goml_runtime_core_string_println(inline493)
+    var index__20 *ref_int32_x
+    var inline490 int32 = 0
+    var inline491 *ref_int32_x = ref__Ref_5int32(inline490)
+    index__20 = inline491
     Loop_loop270:
     for {
-        var t271 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__20)
+        var t271 int32
+        var inline483 int32 = ref_get__Ref_5int32(index__20)
+        t271 = inline483
         var t272 bool = t271 < 2000
         if t272 {
-            var t273 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__20)
+            var t273 int32
+            var inline481 int32 = ref_get__Ref_5int32(index__20)
+            t273 = inline481
             var t274 int32 = 1000 + t273
             var key__21 CollisionKey = CollisionKey{
                 value: t274,
             }
-            var t275 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__20)
-            _goml_m_inherent_i_HashMap_i_H_h16eb43877a9769652cbdd61c4f534eec_Key____V__int32(values__19, key__21, t275)
-            _goml_m_inherent_i_HashMap_i_H_h28011e82243b31bd5417be204086ffb6_Key____V__int32(values__19, key__21)
-            var t276 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__20)
+            var t275 int32
+            var inline479 int32 = ref_get__Ref_5int32(index__20)
+            t275 = inline479
+            hashmap_set__HashMap_12CollisionKey_5int32(values__19, key__21, t275)
+            hashmap_remove__HashMap_12CollisionKey_5int32(values__19, key__21)
+            var t276 int32
+            var inline473 int32 = ref_get__Ref_5int32(index__20)
+            t276 = inline473
             var t277 int32 = t276 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(index__20, t277)
+            ref_set__Ref_5int32(index__20, t277)
             continue
         } else {
             break Loop_loop270
         }
     }
-    var t269 int = _goml_m_inherent_i_HashMap_i_H_h4aea484345d58a42435067138901add4_Key____V__int32(values__19)
-    println__T_int(t269)
+    var t269 int
+    var inline488 int = hashmap_len__HashMap_12CollisionKey_5int32(values__19)
+    t269 = inline488
+    var inline485 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t269)
+    _goml_runtime_core_string_println(inline485)
     return struct{}{}
 }
 
@@ -871,25 +955,69 @@ func reference_contracts() struct{} {
     }
     var equal_value__25 *ref_CollisionKey_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__CollisionKey(t280)
     _goml_m_inherent_i_HashMap_i_H_hf172370390478673f5488deef4d68ffa_r_____V__string(values__22, key__23, "identity")
-    var t281 bool = _goml_m_trait__impl_i_Eq_i_Ref_l_CollisionKey_r__i_eq(key__23, key__23)
-    println__T_bool(t281)
-    var t282 bool = _goml_m_trait__impl_i_Eq_i_Ref_l_CollisionKey_r__i_eq(key__23, equal_value__25)
-    println__T_bool(t282)
-    var t283 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_CollisionKey_r__i_hash(key__23)
-    var t284 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_CollisionKey_r__i_hash(key__23)
-    var t285 bool = _goml_m_trait__impl_i_Eq_i_uint64_i_eq(t283, t284)
-    println__T_bool(t285)
-    var t286 Option__string = _goml_m_inherent_i_HashMap_i_H_h0ff2ed6bbeb05c2951b65091ecc43f4d_r_____V__string(values__22, key__23)
-    print_opt_string(t286)
-    var t287 Option__string = _goml_m_inherent_i_HashMap_i_H_h0ff2ed6bbeb05c2951b65091ecc43f4d_r_____V__string(values__22, equal_value__25)
-    print_opt_string(t287)
+    var t281 bool
+    var inline559 bool = ptr_eq__Ref_12CollisionKey(key__23, key__23)
+    t281 = inline559
+    var inline556 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t281)
+    _goml_runtime_core_string_println(inline556)
+    var t282 bool
+    var inline554 bool = ptr_eq__Ref_12CollisionKey(key__23, equal_value__25)
+    t282 = inline554
+    var inline551 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t282)
+    _goml_runtime_core_string_println(inline551)
+    var t283 uint64
+    var inline549 uint64 = ptr_hash__Ref_12CollisionKey(key__23)
+    t283 = inline549
+    var t284 uint64
+    var inline547 uint64 = ptr_hash__Ref_12CollisionKey(key__23)
+    t284 = inline547
+    var t285 bool
+    var inline545 bool = t283 == t284
+    t285 = inline545
+    var inline542 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t285)
+    _goml_runtime_core_string_println(inline542)
+    var t286 Option__string
+    var inline540 Option__string = hashmap_get__HashMap_18Ref_12CollisionKey_6string(values__22, key__23)
+    t286 = inline540
+    switch t286.(type) {
+    case Option__string_None:
+        println__T_string("none")
+    case Option__string_Some:
+        var inline536 string = t286.(Option__string_Some)._0
+        println__T_string(inline536)
+    default:
+        panic("non-exhaustive match")
+    }
+    var t287 Option__string
+    var inline533 Option__string = hashmap_get__HashMap_18Ref_12CollisionKey_6string(values__22, equal_value__25)
+    t287 = inline533
+    switch t287.(type) {
+    case Option__string_None:
+        println__T_string("none")
+    case Option__string_Some:
+        var inline529 string = t287.(Option__string_Some)._0
+        println__T_string(inline529)
+    default:
+        panic("non-exhaustive match")
+    }
     var t288 CollisionKey = CollisionKey{
         value: 99,
     }
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__CollisionKey(key__23, t288)
-    var t289 Option__string = _goml_m_inherent_i_HashMap_i_H_h0ff2ed6bbeb05c2951b65091ecc43f4d_r_____V__string(values__22, key__23)
-    print_opt_string(t289)
-    return struct{}{}
+    ref_set__Ref_12CollisionKey(key__23, t288)
+    var t289 Option__string
+    var inline524 Option__string = hashmap_get__HashMap_18Ref_12CollisionKey_6string(values__22, key__23)
+    t289 = inline524
+    switch t289.(type) {
+    case Option__string_None:
+        println__T_string("none")
+        return struct{}{}
+    case Option__string_Some:
+        var inline520 string = t289.(Option__string_Some)._0
+        println__T_string(inline520)
+        return struct{}{}
+    default:
+        panic("non-exhaustive match")
+    }
 }
 
 func main0() struct{} {
@@ -909,19 +1037,17 @@ func _goml_m_trait__impl_i_Hash_i_float64_i_hash(self__95 float64) uint64 {
     return t296
 }
 
-func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__65 int32, other__66 int32) bool {
-    var t299 bool = self__65 == other__66
-    return t299
-}
-
 func println__T_string(value__1 string) struct{} {
-    var t301 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    var t301 string
+    t301 = value__1
     _goml_runtime_core_string_println(t301)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t304 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    var t304 string
+    var inline562 string = _goml_runtime_core_int32_to_string(value__1)
+    t304 = inline562
     _goml_runtime_core_string_println(t304)
     return struct{}{}
 }
@@ -957,49 +1083,11 @@ func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__float32____V__s
 }
 
 func println__T_int(value__1 int) struct{} {
-    var t324 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
+    var t324 string
+    var inline564 string = _goml_runtime_core_int_to_string(value__1)
+    t324 = inline564
     _goml_runtime_core_string_println(t324)
     return struct{}{}
-}
-
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__float32____V__string(self__203 *hashmap_float32_string_x) int {
-    var t328 int = hashmap_len__HashMap_7float32_6string(self__203)
-    return t328
-}
-
-func _goml_m_inherent_i_HashMap_i_H_hb2a35d39f572745ebc511322f27baf02_32____V__string(self__201 *hashmap_float32_string_x, key__202 float32) struct{} {
-    hashmap_remove__HashMap_7float32_6string(self__201, key__202)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__float64____V__string() *hashmap_float64_string_x {
-    var t333 *hashmap_float64_string_x = hashmap_new__HashMap_7float64_6string()
-    return t333
-}
-
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__float64____V__string(self__198 *hashmap_float64_string_x, key__199 float64, value__200 string) struct{} {
-    hashmap_set__HashMap_7float64_6string(self__198, key__199, value__200)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__float64____V__string(self__196 *hashmap_float64_string_x, key__197 float64) Option__string {
-    var t338 Option__string = hashmap_get__HashMap_7float64_6string(self__196, key__197)
-    return t338
-}
-
-func _goml_m_inherent_i_HashMap_i_H_h1c159dae3c6d467863c167e50033a837_ey____V__string() *hashmap_FloatKey_string_x {
-    var t341 *hashmap_FloatKey_string_x = hashmap_new__HashMap_8FloatKey_6string()
-    return t341
-}
-
-func _goml_m_inherent_i_HashMap_i_H_hf4091da363de58b5e0b9eb8325b8ab3b_ey____V__string(self__198 *hashmap_FloatKey_string_x, key__199 FloatKey, value__200 string) struct{} {
-    hashmap_set__HashMap_8FloatKey_6string(self__198, key__199, value__200)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_HashMap_i_H_h76ebf5daded74fd7da365b7b6585281d_ey____V__string(self__196 *hashmap_FloatKey_string_x, key__197 FloatKey) Option__string {
-    var t346 Option__string = hashmap_get__HashMap_8FloatKey_6string(self__196, key__197)
-    return t346
 }
 
 func _goml_m_inherent_i_HashMap_i_H_hda117ae4fc64297aa6806f068e6c08ed_Key____V__int32() *hashmap_CollisionKey_int32_x {
@@ -1027,21 +1115,6 @@ func _goml_m_inherent_i_HashMap_i_H_h4aea484345d58a42435067138901add4_Key____V__
     return t359
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__207 int32) *ref_int32_x {
-    var t362 *ref_int32_x = ref__Ref_5int32(value__207)
-    return t362
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__208 *ref_int32_x) int32 {
-    var t365 int32 = ref_get__Ref_5int32(self__208)
-    return t365
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__209 *ref_int32_x, value__210 int32) struct{} {
-    ref_set__Ref_5int32(self__209, value__210)
-    return struct{}{}
-}
-
 func _goml_m_inherent_i_HashMap_i_H_h88509d3b0dfc2392ba920998ecb79184_r_____V__string() *hashmap_Ref_12CollisionKey_string_x {
     var t370 *hashmap_Ref_12CollisionKey_string_x = hashmap_new__HashMap_18Ref_12CollisionKey_6string()
     return t370
@@ -1057,12 +1130,6 @@ func _goml_m_inherent_i_HashMap_i_H_hf172370390478673f5488deef4d68ffa_r_____V__s
     return struct{}{}
 }
 
-func println__T_bool(value__1 bool) struct{} {
-    var t377 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__1)
-    _goml_runtime_core_string_println(t377)
-    return struct{}{}
-}
-
 func _goml_m_trait__impl_i_Eq_i_Ref_l_CollisionKey_r__i_eq(self__96 *ref_CollisionKey_x, other__97 *ref_CollisionKey_x) bool {
     var t381 bool = ptr_eq__Ref_12CollisionKey(self__96, other__97)
     return t381
@@ -1071,16 +1138,6 @@ func _goml_m_trait__impl_i_Eq_i_Ref_l_CollisionKey_r__i_eq(self__96 *ref_Collisi
 func _goml_m_trait__impl_i_Hash_i_Ref_l_CollisionKey_r__i_hash(self__98 *ref_CollisionKey_x) uint64 {
     var t384 uint64 = ptr_hash__Ref_12CollisionKey(self__98)
     return t384
-}
-
-func _goml_m_inherent_i_HashMap_i_H_h0ff2ed6bbeb05c2951b65091ecc43f4d_r_____V__string(self__196 *hashmap_Ref_12CollisionKey_string_x, key__197 *ref_CollisionKey_x) Option__string {
-    var t387 Option__string = hashmap_get__HashMap_18Ref_12CollisionKey_6string(self__196, key__197)
-    return t387
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__CollisionKey(self__209 *ref_CollisionKey_x, value__210 CollisionKey) struct{} {
-    ref_set__Ref_12CollisionKey(self__209, value__210)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

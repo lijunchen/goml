@@ -10,36 +10,45 @@ fn split_host_port(ok/0: bool) -> Result__(string,string)__string {
 }
 
 fn pair(ok/1: bool) -> Result__(string,string)__string {
-  let t174 = split_host_port(ok/1) in
-  t174
+  if ok/1 {
+    let inline200 = ("localhost", "8080") in
+    let inline201 = Result__(string,string)__string::Ok(inline200) in
+    inline201
+  } else {
+    let inline202 = Result__(string,string)__string::Err("missing port") in
+    inline202
+  }
 }
 
 fn render(ok/2: bool) -> Result__string__string {
-  let mtmp155 = pair(ok/2) in
-  join k177(jp178: (string, string)) -> Result__string__string {
-    let mtmp158 = jp178 in
-    let x159 = jp178.0 in
-    let x160 = jp178.1 in
-    let port/4 = x160 in
-    let host/3 = x159 in
-    let t179 = (x159 + "=") in
-    let t180 = (t179 + x160) in
-    let t181 = Result__string__string::Ok(t180) in
-    t181
+  join inline_cont203(mtmp155: Result__(string,string)__string) -> Result__string__string {
+    join k177(jp178: (string, string)) -> Result__string__string {
+      let mtmp158 = jp178 in
+      let x159 = jp178.0 in
+      let x160 = jp178.1 in
+      let port/4 = x160 in
+      let host/3 = x159 in
+      let t179 = (x159 + "=") in
+      let t180 = (t179 + x160) in
+      let t181 = Result__string__string::Ok(t180) in
+      t181
+    } in
+    match mtmp155 {
+      Tag_0 => {
+        let x156 = Result__(string,string)__string::Ok._0(mtmp155) in
+        let try_value/17 = x156 in
+        jump k177(x156)
+      },
+      Tag_1 => {
+        let x157 = Result__(string,string)__string::Err._0(mtmp155) in
+        let try_residual/17 = x157 in
+        let t182 = Result__string__string::Err(x157) in
+        t182
+      },
+    }
   } in
-  match mtmp155 {
-    Tag_0 => {
-      let x156 = Result__(string,string)__string::Ok._0(mtmp155) in
-      let try_value/17 = x156 in
-      jump k177(x156)
-    },
-    Tag_1 => {
-      let x157 = Result__(string,string)__string::Err._0(mtmp155) in
-      let try_residual/17 = x157 in
-      let t182 = Result__string__string::Err(x157) in
-      t182
-    },
-  }
+  let inline204 = split_host_port(ok/2) in
+  jump inline_cont203(inline204)
 }
 
 fn show(res/5: Result__string__string) -> string {
@@ -61,18 +70,55 @@ fn show(res/5: Result__string__string) -> string {
 
 fn main() -> unit {
   let t190 = render(true) in
-  let t191 = show(t190) in
-  let _wild163 = println__T_string(t191) in
-  let t192 = render(false) in
-  let t193 = show(t192) in
-  let _wild164 = println__T_string(t193) in
-  ()
+  join inline_cont218(t191: string) -> unit {
+    join inline_cont215(_wild163: unit) -> unit {
+      let t192 = render(false) in
+      join inline_cont208(t193: string) -> unit {
+        let inline206 = trait_impl#ToString#string#to_string(t193) in
+        let inline207 = @runtime(core.string_println)(inline206) in
+        ()
+      } in
+      match t192 {
+        Tag_0 => {
+          let inline209 = Result__string__string::Ok._0(t192) in
+          let inline210 = inline209 in
+          let inline211 = ("ok " + inline209) in
+          jump inline_cont208(inline211)
+        },
+        Tag_1 => {
+          let inline212 = Result__string__string::Err._0(t192) in
+          let inline213 = inline212 in
+          let inline214 = ("err " + inline212) in
+          jump inline_cont208(inline214)
+        },
+      }
+    } in
+    let inline216 = trait_impl#ToString#string#to_string(t191) in
+    let inline217 = @runtime(core.string_println)(inline216) in
+    jump inline_cont215(())
+  } in
+  match t190 {
+    Tag_0 => {
+      let inline219 = Result__string__string::Ok._0(t190) in
+      let inline220 = inline219 in
+      let inline221 = ("ok " + inline219) in
+      jump inline_cont218(inline221)
+    },
+    Tag_1 => {
+      let inline222 = Result__string__string::Err._0(t190) in
+      let inline223 = inline222 in
+      let inline224 = ("err " + inline222) in
+      jump inline_cont218(inline224)
+    },
+  }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t195 = trait_impl#ToString#string#to_string(value/1) in
-  let t196 = @runtime(core.string_println)(t195) in
-  ()
+  join inline_cont225(t195: string) -> unit {
+    let t196 = @runtime(core.string_println)(t195) in
+    ()
+  } in
+  jump inline_cont225(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

@@ -45,48 +45,26 @@ func main0() struct{} {
     var unsigned__2 uint64 = 4294967296
     var float__3 float64 = 125
     var small__4 float32 = 2.5
-    println__T_int32(integer__1)
-    println__T_uint64(unsigned__2)
-    println__T_float64(float__3)
-    println__T_float32(small__4)
+    var inline212 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(integer__1)
+    _goml_runtime_core_string_println(inline212)
+    var inline209 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(unsigned__2)
+    _goml_runtime_core_string_println(inline209)
+    var inline206 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(float__3)
+    _goml_runtime_core_string_println(inline206)
+    var inline203 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(small__4)
+    _goml_runtime_core_string_println(inline203)
     switch integer__1 {
     case 1000:
-        println__T_string("matched")
+        var inline195 string = "matched"
+        var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline195)
+        _goml_runtime_core_string_println(inline196)
         return struct{}{}
     default:
-        println__T_string("missed")
+        var inline199 string = "missed"
+        var inline200 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline199)
+        _goml_runtime_core_string_println(inline200)
         return struct{}{}
     }
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t166 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t166)
-    return struct{}{}
-}
-
-func println__T_uint64(value__1 uint64) struct{} {
-    var t169 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(value__1)
-    _goml_runtime_core_string_println(t169)
-    return struct{}{}
-}
-
-func println__T_float64(value__1 float64) struct{} {
-    var t172 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(value__1)
-    _goml_runtime_core_string_println(t172)
-    return struct{}{}
-}
-
-func println__T_float32(value__1 float32) struct{} {
-    var t175 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t175)
-    return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t178 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t178)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {

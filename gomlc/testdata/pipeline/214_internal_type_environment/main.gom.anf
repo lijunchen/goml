@@ -61,37 +61,73 @@ fn list_value(value/10: List) -> int32 {
 fn main() -> unit {
   let offset/12 = 1 in
   let add/14 = closure_env_add_0 { offset_0: offset/12 } in
-  let t192 = inherent#closure_env_add_0#closure_env_add_0#apply(add/14, 1) in
-  let point/15 = inherent#Point#Point#new(t192, 3) in
-  let t193 = inherent#Point#Point#origin() in
-  let combined/16 = inherent#Point#Point#copy(point/15, t193) in
-  let t194 = wrap__T_int32(4) in
-  let t195 = Wrapper__int32 { value: t194 } in
-  let wrapped/17 = Shape__int32::Wrapped(t195) in
-  let t196 = Node { value: 5, next: Tag_1 } in
-  let list/18 = List::Cons(t196) in
-  let t197 = Point.x(combined/16) in
-  let t198 = Point.y(combined/16) in
-  let t199 = (t197 + t198) in
-  let t200 = shape_value(wrapped/17) in
-  let t201 = (t199 + t200) in
-  let t202 = list_value(list/18) in
-  let t203 = (t201 + t202) in
-  let t204 = inherent#int32#int32#to_string(t203) in
-  let t205 = println__T_string(t204) in
-  ()
+  join inline_cont253(t192: int32) -> unit {
+    join inline_cont250(point/15: Point) -> unit {
+      join inline_cont248(t193: Point) -> unit {
+        join inline_cont240(combined/16: Point) -> unit {
+          join inline_cont236(t194: int32) -> unit {
+            let t195 = Wrapper__int32 { value: t194 } in
+            let wrapped/17 = Shape__int32::Wrapped(t195) in
+            let t196 = Node { value: 5, next: Tag_1 } in
+            let list/18 = List::Cons(t196) in
+            let t197 = Point.x(combined/16) in
+            let t198 = Point.y(combined/16) in
+            let t199 = (t197 + t198) in
+            join inline_cont227(t200: int32) -> unit {
+              let t201 = (t199 + t200) in
+              let t202 = list_value(list/18) in
+              let t203 = (t201 + t202) in
+              join inline_cont225(t204: string) -> unit {
+                let inline223 = trait_impl#ToString#string#to_string(t204) in
+                let inline224 = @runtime(core.string_println)(inline223) in
+                ()
+              } in
+              let inline226 = @runtime(core.int32_to_string)(t203) in
+              jump inline_cont225(inline226)
+            } in
+            let inline233 = t195 in
+            let inline234 = t195 in
+            let inline235 = t194 in
+            jump inline_cont227(t194)
+          } in
+          let inline237 = 4 in
+          let inline238 = closure_env_id_1 {} in
+          let inline239 = inherent#closure_env_id_1#closure_env_id_1#apply(inline238, inline237) in
+          jump inline_cont236(inline239)
+        } in
+        let inline241 = Point.x(point/15) in
+        let inline242 = Point.x(t193) in
+        let inline243 = (inline241 + inline242) in
+        let inline244 = Point.y(point/15) in
+        let inline245 = Point.y(t193) in
+        let inline246 = (inline244 + inline245) in
+        let inline247 = Point { x: inline243, y: inline246 } in
+        jump inline_cont240(inline247)
+      } in
+      let inline249 = Point { x: 0, y: 0 } in
+      jump inline_cont248(inline249)
+    } in
+    let inline251 = 3 in
+    let inline252 = Point { x: t192, y: inline251 } in
+    jump inline_cont250(inline252)
+  } in
+  let inline254 = 1 in
+  let inline255 = offset/12 in
+  let inline256 = (inline254 + offset/12) in
+  jump inline_cont253(inline256)
 }
 
 fn wrap__T_int32(value/4: int32) -> int32 {
   let id/6 = closure_env_id_1 {} in
-  let t208 = inherent#closure_env_id_1#closure_env_id_1#apply(id/6, value/4) in
-  t208
+  value/4
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t210 = trait_impl#ToString#string#to_string(value/1) in
-  let t211 = @runtime(core.string_println)(t210) in
-  ()
+  join inline_cont258(t210: string) -> unit {
+    let t211 = @runtime(core.string_println)(t210) in
+    ()
+  } in
+  jump inline_cont258(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {

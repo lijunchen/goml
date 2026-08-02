@@ -40,46 +40,31 @@ func main0() struct{} {
     var add64__13 uint64 = 4000000000
     var sum64__14 uint64 = start64__12 + add64__13
     var diff64__15 uint64 = sum64__14 - add64__13
-    var t157 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(sum8__2)
+    var t157 string
+    var inline198 string = _goml_runtime_core_uint8_to_string(sum8__2)
+    t157 = inline198
     var t158 string = t157 + ", "
-    var t159 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(neg8__3)
+    var t159 string
+    var inline196 string = _goml_runtime_core_uint8_to_string(neg8__3)
+    t159 = inline196
     var t160 string = t158 + t159
     var t161 string = t160 + "; "
-    var t162 string = _goml_m_trait__impl_i_ToString_i_uint16_i_to__string(diff16__7)
+    var t162 string
+    var inline194 string = _goml_runtime_core_uint16_to_string(diff16__7)
+    t162 = inline194
     var t163 string = t161 + t162
     var t164 string = t163 + "; "
-    var t165 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(neg32__11)
+    var t165 string
+    var inline192 string = _goml_runtime_core_uint32_to_string(neg32__11)
+    t165 = inline192
     var t166 string = t164 + t165
     var t167 string = t166 + "; "
-    var t168 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(diff64__15)
+    var t168 string
+    var inline190 string = _goml_runtime_core_uint64_to_string(diff64__15)
+    t168 = inline190
     var message__16 string = t167 + t168
-    println__T_string(message__16)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var t171 string = _goml_runtime_core_uint8_to_string(self__45)
-    return t171
-}
-
-func _goml_m_trait__impl_i_ToString_i_uint16_i_to__string(self__46 uint16) string {
-    var t174 string = _goml_runtime_core_uint16_to_string(self__46)
-    return t174
-}
-
-func _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(self__47 uint32) string {
-    var t177 string = _goml_runtime_core_uint32_to_string(self__47)
-    return t177
-}
-
-func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__48 uint64) string {
-    var t180 string = _goml_runtime_core_uint64_to_string(self__48)
-    return t180
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t182 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t182)
+    var inline187 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__16)
+    _goml_runtime_core_string_println(inline187)
     return struct{}{}
 }
 

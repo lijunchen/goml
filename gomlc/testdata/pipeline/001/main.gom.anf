@@ -12,14 +12,18 @@ fn main() -> unit {
   let y/2 = x157 in
   let x/1 = x156 in
   let b/5 = x160 in
-  let mtmp161 = print__T_bool(x160) in
+  let inline171 = trait_impl#ToString#bool#to_string(x160) in
+  let inline172 = @runtime(core.string_print)(inline171) in
   ()
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  let t165 = trait_impl#ToString#bool#to_string(value/0) in
-  let t166 = @runtime(core.string_print)(t165) in
-  ()
+  join inline_cont173(t165: string) -> unit {
+    let t166 = @runtime(core.string_print)(t165) in
+    ()
+  } in
+  let inline174 = @runtime(core.bool_to_string)(value/0) in
+  jump inline_cont173(inline174)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {

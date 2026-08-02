@@ -13,20 +13,18 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-func my_int_equal(x__0 int32, y__1 int32) bool {
-    var t159 bool = x__0 < y__1
-    var t160 bool = !t159
-    if t160 {
-        var t161 bool = y__1 < x__0
-        var t162 bool = !t161
-        return t162
-    } else {
-        return false
-    }
-}
-
 func sum(n__2 int32) int32 {
-    var t167 bool = my_int_equal(n__2, 1)
+    var t167 bool
+    var inline181 int32 = 1
+    var inline182 bool = n__2 < inline181
+    var inline183 bool = !inline182
+    if inline183 {
+        var inline184 bool = inline181 < n__2
+        var inline185 bool = !inline184
+        t167 = inline185
+    } else {
+        t167 = false
+    }
     if t167 {
         return 1
     } else {
@@ -39,13 +37,8 @@ func sum(n__2 int32) int32 {
 
 func main0() struct{} {
     var t172 int32 = sum(100)
-    println__T_int32(t172)
-    return struct{}{}
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t175 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t175)
+    var inline187 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t172)
+    _goml_runtime_core_string_println(inline187)
     return struct{}{}
 }
 

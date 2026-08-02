@@ -19,22 +19,38 @@ fn magnitude(p/3: Point) -> int32 {
 }
 
 fn main() -> int32 {
-  let mtmp158 = make_some(5) in
-  match mtmp158 {
-    Tag_0 => {
-      let x159 = Maybe__int32::Some._0(mtmp158) in
-      let result/6 = x159 in
-      let pt/7 = build_point(x159, 7) in
-      let t175 = Point.x(pt/7) in
-      let mtmp160 = Maybe__int32::Some(t175) in
-      let x161 = t175 in
-      let value/8 = t175 in
-      let t178 = magnitude(pt/7) in
-      let t179 = (t175 + t178) in
-      t179
-    },
-    Tag_1 => {
-      0
-    },
-  }
+  join inline_cont190(mtmp158: Maybe__int32) -> int32 {
+    match mtmp158 {
+      Tag_0 => {
+        let x159 = Maybe__int32::Some._0(mtmp158) in
+        let result/6 = x159 in
+        join inline_cont187(pt/7: Point) -> int32 {
+          let t175 = Point.x(pt/7) in
+          let mtmp160 = Maybe__int32::Some(t175) in
+          let x161 = t175 in
+          let value/8 = t175 in
+          join inline_cont180(t178: int32) -> int32 {
+            let t179 = (t175 + t178) in
+            t179
+          } in
+          let inline181 = pt/7 in
+          let inline182 = Point.x(pt/7) in
+          let inline183 = Point.y(pt/7) in
+          let inline184 = inline183 in
+          let inline185 = inline182 in
+          let inline186 = (inline182 + inline183) in
+          jump inline_cont180(inline186)
+        } in
+        let inline188 = 7 in
+        let inline189 = Point { x: x159, y: inline188 } in
+        jump inline_cont187(inline189)
+      },
+      Tag_1 => {
+        0
+      },
+    }
+  } in
+  let inline191 = 5 in
+  let inline192 = Maybe__int32::Some(inline191) in
+  jump inline_cont190(inline192)
 }

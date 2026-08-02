@@ -28,13 +28,8 @@ func loop_return() int32 {
 func main0() struct{} {
     loop_return_unit(true)
     var t172 int32 = loop_return()
-    println__T_int32(t172)
-    return struct{}{}
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t177 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t177)
+    var inline185 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t172)
+    _goml_runtime_core_string_println(inline185)
     return struct{}{}
 }
 

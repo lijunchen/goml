@@ -4,9 +4,14 @@ fn trait_impl#Display#S#show(self/0: S) -> string {
 
 fn main() -> unit {
   let t160 = S {} in
-  let mtmp155 = to_dyn__T_S(t160) in
-  let _wild156 = println__T_string("ok") in
-  ()
+  join inline_cont173(mtmp155: dyn Display) -> unit {
+    let inline170 = "ok" in
+    let inline171 = trait_impl#ToString#string#to_string(inline170) in
+    let inline172 = @runtime(core.string_println)(inline171) in
+    ()
+  } in
+  let inline174 = to_dyn[Display]{S}(t160) in
+  jump inline_cont173(inline174)
 }
 
 fn to_dyn__T_S(x/1: S) -> dyn Display {
@@ -15,9 +20,11 @@ fn to_dyn__T_S(x/1: S) -> dyn Display {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t165 = trait_impl#ToString#string#to_string(value/1) in
-  let t166 = @runtime(core.string_println)(t165) in
-  ()
+  join inline_cont175(t165: string) -> unit {
+    let t166 = @runtime(core.string_println)(t165) in
+    ()
+  } in
+  jump inline_cont175(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

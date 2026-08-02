@@ -9,17 +9,23 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
         true => {
           match x157 {
             true => {
-              let t171 = println__T_string("case4") in
+              let inline200 = "case4" in
+              let inline201 = trait_impl#ToString#string#to_string(inline200) in
+              let inline202 = @runtime(core.string_println)(inline201) in
               ()
             },
             false => {
-              let t172 = println__T_string("case3") in
+              let inline204 = "case3" in
+              let inline205 = trait_impl#ToString#string#to_string(inline204) in
+              let inline206 = @runtime(core.string_println)(inline205) in
               ()
             },
           }
         },
         false => {
-          let t173 = println__T_string("case4") in
+          let inline208 = "case4" in
+          let inline209 = trait_impl#ToString#string#to_string(inline208) in
+          let inline210 = @runtime(core.string_println)(inline209) in
           ()
         },
       }
@@ -33,17 +39,23 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
             true => {
               match x159 {
                 true => {
-                  let t177 = println__T_string("case2") in
+                  let inline212 = "case2" in
+                  let inline213 = trait_impl#ToString#string#to_string(inline212) in
+                  let inline214 = @runtime(core.string_println)(inline213) in
                   ()
                 },
                 false => {
-                  let t178 = println__T_string("case1") in
+                  let inline216 = "case1" in
+                  let inline217 = trait_impl#ToString#string#to_string(inline216) in
+                  let inline218 = @runtime(core.string_println)(inline217) in
                   ()
                 },
               }
             },
             false => {
-              let t179 = println__T_string("case2") in
+              let inline220 = "case2" in
+              let inline221 = trait_impl#ToString#string#to_string(inline220) in
+              let inline222 = @runtime(core.string_println)(inline221) in
               ()
             },
           }
@@ -55,17 +67,23 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
             true => {
               match x161 {
                 true => {
-                  let t182 = println__T_string("case4") in
+                  let inline224 = "case4" in
+                  let inline225 = trait_impl#ToString#string#to_string(inline224) in
+                  let inline226 = @runtime(core.string_println)(inline225) in
                   ()
                 },
                 false => {
-                  let t183 = println__T_string("case3") in
+                  let inline228 = "case3" in
+                  let inline229 = trait_impl#ToString#string#to_string(inline228) in
+                  let inline230 = @runtime(core.string_println)(inline229) in
                   ()
                 },
               }
             },
             false => {
-              let t184 = println__T_string("case4") in
+              let inline232 = "case4" in
+              let inline233 = trait_impl#ToString#string#to_string(inline232) in
+              let inline234 = @runtime(core.string_println)(inline233) in
               ()
             },
           }
@@ -92,9 +110,11 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t195 = trait_impl#ToString#string#to_string(value/1) in
-  let t196 = @runtime(core.string_println)(t195) in
-  ()
+  join inline_cont235(t195: string) -> unit {
+    let t196 = @runtime(core.string_println)(t195) in
+    ()
+  } in
+  jump inline_cont235(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

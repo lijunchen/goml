@@ -1,8 +1,16 @@
 fn main() -> int32 {
-  let value/0 = inherent#Ref#Ref[T]#new__T_int32(1) in
-  let mtmp155 = inherent#Ref#Ref[T]#set__T_int32(value/0, 2) in
-  let t158 = inherent#Ref#Ref[T]#get__T_int32(value/0) in
-  t158
+  join inline_cont178(value/0: Ref[int32]) -> int32 {
+    join inline_cont175(mtmp155: unit) -> int32 {
+      let inline174 = @intrinsic(ref.get)(value/0) in
+      inline174
+    } in
+    let inline176 = 2 in
+    let inline177 = @intrinsic(ref.set)(value/0, inline176) in
+    jump inline_cont175(())
+  } in
+  let inline179 = 1 in
+  let inline180 = @intrinsic(ref.new)(inline179) in
+  jump inline_cont178(inline180)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {

@@ -35,22 +35,105 @@ fn main() -> unit {
   let first/4 = classify(-42) in
   let second/5 = classify(0) in
   let third/6 = classify(17) in
-  let shape1/7 = triangle_type(1, 2, 3) in
-  let shape2/8 = triangle_type(3, 2, 1) in
-  let shape3/9 = triangle_type(2, 3, 2) in
-  let mtmp155 = println__T_string(first/4) in
-  let mtmp156 = println__T_string(second/5) in
-  let mtmp157 = println__T_string(third/6) in
-  let mtmp158 = println__T_string(shape1/7) in
-  let mtmp159 = println__T_string(shape2/8) in
-  let mtmp160 = println__T_string(shape3/9) in
-  ()
+  join inline_cont218(shape1/7: string) -> unit {
+    join inline_cont211(shape2/8: string) -> unit {
+      join inline_cont204(shape3/9: string) -> unit {
+        join inline_cont201(mtmp155: unit) -> unit {
+          join inline_cont198(mtmp156: unit) -> unit {
+            join inline_cont195(mtmp157: unit) -> unit {
+              join inline_cont192(mtmp158: unit) -> unit {
+                join inline_cont189(mtmp159: unit) -> unit {
+                  let inline187 = trait_impl#ToString#string#to_string(shape3/9) in
+                  let inline188 = @runtime(core.string_println)(inline187) in
+                  ()
+                } in
+                let inline190 = trait_impl#ToString#string#to_string(shape2/8) in
+                let inline191 = @runtime(core.string_println)(inline190) in
+                jump inline_cont189(())
+              } in
+              let inline193 = trait_impl#ToString#string#to_string(shape1/7) in
+              let inline194 = @runtime(core.string_println)(inline193) in
+              jump inline_cont192(())
+            } in
+            let inline196 = trait_impl#ToString#string#to_string(third/6) in
+            let inline197 = @runtime(core.string_println)(inline196) in
+            jump inline_cont195(())
+          } in
+          let inline199 = trait_impl#ToString#string#to_string(second/5) in
+          let inline200 = @runtime(core.string_println)(inline199) in
+          jump inline_cont198(())
+        } in
+        let inline202 = trait_impl#ToString#string#to_string(first/4) in
+        let inline203 = @runtime(core.string_println)(inline202) in
+        jump inline_cont201(())
+      } in
+      let inline205 = 2 in
+      let inline206 = 3 in
+      let inline207 = 2 in
+      let inline208 = (inline205 < inline206) in
+      if inline208 {
+        let inline209 = (inline206 < inline207) in
+        if inline209 {
+          jump inline_cont204("ascending")
+        } else {
+          jump inline_cont204("peak")
+        }
+      } else {
+        let inline210 = (inline205 < inline207) in
+        if inline210 {
+          jump inline_cont204("valley")
+        } else {
+          jump inline_cont204("flat")
+        }
+      }
+    } in
+    let inline212 = 3 in
+    let inline213 = 2 in
+    let inline214 = 1 in
+    let inline215 = (inline212 < inline213) in
+    if inline215 {
+      let inline216 = (inline213 < inline214) in
+      if inline216 {
+        jump inline_cont211("ascending")
+      } else {
+        jump inline_cont211("peak")
+      }
+    } else {
+      let inline217 = (inline212 < inline214) in
+      if inline217 {
+        jump inline_cont211("valley")
+      } else {
+        jump inline_cont211("flat")
+      }
+    }
+  } in
+  let inline219 = 1 in
+  let inline220 = 2 in
+  let inline221 = 3 in
+  let inline222 = (inline219 < inline220) in
+  if inline222 {
+    let inline223 = (inline220 < inline221) in
+    if inline223 {
+      jump inline_cont218("ascending")
+    } else {
+      jump inline_cont218("peak")
+    }
+  } else {
+    let inline224 = (inline219 < inline221) in
+    if inline224 {
+      jump inline_cont218("valley")
+    } else {
+      jump inline_cont218("flat")
+    }
+  }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t182 = trait_impl#ToString#string#to_string(value/1) in
-  let t183 = @runtime(core.string_println)(t182) in
-  ()
+  join inline_cont225(t182: string) -> unit {
+    let t183 = @runtime(core.string_println)(t182) in
+    ()
+  } in
+  jump inline_cont225(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

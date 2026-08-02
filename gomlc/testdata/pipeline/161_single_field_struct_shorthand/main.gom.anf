@@ -2,14 +2,17 @@ fn main() -> unit {
   let name/0 = "Alice" in
   let p/1 = Person { name: name/0 } in
   let t157 = name/0 in
-  let _wild155 = println__T_string(name/0) in
+  let inline164 = trait_impl#ToString#string#to_string(name/0) in
+  let inline165 = @runtime(core.string_println)(inline164) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t159 = trait_impl#ToString#string#to_string(value/1) in
-  let t160 = @runtime(core.string_println)(t159) in
-  ()
+  join inline_cont166(t159: string) -> unit {
+    let t160 = @runtime(core.string_println)(t159) in
+    ()
+  } in
+  jump inline_cont166(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

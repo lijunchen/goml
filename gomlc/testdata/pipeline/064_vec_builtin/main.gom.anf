@@ -1,21 +1,64 @@
 fn main() -> unit {
-  let v/0 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild155 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
-  let _wild156 = inherent#Vec#Vec[T]#push__T_int32(v/0, 20) in
-  let _wild157 = inherent#Vec#Vec[T]#push__T_int32(v/0, 30) in
-  let first/1 = @intrinsic(vec.get)(v/0, 0) in
-  let second/2 = @intrinsic(vec.get)(v/0, 1) in
-  let third/3 = @intrinsic(vec.get)(v/0, 2) in
-  let len/4 = inherent#Vec#Vec[T]#len__T_int32(v/0) in
-  let t163 = inherent#int32#int32#to_string(first/1) in
-  let mtmp158 = println__T_string(t163) in
-  let t164 = inherent#int32#int32#to_string(second/2) in
-  let mtmp159 = println__T_string(t164) in
-  let t165 = inherent#int32#int32#to_string(third/3) in
-  let mtmp160 = println__T_string(t165) in
-  let t166 = inherent#int#int#to_string(len/4) in
-  let mtmp161 = println__T_string(t166) in
-  ()
+  join inline_cont217(v/0: Vec[int32]) -> unit {
+    join inline_cont214(_wild155: unit) -> unit {
+      join inline_cont211(_wild156: unit) -> unit {
+        join inline_cont208(_wild157: unit) -> unit {
+          let first/1 = @intrinsic(vec.get)(v/0, 0) in
+          let second/2 = @intrinsic(vec.get)(v/0, 1) in
+          let third/3 = @intrinsic(vec.get)(v/0, 2) in
+          join inline_cont206(len/4: int) -> unit {
+            join inline_cont204(t163: string) -> unit {
+              join inline_cont201(mtmp158: unit) -> unit {
+                join inline_cont199(t164: string) -> unit {
+                  join inline_cont196(mtmp159: unit) -> unit {
+                    join inline_cont194(t165: string) -> unit {
+                      join inline_cont191(mtmp160: unit) -> unit {
+                        join inline_cont189(t166: string) -> unit {
+                          let inline187 = trait_impl#ToString#string#to_string(t166) in
+                          let inline188 = @runtime(core.string_println)(inline187) in
+                          ()
+                        } in
+                        let inline190 = @runtime(core.int_to_string)(len/4) in
+                        jump inline_cont189(inline190)
+                      } in
+                      let inline192 = trait_impl#ToString#string#to_string(t165) in
+                      let inline193 = @runtime(core.string_println)(inline192) in
+                      jump inline_cont191(())
+                    } in
+                    let inline195 = @runtime(core.int32_to_string)(third/3) in
+                    jump inline_cont194(inline195)
+                  } in
+                  let inline197 = trait_impl#ToString#string#to_string(t164) in
+                  let inline198 = @runtime(core.string_println)(inline197) in
+                  jump inline_cont196(())
+                } in
+                let inline200 = @runtime(core.int32_to_string)(second/2) in
+                jump inline_cont199(inline200)
+              } in
+              let inline202 = trait_impl#ToString#string#to_string(t163) in
+              let inline203 = @runtime(core.string_println)(inline202) in
+              jump inline_cont201(())
+            } in
+            let inline205 = @runtime(core.int32_to_string)(first/1) in
+            jump inline_cont204(inline205)
+          } in
+          let inline207 = @intrinsic(vec.len)(v/0) in
+          jump inline_cont206(inline207)
+        } in
+        let inline209 = 30 in
+        let inline210 = @intrinsic(vec.push)(v/0, inline209) in
+        jump inline_cont208(())
+      } in
+      let inline212 = 20 in
+      let inline213 = @intrinsic(vec.push)(v/0, inline212) in
+      jump inline_cont211(())
+    } in
+    let inline215 = 10 in
+    let inline216 = @intrinsic(vec.push)(v/0, inline215) in
+    jump inline_cont214(())
+  } in
+  let inline218 = @intrinsic(vec.new)() in
+  jump inline_cont217(inline218)
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
@@ -34,9 +77,11 @@ fn inherent#Vec#Vec[T]#len__T_int32(self/137: Vec[int32]) -> int {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t176 = trait_impl#ToString#string#to_string(value/1) in
-  let t177 = @runtime(core.string_println)(t176) in
-  ()
+  join inline_cont219(t176: string) -> unit {
+    let t177 = @runtime(core.string_println)(t176) in
+    ()
+  } in
+  jump inline_cont219(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {

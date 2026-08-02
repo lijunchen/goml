@@ -125,25 +125,64 @@ fn main() -> unit {
   let mtmp162 = (t235) in
   let x163 = t235 in
   let single/9 = t235 in
-  let t236 = unwrap(t235) in
-  let _wild164 = println__T_int32(t236) in
-  let t237 = decide(true) in
-  let _wild165 = println__T_int32(t237) in
-  let t238 = signed_zero(0) in
-  let _wild166 = println__T_string(t238) in
-  ()
+  join inline_cont263(t236: int32) -> unit {
+    join inline_cont260(_wild164: unit) -> unit {
+      join inline_cont258(t237: int32) -> unit {
+        join inline_cont255(_wild165: unit) -> unit {
+          join inline_cont253(t238: string) -> unit {
+            let inline251 = trait_impl#ToString#string#to_string(t238) in
+            let inline252 = @runtime(core.string_println)(inline251) in
+            ()
+          } in
+          let inline254 = 0 in
+          match inline254 {
+            -0 => {
+              jump inline_cont253("zero")
+            },
+            _ => {
+              jump inline_cont253("other")
+            },
+          }
+        } in
+        let inline256 = trait_impl#ToString#int32#to_string(t237) in
+        let inline257 = @runtime(core.string_println)(inline256) in
+        jump inline_cont255(())
+      } in
+      let inline259 = true in
+      match inline259 {
+        true => {
+          jump inline_cont258(1)
+        },
+        false => {
+          jump inline_cont258(2)
+        },
+      }
+    } in
+    let inline261 = trait_impl#ToString#int32#to_string(t236) in
+    let inline262 = @runtime(core.string_println)(inline261) in
+    jump inline_cont260(())
+  } in
+  let inline264 = t235 in
+  let inline265 = 12 in
+  let inline266 = inline265 in
+  jump inline_cont263(inline265)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t240 = trait_impl#ToString#int32#to_string(value/1) in
-  let t241 = @runtime(core.string_println)(t240) in
-  ()
+  join inline_cont267(t240: string) -> unit {
+    let t241 = @runtime(core.string_println)(t240) in
+    ()
+  } in
+  let inline268 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont267(inline268)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t243 = trait_impl#ToString#string#to_string(value/1) in
-  let t244 = @runtime(core.string_println)(t243) in
-  ()
+  join inline_cont269(t243: string) -> unit {
+    let t244 = @runtime(core.string_println)(t243) in
+    ()
+  } in
+  jump inline_cont269(value/1)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {

@@ -18,102 +18,166 @@ fn main() -> unit {
       } in
       joinrec {
         join loop173() -> unit {
-          let mtmp162 = inherent#Ref#Ref[T]#get__T_int(k/3) in
-          join k174(jp175: bool) -> unit {
-            if jp175 {
-              let t176 = inherent#Ref#Ref[T]#get__T_int(sum/4) in
-              let t177 = inherent#Ref#Ref[T]#get__T_int(k/3) in
-              let t178 = (t176 + t177) in
-              let _wild163 = inherent#Ref#Ref[T]#set__T_int(sum/4, t178) in
-              let t179 = inherent#Ref#Ref[T]#get__T_int(k/3) in
-              let t180 = (t179 + 1) in
-              let _wild164 = inherent#Ref#Ref[T]#set__T_int(k/3, t180) in
-              jump loop173()
-            } else {
-              jump exit171()
+          join inline_cont278(mtmp162: int) -> unit {
+            join k174(jp175: bool) -> unit {
+              if jp175 {
+                join inline_cont276(t176: int) -> unit {
+                  join inline_cont274(t177: int) -> unit {
+                    let t178 = (t176 + t177) in
+                    join inline_cont272(_wild163: unit) -> unit {
+                      join inline_cont270(t179: int) -> unit {
+                        let t180 = (t179 + 1) in
+                        let inline269 = @intrinsic(ref.set)(k/3, t180) in
+                        jump loop173()
+                      } in
+                      let inline271 = @intrinsic(ref.get)(k/3) in
+                      jump inline_cont270(inline271)
+                    } in
+                    let inline273 = @intrinsic(ref.set)(sum/4, t178) in
+                    jump inline_cont272(())
+                  } in
+                  let inline275 = @intrinsic(ref.get)(k/3) in
+                  jump inline_cont274(inline275)
+                } in
+                let inline277 = @intrinsic(ref.get)(sum/4) in
+                jump inline_cont276(inline277)
+              } else {
+                jump exit171()
+              }
+            } in
+            match mtmp162 {
+              0 => {
+                jump k174(true)
+              },
+              1 => {
+                join inline_cont266(t183: int) -> unit {
+                  join inline_cont263(t184: bool) -> unit {
+                    if t184 {
+                      jump k174(true)
+                    } else {
+                      jump k174(false)
+                    }
+                  } in
+                  let inline264 = 0 in
+                  let inline265 = @intrinsic(eq.primitive)(t183, inline264) in
+                  jump inline_cont263(inline265)
+                } in
+                let inline267 = @intrinsic(ref.get)(sum/4) in
+                jump inline_cont266(inline267)
+              },
+              2 => {
+                jump k174(true)
+              },
+              _ => {
+                jump k174(false)
+              },
             }
           } in
-          match mtmp162 {
-            0 => {
-              jump k174(true)
-            },
-            1 => {
-              let t183 = inherent#Ref#Ref[T]#get__T_int(sum/4) in
-              let t184 = trait_impl#Eq#int#eq(t183, 0) in
-              if t184 {
-                jump k174(true)
-              } else {
-                jump k174(false)
-              }
-            },
-            2 => {
-              jump k174(true)
-            },
-            _ => {
-              jump k174(false)
-            },
-          }
+          let inline279 = @intrinsic(ref.get)(k/3) in
+          jump inline_cont278(inline279)
         } in
       } in
       jump loop173()
     } in
     joinrec {
       join loop185() -> unit {
-        let t193 = inherent#Ref#Ref[T]#get__T_int(j/1) in
-        let t194 = (t193 < 4) in
-        join k186(jp187: bool) -> unit {
-          if jp187 {
-            let t188 = inherent#Ref#Ref[T]#get__T_int(total/2) in
-            let t189 = inherent#Ref#Ref[T]#get__T_int(j/1) in
-            let t190 = (t188 + t189) in
-            let _wild158 = inherent#Ref#Ref[T]#set__T_int(total/2, t190) in
-            let t191 = inherent#Ref#Ref[T]#get__T_int(j/1) in
-            let t192 = (t191 + 1) in
-            let _wild159 = inherent#Ref#Ref[T]#set__T_int(j/1, t192) in
-            jump loop185()
+        join inline_cont261(t193: int) -> unit {
+          let t194 = (t193 < 4) in
+          join k186(jp187: bool) -> unit {
+            if jp187 {
+              join inline_cont259(t188: int) -> unit {
+                join inline_cont257(t189: int) -> unit {
+                  let t190 = (t188 + t189) in
+                  join inline_cont255(_wild158: unit) -> unit {
+                    join inline_cont253(t191: int) -> unit {
+                      let t192 = (t191 + 1) in
+                      let inline252 = @intrinsic(ref.set)(j/1, t192) in
+                      jump loop185()
+                    } in
+                    let inline254 = @intrinsic(ref.get)(j/1) in
+                    jump inline_cont253(inline254)
+                  } in
+                  let inline256 = @intrinsic(ref.set)(total/2, t190) in
+                  jump inline_cont255(())
+                } in
+                let inline258 = @intrinsic(ref.get)(j/1) in
+                jump inline_cont257(inline258)
+              } in
+              let inline260 = @intrinsic(ref.get)(total/2) in
+              jump inline_cont259(inline260)
+            } else {
+              jump exit169()
+            }
+          } in
+          if t194 {
+            join inline_cont249(t197: int) -> unit {
+              join inline_cont246(t198: bool) -> unit {
+                if t198 {
+                  jump k186(true)
+                } else {
+                  join inline_cont244(t199: int) -> unit {
+                    join inline_cont241(t200: bool) -> unit {
+                      let t201 = (!t200) in
+                      jump k186(t201)
+                    } in
+                    let inline242 = 3 in
+                    let inline243 = @intrinsic(eq.primitive)(t199, inline242) in
+                    jump inline_cont241(inline243)
+                  } in
+                  let inline245 = @intrinsic(ref.get)(j/1) in
+                  jump inline_cont244(inline245)
+                }
+              } in
+              let inline247 = 1 in
+              let inline248 = @intrinsic(eq.primitive)(t197, inline247) in
+              jump inline_cont246(inline248)
+            } in
+            let inline250 = @intrinsic(ref.get)(j/1) in
+            jump inline_cont249(inline250)
           } else {
-            jump exit169()
+            jump k186(false)
           }
         } in
-        if t194 {
-          let t197 = inherent#Ref#Ref[T]#get__T_int(j/1) in
-          let t198 = trait_impl#Eq#int#eq(t197, 1) in
-          if t198 {
-            jump k186(true)
-          } else {
-            let t199 = inherent#Ref#Ref[T]#get__T_int(j/1) in
-            let t200 = trait_impl#Eq#int#eq(t199, 3) in
-            let t201 = (!t200) in
-            jump k186(t201)
-          }
-        } else {
-          jump k186(false)
-        }
+        let inline262 = @intrinsic(ref.get)(j/1) in
+        jump inline_cont261(inline262)
       } in
     } in
     jump loop185()
   } in
   joinrec {
     join loop202() -> unit {
-      let t208 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-      let t209 = (t208 < 3) in
-      join k203(jp204: bool) -> unit {
-        if jp204 {
-          let t205 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-          let _wild155 = println__T_int(t205) in
-          let t206 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-          let t207 = (t206 + 1) in
-          let _wild156 = inherent#Ref#Ref[T]#set__T_int(i/0, t207) in
-          jump loop202()
+      join inline_cont239(t208: int) -> unit {
+        let t209 = (t208 < 3) in
+        join k203(jp204: bool) -> unit {
+          if jp204 {
+            join inline_cont237(t205: int) -> unit {
+              join inline_cont234(_wild155: unit) -> unit {
+                join inline_cont232(t206: int) -> unit {
+                  let t207 = (t206 + 1) in
+                  let inline231 = @intrinsic(ref.set)(i/0, t207) in
+                  jump loop202()
+                } in
+                let inline233 = @intrinsic(ref.get)(i/0) in
+                jump inline_cont232(inline233)
+              } in
+              let inline235 = trait_impl#ToString#int#to_string(t205) in
+              let inline236 = @runtime(core.string_println)(inline235) in
+              jump inline_cont234(())
+            } in
+            let inline238 = @intrinsic(ref.get)(i/0) in
+            jump inline_cont237(inline238)
+          } else {
+            jump exit168()
+          }
+        } in
+        if t209 {
+          jump k203(true)
         } else {
-          jump exit168()
+          jump k203(false)
         }
       } in
-      if t209 {
-        jump k203(true)
-      } else {
-        jump k203(false)
-      }
+      let inline240 = @intrinsic(ref.get)(i/0) in
+      jump inline_cont239(inline240)
     } in
   } in
   jump loop202()
@@ -130,9 +194,12 @@ fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
 }
 
 fn println__T_int(value/1: int) -> unit {
-  let t217 = trait_impl#ToString#int#to_string(value/1) in
-  let t218 = @runtime(core.string_println)(t217) in
-  ()
+  join inline_cont280(t217: string) -> unit {
+    let t218 = @runtime(core.string_println)(t217) in
+    ()
+  } in
+  let inline281 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont280(inline281)
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {

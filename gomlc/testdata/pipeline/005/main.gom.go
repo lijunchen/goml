@@ -33,39 +33,45 @@ func main0() struct{} {
     case Red:
         switch x155 {
         case Red:
-            print__T_int(1)
+            var inline175 int = 1
+            var inline176 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline175)
+            _goml_runtime_core_string_print(inline176)
             return struct{}{}
         default:
-            print__T_int(3)
+            var inline179 int = 3
+            var inline180 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline179)
+            _goml_runtime_core_string_print(inline180)
             return struct{}{}
         }
     case Green:
         switch x155 {
         case Red:
-            print__T_int(0)
+            var inline183 int = 0
+            var inline184 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline183)
+            _goml_runtime_core_string_print(inline184)
             return struct{}{}
         default:
-            print__T_int(3)
+            var inline187 int = 3
+            var inline188 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline187)
+            _goml_runtime_core_string_print(inline188)
             return struct{}{}
         }
     case Blue:
         switch x155 {
         case Blue:
-            print__T_int(2)
+            var inline191 int = 2
+            var inline192 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline191)
+            _goml_runtime_core_string_print(inline192)
             return struct{}{}
         default:
-            print__T_int(3)
+            var inline195 int = 3
+            var inline196 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline195)
+            _goml_runtime_core_string_print(inline196)
             return struct{}{}
         }
     default:
         panic("non-exhaustive match")
     }
-}
-
-func print__T_int(value__0 int) struct{} {
-    var t169 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
-    _goml_runtime_core_string_print(t169)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {

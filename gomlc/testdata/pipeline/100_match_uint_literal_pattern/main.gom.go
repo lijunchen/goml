@@ -20,13 +20,8 @@ func main0() struct{} {
     default:
         jp158 = "other"
     }
-    println__T_string(jp158)
-    return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t160 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t160)
+    var inline165 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp158)
+    _goml_runtime_core_string_println(inline165)
     return struct{}{}
 }
 

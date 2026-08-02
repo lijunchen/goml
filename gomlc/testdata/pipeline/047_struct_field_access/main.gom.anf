@@ -12,14 +12,24 @@ fn sum_point(p/1: Point) -> int32 {
 }
 
 fn main() -> int32 {
-  let p/2 = make_point(5) in
-  let t166 = Point.x(p/2) in
-  let t167 = (t166 + 1) in
-  let t168 = Point.y(p/2) in
-  let t169 = (t168 - 2) in
-  let shifted/3 = Point { x: t167, y: t169 } in
-  let t170 = t167 in
-  let t171 = sum_point(shifted/3) in
-  let t172 = (t167 + t171) in
-  t172
+  join inline_cont177(p/2: Point) -> int32 {
+    let t166 = Point.x(p/2) in
+    let t167 = (t166 + 1) in
+    let t168 = Point.y(p/2) in
+    let t169 = (t168 - 2) in
+    let shifted/3 = Point { x: t167, y: t169 } in
+    let t170 = t167 in
+    join inline_cont173(t171: int32) -> int32 {
+      let t172 = (t167 + t171) in
+      t172
+    } in
+    let inline174 = t167 in
+    let inline175 = t169 in
+    let inline176 = (t167 + t169) in
+    jump inline_cont173(inline176)
+  } in
+  let inline178 = 5 in
+  let inline179 = (inline178 + 1) in
+  let inline180 = Point { x: inline178, y: inline179 } in
+  jump inline_cont177(inline180)
 }

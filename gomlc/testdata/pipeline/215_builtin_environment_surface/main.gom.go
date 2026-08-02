@@ -197,22 +197,35 @@ func main0() struct{} {
         close(p0)
         return struct{}{}
     }(channel__9)
-    var t175 FnIterator__int = _goml_m_range(0, 3)
+    var t175 FnIterator__int
+    var inline256 int = 0
+    var inline257 int = 3
+    var inline258 FnIterator__int = __goml_builtin_range(inline256, inline257)
+    t175 = inline258
     var t176 closure_env_main_0 = closure_env_main_0{}
     var total__13 int = _goml_m_iterator__fold____A__int____I__FnIterator_l_int_r_____T__int(t175, 0, func(p0 int, p1 int) int {
         return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t176, p0, p1)
     })
-    var t177 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(same__5)
+    var t177 string
+    var inline254 string = _goml_runtime_core_bool_to_string(same__5)
+    t177 = inline254
     var t178 string = text__3 + t177
     var t179 int32 = received__10._0
-    var t180 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t179)
+    var t180 string
+    var inline252 string = _goml_runtime_core_int32_to_string(t179)
+    t180 = inline252
     var t181 string = t178 + t180
     var t182 bool = received__10._1
-    var t183 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t182)
+    var t183 string
+    var inline250 string = _goml_runtime_core_bool_to_string(t182)
+    t183 = inline250
     var t184 string = t181 + t183
-    var t185 string = _goml_m_inherent_i_int_i_int_i_to__string(total__13)
+    var t185 string
+    var inline248 string = _goml_runtime_core_int_to_string(total__13)
+    t185 = inline248
     var t186 string = t184 + t185
-    println__T_string(t186)
+    var inline245 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
+    _goml_runtime_core_string_println(inline245)
     return struct{}{}
 }
 
@@ -220,7 +233,10 @@ func _goml_m_iterator__fold____A__int____I__FnIterator_l_int_r_____T__int(iterat
     var accumulator__120 int = initial__118
     Loop_loop_expr191:
     for {
-        var mtmp28 Option__int = _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(iterator__117)
+        var mtmp28 Option__int
+        var inline260 func() Option__int = iterator__117.next_fn
+        var inline261 Option__int = inline260()
+        mtmp28 = inline261
         switch mtmp28.(type) {
         case None:
             break Loop_loop_expr191
@@ -234,38 +250,6 @@ func _goml_m_iterator__fold____A__int____I__FnIterator_l_int_r_____T__int(iterat
         }
     }
     return accumulator__120
-}
-
-func _goml_m_range(start__222 int, end__223 int) FnIterator__int {
-    var t196 FnIterator__int = __goml_builtin_range(start__222, end__223)
-    return t196
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t198)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var t202 string = _goml_runtime_core_bool_to_string(self__37)
-    return t202
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t205 string = _goml_runtime_core_int32_to_string(self__6)
-    return t205
-}
-
-func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var t208 string = _goml_runtime_core_int_to_string(self__5)
-    return t208
-}
-
-func _goml_m_trait__impl_i_Iterator_i_FnIterator____int_i_next(self__102 FnIterator__int) Option__int {
-    var t211 func() Option__int = self__102.next_fn
-    var t212 Option__int = t211()
-    return t212
 }
 
 func __goml_builtin_range(start__218 int, end__219 int) FnIterator__int {

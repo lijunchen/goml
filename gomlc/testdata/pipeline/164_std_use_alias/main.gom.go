@@ -133,34 +133,20 @@ type Result__unit__string_Err struct {
 
 func (_ Result__unit__string_Err) isResult__unit__string() {}
 
-func _goml_m_std_p_env_p_args() *_goml_vec_string {
-    var t157 *_goml_vec_string = _goml_runtime_std_env_args()
-    return t157
-}
-
 func main0() struct{} {
-    var t270 *_goml_vec_string = _goml_m_std_p_env_p_args()
-    var t271 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(t270)
+    var t270 *_goml_vec_string
+    var inline374 *_goml_vec_string = _goml_runtime_std_env_args()
+    t270 = inline374
+    var t271 int
+    var inline372 int = vec_len__Vec_6string(t270)
+    t271 = inline372
     var t272 bool = t271 > 0
-    var t273 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t272)
-    _goml_m_std_p_io_p_println____T__string(t273)
+    var t273 string
+    var inline370 string = _goml_runtime_core_bool_to_string(t272)
+    t273 = inline370
+    var inline367 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t273)
+    _goml_runtime_std_io_println(inline367)
     return struct{}{}
-}
-
-func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
-    var t314 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_std_io_println(t314)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__137 *_goml_vec_string) int {
-    var t318 int = vec_len__Vec_6string(self__137)
-    return t318
-}
-
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var t321 string = _goml_runtime_core_bool_to_string(self__37)
-    return t321
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

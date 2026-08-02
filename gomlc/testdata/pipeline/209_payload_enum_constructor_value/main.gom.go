@@ -59,20 +59,12 @@ func main0() struct{} {
         return _goml_m_inherent_i_closure__env__cons__0_i_closure__env__cons__0_i_apply(cons__6, p0, p1)
     }, 1, t168)
     var t169 int32 = sum(values__7)
-    var t170 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t169)
-    println__T_string(t170)
+    var t170 string
+    var inline187 string = _goml_runtime_core_int32_to_string(t169)
+    t170 = inline187
+    var inline184 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t170)
+    _goml_runtime_core_string_println(inline184)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t173 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t173)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t177 string = _goml_runtime_core_int32_to_string(self__6)
-    return t177
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

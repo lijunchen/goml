@@ -6,11 +6,15 @@ fn main() -> unit {
     Tag_0 => {
       match x155 {
         Tag_0 => {
-          let t160 = print__T_int(1) in
+          let inline175 = 1 in
+          let inline176 = trait_impl#ToString#int#to_string(inline175) in
+          let inline177 = @runtime(core.string_print)(inline176) in
           ()
         },
         _ => {
-          let t161 = print__T_int(3) in
+          let inline179 = 3 in
+          let inline180 = trait_impl#ToString#int#to_string(inline179) in
+          let inline181 = @runtime(core.string_print)(inline180) in
           ()
         },
       }
@@ -18,11 +22,15 @@ fn main() -> unit {
     Tag_1 => {
       match x155 {
         Tag_0 => {
-          let t163 = print__T_int(0) in
+          let inline183 = 0 in
+          let inline184 = trait_impl#ToString#int#to_string(inline183) in
+          let inline185 = @runtime(core.string_print)(inline184) in
           ()
         },
         _ => {
-          let t164 = print__T_int(3) in
+          let inline187 = 3 in
+          let inline188 = trait_impl#ToString#int#to_string(inline187) in
+          let inline189 = @runtime(core.string_print)(inline188) in
           ()
         },
       }
@@ -30,11 +38,15 @@ fn main() -> unit {
     Tag_2 => {
       match x155 {
         Tag_2 => {
-          let t166 = print__T_int(2) in
+          let inline191 = 2 in
+          let inline192 = trait_impl#ToString#int#to_string(inline191) in
+          let inline193 = @runtime(core.string_print)(inline192) in
           ()
         },
         _ => {
-          let t167 = print__T_int(3) in
+          let inline195 = 3 in
+          let inline196 = trait_impl#ToString#int#to_string(inline195) in
+          let inline197 = @runtime(core.string_print)(inline196) in
           ()
         },
       }
@@ -43,9 +55,12 @@ fn main() -> unit {
 }
 
 fn print__T_int(value/0: int) -> unit {
-  let t169 = trait_impl#ToString#int#to_string(value/0) in
-  let t170 = @runtime(core.string_print)(t169) in
-  ()
+  join inline_cont198(t169: string) -> unit {
+    let t170 = @runtime(core.string_print)(t169) in
+    ()
+  } in
+  let inline199 = @runtime(core.int_to_string)(value/0) in
+  jump inline_cont198(inline199)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {

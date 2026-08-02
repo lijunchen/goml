@@ -215,24 +215,14 @@ type _goml_m_Result____Vec_l_string_r_____string_Err struct {
 
 func (_ _goml_m_Result____Vec_l_string_r_____string_Err) is_goml_m_Result____Vec_l_string_r_____string() {}
 
-func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__vec(values__1 *_goml_vec_uint8) _goml_m_std_p_bytes_p_Bytes {
-    var t173 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
-        values: values__1,
-    }
-    return t173
-}
-
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(value__2 string) _goml_m_std_p_bytes_p_Bytes {
-    var t176 *_goml_vec_uint8 = _goml_m_inherent_i_string_i_string_i_to__bytes(value__2)
+    var t176 *_goml_vec_uint8
+    var inline404 *_goml_vec_uint8 = _goml_runtime_core_string_to_bytes(value__2)
+    t176 = inline404
     var t177 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
         values: t176,
     }
     return t177
-}
-
-func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(self__22 _goml_m_std_p_bytes_p_Bytes) *_goml_vec_uint8 {
-    var t218 *_goml_vec_uint8 = self__22.values
-    return t218
 }
 
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(self__23 _goml_m_std_p_bytes_p_Bytes) Result__string__string {
@@ -253,37 +243,17 @@ func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(s
     }
 }
 
-func _goml_m_std_p_fs_p_read__file(path__0 string) Result__string__string {
-    var mtmp0 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_std_p_fs_p_read__bytes(path__0)
-    switch mtmp0.(type) {
-    case _goml_m_Result____std_p_bytes_p_Bytes____string_Ok:
-        var x1 _goml_m_std_p_bytes_p_Bytes = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____string_Ok)._0
-        var t230 Result__string__string = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(x1)
-        return t230
-    case _goml_m_Result____std_p_bytes_p_Bytes____string_Err:
-        var x2 string = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____string_Err)._0
-        var t231 Result__string__string = Result__string__string_Err{
-            _0: x2,
-        }
-        return t231
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
-func _goml_m_std_p_fs_p_write__file(path__3 string, content__4 string) Result__unit__string {
-    var t234 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(content__4)
-    var t235 Result__unit__string = _goml_m_std_p_fs_p_write__bytes(path__3, t234)
-    return t235
-}
-
 func _goml_m_std_p_fs_p_read__bytes(path__5 string) _goml_m_Result____std_p_bytes_p_Bytes____string {
     var mtmp3 Tuple3_4bool_10Vec_5uint8_6string = _goml_runtime_std_fs_read_bytes(path__5)
     var x4 bool = mtmp3._0
     var x5 *_goml_vec_uint8 = mtmp3._1
     var x6 string = mtmp3._2
     if x4 {
-        var t240 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__vec(x5)
+        var t240 _goml_m_std_p_bytes_p_Bytes
+        var inline463 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
+            values: x5,
+        }
+        t240 = inline463
         var t241 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Ok{
             _0: t240,
         }
@@ -297,7 +267,9 @@ func _goml_m_std_p_fs_p_read__bytes(path__5 string) _goml_m_Result____std_p_byte
 }
 
 func _goml_m_std_p_fs_p_write__bytes(path__9 string, data__10 _goml_m_std_p_bytes_p_Bytes) Result__unit__string {
-    var t245 *_goml_vec_uint8 = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__vec(data__10)
+    var t245 *_goml_vec_uint8
+    var inline465 *_goml_vec_uint8 = data__10.values
+    t245 = inline465
     var mtmp7 Tuple2_4bool_6string = _goml_runtime_std_fs_write_bytes(path__9, t245)
     var x8 bool = mtmp7._0
     var x9 string = mtmp7._1
@@ -331,71 +303,92 @@ func _goml_m_std_p_fs_p_create__dir__all(path__13 string) Result__unit__string {
     }
 }
 
-func show_unit(result__0 Result__unit__string) string {
-    switch result__0.(type) {
-    case Result__unit__string_Ok:
-        return "ok"
-    case Result__unit__string_Err:
-        var x156 string = result__0.(Result__unit__string_Err)._0
-        var t331 string = "err " + x156
-        return t331
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
-func show_string(result__2 Result__string__string) string {
-    switch result__2.(type) {
-    case Result__string__string_Ok:
-        var x157 string = result__2.(Result__string__string_Ok)._0
-        return x157
-    case Result__string__string_Err:
-        var x158 string = result__2.(Result__string__string_Err)._0
-        var t336 string = "err " + x158
-        return t336
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
 func main0() struct{} {
     var t338 string = _goml_runtime_core_string_byte_slice("a你好z", 1, 7)
     _goml_m_std_p_io_p_println____T__string(t338)
     _goml_m_std_p_io_p_eprint____T__string("")
-    _goml_m_std_p_io_p_eprintln____T__string("")
+    var inline514 string = ""
+    var inline515 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline514)
+    var inline516 string = inline515 + "\n"
+    _goml_runtime_std_io_eprint(inline516)
     var t339 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
-    var t340 string = show_unit(t339)
-    _goml_m_std_p_io_p_println____T__string(t340)
-    var t341 Result__unit__string = _goml_m_std_p_fs_p_write__file("goml-self-host/nested/output.txt", "boot")
-    var t342 string = show_unit(t341)
-    _goml_m_std_p_io_p_println____T__string(t342)
-    var t343 Result__string__string = _goml_m_std_p_fs_p_read__file("goml-self-host/nested/output.txt")
-    var t344 string = show_string(t343)
-    _goml_m_std_p_io_p_println____T__string(t344)
+    var t340 string
+    switch t339.(type) {
+    case Result__unit__string_Ok:
+        t340 = "ok"
+    case Result__unit__string_Err:
+        var inline510 string = t339.(Result__unit__string_Err)._0
+        var inline512 string = "err " + inline510
+        t340 = inline512
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline506 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t340)
+    _goml_runtime_std_io_println(inline506)
+    var t341 Result__unit__string
+    var inline501 string = "goml-self-host/nested/output.txt"
+    var inline502 string = "boot"
+    var inline503 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(inline502)
+    var inline504 Result__unit__string = _goml_m_std_p_fs_p_write__bytes(inline501, inline503)
+    t341 = inline504
+    var t342 string
+    switch t341.(type) {
+    case Result__unit__string_Ok:
+        t342 = "ok"
+    case Result__unit__string_Err:
+        var inline497 string = t341.(Result__unit__string_Err)._0
+        var inline499 string = "err " + inline497
+        t342 = inline499
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline493 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t342)
+    _goml_runtime_std_io_println(inline493)
+    var t343 Result__string__string
+    var inline484 string = "goml-self-host/nested/output.txt"
+    var inline485 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_std_p_fs_p_read__bytes(inline484)
+    switch inline485.(type) {
+    case _goml_m_Result____std_p_bytes_p_Bytes____string_Ok:
+        var inline486 _goml_m_std_p_bytes_p_Bytes = inline485.(_goml_m_Result____std_p_bytes_p_Bytes____string_Ok)._0
+        var inline488 Result__string__string = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(inline486)
+        t343 = inline488
+    case _goml_m_Result____std_p_bytes_p_Bytes____string_Err:
+        var inline489 string = inline485.(_goml_m_Result____std_p_bytes_p_Bytes____string_Err)._0
+        var inline491 Result__string__string = Result__string__string_Err{
+            _0: inline489,
+        }
+        t343 = inline491
+    default:
+        panic("non-exhaustive match")
+    }
+    var t344 string
+    switch t343.(type) {
+    case Result__string__string_Ok:
+        var inline478 string = t343.(Result__string__string_Ok)._0
+        t344 = inline478
+    case Result__string__string_Err:
+        var inline480 string = t343.(Result__string__string_Err)._0
+        var inline482 string = "err " + inline480
+        t344 = inline482
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline475 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t344)
+    _goml_runtime_std_io_println(inline475)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_string_i_string_i_to__bytes(self__24 string) *_goml_vec_uint8 {
-    var t354 *_goml_vec_uint8 = _goml_runtime_core_string_to_bytes(self__24)
-    return t354
-}
-
 func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
-    var t385 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    var t385 string
+    t385 = value__1
     _goml_runtime_std_io_println(t385)
     return struct{}{}
 }
 
 func _goml_m_std_p_io_p_eprint____T__string(value__2 string) struct{} {
-    var t388 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__2)
+    var t388 string
+    t388 = value__2
     _goml_runtime_std_io_eprint(t388)
-    return struct{}{}
-}
-
-func _goml_m_std_p_io_p_eprintln____T__string(value__3 string) struct{} {
-    var t391 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__3)
-    var t392 string = t391 + "\n"
-    _goml_runtime_std_io_eprint(t392)
     return struct{}{}
 }
 

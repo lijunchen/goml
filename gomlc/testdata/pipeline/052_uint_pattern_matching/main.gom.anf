@@ -78,9 +78,12 @@ fn match_struct(counter/4: Counter) -> bool {
 }
 
 fn report(label/5: string, value/6: bool) -> string {
-  let t182 = trait_impl#ToString#bool#to_string(value/6) in
-  let t183 = (label/5 + t182) in
-  t183
+  join inline_cont221(t182: string) -> string {
+    let t183 = (label/5 + t182) in
+    t183
+  } in
+  let inline222 = @runtime(core.bool_to_string)(value/6) in
+  jump inline_cont221(inline222)
 }
 
 fn main() -> unit {
@@ -100,23 +103,130 @@ fn main() -> unit {
   let t196 = is_flag32(1234567890) in
   let t197 = report(",u32_hit=", t196) in
   let t198 = (t195 + t197) in
-  let t199 = is_flag32(99) in
-  let t200 = report(",u32_miss=", t199) in
-  let t201 = (t198 + t200) in
-  let t202 = is_flag64(900000000) in
-  let t203 = report(",u64_hit=", t202) in
-  let t204 = (t201 + t203) in
-  let t205 = is_flag64(700000000) in
-  let t206 = report(",u64_miss=", t205) in
-  let t207 = (t204 + t206) in
-  let t208 = match_struct(counter/7) in
-  let t209 = report(",struct_first=", t208) in
-  let t210 = (t207 + t209) in
-  let t211 = match_struct(alt_counter/8) in
-  let t212 = report(",struct_second=", t211) in
-  let message/9 = (t210 + t212) in
-  let mtmp157 = println__T_string(message/9) in
-  ()
+  join inline_cont256(t199: bool) -> unit {
+    join inline_cont252(t200: string) -> unit {
+      let t201 = (t198 + t200) in
+      join inline_cont250(t202: bool) -> unit {
+        join inline_cont246(t203: string) -> unit {
+          let t204 = (t201 + t203) in
+          join inline_cont244(t205: bool) -> unit {
+            join inline_cont240(t206: string) -> unit {
+              let t207 = (t204 + t206) in
+              join inline_cont237(t208: bool) -> unit {
+                join inline_cont233(t209: string) -> unit {
+                  let t210 = (t207 + t209) in
+                  join inline_cont230(t211: bool) -> unit {
+                    join inline_cont226(t212: string) -> unit {
+                      let message/9 = (t210 + t212) in
+                      let inline224 = trait_impl#ToString#string#to_string(message/9) in
+                      let inline225 = @runtime(core.string_println)(inline224) in
+                      ()
+                    } in
+                    let inline227 = ",struct_second=" in
+                    let inline228 = trait_impl#ToString#bool#to_string(t211) in
+                    let inline229 = (inline227 + inline228) in
+                    jump inline_cont226(inline229)
+                  } in
+                  let inline231 = 12 in
+                  let inline232 = 600000000 in
+                  match inline232 {
+                    900000000 => {
+                      match inline231 {
+                        4000000000 => {
+                          jump inline_cont230(true)
+                        },
+                        _ => {
+                          jump inline_cont230(false)
+                        },
+                      }
+                    },
+                    600000000 => {
+                      jump inline_cont230(true)
+                    },
+                    _ => {
+                      jump inline_cont230(false)
+                    },
+                  }
+                } in
+                let inline234 = ",struct_first=" in
+                let inline235 = trait_impl#ToString#bool#to_string(t208) in
+                let inline236 = (inline234 + inline235) in
+                jump inline_cont233(inline236)
+              } in
+              let inline238 = 4000000000 in
+              let inline239 = 900000000 in
+              match inline239 {
+                900000000 => {
+                  match inline238 {
+                    4000000000 => {
+                      jump inline_cont237(true)
+                    },
+                    _ => {
+                      jump inline_cont237(false)
+                    },
+                  }
+                },
+                600000000 => {
+                  jump inline_cont237(true)
+                },
+                _ => {
+                  jump inline_cont237(false)
+                },
+              }
+            } in
+            let inline241 = ",u64_miss=" in
+            let inline242 = trait_impl#ToString#bool#to_string(t205) in
+            let inline243 = (inline241 + inline242) in
+            jump inline_cont240(inline243)
+          } in
+          let inline245 = 700000000 in
+          match inline245 {
+            900000000 => {
+              jump inline_cont244(true)
+            },
+            600000000 => {
+              jump inline_cont244(true)
+            },
+            _ => {
+              jump inline_cont244(false)
+            },
+          }
+        } in
+        let inline247 = ",u64_hit=" in
+        let inline248 = trait_impl#ToString#bool#to_string(t202) in
+        let inline249 = (inline247 + inline248) in
+        jump inline_cont246(inline249)
+      } in
+      let inline251 = 900000000 in
+      match inline251 {
+        900000000 => {
+          jump inline_cont250(true)
+        },
+        600000000 => {
+          jump inline_cont250(true)
+        },
+        _ => {
+          jump inline_cont250(false)
+        },
+      }
+    } in
+    let inline253 = ",u32_miss=" in
+    let inline254 = trait_impl#ToString#bool#to_string(t199) in
+    let inline255 = (inline253 + inline254) in
+    jump inline_cont252(inline255)
+  } in
+  let inline257 = 99 in
+  match inline257 {
+    4000000000 => {
+      jump inline_cont256(true)
+    },
+    1234567890 => {
+      jump inline_cont256(true)
+    },
+    _ => {
+      jump inline_cont256(false)
+    },
+  }
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
@@ -125,9 +235,11 @@ fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t217 = trait_impl#ToString#string#to_string(value/1) in
-  let t218 = @runtime(core.string_println)(t217) in
-  ()
+  join inline_cont258(t217: string) -> unit {
+    let t218 = @runtime(core.string_println)(t217) in
+    ()
+  } in
+  jump inline_cont258(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

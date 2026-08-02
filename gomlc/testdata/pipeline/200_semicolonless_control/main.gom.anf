@@ -4,54 +4,77 @@ fn main() -> unit {
     let mtmp156 = 1 in
     join k169() -> unit {
       let _wild157 = () in
-      let index/0 = inherent#Ref#Ref[T]#new__T_int(0) in
-      join exit170() -> unit {
-        let _wild159 = () in
-        let values/1 = inherent#Vec#Vec[T]#new__T_string() in
-        let _wild160 = inherent#Vec#Vec[T]#push__T_string(values/1, "for") in
-        let for_source161 = values/1 in
-        let for_limit162 = @intrinsic(vec.len)(values/1) in
-        let for_index163 = 0 in
-        join exit171() -> unit {
-          let _wild166 = () in
-          let t172 = @runtime(core.string_println)("done") in
-          ()
+      join inline_cont225(index/0: Ref[int]) -> unit {
+        join exit170() -> unit {
+          let _wild159 = () in
+          join inline_cont223(values/1: Vec[string]) -> unit {
+            join inline_cont220(_wild160: unit) -> unit {
+              let for_source161 = values/1 in
+              let for_limit162 = @intrinsic(vec.len)(values/1) in
+              let for_index163 = 0 in
+              join exit171() -> unit {
+                let _wild166 = () in
+                let t172 = @runtime(core.string_println)("done") in
+                ()
+              } in
+              joinrec {
+                join loop173() -> unit {
+                  let t174 = (for_index163 < for_limit162) in
+                  if t174 {
+                    let for_item164 = @intrinsic(vec.get)(values/1, for_index163) in
+                    let t175 = (for_index163 + 1) in
+                    let _wild165 = for_index163 = t175 in
+                    let value/2 = for_item164 in
+                    let t176 = @runtime(core.string_println)(for_item164) in
+                    jump loop173()
+                  } else {
+                    jump exit171()
+                  }
+                } in
+              } in
+              jump loop173()
+            } in
+            let inline221 = "for" in
+            let inline222 = @intrinsic(vec.push)(values/1, inline221) in
+            jump inline_cont220(())
+          } in
+          let inline224 = @intrinsic(vec.new)() in
+          jump inline_cont223(inline224)
         } in
         joinrec {
-          join loop173() -> unit {
-            let t174 = (for_index163 < for_limit162) in
-            if t174 {
-              let for_item164 = @intrinsic(vec.get)(values/1, for_index163) in
-              let t175 = (for_index163 + 1) in
-              let _wild165 = for_index163 = t175 in
-              let value/2 = for_item164 in
-              let t176 = @runtime(core.string_println)(for_item164) in
-              jump loop173()
-            } else {
-              jump exit171()
-            }
+          join loop177() -> unit {
+            join inline_cont218(t178: int) -> unit {
+              let t179 = (t178 < 2) in
+              if t179 {
+                join inline_cont216(t180: int) -> unit {
+                  join inline_cont214(t181: string) -> unit {
+                    let _wild158 = @runtime(core.string_println)(t181) in
+                    join inline_cont212(t182: int) -> unit {
+                      let t183 = (t182 + 1) in
+                      let inline211 = @intrinsic(ref.set)(index/0, t183) in
+                      jump loop177()
+                    } in
+                    let inline213 = @intrinsic(ref.get)(index/0) in
+                    jump inline_cont212(inline213)
+                  } in
+                  let inline215 = @runtime(core.int_to_string)(t180) in
+                  jump inline_cont214(inline215)
+                } in
+                let inline217 = @intrinsic(ref.get)(index/0) in
+                jump inline_cont216(inline217)
+              } else {
+                jump exit170()
+              }
+            } in
+            let inline219 = @intrinsic(ref.get)(index/0) in
+            jump inline_cont218(inline219)
           } in
         } in
-        jump loop173()
+        jump loop177()
       } in
-      joinrec {
-        join loop177() -> unit {
-          let t178 = inherent#Ref#Ref[T]#get__T_int(index/0) in
-          let t179 = (t178 < 2) in
-          if t179 {
-            let t180 = inherent#Ref#Ref[T]#get__T_int(index/0) in
-            let t181 = inherent#int#int#to_string(t180) in
-            let _wild158 = @runtime(core.string_println)(t181) in
-            let t182 = inherent#Ref#Ref[T]#get__T_int(index/0) in
-            let t183 = (t182 + 1) in
-            let t184 = inherent#Ref#Ref[T]#set__T_int(index/0, t183) in
-            jump loop177()
-          } else {
-            jump exit170()
-          }
-        } in
-      } in
-      jump loop177()
+      let inline226 = 0 in
+      let inline227 = @intrinsic(ref.new)(inline226) in
+      jump inline_cont225(inline227)
     } in
     match mtmp156 {
       1 => {

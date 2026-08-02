@@ -4,13 +4,16 @@ fn main() -> unit {
   let mtmp156 = inherent#Maybe#Maybe[T]#map__T_int__U_string(value/3, t160) in
   match mtmp156 {
     Tag_0 => {
-      let t162 = println__T_string("none") in
+      let inline182 = "none" in
+      let inline183 = trait_impl#ToString#string#to_string(inline182) in
+      let inline184 = @runtime(core.string_println)(inline183) in
       ()
     },
     Tag_1 => {
       let x157 = Maybe__string::Some._0(mtmp156) in
       let text/5 = x157 in
-      let t163 = println__T_string(x157) in
+      let inline186 = trait_impl#ToString#string#to_string(x157) in
+      let inline187 = @runtime(core.string_println)(inline186) in
       ()
     },
   }
@@ -37,9 +40,11 @@ fn inherent#Maybe#Maybe[T]#map__T_int__U_string(self/0: Maybe__int, map_fn/1: (i
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t174 = trait_impl#ToString#string#to_string(value/1) in
-  let t175 = @runtime(core.string_println)(t174) in
-  ()
+  join inline_cont188(t174: string) -> unit {
+    let t175 = @runtime(core.string_println)(t174) in
+    ()
+  } in
+  jump inline_cont188(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
@@ -47,6 +52,6 @@ fn trait_impl#ToString#string#to_string(self/38: string) -> string {
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(env158: closure_env_main_0, item/4: int) -> string {
-  let t180 = inherent#int#int#to_string(item/4) in
-  t180
+  let inline190 = @runtime(core.int_to_string)(item/4) in
+  inline190
 }

@@ -35,21 +35,13 @@ func main0() struct{} {
     var t165 Station = Station{
         worker: t164,
     }
-    var t166 string = describe__S_Station__T_Worker(t165)
-    println__T_string(t166)
+    var t166 string
+    var inline180 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(t165)
+    var inline181 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(inline180)
+    t166 = inline181
+    var inline177 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t166)
+    _goml_runtime_core_string_println(inline177)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t168 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t168)
-    return struct{}{}
-}
-
-func describe__S_Station__T_Worker(service__2 Station) string {
-    var t172 Worker = _goml_m_trait__impl_i_Service_i__l_Worker_r__x40_Station_i_get(service__2)
-    var t173 string = _goml_m_trait__impl_i_Ready_i_Worker_i_state(t172)
-    return t173
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

@@ -22,7 +22,9 @@ type RightSource struct {
 }
 
 func _goml_m_trait__impl_i_Mark_i_int32_i_marked(self__0 int32) string {
-    var t158 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
+    var t158 string
+    var inline187 string = _goml_runtime_core_int32_to_string(self__0)
+    t158 = inline187
     var t159 string = "m" + t158
     return t159
 }
@@ -44,30 +46,17 @@ func main0() struct{} {
     var t168 RightSource = RightSource{
         value: 4,
     }
-    var t169 string = combine__A_LeftSource__B_RightSource(t167, t168)
-    println__T_string(t169)
+    var t169 string
+    var inline192 int32 = _goml_m_trait__impl_i_Source_i_LeftSource_i_get(t167)
+    var inline193 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline192)
+    var inline194 string = inline193 + ":"
+    var inline195 int32 = _goml_m_trait__impl_i_Source_i_RightSource_i_get(t168)
+    var inline196 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline195)
+    var inline197 string = inline194 + inline196
+    t169 = inline197
+    var inline189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t169)
+    _goml_runtime_core_string_println(inline189)
     return struct{}{}
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t172 string = _goml_runtime_core_int32_to_string(self__6)
-    return t172
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t174 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t174)
-    return struct{}{}
-}
-
-func combine__A_LeftSource__B_RightSource(left__3 LeftSource, right__4 RightSource) string {
-    var t178 int32 = _goml_m_trait__impl_i_Source_i_LeftSource_i_get(left__3)
-    var t179 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(t178)
-    var t180 string = t179 + ":"
-    var t181 int32 = _goml_m_trait__impl_i_Source_i_RightSource_i_get(right__4)
-    var t182 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(t181)
-    var t183 string = t180 + t182
-    return t183
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

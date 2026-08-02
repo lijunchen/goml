@@ -139,11 +139,18 @@ type Some struct {
 func (_ Some) isOption__int32() {}
 
 func fetch(flag__0 bool) Option__int32 {
-    var m__1 *hashmap_string_int32_x = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__int32()
+    var m__1 *hashmap_string_int32_x
+    var inline210 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
+    m__1 = inline210
     if flag__0 {
-        _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__int32(m__1, "a", 7)
+        var inline203 string = "a"
+        var inline204 int32 = 7
+        hashmap_set__HashMap_6string_5int32(m__1, inline203, inline204)
     } else {}
-    var mtmp157 Option__int32 = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__string____V__int32(m__1, "a")
+    var mtmp157 Option__int32
+    var inline207 string = "a"
+    var inline208 Option__int32 = hashmap_get__HashMap_6string_5int32(m__1, inline207)
+    mtmp157 = inline208
     var jp166 int32
     switch mtmp157.(type) {
     case None:
@@ -161,54 +168,43 @@ func fetch(flag__0 bool) Option__int32 {
     }
 }
 
-func show(opt__3 Option__int32) string {
-    switch opt__3.(type) {
+func main0() struct{} {
+    var t176 Option__int32 = fetch(true)
+    var t177 string
+    switch t176.(type) {
     case None:
-        return "none"
+        t177 = "none"
     case Some:
-        var x159 int32 = opt__3.(Some)._0
-        var t173 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x159)
-        var t174 string = "some=" + t173
-        return t174
+        var inline225 int32 = t176.(Some)._0
+        var inline227 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline225)
+        var inline228 string = "some=" + inline227
+        t177 = inline228
     default:
         panic("non-exhaustive match")
     }
-}
-
-func main0() struct{} {
-    var t176 Option__int32 = fetch(true)
-    var t177 string = show(t176)
-    println__T_string(t177)
+    var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t177)
+    _goml_runtime_core_string_println(inline222)
     var t178 Option__int32 = fetch(false)
-    var t179 string = show(t178)
-    println__T_string(t179)
+    var t179 string
+    switch t178.(type) {
+    case None:
+        t179 = "none"
+    case Some:
+        var inline217 int32 = t178.(Some)._0
+        var inline219 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline217)
+        var inline220 string = "some=" + inline219
+        t179 = inline220
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline214 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t179)
+    _goml_runtime_core_string_println(inline214)
     return struct{}{}
-}
-
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__int32() *hashmap_string_int32_x {
-    var t182 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
-    return t182
-}
-
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__int32(self__198 *hashmap_string_int32_x, key__199 string, value__200 int32) struct{} {
-    hashmap_set__HashMap_6string_5int32(self__198, key__199, value__200)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__string____V__int32(self__196 *hashmap_string_int32_x, key__197 string) Option__int32 {
-    var t187 Option__int32 = hashmap_get__HashMap_6string_5int32(self__196, key__197)
-    return t187
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
     var t190 string = _goml_runtime_core_int32_to_string(self__6)
     return t190
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t192)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

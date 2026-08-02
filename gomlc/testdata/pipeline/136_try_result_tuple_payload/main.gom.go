@@ -46,26 +46,23 @@ type Result__string__string_Err struct {
 
 func (_ Result__string__string_Err) isResult__string__string() {}
 
-func split_host_port(ok__0 bool) _goml_m_Result_____o_string_c_string_q_____string {
-    if ok__0 {
-        var t169 Tuple2_6string_6string = Tuple2_6string_6string{
+func render(ok__1 bool) Result__string__string {
+    var mtmp155 _goml_m_Result_____o_string_c_string_q_____string
+    if ok__1 {
+        var inline197 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "example.com",
             _1: "443",
         }
-        var t170 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Ok{
-            _0: t169,
+        var inline198 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Ok{
+            _0: inline197,
         }
-        return t170
+        mtmp155 = inline198
     } else {
-        var t171 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Err{
+        var inline199 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Err{
             _0: "missing port",
         }
-        return t171
+        mtmp155 = inline199
     }
-}
-
-func render(ok__1 bool) Result__string__string {
-    var mtmp155 _goml_m_Result_____o_string_c_string_q_____string = split_host_port(ok__1)
     var jp175 Tuple2_6string_6string
     switch mtmp155.(type) {
     case _goml_m_Result_____o_string_c_string_q_____string_Ok:
@@ -90,34 +87,39 @@ func render(ok__1 bool) Result__string__string {
     }
 }
 
-func show(res__4 Result__string__string) string {
-    switch res__4.(type) {
+func main0() struct{} {
+    var t187 Result__string__string = render(true)
+    var t188 string
+    switch t187.(type) {
     case Result__string__string_Ok:
-        var x161 string = res__4.(Result__string__string_Ok)._0
-        var t184 string = "ok " + x161
-        return t184
+        var inline214 string = t187.(Result__string__string_Ok)._0
+        var inline216 string = "ok " + inline214
+        t188 = inline216
     case Result__string__string_Err:
-        var x162 string = res__4.(Result__string__string_Err)._0
-        var t185 string = "err " + x162
-        return t185
+        var inline217 string = t187.(Result__string__string_Err)._0
+        var inline219 string = "err " + inline217
+        t188 = inline219
     default:
         panic("non-exhaustive match")
     }
-}
-
-func main0() struct{} {
-    var t187 Result__string__string = render(true)
-    var t188 string = show(t187)
-    println__T_string(t188)
+    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t188)
+    _goml_runtime_core_string_println(inline211)
     var t189 Result__string__string = render(false)
-    var t190 string = show(t189)
-    println__T_string(t190)
-    return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t192)
+    var t190 string
+    switch t189.(type) {
+    case Result__string__string_Ok:
+        var inline204 string = t189.(Result__string__string_Ok)._0
+        var inline206 string = "ok " + inline204
+        t190 = inline206
+    case Result__string__string_Err:
+        var inline207 string = t189.(Result__string__string_Err)._0
+        var inline209 string = "err " + inline207
+        t190 = inline209
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline201 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
+    _goml_runtime_core_string_println(inline201)
     return struct{}{}
 }
 

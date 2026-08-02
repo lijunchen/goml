@@ -1,8 +1,12 @@
 fn main() -> unit {
   let value/0 = 42 in
-  let text/1 = inherent#int32#int32#to_string(value/0) in
-  let mtmp155 = println__T_string(text/1) in
-  ()
+  join inline_cont168(text/1: string) -> unit {
+    let inline166 = trait_impl#ToString#string#to_string(text/1) in
+    let inline167 = @runtime(core.string_println)(inline166) in
+    ()
+  } in
+  let inline169 = @runtime(core.int32_to_string)(value/0) in
+  jump inline_cont168(inline169)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -11,9 +15,11 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t161 = trait_impl#ToString#string#to_string(value/1) in
-  let t162 = @runtime(core.string_println)(t161) in
-  ()
+  join inline_cont170(t161: string) -> unit {
+    let t162 = @runtime(core.string_println)(t161) in
+    ()
+  } in
+  jump inline_cont170(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

@@ -13,21 +13,32 @@ fn add(a/1: int32, b/2: int32) -> int32 {
 }
 
 fn plus_two(flag/3: bool) -> Option__int32 {
-  let mtmp155 = maybe_value(flag/3) in
-  join k170(jp171: int32) -> Option__int32 {
-    let t172 = add(jp171, 2) in
-    let t173 = Option__int32::Some(t172) in
-    t173
+  join inline_cont196(mtmp155: Option__int32) -> Option__int32 {
+    join k170(jp171: int32) -> Option__int32 {
+      join inline_cont193(t172: int32) -> Option__int32 {
+        let t173 = Option__int32::Some(t172) in
+        t173
+      } in
+      let inline194 = 2 in
+      let inline195 = (jp171 + inline194) in
+      jump inline_cont193(inline195)
+    } in
+    match mtmp155 {
+      Tag_0 => {
+        Tag_0
+      },
+      Tag_1 => {
+        let x156 = Option__int32::Some._0(mtmp155) in
+        let try_value/15 = x156 in
+        jump k170(x156)
+      },
+    }
   } in
-  match mtmp155 {
-    Tag_0 => {
-      Tag_0
-    },
-    Tag_1 => {
-      let x156 = Option__int32::Some._0(mtmp155) in
-      let try_value/15 = x156 in
-      jump k170(x156)
-    },
+  if flag/3 {
+    let inline197 = Option__int32::Some(4) in
+    jump inline_cont196(inline197)
+  } else {
+    jump inline_cont196(Tag_0)
   }
 }
 
@@ -39,21 +50,91 @@ fn show(opt/4: Option__int32) -> string {
     Tag_1 => {
       let x157 = Option__int32::Some._0(opt/4) in
       let value/5 = x157 in
-      let t178 = inherent#int32#int32#to_string(x157) in
-      let t179 = ("some=" + t178) in
-      t179
+      join inline_cont198(t178: string) -> string {
+        let t179 = ("some=" + t178) in
+        t179
+      } in
+      let inline199 = @runtime(core.int32_to_string)(x157) in
+      jump inline_cont198(inline199)
     },
   }
 }
 
 fn main() -> unit {
-  let t181 = plus_two(true) in
-  let t182 = show(t181) in
-  let _wild158 = println__T_string(t182) in
-  let t183 = plus_two(false) in
-  let t184 = show(t183) in
-  let _wild159 = println__T_string(t184) in
-  ()
+  join inline_cont225(t181: Option__int32) -> unit {
+    join inline_cont220(t182: string) -> unit {
+      join inline_cont217(_wild158: unit) -> unit {
+        join inline_cont208(t183: Option__int32) -> unit {
+          join inline_cont203(t184: string) -> unit {
+            let inline201 = trait_impl#ToString#string#to_string(t184) in
+            let inline202 = @runtime(core.string_println)(inline201) in
+            ()
+          } in
+          match t183 {
+            Tag_0 => {
+              jump inline_cont203("none")
+            },
+            Tag_1 => {
+              let inline204 = Option__int32::Some._0(t183) in
+              let inline205 = inline204 in
+              let inline206 = inherent#int32#int32#to_string(inline204) in
+              let inline207 = ("some=" + inline206) in
+              jump inline_cont203(inline207)
+            },
+          }
+        } in
+        let inline209 = false in
+        let inline210 = maybe_value(inline209) in
+        join inline_join211(inline212: int32) -> unit {
+          let inline213 = add(inline212, 2) in
+          let inline214 = Option__int32::Some(inline213) in
+          jump inline_cont208(inline214)
+        } in
+        match inline210 {
+          Tag_0 => {
+            jump inline_cont208(Tag_0)
+          },
+          Tag_1 => {
+            let inline215 = Option__int32::Some._0(inline210) in
+            let inline216 = inline215 in
+            jump inline_join211(inline215)
+          },
+        }
+      } in
+      let inline218 = trait_impl#ToString#string#to_string(t182) in
+      let inline219 = @runtime(core.string_println)(inline218) in
+      jump inline_cont217(())
+    } in
+    match t181 {
+      Tag_0 => {
+        jump inline_cont220("none")
+      },
+      Tag_1 => {
+        let inline221 = Option__int32::Some._0(t181) in
+        let inline222 = inline221 in
+        let inline223 = inherent#int32#int32#to_string(inline221) in
+        let inline224 = ("some=" + inline223) in
+        jump inline_cont220(inline224)
+      },
+    }
+  } in
+  let inline226 = true in
+  let inline227 = maybe_value(inline226) in
+  join inline_join228(inline229: int32) -> unit {
+    let inline230 = add(inline229, 2) in
+    let inline231 = Option__int32::Some(inline230) in
+    jump inline_cont225(inline231)
+  } in
+  match inline227 {
+    Tag_0 => {
+      jump inline_cont225(Tag_0)
+    },
+    Tag_1 => {
+      let inline232 = Option__int32::Some._0(inline227) in
+      let inline233 = inline232 in
+      jump inline_join228(inline232)
+    },
+  }
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -62,9 +143,11 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t189 = trait_impl#ToString#string#to_string(value/1) in
-  let t190 = @runtime(core.string_println)(t189) in
-  ()
+  join inline_cont234(t189: string) -> unit {
+    let t190 = @runtime(core.string_println)(t189) in
+    ()
+  } in
+  jump inline_cont234(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

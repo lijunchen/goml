@@ -17,14 +17,18 @@ fn fib(x/0: int32) -> int32 {
 
 fn main() -> unit {
   let t167 = fib(10) in
-  let mtmp156 = print__T_int32(t167) in
+  let inline175 = trait_impl#ToString#int32#to_string(t167) in
+  let inline176 = @runtime(core.string_print)(inline175) in
   ()
 }
 
 fn print__T_int32(value/0: int32) -> unit {
-  let t169 = trait_impl#ToString#int32#to_string(value/0) in
-  let t170 = @runtime(core.string_print)(t169) in
-  ()
+  join inline_cont177(t169: string) -> unit {
+    let t170 = @runtime(core.string_print)(t169) in
+    ()
+  } in
+  let inline178 = @runtime(core.int32_to_string)(value/0) in
+  jump inline_cont177(inline178)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {

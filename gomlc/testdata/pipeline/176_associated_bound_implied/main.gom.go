@@ -27,21 +27,13 @@ func main0() struct{} {
     var t163 TextSource = TextSource{
         value: "goml",
     }
-    var t164 string = render__S_TextSource(t163)
-    println__T_string(t164)
+    var t164 string
+    var inline178 string = _goml_m_trait__impl_i_Source_i_TextSource_i_get(t163)
+    var inline179 string = _goml_m_trait__impl_i_Label_i_string_i_label(inline178)
+    t164 = inline179
+    var inline175 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t164)
+    _goml_runtime_core_string_println(inline175)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t166 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t166)
-    return struct{}{}
-}
-
-func render__S_TextSource(source__2 TextSource) string {
-    var t170 string = _goml_m_trait__impl_i_Source_i_TextSource_i_get(source__2)
-    var t171 string = _goml_m_trait__impl_i_Label_i_string_i_label(t170)
-    return t171
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

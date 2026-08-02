@@ -1,12 +1,25 @@
 fn main() -> unit {
-  let a/0 = inherent#Ref#Ref[T]#new__T_int(1) in
-  let b/1 = a/0 in
-  let c/2 = inherent#Ref#Ref[T]#new__T_int(1) in
-  let t158 = @intrinsic(ref.ptr_eq)(a/0, a/0) in
-  let _wild155 = println__T_bool(t158) in
-  let t159 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
-  let _wild156 = println__T_bool(t159) in
-  ()
+  join inline_cont184(a/0: Ref[int]) -> unit {
+    let b/1 = a/0 in
+    join inline_cont181(c/2: Ref[int]) -> unit {
+      let t158 = @intrinsic(ref.ptr_eq)(a/0, a/0) in
+      join inline_cont178(_wild155: unit) -> unit {
+        let t159 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
+        let inline176 = trait_impl#ToString#bool#to_string(t159) in
+        let inline177 = @runtime(core.string_println)(inline176) in
+        ()
+      } in
+      let inline179 = trait_impl#ToString#bool#to_string(t158) in
+      let inline180 = @runtime(core.string_println)(inline179) in
+      jump inline_cont178(())
+    } in
+    let inline182 = 1 in
+    let inline183 = @intrinsic(ref.new)(inline182) in
+    jump inline_cont181(inline183)
+  } in
+  let inline185 = 1 in
+  let inline186 = @intrinsic(ref.new)(inline185) in
+  jump inline_cont184(inline186)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
@@ -15,9 +28,12 @@ fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  let t164 = trait_impl#ToString#bool#to_string(value/1) in
-  let t165 = @runtime(core.string_println)(t164) in
-  ()
+  join inline_cont187(t164: string) -> unit {
+    let t165 = @runtime(core.string_println)(t164) in
+    ()
+  } in
+  let inline188 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont187(inline188)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {

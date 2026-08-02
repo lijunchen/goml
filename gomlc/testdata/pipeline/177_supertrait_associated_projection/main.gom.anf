@@ -9,20 +9,27 @@ fn trait_impl#Child#Count#child(self/1: Count) -> unit {
 
 fn main() -> unit {
   let t161 = Count { value: 42 } in
-  let t162 = get_from_child__C_Count(t161) in
-  let _wild155 = println__T_int32(t162) in
-  ()
+  join inline_cont175(t162: int32) -> unit {
+    let inline173 = trait_impl#ToString#int32#to_string(t162) in
+    let inline174 = @runtime(core.string_println)(inline173) in
+    ()
+  } in
+  let inline176 = trait_impl#Parent#Count#get(t161) in
+  jump inline_cont175(inline176)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t164 = trait_impl#ToString#int32#to_string(value/1) in
-  let t165 = @runtime(core.string_println)(t164) in
-  ()
+  join inline_cont177(t164: string) -> unit {
+    let t165 = @runtime(core.string_println)(t164) in
+    ()
+  } in
+  let inline178 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont177(inline178)
 }
 
 fn get_from_child__C_Count(value/2: Count) -> int32 {
-  let t168 = trait_impl#Parent#Count#get(value/2) in
-  t168
+  let inline180 = Count.value(value/2) in
+  inline180
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {

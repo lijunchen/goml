@@ -8,23 +8,30 @@ fn main() -> unit {
   match x159 {
     Tag_0 => {
       let x/4 = t191 in
-      let t204 = print__T_int(3) in
+      let inline217 = 3 in
+      let inline218 = trait_impl#ToString#int#to_string(inline217) in
+      let inline219 = @runtime(core.string_print)(inline218) in
       ()
     },
     _ => {
       let y/6 = x177 in
       let x/5 = x176 in
       let z/7 = x159 in
-      let t205 = print__T_int(4) in
+      let inline221 = 4 in
+      let inline222 = trait_impl#ToString#int#to_string(inline221) in
+      let inline223 = @runtime(core.string_print)(inline222) in
       ()
     },
   }
 }
 
 fn print__T_int(value/0: int) -> unit {
-  let t211 = trait_impl#ToString#int#to_string(value/0) in
-  let t212 = @runtime(core.string_print)(t211) in
-  ()
+  join inline_cont224(t211: string) -> unit {
+    let t212 = @runtime(core.string_print)(t211) in
+    ()
+  } in
+  let inline225 = @runtime(core.int_to_string)(value/0) in
+  jump inline_cont224(inline225)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {

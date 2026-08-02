@@ -53,20 +53,18 @@ func main0() struct{} {
     })
     switch mtmp156.(type) {
     case Maybe__string_None:
-        println__T_string("none")
+        var inline182 string = "none"
+        var inline183 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline182)
+        _goml_runtime_core_string_println(inline183)
         return struct{}{}
     case Maybe__string_Some:
         var x157 string = mtmp156.(Maybe__string_Some)._0
-        println__T_string(x157)
+        var inline186 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x157)
+        _goml_runtime_core_string_println(inline186)
         return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-}
-
-func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var t166 string = _goml_runtime_core_int_to_string(self__5)
-    return t166
 }
 
 func _goml_m_inherent_i_Maybe_i_Maybe_l_T_r__i_map____T__int____U__string(self__0 Maybe__int, map_fn__1 func(int) string) Maybe__string {
@@ -85,19 +83,13 @@ func _goml_m_inherent_i_Maybe_i_Maybe_l_T_r__i_map____T__int____U__string(self__
     }
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t174 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t174)
-    return struct{}{}
-}
-
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
     return self__38
 }
 
 func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env158 closure_env_main_0, item__4 int) string {
-    var t180 string = _goml_m_inherent_i_int_i_int_i_to__string(item__4)
-    return t180
+    var inline190 string = _goml_runtime_core_int_to_string(item__4)
+    return inline190
 }
 
 func main() {

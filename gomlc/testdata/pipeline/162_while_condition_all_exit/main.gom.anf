@@ -24,20 +24,26 @@ fn loop_return() -> int32 {
 fn main() -> unit {
   let _wild160 = loop_return_unit(true) in
   let t172 = loop_return() in
-  let _wild161 = println__T_int32(t172) in
+  let inline185 = trait_impl#ToString#int32#to_string(t172) in
+  let inline186 = @runtime(core.string_println)(inline185) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t174 = trait_impl#ToString#string#to_string(value/1) in
-  let t175 = @runtime(core.string_println)(t174) in
-  ()
+  join inline_cont187(t174: string) -> unit {
+    let t175 = @runtime(core.string_println)(t174) in
+    ()
+  } in
+  jump inline_cont187(value/1)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t177 = trait_impl#ToString#int32#to_string(value/1) in
-  let t178 = @runtime(core.string_println)(t177) in
-  ()
+  join inline_cont188(t177: string) -> unit {
+    let t178 = @runtime(core.string_println)(t177) in
+    ()
+  } in
+  let inline189 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont188(inline189)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

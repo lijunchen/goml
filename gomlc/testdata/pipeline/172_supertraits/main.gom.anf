@@ -1,22 +1,46 @@
 fn main() -> unit {
   let t157 = Box__int { value: 5 } in
-  let t158 = describe__B_Box[int]__T_int(t157) in
-  let _wild155 = @runtime(core.string_println)(t158) in
-  let value/4 = Box__int32 { value: 6 } in
-  let t159 = trait_impl#Parent#[int32]@Box__int32#parent(value/4) in
-  let t160 = inherent#int32#int32#to_string(t159) in
-  let t161 = @runtime(core.string_println)(t160) in
-  ()
+  join inline_cont190(t158: string) -> unit {
+    let _wild155 = @runtime(core.string_println)(t158) in
+    let value/4 = Box__int32 { value: 6 } in
+    join inline_cont188(t159: int32) -> unit {
+      join inline_cont186(t160: string) -> unit {
+        let t161 = @runtime(core.string_println)(t160) in
+        ()
+      } in
+      let inline187 = @runtime(core.int32_to_string)(t159) in
+      jump inline_cont186(inline187)
+    } in
+    let inline189 = 6 in
+    jump inline_cont188(inline189)
+  } in
+  let inline191 = trait_impl#Parent#[int]@Box__int#parent(t157) in
+  let inline192 = trait_impl#ToString#int#to_string(inline191) in
+  let inline193 = trait_impl#Render#Box__int#render(t157) in
+  let inline194 = (inline192 + inline193) in
+  let inline195 = trait_impl#Child#[int]@Box__int#child(t157) in
+  let inline196 = (inline194 + inline195) in
+  jump inline_cont190(inline196)
 }
 
 fn describe__B_Box[int]__T_int(value/3: Box__int) -> string {
-  let t164 = trait_impl#Parent#[int]@Box__int#parent(value/3) in
-  let t165 = trait_impl#ToString#int#to_string(t164) in
-  let t166 = trait_impl#Render#Box__int#render(value/3) in
-  let t167 = (t165 + t166) in
-  let t168 = trait_impl#Child#[int]@Box__int#child(value/3) in
-  let t169 = (t167 + t168) in
-  t169
+  join inline_cont201(t164: int) -> string {
+    join inline_cont199(t165: string) -> string {
+      join inline_cont198(t166: string) -> string {
+        let t167 = (t165 + t166) in
+        join inline_cont197(t168: string) -> string {
+          let t169 = (t167 + t168) in
+          t169
+        } in
+        jump inline_cont197(":child")
+      } in
+      jump inline_cont198(":render")
+    } in
+    let inline200 = @runtime(core.int_to_string)(t164) in
+    jump inline_cont199(inline200)
+  } in
+  let inline202 = Box__int.value(value/3) in
+  jump inline_cont201(inline202)
 }
 
 fn trait_impl#Parent#[int32]@Box__int32#parent(self/0: Box__int32) -> int32 {

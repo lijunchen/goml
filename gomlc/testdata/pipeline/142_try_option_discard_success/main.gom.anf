@@ -9,21 +9,29 @@ fn cut_pair(ok/0: bool) -> Option__(string,string) {
 }
 
 fn check(ok/1: bool) -> Option__string {
-  let mtmp155 = cut_pair(ok/1) in
-  join k169(jp170: (string, string)) -> Option__string {
-    let mtmp157 = jp170 in
-    let t171 = Option__string::Some("ok") in
-    t171
+  join inline_cont187(mtmp155: Option__(string,string)) -> Option__string {
+    join k169(jp170: (string, string)) -> Option__string {
+      let mtmp157 = jp170 in
+      let t171 = Option__string::Some("ok") in
+      t171
+    } in
+    match mtmp155 {
+      Tag_0 => {
+        Tag_0
+      },
+      Tag_1 => {
+        let x156 = Option__(string,string)::Some._0(mtmp155) in
+        let try_value/13 = x156 in
+        jump k169(x156)
+      },
+    }
   } in
-  match mtmp155 {
-    Tag_0 => {
-      Tag_0
-    },
-    Tag_1 => {
-      let x156 = Option__(string,string)::Some._0(mtmp155) in
-      let try_value/13 = x156 in
-      jump k169(x156)
-    },
+  if ok/1 {
+    let inline188 = ("left", "right") in
+    let inline189 = Option__(string,string)::Some(inline188) in
+    jump inline_cont187(inline189)
+  } else {
+    jump inline_cont187(Tag_0)
   }
 }
 
@@ -42,19 +50,86 @@ fn show(opt/2: Option__string) -> string {
 }
 
 fn main() -> unit {
-  let t178 = check(true) in
-  let t179 = show(t178) in
-  let _wild159 = println__T_string(t179) in
-  let t180 = check(false) in
-  let t181 = show(t180) in
-  let _wild160 = println__T_string(t181) in
-  ()
+  join inline_cont213(t178: Option__string) -> unit {
+    join inline_cont209(t179: string) -> unit {
+      join inline_cont206(_wild159: unit) -> unit {
+        join inline_cont197(t180: Option__string) -> unit {
+          join inline_cont193(t181: string) -> unit {
+            let inline191 = trait_impl#ToString#string#to_string(t181) in
+            let inline192 = @runtime(core.string_println)(inline191) in
+            ()
+          } in
+          match t180 {
+            Tag_0 => {
+              jump inline_cont193("none")
+            },
+            Tag_1 => {
+              let inline194 = Option__string::Some._0(t180) in
+              let inline195 = inline194 in
+              let inline196 = ("some " + inline194) in
+              jump inline_cont193(inline196)
+            },
+          }
+        } in
+        let inline198 = false in
+        let inline199 = cut_pair(inline198) in
+        join inline_join200(inline201: (string, string)) -> unit {
+          let inline202 = inline201 in
+          let inline203 = Option__string::Some("ok") in
+          jump inline_cont197(inline203)
+        } in
+        match inline199 {
+          Tag_0 => {
+            jump inline_cont197(Tag_0)
+          },
+          Tag_1 => {
+            let inline204 = Option__(string,string)::Some._0(inline199) in
+            let inline205 = inline204 in
+            jump inline_join200(inline204)
+          },
+        }
+      } in
+      let inline207 = trait_impl#ToString#string#to_string(t179) in
+      let inline208 = @runtime(core.string_println)(inline207) in
+      jump inline_cont206(())
+    } in
+    match t178 {
+      Tag_0 => {
+        jump inline_cont209("none")
+      },
+      Tag_1 => {
+        let inline210 = Option__string::Some._0(t178) in
+        let inline211 = inline210 in
+        let inline212 = ("some " + inline210) in
+        jump inline_cont209(inline212)
+      },
+    }
+  } in
+  let inline214 = true in
+  let inline215 = cut_pair(inline214) in
+  join inline_join216(inline217: (string, string)) -> unit {
+    let inline218 = inline217 in
+    let inline219 = Option__string::Some("ok") in
+    jump inline_cont213(inline219)
+  } in
+  match inline215 {
+    Tag_0 => {
+      jump inline_cont213(Tag_0)
+    },
+    Tag_1 => {
+      let inline220 = Option__(string,string)::Some._0(inline215) in
+      let inline221 = inline220 in
+      jump inline_join216(inline220)
+    },
+  }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t183 = trait_impl#ToString#string#to_string(value/1) in
-  let t184 = @runtime(core.string_println)(t183) in
-  ()
+  join inline_cont222(t183: string) -> unit {
+    let t184 = @runtime(core.string_println)(t183) in
+    ()
+  } in
+  jump inline_cont222(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

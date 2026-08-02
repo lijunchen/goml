@@ -13,61 +13,78 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-func match_string(s__0 string) int32 {
-    switch s__0 {
-    case "hello":
-        return 1
-    case "world":
-        return 2
-    default:
-        return 3
-    }
-}
-
-func wildcard_position(s__1 string) int32 {
-    return 4
-}
-
-func repeated_string(s__2 string) int32 {
-    switch s__2 {
-    case "hello":
-        return 6
-    default:
-        return 8
-    }
-}
-
 func main0() struct{} {
-    var t171 int32 = match_string("hello")
-    var t172 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t171)
-    println__T_string(t172)
-    var t173 int32 = match_string("planet")
-    var t174 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t173)
-    println__T_string(t174)
-    var t175 int32 = wildcard_position("world")
-    var t176 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t175)
-    println__T_string(t176)
-    var t177 int32 = wildcard_position("sun")
-    var t178 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t177)
-    println__T_string(t178)
-    var t179 int32 = repeated_string("hello")
-    var t180 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t179)
-    println__T_string(t180)
-    var t181 int32 = repeated_string("mars")
-    var t182 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t181)
-    println__T_string(t182)
+    var t171 int32
+    var inline233 string = "hello"
+    switch inline233 {
+    case "hello":
+        t171 = 1
+    case "world":
+        t171 = 2
+    default:
+        t171 = 3
+    }
+    var t172 string
+    var inline231 string = _goml_runtime_core_int32_to_string(t171)
+    t172 = inline231
+    var inline228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t172)
+    _goml_runtime_core_string_println(inline228)
+    var t173 int32
+    var inline226 string = "planet"
+    switch inline226 {
+    case "hello":
+        t173 = 1
+    case "world":
+        t173 = 2
+    default:
+        t173 = 3
+    }
+    var t174 string
+    var inline224 string = _goml_runtime_core_int32_to_string(t173)
+    t174 = inline224
+    var inline221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t174)
+    _goml_runtime_core_string_println(inline221)
+    var t175 int32
+    t175 = 4
+    var t176 string
+    var inline217 string = _goml_runtime_core_int32_to_string(t175)
+    t176 = inline217
+    var inline214 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t176)
+    _goml_runtime_core_string_println(inline214)
+    var t177 int32
+    t177 = 4
+    var t178 string
+    var inline210 string = _goml_runtime_core_int32_to_string(t177)
+    t178 = inline210
+    var inline207 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t178)
+    _goml_runtime_core_string_println(inline207)
+    var t179 int32
+    var inline205 string = "hello"
+    switch inline205 {
+    case "hello":
+        t179 = 6
+    default:
+        t179 = 8
+    }
+    var t180 string
+    var inline203 string = _goml_runtime_core_int32_to_string(t179)
+    t180 = inline203
+    var inline200 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t180)
+    _goml_runtime_core_string_println(inline200)
+    var t181 int32
+    var inline198 string = "mars"
+    switch inline198 {
+    case "hello":
+        t181 = 6
+    default:
+        t181 = 8
+    }
+    var t182 string
+    var inline196 string = _goml_runtime_core_int32_to_string(t181)
+    t182 = inline196
+    var inline193 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
+    _goml_runtime_core_string_println(inline193)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t185 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t185)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t189 string = _goml_runtime_core_int32_to_string(self__6)
-    return t189
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

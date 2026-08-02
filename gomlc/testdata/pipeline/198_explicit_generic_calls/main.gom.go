@@ -14,25 +14,18 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var t157 string = identity__T_string("direct")
+    var t157 string
+    var inline173 string = "direct"
+    t157 = inline173
     _goml_runtime_core_string_println(t157)
-    var t158 int32 = identity__T_int32(42)
-    var t159 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t158)
+    var t158 int32
+    var inline171 int32 = 42
+    t158 = inline171
+    var t159 string
+    var inline169 string = _goml_runtime_core_int32_to_string(t158)
+    t159 = inline169
     _goml_runtime_core_string_println(t159)
     return struct{}{}
-}
-
-func identity__T_string(value__0 string) string {
-    return value__0
-}
-
-func identity__T_int32(value__0 int32) int32 {
-    return value__0
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t167 string = _goml_runtime_core_int32_to_string(self__6)
-    return t167
 }
 
 func main() {

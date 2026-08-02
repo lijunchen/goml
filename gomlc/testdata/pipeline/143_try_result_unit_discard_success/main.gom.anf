@@ -9,24 +9,32 @@ fn step(ok/0: bool) -> Result__unit__string {
 }
 
 fn run(ok/1: bool) -> Result__unit__string {
-  let mtmp155 = step(ok/1) in
-  join k171() -> Result__unit__string {
-    let mtmp158 = () in
-    let t172 = Result__unit__string::Ok(()) in
-    t172
+  join inline_cont191(mtmp155: Result__unit__string) -> Result__unit__string {
+    join k171() -> Result__unit__string {
+      let mtmp158 = () in
+      let t172 = Result__unit__string::Ok(()) in
+      t172
+    } in
+    match mtmp155 {
+      Tag_0 => {
+        let x156 = Result__unit__string::Ok._0(mtmp155) in
+        let try_value/12 = x156 in
+        jump k171()
+      },
+      Tag_1 => {
+        let x157 = Result__unit__string::Err._0(mtmp155) in
+        let try_residual/12 = x157 in
+        let t173 = Result__unit__string::Err(x157) in
+        t173
+      },
+    }
   } in
-  match mtmp155 {
-    Tag_0 => {
-      let x156 = Result__unit__string::Ok._0(mtmp155) in
-      let try_value/12 = x156 in
-      jump k171()
-    },
-    Tag_1 => {
-      let x157 = Result__unit__string::Err._0(mtmp155) in
-      let try_residual/12 = x157 in
-      let t173 = Result__unit__string::Err(x157) in
-      t173
-    },
+  if ok/1 {
+    let inline192 = Result__unit__string::Ok(()) in
+    jump inline_cont191(inline192)
+  } else {
+    let inline193 = Result__unit__string::Err("step failed") in
+    jump inline_cont191(inline193)
   }
 }
 
@@ -50,19 +58,102 @@ fn show(res/2: Result__unit__string) -> string {
 }
 
 fn main() -> unit {
-  let t182 = run(true) in
-  let t183 = show(t182) in
-  let _wild161 = println__T_string(t183) in
-  let t184 = run(false) in
-  let t185 = show(t184) in
-  let _wild162 = println__T_string(t185) in
-  ()
+  join inline_cont221(t182: Result__unit__string) -> unit {
+    join inline_cont216(t183: string) -> unit {
+      join inline_cont213(_wild161: unit) -> unit {
+        join inline_cont202(t184: Result__unit__string) -> unit {
+          join inline_cont197(t185: string) -> unit {
+            let inline195 = trait_impl#ToString#string#to_string(t185) in
+            let inline196 = @runtime(core.string_println)(inline195) in
+            ()
+          } in
+          match t184 {
+            Tag_0 => {
+              let inline198 = Result__unit__string::Ok._0(t184) in
+              match inline198 {
+                () => {
+                  jump inline_cont197("ok unit")
+                },
+              }
+            },
+            Tag_1 => {
+              let inline199 = Result__unit__string::Err._0(t184) in
+              let inline200 = inline199 in
+              let inline201 = ("err " + inline199) in
+              jump inline_cont197(inline201)
+            },
+          }
+        } in
+        let inline203 = false in
+        let inline204 = step(inline203) in
+        join inline_join205() -> unit {
+          let inline206 = () in
+          let inline207 = Result__unit__string::Ok(()) in
+          jump inline_cont202(inline207)
+        } in
+        match inline204 {
+          Tag_0 => {
+            let inline208 = Result__unit__string::Ok._0(inline204) in
+            let inline209 = inline208 in
+            jump inline_join205()
+          },
+          Tag_1 => {
+            let inline210 = Result__unit__string::Err._0(inline204) in
+            let inline211 = inline210 in
+            let inline212 = Result__unit__string::Err(inline210) in
+            jump inline_cont202(inline212)
+          },
+        }
+      } in
+      let inline214 = trait_impl#ToString#string#to_string(t183) in
+      let inline215 = @runtime(core.string_println)(inline214) in
+      jump inline_cont213(())
+    } in
+    match t182 {
+      Tag_0 => {
+        let inline217 = Result__unit__string::Ok._0(t182) in
+        match inline217 {
+          () => {
+            jump inline_cont216("ok unit")
+          },
+        }
+      },
+      Tag_1 => {
+        let inline218 = Result__unit__string::Err._0(t182) in
+        let inline219 = inline218 in
+        let inline220 = ("err " + inline218) in
+        jump inline_cont216(inline220)
+      },
+    }
+  } in
+  let inline222 = true in
+  let inline223 = step(inline222) in
+  join inline_join224() -> unit {
+    let inline225 = () in
+    let inline226 = Result__unit__string::Ok(()) in
+    jump inline_cont221(inline226)
+  } in
+  match inline223 {
+    Tag_0 => {
+      let inline227 = Result__unit__string::Ok._0(inline223) in
+      let inline228 = inline227 in
+      jump inline_join224()
+    },
+    Tag_1 => {
+      let inline229 = Result__unit__string::Err._0(inline223) in
+      let inline230 = inline229 in
+      let inline231 = Result__unit__string::Err(inline229) in
+      jump inline_cont221(inline231)
+    },
+  }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t187 = trait_impl#ToString#string#to_string(value/1) in
-  let t188 = @runtime(core.string_println)(t187) in
-  ()
+  join inline_cont232(t187: string) -> unit {
+    let t188 = @runtime(core.string_println)(t187) in
+    ()
+  } in
+  jump inline_cont232(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

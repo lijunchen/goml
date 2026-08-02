@@ -1,6 +1,6 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  let t158 = inherent#int32#int32#to_string(self/0) in
-  t158
+  let inline175 = @runtime(core.int32_to_string)(self/0) in
+  inline175
 }
 
 fn render(x/1: dyn Display) -> string {
@@ -13,9 +13,13 @@ fn main() -> unit {
   let t163 = to_dyn[Display]{int32}(value/2) in
   let holder/3 = Holder__dynDisplay { value: t163 } in
   let t164 = t163 in
-  let t165 = render(t163) in
-  let _wild155 = println__T_string(t165) in
-  ()
+  join inline_cont179(t165: string) -> unit {
+    let inline177 = trait_impl#ToString#string#to_string(t165) in
+    let inline178 = @runtime(core.string_println)(inline177) in
+    ()
+  } in
+  let inline180 = dyn_call[Display::show](t163) in
+  jump inline_cont179(inline180)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -24,9 +28,11 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t170 = trait_impl#ToString#string#to_string(value/1) in
-  let t171 = @runtime(core.string_println)(t170) in
-  ()
+  join inline_cont181(t170: string) -> unit {
+    let t171 = @runtime(core.string_println)(t170) in
+    ()
+  } in
+  jump inline_cont181(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

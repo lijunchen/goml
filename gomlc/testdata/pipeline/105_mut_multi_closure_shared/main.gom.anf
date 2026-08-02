@@ -2,17 +2,34 @@ fn main() -> unit {
   let x/0 = @intrinsic(ref.new)(0) in
   let inc/1 = closure_env_inc_0 { x_0: x/0 } in
   let get/2 = closure_env_get_1 { x_0: x/0 } in
-  let mtmp156 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
-  let t161 = inherent#closure_env_get_1#closure_env_get_1#apply(get/2) in
-  let t162 = inherent#int#int#to_string(t161) in
-  let _wild157 = println__T_string(t162) in
-  ()
+  join inline_cont193(mtmp156: int) -> unit {
+    join inline_cont190(t161: int) -> unit {
+      join inline_cont188(t162: string) -> unit {
+        let inline186 = trait_impl#ToString#string#to_string(t162) in
+        let inline187 = @runtime(core.string_println)(inline186) in
+        ()
+      } in
+      let inline189 = @runtime(core.int_to_string)(t161) in
+      jump inline_cont188(inline189)
+    } in
+    let inline191 = x/0 in
+    let inline192 = @intrinsic(ref.get)(x/0) in
+    jump inline_cont190(inline192)
+  } in
+  let inline194 = x/0 in
+  let inline195 = @intrinsic(ref.get)(x/0) in
+  let inline196 = (inline195 + 1) in
+  let inline197 = @intrinsic(ref.set)(x/0, inline196) in
+  let inline198 = @intrinsic(ref.get)(x/0) in
+  jump inline_cont193(inline198)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t164 = trait_impl#ToString#string#to_string(value/1) in
-  let t165 = @runtime(core.string_println)(t164) in
-  ()
+  join inline_cont199(t164: string) -> unit {
+    let t165 = @runtime(core.string_println)(t164) in
+    ()
+  } in
+  jump inline_cont199(value/1)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {

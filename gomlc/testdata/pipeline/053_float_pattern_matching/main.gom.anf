@@ -5,18 +5,24 @@ fn summarize(event/0: FloatEvent) -> string {
       let x156 = FloatEvent::Sample32._1(event/0) in
       let value/2 = x156 in
       let label/1 = x155 in
-      let t166 = trait_impl#ToString#float32#to_string(x156) in
-      let t167 = (x155 + t166) in
-      t167
+      join inline_cont200(t166: string) -> string {
+        let t167 = (x155 + t166) in
+        t167
+      } in
+      let inline201 = @runtime(core.float32_to_string)(x156) in
+      jump inline_cont200(inline201)
     },
     Tag_1 => {
       let x157 = FloatEvent::Sample64._0(event/0) in
       let x158 = FloatEvent::Sample64._1(event/0) in
       let value/4 = x158 in
       let label/3 = x157 in
-      let t168 = trait_impl#ToString#float64#to_string(x158) in
-      let t169 = (x157 + t168) in
-      t169
+      join inline_cont202(t168: string) -> string {
+        let t169 = (x157 + t168) in
+        t169
+      } in
+      let inline203 = @runtime(core.float64_to_string)(x158) in
+      jump inline_cont202(inline203)
     },
   }
 }
@@ -30,12 +36,18 @@ fn compare(values/5: (float32, float64)) -> string {
   let limit64/9 = 5 in
   let less_left/10 = (x159 < limit32/8) in
   let less_right/11 = (x160 < limit64/9) in
-  let t172 = trait_impl#ToString#bool#to_string(less_left/10) in
-  let t173 = ("left<1?=" + t172) in
-  let t174 = (t173 + ",right<5?=") in
-  let t175 = trait_impl#ToString#bool#to_string(less_right/11) in
-  let t176 = (t174 + t175) in
-  t176
+  join inline_cont206(t172: string) -> string {
+    let t173 = ("left<1?=" + t172) in
+    let t174 = (t173 + ",right<5?=") in
+    join inline_cont204(t175: string) -> string {
+      let t176 = (t174 + t175) in
+      t176
+    } in
+    let inline205 = @runtime(core.bool_to_string)(less_right/11) in
+    jump inline_cont204(inline205)
+  } in
+  let inline207 = @runtime(core.bool_to_string)(less_left/10) in
+  jump inline_cont206(inline207)
 }
 
 fn main() -> unit {
@@ -50,14 +62,53 @@ fn main() -> unit {
   let t178 = summarize(first/15) in
   let t179 = summarize(second/16) in
   let t180 = (t178 + t179) in
-  let t181 = summarize(third/17) in
-  let t182 = (t180 + t181) in
-  let t183 = compare(tuple/18) in
-  let t184 = (t182 + t183) in
-  let t185 = compare(tuple_other/19) in
-  let message/20 = (t184 + t185) in
-  let mtmp161 = println__T_string(message/20) in
-  ()
+  join inline_cont239(t181: string) -> unit {
+    let t182 = (t180 + t181) in
+    join inline_cont225(t183: string) -> unit {
+      let t184 = (t182 + t183) in
+      join inline_cont211(t185: string) -> unit {
+        let message/20 = (t184 + t185) in
+        let inline209 = trait_impl#ToString#string#to_string(message/20) in
+        let inline210 = @runtime(core.string_println)(inline209) in
+        ()
+      } in
+      let inline212 = 1.5 in
+      let inline213 = 7.25 in
+      let inline214 = inline213 in
+      let inline215 = inline212 in
+      let inline216 = 1 in
+      let inline217 = 5 in
+      let inline218 = (inline212 < inline216) in
+      let inline219 = (inline213 < inline217) in
+      let inline220 = trait_impl#ToString#bool#to_string(inline218) in
+      let inline221 = ("left<1?=" + inline220) in
+      let inline222 = (inline221 + ",right<5?=") in
+      let inline223 = trait_impl#ToString#bool#to_string(inline219) in
+      let inline224 = (inline222 + inline223) in
+      jump inline_cont211(inline224)
+    } in
+    let inline226 = 0.75 in
+    let inline227 = 4 in
+    let inline228 = inline227 in
+    let inline229 = inline226 in
+    let inline230 = 1 in
+    let inline231 = 5 in
+    let inline232 = (inline226 < inline230) in
+    let inline233 = (inline227 < inline231) in
+    let inline234 = trait_impl#ToString#bool#to_string(inline232) in
+    let inline235 = ("left<1?=" + inline234) in
+    let inline236 = (inline235 + ",right<5?=") in
+    let inline237 = trait_impl#ToString#bool#to_string(inline233) in
+    let inline238 = (inline236 + inline237) in
+    jump inline_cont225(inline238)
+  } in
+  let inline246 = "f64=" in
+  let inline247 = third_value/14 in
+  let inline248 = third_value/14 in
+  let inline249 = inline246 in
+  let inline250 = trait_impl#ToString#float64#to_string(third_value/14) in
+  let inline251 = (inline246 + inline250) in
+  jump inline_cont239(inline251)
 }
 
 fn trait_impl#ToString#float32#to_string(self/49: float32) -> string {
@@ -76,9 +127,11 @@ fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t196 = trait_impl#ToString#string#to_string(value/1) in
-  let t197 = @runtime(core.string_println)(t196) in
-  ()
+  join inline_cont252(t196: string) -> unit {
+    let t197 = @runtime(core.string_println)(t196) in
+    ()
+  } in
+  jump inline_cont252(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

@@ -30,49 +30,31 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var a__1 uint8 = identity__T_uint8(42)
-    var t159 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(a__1)
-    println__T_string(t159)
-    var b__2 float32 = identity__T_float32(3.140000104904175)
-    var t160 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(b__2)
-    println__T_string(t160)
-    var c__3 int64 = identity__T_int64(100)
-    var t161 string = _goml_m_trait__impl_i_ToString_i_int64_i_to__string(c__3)
-    println__T_string(t161)
+    var a__1 uint8
+    var inline202 uint8 = 42
+    a__1 = inline202
+    var t159 string
+    var inline200 string = _goml_runtime_core_uint8_to_string(a__1)
+    t159 = inline200
+    var inline197 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t159)
+    _goml_runtime_core_string_println(inline197)
+    var b__2 float32
+    var inline195 float32 = 3.140000104904175
+    b__2 = inline195
+    var t160 string
+    var inline193 string = _goml_runtime_core_float32_to_string(b__2)
+    t160 = inline193
+    var inline190 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t160)
+    _goml_runtime_core_string_println(inline190)
+    var c__3 int64
+    var inline188 int64 = 100
+    c__3 = inline188
+    var t161 string
+    var inline186 string = _goml_runtime_core_int64_to_string(c__3)
+    t161 = inline186
+    var inline183 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t161)
+    _goml_runtime_core_string_println(inline183)
     return struct{}{}
-}
-
-func identity__T_uint8(x__0 uint8) uint8 {
-    return x__0
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t165 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t165)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var t169 string = _goml_runtime_core_uint8_to_string(self__45)
-    return t169
-}
-
-func identity__T_float32(x__0 float32) float32 {
-    return x__0
-}
-
-func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__49 float32) string {
-    var t174 string = _goml_runtime_core_float32_to_string(self__49)
-    return t174
-}
-
-func identity__T_int64(x__0 int64) int64 {
-    return x__0
-}
-
-func _goml_m_trait__impl_i_ToString_i_int64_i_to__string(self__44 int64) string {
-    var t179 string = _goml_runtime_core_int64_to_string(self__44)
-    return t179
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

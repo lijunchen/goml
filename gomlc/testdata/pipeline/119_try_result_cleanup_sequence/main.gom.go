@@ -61,48 +61,42 @@ type Result__string__string_Err struct {
 
 func (_ Result__string__string_Err) isResult__string__string() {}
 
-func open_handle(ok__0 bool) Result__Handle__string {
-    if ok__0 {
-        var t171 Handle = Handle{
+func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
+    var mtmp155 Result__Handle__string
+    if open_ok__3 {
+        var inline215 Handle = Handle{
             name: "config",
         }
-        var t172 Result__Handle__string = Result__Handle__string_Ok{
-            _0: t171,
+        var inline216 Result__Handle__string = Result__Handle__string_Ok{
+            _0: inline215,
         }
-        return t172
+        mtmp155 = inline216
     } else {
-        var t173 Result__Handle__string = Result__Handle__string_Err{
+        var inline217 Result__Handle__string = Result__Handle__string_Err{
             _0: "open failed",
         }
-        return t173
+        mtmp155 = inline217
     }
-}
-
-func close_handle(handle__1 Handle, ok__2 bool) Result__unit__string {
-    if ok__2 {
-        var t178 Result__unit__string = Result__unit__string_Ok{
-            _0: struct{}{},
-        }
-        return t178
-    } else {
-        var t179 string = handle__1.name
-        var t180 string = "close failed for " + t179
-        var t181 Result__unit__string = Result__unit__string_Err{
-            _0: t180,
-        }
-        return t181
-    }
-}
-
-func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
-    var mtmp155 Result__Handle__string = open_handle(open_ok__3)
     var jp185 Handle
     switch mtmp155.(type) {
     case Result__Handle__string_Ok:
         var x156 Handle = mtmp155.(Result__Handle__string_Ok)._0
         jp185 = x156
         var name__6 string = jp185.name
-        var mtmp158 Result__unit__string = close_handle(jp185, close_ok__4)
+        var mtmp158 Result__unit__string
+        if close_ok__4 {
+            var inline210 Result__unit__string = Result__unit__string_Ok{
+                _0: struct{}{},
+            }
+            mtmp158 = inline210
+        } else {
+            var inline211 string = jp185.name
+            var inline212 string = "close failed for " + inline211
+            var inline213 Result__unit__string = Result__unit__string_Err{
+                _0: inline212,
+            }
+            mtmp158 = inline213
+        }
         switch mtmp158.(type) {
         case Result__unit__string_Ok:
             var t187 string = "closed " + name__6
@@ -130,37 +124,55 @@ func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
     }
 }
 
-func show(res__7 Result__string__string) string {
-    switch res__7.(type) {
+func main0() struct{} {
+    var t198 Result__string__string = use_handle(true, true)
+    var t199 string
+    switch t198.(type) {
     case Result__string__string_Ok:
-        var x162 string = res__7.(Result__string__string_Ok)._0
-        var t195 string = "ok " + x162
-        return t195
+        var inline242 string = t198.(Result__string__string_Ok)._0
+        var inline244 string = "ok " + inline242
+        t199 = inline244
     case Result__string__string_Err:
-        var x163 string = res__7.(Result__string__string_Err)._0
-        var t196 string = "err " + x163
-        return t196
+        var inline245 string = t198.(Result__string__string_Err)._0
+        var inline247 string = "err " + inline245
+        t199 = inline247
     default:
         panic("non-exhaustive match")
     }
-}
-
-func main0() struct{} {
-    var t198 Result__string__string = use_handle(true, true)
-    var t199 string = show(t198)
-    println__T_string(t199)
+    var inline239 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t199)
+    _goml_runtime_core_string_println(inline239)
     var t200 Result__string__string = use_handle(false, true)
-    var t201 string = show(t200)
-    println__T_string(t201)
+    var t201 string
+    switch t200.(type) {
+    case Result__string__string_Ok:
+        var inline232 string = t200.(Result__string__string_Ok)._0
+        var inline234 string = "ok " + inline232
+        t201 = inline234
+    case Result__string__string_Err:
+        var inline235 string = t200.(Result__string__string_Err)._0
+        var inline237 string = "err " + inline235
+        t201 = inline237
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline229 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
+    _goml_runtime_core_string_println(inline229)
     var t202 Result__string__string = use_handle(true, false)
-    var t203 string = show(t202)
-    println__T_string(t203)
-    return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t205 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t205)
+    var t203 string
+    switch t202.(type) {
+    case Result__string__string_Ok:
+        var inline222 string = t202.(Result__string__string_Ok)._0
+        var inline224 string = "ok " + inline222
+        t203 = inline224
+    case Result__string__string_Err:
+        var inline225 string = t202.(Result__string__string_Err)._0
+        var inline227 string = "err " + inline225
+        t203 = inline227
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline219 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t203)
+    _goml_runtime_core_string_println(inline219)
     return struct{}{}
 }
 

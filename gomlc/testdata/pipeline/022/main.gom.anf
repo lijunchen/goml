@@ -28,31 +28,124 @@ fn repeated_string(s/2: string) -> int32 {
 }
 
 fn main() -> unit {
-  let t171 = match_string("hello") in
-  let t172 = inherent#int32#int32#to_string(t171) in
-  let mtmp155 = println__T_string(t172) in
-  let t173 = match_string("planet") in
-  let t174 = inherent#int32#int32#to_string(t173) in
-  let mtmp156 = println__T_string(t174) in
-  let t175 = wildcard_position("world") in
-  let t176 = inherent#int32#int32#to_string(t175) in
-  let mtmp157 = println__T_string(t176) in
-  let t177 = wildcard_position("sun") in
-  let t178 = inherent#int32#int32#to_string(t177) in
-  let mtmp158 = println__T_string(t178) in
-  let t179 = repeated_string("hello") in
-  let t180 = inherent#int32#int32#to_string(t179) in
-  let mtmp159 = println__T_string(t180) in
-  let t181 = repeated_string("mars") in
-  let t182 = inherent#int32#int32#to_string(t181) in
-  let t183 = println__T_string(t182) in
-  ()
+  join inline_cont232(t171: int32) -> unit {
+    join inline_cont230(t172: string) -> unit {
+      join inline_cont227(mtmp155: unit) -> unit {
+        join inline_cont225(t173: int32) -> unit {
+          join inline_cont223(t174: string) -> unit {
+            join inline_cont220(mtmp156: unit) -> unit {
+              join inline_cont218(t175: int32) -> unit {
+                join inline_cont216(t176: string) -> unit {
+                  join inline_cont213(mtmp157: unit) -> unit {
+                    join inline_cont211(t177: int32) -> unit {
+                      join inline_cont209(t178: string) -> unit {
+                        join inline_cont206(mtmp158: unit) -> unit {
+                          join inline_cont204(t179: int32) -> unit {
+                            join inline_cont202(t180: string) -> unit {
+                              join inline_cont199(mtmp159: unit) -> unit {
+                                join inline_cont197(t181: int32) -> unit {
+                                  join inline_cont195(t182: string) -> unit {
+                                    let inline193 = trait_impl#ToString#string#to_string(t182) in
+                                    let inline194 = @runtime(core.string_println)(inline193) in
+                                    ()
+                                  } in
+                                  let inline196 = @runtime(core.int32_to_string)(t181) in
+                                  jump inline_cont195(inline196)
+                                } in
+                                let inline198 = "mars" in
+                                match inline198 {
+                                  "hello" => {
+                                    jump inline_cont197(6)
+                                  },
+                                  _ => {
+                                    jump inline_cont197(8)
+                                  },
+                                }
+                              } in
+                              let inline200 = trait_impl#ToString#string#to_string(t180) in
+                              let inline201 = @runtime(core.string_println)(inline200) in
+                              jump inline_cont199(())
+                            } in
+                            let inline203 = @runtime(core.int32_to_string)(t179) in
+                            jump inline_cont202(inline203)
+                          } in
+                          let inline205 = "hello" in
+                          match inline205 {
+                            "hello" => {
+                              jump inline_cont204(6)
+                            },
+                            _ => {
+                              jump inline_cont204(8)
+                            },
+                          }
+                        } in
+                        let inline207 = trait_impl#ToString#string#to_string(t178) in
+                        let inline208 = @runtime(core.string_println)(inline207) in
+                        jump inline_cont206(())
+                      } in
+                      let inline210 = @runtime(core.int32_to_string)(t177) in
+                      jump inline_cont209(inline210)
+                    } in
+                    let inline212 = "sun" in
+                    jump inline_cont211(4)
+                  } in
+                  let inline214 = trait_impl#ToString#string#to_string(t176) in
+                  let inline215 = @runtime(core.string_println)(inline214) in
+                  jump inline_cont213(())
+                } in
+                let inline217 = @runtime(core.int32_to_string)(t175) in
+                jump inline_cont216(inline217)
+              } in
+              let inline219 = "world" in
+              jump inline_cont218(4)
+            } in
+            let inline221 = trait_impl#ToString#string#to_string(t174) in
+            let inline222 = @runtime(core.string_println)(inline221) in
+            jump inline_cont220(())
+          } in
+          let inline224 = @runtime(core.int32_to_string)(t173) in
+          jump inline_cont223(inline224)
+        } in
+        let inline226 = "planet" in
+        match inline226 {
+          "hello" => {
+            jump inline_cont225(1)
+          },
+          "world" => {
+            jump inline_cont225(2)
+          },
+          _ => {
+            jump inline_cont225(3)
+          },
+        }
+      } in
+      let inline228 = trait_impl#ToString#string#to_string(t172) in
+      let inline229 = @runtime(core.string_println)(inline228) in
+      jump inline_cont227(())
+    } in
+    let inline231 = @runtime(core.int32_to_string)(t171) in
+    jump inline_cont230(inline231)
+  } in
+  let inline233 = "hello" in
+  match inline233 {
+    "hello" => {
+      jump inline_cont232(1)
+    },
+    "world" => {
+      jump inline_cont232(2)
+    },
+    _ => {
+      jump inline_cont232(3)
+    },
+  }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t185 = trait_impl#ToString#string#to_string(value/1) in
-  let t186 = @runtime(core.string_println)(t185) in
-  ()
+  join inline_cont234(t185: string) -> unit {
+    let t186 = @runtime(core.string_println)(t185) in
+    ()
+  } in
+  jump inline_cont234(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {

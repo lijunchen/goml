@@ -30,39 +30,29 @@ type AlwaysDifferent struct {
     value int32
 }
 
-func _goml_m_trait__impl_i_Eq_i_AlwaysDifferent_i_eq(self__0 AlwaysDifferent, other__1 AlwaysDifferent) bool {
-    return false
-}
-
 func main0() struct{} {
-    var first__2 AlwaysDifferent = AlwaysDifferent{
-        value: 7,
-    }
-    var second__3 AlwaysDifferent = AlwaysDifferent{
-        value: 7,
-    }
-    var t166 bool = _goml_m_trait__impl_i_Eq_i_AlwaysDifferent_i_eq(first__2, second__3)
-    println__T_bool(t166)
-    var t167 bool = _goml_m_trait__impl_i_Eq_i_AlwaysDifferent_i_eq(first__2, second__3)
+    var t166 bool
+    t166 = false
+    var inline216 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t166)
+    _goml_runtime_core_string_println(inline216)
+    var t167 bool
+    t167 = false
     var t168 bool = !t167
-    println__T_bool(t168)
-    var t169 AlwaysDifferent = AlwaysDifferent{
-        value: 1,
-    }
-    var t170 AlwaysDifferent = AlwaysDifferent{
-        value: 1,
-    }
-    var t187 bool = _goml_m_trait__impl_i_Eq_i_AlwaysDifferent_i_eq(t169, t170)
+    var inline212 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t168)
+    _goml_runtime_core_string_println(inline212)
+    var t187 bool
+    t187 = false
     var jp172 bool
     if t187 {
         var t188 int = 2
         var t189 int = 2
-        var t190 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t188, t189)
-        jp172 = t190
+        var inline201 bool = t188 == t189
+        jp172 = inline201
     } else {
         jp172 = false
     }
-    println__T_bool(jp172)
+    var inline208 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp172)
+    _goml_runtime_core_string_println(inline208)
     var t173 AlwaysDifferent = AlwaysDifferent{
         value: 1,
     }
@@ -77,31 +67,21 @@ func main0() struct{} {
         value: 2,
     }
     var right_array__7 [2]AlwaysDifferent = [2]AlwaysDifferent{t175, t176}
-    var t179 AlwaysDifferent = array_get__Array_2_15AlwaysDifferent(left_array__6, 0)
-    var t180 AlwaysDifferent = array_get__Array_2_15AlwaysDifferent(right_array__7, 0)
-    var t181 bool = _goml_m_trait__impl_i_Eq_i_AlwaysDifferent_i_eq(t179, t180)
+    array_get__Array_2_15AlwaysDifferent(left_array__6, 0)
+    array_get__Array_2_15AlwaysDifferent(right_array__7, 0)
+    var t181 bool
+    t181 = false
     var jp178 bool
     if t181 {
-        var t182 AlwaysDifferent = array_get__Array_2_15AlwaysDifferent(left_array__6, 1)
-        var t183 AlwaysDifferent = array_get__Array_2_15AlwaysDifferent(right_array__7, 1)
-        var t184 bool = _goml_m_trait__impl_i_Eq_i_AlwaysDifferent_i_eq(t182, t183)
-        jp178 = t184
+        array_get__Array_2_15AlwaysDifferent(left_array__6, 1)
+        array_get__Array_2_15AlwaysDifferent(right_array__7, 1)
+        jp178 = false
     } else {
         jp178 = false
     }
-    println__T_bool(jp178)
+    var inline204 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(jp178)
+    _goml_runtime_core_string_println(inline204)
     return struct{}{}
-}
-
-func println__T_bool(value__1 bool) struct{} {
-    var t192 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__1)
-    _goml_runtime_core_string_println(t192)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var t196 bool = self__59 == other__60
-    return t196
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {

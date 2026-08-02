@@ -45,18 +45,16 @@ func main0() struct{} {
     var x159 Expr = Zero{}
     switch x159.(type) {
     case Zero:
-        print__T_int(3)
+        var inline217 int = 3
+        var inline218 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline217)
+        _goml_runtime_core_string_print(inline218)
         return struct{}{}
     default:
-        print__T_int(4)
+        var inline221 int = 4
+        var inline222 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline221)
+        _goml_runtime_core_string_print(inline222)
         return struct{}{}
     }
-}
-
-func print__T_int(value__0 int) struct{} {
-    var t211 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
-    _goml_runtime_core_string_print(t211)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {

@@ -33,16 +33,26 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 }
 
 func main0() struct{} {
-    var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    var sum__1 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
+    var i__0 *ref_int_x
+    var inline212 int = 0
+    var inline213 *ref_int_x = ref__Ref_3int(inline212)
+    i__0 = inline213
+    var sum__1 *ref_int_x
+    var inline209 int = 0
+    var inline210 *ref_int_x = ref__Ref_3int(inline209)
+    sum__1 = inline210
     Loop_loop163:
     for {
-        var t164 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+        var t164 int
+        var inline202 int = ref_get__Ref_3int(i__0)
+        t164 = inline202
         var t165 bool = t164 < 7
         if t165 {
-            var cur__2 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
+            var cur__2 int
+            var inline200 int = ref_get__Ref_3int(i__0)
+            cur__2 = inline200
             var t166 int = cur__2 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(i__0, t166)
+            ref_set__Ref_3int(i__0, t166)
             var t170 bool = cur__2 < 5
             if t170 {
                 switch cur__2 {
@@ -51,9 +61,11 @@ func main0() struct{} {
                 case 3:
                     continue
                 default:
-                    var t168 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__1)
+                    var t168 int
+                    var inline196 int = ref_get__Ref_3int(sum__1)
+                    t168 = inline196
                     var t169 int = t168 + cur__2
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(sum__1, t169)
+                    ref_set__Ref_3int(sum__1, t169)
                     continue
                 }
             } else {
@@ -61,9 +73,11 @@ func main0() struct{} {
                 case 5:
                     break Loop_loop163
                 default:
-                    var t168 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__1)
+                    var t168 int
+                    var inline196 int = ref_get__Ref_3int(sum__1)
+                    t168 = inline196
                     var t169 int = t168 + cur__2
-                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(sum__1, t169)
+                    ref_set__Ref_3int(sum__1, t169)
                     continue
                 }
             }
@@ -71,29 +85,11 @@ func main0() struct{} {
             break Loop_loop163
         }
     }
-    var t162 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(sum__1)
-    println__T_int(t162)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var t175 *ref_int_x = ref__Ref_3int(value__207)
-    return t175
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var t178 int = ref_get__Ref_3int(self__208)
-    return t178
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
-    ref_set__Ref_3int(self__209, value__210)
-    return struct{}{}
-}
-
-func println__T_int(value__1 int) struct{} {
-    var t182 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
-    _goml_runtime_core_string_println(t182)
+    var t162 int
+    var inline207 int = ref_get__Ref_3int(sum__1)
+    t162 = inline207
+    var inline204 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t162)
+    _goml_runtime_core_string_println(inline204)
     return struct{}{}
 }
 

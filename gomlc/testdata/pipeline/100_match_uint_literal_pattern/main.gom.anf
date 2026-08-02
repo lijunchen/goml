@@ -2,7 +2,8 @@ fn main() -> unit {
   let x/0 = 5 in
   join k157(jp158: string) -> unit {
     let y/1 = jp158 in
-    let _wild155 = println__T_string(jp158) in
+    let inline165 = trait_impl#ToString#string#to_string(jp158) in
+    let inline166 = @runtime(core.string_println)(inline165) in
     ()
   } in
   match x/0 {
@@ -19,9 +20,11 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t160 = trait_impl#ToString#string#to_string(value/1) in
-  let t161 = @runtime(core.string_println)(t160) in
-  ()
+  join inline_cont167(t160: string) -> unit {
+    let t161 = @runtime(core.string_println)(t160) in
+    ()
+  } in
+  jump inline_cont167(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

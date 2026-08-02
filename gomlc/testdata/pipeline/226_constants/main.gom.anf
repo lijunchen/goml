@@ -5,14 +5,23 @@ const greeting: string = ("constant" + " value");
 const enabled: bool = true;
 
 fn main() -> unit {
-  let t159 = inherent#int#int#to_string(answer) in
-  let _wild155 = @runtime(core.string_println)(t159) in
-  let t160 = trait_impl#ToString#uint8#to_string(mask) in
-  let _wild156 = @runtime(core.string_println)(t160) in
-  let _wild157 = @runtime(core.string_println)(greeting) in
-  let t161 = trait_impl#ToString#bool#to_string(enabled) in
-  let t162 = @runtime(core.string_println)(t161) in
-  ()
+  join inline_cont176(t159: string) -> unit {
+    let _wild155 = @runtime(core.string_println)(t159) in
+    join inline_cont174(t160: string) -> unit {
+      let _wild156 = @runtime(core.string_println)(t160) in
+      let _wild157 = @runtime(core.string_println)(greeting) in
+      join inline_cont172(t161: string) -> unit {
+        let t162 = @runtime(core.string_println)(t161) in
+        ()
+      } in
+      let inline173 = @runtime(core.bool_to_string)(enabled) in
+      jump inline_cont172(inline173)
+    } in
+    let inline175 = @runtime(core.uint8_to_string)(mask) in
+    jump inline_cont174(inline175)
+  } in
+  let inline177 = @runtime(core.int_to_string)(answer) in
+  jump inline_cont176(inline177)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {

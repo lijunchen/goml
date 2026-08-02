@@ -26,7 +26,9 @@ fn main() -> bool {
     Tag_2 => {
       match x155 {
         Tag_2 => {
-          let mtmp157 = print__T_bool(true) in
+          let inline175 = true in
+          let inline176 = trait_impl#ToString#bool#to_string(inline175) in
+          let inline177 = @runtime(core.string_print)(inline176) in
           false
         },
         _ => {
@@ -38,9 +40,12 @@ fn main() -> bool {
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  let t169 = trait_impl#ToString#bool#to_string(value/0) in
-  let t170 = @runtime(core.string_print)(t169) in
-  ()
+  join inline_cont178(t169: string) -> unit {
+    let t170 = @runtime(core.string_print)(t169) in
+    ()
+  } in
+  let inline179 = @runtime(core.bool_to_string)(value/0) in
+  jump inline_cont178(inline179)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {

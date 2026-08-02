@@ -38,38 +38,21 @@ type closure_env_inc_0 struct {
 
 func main0() struct{} {
     var x__0 *ref_int_x = ref__Ref_3int(0)
-    var inc__1 closure_env_inc_0 = closure_env_inc_0{
-        x_0: x__0,
-    }
-    _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(inc__1)
+    var inline188 int = ref_get__Ref_3int(x__0)
+    var inline189 int = inline188 + 1
+    ref_set__Ref_3int(x__0, inline189)
+    ref_get__Ref_3int(x__0)
     var t160 int = ref_get__Ref_3int(x__0)
-    var t161 string = _goml_m_inherent_i_int_i_int_i_to__string(t160)
-    println__T_string(t161)
+    var t161 string
+    var inline185 string = _goml_runtime_core_int_to_string(t160)
+    t161 = inline185
+    var inline182 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t161)
+    _goml_runtime_core_string_println(inline182)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t163 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t163)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var t167 string = _goml_runtime_core_int_to_string(self__5)
-    return t167
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
     return self__38
-}
-
-func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env158 closure_env_inc_0) int {
-    var x__0 *ref_int_x = env158.x_0
-    var t178 int = ref_get__Ref_3int(x__0)
-    var t179 int = t178 + 1
-    ref_set__Ref_3int(x__0, t179)
-    var t180 int = ref_get__Ref_3int(x__0)
-    return t180
 }
 
 func main() {

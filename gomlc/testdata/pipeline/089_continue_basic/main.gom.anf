@@ -1,37 +1,63 @@
 fn main() -> unit {
-  let i/0 = inherent#Ref#Ref[T]#new__T_int(0) in
-  join exit161() -> unit {
-    let _wild158 = () in
-    let mtmp159 = println__T_string("done") in
-    ()
-  } in
-  joinrec {
-    join loop162() -> unit {
-      let t163 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-      let t164 = (t163 < 10) in
-      if t164 {
-        let t165 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-        let t166 = (t165 + 1) in
-        let _wild155 = inherent#Ref#Ref[T]#set__T_int(i/0, t166) in
-        let t169 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-        let t170 = trait_impl#Eq#int#eq(t169, 5) in
-        join k167() -> unit {
-          let _wild156 = () in
-          let t168 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-          let mtmp157 = println__T_int(t168) in
-          jump loop162()
-        } in
-        if t170 {
-          jump loop162()
-        } else {
-          jump k167()
-        }
-      } else {
-        jump exit161()
-      }
+  join inline_cont216(i/0: Ref[int]) -> unit {
+    join exit161() -> unit {
+      let _wild158 = () in
+      let inline213 = "done" in
+      let inline214 = trait_impl#ToString#string#to_string(inline213) in
+      let inline215 = @runtime(core.string_println)(inline214) in
+      ()
     } in
+    joinrec {
+      join loop162() -> unit {
+        join inline_cont210(t163: int) -> unit {
+          let t164 = (t163 < 10) in
+          if t164 {
+            join inline_cont208(t165: int) -> unit {
+              let t166 = (t165 + 1) in
+              join inline_cont206(_wild155: unit) -> unit {
+                join inline_cont204(t169: int) -> unit {
+                  join inline_cont201(t170: bool) -> unit {
+                    join k167() -> unit {
+                      let _wild156 = () in
+                      join inline_cont199(t168: int) -> unit {
+                        let inline197 = trait_impl#ToString#int#to_string(t168) in
+                        let inline198 = @runtime(core.string_println)(inline197) in
+                        jump loop162()
+                      } in
+                      let inline200 = @intrinsic(ref.get)(i/0) in
+                      jump inline_cont199(inline200)
+                    } in
+                    if t170 {
+                      jump loop162()
+                    } else {
+                      jump k167()
+                    }
+                  } in
+                  let inline202 = 5 in
+                  let inline203 = @intrinsic(eq.primitive)(t169, inline202) in
+                  jump inline_cont201(inline203)
+                } in
+                let inline205 = @intrinsic(ref.get)(i/0) in
+                jump inline_cont204(inline205)
+              } in
+              let inline207 = @intrinsic(ref.set)(i/0, t166) in
+              jump inline_cont206(())
+            } in
+            let inline209 = @intrinsic(ref.get)(i/0) in
+            jump inline_cont208(inline209)
+          } else {
+            jump exit161()
+          }
+        } in
+        let inline211 = @intrinsic(ref.get)(i/0) in
+        jump inline_cont210(inline211)
+      } in
+    } in
+    jump loop162()
   } in
-  jump loop162()
+  let inline217 = 0 in
+  let inline218 = @intrinsic(ref.new)(inline217) in
+  jump inline_cont216(inline218)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
@@ -55,15 +81,20 @@ fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
 }
 
 fn println__T_int(value/1: int) -> unit {
-  let t183 = trait_impl#ToString#int#to_string(value/1) in
-  let t184 = @runtime(core.string_println)(t183) in
-  ()
+  join inline_cont219(t183: string) -> unit {
+    let t184 = @runtime(core.string_println)(t183) in
+    ()
+  } in
+  let inline220 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont219(inline220)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t186 = trait_impl#ToString#string#to_string(value/1) in
-  let t187 = @runtime(core.string_println)(t186) in
-  ()
+  join inline_cont221(t186: string) -> unit {
+    let t187 = @runtime(core.string_println)(t186) in
+    ()
+  } in
+  jump inline_cont221(value/1)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {

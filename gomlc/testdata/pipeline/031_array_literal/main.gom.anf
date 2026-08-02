@@ -4,18 +4,28 @@ fn make_array() -> [int32; 3] {
 }
 
 fn main() -> unit {
-  let arr/0 = make_array() in
-  let inline/1 = [4, 5, 6] in
-  let mtmp155 = print__T_string("array literal") in
-  let mtmp156 = arr/0 in
-  let mtmp157 = inline/1 in
-  ()
+  join inline_cont171(arr/0: [int32; 3]) -> unit {
+    let inline/1 = [4, 5, 6] in
+    join inline_cont167(mtmp155: unit) -> unit {
+      let mtmp156 = arr/0 in
+      let mtmp157 = inline/1 in
+      ()
+    } in
+    let inline168 = "array literal" in
+    let inline169 = trait_impl#ToString#string#to_string(inline168) in
+    let inline170 = @runtime(core.string_print)(inline169) in
+    jump inline_cont167(())
+  } in
+  let inline172 = [1, 2, 3] in
+  jump inline_cont171(inline172)
 }
 
 fn print__T_string(value/0: string) -> unit {
-  let t163 = trait_impl#ToString#string#to_string(value/0) in
-  let t164 = @runtime(core.string_print)(t163) in
-  ()
+  join inline_cont173(t163: string) -> unit {
+    let t164 = @runtime(core.string_print)(t163) in
+    ()
+  } in
+  jump inline_cont173(value/0)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

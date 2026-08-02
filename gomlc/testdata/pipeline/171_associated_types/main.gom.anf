@@ -5,26 +5,47 @@ fn trait_impl#Provider#Number#get(self/0: Number) -> int32 {
 
 fn main() -> unit {
   let t162 = Number { value: 42 } in
-  let t163 = read__P_Number(t162) in
-  let t164 = inherent#int32#int32#to_string(t163) in
-  let _wild155 = @runtime(core.string_println)(t164) in
-  let t165 = Number { value: 7 } in
-  let value/4 = read_as__P_Number__T_int32(t165) in
-  let t166 = inherent#int32#int32#to_string(value/4) in
-  let _wild156 = @runtime(core.string_println)(t166) in
-  let t167 = Box__string { value: "generic" } in
-  let t168 = read__P_Box[string](t167) in
-  let _wild157 = @runtime(core.string_println)(t168) in
-  let t169 = Number { value: 11 } in
-  let t170 = trait_impl#Provider#Number#get(t169) in
-  let t171 = inherent#int32#int32#to_string(t170) in
-  let t172 = @runtime(core.string_println)(t171) in
-  ()
+  join inline_cont200(t163: int32) -> unit {
+    join inline_cont198(t164: string) -> unit {
+      let _wild155 = @runtime(core.string_println)(t164) in
+      let t165 = Number { value: 7 } in
+      join inline_cont196(value/4: int32) -> unit {
+        join inline_cont194(t166: string) -> unit {
+          let _wild156 = @runtime(core.string_println)(t166) in
+          let t167 = Box__string { value: "generic" } in
+          join inline_cont192(t168: string) -> unit {
+            let _wild157 = @runtime(core.string_println)(t168) in
+            let t169 = Number { value: 11 } in
+            join inline_cont190(t170: int32) -> unit {
+              join inline_cont188(t171: string) -> unit {
+                let t172 = @runtime(core.string_println)(t171) in
+                ()
+              } in
+              let inline189 = @runtime(core.int32_to_string)(t170) in
+              jump inline_cont188(inline189)
+            } in
+            let inline191 = 11 in
+            jump inline_cont190(inline191)
+          } in
+          let inline193 = trait_impl#Provider#Box__string#get(t167) in
+          jump inline_cont192(inline193)
+        } in
+        let inline195 = @runtime(core.int32_to_string)(value/4) in
+        jump inline_cont194(inline195)
+      } in
+      let inline197 = trait_impl#Provider#Number#get(t165) in
+      jump inline_cont196(inline197)
+    } in
+    let inline199 = @runtime(core.int32_to_string)(t163) in
+    jump inline_cont198(inline199)
+  } in
+  let inline201 = trait_impl#Provider#Number#get(t162) in
+  jump inline_cont200(inline201)
 }
 
 fn read__P_Number(provider/2: Number) -> int32 {
-  let t175 = trait_impl#Provider#Number#get(provider/2) in
-  t175
+  let inline203 = Number.value(provider/2) in
+  inline203
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -33,13 +54,13 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn read_as__P_Number__T_int32(provider/3: Number) -> int32 {
-  let t181 = trait_impl#Provider#Number#get(provider/3) in
-  t181
+  let inline205 = Number.value(provider/3) in
+  inline205
 }
 
 fn read__P_Box[string](provider/2: Box__string) -> string {
-  let t184 = trait_impl#Provider#Box__string#get(provider/2) in
-  t184
+  let inline207 = Box__string.value(provider/2) in
+  inline207
 }
 
 fn trait_impl#Provider#Box__string#get(self/1: Box__string) -> string {

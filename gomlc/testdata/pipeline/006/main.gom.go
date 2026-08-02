@@ -27,7 +27,8 @@ func main0() struct{} {
     var x156 bool = false
     switch x155 {
     case true:
-        print__T_bool(x156)
+        var inline172 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x156)
+        _goml_runtime_core_string_print(inline172)
     case false:
     default:
         panic("non-exhaustive match")
@@ -36,19 +37,14 @@ func main0() struct{} {
     var x159 bool = true
     switch x158 {
     case true:
-        print__T_bool(x159)
+        var inline175 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x159)
+        _goml_runtime_core_string_print(inline175)
         return struct{}{}
     case false:
         return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-}
-
-func print__T_bool(value__0 bool) struct{} {
-    var t166 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
-    _goml_runtime_core_string_print(t166)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {

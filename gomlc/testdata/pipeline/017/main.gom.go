@@ -26,40 +26,24 @@ type Tuple2_3int_3int struct {
     _1 int
 }
 
-func _goml_m_trait__impl_i_ToString_i__o_int_c_int_q__i_to__string(self__0 Tuple2_3int_3int) string {
-    return "(?, ?)"
-}
-
 func main0() struct{} {
     var x__1 int = 123
-    var t161 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x__1)
-    println__T_string(t161)
+    var t161 string
+    var inline188 string = _goml_runtime_core_int_to_string(x__1)
+    t161 = inline188
+    var inline185 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t161)
+    _goml_runtime_core_string_println(inline185)
     var x__2 bool = true
-    var t162 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x__2)
-    println__T_string(t162)
-    var x__3 Tuple2_3int_3int = Tuple2_3int_3int{
-        _0: 3,
-        _1: 4,
-    }
-    var t163 string = _goml_m_trait__impl_i_ToString_i__o_int_c_int_q__i_to__string(x__3)
-    println__T_string(t163)
+    var t162 string
+    var inline183 string = _goml_runtime_core_bool_to_string(x__2)
+    t162 = inline183
+    var inline180 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t162)
+    _goml_runtime_core_string_println(inline180)
+    var t163 string
+    t163 = "(?, ?)"
+    var inline176 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t163)
+    _goml_runtime_core_string_println(inline176)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t165 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t165)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var t169 string = _goml_runtime_core_int_to_string(self__40)
-    return t169
-}
-
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var t172 string = _goml_runtime_core_bool_to_string(self__37)
-    return t172
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

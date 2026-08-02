@@ -64,13 +64,10 @@ func split_host_port(ok__0 bool) _goml_m_Result_____o_string_c_string_q_____stri
     }
 }
 
-func pair(ok__1 bool) _goml_m_Result_____o_string_c_string_q_____string {
-    var t174 _goml_m_Result_____o_string_c_string_q_____string = split_host_port(ok__1)
-    return t174
-}
-
 func render(ok__2 bool) Result__string__string {
-    var mtmp155 _goml_m_Result_____o_string_c_string_q_____string = pair(ok__2)
+    var mtmp155 _goml_m_Result_____o_string_c_string_q_____string
+    var inline204 _goml_m_Result_____o_string_c_string_q_____string = split_host_port(ok__2)
+    mtmp155 = inline204
     var jp178 Tuple2_6string_6string
     switch mtmp155.(type) {
     case _goml_m_Result_____o_string_c_string_q_____string_Ok:
@@ -95,34 +92,39 @@ func render(ok__2 bool) Result__string__string {
     }
 }
 
-func show(res__5 Result__string__string) string {
-    switch res__5.(type) {
+func main0() struct{} {
+    var t190 Result__string__string = render(true)
+    var t191 string
+    switch t190.(type) {
     case Result__string__string_Ok:
-        var x161 string = res__5.(Result__string__string_Ok)._0
-        var t187 string = "ok " + x161
-        return t187
+        var inline219 string = t190.(Result__string__string_Ok)._0
+        var inline221 string = "ok " + inline219
+        t191 = inline221
     case Result__string__string_Err:
-        var x162 string = res__5.(Result__string__string_Err)._0
-        var t188 string = "err " + x162
-        return t188
+        var inline222 string = t190.(Result__string__string_Err)._0
+        var inline224 string = "err " + inline222
+        t191 = inline224
     default:
         panic("non-exhaustive match")
     }
-}
-
-func main0() struct{} {
-    var t190 Result__string__string = render(true)
-    var t191 string = show(t190)
-    println__T_string(t191)
+    var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline216)
     var t192 Result__string__string = render(false)
-    var t193 string = show(t192)
-    println__T_string(t193)
-    return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t195 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t195)
+    var t193 string
+    switch t192.(type) {
+    case Result__string__string_Ok:
+        var inline209 string = t192.(Result__string__string_Ok)._0
+        var inline211 string = "ok " + inline209
+        t193 = inline211
+    case Result__string__string_Err:
+        var inline212 string = t192.(Result__string__string_Err)._0
+        var inline214 string = "err " + inline212
+        t193 = inline214
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
+    _goml_runtime_core_string_println(inline206)
     return struct{}{}
 }
 

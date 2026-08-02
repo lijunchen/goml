@@ -34,29 +34,20 @@ const (
 )
 
 func main0() struct{} {
-    var t159 string = _goml_m_inherent_i_int_i_int_i_to__string(answer)
+    var t159 string
+    var inline177 string = _goml_runtime_core_int_to_string(answer)
+    t159 = inline177
     _goml_runtime_core_string_println(t159)
-    var t160 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(mask)
+    var t160 string
+    var inline175 string = _goml_runtime_core_uint8_to_string(mask)
+    t160 = inline175
     _goml_runtime_core_string_println(t160)
     _goml_runtime_core_string_println(greeting)
-    var t161 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(enabled)
+    var t161 string
+    var inline173 string = _goml_runtime_core_bool_to_string(enabled)
+    t161 = inline173
     _goml_runtime_core_string_println(t161)
     return struct{}{}
-}
-
-func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var t165 string = _goml_runtime_core_int_to_string(self__5)
-    return t165
-}
-
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var t168 string = _goml_runtime_core_uint8_to_string(self__45)
-    return t168
-}
-
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var t171 string = _goml_runtime_core_bool_to_string(self__37)
-    return t171
 }
 
 func main() {

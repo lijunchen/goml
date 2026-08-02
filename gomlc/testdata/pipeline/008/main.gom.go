@@ -32,27 +32,24 @@ func main0() struct{} {
     var x155 bool = true
     switch x155 {
     case true:
-        var t163 string = _goml_m_inherent_i_int_i_int_i_to__string(2)
-        println__T_string(t163)
+        var t163 string
+        var inline179 int = 2
+        var inline180 string = _goml_runtime_core_int_to_string(inline179)
+        t163 = inline180
+        var inline176 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t163)
+        _goml_runtime_core_string_println(inline176)
         return struct{}{}
     case false:
-        var t165 string = _goml_m_inherent_i_int_i_int_i_to__string(3)
-        println__T_string(t165)
+        var t165 string
+        var inline185 int = 3
+        var inline186 string = _goml_runtime_core_int_to_string(inline185)
+        t165 = inline186
+        var inline182 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t165)
+        _goml_runtime_core_string_println(inline182)
         return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t168 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t168)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var t172 string = _goml_runtime_core_int_to_string(self__5)
-    return t172
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

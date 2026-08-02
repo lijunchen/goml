@@ -3,7 +3,9 @@ fn stop() -> unit {
 }
 
 fn main() -> unit {
-  let _wild156 = stop() in
-  let t159 = @runtime(core.string_println)("continued") in
-  ()
+  join inline_cont160(_wild156: unit) -> unit {
+    let t159 = @runtime(core.string_println)("continued") in
+    ()
+  } in
+  jump inline_cont160(())
 }

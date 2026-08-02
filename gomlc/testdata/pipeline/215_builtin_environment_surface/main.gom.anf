@@ -27,21 +27,39 @@ fn main() -> unit {
   let _wild160 = @intrinsic(channel.send)(channel/9, t174) in
   let received/10 = @intrinsic(channel.recv)(channel/9) in
   let _wild161 = @intrinsic(channel.close)(channel/9) in
-  let t175 = range(0, 3) in
-  let t176 = closure_env_main_0 {} in
-  let total/13 = iterator_fold__A_int__I_FnIterator[int]__T_int(t175, 0, t176) in
-  let t177 = trait_impl#ToString#bool#to_string(same/5) in
-  let t178 = (text/3 + t177) in
-  let t179 = received/10.0 in
-  let t180 = inherent#int32#int32#to_string(t179) in
-  let t181 = (t178 + t180) in
-  let t182 = received/10.1 in
-  let t183 = trait_impl#ToString#bool#to_string(t182) in
-  let t184 = (t181 + t183) in
-  let t185 = inherent#int#int#to_string(total/13) in
-  let t186 = (t184 + t185) in
-  let t187 = println__T_string(t186) in
-  ()
+  join inline_cont255(t175: FnIterator__int) -> unit {
+    let t176 = closure_env_main_0 {} in
+    let total/13 = iterator_fold__A_int__I_FnIterator[int]__T_int(t175, 0, t176) in
+    join inline_cont253(t177: string) -> unit {
+      let t178 = (text/3 + t177) in
+      let t179 = received/10.0 in
+      join inline_cont251(t180: string) -> unit {
+        let t181 = (t178 + t180) in
+        let t182 = received/10.1 in
+        join inline_cont249(t183: string) -> unit {
+          let t184 = (t181 + t183) in
+          join inline_cont247(t185: string) -> unit {
+            let t186 = (t184 + t185) in
+            let inline245 = trait_impl#ToString#string#to_string(t186) in
+            let inline246 = @runtime(core.string_println)(inline245) in
+            ()
+          } in
+          let inline248 = @runtime(core.int_to_string)(total/13) in
+          jump inline_cont247(inline248)
+        } in
+        let inline250 = @runtime(core.bool_to_string)(t182) in
+        jump inline_cont249(inline250)
+      } in
+      let inline252 = @runtime(core.int32_to_string)(t179) in
+      jump inline_cont251(inline252)
+    } in
+    let inline254 = @runtime(core.bool_to_string)(same/5) in
+    jump inline_cont253(inline254)
+  } in
+  let inline256 = 0 in
+  let inline257 = 3 in
+  let inline258 = __goml_builtin_range(inline256, inline257) in
+  jump inline_cont255(inline258)
 }
 
 fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int, initial/118: int, combine/119: (int, int) -> int) -> int {
@@ -52,37 +70,45 @@ fn iterator_fold__A_int__I_FnIterator[int]__T_int(iterator/117: FnIterator__int,
   } in
   joinrec {
     join loop_expr191() -> int {
-      let mtmp28 = trait_impl#Iterator#FnIterator__int#next(iterator/117) in
-      join k192() -> int {
-        let _wild31 = () in
-        jump loop_expr191()
+      join inline_cont259(mtmp28: Option__int) -> int {
+        join k192() -> int {
+          let _wild31 = () in
+          jump loop_expr191()
+        } in
+        match mtmp28 {
+          Tag_0 => {
+            jump exit190()
+          },
+          Tag_1 => {
+            let x29 = Option__int::Some._0(mtmp28) in
+            let value/121 = x29 in
+            let t193 = combine/119(accumulator/120, x29) in
+            let _wild30 = accumulator/120 = t193 in
+            jump k192()
+          },
+        }
       } in
-      match mtmp28 {
-        Tag_0 => {
-          jump exit190()
-        },
-        Tag_1 => {
-          let x29 = Option__int::Some._0(mtmp28) in
-          let value/121 = x29 in
-          let t193 = combine/119(accumulator/120, x29) in
-          let _wild30 = accumulator/120 = t193 in
-          jump k192()
-        },
-      }
+      let inline260 = FnIterator__int.next_fn(iterator/117) in
+      let inline261 = inline260() in
+      jump inline_cont259(inline261)
     } in
   } in
   jump loop_expr191()
 }
 
 fn range(start/222: int, end/223: int) -> FnIterator__int {
-  let t196 = __goml_builtin_range(start/222, end/223) in
-  t196
+  let inline263 = @intrinsic(ref.new)(start/222) in
+  let inline264 = closure_env_goml_builtin_range_1 { current_0: inline263, end_1: end/223 } in
+  let inline265 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline264) in
+  inline265
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t198 = trait_impl#ToString#string#to_string(value/1) in
-  let t199 = @runtime(core.string_println)(t198) in
-  ()
+  join inline_cont266(t198: string) -> unit {
+    let t199 = @runtime(core.string_println)(t198) in
+    ()
+  } in
+  jump inline_cont266(value/1)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {

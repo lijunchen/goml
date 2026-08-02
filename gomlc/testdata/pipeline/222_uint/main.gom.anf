@@ -21,44 +21,102 @@ fn classify(value/2: uint) -> string {
 fn main() -> unit {
   let left/3 = 19 in
   let right/4 = (2 as uint) in
-  let result/5 = combine(left/3, right/4) in
-  let _wild155 = println__T_uint(result/5) in
-  let t172 = trait_impl#ToString#uint#to_string(result/5) in
-  let _wild156 = println__T_string(t172) in
-  let t173 = classify(result/5) in
-  let _wild157 = println__T_string(t173) in
-  let t174 = (result/5 > left/3) in
-  let _wild158 = println__T_bool(t174) in
-  let t175 = (result/5 & 15) in
-  let t176 = (t175 as uint64) in
-  let _wild159 = println__T_uint64(t176) in
-  let values/6 = inherent#HashMap#HashMap[K,V]#new__K_uint__V_string() in
-  let _wild160 = inherent#HashMap#HashMap[K,V]#set__K_uint__V_string(values/6, result/5, "stored") in
-  let mtmp161 = inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(values/6, 42) in
-  match mtmp161 {
-    Tag_0 => {
-      let t178 = println__T_string("missing") in
-      ()
-    },
-    Tag_1 => {
-      let x162 = Option__string::Some._0(mtmp161) in
-      let value/7 = x162 in
-      let t179 = println__T_string(x162) in
-      ()
-    },
-  }
+  join inline_cont250(result/5: uint) -> unit {
+    join inline_cont247(_wild155: unit) -> unit {
+      join inline_cont245(t172: string) -> unit {
+        join inline_cont242(_wild156: unit) -> unit {
+          join inline_cont241(t173: string) -> unit {
+            join inline_cont238(_wild157: unit) -> unit {
+              let t174 = (result/5 > left/3) in
+              join inline_cont235(_wild158: unit) -> unit {
+                let t175 = (result/5 & 15) in
+                let t176 = (t175 as uint64) in
+                join inline_cont232(_wild159: unit) -> unit {
+                  join inline_cont230(values/6: HashMap[uint, string]) -> unit {
+                    join inline_cont227(_wild160: unit) -> unit {
+                      join inline_cont224(mtmp161: Option__string) -> unit {
+                        match mtmp161 {
+                          Tag_0 => {
+                            let inline218 = "missing" in
+                            let inline219 = trait_impl#ToString#string#to_string(inline218) in
+                            let inline220 = @runtime(core.string_println)(inline219) in
+                            ()
+                          },
+                          Tag_1 => {
+                            let x162 = Option__string::Some._0(mtmp161) in
+                            let value/7 = x162 in
+                            let inline222 = trait_impl#ToString#string#to_string(x162) in
+                            let inline223 = @runtime(core.string_println)(inline222) in
+                            ()
+                          },
+                        }
+                      } in
+                      let inline225 = 42 in
+                      let inline226 = @intrinsic(hashmap.get)(values/6, inline225) in
+                      jump inline_cont224(inline226)
+                    } in
+                    let inline228 = "stored" in
+                    let inline229 = @intrinsic(hashmap.set)(values/6, result/5, inline228) in
+                    jump inline_cont227(())
+                  } in
+                  let inline231 = @intrinsic(hashmap.new)() in
+                  jump inline_cont230(inline231)
+                } in
+                let inline233 = trait_impl#ToString#uint64#to_string(t176) in
+                let inline234 = @runtime(core.string_println)(inline233) in
+                jump inline_cont232(())
+              } in
+              let inline236 = trait_impl#ToString#bool#to_string(t174) in
+              let inline237 = @runtime(core.string_println)(inline236) in
+              jump inline_cont235(())
+            } in
+            let inline239 = trait_impl#ToString#string#to_string(t173) in
+            let inline240 = @runtime(core.string_println)(inline239) in
+            jump inline_cont238(())
+          } in
+          match result/5 {
+            0 => {
+              jump inline_cont241("zero")
+            },
+            42 => {
+              jump inline_cont241("answer")
+            },
+            _ => {
+              jump inline_cont241("other")
+            },
+          }
+        } in
+        let inline243 = trait_impl#ToString#string#to_string(t172) in
+        let inline244 = @runtime(core.string_println)(inline243) in
+        jump inline_cont242(())
+      } in
+      let inline246 = @runtime(core.uint_to_string)(result/5) in
+      jump inline_cont245(inline246)
+    } in
+    let inline248 = trait_impl#ToString#uint#to_string(result/5) in
+    let inline249 = @runtime(core.string_println)(inline248) in
+    jump inline_cont247(())
+  } in
+  let inline251 = (left/3 + right/4) in
+  let inline252 = (inline251 * 2) in
+  jump inline_cont250(inline252)
 }
 
 fn println__T_uint(value/1: uint) -> unit {
-  let t181 = trait_impl#ToString#uint#to_string(value/1) in
-  let t182 = @runtime(core.string_println)(t181) in
-  ()
+  join inline_cont253(t181: string) -> unit {
+    let t182 = @runtime(core.string_println)(t181) in
+    ()
+  } in
+  let inline254 = @runtime(core.uint_to_string)(value/1) in
+  jump inline_cont253(inline254)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t184 = trait_impl#ToString#string#to_string(value/1) in
-  let t185 = @runtime(core.string_println)(t184) in
-  ()
+  join inline_cont255(t184: string) -> unit {
+    let t185 = @runtime(core.string_println)(t184) in
+    ()
+  } in
+  jump inline_cont255(value/1)
 }
 
 fn trait_impl#ToString#uint#to_string(self/224: uint) -> string {
@@ -67,15 +125,21 @@ fn trait_impl#ToString#uint#to_string(self/224: uint) -> string {
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  let t190 = trait_impl#ToString#bool#to_string(value/1) in
-  let t191 = @runtime(core.string_println)(t190) in
-  ()
+  join inline_cont256(t190: string) -> unit {
+    let t191 = @runtime(core.string_println)(t190) in
+    ()
+  } in
+  let inline257 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont256(inline257)
 }
 
 fn println__T_uint64(value/1: uint64) -> unit {
-  let t193 = trait_impl#ToString#uint64#to_string(value/1) in
-  let t194 = @runtime(core.string_println)(t193) in
-  ()
+  join inline_cont258(t193: string) -> unit {
+    let t194 = @runtime(core.string_println)(t193) in
+    ()
+  } in
+  let inline259 = @runtime(core.uint64_to_string)(value/1) in
+  jump inline_cont258(inline259)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_uint__V_string() -> HashMap[uint, string] {

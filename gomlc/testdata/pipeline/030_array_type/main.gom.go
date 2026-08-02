@@ -14,13 +14,9 @@ type Buffer struct {
 }
 
 func main0() struct{} {
-    print__T_string("array")
-    return struct{}{}
-}
-
-func print__T_string(value__0 string) struct{} {
-    var t160 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
-    _goml_runtime_core_string_print(t160)
+    var inline165 string = "array"
+    var inline166 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline165)
+    _goml_runtime_core_string_print(inline166)
     return struct{}{}
 }
 

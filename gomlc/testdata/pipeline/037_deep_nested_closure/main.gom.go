@@ -43,17 +43,18 @@ type closure_env_f1_3 struct {
 
 func main0() struct{} {
     var a__0 int32 = 10
-    var f1__11 closure_env_f1_3 = closure_env_f1_3{
+    var result__12 int32
+    var inline189 int32 = 1
+    var inline191 int32 = 20
+    var inline192 closure_env_f2_2 = closure_env_f2_2{
         a_0: a__0,
+        b_1: inline191,
+        x_2: inline189,
     }
-    var result__12 int32 = _goml_m_inherent_i_closure__env__f1__3_i_closure__env__f1__3_i_apply(f1__11, 1)
-    println__T_int32(result__12)
-    return struct{}{}
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t162 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t162)
+    var inline193 int32 = _goml_m_inherent_i_closure__env__f2__2_i_closure__env__f2__2_i_apply(inline192, 2)
+    result__12 = inline193
+    var inline186 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(result__12)
+    _goml_runtime_core_string_println(inline186)
     return struct{}{}
 }
 
@@ -80,52 +81,24 @@ func _goml_m_inherent_i_closure__env__f4__0_i_closure__env__f4__0_i_apply(env155
     return t175
 }
 
-func _goml_m_inherent_i_closure__env__f3__1_i_closure__env__f3__1_i_apply(env156 closure_env_f3_1, z__5 int32) int32 {
-    var a__0 int32 = env156.a_0
-    var b__2 int32 = env156.b_1
-    var c__4 int32 = env156.c_2
-    var x__1 int32 = env156.x_3
-    var y__3 int32 = env156.y_4
-    var d__6 int32 = 40
-    var f4__8 closure_env_f4_0 = closure_env_f4_0{
-        a_0: a__0,
-        b_1: b__2,
-        c_2: c__4,
-        d_3: d__6,
-        x_4: x__1,
-        y_5: y__3,
-        z_6: z__5,
-    }
-    var t178 int32 = _goml_m_inherent_i_closure__env__f4__0_i_closure__env__f4__0_i_apply(f4__8, 4)
-    return t178
-}
-
 func _goml_m_inherent_i_closure__env__f2__2_i_closure__env__f2__2_i_apply(env157 closure_env_f2_2, y__3 int32) int32 {
     var a__0 int32 = env157.a_0
     var b__2 int32 = env157.b_1
     var x__1 int32 = env157.x_2
     var c__4 int32 = 30
-    var f3__9 closure_env_f3_1 = closure_env_f3_1{
+    var inline213 int32 = 3
+    var inline219 int32 = 40
+    var inline220 closure_env_f4_0 = closure_env_f4_0{
         a_0: a__0,
         b_1: b__2,
         c_2: c__4,
-        x_3: x__1,
-        y_4: y__3,
+        d_3: inline219,
+        x_4: x__1,
+        y_5: y__3,
+        z_6: inline213,
     }
-    var t181 int32 = _goml_m_inherent_i_closure__env__f3__1_i_closure__env__f3__1_i_apply(f3__9, 3)
-    return t181
-}
-
-func _goml_m_inherent_i_closure__env__f1__3_i_closure__env__f1__3_i_apply(env158 closure_env_f1_3, x__1 int32) int32 {
-    var a__0 int32 = env158.a_0
-    var b__2 int32 = 20
-    var f2__10 closure_env_f2_2 = closure_env_f2_2{
-        a_0: a__0,
-        b_1: b__2,
-        x_2: x__1,
-    }
-    var t184 int32 = _goml_m_inherent_i_closure__env__f2__2_i_closure__env__f2__2_i_apply(f2__10, 2)
-    return t184
+    var inline221 int32 = _goml_m_inherent_i_closure__env__f4__0_i_closure__env__f4__0_i_apply(inline220, 4)
+    return inline221
 }
 
 func main() {

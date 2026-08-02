@@ -22,38 +22,21 @@ type Wrap__string struct {
 }
 
 func main0() struct{} {
-    var a__1 Wrap__int = Wrap__int{
-        value: 1,
-    }
-    var b__2 Wrap__string = Wrap__string{
-        value: "x",
-    }
-    var t158 int32 = _goml_m_trait__impl_i_Size_i_Wrap____int_i_size(a__1)
-    var t159 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t158)
-    println__T_string(t159)
-    var t160 int32 = _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(b__2)
-    var t161 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t160)
-    println__T_string(t161)
+    var t158 int32
+    t158 = 1
+    var t159 string
+    var inline184 string = _goml_runtime_core_int32_to_string(t158)
+    t159 = inline184
+    var inline181 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t159)
+    _goml_runtime_core_string_println(inline181)
+    var t160 int32
+    t160 = 1
+    var t161 string
+    var inline178 string = _goml_runtime_core_int32_to_string(t160)
+    t161 = inline178
+    var inline175 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t161)
+    _goml_runtime_core_string_println(inline175)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t163 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t163)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_Size_i_Wrap____int_i_size(self__0 Wrap__int) int32 {
-    return 1
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t169 string = _goml_runtime_core_int32_to_string(self__6)
-    return t169
-}
-
-func _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(self__0 Wrap__string) int32 {
-    return 1
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

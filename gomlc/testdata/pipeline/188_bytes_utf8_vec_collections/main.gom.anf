@@ -1,60 +1,90 @@
 fn print_chars(value/0: string) -> unit {
-  let t249 = inherent#string#string#chars(value/0) in
-  let for_iter155 = trait_impl#IntoIterator#FnIterator__char#into_iter(t249) in
-  join exit250() -> unit {
-    ()
-  } in
-  joinrec {
-    join loop251() -> unit {
-      let for_next156 = trait_impl#Iterator#FnIterator__char#next(for_iter155) in
-      match for_next156 {
-        Tag_0 => {
-          jump exit250()
-        },
-        Tag_1 => {
-          let x157 = Option__char::Some._0(for_next156) in
-          let character/1 = x157 in
-          let t253 = println__T_char(x157) in
-          jump loop251()
-        },
-      }
+  join inline_cont586(t249: FnIterator__char) -> unit {
+    join inline_cont585(for_iter155: FnIterator__char) -> unit {
+      join exit250() -> unit {
+        ()
+      } in
+      joinrec {
+        join loop251() -> unit {
+          join inline_cont582(for_next156: Option__char) -> unit {
+            match for_next156 {
+              Tag_0 => {
+                jump exit250()
+              },
+              Tag_1 => {
+                let x157 = Option__char::Some._0(for_next156) in
+                let character/1 = x157 in
+                let inline580 = trait_impl#ToString#char#to_string(x157) in
+                let inline581 = @runtime(core.string_println)(inline580) in
+                jump loop251()
+              },
+            }
+          } in
+          let inline583 = FnIterator__char.next_fn(for_iter155) in
+          let inline584 = inline583() in
+          jump inline_cont582(inline584)
+        } in
+      } in
+      jump loop251()
     } in
+    jump inline_cont585(t249)
   } in
-  jump loop251()
+  let inline587 = @intrinsic(ref.new)(0) in
+  let inline588 = closure_env_inherent_string_string_chars_0 { self_0: value/0, index_1: inline587 } in
+  let inline589 = inherent#FnIterator#FnIterator[T]#from_fn__T_char(inline588) in
+  jump inline_cont586(inline589)
 }
 
 fn print_char_indices(value/2: string) -> unit {
-  let t255 = inherent#string#string#char_indices(value/2) in
-  let for_iter158 = trait_impl#IntoIterator#FnIterator__(int,char)#into_iter(t255) in
-  join exit256() -> unit {
-    ()
-  } in
-  joinrec {
-    join loop257() -> unit {
-      let for_next159 = trait_impl#Iterator#FnIterator__(int,char)#next(for_iter158) in
-      match for_next159 {
-        Tag_0 => {
-          jump exit256()
-        },
-        Tag_1 => {
-          let x160 = Option__(int,char)::Some._0(for_next159) in
-          let item/3 = x160 in
-          let mtmp161 = x160 in
-          let x162 = x160.0 in
-          let x163 = x160.1 in
-          let character/5 = x163 in
-          let index/4 = x162 in
-          let t259 = inherent#int#int#to_string(x162) in
-          let t260 = (t259 + ":") in
-          let t261 = inherent#char#char#to_string(x163) in
-          let t262 = (t260 + t261) in
-          let t263 = println__T_string(t262) in
-          jump loop257()
-        },
-      }
+  join inline_cont601(t255: FnIterator__(int,char)) -> unit {
+    join inline_cont600(for_iter158: FnIterator__(int,char)) -> unit {
+      join exit256() -> unit {
+        ()
+      } in
+      joinrec {
+        join loop257() -> unit {
+          join inline_cont597(for_next159: Option__(int,char)) -> unit {
+            match for_next159 {
+              Tag_0 => {
+                jump exit256()
+              },
+              Tag_1 => {
+                let x160 = Option__(int,char)::Some._0(for_next159) in
+                let item/3 = x160 in
+                let mtmp161 = x160 in
+                let x162 = x160.0 in
+                let x163 = x160.1 in
+                let character/5 = x163 in
+                let index/4 = x162 in
+                join inline_cont595(t259: string) -> unit {
+                  let t260 = (t259 + ":") in
+                  join inline_cont593(t261: string) -> unit {
+                    let t262 = (t260 + t261) in
+                    let inline591 = trait_impl#ToString#string#to_string(t262) in
+                    let inline592 = @runtime(core.string_println)(inline591) in
+                    jump loop257()
+                  } in
+                  let inline594 = @runtime(core.char_to_string)(x163) in
+                  jump inline_cont593(inline594)
+                } in
+                let inline596 = @runtime(core.int_to_string)(x162) in
+                jump inline_cont595(inline596)
+              },
+            }
+          } in
+          let inline598 = FnIterator__(int,char).next_fn(for_iter158) in
+          let inline599 = inline598() in
+          jump inline_cont597(inline599)
+        } in
+      } in
+      jump loop257()
     } in
+    jump inline_cont600(t255)
   } in
-  jump loop257()
+  let inline602 = @intrinsic(ref.new)(0) in
+  let inline603 = closure_env_inherent_string_string_char_indices_1 { index_0: inline602, self_1: value/2 } in
+  let inline604 = inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(inline603) in
+  jump inline_cont601(inline604)
 }
 
 fn main() -> unit {
@@ -170,97 +200,136 @@ fn main() -> unit {
         let _wild234 = inherent#HashMap#HashMap[K,V]#remove__K_string__V_int32(map/20, "a") in
         let t300 = inherent#Vec#Vec[T]#len__T_(string,int32)(entries/21) in
         let _wild235 = println__T_int(t300) in
-        let seen_a/22 = inherent#Ref#Ref[T]#new__T_bool(false) in
-        let seen_b/23 = inherent#Ref#Ref[T]#new__T_bool(false) in
-        let for_source236 = entries/21 in
-        let for_limit237 = @intrinsic(vec.len)(entries/21) in
-        let for_index238 = 0 in
-        join exit301() -> unit {
-          let _wild244 = () in
-          let t302 = inherent#Ref#Ref[T]#get__T_bool(seen_a/22) in
-          let _wild245 = println__T_bool(t302) in
-          let t303 = inherent#Ref#Ref[T]#get__T_bool(seen_b/23) in
-          let t304 = println__T_bool(t303) in
-          ()
-        } in
-        joinrec {
-          join loop305() -> unit {
-            let t306 = (for_index238 < for_limit237) in
-            if t306 {
-              let for_item239 = @intrinsic(vec.get)(entries/21, for_index238) in
-              let t307 = (for_index238 + 1) in
-              let _wild240 = for_index238 = t307 in
-              let entry/24 = for_item239 in
-              let mtmp241 = for_item239 in
-              let x242 = for_item239.0 in
-              let x243 = for_item239.1 in
-              let item_value/26 = x243 in
-              let key/25 = x242 in
-              let t318 = trait_impl#Eq#string#eq(x242, "a") in
-              join k309(jp310: bool) -> unit {
-                if jp310 {
-                  let t311 = inherent#Ref#Ref[T]#set__T_bool(seen_a/22, true) in
-                  jump loop305()
-                } else {
-                  let t316 = trait_impl#Eq#string#eq(x242, "b") in
-                  join k313(jp314: bool) -> unit {
-                    if jp314 {
-                      let t315 = inherent#Ref#Ref[T]#set__T_bool(seen_b/23, true) in
-                      jump loop305()
+        join inline_cont660(seen_a/22: Ref[bool]) -> unit {
+          join inline_cont657(seen_b/23: Ref[bool]) -> unit {
+            let for_source236 = entries/21 in
+            let for_limit237 = @intrinsic(vec.len)(entries/21) in
+            let for_index238 = 0 in
+            join exit301() -> unit {
+              let _wild244 = () in
+              join inline_cont655(t302: bool) -> unit {
+                join inline_cont652(_wild245: unit) -> unit {
+                  join inline_cont650(t303: bool) -> unit {
+                    let inline648 = trait_impl#ToString#bool#to_string(t303) in
+                    let inline649 = @runtime(core.string_println)(inline648) in
+                    ()
+                  } in
+                  let inline651 = @intrinsic(ref.get)(seen_b/23) in
+                  jump inline_cont650(inline651)
+                } in
+                let inline653 = trait_impl#ToString#bool#to_string(t302) in
+                let inline654 = @runtime(core.string_println)(inline653) in
+                jump inline_cont652(())
+              } in
+              let inline656 = @intrinsic(ref.get)(seen_a/22) in
+              jump inline_cont655(inline656)
+            } in
+            joinrec {
+              join loop305() -> unit {
+                let t306 = (for_index238 < for_limit237) in
+                if t306 {
+                  let for_item239 = @intrinsic(vec.get)(entries/21, for_index238) in
+                  let t307 = (for_index238 + 1) in
+                  let _wild240 = for_index238 = t307 in
+                  let entry/24 = for_item239 in
+                  let mtmp241 = for_item239 in
+                  let x242 = for_item239.0 in
+                  let x243 = for_item239.1 in
+                  let item_value/26 = x243 in
+                  let key/25 = x242 in
+                  join inline_cont644(t318: bool) -> unit {
+                    join k309(jp310: bool) -> unit {
+                      if jp310 {
+                        let inline633 = true in
+                        let inline634 = @intrinsic(ref.set)(seen_a/22, inline633) in
+                        jump loop305()
+                      } else {
+                        join inline_cont641(t316: bool) -> unit {
+                          join k313(jp314: bool) -> unit {
+                            if jp314 {
+                              let inline639 = true in
+                              let inline640 = @intrinsic(ref.set)(seen_b/23, inline639) in
+                              jump loop305()
+                            } else {
+                              jump loop305()
+                            }
+                          } in
+                          if t316 {
+                            let inline636 = 2 in
+                            let inline637 = @intrinsic(eq.primitive)(x243, inline636) in
+                            jump k313(inline637)
+                          } else {
+                            jump k313(false)
+                          }
+                        } in
+                        let inline642 = "b" in
+                        let inline643 = @intrinsic(eq.primitive)(x242, inline642) in
+                        jump inline_cont641(inline643)
+                      }
+                    } in
+                    if t318 {
+                      let inline630 = 1 in
+                      let inline631 = @intrinsic(eq.primitive)(x243, inline630) in
+                      jump k309(inline631)
                     } else {
-                      jump loop305()
+                      jump k309(false)
                     }
                   } in
-                  if t316 {
-                    let t317 = trait_impl#Eq#int32#eq(x243, 2) in
-                    jump k313(t317)
-                  } else {
-                    jump k313(false)
-                  }
+                  let inline645 = "a" in
+                  let inline646 = @intrinsic(eq.primitive)(x242, inline645) in
+                  jump inline_cont644(inline646)
+                } else {
+                  jump exit301()
                 }
               } in
-              if t318 {
-                let t319 = trait_impl#Eq#int32#eq(x243, 1) in
-                jump k309(t319)
-              } else {
-                jump k309(false)
-              }
-            } else {
-              jump exit301()
-            }
+            } in
+            jump loop305()
           } in
+          let inline658 = false in
+          let inline659 = @intrinsic(ref.new)(inline658) in
+          jump inline_cont657(inline659)
         } in
-        jump loop305()
+        let inline661 = false in
+        let inline662 = @intrinsic(ref.new)(inline661) in
+        jump inline_cont660(inline662)
       } in
       match mtmp222 {
         Tag_0 => {
-          let t320 = println__T_int(-1) in
+          let inline623 = -1 in
+          let inline624 = trait_impl#ToString#int#to_string(inline623) in
+          let inline625 = @runtime(core.string_println)(inline624) in
           jump k296()
         },
         Tag_1 => {
           let x223 = Option__int32::Some._0(mtmp222) in
           let value/19 = x223 in
-          let t321 = println__T_int32(x223) in
+          let inline627 = trait_impl#ToString#int32#to_string(x223) in
+          let inline628 = @runtime(core.string_println)(inline627) in
           jump k296()
         },
       }
     } in
     match mtmp219 {
       Tag_0 => {
-        let t322 = println__T_int(-1) in
+        let inline616 = -1 in
+        let inline617 = trait_impl#ToString#int#to_string(inline616) in
+        let inline618 = @runtime(core.string_println)(inline617) in
         jump k295()
       },
       Tag_1 => {
         let x220 = Option__int32::Some._0(mtmp219) in
         let value/18 = x220 in
-        let t323 = println__T_int32(x220) in
+        let inline620 = trait_impl#ToString#int32#to_string(x220) in
+        let inline621 = @runtime(core.string_println)(inline620) in
         jump k295()
       },
     }
   } in
   match mtmp176 {
     Tag_0 => {
-      let t324 = println__T_string("missing") in
+      let inline606 = "missing" in
+      let inline607 = trait_impl#ToString#string#to_string(inline606) in
+      let inline608 = @runtime(core.string_println)(inline607) in
       jump k277()
     },
     Tag_1 => {
@@ -271,9 +340,14 @@ fn main() -> unit {
       let x180 = x177.1 in
       let width/9 = x180 in
       let character/8 = x179 in
-      let _wild181 = println__T_char(x179) in
-      let t325 = println__T_int(x180) in
-      jump k277()
+      join inline_cont612(_wild181: unit) -> unit {
+        let inline610 = trait_impl#ToString#int#to_string(x180) in
+        let inline611 = @runtime(core.string_println)(inline610) in
+        jump k277()
+      } in
+      let inline613 = trait_impl#ToString#char#to_string(x179) in
+      let inline614 = @runtime(core.string_println)(inline613) in
+      jump inline_cont612(())
     },
   }
 }
@@ -296,9 +370,12 @@ fn trait_impl#Iterator#FnIterator__char#next(self/102: FnIterator__char) -> Opti
 }
 
 fn println__T_char(value/1: char) -> unit {
-  let t337 = trait_impl#ToString#char#to_string(value/1) in
-  let t338 = @runtime(core.string_println)(t337) in
-  ()
+  join inline_cont663(t337: string) -> unit {
+    let t338 = @runtime(core.string_println)(t337) in
+    ()
+  } in
+  let inline664 = @runtime(core.char_to_string)(value/1) in
+  jump inline_cont663(inline664)
 }
 
 fn inherent#string#string#char_indices(self/30: string) -> FnIterator__(int,char) {
@@ -319,9 +396,11 @@ fn trait_impl#Iterator#FnIterator__(int,char)#next(self/102: FnIterator__(int,ch
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t350 = trait_impl#ToString#string#to_string(value/1) in
-  let t351 = @runtime(core.string_println)(t350) in
-  ()
+  join inline_cont665(t350: string) -> unit {
+    let t351 = @runtime(core.string_println)(t350) in
+    ()
+  } in
+  jump inline_cont665(value/1)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
@@ -335,9 +414,12 @@ fn inherent#char#char#to_string(self/7: char) -> string {
 }
 
 fn println__T_int(value/1: int) -> unit {
-  let t359 = trait_impl#ToString#int#to_string(value/1) in
-  let t360 = @runtime(core.string_println)(t359) in
-  ()
+  join inline_cont666(t359: string) -> unit {
+    let t360 = @runtime(core.string_println)(t359) in
+    ()
+  } in
+  let inline667 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont666(inline667)
 }
 
 fn inherent#string#string#byte_len(self/9: string) -> int {
@@ -356,9 +438,12 @@ fn inherent#string#string#get(self/10: string, index/11: int) -> char {
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  let t371 = trait_impl#ToString#bool#to_string(value/1) in
-  let t372 = @runtime(core.string_println)(t371) in
-  ()
+  join inline_cont668(t371: string) -> unit {
+    let t372 = @runtime(core.string_println)(t371) in
+    ()
+  } in
+  let inline669 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont668(inline669)
 }
 
 fn inherent#string#string#is_char_boundary(self/17: string, index/18: int) -> bool {
@@ -399,9 +484,12 @@ fn inherent#Vec#Vec[T]#len__T_uint8(self/137: Vec[uint8]) -> int {
 }
 
 fn println__T_uint8(value/1: uint8) -> unit {
-  let t392 = trait_impl#ToString#uint8#to_string(value/1) in
-  let t393 = @runtime(core.string_println)(t392) in
-  ()
+  join inline_cont670(t392: string) -> unit {
+    let t393 = @runtime(core.string_println)(t392) in
+    ()
+  } in
+  let inline671 = @runtime(core.uint8_to_string)(value/1) in
+  jump inline_cont670(inline671)
 }
 
 fn inherent#Vec#Vec[T]#get__T_uint8(self/132: Vec[uint8], index/133: int) -> uint8 {
@@ -465,149 +553,185 @@ fn inherent#Vec#Vec[T]#push__T_int32(self/126: Vec[int32], elem/127: int32) -> u
 }
 
 fn inherent#Vec#Vec[T]#insert__T_int32(self/158: Vec[int32], index/159: int, value/160: int32) -> unit {
-  let len/161 = inherent#Vec#Vec[T]#len__T_int32(self/158) in
-  let t428 = trait_impl#Eq#int#eq(index/159, len/161) in
-  if t428 {
-    let t429 = inherent#Vec#Vec[T]#push__T_int32(self/158, value/160) in
-    ()
-  } else {
-    let mtmp61 = @intrinsic(vec.get)(self/158, index/159) in
-    let t430 = (len/161 - 1) in
-    let t431 = @intrinsic(vec.get)(self/158, t430) in
-    let _wild62 = inherent#Vec#Vec[T]#push__T_int32(self/158, t431) in
-    let current/162 = (len/161 - 1) in
-    join exit432() -> unit {
-      let _wild71 = () in
-      let place_root72 = self/158 in
-      let index73 = index/159 in
-      let place74 = @intrinsic(vec.get)(self/158, index/159) in
-      let value75 = value/160 in
-      let t433 = @intrinsic(vec.set)(self/158, index/159, value/160) in
-      let _wild76 = t433 in
-      ()
-    } in
-    joinrec {
-      join loop434() -> unit {
-        let t435 = (current/162 > index/159) in
-        if t435 {
-          let place_root63 = self/158 in
-          let index64 = current/162 in
-          let place65 = @intrinsic(vec.get)(self/158, index64) in
-          let t436 = (current/162 - 1) in
-          let value66 = @intrinsic(vec.get)(self/158, t436) in
-          let t437 = @intrinsic(vec.set)(self/158, index64, value66) in
-          let _wild67 = t437 in
-          let compound_old68 = current/162 in
-          let compound_value69 = 1 in
-          let t438 = (compound_old68 - compound_value69) in
-          let t439 = current/162 = t438 in
-          let _wild70 = t439 in
+  join inline_cont678(len/161: int) -> unit {
+    join inline_cont676(t428: bool) -> unit {
+      if t428 {
+        let inline673 = @intrinsic(vec.push)(self/158, value/160) in
+        ()
+      } else {
+        let mtmp61 = @intrinsic(vec.get)(self/158, index/159) in
+        let t430 = (len/161 - 1) in
+        let t431 = @intrinsic(vec.get)(self/158, t430) in
+        join inline_cont674(_wild62: unit) -> unit {
+          let current/162 = (len/161 - 1) in
+          join exit432() -> unit {
+            let _wild71 = () in
+            let place_root72 = self/158 in
+            let index73 = index/159 in
+            let place74 = @intrinsic(vec.get)(self/158, index/159) in
+            let value75 = value/160 in
+            let t433 = @intrinsic(vec.set)(self/158, index/159, value/160) in
+            let _wild76 = t433 in
+            ()
+          } in
+          joinrec {
+            join loop434() -> unit {
+              let t435 = (current/162 > index/159) in
+              if t435 {
+                let place_root63 = self/158 in
+                let index64 = current/162 in
+                let place65 = @intrinsic(vec.get)(self/158, index64) in
+                let t436 = (current/162 - 1) in
+                let value66 = @intrinsic(vec.get)(self/158, t436) in
+                let t437 = @intrinsic(vec.set)(self/158, index64, value66) in
+                let _wild67 = t437 in
+                let compound_old68 = current/162 in
+                let compound_value69 = 1 in
+                let t438 = (compound_old68 - compound_value69) in
+                let t439 = current/162 = t438 in
+                let _wild70 = t439 in
+                jump loop434()
+              } else {
+                jump exit432()
+              }
+            } in
+          } in
           jump loop434()
-        } else {
-          jump exit432()
-        }
-      } in
+        } in
+        let inline675 = @intrinsic(vec.push)(self/158, t431) in
+        jump inline_cont674(())
+      }
     } in
-    jump loop434()
-  }
+    let inline677 = @intrinsic(eq.primitive)(index/159, len/161) in
+    jump inline_cont676(inline677)
+  } in
+  let inline679 = @intrinsic(vec.len)(self/158) in
+  jump inline_cont678(inline679)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t441 = trait_impl#ToString#int32#to_string(value/1) in
-  let t442 = @runtime(core.string_println)(t441) in
-  ()
+  join inline_cont680(t441: string) -> unit {
+    let t442 = @runtime(core.string_println)(t441) in
+    ()
+  } in
+  let inline681 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont680(inline681)
 }
 
 fn inherent#Vec#Vec[T]#remove__T_int32(self/163: Vec[int32], index/164: int) -> int32 {
-  let len/165 = inherent#Vec#Vec[T]#len__T_int32(self/163) in
-  let value/166 = @intrinsic(vec.get)(self/163, index/164) in
-  let current/167 = index/164 in
-  join exit445() -> int32 {
-    let _wild85 = () in
-    let t446 = (len/165 - 1) in
-    let _wild86 = inherent#Vec#Vec[T]#truncate__T_int32(self/163, t446) in
-    value/166
-  } in
-  joinrec {
-    join loop447() -> int32 {
-      let t448 = (current/167 + 1) in
-      let t449 = (t448 < len/165) in
-      if t449 {
-        let place_root77 = self/163 in
-        let index78 = current/167 in
-        let place79 = @intrinsic(vec.get)(self/163, index78) in
-        let t450 = (current/167 + 1) in
-        let value80 = @intrinsic(vec.get)(self/163, t450) in
-        let t451 = @intrinsic(vec.set)(self/163, index78, value80) in
-        let _wild81 = t451 in
-        let compound_old82 = current/167 in
-        let compound_value83 = 1 in
-        let t452 = (compound_old82 + compound_value83) in
-        let t453 = current/167 = t452 in
-        let _wild84 = t453 in
-        jump loop447()
-      } else {
-        jump exit445()
-      }
+  join inline_cont684(len/165: int) -> int32 {
+    let value/166 = @intrinsic(vec.get)(self/163, index/164) in
+    let current/167 = index/164 in
+    join exit445() -> int32 {
+      let _wild85 = () in
+      let t446 = (len/165 - 1) in
+      let inline683 = @intrinsic(vec.truncate)(self/163, t446) in
+      value/166
     } in
+    joinrec {
+      join loop447() -> int32 {
+        let t448 = (current/167 + 1) in
+        let t449 = (t448 < len/165) in
+        if t449 {
+          let place_root77 = self/163 in
+          let index78 = current/167 in
+          let place79 = @intrinsic(vec.get)(self/163, index78) in
+          let t450 = (current/167 + 1) in
+          let value80 = @intrinsic(vec.get)(self/163, t450) in
+          let t451 = @intrinsic(vec.set)(self/163, index78, value80) in
+          let _wild81 = t451 in
+          let compound_old82 = current/167 in
+          let compound_value83 = 1 in
+          let t452 = (compound_old82 + compound_value83) in
+          let t453 = current/167 = t452 in
+          let _wild84 = t453 in
+          jump loop447()
+        } else {
+          jump exit445()
+        }
+      } in
+    } in
+    jump loop447()
   } in
-  jump loop447()
+  let inline685 = @intrinsic(vec.len)(self/163) in
+  jump inline_cont684(inline685)
 }
 
 fn inherent#Vec#Vec[T]#swap_remove__T_int32(self/154: Vec[int32], index/155: int) -> int32 {
-  let len/156 = inherent#Vec#Vec[T]#len__T_int32(self/154) in
-  let value/157 = @intrinsic(vec.get)(self/154, index/155) in
-  let t458 = (index/155 + 1) in
-  let t459 = (t458 < len/156) in
-  join k456() -> int32 {
-    let _wild59 = () in
-    let t457 = (len/156 - 1) in
-    let _wild60 = inherent#Vec#Vec[T]#truncate__T_int32(self/154, t457) in
-    value/157
+  join inline_cont688(len/156: int) -> int32 {
+    let value/157 = @intrinsic(vec.get)(self/154, index/155) in
+    let t458 = (index/155 + 1) in
+    let t459 = (t458 < len/156) in
+    join k456() -> int32 {
+      let _wild59 = () in
+      let t457 = (len/156 - 1) in
+      let inline687 = @intrinsic(vec.truncate)(self/154, t457) in
+      value/157
+    } in
+    if t459 {
+      let place_root54 = self/154 in
+      let index55 = index/155 in
+      let place56 = @intrinsic(vec.get)(self/154, index/155) in
+      let t460 = (len/156 - 1) in
+      let value57 = @intrinsic(vec.get)(self/154, t460) in
+      let t461 = @intrinsic(vec.set)(self/154, index/155, value57) in
+      let _wild58 = t461 in
+      jump k456()
+    } else {
+      jump k456()
+    }
   } in
-  if t459 {
-    let place_root54 = self/154 in
-    let index55 = index/155 in
-    let place56 = @intrinsic(vec.get)(self/154, index/155) in
-    let t460 = (len/156 - 1) in
-    let value57 = @intrinsic(vec.get)(self/154, t460) in
-    let t461 = @intrinsic(vec.set)(self/154, index/155, value57) in
-    let _wild58 = t461 in
-    jump k456()
-  } else {
-    jump k456()
-  }
+  let inline689 = @intrinsic(vec.len)(self/154) in
+  jump inline_cont688(inline689)
 }
 
 fn inherent#Vec#Vec[T]#reverse__T_int32(self/168: Vec[int32]) -> unit {
   let left/169 = 0 in
-  let t463 = inherent#Vec#Vec[T]#len__T_int32(self/168) in
-  let right/170 = (t463 - 1) in
-  join exit464() -> unit {
-    ()
-  } in
-  joinrec {
-    join loop465() -> unit {
-      let t466 = (left/169 < right/170) in
-      if t466 {
-        let _wild87 = inherent#Vec#Vec[T]#swap__T_int32(self/168, left/169, right/170) in
-        let compound_old88 = left/169 in
-        let compound_value89 = 1 in
-        let t467 = (compound_old88 + compound_value89) in
-        let t468 = left/169 = t467 in
-        let _wild90 = t468 in
-        let compound_old91 = right/170 in
-        let compound_value92 = 1 in
-        let t469 = (compound_old91 - compound_value92) in
-        let t470 = right/170 = t469 in
-        let _wild93 = t470 in
-        jump loop465()
-      } else {
-        jump exit464()
-      }
+  join inline_cont704(t463: int) -> unit {
+    let right/170 = (t463 - 1) in
+    join exit464() -> unit {
+      ()
     } in
+    joinrec {
+      join loop465() -> unit {
+        let t466 = (left/169 < right/170) in
+        if t466 {
+          join inline_cont690(_wild87: unit) -> unit {
+            let compound_old88 = left/169 in
+            let compound_value89 = 1 in
+            let t467 = (compound_old88 + compound_value89) in
+            let t468 = left/169 = t467 in
+            let _wild90 = t468 in
+            let compound_old91 = right/170 in
+            let compound_value92 = 1 in
+            let t469 = (compound_old91 - compound_value92) in
+            let t470 = right/170 = t469 in
+            let _wild93 = t470 in
+            jump loop465()
+          } in
+          let inline691 = @intrinsic(vec.get)(self/168, left/169) in
+          let inline692 = self/168 in
+          let inline693 = left/169 in
+          let inline694 = @intrinsic(vec.get)(self/168, left/169) in
+          let inline695 = @intrinsic(vec.get)(self/168, right/170) in
+          let inline696 = @intrinsic(vec.set)(self/168, left/169, inline695) in
+          let inline697 = inline696 in
+          let inline698 = self/168 in
+          let inline699 = right/170 in
+          let inline700 = @intrinsic(vec.get)(self/168, right/170) in
+          let inline701 = inline691 in
+          let inline702 = @intrinsic(vec.set)(self/168, right/170, inline691) in
+          let inline703 = inline702 in
+          jump inline_cont690(())
+        } else {
+          jump exit464()
+        }
+      } in
+    } in
+    jump loop465()
   } in
-  jump loop465()
+  let inline705 = @intrinsic(vec.len)(self/168) in
+  jump inline_cont704(inline705)
 }
 
 fn inherent#Vec#Vec[T]#get__T_int32(self/132: Vec[int32], index/133: int) -> int32 {
@@ -616,31 +740,48 @@ fn inherent#Vec#Vec[T]#get__T_int32(self/132: Vec[int32], index/133: int) -> int
 }
 
 fn inherent#Vec#Vec[T]#last__T_int32(self/145: Vec[int32]) -> Option__int32 {
-  let len/146 = inherent#Vec#Vec[T]#len__T_int32(self/145) in
-  let t478 = trait_impl#Eq#int#eq(len/146, 0) in
-  if t478 {
-    Tag_0
-  } else {
-    let t479 = (len/146 - 1) in
-    let t480 = @intrinsic(vec.get)(self/145, t479) in
-    let t481 = Option__int32::Some(t480) in
-    t481
-  }
+  join inline_cont709(len/146: int) -> Option__int32 {
+    join inline_cont706(t478: bool) -> Option__int32 {
+      if t478 {
+        Tag_0
+      } else {
+        let t479 = (len/146 - 1) in
+        let t480 = @intrinsic(vec.get)(self/145, t479) in
+        let t481 = Option__int32::Some(t480) in
+        t481
+      }
+    } in
+    let inline707 = 0 in
+    let inline708 = @intrinsic(eq.primitive)(len/146, inline707) in
+    jump inline_cont706(inline708)
+  } in
+  let inline710 = @intrinsic(vec.len)(self/145) in
+  jump inline_cont709(inline710)
 }
 
 fn inherent#Vec#Vec[T]#pop__T_int32(self/147: Vec[int32]) -> Option__int32 {
-  let len/148 = inherent#Vec#Vec[T]#len__T_int32(self/147) in
-  let t486 = trait_impl#Eq#int#eq(len/148, 0) in
-  if t486 {
-    Tag_0
-  } else {
-    let t487 = (len/148 - 1) in
-    let value/149 = @intrinsic(vec.get)(self/147, t487) in
-    let t488 = (len/148 - 1) in
-    let _wild43 = inherent#Vec#Vec[T]#truncate__T_int32(self/147, t488) in
-    let t489 = Option__int32::Some(value/149) in
-    t489
-  }
+  join inline_cont716(len/148: int) -> Option__int32 {
+    join inline_cont713(t486: bool) -> Option__int32 {
+      if t486 {
+        Tag_0
+      } else {
+        let t487 = (len/148 - 1) in
+        let value/149 = @intrinsic(vec.get)(self/147, t487) in
+        let t488 = (len/148 - 1) in
+        join inline_cont711(_wild43: unit) -> Option__int32 {
+          let t489 = Option__int32::Some(value/149) in
+          t489
+        } in
+        let inline712 = @intrinsic(vec.truncate)(self/147, t488) in
+        jump inline_cont711(())
+      }
+    } in
+    let inline714 = 0 in
+    let inline715 = @intrinsic(eq.primitive)(len/148, inline714) in
+    jump inline_cont713(inline715)
+  } in
+  let inline717 = @intrinsic(vec.len)(self/147) in
+  jump inline_cont716(inline717)
 }
 
 fn inherent#Vec#Vec[T]#truncate__T_int32(self/142: Vec[int32], len/143: int) -> unit {
@@ -650,12 +791,14 @@ fn inherent#Vec#Vec[T]#truncate__T_int32(self/142: Vec[int32], len/143: int) -> 
 
 fn inherent#Vec#Vec[T]#is_empty__T_int32(self/139: Vec[int32]) -> bool {
   let t494 = @intrinsic(vec.len)(self/139) in
-  let t495 = trait_impl#Eq#int#eq(t494, 0) in
-  t495
+  let inline719 = 0 in
+  let inline720 = @intrinsic(eq.primitive)(t494, inline719) in
+  inline720
 }
 
 fn inherent#Vec#Vec[T]#clear__T_int32(self/144: Vec[int32]) -> unit {
-  let t497 = inherent#Vec#Vec[T]#truncate__T_int32(self/144, 0) in
+  let inline722 = 0 in
+  let inline723 = @intrinsic(vec.truncate)(self/144, inline722) in
   ()
 }
 
@@ -792,27 +935,42 @@ fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_stri
   let self/25 = closure_env_inherent_string_string_chars_0.self_0(env246) in
   let index/26 = closure_env_inherent_string_string_chars_0.index_1(env246) in
   let t566 = @intrinsic(ref.get)(index/26) in
-  let mtmp7 = inherent#string#string#decode_at(self/25, t566) in
-  match mtmp7 {
-    Tag_0 => {
-      Tag_0
-    },
-    Tag_1 => {
-      let x8 = Option__(char,int)::Some._0(mtmp7) in
-      let decoded/27 = x8 in
-      let mtmp9 = x8 in
-      let x10 = x8.0 in
-      let x11 = x8.1 in
-      let width/29 = x11 in
-      let value/28 = x10 in
-      let compound_old12 = @intrinsic(ref.get)(index/26) in
-      let compound_value13 = x11 in
-      let t569 = (compound_old12 + x11) in
-      let t570 = @intrinsic(ref.set)(index/26, t569) in
-      let _wild14 = t570 in
-      let t571 = Option__char::Some(x10) in
-      t571
-    },
+  join inline_cont724(mtmp7: Option__(char,int)) -> Option__char {
+    match mtmp7 {
+      Tag_0 => {
+        Tag_0
+      },
+      Tag_1 => {
+        let x8 = Option__(char,int)::Some._0(mtmp7) in
+        let decoded/27 = x8 in
+        let mtmp9 = x8 in
+        let x10 = x8.0 in
+        let x11 = x8.1 in
+        let width/29 = x11 in
+        let value/28 = x10 in
+        let compound_old12 = @intrinsic(ref.get)(index/26) in
+        let compound_value13 = x11 in
+        let t569 = (compound_old12 + x11) in
+        let t570 = @intrinsic(ref.set)(index/26, t569) in
+        let _wild14 = t570 in
+        let t571 = Option__char::Some(x10) in
+        t571
+      },
+    }
+  } in
+  let inline725 = @runtime(core.string_decode_utf8_at)(self/25, t566) in
+  let inline726 = inline725.0 in
+  let inline727 = inline725.1 in
+  let inline728 = inline725.2 in
+  let inline729 = inline728 in
+  let inline730 = inline727 in
+  let inline731 = inline726 in
+  if inline726 {
+    let inline732 = (inline727, inline728) in
+    let inline733 = Option__(char,int)::Some(inline732) in
+    jump inline_cont724(inline733)
+  } else {
+    jump inline_cont724(Tag_0)
   }
 }
 
@@ -820,24 +978,39 @@ fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inhere
   let index/31 = closure_env_inherent_string_string_char_indices_1.index_0(env247) in
   let self/30 = closure_env_inherent_string_string_char_indices_1.self_1(env247) in
   let current/32 = @intrinsic(ref.get)(index/31) in
-  let mtmp15 = inherent#string#string#decode_at(self/30, current/32) in
-  match mtmp15 {
-    Tag_0 => {
-      Tag_0
-    },
-    Tag_1 => {
-      let x16 = Option__(char,int)::Some._0(mtmp15) in
-      let decoded/33 = x16 in
-      let mtmp17 = x16 in
-      let x18 = x16.0 in
-      let x19 = x16.1 in
-      let width/35 = x19 in
-      let value/34 = x18 in
-      let t576 = (current/32 + x19) in
-      let _wild20 = @intrinsic(ref.set)(index/31, t576) in
-      let t577 = (current/32, x18) in
-      let t578 = Option__(int,char)::Some(t577) in
-      t578
-    },
+  join inline_cont734(mtmp15: Option__(char,int)) -> Option__(int,char) {
+    match mtmp15 {
+      Tag_0 => {
+        Tag_0
+      },
+      Tag_1 => {
+        let x16 = Option__(char,int)::Some._0(mtmp15) in
+        let decoded/33 = x16 in
+        let mtmp17 = x16 in
+        let x18 = x16.0 in
+        let x19 = x16.1 in
+        let width/35 = x19 in
+        let value/34 = x18 in
+        let t576 = (current/32 + x19) in
+        let _wild20 = @intrinsic(ref.set)(index/31, t576) in
+        let t577 = (current/32, x18) in
+        let t578 = Option__(int,char)::Some(t577) in
+        t578
+      },
+    }
+  } in
+  let inline735 = @runtime(core.string_decode_utf8_at)(self/30, current/32) in
+  let inline736 = inline735.0 in
+  let inline737 = inline735.1 in
+  let inline738 = inline735.2 in
+  let inline739 = inline738 in
+  let inline740 = inline737 in
+  let inline741 = inline736 in
+  if inline736 {
+    let inline742 = (inline737, inline738) in
+    let inline743 = Option__(char,int)::Some(inline742) in
+    jump inline_cont734(inline743)
+  } else {
+    jump inline_cont734(Tag_0)
   }
 }

@@ -30,47 +30,38 @@ func main0() struct{} {
     var t162 Number = Number{
         value: 42,
     }
-    var t163 int32 = read__P_Number(t162)
-    var t164 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t163)
+    var t163 int32
+    var inline201 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(t162)
+    t163 = inline201
+    var t164 string
+    var inline199 string = _goml_runtime_core_int32_to_string(t163)
+    t164 = inline199
     _goml_runtime_core_string_println(t164)
     var t165 Number = Number{
         value: 7,
     }
-    var value__4 int32 = read_as__P_Number__T_int32(t165)
-    var t166 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__4)
+    var value__4 int32
+    var inline197 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(t165)
+    value__4 = inline197
+    var t166 string
+    var inline195 string = _goml_runtime_core_int32_to_string(value__4)
+    t166 = inline195
     _goml_runtime_core_string_println(t166)
     var t167 Box__string = Box__string{
         value: "generic",
     }
-    var t168 string = _goml_m_read____P__Box_l_string_r_(t167)
+    var t168 string
+    var inline193 string = _goml_m_trait__impl_i_Provider_i_Box____string_i_get(t167)
+    t168 = inline193
     _goml_runtime_core_string_println(t168)
-    var t169 Number = Number{
-        value: 11,
-    }
-    var t170 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(t169)
-    var t171 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t170)
+    var t170 int32
+    var inline191 int32 = 11
+    t170 = inline191
+    var t171 string
+    var inline189 string = _goml_runtime_core_int32_to_string(t170)
+    t171 = inline189
     _goml_runtime_core_string_println(t171)
     return struct{}{}
-}
-
-func read__P_Number(provider__2 Number) int32 {
-    var t175 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(provider__2)
-    return t175
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t178 string = _goml_runtime_core_int32_to_string(self__6)
-    return t178
-}
-
-func read_as__P_Number__T_int32(provider__3 Number) int32 {
-    var t181 int32 = _goml_m_trait__impl_i_Provider_i_Number_i_get(provider__3)
-    return t181
-}
-
-func _goml_m_read____P__Box_l_string_r_(provider__2 Box__string) string {
-    var t184 string = _goml_m_trait__impl_i_Provider_i_Box____string_i_get(provider__2)
-    return t184
 }
 
 func _goml_m_trait__impl_i_Provider_i_Box____string_i_get(self__1 Box__string) string {

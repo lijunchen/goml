@@ -3,9 +3,12 @@ fn classify(value/0: First__int) -> string {
     Tag_0 => {
       let x155 = First__int::Shared._0(value/0) in
       let number/1 = x155 in
-      let t198 = inherent#int#int#to_string(x155) in
-      let t199 = ("shared:" + t198) in
-      t199
+      join inline_cont314(t198: string) -> string {
+        let t199 = ("shared:" + t198) in
+        t199
+      } in
+      let inline315 = @runtime(core.int_to_string)(x155) in
+      jump inline_cont314(inline315)
     },
     Tag_1 => {
       "idle"
@@ -16,9 +19,12 @@ fn classify(value/0: First__int) -> string {
       let label/3 = x157 in
       let value/2 = x156 in
       let t200 = (x157 + ":") in
-      let t201 = inherent#int#int#to_string(x156) in
-      let t202 = (t200 + t201) in
-      t202
+      join inline_cont316(t201: string) -> string {
+        let t202 = (t200 + t201) in
+        t202
+      } in
+      let inline317 = @runtime(core.int_to_string)(x156) in
+      jump inline_cont316(inline317)
     },
   }
 }
@@ -34,9 +40,12 @@ fn nested(value/4: Option__Result__int__string) -> string {
         Tag_0 => {
           let x159 = Result__int__string::Ok._0(x158) in
           let number/5 = x159 in
-          let t209 = inherent#int#int#to_string(x159) in
-          let t210 = ("ok:" + t209) in
-          t210
+          join inline_cont318(t209: string) -> string {
+            let t210 = ("ok:" + t209) in
+            t210
+          } in
+          let inline319 = @runtime(core.int_to_string)(x159) in
+          jump inline_cont318(inline319)
         },
         Tag_1 => {
           let x160 = Result__int__string::Err._0(x158) in
@@ -80,31 +89,44 @@ fn is_non_shared(value/9: First__int) -> bool {
 }
 
 fn take_once(value/10: Option__int) -> int {
-  let current/11 = inherent#Ref#Ref[T]#new__T_Option[int](value/10) in
-  let result/12 = inherent#Ref#Ref[T]#new__T_int(0) in
-  join exit222() -> int {
-    let _wild169 = () in
-    let t223 = inherent#Ref#Ref[T]#get__T_int(result/12) in
-    t223
-  } in
-  joinrec {
-    join loop224() -> int {
-      let mtmp165 = inherent#Ref#Ref[T]#get__T_Option[int](current/11) in
-      match mtmp165 {
-        Tag_1 => {
-          let x166 = Option__int::Some._0(mtmp165) in
-          let number/13 = x166 in
-          let _wild167 = inherent#Ref#Ref[T]#set__T_int(result/12, x166) in
-          let _wild168 = inherent#Ref#Ref[T]#set__T_Option[int](current/11, Tag_0) in
-          jump loop224()
-        },
-        _ => {
-          jump exit222()
-        },
-      }
+  join inline_cont331(current/11: Ref[Option__int]) -> int {
+    join inline_cont328(result/12: Ref[int]) -> int {
+      join exit222() -> int {
+        let _wild169 = () in
+        let inline327 = @intrinsic(ref.get)(result/12) in
+        inline327
+      } in
+      joinrec {
+        join loop224() -> int {
+          join inline_cont324(mtmp165: Option__int) -> int {
+            match mtmp165 {
+              Tag_1 => {
+                let x166 = Option__int::Some._0(mtmp165) in
+                let number/13 = x166 in
+                join inline_cont322(_wild167: unit) -> int {
+                  let inline321 = @intrinsic(ref.set)(current/11, Tag_0) in
+                  jump loop224()
+                } in
+                let inline323 = @intrinsic(ref.set)(result/12, x166) in
+                jump inline_cont322(())
+              },
+              _ => {
+                jump exit222()
+              },
+            }
+          } in
+          let inline325 = @intrinsic(ref.get)(current/11) in
+          jump inline_cont324(inline325)
+        } in
+      } in
+      jump loop224()
     } in
+    let inline329 = 0 in
+    let inline330 = @intrinsic(ref.new)(inline329) in
+    jump inline_cont328(inline330)
   } in
-  jump loop224()
+  let inline332 = @intrinsic(ref.new)(value/10) in
+  jump inline_cont331(inline332)
 }
 
 fn unbox(value/14: Boxed__int) -> int {
@@ -119,38 +141,45 @@ fn unbox(value/14: Boxed__int) -> int {
 }
 
 fn sum_boxed(values/16: Vec[Boxed__int]) -> int {
-  let result/17 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let for_source172 = values/16 in
-  let for_limit173 = @intrinsic(vec.len)(values/16) in
-  let for_index174 = 0 in
-  join exit232() -> int {
-    let _wild179 = () in
-    let t233 = inherent#Ref#Ref[T]#get__T_int(result/17) in
-    t233
-  } in
-  joinrec {
-    join loop234() -> int {
-      let t235 = (for_index174 < for_limit173) in
-      if t235 {
-        let for_item175 = @intrinsic(vec.get)(values/16, for_index174) in
-        let t236 = (for_index174 + 1) in
-        let _wild176 = for_index174 = t236 in
-        match for_item175 {
-          Tag_0 => {
-            let x177 = Boxed__int::Value._0(for_item175) in
-            let number/18 = x177 in
-            let t238 = inherent#Ref#Ref[T]#get__T_int(result/17) in
-            let t239 = (t238 + x177) in
-            let _wild178 = inherent#Ref#Ref[T]#set__T_int(result/17, t239) in
-            jump loop234()
-          },
-        }
-      } else {
-        jump exit232()
-      }
+  join inline_cont339(result/17: Ref[int]) -> int {
+    let for_source172 = values/16 in
+    let for_limit173 = @intrinsic(vec.len)(values/16) in
+    let for_index174 = 0 in
+    join exit232() -> int {
+      let _wild179 = () in
+      let inline338 = @intrinsic(ref.get)(result/17) in
+      inline338
     } in
+    joinrec {
+      join loop234() -> int {
+        let t235 = (for_index174 < for_limit173) in
+        if t235 {
+          let for_item175 = @intrinsic(vec.get)(values/16, for_index174) in
+          let t236 = (for_index174 + 1) in
+          let _wild176 = for_index174 = t236 in
+          match for_item175 {
+            Tag_0 => {
+              let x177 = Boxed__int::Value._0(for_item175) in
+              let number/18 = x177 in
+              join inline_cont335(t238: int) -> int {
+                let t239 = (t238 + x177) in
+                let inline334 = @intrinsic(ref.set)(result/17, t239) in
+                jump loop234()
+              } in
+              let inline336 = @intrinsic(ref.get)(result/17) in
+              jump inline_cont335(inline336)
+            },
+          }
+        } else {
+          jump exit232()
+        }
+      } in
+    } in
+    jump loop234()
   } in
-  jump loop234()
+  let inline340 = 0 in
+  let inline341 = @intrinsic(ref.new)(inline340) in
+  jump inline_cont339(inline341)
 }
 
 fn main() -> unit {
@@ -177,26 +206,67 @@ fn main() -> unit {
   let t253 = nested(t252) in
   let _wild186 = println__T_string(t253) in
   let t254 = nested(Tag_0) in
-  let _wild187 = println__T_string(t254) in
-  let t255 = Option__int::Some(13) in
-  let t256 = optional_number(t255) in
-  let _wild188 = println__T_int(t256) in
-  let t257 = optional_number(Tag_0) in
-  let _wild189 = println__T_int(t257) in
-  let t258 = is_non_shared(Tag_1) in
-  let _wild190 = println__T_bool(t258) in
-  let t259 = First__int::Shared(1) in
-  let t260 = is_non_shared(t259) in
-  let _wild191 = println__T_bool(t260) in
-  let t261 = Option__int::Some(15) in
-  let t262 = take_once(t261) in
-  let _wild192 = println__T_int(t262) in
-  let t263 = Boxed__int::Value(17) in
-  let t264 = unbox(t263) in
-  let _wild193 = println__T_int(t264) in
-  let t265 = sum_boxed(vec_literal/1450) in
-  let t266 = println__T_int(t265) in
-  ()
+  join inline_cont378(_wild187: unit) -> unit {
+    let t255 = Option__int::Some(13) in
+    let t256 = optional_number(t255) in
+    join inline_cont375(_wild188: unit) -> unit {
+      join inline_cont372(t257: int) -> unit {
+        join inline_cont369(_wild189: unit) -> unit {
+          join inline_cont365(t258: bool) -> unit {
+            join inline_cont362(_wild190: unit) -> unit {
+              let t259 = First__int::Shared(1) in
+              join inline_cont358(t260: bool) -> unit {
+                join inline_cont355(_wild191: unit) -> unit {
+                  let t261 = Option__int::Some(15) in
+                  let t262 = take_once(t261) in
+                  join inline_cont352(_wild192: unit) -> unit {
+                    let t263 = Boxed__int::Value(17) in
+                    join inline_cont348(t264: int) -> unit {
+                      join inline_cont345(_wild193: unit) -> unit {
+                        let t265 = sum_boxed(vec_literal/1450) in
+                        let inline343 = trait_impl#ToString#int#to_string(t265) in
+                        let inline344 = @runtime(core.string_println)(inline343) in
+                        ()
+                      } in
+                      let inline346 = trait_impl#ToString#int#to_string(t264) in
+                      let inline347 = @runtime(core.string_println)(inline346) in
+                      jump inline_cont345(())
+                    } in
+                    let inline349 = t263 in
+                    let inline350 = 17 in
+                    let inline351 = inline350 in
+                    jump inline_cont348(inline350)
+                  } in
+                  let inline353 = trait_impl#ToString#int#to_string(t262) in
+                  let inline354 = @runtime(core.string_println)(inline353) in
+                  jump inline_cont352(())
+                } in
+                let inline356 = trait_impl#ToString#bool#to_string(t260) in
+                let inline357 = @runtime(core.string_println)(inline356) in
+                jump inline_cont355(())
+              } in
+              let inline359 = 1 in
+              jump inline_cont358(false)
+            } in
+            let inline363 = trait_impl#ToString#bool#to_string(t258) in
+            let inline364 = @runtime(core.string_println)(inline363) in
+            jump inline_cont362(())
+          } in
+          jump inline_cont365(true)
+        } in
+        let inline370 = trait_impl#ToString#int#to_string(t257) in
+        let inline371 = @runtime(core.string_println)(inline370) in
+        jump inline_cont369(())
+      } in
+      jump inline_cont372(0)
+    } in
+    let inline376 = trait_impl#ToString#int#to_string(t256) in
+    let inline377 = @runtime(core.string_println)(inline376) in
+    jump inline_cont375(())
+  } in
+  let inline379 = trait_impl#ToString#string#to_string(t254) in
+  let inline380 = @runtime(core.string_println)(inline379) in
+  jump inline_cont378(())
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
@@ -245,21 +315,29 @@ fn inherent#Vec#Vec[T]#push__T_Boxed[int](self/126: Vec[Boxed__int], elem/127: B
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t292 = trait_impl#ToString#string#to_string(value/1) in
-  let t293 = @runtime(core.string_println)(t292) in
-  ()
+  join inline_cont381(t292: string) -> unit {
+    let t293 = @runtime(core.string_println)(t292) in
+    ()
+  } in
+  jump inline_cont381(value/1)
 }
 
 fn println__T_int(value/1: int) -> unit {
-  let t295 = trait_impl#ToString#int#to_string(value/1) in
-  let t296 = @runtime(core.string_println)(t295) in
-  ()
+  join inline_cont382(t295: string) -> unit {
+    let t296 = @runtime(core.string_println)(t295) in
+    ()
+  } in
+  let inline383 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont382(inline383)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  let t298 = trait_impl#ToString#bool#to_string(value/1) in
-  let t299 = @runtime(core.string_println)(t298) in
-  ()
+  join inline_cont384(t298: string) -> unit {
+    let t299 = @runtime(core.string_println)(t298) in
+    ()
+  } in
+  let inline385 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont384(inline385)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

@@ -11,40 +11,105 @@ fn test_int_comparisons() -> unit {
   let t184 = ("20 > 10: " + t183) in
   let mtmp156 = println__T_string(t184) in
   let less_eq1/5 = (a/0 <= b/1) in
-  let t185 = trait_impl#ToString#bool#to_string(less_eq1/5) in
-  let t186 = ("10 <= 20: " + t185) in
-  let mtmp157 = println__T_string(t186) in
-  let less_eq2/6 = (a/0 <= c/2) in
-  let t187 = trait_impl#ToString#bool#to_string(less_eq2/6) in
-  let t188 = ("10 <= 10: " + t187) in
-  let mtmp158 = println__T_string(t188) in
-  let greater_eq1/7 = (b/1 >= a/0) in
-  let t189 = trait_impl#ToString#bool#to_string(greater_eq1/7) in
-  let t190 = ("20 >= 10: " + t189) in
-  let mtmp159 = println__T_string(t190) in
-  let greater_eq2/8 = (c/2 >= a/0) in
-  let t191 = trait_impl#ToString#bool#to_string(greater_eq2/8) in
-  let t192 = ("10 >= 10: " + t191) in
-  let mtmp160 = println__T_string(t192) in
-  let eq1/9 = trait_impl#Eq#int32#eq(a/0, c/2) in
-  let t193 = trait_impl#ToString#bool#to_string(eq1/9) in
-  let t194 = ("10 == 10: " + t193) in
-  let mtmp161 = println__T_string(t194) in
-  let eq2/10 = trait_impl#Eq#int32#eq(a/0, b/1) in
-  let t195 = trait_impl#ToString#bool#to_string(eq2/10) in
-  let t196 = ("10 == 20: " + t195) in
-  let mtmp162 = println__T_string(t196) in
-  let t197 = trait_impl#Eq#int32#eq(a/0, b/1) in
-  let neq1/11 = (!t197) in
-  let t198 = trait_impl#ToString#bool#to_string(neq1/11) in
-  let t199 = ("10 != 20: " + t198) in
-  let mtmp163 = println__T_string(t199) in
-  let t200 = trait_impl#Eq#int32#eq(a/0, c/2) in
-  let neq2/12 = (!t200) in
-  let t201 = trait_impl#ToString#bool#to_string(neq2/12) in
-  let t202 = ("10 != 10: " + t201) in
-  let mtmp164 = println__T_string(t202) in
-  ()
+  join inline_cont287(t185: string) -> unit {
+    let t186 = ("10 <= 20: " + t185) in
+    join inline_cont284(mtmp157: unit) -> unit {
+      let less_eq2/6 = (a/0 <= c/2) in
+      join inline_cont282(t187: string) -> unit {
+        let t188 = ("10 <= 10: " + t187) in
+        join inline_cont279(mtmp158: unit) -> unit {
+          let greater_eq1/7 = (b/1 >= a/0) in
+          join inline_cont277(t189: string) -> unit {
+            let t190 = ("20 >= 10: " + t189) in
+            join inline_cont274(mtmp159: unit) -> unit {
+              let greater_eq2/8 = (c/2 >= a/0) in
+              join inline_cont272(t191: string) -> unit {
+                let t192 = ("10 >= 10: " + t191) in
+                join inline_cont269(mtmp160: unit) -> unit {
+                  join inline_cont267(eq1/9: bool) -> unit {
+                    join inline_cont265(t193: string) -> unit {
+                      let t194 = ("10 == 10: " + t193) in
+                      join inline_cont262(mtmp161: unit) -> unit {
+                        join inline_cont260(eq2/10: bool) -> unit {
+                          join inline_cont258(t195: string) -> unit {
+                            let t196 = ("10 == 20: " + t195) in
+                            join inline_cont255(mtmp162: unit) -> unit {
+                              join inline_cont253(t197: bool) -> unit {
+                                let neq1/11 = (!t197) in
+                                join inline_cont251(t198: string) -> unit {
+                                  let t199 = ("10 != 20: " + t198) in
+                                  join inline_cont248(mtmp163: unit) -> unit {
+                                    join inline_cont246(t200: bool) -> unit {
+                                      let neq2/12 = (!t200) in
+                                      join inline_cont244(t201: string) -> unit {
+                                        let t202 = ("10 != 10: " + t201) in
+                                        let inline242 = trait_impl#ToString#string#to_string(t202) in
+                                        let inline243 = @runtime(core.string_println)(inline242) in
+                                        ()
+                                      } in
+                                      let inline245 = @runtime(core.bool_to_string)(neq2/12) in
+                                      jump inline_cont244(inline245)
+                                    } in
+                                    let inline247 = @intrinsic(eq.primitive)(a/0, c/2) in
+                                    jump inline_cont246(inline247)
+                                  } in
+                                  let inline249 = trait_impl#ToString#string#to_string(t199) in
+                                  let inline250 = @runtime(core.string_println)(inline249) in
+                                  jump inline_cont248(())
+                                } in
+                                let inline252 = @runtime(core.bool_to_string)(neq1/11) in
+                                jump inline_cont251(inline252)
+                              } in
+                              let inline254 = @intrinsic(eq.primitive)(a/0, b/1) in
+                              jump inline_cont253(inline254)
+                            } in
+                            let inline256 = trait_impl#ToString#string#to_string(t196) in
+                            let inline257 = @runtime(core.string_println)(inline256) in
+                            jump inline_cont255(())
+                          } in
+                          let inline259 = @runtime(core.bool_to_string)(eq2/10) in
+                          jump inline_cont258(inline259)
+                        } in
+                        let inline261 = @intrinsic(eq.primitive)(a/0, b/1) in
+                        jump inline_cont260(inline261)
+                      } in
+                      let inline263 = trait_impl#ToString#string#to_string(t194) in
+                      let inline264 = @runtime(core.string_println)(inline263) in
+                      jump inline_cont262(())
+                    } in
+                    let inline266 = @runtime(core.bool_to_string)(eq1/9) in
+                    jump inline_cont265(inline266)
+                  } in
+                  let inline268 = @intrinsic(eq.primitive)(a/0, c/2) in
+                  jump inline_cont267(inline268)
+                } in
+                let inline270 = trait_impl#ToString#string#to_string(t192) in
+                let inline271 = @runtime(core.string_println)(inline270) in
+                jump inline_cont269(())
+              } in
+              let inline273 = @runtime(core.bool_to_string)(greater_eq2/8) in
+              jump inline_cont272(inline273)
+            } in
+            let inline275 = trait_impl#ToString#string#to_string(t190) in
+            let inline276 = @runtime(core.string_println)(inline275) in
+            jump inline_cont274(())
+          } in
+          let inline278 = @runtime(core.bool_to_string)(greater_eq1/7) in
+          jump inline_cont277(inline278)
+        } in
+        let inline280 = trait_impl#ToString#string#to_string(t188) in
+        let inline281 = @runtime(core.string_println)(inline280) in
+        jump inline_cont279(())
+      } in
+      let inline283 = @runtime(core.bool_to_string)(less_eq2/6) in
+      jump inline_cont282(inline283)
+    } in
+    let inline285 = trait_impl#ToString#string#to_string(t186) in
+    let inline286 = @runtime(core.string_println)(inline285) in
+    jump inline_cont284(())
+  } in
+  let inline288 = @runtime(core.bool_to_string)(less_eq1/5) in
+  jump inline_cont287(inline288)
 }
 
 fn test_float_comparisons() -> unit {
@@ -60,55 +125,137 @@ fn test_float_comparisons() -> unit {
   let t207 = ("3.14 > 2.71: " + t206) in
   let mtmp166 = println__T_string(t207) in
   let less_eq1/18 = (y/14 <= x/13) in
-  let t208 = trait_impl#ToString#bool#to_string(less_eq1/18) in
-  let t209 = ("2.71 <= 3.14: " + t208) in
-  let mtmp167 = println__T_string(t209) in
-  let less_eq2/19 = (x/13 <= z/15) in
-  let t210 = trait_impl#ToString#bool#to_string(less_eq2/19) in
-  let t211 = ("3.14 <= 3.14: " + t210) in
-  let mtmp168 = println__T_string(t211) in
-  let greater_eq1/20 = (x/13 >= y/14) in
-  let t212 = trait_impl#ToString#bool#to_string(greater_eq1/20) in
-  let t213 = ("3.14 >= 2.71: " + t212) in
-  let mtmp169 = println__T_string(t213) in
-  let greater_eq2/21 = (z/15 >= x/13) in
-  let t214 = trait_impl#ToString#bool#to_string(greater_eq2/21) in
-  let t215 = ("3.14 >= 3.14: " + t214) in
-  let mtmp170 = println__T_string(t215) in
-  let eq1/22 = trait_impl#Eq#float64#eq(x/13, z/15) in
-  let t216 = trait_impl#ToString#bool#to_string(eq1/22) in
-  let t217 = ("3.14 == 3.14: " + t216) in
-  let mtmp171 = println__T_string(t217) in
-  let eq2/23 = trait_impl#Eq#float64#eq(x/13, y/14) in
-  let t218 = trait_impl#ToString#bool#to_string(eq2/23) in
-  let t219 = ("3.14 == 2.71: " + t218) in
-  let mtmp172 = println__T_string(t219) in
-  let t220 = trait_impl#Eq#float64#eq(x/13, y/14) in
-  let neq1/24 = (!t220) in
-  let t221 = trait_impl#ToString#bool#to_string(neq1/24) in
-  let t222 = ("3.14 != 2.71: " + t221) in
-  let mtmp173 = println__T_string(t222) in
-  let t223 = trait_impl#Eq#float64#eq(x/13, z/15) in
-  let neq2/25 = (!t223) in
-  let t224 = trait_impl#ToString#bool#to_string(neq2/25) in
-  let t225 = ("3.14 != 3.14: " + t224) in
-  let mtmp174 = println__T_string(t225) in
-  ()
+  join inline_cont335(t208: string) -> unit {
+    let t209 = ("2.71 <= 3.14: " + t208) in
+    join inline_cont332(mtmp167: unit) -> unit {
+      let less_eq2/19 = (x/13 <= z/15) in
+      join inline_cont330(t210: string) -> unit {
+        let t211 = ("3.14 <= 3.14: " + t210) in
+        join inline_cont327(mtmp168: unit) -> unit {
+          let greater_eq1/20 = (x/13 >= y/14) in
+          join inline_cont325(t212: string) -> unit {
+            let t213 = ("3.14 >= 2.71: " + t212) in
+            join inline_cont322(mtmp169: unit) -> unit {
+              let greater_eq2/21 = (z/15 >= x/13) in
+              join inline_cont320(t214: string) -> unit {
+                let t215 = ("3.14 >= 3.14: " + t214) in
+                join inline_cont317(mtmp170: unit) -> unit {
+                  join inline_cont315(eq1/22: bool) -> unit {
+                    join inline_cont313(t216: string) -> unit {
+                      let t217 = ("3.14 == 3.14: " + t216) in
+                      join inline_cont310(mtmp171: unit) -> unit {
+                        join inline_cont308(eq2/23: bool) -> unit {
+                          join inline_cont306(t218: string) -> unit {
+                            let t219 = ("3.14 == 2.71: " + t218) in
+                            join inline_cont303(mtmp172: unit) -> unit {
+                              join inline_cont301(t220: bool) -> unit {
+                                let neq1/24 = (!t220) in
+                                join inline_cont299(t221: string) -> unit {
+                                  let t222 = ("3.14 != 2.71: " + t221) in
+                                  join inline_cont296(mtmp173: unit) -> unit {
+                                    join inline_cont294(t223: bool) -> unit {
+                                      let neq2/25 = (!t223) in
+                                      join inline_cont292(t224: string) -> unit {
+                                        let t225 = ("3.14 != 3.14: " + t224) in
+                                        let inline290 = trait_impl#ToString#string#to_string(t225) in
+                                        let inline291 = @runtime(core.string_println)(inline290) in
+                                        ()
+                                      } in
+                                      let inline293 = @runtime(core.bool_to_string)(neq2/25) in
+                                      jump inline_cont292(inline293)
+                                    } in
+                                    let inline295 = @intrinsic(eq.primitive)(x/13, z/15) in
+                                    jump inline_cont294(inline295)
+                                  } in
+                                  let inline297 = trait_impl#ToString#string#to_string(t222) in
+                                  let inline298 = @runtime(core.string_println)(inline297) in
+                                  jump inline_cont296(())
+                                } in
+                                let inline300 = @runtime(core.bool_to_string)(neq1/24) in
+                                jump inline_cont299(inline300)
+                              } in
+                              let inline302 = @intrinsic(eq.primitive)(x/13, y/14) in
+                              jump inline_cont301(inline302)
+                            } in
+                            let inline304 = trait_impl#ToString#string#to_string(t219) in
+                            let inline305 = @runtime(core.string_println)(inline304) in
+                            jump inline_cont303(())
+                          } in
+                          let inline307 = @runtime(core.bool_to_string)(eq2/23) in
+                          jump inline_cont306(inline307)
+                        } in
+                        let inline309 = @intrinsic(eq.primitive)(x/13, y/14) in
+                        jump inline_cont308(inline309)
+                      } in
+                      let inline311 = trait_impl#ToString#string#to_string(t217) in
+                      let inline312 = @runtime(core.string_println)(inline311) in
+                      jump inline_cont310(())
+                    } in
+                    let inline314 = @runtime(core.bool_to_string)(eq1/22) in
+                    jump inline_cont313(inline314)
+                  } in
+                  let inline316 = @intrinsic(eq.primitive)(x/13, z/15) in
+                  jump inline_cont315(inline316)
+                } in
+                let inline318 = trait_impl#ToString#string#to_string(t215) in
+                let inline319 = @runtime(core.string_println)(inline318) in
+                jump inline_cont317(())
+              } in
+              let inline321 = @runtime(core.bool_to_string)(greater_eq2/21) in
+              jump inline_cont320(inline321)
+            } in
+            let inline323 = trait_impl#ToString#string#to_string(t213) in
+            let inline324 = @runtime(core.string_println)(inline323) in
+            jump inline_cont322(())
+          } in
+          let inline326 = @runtime(core.bool_to_string)(greater_eq1/20) in
+          jump inline_cont325(inline326)
+        } in
+        let inline328 = trait_impl#ToString#string#to_string(t211) in
+        let inline329 = @runtime(core.string_println)(inline328) in
+        jump inline_cont327(())
+      } in
+      let inline331 = @runtime(core.bool_to_string)(less_eq2/19) in
+      jump inline_cont330(inline331)
+    } in
+    let inline333 = trait_impl#ToString#string#to_string(t209) in
+    let inline334 = @runtime(core.string_println)(inline333) in
+    jump inline_cont332(())
+  } in
+  let inline336 = @runtime(core.bool_to_string)(less_eq1/18) in
+  jump inline_cont335(inline336)
 }
 
 fn main() -> unit {
-  let mtmp175 = println__T_string("=== Integer Comparisons ===") in
-  let mtmp176 = test_int_comparisons() in
-  let mtmp177 = println__T_string("") in
-  let mtmp178 = println__T_string("=== Float Comparisons ===") in
-  let mtmp179 = test_float_comparisons() in
-  ()
+  join inline_cont345(mtmp175: unit) -> unit {
+    let mtmp176 = test_int_comparisons() in
+    join inline_cont341(mtmp177: unit) -> unit {
+      join inline_cont337(mtmp178: unit) -> unit {
+        let mtmp179 = test_float_comparisons() in
+        ()
+      } in
+      let inline338 = "=== Float Comparisons ===" in
+      let inline339 = trait_impl#ToString#string#to_string(inline338) in
+      let inline340 = @runtime(core.string_println)(inline339) in
+      jump inline_cont337(())
+    } in
+    let inline342 = "" in
+    let inline343 = trait_impl#ToString#string#to_string(inline342) in
+    let inline344 = @runtime(core.string_println)(inline343) in
+    jump inline_cont341(())
+  } in
+  let inline346 = "=== Integer Comparisons ===" in
+  let inline347 = trait_impl#ToString#string#to_string(inline346) in
+  let inline348 = @runtime(core.string_println)(inline347) in
+  jump inline_cont345(())
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t228 = trait_impl#ToString#string#to_string(value/1) in
-  let t229 = @runtime(core.string_println)(t228) in
-  ()
+  join inline_cont349(t228: string) -> unit {
+    let t229 = @runtime(core.string_println)(t228) in
+    ()
+  } in
+  jump inline_cont349(value/1)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {

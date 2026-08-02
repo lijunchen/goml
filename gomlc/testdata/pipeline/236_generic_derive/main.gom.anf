@@ -9,28 +9,78 @@ fn main() -> unit {
   let _wild167 = println__T_bool(t175) in
   let t176 = trait_impl#Hash#Generic__NoTraits__NoTraits#hash(left/25) in
   let t177 = trait_impl#Hash#Generic__NoTraits__NoTraits#hash(right/26) in
-  let t178 = trait_impl#Eq#uint64#eq(t176, t177) in
-  let _wild168 = println__T_bool(t178) in
-  let empty/27 = Tag_0 in
-  let value/28 = GenericChoice__NoTraits__NoTraits::Value(wrapped/24) in
-  let t179 = trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(empty/27) in
-  let _wild169 = println__T_string(t179) in
-  let t180 = trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(value/28) in
-  let _wild170 = println__T_string(t180) in
-  let t181 = trait_impl#Eq#GenericChoice__NoTraits__NoTraits#eq(empty/27, value/28) in
-  let t182 = (!t181) in
-  let _wild171 = println__T_bool(t182) in
-  let t183 = trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28) in
-  let t184 = trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28) in
-  let t185 = trait_impl#Eq#uint64#eq(t183, t184) in
-  let t186 = println__T_bool(t185) in
-  ()
+  join inline_cont297(t178: bool) -> unit {
+    let _wild168 = println__T_bool(t178) in
+    let empty/27 = Tag_0 in
+    let value/28 = GenericChoice__NoTraits__NoTraits::Value(wrapped/24) in
+    let t179 = trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(empty/27) in
+    let _wild169 = println__T_string(t179) in
+    let t180 = trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(value/28) in
+    join inline_cont294(_wild170: unit) -> unit {
+      join inline_cont285(t181: bool) -> unit {
+        let t182 = (!t181) in
+        join inline_cont282(_wild171: unit) -> unit {
+          join inline_cont274(t183: uint64) -> unit {
+            join inline_cont266(t184: uint64) -> unit {
+              join inline_cont264(t185: bool) -> unit {
+                let inline262 = trait_impl#ToString#bool#to_string(t185) in
+                let inline263 = @runtime(core.string_println)(inline262) in
+                ()
+              } in
+              let inline265 = @intrinsic(eq.primitive)(t183, t184) in
+              jump inline_cont264(inline265)
+            } in
+            let inline268 = wrapped/24 in
+            let inline269 = wrapped/24 in
+            let inline270 = (14695981039346656037 + 2) in
+            let inline271 = (inline270 * 1099511628211) in
+            let inline272 = trait_impl#Hash#Wrapper__NoTraits#hash(wrapped/24) in
+            let inline273 = (inline271 + inline272) in
+            jump inline_cont266(inline273)
+          } in
+          let inline276 = wrapped/24 in
+          let inline277 = wrapped/24 in
+          let inline278 = (14695981039346656037 + 2) in
+          let inline279 = (inline278 * 1099511628211) in
+          let inline280 = trait_impl#Hash#Wrapper__NoTraits#hash(wrapped/24) in
+          let inline281 = (inline279 + inline280) in
+          jump inline_cont274(inline281)
+        } in
+        let inline283 = trait_impl#ToString#bool#to_string(t182) in
+        let inline284 = @runtime(core.string_println)(inline283) in
+        jump inline_cont282(())
+      } in
+      let inline286 = (empty/27, value/28) in
+      let inline287 = empty/27 in
+      let inline288 = value/28 in
+      let inline289 = wrapped/24 in
+      match empty/27 {
+        Tag_1 => {
+          let inline290 = GenericChoice__NoTraits__NoTraits::Value._0(empty/27) in
+          let inline291 = inline290 in
+          let inline292 = wrapped/24 in
+          let inline293 = trait_impl#Eq#Wrapper__NoTraits#eq(inline290, wrapped/24) in
+          jump inline_cont285(inline293)
+        },
+        _ => {
+          jump inline_cont285(false)
+        },
+      }
+    } in
+    let inline295 = trait_impl#ToString#string#to_string(t180) in
+    let inline296 = @runtime(core.string_println)(inline295) in
+    jump inline_cont294(())
+  } in
+  let inline298 = @intrinsic(eq.primitive)(t176, t177) in
+  jump inline_cont297(inline298)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t188 = trait_impl#ToString#string#to_string(value/1) in
-  let t189 = @runtime(core.string_println)(t188) in
-  ()
+  join inline_cont299(t188: string) -> unit {
+    let t189 = @runtime(core.string_println)(t188) in
+    ()
+  } in
+  jump inline_cont299(value/1)
 }
 
 fn trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(self/4: Generic__NoTraits__NoTraits) -> string {
@@ -40,20 +90,27 @@ fn trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(self/4: Generic__No
   let second/6 = x157 in
   let first/5 = x156 in
   let t192 = ("Generic { " + "first: ") in
-  let t193 = trait_impl#ToString#Wrapper__NoTraits#to_string(x156) in
-  let t194 = (t192 + t193) in
-  let t195 = (t194 + ", ") in
-  let t196 = (t195 + "second: ") in
-  let t197 = trait_impl#ToString#Wrapper__NoTraits#to_string(x157) in
-  let t198 = (t196 + t197) in
-  let t199 = (t198 + " }") in
-  t199
+  join inline_cont301(t193: string) -> string {
+    let t194 = (t192 + t193) in
+    let t195 = (t194 + ", ") in
+    let t196 = (t195 + "second: ") in
+    join inline_cont300(t197: string) -> string {
+      let t198 = (t196 + t197) in
+      let t199 = (t198 + " }") in
+      t199
+    } in
+    jump inline_cont300("wrapped")
+  } in
+  jump inline_cont301("wrapped")
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  let t201 = trait_impl#ToString#bool#to_string(value/1) in
-  let t202 = @runtime(core.string_println)(t201) in
-  ()
+  join inline_cont302(t201: string) -> unit {
+    let t202 = @runtime(core.string_println)(t201) in
+    ()
+  } in
+  let inline303 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont302(inline303)
 }
 
 fn trait_impl#Eq#Generic__NoTraits__NoTraits#eq(self/7: Generic__NoTraits__NoTraits, other/8: Generic__NoTraits__NoTraits) -> bool {
@@ -61,29 +118,31 @@ fn trait_impl#Eq#Generic__NoTraits__NoTraits#eq(self/7: Generic__NoTraits__NoTra
     if jp208 {
       let t209 = Generic__NoTraits__NoTraits.second(self/7) in
       let t210 = Generic__NoTraits__NoTraits.second(other/8) in
-      let t211 = trait_impl#Eq#Wrapper__NoTraits#eq(t209, t210) in
-      t211
+      true
     } else {
       false
     }
   } in
   let t212 = Generic__NoTraits__NoTraits.first(self/7) in
   let t213 = Generic__NoTraits__NoTraits.first(other/8) in
-  let t214 = trait_impl#Eq#Wrapper__NoTraits#eq(t212, t213) in
-  jump k207(t214)
+  jump k207(true)
 }
 
 fn trait_impl#Hash#Generic__NoTraits__NoTraits#hash(self/9: Generic__NoTraits__NoTraits) -> uint64 {
   let h/10 = 14695981039346656037 in
   let t217 = (h/10 * 1099511628211) in
   let t218 = Generic__NoTraits__NoTraits.first(self/9) in
-  let t219 = trait_impl#Hash#Wrapper__NoTraits#hash(t218) in
-  let h/11 = (t217 + t219) in
-  let t220 = (h/11 * 1099511628211) in
-  let t221 = Generic__NoTraits__NoTraits.second(self/9) in
-  let t222 = trait_impl#Hash#Wrapper__NoTraits#hash(t221) in
-  let h/12 = (t220 + t222) in
-  h/12
+  join inline_cont307(t219: uint64) -> uint64 {
+    let h/11 = (t217 + t219) in
+    let t220 = (h/11 * 1099511628211) in
+    let t221 = Generic__NoTraits__NoTraits.second(self/9) in
+    join inline_cont306(t222: uint64) -> uint64 {
+      let h/12 = (t220 + t222) in
+      h/12
+    } in
+    jump inline_cont306(7)
+  } in
+  jump inline_cont307(7)
 }
 
 fn trait_impl#Eq#uint64#eq(self/75: uint64, other/76: uint64) -> bool {
@@ -99,10 +158,12 @@ fn trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(self/13: Gene
     Tag_1 => {
       let x158 = GenericChoice__NoTraits__NoTraits::Value._0(self/13) in
       let __field0/14 = x158 in
-      let t230 = trait_impl#ToString#Wrapper__NoTraits#to_string(x158) in
-      let t231 = ("GenericChoice::Value(" + t230) in
-      let t232 = (t231 + ")") in
-      t232
+      join inline_cont308(t230: string) -> string {
+        let t231 = ("GenericChoice::Value(" + t230) in
+        let t232 = (t231 + ")") in
+        t232
+      } in
+      jump inline_cont308("wrapped")
     },
   }
 }
@@ -129,8 +190,7 @@ fn trait_impl#Eq#GenericChoice__NoTraits__NoTraits#eq(self/15: GenericChoice__No
           let x164 = GenericChoice__NoTraits__NoTraits::Value._0(self/15) in
           let __l1_0/17 = x164 in
           let __r1_0/18 = x162 in
-          let t243 = trait_impl#Eq#Wrapper__NoTraits#eq(x164, x162) in
-          t243
+          true
         },
         _ => {
           false
@@ -151,9 +211,11 @@ fn trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(self/19: GenericChoice
       let __field1_0/21 = x165 in
       let h/22 = (14695981039346656037 + 2) in
       let t248 = (h/22 * 1099511628211) in
-      let t249 = trait_impl#Hash#Wrapper__NoTraits#hash(x165) in
-      let h/23 = (t248 + t249) in
-      h/23
+      join inline_cont310(t249: uint64) -> uint64 {
+        let h/23 = (t248 + t249) in
+        h/23
+      } in
+      jump inline_cont310(7)
     },
   }
 }

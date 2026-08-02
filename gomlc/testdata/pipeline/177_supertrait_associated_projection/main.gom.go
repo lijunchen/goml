@@ -26,20 +26,12 @@ func main0() struct{} {
     var t161 Count = Count{
         value: 42,
     }
-    var t162 int32 = get_from_child__C_Count(t161)
-    println__T_int32(t162)
+    var t162 int32
+    var inline176 int32 = _goml_m_trait__impl_i_Parent_i_Count_i_get(t161)
+    t162 = inline176
+    var inline173 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t162)
+    _goml_runtime_core_string_println(inline173)
     return struct{}{}
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t164 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t164)
-    return struct{}{}
-}
-
-func get_from_child__C_Count(value__2 Count) int32 {
-    var t168 int32 = _goml_m_trait__impl_i_Parent_i_Count_i_get(value__2)
-    return t168
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {

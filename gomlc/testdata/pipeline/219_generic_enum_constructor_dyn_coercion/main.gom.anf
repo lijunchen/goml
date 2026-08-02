@@ -3,8 +3,8 @@ fn trait_impl#Show#Boxed__int32#show(self/0: Boxed__int32) -> string {
     Tag_0 => {
       let x155 = Boxed__int32::One._0(self/0) in
       let value/1 = x155 in
-      let t160 = inherent#int32#int32#to_string(x155) in
-      t160
+      let inline178 = @runtime(core.int32_to_string)(x155) in
+      inline178
     },
   }
 }
@@ -18,9 +18,13 @@ fn main() -> unit {
   let value/3 = 42 in
   let t165 = Boxed__int32::One(value/3) in
   let t166 = to_dyn[Show]{Boxed__int32}(t165) in
-  let t167 = render(t166) in
-  let t168 = println__T_string(t167) in
-  ()
+  join inline_cont182(t167: string) -> unit {
+    let inline180 = trait_impl#ToString#string#to_string(t167) in
+    let inline181 = @runtime(core.string_println)(inline180) in
+    ()
+  } in
+  let inline183 = dyn_call[Show::show](t166) in
+  jump inline_cont182(inline183)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -29,9 +33,11 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t173 = trait_impl#ToString#string#to_string(value/1) in
-  let t174 = @runtime(core.string_println)(t173) in
-  ()
+  join inline_cont184(t173: string) -> unit {
+    let t174 = @runtime(core.string_println)(t173) in
+    ()
+  } in
+  jump inline_cont184(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

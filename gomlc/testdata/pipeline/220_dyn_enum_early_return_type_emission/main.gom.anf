@@ -1,6 +1,6 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  let t158 = inherent#int32#int32#to_string(self/0) in
-  t158
+  let inline174 = @runtime(core.int32_to_string)(self/0) in
+  inline174
 }
 
 fn build() -> int32 {
@@ -8,10 +8,16 @@ fn build() -> int32 {
 }
 
 fn main() -> unit {
-  let t162 = build() in
-  let t163 = inherent#int32#int32#to_string(t162) in
-  let t164 = println__T_string(t163) in
-  ()
+  join inline_cont180(t162: int32) -> unit {
+    join inline_cont178(t163: string) -> unit {
+      let inline176 = trait_impl#ToString#string#to_string(t163) in
+      let inline177 = @runtime(core.string_println)(inline176) in
+      ()
+    } in
+    let inline179 = @runtime(core.int32_to_string)(t162) in
+    jump inline_cont178(inline179)
+  } in
+  jump inline_cont180(9)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -20,9 +26,11 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t169 = trait_impl#ToString#string#to_string(value/1) in
-  let t170 = @runtime(core.string_println)(t169) in
-  ()
+  join inline_cont181(t169: string) -> unit {
+    let t170 = @runtime(core.string_println)(t169) in
+    ()
+  } in
+  jump inline_cont181(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

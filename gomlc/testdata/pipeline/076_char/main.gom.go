@@ -19,8 +19,11 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var c__0 rune = 65
-    var t158 string = _goml_m_inherent_i_char_i_char_i_to__string(c__0)
-    println__T_string(t158)
+    var t158 string
+    var inline176 string = _goml_runtime_core_char_to_string(c__0)
+    t158 = inline176
+    var inline173 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t158)
+    _goml_runtime_core_string_println(inline173)
     var d__1 rune = 98
     var jp160 string
     switch d__1 {
@@ -31,19 +34,9 @@ func main0() struct{} {
     default:
         jp160 = "?"
     }
-    println__T_string(jp160)
+    var inline170 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(jp160)
+    _goml_runtime_core_string_println(inline170)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t162 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t162)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_char_i_char_i_to__string(self__7 rune) string {
-    var t166 string = _goml_runtime_core_char_to_string(self__7)
-    return t166
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {

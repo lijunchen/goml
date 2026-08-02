@@ -22,29 +22,63 @@ fn main() -> unit {
   let g/5 = @intrinsic(array.get)(xs/3, 1) in
   let t169 = f/4(10) in
   let t170 = g/5(t169) in
-  let mtmp155 = println__T_int32(t170) in
-  let chosen/6 = chooser(true) in
-  let applied/7 = chosen/6(5) in
-  let t171 = chooser(false) in
-  let direct/8 = t171(5) in
-  let printer/9 = println__T_string in
-  let t172 = inherent#int32#int32#to_string(applied/7) in
-  let mtmp156 = println__T_string(t172) in
-  let t173 = inherent#int32#int32#to_string(direct/8) in
-  let mtmp157 = println__T_string(t173) in
-  ()
+  join inline_cont202(mtmp155: unit) -> unit {
+    join inline_cont200(chosen/6: (int32) -> int32) -> unit {
+      let applied/7 = chosen/6(5) in
+      join inline_cont198(t171: (int32) -> int32) -> unit {
+        let direct/8 = t171(5) in
+        let printer/9 = println__T_string in
+        join inline_cont196(t172: string) -> unit {
+          join inline_cont193(mtmp156: unit) -> unit {
+            join inline_cont191(t173: string) -> unit {
+              let inline189 = trait_impl#ToString#string#to_string(t173) in
+              let inline190 = @runtime(core.string_println)(inline189) in
+              ()
+            } in
+            let inline192 = @runtime(core.int32_to_string)(direct/8) in
+            jump inline_cont191(inline192)
+          } in
+          let inline194 = trait_impl#ToString#string#to_string(t172) in
+          let inline195 = @runtime(core.string_println)(inline194) in
+          jump inline_cont193(())
+        } in
+        let inline197 = @runtime(core.int32_to_string)(applied/7) in
+        jump inline_cont196(inline197)
+      } in
+      let inline199 = false in
+      if inline199 {
+        jump inline_cont198(double)
+      } else {
+        jump inline_cont198(increment)
+      }
+    } in
+    let inline201 = true in
+    if inline201 {
+      jump inline_cont200(double)
+    } else {
+      jump inline_cont200(increment)
+    }
+  } in
+  let inline203 = trait_impl#ToString#int32#to_string(t170) in
+  let inline204 = @runtime(core.string_println)(inline203) in
+  jump inline_cont202(())
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t175 = trait_impl#ToString#int32#to_string(value/1) in
-  let t176 = @runtime(core.string_println)(t175) in
-  ()
+  join inline_cont205(t175: string) -> unit {
+    let t176 = @runtime(core.string_println)(t175) in
+    ()
+  } in
+  let inline206 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont205(inline206)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t178 = trait_impl#ToString#string#to_string(value/1) in
-  let t179 = @runtime(core.string_println)(t178) in
-  ()
+  join inline_cont207(t178: string) -> unit {
+    let t179 = @runtime(core.string_println)(t178) in
+    ()
+  } in
+  jump inline_cont207(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {

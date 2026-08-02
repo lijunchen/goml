@@ -1,15 +1,22 @@
 fn main() -> unit {
   let poem/0 = "roses are red\nviolets are blue\n\"quotes\" stay quoted\nbackslash \\\\\\\\ stays too" in
   let trailing_blank/1 = "line one\n\nline three" in
-  let _wild155 = println__T_string(poem/0) in
-  let _wild156 = println__T_string(trailing_blank/1) in
-  ()
+  join inline_cont166(_wild155: unit) -> unit {
+    let inline164 = trait_impl#ToString#string#to_string(trailing_blank/1) in
+    let inline165 = @runtime(core.string_println)(inline164) in
+    ()
+  } in
+  let inline167 = trait_impl#ToString#string#to_string(poem/0) in
+  let inline168 = @runtime(core.string_println)(inline167) in
+  jump inline_cont166(())
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t159 = trait_impl#ToString#string#to_string(value/1) in
-  let t160 = @runtime(core.string_println)(t159) in
-  ()
+  join inline_cont169(t159: string) -> unit {
+    let t160 = @runtime(core.string_println)(t159) in
+    ()
+  } in
+  jump inline_cont169(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

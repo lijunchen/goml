@@ -4,18 +4,29 @@ fn inherent#Boxed#Boxed#format(self/0: Boxed) -> string {
 
 fn trait_impl#Render#Boxed#format(self/1: Boxed) -> string {
   let t161 = Boxed.value(self/1) in
-  let t162 = inherent#int32#int32#to_string(t161) in
-  t162
+  let inline177 = @runtime(core.int32_to_string)(t161) in
+  inline177
 }
 
 fn main() -> unit {
   let t164 = Boxed { value: 9 } in
-  let t165 = inherent#Boxed#Boxed#format(t164) in
-  let _wild155 = println__T_string(t165) in
-  let t166 = Boxed { value: 9 } in
-  let t167 = trait_impl#Render#Boxed#format(t166) in
-  let _wild156 = println__T_string(t167) in
-  ()
+  join inline_cont187(t165: string) -> unit {
+    join inline_cont184(_wild155: unit) -> unit {
+      let t166 = Boxed { value: 9 } in
+      join inline_cont181(t167: string) -> unit {
+        let inline179 = trait_impl#ToString#string#to_string(t167) in
+        let inline180 = @runtime(core.string_println)(inline179) in
+        ()
+      } in
+      let inline182 = 9 in
+      let inline183 = inherent#int32#int32#to_string(inline182) in
+      jump inline_cont181(inline183)
+    } in
+    let inline185 = trait_impl#ToString#string#to_string(t165) in
+    let inline186 = @runtime(core.string_println)(inline185) in
+    jump inline_cont184(())
+  } in
+  jump inline_cont187("inherent")
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
@@ -24,9 +35,11 @@ fn inherent#int32#int32#to_string(self/6: int32) -> string {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t172 = trait_impl#ToString#string#to_string(value/1) in
-  let t173 = @runtime(core.string_println)(t172) in
-  ()
+  join inline_cont188(t172: string) -> unit {
+    let t173 = @runtime(core.string_println)(t172) in
+    ()
+  } in
+  jump inline_cont188(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {

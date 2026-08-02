@@ -11,45 +11,112 @@ fn c_value() -> int8 {
 }
 
 fn show_int8(label/0: string, value/1: int8) -> unit {
-  let t173 = trait_impl#ToString#int8#to_string(value/1) in
-  let t174 = (label/0 + t173) in
-  let mtmp155 = println__T_string(t174) in
-  ()
+  join inline_cont193(t173: string) -> unit {
+    let t174 = (label/0 + t173) in
+    let inline191 = trait_impl#ToString#string#to_string(t174) in
+    let inline192 = @runtime(core.string_println)(inline191) in
+    ()
+  } in
+  let inline194 = @runtime(core.int8_to_string)(value/1) in
+  jump inline_cont193(inline194)
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  let t176 = trait_impl#ToString#bool#to_string(value/3) in
-  let t177 = (label/2 + t176) in
-  let mtmp156 = println__T_string(t177) in
-  ()
+  join inline_cont198(t176: string) -> unit {
+    let t177 = (label/2 + t176) in
+    let inline196 = trait_impl#ToString#string#to_string(t177) in
+    let inline197 = @runtime(core.string_println)(inline196) in
+    ()
+  } in
+  let inline199 = @runtime(core.bool_to_string)(value/3) in
+  jump inline_cont198(inline199)
 }
 
 fn main() -> unit {
-  let a/4 = a_value() in
-  let b/5 = b_value() in
-  let c/6 = c_value() in
-  let sum/7 = (a/4 + b/5) in
-  let diff/8 = (a/4 - c/6) in
-  let prod/9 = (b/5 * c/6) in
-  let quot/10 = (a/4 / c/6) in
-  let neg/11 = (-b/5) in
-  let less/12 = (b/5 < a/4) in
-  let mtmp157 = show_int8("a=", a/4) in
-  let mtmp158 = show_int8("b=", b/5) in
-  let mtmp159 = show_int8("c=", c/6) in
-  let mtmp160 = show_int8("sum=", sum/7) in
-  let mtmp161 = show_int8("diff=", diff/8) in
-  let mtmp162 = show_int8("prod=", prod/9) in
-  let mtmp163 = show_int8("quot=", quot/10) in
-  let mtmp164 = show_int8("neg=", neg/11) in
-  let mtmp165 = show_bool("b<a=", less/12) in
-  ()
+  join inline_cont247(a/4: int8) -> unit {
+    join inline_cont246(b/5: int8) -> unit {
+      join inline_cont245(c/6: int8) -> unit {
+        let sum/7 = (a/4 + b/5) in
+        let diff/8 = (a/4 - c/6) in
+        let prod/9 = (b/5 * c/6) in
+        let quot/10 = (a/4 / c/6) in
+        let neg/11 = (-b/5) in
+        let less/12 = (b/5 < a/4) in
+        join inline_cont240(mtmp157: unit) -> unit {
+          join inline_cont235(mtmp158: unit) -> unit {
+            join inline_cont230(mtmp159: unit) -> unit {
+              join inline_cont225(mtmp160: unit) -> unit {
+                join inline_cont220(mtmp161: unit) -> unit {
+                  join inline_cont215(mtmp162: unit) -> unit {
+                    join inline_cont210(mtmp163: unit) -> unit {
+                      join inline_cont205(mtmp164: unit) -> unit {
+                        let inline201 = "b<a=" in
+                        let inline202 = trait_impl#ToString#bool#to_string(less/12) in
+                        let inline203 = (inline201 + inline202) in
+                        let inline204 = println__T_string(inline203) in
+                        ()
+                      } in
+                      let inline206 = "neg=" in
+                      let inline207 = trait_impl#ToString#int8#to_string(neg/11) in
+                      let inline208 = (inline206 + inline207) in
+                      let inline209 = println__T_string(inline208) in
+                      jump inline_cont205(())
+                    } in
+                    let inline211 = "quot=" in
+                    let inline212 = trait_impl#ToString#int8#to_string(quot/10) in
+                    let inline213 = (inline211 + inline212) in
+                    let inline214 = println__T_string(inline213) in
+                    jump inline_cont210(())
+                  } in
+                  let inline216 = "prod=" in
+                  let inline217 = trait_impl#ToString#int8#to_string(prod/9) in
+                  let inline218 = (inline216 + inline217) in
+                  let inline219 = println__T_string(inline218) in
+                  jump inline_cont215(())
+                } in
+                let inline221 = "diff=" in
+                let inline222 = trait_impl#ToString#int8#to_string(diff/8) in
+                let inline223 = (inline221 + inline222) in
+                let inline224 = println__T_string(inline223) in
+                jump inline_cont220(())
+              } in
+              let inline226 = "sum=" in
+              let inline227 = trait_impl#ToString#int8#to_string(sum/7) in
+              let inline228 = (inline226 + inline227) in
+              let inline229 = println__T_string(inline228) in
+              jump inline_cont225(())
+            } in
+            let inline231 = "c=" in
+            let inline232 = trait_impl#ToString#int8#to_string(c/6) in
+            let inline233 = (inline231 + inline232) in
+            let inline234 = println__T_string(inline233) in
+            jump inline_cont230(())
+          } in
+          let inline236 = "b=" in
+          let inline237 = trait_impl#ToString#int8#to_string(b/5) in
+          let inline238 = (inline236 + inline237) in
+          let inline239 = println__T_string(inline238) in
+          jump inline_cont235(())
+        } in
+        let inline241 = "a=" in
+        let inline242 = trait_impl#ToString#int8#to_string(a/4) in
+        let inline243 = (inline241 + inline242) in
+        let inline244 = println__T_string(inline243) in
+        jump inline_cont240(())
+      } in
+      jump inline_cont245(3)
+    } in
+    jump inline_cont246(-20)
+  } in
+  jump inline_cont247(90)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t180 = trait_impl#ToString#string#to_string(value/1) in
-  let t181 = @runtime(core.string_println)(t180) in
-  ()
+  join inline_cont248(t180: string) -> unit {
+    let t181 = @runtime(core.string_println)(t180) in
+    ()
+  } in
+  jump inline_cont248(value/1)
 }
 
 fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
