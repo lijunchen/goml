@@ -418,3 +418,83 @@ fn exhausts_static_inline_budget() -> unit {
     };
     testing::assert_eq(inline_block_cost(callee.body), 1)
 }
+
+#[test]
+fn commutes_known_constructor_continuations() -> unit {
+    let source = "enum Maybe { Some(int32), None } fn make(flag: bool) -> Maybe { if flag { Some(7) } else { None } } fn consume(value: Maybe) -> int32 { match value { Some(item) => item, None => 0 } } fn combined(flag: bool) -> int32 { consume(make(flag)) }";
+    let lowered = lower_source(source);
+    match verify(lowered) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let output = encode(lowered);
+    testing::assert(strings::contains(output, "join commute_arm"));
+    testing::assert(!strings::contains(output, "match mtmp"))
+}
+
+#[test]
+fn preserves_continuations_with_unknown_entries() -> unit {
+    let source = "enum Maybe { Some(int32), None } fn consume(value: Maybe) -> int32 { match value { Some(item) => item, None => 0 } } fn combined(flag: bool, fallback: Maybe) -> int32 { consume(if flag { Some(1) } else { fallback }) }";
+    let lowered = lower_source(source);
+    match verify(lowered) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let output = encode(lowered);
+    testing::assert(strings::contains(output, "join k"));
+    testing::assert(!strings::contains(output, "join commute_arm"))
+}
+
+#[test]
+fn invalidates_commuting_constructors_after_assignment() -> unit {
+    let known: Vec[CommuteBinding] = Vec::[];
+    record_commute_binding(
+        known,
+        LetBind {
+            name: "field",
+            value: Value::Imm(
+                Imm::Prim { value: tast::Primitive::Int32 { value: "1" }, ty: tast::Type::Int32 },
+            ),
+            ty: tast::Type::Int32,
+        },
+    );
+    let fields: Vec[Imm] = Vec::[];
+    fields.push(Imm::Var { name: "field", ty: tast::Type::Int32 });
+    record_commute_binding(
+        known,
+        LetBind {
+            name: "value",
+            value: Value::Constr {
+                constructor: tast::Constructor {
+                    name: "Maybe::Some",
+                    fields: Vec::[],
+                    is_struct: false,
+                    tag: Option::Some(0),
+                },
+                args: fields,
+                ty: tast::Type::Con { name: "Maybe" },
+            },
+            ty: tast::Type::Con { name: "Maybe" },
+        },
+    );
+    record_commute_binding(
+        known,
+        LetBind {
+            name: "assigned",
+            value: Value::Assign {
+                name: "field",
+                value: Imm::Prim {
+                    value: tast::Primitive::Int32 { value: "2" },
+                    ty: tast::Type::Int32,
+                },
+                target_ty: tast::Type::Int32,
+                ty: tast::Type::Unit,
+            },
+            ty: tast::Type::Unit,
+        },
+    );
+    match known_dispatch(Imm::Var { name: "value", ty: tast::Type::Con { name: "Maybe" } }, known) {
+        Unknown => (),
+        Dispatch { .. } => testing::fail("expected invalidated constructor"),
+    }
+}
