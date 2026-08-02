@@ -1,0 +1,79 @@
+fn trait_impl#Describe#DefaultValue#name(self/3: DefaultValue) -> string {
+  join ret159(retv160: string) -> string {
+    retv160
+  } in
+  let t161 = DefaultValue.name(self/3) in
+  jump ret159(t161)
+}
+
+fn trait_impl#Describe#DefaultValue#describe(default_arg0: DefaultValue) -> string {
+  join ret162(retv163: string) -> string {
+    retv163
+  } in
+  let t164 = trait_default#Describe#describe__Self_DefaultValue(default_arg0) in
+  jump ret162(t164)
+}
+
+fn trait_impl#Describe#OverrideValue#name(self/4: OverrideValue) -> string {
+  join ret165(retv166: string) -> string {
+    retv166
+  } in
+  jump ret165("override-name")
+}
+
+fn trait_impl#Describe#OverrideValue#describe(self/5: OverrideValue) -> string {
+  join ret167(retv168: string) -> string {
+    retv168
+  } in
+  jump ret167("override")
+}
+
+fn describe_dyn(value/6: dyn Describe) -> string {
+  join ret169(retv170: string) -> string {
+    retv170
+  } in
+  let t171 = dyn_call[Describe::describe](value/6) in
+  jump ret169(t171)
+}
+
+fn main() -> unit {
+  join ret172() -> unit {
+    ()
+  } in
+  let default_value/7 = DefaultValue { name: "value" } in
+  let t173 = trait_impl#Describe#DefaultValue#describe(default_value/7) in
+  let _wild155 = @runtime(core.string_println)(t173) in
+  let t174 = trait_impl#Keep#DefaultValue#keep__mono1(default_value/7, "generic") in
+  let _wild156 = @runtime(core.string_println)(t174) in
+  let t175 = OverrideValue {} in
+  let t176 = trait_impl#Describe#OverrideValue#describe(t175) in
+  let _wild157 = @runtime(core.string_println)(t176) in
+  let t177 = to_dyn[Describe]{DefaultValue}(default_value/7) in
+  let t178 = describe_dyn(t177) in
+  let _wild158 = @runtime(core.string_println)(t178) in
+  jump ret172()
+}
+
+fn trait_default#Describe#describe__Self_DefaultValue(self/0: DefaultValue) -> string {
+  join ret179(retv180: string) -> string {
+    retv180
+  } in
+  let t181 = trait_impl#Describe#DefaultValue#name(self/0) in
+  let t182 = ("default:" + t181) in
+  jump ret179(t182)
+}
+
+fn trait_impl#Keep#DefaultValue#keep__mono1(default_arg0: DefaultValue, default_arg1: string) -> string {
+  join ret183(retv184: string) -> string {
+    retv184
+  } in
+  let t185 = trait_default#Keep#keep__Self_DefaultValue__T_string(default_arg0, default_arg1) in
+  jump ret183(t185)
+}
+
+fn trait_default#Keep#keep__Self_DefaultValue__T_string(self/1: DefaultValue, value/2: string) -> string {
+  join ret186(retv187: string) -> string {
+    retv187
+  } in
+  jump ret186(value/2)
+}
