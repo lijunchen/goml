@@ -1,18 +1,16 @@
 package core;
 
+use gomlc::pretty;
 use gomlc::strings;
 use gomlc::tast;
-use std::text;
 
-fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in 0..count {
-        builder.write_char(' ')
-    }
+struct PrintStyle {
+    mono_style: bool,
+    flatten_blocks: bool,
 }
 
-fn newline(builder: text::StringBuilder, indent: int) -> unit {
-    builder.write_char('\n');
-    write_spaces(builder, indent)
+fn arguments(values: Vec[pretty::Doc]) -> pretty::Doc {
+    pretty::delimited("(", ",", ")", values)
 }
 
 fn dyn_method_name(value: string) -> string {
@@ -22,467 +20,403 @@ fn dyn_method_name(value: string) -> string {
     }
 }
 
-fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
+fn callable_doc(value: tast::Callable) -> pretty::Doc {
     match value {
-        Function(name) => builder.write_string(name),
-        LangItem { item: _, function_name } => builder.write_string(function_name),
-        Runtime(name) => {
-            builder.write_string("@runtime(");
-            builder.write_string(name);
-            builder.write_char(')')
-        },
-        Intrinsic(name) => {
-            builder.write_string("@intrinsic(");
-            builder.write_string(name);
-            builder.write_char(')')
-        },
-        TraitMethod { trait_ref: reference, method_name: name } => {
-            tast::write_trait_ref(builder, reference);
-            builder.write_string("::");
-            builder.write_string(name)
-        },
+        Function(name) => pretty::text(name),
+        LangItem { item: _, function_name } => pretty::text(function_name),
+        Runtime(name) => pretty::text("@runtime(" + name + ")"),
+        Intrinsic(name) => pretty::text("@intrinsic(" + name + ")"),
+        TraitMethod { trait_ref: reference, method_name: name } => pretty::concat(
+            Vec::[tast::trait_ref_doc(reference), pretty::text("::" + name)],
+        ),
         DynTraitMethod { trait_name: owner, dispatch_name: _, method_name: name } => {
-            builder.write_string("dyn ");
-            builder.write_string(owner);
-            builder.write_string("::");
-            builder.write_string(name)
+            pretty::text("dyn " + owner + "::" + name)
         },
         InherentMethod { receiver_ty: owner, method_name: name } => {
-            builder.write_string(inherent_method_name(owner, name))
+            pretty::text(inherent_method_name(owner, name))
         },
     }
 }
 
-fn write_exprs(
-    builder: text::StringBuilder,
-    values: Vec[Expr],
-    indent: int,
-    mono_style: bool,
-    flatten_blocks: bool,
-) -> unit {
-    for index in 0..values.len() {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        write_expr(builder, values[index], indent, mono_style, flatten_blocks)
+fn exprs_doc(values: Vec[Expr], style: PrintStyle) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(expr_doc(value, style))
+    };
+    result
+}
+
+fn record_doc(name: string, values: Vec[pretty::Doc]) -> pretty::Doc {
+    if values.is_empty() {
+        pretty::text(name + " {}")
+    } else {
+        pretty::group(
+            pretty::concat(
+                Vec::[
+                    pretty::text(name + " {"),
+                    pretty::nest(
+                        2,
+                        pretty::append(
+                            pretty::line(),
+                            pretty::join(pretty::append(pretty::text(","), pretty::line()), values),
+                        ),
+                    ),
+                    pretty::line(),
+                    pretty::text("}"),
+                ],
+            ),
+        )
     }
 }
 
-fn write_constructor(
-    builder: text::StringBuilder,
-    constructor: tast::Constructor,
-    args: Vec[Expr],
-    indent: int,
-    mono_style: bool,
-    flatten_blocks: bool,
-) -> unit {
-    builder.write_string(constructor.name);
+fn constructor_doc(constructor: tast::Constructor, args: Vec[Expr], style: PrintStyle) -> pretty::Doc {
     if constructor.is_struct {
         if constructor.fields.is_empty() && args.is_empty() {
-            builder.write_string(" {}")
+            pretty::text(constructor.name + " {}")
         } else if constructor.fields.len() == args.len() {
-            builder.write_string(" { ");
+            let fields: Vec[pretty::Doc] = Vec::with_capacity(args.len());
             for index in 0..args.len() {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                builder.write_string(constructor.fields[index]);
-                builder.write_string(": ");
-                write_expr(builder, args[index], indent, mono_style, flatten_blocks)
+                fields.push(
+                    pretty::concat(
+                        Vec::[
+                            pretty::text(constructor.fields[index] + ": "),
+                            expr_doc(args[index], style),
+                        ],
+                    ),
+                )
             };
-            builder.write_string(" }")
+            record_doc(constructor.name, fields)
         } else if !args.is_empty() {
-            builder.write_char('(');
-            write_exprs(builder, args, indent, mono_style, flatten_blocks);
-            builder.write_char(')')
+            pretty::append(pretty::text(constructor.name), arguments(exprs_doc(args, style)))
         } else {
-            ()
+            pretty::text(constructor.name)
         }
     } else if !args.is_empty() {
-        builder.write_char('(');
-        write_exprs(builder, args, indent, mono_style, flatten_blocks);
-        builder.write_char(')')
+        pretty::append(pretty::text(constructor.name), arguments(exprs_doc(args, style)))
     } else {
-        ()
+        pretty::text(constructor.name)
     }
 }
 
-fn write_block_contents(
-    builder: text::StringBuilder,
-    value: Block,
-    indent: int,
-    mono_style: bool,
-    flatten_blocks: bool,
-) -> unit {
+fn block_docs(value: Block, style: PrintStyle) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(value.stmts.len() + 1);
     if value.stmts.is_empty() {
         match value.tail {
-            Some(tail) => {
-                write_expr(builder, tail, indent, mono_style, flatten_blocks)
-            },
-            None => builder.write_string("()"),
+            Some(tail) => result.push(expr_doc(tail, style)),
+            None => result.push(pretty::text("()")),
         }
     } else {
-        for index in 0..value.stmts.len() {
-            if index > 0 {
-                newline(builder, indent)
-            } else {
-                ()
-            };
-            let stmt = value.stmts[index];
-            builder.write_string("let ");
-            builder.write_string(stmt.name);
-            builder.write_string(" = ");
-            write_expr(builder, stmt.value, indent, mono_style, flatten_blocks);
-            builder.write_string(" in")
+        for statement in value.stmts {
+            result.push(
+                pretty::group(
+                    pretty::concat(
+                        Vec::[
+                            pretty::text("let " + statement.name + " ="),
+                            pretty::nest(
+                                2,
+                                pretty::append(pretty::line(), expr_doc(statement.value, style)),
+                            ),
+                            pretty::text(" in"),
+                        ],
+                    ),
+                ),
+            )
         };
         match value.tail {
-            Some(tail) => {
-                newline(builder, indent);
-                write_expr(builder, tail, indent, mono_style, flatten_blocks)
-            },
-            None => if flatten_blocks {
-                newline(builder, indent);
-                builder.write_string("()")
+            Some(tail) => result.push(expr_doc(tail, style)),
+            None => if style.flatten_blocks {
+                result.push(pretty::text("()"))
             } else {
                 ()
             },
         }
+    };
+    result
+}
+
+fn braced_docs(values: Vec[pretty::Doc], indentation: int) -> pretty::Doc {
+    if values.is_empty() {
+        pretty::text("{}")
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::text("{"),
+                pretty::nest(indentation, pretty::append(pretty::hardline(), pretty::stack(values))),
+                pretty::hardline(),
+                pretty::text("}"),
+            ],
+        )
     }
 }
 
-fn write_block_expr(
-    builder: text::StringBuilder,
-    value: Block,
-    indent: int,
-    mono_style: bool,
-    flatten_blocks: bool,
-) -> unit {
-    builder.write_char('{');
-    newline(builder, indent + 2);
-    write_block_contents(builder, value, indent + 2, mono_style, flatten_blocks);
-    newline(builder, indent);
-    builder.write_char('}')
+fn arm_doc(value: Arm, style: PrintStyle) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            pretty::append(expr_doc(value.lhs, style), pretty::text(" => ")),
+            braced_docs(Vec::[expr_doc(value.body, style)], 2),
+            pretty::text(","),
+        ],
+    )
 }
 
-fn write_arm(
-    builder: text::StringBuilder,
-    value: Arm,
-    indent: int,
-    mono_style: bool,
-    flatten_blocks: bool,
-) -> unit {
-    write_expr(builder, value.lhs, indent, mono_style, flatten_blocks);
-    builder.write_string(" => {");
-    newline(builder, indent + 2);
-    write_expr(builder, value.body, indent + 2, mono_style, flatten_blocks);
-    newline(builder, indent);
-    builder.write_string("},")
-}
-
-fn write_expr(
-    builder: text::StringBuilder,
-    value: Expr,
-    indent: int,
-    mono_style: bool,
-    flatten_blocks: bool,
-) -> unit {
+fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
     match value {
-        Var { name, ty: _ } => builder.write_string(name),
-        Callable { callable, ty: _ } => write_callable(builder, callable),
-        Prim { value, ty: _ } => tast::write_primitive(builder, value),
-        Constr { constructor, args, ty: _ } => {
-            write_constructor(builder, constructor, args, indent, mono_style, flatten_blocks)
-        },
-        Tuple { items: values, ty: _ } => {
-            builder.write_char('(');
-            write_exprs(builder, values, indent, mono_style, flatten_blocks);
-            builder.write_char(')')
-        },
+        Var { name, ty: _ } => pretty::text(name),
+        Callable { callable, ty: _ } => callable_doc(callable),
+        Prim { value, ty: _ } => tast::primitive_doc(value),
+        Constr { constructor, args, ty: _ } => constructor_doc(constructor, args, style),
+        Tuple { items: values, ty: _ } => arguments(exprs_doc(values, style)),
         Array { items: values, ty: _ } => {
-            builder.write_char('[');
-            write_exprs(builder, values, indent, mono_style, flatten_blocks);
-            builder.write_char(']')
+            pretty::delimited("[", ",", "]", exprs_doc(values, style))
         },
         Closure { params, body, ty: _ } => {
-            builder.write_char('|');
-            if !params.is_empty() {
-                for index in 0..params.len() {
-                    if index > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
-                    let param = params[index];
-                    builder.write_string(param.name);
-                    if mono_style {
-                        ()
-                    } else {
-                        builder.write_string(": ");
-                        tast::write_type(builder, param.ty)
-                    }
+            let values: Vec[pretty::Doc] = Vec::with_capacity(params.len());
+            for param in params {
+                if style.mono_style {
+                    values.push(pretty::text(param.name))
+                } else {
+                    values.push(
+                        pretty::concat(
+                            Vec::[pretty::text(param.name + ": "), tast::type_doc(param.ty)],
+                        ),
+                    )
                 }
-            } else {
-                ()
             };
-            builder.write_char('|');
-            builder.write_char(' ');
-            if mono_style {
-                ()
-            } else {
-                builder.write_string("=> ")
-            };
-            write_expr(builder, body, indent, mono_style, flatten_blocks)
+            pretty::group(
+                pretty::concat(
+                    Vec::[
+                        pretty::text("|"),
+                        pretty::join(pretty::append(pretty::text(","), pretty::line()), values),
+                        pretty::text("| "),
+                        if style.mono_style {
+                            pretty::nil()
+                        } else {
+                            pretty::text("=> ")
+                        },
+                        expr_doc(body, style),
+                    ],
+                ),
+            )
         },
-        Block { block, ty: _ } => if flatten_blocks {
-            write_block_contents(builder, block, indent, mono_style, flatten_blocks)
+        Block { block, ty: _ } => if style.flatten_blocks {
+            pretty::stack(block_docs(block, style))
         } else {
-            write_block_expr(builder, block, indent, mono_style, flatten_blocks)
+            braced_docs(block_docs(block, style), 2)
         },
         Match { expr: source, arms, default, ty: _ } => {
-            builder.write_string("match ");
-            write_expr(builder, source, indent, mono_style, flatten_blocks);
-            builder.write_string(" {");
+            let values: Vec[pretty::Doc] = Vec::with_capacity(
+                arms.len()
+                    + if default.is_some() {
+                        1
+                    } else {
+                        0
+                    },
+            );
             for arm in arms {
-                newline(builder, indent + 2);
-                write_arm(builder, arm, indent + 2, mono_style, flatten_blocks)
+                values.push(arm_doc(arm, style))
             };
             match default {
-                Some(value) => {
-                    newline(builder, indent + 2);
-                    builder.write_string("_ => ");
-                    write_expr(builder, value, indent + 2, mono_style, flatten_blocks);
-                    builder.write_char(',')
-                },
+                Some(value) => values.push(
+                    pretty::group(
+                        pretty::concat(
+                            Vec::[
+                                pretty::text("_ =>"),
+                                pretty::nest(
+                                    2,
+                                    pretty::append(pretty::line(), expr_doc(value, style)),
+                                ),
+                                pretty::text(","),
+                            ],
+                        ),
+                    ),
+                ),
                 None => (),
             };
-            newline(builder, indent);
-            builder.write_char('}')
+            pretty::block(pretty::append(pretty::text("match "), expr_doc(source, style)), values)
         },
-        If { cond, then_branch, else_branch, ty: _ } => {
-            builder.write_string("if ");
-            write_expr(builder, cond, indent, mono_style, flatten_blocks);
-            builder.write_string(" {");
-            newline(builder, indent + 4);
-            write_expr(builder, then_branch, indent + 4, mono_style, flatten_blocks);
-            newline(builder, indent);
-            builder.write_string("} else {");
-            newline(builder, indent + 4);
-            write_expr(builder, else_branch, indent + 4, mono_style, flatten_blocks);
-            newline(builder, indent);
-            builder.write_char('}')
-        },
-        While { cond, body, ty: _ } => {
-            builder.write_string("while ");
-            write_expr(builder, cond, indent, mono_style, flatten_blocks);
-            builder.write_string(" {");
-            newline(builder, indent + 4);
-            write_expr(builder, body, indent + 4, mono_style, flatten_blocks);
-            newline(builder, indent);
-            builder.write_char('}')
-        },
+        If { cond, then_branch, else_branch, ty: _ } => pretty::concat(
+            Vec::[
+                pretty::append(pretty::text("if "), expr_doc(cond, style)),
+                pretty::text(" "),
+                braced_docs(Vec::[expr_doc(then_branch, style)], 4),
+                pretty::text(" else "),
+                braced_docs(Vec::[expr_doc(else_branch, style)], 4),
+            ],
+        ),
+        While { cond, body, ty: _ } => pretty::concat(
+            Vec::[
+                pretty::append(pretty::text("while "), expr_doc(cond, style)),
+                pretty::text(" "),
+                braced_docs(Vec::[expr_doc(body, style)], 4),
+            ],
+        ),
         Loop { body, ty: _ } => {
-            builder.write_string("loop ");
-            write_expr(builder, body, indent, mono_style, flatten_blocks)
+            pretty::append(pretty::text("loop "), expr_doc(body, style))
         },
-        Break { value, ty: _ } => {
-            builder.write_string("break");
-            match value {
-                Some(expr) => {
-                    builder.write_char(' ');
-                    write_expr(builder, expr, indent, mono_style, flatten_blocks)
-                },
-                None => (),
-            }
+        Break { value, ty: _ } => match value {
+            Some(value) => pretty::append(pretty::text("break "), expr_doc(value, style)),
+            None => pretty::text("break"),
         },
-        Continue { ty: _ } => builder.write_string("continue"),
-        Return { expr: value, ty: _ } => {
-            builder.write_string("return");
-            match value {
-                Some(expr) => {
-                    builder.write_char(' ');
-                    write_expr(builder, expr, indent, mono_style, flatten_blocks)
-                },
-                None => (),
-            }
+        Continue { ty: _ } => pretty::text("continue"),
+        Return { expr: value, ty: _ } => match value {
+            Some(value) => pretty::append(pretty::text("return "), expr_doc(value, style)),
+            None => pretty::text("return"),
         },
         Go { expr: value, ty: _ } => {
-            builder.write_string("go ");
-            write_expr(builder, value, indent, mono_style, flatten_blocks)
+            pretty::append(pretty::text("go "), expr_doc(value, style))
         },
         ConstrGet { expr: value, constructor, field_index, ty: _ } => {
-            builder.write_string(constructor.name);
-            builder.write_char('.');
-            if constructor.is_struct && field_index < constructor.fields.len() {
-                builder.write_string(constructor.fields[field_index])
+            let field = if constructor.is_struct && field_index < constructor.fields.len() {
+                constructor.fields[field_index]
             } else {
-                builder.write_char('_');
-                builder.write_string(field_index.to_string())
+                "_" + field_index.to_string()
             };
-            builder.write_char('(');
-            write_expr(builder, value, indent, mono_style, flatten_blocks);
-            builder.write_char(')')
+            pretty::concat(
+                Vec::[
+                    pretty::text(constructor.name + "." + field),
+                    arguments(Vec::[expr_doc(value, style)]),
+                ],
+            )
         },
-        Unary { op, expr: value, ty: _ } => {
-            builder.write_char('(');
-            builder.write_string(tast::unary_symbol(op));
-            write_expr(builder, value, indent, mono_style, flatten_blocks);
-            builder.write_char(')')
-        },
-        Cast { expr: value, ty } => {
-            builder.write_char('(');
-            write_expr(builder, value, indent, mono_style, flatten_blocks);
-            builder.write_string(" as ");
-            tast::write_type(builder, ty);
-            builder.write_char(')')
-        },
-        Binary { op, lhs: left, rhs: right, ty: _ } => {
-            builder.write_char('(');
-            write_expr(builder, left, indent, mono_style, flatten_blocks);
-            builder.write_char(' ');
-            builder.write_string(tast::binary_symbol(op));
-            builder.write_char(' ');
-            write_expr(builder, right, indent, mono_style, flatten_blocks);
-            builder.write_char(')')
-        },
-        Assign { name, value, target_ty: _, ty: _ } => {
-            builder.write_string(name);
-            builder.write_string(" = ");
-            write_expr(builder, value, indent, mono_style, flatten_blocks)
-        },
+        Unary { op, expr: value, ty: _ } => pretty::concat(
+            Vec::[
+                pretty::text("(" + tast::unary_symbol(op)),
+                expr_doc(value, style),
+                pretty::text(")"),
+            ],
+        ),
+        Cast { expr: value, ty } => pretty::concat(
+            Vec::[
+                pretty::text("("),
+                expr_doc(value, style),
+                pretty::text(" as "),
+                tast::type_doc(ty),
+                pretty::text(")"),
+            ],
+        ),
+        Binary { op, lhs, rhs, ty: _ } => pretty::group(
+            pretty::concat(
+                Vec::[
+                    pretty::text("("),
+                    expr_doc(lhs, style),
+                    pretty::text(" " + tast::binary_symbol(op)),
+                    pretty::nest(2, pretty::append(pretty::line(), expr_doc(rhs, style))),
+                    pretty::text(")"),
+                ],
+            ),
+        ),
+        Assign { name, value, target_ty: _, ty: _ } => pretty::concat(
+            Vec::[pretty::text(name + " = "), expr_doc(value, style)],
+        ),
         Call { func: function, args, ty: _ } => {
-            write_expr(builder, function, indent, mono_style, flatten_blocks);
-            builder.write_char('(');
-            write_exprs(builder, args, indent, mono_style, flatten_blocks);
-            builder.write_char(')')
+            pretty::append(expr_doc(function, style), arguments(exprs_doc(args, style)))
         },
-        ToDyn { trait_name, for_ty, expr: value, ty: _ } => {
-            builder.write_string("to_dyn[");
-            builder.write_string(trait_name);
-            builder.write_string("]{");
-            tast::write_type(builder, for_ty);
-            builder.write_string("}(");
-            write_expr(builder, value, indent, mono_style, flatten_blocks);
-            builder.write_char(')')
-        },
+        ToDyn { trait_name, for_ty, expr: value, ty: _ } => pretty::concat(
+            Vec::[
+                pretty::text("to_dyn[" + trait_name + "]{"),
+                tast::type_doc(for_ty),
+                pretty::text("}"),
+                arguments(Vec::[expr_doc(value, style)]),
+            ],
+        ),
         DynCall { trait_name, method_name, receiver, args, ty: _ } => {
-            builder.write_string("dyn_call[");
-            builder.write_string(trait_name);
-            builder.write_string("::");
-            builder.write_string(dyn_method_name(method_name));
-            builder.write_string("](");
-            write_expr(builder, receiver, indent, mono_style, flatten_blocks);
-            if !args.is_empty() {
-                builder.write_string(", ");
-                write_exprs(builder, args, indent, mono_style, flatten_blocks)
-            } else {
-                ()
+            let values: Vec[pretty::Doc] = Vec::with_capacity(args.len() + 1);
+            values.push(expr_doc(receiver, style));
+            for arg in args {
+                values.push(expr_doc(arg, style))
             };
-            builder.write_char(')')
+            pretty::concat(
+                Vec::[
+                    pretty::text(
+                        "dyn_call[" + trait_name + "::" + dyn_method_name(method_name) + "]",
+                    ),
+                    arguments(values),
+                ],
+            )
         },
         TraitCall { trait_ref: reference, method_name, receiver, args, .. } => {
-            builder.write_string("trait_call[");
-            tast::write_trait_ref(builder, reference);
-            builder.write_string("::");
-            builder.write_string(method_name);
-            builder.write_string("](");
-            write_expr(builder, receiver, indent, mono_style, flatten_blocks);
-            if !args.is_empty() {
-                builder.write_string(", ");
-                write_exprs(builder, args, indent, mono_style, flatten_blocks)
-            } else {
-                ()
+            let values: Vec[pretty::Doc] = Vec::with_capacity(args.len() + 1);
+            values.push(expr_doc(receiver, style));
+            for arg in args {
+                values.push(expr_doc(arg, style))
             };
-            builder.write_char(')')
+            pretty::concat(
+                Vec::[
+                    pretty::text("trait_call["),
+                    tast::trait_ref_doc(reference),
+                    pretty::text("::" + method_name + "]"),
+                    arguments(values),
+                ],
+            )
         },
         Proj { tuple: value, index, ty: _ } => {
-            write_expr(builder, value, indent, mono_style, flatten_blocks);
-            builder.write_char('.');
-            builder.write_string(index.to_string())
+            pretty::append(expr_doc(value, style), pretty::text("." + index.to_string()))
         },
     }
 }
 
-fn write_function(
-    builder: text::StringBuilder,
-    value: Function,
-    mono_style: bool,
-    flatten_blocks: bool,
-) -> unit {
-    builder.write_string("fn ");
-    builder.write_string(value.name);
-    if !value.generics.is_empty() {
-        builder.write_char('[');
-        for index in 0..value.generics.len() {
-            if index > 0 {
-                builder.write_string(", ")
-            } else {
-                ()
-            };
-            builder.write_string(value.generics[index])
-        };
-        builder.write_char(']')
-    } else {
-        ()
+fn params_doc(values: Vec[(string, tast::Type)]) -> pretty::Doc {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(pretty::concat(Vec::[pretty::text(value.0 + ": "), tast::type_doc(value.1)]))
     };
-    builder.write_char('(');
-    for index in 0..value.params.len() {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        let param = value.params[index];
-        builder.write_string(param.0);
-        builder.write_string(": ");
-        tast::write_type(builder, param.1)
-    };
-    builder.write_string(") -> ");
-    tast::write_type(builder, value.ret_ty);
-    builder.write_string(" {");
-    newline(builder, 2);
-    write_block_contents(builder, value.body, 2, mono_style, flatten_blocks);
-    newline(builder, 0);
-    builder.write_char('}')
+    arguments(result)
 }
 
-fn encode_with_style(value: File, mono_style: bool, flatten_blocks: bool) -> string {
-    let builder = text::StringBuilder::new();
-    for index in 0..value.constants.len() {
-        if index > 0 {
-            builder.write_char('\n')
-        } else {
-            ()
-        };
-        tast::write_constant(builder, value.constants[index])
-    };
-    if !value.constants.is_empty() && !value.functions.is_empty() {
-        builder.write_string("\n\n")
+fn function_doc(value: Function, style: PrintStyle) -> pretty::Doc {
+    let generics = if value.generics.is_empty() {
+        pretty::nil()
     } else {
-        ()
-    };
-    for index in 0..value.functions.len() {
-        if index > 0 {
-            builder.write_string("\n\n")
-        } else {
-            ()
+        let values: Vec[pretty::Doc] = Vec::with_capacity(value.generics.len());
+        for value in value.generics {
+            values.push(pretty::text(value))
         };
-        write_function(builder, value.functions[index], mono_style, flatten_blocks)
+        pretty::delimited("[", ",", "]", values)
     };
-    builder.finish()
+    pretty::block(
+        pretty::concat(
+            Vec::[
+                pretty::text("fn " + value.name),
+                generics,
+                params_doc(value.params),
+                pretty::text(" -> "),
+                tast::type_doc(value.ret_ty),
+            ],
+        ),
+        block_docs(value.body, style),
+    )
+}
+
+fn encode_with_style(value: File, style: PrintStyle) -> string {
+    let constants: Vec[pretty::Doc] = Vec::with_capacity(value.constants.len());
+    for value in value.constants {
+        constants.push(tast::constant_doc(value))
+    };
+    let functions: Vec[pretty::Doc] = Vec::with_capacity(value.functions.len());
+    for value in value.functions {
+        functions.push(function_doc(value, style))
+    };
+    let constants_doc = pretty::stack(constants);
+    let functions_doc = pretty::join(
+        pretty::concat(Vec::[pretty::hardline(), pretty::hardline()]),
+        functions,
+    );
+    let result = if !value.constants.is_empty() && !value.functions.is_empty() {
+        pretty::concat(Vec::[constants_doc, pretty::hardline(), pretty::hardline(), functions_doc])
+    } else {
+        pretty::append(constants_doc, functions_doc)
+    };
+    pretty::pretty(100, result)
 }
 
 pub fn encode(value: File) -> string {
-    encode_with_style(value, false, false)
+    encode_with_style(value, PrintStyle { mono_style: false, flatten_blocks: false })
 }
 
 pub fn encode_mono(value: File) -> string {
-    encode_with_style(value, true, false)
+    encode_with_style(value, PrintStyle { mono_style: true, flatten_blocks: false })
 }
 
 pub fn encode_lift(value: File) -> string {
-    encode_with_style(value, true, true)
+    encode_with_style(value, PrintStyle { mono_style: true, flatten_blocks: true })
 }
