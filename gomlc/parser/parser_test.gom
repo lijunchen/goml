@@ -64,6 +64,37 @@ fn parses_lossless_precedence_tree() -> unit {
 }
 
 #[test]
+fn parses_half_open_and_inclusive_range_expressions() -> unit {
+    let source = "fn main() -> unit { for value in 1..4 { println(value) }; for value in 4..=6 { println(value) }; }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_RANGE), 2);
+    let builder = text::StringBuilder::new();
+    append_source(result.root, builder);
+    testing::assert_eq(builder.finish(), source)
+}
+
+#[test]
+fn parses_braced_imports_with_item_aliases() -> unit {
+    let source = "package main; use alice::render::{Canvas, Color as Paint, render}; fn main() -> unit {}";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::USE), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::USE_ITEM_LIST), 1);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::USE_ITEM), 3);
+    let builder = text::StringBuilder::new();
+    append_source(result.root, builder);
+    testing::assert_eq(builder.finish(), source)
+}
+
+#[test]
+fn rejects_unsupported_braced_import_forms() -> unit {
+    testing::assert(parse("use alice::api::{};").diagnostics.len() > 0);
+    testing::assert(parse("use alice::api::{*};").diagnostics.len() > 0);
+    testing::assert(parse("use alice::api::{thing::{nested}};").diagnostics.len() > 0)
+}
+
+#[test]
 fn reports_recoverable_syntax_errors() -> unit {
     let source = "fn main( { let value = ; } trailing";
     let result = parse(source);

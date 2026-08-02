@@ -6,67 +6,67 @@ file main.gom
         Lam(string, Exp),
         Let(string, Exp, Exp)
     }
-    
+
     enum Typ {
         TVar(Ref[Tv]),
         QVar(string),
         TArrow(Typ, Typ)
     }
-    
+
     enum Tv {
         Unbound(string, int32),
         Link(Typ)
     }
-    
+
     struct CheckerState {
         gensym_counter: Ref[int32],
         current_level: Ref[int32],
     }
-    
+
     struct EnvEntry {
         name: string,
         ty: Typ,
     }
-    
+
     struct SubstEntry {
         name: string,
         ty: Typ,
     }
-    
+
     fn state_new() -> CheckerState {
         CheckerState {
             gensym_counter: Ref::new(0),
             current_level: Ref::new(1)
         }
     }
-    
+
     fn reset_gensym(local/1/0: CheckerState) -> unit {
         let _ = st/0.gensym_counter.set(0);
         ()
     }
-    
+
     fn reset_level(local/1/1: CheckerState) -> unit {
         let _ = st/1.current_level.set(1);
         ()
     }
-    
+
     fn reset_type_variables(local/1/2: CheckerState) -> unit {
         def/1/7(st/2);
         def/1/8(st/2)
     }
-    
+
     fn enter_level(local/1/3: CheckerState) -> unit {
         let local/1/4 = st/3.current_level.get();
         let _ = st/3.current_level.set(l/4 + 1);
         ()
     }
-    
+
     fn leave_level(local/1/5: CheckerState) -> unit {
         let local/1/6 = st/5.current_level.get();
         let _ = st/5.current_level.set(l/6 - 1);
         ()
     }
-    
+
     fn min_i32(local/1/7: int32, local/1/8: int32) -> int32 {
         if a/7 < b/8 {
             a/7
@@ -74,7 +74,7 @@ file main.gom
             b/8
         }
     }
-    
+
     fn nth_letter(local/1/9: int32) -> char {
         match n/9 {
             0 => 'a',
@@ -106,7 +106,7 @@ file main.gom
             _ => 'a',
         }
     }
-    
+
     fn gensym(local/1/10: CheckerState) -> string {
         let local/1/11 = st/10.gensym_counter.get();
         let _ = st/10.gensym_counter.set(n/11 + 1);
@@ -116,13 +116,13 @@ file main.gom
             "t" + n/11.to_string()
         }
     }
-    
+
     fn newvar(local/1/12: CheckerState) -> Typ {
         let local/1/13 = def/1/14(st/12);
         let local/1/14 = st/12.current_level.get();
         ctor(def/1/1::v0)(Ref::new(ctor(def/1/2::v0)(name/13, level/14)))
     }
-    
+
     fn typ_is_arrow(local/1/15: Typ) -> bool {
         match ty/15 {
             ctor(def/1/1::v2)(_, _) => true,
@@ -133,7 +133,7 @@ file main.gom
             _ => false,
         }
     }
-    
+
     fn typ_to_string(local/1/18: Typ) -> string {
         match ty/18 {
             ctor(def/1/1::v1)(local/1/19) => "'" + name/19,
@@ -152,12 +152,12 @@ file main.gom
               },
         }
     }
-    
+
     fn env_empty() -> Vec[EnvEntry] {
         let local/1/27: Vec[EnvEntry] = Vec::new();
         env/27
     }
-    
+
     fn env_lookup(local/1/28: Vec[EnvEntry], local/1/29: string) -> Option[Typ] {
         let local/1/30 = Ref::new(env/28.len() - 1);
         let local/1/31 = Ref::new(Option::None);
@@ -175,7 +175,7 @@ file main.gom
         };
         found/31.get()
     }
-    
+
     fn subst_lookup(local/1/34: Vec[SubstEntry], local/1/35: string) -> Option[Typ] {
         let local/1/36 = Ref::new(subst/34.len() - 1);
         let local/1/37 = Ref::new(Option::None);
@@ -193,7 +193,7 @@ file main.gom
         };
         found/37.get()
     }
-    
+
     fn occurs(local/1/40: CheckerState, local/1/41: Ref[Tv], local/1/42: Typ) -> Result[unit, string] {
         match ty/42 {
             ctor(def/1/1::v0)(local/1/43) => {
@@ -222,7 +222,7 @@ file main.gom
             _ => Result::Ok(()),
         }
     }
-    
+
     fn unify(local/1/52: CheckerState, local/1/53: Typ, local/1/54: Typ) -> Result[unit, string] {
         match (t1/53, t2/54) {
             (ctor(def/1/1::v0)(local/1/55), ctor(def/1/1::v0)(local/1/56)) => {
@@ -271,7 +271,7 @@ file main.gom
             _ => Result::Err("unify error"),
         }
     }
-    
+
     fn gen(local/1/73: CheckerState, local/1/74: Typ) -> Typ {
         match ty/74 {
             ctor(def/1/1::v0)(local/1/75) => match tvref/75.get() {
@@ -289,7 +289,7 @@ file main.gom
             local/1/82 => other/82,
         }
     }
-    
+
     fn inst_loop(local/1/83: CheckerState, local/1/84: Vec[SubstEntry], local/1/85: Typ) -> (Typ, Vec[SubstEntry]) {
         match ty/85 {
             ctor(def/1/1::v1)(local/1/86) => match def/1/20(subst/84, name/86) {
@@ -314,13 +314,13 @@ file main.gom
               },
         }
     }
-    
+
     fn inst(local/1/98: CheckerState, local/1/99: Typ) -> Typ {
         let local/1/100: Vec[SubstEntry] = Vec::new();
         let (local/1/101, _) = def/1/24(st/98, subst0/100, ty/99);
         t/101
     }
-    
+
     fn typeof(local/1/102: CheckerState, local/1/103: Vec[EnvEntry], local/1/104: Exp) -> Result[Typ, string] {
         match e/104 {
             ctor(def/1/0::v0)(local/1/105) => match def/1/19(env/103, x/105) {
@@ -373,30 +373,30 @@ file main.gom
               },
         }
     }
-    
+
     fn exp_var(local/1/129: string) -> Exp {
         ctor(def/1/0::v0)(name/129)
     }
-    
+
     fn exp_lam(local/1/130: string, local/1/131: Exp) -> Exp {
         ctor(def/1/0::v2)(name/130, body/131)
     }
-    
+
     fn exp_app(local/1/132: Exp, local/1/133: Exp) -> Exp {
         ctor(def/1/0::v1)(a/132, b/133)
     }
-    
+
     fn exp_let(local/1/134: string, local/1/135: Exp, local/1/136: Exp) -> Exp {
         ctor(def/1/0::v3)(name/134, a/135, b/136)
     }
-    
+
     fn show_result(local/1/137: string, local/1/138: Result[Typ, string]) -> unit {
         match res/138 {
             Result::Ok(local/1/139) => println(label/137 + ": " + def/1/17(ty/139)),
             Result::Err(local/1/140) => println(label/137 + ": " + e/140),
         }
     }
-    
+
     fn main() -> unit {
         let local/1/141 = def/1/6();
         let local/1/142 = def/1/28("x", def/1/27("x"));

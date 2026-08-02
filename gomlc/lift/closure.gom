@@ -32,7 +32,7 @@ struct State {
 }
 
 fn copy_scope(values: Vec[ScopeEntry]) -> Vec[ScopeEntry] {
-    let result = Vec::new();
+    let result: Vec[ScopeEntry] = Vec::[];
     for value in values {
         result.push(value)
     };
@@ -40,13 +40,13 @@ fn copy_scope(values: Vec[ScopeEntry]) -> Vec[ScopeEntry] {
 }
 
 fn find_scope(values: Vec[ScopeEntry], name: string) -> Option[ScopeEntry] {
-    let index = Ref::new(values.len() - 1);
-    while index.get() >= 0 {
-        let value = values[index.get()];
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
         if value.name == name {
             return Option::Some(value)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -203,7 +203,7 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
 }
 
 fn initial_used_types(value: core::File) -> Vec[string] {
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for function in value.functions {
         for param in function.params {
             collect_used_types(result, param.1)
@@ -241,31 +241,31 @@ fn primary_name(value: string) -> string {
 fn sanitize_name(value: string) -> Option[string] {
     let value = primary_name(value);
     let builder = text::StringBuilder::new();
-    let pending_separator = Ref::new(false);
-    let wrote = Ref::new(false);
+    let mut pending_separator = false;
+    let mut wrote = false;
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
         if ascii_alphanumeric(byte) {
-            if pending_separator.get() && wrote.get() {
+            if pending_separator && wrote {
                 builder.write_char('_')
             } else {
                 ()
             };
-            if wrote.get() == false && byte >= b'0' && byte <= b'9' {
+            if !wrote && byte >= b'0' && byte <= b'9' {
                 builder.write_char('_')
             } else {
                 ()
             };
             builder.write_string(value.byte_slice(index, index + 1));
-            pending_separator.set(false);
-            wrote.set(true)
-        } else if wrote.get() {
-            pending_separator.set(true)
+            pending_separator = false;
+            wrote = true;
+        } else if wrote {
+            pending_separator = true;
         } else {
             ()
         }
     };
-    if wrote.get() {
+    if wrote {
         Option::Some(builder.finish())
     } else {
         Option::None
@@ -306,28 +306,28 @@ fn trailing_number(value: string) -> Option[int] {
     if value.byte_len() == 0 {
         Option::None
     } else {
-        let start = Ref::new(value.byte_len());
-        let index = Ref::new(value.byte_len());
-        while index.get() > 0 {
-            let next = index.get() - 1;
+        let mut start = value.byte_len();
+        let mut index = value.byte_len();
+        while index > 0 {
+            let next = index - 1;
             let byte = value.byte_get(next);
             if byte >= b'0' && byte <= b'9' {
-                start.set(next);
-                index.set(next)
+                start = next;
+                index = next;
             } else {
                 break
             }
         };
-        if start.get() == value.byte_len() {
+        if start == value.byte_len() {
             Option::None
         } else {
-            Option::Some(parse_digits(value, start.get()))
+            Option::Some(parse_digits(value, start))
         }
     }
 }
 
 fn parse_digits(value: string, start: int) -> int {
-    let result = Ref::new(0);
+    let mut result = 0;
     for index in start..value.byte_len() {
         let byte = value.byte_get(index);
         let digit = if byte == b'0' {
@@ -351,9 +351,9 @@ fn parse_digits(value: string, start: int) -> int {
         } else {
             9
         };
-        result.set(result.get() * 10 + digit)
+        result = result * 10 + digit;
     };
-    result.get()
+    result
 }
 
 fn observe_name(maximum: Ref[int], name: string) -> unit {
@@ -465,7 +465,7 @@ fn transform_exprs(
     values: Vec[core::Expr],
     context: Option[string],
 ) -> Vec[core::Expr] {
-    let result = Vec::new();
+    let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(transform_expr(state, scope, value, context))
     };
@@ -500,7 +500,7 @@ fn transform_block(
     context: Option[string],
 ) -> core::Block {
     let scope = copy_scope(outer_scope);
-    let stmts = Vec::new();
+    let stmts: Vec[core::LetStmt] = Vec::[];
     for stmt in value.stmts {
         let transformed = match stmt.value {
             Closure { params, body, ty } => transform_closure(
@@ -538,7 +538,7 @@ fn transform_arms(
     values: Vec[core::Arm],
     context: Option[string],
 ) -> Vec[core::Arm] {
-    let result = Vec::new();
+    let result: Vec[core::Arm] = Vec::[];
     for value in values {
         result.push(transform_arm(state, scope, value, context))
     };
@@ -567,7 +567,7 @@ fn transform_call(
     };
     match closure {
         Some(info) => {
-            let call_args = Vec::new();
+            let call_args: Vec[core::Expr] = Vec::[];
             call_args.push(func);
             for arg in args {
                 call_args.push(arg)
@@ -749,14 +749,14 @@ fn collect_captured_block(
     captured: Vec[Capture],
     scope: Vec[ScopeEntry],
 ) -> unit {
-    let added = Ref::new(0);
+    let mut added = 0;
     for stmt in value.stmts {
         collect_captured(stmt.value, bound, captured, scope);
         bound.push(stmt.name);
-        added.set(added.get() + 1)
+        added = added + 1;
     };
     collect_captured_optional(value.tail, bound, captured, scope);
-    for _ in 0..added.get() {
+    for _ in 0..added {
         let _ = bound.pop();
     }
 }
@@ -857,7 +857,7 @@ fn make_field_name(name: string, index: int) -> string {
 fn closure_body_block(value: core::Expr) -> core::Block {
     match value {
         Block { block, ty: _ } => block,
-        other => core::Block { stmts: Vec::new(), tail: Option::Some(other) },
+        other => core::Block { stmts: Vec::[], tail: Option::Some(other) },
     }
 }
 
@@ -868,7 +868,7 @@ fn prepend_captures(
     env_ty: tast::Type,
     constructor: tast::Constructor,
 ) -> core::Block {
-    let stmts = Vec::new();
+    let stmts: Vec[core::LetStmt] = Vec::[];
     for index in 0..captures.len() {
         let capture = captures[index];
         stmts.push(
@@ -906,8 +906,8 @@ fn transform_closure(
     match signature {
         Some(signature) => {
             let closure_scope = copy_scope(outer_scope);
-            let lowered_params = Vec::new();
-            let bound = Vec::new();
+            let lowered_params: Vec[(string, tast::Type)] = Vec::[];
+            let bound: Vec[string] = Vec::[];
             for index in 0..params.len() {
                 let param = params[index];
                 let param_ty = signature.0[index];
@@ -932,13 +932,13 @@ fn transform_closure(
                 None => context,
             };
             let body = transform_expr(state, closure_scope, body, hint);
-            let captures = Vec::new();
+            let captures: Vec[Capture] = Vec::[];
             collect_captured(body, bound, captures, outer_scope);
             let struct_name = fresh_struct_name(state, hint);
             let env_ty = tast::Type::Con { name: struct_name };
-            let fields = Vec::new();
-            let struct_fields: Vec[(string, tast::Type)] = Vec::new();
-            let captured_args = Vec::new();
+            let fields: Vec[string] = Vec::[];
+            let struct_fields: Vec[(string, tast::Type)] = Vec::[];
+            let captured_args: Vec[core::Expr] = Vec::[];
             for index in 0..captures.len() {
                 let capture = captures[index];
                 let field_name = make_field_name(capture.name, index);
@@ -954,9 +954,9 @@ fn transform_closure(
             };
             let apply_name = "inherent#" + struct_name + "#" + struct_name + "#apply";
             let env_name = fresh_name(state, "env");
-            let fn_params = Vec::new();
+            let fn_params: Vec[(string, tast::Type)] = Vec::[];
             fn_params.push((env_name, env_ty));
-            let apply_param_types = Vec::new();
+            let apply_param_types: Vec[tast::Type] = Vec::[];
             apply_param_types.push(env_ty);
             for param in lowered_params {
                 fn_params.push(param);
@@ -967,9 +967,9 @@ fn transform_closure(
             state.generated_structs.push(
                 tast::StructDef {
                     name: struct_name,
-                    generics: Vec::new(),
+                    generics: Vec::[],
                     fields: struct_fields,
-                    public_fields: Vec::new(),
+                    public_fields: Vec::[],
                     has_hidden_fields: false,
                 },
             );
@@ -983,9 +983,10 @@ fn transform_closure(
             state.generated.push(
                 core::Function {
                     name: apply_name,
+                    origin: core::FunctionOrigin::Inherent { owner: env_ty, method_name: "apply" },
                     root: true,
-                    generics: Vec::new(),
-                    predicates: Vec::new(),
+                    generics: Vec::[],
+                    predicates: Vec::[],
                     trait_impl: Option::None,
                     params: fn_params,
                     ret_ty: signature.1,
@@ -999,7 +1000,7 @@ fn transform_closure(
 }
 
 fn transform_function(state: State, value: core::Function) -> core::Function {
-    let scope = Vec::new();
+    let scope: Vec[ScopeEntry] = Vec::[];
     for param in value.params {
         scope.push(
             ScopeEntry {
@@ -1015,6 +1016,7 @@ fn transform_function(state: State, value: core::Function) -> core::Function {
     let context = sanitize_name(value.name);
     core::Function {
         name: value.name,
+        origin: value.origin,
         root: value.root,
         generics: value.generics,
         predicates: value.predicates,
@@ -1033,12 +1035,12 @@ fn lambda_lift_with_counter(value: core::File, counter: Ref[int]) -> core::File 
     let state = State {
         next_env: Ref::new(0),
         next_name: counter,
-        generated: Vec::new(),
-        generated_structs: Vec::new(),
-        closures: Vec::new(),
+        generated: Vec::[],
+        generated_structs: Vec::[],
+        closures: Vec::[],
         used_types: initial_used_types(value),
     };
-    let functions = Vec::new();
+    let functions: Vec[core::Function] = Vec::[];
     for function in value.functions {
         functions.push(transform_function(state, function))
     };

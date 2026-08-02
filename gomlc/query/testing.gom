@@ -17,9 +17,9 @@ pub struct TestItem {
 }
 
 fn test_path_kind(source_path: string) -> Option[TestItemKind] {
-    let current = Ref::new(path::clean(source_path));
+    let mut current = path::clean(source_path);
     loop {
-        match path::parent(current.get()) {
+        match path::parent(current) {
             Some(parent) => {
                 match path::file_name(parent) {
                     Some(name) => if name == "tests" {
@@ -29,10 +29,10 @@ fn test_path_kind(source_path: string) -> Option[TestItemKind] {
                     },
                     None => (),
                 };
-                if parent == current.get() {
+                if parent == current {
                     break
                 } else {
-                    current.set(parent)
+                    current = parent;
                 }
             },
             None => break,
@@ -76,7 +76,7 @@ fn function_symbol_span(symbols: SymbolIndex, source_path: string, name: string)
 }
 
 pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
-    let result = Vec::new();
+    let result: Vec[TestItem] = Vec::[];
     match test_path_kind(source_path) {
         Some(kind) => {
             let lowered = ast::lower(parser::parse(source));
@@ -87,7 +87,7 @@ pub fn test_items(source_path: string, source: string) -> Vec[TestItem] {
                         source,
                         package_name: file.package_name,
                     };
-                    let analysis_sources = Vec::new();
+                    let analysis_sources: Vec[SourceFile] = Vec::[];
                     analysis_sources.push(source_file);
                     let symbols = build_symbol_index_from_sources(analysis_sources);
                     for item in file.items {

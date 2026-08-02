@@ -26,21 +26,22 @@ pub struct ResolvedModule {
 }
 
 fn decimal_number(value: string) -> Option[int] {
-    if value.byte_len() == 0 {
+    let length = value.byte_len();
+    if length == 0 {
         return Option::None
     } else {
         ()
     };
-    let result = Ref::new(0);
-    for index in 0..value.byte_len() {
+    let mut result = 0;
+    for index in 0..length {
         let byte = value.byte_get(index);
         if byte < b'0' || byte > b'9' {
             return Option::None
         } else {
-            result.set(result.get() * 10 + (byte - 48) as int)
+            result = result * 10 + (byte - b'0') as int;
         }
     };
-    Option::Some(result.get())
+    Option::Some(result)
 }
 
 pub fn parse_sem_version(value: string) -> Result[SemVersion, string] {
@@ -73,16 +74,18 @@ fn version_equal(left: SemVersion, right: SemVersion) -> bool {
 }
 
 fn quoted_values(value: string) -> Vec[string] {
-    let result = Vec::new();
-    let start: Ref[Option[int]] = Ref::new(Option::None);
+    let result: Vec[string] = Vec::[];
+    let mut start: Option[int] = Option::None;
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'"' {
-            match start.get() {
+            match start {
                 Some(offset) => {
                     result.push(value.byte_slice(offset, index));
-                    start.set(Option::None)
+                    start = Option::None;
                 },
-                None => start.set(Option::Some(index + 1)),
+                None => {
+                    start = Option::Some(index + 1);
+                },
             }
         } else {
             ()
@@ -93,8 +96,8 @@ fn quoted_values(value: string) -> Vec[string] {
 
 fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
     let source = fs::read_file(path::join(root, "index.toml"))?;
-    let entries = Vec::new();
-    let current: Ref[Option[string]] = Ref::new(Option::None);
+    let entries: Vec[RegistryEntry] = Vec::[];
+    let mut current: Option[string] = Option::None;
     for original in util::split_lines(source) {
         let line = util::trim(original);
         if util::starts_with(line, "[modules.") {
@@ -102,11 +105,11 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
             if values.len() != 1 {
                 return Result::Err("invalid registry module table " + line)
             } else {
-                current.set(Option::Some(values[0]));
-                entries.push(RegistryEntry { name: values[0], latest: "", versions: Vec::new() })
+                current = Option::Some(values[0]);
+                entries.push(RegistryEntry { name: values[0], latest: "", versions: Vec::[] })
             }
         } else {
-            match current.get() {
+            match current {
                 Some(_) => if util::starts_with(line, "latest") {
                     let values = quoted_values(line);
                     if values.len() != 1 {
@@ -208,11 +211,11 @@ pub fn validate(root: string) -> Result[unit, string] {
     for entry in entries {
         validate_coordinate(entry.name)?;
         let latest = parse_sem_version(entry.latest)?;
-        let latest_matches: Vec[string] = Vec::new();
+        let mut latest_matches = false;
         for version in entry.versions {
             let parsed = parse_sem_version(version)?;
             if version_equal(parsed, latest) {
-                latest_matches.push(version)
+                latest_matches = true;
             } else {
                 ()
             };
@@ -226,7 +229,7 @@ pub fn validate(root: string) -> Result[unit, string] {
                 ()
             }
         };
-        if latest_matches.len() == 0 {
+        if !latest_matches {
             return Result::Err(
                 "registry index latest version " + entry.latest + " for " + entry.name
                     + " is not listed in versions",
@@ -257,22 +260,22 @@ pub fn select_version(root: string, name: string, minimum: string) -> Result[str
     let Some(entry) = find_entry(entries, name) else {
         return Result::Err("module " + name + " not found in registry index")
     };
-    let selected: Ref[Option[string]] = Ref::new(Option::None);
-    let selected_value: Ref[Option[SemVersion]] = Ref::new(Option::None);
+    let mut selected: Option[string] = Option::None;
+    let mut selected_value: Option[SemVersion] = Option::None;
     for version in entry.versions {
         let parsed = parse_sem_version(version)?;
         if !version_less(parsed, minimum_value)
-            && match selected_value.get() {
+            && match selected_value {
                 Some(current) => version_less(parsed, current),
                 None => true,
             } {
-            selected.set(Option::Some(version));
-            selected_value.set(Option::Some(parsed))
+            selected = Option::Some(version);
+            selected_value = Option::Some(parsed);
         } else {
             ()
         }
     };
-    match selected.get() {
+    match selected {
         Some(value) => Result::Ok(value),
         None => Result::Err("registry has no version for " + name + " satisfying >= " + minimum),
     }
@@ -322,14 +325,15 @@ fn selected_index(values: Vec[ResolvedModule], name: string) -> Option[int] {
 pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModule], string] {
     let root_manifest = manifest::load(path::join(module_root, "goml.toml"))?;
     let queue = root_manifest.dependencies;
-    let cursor = Ref::new(0);
-    let selected = Vec::new();
-    while cursor.get() < queue.len() {
-        let requirement = queue[cursor.get()];
-        cursor.set(cursor.get() + 1);
+    let selected: Vec[ResolvedModule] = Vec::[];
+    let mut cursor = 0;
+    while cursor < queue.len() {
+        let requirement = queue[cursor];
+        cursor += 1;
         let version = select_version(root, requirement.name, requirement.version)?;
         let parsed = parse_sem_version(version)?;
-        let update = match selected_index(selected, requirement.name) {
+        let selected_position = selected_index(selected, requirement.name);
+        let update = match selected_position {
             Some(index) => {
                 let current = parse_sem_version(selected[index].version)?;
                 version_less(current, parsed)
@@ -353,7 +357,7 @@ pub fn resolve_at(module_root: string, root: string) -> Result[Vec[ResolvedModul
                 root: directory,
                 dependencies: module_manifest.dependencies,
             };
-            match selected_index(selected, requirement.name) {
+            match selected_position {
                 Some(index) => selected.set(index, resolved),
                 None => selected.push(resolved),
             };
@@ -385,12 +389,12 @@ pub fn package_directory(module: ResolvedModule, package_name: string) -> Option
     if package_name == module.name {
         Option::Some(module.root)
     } else if module_matches_package(module.name, package_name) {
-        let result = Ref::new(module.root);
+        let mut result = module.root;
         let suffix = package_name.byte_slice(module.name.byte_len() + 2, package_name.byte_len());
         for segment in util::split(suffix, "::") {
-            result.set(path::join(result.get(), segment))
+            result = path::join(result, segment);
         };
-        Option::Some(result.get())
+        Option::Some(result)
     } else {
         Option::None
     }

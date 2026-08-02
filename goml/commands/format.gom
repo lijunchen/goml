@@ -80,7 +80,7 @@ fn collect_owned_graph_files(graph: project::Graph, module_path: string, result:
 }
 
 fn module_format_files(context: project::Context) -> Result[Vec[string], string] {
-    let files = Vec::new();
+    let files: Vec[string] = Vec::[];
     collect_owned_graph_files(context.graph, context.graph.module_path, files);
     let internal = project::internal_test_graphs(context)?;
     for graph in internal {
@@ -105,7 +105,7 @@ pub fn format_module(check: bool, formatter_override: Option[string]) -> Result[
     let context = project::load_context(Option::None, Option::None)?;
     let module_root = context.graph.module_dir;
     let files = module_format_files(context)?;
-    if files.len() == 0 {
+    if files.is_empty() {
         return Result::Ok(0)
     } else {
         ()

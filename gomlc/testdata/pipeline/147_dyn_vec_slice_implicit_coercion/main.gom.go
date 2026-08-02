@@ -48,87 +48,53 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var retv157 string
-    var t158 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    retv157 = t158
-    return retv157
-}
-
-func render(x__1 dyn__Display) string {
-    var retv160 string
-    var t161 string = x__1.vtable.show(x__1.data)
-    retv160 = t161
-    return retv160
+    var inline192 string = _goml_runtime_core_int32_to_string(self__0)
+    return inline192
 }
 
 func main0() struct{} {
-    var v__2 *_goml_vec_Dyn_Display = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__dynDisplay()
+    var v__2 *_goml_vec_Dyn_Display
+    var inline216 *_goml_vec_Dyn_Display = vec_new__Vec_11Dyn_Display()
+    v__2 = inline216
     var first__3 int32 = 10
     var second__4 int32 = 20
-    var t163 dyn__Display = dyn__Display{
+    var t166 dyn__Display = dyn__Display{
         data: int32(first__3),
         vtable: dyn__Display__vtable__int32(),
     }
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(v__2, t163)
-    var t164 dyn__Display = dyn__Display{
+    vec_push__Vec_11Dyn_Display(v__2, t166)
+    var t167 dyn__Display = dyn__Display{
         data: int32(second__4),
         vtable: dyn__Display__vtable__int32(),
     }
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(v__2, t164)
-    var s__5 []dyn__Display = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__dynDisplay(v__2, 0, 2)
-    var t165 dyn__Display = s__5[0]
-    var t166 string = render(t165)
-    println__T_string(t166)
-    var t__6 []dyn__Display = _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__dynDisplay(s__5, 1, 2)
-    var t167 dyn__Display = t__6[0]
-    var t168 string = render(t167)
-    println__T_string(t168)
+    vec_push__Vec_11Dyn_Display(v__2, t167)
+    var s__5 []dyn__Display
+    var inline208 int = 0
+    var inline209 int = 2
+    var inline210 []dyn__Display = v__2.items[inline208:inline209]
+    s__5 = inline210
+    var t168 dyn__Display = s__5[0]
+    var t169 string
+    var inline206 string = t168.vtable.show(t168.data)
+    t169 = inline206
+    var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t169)
+    _goml_runtime_core_string_println(inline203)
+    var t__6 []dyn__Display
+    var inline199 int = 1
+    var inline200 int = 2
+    var inline201 []dyn__Display = s__5[inline199:inline200]
+    t__6 = inline201
+    var t170 dyn__Display = t__6[0]
+    var t171 string
+    var inline197 string = t170.vtable.show(t170.data)
+    t171 = inline197
+    var inline194 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t171)
+    _goml_runtime_core_string_println(inline194)
     return struct{}{}
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv170 string
-    var t171 string = _goml_runtime_core_int32_to_string(self__6)
-    retv170 = t171
-    return retv170
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__dynDisplay() *_goml_vec_Dyn_Display {
-    var retv173 *_goml_vec_Dyn_Display
-    var t174 *_goml_vec_Dyn_Display = vec_new__Vec_11Dyn_Display()
-    retv173 = t174
-    return retv173
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(self__126 *_goml_vec_Dyn_Display, elem__127 dyn__Display) struct{} {
-    vec_push__Vec_11Dyn_Display(self__126, elem__127)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__dynDisplay(self__175 *_goml_vec_Dyn_Display, start__176 int, end__177 int) []dyn__Display {
-    var retv178 []dyn__Display
-    var t179 []dyn__Display = self__175.items[start__176:end__177]
-    retv178 = t179
-    return retv178
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t181 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t181)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__dynDisplay(self__187 []dyn__Display, start__188 int, end__189 int) []dyn__Display {
-    var retv184 []dyn__Display
-    var t185 []dyn__Display = self__187[start__188:end__189]
-    retv184 = t185
-    return retv184
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv187 string
-    retv187 = self__38
-    return retv187
+    return self__38
 }
 
 func main() {

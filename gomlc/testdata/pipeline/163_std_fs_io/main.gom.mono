@@ -1,5 +1,8 @@
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: inherent#Vec#Vec[T]#new__T_uint8() }
+  std::bytes::Bytes { values: {
+    let vec_literal/130 = inherent#Vec#Vec[T]#new__T_uint8() in
+    vec_literal/130
+  } }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -> std::bytes::Bytes {
@@ -470,20 +473,20 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
 
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
-    Result__string__string::Ok(x152) => {
+    Result__string__string::Ok(x155) => {
       {
-        let x152 = Result__string__string::Ok._0(res/0) in
+        let x155 = Result__string__string::Ok._0(res/0) in
         {
-          let value/1 = x152 in
+          let value/1 = x155 in
           value/1
         }
       }
     },
-    Result__string__string::Err(x153) => {
+    Result__string__string::Err(x156) => {
       {
-        let x153 = Result__string__string::Err._0(res/0) in
+        let x156 = Result__string__string::Err._0(res/0) in
         {
-          let err/2 = x153 in
+          let err/2 = x156 in
           ("err " + err/2)
         }
       }
@@ -493,20 +496,20 @@ fn show_read(res/0: Result__string__string) -> string {
 
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
   match res/3 {
-    Result__Vec[string]__string::Ok(x154) => {
+    Result__Vec[string]__string::Ok(x157) => {
       {
-        let x154 = Result__Vec[string]__string::Ok._0(res/3) in
+        let x157 = Result__Vec[string]__string::Ok._0(res/3) in
         {
-          let names/4 = x154 in
+          let names/4 = x157 in
           trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(names/4) > 0))
         }
       }
     },
-    Result__Vec[string]__string::Err(x155) => {
+    Result__Vec[string]__string::Err(x158) => {
       {
-        let x155 = Result__Vec[string]__string::Err._0(res/3) in
+        let x158 = Result__Vec[string]__string::Err._0(res/3) in
         {
-          let err/5 = x155 in
+          let err/5 = x158 in
           ("err " + err/5)
         }
       }
@@ -515,11 +518,11 @@ fn show_dir(res/3: Result__Vec[string]__string) -> string {
 }
 
 fn main() -> unit {
-  let mtmp156 = std::fs::write_file("goml-std-test.txt", "std-ok") in
+  let mtmp159 = std::fs::write_file("goml-std-test.txt", "std-ok") in
   {
-    let _wild157 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
-    let _wild158 = std::io::println__T_string(trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))) in
-    let _wild159 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
+    let _wild160 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
+    let _wild161 = std::io::println__T_string(trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))) in
+    let _wild162 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
   }
 }
 
@@ -544,7 +547,7 @@ fn inherent#Vec#Vec[T]#capacity__T_uint8(self/138: Vec[uint8]) -> int {
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/139: Vec[uint8]) -> bool {
-  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len__T_uint8(self/139), 0)
+  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/139), 0)
 }
 
 fn inherent#Vec#Vec[T]#push__T_uint8(self/126: Vec[uint8], elem/127: uint8) -> unit {

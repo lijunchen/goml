@@ -181,7 +181,7 @@ fn sha256_bytes(value: Vec[byte]) -> string {
         h6 += g;
         h7 += h;
     };
-    let builder = text::StringBuilder::new();
+    let builder = text::StringBuilder::with_capacity(64);
     sha256_write_hex(builder, h0);
     sha256_write_hex(builder, h1);
     sha256_write_hex(builder, h2);
@@ -226,13 +226,13 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             CacheSpec {
                 kind: "prepare-world",
                 args: command_args(value).1,
-                inputs: Vec::new(),
+                inputs: Vec::[],
                 outputs: Vec::[output],
                 anchor: output,
             },
         ),
         Compile { subcommand, input_files, interface_files, output, world, .. } => {
-            let inputs = Vec::new();
+            let inputs: Vec[string] = Vec::[];
             for input in input_files {
                 inputs.push(input)
             };
@@ -260,7 +260,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             )
         },
         Link { input_cores, output, world, .. } => {
-            let inputs = Vec::new();
+            let inputs: Vec[string] = Vec::[];
             for input in input_cores {
                 inputs.push(input)
             };
@@ -279,7 +279,7 @@ fn cache_spec(value: Command) -> Option[CacheSpec] {
             )
         },
         TestLink { input_cores, output, manifest, world, .. } => {
-            let inputs = Vec::new();
+            let inputs: Vec[string] = Vec::[];
             for input in input_cores {
                 inputs.push(input)
             };
@@ -342,7 +342,7 @@ fn command_fingerprint(context: Context, compiler: string, spec: CacheSpec) -> R
 }
 
 fn output_digests(module_dir: string, outputs: Vec[string]) -> Result[Option[Vec[string]], string] {
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for output in outputs {
         if fs::is_file(absolute_from_module(module_dir, output)) {
             match file_digest(module_dir, output) {

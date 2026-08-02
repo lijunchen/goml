@@ -1,185 +1,221 @@
 fn make_point() -> Point {
-  join ret180(retv181: Point) -> Point {
-    retv181
-  } in
-  let t182 = Point { x: 0, y: 0 } in
-  jump ret180(t182)
+  let t185 = Point { x: 0, y: 0 } in
+  t185
 }
 
 fn flip(point/0: Point) -> Point {
-  join ret183(retv184: Point) -> Point {
-    retv184
-  } in
-  let mtmp152 = point/0 in
-  let x153 = Point.x(mtmp152) in
-  let x154 = Point.y(mtmp152) in
-  let y/2 = x154 in
-  let x/1 = x153 in
-  let t185 = Point { x: y/2, y: x/1 } in
-  jump ret183(t185)
+  let mtmp155 = point/0 in
+  let x156 = Point.x(point/0) in
+  let x157 = Point.y(point/0) in
+  let y/2 = x157 in
+  let x/1 = x156 in
+  let t188 = Point { x: x157, y: x156 } in
+  t188
 }
 
 fn wrap_int(x/3: int32) -> Wrapper__int32 {
-  join ret186(retv187: Wrapper__int32) -> Wrapper__int32 {
-    retv187
-  } in
-  let t188 = Wrapper__int32 { value: x/3 } in
-  jump ret186(t188)
+  let t191 = Wrapper__int32 { value: x/3 } in
+  t191
 }
 
 fn x_add_1(p/4: Point) -> Point {
-  join ret189(retv190: Point) -> Point {
-    retv190
-  } in
-  let mtmp155 = p/4 in
-  let x156 = Point.x(mtmp155) in
-  let x157 = Point.y(mtmp155) in
-  let y/6 = x157 in
-  let x/5 = x156 in
-  let t191 = (x/5 + 1) in
-  let t192 = Point { x: t191, y: y/6 } in
-  jump ret189(t192)
+  let mtmp158 = p/4 in
+  let x159 = Point.x(p/4) in
+  let x160 = Point.y(p/4) in
+  let y/6 = x160 in
+  let x/5 = x159 in
+  let t194 = (x159 + 1) in
+  let t195 = Point { x: t194, y: x160 } in
+  t195
 }
 
 fn get_x(p/7: Point) -> int32 {
-  join ret193(retv194: int32) -> int32 {
-    retv194
-  } in
-  let mtmp158 = p/7 in
-  let x159 = Point.x(mtmp158) in
-  let x160 = Point.y(mtmp158) in
-  let y/9 = x160 in
-  let x/8 = x159 in
-  jump ret193(x/8)
+  let mtmp161 = p/7 in
+  let x162 = Point.x(p/7) in
+  let x163 = Point.y(p/7) in
+  let y/9 = x163 in
+  let x/8 = x162 in
+  x162
 }
 
 fn get_y(p/10: Point) -> int32 {
-  join ret195(retv196: int32) -> int32 {
-    retv196
-  } in
-  let mtmp161 = p/10 in
-  let x162 = Point.x(mtmp161) in
-  let x163 = Point.y(mtmp161) in
-  let y/12 = x163 in
-  let x/11 = x162 in
-  jump ret195(y/12)
+  let mtmp164 = p/10 in
+  let x165 = Point.x(p/10) in
+  let x166 = Point.y(p/10) in
+  let y/12 = x166 in
+  let x/11 = x165 in
+  x166
 }
 
 fn point32_to_string(p/13: Point) -> string {
-  join ret197(retv198: string) -> string {
-    retv198
+  let mtmp167 = p/13 in
+  let x168 = Point.x(p/13) in
+  let x169 = Point.y(p/13) in
+  let y/15 = x169 in
+  let x/14 = x168 in
+  join inline_cont249(t202: string) -> string {
+    let t203 = ("Point { x: " + t202) in
+    let t204 = (t203 + ", y: ") in
+    join inline_cont247(t205: string) -> string {
+      let t206 = (t204 + t205) in
+      let t207 = (t206 + "}") in
+      t207
+    } in
+    let inline248 = @runtime(core.int32_to_string)(x169) in
+    jump inline_cont247(inline248)
   } in
-  let mtmp164 = p/13 in
-  let x165 = Point.x(mtmp164) in
-  let x166 = Point.y(mtmp164) in
-  let y/15 = x166 in
-  let x/14 = x165 in
-  let t199 = inherent#int32#int32#to_string(x/14) in
-  let t200 = ("Point { x: " + t199) in
-  let t201 = (t200 + ", y: ") in
-  let t202 = inherent#int32#int32#to_string(y/15) in
-  let t203 = (t201 + t202) in
-  let t204 = (t203 + "}") in
-  jump ret197(t204)
+  let inline250 = @runtime(core.int32_to_string)(x168) in
+  jump inline_cont249(inline250)
 }
 
 fn point32_to_string2(p/16: Point) -> string {
-  join ret205(retv206: string) -> string {
-    retv206
+  let mtmp170 = p/16 in
+  let x171 = Point.x(p/16) in
+  let x172 = Point.y(p/16) in
+  let y/18 = x172 in
+  let x/17 = x171 in
+  join inline_cont253(t210: string) -> string {
+    let t211 = ("Point { x: " + t210) in
+    let t212 = (t211 + ", y: ") in
+    join inline_cont251(t213: string) -> string {
+      let t214 = (t212 + t213) in
+      let t215 = (t214 + "}") in
+      t215
+    } in
+    let inline252 = @runtime(core.int32_to_string)(x172) in
+    jump inline_cont251(inline252)
   } in
-  let mtmp167 = p/16 in
-  let x168 = Point.x(mtmp167) in
-  let x169 = Point.y(mtmp167) in
-  let y/18 = x169 in
-  let x/17 = x168 in
-  let t207 = inherent#int32#int32#to_string(x/17) in
-  let t208 = ("Point { x: " + t207) in
-  let t209 = (t208 + ", y: ") in
-  let t210 = inherent#int32#int32#to_string(y/18) in
-  let t211 = (t209 + t210) in
-  let t212 = (t211 + "}") in
-  jump ret205(t212)
+  let inline254 = @runtime(core.int32_to_string)(x171) in
+  jump inline_cont253(inline254)
 }
 
 fn point32_to_string3(p/19: Point) -> string {
-  join ret213(retv214: string) -> string {
-    retv214
+  let mtmp173 = p/19 in
+  let x174 = Point.x(p/19) in
+  let x175 = Point.y(p/19) in
+  let y/21 = x175 in
+  let x/20 = x174 in
+  join inline_cont257(t218: string) -> string {
+    let t219 = ("Point { x: " + t218) in
+    let t220 = (t219 + ", y: ") in
+    join inline_cont255(t221: string) -> string {
+      let t222 = (t220 + t221) in
+      let t223 = (t222 + "}") in
+      t223
+    } in
+    let inline256 = @runtime(core.int32_to_string)(x175) in
+    jump inline_cont255(inline256)
   } in
-  let mtmp170 = p/19 in
-  let x171 = Point.x(mtmp170) in
-  let x172 = Point.y(mtmp170) in
-  let y/21 = x172 in
-  let x/20 = x171 in
-  let t215 = inherent#int32#int32#to_string(x/20) in
-  let t216 = ("Point { x: " + t215) in
-  let t217 = (t216 + ", y: ") in
-  let t218 = inherent#int32#int32#to_string(y/21) in
-  let t219 = (t217 + t218) in
-  let t220 = (t219 + "}") in
-  jump ret213(t220)
+  let inline258 = @runtime(core.int32_to_string)(x174) in
+  jump inline_cont257(inline258)
 }
 
 fn point32_to_string4(p/22: Point) -> string {
-  join ret221(retv222: string) -> string {
-    retv222
+  let mtmp176 = p/22 in
+  let x177 = Point.x(p/22) in
+  let x178 = Point.y(p/22) in
+  let y/24 = x178 in
+  let x/23 = x177 in
+  join inline_cont261(t226: string) -> string {
+    let t227 = ("Point { x: " + t226) in
+    let t228 = (t227 + ", y: ") in
+    join inline_cont259(t229: string) -> string {
+      let t230 = (t228 + t229) in
+      let t231 = (t230 + "}") in
+      t231
+    } in
+    let inline260 = @runtime(core.int32_to_string)(x178) in
+    jump inline_cont259(inline260)
   } in
-  let mtmp173 = p/22 in
-  let x174 = Point.x(mtmp173) in
-  let x175 = Point.y(mtmp173) in
-  let y/24 = x175 in
-  let x/23 = x174 in
-  let t223 = inherent#int32#int32#to_string(x/23) in
-  let t224 = ("Point { x: " + t223) in
-  let t225 = (t224 + ", y: ") in
-  let t226 = inherent#int32#int32#to_string(y/24) in
-  let t227 = (t225 + t226) in
-  let t228 = (t227 + "}") in
-  jump ret221(t228)
+  let inline262 = @runtime(core.int32_to_string)(x177) in
+  jump inline_cont261(inline262)
 }
 
 fn main() -> unit {
-  join ret229() -> unit {
-    ()
-  } in
   let start/25 = make_point() in
-  let t230 = point32_to_string(start/25) in
-  let mtmp176 = println__T_string(t230) in
-  let t231 = Point { x: 1, y: 2 } in
-  let swapped/26 = flip(t231) in
-  let t232 = point32_to_string2(swapped/26) in
-  let mtmp177 = println__T_string(t232) in
-  let boxed/27 = wrap_int(3) in
-  let point_box/28 = Wrapper__Point { value: swapped/26 } in
-  let a/29 = x_add_1(start/25) in
-  let t233 = point32_to_string3(a/29) in
-  let mtmp178 = println__T_string(t233) in
-  let t234 = x_add_1(start/25) in
-  let a/30 = flip(t234) in
-  let t235 = point32_to_string4(a/30) in
-  let mtmp179 = println__T_string(t235) in
-  jump ret229()
+  let t233 = point32_to_string(start/25) in
+  let mtmp179 = println__T_string(t233) in
+  let t234 = Point { x: 1, y: 2 } in
+  let swapped/26 = flip(t234) in
+  let t235 = point32_to_string2(swapped/26) in
+  let mtmp180 = println__T_string(t235) in
+  join inline_cont308(boxed/27: Wrapper__int32) -> unit {
+    let point_box/28 = Wrapper__Point { value: swapped/26 } in
+    let a/29 = x_add_1(start/25) in
+    join inline_cont296(t236: string) -> unit {
+      join inline_cont293(mtmp181: unit) -> unit {
+        join inline_cont285(t237: Point) -> unit {
+          join inline_cont278(a/30: Point) -> unit {
+            join inline_cont266(t238: string) -> unit {
+              let inline264 = trait_impl#ToString#string#to_string(t238) in
+              let inline265 = @runtime(core.string_println)(inline264) in
+              ()
+            } in
+            let inline267 = a/30 in
+            let inline268 = Point.x(a/30) in
+            let inline269 = Point.y(a/30) in
+            let inline270 = inline269 in
+            let inline271 = inline268 in
+            let inline272 = inherent#int32#int32#to_string(inline268) in
+            let inline273 = ("Point { x: " + inline272) in
+            let inline274 = (inline273 + ", y: ") in
+            let inline275 = inherent#int32#int32#to_string(inline269) in
+            let inline276 = (inline274 + inline275) in
+            let inline277 = (inline276 + "}") in
+            jump inline_cont266(inline277)
+          } in
+          let inline279 = t237 in
+          let inline280 = Point.x(t237) in
+          let inline281 = Point.y(t237) in
+          let inline282 = inline281 in
+          let inline283 = inline280 in
+          let inline284 = Point { x: inline281, y: inline280 } in
+          jump inline_cont278(inline284)
+        } in
+        let inline286 = start/25 in
+        let inline287 = Point.x(start/25) in
+        let inline288 = Point.y(start/25) in
+        let inline289 = inline288 in
+        let inline290 = inline287 in
+        let inline291 = (inline287 + 1) in
+        let inline292 = Point { x: inline291, y: inline288 } in
+        jump inline_cont285(inline292)
+      } in
+      let inline294 = trait_impl#ToString#string#to_string(t236) in
+      let inline295 = @runtime(core.string_println)(inline294) in
+      jump inline_cont293(())
+    } in
+    let inline297 = a/29 in
+    let inline298 = Point.x(a/29) in
+    let inline299 = Point.y(a/29) in
+    let inline300 = inline299 in
+    let inline301 = inline298 in
+    let inline302 = inherent#int32#int32#to_string(inline298) in
+    let inline303 = ("Point { x: " + inline302) in
+    let inline304 = (inline303 + ", y: ") in
+    let inline305 = inherent#int32#int32#to_string(inline299) in
+    let inline306 = (inline304 + inline305) in
+    let inline307 = (inline306 + "}") in
+    jump inline_cont296(inline307)
+  } in
+  let inline309 = 3 in
+  let inline310 = Wrapper__int32 { value: inline309 } in
+  jump inline_cont308(inline310)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret236(retv237: string) -> string {
-    retv237
-  } in
-  let t238 = @runtime(core.int32_to_string)(self/6) in
-  jump ret236(t238)
+  let t241 = @runtime(core.int32_to_string)(self/6) in
+  t241
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret239() -> unit {
+  join inline_cont311(t243: string) -> unit {
+    let t244 = @runtime(core.string_println)(t243) in
     ()
   } in
-  let t240 = trait_impl#ToString#string#to_string(value/1) in
-  let t241 = @runtime(core.string_println)(t240) in
-  jump ret239()
+  jump inline_cont311(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret242(retv243: string) -> string {
-    retv243
-  } in
-  jump ret242(self/38)
+  self/38
 }

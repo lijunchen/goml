@@ -122,6 +122,7 @@ pub struct TraitMethodSignature {
     pub params: Vec[TypeExpr],
     pub ret_ty: TypeExpr,
     pub ret_ty_span: Option[ast::Span],
+    pub default_name: Option[string],
 }
 
 pub struct ClosureParam {
@@ -258,6 +259,9 @@ pub struct Block {
 }
 
 pub enum Stmt {
+    Defer {
+        expr: Expr,
+    },
     Let {
         is_mut: bool,
         pat: Pat,
@@ -400,6 +404,7 @@ pub enum ExprKind {
     Range {
         start: Expr,
         end: Expr,
+        inclusive: bool,
     },
     Binary {
         op: ast::BinaryOp,

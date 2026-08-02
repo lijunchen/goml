@@ -29,17 +29,8 @@ stage0_extracted="$(mktemp -d)"
 trap 'rm -rf "$stage0_extracted"' EXIT
 tar -xzf "$stage0_archive" --strip-components=1 -C "$stage0_extracted"
 
-if test -x "$stage0_extracted/bin/goml"; then
-    cp -R "$stage0_extracted/bin/." "$stage0_output/bin/"
-    cp -R "$stage0_extracted/lib/." "$stage0_output/lib/"
-else
-    cp "$stage0_extracted/goml" "$stage0_output/bin/goml"
-    cp "$stage0_extracted/gomlc" "$stage0_output/bin/gomlc"
-    cp "$stage0_extracted/gomlfmt" "$stage0_output/bin/gomlfmt"
-    cp "$stage0_extracted/gomllsp" "$stage0_output/bin/gomllsp"
-    cp "$stage0_extracted/builtin_prelude.gom" "$stage0_output/lib/builtin_prelude.gom"
-    cp -R "$stage0_extracted/lib/std" "$stage0_output/lib/"
-fi
+cp -R "$stage0_extracted/bin/." "$stage0_output/bin/"
+cp -R "$stage0_extracted/lib/." "$stage0_output/lib/"
 
 trap - EXIT
 rm -rf "$stage0_extracted"

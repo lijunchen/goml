@@ -1,67 +1,63 @@
 fn trait_impl#Base#Value#base(self/0: Value) -> string {
-  join ret153(retv154: string) -> string {
-    retv154
-  } in
-  jump ret153("B")
+  "B"
 }
 
 fn trait_impl#Left#Value#left(self/1: Value) -> string {
-  join ret155(retv156: string) -> string {
-    retv156
-  } in
-  jump ret155("L")
+  "L"
 }
 
 fn trait_impl#Right#Value#right(self/2: Value) -> string {
-  join ret157(retv158: string) -> string {
-    retv158
-  } in
-  jump ret157("R")
+  "R"
 }
 
 fn trait_impl#Diamond#Value#diamond(self/3: Value) -> string {
-  join ret159(retv160: string) -> string {
-    retv160
-  } in
-  jump ret159("D")
+  "D"
 }
 
 fn main() -> unit {
-  join ret161() -> unit {
+  let t165 = Value {} in
+  join inline_cont184(t166: string) -> unit {
+    let inline182 = trait_impl#ToString#string#to_string(t166) in
+    let inline183 = @runtime(core.string_println)(inline182) in
     ()
   } in
-  let t162 = Value {} in
-  let t163 = describe__T_Value(t162) in
-  let _wild152 = println__T_string(t163) in
-  jump ret161()
+  let inline185 = trait_impl#Base#Value#base(t165) in
+  let inline186 = trait_impl#Left#Value#left(t165) in
+  let inline187 = (inline185 + inline186) in
+  let inline188 = trait_impl#Right#Value#right(t165) in
+  let inline189 = (inline187 + inline188) in
+  let inline190 = trait_impl#Diamond#Value#diamond(t165) in
+  let inline191 = (inline189 + inline190) in
+  jump inline_cont184(inline191)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret164() -> unit {
+  join inline_cont192(t168: string) -> unit {
+    let t169 = @runtime(core.string_println)(t168) in
     ()
   } in
-  let t165 = trait_impl#ToString#string#to_string(value/1) in
-  let t166 = @runtime(core.string_println)(t165) in
-  jump ret164()
+  jump inline_cont192(value/1)
 }
 
 fn describe__T_Value(value/4: Value) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
+  join inline_cont196(t172: string) -> string {
+    join inline_cont195(t173: string) -> string {
+      let t174 = (t172 + t173) in
+      join inline_cont194(t175: string) -> string {
+        let t176 = (t174 + t175) in
+        join inline_cont193(t177: string) -> string {
+          let t178 = (t176 + t177) in
+          t178
+        } in
+        jump inline_cont193("D")
+      } in
+      jump inline_cont194("R")
+    } in
+    jump inline_cont195("L")
   } in
-  let t169 = trait_impl#Base#Value#base(value/4) in
-  let t170 = trait_impl#Left#Value#left(value/4) in
-  let t171 = (t169 + t170) in
-  let t172 = trait_impl#Right#Value#right(value/4) in
-  let t173 = (t171 + t172) in
-  let t174 = trait_impl#Diamond#Value#diamond(value/4) in
-  let t175 = (t173 + t174) in
-  jump ret167(t175)
+  jump inline_cont196("B")
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
-  } in
-  jump ret176(self/38)
+  self/38
 }

@@ -1,0 +1,84 @@
+fn early_return() -> int {
+    defer (println : (string) -> unit)("return:outer");
+    {
+        defer (println : (string) -> unit)("return:inner");
+        return 7;
+    };
+    0
+}
+
+fn maybe(value/0: Option[int]) -> Option[int] {
+    defer (println : (string) -> unit)("try:cleanup");
+    let number/1: int = match (value/0 : Option[int]) {
+        Option::Some(try_value/15: int) => (try_value/15 : int),
+        Option::None => return Option::None,
+    };
+    Option::Some((number/1 : int))
+}
+
+fn loop_cleanup() -> unit {
+    let index/2: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    while (Ref[int]::get : (Ref[int]) -> int)((index/2 : Ref[int])) < 3 {
+        {
+            let current/3: int = (Ref[int]::get : (Ref[int]) -> int)((index/2 : Ref[int]));
+            defer (println : (string) -> unit)("loop:" + (int::to_string : (int) -> string)((current/3 : int)));
+            (Ref[int]::set : (Ref[int], int) -> unit)((index/2 : Ref[int]), (current/3 : int) + 1);
+            if (current/3 : int) == 0 {
+                {
+                    continue;
+                }
+            } else {
+                if (current/3 : int) == 1 {
+                    {
+                        break;
+                    }
+                } else {
+                    {
+                        ()
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn observed_at_exit() -> unit {
+    let value/4: Ref[string] = (Ref[string]::new : (string) -> Ref[string])("before");
+    defer (println : (string) -> unit)("observed:" + (Ref[string]::get : (Ref[string]) -> string)((value/4 : Ref[string])));
+    (Ref[string]::set : (Ref[string], string) -> unit)((value/4 : Ref[string]), "after")
+}
+
+fn pattern_cleanup(value/5: Option[int]) -> int {
+    defer (println : (string) -> unit)("pattern:cleanup");
+    let Option::Some(number/6: int) = (value/5 : Option[int]) else {
+        return 0;
+    };
+    let (left/7: int, right/8: int) = ((number/6 : int), 2);
+    (left/7 : int) + (right/8 : int)
+}
+
+fn closure_cleanup() -> unit {
+    defer (println : (string) -> unit)("closure:outer");
+    let run/9: () -> unit = || => {
+        defer (println : (string) -> unit)("closure:inner");
+        (println : (string) -> unit)("closure:body")
+    };
+    (run/9 : () -> unit)();
+    (println : (string) -> unit)("closure:after")
+}
+
+fn main() -> unit {
+    defer (println : (string) -> unit)("main:first");
+    defer (println : (string) -> unit)("main:second");
+    {
+        defer (println : (string) -> unit)("block");
+        (println : (string) -> unit)("body")
+    };
+    (println : (string) -> unit)((int::to_string : (int) -> string)((early_return : () -> int)()));
+    let _ : Option[int] = (maybe : (Option[int]) -> Option[int])(Option::None);
+    (loop_cleanup : () -> unit)();
+    (observed_at_exit : () -> unit)();
+    (println : (string) -> unit)((int::to_string : (int) -> string)((pattern_cleanup : (Option[int]) -> int)(Option::Some(3))));
+    (println : (string) -> unit)((int::to_string : (int) -> string)((pattern_cleanup : (Option[int]) -> int)(Option::None)));
+    (closure_cleanup : () -> unit)()
+}

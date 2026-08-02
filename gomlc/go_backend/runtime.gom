@@ -2,9 +2,11 @@ package go_backend;
 
 use gomlc::anf;
 use gomlc::core;
+use gomlc::resources;
 use gomlc::strings;
 use gomlc::tast;
 use gomlc::vecs;
+use std::collections;
 use std::text;
 
 struct DynMethod {
@@ -40,9 +42,9 @@ pub fn runtime_hook_name(key: string) -> string {
 }
 
 fn missing_base_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
-    let print_args: Vec[Expr] = Vec::new();
+    let print_args: Vec[Expr] = Vec::[];
     print_args.push(
         Expr::Binary {
             op: BinaryOp::Add,
@@ -50,9 +52,9 @@ fn missing_base_item() -> Item {
             rhs: Expr::Var { name: "s" },
         },
     );
-    let panic_args: Vec[Expr] = Vec::new();
+    let panic_args: Vec[Expr] = Vec::[];
     panic_args.push(Expr::String { value: "" });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: "println" }, args: print_args } },
     );
@@ -71,12 +73,12 @@ fn missing_base_item() -> Item {
 }
 
 fn missing_runtime_item(ty: tast::Type) -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Var { name: "s" });
     let ret_ty = lower_type(ty);
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Expr {
             expr: Expr::Call {
@@ -98,7 +100,7 @@ fn missing_runtime_item(ty: tast::Type) -> Item {
 }
 
 pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[tast::Type]) -> unit {
-    if missing_types.len() > 0 {
+    if !missing_types.is_empty() {
         items.push(missing_base_item())
     } else {
         ()
@@ -106,9 +108,9 @@ pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[tast::Type]) 
 }
 
 fn unit_to_string_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", Type::Unit));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "()" }) });
     Item::Function(
         Function {
@@ -121,13 +123,13 @@ fn unit_to_string_hook_item() -> Item {
 }
 
 fn bool_to_string_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", Type::Bool));
-    let then_stmts: Vec[Stmt] = Vec::new();
+    let then_stmts: Vec[Stmt] = Vec::[];
     then_stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "true" }) });
-    let else_stmts: Vec[Stmt] = Vec::new();
+    let else_stmts: Vec[Stmt] = Vec::[];
     else_stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "false" }) });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::If {
             cond: Expr::Var { name: "x" },
@@ -172,12 +174,12 @@ fn integer_to_string_hook_type(key: string) -> Option[Type] {
 }
 
 fn integer_to_string_hook_item(key: string, ty: Type) -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", ty));
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::String { value: "%d" });
     args.push(Expr::Var { name: "x" });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Return {
             expr: Option::Some(Expr::Call { func: Expr::Var { name: "_goml_fmt.Sprintf" }, args }),
@@ -194,11 +196,11 @@ fn integer_to_string_hook_item(key: string, ty: Type) -> Item {
 }
 
 fn string_output_hook_item(key: string, go_name: string) -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Var { name: "s" });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Expr { expr: Expr::Call { func: Expr::Var { name: go_name }, args } });
     stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
     Item::Function(
@@ -212,25 +214,25 @@ fn string_output_hook_item(key: string, go_name: string) -> Item {
 }
 
 fn string_from_utf8_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     let byte_vec = tast::Type::VecType { elem: tast::Type::Uint8 };
     params.push(("bytes", lower_type(byte_vec)));
-    let tuple_items: Vec[tast::Type] = Vec::new();
+    let tuple_items: Vec[tast::Type] = Vec::[];
     tuple_items.push(tast::Type::Bool);
     tuple_items.push(tast::Type::String);
     let tuple_ty = lower_type(tast::Type::Tuple { items: tuple_items });
-    let invalid_fields: Vec[(string, Expr)] = Vec::new();
+    let invalid_fields: Vec[(string, Expr)] = Vec::[];
     invalid_fields.push(("_0", Expr::Bool { value: false }));
     invalid_fields.push(("_1", Expr::String { value: "" }));
-    let invalid_stmts: Vec[Stmt] = Vec::new();
+    let invalid_stmts: Vec[Stmt] = Vec::[];
     invalid_stmts.push(
         Stmt::Return {
             expr: Option::Some(Expr::StructLiteral { ty: tuple_ty, fields: invalid_fields }),
         },
     );
-    let valid_args: Vec[Expr] = Vec::new();
+    let valid_args: Vec[Expr] = Vec::[];
     valid_args.push(Expr::Field { expr: Expr::Var { name: "bytes" }, field_name: "items" });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::If {
             cond: Expr::Unary {
@@ -241,7 +243,7 @@ fn string_from_utf8_hook_item() -> Item {
             else_: Option::None,
         },
     );
-    let result_fields: Vec[(string, Expr)] = Vec::new();
+    let result_fields: Vec[(string, Expr)] = Vec::[];
     result_fields.push(("_0", Expr::Bool { value: true }));
     result_fields.push(
         (
@@ -268,12 +270,12 @@ fn string_from_utf8_hook_item() -> Item {
 }
 
 fn string_concat_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("values", lower_type(tast::Type::VecType { elem: tast::Type::String })));
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Field { expr: Expr::Var { name: "values" }, field_name: "items" });
     args.push(Expr::String { value: "" });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Return {
             expr: Option::Some(Expr::Call { func: Expr::Var { name: "_goml_strings.Join" }, args }),
@@ -290,19 +292,19 @@ fn string_concat_hook_item() -> Item {
 }
 
 fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("value", Type::String));
-    let tuple_items: Vec[tast::Type] = Vec::new();
+    let tuple_items: Vec[tast::Type] = Vec::[];
     tuple_items.push(tast::Type::Bool);
     tuple_items.push(tast::Type::Float64);
     let tuple_ty = lower_type(tast::Type::Tuple { items: tuple_items });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "parsed", ty: Type::Float64, value: Option::None });
     stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     names.push("parsed");
     names.push("err");
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Var { name: "value" });
     args.push(Expr::Int { value: bit_size });
     stmts.push(
@@ -311,7 +313,7 @@ fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
             value: Expr::Call { func: Expr::Var { name: "_goml_strconv.ParseFloat" }, args },
         },
     );
-    let fields: Vec[(string, Expr)] = Vec::new();
+    let fields: Vec[(string, Expr)] = Vec::[];
     fields.push(
         ("_0", Expr::Binary { op: BinaryOp::Eq, lhs: Expr::Var { name: "err" }, rhs: Expr::Nil }),
     );
@@ -336,7 +338,7 @@ fn require_runtime_import(imports: Vec[string], name: string) -> unit {
 }
 
 pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics: Vec[string]) -> unit {
-    let required_imports: Vec[string] = Vec::new();
+    let required_imports: Vec[string] = Vec::[];
     for hook in hooks {
         match integer_to_string_hook_type(hook) {
             Some(_) => require_runtime_import(required_imports, "fmt"),
@@ -422,8 +424,8 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
             ()
         }
     };
-    if required_imports.len() > 0 {
-        let imports: Vec[(string, string)] = Vec::new();
+    if !required_imports.is_empty() {
+        let imports: Vec[(string, string)] = Vec::[];
         if vecs::contains(required_imports, "bytes") {
             imports.push(("_goml_bytes", "bytes"))
         } else {
@@ -503,97 +505,14 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
     } else {
         ()
     };
-    let ordered: Vec[string] = Vec::new();
-    ordered.push("core.unit_to_string");
-    ordered.push("core.bool_to_string");
-    ordered.push("core.string_len");
-    ordered.push("internal.string_decode_utf8_at_native");
-    ordered.push("core.string_get");
-    ordered.push("core.string_byte_get");
-    ordered.push("core.string_byte_slice");
-    ordered.push("core.string_is_char_boundary");
-    ordered.push("core.string_decode_utf8_at");
-    ordered.push("core.string_to_bytes");
-    ordered.push("core.string_from_utf8");
-    ordered.push("core.string_concat");
-    ordered.push("core.char_to_string");
-    ordered.push("core.char_from_uint32");
-    ordered.push("core.int_to_string");
-    ordered.push("core.int8_to_string");
-    ordered.push("core.int16_to_string");
-    ordered.push("core.int32_to_string");
-    ordered.push("core.int64_to_string");
-    ordered.push("core.uint_to_string");
-    ordered.push("core.uint8_to_string");
-    ordered.push("core.uint16_to_string");
-    ordered.push("core.uint32_to_string");
-    ordered.push("core.uint64_to_string");
-    ordered.push("core.float32_to_string");
-    ordered.push("core.float64_to_string");
-    ordered.push("core.string_parse_float32");
-    ordered.push("core.string_parse_float64");
-    ordered.push("core.int_hash");
-    ordered.push("core.int8_hash");
-    ordered.push("core.int16_hash");
-    ordered.push("core.int32_hash");
-    ordered.push("core.int64_hash");
-    ordered.push("core.char_hash");
-    ordered.push("core.uint_hash");
-    ordered.push("core.uint8_hash");
-    ordered.push("core.uint16_hash");
-    ordered.push("core.uint32_hash");
-    ordered.push("core.float32_hash");
-    ordered.push("core.float64_hash");
-    ordered.push("core.string_hash");
-    ordered.push("core.string_print");
-    ordered.push("core.string_println");
-    ordered.push("std.env.args");
-    ordered.push("std.env.current_dir");
-    ordered.push("std.env.current_exe");
-    ordered.push("std.env.var");
-    ordered.push("std.fs.read_file");
-    ordered.push("std.fs.write_file");
-    ordered.push("std.fs.read_bytes");
-    ordered.push("std.fs.write_bytes");
-    ordered.push("std.fs.create_dir_all");
-    ordered.push("std.fs.remove_file");
-    ordered.push("std.fs.remove_dir_all");
-    ordered.push("std.fs.file_exists");
-    ordered.push("std.fs.is_file");
-    ordered.push("std.fs.is_dir");
-    ordered.push("std.fs.canonicalize");
-    ordered.push("std.fs.read_dir");
-    ordered.push("std.fs.sha256_file");
-    ordered.push("std.io.print");
-    ordered.push("std.io.println");
-    ordered.push("std.io.eprint");
-    ordered.push("std.io.read_stdin");
-    ordered.push("std.io.read_stdin_exact");
-    ordered.push("std.io.write_stdout");
-    ordered.push("std.io.write_stderr");
-    ordered.push("std.path.join");
-    ordered.push("std.path.clean");
-    ordered.push("std.path.is_absolute");
-    ordered.push("std.path.parent");
-    ordered.push("std.path.file_name");
-    ordered.push("std.path.extension");
-    ordered.push("std.path.file_stem");
-    ordered.push("std.path.with_extension");
-    ordered.push("std.path.absolute");
-    ordered.push("std.process.exit");
-    ordered.push("std.process.look_path");
-    ordered.push("std.process.output");
-    ordered.push("std.process.output_timeout");
-    ordered.push("std.process.status");
-    ordered.push("std.process.status_timeout");
-    ordered.push("std.testing.fail");
-    ordered.push("std.num.parse_int");
-    ordered.push("std.num.parse_uint");
-    ordered.push("std.num.parse_float32");
-    ordered.push("std.num.parse_float64");
-    ordered.push("std.time.monotonic_nanoseconds");
-    ordered.push("std.time.unix_nanoseconds");
-    ordered.push("std.time.sleep_nanoseconds");
+    let ordered: Vec[string] = Vec::[];
+    for key in resources::core_runtime_keys() {
+        ordered.push("core." + key)
+    };
+    for spec in resources::standard_runtime_abi_specs() {
+        ordered.push(spec.key)
+    };
+    ordered.insert(3, "internal.string_decode_utf8_at_native");
     for key in ordered {
         let needed = if key == "internal.string_decode_utf8_at_native" {
             vecs::contains(hooks, "core.string_get")
@@ -652,15 +571,15 @@ pub fn ref_helper_name(prefix: string, ref_ty: tast::Type) -> string {
 }
 
 fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
-    let result: Vec[Item] = Vec::new();
+    let result: Vec[Item] = Vec::[];
     match tast::resolve_type(array_ty) {
         Array { len: _, elem } => {
             let lowered_array = lower_type(array_ty);
             let lowered_elem = lower_type(elem);
-            let get_params: Vec[(string, Type)] = Vec::new();
+            let get_params: Vec[(string, Type)] = Vec::[];
             get_params.push(("arr", lowered_array));
             get_params.push(("index", Type::Int));
-            let get_stmts: Vec[Stmt] = Vec::new();
+            let get_stmts: Vec[Stmt] = Vec::[];
             get_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -681,11 +600,11 @@ fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let set_params: Vec[(string, Type)] = Vec::new();
+            let set_params: Vec[(string, Type)] = Vec::[];
             set_params.push(("arr", lowered_array));
             set_params.push(("index", Type::Int));
             set_params.push(("value", lowered_elem));
-            let set_stmts: Vec[Stmt] = Vec::new();
+            let set_stmts: Vec[Stmt] = Vec::[];
             set_stmts.push(
                 Stmt::IndexAssign {
                     base: Expr::Var { name: "arr" },
@@ -711,14 +630,14 @@ fn array_runtime_items(array_ty: tast::Type) -> Vec[Item] {
 }
 
 fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
-    let result: Vec[Item] = Vec::new();
+    let result: Vec[Item] = Vec::[];
     match tast::resolve_type(vec_ty) {
         VecType { elem } => {
             let lowered_vec = lower_type(vec_ty);
             let lowered_elem = lower_type(elem);
-            let new_fields: Vec[(string, Expr)] = Vec::new();
+            let new_fields: Vec[(string, Expr)] = Vec::[];
             new_fields.push(("items", Expr::Nil));
-            let new_stmts: Vec[Stmt] = Vec::new();
+            let new_stmts: Vec[Stmt] = Vec::[];
             new_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -736,7 +655,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     ),
                 },
             );
-            let new_params: Vec[(string, Type)] = Vec::new();
+            let new_params: Vec[(string, Type)] = Vec::[];
             result.push(
                 Item::Function(
                     Function {
@@ -747,11 +666,11 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let with_capacity_params: Vec[(string, Type)] = Vec::new();
+            let with_capacity_params: Vec[(string, Type)] = Vec::[];
             with_capacity_params.push(("capacity", Type::Int));
-            let grow_args: Vec[Expr] = Vec::new();
+            let grow_args: Vec[Expr] = Vec::[];
             grow_args.push(
-                Expr::ArrayLiteral { ty: Type::Slice { elem: lowered_elem }, items: Vec::new() },
+                Expr::ArrayLiteral { ty: Type::Slice { elem: lowered_elem }, items: Vec::[] },
             );
             grow_args.push(
                 Expr::Convert {
@@ -759,14 +678,14 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     expr: Expr::Var { name: "capacity" },
                 },
             );
-            let with_capacity_fields: Vec[(string, Expr)] = Vec::new();
+            let with_capacity_fields: Vec[(string, Expr)] = Vec::[];
             with_capacity_fields.push(
                 (
                     "items",
                     Expr::Call { func: Expr::Var { name: "_goml_slices.Grow" }, args: grow_args },
                 ),
             );
-            let with_capacity_stmts: Vec[Stmt] = Vec::new();
+            let with_capacity_stmts: Vec[Stmt] = Vec::[];
             with_capacity_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -794,13 +713,13 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let push_params: Vec[(string, Type)] = Vec::new();
+            let push_params: Vec[(string, Type)] = Vec::[];
             push_params.push(("vec", lowered_vec));
             push_params.push(("elem", lowered_elem));
-            let append_args: Vec[Expr] = Vec::new();
+            let append_args: Vec[Expr] = Vec::[];
             append_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
             append_args.push(Expr::Var { name: "elem" });
-            let push_stmts: Vec[Stmt] = Vec::new();
+            let push_stmts: Vec[Stmt] = Vec::[];
             push_stmts.push(
                 Stmt::FieldAssign {
                     target: Expr::Var { name: "vec" },
@@ -819,10 +738,10 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let get_params: Vec[(string, Type)] = Vec::new();
+            let get_params: Vec[(string, Type)] = Vec::[];
             get_params.push(("vec", lowered_vec));
             get_params.push(("index", Type::Int));
-            let get_stmts: Vec[Stmt] = Vec::new();
+            let get_stmts: Vec[Stmt] = Vec::[];
             get_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -846,11 +765,11 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let set_params: Vec[(string, Type)] = Vec::new();
+            let set_params: Vec[(string, Type)] = Vec::[];
             set_params.push(("vec", lowered_vec));
             set_params.push(("index", Type::Int));
             set_params.push(("value", lowered_elem));
-            let set_stmts: Vec[Stmt] = Vec::new();
+            let set_stmts: Vec[Stmt] = Vec::[];
             set_stmts.push(
                 Stmt::IndexAssign {
                     base: Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" },
@@ -869,11 +788,11 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let len_params: Vec[(string, Type)] = Vec::new();
+            let len_params: Vec[(string, Type)] = Vec::[];
             len_params.push(("vec", lowered_vec));
-            let len_args: Vec[Expr] = Vec::new();
+            let len_args: Vec[Expr] = Vec::[];
             len_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
-            let len_stmts: Vec[Stmt] = Vec::new();
+            let len_stmts: Vec[Stmt] = Vec::[];
             len_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -894,11 +813,11 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let capacity_params: Vec[(string, Type)] = Vec::new();
+            let capacity_params: Vec[(string, Type)] = Vec::[];
             capacity_params.push(("vec", lowered_vec));
-            let capacity_args: Vec[Expr] = Vec::new();
+            let capacity_args: Vec[Expr] = Vec::[];
             capacity_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
-            let capacity_stmts: Vec[Stmt] = Vec::new();
+            let capacity_stmts: Vec[Stmt] = Vec::[];
             capacity_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -922,10 +841,10 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let reserve_params: Vec[(string, Type)] = Vec::new();
+            let reserve_params: Vec[(string, Type)] = Vec::[];
             reserve_params.push(("vec", lowered_vec));
             reserve_params.push(("additional", Type::Int));
-            let reserve_args: Vec[Expr] = Vec::new();
+            let reserve_args: Vec[Expr] = Vec::[];
             reserve_args.push(Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" });
             reserve_args.push(
                 Expr::Convert {
@@ -933,7 +852,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     expr: Expr::Var { name: "additional" },
                 },
             );
-            let reserve_stmts: Vec[Stmt] = Vec::new();
+            let reserve_stmts: Vec[Stmt] = Vec::[];
             reserve_stmts.push(
                 Stmt::FieldAssign {
                     target: Expr::Var { name: "vec" },
@@ -955,11 +874,11 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let truncate_params: Vec[(string, Type)] = Vec::new();
+            let truncate_params: Vec[(string, Type)] = Vec::[];
             truncate_params.push(("vec", lowered_vec));
             truncate_params.push(("new_len", Type::Int));
-            let truncate_stmts: Vec[Stmt] = Vec::new();
-            let negative_stmts: Vec[Stmt] = Vec::new();
+            let truncate_stmts: Vec[Stmt] = Vec::[];
+            let negative_stmts: Vec[Stmt] = Vec::[];
             negative_stmts.push(Stmt::Panic { message: "negative vector length" });
             truncate_stmts.push(
                 Stmt::If {
@@ -972,7 +891,7 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                     else_: Option::None,
                 },
             );
-            let current_len_args: Vec[Expr] = Vec::new();
+            let current_len_args: Vec[Expr] = Vec::[];
             current_len_args.push(
                 Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" },
             );
@@ -980,12 +899,12 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                 ty: Type::Int,
                 expr: Expr::Call { func: Expr::Var { name: "len" }, args: current_len_args },
             };
-            let shorten_stmts: Vec[Stmt] = Vec::new();
-            let clear_len_args: Vec[Expr] = Vec::new();
+            let shorten_stmts: Vec[Stmt] = Vec::[];
+            let clear_len_args: Vec[Expr] = Vec::[];
             clear_len_args.push(
                 Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" },
             );
-            let clear_args: Vec[Expr] = Vec::new();
+            let clear_args: Vec[Expr] = Vec::[];
             clear_args.push(
                 Expr::Slice {
                     base: Expr::Field { expr: Expr::Var { name: "vec" }, field_name: "items" },
@@ -1041,15 +960,15 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
 }
 
 fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
-    let result: Vec[Item] = Vec::new();
+    let result: Vec[Item] = Vec::[];
     match tast::resolve_type(ref_ty) {
         RefType { elem } => {
             let elem_ty = lower_type(elem);
             let lowered_ref_ty = lower_type(ref_ty);
             let struct_ty = Type::Named { name: ref_struct_name(elem) };
-            let new_fields: Vec[(string, Expr)] = Vec::new();
+            let new_fields: Vec[(string, Expr)] = Vec::[];
             new_fields.push(("value", Expr::Var { name: "value" }));
-            let new_stmts: Vec[Stmt] = Vec::new();
+            let new_stmts: Vec[Stmt] = Vec::[];
             new_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -1060,7 +979,7 @@ fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
                     ),
                 },
             );
-            let new_params: Vec[(string, Type)] = Vec::new();
+            let new_params: Vec[(string, Type)] = Vec::[];
             new_params.push(("value", elem_ty));
             result.push(
                 Item::Function(
@@ -1072,9 +991,9 @@ fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let get_params: Vec[(string, Type)] = Vec::new();
+            let get_params: Vec[(string, Type)] = Vec::[];
             get_params.push(("reference", lowered_ref_ty));
-            let get_stmts: Vec[Stmt] = Vec::new();
+            let get_stmts: Vec[Stmt] = Vec::[];
             get_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -1092,10 +1011,10 @@ fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let set_params: Vec[(string, Type)] = Vec::new();
+            let set_params: Vec[(string, Type)] = Vec::[];
             set_params.push(("reference", lowered_ref_ty));
             set_params.push(("value", elem_ty));
-            let set_stmts: Vec[Stmt] = Vec::new();
+            let set_stmts: Vec[Stmt] = Vec::[];
             set_stmts.push(
                 Stmt::FieldAssign {
                     target: Expr::Var { name: "reference" },
@@ -1114,10 +1033,10 @@ fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let ptr_eq_params: Vec[(string, Type)] = Vec::new();
+            let ptr_eq_params: Vec[(string, Type)] = Vec::[];
             ptr_eq_params.push(("a", lowered_ref_ty));
             ptr_eq_params.push(("b", lowered_ref_ty));
-            let ptr_eq_stmts: Vec[Stmt] = Vec::new();
+            let ptr_eq_stmts: Vec[Stmt] = Vec::[];
             ptr_eq_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -1139,12 +1058,12 @@ fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
                     },
                 ),
             );
-            let ptr_hash_params: Vec[(string, Type)] = Vec::new();
+            let ptr_hash_params: Vec[(string, Type)] = Vec::[];
             ptr_hash_params.push(("reference", lowered_ref_ty));
-            let value_of_args: Vec[Expr] = Vec::new();
+            let value_of_args: Vec[Expr] = Vec::[];
             value_of_args.push(Expr::Var { name: "reference" });
-            let pointer_args: Vec[Expr] = Vec::new();
-            let ptr_hash_stmts: Vec[Stmt] = Vec::new();
+            let pointer_args: Vec[Expr] = Vec::[];
+            let ptr_hash_stmts: Vec[Stmt] = Vec::[];
             ptr_hash_stmts.push(
                 Stmt::Return {
                     expr: Option::Some(
@@ -1185,15 +1104,15 @@ fn synthetic_option_base(value: tast::Type) -> string {
 }
 
 fn synthetic_option_items(value: tast::Type) -> Vec[Item] {
-    let result: Vec[Item] = Vec::new();
+    let result: Vec[Item] = Vec::[];
     let option_name = go_generated_ident("_goml_synthetic_" + synthetic_option_base(value));
     let method_name = go_generated_ident("is" + option_name);
     let some_name = go_generated_ident(option_name + "_Some");
     let none_name = go_generated_ident(option_name + "_None");
-    let methods: Vec[InterfaceMethod] = Vec::new();
-    methods.push(InterfaceMethod { name: method_name, params: Vec::new(), ret_ty: Option::None });
+    let methods: Vec[InterfaceMethod] = Vec::[];
+    methods.push(InterfaceMethod { name: method_name, params: Vec::[], ret_ty: Option::None });
     result.push(Item::Interface(InterfaceDef { name: option_name, methods }));
-    let some_fields: Vec[(string, Type)] = Vec::new();
+    let some_fields: Vec[(string, Type)] = Vec::[];
     some_fields.push(("_0", lower_type(value)));
     result.push(Item::Struct(StructDef { name: some_name, fields: some_fields }));
     result.push(
@@ -1201,59 +1120,25 @@ fn synthetic_option_items(value: tast::Type) -> Vec[Item] {
             Method {
                 receiver: ("_", Type::Named { name: some_name }),
                 name: method_name,
-                params: Vec::new(),
+                params: Vec::[],
                 ret_ty: Option::None,
-                body: Block { stmts: Vec::new() },
+                body: Block { stmts: Vec::[] },
             },
         ),
     );
-    result.push(Item::Struct(StructDef { name: none_name, fields: Vec::new() }));
+    result.push(Item::Struct(StructDef { name: none_name, fields: Vec::[] }));
     result.push(
         Item::Method(
             Method {
                 receiver: ("_", Type::Named { name: none_name }),
                 name: method_name,
-                params: Vec::new(),
+                params: Vec::[],
                 ret_ty: Option::None,
-                body: Block { stmts: Vec::new() },
+                body: Block { stmts: Vec::[] },
             },
         ),
     );
     result
-}
-
-fn option_variant_names(value: tast::EnumDef) -> Option[(string, string)] {
-    let named_some: Vec[string] = Vec::new();
-    let named_none: Vec[string] = Vec::new();
-    let payloads: Vec[string] = Vec::new();
-    let empties: Vec[string] = Vec::new();
-    for variant in value.variants {
-        let fields = tast::enum_variant_field_types(variant.fields);
-        if fields.len() == 1 {
-            payloads.push(variant.name);
-            if variant.name == "Some" {
-                named_some.push(variant.name)
-            } else {
-                ()
-            }
-        } else if fields.len() == 0 {
-            empties.push(variant.name);
-            if variant.name == "None" {
-                named_none.push(variant.name)
-            } else {
-                ()
-            }
-        } else {
-            ()
-        }
-    };
-    if named_some.len() > 0 && named_none.len() > 0 {
-        Option::Some((named_some[0], named_none[0]))
-    } else if payloads.len() == 1 && empties.len() == 1 {
-        Option::Some((payloads[0], empties[0]))
-    } else {
-        Option::None
-    }
 }
 
 fn hashmap_option_info(
@@ -1263,12 +1148,12 @@ fn hashmap_option_info(
     structs: Vec[tast::StructDef],
     function_names: FunctionNames,
 ) -> (Type, Type, Type, bool) {
-    let args: Vec[tast::Type] = Vec::new();
+    let args: Vec[tast::Type] = Vec::[];
     args.push(value);
     match find_instance(instances, "Option", args) {
         Some(instance) => {
             let variants = match find_enum(enums, instance.base_name) {
-                Some(definition) => option_variant_names(definition),
+                Some(definition) => definition.option_variants,
                 None => Option::None,
             };
             let variants = match variants {
@@ -1344,11 +1229,11 @@ fn hashmap_new_item(key: tast::Type, value: tast::Type) -> Item {
     let name = hashmap_name(key, value);
     let entry_ty = Type::Named { name: go_generated_ident(name + "_entry") };
     let buckets_ty = Type::Map { key: Type::Uint64, value: Type::Slice { elem: entry_ty } };
-    let fields: Vec[(string, Expr)] = Vec::new();
-    fields.push(("buckets", Expr::Make { ty: buckets_ty, args: Vec::new() }));
+    let fields: Vec[(string, Expr)] = Vec::[];
+    fields.push(("buckets", Expr::Make { ty: buckets_ty, args: Vec::[] }));
     fields.push(("len", Expr::Int { value: "0" }));
     fields.push(("hashes", Expr::Nil));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Return {
             expr: Option::Some(
@@ -1362,7 +1247,7 @@ fn hashmap_new_item(key: tast::Type, value: tast::Type) -> Item {
     Item::Function(
         Function {
             name: runtime_helper_name("hashmap_new", map_ty),
-            params: Vec::new(),
+            params: Vec::[],
             ret_ty: Option::Some(lower_type(map_ty)),
             body: Block { stmts },
         },
@@ -1371,10 +1256,10 @@ fn hashmap_new_item(key: tast::Type, value: tast::Type) -> Item {
 
 fn hashmap_len_item(key: tast::Type, value: tast::Type) -> Item {
     let map_ty = tast::Type::HashMap { key, value };
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lower_type(map_ty)));
-    let stmts: Vec[Stmt] = Vec::new();
-    let nil_stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let nil_stmts: Vec[Stmt] = Vec::[];
     nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Int { value: "0" }) });
     stmts.push(
         Stmt::If {
@@ -1405,13 +1290,13 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
     let lowered_value = lower_type(value);
     let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
     let bucket_ty = Type::Slice { elem: entry_ty };
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lowered_map));
     params.push(("key", lowered_key));
-    let stmts: Vec[Stmt] = Vec::new();
-    let nil_stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let nil_stmts: Vec[Stmt] = Vec::[];
     nil_stmts.push(Stmt::Var { name: "zero", ty: lowered_value, value: Option::None });
-    let nil_values: Vec[Expr] = Vec::new();
+    let nil_values: Vec[Expr] = Vec::[];
     nil_values.push(Expr::Var { name: "zero" });
     nil_values.push(Expr::Bool { value: false });
     nil_stmts.push(Stmt::ReturnMulti { exprs: nil_values });
@@ -1444,10 +1329,10 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
     stmts.push(
         Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
     );
-    let loop_stmts: Vec[Stmt] = Vec::new();
-    let len_args: Vec[Expr] = Vec::new();
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    let len_args: Vec[Expr] = Vec::[];
     len_args.push(Expr::Var { name: "bucket" });
-    let break_stmts: Vec[Stmt] = Vec::new();
+    let break_stmts: Vec[Stmt] = Vec::[];
     break_stmts.push(Stmt::Break);
     loop_stmts.push(
         Stmt::If {
@@ -1472,11 +1357,11 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
             ),
         },
     );
-    let eq_args: Vec[Expr] = Vec::new();
+    let eq_args: Vec[Expr] = Vec::[];
     eq_args.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "key" });
     eq_args.push(Expr::Var { name: "key" });
-    let found_stmts: Vec[Stmt] = Vec::new();
-    let found_values: Vec[Expr] = Vec::new();
+    let found_stmts: Vec[Stmt] = Vec::[];
+    let found_values: Vec[Expr] = Vec::[];
     found_values.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "value" });
     found_values.push(Expr::Bool { value: true });
     found_stmts.push(Stmt::ReturnMulti { exprs: found_values });
@@ -1506,11 +1391,11 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
     );
     stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
     stmts.push(Stmt::Var { name: "zero", ty: lowered_value, value: Option::None });
-    let missing_values: Vec[Expr] = Vec::new();
+    let missing_values: Vec[Expr] = Vec::[];
     missing_values.push(Expr::Var { name: "zero" });
     missing_values.push(Expr::Bool { value: false });
     stmts.push(Stmt::ReturnMulti { exprs: missing_values });
-    let returns: Vec[Type] = Vec::new();
+    let returns: Vec[Type] = Vec::[];
     returns.push(lowered_value);
     returns.push(Type::Bool);
     Item::Function(
@@ -1531,16 +1416,16 @@ fn hashmap_get_item(
     none_ty: Type,
 ) -> Item {
     let map_ty = tast::Type::HashMap { key, value };
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lower_type(map_ty)));
     params.push(("key", lower_type(key)));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "value", ty: lower_type(value), value: Option::None });
     stmts.push(Stmt::Var { name: "ok", ty: Type::Bool, value: Option::None });
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     names.push("value");
     names.push("ok");
-    let lookup_args: Vec[Expr] = Vec::new();
+    let lookup_args: Vec[Expr] = Vec::[];
     lookup_args.push(Expr::Var { name: "m" });
     lookup_args.push(Expr::Var { name: "key" });
     stmts.push(
@@ -1552,9 +1437,9 @@ fn hashmap_get_item(
             },
         },
     );
-    let some_fields: Vec[(string, Expr)] = Vec::new();
+    let some_fields: Vec[(string, Expr)] = Vec::[];
     some_fields.push(("_0", Expr::Var { name: "value" }));
-    let some_stmts: Vec[Stmt] = Vec::new();
+    let some_stmts: Vec[Stmt] = Vec::[];
     some_stmts.push(
         Stmt::Return {
             expr: Option::Some(Expr::StructLiteral { ty: some_ty, fields: some_fields }),
@@ -1568,7 +1453,7 @@ fn hashmap_get_item(
         },
     );
     stmts.push(
-        Stmt::Return { expr: Option::Some(Expr::StructLiteral { ty: none_ty, fields: Vec::new() }) },
+        Stmt::Return { expr: Option::Some(Expr::StructLiteral { ty: none_ty, fields: Vec::[] }) },
     );
     Item::Function(
         Function {
@@ -1581,7 +1466,7 @@ fn hashmap_get_item(
 }
 
 fn hashmap_entry_expr(entry_ty: Type) -> Expr {
-    let fields: Vec[(string, Expr)] = Vec::new();
+    let fields: Vec[(string, Expr)] = Vec::[];
     fields.push(("active", Expr::Bool { value: true }));
     fields.push(("key", Expr::Var { name: "key" }));
     fields.push(("value", Expr::Var { name: "value" }));
@@ -1607,11 +1492,11 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
     let lowered_value = lower_type(value);
     let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
     let bucket_ty = Type::Slice { elem: entry_ty };
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lowered_map));
     params.push(("key", lowered_key));
     params.push(("value", lowered_value));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
             name: "reuse_index",
@@ -1619,7 +1504,7 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
             value: Option::Some(Expr::Int { value: "-1" }),
         },
     );
-    let nil_stmts: Vec[Stmt] = Vec::new();
+    let nil_stmts: Vec[Stmt] = Vec::[];
     nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
     stmts.push(
         Stmt::If {
@@ -1647,10 +1532,10 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
             ),
         },
     );
-    let len_args: Vec[Expr] = Vec::new();
+    let len_args: Vec[Expr] = Vec::[];
     len_args.push(Expr::Var { name: "bucket" });
-    let empty_stmts: Vec[Stmt] = Vec::new();
-    let append_hash_args: Vec[Expr] = Vec::new();
+    let empty_stmts: Vec[Stmt] = Vec::[];
+    let append_hash_args: Vec[Expr] = Vec::[];
     append_hash_args.push(Expr::Field { expr: Expr::Var { name: "m" }, field_name: "hashes" });
     append_hash_args.push(Expr::Var { name: "h" });
     empty_stmts.push(
@@ -1674,10 +1559,10 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
     stmts.push(
         Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
     );
-    let loop_stmts: Vec[Stmt] = Vec::new();
-    let loop_len_args: Vec[Expr] = Vec::new();
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    let loop_len_args: Vec[Expr] = Vec::[];
     loop_len_args.push(Expr::Var { name: "bucket" });
-    let break_stmts: Vec[Stmt] = Vec::new();
+    let break_stmts: Vec[Stmt] = Vec::[];
     break_stmts.push(Stmt::Break);
     loop_stmts.push(
         Stmt::If {
@@ -1702,10 +1587,10 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
             ),
         },
     );
-    let eq_args: Vec[Expr] = Vec::new();
+    let eq_args: Vec[Expr] = Vec::[];
     eq_args.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "key" });
     eq_args.push(Expr::Var { name: "key" });
-    let update_stmts: Vec[Stmt] = Vec::new();
+    let update_stmts: Vec[Stmt] = Vec::[];
     update_stmts.push(
         Stmt::FieldAssign {
             target: Expr::Index {
@@ -1731,7 +1616,7 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
             else_: Option::None,
         },
     );
-    let reuse_stmts: Vec[Stmt] = Vec::new();
+    let reuse_stmts: Vec[Stmt] = Vec::[];
     reuse_stmts.push(Stmt::Assign { name: "reuse_index", value: Expr::Var { name: "i" } });
     loop_stmts.push(
         Stmt::If {
@@ -1762,7 +1647,7 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
         },
     );
     stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
-    let replace_stmts: Vec[Stmt] = Vec::new();
+    let replace_stmts: Vec[Stmt] = Vec::[];
     replace_stmts.push(
         Stmt::IndexAssign {
             base: Expr::Var { name: "bucket" },
@@ -1783,7 +1668,7 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
             else_: Option::None,
         },
     );
-    let append_entry_args: Vec[Expr] = Vec::new();
+    let append_entry_args: Vec[Expr] = Vec::[];
     append_entry_args.push(Expr::Var { name: "bucket" });
     append_entry_args.push(hashmap_entry_expr(entry_ty));
     stmts.push(
@@ -1817,11 +1702,11 @@ fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
     let lowered_key = lower_type(key);
     let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
     let bucket_ty = Type::Slice { elem: entry_ty };
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lowered_map));
     params.push(("key", lowered_key));
-    let stmts: Vec[Stmt] = Vec::new();
-    let nil_stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let nil_stmts: Vec[Stmt] = Vec::[];
     nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Unit) });
     stmts.push(
         Stmt::If {
@@ -1852,10 +1737,10 @@ fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
     stmts.push(
         Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
     );
-    let loop_stmts: Vec[Stmt] = Vec::new();
-    let len_args: Vec[Expr] = Vec::new();
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    let len_args: Vec[Expr] = Vec::[];
     len_args.push(Expr::Var { name: "bucket" });
-    let break_stmts: Vec[Stmt] = Vec::new();
+    let break_stmts: Vec[Stmt] = Vec::[];
     break_stmts.push(Stmt::Break);
     loop_stmts.push(
         Stmt::If {
@@ -1880,10 +1765,10 @@ fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
             ),
         },
     );
-    let eq_args: Vec[Expr] = Vec::new();
+    let eq_args: Vec[Expr] = Vec::[];
     eq_args.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "key" });
     eq_args.push(Expr::Var { name: "key" });
-    let found_stmts: Vec[Stmt] = Vec::new();
+    let found_stmts: Vec[Stmt] = Vec::[];
     found_stmts.push(Stmt::Var { name: "zero", ty: entry_ty, value: Option::None });
     found_stmts.push(
         Stmt::IndexAssign {
@@ -1946,11 +1831,11 @@ fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
     let lowered_key = lower_type(key);
     let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
     let bucket_ty = Type::Slice { elem: entry_ty };
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lowered_map));
     params.push(("key", lowered_key));
-    let stmts: Vec[Stmt] = Vec::new();
-    let nil_stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
+    let nil_stmts: Vec[Stmt] = Vec::[];
     nil_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: false }) });
     stmts.push(
         Stmt::If {
@@ -1981,10 +1866,10 @@ fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
     stmts.push(
         Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
     );
-    let loop_stmts: Vec[Stmt] = Vec::new();
-    let len_args: Vec[Expr] = Vec::new();
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    let len_args: Vec[Expr] = Vec::[];
     len_args.push(Expr::Var { name: "bucket" });
-    let break_stmts: Vec[Stmt] = Vec::new();
+    let break_stmts: Vec[Stmt] = Vec::[];
     break_stmts.push(Stmt::Break);
     loop_stmts.push(
         Stmt::If {
@@ -2009,10 +1894,10 @@ fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
             ),
         },
     );
-    let eq_args: Vec[Expr] = Vec::new();
+    let eq_args: Vec[Expr] = Vec::[];
     eq_args.push(Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "key" });
     eq_args.push(Expr::Var { name: "key" });
-    let found_stmts: Vec[Stmt] = Vec::new();
+    let found_stmts: Vec[Stmt] = Vec::[];
     found_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: true }) });
     loop_stmts.push(
         Stmt::If {
@@ -2054,7 +1939,7 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
     let map_ty = tast::Type::HashMap { key, value };
     let entry_ty = Type::Named { name: go_generated_ident(hashmap_name(key, value) + "_entry") };
     let bucket_ty = Type::Slice { elem: entry_ty };
-    let pair_types: Vec[tast::Type] = Vec::new();
+    let pair_types: Vec[tast::Type] = Vec::[];
     pair_types.push(key);
     pair_types.push(value);
     let pair_ty = tast::Type::Tuple { items: pair_types };
@@ -2064,13 +1949,13 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
     let result_vec_struct = Type::Named {
         name: go_generated_ident("_goml_vec_" + go_ident(encode_type(pair_ty))),
     };
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("m", lower_type(map_ty)));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "result", ty: result_slice_ty, value: Option::None });
-    let nil_fields: Vec[(string, Expr)] = Vec::new();
+    let nil_fields: Vec[(string, Expr)] = Vec::[];
     nil_fields.push(("items", Expr::Var { name: "result" }));
-    let nil_stmts: Vec[Stmt] = Vec::new();
+    let nil_stmts: Vec[Stmt] = Vec::[];
     nil_stmts.push(
         Stmt::Return {
             expr: Option::Some(
@@ -2088,7 +1973,7 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
             else_: Option::None,
         },
     );
-    let range_stmts: Vec[Stmt] = Vec::new();
+    let range_stmts: Vec[Stmt] = Vec::[];
     range_stmts.push(
         Stmt::Var {
             name: "bucket",
@@ -2104,10 +1989,10 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
     range_stmts.push(
         Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
     );
-    let loop_stmts: Vec[Stmt] = Vec::new();
-    let len_args: Vec[Expr] = Vec::new();
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    let len_args: Vec[Expr] = Vec::[];
     len_args.push(Expr::Var { name: "bucket" });
-    let break_stmts: Vec[Stmt] = Vec::new();
+    let break_stmts: Vec[Stmt] = Vec::[];
     break_stmts.push(Stmt::Break);
     loop_stmts.push(
         Stmt::If {
@@ -2132,13 +2017,13 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
             ),
         },
     );
-    let pair_fields: Vec[(string, Expr)] = Vec::new();
+    let pair_fields: Vec[(string, Expr)] = Vec::[];
     pair_fields.push(("_0", Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "key" }));
     pair_fields.push(("_1", Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "value" }));
-    let append_args: Vec[Expr] = Vec::new();
+    let append_args: Vec[Expr] = Vec::[];
     append_args.push(Expr::Var { name: "result" });
     append_args.push(Expr::StructLiteral { ty: lowered_pair, fields: pair_fields });
-    let active_stmts: Vec[Stmt] = Vec::new();
+    let active_stmts: Vec[Stmt] = Vec::[];
     active_stmts.push(
         Stmt::Assign {
             name: "result",
@@ -2163,7 +2048,7 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
         },
     );
     range_stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
-    let range_names: Vec[string] = Vec::new();
+    let range_names: Vec[string] = Vec::[];
     range_names.push("_");
     range_names.push("h");
     stmts.push(
@@ -2173,7 +2058,7 @@ fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
             body: Block { stmts: range_stmts },
         },
     );
-    let result_fields: Vec[(string, Expr)] = Vec::new();
+    let result_fields: Vec[(string, Expr)] = Vec::[];
     result_fields.push(("items", Expr::Var { name: "result" }));
     stmts.push(
         Stmt::Return {
@@ -2204,15 +2089,15 @@ fn hashmap_items(
     function_names: FunctionNames,
     include_option: bool,
 ) -> Vec[Item] {
-    let result: Vec[Item] = Vec::new();
+    let result: Vec[Item] = Vec::[];
     let name = hashmap_name(key, value);
     let entry_name = go_generated_ident(name + "_entry");
-    let entry_fields: Vec[(string, Type)] = Vec::new();
+    let entry_fields: Vec[(string, Type)] = Vec::[];
     entry_fields.push(("active", Type::Bool));
     entry_fields.push(("key", lower_type(key)));
     entry_fields.push(("value", lower_type(value)));
     result.push(Item::Struct(StructDef { name: entry_name, fields: entry_fields }));
-    let fields: Vec[(string, Type)] = Vec::new();
+    let fields: Vec[(string, Type)] = Vec::[];
     fields.push(
         (
             "buckets",
@@ -2245,7 +2130,7 @@ fn hashmap_items(
 }
 
 fn option_available(instances: Vec[core::TypeInstance], value: tast::Type) -> bool {
-    let args: Vec[tast::Type] = Vec::new();
+    let args: Vec[tast::Type] = Vec::[];
     args.push(value);
     find_instance(instances, "Option", args).is_some()
 }
@@ -2264,15 +2149,15 @@ fn raw_dyn_wrapper_name(trait_name: string, for_ty: tast::Type, method: string) 
 
 fn dyn_wrapper_name(names: DynHelperNames, trait_name: string, for_ty: tast::Type, method: string) -> string {
     let key = compact_type(for_ty);
-    let result = Ref::new(raw_dyn_wrapper_name(trait_name, for_ty, method));
+    let mut result = raw_dyn_wrapper_name(trait_name, for_ty, method);
     for entry in names.wrappers {
         if entry.0 == trait_name && entry.1 == key && entry.2 == method {
-            result.set(entry.3)
+            result = entry.3;
         } else {
             ()
         }
     };
-    result.get()
+    result
 }
 
 fn raw_dyn_factory_name(trait_name: string, for_ty: tast::Type) -> string {
@@ -2281,27 +2166,21 @@ fn raw_dyn_factory_name(trait_name: string, for_ty: tast::Type) -> string {
 
 pub fn dyn_factory_name(names: DynHelperNames, trait_name: string, for_ty: tast::Type) -> string {
     let key = compact_type(for_ty);
-    let result = Ref::new(raw_dyn_factory_name(trait_name, for_ty));
+    let mut result = raw_dyn_factory_name(trait_name, for_ty);
     for entry in names.factories {
         if entry.0 == trait_name && entry.1 == key {
-            result.set(entry.2)
+            result = entry.2;
         } else {
             ()
         }
     };
-    result.get()
+    result
 }
 
-fn hash_segments(value: string) -> Vec[string] {
-    strings::split(value, "#")
-}
-
-fn trait_impl_method_name(value: string) -> Option[string] {
-    let segments = hash_segments(value);
-    if segments.len() == 4 && segments[0] == "trait_impl" {
-        Option::Some(segments[3])
-    } else {
-        Option::None
+fn trait_impl_method_name(value: anf::Function) -> Option[string] {
+    match value.origin {
+        core::FunctionOrigin::TraitImplementation { method_name } => Option::Some(method_name),
+        _ => Option::None,
     }
 }
 
@@ -2317,21 +2196,18 @@ fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
 }
 
 fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
-    let separator = Ref::new(-1);
+    let mut separator = -1;
     for index in 0..value.byte_len() {
-        if separator.get() < 0 && value.byte_get(index) == b'#' {
-            separator.set(index)
+        if separator < 0 && value.byte_get(index) == b'#' {
+            separator = index;
         } else {
             ()
         }
     };
-    if separator.get() < 0 {
+    if separator < 0 {
         (fallback, value)
     } else {
-        (
-            value.byte_slice(0, separator.get()),
-            value.byte_slice(separator.get() + 1, value.byte_len()),
-        )
+        (value.byte_slice(0, separator), value.byte_slice(separator + 1, value.byte_len()))
     }
 }
 
@@ -2340,8 +2216,8 @@ fn collect_dyn_call_method(result: Vec[DynMethod], trait_name: string, value: an
         DynCall { trait_name: owner, method_name: encoded, receiver: _, args, ty: ret_ty } => if owner
             == trait_name {
             let parts = dyn_method_parts(encoded, owner);
-            if contains_method(result, parts.1) == false {
-                let params: Vec[tast::Type] = Vec::new();
+            if !contains_method(result, parts.1) {
+                let params: Vec[tast::Type] = Vec::[];
                 for arg in args {
                     params.push(anf::imm_type(arg))
                 };
@@ -2389,13 +2265,12 @@ fn collect_dyn_call_methods(result: Vec[DynMethod], trait_name: string, block: a
 }
 
 fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMethod] {
-    let result: Vec[DynMethod] = Vec::new();
+    let result: Vec[DynMethod] = Vec::[];
     for function in functions {
-        match (function.trait_impl, trait_impl_method_name(function.name)) {
+        match (function.trait_impl, trait_impl_method_name(function)) {
             (Some(metadata), Some(method_name)) => {
-                if metadata.trait_ref.name == trait_name
-                    && contains_method(result, method_name) == false {
-                    let params: Vec[tast::Type] = Vec::new();
+                if metadata.trait_ref.name == trait_name && !contains_method(result, method_name) {
+                    let params: Vec[tast::Type] = Vec::[];
                     for index in 1..function.params.len() {
                         params.push(function.params[index].1)
                     };
@@ -2417,21 +2292,21 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
     for function in functions {
         collect_dyn_call_methods(result, trait_name, function.body)
     };
-    if trait_name == "Hash" && contains_method(result, "hash") == false {
+    if trait_name == "Hash" && !contains_method(result, "hash") {
         result.push(
             DynMethod {
                 name: "hash",
                 dispatch_trait: trait_name,
-                params: Vec::new(),
+                params: Vec::[],
                 ret_ty: tast::Type::Uint64,
             },
         )
-    } else if trait_name == "ToString" && contains_method(result, "to_string") == false {
+    } else if trait_name == "ToString" && !contains_method(result, "to_string") {
         result.push(
             DynMethod {
                 name: "to_string",
                 dispatch_trait: trait_name,
-                params: Vec::new(),
+                params: Vec::[],
                 ret_ty: tast::Type::String,
             },
         )
@@ -2442,15 +2317,15 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
 }
 
 fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> int {
-    let count = Ref::new(0);
+    let mut count = 0;
     for coercion in coercions {
         if raw_dyn_factory_name(coercion.trait_name, coercion.for_ty) == expected {
-            count.set(count.get() + 1)
+            count = count + 1;
         } else {
             ()
         }
     };
-    count.get()
+    count
 }
 
 fn dyn_wrapper_name_count(
@@ -2458,22 +2333,22 @@ fn dyn_wrapper_name_count(
     functions: Vec[anf::Function],
     expected: string,
 ) -> int {
-    let count = Ref::new(0);
+    let mut count = 0;
     for coercion in coercions {
         for method in dyn_methods(functions, coercion.trait_name) {
             if raw_dyn_wrapper_name(coercion.trait_name, coercion.for_ty, method.name) == expected {
-                count.set(count.get() + 1)
+                count = count + 1;
             } else {
                 ()
             }
         }
     };
-    count.get()
+    count
 }
 
 pub fn build_dyn_helper_names(coercions: Vec[DynCoercion], functions: Vec[anf::Function]) -> DynHelperNames {
-    let factories: Vec[(string, string, string)] = Vec::new();
-    let wrappers: Vec[(string, string, string, string)] = Vec::new();
+    let factories: Vec[(string, string, string)] = Vec::[];
+    let wrappers: Vec[(string, string, string, string)] = Vec::[];
     for coercion in coercions {
         let key = compact_type(coercion.for_ty);
         let raw_factory = raw_dyn_factory_name(coercion.trait_name, coercion.for_ty);
@@ -2515,10 +2390,10 @@ pub fn build_dyn_helper_names(coercions: Vec[DynCoercion], functions: Vec[anf::F
 }
 
 fn dyn_type_items(trait_name: string, methods: Vec[DynMethod]) -> Vec[Item] {
-    let result: Vec[Item] = Vec::new();
-    let fields: Vec[(string, Type)] = Vec::new();
+    let result: Vec[Item] = Vec::[];
+    let fields: Vec[(string, Type)] = Vec::[];
     for method in methods {
-        let params: Vec[Type] = Vec::new();
+        let params: Vec[Type] = Vec::[];
         params.push(Type::Any);
         for param in method.params {
             params.push(lower_type(param))
@@ -2528,7 +2403,7 @@ fn dyn_type_items(trait_name: string, methods: Vec[DynMethod]) -> Vec[Item] {
         )
     };
     result.push(Item::Struct(StructDef { name: dyn_vtable_name(trait_name), fields }));
-    let object_fields: Vec[(string, Type)] = Vec::new();
+    let object_fields: Vec[(string, Type)] = Vec::[];
     object_fields.push(("data", Type::Any));
     object_fields.push(
         ("vtable", Type::Pointer { elem: Type::Named { name: dyn_vtable_name(trait_name) } }),
@@ -2545,60 +2420,65 @@ fn find_dyn_impl_name(
     for_ty: tast::Type,
     method_name: string,
 ) -> string {
-    let index = Ref::new(functions.len() - 1);
-    while index.get() >= 0 {
-        let function = functions[index.get()];
-        match (function.trait_impl, trait_impl_method_name(function.name)) {
+    let mut index = functions.len() - 1;
+    while index >= 0 {
+        let function = functions[index];
+        match (function.trait_impl, trait_impl_method_name(function)) {
             (Some(metadata), Some(candidate_method)) => {
                 if metadata.trait_ref.name == trait_name
                     && encode_type(metadata.for_ty) == encode_type(for_ty)
                     && candidate_method == method_name {
                     return go_ident(function.name)
                 } else {
-                    index.set(index.get() - 1)
+                    index = index - 1;
                 }
             },
-            _ => index.set(index.get() - 1),
+            _ => {
+                index = index - 1;
+            },
         }
     };
     go_ident("trait_impl#" + trait_name + "#" + compact_type(for_ty) + "#" + method_name)
 }
 
-fn runtime_string_precedes(left: string, right: string) -> bool {
-    let length = if left.byte_len() < right.byte_len() {
-        left.byte_len()
+fn runtime_string_compare(left: string, right: string) -> int {
+    let left_len = left.byte_len();
+    let right_len = right.byte_len();
+    let length = if left_len < right_len {
+        left_len
     } else {
-        right.byte_len()
+        right_len
     };
-    let index = Ref::new(0);
-    while index.get() < length && left.byte_get(index.get()) == right.byte_get(index.get()) {
-        index.set(index.get() + 1)
+    let mut index = 0;
+    while index < length && left.byte_get(index) == right.byte_get(index) {
+        index += 1;
     };
-    if index.get() == length {
-        left.byte_len() < right.byte_len()
+    if index == length {
+        if left_len < right_len {
+            -1
+        } else if left_len > right_len {
+            1
+        } else {
+            0
+        }
+    } else if left.byte_get(index) < right.byte_get(index) {
+        -1
     } else {
-        left.byte_get(index.get()) < right.byte_get(index.get())
+        1
     }
 }
 
-fn dyn_coercion_precedes(left: DynCoercion, right: DynCoercion) -> bool {
+fn dyn_coercion_compare(left: DynCoercion, right: DynCoercion) -> int {
     if left.trait_name == right.trait_name {
-        runtime_string_precedes(encode_type(left.for_ty), encode_type(right.for_ty))
+        runtime_string_compare(encode_type(left.for_ty), encode_type(right.for_ty))
     } else {
-        runtime_string_precedes(left.trait_name, right.trait_name)
+        runtime_string_compare(left.trait_name, right.trait_name)
     }
 }
 
 fn sorted_dyn_coercions(values: Vec[DynCoercion]) -> Vec[DynCoercion] {
-    let result = Vec::new();
-    for value in values {
-        let index = Ref::new(0);
-        while index.get() < result.len() && !dyn_coercion_precedes(value, result[index.get()]) {
-            index.set(index.get() + 1)
-        };
-        result.insert(index.get(), value)
-    };
-    result
+    collections::sort_by(values, dyn_coercion_compare);
+    values
 }
 
 fn is_enum_dyn_receiver(
@@ -2627,13 +2507,13 @@ fn dyn_coercion_items(
     methods: Vec[DynMethod],
     names: DynHelperNames,
 ) -> Vec[Item] {
-    let result: Vec[Item] = Vec::new();
+    let result: Vec[Item] = Vec::[];
     let enum_receiver = is_enum_dyn_receiver(enums, instances, coercion.for_ty);
     for method in methods {
         let wrapper = dyn_wrapper_name(names, coercion.trait_name, coercion.for_ty, method.name);
-        let wrapper_params: Vec[(string, Type)] = Vec::new();
+        let wrapper_params: Vec[(string, Type)] = Vec::[];
         wrapper_params.push(("self", Type::Any));
-        let wrapper_args: Vec[Expr] = Vec::new();
+        let wrapper_args: Vec[Expr] = Vec::[];
         wrapper_args.push(
             if enum_receiver {
                 Expr::Var { name: "v" }
@@ -2646,7 +2526,7 @@ fn dyn_coercion_items(
             wrapper_params.push((name, lower_type(method.params[index])));
             wrapper_args.push(Expr::Var { name })
         };
-        let wrapper_stmts: Vec[Stmt] = Vec::new();
+        let wrapper_stmts: Vec[Stmt] = Vec::[];
         let wrapper_call = Expr::Call {
             func: Expr::Var {
                 name: find_dyn_impl_name(
@@ -2659,8 +2539,8 @@ fn dyn_coercion_items(
             args: wrapper_args,
         };
         if enum_receiver {
-            let cases: Vec[TypeSwitchCase] = Vec::new();
-            let case_stmts: Vec[Stmt] = Vec::new();
+            let cases: Vec[TypeSwitchCase] = Vec::[];
+            let case_stmts: Vec[Stmt] = Vec::[];
             case_stmts.push(Stmt::Return { expr: Option::Some(wrapper_call) });
             cases.push(
                 TypeSwitchCase {
@@ -2668,7 +2548,7 @@ fn dyn_coercion_items(
                     body: Block { stmts: case_stmts },
                 },
             );
-            let default_stmts: Vec[Stmt] = Vec::new();
+            let default_stmts: Vec[Stmt] = Vec::[];
             default_stmts.push(Stmt::Panic { message: "unexpected type" });
             wrapper_stmts.push(
                 Stmt::TypeSwitch {
@@ -2692,8 +2572,8 @@ fn dyn_coercion_items(
             ),
         )
     };
-    let factory_stmts: Vec[Stmt] = Vec::new();
-    let factory_fields: Vec[(string, Expr)] = Vec::new();
+    let factory_stmts: Vec[Stmt] = Vec::[];
+    let factory_fields: Vec[(string, Expr)] = Vec::[];
     for method in methods {
         factory_fields.push(
             (
@@ -2721,7 +2601,7 @@ fn dyn_coercion_items(
         Item::Function(
             Function {
                 name: dyn_factory_name(names, coercion.trait_name, coercion.for_ty),
-                params: Vec::new(),
+                params: Vec::[],
                 ret_ty: Option::Some(
                     Type::Pointer {
                         elem: Type::Named { name: dyn_vtable_name(coercion.trait_name) },
@@ -2775,13 +2655,13 @@ pub fn emit_builtin_runtime_items(
             _ => (),
         }
     };
-    let options: Vec[string] = Vec::new();
+    let options: Vec[string] = Vec::[];
     for ty in types {
         match tast::resolve_type(ty) {
             HashMap { key, value } => {
                 let option = synthetic_option_base(value);
-                let include_option = vecs::contains(options, option) == false
-                    && option_available(instances, value) == false;
+                let include_option = !vecs::contains(options, option)
+                    && !option_available(instances, value);
                 for item in hashmap_items(
                     key,
                     value,
@@ -2822,11 +2702,11 @@ pub fn emit_dyn_runtime_items(
     functions: Vec[anf::Function],
     names: DynHelperNames,
 ) -> unit {
-    let dyn_traits: Vec[string] = Vec::new();
+    let dyn_traits: Vec[string] = Vec::[];
     for ty in types {
         match tast::resolve_type(ty) {
             Dyn { trait_name: name } => {
-                if vecs::contains(dyn_traits, name) == false {
+                if !vecs::contains(dyn_traits, name) {
                     for item in dyn_type_items(name, dyn_methods(functions, name)) {
                         items.push(item)
                     };

@@ -8,7 +8,7 @@ struct NameSet {
 }
 
 fn new_name_set() -> NameSet {
-    NameSet { values: Vec::new(), present: HashMap::{} }
+    NameSet { values: Vec::[], present: HashMap::{} }
 }
 
 fn name_present(values: NameSet, expected: string) -> bool {
@@ -16,7 +16,7 @@ fn name_present(values: NameSet, expected: string) -> bool {
 }
 
 fn add_reachable(values: NameSet, value: string) -> unit {
-    if values.present.contains(value) == false {
+    if !values.present.contains(value) {
         values.present[value] = ();
         values.values.push(value)
     } else {
@@ -271,11 +271,11 @@ fn prune_imports(values: Vec[Item]) -> Vec[Item] {
     for value in values {
         collect_item_names(names, value)
     };
-    let result: Vec[Item] = Vec::new();
+    let result: Vec[Item] = Vec::[];
     for value in values {
         match value {
             ImportGroup(imports) => {
-                let retained: Vec[(string, string)] = Vec::new();
+                let retained: Vec[(string, string)] = Vec::[];
                 for entry in imports {
                     if import_is_used(names, entry.0) {
                         retained.push(entry)
@@ -283,7 +283,7 @@ fn prune_imports(values: Vec[Item]) -> Vec[Item] {
                         ()
                     }
                 };
-                if retained.len() > 0 {
+                if !retained.is_empty() {
                     result.push(Item::ImportGroup(retained))
                 } else {
                     ()
@@ -305,7 +305,7 @@ pub fn prune_functions(value: File) -> File {
             match item {
                 Function(function) => {
                     if name_present(reachable, function.name)
-                        && name_present(expanded, function.name) == false {
+                        && !name_present(expanded, function.name) {
                         add_reachable(expanded, function.name);
                         collect_block_names(reachable, function.body);
                     } else {
@@ -326,7 +326,7 @@ pub fn prune_functions(value: File) -> File {
         for item in value.items {
             match item {
                 Global(global) => if name_present(reachable, global.name)
-                    && name_present(expanded, global.name) == false {
+                    && !name_present(expanded, global.name) {
                     add_reachable(expanded, global.name);
                     collect_expr_names(reachable, global.value)
                 } else {
@@ -346,8 +346,7 @@ pub fn prune_functions(value: File) -> File {
         for item in value.items {
             match item {
                 ConstGroup(group) => for spec in group.specs {
-                    if name_present(reachable, spec.name)
-                        && name_present(expanded, spec.name) == false {
+                    if name_present(reachable, spec.name) && !name_present(expanded, spec.name) {
                         add_reachable(expanded, spec.name);
                         collect_expr_names(reachable, spec.value)
                     } else {
@@ -363,7 +362,7 @@ pub fn prune_functions(value: File) -> File {
             ()
         }
     };
-    let items: Vec[Item] = Vec::new();
+    let items: Vec[Item] = Vec::[];
     for item in value.items {
         match item {
             Function(function) => {
@@ -374,8 +373,8 @@ pub fn prune_functions(value: File) -> File {
                 }
             },
             ConstGroup(group) => {
-                let was_empty = group.specs.len() == 0;
-                let specs: Vec[ConstSpec] = Vec::new();
+                let was_empty = group.specs.is_empty();
+                let specs: Vec[ConstSpec] = Vec::[];
                 for spec in group.specs {
                     if name_present(reachable, spec.name) {
                         specs.push(spec)
@@ -383,7 +382,7 @@ pub fn prune_functions(value: File) -> File {
                         ()
                     }
                 };
-                if was_empty || specs.len() > 0 {
+                if was_empty || !specs.is_empty() {
                     items.push(Item::ConstGroup(ConstGroup { specs }))
                 } else {
                     ()

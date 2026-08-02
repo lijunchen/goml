@@ -31,6 +31,7 @@ fn collect_mutable_exprs(values: Vec[tast::Expr], result: Vec[(string, tast::Typ
 fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => collect_mutable_expr(expr, result),
             Let { is_mut, pat: pattern, value: expr } => {
                 if is_mut {
                     match pattern {
@@ -180,6 +181,7 @@ fn collect_bound_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit {
 fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => collect_bound_expr(expr, result),
             Let { is_mut: _, pat: pattern, value: expr } => {
                 collect_pattern_names(pattern, result);
                 collect_bound_expr(expr, result)
@@ -284,6 +286,7 @@ fn collect_reference_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit
 fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => collect_reference_expr(expr, result),
             Let { is_mut: _, pat: _, value: expr } => collect_reference_expr(expr, result),
             LetElse { is_mut: _, pat: _, value: expr, else_branch } => {
                 collect_reference_expr(expr, result);
@@ -383,6 +386,7 @@ fn collect_capture_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit {
 fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => collect_capture_expr(expr, result),
             Let { is_mut: _, pat: _, value: expr } => collect_capture_expr(expr, result),
             LetElse { is_mut: _, pat: _, value: expr, else_branch } => {
                 collect_capture_expr(expr, result);
@@ -402,12 +406,12 @@ fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
 }
 
 fn collect_closure_captures(params: Vec[tast::ClosureParam], body: tast::Expr, result: Vec[string]) -> unit {
-    let bound: Vec[string] = Vec::new();
+    let bound: Vec[string] = Vec::[];
     for param in params {
         push_name(bound, param.name)
     };
     collect_bound_expr(body, bound);
-    let references: Vec[string] = Vec::new();
+    let references: Vec[string] = Vec::[];
     collect_reference_expr(body, references);
     for name in references {
         if vecs::contains(bound, name) {
@@ -490,11 +494,11 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
 }
 
 fn hidden_mutable_cells(value: tast::Block) -> Vec[(string, tast::Type)] {
-    let mutables: Vec[(string, tast::Type)] = Vec::new();
+    let mutables: Vec[(string, tast::Type)] = Vec::[];
     collect_mutable_block(value, mutables);
-    let captures: Vec[string] = Vec::new();
+    let captures: Vec[string] = Vec::[];
     collect_capture_block(value, captures);
-    let result: Vec[(string, tast::Type)] = Vec::new();
+    let result: Vec[(string, tast::Type)] = Vec::[];
     for value in mutables {
         if vecs::contains(captures, value.0) {
             result.push(value)
@@ -510,13 +514,13 @@ fn hidden_cell_type(value: tast::Type) -> tast::Type {
 }
 
 fn hidden_cell_inner(cells: Vec[(string, tast::Type)], name: string) -> Option[tast::Type] {
-    let index = Ref::new(cells.len() - 1);
-    while index.get() >= 0 {
-        let value = cells[index.get()];
+    let mut index = cells.len() - 1;
+    while index >= 0 {
+        let value = cells[index];
         if value.0 == name {
             return Option::Some(value.1)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -535,28 +539,28 @@ fn hidden_cell_var(name: string, inner_ty: tast::Type) -> Expr {
 
 fn hidden_ref_alloc(value: Expr, inner_ty: tast::Type) -> Expr {
     let ref_ty = hidden_cell_type(inner_ty);
-    let params: Vec[tast::Type] = Vec::new();
+    let params: Vec[tast::Type] = Vec::[];
     params.push(inner_ty);
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(value);
     Expr::Call { func: intrinsic_expr("ref.new", params, ref_ty), args, ty: ref_ty }
 }
 
 fn hidden_ref_get(name: string, inner_ty: tast::Type) -> Expr {
     let ref_ty = hidden_cell_type(inner_ty);
-    let params: Vec[tast::Type] = Vec::new();
+    let params: Vec[tast::Type] = Vec::[];
     params.push(ref_ty);
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(hidden_cell_var(name, inner_ty));
     Expr::Call { func: intrinsic_expr("ref.get", params, inner_ty), args, ty: inner_ty }
 }
 
 fn hidden_ref_set(name: string, inner_ty: tast::Type, value: Expr) -> Expr {
     let ref_ty = hidden_cell_type(inner_ty);
-    let params: Vec[tast::Type] = Vec::new();
+    let params: Vec[tast::Type] = Vec::[];
     params.push(ref_ty);
     params.push(inner_ty);
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(hidden_cell_var(name, inner_ty));
     args.push(value);
     Expr::Call {
@@ -567,7 +571,7 @@ fn hidden_ref_set(name: string, inner_ty: tast::Type, value: Expr) -> Expr {
 }
 
 fn lower_hidden_exprs(values: Vec[Expr], cells: Vec[(string, tast::Type)]) -> Vec[Expr] {
-    let result: Vec[Expr] = Vec::new();
+    let result: Vec[Expr] = Vec::[];
     for value in values {
         result.push(lower_hidden_expr(value, cells))
     };
@@ -575,7 +579,7 @@ fn lower_hidden_exprs(values: Vec[Expr], cells: Vec[(string, tast::Type)]) -> Ve
 }
 
 fn lower_hidden_block(value: Block, cells: Vec[(string, tast::Type)]) -> Block {
-    let stmts: Vec[LetStmt] = Vec::new();
+    let stmts: Vec[LetStmt] = Vec::[];
     for stmt in value.stmts {
         let lowered = lower_hidden_expr(stmt.value, cells);
         match hidden_cell_inner(cells, stmt.name) {
@@ -599,7 +603,7 @@ fn lower_hidden_block(value: Block, cells: Vec[(string, tast::Type)]) -> Block {
 }
 
 fn lower_hidden_arms(values: Vec[Arm], cells: Vec[(string, tast::Type)]) -> Vec[Arm] {
-    let result: Vec[Arm] = Vec::new();
+    let result: Vec[Arm] = Vec::[];
     for value in values {
         result.push(
             Arm {

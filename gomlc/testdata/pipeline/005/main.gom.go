@@ -27,51 +27,56 @@ const (
 )
 
 func main0() struct{} {
-    var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
-        _0: Blue,
-        _1: Red,
-    }
-    var x152 Color = a__0._0
-    var x153 Color = a__0._1
-    switch x153 {
+    var x155 Color = Blue
+    var x156 Color = Red
+    switch x156 {
     case Red:
-        switch x152 {
+        switch x155 {
         case Red:
-            print__T_int(1)
+            var inline175 int = 1
+            var inline176 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline175)
+            _goml_runtime_core_string_print(inline176)
+            return struct{}{}
         default:
-            print__T_int(3)
+            var inline179 int = 3
+            var inline180 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline179)
+            _goml_runtime_core_string_print(inline180)
+            return struct{}{}
         }
     case Green:
-        switch x152 {
+        switch x155 {
         case Red:
-            print__T_int(0)
+            var inline183 int = 0
+            var inline184 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline183)
+            _goml_runtime_core_string_print(inline184)
+            return struct{}{}
         default:
-            print__T_int(3)
+            var inline187 int = 3
+            var inline188 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline187)
+            _goml_runtime_core_string_print(inline188)
+            return struct{}{}
         }
     case Blue:
-        switch x152 {
+        switch x155 {
         case Blue:
-            print__T_int(2)
+            var inline191 int = 2
+            var inline192 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline191)
+            _goml_runtime_core_string_print(inline192)
+            return struct{}{}
         default:
-            print__T_int(3)
+            var inline195 int = 3
+            var inline196 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline195)
+            _goml_runtime_core_string_print(inline196)
+            return struct{}{}
         }
     default:
         panic("non-exhaustive match")
     }
-    return struct{}{}
-}
-
-func print__T_int(value__0 int) struct{} {
-    var t166 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__0)
-    _goml_runtime_core_string_print(t166)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv169 string
-    var t170 string = _goml_runtime_core_int_to_string(self__40)
-    retv169 = t170
-    return retv169
+    var t173 string = _goml_runtime_core_int_to_string(self__40)
+    return t173
 }
 
 func main() {

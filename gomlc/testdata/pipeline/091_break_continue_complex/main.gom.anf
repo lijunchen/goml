@@ -1,153 +1,194 @@
 fn main() -> unit {
-  join ret164() -> unit {
-    ()
-  } in
   let sum/0 = inherent#Ref#Ref[T]#new__T_int(0) in
   let i/1 = inherent#Ref#Ref[T]#new__T_int(1) in
-  join exit165() -> unit {
-    let _wild155 = () in
-    let mtmp156 = print__T_string("sum up to break: ") in
-    let t166 = inherent#Ref#Ref[T]#get__T_int(sum/0) in
-    let mtmp157 = println__T_int(t166) in
-    let even_sum/2 = inherent#Ref#Ref[T]#new__T_int(0) in
-    let j/3 = inherent#Ref#Ref[T]#new__T_int(1) in
-    join exit167() -> unit {
-      let _wild161 = () in
-      let mtmp162 = print__T_string("even sum: ") in
-      let t168 = inherent#Ref#Ref[T]#get__T_int(even_sum/2) in
-      let mtmp163 = println__T_int(t168) in
-      jump ret164()
-    } in
-    joinrec {
-      join loop169() -> unit {
-        let t170 = inherent#Ref#Ref[T]#get__T_int(j/3) in
-        let t171 = (t170 <= 10) in
-        if t171 {
-          let cur/4 = inherent#Ref#Ref[T]#get__T_int(j/3) in
-          let t172 = (cur/4 + 1) in
-          let _wild158 = inherent#Ref#Ref[T]#set__T_int(j/3, t172) in
-          let t174 = (cur/4 / 2) in
-          let t175 = (t174 * 2) in
-          let t176 = trait_impl#Eq#int#eq(cur/4, t175) in
-          join k173() -> unit {
-            let _wild160 = () in
-            jump loop169()
+  join exit168() -> unit {
+    let _wild158 = () in
+    join inline_cont267(mtmp159: unit) -> unit {
+      join inline_cont265(t169: int) -> unit {
+        join inline_cont262(mtmp160: unit) -> unit {
+          join inline_cont259(even_sum/2: Ref[int]) -> unit {
+            join inline_cont256(j/3: Ref[int]) -> unit {
+              join exit170() -> unit {
+                let _wild164 = () in
+                join inline_cont252(mtmp165: unit) -> unit {
+                  join inline_cont250(t171: int) -> unit {
+                    let inline248 = trait_impl#ToString#int#to_string(t171) in
+                    let inline249 = @runtime(core.string_println)(inline248) in
+                    ()
+                  } in
+                  let inline251 = @intrinsic(ref.get)(even_sum/2) in
+                  jump inline_cont250(inline251)
+                } in
+                let inline253 = "even sum: " in
+                let inline254 = trait_impl#ToString#string#to_string(inline253) in
+                let inline255 = @runtime(core.string_print)(inline254) in
+                jump inline_cont252(())
+              } in
+              joinrec {
+                join loop172() -> unit {
+                  join inline_cont245(t173: int) -> unit {
+                    let t174 = (t173 <= 10) in
+                    if t174 {
+                      join inline_cont243(cur/4: int) -> unit {
+                        let t175 = (cur/4 + 1) in
+                        join inline_cont241(_wild161: unit) -> unit {
+                          let t177 = (cur/4 / 2) in
+                          let t178 = (t177 * 2) in
+                          join inline_cont239(t179: bool) -> unit {
+                            join k176() -> unit {
+                              let _wild163 = () in
+                              jump loop172()
+                            } in
+                            if t179 {
+                              join inline_cont237(t180: int) -> unit {
+                                let t181 = (t180 + cur/4) in
+                                let inline236 = @intrinsic(ref.set)(even_sum/2, t181) in
+                                jump loop172()
+                              } in
+                              let inline238 = @intrinsic(ref.get)(even_sum/2) in
+                              jump inline_cont237(inline238)
+                            } else {
+                              jump k176()
+                            }
+                          } in
+                          let inline240 = @intrinsic(eq.primitive)(cur/4, t178) in
+                          jump inline_cont239(inline240)
+                        } in
+                        let inline242 = @intrinsic(ref.set)(j/3, t175) in
+                        jump inline_cont241(())
+                      } in
+                      let inline244 = @intrinsic(ref.get)(j/3) in
+                      jump inline_cont243(inline244)
+                    } else {
+                      jump exit170()
+                    }
+                  } in
+                  let inline246 = @intrinsic(ref.get)(j/3) in
+                  jump inline_cont245(inline246)
+                } in
+              } in
+              jump loop172()
+            } in
+            let inline257 = 1 in
+            let inline258 = @intrinsic(ref.new)(inline257) in
+            jump inline_cont256(inline258)
           } in
-          if t176 {
-            let t177 = inherent#Ref#Ref[T]#get__T_int(even_sum/2) in
-            let t178 = (t177 + cur/4) in
-            let _wild159 = inherent#Ref#Ref[T]#set__T_int(even_sum/2, t178) in
-            jump loop169()
-          } else {
-            jump k173()
-          }
-        } else {
-          jump exit167()
-        }
+          let inline260 = 0 in
+          let inline261 = @intrinsic(ref.new)(inline260) in
+          jump inline_cont259(inline261)
+        } in
+        let inline263 = trait_impl#ToString#int#to_string(t169) in
+        let inline264 = @runtime(core.string_println)(inline263) in
+        jump inline_cont262(())
       } in
+      let inline266 = @intrinsic(ref.get)(sum/0) in
+      jump inline_cont265(inline266)
     } in
-    jump loop169()
+    let inline268 = "sum up to break: " in
+    let inline269 = trait_impl#ToString#string#to_string(inline268) in
+    let inline270 = @runtime(core.string_print)(inline269) in
+    jump inline_cont267(())
   } in
   joinrec {
-    join loop179() -> unit {
-      let t180 = inherent#Ref#Ref[T]#get__T_int(i/1) in
-      let t181 = (t180 <= 100) in
-      if t181 {
-        let t188 = inherent#Ref#Ref[T]#get__T_int(i/1) in
-        let t189 = trait_impl#Eq#int#eq(t188, 50) in
-        join k182() -> unit {
-          let _wild152 = () in
-          let t183 = inherent#Ref#Ref[T]#get__T_int(sum/0) in
-          let t184 = inherent#Ref#Ref[T]#get__T_int(i/1) in
-          let t185 = (t183 + t184) in
-          let _wild153 = inherent#Ref#Ref[T]#set__T_int(sum/0, t185) in
-          let t186 = inherent#Ref#Ref[T]#get__T_int(i/1) in
-          let t187 = (t186 + 1) in
-          let _wild154 = inherent#Ref#Ref[T]#set__T_int(i/1, t187) in
-          jump loop179()
-        } in
-        if t189 {
-          jump exit165()
+    join loop182() -> unit {
+      join inline_cont233(t183: int) -> unit {
+        let t184 = (t183 <= 100) in
+        if t184 {
+          join inline_cont231(t191: int) -> unit {
+            join inline_cont228(t192: bool) -> unit {
+              join k185() -> unit {
+                let _wild155 = () in
+                join inline_cont226(t186: int) -> unit {
+                  join inline_cont224(t187: int) -> unit {
+                    let t188 = (t186 + t187) in
+                    join inline_cont222(_wild156: unit) -> unit {
+                      join inline_cont220(t189: int) -> unit {
+                        let t190 = (t189 + 1) in
+                        let inline219 = @intrinsic(ref.set)(i/1, t190) in
+                        jump loop182()
+                      } in
+                      let inline221 = @intrinsic(ref.get)(i/1) in
+                      jump inline_cont220(inline221)
+                    } in
+                    let inline223 = @intrinsic(ref.set)(sum/0, t188) in
+                    jump inline_cont222(())
+                  } in
+                  let inline225 = @intrinsic(ref.get)(i/1) in
+                  jump inline_cont224(inline225)
+                } in
+                let inline227 = @intrinsic(ref.get)(sum/0) in
+                jump inline_cont226(inline227)
+              } in
+              if t192 {
+                jump exit168()
+              } else {
+                jump k185()
+              }
+            } in
+            let inline229 = 50 in
+            let inline230 = @intrinsic(eq.primitive)(t191, inline229) in
+            jump inline_cont228(inline230)
+          } in
+          let inline232 = @intrinsic(ref.get)(i/1) in
+          jump inline_cont231(inline232)
         } else {
-          jump k182()
+          jump exit168()
         }
-      } else {
-        jump exit165()
-      }
+      } in
+      let inline234 = @intrinsic(ref.get)(i/1) in
+      jump inline_cont233(inline234)
     } in
   } in
-  jump loop179()
+  jump loop182()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  join ret190(retv191: Ref[int]) -> Ref[int] {
-    retv191
-  } in
-  let t192 = @intrinsic(ref.new)(value/207) in
-  jump ret190(t192)
+  let t195 = @intrinsic(ref.new)(value/207) in
+  t195
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  join ret193(retv194: int) -> int {
-    retv194
-  } in
-  let t195 = @intrinsic(ref.get)(self/208) in
-  jump ret193(t195)
+  let t198 = @intrinsic(ref.get)(self/208) in
+  t198
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret196(retv197: bool) -> bool {
-    retv197
-  } in
-  let t198 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret196(t198)
+  let t201 = @intrinsic(eq.primitive)(self/59, other/60) in
+  t201
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  join ret199() -> unit {
-    ()
-  } in
-  let t200 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret199()
+  let t203 = @intrinsic(ref.set)(self/209, value/210) in
+  ()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  join ret201() -> unit {
+  join inline_cont271(t205: string) -> unit {
+    let t206 = @runtime(core.string_print)(t205) in
     ()
   } in
-  let t202 = trait_impl#ToString#string#to_string(value/0) in
-  let t203 = @runtime(core.string_print)(t202) in
-  jump ret201()
+  jump inline_cont271(value/0)
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret204() -> unit {
+  join inline_cont272(t208: string) -> unit {
+    let t209 = @runtime(core.string_println)(t208) in
     ()
   } in
-  let t205 = trait_impl#ToString#int#to_string(value/1) in
-  let t206 = @runtime(core.string_println)(t205) in
-  jump ret204()
+  let inline273 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont272(inline273)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret207(retv208: string) -> string {
-    retv208
-  } in
-  jump ret207(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret209(retv210: string) -> string {
-    retv210
-  } in
-  let t211 = @runtime(core.int_to_string)(self/40) in
-  jump ret209(t211)
+  let t214 = @runtime(core.int_to_string)(self/40) in
+  t214
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret212(retv213: uint64) -> uint64 {
-    retv213
-  } in
-  let t214 = @runtime(core.int_hash)(self/85) in
-  jump ret212(t214)
+  let t217 = @runtime(core.int_hash)(self/85) in
+  t217
 }

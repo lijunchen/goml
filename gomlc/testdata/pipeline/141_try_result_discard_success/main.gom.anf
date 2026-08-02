@@ -1,92 +1,134 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
-  join ret160(retv161: Result__string__string) -> Result__string__string {
-    retv161
-  } in
-  join k162(jp163: Result__string__string) -> Result__string__string {
-    jump ret160(jp163)
-  } in
   if ok/0 {
-    let t164 = Result__string__string::Ok("ignored") in
-    jump k162(t164)
+    let t167 = Result__string__string::Ok("ignored") in
+    t167
   } else {
-    let t165 = Result__string__string::Err("parse failed") in
-    jump k162(t165)
+    let t168 = Result__string__string::Err("parse failed") in
+    t168
   }
 }
 
 fn check(ok/1: bool) -> Result__string__string {
-  join ret166(retv167: Result__string__string) -> Result__string__string {
-    retv167
+  join inline_cont191(mtmp155: Result__string__string) -> Result__string__string {
+    join k171(jp172: string) -> Result__string__string {
+      let mtmp158 = jp172 in
+      let t173 = Result__string__string::Ok("ok") in
+      t173
+    } in
+    match mtmp155 {
+      Tag_0 => {
+        let x156 = Result__string__string::Ok._0(mtmp155) in
+        let try_value/12 = x156 in
+        jump k171(x156)
+      },
+      Tag_1 => {
+        let x157 = Result__string__string::Err._0(mtmp155) in
+        let try_residual/12 = x157 in
+        let t174 = Result__string__string::Err(x157) in
+        t174
+      },
+    }
   } in
-  let mtmp152 = parse_text(ok/1) in
-  join k168(jp169: string) -> Result__string__string {
-    let mtmp155 = jp169 in
-    let t170 = Result__string__string::Ok("ok") in
-    jump ret166(t170)
-  } in
-  match mtmp152 {
-    Tag_0 => {
-      let x153 = Result__string__string::Ok._0(mtmp152) in
-      let try_value/12 = x153 in
-      jump k168(try_value/12)
-    },
-    Tag_1 => {
-      let x154 = Result__string__string::Err._0(mtmp152) in
-      let try_residual/12 = x154 in
-      let t171 = Result__string__string::Err(try_residual/12) in
-      jump ret166(t171)
-    },
+  if ok/1 {
+    let inline192 = Result__string__string::Ok("ignored") in
+    jump inline_cont191(inline192)
+  } else {
+    let inline193 = Result__string__string::Err("parse failed") in
+    jump inline_cont191(inline193)
   }
 }
 
 fn show(res/2: Result__string__string) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  join k174(jp175: string) -> string {
-    jump ret172(jp175)
-  } in
   match res/2 {
     Tag_0 => {
-      let x156 = Result__string__string::Ok._0(res/2) in
-      let value/3 = x156 in
-      let t176 = ("ok " + value/3) in
-      jump k174(t176)
+      let x159 = Result__string__string::Ok._0(res/2) in
+      let value/3 = x159 in
+      let t179 = ("ok " + x159) in
+      t179
     },
     Tag_1 => {
-      let x157 = Result__string__string::Err._0(res/2) in
-      let err/4 = x157 in
-      let t177 = ("err " + err/4) in
-      jump k174(t177)
+      let x160 = Result__string__string::Err._0(res/2) in
+      let err/4 = x160 in
+      let t180 = ("err " + x160) in
+      t180
     },
   }
 }
 
 fn main() -> unit {
-  join ret178() -> unit {
-    ()
+  let t182 = check(true) in
+  join inline_cont219(t183: string) -> unit {
+    join inline_cont216(_wild161: unit) -> unit {
+      join inline_cont204(t184: Result__string__string) -> unit {
+        join inline_cont197(t185: string) -> unit {
+          let inline195 = trait_impl#ToString#string#to_string(t185) in
+          let inline196 = @runtime(core.string_println)(inline195) in
+          ()
+        } in
+        match t184 {
+          Tag_0 => {
+            let inline198 = Result__string__string::Ok._0(t184) in
+            let inline199 = inline198 in
+            let inline200 = ("ok " + inline198) in
+            jump inline_cont197(inline200)
+          },
+          Tag_1 => {
+            let inline201 = Result__string__string::Err._0(t184) in
+            let inline202 = inline201 in
+            let inline203 = ("err " + inline201) in
+            jump inline_cont197(inline203)
+          },
+        }
+      } in
+      let inline205 = false in
+      let inline206 = parse_text(inline205) in
+      join inline_join207(inline208: string) -> unit {
+        let inline209 = inline208 in
+        let inline210 = Result__string__string::Ok("ok") in
+        jump inline_cont204(inline210)
+      } in
+      match inline206 {
+        Tag_0 => {
+          let inline211 = Result__string__string::Ok._0(inline206) in
+          let inline212 = inline211 in
+          jump inline_join207(inline211)
+        },
+        Tag_1 => {
+          let inline213 = Result__string__string::Err._0(inline206) in
+          let inline214 = inline213 in
+          let inline215 = Result__string__string::Err(inline213) in
+          jump inline_cont204(inline215)
+        },
+      }
+    } in
+    let inline217 = trait_impl#ToString#string#to_string(t183) in
+    let inline218 = @runtime(core.string_println)(inline217) in
+    jump inline_cont216(())
   } in
-  let t179 = check(true) in
-  let t180 = show(t179) in
-  let _wild158 = println__T_string(t180) in
-  let t181 = check(false) in
-  let t182 = show(t181) in
-  let _wild159 = println__T_string(t182) in
-  jump ret178()
+  match t182 {
+    Tag_0 => {
+      let inline220 = Result__string__string::Ok._0(t182) in
+      let inline221 = inline220 in
+      let inline222 = ("ok " + inline220) in
+      jump inline_cont219(inline222)
+    },
+    Tag_1 => {
+      let inline223 = Result__string__string::Err._0(t182) in
+      let inline224 = inline223 in
+      let inline225 = ("err " + inline223) in
+      jump inline_cont219(inline225)
+    },
+  }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret183() -> unit {
+  join inline_cont226(t187: string) -> unit {
+    let t188 = @runtime(core.string_println)(t187) in
     ()
   } in
-  let t184 = trait_impl#ToString#string#to_string(value/1) in
-  let t185 = @runtime(core.string_println)(t184) in
-  jump ret183()
+  jump inline_cont226(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret186(retv187: string) -> string {
-    retv187
-  } in
-  jump ret186(self/38)
+  self/38
 }

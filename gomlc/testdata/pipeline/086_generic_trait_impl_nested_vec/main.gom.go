@@ -22,50 +22,25 @@ type Wrap__string struct {
 }
 
 func main0() struct{} {
-    var a__1 Wrap__int = Wrap__int{
-        value: 1,
-    }
-    var b__2 Wrap__string = Wrap__string{
-        value: "x",
-    }
-    var t155 int32 = _goml_m_trait__impl_i_Size_i_Wrap____int_i_size(a__1)
-    var t156 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t155)
-    println__T_string(t156)
-    var t157 int32 = _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(b__2)
-    var t158 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t157)
-    println__T_string(t158)
+    var t158 int32
+    t158 = 1
+    var t159 string
+    var inline184 string = _goml_runtime_core_int32_to_string(t158)
+    t159 = inline184
+    var inline181 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t159)
+    _goml_runtime_core_string_println(inline181)
+    var t160 int32
+    t160 = 1
+    var t161 string
+    var inline178 string = _goml_runtime_core_int32_to_string(t160)
+    t161 = inline178
+    var inline175 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t161)
+    _goml_runtime_core_string_println(inline175)
     return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t160 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t160)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_Size_i_Wrap____int_i_size(self__0 Wrap__int) int32 {
-    var retv163 int32
-    retv163 = 1
-    return retv163
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv165 string
-    var t166 string = _goml_runtime_core_int32_to_string(self__6)
-    retv165 = t166
-    return retv165
-}
-
-func _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(self__0 Wrap__string) int32 {
-    var retv168 int32
-    retv168 = 1
-    return retv168
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv170 string
-    retv170 = self__38
-    return retv170
+    return self__38
 }
 
 func main() {

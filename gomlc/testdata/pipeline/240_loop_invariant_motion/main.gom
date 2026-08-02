@@ -1,0 +1,42 @@
+fn optimized(base: int, count: int) -> int {
+    let mut index = 0;
+    let mut result = 0;
+    while index < count {
+        let square = base * base;
+        let scaled = square * 17;
+        let offset = scaled + base;
+        result = result + offset;
+        index = index + 1;
+    };
+    result
+}
+
+fn guarded(divisor: int, count: int) -> int {
+    let mut index = 0;
+    let mut result = 0;
+    while index < count {
+        let quotient = 100 / divisor;
+        result = result + quotient;
+        index = index + 1;
+    };
+    result
+}
+
+fn changing(count: int) -> int {
+    let mut index = 0;
+    let mut value = 1;
+    let mut result = 0;
+    while index < count {
+        let derived = value + 1;
+        result = result + derived;
+        value = value + 1;
+        index = index + 1;
+    };
+    result
+}
+
+fn main() -> unit {
+    println(optimized(3, 4));
+    println(guarded(0, 0));
+    println(changing(3));
+}

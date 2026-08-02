@@ -1,40 +1,32 @@
 fn trait_impl#Display#S#show(self/0: S) -> string {
-  join ret154(retv155: string) -> string {
-    retv155
-  } in
-  jump ret154("ok")
+  "ok"
 }
 
 fn main() -> unit {
-  join ret156() -> unit {
+  let t160 = S {} in
+  join inline_cont173(mtmp155: dyn Display) -> unit {
+    let inline170 = "ok" in
+    let inline171 = trait_impl#ToString#string#to_string(inline170) in
+    let inline172 = @runtime(core.string_println)(inline171) in
     ()
   } in
-  let t157 = S {} in
-  let mtmp152 = to_dyn__T_S(t157) in
-  let _wild153 = println__T_string("ok") in
-  jump ret156()
+  let inline174 = to_dyn[Display]{S}(t160) in
+  jump inline_cont173(inline174)
 }
 
 fn to_dyn__T_S(x/1: S) -> dyn Display {
-  join ret158(retv159: dyn Display) -> dyn Display {
-    retv159
-  } in
-  let t160 = to_dyn[Display]{S}(x/1) in
-  jump ret158(t160)
+  let t163 = to_dyn[Display]{S}(x/1) in
+  t163
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret161() -> unit {
+  join inline_cont175(t165: string) -> unit {
+    let t166 = @runtime(core.string_println)(t165) in
     ()
   } in
-  let t162 = trait_impl#ToString#string#to_string(value/1) in
-  let t163 = @runtime(core.string_println)(t162) in
-  jump ret161()
+  jump inline_cont175(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret164(retv165: string) -> string {
-    retv165
-  } in
-  jump ret164(self/38)
+  self/38
 }

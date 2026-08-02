@@ -1,87 +1,95 @@
 fn trait_impl#Eq#AlwaysDifferent#eq(self/0: AlwaysDifferent, other/1: AlwaysDifferent) -> bool {
-  join ret160(retv161: bool) -> bool {
-    retv161
-  } in
-  jump ret160(false)
+  false
 }
 
 fn main() -> unit {
-  join ret162() -> unit {
-    ()
-  } in
   let first/2 = AlwaysDifferent { value: 7 } in
   let second/3 = AlwaysDifferent { value: 7 } in
-  let t163 = trait_impl#Eq#AlwaysDifferent#eq(first/2, second/3) in
-  let _wild152 = println__T_bool(t163) in
-  let t164 = trait_impl#Eq#AlwaysDifferent#eq(first/2, second/3) in
-  let t165 = (!t164) in
-  let _wild153 = println__T_bool(t165) in
-  let t166 = AlwaysDifferent { value: 1 } in
-  let left_tuple/4 = (t166, 2) in
-  let t167 = AlwaysDifferent { value: 1 } in
-  let right_tuple/5 = (t167, 2) in
-  let _eq_lhs154 = left_tuple/4 in
-  let _eq_rhs155 = right_tuple/5 in
-  let t182 = _eq_lhs154.0 in
-  let t183 = _eq_rhs155.0 in
-  let t184 = trait_impl#Eq#AlwaysDifferent#eq(t182, t183) in
-  join k168(jp169: bool) -> unit {
-    let _wild156 = println__T_bool(jp169) in
-    let t170 = AlwaysDifferent { value: 1 } in
-    let t171 = AlwaysDifferent { value: 2 } in
-    let left_array/6 = [t170, t171] in
-    let t172 = AlwaysDifferent { value: 1 } in
-    let t173 = AlwaysDifferent { value: 2 } in
-    let right_array/7 = [t172, t173] in
-    let _eq_lhs157 = left_array/6 in
-    let _eq_rhs158 = right_array/7 in
-    let t176 = @intrinsic(array.get)(_eq_lhs157, 0) in
-    let t177 = @intrinsic(array.get)(_eq_rhs158, 0) in
-    let t178 = trait_impl#Eq#AlwaysDifferent#eq(t176, t177) in
-    join k174(jp175: bool) -> unit {
-      let _wild159 = println__T_bool(jp175) in
-      jump ret162()
+  join inline_cont218(t166: bool) -> unit {
+    join inline_cont215(_wild155: unit) -> unit {
+      join inline_cont214(t167: bool) -> unit {
+        let t168 = (!t167) in
+        join inline_cont211(_wild156: unit) -> unit {
+          let t169 = AlwaysDifferent { value: 1 } in
+          let left_tuple/4 = (t169, 2) in
+          let t170 = AlwaysDifferent { value: 1 } in
+          let right_tuple/5 = (t170, 2) in
+          let _eq_lhs157 = left_tuple/4 in
+          let _eq_rhs158 = right_tuple/5 in
+          let t185 = t169 in
+          let t186 = t170 in
+          join inline_cont210(t187: bool) -> unit {
+            join k171(jp172: bool) -> unit {
+              join inline_cont207(_wild159: unit) -> unit {
+                let t173 = AlwaysDifferent { value: 1 } in
+                let t174 = AlwaysDifferent { value: 2 } in
+                let left_array/6 = [t173, t174] in
+                let t175 = AlwaysDifferent { value: 1 } in
+                let t176 = AlwaysDifferent { value: 2 } in
+                let right_array/7 = [t175, t176] in
+                let _eq_lhs160 = left_array/6 in
+                let _eq_rhs161 = right_array/7 in
+                let t179 = @intrinsic(array.get)(left_array/6, 0) in
+                let t180 = @intrinsic(array.get)(right_array/7, 0) in
+                join inline_cont206(t181: bool) -> unit {
+                  join k177(jp178: bool) -> unit {
+                    let inline204 = trait_impl#ToString#bool#to_string(jp178) in
+                    let inline205 = @runtime(core.string_println)(inline204) in
+                    ()
+                  } in
+                  if t181 {
+                    let t182 = @intrinsic(array.get)(left_array/6, 1) in
+                    let t183 = @intrinsic(array.get)(right_array/7, 1) in
+                    jump k177(false)
+                  } else {
+                    jump k177(false)
+                  }
+                } in
+                jump inline_cont206(false)
+              } in
+              let inline208 = trait_impl#ToString#bool#to_string(jp172) in
+              let inline209 = @runtime(core.string_println)(inline208) in
+              jump inline_cont207(())
+            } in
+            if t187 {
+              let t188 = 2 in
+              let t189 = 2 in
+              let inline201 = @intrinsic(eq.primitive)(t188, t189) in
+              jump k171(inline201)
+            } else {
+              jump k171(false)
+            }
+          } in
+          jump inline_cont210(false)
+        } in
+        let inline212 = trait_impl#ToString#bool#to_string(t168) in
+        let inline213 = @runtime(core.string_println)(inline212) in
+        jump inline_cont211(())
+      } in
+      jump inline_cont214(false)
     } in
-    if t178 {
-      let t179 = @intrinsic(array.get)(_eq_lhs157, 1) in
-      let t180 = @intrinsic(array.get)(_eq_rhs158, 1) in
-      let t181 = trait_impl#Eq#AlwaysDifferent#eq(t179, t180) in
-      jump k174(t181)
-    } else {
-      jump k174(false)
-    }
+    let inline216 = trait_impl#ToString#bool#to_string(t166) in
+    let inline217 = @runtime(core.string_println)(inline216) in
+    jump inline_cont215(())
   } in
-  if t184 {
-    let t185 = _eq_lhs154.1 in
-    let t186 = _eq_rhs155.1 in
-    let t187 = trait_impl#Eq#int#eq(t185, t186) in
-    jump k168(t187)
-  } else {
-    jump k168(false)
-  }
+  jump inline_cont218(false)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join ret188() -> unit {
+  join inline_cont219(t192: string) -> unit {
+    let t193 = @runtime(core.string_println)(t192) in
     ()
   } in
-  let t189 = trait_impl#ToString#bool#to_string(value/1) in
-  let t190 = @runtime(core.string_println)(t189) in
-  jump ret188()
+  let inline220 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont219(inline220)
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret191(retv192: bool) -> bool {
-    retv192
-  } in
-  let t193 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret191(t193)
+  let t196 = @intrinsic(eq.primitive)(self/59, other/60) in
+  t196
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
-  } in
-  let t196 = @runtime(core.bool_to_string)(self/37) in
-  jump ret194(t196)
+  let t199 = @runtime(core.bool_to_string)(self/37) in
+  t199
 }

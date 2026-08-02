@@ -48,12 +48,12 @@ pub fn rfind(value: string, expected: string) -> Option[int] {
     if expected.byte_len() > value.byte_len() {
         Option::None
     } else {
-        let start = Ref::new(value.byte_len() - expected.byte_len());
-        while start.get() >= 0 {
-            if region_matches(value, start.get(), expected) {
-                return Option::Some(start.get())
+        let mut start = value.byte_len() - expected.byte_len();
+        while start >= 0 {
+            if region_matches(value, start, expected) {
+                return Option::Some(start)
             } else {
-                start.set(start.get() - 1)
+                start = start - 1;
             }
         };
         Option::None
@@ -61,23 +61,23 @@ pub fn rfind(value: string, expected: string) -> Option[int] {
 }
 
 pub fn split(value: string, separator: string) -> Vec[string] {
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     if separator.byte_len() == 0 {
         result.push(value);
         result
     } else {
-        let start = Ref::new(0);
-        let cursor = Ref::new(0);
-        while cursor.get() + separator.byte_len() <= value.byte_len() {
-            if region_matches(value, cursor.get(), separator) {
-                result.push(value.byte_slice(start.get(), cursor.get()));
-                cursor.set(cursor.get() + separator.byte_len());
-                start.set(cursor.get())
+        let mut start = 0;
+        let mut cursor = 0;
+        while cursor + separator.byte_len() <= value.byte_len() {
+            if region_matches(value, cursor, separator) {
+                result.push(value.byte_slice(start, cursor));
+                cursor = cursor + separator.byte_len();
+                start = cursor;
             } else {
-                cursor.set(cursor.get() + 1)
+                cursor = cursor + 1;
             }
         };
-        result.push(value.byte_slice(start.get(), value.byte_len()));
+        result.push(value.byte_slice(start, value.byte_len()));
         result
     }
 }

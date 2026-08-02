@@ -1,137 +1,40 @@
 fn main() -> unit {
-  join ret187() -> unit {
-    ()
-  } in
-  let t188 = Expr::Add(Tag_0, Tag_0) in
-  let a/0 = Expr::Mul(t188, Tag_0) in
-  join k189() -> unit {
-    jump ret187()
-  } in
-  match a/0 {
-    Tag_2 => {
-      let x153 = Expr::Add._0(a/0) in
-      let x154 = Expr::Add._1(a/0) in
-      join k190() -> unit {
-        jump k189()
-      } in
-      match x154 {
-        Tag_0 => {
-          join k191() -> unit {
-            jump k190()
-          } in
-          match x153 {
-            Tag_0 => {
-              let t192 = print__T_int(0) in
-              jump k191()
-            },
-            Tag_1 => {
-              let x162 = Expr::Succ._0(x153) in
-              let x/2 = x162 in
-              let y/3 = x154 in
-              let t193 = print__T_int(2) in
-              jump k191()
-            },
-            _ => {
-              let x/8 = x153 in
-              let t194 = print__T_int(5) in
-              jump k191()
-            },
-          }
-        },
-        _ => {
-          join k195() -> unit {
-            jump k190()
-          } in
-          match x153 {
-            Tag_1 => {
-              let x167 = Expr::Succ._0(x153) in
-              let x/2 = x167 in
-              let y/3 = x154 in
-              let t196 = print__T_int(2) in
-              jump k195()
-            },
-            _ => {
-              let x/9 = a/0 in
-              let t197 = print__T_int(6) in
-              jump k195()
-            },
-          }
-        },
-      }
-    },
-    Tag_3 => {
-      let x155 = Expr::Mul._0(a/0) in
-      let x156 = Expr::Mul._1(a/0) in
-      join k198() -> unit {
-        jump k189()
-      } in
-      match x155 {
-        Tag_0 => {
-          let x/1 = x156 in
-          let t199 = print__T_int(1) in
-          jump k198()
-        },
-        Tag_2 => {
-          let x173 = Expr::Add._0(x155) in
-          let x174 = Expr::Add._1(x155) in
-          join k200() -> unit {
-            jump k198()
-          } in
-          match x156 {
-            Tag_0 => {
-              let x/4 = x155 in
-              let t201 = print__T_int(3) in
-              jump k200()
-            },
-            _ => {
-              let y/6 = x174 in
-              let x/5 = x173 in
-              let z/7 = x156 in
-              let t202 = print__T_int(4) in
-              jump k200()
-            },
-          }
-        },
-        _ => {
-          join k203() -> unit {
-            jump k198()
-          } in
-          match x156 {
-            Tag_0 => {
-              let x/4 = x155 in
-              let t204 = print__T_int(3) in
-              jump k203()
-            },
-            _ => {
-              let x/9 = a/0 in
-              let t205 = print__T_int(6) in
-              jump k203()
-            },
-          }
-        },
-      }
+  let t191 = Expr::Add(Tag_0, Tag_0) in
+  let a/0 = Expr::Mul(t191, Tag_0) in
+  let x158 = t191 in
+  let x159 = Tag_0 in
+  let x176 = Tag_0 in
+  let x177 = Tag_0 in
+  match x159 {
+    Tag_0 => {
+      let x/4 = t191 in
+      let inline217 = 3 in
+      let inline218 = trait_impl#ToString#int#to_string(inline217) in
+      let inline219 = @runtime(core.string_print)(inline218) in
+      ()
     },
     _ => {
-      let x/9 = a/0 in
-      let t206 = print__T_int(6) in
-      jump k189()
+      let y/6 = x177 in
+      let x/5 = x176 in
+      let z/7 = x159 in
+      let inline221 = 4 in
+      let inline222 = trait_impl#ToString#int#to_string(inline221) in
+      let inline223 = @runtime(core.string_print)(inline222) in
+      ()
     },
   }
 }
 
 fn print__T_int(value/0: int) -> unit {
-  join ret207() -> unit {
+  join inline_cont224(t211: string) -> unit {
+    let t212 = @runtime(core.string_print)(t211) in
     ()
   } in
-  let t208 = trait_impl#ToString#int#to_string(value/0) in
-  let t209 = @runtime(core.string_print)(t208) in
-  jump ret207()
+  let inline225 = @runtime(core.int_to_string)(value/0) in
+  jump inline_cont224(inline225)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret210(retv211: string) -> string {
-    retv211
-  } in
-  let t212 = @runtime(core.int_to_string)(self/40) in
-  jump ret210(t212)
+  let t215 = @runtime(core.int_to_string)(self/40) in
+  t215
 }

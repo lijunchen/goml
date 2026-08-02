@@ -19,13 +19,13 @@ fn same_local(left: hir::LocalId, right: hir::LocalId) -> bool {
 }
 
 fn source_by_path(sources: Vec[SourceFile], source_path: string) -> Option[SourceFile] {
-    let index = Ref::new(sources.len() - 1);
-    while index.get() >= 0 {
-        let source = sources[index.get()];
+    let mut index = sources.len() - 1;
+    while index >= 0 {
+        let source = sources[index];
         if source.path == source_path {
             return Option::Some(source)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -48,15 +48,15 @@ fn push_definition(values: Vec[DefinitionResult], value: DefinitionResult) -> un
 }
 
 fn package_definition(value: Analysis, package_name: string) -> Option[DefinitionResult] {
-    let index = Ref::new(value.sources.len() - 1);
-    while index.get() >= 0 {
-        let source = value.sources[index.get()];
+    let mut index = value.sources.len() - 1;
+    while index >= 0 {
+        let source = value.sources[index];
         if source.package_name == package_name {
             return Option::Some(
                 DefinitionResult { source_path: source.path, span: ast::span(0, 0) },
             )
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -67,7 +67,7 @@ fn path_node_at(value: Analysis, offset: int) -> Option[SyntaxNode] {
 }
 
 fn node_identifiers(value: Analysis, node: SyntaxNode) -> Vec[SyntaxToken] {
-    let result = Vec::new();
+    let result: Vec[SyntaxToken] = Vec::[];
     for token in value.syntax.tokens {
         if token.start >= node.start && token.end <= node.end
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Ident) {
@@ -93,15 +93,15 @@ fn path_prefix(values: Vec[SyntaxToken], end: int) -> string {
 }
 
 fn containing_use(value: Analysis, node: SyntaxNode) -> bool {
-    let current = Ref::new(node.parent);
-    while current.get().is_some() {
-        match current.get() {
+    let mut current = node.parent;
+    while current.is_some() {
+        match current {
             Some(id) => {
                 let parent = value.syntax.nodes[id];
                 if cst::node_kind_equal(parent.kind, cst::NodeKind::USE) {
                     return true
                 } else {
-                    current.set(parent.parent)
+                    current = parent.parent;
                 }
             },
             None => (),
@@ -111,19 +111,19 @@ fn containing_use(value: Analysis, node: SyntaxNode) -> bool {
 }
 
 fn longest_package_prefix(value: Analysis, path_value: string) -> Option[string] {
-    let result = Ref::new(Option::None);
-    let length = Ref::new(0);
+    let mut result: Option[string] = Option::None;
+    let mut length = 0;
     for source in value.sources {
         let package_name = source.package_name;
         if (path_value == package_name || strings::starts_with(path_value, package_name + "::"))
-            && package_name.byte_len() > length.get() {
-            result.set(Option::Some(package_name));
-            length.set(package_name.byte_len())
+            && package_name.byte_len() > length {
+            result = Option::Some(package_name);
+            length = package_name.byte_len();
         } else {
             ()
         }
     };
-    result.get()
+    result
 }
 
 fn canonical_path_at(
@@ -153,12 +153,12 @@ fn symbol_definitions(
     short_name: string,
     allow_short_name: bool,
 ) -> Vec[DefinitionResult] {
-    let exact_current = Vec::new();
-    let exact_external = Vec::new();
-    let relative_current = Vec::new();
-    let relative_external = Vec::new();
-    let short_current = Vec::new();
-    let short_external = Vec::new();
+    let exact_current: Vec[DefinitionResult] = Vec::[];
+    let exact_external: Vec[DefinitionResult] = Vec::[];
+    let relative_current: Vec[DefinitionResult] = Vec::[];
+    let relative_external: Vec[DefinitionResult] = Vec::[];
+    let short_current: Vec[DefinitionResult] = Vec::[];
+    let short_external: Vec[DefinitionResult] = Vec::[];
     for symbol in build_symbol_index(value).symbols {
         let definition = DefinitionResult { source_path: symbol.source_path, span: symbol.span };
         let current = symbol.package_name == value.package_name;
@@ -185,15 +185,15 @@ fn symbol_definitions(
             ()
         }
     };
-    if exact_current.len() > 0 {
+    if !exact_current.is_empty() {
         exact_current
-    } else if exact_external.len() > 0 {
+    } else if !exact_external.is_empty() {
         exact_external
-    } else if relative_current.len() > 0 {
+    } else if !relative_current.is_empty() {
         relative_current
-    } else if relative_external.len() > 0 {
+    } else if !relative_external.is_empty() {
         relative_external
-    } else if short_current.len() > 0 {
+    } else if !short_current.is_empty() {
         short_current
     } else {
         short_external
@@ -214,7 +214,7 @@ fn identifier_index_at(identifiers: Vec[SyntaxToken], offset: int) -> Option[int
 }
 
 fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
-    let result = Vec::new();
+    let result: Vec[DefinitionResult] = Vec::[];
     match path_node_at(value, offset) {
         Some(node) => {
             let identifiers = node_identifiers(value, node);
@@ -264,8 +264,8 @@ fn symbol_owner_matches(symbol: Symbol, owner: string) -> bool {
 }
 
 fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
-    let exact = Vec::new();
-    let fallback = Vec::new();
+    let exact: Vec[DefinitionResult] = Vec::[];
+    let fallback: Vec[DefinitionResult] = Vec::[];
     match token_at(value.syntax, offset) {
         Some(token) => if token.start > 0 && value.source.byte_get(token.start - 1) == b'.' {
             match receiver_type(value, token.start - 1) {
@@ -302,7 +302,7 @@ fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
         },
         None => (),
     };
-    if exact.len() > 0 {
+    if !exact.is_empty() {
         exact
     } else {
         fallback
@@ -314,15 +314,15 @@ fn containing_struct_literal(value: Analysis, offset: int) -> Option[SyntaxNode]
 }
 
 fn struct_literal_owner(value: Analysis, literal: SyntaxNode) -> Option[string] {
-    let best = Ref::new(-1);
+    let mut best = -1;
     for candidate in 0..value.syntax.nodes.len() {
         let node = value.syntax.nodes[candidate];
         if cst::node_kind_equal(node.kind, cst::NodeKind::PATH) && node.start >= literal.start
             && node.end <= literal.end
-            && (best.get() < 0 || node.start < value.syntax.nodes[best.get()].start) {
+            && (best < 0 || node.start < value.syntax.nodes[best].start) {
             let identifiers = node_identifiers(value, node);
-            if identifiers.len() > 0 {
-                best.set(candidate)
+            if !identifiers.is_empty() {
+                best = candidate;
             } else {
                 ()
             }
@@ -330,8 +330,8 @@ fn struct_literal_owner(value: Analysis, literal: SyntaxNode) -> Option[string] 
             ()
         }
     };
-    if best.get() >= 0 {
-        let node = value.syntax.nodes[best.get()];
+    if best >= 0 {
+        let node = value.syntax.nodes[best];
         let identifiers = node_identifiers(value, node);
         Option::Some(canonical_path_at(value, node, identifiers, identifiers.len() - 1))
     } else {
@@ -340,8 +340,8 @@ fn struct_literal_owner(value: Analysis, literal: SyntaxNode) -> Option[string] 
 }
 
 fn struct_field_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
-    let exact = Vec::new();
-    let fallback = Vec::new();
+    let exact: Vec[DefinitionResult] = Vec::[];
+    let fallback: Vec[DefinitionResult] = Vec::[];
     match token_at(value.syntax, offset) {
         Some(token) => match containing_struct_literal(value, offset) {
             Some(literal) => match struct_literal_owner(value, literal) {
@@ -374,7 +374,7 @@ fn struct_field_definitions(value: Analysis, offset: int) -> Vec[DefinitionResul
         },
         None => (),
     };
-    if exact.len() > 0 {
+    if !exact.is_empty() {
         exact
     } else {
         fallback
@@ -390,17 +390,17 @@ fn local_definition_span(value: Analysis, local: hir::LocalId) -> Option[Definit
                 Some(span) => match source_by_path(value.sources, fact.source_path) {
                     Some(source) => {
                         let syntax = syntax_index(parser::parse(source.source).root);
-                        let best = Ref::new(Option::None);
-                        let width = Ref::new(2147483647);
+                        let mut best: Option[ast::Span] = Option::None;
+                        let mut width = 2147483647;
                         for node in syntax.nodes {
                             let node_width = node.end - node.start;
                             if node.start <= span.start && node.end >= span.end
-                                && node_width < width.get() {
+                                && node_width < width {
                                 for token in syntax.tokens {
                                     if token.start >= node.start && token.end <= node.end
                                         && token.text == local.hint {
-                                        best.set(Option::Some(ast::span(token.start, token.end)));
-                                        width.set(node_width)
+                                        best = Option::Some(ast::span(token.start, token.end));
+                                        width = node_width;
                                     } else {
                                         ()
                                     }
@@ -409,7 +409,7 @@ fn local_definition_span(value: Analysis, local: hir::LocalId) -> Option[Definit
                                 ()
                             }
                         };
-                        match best.get() {
+                        match best {
                             Some(definition_span) => return Option::Some(
                                 DefinitionResult {
                                     source_path: fact.source_path,
@@ -446,6 +446,7 @@ fn type_owner_name(value: tast::Type) -> string {
 fn callable_name(value: tast::Callable) -> string {
     match value {
         Function(name) | Runtime(name) | Intrinsic(name) => name,
+        LangItem { item: _, function_name } => function_name,
         TraitMethod { trait_ref, method_name } => {
             trait_ref.name + "::" + method_name
         },
@@ -481,20 +482,20 @@ fn target_symbol_name(value: Analysis, target: tast::ReferenceTarget, offset: in
 }
 
 fn semantic_definition(value: Analysis, offset: int) -> Option[DefinitionResult] {
-    let reference = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
+    let mut reference: Option[tast::ReferenceFact] = Option::None;
+    let mut width = 2147483647;
     for fact in value.checked.typeck_results.references {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact.span.start <= offset
             && offset < fact.span.end
-            && fact_width <= width.get() {
-            reference.set(Option::Some(fact));
-            width.set(fact_width)
+            && fact_width <= width {
+            reference = Option::Some(fact);
+            width = fact_width;
         } else {
             ()
         }
     };
-    match reference.get() {
+    match reference {
         Some(fact) => match fact.target {
             Local(local) => {
                 local_definition_span(value, local)
@@ -514,16 +515,16 @@ fn semantic_definition(value: Analysis, offset: int) -> Option[DefinitionResult]
 }
 
 pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
-    let result = Vec::new();
-    let reference = Ref::new(Option::None);
-    let width = Ref::new(2147483647);
+    let result: Vec[DefinitionResult] = Vec::[];
+    let mut reference: Option[tast::ReferenceFact] = Option::None;
+    let mut width = 2147483647;
     for fact in value.checked.typeck_results.references {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact.span.start <= offset
             && offset < fact.span.end
-            && fact_width <= width.get() {
-            reference.set(Option::Some(fact));
-            width.set(fact_width)
+            && fact_width <= width {
+            reference = Option::Some(fact);
+            width = fact_width;
         } else {
             ()
         }
@@ -531,16 +532,16 @@ pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
     for definition in member_definitions(value, offset) {
         push_definition(result, definition)
     };
-    if result.len() == 0 {
+    if result.is_empty() {
         for definition in struct_field_definitions(value, offset) {
             push_definition(result, definition)
         }
     } else {
         ()
     };
-    match reference.get() {
+    match reference {
         Some(fact) => match fact.target {
-            Local(_) | Constructor(_) => if result.len() == 0 {
+            Local(_) | Constructor(_) => if result.is_empty() {
                 match semantic_definition(value, offset) {
                     Some(definition) => result.push(definition),
                     None => (),
@@ -548,7 +549,7 @@ pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
             } else {
                 ()
             },
-            _ => if result.len() == 0 {
+            _ => if result.is_empty() {
                 for definition in path_definitions(value, offset) {
                     push_definition(result, definition)
                 }
@@ -556,7 +557,7 @@ pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
                 ()
             },
         },
-        None => if result.len() == 0 {
+        None => if result.is_empty() {
             for definition in path_definitions(value, offset) {
                 push_definition(result, definition)
             }
@@ -564,7 +565,7 @@ pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
             ()
         },
     };
-    if result.len() == 0 {
+    if result.is_empty() {
         match semantic_definition(value, offset) {
             Some(definition) => result.push(definition),
             None => (),
@@ -577,7 +578,7 @@ pub fn goto_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
 
 pub fn goto_definition(value: Analysis, offset: int) -> Option[DefinitionResult] {
     let values = goto_definitions(value, offset);
-    if values.len() == 0 {
+    if values.is_empty() {
         Option::None
     } else {
         Option::Some(values[0])

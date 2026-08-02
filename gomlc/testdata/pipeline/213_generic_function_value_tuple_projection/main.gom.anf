@@ -1,45 +1,41 @@
 fn main() -> unit {
-  join ret152() -> unit {
-    ()
-  } in
   let make/2 = pair__First_int32__Second_string in
-  let value/3 = make/2(1, "x") in
-  let t153 = value/3.0 in
-  let t154 = inherent#int32#int32#to_string(t153) in
-  let t155 = value/3.1 in
-  let t156 = (t154 + t155) in
-  let t157 = println__T_string(t156) in
-  jump ret152()
+  join inline_cont177(value/3: (int32, string)) -> unit {
+    let t156 = value/3.0 in
+    join inline_cont175(t157: string) -> unit {
+      let t158 = value/3.1 in
+      let t159 = (t157 + t158) in
+      let inline173 = trait_impl#ToString#string#to_string(t159) in
+      let inline174 = @runtime(core.string_println)(inline173) in
+      ()
+    } in
+    let inline176 = @runtime(core.int32_to_string)(t156) in
+    jump inline_cont175(inline176)
+  } in
+  let inline178 = 1 in
+  let inline179 = "x" in
+  let inline180 = (inline178, inline179) in
+  jump inline_cont177(inline180)
 }
 
 fn pair__First_int32__Second_string(first/0: int32, second/1: string) -> (int32, string) {
-  join ret158(retv159: (int32, string)) -> (int32, string) {
-    retv159
-  } in
-  let t160 = (first/0, second/1) in
-  jump ret158(t160)
+  let t163 = (first/0, second/1) in
+  t163
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret161() -> unit {
+  join inline_cont181(t165: string) -> unit {
+    let t166 = @runtime(core.string_println)(t165) in
     ()
   } in
-  let t162 = trait_impl#ToString#string#to_string(value/1) in
-  let t163 = @runtime(core.string_println)(t162) in
-  jump ret161()
+  jump inline_cont181(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret164(retv165: string) -> string {
-    retv165
-  } in
-  let t166 = @runtime(core.int32_to_string)(self/6) in
-  jump ret164(t166)
+  let t169 = @runtime(core.int32_to_string)(self/6) in
+  t169
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
-  } in
-  jump ret167(self/38)
+  self/38
 }

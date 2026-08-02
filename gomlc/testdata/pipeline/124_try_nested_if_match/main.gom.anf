@@ -1,48 +1,43 @@
 fn maybe_num(flag/0: bool) -> Option__int32 {
-  join ret160(retv161: Option__int32) -> Option__int32 {
-    retv161
-  } in
-  join k162(jp163: Option__int32) -> Option__int32 {
-    jump ret160(jp163)
-  } in
   if flag/0 {
-    let t164 = Option__int32::Some(8) in
-    jump k162(t164)
+    let t167 = Option__int32::Some(8) in
+    t167
   } else {
-    jump k162(Tag_0)
+    Tag_0
   }
 }
 
 fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
-  join ret165(retv166: Option__int32) -> Option__int32 {
-    retv166
-  } in
-  join k167(jp168: int32) -> Option__int32 {
-    let value/6 = jp168 in
-    let t169 = Option__int32::Some(value/6) in
-    jump ret165(t169)
+  join k170(jp171: int32) -> Option__int32 {
+    let value/6 = jp171 in
+    let t172 = Option__int32::Some(jp171) in
+    t172
   } in
   if top/1 {
-    join k170(jp171: int32) -> Option__int32 {
-      jump k167(jp171)
-    } in
     match mode/2 {
       Tag_0 => {
-        let mtmp152 = maybe_num(inner_flag/3) in
-        join k172(jp173: int32) -> Option__int32 {
-          let inner/4 = jp173 in
-          let t174 = (inner/4 + 1) in
-          jump k170(t174)
+        join inline_cont202(mtmp155: Option__int32) -> Option__int32 {
+          join k175(jp176: int32) -> Option__int32 {
+            let inner/4 = jp176 in
+            let t177 = (jp176 + 1) in
+            jump k170(t177)
+          } in
+          match mtmp155 {
+            Tag_0 => {
+              Tag_0
+            },
+            Tag_1 => {
+              let x156 = Option__int32::Some._0(mtmp155) in
+              let try_value/13 = x156 in
+              jump k175(x156)
+            },
+          }
         } in
-        match mtmp152 {
-          Tag_0 => {
-            jump ret165(Tag_0)
-          },
-          Tag_1 => {
-            let x153 = Option__int32::Some._0(mtmp152) in
-            let try_value/13 = x153 in
-            jump k172(try_value/13)
-          },
+        if inner_flag/3 {
+          let inline203 = Option__int32::Some(8) in
+          jump inline_cont202(inline203)
+        } else {
+          jump inline_cont202(Tag_0)
         }
       },
       Tag_1 => {
@@ -50,82 +45,124 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
       },
     }
   } else {
-    let mtmp154 = maybe_num(inner_flag/3) in
-    join k175(jp176: int32) -> Option__int32 {
-      let inner/5 = jp176 in
-      let t177 = (inner/5 + 2) in
-      jump k167(t177)
+    join inline_cont204(mtmp157: Option__int32) -> Option__int32 {
+      join k178(jp179: int32) -> Option__int32 {
+        let inner/5 = jp179 in
+        let t180 = (jp179 + 2) in
+        jump k170(t180)
+      } in
+      match mtmp157 {
+        Tag_0 => {
+          Tag_0
+        },
+        Tag_1 => {
+          let x158 = Option__int32::Some._0(mtmp157) in
+          let try_value/24 = x158 in
+          jump k178(x158)
+        },
+      }
     } in
-    match mtmp154 {
-      Tag_0 => {
-        jump ret165(Tag_0)
-      },
-      Tag_1 => {
-        let x155 = Option__int32::Some._0(mtmp154) in
-        let try_value/24 = x155 in
-        jump k175(try_value/24)
-      },
+    if inner_flag/3 {
+      let inline205 = Option__int32::Some(8) in
+      jump inline_cont204(inline205)
+    } else {
+      jump inline_cont204(Tag_0)
     }
   }
 }
 
 fn show(opt/7: Option__int32) -> string {
-  join ret178(retv179: string) -> string {
-    retv179
-  } in
-  join k180(jp181: string) -> string {
-    jump ret178(jp181)
-  } in
   match opt/7 {
     Tag_0 => {
-      jump k180("none")
+      "none"
     },
     Tag_1 => {
-      let x156 = Option__int32::Some._0(opt/7) in
-      let value/8 = x156 in
-      let t182 = inherent#int32#int32#to_string(value/8) in
-      let t183 = ("some=" + t182) in
-      jump k180(t183)
+      let x159 = Option__int32::Some._0(opt/7) in
+      let value/8 = x159 in
+      join inline_cont206(t185: string) -> string {
+        let t186 = ("some=" + t185) in
+        t186
+      } in
+      let inline207 = @runtime(core.int32_to_string)(x159) in
+      jump inline_cont206(inline207)
     },
   }
 }
 
 fn main() -> unit {
-  join ret184() -> unit {
-    ()
+  let t188 = nested(true, Tag_0, true) in
+  join inline_cont227(t189: string) -> unit {
+    join inline_cont224(_wild160: unit) -> unit {
+      let t190 = nested(true, Tag_1, false) in
+      join inline_cont219(t191: string) -> unit {
+        join inline_cont216(_wild161: unit) -> unit {
+          let t192 = nested(false, Tag_0, false) in
+          join inline_cont211(t193: string) -> unit {
+            let inline209 = trait_impl#ToString#string#to_string(t193) in
+            let inline210 = @runtime(core.string_println)(inline209) in
+            ()
+          } in
+          match t192 {
+            Tag_0 => {
+              jump inline_cont211("none")
+            },
+            Tag_1 => {
+              let inline212 = Option__int32::Some._0(t192) in
+              let inline213 = inline212 in
+              let inline214 = inherent#int32#int32#to_string(inline212) in
+              let inline215 = ("some=" + inline214) in
+              jump inline_cont211(inline215)
+            },
+          }
+        } in
+        let inline217 = trait_impl#ToString#string#to_string(t191) in
+        let inline218 = @runtime(core.string_println)(inline217) in
+        jump inline_cont216(())
+      } in
+      match t190 {
+        Tag_0 => {
+          jump inline_cont219("none")
+        },
+        Tag_1 => {
+          let inline220 = Option__int32::Some._0(t190) in
+          let inline221 = inline220 in
+          let inline222 = inherent#int32#int32#to_string(inline220) in
+          let inline223 = ("some=" + inline222) in
+          jump inline_cont219(inline223)
+        },
+      }
+    } in
+    let inline225 = trait_impl#ToString#string#to_string(t189) in
+    let inline226 = @runtime(core.string_println)(inline225) in
+    jump inline_cont224(())
   } in
-  let t185 = nested(true, Tag_0, true) in
-  let t186 = show(t185) in
-  let _wild157 = println__T_string(t186) in
-  let t187 = nested(true, Tag_1, false) in
-  let t188 = show(t187) in
-  let _wild158 = println__T_string(t188) in
-  let t189 = nested(false, Tag_0, false) in
-  let t190 = show(t189) in
-  let _wild159 = println__T_string(t190) in
-  jump ret184()
+  match t188 {
+    Tag_0 => {
+      jump inline_cont227("none")
+    },
+    Tag_1 => {
+      let inline228 = Option__int32::Some._0(t188) in
+      let inline229 = inline228 in
+      let inline230 = inherent#int32#int32#to_string(inline228) in
+      let inline231 = ("some=" + inline230) in
+      jump inline_cont227(inline231)
+    },
+  }
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret191(retv192: string) -> string {
-    retv192
-  } in
-  let t193 = @runtime(core.int32_to_string)(self/6) in
-  jump ret191(t193)
+  let t196 = @runtime(core.int32_to_string)(self/6) in
+  t196
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret194() -> unit {
+  join inline_cont232(t198: string) -> unit {
+    let t199 = @runtime(core.string_println)(t198) in
     ()
   } in
-  let t195 = trait_impl#ToString#string#to_string(value/1) in
-  let t196 = @runtime(core.string_println)(t195) in
-  jump ret194()
+  jump inline_cont232(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret197(retv198: string) -> string {
-    retv198
-  } in
-  jump ret197(self/38)
+  self/38
 }

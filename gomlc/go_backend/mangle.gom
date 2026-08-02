@@ -1,5 +1,6 @@
 package go_backend;
 
+use gomlc::hash;
 use gomlc::strings;
 use std::text;
 
@@ -187,24 +188,24 @@ fn write_encoded_char(builder: text::StringBuilder, value: char) -> unit {
 
 fn encode_name(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
-    let pending_colon = Ref::new(false);
+    let mut pending_colon = false;
     for character in value.chars() {
-        if pending_colon.get() {
+        if pending_colon {
             if character == ':' {
                 builder.write_string("_p_");
-                pending_colon.set(false)
+                pending_colon = false;
             } else {
                 write_encoded_char(builder, ':');
                 write_encoded_char(builder, character);
-                pending_colon.set(false)
+                pending_colon = false;
             }
         } else if character == ':' {
-            pending_colon.set(true)
+            pending_colon = true;
         } else {
             write_encoded_char(builder, character)
         }
     };
-    if pending_colon.get() {
+    if pending_colon {
         write_encoded_char(builder, ':')
     } else {
         ()
@@ -216,7 +217,7 @@ fn compact_ident(value: string) -> string {
     if value.byte_len() <= 80 {
         value
     } else {
-        let marker = "_h" + sha256_prefix(value) + "_";
+        let marker = "_h" + hash::sha256_prefix(value) + "_";
         let budget = 80 - marker.byte_len();
         let head_len = budget * 2 / 3;
         let tail_len = budget - head_len;
@@ -239,7 +240,7 @@ fn bounded_hint(value: string, budget: int) -> string {
 
 pub fn go_hashed_ident(kind: string, value: string) -> string {
     let prefix = "_goml_" + kind + "_";
-    let digest = sha256_prefix(kind + "\u0000" + value);
+    let digest = hash::sha256_prefix(kind + "\u0000" + value);
     let suffix = "_h" + digest;
     let budget = 80 - prefix.byte_len() - suffix.byte_len();
     prefix + bounded_hint(encode_name(value), budget) + suffix
@@ -289,11 +290,11 @@ pub fn is_generated_tuple_type_name(value: string) -> bool {
     if !strings::starts_with(value, "Tuple") {
         false
     } else {
-        let index = Ref::new(5);
-        while index.get() < value.len() && is_ascii_digit(value.get(index.get())) {
-            index.set(index.get() + 1)
+        let mut index = 5;
+        while index < value.len() && is_ascii_digit(value.get(index)) {
+            index = index + 1;
         };
-        index.get() > 5 && (index.get() == value.len() || value.get(index.get()) == '_')
+        index > 5 && (index == value.len() || value.get(index) == '_')
     }
 }
 

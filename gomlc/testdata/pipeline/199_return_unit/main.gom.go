@@ -9,12 +9,7 @@ func _goml_runtime_core_string_println(s string) struct{} {
     return struct{}{}
 }
 
-func stop() struct{} {
-    return struct{}{}
-}
-
 func main0() struct{} {
-    stop()
     _goml_runtime_core_string_println("continued")
     return struct{}{}
 }

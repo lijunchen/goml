@@ -1,0 +1,850 @@
+package anf;
+
+use gomlc::tast;
+
+struct InlineName {
+    name: string,
+    value: Imm,
+}
+
+struct InlineJoin {
+    name: string,
+    replacement: string,
+}
+
+fn fresh_inline(counter: Ref[int], prefix: string) -> string {
+    let value = counter.get();
+    counter.set(value + 1);
+    prefix + value.to_string()
+}
+
+fn find_inline_name(values: Vec[InlineName], name: string) -> Option[Imm] {
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
+        if value.name == name {
+            return Option::Some(value.value)
+        } else {
+            index = index - 1;
+        }
+    };
+    Option::None
+}
+
+fn find_inline_join(values: Vec[InlineJoin], name: string) -> Option[string] {
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
+        if value.name == name {
+            return Option::Some(value.replacement)
+        } else {
+            index = index - 1;
+        }
+    };
+    Option::None
+}
+
+fn renamed_inline_name(values: Vec[InlineName], name: string) -> string {
+    match find_inline_name(values, name) {
+        Some(Var { name, ty: _ }) => name,
+        _ => name,
+    }
+}
+
+fn renamed_inline_join(values: Vec[InlineJoin], name: string) -> string {
+    match find_inline_join(values, name) {
+        Some(value) => value,
+        None => name,
+    }
+}
+
+fn add_inline_local(values: Vec[InlineName], name: string, ty: tast::Type, counter: Ref[int]) -> unit {
+    if name == "_" {
+        ()
+    } else {
+        values.push(
+            InlineName { name, value: Imm::Var { name: fresh_inline(counter, "inline"), ty } },
+        )
+    }
+}
+
+fn collect_inline_term_names(
+    value: Term,
+    names: Vec[InlineName],
+    joins: Vec[InlineJoin],
+    counter: Ref[int],
+) -> unit {
+    match value {
+        If { then_, else_, .. } => {
+            collect_inline_block_names(then_, names, joins, counter);
+            collect_inline_block_names(else_, names, joins, counter)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                collect_inline_block_names(arm.body, names, joins, counter)
+            };
+            match default {
+                Some(body) => collect_inline_block_names(body, names, joins, counter),
+                None => (),
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => (),
+    }
+}
+
+fn collect_inline_join_names(
+    value: JoinBind,
+    names: Vec[InlineName],
+    joins: Vec[InlineJoin],
+    counter: Ref[int],
+) -> unit {
+    for param in value.params {
+        add_inline_local(names, param.0, param.1, counter)
+    };
+    collect_inline_block_names(value.body, names, joins, counter)
+}
+
+fn collect_inline_block_names(
+    value: Block,
+    names: Vec[InlineName],
+    joins: Vec[InlineJoin],
+    counter: Ref[int],
+) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(value) => add_inline_local(names, value.name, value.ty, counter),
+            Join(value) => {
+                joins.push(
+                    InlineJoin {
+                        name: value.name,
+                        replacement: fresh_inline(counter, "inline_join"),
+                    },
+                );
+                collect_inline_join_names(value, names, joins, counter)
+            },
+            JoinRec(values) => {
+                for value in values {
+                    joins.push(
+                        InlineJoin {
+                            name: value.name,
+                            replacement: fresh_inline(counter, "inline_join"),
+                        },
+                    )
+                };
+                for value in values {
+                    collect_inline_join_names(value, names, joins, counter)
+                }
+            },
+        }
+    };
+    collect_inline_term_names(value.term, names, joins, counter)
+}
+
+fn clone_inline_imm(value: Imm, names: Vec[InlineName]) -> Imm {
+    match value {
+        Var { name, ty: _ } => match find_inline_name(names, name) {
+            Some(value) => value,
+            None => value,
+        },
+        _ => value,
+    }
+}
+
+fn clone_inline_imms(values: Vec[Imm], names: Vec[InlineName]) -> Vec[Imm] {
+    let result: Vec[Imm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(clone_inline_imm(value, names))
+    };
+    result
+}
+
+fn clone_inline_value(value: Value, names: Vec[InlineName]) -> Value {
+    match value {
+        Imm(value) => Value::Imm(clone_inline_imm(value, names)),
+        Constr { constructor, args, ty } => {
+            Value::Constr { constructor, args: clone_inline_imms(args, names), ty }
+        },
+        Tuple { items, ty } => Value::Tuple { items: clone_inline_imms(items, names), ty },
+        Array { items, ty } => Value::Array { items: clone_inline_imms(items, names), ty },
+        ConstrGet { expr, constructor, field_index, ty } => Value::ConstrGet {
+            expr: clone_inline_imm(expr, names),
+            constructor,
+            field_index,
+            ty,
+        },
+        Unary { op, expr, ty } => Value::Unary { op, expr: clone_inline_imm(expr, names), ty },
+        Cast { expr, ty } => Value::Cast { expr: clone_inline_imm(expr, names), ty },
+        Binary { op, lhs, rhs, ty } => Value::Binary {
+            op,
+            lhs: clone_inline_imm(lhs, names),
+            rhs: clone_inline_imm(rhs, names),
+            ty,
+        },
+        Assign { name, value, target_ty, ty } => Value::Assign {
+            name: renamed_inline_name(names, name),
+            value: clone_inline_imm(value, names),
+            target_ty,
+            ty,
+        },
+        Call { func, args, ty } => Value::Call {
+            func: clone_inline_imm(func, names),
+            args: clone_inline_imms(args, names),
+            ty,
+        },
+        ToDyn { trait_name, for_ty, expr, ty } => Value::ToDyn {
+            trait_name,
+            for_ty,
+            expr: clone_inline_imm(expr, names),
+            ty,
+        },
+        DynCall { trait_name, method_name, receiver, args, ty } => Value::DynCall {
+            trait_name,
+            method_name,
+            receiver: clone_inline_imm(receiver, names),
+            args: clone_inline_imms(args, names),
+            ty,
+        },
+        Go { closure, ty } => Value::Go { closure: clone_inline_imm(closure, names), ty },
+        Proj { tuple, index, ty } => {
+            Value::Proj { tuple: clone_inline_imm(tuple, names), index, ty }
+        },
+    }
+}
+
+fn clone_inline_params(values: Vec[(string, tast::Type)], names: Vec[InlineName]) -> Vec[
+    (string, tast::Type),
+] {
+    let result: Vec[(string, tast::Type)] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push((renamed_inline_name(names, value.0), value.1))
+    };
+    result
+}
+
+fn clone_inline_join(
+    value: JoinBind,
+    names: Vec[InlineName],
+    joins: Vec[InlineJoin],
+    continuation: string,
+    ret_ty: tast::Type,
+) -> JoinBind {
+    JoinBind {
+        name: renamed_inline_join(joins, value.name),
+        role: value.role,
+        params: clone_inline_params(value.params, names),
+        ret_ty,
+        body: clone_inline_block(value.body, names, joins, continuation, ret_ty),
+    }
+}
+
+fn clone_inline_term(
+    value: Term,
+    names: Vec[InlineName],
+    joins: Vec[InlineJoin],
+    continuation: string,
+    ret_ty: tast::Type,
+) -> Term {
+    match value {
+        Return(value) => {
+            let args: Vec[Imm] = Vec::[];
+            args.push(clone_inline_imm(value, names));
+            Term::Jump { target: continuation, args, ret_ty }
+        },
+        Jump { target, args, ret_ty: _ } => Term::Jump {
+            target: renamed_inline_join(joins, target),
+            args: clone_inline_imms(args, names),
+            ret_ty,
+        },
+        If { cond, then_, else_, ret_ty: _ } => Term::If {
+            cond: clone_inline_imm(cond, names),
+            then_: clone_inline_block(then_, names, joins, continuation, ret_ty),
+            else_: clone_inline_block(else_, names, joins, continuation, ret_ty),
+            ret_ty,
+        },
+        Match { scrutinee, arms, default, ret_ty: _ } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    Arm {
+                        lhs: clone_inline_imm(arm.lhs, names),
+                        body: clone_inline_block(arm.body, names, joins, continuation, ret_ty),
+                    },
+                )
+            };
+            Term::Match {
+                scrutinee: clone_inline_imm(scrutinee, names),
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(
+                        clone_inline_block(body, names, joins, continuation, ret_ty),
+                    ),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Unreachable { ty: _ } => Term::Unreachable { ty: ret_ty },
+    }
+}
+
+fn clone_inline_block(
+    value: Block,
+    names: Vec[InlineName],
+    joins: Vec[InlineJoin],
+    continuation: string,
+    ret_ty: tast::Type,
+) -> Block {
+    let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    for bind in value.binds {
+        match bind {
+            Let(value) => binds.push(
+                Bind::Let(
+                    LetBind {
+                        name: renamed_inline_name(names, value.name),
+                        value: clone_inline_value(value.value, names),
+                        ty: value.ty,
+                    },
+                ),
+            ),
+            Join(value) => binds.push(
+                Bind::Join(clone_inline_join(value, names, joins, continuation, ret_ty)),
+            ),
+            JoinRec(values) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    lowered.push(clone_inline_join(value, names, joins, continuation, ret_ty))
+                };
+                binds.push(Bind::JoinRec(lowered))
+            },
+        }
+    };
+    Block { binds, term: clone_inline_term(value.term, names, joins, continuation, ret_ty) }
+}
+
+fn inline_block_cost(value: Block) -> int {
+    let mut result = 1;
+    for bind in value.binds {
+        result = result + 1;
+        match bind {
+            Let(_) => (),
+            Join(value) => {
+                result = result + inline_block_cost(value.body);
+            },
+            JoinRec(values) => for value in values {
+                result = result + inline_block_cost(value.body);
+            },
+        }
+    };
+    match value.term {
+        If { then_, else_, .. } => {
+            result + inline_block_cost(then_) + inline_block_cost(else_)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                result = result + inline_block_cost(arm.body);
+            };
+            match default {
+                Some(body) => result + inline_block_cost(body),
+                None => result,
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => result,
+    }
+}
+
+fn inline_term_has_joinrec(value: Term) -> bool {
+    match value {
+        If { then_, else_, .. } => inline_block_has_joinrec(then_)
+            || inline_block_has_joinrec(else_),
+        Match { arms, default, .. } => {
+            for arm in arms {
+                if inline_block_has_joinrec(arm.body) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => inline_block_has_joinrec(body),
+                None => false,
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => false,
+    }
+}
+
+fn inline_block_has_joinrec(value: Block) -> bool {
+    for bind in value.binds {
+        match bind {
+            Let(_) => (),
+            Join(value) => if inline_block_has_joinrec(value.body) {
+                return true
+            } else {
+                ()
+            },
+            JoinRec(_) => return true,
+        }
+    };
+    inline_term_has_joinrec(value.term)
+}
+
+fn inline_value_assigns(value: Value, name: string) -> bool {
+    match value {
+        Assign { name: target, .. } => target == name,
+        _ => false,
+    }
+}
+
+fn inline_term_assigns(value: Term, name: string) -> bool {
+    match value {
+        If { then_, else_, .. } => {
+            inline_block_assigns(then_, name) || inline_block_assigns(else_, name)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                if inline_block_assigns(arm.body, name) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => inline_block_assigns(body, name),
+                None => false,
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => false,
+    }
+}
+
+fn inline_block_assigns(value: Block, name: string) -> bool {
+    for bind in value.binds {
+        match bind {
+            Let(value) => if inline_value_assigns(value.value, name) {
+                return true
+            } else {
+                ()
+            },
+            Join(value) => if inline_block_assigns(value.body, name) {
+                return true
+            } else {
+                ()
+            },
+            JoinRec(values) => for value in values {
+                if inline_block_assigns(value.body, name) {
+                    return true
+                } else {
+                    ()
+                }
+            },
+        }
+    };
+    inline_term_assigns(value.term, name)
+}
+
+fn inline_params_safe(value: Function, args: Vec[Imm]) -> bool {
+    if value.params.len() != args.len() {
+        return false
+    } else {
+        ()
+    };
+    for index in 0..args.len() {
+        if !tast::types_equal(value.params[index].1, imm_type(args[index]))
+            || inline_block_assigns(value.body, value.params[index].0) {
+            return false
+        } else {
+            ()
+        }
+    };
+    true
+}
+
+fn inline_term_calls(value: Term, name: string) -> bool {
+    match value {
+        If { then_, else_, .. } => inline_block_calls(then_, name)
+            || inline_block_calls(else_, name),
+        Match { arms, default, .. } => {
+            for arm in arms {
+                if inline_block_calls(arm.body, name) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => inline_block_calls(body, name),
+                None => false,
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => false,
+    }
+}
+
+fn inline_value_calls(value: Value, name: string) -> bool {
+    match value {
+        Call { func: Var { name: target, ty: _ }, args: _, ty: _ } => target == name,
+        Call {
+            func: Callable { callable: tast::Callable::Function(target), ty: _ },
+            args: _,
+            ty: _,
+        } => target == name,
+        _ => false,
+    }
+}
+
+fn inline_block_calls(value: Block, name: string) -> bool {
+    for bind in value.binds {
+        match bind {
+            Let(value) => if inline_value_calls(value.value, name) {
+                return true
+            } else {
+                ()
+            },
+            Join(value) => if inline_block_calls(value.body, name) {
+                return true
+            } else {
+                ()
+            },
+            JoinRec(values) => for value in values {
+                if inline_block_calls(value.body, name) {
+                    return true
+                } else {
+                    ()
+                }
+            },
+        }
+    };
+    inline_term_calls(value.term, name)
+}
+
+fn find_inline_function(values: Vec[Function], name: string) -> Option[Function] {
+    for value in values {
+        if value.name == name {
+            return Option::Some(value)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn inline_term_consumes(value: Term, name: string) -> bool {
+    match value {
+        If { cond: Var { name: present, ty: _ }, then_, else_, .. } => {
+            present == name && inline_block_returns(then_) && inline_block_returns(else_)
+        },
+        Match { scrutinee: Var { name: present, ty: _ }, arms, default, .. } => {
+            if present != name || arms.is_empty() {
+                return false
+            } else {
+                ()
+            };
+            for arm in arms {
+                if !inline_block_returns(arm.body) {
+                    return false
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => inline_block_returns(body),
+                None => true,
+            }
+        },
+        Return(_) | Jump { .. } | If { .. } | Match { .. } | Unreachable { .. } => false,
+    }
+}
+
+fn inline_term_returns(value: Term) -> bool {
+    match value {
+        Return(_) | Unreachable { .. } => true,
+        If { then_, else_, .. } => {
+            inline_block_returns(then_) && inline_block_returns(else_)
+        },
+        Match { arms, default, .. } => {
+            if arms.is_empty() {
+                return false
+            } else {
+                ()
+            };
+            for arm in arms {
+                if !inline_block_returns(arm.body) {
+                    return false
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Some(body) => inline_block_returns(body),
+                None => true,
+            }
+        },
+        Jump { .. } => false,
+    }
+}
+
+fn inline_block_returns(value: Block) -> bool {
+    inline_term_returns(value.term)
+}
+
+fn inline_block_consumes(value: Block, name: string) -> bool {
+    inline_term_consumes(value.term, name)
+}
+
+fn inline_candidate(
+    functions: Vec[Function],
+    caller: string,
+    name: string,
+    args: Vec[Imm],
+    ty: tast::Type,
+    bind_ty: tast::Type,
+    recursive_consumer: bool,
+    budget: Ref[int],
+) -> Option[Function] {
+    if name == caller {
+        return Option::None
+    } else {
+        ()
+    };
+    let value = find_inline_function(functions, name)?;
+    let cost = inline_block_cost(value.body);
+    let recursive = inline_block_has_joinrec(value.body);
+    let cost_limit = if recursive {
+        32
+    } else {
+        16
+    };
+    if cost > cost_limit || cost > budget.get() || recursive && !recursive_consumer
+        || inline_block_calls(value.body, value.name)
+        || !tast::types_equal(value.ret_ty, ty)
+        || !tast::types_equal(value.ret_ty, bind_ty)
+        || !inline_params_safe(value, args) {
+        Option::None
+    } else {
+        budget.set(budget.get() - cost);
+        Option::Some(value)
+    }
+}
+
+fn prepend_inline_bind(value: Bind, rest: Block) -> Block {
+    let binds: Vec[Bind] = Vec::with_capacity(rest.binds.len() + 1);
+    binds.push(value);
+    for bind in rest.binds {
+        binds.push(bind)
+    };
+    Block { binds, term: rest.term }
+}
+
+fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, counter: Ref[int]) -> Block {
+    let continuation = fresh_inline(counter, "inline_cont");
+    let params: Vec[(string, tast::Type)] = Vec::[];
+    params.push((value.name, value.ty));
+    let continuation_join = JoinBind {
+        name: continuation,
+        role: JoinRole::Continuation,
+        params,
+        ret_ty: block_type(rest),
+        body: rest,
+    };
+    let names: Vec[InlineName] = Vec::[];
+    let parameter_binds: Vec[Bind] = Vec::with_capacity(callee.params.len());
+    for index in 0..callee.params.len() {
+        let param = callee.params[index];
+        match args[index] {
+            Prim { .. } => {
+                let replacement = fresh_inline(counter, "inline");
+                names.push(
+                    InlineName { name: param.0, value: Imm::Var { name: replacement, ty: param.1 } },
+                );
+                parameter_binds.push(
+                    Bind::Let(
+                        LetBind { name: replacement, value: Value::Imm(args[index]), ty: param.1 },
+                    ),
+                )
+            },
+            _ => names.push(InlineName { name: param.0, value: args[index] }),
+        }
+    };
+    let joins: Vec[InlineJoin] = Vec::[];
+    collect_inline_block_names(callee.body, names, joins, counter);
+    let cloned = clone_inline_block(
+        callee.body,
+        names,
+        joins,
+        continuation,
+        continuation_join.ret_ty,
+    );
+    for bind in cloned.binds {
+        parameter_binds.push(bind)
+    };
+    let body = Block { binds: parameter_binds, term: cloned.term };
+    prepend_inline_bind(Bind::Join(continuation_join), body)
+}
+
+fn inline_term(
+    value: Term,
+    functions: Vec[Function],
+    caller: string,
+    budget: Ref[int],
+    counter: Ref[int],
+) -> Term {
+    match value {
+        If { cond, then_, else_, ret_ty } => Term::If {
+            cond,
+            then_: inline_block(then_, functions, caller, budget, counter),
+            else_: inline_block(else_, functions, caller, budget, counter),
+            ret_ty,
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(
+                    Arm {
+                        lhs: arm.lhs,
+                        body: inline_block(arm.body, functions, caller, budget, counter),
+                    },
+                )
+            };
+            Term::Match {
+                scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(
+                        inline_block(body, functions, caller, budget, counter),
+                    ),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Return(value) => Term::Return(value),
+        Jump { target, args, ret_ty } => Term::Jump { target, args, ret_ty },
+        Unreachable { ty } => Term::Unreachable { ty },
+    }
+}
+
+fn inline_binds(
+    values: Vec[Bind],
+    index: int,
+    term: Term,
+    functions: Vec[Function],
+    caller: string,
+    budget: Ref[int],
+    counter: Ref[int],
+) -> Block {
+    if index >= values.len() {
+        Block { binds: Vec::[], term }
+    } else {
+        let bind = values[index];
+        let rest = inline_binds(values, index + 1, term, functions, caller, budget, counter);
+        match bind {
+            Let(value) => match value.value {
+                Call { func: Var { name, ty: _ }, args, ty } => {
+                    match inline_candidate(
+                        functions,
+                        caller,
+                        name,
+                        args,
+                        ty,
+                        value.ty,
+                        inline_block_consumes(rest, value.name),
+                        budget,
+                    ) {
+                        Some(callee) => inline_call(value, callee, args, rest, counter),
+                        None => prepend_inline_bind(Bind::Let(value), rest),
+                    }
+                },
+                Call {
+                    func: Callable { callable: tast::Callable::Function(name), ty: _ },
+                    args,
+                    ty,
+                } => match inline_candidate(
+                    functions,
+                    caller,
+                    name,
+                    args,
+                    ty,
+                    value.ty,
+                    inline_block_consumes(rest, value.name),
+                    budget,
+                ) {
+                    Some(callee) => inline_call(value, callee, args, rest, counter),
+                    None => prepend_inline_bind(Bind::Let(value), rest),
+                },
+                _ => prepend_inline_bind(Bind::Let(value), rest),
+            },
+            Join(value) => prepend_inline_bind(
+                Bind::Join(
+                    JoinBind {
+                        name: value.name,
+                        role: value.role,
+                        params: value.params,
+                        ret_ty: value.ret_ty,
+                        body: inline_block(value.body, functions, caller, budget, counter),
+                    },
+                ),
+                rest,
+            ),
+            JoinRec(values) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    lowered.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: inline_block(value.body, functions, caller, budget, counter),
+                        },
+                    )
+                };
+                prepend_inline_bind(Bind::JoinRec(lowered), rest)
+            },
+        }
+    }
+}
+
+fn inline_block(
+    value: Block,
+    functions: Vec[Function],
+    caller: string,
+    budget: Ref[int],
+    counter: Ref[int],
+) -> Block {
+    inline_binds(
+        value.binds,
+        0,
+        inline_term(value.term, functions, caller, budget, counter),
+        functions,
+        caller,
+        budget,
+        counter,
+    )
+}
+
+fn inline_function(value: Function, functions: Vec[Function], counter: Ref[int]) -> Function {
+    let budget = Ref::new(48);
+    Function {
+        name: value.name,
+        origin: value.origin,
+        root: value.root,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: inline_block(value.body, functions, value.name, budget, counter),
+    }
+}
+
+pub fn inline(value: File, counter: Ref[int]) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(inline_function(function, value.functions, counter))
+    };
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+    }
+}

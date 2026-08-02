@@ -1,51 +1,38 @@
 fn main() -> bool {
-  join ret155(retv156: bool) -> bool {
-    retv156
-  } in
   let a/0 = (Tag_2, Tag_2) in
-  let x152 = a/0.0 in
-  let x153 = a/0.1 in
-  join k157(jp158: bool) -> bool {
-    jump ret155(jp158)
-  } in
-  match x153 {
+  let x155 = Tag_2 in
+  let x156 = Tag_2 in
+  match x156 {
     Tag_0 => {
-      join k159(jp160: bool) -> bool {
-        jump k157(jp160)
-      } in
-      match x152 {
+      match x155 {
         Tag_0 => {
-          jump k159(true)
+          true
         },
         _ => {
-          jump k159(false)
+          false
         },
       }
     },
     Tag_1 => {
-      join k161(jp162: bool) -> bool {
-        jump k157(jp162)
-      } in
-      match x152 {
+      match x155 {
         Tag_0 => {
-          jump k161(true)
+          true
         },
         _ => {
-          jump k161(false)
+          false
         },
       }
     },
     Tag_2 => {
-      join k163(jp164: bool) -> bool {
-        jump k157(jp164)
-      } in
-      match x152 {
+      match x155 {
         Tag_2 => {
-          let mtmp154 = print__T_bool(true) in
-          jump k163(false)
+          let inline175 = true in
+          let inline176 = trait_impl#ToString#bool#to_string(inline175) in
+          let inline177 = @runtime(core.string_print)(inline176) in
+          false
         },
         _ => {
-          jump k163(false)
+          false
         },
       }
     },
@@ -53,18 +40,15 @@ fn main() -> bool {
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  join ret165() -> unit {
+  join inline_cont178(t169: string) -> unit {
+    let t170 = @runtime(core.string_print)(t169) in
     ()
   } in
-  let t166 = trait_impl#ToString#bool#to_string(value/0) in
-  let t167 = @runtime(core.string_print)(t166) in
-  jump ret165()
+  let inline179 = @runtime(core.bool_to_string)(value/0) in
+  jump inline_cont178(inline179)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret168(retv169: string) -> string {
-    retv169
-  } in
-  let t170 = @runtime(core.bool_to_string)(self/37) in
-  jump ret168(t170)
+  let t173 = @runtime(core.bool_to_string)(self/37) in
+  t173
 }

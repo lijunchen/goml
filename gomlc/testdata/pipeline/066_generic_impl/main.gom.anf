@@ -1,72 +1,76 @@
 fn main() -> unit {
-  join ret153() -> unit {
-    ()
+  join inline_cont199(p1/4: Point__int32__string) -> unit {
+    join inline_cont195(p2/5: Point__string__string) -> unit {
+      join inline_cont191(p3/6: Point__string__int32) -> unit {
+        let x/7 = Point__string__int32.y(p3/6) in
+        join inline_cont189(t157: string) -> unit {
+          join inline_cont186(_wild155: unit) -> unit {
+            join inline_cont184(x2/8: string) -> unit {
+              let inline182 = trait_impl#ToString#string#to_string(x2/8) in
+              let inline183 = @runtime(core.string_println)(inline182) in
+              ()
+            } in
+            let inline185 = Point__string__string.x(p2/5) in
+            jump inline_cont184(inline185)
+          } in
+          let inline187 = trait_impl#ToString#string#to_string(t157) in
+          let inline188 = @runtime(core.string_println)(inline187) in
+          jump inline_cont186(())
+        } in
+        let inline190 = @runtime(core.int32_to_string)(x/7) in
+        jump inline_cont189(inline190)
+      } in
+      let inline192 = Point__int32__string.y(p1/4) in
+      let inline193 = Point__int32__string.x(p1/4) in
+      let inline194 = Point__string__int32 { x: inline192, y: inline193 } in
+      jump inline_cont191(inline194)
+    } in
+    let inline196 = "goml" in
+    let inline197 = "lang" in
+    let inline198 = Point__string__string { x: inline196, y: inline197 } in
+    jump inline_cont195(inline198)
   } in
-  let p1/4 = inherent#Point#Point[U,V]#new__U_int32__V_string(10, "hello") in
-  let p2/5 = inherent#Point#Point[U,V]#new__U_string__V_string("goml", "lang") in
-  let p3/6 = inherent#Point#Point[U,V]#swap__U_int32__V_string(p1/4) in
-  let x/7 = Point__string__int32.y(p3/6) in
-  let t154 = inherent#int32#int32#to_string(x/7) in
-  let _wild152 = println__T_string(t154) in
-  let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in
-  let t155 = println__T_string(x2/8) in
-  jump ret153()
+  let inline200 = 10 in
+  let inline201 = "hello" in
+  let inline202 = Point__int32__string { x: inline200, y: inline201 } in
+  jump inline_cont199(inline202)
 }
 
 fn inherent#Point#Point[U,V]#new__U_int32__V_string(x/0: int32, y/1: string) -> Point__int32__string {
-  join ret156(retv157: Point__int32__string) -> Point__int32__string {
-    retv157
-  } in
-  let t158 = Point__int32__string { x: x/0, y: y/1 } in
-  jump ret156(t158)
+  let t161 = Point__int32__string { x: x/0, y: y/1 } in
+  t161
 }
 
 fn inherent#Point#Point[U,V]#new__U_string__V_string(x/0: string, y/1: string) -> Point__string__string {
-  join ret159(retv160: Point__string__string) -> Point__string__string {
-    retv160
-  } in
-  let t161 = Point__string__string { x: x/0, y: y/1 } in
-  jump ret159(t161)
+  let t164 = Point__string__string { x: x/0, y: y/1 } in
+  t164
 }
 
 fn inherent#Point#Point[U,V]#swap__U_int32__V_string(self/2: Point__int32__string) -> Point__string__int32 {
-  join ret162(retv163: Point__string__int32) -> Point__string__int32 {
-    retv163
-  } in
-  let t164 = Point__int32__string.y(self/2) in
-  let t165 = Point__int32__string.x(self/2) in
-  let t166 = Point__string__int32 { x: t164, y: t165 } in
-  jump ret162(t166)
+  let t167 = Point__int32__string.y(self/2) in
+  let t168 = Point__int32__string.x(self/2) in
+  let t169 = Point__string__int32 { x: t167, y: t168 } in
+  t169
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret167() -> unit {
+  join inline_cont203(t171: string) -> unit {
+    let t172 = @runtime(core.string_println)(t171) in
     ()
   } in
-  let t168 = trait_impl#ToString#string#to_string(value/1) in
-  let t169 = @runtime(core.string_println)(t168) in
-  jump ret167()
+  jump inline_cont203(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
-  } in
-  let t172 = @runtime(core.int32_to_string)(self/6) in
-  jump ret170(t172)
+  let t175 = @runtime(core.int32_to_string)(self/6) in
+  t175
 }
 
 fn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {
-  join ret173(retv174: string) -> string {
-    retv174
-  } in
-  let t175 = Point__string__string.x(self/3) in
-  jump ret173(t175)
+  let t178 = Point__string__string.x(self/3) in
+  t178
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
-  } in
-  jump ret176(self/38)
+  self/38
 }

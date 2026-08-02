@@ -55,27 +55,27 @@ fn type_is_error(value: tast::Type) -> bool {
 }
 
 fn no_imms() -> Vec[Imm] {
-    Vec::new()
+    Vec::[]
 }
 
 fn one_imm(value: Imm) -> Vec[Imm] {
-    let result = Vec::new();
+    let result: Vec[Imm] = Vec::[];
     result.push(value);
     result
 }
 
 fn no_binds() -> Vec[Bind] {
-    Vec::new()
+    Vec::[]
 }
 
 fn one_bind(value: Bind) -> Vec[Bind] {
-    let result = Vec::new();
+    let result: Vec[Bind] = Vec::[];
     result.push(value);
     result
 }
 
 fn prepend_bind(value: Bind, block: Block) -> Block {
-    let binds = Vec::new();
+    let binds: Vec[Bind] = Vec::[];
     binds.push(value);
     for bind in block.binds {
         binds.push(bind)
@@ -105,10 +105,9 @@ fn expr_is_control(value: core::Expr) -> bool {
             arms: _,
             default: _,
             ty: _,
-        } | While { cond: _, body: _, ty: _ } | Loop { body: _, ty: _ } | Break { ty: _, .. } | Continue { ty: _ } | Return {
-            expr: _,
+        } | While { cond: _, body: _, ty: _ } | Loop { body: _, ty: _ } | Break { ty: _, .. } | Continue {
             ty: _,
-        } => true,
+        } | Return { expr: _, ty: _ } => true,
         _ => false,
     }
 }

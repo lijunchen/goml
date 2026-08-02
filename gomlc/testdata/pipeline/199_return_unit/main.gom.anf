@@ -1,15 +1,11 @@
 fn stop() -> unit {
-  join ret154() -> unit {
-    ()
-  } in
-  jump ret154()
+  ()
 }
 
 fn main() -> unit {
-  join ret155() -> unit {
+  join inline_cont160(_wild156: unit) -> unit {
+    let t159 = @runtime(core.string_println)("continued") in
     ()
   } in
-  let _wild153 = stop() in
-  let t156 = @runtime(core.string_println)("continued") in
-  jump ret155()
+  jump inline_cont160(())
 }

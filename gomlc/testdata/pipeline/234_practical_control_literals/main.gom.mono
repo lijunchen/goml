@@ -1,11 +1,11 @@
 fn unwrap_or_negative(value/0: Option__int) -> int {
-  let mtmp152 = value/0 in
-  match mtmp152 {
-    Option__int::Some(x153) => {
+  let mtmp155 = value/0 in
+  match mtmp155 {
+    Option__int::Some(x156) => {
       {
-        let x153 = Option__int::Some._0(mtmp152) in
+        let x156 = Option__int::Some._0(mtmp155) in
         {
-          let result/1 = x153 in
+          let result/1 = x156 in
           {
             result/1
           }
@@ -13,7 +13,7 @@ fn unwrap_or_negative(value/0: Option__int) -> int {
       }
     },
     _ => {
-      let _wild154 = return -1 in
+      let _wild157 = return -1 in
     },
   }
 }
@@ -22,34 +22,34 @@ fn count_to(limit/2: int) -> int {
   let counter/3 = inherent#Ref#Ref[T]#new__T_int(0) in
   loop {
     let current/4 = inherent#Ref#Ref[T]#get__T_int(counter/3) in
-    let _wild156 = if (current/4 >= limit/2) {
+    let _wild159 = if (current/4 >= limit/2) {
         {
-          let _wild155 = break current/4 in
+          let _wild158 = break current/4 in
         }
     } else {
         ()
     } in
-    let _wild157 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
+    let _wild160 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
   }
 }
 
 fn loop_option(value/5: Option__int) -> int {
   loop {
-    let mtmp158 = value/5 in
-    match mtmp158 {
-      Option__int::Some(x159) => {
+    let mtmp161 = value/5 in
+    match mtmp161 {
+      Option__int::Some(x162) => {
         {
-          let x159 = Option__int::Some._0(mtmp158) in
+          let x162 = Option__int::Some._0(mtmp161) in
           {
-            let item/6 = x159 in
+            let item/6 = x162 in
             {
-              let _wild160 = break item/6 in
+              let _wild163 = break item/6 in
             }
           }
         }
       },
       _ => {
-        let _wild161 = break -2 in
+        let _wild164 = break -2 in
       },
     }
   }
@@ -57,10 +57,10 @@ fn loop_option(value/5: Option__int) -> int {
 
 fn nested_loop_value() -> int {
   loop {
-    let _wild163 = loop {
-      let _wild162 = break in
+    let _wild166 = loop {
+      let _wild165 = break in
     } in
-    let _wild164 = break 7 in
+    let _wild167 = break 7 in
   }
 }
 
@@ -80,15 +80,15 @@ fn matches_raw_path(value/7: string) -> bool {
 }
 
 fn main() -> unit {
-  let _wild165 = @runtime(core.string_println)("C:\\tmp\\\"quoted\\\"") in
-  let _wild166 = @runtime(core.string_println)(("" + "}")) in
-  let _wild167 = println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::Some(11)))) in
-  let _wild168 = println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
-  let _wild169 = println__T_string(inherent#int#int#to_string(count_to(4))) in
-  let _wild170 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
-  let _wild171 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
-  let _wild172 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
-  let _wild173 = println__T_string(trait_impl#ToString#bool#to_string(matches_raw_path("C:\\tmp"))) in
+  let _wild168 = @runtime(core.string_println)("C:\\tmp\\\"quoted\\\"") in
+  let _wild169 = @runtime(core.string_println)(("" + "}")) in
+  let _wild170 = println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::Some(11)))) in
+  let _wild171 = println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
+  let _wild172 = println__T_string(inherent#int#int#to_string(count_to(4))) in
+  let _wild173 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
+  let _wild174 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
+  let _wild175 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
+  let _wild176 = println__T_string(trait_impl#ToString#bool#to_string(matches_raw_path("C:\\tmp"))) in
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {

@@ -16,7 +16,7 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 8. `let` and assignment statements must end with a semicolon.Local binding must be declared with `let mut` before reassignment; the semicolon can be omitted for `if`, `match`, `while`, `loop` and `for` as statements.
 9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
-11. Before using trait method syntax across packages, import the package first and then write `use alias::Trait;`; when in doubt, use UFCS: `Trait::method(value)`.
+11. Before using trait method syntax across packages, import the package and trait with `use alias::Trait;` or a braced import; when in doubt, use UFCS: `Trait::method(value)`.
 12. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, Go `var` / `:=` or user `extern fn`.
 13. The test function uses `#[test]`, which must have no parameters, no type parameters and return `unit`; the white-box test is placed in `*_test.gom` of the same package, and the black-box test is placed in the `tests/` directory of the package under test.
 
@@ -54,7 +54,7 @@ Ordinary identifiers only use ASCII and are of the form:
 
 The single `_` is a wildcard character, not an ordinary variable name.The current syntax enforces the first letter case of name categories:
 
-- Package names, `use ... as` aliases, functions, methods, parameters, local bindings and fields must start with a lowercase letter or `_`;
+- Package names, package aliases in `use ... as`, functions, methods, parameters, local bindings and fields must start with a lowercase letter or `_`; aliases inside braced imports may follow the naming convention of the imported item;
 - Structures, enumerations, traits, enumeration variants, generic parameters, and associated types must start with a capital letter;
 - Paths retain the appropriate case for the referenced name.
 
@@ -63,7 +63,7 @@ Enumeration construction should use `Enum::Variant`.Patterns may omit `Enum::` b
 Common keywords include:
 
 ```text
-package use as pub fn struct enum trait impl for type const where
+package use as pub fn struct enum trait impl for type const where defer
 let mut if else match while loop for in break continue return go dyn
 true false unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
 float32 float64 string char extern
@@ -275,14 +275,26 @@ After importing the package, access its public items through local aliases:
 let request = http_client::new_request();
 ```
 
-There are currently no globs, braced imports, or plain single imports.The following special form only adds traits from a loaded package to the method calling scope:
+Braced imports bring selected public top-level items directly into the current file. Functions, constants, structs, enums, type aliases, and traits can be imported, and each item may be renamed independently:
+
+```goml
+use alice::rendering::api::{Canvas, Color as Paint, Render, render_to_string};
+
+fn describe(canvas: Canvas) -> string {
+    render_to_string(canvas)
+}
+```
+
+The path before the braces is always a package path. Nested braced imports, `self`, glob imports with `*`, enum-variant imports, and subpackage aggregation are not supported. Imported names remain file-local, and normal top-level visibility rules apply.
+
+The following special form also adds a trait from an already loaded package to the method calling scope:
 
 ```goml
 use alice::rendering::api;
 use api::Render;
 ```
 
-Afterwards, the specific value can be written as `value.render()`.Even if the trait is not added to the method scope, you can still write a qualified call to `api::Render::render(value)`.
+Importing `Render` in a braced list also adds it to the method scope. Afterwards, the specific value can be written as `value.render()`.Even if the trait is not added to the method scope, you can still write a qualified call to `api::Render::render(value)`.
 
 The following path models are not supported:
 
@@ -597,6 +609,21 @@ fn run() -> unit {
 
 `let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them.
 
+`defer expression;` registers a `unit` expression to run when the current lexical block is left. Deferred expressions run in last-in-first-out order on normal completion and when `return`, `?`, `break`, or `continue` crosses their block. A return or break value is evaluated before cleanup begins. Each loop-body block has its own cleanup stack, so a deferred expression registered during one iteration runs before that iteration exits.
+
+Unlike Go's `defer`, GoML does not evaluate call arguments when the statement is reached. The complete expression is evaluated at block exit, so reads through `Ref` observe the value at cleanup time. A closure body is a separate control-flow scope. Deferred expressions cannot contain `return`, `break`, `continue`, or `?`, and cleanup during an unrecovered runtime panic is not currently guaranteed. The compiler lowers cleanup to ordinary structured control flow and never emits a Go `defer` statement.
+
+```goml
+fn work() -> unit {
+    let state = Ref::new("open");
+    defer println("closing:" + state.get());
+    defer println("flush");
+    state.set("ready")
+}
+```
+
+This prints `flush` first, then `closing:ready`.
+
 ### `let`, type annotations and shadowing
 
 ```goml
@@ -765,15 +792,19 @@ There are no exponentiation, null coalescing or user-defined operators.
 
 ### range expression
 
-`start..end` constructs an incrementing half-open `FnIterator[int]`, which can be used directly in `for`:
+`start..end` constructs an incrementing half-open `FnIterator[int]`, and `start..=end` constructs an inclusive iterator. Both can be used directly in `for`:
 
 ```goml
 for value in 0..10 {
     println(value)
 }
+
+for value in 0..=10 {
+    println(value)
+}
 ```
 
-Both ends are `int`; the range is empty when `start >= end`.Range expressions cannot be chained, and there is currently no `..=` in the expression position.The `..` and `..=` in the pattern are another set of range pattern syntax.
+Both ends are `int`. A half-open range is empty when `start >= end`; an inclusive range is empty when `start > end` and contains one value when both ends are equal. Each endpoint is evaluated once from left to right. Inclusive iteration does not compute `end + 1`, so the maximum `int` endpoint does not overflow. Range expressions cannot be chained. Open ranges, character ranges, and custom step syntax are not supported. The `..` and `..=` in patterns are a separate range-pattern syntax.
 
 ## control flow
 
@@ -1238,7 +1269,25 @@ where
 }
 ```
 
-Trait methods have no default implementation. They may declare their own type parameters and constraints:
+Trait methods may provide a default body. An impl may omit such a method and will inherit the default; an explicitly declared impl method overrides it. Default bodies are checked using the trait's generic parameters, predicates, associated types, and `Self`, and remain available across package boundaries:
+
+```goml
+trait Named {
+    fn name(self) -> string;
+
+    fn describe(self) -> string {
+        "named:" + self.name()
+    }
+}
+
+impl Named for Point {
+    fn name(self) -> string {
+        "point"
+    }
+}
+```
+
+Trait methods may also declare their own type parameters and constraints:
 
 ```goml
 trait Convert {
@@ -1409,7 +1458,7 @@ Current limitations:
 
 ## Properties and Derivations
 
-User source code currently supports deriving `ToString`, `Eq` and `Hash` for non-generic structures and enumerations:
+User source code supports deriving `ToString`, `Eq` and `Hash` for structures and enumerations, including generic types:
 
 ```goml
 #[derive(ToString, Eq, Hash)]
@@ -1417,9 +1466,15 @@ struct Key {
     name: string,
     version: int32,
 }
+
+#[derive(ToString, Eq, Hash)]
+enum Entry[T, Marker] {
+    Empty,
+    Value(Vec[T]),
+}
 ```
 
-All fields or variant payloads must support the derived trait.Generic structures and enumerations do not currently support these derives.Except for `#[test]` and `#[ignore]` in the next section, other attributes and `extern fn` are used for the compiler's own runtime, intrinsic and lang items; ordinary GoML projects cannot use this to bind any Go symbols.
+All fields or variant payloads must support the derived trait. For a generic definition, the generated impl constrains each distinct field or payload type that mentions a type parameter. In the example above the constraint is on `Vec[T]`, while the unused phantom parameter `Marker` receives no constraint. Except for `#[test]` and `#[ignore]` in the next section, other attributes and `extern fn` are used for the compiler's own runtime, intrinsic and lang items; ordinary GoML projects cannot use this to bind any Go symbols.
 
 Derived `Eq` provides `Eq::eq(left, right)`, making the type usable with `==` / `!=` and satisfying the key constraints of `HashMap`.
 
@@ -1616,7 +1671,7 @@ Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`
 
 The basic scalar types all implement `ToString`.String concatenation uses `+`.
 
-The signatures of built-in key-related traits are `Eq::eq(self, other: Self) -> bool` and `Hash::hash(self) -> uint64`; user types can be handwritten impl, and non-generic structures and enumerations can also be generated using derive.
+The signatures of built-in key-related traits are `Eq::eq(self, other: Self) -> bool` and `Hash::hash(self) -> uint64`; user types can be handwritten impl, and structures and enumerations can also be generated using derive.
 
 ### `Ref[T]`
 
@@ -1871,7 +1926,7 @@ Sorting mutates a `Vec[T]` in place. Both `sort_by` and `stable_sort_by` are sta
 | `float_value as int32` | Floating point to integer conversion is not supported; use dedicated parsing or conversion APIs |
 | `dyn A + B` | Single `dyn A`, or redesign the combined trait |
 | `dyn TraitWithAssociatedType` | dyn traits cannot have type parameters or associated types |
-| `use pkg::{A, B}` | Use `package::A` after `use full::package;` |
+| `use pkg::*` | List the required public items explicitly with `use pkg::{A, B};` |
 | `mod`、`crate::`、`super::` | Directory packages and canonical `use` paths |
 | `fn helper` inside function | Top-level function or local closure |
 | User `extern fn` | Use the API provided by compiler/prelude/stdlib |
@@ -1883,7 +1938,9 @@ The following EBNF only describes the canonical form that should be generated; `
 ```text
 file          = package_decl? use_decl* item*
 package_decl  = "package" lower_ident ";"
-use_decl      = "use" path ("as" lower_ident)? ";"
+use_decl      = "use" path ("as" lower_ident | "::" "{" use_items "}")? ";"
+use_items     = use_item ("," use_item)* ","?
+use_item      = ident ("as" ident)?
 path          = ident ("::" ident)*
 
 item          = attribute* visibility? function
@@ -1916,7 +1973,8 @@ type_names    = "[" upper_ident ("," upper_ident)* "]"
 trait_def     = "trait" upper_ident generic_params? (":" trait_set)? where_clause?
                 "{" trait_member* "}"
 trait_member  = "type" upper_ident (":" trait_set)? ";"
-              | "fn" lower_ident generic_params? param_list return_type? where_clause? ";"
+              | "fn" lower_ident generic_params? param_list return_type? where_clause?
+                (";" | block)
 
 impl_def      = "impl" generic_params? trait_ref "for" type where_clause?
                 "{" impl_member* "}"
@@ -1941,6 +1999,7 @@ type_list     = type ("," type)* ","?
 
 block         = "{" statement* expression? "}"
 statement     = "let" "mut"? pattern (":" type)? "=" expression ("else" block)? ";"
+              | "defer" expression ";"
               | assign_target assignment_operator expression ";"
               | expression ";"
               | control_expression
@@ -1983,7 +2042,7 @@ for_expression = "for" pattern "in" expression block
 closure       = "||" (expression | block)
               | "|" closure_params? "|" (expression | block)
 cast          = expression "as" integer_type
-range_expression = expression ".." expression
+range_expression = expression (".." | "..=") expression
 
 pattern       = or_pattern
 or_pattern    = alias_pattern ("|" alias_pattern)*

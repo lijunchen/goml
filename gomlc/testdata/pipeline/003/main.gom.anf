@@ -1,61 +1,66 @@
 fn main() -> unit {
-  join ret156() -> unit {
-    ()
+  join inline_cont190(mtmp155: unit) -> unit {
+    join inline_cont186(mtmp156: unit) -> unit {
+      join inline_cont182(mtmp157: unit) -> unit {
+        let inline179 = 123 in
+        let inline180 = trait_impl#ToString#int#to_string(inline179) in
+        let inline181 = @runtime(core.string_print)(inline180) in
+        ()
+      } in
+      let inline183 = false in
+      let inline184 = trait_impl#ToString#bool#to_string(inline183) in
+      let inline185 = @runtime(core.string_print)(inline184) in
+      jump inline_cont182(())
+    } in
+    let inline187 = true in
+    let inline188 = trait_impl#ToString#bool#to_string(inline187) in
+    let inline189 = @runtime(core.string_print)(inline188) in
+    jump inline_cont186(())
   } in
-  let mtmp152 = print__T_unit(()) in
-  let mtmp153 = print__T_bool(true) in
-  let mtmp154 = print__T_bool(false) in
-  let mtmp155 = print__T_int(123) in
-  jump ret156()
+  let inline191 = () in
+  let inline192 = trait_impl#ToString#unit#to_string(inline191) in
+  let inline193 = @runtime(core.string_print)(inline192) in
+  jump inline_cont190(())
 }
 
 fn print__T_unit(value/0: unit) -> unit {
-  join ret157() -> unit {
+  join inline_cont194(t161: string) -> unit {
+    let t162 = @runtime(core.string_print)(t161) in
     ()
   } in
-  let t158 = trait_impl#ToString#unit#to_string(value/0) in
-  let t159 = @runtime(core.string_print)(t158) in
-  jump ret157()
+  let inline195 = @runtime(core.unit_to_string)(value/0) in
+  jump inline_cont194(inline195)
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  join ret160() -> unit {
+  join inline_cont196(t164: string) -> unit {
+    let t165 = @runtime(core.string_print)(t164) in
     ()
   } in
-  let t161 = trait_impl#ToString#bool#to_string(value/0) in
-  let t162 = @runtime(core.string_print)(t161) in
-  jump ret160()
+  let inline197 = @runtime(core.bool_to_string)(value/0) in
+  jump inline_cont196(inline197)
 }
 
 fn print__T_int(value/0: int) -> unit {
-  join ret163() -> unit {
+  join inline_cont198(t167: string) -> unit {
+    let t168 = @runtime(core.string_print)(t167) in
     ()
   } in
-  let t164 = trait_impl#ToString#int#to_string(value/0) in
-  let t165 = @runtime(core.string_print)(t164) in
-  jump ret163()
+  let inline199 = @runtime(core.int_to_string)(value/0) in
+  jump inline_cont198(inline199)
 }
 
 fn trait_impl#ToString#unit#to_string(self/36: unit) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
-  } in
-  let t168 = @runtime(core.unit_to_string)(self/36) in
-  jump ret166(t168)
+  let t171 = @runtime(core.unit_to_string)(self/36) in
+  t171
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
-  } in
-  let t171 = @runtime(core.bool_to_string)(self/37) in
-  jump ret169(t171)
+  let t174 = @runtime(core.bool_to_string)(self/37) in
+  t174
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  let t174 = @runtime(core.int_to_string)(self/40) in
-  jump ret172(t174)
+  let t177 = @runtime(core.int_to_string)(self/40) in
+  t177
 }

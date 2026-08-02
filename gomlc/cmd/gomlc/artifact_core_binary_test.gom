@@ -1,15 +1,20 @@
 package main;
 
+use gomlc::artifact::core_codec as core_codec;
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use gomlc::core;
 use gomlc::tast;
 use std::bytes;
 use std::testing;
 
-fn binary_core_fixture() -> ArtifactCoreUnit {
+fn binary_core_fixture() -> artifact::ArtifactCoreUnit {
     let core_ir = empty_core_file();
     core_ir.functions.push(
         core::Function {
             name: "audit::value::choose",
+            origin: core::FunctionOrigin::Source,
             root: true,
             generics: Vec::new(),
             predicates: Vec::new(),
@@ -35,11 +40,11 @@ fn binary_core_fixture() -> ArtifactCoreUnit {
             },
         },
     );
-    ArtifactCoreUnit {
+    artifact::ArtifactCoreUnit {
         package_name: "audit::value",
         declared_name: "value",
         interface_hash: "0123456789abcdef",
-        exports: empty_artifact_package_exports(),
+        exports: interface_codec::empty_exports(),
         core_ir,
         deps: Vec::[("builtin", "fedcba9876543210")],
         sources: Vec::["value.gom"],
@@ -49,28 +54,28 @@ fn binary_core_fixture() -> ArtifactCoreUnit {
 
 #[test]
 fn binary_core_artifact_is_deterministic_and_independent() -> unit {
-    let first = match encode_artifact_core_binary(binary_core_fixture()) {
+    let first = match core_codec::encode_binary(binary_core_fixture()) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    let second = match encode_artifact_core_binary(binary_core_fixture()) {
+    let second = match core_codec::encode_binary(binary_core_fixture()) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
             bytes::Bytes::new()
         },
     };
-    testing::assert_eq(artifact_binary_bytes_equal(first, second), true);
-    match decode_artifact_core_binary(first) {
+    testing::assert_eq(wire::artifact_binary_bytes_equal(first, second), true);
+    match core_codec::decode_binary(first) {
         Ok(value) => {
             testing::assert_eq(value.interface_hash, "0123456789abcdef");
             testing::assert_eq(value.declared_name, "value");
             testing::assert_eq(
-                encode_artifact_core_unit(value, false),
-                encode_artifact_core_unit(binary_core_fixture(), false),
+                core_codec::encode_json(value, false),
+                core_codec::encode_json(binary_core_fixture(), false),
             )
         },
         Err(error) => testing::fail(error),

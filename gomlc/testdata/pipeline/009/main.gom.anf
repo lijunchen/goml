@@ -1,54 +1,64 @@
 fn test(t/0: T) -> unit {
-  join ret158() -> unit {
-    ()
-  } in
-  join k159() -> unit {
-    jump ret158()
-  } in
   match t/0 {
     Tag_0 => {
-      let t160 = inherent#int#int#to_string(1) in
-      let t161 = println__T_string(t160) in
-      jump k159()
+      join inline_cont191(t163: string) -> unit {
+        let inline189 = trait_impl#ToString#string#to_string(t163) in
+        let inline190 = @runtime(core.string_println)(inline189) in
+        ()
+      } in
+      let inline192 = 1 in
+      let inline193 = @runtime(core.int_to_string)(inline192) in
+      jump inline_cont191(inline193)
     },
     Tag_1 => {
-      let x152 = T::B._0(t/0) in
-      let x153 = T::B._1(t/0) in
-      join k162() -> unit {
-        jump k159()
-      } in
-      match x153 {
+      let x155 = T::B._0(t/0) in
+      let x156 = T::B._1(t/0) in
+      match x156 {
         true => {
-          join k163() -> unit {
-            jump k162()
-          } in
-          match x152 {
+          match x155 {
             true => {
-              let t164 = inherent#int#int#to_string(4) in
-              let t165 = println__T_string(t164) in
-              jump k163()
+              join inline_cont197(t167: string) -> unit {
+                let inline195 = trait_impl#ToString#string#to_string(t167) in
+                let inline196 = @runtime(core.string_println)(inline195) in
+                ()
+              } in
+              let inline198 = 4 in
+              let inline199 = @runtime(core.int_to_string)(inline198) in
+              jump inline_cont197(inline199)
             },
             false => {
-              let t166 = inherent#int#int#to_string(3) in
-              let t167 = println__T_string(t166) in
-              jump k163()
+              join inline_cont203(t169: string) -> unit {
+                let inline201 = trait_impl#ToString#string#to_string(t169) in
+                let inline202 = @runtime(core.string_println)(inline201) in
+                ()
+              } in
+              let inline204 = 3 in
+              let inline205 = @runtime(core.int_to_string)(inline204) in
+              jump inline_cont203(inline205)
             },
           }
         },
         false => {
-          join k168() -> unit {
-            jump k162()
-          } in
-          match x152 {
+          match x155 {
             true => {
-              let t169 = inherent#int#int#to_string(4) in
-              let t170 = println__T_string(t169) in
-              jump k168()
+              join inline_cont209(t172: string) -> unit {
+                let inline207 = trait_impl#ToString#string#to_string(t172) in
+                let inline208 = @runtime(core.string_println)(inline207) in
+                ()
+              } in
+              let inline210 = 4 in
+              let inline211 = @runtime(core.int_to_string)(inline210) in
+              jump inline_cont209(inline211)
             },
             false => {
-              let t171 = inherent#int#int#to_string(2) in
-              let t172 = println__T_string(t171) in
-              jump k168()
+              join inline_cont215(t174: string) -> unit {
+                let inline213 = trait_impl#ToString#string#to_string(t174) in
+                let inline214 = @runtime(core.string_println)(inline213) in
+                ()
+              } in
+              let inline216 = 2 in
+              let inline217 = @runtime(core.int_to_string)(inline216) in
+              jump inline_cont215(inline217)
             },
           }
         },
@@ -58,39 +68,29 @@ fn test(t/0: T) -> unit {
 }
 
 fn main() -> unit {
-  join ret173() -> unit {
-    ()
-  } in
-  let t174 = T::B(true, true) in
-  let mtmp154 = test(t174) in
-  let t175 = T::B(false, true) in
-  let mtmp155 = test(t175) in
-  let t176 = T::B(false, false) in
-  let mtmp156 = test(t176) in
-  let mtmp157 = test(Tag_0) in
-  jump ret173()
+  let t177 = T::B(true, true) in
+  let mtmp157 = test(t177) in
+  let t178 = T::B(false, true) in
+  let mtmp158 = test(t178) in
+  let t179 = T::B(false, false) in
+  let mtmp159 = test(t179) in
+  let mtmp160 = test(Tag_0) in
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret177() -> unit {
+  join inline_cont218(t181: string) -> unit {
+    let t182 = @runtime(core.string_println)(t181) in
     ()
   } in
-  let t178 = trait_impl#ToString#string#to_string(value/1) in
-  let t179 = @runtime(core.string_println)(t178) in
-  jump ret177()
+  jump inline_cont218(value/1)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret180(retv181: string) -> string {
-    retv181
-  } in
-  let t182 = @runtime(core.int_to_string)(self/5) in
-  jump ret180(t182)
+  let t185 = @runtime(core.int_to_string)(self/5) in
+  t185
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret183(retv184: string) -> string {
-    retv184
-  } in
-  jump ret183(self/38)
+  self/38
 }

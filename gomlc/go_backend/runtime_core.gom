@@ -18,7 +18,7 @@ fn core_call(name: string, args: Vec[Expr]) -> Expr {
 }
 
 fn core_len(value: Expr) -> Expr {
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(value);
     core_call("len", args)
 }
@@ -28,14 +28,14 @@ fn core_int(value: Expr) -> Expr {
 }
 
 fn core_tuple_type2(first: tast::Type, second: tast::Type) -> Type {
-    let values: Vec[tast::Type] = Vec::new();
+    let values: Vec[tast::Type] = Vec::[];
     values.push(first);
     values.push(second);
     lower_type(tast::Type::Tuple { items: values })
 }
 
 fn core_tuple_type3(first: tast::Type, second: tast::Type, third: tast::Type) -> Type {
-    let values: Vec[tast::Type] = Vec::new();
+    let values: Vec[tast::Type] = Vec::[];
     values.push(first);
     values.push(second);
     values.push(third);
@@ -43,7 +43,7 @@ fn core_tuple_type3(first: tast::Type, second: tast::Type, third: tast::Type) ->
 }
 
 fn core_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
-    let fields: Vec[(string, Expr)] = Vec::new();
+    let fields: Vec[(string, Expr)] = Vec::[];
     for index in 0..values.len() {
         fields.push(("_" + index.to_string(), values[index]))
     };
@@ -51,26 +51,26 @@ fn core_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
 }
 
 fn string_len_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Return { expr: Option::Some(core_int(core_len(Expr::Var { name: "s" }))) });
     core_function_item("core.string_len", params, Type::Int, stmts)
 }
 
 fn string_decode_utf8_at_native_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
     params.push(("i", Type::Int));
-    let returns: Vec[Type] = Vec::new();
+    let returns: Vec[Type] = Vec::[];
     returns.push(Type::Bool);
     returns.push(Type::Char);
     returns.push(Type::Int);
-    let invalid: Vec[Expr] = Vec::new();
+    let invalid: Vec[Expr] = Vec::[];
     invalid.push(Expr::Bool { value: false });
     invalid.push(Expr::Int { value: "0" });
     invalid.push(Expr::Int { value: "0" });
-    let invalid_index_stmts: Vec[Stmt] = Vec::new();
+    let invalid_index_stmts: Vec[Stmt] = Vec::[];
     invalid_index_stmts.push(Stmt::ReturnMulti { exprs: invalid });
     let length = core_int(core_len(Expr::Var { name: "s" }));
     let invalid_index = Expr::Binary {
@@ -82,7 +82,7 @@ fn string_decode_utf8_at_native_item() -> Item {
         },
         rhs: Expr::Binary { op: BinaryOp::GreaterEq, lhs: Expr::Var { name: "i" }, rhs: length },
     };
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::If {
             cond: invalid_index,
@@ -92,7 +92,7 @@ fn string_decode_utf8_at_native_item() -> Item {
     );
     stmts.push(Stmt::Var { name: "value", ty: Type::Char, value: Option::None });
     stmts.push(Stmt::Var { name: "width", ty: Type::Named { name: "int" }, value: Option::None });
-    let decode_args: Vec[Expr] = Vec::new();
+    let decode_args: Vec[Expr] = Vec::[];
     decode_args.push(
         Expr::Slice {
             base: Expr::Var { name: "s" },
@@ -100,14 +100,14 @@ fn string_decode_utf8_at_native_item() -> Item {
             end: core_int(core_len(Expr::Var { name: "s" })),
         },
     );
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     names.push("value");
     names.push("width");
     stmts.push(
         Stmt::MultiAssign { names, value: core_call("_goml_utf8.DecodeRuneInString", decode_args) },
     );
-    let invalid_rune_stmts: Vec[Stmt] = Vec::new();
-    let invalid_rune: Vec[Expr] = Vec::new();
+    let invalid_rune_stmts: Vec[Stmt] = Vec::[];
+    let invalid_rune: Vec[Expr] = Vec::[];
     invalid_rune.push(Expr::Bool { value: false });
     invalid_rune.push(Expr::Int { value: "0" });
     invalid_rune.push(Expr::Int { value: "0" });
@@ -131,7 +131,7 @@ fn string_decode_utf8_at_native_item() -> Item {
             else_: Option::None,
         },
     );
-    let valid: Vec[Expr] = Vec::new();
+    let valid: Vec[Expr] = Vec::[];
     valid.push(Expr::Bool { value: true });
     valid.push(Expr::Var { name: "value" });
     valid.push(core_int(Expr::Var { name: "width" }));
@@ -147,17 +147,17 @@ fn string_decode_utf8_at_native_item() -> Item {
 }
 
 fn string_get_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
     params.push(("i", Type::Int));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "valid", ty: Type::Bool, value: Option::None });
     stmts.push(Stmt::Var { name: "value", ty: Type::Char, value: Option::None });
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     names.push("valid");
     names.push("value");
     names.push("_");
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Var { name: "s" });
     args.push(Expr::Var { name: "i" });
     stmts.push(
@@ -166,7 +166,7 @@ fn string_get_hook_item() -> Item {
             value: core_call(go_generated_ident("_goml_runtime_string_decode_utf8_at_native"), args),
         },
     );
-    let invalid_stmts: Vec[Stmt] = Vec::new();
+    let invalid_stmts: Vec[Stmt] = Vec::[];
     invalid_stmts.push(Stmt::Panic { message: "invalid string byte index" });
     stmts.push(
         Stmt::If {
@@ -180,10 +180,10 @@ fn string_get_hook_item() -> Item {
 }
 
 fn string_byte_get_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
     params.push(("i", Type::Int));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Return {
             expr: Option::Some(
@@ -195,20 +195,20 @@ fn string_byte_get_hook_item() -> Item {
 }
 
 fn string_boundary_call(index: string) -> Expr {
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Var { name: "s" });
     args.push(Expr::Var { name: index });
     core_call(runtime_hook_name("core.string_is_char_boundary"), args)
 }
 
 fn string_byte_slice_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
     params.push(("start", Type::Int));
     params.push(("end", Type::Int));
-    let invalid_stmts: Vec[Stmt] = Vec::new();
+    let invalid_stmts: Vec[Stmt] = Vec::[];
     invalid_stmts.push(Stmt::Panic { message: "invalid string byte slice" });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::If {
             cond: Expr::Unary {
@@ -238,15 +238,15 @@ fn string_byte_slice_hook_item() -> Item {
 }
 
 fn string_is_char_boundary_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
     params.push(("i", Type::Int));
-    let out_of_range_stmts: Vec[Stmt] = Vec::new();
+    let out_of_range_stmts: Vec[Stmt] = Vec::[];
     out_of_range_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: false }) });
-    let at_end_stmts: Vec[Stmt] = Vec::new();
+    let at_end_stmts: Vec[Stmt] = Vec::[];
     at_end_stmts.push(Stmt::Return { expr: Option::Some(Expr::Bool { value: true }) });
     let length = core_int(core_len(Expr::Var { name: "s" }));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::If {
             cond: Expr::Binary {
@@ -277,25 +277,25 @@ fn string_is_char_boundary_hook_item() -> Item {
             else_: Option::None,
         },
     );
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Index { base: Expr::Var { name: "s" }, index: Expr::Var { name: "i" } });
     stmts.push(Stmt::Return { expr: Option::Some(core_call("_goml_utf8.RuneStart", args)) });
     core_function_item("core.string_is_char_boundary", params, Type::Bool, stmts)
 }
 
 fn string_decode_utf8_at_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
     params.push(("i", Type::Int));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Var { name: "valid", ty: Type::Bool, value: Option::None });
     stmts.push(Stmt::Var { name: "value", ty: Type::Char, value: Option::None });
     stmts.push(Stmt::Var { name: "width", ty: Type::Int, value: Option::None });
-    let names: Vec[string] = Vec::new();
+    let names: Vec[string] = Vec::[];
     names.push("valid");
     names.push("value");
     names.push("width");
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Var { name: "s" });
     args.push(Expr::Var { name: "i" });
     stmts.push(
@@ -305,7 +305,7 @@ fn string_decode_utf8_at_hook_item() -> Item {
         },
     );
     let ret_ty = core_tuple_type3(tast::Type::Bool, tast::Type::Char, tast::Type::Int);
-    let values: Vec[Expr] = Vec::new();
+    let values: Vec[Expr] = Vec::[];
     values.push(Expr::Var { name: "valid" });
     values.push(Expr::Var { name: "value" });
     values.push(Expr::Var { name: "width" });
@@ -314,11 +314,11 @@ fn string_decode_utf8_at_hook_item() -> Item {
 }
 
 fn string_to_bytes_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
     let elem = tast::Type::Uint8;
     let vec_ty = tast::Type::VecType { elem };
-    let fields: Vec[(string, Expr)] = Vec::new();
+    let fields: Vec[(string, Expr)] = Vec::[];
     fields.push(
         (
             "items",
@@ -332,19 +332,19 @@ fn string_to_bytes_hook_item() -> Item {
             fields,
         },
     };
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(Stmt::Return { expr: Option::Some(value) });
     core_function_item("core.string_to_bytes", params, lower_type(vec_ty), stmts)
 }
 
 fn char_to_string_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", Type::Char));
-    let valid_args: Vec[Expr] = Vec::new();
+    let valid_args: Vec[Expr] = Vec::[];
     valid_args.push(Expr::Var { name: "x" });
-    let invalid_stmts: Vec[Stmt] = Vec::new();
+    let invalid_stmts: Vec[Stmt] = Vec::[];
     invalid_stmts.push(Stmt::Panic { message: "invalid char" });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::If {
             cond: Expr::Unary {
@@ -364,13 +364,13 @@ fn char_to_string_hook_item() -> Item {
 }
 
 fn char_from_uint32_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("value", Type::Uint32));
     let ret_ty = core_tuple_type2(tast::Type::Bool, tast::Type::Char);
-    let invalid_values: Vec[Expr] = Vec::new();
+    let invalid_values: Vec[Expr] = Vec::[];
     invalid_values.push(Expr::Bool { value: false });
     invalid_values.push(Expr::Int { value: "0" });
-    let invalid_stmts: Vec[Stmt] = Vec::new();
+    let invalid_stmts: Vec[Stmt] = Vec::[];
     invalid_stmts.push(Stmt::Return { expr: Option::Some(core_tuple_expr(ret_ty, invalid_values)) });
     let invalid = Expr::Binary {
         op: BinaryOp::Or,
@@ -393,11 +393,11 @@ fn char_from_uint32_hook_item() -> Item {
             },
         },
     };
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::If { cond: invalid, then_: Block { stmts: invalid_stmts }, else_: Option::None },
     );
-    let values: Vec[Expr] = Vec::new();
+    let values: Vec[Expr] = Vec::[];
     values.push(Expr::Bool { value: true });
     values.push(Expr::Convert { ty: Type::Char, expr: Expr::Var { name: "value" } });
     stmts.push(Stmt::Return { expr: Option::Some(core_tuple_expr(ret_ty, values)) });
@@ -405,9 +405,9 @@ fn char_from_uint32_hook_item() -> Item {
 }
 
 fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", ty));
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(
         if key == "core.float32_to_string" {
             Expr::Convert { ty: Type::Float64, expr: Expr::Var { name: "x" } }
@@ -418,7 +418,7 @@ fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
     args.push(Expr::Int { value: "102" });
     args.push(Expr::Int { value: "-1" });
     args.push(Expr::Int { value: bit_size });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
             name: "formatted",
@@ -426,7 +426,7 @@ fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
             value: Option::Some(core_call("_goml_strconv.FormatFloat", args)),
         },
     );
-    let positive_stmts: Vec[Stmt] = Vec::new();
+    let positive_stmts: Vec[Stmt] = Vec::[];
     positive_stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "inf" }) });
     stmts.push(
         Stmt::If {
@@ -439,7 +439,7 @@ fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
             else_: Option::None,
         },
     );
-    let negative_stmts: Vec[Stmt] = Vec::new();
+    let negative_stmts: Vec[Stmt] = Vec::[];
     negative_stmts.push(Stmt::Return { expr: Option::Some(Expr::String { value: "-inf" }) });
     stmts.push(
         Stmt::If {
@@ -483,9 +483,9 @@ fn integer_hash_hook_type(key: string) -> Option[Type] {
 }
 
 fn integer_hash_hook_item(key: string, ty: Type) -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", ty));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Return {
             expr: Option::Some(Expr::Convert { ty: Type::Uint64, expr: Expr::Var { name: "x" } }),
@@ -495,11 +495,11 @@ fn integer_hash_hook_item(key: string, ty: Type) -> Item {
 }
 
 fn float_hash_hook_item(key: string, ty: Type, go_name: string) -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("x", ty));
-    let zero_stmts: Vec[Stmt] = Vec::new();
+    let zero_stmts: Vec[Stmt] = Vec::[];
     zero_stmts.push(Stmt::Return { expr: Option::Some(Expr::Int { value: "0" }) });
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::If {
             cond: Expr::Binary {
@@ -511,7 +511,7 @@ fn float_hash_hook_item(key: string, ty: Type, go_name: string) -> Item {
             else_: Option::None,
         },
     );
-    let args: Vec[Expr] = Vec::new();
+    let args: Vec[Expr] = Vec::[];
     args.push(Expr::Var { name: "x" });
     let bits = core_call(go_name, args);
     stmts.push(
@@ -529,9 +529,9 @@ fn float_hash_hook_item(key: string, ty: Type, go_name: string) -> Item {
 }
 
 fn string_hash_hook_item() -> Item {
-    let params: Vec[(string, Type)] = Vec::new();
+    let params: Vec[(string, Type)] = Vec::[];
     params.push(("s", Type::String));
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
             name: "h",
@@ -542,8 +542,8 @@ fn string_hash_hook_item() -> Item {
     stmts.push(
         Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
     );
-    let loop_stmts: Vec[Stmt] = Vec::new();
-    let break_stmts: Vec[Stmt] = Vec::new();
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    let break_stmts: Vec[Stmt] = Vec::[];
     break_stmts.push(Stmt::Break);
     loop_stmts.push(
         Stmt::If {

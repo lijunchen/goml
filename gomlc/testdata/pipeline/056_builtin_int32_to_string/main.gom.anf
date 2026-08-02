@@ -1,33 +1,27 @@
 fn main() -> unit {
-  join ret153() -> unit {
+  let value/0 = 42 in
+  join inline_cont168(text/1: string) -> unit {
+    let inline166 = trait_impl#ToString#string#to_string(text/1) in
+    let inline167 = @runtime(core.string_println)(inline166) in
     ()
   } in
-  let value/0 = 42 in
-  let text/1 = inherent#int32#int32#to_string(value/0) in
-  let mtmp152 = println__T_string(text/1) in
-  jump ret153()
+  let inline169 = @runtime(core.int32_to_string)(value/0) in
+  jump inline_cont168(inline169)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret154(retv155: string) -> string {
-    retv155
-  } in
-  let t156 = @runtime(core.int32_to_string)(self/6) in
-  jump ret154(t156)
+  let t159 = @runtime(core.int32_to_string)(self/6) in
+  t159
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret157() -> unit {
+  join inline_cont170(t161: string) -> unit {
+    let t162 = @runtime(core.string_println)(t161) in
     ()
   } in
-  let t158 = trait_impl#ToString#string#to_string(value/1) in
-  let t159 = @runtime(core.string_println)(t158) in
-  jump ret157()
+  jump inline_cont170(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret160(retv161: string) -> string {
-    retv161
-  } in
-  jump ret160(self/38)
+  self/38
 }

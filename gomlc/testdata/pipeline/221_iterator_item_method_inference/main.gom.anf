@@ -1,58 +1,29 @@
 fn trait_impl#Iterator#Values#next(self/0: Values) -> Option__int32 {
-  join ret157(retv158: Option__int32) -> Option__int32 {
-    retv158
-  } in
-  jump ret157(Tag_0)
+  Tag_0
 }
 
 fn main() -> unit {
-  join ret159() -> unit {
-    ()
-  } in
-  let t160 = Values {} in
-  let for_iter152 = trait_impl#IntoIterator#Values#into_iter(t160) in
-  join exit161() -> unit {
-    let _wild156 = () in
-    jump ret159()
-  } in
-  joinrec {
-    join loop162() -> unit {
-      if true {
-        let for_next153 = trait_impl#Iterator#Values#next(for_iter152) in
-        join k163() -> unit {
-          jump loop162()
-        } in
-        match for_next153 {
-          Tag_0 => {
-            jump exit161()
-          },
-          Tag_1 => {
-            let x154 = Option__int32::Some._0(for_next153) in
-            let value/1 = x154 in
-            let t164 = inherent#int32#int32#to_string(value/1) in
-            let _wild155 = @runtime(core.string_println)(t164) in
-            jump k163()
-          },
-        }
-      } else {
-        jump exit161()
-      }
+  let t163 = Values {} in
+  join inline_cont176(for_iter155: Values) -> unit {
+    join exit164() -> unit {
+      let _wild159 = () in
+      ()
     } in
+    joinrec {
+      join loop165() -> unit {
+        jump exit164()
+      } in
+    } in
+    jump loop165()
   } in
-  jump loop162()
+  jump inline_cont176(t163)
 }
 
 fn trait_impl#IntoIterator#Values#into_iter(self/109: Values) -> Values {
-  join ret165(retv166: Values) -> Values {
-    retv166
-  } in
-  jump ret165(self/109)
+  self/109
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
-  } in
-  let t169 = @runtime(core.int32_to_string)(self/6) in
-  jump ret167(t169)
+  let t172 = @runtime(core.int32_to_string)(self/6) in
+  t172
 }

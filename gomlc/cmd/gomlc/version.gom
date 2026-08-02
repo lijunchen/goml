@@ -21,18 +21,17 @@ fn parse_version_format(value: string) -> Result[VersionFormat, string] {
 }
 
 fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
-    let format: Ref[Option[string]] = Ref::new(Option::None);
-    let positional = Ref::new(false);
-    let index = Ref::new(2);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
-        if positional.get() == false && argument == "--" {
-            positional.set(true);
-            index.set(index.get() + 1)
-        } else if positional.get() == false && cli_help_argument(argument) {
+    let mut format: Option[string] = Option::None;
+    let mut positional = false;
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
+        if !positional && argument == "--" {
+            positional = true;
+            index += 1;
+        } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
-        } else if positional.get() == false
-            && option_string_present(inline_cli_value(argument, "--help")) {
+        } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
             let value = match inline_cli_value(argument, "--help") {
                 Some(value) => value,
                 None => "",
@@ -40,37 +39,35 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             return Result::Err(
                 unexpected_value_error_with_usage(value, "--help", "gomlc version --help"),
             )
-        } else if positional.get() == false && cli_value_option("version", argument)
-            && index.get() + 1 < args.len()
-            && cli_option(args[index.get() + 1])
-            && !known_cli_option("version", args[index.get() + 1]) {
+        } else if !positional && cli_value_option("version", argument) && index + 1 < args.len()
+            && cli_option(args[index + 1])
+            && !known_cli_option("version", args[index + 1]) {
             return Result::Err(
                 unexpected_cli_option_error_with_usage(
                     "version",
-                    args[index.get() + 1],
+                    args[index + 1],
                     command_usage("version"),
                 ),
             )
-        } else if positional.get() == false && argument == "--format" {
-            if index.get() + 1 >= args.len() || cli_option(args[index.get() + 1]) {
+        } else if !positional && argument == "--format" {
+            if index + 1 >= args.len() || cli_option(args[index + 1]) {
                 return Result::Err(
                     value_required_error("--format <FORMAT>", Option::Some("text, json")),
                 )
-            } else if option_string_present(format.get()) {
+            } else if option_string_present(format) {
                 return Result::Err(repeated_argument_error("version", "--format <FORMAT>"))
             } else {
-                let value = args[index.get() + 1];
+                let value = args[index + 1];
                 match parse_version_format(value) {
                     Ok(_) => {
-                        format.set(Option::Some(value));
-                        index.set(index.get() + 2)
+                        format = Option::Some(value);
+                        index += 2;
                     },
                     Err(error) => return Result::Err(error),
                 }
             }
-        } else if positional.get() == false
-            && option_string_present(inline_cli_value(argument, "--format")) {
-            if option_string_present(format.get()) {
+        } else if !positional && option_string_present(inline_cli_value(argument, "--format")) {
+            if option_string_present(format) {
                 return Result::Err(repeated_argument_error("version", "--format <FORMAT>"))
             } else {
                 match inline_cli_value(argument, "--format") {
@@ -80,16 +77,18 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                         )
                     } else {
                         match parse_version_format(value) {
-                            Ok(_) => format.set(Option::Some(value)),
+                            Ok(_) => {
+                                format = Option::Some(value);
+                            },
                             Err(error) => return Result::Err(error),
                         }
                     },
                     None => (),
                 };
-                index.set(index.get() + 1)
+                index += 1;
             }
         } else {
-            if positional.get() {
+            if positional {
                 return Result::Err(unexpected_argument_error("version", argument, false))
             } else {
                 ()
@@ -106,19 +105,18 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
             }
         }
     };
-    match format.get() {
+    match format {
         Some(value) => parse_version_format(value),
         None => Result::Ok(VersionFormat::Text),
     }
 }
 
 fn trim_version_value(value: string) -> string {
-    let end = Ref::new(value.byte_len());
-    while end.get() > 0
-        && (value.byte_get(end.get() - 1) == b'\n' || value.byte_get(end.get() - 1) == b'\r') {
-        end.set(end.get() - 1)
+    let mut end = value.byte_len();
+    while end > 0 && (value.byte_get(end - 1) == b'\n' || value.byte_get(end - 1) == b'\r') {
+        end -= 1;
     };
-    value.byte_slice(0, end.get())
+    value.byte_slice(0, end)
 }
 
 fn git_version_value(args: Vec[string]) -> Option[string] {

@@ -42,7 +42,7 @@ pub fn parse_rpc_message(value: json::Value) -> Result[RpcMessage, string] {
 }
 
 pub fn rpc_success(id: json::Value, result: json::Value) -> json::Value {
-    let fields = Vec::new();
+    let fields: Vec[(string, json::Value)] = Vec::[];
     push_json_field(fields, "jsonrpc", json::Value::String("2.0"));
     push_json_field(fields, "id", id);
     push_json_field(fields, "result", result);
@@ -50,10 +50,10 @@ pub fn rpc_success(id: json::Value, result: json::Value) -> json::Value {
 }
 
 pub fn rpc_error(id: json::Value, code: int, message: string) -> json::Value {
-    let error = Vec::new();
+    let error: Vec[(string, json::Value)] = Vec::[];
     push_json_field(error, "code", json::Value::Number(code.to_string()));
     push_json_field(error, "message", json::Value::String(message));
-    let fields = Vec::new();
+    let fields: Vec[(string, json::Value)] = Vec::[];
     push_json_field(fields, "jsonrpc", json::Value::String("2.0"));
     push_json_field(fields, "id", id);
     push_json_field(fields, "error", json_fields(error));
@@ -61,7 +61,7 @@ pub fn rpc_error(id: json::Value, code: int, message: string) -> json::Value {
 }
 
 pub fn rpc_notification(method: string, params: json::Value) -> json::Value {
-    let fields = Vec::new();
+    let fields: Vec[(string, json::Value)] = Vec::[];
     push_json_field(fields, "jsonrpc", json::Value::String("2.0"));
     push_json_field(fields, "method", json::Value::String(method));
     push_json_field(fields, "params", params);
@@ -97,30 +97,30 @@ fn ascii_prefix_equal_case_insensitive(value: string, expected: string) -> bool 
 }
 
 fn header_line_content(value: string) -> string {
-    let end = Ref::new(value.byte_len());
-    while end.get() > 0
-        && (value.byte_get(end.get() - 1) == b'\n' || value.byte_get(end.get() - 1) == b'\r') {
-        end.set(end.get() - 1)
+    let mut end = value.byte_len();
+    while end > 0 && (value.byte_get(end - 1) == b'\n' || value.byte_get(end - 1) == b'\r') {
+        end = end - 1;
     };
-    value.byte_slice(0, end.get())
+    value.byte_slice(0, end)
 }
 
 fn decimal_length(value: string) -> Result[int, string] {
-    let result = Ref::new(0);
-    if value.byte_len() == 0 {
+    let mut result = 0;
+    let length = value.byte_len();
+    if length == 0 {
         return Result::Err("empty Content-Length")
     } else {
         ()
     };
-    for index in 0..value.byte_len() {
+    for index in 0..length {
         let byte = value.byte_get(index);
         if byte < b'0' || byte > b'9' {
             return Result::Err("invalid Content-Length")
         } else {
-            result.set(result.get() * 10 + (byte - 48) as int)
+            result = result * 10 + (byte - b'0') as int;
         }
     };
-    Result::Ok(result.get())
+    Result::Ok(result)
 }
 
 pub fn content_length(value: string) -> Result[int, string] {
@@ -129,12 +129,12 @@ pub fn content_length(value: string) -> Result[int, string] {
     if !ascii_prefix_equal_case_insensitive(line, prefix) {
         Result::Err("expected Content-Length header")
     } else {
-        let start = Ref::new(prefix.byte_len());
-        while start.get() < line.byte_len()
-            && (line.byte_get(start.get()) == b' ' || line.byte_get(start.get()) == b'\t') {
-            start.set(start.get() + 1)
+        let mut start = prefix.byte_len();
+        while start < line.byte_len()
+            && (line.byte_get(start) == b' ' || line.byte_get(start) == b'\t') {
+            start = start + 1;
         };
-        decimal_length(line.byte_slice(start.get(), line.byte_len()))
+        decimal_length(line.byte_slice(start, line.byte_len()))
     }
 }
 
@@ -144,14 +144,14 @@ fn is_content_length_header(value: string) -> bool {
 }
 
 pub fn position_json(value: Position) -> json::Value {
-    let fields = Vec::new();
+    let fields: Vec[(string, json::Value)] = Vec::[];
     push_json_field(fields, "line", json::Value::Number(value.line.to_string()));
     push_json_field(fields, "character", json::Value::Number(value.character.to_string()));
     json_fields(fields)
 }
 
 pub fn range_json(value: Range) -> json::Value {
-    let fields = Vec::new();
+    let fields: Vec[(string, json::Value)] = Vec::[];
     push_json_field(fields, "start", position_json(value.start));
     push_json_field(fields, "end", position_json(value.end));
     json_fields(fields)

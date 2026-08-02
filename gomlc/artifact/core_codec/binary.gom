@@ -1,0 +1,94 @@
+package core_codec;
+
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
+use gomlc::artifact::interface_codec as interface_codec;
+use std::bytes;
+
+fn artifact_binary_core_sections(value: artifact::ArtifactCoreUnit) -> Result[
+    Vec[wire::ArtifactBinarySection],
+    string,
+] {
+    let collector = wire::new_artifact_binary_string_collector();
+    artifact_json_core_unit(collector, value);
+    let table = wire::artifact_binary_collected_string_table(collector);
+    let writer = wire::new_artifact_binary_value_stream(table);
+    artifact_json_core_unit(writer, value);
+    let payload = wire::artifact_binary_stream_finish(writer)?;
+    Result::Ok(
+        Vec::[
+            wire::ArtifactBinarySection {
+                id: wire::string_table_section_id(),
+                version: 1,
+                flags: wire::required_section_flag(),
+                data: wire::encode_artifact_binary_string_table(table),
+            },
+            wire::ArtifactBinarySection {
+                id: wire::value_section_id(),
+                version: 3,
+                flags: wire::required_section_flag(),
+                data: payload,
+            },
+        ],
+    )
+}
+
+pub fn encode_binary(value: artifact::ArtifactCoreUnit) -> Result[bytes::Bytes, string] {
+    let sections = artifact_binary_core_sections(value)?;
+    wire::encode_artifact_binary_container(2, sections)
+}
+
+fn artifact_binary_validate_core_sections(value: wire::ArtifactBinaryContainer) -> Result[
+    unit,
+    string,
+] {
+    for section in value.sections {
+        if section.id == wire::string_table_section_id() {
+            if section.version != 1 {
+                return Result::Err("unsupported binary Core artifact section version")
+            } else if section.flags != wire::required_section_flag() {
+                return Result::Err("invalid binary Core artifact section flags")
+            } else {
+                ()
+            }
+        } else if section.id == wire::value_section_id() {
+            if section.version != 3 {
+                return Result::Err("unsupported binary Core artifact section version")
+            } else if section.flags != wire::required_section_flag() {
+                return Result::Err("invalid binary Core artifact section flags")
+            } else {
+                ()
+            }
+        } else if section.flags & wire::required_section_flag() != 0 {
+            return Result::Err("unsupported required binary Core artifact section")
+        } else {
+            ()
+        }
+    };
+    Result::Ok(())
+}
+
+pub fn decode_binary(data: bytes::Bytes) -> Result[artifact::ArtifactCoreUnit, string] {
+    let container = wire::decode_artifact_binary_container(data)?;
+    if container.kind != 2 {
+        return Result::Err("binary artifact is not Core")
+    } else {
+        ()
+    };
+    artifact_binary_validate_core_sections(container)?;
+    let Some(string_section) = wire::artifact_binary_find_section(
+        container,
+        wire::string_table_section_id(),
+    ) else {
+        return Result::Err("binary Core artifact is missing string table")
+    };
+    let Some(value_section) = wire::artifact_binary_find_section(
+        container,
+        wire::value_section_id(),
+    ) else {
+        return Result::Err("binary Core artifact is missing value")
+    };
+    let table = wire::decode_artifact_binary_string_table(string_section.data)?;
+    let value = wire::decode_artifact_binary_value(table, value_section.data)?;
+    artifact_decode_core_value(value)
+}

@@ -1,48 +1,38 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret153(retv154: string) -> string {
-    retv154
-  } in
-  let t155 = inherent#int32#int32#to_string(self/0) in
-  jump ret153(t155)
+  let inline174 = @runtime(core.int32_to_string)(self/0) in
+  inline174
 }
 
 fn build() -> int32 {
-  join ret156(retv157: int32) -> int32 {
-    retv157
-  } in
-  jump ret156(9)
+  9
 }
 
 fn main() -> unit {
-  join ret158() -> unit {
-    ()
+  join inline_cont180(t162: int32) -> unit {
+    join inline_cont178(t163: string) -> unit {
+      let inline176 = trait_impl#ToString#string#to_string(t163) in
+      let inline177 = @runtime(core.string_println)(inline176) in
+      ()
+    } in
+    let inline179 = @runtime(core.int32_to_string)(t162) in
+    jump inline_cont178(inline179)
   } in
-  let t159 = build() in
-  let t160 = inherent#int32#int32#to_string(t159) in
-  let t161 = println__T_string(t160) in
-  jump ret158()
+  jump inline_cont180(9)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret162(retv163: string) -> string {
-    retv163
-  } in
-  let t164 = @runtime(core.int32_to_string)(self/6) in
-  jump ret162(t164)
+  let t167 = @runtime(core.int32_to_string)(self/6) in
+  t167
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret165() -> unit {
+  join inline_cont181(t169: string) -> unit {
+    let t170 = @runtime(core.string_println)(t169) in
     ()
   } in
-  let t166 = trait_impl#ToString#string#to_string(value/1) in
-  let t167 = @runtime(core.string_println)(t166) in
-  jump ret165()
+  jump inline_cont181(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret168(retv169: string) -> string {
-    retv169
-  } in
-  jump ret168(self/38)
+  self/38
 }

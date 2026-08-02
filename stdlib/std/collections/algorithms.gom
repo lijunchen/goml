@@ -99,7 +99,7 @@ pub fn contains[T: Eq](values: Vec[T], expected: T) -> bool {
 }
 
 pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
-    if values.len() == 0 {
+    if values.is_empty() {
         Option::None
     } else {
         let mut best = values[0];
@@ -116,7 +116,7 @@ pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
 }
 
 pub fn max_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
-    if values.len() == 0 {
+    if values.is_empty() {
         Option::None
     } else {
         let mut best = values[0];
@@ -141,7 +141,7 @@ pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
     let mut output = 1;
     for index in 1..values.len() {
         let value = values[index];
-        if equal(values[output - 1], value) == false {
+        if !equal(values[output - 1], value) {
             values[output] = value;
             output += 1;
         } else {

@@ -37,57 +37,31 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var retv154 string
-    var t155 int32 = self__0.value
-    var t156 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t155)
-    retv154 = t156
-    return retv154
-}
-
-func render(x__2 dyn__Display) string {
-    var retv158 string
-    var t159 string = x__2.vtable.show(x__2.data)
-    retv158 = t159
-    return retv158
+    var t158 int32 = self__0.value
+    var inline178 string = _goml_runtime_core_int32_to_string(t158)
+    return inline178
 }
 
 func main0() struct{} {
-    var t161 Point = Point{
+    var t164 Point = Point{
         value: 7,
     }
-    var d__3 dyn__Display = to_dyn__T_Point(t161)
-    var t162 string = render(d__3)
-    println__T_string(t162)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv164 string
-    var t165 string = _goml_runtime_core_int32_to_string(self__6)
-    retv164 = t165
-    return retv164
-}
-
-func to_dyn__T_Point(x__1 Point) dyn__Display {
-    var retv167 dyn__Display
-    var t168 dyn__Display = dyn__Display{
-        data: x__1,
+    var d__3 dyn__Display
+    var inline185 dyn__Display = dyn__Display{
+        data: t164,
         vtable: dyn__Display__vtable__Point(),
     }
-    retv167 = t168
-    return retv167
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t170 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t170)
+    d__3 = inline185
+    var t165 string
+    var inline183 string = d__3.vtable.show(d__3.data)
+    t165 = inline183
+    var inline180 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t165)
+    _goml_runtime_core_string_println(inline180)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv173 string
-    retv173 = self__38
-    return retv173
+    return self__38
 }
 
 func main() {

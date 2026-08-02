@@ -153,7 +153,7 @@ fn path_text(value: ast::Path) -> string {
 }
 
 fn last_path_segment(value: ast::Path) -> string {
-    if value.segments.len() > 0 {
+    if !value.segments.is_empty() {
         value.segments[value.segments.len() - 1].ident
     } else {
         ""
@@ -167,6 +167,17 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
             let mut index = file.uses.len() - 1;
             while index >= 0 {
                 let use_decl = file.uses[index];
+                for item in use_decl.items {
+                    let candidate = match item.alias {
+                        Some(name) => name,
+                        None => item.name,
+                    };
+                    if candidate == alias {
+                        return Option::Some(path_text(use_decl.path) + "::" + item.name)
+                    } else {
+                        ()
+                    }
+                };
                 let candidate = match use_decl.alias {
                     Some(name) => name,
                     None => last_path_segment(use_decl.path),
@@ -250,7 +261,7 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
     if namespace_is_package(value, canonical) {
         complete_namespace(value, canonical, prefix)
     } else {
-        let result = Vec::new();
+        let result: Vec[CompletionItem] = Vec::[];
         let current_name = value.package_name + "::" + canonical;
         for symbol in build_symbol_index(value).symbols {
             let owner = qualified_owner(symbol.qualified_name);
@@ -352,7 +363,7 @@ fn analysis_has_package(value: Analysis, package_name: string) -> bool {
 }
 
 fn complete_namespace(value: Analysis, package_name: string, prefix: string) -> Vec[CompletionItem] {
-    let result = Vec::new();
+    let result: Vec[CompletionItem] = Vec::[];
     for symbol in build_symbol_index(value).symbols {
         if immediate_package_member(symbol.qualified_name, package_name)
             && (symbol.package_name == value.package_name || symbol.public) {
@@ -440,8 +451,8 @@ fn complete_local_package_children(
 }
 
 fn complete_source_package(source: SourceFile, prefix: string) -> Vec[CompletionItem] {
-    let result = Vec::new();
-    let sources = Vec::new();
+    let result: Vec[CompletionItem] = Vec::[];
+    let sources: Vec[SourceFile] = Vec::[];
     sources.push(source);
     for symbol in build_symbol_index_from_sources(sources).symbols {
         if symbol.public && immediate_package_member(symbol.qualified_name, source.package_name) {
@@ -462,7 +473,7 @@ fn complete_source_package(source: SourceFile, prefix: string) -> Vec[Completion
 }
 
 fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> Vec[CompletionItem] {
-    let result = Vec::new();
+    let result: Vec[CompletionItem] = Vec::[];
     if context.namespace == "" {
         push_package_completion(result, "std", "std", context.prefix)
     } else {
@@ -798,7 +809,7 @@ fn complete_named_methods(
 }
 
 fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[CompletionItem] {
-    let result = Vec::new();
+    let result: Vec[CompletionItem] = Vec::[];
     match receiver_type(value, dot) {
         Some(receiver) => {
             let receiver_name = type_owner_name(receiver);
@@ -951,7 +962,7 @@ fn push_local_completion(values: Vec[CompletionItem], value: CompletionItem, pre
 }
 
 fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[CompletionItem] {
-    let result = Vec::new();
+    let result: Vec[CompletionItem] = Vec::[];
     for fact in value.checked.typeck_results.locals {
         if fact.source_path == value.source_path {
             match fact.span {
@@ -1154,10 +1165,10 @@ pub fn completions(value: Analysis, offset: int) -> Vec[CompletionItem] {
     match use_completion_context(value.source, offset) {
         Some(context) => complete_import_namespace(value, context),
         None => if prefix == "" && call_argument_context(value.source, offset) {
-            Vec::new()
+            Vec::[]
         } else {
             let result = completion_query(value, value.source, offset, prefix);
-            if result.len() > 0
+            if !result.is_empty()
                 || (member_dot(value.source, offset).is_none()
                     && namespace_path(value.source, offset).is_none()) {
                 result

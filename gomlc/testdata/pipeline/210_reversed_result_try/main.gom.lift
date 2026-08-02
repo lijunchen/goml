@@ -7,16 +7,16 @@ fn parse(flag/0: bool) -> Result__int32__string {
 }
 
 fn compute(flag/1: bool) -> Result__int32__string {
-  let value/2 = let mtmp152 = parse(flag/1) in
-  match mtmp152 {
-    Result__int32__string::Err(x153) => {
-      let x153 = Result__int32__string::Err._0(mtmp152) in
-      let try_residual/12 = x153 in
+  let value/2 = let mtmp155 = parse(flag/1) in
+  match mtmp155 {
+    Result__int32__string::Err(x156) => {
+      let x156 = Result__int32__string::Err._0(mtmp155) in
+      let try_residual/12 = x156 in
       return Result__int32__string::Err(try_residual/12)
     },
-    Result__int32__string::Ok(x154) => {
-      let x154 = Result__int32__string::Ok._0(mtmp152) in
-      let try_value/12 = x154 in
+    Result__int32__string::Ok(x157) => {
+      let x157 = Result__int32__string::Ok._0(mtmp155) in
+      let try_value/12 = x157 in
       try_value/12
     },
   } in
@@ -25,21 +25,21 @@ fn compute(flag/1: bool) -> Result__int32__string {
 
 fn show(value/3: Result__int32__string) -> string {
   match value/3 {
-    Result__int32__string::Err(x155) => {
-      let x155 = Result__int32__string::Err._0(value/3) in
-      let error/5 = x155 in
+    Result__int32__string::Err(x158) => {
+      let x158 = Result__int32__string::Err._0(value/3) in
+      let error/5 = x158 in
       error/5
     },
-    Result__int32__string::Ok(x156) => {
-      let x156 = Result__int32__string::Ok._0(value/3) in
-      let value/4 = x156 in
+    Result__int32__string::Ok(x159) => {
+      let x159 = Result__int32__string::Ok._0(value/3) in
+      let value/4 = x159 in
       inherent#int32#int32#to_string(value/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild157 = println__T_string(show(compute(true))) in
+  let _wild160 = println__T_string(show(compute(true))) in
   println__T_string(show(compute(false)))
 }
 

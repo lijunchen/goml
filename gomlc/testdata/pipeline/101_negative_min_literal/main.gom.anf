@@ -1,44 +1,42 @@
 fn main() -> unit {
-  join ret154() -> unit {
-    ()
-  } in
   let a/0 = -128 in
-  let t155 = trait_impl#ToString#int8#to_string(a/0) in
-  let _wild152 = println__T_string(t155) in
-  let b/1 = -32768 in
-  let t156 = trait_impl#ToString#int16#to_string(b/1) in
-  let _wild153 = println__T_string(t156) in
-  jump ret154()
+  join inline_cont179(t158: string) -> unit {
+    join inline_cont176(_wild155: unit) -> unit {
+      let b/1 = -32768 in
+      join inline_cont174(t159: string) -> unit {
+        let inline172 = trait_impl#ToString#string#to_string(t159) in
+        let inline173 = @runtime(core.string_println)(inline172) in
+        ()
+      } in
+      let inline175 = @runtime(core.int16_to_string)(b/1) in
+      jump inline_cont174(inline175)
+    } in
+    let inline177 = trait_impl#ToString#string#to_string(t158) in
+    let inline178 = @runtime(core.string_println)(inline177) in
+    jump inline_cont176(())
+  } in
+  let inline180 = @runtime(core.int8_to_string)(a/0) in
+  jump inline_cont179(inline180)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret157() -> unit {
+  join inline_cont181(t161: string) -> unit {
+    let t162 = @runtime(core.string_println)(t161) in
     ()
   } in
-  let t158 = trait_impl#ToString#string#to_string(value/1) in
-  let t159 = @runtime(core.string_println)(t158) in
-  jump ret157()
+  jump inline_cont181(value/1)
 }
 
 fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
-  join ret160(retv161: string) -> string {
-    retv161
-  } in
-  let t162 = @runtime(core.int8_to_string)(self/41) in
-  jump ret160(t162)
+  let t165 = @runtime(core.int8_to_string)(self/41) in
+  t165
 }
 
 fn trait_impl#ToString#int16#to_string(self/42: int16) -> string {
-  join ret163(retv164: string) -> string {
-    retv164
-  } in
-  let t165 = @runtime(core.int16_to_string)(self/42) in
-  jump ret163(t165)
+  let t168 = @runtime(core.int16_to_string)(self/42) in
+  t168
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
-  } in
-  jump ret166(self/38)
+  self/38
 }

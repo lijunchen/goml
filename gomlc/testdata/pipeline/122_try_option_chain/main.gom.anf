@@ -1,126 +1,145 @@
 fn maybe_seed(flag/0: bool) -> Option__int32 {
-  join ret159(retv160: Option__int32) -> Option__int32 {
-    retv160
-  } in
-  join k161(jp162: Option__int32) -> Option__int32 {
-    jump ret159(jp162)
-  } in
   if flag/0 {
-    let t163 = Option__int32::Some(3) in
-    jump k161(t163)
+    let t166 = Option__int32::Some(3) in
+    t166
   } else {
-    jump k161(Tag_0)
+    Tag_0
   }
 }
 
 fn maybe_double(value/1: int32) -> Option__int32 {
-  join ret164(retv165: Option__int32) -> Option__int32 {
-    retv165
-  } in
-  let t168 = (value/1 > 0) in
-  join k166(jp167: Option__int32) -> Option__int32 {
-    jump ret164(jp167)
-  } in
-  if t168 {
-    let t169 = (value/1 * 2) in
-    let t170 = Option__int32::Some(t169) in
-    jump k166(t170)
+  let t171 = (value/1 > 0) in
+  if t171 {
+    let t172 = (value/1 * 2) in
+    let t173 = Option__int32::Some(t172) in
+    t173
   } else {
-    jump k166(Tag_0)
+    Tag_0
   }
 }
 
 fn maybe_total(flag/2: bool) -> Option__int32 {
-  join ret171(retv172: Option__int32) -> Option__int32 {
-    retv172
-  } in
-  let mtmp152 = maybe_seed(flag/2) in
-  join k173(jp174: int32) -> Option__int32 {
-    let a/3 = jp174 in
-    let mtmp154 = maybe_double(a/3) in
-    join k175(jp176: int32) -> Option__int32 {
-      let b/4 = jp176 in
-      let t177 = (a/3 + b/4) in
-      let t178 = Option__int32::Some(t177) in
-      jump ret171(t178)
+  join inline_cont205(mtmp155: Option__int32) -> Option__int32 {
+    join k176(jp177: int32) -> Option__int32 {
+      let a/3 = jp177 in
+      join inline_cont201(mtmp157: Option__int32) -> Option__int32 {
+        join k178(jp179: int32) -> Option__int32 {
+          let b/4 = jp179 in
+          let t180 = (jp177 + jp179) in
+          let t181 = Option__int32::Some(t180) in
+          t181
+        } in
+        match mtmp157 {
+          Tag_0 => {
+            Tag_0
+          },
+          Tag_1 => {
+            let x158 = Option__int32::Some._0(mtmp157) in
+            let try_value/26 = x158 in
+            jump k178(x158)
+          },
+        }
+      } in
+      let inline202 = (jp177 > 0) in
+      if inline202 {
+        let inline203 = (jp177 * 2) in
+        let inline204 = Option__int32::Some(inline203) in
+        jump inline_cont201(inline204)
+      } else {
+        jump inline_cont201(Tag_0)
+      }
     } in
-    match mtmp154 {
+    match mtmp155 {
       Tag_0 => {
-        jump ret171(Tag_0)
+        Tag_0
       },
       Tag_1 => {
-        let x155 = Option__int32::Some._0(mtmp154) in
-        let try_value/26 = x155 in
-        jump k175(try_value/26)
+        let x156 = Option__int32::Some._0(mtmp155) in
+        let try_value/22 = x156 in
+        jump k176(x156)
       },
     }
   } in
-  match mtmp152 {
-    Tag_0 => {
-      jump ret171(Tag_0)
-    },
-    Tag_1 => {
-      let x153 = Option__int32::Some._0(mtmp152) in
-      let try_value/22 = x153 in
-      jump k173(try_value/22)
-    },
+  if flag/2 {
+    let inline206 = Option__int32::Some(3) in
+    jump inline_cont205(inline206)
+  } else {
+    jump inline_cont205(Tag_0)
   }
 }
 
 fn show(opt/5: Option__int32) -> string {
-  join ret179(retv180: string) -> string {
-    retv180
-  } in
-  join k181(jp182: string) -> string {
-    jump ret179(jp182)
-  } in
   match opt/5 {
     Tag_0 => {
-      jump k181("none")
+      "none"
     },
     Tag_1 => {
-      let x156 = Option__int32::Some._0(opt/5) in
-      let value/6 = x156 in
-      let t183 = inherent#int32#int32#to_string(value/6) in
-      let t184 = ("some=" + t183) in
-      jump k181(t184)
+      let x159 = Option__int32::Some._0(opt/5) in
+      let value/6 = x159 in
+      join inline_cont207(t186: string) -> string {
+        let t187 = ("some=" + t186) in
+        t187
+      } in
+      let inline208 = @runtime(core.int32_to_string)(x159) in
+      jump inline_cont207(inline208)
     },
   }
 }
 
 fn main() -> unit {
-  join ret185() -> unit {
-    ()
+  let t189 = maybe_total(true) in
+  join inline_cont220(t190: string) -> unit {
+    join inline_cont217(_wild160: unit) -> unit {
+      let t191 = maybe_total(false) in
+      join inline_cont212(t192: string) -> unit {
+        let inline210 = trait_impl#ToString#string#to_string(t192) in
+        let inline211 = @runtime(core.string_println)(inline210) in
+        ()
+      } in
+      match t191 {
+        Tag_0 => {
+          jump inline_cont212("none")
+        },
+        Tag_1 => {
+          let inline213 = Option__int32::Some._0(t191) in
+          let inline214 = inline213 in
+          let inline215 = inherent#int32#int32#to_string(inline213) in
+          let inline216 = ("some=" + inline215) in
+          jump inline_cont212(inline216)
+        },
+      }
+    } in
+    let inline218 = trait_impl#ToString#string#to_string(t190) in
+    let inline219 = @runtime(core.string_println)(inline218) in
+    jump inline_cont217(())
   } in
-  let t186 = maybe_total(true) in
-  let t187 = show(t186) in
-  let _wild157 = println__T_string(t187) in
-  let t188 = maybe_total(false) in
-  let t189 = show(t188) in
-  let _wild158 = println__T_string(t189) in
-  jump ret185()
+  match t189 {
+    Tag_0 => {
+      jump inline_cont220("none")
+    },
+    Tag_1 => {
+      let inline221 = Option__int32::Some._0(t189) in
+      let inline222 = inline221 in
+      let inline223 = inherent#int32#int32#to_string(inline221) in
+      let inline224 = ("some=" + inline223) in
+      jump inline_cont220(inline224)
+    },
+  }
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret190(retv191: string) -> string {
-    retv191
-  } in
-  let t192 = @runtime(core.int32_to_string)(self/6) in
-  jump ret190(t192)
+  let t195 = @runtime(core.int32_to_string)(self/6) in
+  t195
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret193() -> unit {
+  join inline_cont225(t197: string) -> unit {
+    let t198 = @runtime(core.string_println)(t197) in
     ()
   } in
-  let t194 = trait_impl#ToString#string#to_string(value/1) in
-  let t195 = @runtime(core.string_println)(t194) in
-  jump ret193()
+  jump inline_cont225(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret196(retv197: string) -> string {
-    retv197
-  } in
-  jump ret196(self/38)
+  self/38
 }

@@ -1,98 +1,80 @@
 fn child(signal/0: Ref[int32]) -> unit {
-  join ret156() -> unit {
-    ()
-  } in
-  let t157 = inherent#Ref#Ref[T]#set__T_int32(signal/0, 1) in
-  jump ret156()
+  let inline189 = 1 in
+  let inline190 = @intrinsic(ref.set)(signal/0, inline189) in
+  ()
 }
 
 fn main() -> unit {
-  join ret158() -> unit {
-    ()
-  } in
-  let signal/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let t159 = closure_env_main_0 { signal_0: signal/1 } in
-  let _wild152 = go t159 in
-  join exit160() -> unit {
-    let _wild153 = () in
-    let _wild154 = println__T_string("main") in
-    jump ret158()
-  } in
-  joinrec {
-    join loop161() -> unit {
-      let t162 = inherent#Ref#Ref[T]#get__T_int32(signal/1) in
-      let t163 = (t162 < 1) in
-      if t163 {
-        jump loop161()
-      } else {
-        jump exit160()
-      }
+  join inline_cont197(signal/1: Ref[int32]) -> unit {
+    let t162 = closure_env_main_0 { signal_0: signal/1 } in
+    let _wild155 = go t162 in
+    join exit163() -> unit {
+      let _wild156 = () in
+      let inline194 = "main" in
+      let inline195 = trait_impl#ToString#string#to_string(inline194) in
+      let inline196 = @runtime(core.string_println)(inline195) in
+      ()
     } in
+    joinrec {
+      join loop164() -> unit {
+        join inline_cont191(t165: int32) -> unit {
+          let t166 = (t165 < 1) in
+          if t166 {
+            jump loop164()
+          } else {
+            jump exit163()
+          }
+        } in
+        let inline192 = @intrinsic(ref.get)(signal/1) in
+        jump inline_cont191(inline192)
+      } in
+    } in
+    jump loop164()
   } in
-  jump loop161()
+  let inline198 = 0 in
+  let inline199 = @intrinsic(ref.new)(inline198) in
+  jump inline_cont197(inline199)
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/209: Ref[int32], value/210: int32) -> unit {
-  join ret164() -> unit {
-    ()
-  } in
-  let t165 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret164()
+  let t168 = @intrinsic(ref.set)(self/209, value/210) in
+  ()
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {
-  join ret166(retv167: Ref[int32]) -> Ref[int32] {
-    retv167
-  } in
-  let t168 = @intrinsic(ref.new)(value/207) in
-  jump ret166(t168)
+  let t171 = @intrinsic(ref.new)(value/207) in
+  t171
 }
 
 fn inherent#Ref#Ref[T]#get__T_int32(self/208: Ref[int32]) -> int32 {
-  join ret169(retv170: int32) -> int32 {
-    retv170
-  } in
-  let t171 = @intrinsic(ref.get)(self/208) in
-  jump ret169(t171)
+  let t174 = @intrinsic(ref.get)(self/208) in
+  t174
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret172() -> unit {
+  join inline_cont200(t176: string) -> unit {
+    let t177 = @runtime(core.string_println)(t176) in
     ()
   } in
-  let t173 = trait_impl#ToString#string#to_string(value/1) in
-  let t174 = @runtime(core.string_println)(t173) in
-  jump ret172()
+  jump inline_cont200(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret175(retv176: string) -> string {
-    retv176
-  } in
-  jump ret175(self/38)
+  self/38
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret177(retv178: bool) -> bool {
-    retv178
-  } in
-  let t179 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret177(t179)
+  let t182 = @intrinsic(eq.primitive)(self/65, other/66) in
+  t182
 }
 
 fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret180(retv181: uint64) -> uint64 {
-    retv181
-  } in
-  let t182 = @runtime(core.int32_hash)(self/88) in
-  jump ret180(t182)
+  let t185 = @runtime(core.int32_hash)(self/88) in
+  t185
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env155: closure_env_main_0) -> unit {
-  join ret183() -> unit {
-    ()
-  } in
-  let signal/1 = closure_env_main_0.signal_0(env155) in
-  let t184 = child(signal/1) in
-  jump ret183()
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env158: closure_env_main_0) -> unit {
+  let signal/1 = closure_env_main_0.signal_0(env158) in
+  let inline202 = inherent#Ref#Ref[T]#set__T_int32(signal/1, 1) in
+  ()
 }

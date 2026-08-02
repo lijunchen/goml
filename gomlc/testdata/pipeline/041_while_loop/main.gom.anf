@@ -1,204 +1,217 @@
 fn sum_to(limit/0: int32) -> int32 {
-  join ret162(retv163: int32) -> int32 {
-    retv163
-  } in
-  let acc/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let i/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit164() -> int32 {
-    let mtmp154 = () in
-    let t165 = inherent#Ref#Ref[T]#get__T_int32(acc/1) in
-    jump ret162(t165)
-  } in
-  joinrec {
-    join loop166() -> int32 {
-      let t167 = inherent#Ref#Ref[T]#get__T_int32(i/2) in
-      let t168 = (t167 < limit/0) in
-      if t168 {
-        let current/3 = inherent#Ref#Ref[T]#get__T_int32(i/2) in
-        let t169 = inherent#Ref#Ref[T]#get__T_int32(acc/1) in
-        let t170 = (t169 + current/3) in
-        let mtmp152 = inherent#Ref#Ref[T]#set__T_int32(acc/1, t170) in
-        let t171 = (current/3 + 1) in
-        let mtmp153 = inherent#Ref#Ref[T]#set__T_int32(i/2, t171) in
-        jump loop166()
-      } else {
-        jump exit164()
-      }
+  join inline_cont244(acc/1: Ref[int32]) -> int32 {
+    join inline_cont241(i/2: Ref[int32]) -> int32 {
+      join exit167() -> int32 {
+        let mtmp157 = () in
+        let inline240 = @intrinsic(ref.get)(acc/1) in
+        inline240
+      } in
+      joinrec {
+        join loop169() -> int32 {
+          join inline_cont237(t170: int32) -> int32 {
+            let t171 = (t170 < limit/0) in
+            if t171 {
+              join inline_cont235(current/3: int32) -> int32 {
+                join inline_cont233(t172: int32) -> int32 {
+                  let t173 = (t172 + current/3) in
+                  join inline_cont231(mtmp155: unit) -> int32 {
+                    let t174 = (current/3 + 1) in
+                    let inline230 = @intrinsic(ref.set)(i/2, t174) in
+                    jump loop169()
+                  } in
+                  let inline232 = @intrinsic(ref.set)(acc/1, t173) in
+                  jump inline_cont231(())
+                } in
+                let inline234 = @intrinsic(ref.get)(acc/1) in
+                jump inline_cont233(inline234)
+              } in
+              let inline236 = @intrinsic(ref.get)(i/2) in
+              jump inline_cont235(inline236)
+            } else {
+              jump exit167()
+            }
+          } in
+          let inline238 = @intrinsic(ref.get)(i/2) in
+          jump inline_cont237(inline238)
+        } in
+      } in
+      jump loop169()
     } in
+    let inline242 = 0 in
+    let inline243 = @intrinsic(ref.new)(inline242) in
+    jump inline_cont241(inline243)
   } in
-  jump loop166()
+  let inline245 = 0 in
+  let inline246 = @intrinsic(ref.new)(inline245) in
+  jump inline_cont244(inline246)
 }
 
 fn sum_even(limit/4: int32) -> int32 {
-  join ret172(retv173: int32) -> int32 {
-    retv173
-  } in
-  let acc/5 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let i/6 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let is_even/7 = inherent#Ref#Ref[T]#new__T_bool(true) in
-  join exit174() -> int32 {
-    let mtmp157 = () in
-    let t175 = inherent#Ref#Ref[T]#get__T_int32(acc/5) in
-    jump ret172(t175)
-  } in
-  joinrec {
-    join loop176() -> int32 {
-      let t177 = inherent#Ref#Ref[T]#get__T_int32(i/6) in
-      let t178 = (t177 < limit/4) in
-      if t178 {
-        let current/8 = inherent#Ref#Ref[T]#get__T_int32(i/6) in
-        let t179 = (current/8 + 1) in
-        let mtmp155 = inherent#Ref#Ref[T]#set__T_int32(i/6, t179) in
-        let add_now/9 = inherent#Ref#Ref[T]#get__T_bool(is_even/7) in
-        let t180 = (!add_now/9) in
-        let mtmp156 = inherent#Ref#Ref[T]#set__T_bool(is_even/7, t180) in
-        join k181() -> int32 {
-          jump loop176()
+  join inline_cont269(acc/5: Ref[int32]) -> int32 {
+    join inline_cont266(i/6: Ref[int32]) -> int32 {
+      join inline_cont263(is_even/7: Ref[bool]) -> int32 {
+        join exit177() -> int32 {
+          let mtmp160 = () in
+          let inline262 = @intrinsic(ref.get)(acc/5) in
+          inline262
         } in
-        if add_now/9 {
-          let t182 = inherent#Ref#Ref[T]#get__T_int32(acc/5) in
-          let t183 = (t182 + current/8) in
-          let t184 = inherent#Ref#Ref[T]#set__T_int32(acc/5, t183) in
-          jump k181()
-        } else {
-          jump k181()
-        }
-      } else {
-        jump exit174()
-      }
+        joinrec {
+          join loop179() -> int32 {
+            join inline_cont259(t180: int32) -> int32 {
+              let t181 = (t180 < limit/4) in
+              if t181 {
+                join inline_cont257(current/8: int32) -> int32 {
+                  let t182 = (current/8 + 1) in
+                  join inline_cont255(mtmp158: unit) -> int32 {
+                    join inline_cont253(add_now/9: bool) -> int32 {
+                      let t183 = (!add_now/9) in
+                      join inline_cont251(mtmp159: unit) -> int32 {
+                        if add_now/9 {
+                          join inline_cont249(t185: int32) -> int32 {
+                            let t186 = (t185 + current/8) in
+                            let inline248 = @intrinsic(ref.set)(acc/5, t186) in
+                            jump loop179()
+                          } in
+                          let inline250 = @intrinsic(ref.get)(acc/5) in
+                          jump inline_cont249(inline250)
+                        } else {
+                          jump loop179()
+                        }
+                      } in
+                      let inline252 = @intrinsic(ref.set)(is_even/7, t183) in
+                      jump inline_cont251(())
+                    } in
+                    let inline254 = @intrinsic(ref.get)(is_even/7) in
+                    jump inline_cont253(inline254)
+                  } in
+                  let inline256 = @intrinsic(ref.set)(i/6, t182) in
+                  jump inline_cont255(())
+                } in
+                let inline258 = @intrinsic(ref.get)(i/6) in
+                jump inline_cont257(inline258)
+              } else {
+                jump exit177()
+              }
+            } in
+            let inline260 = @intrinsic(ref.get)(i/6) in
+            jump inline_cont259(inline260)
+          } in
+        } in
+        jump loop179()
+      } in
+      let inline264 = true in
+      let inline265 = @intrinsic(ref.new)(inline264) in
+      jump inline_cont263(inline265)
     } in
+    let inline267 = 0 in
+    let inline268 = @intrinsic(ref.new)(inline267) in
+    jump inline_cont266(inline268)
   } in
-  jump loop176()
+  let inline270 = 0 in
+  let inline271 = @intrinsic(ref.new)(inline270) in
+  jump inline_cont269(inline271)
 }
 
 fn main() -> unit {
-  join ret185() -> unit {
-    ()
-  } in
   let first/10 = sum_to(5) in
   let evens/11 = sum_even(6) in
-  let mtmp158 = print__T_string("sum_to(5)=") in
-  let mtmp159 = println__T_int32(first/10) in
-  let mtmp160 = print__T_string("sum_even(6)=") in
-  let mtmp161 = println__T_int32(evens/11) in
-  jump ret185()
+  join inline_cont282(mtmp161: unit) -> unit {
+    join inline_cont279(mtmp162: unit) -> unit {
+      join inline_cont275(mtmp163: unit) -> unit {
+        let inline273 = trait_impl#ToString#int32#to_string(evens/11) in
+        let inline274 = @runtime(core.string_println)(inline273) in
+        ()
+      } in
+      let inline276 = "sum_even(6)=" in
+      let inline277 = trait_impl#ToString#string#to_string(inline276) in
+      let inline278 = @runtime(core.string_print)(inline277) in
+      jump inline_cont275(())
+    } in
+    let inline280 = trait_impl#ToString#int32#to_string(first/10) in
+    let inline281 = @runtime(core.string_println)(inline280) in
+    jump inline_cont279(())
+  } in
+  let inline283 = "sum_to(5)=" in
+  let inline284 = trait_impl#ToString#string#to_string(inline283) in
+  let inline285 = @runtime(core.string_print)(inline284) in
+  jump inline_cont282(())
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/207: int32) -> Ref[int32] {
-  join ret186(retv187: Ref[int32]) -> Ref[int32] {
-    retv187
-  } in
-  let t188 = @intrinsic(ref.new)(value/207) in
-  jump ret186(t188)
+  let t191 = @intrinsic(ref.new)(value/207) in
+  t191
 }
 
 fn inherent#Ref#Ref[T]#get__T_int32(self/208: Ref[int32]) -> int32 {
-  join ret189(retv190: int32) -> int32 {
-    retv190
-  } in
-  let t191 = @intrinsic(ref.get)(self/208) in
-  jump ret189(t191)
+  let t194 = @intrinsic(ref.get)(self/208) in
+  t194
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/209: Ref[int32], value/210: int32) -> unit {
-  join ret192() -> unit {
-    ()
-  } in
-  let t193 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret192()
+  let t196 = @intrinsic(ref.set)(self/209, value/210) in
+  ()
 }
 
 fn inherent#Ref#Ref[T]#new__T_bool(value/207: bool) -> Ref[bool] {
-  join ret194(retv195: Ref[bool]) -> Ref[bool] {
-    retv195
-  } in
-  let t196 = @intrinsic(ref.new)(value/207) in
-  jump ret194(t196)
+  let t199 = @intrinsic(ref.new)(value/207) in
+  t199
 }
 
 fn inherent#Ref#Ref[T]#get__T_bool(self/208: Ref[bool]) -> bool {
-  join ret197(retv198: bool) -> bool {
-    retv198
-  } in
-  let t199 = @intrinsic(ref.get)(self/208) in
-  jump ret197(t199)
+  let t202 = @intrinsic(ref.get)(self/208) in
+  t202
 }
 
 fn inherent#Ref#Ref[T]#set__T_bool(self/209: Ref[bool], value/210: bool) -> unit {
-  join ret200() -> unit {
-    ()
-  } in
-  let t201 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret200()
+  let t204 = @intrinsic(ref.set)(self/209, value/210) in
+  ()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  join ret202() -> unit {
+  join inline_cont286(t206: string) -> unit {
+    let t207 = @runtime(core.string_print)(t206) in
     ()
   } in
-  let t203 = trait_impl#ToString#string#to_string(value/0) in
-  let t204 = @runtime(core.string_print)(t203) in
-  jump ret202()
+  jump inline_cont286(value/0)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret205() -> unit {
+  join inline_cont287(t209: string) -> unit {
+    let t210 = @runtime(core.string_println)(t209) in
     ()
   } in
-  let t206 = trait_impl#ToString#int32#to_string(value/1) in
-  let t207 = @runtime(core.string_println)(t206) in
-  jump ret205()
+  let inline288 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont287(inline288)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret208(retv209: string) -> string {
-    retv209
-  } in
-  jump ret208(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret210(retv211: string) -> string {
-    retv211
-  } in
-  let t212 = @runtime(core.int32_to_string)(self/43) in
-  jump ret210(t212)
+  let t215 = @runtime(core.int32_to_string)(self/43) in
+  t215
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret213(retv214: bool) -> bool {
-    retv214
-  } in
-  let t215 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret213(t215)
+  let t218 = @intrinsic(eq.primitive)(self/65, other/66) in
+  t218
 }
 
 fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret216(retv217: uint64) -> uint64 {
-    retv217
-  } in
-  let t218 = @runtime(core.int32_hash)(self/88) in
-  jump ret216(t218)
+  let t221 = @runtime(core.int32_hash)(self/88) in
+  t221
 }
 
 fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
-  join ret219(retv220: bool) -> bool {
-    retv220
-  } in
-  let t221 = @intrinsic(eq.primitive)(self/53, other/54) in
-  jump ret219(t221)
+  let t224 = @intrinsic(eq.primitive)(self/53, other/54) in
+  t224
 }
 
 fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {
-  join ret222(retv223: uint64) -> uint64 {
-    retv223
-  } in
-  join k224(jp225: uint64) -> uint64 {
-    jump ret222(jp225)
-  } in
   if self/82 {
-    jump k224(1)
+    1
   } else {
-    jump k224(0)
+    0
   }
 }

@@ -1,0 +1,133 @@
+package core_codec;
+
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
+use gomlc::artifact::tast_codec as tast_codec;
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::vecs;
+
+fn artifact_decode_optional_string(value: wire::ArtifactValue, expected: string) -> Result[
+    Option[string],
+    string,
+] {
+    match value {
+        Null => Result::Ok(Option::None),
+        other => match wire::artifact_json_string_value(other, expected) {
+            Ok(value) => Result::Ok(Option::Some(value)),
+            Err(error) => Result::Err(error),
+        },
+    }
+}
+
+fn artifact_decode_test_descriptor(value: wire::ArtifactValue) -> Result[
+    artifact::ArtifactTestDescriptor,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "test descriptor")?;
+    let id = wire::artifact_json_field_string(object, "id")?;
+    let package_name = wire::artifact_json_field_string(object, "package")?;
+    let symbol = wire::artifact_json_field_string(object, "symbol")?;
+    let display_name = wire::artifact_json_field_string(object, "display_name")?;
+    let source_path = wire::artifact_json_field_string(object, "source_path")?;
+    let start = artifact_decode_core_index_field(object, "start")?;
+    let end = artifact_decode_core_index_field(object, "end")?;
+    let ignored = wire::artifact_json_bool_value(
+        wire::artifact_json_required_field(object, "ignored")?,
+        "test ignored flag",
+    )?;
+    let ignore_reason = artifact_decode_optional_string(
+        wire::artifact_json_required_field(object, "ignore_reason")?,
+        "test ignore reason",
+    )?;
+    Result::Ok(
+        artifact::ArtifactTestDescriptor {
+            id,
+            package_name,
+            symbol,
+            display_name,
+            source_path,
+            start,
+            end,
+            ignored,
+            ignore_reason,
+        },
+    )
+}
+
+fn artifact_decode_tests(value: wire::ArtifactValue) -> Result[
+    Vec[artifact::ArtifactTestDescriptor],
+    string,
+] {
+    let values = wire::artifact_json_array(value, "test descriptors")?;
+    let result: Vec[artifact::ArtifactTestDescriptor] = Vec::[];
+    for value in values {
+        result.push(artifact_decode_test_descriptor(value)?)
+    };
+    Result::Ok(result)
+}
+
+fn artifact_test_descriptors_valid(
+    package_name: string,
+    values: Vec[artifact::ArtifactTestDescriptor],
+) -> bool {
+    let ids: Vec[string] = Vec::[];
+    for value in values {
+        if value.package_name != package_name || value.id == "" || value.symbol == ""
+            || value.display_name == ""
+            || value.source_path == ""
+            || value.start > value.end
+            || (!value.ignored && tast_codec::option_string_present(value.ignore_reason))
+            || vecs::contains(ids, value.id) {
+            return false
+        } else {
+            ids.push(value.id)
+        }
+    };
+    true
+}
+
+fn artifact_decode_core_value(value: wire::ArtifactValue) -> Result[
+    artifact::ArtifactCoreUnit,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "Core unit")?;
+    let package_name = wire::artifact_json_field_string(object, "package")?;
+    let declared_name = wire::artifact_json_field_string(object, "declared_name")?;
+    let interface_hash = wire::artifact_json_field_string(object, "interface_hash")?;
+    let exports = interface_codec::decode_exports(
+        wire::artifact_json_required_field(object, "exports")?,
+    )?;
+    let context = artifact_core_decode_context(exports);
+    let core_ir = artifact_decode_core_file(
+        context,
+        wire::artifact_json_required_field(object, "core_ir")?,
+    )?;
+    let deps = interface_codec::artifact_decode_string_map(
+        wire::artifact_json_required_field(object, "deps")?,
+        "dependency hashes",
+    )?;
+    let sources = wire::artifact_decode_string_array(
+        wire::artifact_json_required_field(object, "sources")?,
+        "source paths",
+    )?;
+    let tests = match wire::artifact_json_optional_field(object, "tests")? {
+        Some(value) => artifact_decode_tests(value)?,
+        None => Vec::[],
+    };
+    if !artifact_test_descriptors_valid(package_name, tests) {
+        Result::Err(wire::artifact_decode_error("valid test descriptors"))
+    } else {
+        Result::Ok(
+            artifact::ArtifactCoreUnit {
+                package_name,
+                declared_name,
+                interface_hash,
+                exports,
+                core_ir,
+                deps,
+                sources,
+                tests,
+            },
+        )
+    }
+}

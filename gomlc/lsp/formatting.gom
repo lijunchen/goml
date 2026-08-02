@@ -6,12 +6,12 @@ use std::json;
 fn formatting_response(server: Server, params: json::Value) -> Result[json::Value, string] {
     let document = request_document(server, params)?;
     let Ok(formatted) = formatter::format_source(document.text) else {
-        return Result::Ok(json::Value::Array(Vec::new()))
+        return Result::Ok(json::Value::Array(Vec::[]))
     };
     if formatted == document.text {
-        Result::Ok(json::Value::Array(Vec::new()))
+        Result::Ok(json::Value::Array(Vec::[]))
     } else {
-        let edit = Vec::new();
+        let edit: Vec[(string, json::Value)] = Vec::[];
         push_json_field(
             edit,
             "range",

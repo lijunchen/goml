@@ -1,14 +1,17 @@
 package util;
 
+use std::collections;
 use std::text;
 
 pub fn starts_with(value: string, prefix: string) -> bool {
-    value.byte_len() >= prefix.byte_len() && value.byte_slice(0, prefix.byte_len()) == prefix
+    let prefix_len = prefix.byte_len();
+    value.byte_len() >= prefix_len && value.byte_slice(0, prefix_len) == prefix
 }
 
 pub fn ends_with(value: string, suffix: string) -> bool {
-    value.byte_len() >= suffix.byte_len()
-        && value.byte_slice(value.byte_len() - suffix.byte_len(), value.byte_len()) == suffix
+    let value_len = value.byte_len();
+    let suffix_len = suffix.byte_len();
+    value_len >= suffix_len && value.byte_slice(value_len - suffix_len, value_len) == suffix
 }
 
 fn whitespace(value: uint8) -> bool {
@@ -16,36 +19,20 @@ fn whitespace(value: uint8) -> bool {
 }
 
 pub fn trim(value: string) -> string {
-    let start = Ref::new(0);
-    while start.get() < value.byte_len() && whitespace(value.byte_get(start.get())) {
-        start.set(start.get() + 1)
+    let length = value.byte_len();
+    let mut start = 0;
+    while start < length && whitespace(value.byte_get(start)) {
+        start += 1;
     };
-    let end = Ref::new(value.byte_len());
-    while end.get() > start.get() && whitespace(value.byte_get(end.get() - 1)) {
-        end.set(end.get() - 1)
+    let mut end = length;
+    while end > start && whitespace(value.byte_get(end - 1)) {
+        end -= 1;
     };
-    value.byte_slice(start.get(), end.get())
+    value.byte_slice(start, end)
 }
 
 pub fn contains(value: string, needle: string) -> bool {
-    if needle.byte_len() == 0 {
-        return true
-    } else {
-        ()
-    };
-    if needle.byte_len() > value.byte_len() {
-        return false
-    } else {
-        ()
-    };
-    for index in 0..value.byte_len() - needle.byte_len() + 1 {
-        if value.byte_slice(index, index + needle.byte_len()) == needle {
-            return true
-        } else {
-            ()
-        }
-    };
-    false
+    text::find(value, needle).is_some()
 }
 
 pub fn string_vec_contains(values: Vec[string], expected: string) -> bool {
@@ -71,23 +58,24 @@ pub fn int_vec_contains(values: Vec[int], expected: int) -> bool {
 }
 
 pub fn split_lines(value: string) -> Vec[string] {
-    let result = Vec::new();
-    let start = Ref::new(0);
-    for index in 0..value.byte_len() {
+    let result: Vec[string] = Vec::[];
+    let length = value.byte_len();
+    let mut start = 0;
+    for index in 0..length {
         if value.byte_get(index) == b'\n' {
-            let end = if index > start.get() && value.byte_get(index - 1) == b'\r' {
+            let end = if index > start && value.byte_get(index - 1) == b'\r' {
                 index - 1
             } else {
                 index
             };
-            result.push(value.byte_slice(start.get(), end));
-            start.set(index + 1)
+            result.push(value.byte_slice(start, end));
+            start = index + 1;
         } else {
             ()
         }
     };
-    if start.get() <= value.byte_len() {
-        result.push(value.byte_slice(start.get(), value.byte_len()))
+    if start <= length {
+        result.push(value.byte_slice(start, length))
     } else {
         ()
     };
@@ -95,69 +83,54 @@ pub fn split_lines(value: string) -> Vec[string] {
 }
 
 pub fn split(value: string, separator: string) -> Vec[string] {
-    let result = Vec::new();
-    if separator.byte_len() == 0 {
+    let result: Vec[string] = Vec::[];
+    let separator_len = separator.byte_len();
+    let value_len = value.byte_len();
+    if separator_len == 0 {
         result.push(value);
         return result
     } else {
         ()
     };
-    let start = Ref::new(0);
-    let index = Ref::new(0);
-    while index.get() + separator.byte_len() <= value.byte_len() {
-        if value.byte_slice(index.get(), index.get() + separator.byte_len()) == separator {
-            result.push(value.byte_slice(start.get(), index.get()));
-            index.set(index.get() + separator.byte_len());
-            start.set(index.get())
+    let mut start = 0;
+    let mut index = 0;
+    while index + separator_len <= value_len {
+        if value.byte_slice(index, index + separator_len) == separator {
+            result.push(value.byte_slice(start, index));
+            index += separator_len;
+            start = index;
         } else {
-            index.set(index.get() + 1)
+            index += 1;
         }
     };
-    result.push(value.byte_slice(start.get(), value.byte_len()));
+    result.push(value.byte_slice(start, value_len));
     result
 }
 
 pub fn join(values: Vec[string], separator: string) -> string {
-    let builder = text::StringBuilder::new();
-    for index in 0..values.len() {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        builder.write_string(values[index])
-    };
-    builder.finish()
+    text::join(values, separator)
 }
 
-fn string_insert_index(values: Vec[string], value: string) -> int {
-    for index in 0..values.len() {
-        if value < values[index] {
-            return index
-        } else {
-            ()
-        }
-    };
-    values.len()
+fn compare_strings(left: string, right: string) -> int {
+    if left < right {
+        -1
+    } else if left > right {
+        1
+    } else {
+        0
+    }
 }
 
 pub fn sorted(values: Vec[string]) -> Vec[string] {
-    let result = Vec::new();
-    for value in values {
-        let index = string_insert_index(result, value);
-        if index == result.len() {
-            result.push(value)
-        } else {
-            result.insert(index, value)
-        }
-    };
-    result
+    collections::sort_by(values, compare_strings);
+    values
 }
 
 pub fn sorted_unique(values: Vec[string]) -> Vec[string] {
-    let result = Vec::new();
-    for value in sorted(values) {
-        if result.len() == 0 || result[result.len() - 1] != value {
+    let sorted_values = sorted(values);
+    let result = Vec::with_capacity(sorted_values.len());
+    for value in sorted_values {
+        if result.is_empty() || result[result.len() - 1] != value {
             result.push(value)
         } else {
             ()
@@ -166,44 +139,46 @@ pub fn sorted_unique(values: Vec[string]) -> Vec[string] {
     result
 }
 
+pub fn progress_bar(completed: int, total: int) -> string {
+    let width = 20;
+    let filled = if total == 0 {
+        width
+    } else {
+        completed * width / total
+    };
+    let builder = text::StringBuilder::with_capacity(width + 2);
+    builder.write_char('[');
+    for index in 0..width {
+        builder.write_char(
+            if index < filled {
+                '#'
+            } else {
+                '-'
+            },
+        )
+    };
+    builder.write_char(']');
+    builder.finish()
+}
+
 pub fn parse_positive_int(value: string) -> Result[int, string] {
-    if value.byte_len() == 0 {
+    let length = value.byte_len();
+    if length == 0 {
         return Result::Err("expected a positive integer")
     } else {
         ()
     };
-    let result = Ref::new(0);
-    for index in 0..value.byte_len() {
+    let mut result = 0;
+    for index in 0..length {
         let byte = value.byte_get(index);
         if byte < b'0' || byte > b'9' {
             return Result::Err("expected a positive integer")
         } else {
-            let digit = if byte == b'0' {
-                0
-            } else if byte == b'1' {
-                1
-            } else if byte == b'2' {
-                2
-            } else if byte == b'3' {
-                3
-            } else if byte == b'4' {
-                4
-            } else if byte == b'5' {
-                5
-            } else if byte == b'6' {
-                6
-            } else if byte == b'7' {
-                7
-            } else if byte == b'8' {
-                8
-            } else {
-                9
-            };
-            result.set(result.get() * 10 + digit)
+            result = result * 10 + (byte - b'0') as int;
         }
     };
-    if result.get() > 0 {
-        Result::Ok(result.get())
+    if result > 0 {
+        Result::Ok(result)
     } else {
         Result::Err("expected a positive integer")
     }

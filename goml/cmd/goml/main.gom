@@ -78,40 +78,39 @@ fn inline_value(argument: string, name: string) -> Option[string] {
     }
 }
 
-fn option_value(args: Vec[string], index: Ref[int], argument: string, name: string) -> Result[
-    Option[string],
+fn option_value(args: Vec[string], index: int, argument: string, name: string) -> Result[
+    (Option[string], int),
     string,
 ] {
     if argument == name {
-        if index.get() + 1 >= args.len() {
+        if index + 1 >= args.len() {
             Result::Err(f"{name} requires a value")
         } else {
-            let value = args[index.get() + 1];
-            index.set(index.get() + 2);
-            Result::Ok(Option::Some(value))
+            let value = args[index + 1];
+            Result::Ok((Option::Some(value), index + 2))
         }
     } else {
         match inline_value(argument, name) {
             Some(value) => {
-                index.set(index.get() + 1);
                 if value == "" {
                     Result::Err(f"{name} requires a value")
                 } else {
-                    Result::Ok(Option::Some(value))
+                    Result::Ok((Option::Some(value), index + 1))
                 }
             },
-            None => Result::Ok(Option::None),
+            None => Result::Ok((Option::None, index)),
         }
     }
 }
 
 fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
     let mut target_dir: Option[string] = Option::None;
-    let index = Ref::new(2);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
         let parsed = option_value(args, index, argument, "--target-dir")?;
-        match parsed {
+        index = parsed.1;
+        match parsed.0 {
             Some(value) => match target_dir {
                 Some(_) => {
                     return Result::Err("--target-dir cannot be repeated")
@@ -133,9 +132,9 @@ fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
 fn parse_fmt(args: Vec[string]) -> Result[FmtArgs, string] {
     let mut check = false;
     let mut formatter: Option[string] = Option::None;
-    let index = Ref::new(2);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
         if argument == "-h" || argument == "--help" {
             return Result::Err("help")
         } else if argument == "--check" {
@@ -143,11 +142,12 @@ fn parse_fmt(args: Vec[string]) -> Result[FmtArgs, string] {
                 return Result::Err("--check cannot be repeated")
             } else {
                 check = true;
-                index.set(index.get() + 1)
+                index += 1;
             }
         } else {
             let parsed = option_value(args, index, argument, "--formatter")?;
-            match parsed {
+            index = parsed.1;
+            match parsed.0 {
                 Some(value) => match formatter {
                     Some(_) => {
                         return Result::Err("--formatter cannot be repeated")
@@ -200,72 +200,75 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     } else {
         ()
     };
-    let targets: Vec[string] = Vec::new();
+    let targets: Vec[string] = Vec::[];
     let mut target_dir: Option[string] = Option::None;
     let mut compiler: Option[string] = Option::None;
     let flags: HashMap[string, unit] = HashMap::{};
-    let program_args = Vec::new();
+    let program_args: Vec[string] = Vec::[];
     let mut test_filter: Option[string] = Option::None;
     let mut build_jobs = 16;
     let mut test_jobs = 1;
-    let test_formats: Vec[string] = Vec::new();
+    let test_formats: Vec[string] = Vec::[];
     let mut test_timeout_ms = 30000;
     let mut test_kind = "all";
     let mut trailing = false;
-    let index = Ref::new(2);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
         if trailing {
             if command == "run" {
                 program_args.push(argument);
-                index.set(index.get() + 1)
+                index += 1;
             } else {
                 return Result::Err(f"unexpected argument {argument}")
             }
         } else if argument == "--" {
             trailing = true;
-            index.set(index.get() + 1)
+            index += 1;
         } else if argument == "-h" || argument == "--help" {
             io::println(command_help(command));
             process::exit(0)
         } else if argument == "--dry-run" {
             flags[argument] = ();
-            index.set(index.get() + 1)
+            index += 1;
         } else if command == "check" && argument == "--tests" {
             flags[argument] = ();
-            index.set(index.get() + 1)
+            index += 1;
         } else if command == "test" && argument == "--list" {
             flags[argument] = ();
-            index.set(index.get() + 1)
+            index += 1;
         } else if command == "test" && argument == "--ignored" {
             flags[argument] = ();
-            index.set(index.get() + 1)
+            index += 1;
         } else if command == "test" && argument == "--include-ignored" {
             flags[argument] = ();
-            index.set(index.get() + 1)
+            index += 1;
         } else if command == "test" && argument == "--nocapture" {
             flags[argument] = ();
-            index.set(index.get() + 1)
+            index += 1;
         } else {
             let parsed_target_dir = option_value(args, index, argument, "--target-dir")?;
-            if parsed_target_dir.is_some() {
+            index = parsed_target_dir.1;
+            if parsed_target_dir.0.is_some() {
                 if target_dir.is_some() {
                     return Result::Err("--target-dir cannot be repeated")
                 } else {
-                    target_dir = parsed_target_dir;
+                    target_dir = parsed_target_dir.0;
                 }
             } else {
                 let parsed_compiler = option_value(args, index, argument, "--compiler")?;
-                if parsed_compiler.is_some() {
+                index = parsed_compiler.1;
+                if parsed_compiler.0.is_some() {
                     if compiler.is_some() {
                         return Result::Err("--compiler cannot be repeated")
                     } else {
-                        compiler = parsed_compiler;
+                        compiler = parsed_compiler.0;
                     }
                 } else if command == "test" {
                     let parsed_timeout = option_value(args, index, argument, "--timeout")?;
-                    if parsed_timeout.is_some() {
-                        let value = match parsed_timeout {
+                    index = parsed_timeout.1;
+                    if parsed_timeout.0.is_some() {
+                        let value = match parsed_timeout.0 {
                             Some(value) => value,
                             None => "30s",
                         };
@@ -277,8 +280,9 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         }
                     } else {
                         let parsed_jobs = option_value(args, index, argument, "--jobs")?;
-                        if parsed_jobs.is_some() {
-                            let value = match parsed_jobs {
+                        index = parsed_jobs.1;
+                        if parsed_jobs.0.is_some() {
+                            let value = match parsed_jobs.0 {
                                 Some(value) => value,
                                 None => "1",
                             };
@@ -291,8 +295,9 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             }
                         } else {
                             let parsed_kind = option_value(args, index, argument, "--kind")?;
-                            if parsed_kind.is_some() {
-                                let value = match parsed_kind {
+                            index = parsed_kind.1;
+                            if parsed_kind.0.is_some() {
+                                let value = match parsed_kind.0 {
                                     Some(value) => value,
                                     None => "all",
                                 };
@@ -303,7 +308,8 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                 }
                             } else {
                                 let parsed_format = option_value(args, index, argument, "--format")?;
-                                match parsed_format {
+                                index = parsed_format.1;
+                                match parsed_format.0 {
                                     Some(value) => if value == "json" {
                                         test_formats.push(value)
                                     } else if value == "text" {
@@ -317,7 +323,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                         return Result::Err(f"unexpected argument {argument}")
                                     } else {
                                         test_filter = Option::Some(argument);
-                                        index.set(index.get() + 1)
+                                        index += 1;
                                     },
                                 }
                             }
@@ -325,7 +331,8 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                     }
                 } else {
                     let parsed_jobs = option_value(args, index, argument, "--jobs")?;
-                    match parsed_jobs {
+                    index = parsed_jobs.1;
+                    match parsed_jobs.0 {
                         Some(value) => match util::parse_positive_int(value) {
                             Ok(value) => {
                                 build_jobs = value;
@@ -334,9 +341,9 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                         },
                         None => if util::starts_with(argument, "-") {
                             return Result::Err(f"unknown option {argument}")
-                        } else if command == "run" && targets.len() == 0 {
+                        } else if command == "run" && targets.is_empty() {
                             targets.push(argument);
-                            index.set(index.get() + 1)
+                            index += 1;
                         } else {
                             return Result::Err(f"unexpected argument {argument}")
                         },
@@ -345,7 +352,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
             }
         }
     };
-    let test_json = test_formats.len() > 0 && test_formats[test_formats.len() - 1] == "json";
+    let test_json = !test_formats.is_empty() && test_formats[test_formats.len() - 1] == "json";
     if flags.contains("--ignored") && flags.contains("--include-ignored") {
         Result::Err("--ignored cannot be combined with --include-ignored")
     } else if test_json && flags.contains("--nocapture") {
@@ -354,7 +361,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
         Result::Ok(
             CliArgs {
                 command,
-                target: if targets.len() > 0 {
+                target: if !targets.is_empty() {
                     targets[0]
                 } else {
                     "."
@@ -408,7 +415,7 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
             None => Result::Err("build plan omitted executable"),
         }
     } else if args.command == "test" && !args.dry_run {
-        let groups = Vec::new();
+        let groups: Vec[runner::Group] = Vec::[];
         for group in plan.test_groups {
             groups.push(
                 runner::Group {

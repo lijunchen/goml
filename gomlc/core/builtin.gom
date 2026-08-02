@@ -9,6 +9,7 @@ use gomlc::tast;
 fn non_root(value: Function) -> Function {
     Function {
         name: value.name,
+        origin: value.origin,
         root: false,
         generics: value.generics,
         predicates: value.predicates,
@@ -21,11 +22,11 @@ fn non_root(value: Function) -> Function {
 
 pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
     let sources = resources::builtin_sources()?;
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     for source in sources {
         inputs.push((ast::lower(parser::parse(source.source)), source.path))
     };
-    let hir_files = Vec::new();
+    let hir_files: Vec[hir::File] = Vec::[];
     for lowered in hir::lower_package_files(inputs, "builtin") {
         match lowered.hir {
             Some(file) => hir_files.push(file),
@@ -38,16 +39,11 @@ pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
     } else {
         ()
     };
-    Result::Ok(
-        lower_with_counter(
-            checked,
-            counter,
-        ),
-    )
+    Result::Ok(lower_with_counter(checked, counter))
 }
 
 pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: File) -> File {
-    let functions: Vec[Function] = Vec::new();
+    let functions: Vec[Function] = Vec::[];
     for function in builtins.functions {
         functions.push(non_root(function))
     };
@@ -59,7 +55,7 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     for function in user.functions {
         functions.push(function)
     };
-    let enums: Vec[tast::EnumDef] = Vec::new();
+    let enums: Vec[tast::EnumDef] = Vec::[];
     for value in builtins.enums {
         enums.push(value)
     };
@@ -71,7 +67,7 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     for value in user.enums {
         enums.push(value)
     };
-    let structs: Vec[tast::StructDef] = Vec::new();
+    let structs: Vec[tast::StructDef] = Vec::[];
     for value in builtins.structs {
         structs.push(value)
     };
@@ -83,7 +79,7 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     for value in user.structs {
         structs.push(value)
     };
-    let type_instances: Vec[TypeInstance] = Vec::new();
+    let type_instances: Vec[TypeInstance] = Vec::[];
     for value in builtins.type_instances {
         type_instances.push(value)
     };
@@ -95,7 +91,7 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     for value in user.type_instances {
         type_instances.push(value)
     };
-    let constants: Vec[tast::Constant] = Vec::new();
+    let constants: Vec[tast::Constant] = Vec::[];
     for value in builtins.constants {
         constants.push(value)
     };
@@ -111,5 +107,5 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
 }
 
 pub fn link_with_builtins(builtins: File, user: File) -> File {
-    link_with_dependencies(builtins, Vec::new(), user)
+    link_with_dependencies(builtins, Vec::[], user)
 }

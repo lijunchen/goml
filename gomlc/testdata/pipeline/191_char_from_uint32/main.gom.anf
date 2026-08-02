@@ -1,114 +1,158 @@
 fn show_scalar(value/0: uint32) -> unit {
-  join ret164() -> unit {
+  join commute_arm254() -> unit {
+    let inline197 = "none" in
+    let inline198 = trait_impl#ToString#string#to_string(inline197) in
+    let inline199 = @runtime(core.string_println)(inline198) in
     ()
   } in
-  let mtmp152 = char_from_uint32(value/0) in
-  join k165() -> unit {
-    jump ret164()
+  join commute_arm256(commute_field255: char) -> unit {
+    let x156 = commute_field255 in
+    let t170 = (commute_field255 as uint32) in
+    let inline201 = trait_impl#ToString#uint32#to_string(t170) in
+    let inline202 = @runtime(core.string_println)(inline201) in
+    ()
   } in
-  match mtmp152 {
-    Tag_0 => {
-      let t166 = println__T_string("none") in
-      jump k165()
-    },
-    Tag_1 => {
-      let x153 = Option__char::Some._0(mtmp152) in
-      let result/1 = x153 in
-      let t167 = (result/1 as uint32) in
-      let t168 = println__T_uint32(t167) in
-      jump k165()
-    },
+  let inline204 = @runtime(core.char_from_uint32)(value/0) in
+  let inline205 = inline204.0 in
+  let inline206 = inline204.1 in
+  let inline207 = inline206 in
+  let inline208 = inline205 in
+  if inline205 {
+    let inline209 = Option__char::Some(inline206) in
+    jump commute_arm256(inline206)
+  } else {
+    jump commute_arm254()
   }
 }
 
 fn main() -> unit {
-  join ret169() -> unit {
-    ()
+  let _wild157 = show_scalar(0) in
+  let _wild158 = show_scalar(65) in
+  let _wild159 = show_scalar(55295) in
+  let _wild160 = show_scalar(55296) in
+  let _wild161 = show_scalar(57343) in
+  join inline_cont243(_wild162: unit) -> unit {
+    join inline_cont235(_wild163: unit) -> unit {
+      join inline_cont227(_wild164: unit) -> unit {
+        join commute_arm257() -> unit {
+          let inline211 = "none" in
+          let inline212 = trait_impl#ToString#string#to_string(inline211) in
+          let inline213 = @runtime(core.string_println)(inline212) in
+          ()
+        } in
+        join commute_arm259(commute_field258: char) -> unit {
+          let x166 = commute_field258 in
+          join inline_cont217(t175: string) -> unit {
+            let inline215 = trait_impl#ToString#string#to_string(t175) in
+            let inline216 = @runtime(core.string_println)(inline215) in
+            ()
+          } in
+          let inline218 = @runtime(core.char_to_string)(commute_field258) in
+          jump inline_cont217(inline218)
+        } in
+        let inline220 = 128512 in
+        let inline221 = @runtime(core.char_from_uint32)(inline220) in
+        let inline222 = inline221.0 in
+        let inline223 = inline221.1 in
+        let inline224 = inline223 in
+        let inline225 = inline222 in
+        if inline222 {
+          let inline226 = Option__char::Some(inline223) in
+          jump commute_arm259(inline223)
+        } else {
+          jump commute_arm257()
+        }
+      } in
+      let inline228 = 1114112 in
+      let inline229 = char_from_uint32(inline228) in
+      match inline229 {
+        Tag_0 => {
+          let inline230 = println__T_string("none") in
+          jump inline_cont227(())
+        },
+        Tag_1 => {
+          let inline231 = Option__char::Some._0(inline229) in
+          let inline232 = inline231 in
+          let inline233 = (inline231 as uint32) in
+          let inline234 = println__T_uint32(inline233) in
+          jump inline_cont227(())
+        },
+      }
+    } in
+    let inline236 = 1114111 in
+    let inline237 = char_from_uint32(inline236) in
+    match inline237 {
+      Tag_0 => {
+        let inline238 = println__T_string("none") in
+        jump inline_cont235(())
+      },
+      Tag_1 => {
+        let inline239 = Option__char::Some._0(inline237) in
+        let inline240 = inline239 in
+        let inline241 = (inline239 as uint32) in
+        let inline242 = println__T_uint32(inline241) in
+        jump inline_cont235(())
+      },
+    }
   } in
-  let _wild154 = show_scalar(0) in
-  let _wild155 = show_scalar(65) in
-  let _wild156 = show_scalar(55295) in
-  let _wild157 = show_scalar(55296) in
-  let _wild158 = show_scalar(57343) in
-  let _wild159 = show_scalar(57344) in
-  let _wild160 = show_scalar(1114111) in
-  let _wild161 = show_scalar(1114112) in
-  let mtmp162 = char_from_uint32(128512) in
-  join k170() -> unit {
-    jump ret169()
-  } in
-  match mtmp162 {
+  let inline244 = 57344 in
+  let inline245 = char_from_uint32(inline244) in
+  match inline245 {
     Tag_0 => {
-      let t171 = println__T_string("none") in
-      jump k170()
+      let inline246 = println__T_string("none") in
+      jump inline_cont243(())
     },
     Tag_1 => {
-      let x163 = Option__char::Some._0(mtmp162) in
-      let result/2 = x163 in
-      let t172 = inherent#char#char#to_string(result/2) in
-      let t173 = println__T_string(t172) in
-      jump k170()
+      let inline247 = Option__char::Some._0(inline245) in
+      let inline248 = inline247 in
+      let inline249 = (inline247 as uint32) in
+      let inline250 = println__T_uint32(inline249) in
+      jump inline_cont243(())
     },
   }
 }
 
 fn char_from_uint32(value/2: uint32) -> Option__char {
-  join ret174(retv175: Option__char) -> Option__char {
-    retv175
-  } in
   let mtmp0 = @runtime(core.char_from_uint32)(value/2) in
   let x1 = mtmp0.0 in
   let x2 = mtmp0.1 in
   let value/4 = x2 in
   let valid/3 = x1 in
-  join k176(jp177: Option__char) -> Option__char {
-    jump ret174(jp177)
-  } in
-  if valid/3 {
-    let t178 = Option__char::Some(value/4) in
-    jump k176(t178)
+  if x1 {
+    let t181 = Option__char::Some(x2) in
+    t181
   } else {
-    jump k176(Tag_0)
+    Tag_0
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret179() -> unit {
+  join inline_cont251(t183: string) -> unit {
+    let t184 = @runtime(core.string_println)(t183) in
     ()
   } in
-  let t180 = trait_impl#ToString#string#to_string(value/1) in
-  let t181 = @runtime(core.string_println)(t180) in
-  jump ret179()
+  jump inline_cont251(value/1)
 }
 
 fn println__T_uint32(value/1: uint32) -> unit {
-  join ret182() -> unit {
+  join inline_cont252(t186: string) -> unit {
+    let t187 = @runtime(core.string_println)(t186) in
     ()
   } in
-  let t183 = trait_impl#ToString#uint32#to_string(value/1) in
-  let t184 = @runtime(core.string_println)(t183) in
-  jump ret182()
+  let inline253 = @runtime(core.uint32_to_string)(value/1) in
+  jump inline_cont252(inline253)
 }
 
 fn inherent#char#char#to_string(self/7: char) -> string {
-  join ret185(retv186: string) -> string {
-    retv186
-  } in
-  let t187 = @runtime(core.char_to_string)(self/7) in
-  jump ret185(t187)
+  let t190 = @runtime(core.char_to_string)(self/7) in
+  t190
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret188(retv189: string) -> string {
-    retv189
-  } in
-  jump ret188(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#uint32#to_string(self/47: uint32) -> string {
-  join ret190(retv191: string) -> string {
-    retv191
-  } in
-  let t192 = @runtime(core.uint32_to_string)(self/47) in
-  jump ret190(t192)
+  let t195 = @runtime(core.uint32_to_string)(self/47) in
+  t195
 }

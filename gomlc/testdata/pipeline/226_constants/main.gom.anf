@@ -5,39 +5,36 @@ const greeting: string = ("constant" + " value");
 const enabled: bool = true;
 
 fn main() -> unit {
-  join ret155() -> unit {
-    ()
+  join inline_cont176(t159: string) -> unit {
+    let _wild155 = @runtime(core.string_println)(t159) in
+    join inline_cont174(t160: string) -> unit {
+      let _wild156 = @runtime(core.string_println)(t160) in
+      let _wild157 = @runtime(core.string_println)(greeting) in
+      join inline_cont172(t161: string) -> unit {
+        let t162 = @runtime(core.string_println)(t161) in
+        ()
+      } in
+      let inline173 = @runtime(core.bool_to_string)(enabled) in
+      jump inline_cont172(inline173)
+    } in
+    let inline175 = @runtime(core.uint8_to_string)(mask) in
+    jump inline_cont174(inline175)
   } in
-  let t156 = inherent#int#int#to_string(answer) in
-  let _wild152 = @runtime(core.string_println)(t156) in
-  let t157 = trait_impl#ToString#uint8#to_string(mask) in
-  let _wild153 = @runtime(core.string_println)(t157) in
-  let _wild154 = @runtime(core.string_println)(greeting) in
-  let t158 = trait_impl#ToString#bool#to_string(enabled) in
-  let t159 = @runtime(core.string_println)(t158) in
-  jump ret155()
+  let inline177 = @runtime(core.int_to_string)(answer) in
+  jump inline_cont176(inline177)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret160(retv161: string) -> string {
-    retv161
-  } in
-  let t162 = @runtime(core.int_to_string)(self/5) in
-  jump ret160(t162)
+  let t165 = @runtime(core.int_to_string)(self/5) in
+  t165
 }
 
 fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
-  join ret163(retv164: string) -> string {
-    retv164
-  } in
-  let t165 = @runtime(core.uint8_to_string)(self/45) in
-  jump ret163(t165)
+  let t168 = @runtime(core.uint8_to_string)(self/45) in
+  t168
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
-  } in
-  let t168 = @runtime(core.bool_to_string)(self/37) in
-  jump ret166(t168)
+  let t171 = @runtime(core.bool_to_string)(self/37) in
+  t171
 }

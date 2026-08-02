@@ -91,9 +91,9 @@ fn lexes_interpolated_string_segments() -> unit {
 
 #[test]
 fn lexes_keywords_and_identifiers() -> unit {
-    let source = "extern package use import as pub mod crate super fn trait impl for enum struct type const where match if else let mut in return go while break continue dyn true false _ unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64 float32 float64 string char array self _x __ x1";
+    let source = "extern package use import as pub mod crate super fn trait impl for enum struct type const where match if else let mut in return go defer while break continue dyn true false _ unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64 float32 float64 string char array self _x __ x1";
     let tokens = lex(source);
-    let expected = "ExternKeyword PackageKeyword UseKeyword Ident AsKeyword PubKeyword Ident Ident Ident FnKeyword TraitKeyword ImplKeyword ForKeyword EnumKeyword StructKeyword TypeKeyword ConstKeyword WhereKeyword MatchKeyword IfKeyword ElseKeyword LetKeyword MutKeyword InKeyword ReturnKeyword GoKeyword WhileKeyword BreakKeyword ContinueKeyword DynKeyword TrueKeyword FalseKeyword WildcardKeyword UnitKeyword BoolKeyword IntKeyword Int8Keyword Int16Keyword Int32Keyword Int64Keyword UintKeyword Uint8Keyword Uint16Keyword Uint32Keyword Uint64Keyword Float32Keyword Float64Keyword StringKeyword CharKeyword Ident Ident Ident Ident Ident";
+    let expected = "ExternKeyword PackageKeyword UseKeyword Ident AsKeyword PubKeyword Ident Ident Ident FnKeyword TraitKeyword ImplKeyword ForKeyword EnumKeyword StructKeyword TypeKeyword ConstKeyword WhereKeyword MatchKeyword IfKeyword ElseKeyword LetKeyword MutKeyword InKeyword ReturnKeyword GoKeyword DeferKeyword WhileKeyword BreakKeyword ContinueKeyword DynKeyword TrueKeyword FalseKeyword WildcardKeyword UnitKeyword BoolKeyword IntKeyword Int8Keyword Int16Keyword Int32Keyword Int64Keyword UintKeyword Uint8Keyword Uint16Keyword Uint32Keyword Uint64Keyword Float32Keyword Float64Keyword StringKeyword CharKeyword Ident Ident Ident Ident Ident";
     let builder = text::StringBuilder::new();
     for token in tokens {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {

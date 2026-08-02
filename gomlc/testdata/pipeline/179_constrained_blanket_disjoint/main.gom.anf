@@ -1,63 +1,61 @@
 fn trait_impl#Mark#int32#mark(self/0: int32) -> string {
-  join ret154(retv155: string) -> string {
-    retv155
-  } in
-  let t156 = inherent#int32#int32#to_string(self/0) in
-  jump ret154(t156)
+  let inline182 = @runtime(core.int32_to_string)(self/0) in
+  inline182
 }
 
 fn trait_impl#Label#Box__string#label(self/2: Box__string) -> string {
-  join ret157(retv158: string) -> string {
-    retv158
-  } in
-  let t159 = Box__string.value(self/2) in
-  let t160 = ("string:" + t159) in
-  jump ret157(t160)
+  let t162 = Box__string.value(self/2) in
+  let t163 = ("string:" + t162) in
+  t163
 }
 
 fn main() -> unit {
-  join ret161() -> unit {
-    ()
+  let t165 = Box__string { value: "text" } in
+  join inline_cont193(t166: string) -> unit {
+    join inline_cont190(_wild155: unit) -> unit {
+      let value/3 = Box__int32 { value: 7 } in
+      join inline_cont186(t167: string) -> unit {
+        let inline184 = trait_impl#ToString#string#to_string(t167) in
+        let inline185 = @runtime(core.string_println)(inline184) in
+        ()
+      } in
+      let inline187 = 7 in
+      let inline188 = trait_impl#Mark#int32#mark(inline187) in
+      let inline189 = ("blanket:" + inline188) in
+      jump inline_cont186(inline189)
+    } in
+    let inline191 = trait_impl#ToString#string#to_string(t166) in
+    let inline192 = @runtime(core.string_println)(inline191) in
+    jump inline_cont190(())
   } in
-  let t162 = Box__string { value: "text" } in
-  let t163 = trait_impl#Label#Box__string#label(t162) in
-  let _wild152 = println__T_string(t163) in
-  let value/3 = Box__int32 { value: 7 } in
-  let t164 = trait_impl#Label#Box__int32#label(value/3) in
-  let _wild153 = println__T_string(t164) in
-  jump ret161()
+  let inline194 = "text" in
+  let inline195 = ("string:" + inline194) in
+  jump inline_cont193(inline195)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret165(retv166: string) -> string {
-    retv166
-  } in
-  let t167 = @runtime(core.int32_to_string)(self/6) in
-  jump ret165(t167)
+  let t170 = @runtime(core.int32_to_string)(self/6) in
+  t170
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret168() -> unit {
+  join inline_cont196(t172: string) -> unit {
+    let t173 = @runtime(core.string_println)(t172) in
     ()
   } in
-  let t169 = trait_impl#ToString#string#to_string(value/1) in
-  let t170 = @runtime(core.string_println)(t169) in
-  jump ret168()
+  jump inline_cont196(value/1)
 }
 
 fn trait_impl#Label#Box__int32#label(self/1: Box__int32) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
+  let t176 = Box__int32.value(self/1) in
+  join inline_cont197(t177: string) -> string {
+    let t178 = ("blanket:" + t177) in
+    t178
   } in
-  let t173 = Box__int32.value(self/1) in
-  let t174 = trait_impl#Mark#int32#mark(t173) in
-  let t175 = ("blanket:" + t174) in
-  jump ret171(t175)
+  let inline198 = inherent#int32#int32#to_string(t176) in
+  jump inline_cont197(inline198)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
-  } in
-  jump ret176(self/38)
+  self/38
 }

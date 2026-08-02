@@ -1,0 +1,200 @@
+package core_codec;
+
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
+use gomlc::artifact::tast_codec as tast_codec;
+use gomlc::ast;
+use gomlc::core;
+use gomlc::tast;
+
+struct ArtifactCoreDecodeContext {
+    pub types: tast_codec::ArtifactDecodeContext,
+    pub struct_fields: Vec[(string, Vec[string])],
+    pub enums: Vec[tast::EnumDef],
+    pub structs: Vec[tast::StructDef],
+}
+
+fn artifact_core_decode_context(value: artifact::ArtifactPackageExports) -> ArtifactCoreDecodeContext {
+    let types = tast_codec::ArtifactDecodeContext {
+        enum_names: value.enum_type_names,
+        struct_names: value.struct_type_names,
+    };
+    let struct_fields: Vec[(string, Vec[string])] = Vec::[];
+    for definition in value.structs {
+        let fields: Vec[string] = Vec::[];
+        for field in definition.fields {
+            fields.push(field.0)
+        };
+        struct_fields.push((definition.name, fields))
+    };
+    ArtifactCoreDecodeContext { types, struct_fields, enums: value.enums, structs: value.structs }
+}
+
+fn artifact_decode_struct_fields(context: ArtifactCoreDecodeContext, name: string) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    for value in context.struct_fields {
+        if value.0 == name {
+            for field in value.1 {
+                result.push(field)
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn artifact_decode_primitive_payload(value: wire::ArtifactValue) -> Result[
+    wire::ArtifactValue,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "primitive payload")?;
+    wire::artifact_json_required_field(object, "value")
+}
+
+fn artifact_decode_numeric_primitive(kind: string, value: wire::ArtifactValue) -> Result[
+    tast::Primitive,
+    string,
+] {
+    let value = wire::artifact_json_number_value(
+        artifact_decode_primitive_payload(value)?,
+        "numeric primitive",
+    )?;
+    match kind {
+        "Int" => Result::Ok(tast::Primitive::Int { value }),
+        "Int8" => Result::Ok(tast::Primitive::Int8 { value }),
+        "Int16" => Result::Ok(tast::Primitive::Int16 { value }),
+        "Int32" => Result::Ok(tast::Primitive::Int32 { value }),
+        "Int64" => Result::Ok(tast::Primitive::Int64 { value }),
+        "UInt" => Result::Ok(tast::Primitive::Uint { value }),
+        "UInt8" => Result::Ok(tast::Primitive::Uint8 { value }),
+        "UInt16" => Result::Ok(tast::Primitive::Uint16 { value }),
+        "UInt32" => Result::Ok(tast::Primitive::Uint32 { value }),
+        "UInt64" => Result::Ok(tast::Primitive::Uint64 { value }),
+        "Float32" => Result::Ok(tast::Primitive::Float32 { value }),
+        "Float64" => Result::Ok(tast::Primitive::Float64 { value }),
+        _ => Result::Err(wire::artifact_decode_error("numeric primitive kind")),
+    }
+}
+
+fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primitive, string] {
+    let object = wire::artifact_json_object(value, "primitive")?;
+    if object.len() != 1 {
+        return Result::Err(wire::artifact_decode_error("primitive variant"))
+    } else {
+        ()
+    };
+    let kind = object[0].0;
+    let payload = object[0].1;
+    if kind == "Unit" {
+        match artifact_decode_primitive_payload(payload) {
+            Ok(Null) => Result::Ok(tast::Primitive::Unit),
+            Ok(_) => Result::Err(wire::artifact_decode_error("unit primitive")),
+            Err(error) => Result::Err(error),
+        }
+    } else if kind == "Bool" {
+        match artifact_decode_primitive_payload(payload) {
+            Ok(value) => match wire::artifact_json_bool_value(value, "boolean primitive") {
+                Ok(value) => Result::Ok(tast::Primitive::Bool { value }),
+                Err(error) => Result::Err(error),
+            },
+            Err(error) => Result::Err(error),
+        }
+    } else if kind == "String" {
+        match artifact_decode_primitive_payload(payload) {
+            Ok(value) => match wire::artifact_json_string_value(value, "string primitive") {
+                Ok(value) => Result::Ok(tast::Primitive::String { value }),
+                Err(error) => Result::Err(error),
+            },
+            Err(error) => Result::Err(error),
+        }
+    } else if kind == "Char" {
+        let value = wire::artifact_json_string_value(
+            artifact_decode_primitive_payload(payload)?,
+            "character primitive",
+        )?;
+        if value.len() != 1 {
+            Result::Err(wire::artifact_decode_error("single character primitive"))
+        } else {
+            Result::Ok(tast::Primitive::Char { value: value.get(0) })
+        }
+    } else {
+        artifact_decode_numeric_primitive(kind, payload)
+    }
+}
+
+fn artifact_decode_constructor(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+    tast::Constructor,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "constructor")?;
+    if object.len() != 1 {
+        Result::Err(wire::artifact_decode_error("constructor variant"))
+    } else if object[0].0 == "Struct" {
+        let payload = wire::artifact_json_object(object[0].1, "struct constructor")?;
+        match wire::artifact_json_field_string(payload, "type_name") {
+            Ok(name) => Result::Ok(
+                tast::Constructor {
+                    name,
+                    fields: artifact_decode_struct_fields(context, name),
+                    is_struct: true,
+                    tag: Option::None,
+                },
+            ),
+            Err(error) => Result::Err(error),
+        }
+    } else if object[0].0 == "Enum" {
+        let payload = wire::artifact_json_object(object[0].1, "enum constructor")?;
+        let type_name = wire::artifact_json_field_string(payload, "type_name")?;
+        let variant = wire::artifact_json_field_string(payload, "variant")?;
+        let index = wire::artifact_parse_nonnegative_int(
+            wire::artifact_json_number_value(
+                wire::artifact_json_required_field(payload, "index")?,
+                "enum constructor index",
+            )?,
+        )?;
+        Result::Ok(
+            tast::Constructor {
+                name: type_name + "::" + variant,
+                fields: Vec::[],
+                is_struct: false,
+                tag: Option::Some(index),
+            },
+        )
+    } else {
+        Result::Err(wire::artifact_decode_error("constructor kind"))
+    }
+}
+
+fn artifact_decode_unary(value: string) -> Result[ast::UnaryOp, string] {
+    match value {
+        "Neg" => Result::Ok(ast::UnaryOp::Neg),
+        "Not" => Result::Ok(ast::UnaryOp::Not),
+        "BitNot" => Result::Ok(ast::UnaryOp::BitNot),
+        _ => Result::Err(wire::artifact_decode_error("unary operator")),
+    }
+}
+
+fn artifact_decode_binary(value: string) -> Result[ast::BinaryOp, string] {
+    match value {
+        "Add" => Result::Ok(ast::BinaryOp::Add),
+        "Sub" => Result::Ok(ast::BinaryOp::Sub),
+        "Mul" => Result::Ok(ast::BinaryOp::Mul),
+        "Div" => Result::Ok(ast::BinaryOp::Div),
+        "Rem" => Result::Ok(ast::BinaryOp::Rem),
+        "BitAnd" => Result::Ok(ast::BinaryOp::BitAnd),
+        "BitOr" => Result::Ok(ast::BinaryOp::BitOr),
+        "BitXor" => Result::Ok(ast::BinaryOp::BitXor),
+        "Shl" => Result::Ok(ast::BinaryOp::Shl),
+        "Shr" => Result::Ok(ast::BinaryOp::Shr),
+        "And" => Result::Ok(ast::BinaryOp::And),
+        "Or" => Result::Ok(ast::BinaryOp::Or),
+        "Less" => Result::Ok(ast::BinaryOp::Less),
+        "Greater" => Result::Ok(ast::BinaryOp::Greater),
+        "LessEq" => Result::Ok(ast::BinaryOp::LessEq),
+        "GreaterEq" => Result::Ok(ast::BinaryOp::GreaterEq),
+        "Eq" => Result::Ok(ast::BinaryOp::Eq),
+        "NotEq" => Result::Ok(ast::BinaryOp::NotEq),
+        _ => Result::Err(wire::artifact_decode_error("binary operator")),
+    }
+}

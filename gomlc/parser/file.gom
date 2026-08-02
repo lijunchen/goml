@@ -34,7 +34,7 @@ fn parse_file(parser: Parser) -> unit {
     while parser.at(lexer::TokenKind::UseKeyword) {
         use_decl(parser)
     };
-    while parser.eof() == false {
+    while !parser.eof() {
         if parser.at(lexer::TokenKind::Pound) {
             let attrs = attribute_list(parser);
             item_with_attrs(parser, attrs)
@@ -93,13 +93,15 @@ fn use_decl(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::UseKeyword);
     if parser.at(lexer::TokenKind::Ident) {
-        parse_path_always(parser)
-    } else if parser.eof() == false {
+        use_path(parser)
+    } else if !parser.eof() {
         parser.advance_with_error("expected a path after `use`")
     } else {
         ()
     };
-    if parser.eat(lexer::TokenKind::AsKeyword) {
+    if parser.at(lexer::TokenKind::LBrace) {
+        use_item_list(parser)
+    } else if parser.eat(lexer::TokenKind::AsKeyword) {
         parser.expect_lower_ident("use alias")
     } else {
         ()
@@ -109,10 +111,56 @@ fn use_decl(parser: Parser) -> unit {
     ()
 }
 
+fn use_path(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    while parser.at(lexer::TokenKind::ColonColon) && parser.nth(1) == lexer::TokenKind::Ident {
+        parser.advance();
+        parser.advance()
+    };
+    if parser.at(lexer::TokenKind::ColonColon) && parser.nth(1) == lexer::TokenKind::LBrace {
+        parser.advance()
+    } else {
+        ()
+    };
+    let _ = parser.close(marker, cst::NodeKind::PATH);
+    ()
+}
+
+fn use_item_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBrace);
+    if parser.at(lexer::TokenKind::RBrace) {
+        parser.error("use item list cannot be empty")
+    } else {
+        ()
+    };
+    while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) {
+        let item = parser.open();
+        parser.expect(lexer::TokenKind::Ident);
+        if parser.eat(lexer::TokenKind::AsKeyword) {
+            parser.expect(lexer::TokenKind::Ident)
+        } else {
+            ()
+        };
+        let _ = parser.close(item, cst::NodeKind::USE_ITEM);
+        if parser.eat(lexer::TokenKind::Comma) {
+            ()
+        } else if !parser.at(lexer::TokenKind::RBrace) {
+            parser.advance_with_error("expected ',' or '}' in use item list")
+        } else {
+            ()
+        }
+    };
+    parser.expect(lexer::TokenKind::RBrace);
+    let _ = parser.close(marker, cst::NodeKind::USE_ITEM_LIST);
+    ()
+}
+
 fn removed_import_decl(parser: Parser) -> unit {
     let marker = parser.open();
     parser.error("`import` has been removed; use `use` instead");
-    while parser.eof() == false && parser.at(lexer::TokenKind::Semi) == false {
+    while !parser.eof() && !parser.at(lexer::TokenKind::Semi) {
         parser.advance()
     };
     parser.eat(lexer::TokenKind::Semi);
@@ -153,7 +201,7 @@ fn item_with_attrs(parser: Parser, attrs: MarkerClosed) -> unit {
         constant_with_marker(parser, marker)
     } else {
         parser.error("expected a top-level item after attributes");
-        if parser.eof() == false {
+        if !parser.eof() {
             parser.advance()
         } else {
             ()
@@ -197,7 +245,7 @@ fn public_item_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
         constant_with_marker(parser, marker)
     } else {
         parser.error("expected a public top-level item");
-        if parser.eof() == false {
+        if !parser.eof() {
             parser.advance()
         } else {
             ()
@@ -279,7 +327,7 @@ fn attribute(parser: Parser) -> unit {
 
 fn attribute_body(parser: Parser) -> unit {
     let mut depth = 1;
-    while depth > 0 && parser.eof() == false {
+    while depth > 0 && !parser.eof() {
         if parser.at(lexer::TokenKind::LBracket) {
             depth += 1;
             parser.advance()
@@ -304,10 +352,10 @@ fn extern_decl(parser: Parser) -> unit {
 
 fn extern_decl_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     parser.expect(lexer::TokenKind::ExternKeyword);
-    if parser.eat(lexer::TokenKind::FnKeyword) == false {
+    if !parser.eat(lexer::TokenKind::FnKeyword) {
         let legacy_extern = parser.at(lexer::TokenKind::Str);
         parser.error("only `extern fn` declarations are supported");
-        while parser.eof() == false && is_block_recovery(parser.peek()) == false {
+        while !parser.eof() && !is_block_recovery(parser.peek()) {
             parser.advance()
         };
         if legacy_extern && parser.eat(lexer::TokenKind::TypeKeyword) {
@@ -413,7 +461,7 @@ fn impl_block_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     };
     if parser.at(lexer::TokenKind::LBrace) {
         parser.advance();
-        while parser.at(lexer::TokenKind::RBrace) == false && parser.eof() == false {
+        while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
             if parser.at(lexer::TokenKind::FnKeyword) {
                 func(parser)
             } else if parser.at(lexer::TokenKind::PubKeyword) {
@@ -423,7 +471,7 @@ fn impl_block_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
                     func_with_marker(parser, marker)
                 } else {
                     parser.error("expected a function after `pub`");
-                    if parser.eof() == false {
+                    if !parser.eof() {
                         parser.advance()
                     } else {
                         ()
@@ -480,10 +528,9 @@ fn trait_def_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
 fn trait_method_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
-    while parser.at(lexer::TokenKind::RBrace) == false && parser.eof() == false {
+    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
         if parser.at(lexer::TokenKind::FnKeyword) {
             trait_method(parser);
-            parser.expect(lexer::TokenKind::Semi);
             ()
         } else if parser.at(lexer::TokenKind::TypeKeyword) {
             trait_associated_type(parser)
@@ -519,6 +566,11 @@ fn trait_method(parser: Parser) -> unit {
         where_clause(parser)
     } else {
         ()
+    };
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        parser.expect(lexer::TokenKind::Semi)
     };
     let _ = parser.close(marker, cst::NodeKind::TRAIT_METHOD_SIG);
     ()
@@ -596,7 +648,7 @@ fn struct_def_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
 fn variant_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
-    while parser.at(lexer::TokenKind::RBrace) == false && parser.eof() == false {
+    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
         if parser.at(lexer::TokenKind::Ident) {
             variant(parser);
             if parser.eat(lexer::TokenKind::Comma) {
@@ -618,7 +670,7 @@ fn variant_list(parser: Parser) -> unit {
 fn struct_field_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
-    while parser.at(lexer::TokenKind::RBrace) == false && parser.eof() == false {
+    while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
         if parser.at(lexer::TokenKind::Ident) || parser.at(lexer::TokenKind::PubKeyword) {
             struct_field(parser);
             if parser.eat(lexer::TokenKind::Comma) {
@@ -664,7 +716,7 @@ fn variant(parser: Parser) -> unit {
 fn type_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LParen);
-    while parser.at(lexer::TokenKind::RParen) == false && parser.eof() == false {
+    while !parser.at(lexer::TokenKind::RParen) && !parser.eof() {
         if is_type_first(parser.peek()) {
             type_expr(parser);
             if parser.eat(lexer::TokenKind::Comma) {
@@ -736,10 +788,10 @@ fn trait_ref(parser: Parser) -> unit {
 fn where_clause(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::WhereKeyword);
-    while parser.eof() == false && parser.at(lexer::TokenKind::LBrace) == false
-        && parser.at(lexer::TokenKind::Semi) == false {
+    while !parser.eof() && !parser.at(lexer::TokenKind::LBrace)
+        && !parser.at(lexer::TokenKind::Semi) {
         where_predicate(parser);
-        if parser.eat(lexer::TokenKind::Comma) == false {
+        if !parser.eat(lexer::TokenKind::Comma) {
             break
         } else {
             ()
@@ -783,7 +835,7 @@ fn where_predicate(parser: Parser) -> unit {
 fn generic_list(parser: Parser, allow_bounds: bool) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
-    while parser.at(lexer::TokenKind::RBracket) == false && parser.eof() == false {
+    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof() {
         if parser.at(lexer::TokenKind::Ident) {
             generic(parser, allow_bounds);
             if parser.eat(lexer::TokenKind::Comma) {
@@ -805,7 +857,7 @@ fn generic_list(parser: Parser, allow_bounds: bool) -> unit {
 fn param_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LParen);
-    while parser.at(lexer::TokenKind::RParen) == false && parser.eof() == false {
+    while !parser.at(lexer::TokenKind::RParen) && !parser.eof() {
         if parser.at(lexer::TokenKind::Ident) {
             param(parser)
         } else if is_param_list_recovery(parser.peek()) {
@@ -825,12 +877,12 @@ fn param(parser: Parser) -> unit {
     parser.expect_lower_ident("parameter name");
     if parser.eat(lexer::TokenKind::Colon) {
         type_expr(parser)
-    } else if self_shorthand == false {
+    } else if !self_shorthand {
         parser.error("only the first trait or impl parameter may use the `self` shorthand")
     } else {
         ()
     };
-    if parser.at(lexer::TokenKind::RParen) == false {
+    if !parser.at(lexer::TokenKind::RParen) {
         parser.expect(lexer::TokenKind::Comma)
     } else {
         ()
@@ -840,7 +892,7 @@ fn param(parser: Parser) -> unit {
 }
 
 fn type_expr(parser: Parser) -> unit {
-    if marker_is_none(type_expr_bp(parser, 0)) && parser.eof() == false {
+    if marker_is_none(type_expr_bp(parser, 0)) && !parser.eof() {
         parser.advance_with_error("expected a type")
     } else {
         ()
@@ -848,7 +900,7 @@ fn type_expr(parser: Parser) -> unit {
 }
 
 fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
-    if parser.enter_type() == false {
+    if !parser.enter_type() {
         Option::None
     } else {
         match type_atom(parser) {
@@ -858,7 +910,7 @@ fn type_expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
             },
             Some(initial) => {
                 let mut lhs = initial;
-                while parser.eof() == false {
+                while !parser.eof() {
                     if parser.at(lexer::TokenKind::Arrow) {
                         let left_bp = 5;
                         let right_bp = 4;
@@ -956,7 +1008,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
         LParen => {
             let empty = token_is(parser.nth(1), lexer::TokenKind::RParen);
             type_list(parser);
-            if empty && parser.at(lexer::TokenKind::Arrow) == false {
+            if empty && !parser.at(lexer::TokenKind::Arrow) {
                 parser.error("`()` is a value and pattern; use `unit` as the unit type")
             } else {
                 ()
@@ -1020,7 +1072,7 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
 fn type_param_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
-    while parser.at(lexer::TokenKind::RBracket) == false && parser.eof() == false {
+    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof() {
         if is_type_first(parser.peek()) {
             type_expr(parser);
             if parser.eat(lexer::TokenKind::Comma) {
@@ -1045,12 +1097,15 @@ fn block(parser: Parser) -> unit {
     let previous = parser.set_struct_literals_allowed(true);
     let mut trailing_expr_seen = false;
     let mut parsing = true;
-    while parsing && parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
+    while parsing && !parser.eof() && !parser.at(lexer::TokenKind::RBrace) {
         if trailing_expr_seen {
             parser.advance_with_error("expected `}` after block expression");
             parsing = false;
         } else if parser.at(lexer::TokenKind::LetKeyword) {
             let _ = let_stmt(parser);
+            ()
+        } else if parser.at(lexer::TokenKind::DeferKeyword) {
+            let _ = defer_stmt(parser);
             ()
         } else if is_expr_first(parser.peek()) {
             let semicolon_optional = match parser.peek() {
@@ -1073,7 +1128,7 @@ fn block(parser: Parser) -> unit {
                         None => if parser.eat(lexer::TokenKind::Semi) {
                             let _ = wrap_expr_stmt(parser, expr_marker);
                             ()
-                        } else if semicolon_optional && parser.at(lexer::TokenKind::RBrace) == false {
+                        } else if semicolon_optional && !parser.at(lexer::TokenKind::RBrace) {
                             let _ = wrap_expr_stmt(parser, expr_marker);
                             ()
                         } else {

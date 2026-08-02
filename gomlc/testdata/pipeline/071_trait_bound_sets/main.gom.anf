@@ -1,64 +1,51 @@
 fn trait_impl#A#S#foo(self/0: S) -> string {
-  join ret154(retv155: string) -> string {
-    retv155
-  } in
-  jump ret154("A")
+  "A"
 }
 
 fn trait_impl#B#S#foo(self/1: S) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
-  } in
-  jump ret156("B")
+  "B"
 }
 
 fn trait_impl#C#S#bar(self/2: S) -> string {
-  join ret158(retv159: string) -> string {
-    retv159
-  } in
-  jump ret158("C")
+  "C"
 }
 
 fn main() -> unit {
-  join ret160() -> unit {
-    ()
-  } in
   let s/5 = S {} in
-  let t161 = pick_a__T_S(s/5) in
-  let mtmp152 = println__T_string(t161) in
-  let t162 = bar_it__T_S(s/5) in
-  let mtmp153 = println__T_string(t162) in
-  jump ret160()
+  join inline_cont185(t164: string) -> unit {
+    join inline_cont182(mtmp155: unit) -> unit {
+      join inline_cont180(t165: string) -> unit {
+        let inline178 = trait_impl#ToString#string#to_string(t165) in
+        let inline179 = @runtime(core.string_println)(inline178) in
+        ()
+      } in
+      let inline181 = trait_impl#C#S#bar(s/5) in
+      jump inline_cont180(inline181)
+    } in
+    let inline183 = trait_impl#ToString#string#to_string(t164) in
+    let inline184 = @runtime(core.string_println)(inline183) in
+    jump inline_cont182(())
+  } in
+  let inline186 = trait_impl#A#S#foo(s/5) in
+  jump inline_cont185(inline186)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret163() -> unit {
+  join inline_cont187(t167: string) -> unit {
+    let t168 = @runtime(core.string_println)(t167) in
     ()
   } in
-  let t164 = trait_impl#ToString#string#to_string(value/1) in
-  let t165 = @runtime(core.string_println)(t164) in
-  jump ret163()
+  jump inline_cont187(value/1)
 }
 
 fn pick_a__T_S(x/3: S) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
-  } in
-  let t168 = trait_impl#A#S#foo(x/3) in
-  jump ret166(t168)
+  "A"
 }
 
 fn bar_it__T_S(x/4: S) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
-  } in
-  let t171 = trait_impl#C#S#bar(x/4) in
-  jump ret169(t171)
+  "C"
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  jump ret172(self/38)
+  self/38
 }

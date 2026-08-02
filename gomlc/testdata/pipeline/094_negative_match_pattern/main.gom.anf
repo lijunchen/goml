@@ -1,53 +1,117 @@
 fn classify(n/0: int32) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
-  } in
-  join k158(jp159: string) -> string {
-    jump ret156(jp159)
-  } in
   match n/0 {
     -1 => {
-      jump k158("minus one")
+      "minus one"
     },
     0 => {
-      jump k158("zero")
+      "zero"
     },
     1 => {
-      jump k158("one")
+      "one"
     },
     _ => {
-      jump k158("other")
+      "other"
     },
   }
 }
 
 fn main() -> unit {
-  join ret160() -> unit {
-    ()
+  join inline_cont191(t164: string) -> unit {
+    join inline_cont188(_wild155: unit) -> unit {
+      join inline_cont186(t165: string) -> unit {
+        join inline_cont183(_wild156: unit) -> unit {
+          join inline_cont181(t166: string) -> unit {
+            join inline_cont178(_wild157: unit) -> unit {
+              join inline_cont176(t167: string) -> unit {
+                let inline174 = trait_impl#ToString#string#to_string(t167) in
+                let inline175 = @runtime(core.string_println)(inline174) in
+                ()
+              } in
+              let inline177 = 42 in
+              match inline177 {
+                -1 => {
+                  jump inline_cont176("minus one")
+                },
+                0 => {
+                  jump inline_cont176("zero")
+                },
+                1 => {
+                  jump inline_cont176("one")
+                },
+                _ => {
+                  jump inline_cont176("other")
+                },
+              }
+            } in
+            let inline179 = trait_impl#ToString#string#to_string(t166) in
+            let inline180 = @runtime(core.string_println)(inline179) in
+            jump inline_cont178(())
+          } in
+          let inline182 = 1 in
+          match inline182 {
+            -1 => {
+              jump inline_cont181("minus one")
+            },
+            0 => {
+              jump inline_cont181("zero")
+            },
+            1 => {
+              jump inline_cont181("one")
+            },
+            _ => {
+              jump inline_cont181("other")
+            },
+          }
+        } in
+        let inline184 = trait_impl#ToString#string#to_string(t165) in
+        let inline185 = @runtime(core.string_println)(inline184) in
+        jump inline_cont183(())
+      } in
+      let inline187 = 0 in
+      match inline187 {
+        -1 => {
+          jump inline_cont186("minus one")
+        },
+        0 => {
+          jump inline_cont186("zero")
+        },
+        1 => {
+          jump inline_cont186("one")
+        },
+        _ => {
+          jump inline_cont186("other")
+        },
+      }
+    } in
+    let inline189 = trait_impl#ToString#string#to_string(t164) in
+    let inline190 = @runtime(core.string_println)(inline189) in
+    jump inline_cont188(())
   } in
-  let t161 = classify(-1) in
-  let _wild152 = println__T_string(t161) in
-  let t162 = classify(0) in
-  let _wild153 = println__T_string(t162) in
-  let t163 = classify(1) in
-  let _wild154 = println__T_string(t163) in
-  let t164 = classify(42) in
-  let _wild155 = println__T_string(t164) in
-  jump ret160()
+  let inline192 = -1 in
+  match inline192 {
+    -1 => {
+      jump inline_cont191("minus one")
+    },
+    0 => {
+      jump inline_cont191("zero")
+    },
+    1 => {
+      jump inline_cont191("one")
+    },
+    _ => {
+      jump inline_cont191("other")
+    },
+  }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret165() -> unit {
+  join inline_cont193(t169: string) -> unit {
+    let t170 = @runtime(core.string_println)(t169) in
     ()
   } in
-  let t166 = trait_impl#ToString#string#to_string(value/1) in
-  let t167 = @runtime(core.string_println)(t166) in
-  jump ret165()
+  jump inline_cont193(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret168(retv169: string) -> string {
-    retv169
-  } in
-  jump ret168(self/38)
+  self/38
 }

@@ -1,74 +1,82 @@
 fn main() -> unit {
-  join ret156() -> unit {
-    ()
+  join inline_cont197(int_pairer/2: (string) -> string) -> unit {
+    join inline_cont192(string_pairer/3: (string) -> string) -> unit {
+      let t160 = int_pairer/2("a") in
+      join inline_cont189(_wild155: unit) -> unit {
+        let t161 = string_pairer/3("b") in
+        let inline187 = trait_impl#ToString#string#to_string(t161) in
+        let inline188 = @runtime(core.string_println)(inline187) in
+        ()
+      } in
+      let inline190 = trait_impl#ToString#string#to_string(t160) in
+      let inline191 = @runtime(core.string_println)(inline190) in
+      jump inline_cont189(())
+    } in
+    let inline193 = "ok" in
+    join inline_join194(inline195: (string) -> string) -> unit {
+      jump inline_cont192(inline195)
+    } in
+    let inline196 = closure_env_make_pairer_T_string_1 { x_0: inline193 } in
+    jump inline_join194(inline196)
   } in
-  let int_pairer/2 = make_pairer__T_int(7) in
-  let string_pairer/3 = make_pairer__T_string("ok") in
-  let t157 = int_pairer/2("a") in
-  let _wild152 = println__T_string(t157) in
-  let t158 = string_pairer/3("b") in
-  let _wild153 = println__T_string(t158) in
-  jump ret156()
+  let inline198 = 7 in
+  join inline_join199(inline200: (string) -> string) -> unit {
+    jump inline_cont197(inline200)
+  } in
+  let inline201 = closure_env_make_pairer_T_int_0 { x_0: inline198 } in
+  jump inline_join199(inline201)
 }
 
 fn make_pairer__T_int(x/0: int) -> (string) -> string {
-  join ret159(retv160: (string) -> string) -> (string) -> string {
-    retv160
-  } in
-  let t161 = closure_env_make_pairer_T_int_0 { x_0: x/0 } in
-  jump ret159(t161)
-}
-
-fn make_pairer__T_string(x/0: string) -> (string) -> string {
   join ret162(retv163: (string) -> string) -> (string) -> string {
     retv163
   } in
-  let t164 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
+  let t164 = closure_env_make_pairer_T_int_0 { x_0: x/0 } in
   jump ret162(t164)
 }
 
+fn make_pairer__T_string(x/0: string) -> (string) -> string {
+  join ret165(retv166: (string) -> string) -> (string) -> string {
+    retv166
+  } in
+  let t167 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
+  jump ret165(t167)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret165() -> unit {
+  join inline_cont202(t169: string) -> unit {
+    let t170 = @runtime(core.string_println)(t169) in
     ()
   } in
-  let t166 = trait_impl#ToString#string#to_string(value/1) in
-  let t167 = @runtime(core.string_println)(t166) in
-  jump ret165()
+  jump inline_cont202(value/1)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret168(retv169: string) -> string {
-    retv169
-  } in
-  let t170 = @runtime(core.int_to_string)(self/40) in
-  jump ret168(t170)
+  let t173 = @runtime(core.int_to_string)(self/40) in
+  t173
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
-  jump ret171(self/38)
+  self/38
 }
 
-fn inherent#closure_env_make_pairer_T_int_0#closure_env_make_pairer_T_int_0#apply(env154: closure_env_make_pairer_T_int_0, tag/1: string) -> string {
-  join ret173(retv174: string) -> string {
-    retv174
+fn inherent#closure_env_make_pairer_T_int_0#closure_env_make_pairer_T_int_0#apply(env157: closure_env_make_pairer_T_int_0, tag/1: string) -> string {
+  let x/0 = closure_env_make_pairer_T_int_0.x_0(env157) in
+  let t178 = (tag/1 + ":") in
+  join inline_cont203(t179: string) -> string {
+    let t180 = (t178 + t179) in
+    t180
   } in
-  let x/0 = closure_env_make_pairer_T_int_0.x_0(env154) in
-  let t175 = (tag/1 + ":") in
-  let t176 = trait_impl#ToString#int#to_string(x/0) in
-  let t177 = (t175 + t176) in
-  jump ret173(t177)
+  let inline204 = @runtime(core.int_to_string)(x/0) in
+  jump inline_cont203(inline204)
 }
 
-fn inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(env155: closure_env_make_pairer_T_string_1, tag/1: string) -> string {
-  join ret178(retv179: string) -> string {
-    retv179
+fn inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(env158: closure_env_make_pairer_T_string_1, tag/1: string) -> string {
+  let x/0 = closure_env_make_pairer_T_string_1.x_0(env158) in
+  let t183 = (tag/1 + ":") in
+  join inline_cont205(t184: string) -> string {
+    let t185 = (t183 + t184) in
+    t185
   } in
-  let x/0 = closure_env_make_pairer_T_string_1.x_0(env155) in
-  let t180 = (tag/1 + ":") in
-  let t181 = trait_impl#ToString#string#to_string(x/0) in
-  let t182 = (t180 + t181) in
-  jump ret178(t182)
+  jump inline_cont205(x/0)
 }

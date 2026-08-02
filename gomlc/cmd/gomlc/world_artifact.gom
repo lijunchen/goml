@@ -1,18 +1,22 @@
 package main;
 
+use gomlc::artifact::core_codec as core_codec;
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use gomlc::core;
 use std::bytes;
 use std::fs;
 
 fn world_metadata(counter: int) -> bytes::Bytes {
-    let writer = new_artifact_binary_writer();
-    artifact_binary_write_u64(writer, counter as uint64);
-    artifact_binary_writer_finish(writer)
+    let writer = wire::new_artifact_binary_writer();
+    wire::artifact_binary_write_u64(writer, counter as uint64);
+    wire::artifact_binary_writer_finish(writer)
 }
 
 fn world_decode_counter(data: bytes::Bytes) -> Result[int, string] {
-    let reader = new_artifact_binary_reader(data);
-    let value = artifact_binary_read_u64(reader)?;
+    let reader = wire::new_artifact_binary_reader(data);
+    let value = wire::artifact_binary_read_u64(reader)?;
     if value > 2147483647 {
         Result::Err("world artifact counter exceeds supported size")
     } else {
@@ -23,29 +27,29 @@ fn world_decode_counter(data: bytes::Bytes) -> Result[int, string] {
 fn world_core_unit(
     package_name: string,
     declared_name: string,
-    interface: ArtifactInterfaceUnit,
-    exports: ArtifactPackageExports,
+    interface: artifact::ArtifactInterfaceUnit,
+    exports: artifact::ArtifactPackageExports,
     value: core::File,
-) -> ArtifactCoreUnit {
-    ArtifactCoreUnit {
+) -> artifact::ArtifactCoreUnit {
+    artifact::ArtifactCoreUnit {
         package_name,
         declared_name,
         interface_hash: interface.interface_hash,
         exports,
         core_ir: value,
         deps: interface.deps,
-        sources: Vec::new(),
-        tests: Vec::new(),
+        sources: Vec::[],
+        tests: Vec::[],
     }
 }
 
 fn world_add_package_sections(
-    sections: Vec[ArtifactBinarySection],
+    sections: Vec[wire::ArtifactBinarySection],
     section_id: uint16,
     value: ArtifactStandardPackage,
 ) -> Result[unit, string] {
-    let interface = encode_artifact_interface_binary(value.interface_unit)?;
-    let core = encode_artifact_core_binary(
+    let interface = interface_codec::encode_binary(value.interface_unit)?;
+    let core = core_codec::encode_binary(
         world_core_unit(
             value.interface_unit.package_name,
             value.interface_unit.package_interface.name,
@@ -55,28 +59,28 @@ fn world_add_package_sections(
         ),
     )?;
     sections.push(
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: section_id,
             version: 1,
-            flags: artifact_binary_required_section_flag(),
+            flags: wire::required_section_flag(),
             data: interface,
         },
     );
     sections.push(
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: section_id + 1,
             version: 1,
-            flags: artifact_binary_required_section_flag(),
+            flags: wire::required_section_flag(),
             data: core,
         },
     );
     Result::Ok(())
 }
 
-fn world_add_standard_sections(sections: Vec[ArtifactBinarySection], value: ArtifactStandardLibrary) -> Result[
-    unit,
-    string,
-] {
+fn world_add_standard_sections(
+    sections: Vec[wire::ArtifactBinarySection],
+    value: ArtifactStandardLibrary,
+) -> Result[unit, string] {
     let packages: Vec[(uint16, ArtifactStandardPackage)] = Vec::[
         (10 as uint16, value.root),
         (12 as uint16, value.host),
@@ -100,8 +104,8 @@ fn world_add_standard_sections(sections: Vec[ArtifactBinarySection], value: Arti
 }
 
 fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
-    let builtin_interface = encode_artifact_interface_binary(value.builtin_interface)?;
-    let builtin_core = encode_artifact_core_binary(
+    let builtin_interface = interface_codec::encode_binary(value.builtin_interface)?;
+    let builtin_core = core_codec::encode_binary(
         world_core_unit(
             "builtin",
             "builtin",
@@ -111,36 +115,35 @@ fn encode_package_world(value: PackageWorld) -> Result[bytes::Bytes, string] {
         ),
     )?;
     let sections = Vec::[
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: 1,
             version: 1,
-            flags: artifact_binary_required_section_flag(),
+            flags: wire::required_section_flag(),
             data: world_metadata(value.counter.get()),
         },
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: 2,
             version: 1,
-            flags: artifact_binary_required_section_flag(),
+            flags: wire::required_section_flag(),
             data: builtin_interface,
         },
-        ArtifactBinarySection {
+        wire::ArtifactBinarySection {
             id: 3,
             version: 1,
-            flags: artifact_binary_required_section_flag(),
+            flags: wire::required_section_flag(),
             data: builtin_core,
         },
     ];
     world_add_standard_sections(sections, value.standard)?;
-    encode_artifact_binary_container(3, sections)
+    wire::encode_artifact_binary_container(3, sections)
 }
 
-fn world_required_section(value: ArtifactBinaryContainer, id: uint16) -> Result[
-    ArtifactBinarySection,
+fn world_required_section(value: wire::ArtifactBinaryContainer, id: uint16) -> Result[
+    wire::ArtifactBinarySection,
     string,
 ] {
-    match artifact_binary_find_section(value, id) {
-        Some(section) => if section.version != 1
-            || section.flags != artifact_binary_required_section_flag() {
+    match wire::artifact_binary_find_section(value, id) {
+        Some(section) => if section.version != 1 || section.flags != wire::required_section_flag() {
             Result::Err("invalid world artifact section")
         } else {
             Result::Ok(section)
@@ -149,14 +152,15 @@ fn world_required_section(value: ArtifactBinaryContainer, id: uint16) -> Result[
     }
 }
 
-fn world_decode_package(value: ArtifactBinaryContainer, section_id: uint16, expected_name: string) -> Result[
-    ArtifactStandardPackage,
-    string,
-] {
+fn world_decode_package(
+    value: wire::ArtifactBinaryContainer,
+    section_id: uint16,
+    expected_name: string,
+) -> Result[ArtifactStandardPackage, string] {
     let interface_section = world_required_section(value, section_id)?;
     let core_section = world_required_section(value, section_id + 1)?;
-    let interface = decode_artifact_interface_binary(interface_section.data)?;
-    let core = decode_artifact_core_binary(core_section.data)?;
+    let interface = interface_codec::decode_binary(interface_section.data)?;
+    let core = core_codec::decode_binary(core_section.data)?;
     if interface.package_name != expected_name || core.package_name != expected_name
         || core.interface_hash != interface.interface_hash {
         Result::Err("world artifact package identity does not match")
@@ -172,7 +176,7 @@ fn world_decode_package(value: ArtifactBinaryContainer, section_id: uint16, expe
 }
 
 fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
-    let container = decode_artifact_binary_container(data)?;
+    let container = wire::decode_artifact_binary_container(data)?;
     if container.kind != 3 {
         return Result::Err("binary artifact is not a compiler world")
     } else {
@@ -182,8 +186,8 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let counter = Ref::new(world_decode_counter(counter_section.data)?);
     let builtin_interface_section = world_required_section(container, 2)?;
     let builtin_core_section = world_required_section(container, 3)?;
-    let builtin_interface = decode_artifact_interface_binary(builtin_interface_section.data)?;
-    let builtin_core = decode_artifact_core_binary(builtin_core_section.data)?;
+    let builtin_interface = interface_codec::decode_binary(builtin_interface_section.data)?;
+    let builtin_core = core_codec::decode_binary(builtin_core_section.data)?;
     if builtin_interface.package_name != "builtin" || builtin_core.package_name != "builtin"
         || builtin_core.interface_hash != builtin_interface.interface_hash {
         return Result::Err("world artifact builtin identity does not match")
@@ -249,35 +253,35 @@ fn write_package_world(path: string, value: PackageWorld) -> Result[unit, string
 }
 
 fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
-    let output: Ref[Option[string]] = Ref::new(Option::None);
-    let index = Ref::new(2);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
+    let mut output: Option[string] = Option::None;
+    let mut index = 2;
+    while index < args.len() {
+        let argument = args[index];
         if cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
         } else if argument == "--output" {
-            if option_string_present(output.get()) {
+            if option_string_present(output) {
                 return Result::Err(repeated_argument_error("prepare-world", "--output <OUTPUT>"))
-            } else if index.get() + 1 >= args.len() || cli_option(args[index.get() + 1]) {
+            } else if index + 1 >= args.len() || cli_option(args[index + 1]) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
             } else {
-                output.set(Option::Some(args[index.get() + 1]));
-                index.set(index.get() + 2)
+                output = Option::Some(args[index + 1]);
+                index = index + 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--output")) {
-            if option_string_present(output.get()) {
+            if option_string_present(output) {
                 return Result::Err(repeated_argument_error("prepare-world", "--output <OUTPUT>"))
             } else if option_string_empty(inline_cli_value(argument, "--output")) {
                 return Result::Err(value_required_error("--output <OUTPUT>", Option::None))
             } else {
-                output.set(inline_cli_value(argument, "--output"));
-                index.set(index.get() + 1)
+                output = inline_cli_value(argument, "--output");
+                index = index + 1;
             }
         } else {
             return Result::Err(unexpected_argument_error("prepare-world", argument, false))
         }
     };
-    match output.get() {
+    match output {
         Some(value) => Result::Ok(value),
         None => {
             let missing: Vec[string] = Vec::["--output <OUTPUT>"];

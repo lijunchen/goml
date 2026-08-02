@@ -4,6 +4,7 @@ use gomlc::core;
 use gomlc::strings;
 use gomlc::tast;
 use gomlc::vecs;
+use std::collections;
 
 type FunctionIndex = HashMap[string, Vec[core::Function]];
 
@@ -27,7 +28,7 @@ struct TraitSelection {
 struct SpecializeCtx {
     functions: Vec[core::Function],
     function_index: HashMap[string, core::Function],
-    generic_inherent_index: HashMap[string, core::Function],
+    inherent_method_index: FunctionIndex,
     trait_function_index: FunctionIndex,
     trait_method_index: FunctionIndex,
     trait_method_names: HashMap[string, string],
@@ -40,13 +41,13 @@ struct SpecializeCtx {
 }
 
 fn find_binding(values: Vec[TypeBinding], name: string) -> Option[tast::Type] {
-    let index = Ref::new(values.len() - 1);
-    while index.get() >= 0 {
-        let value = values[index.get()];
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
         if value.name == name {
             return Option::Some(value.ty)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -194,7 +195,7 @@ fn unify_type(template: tast::Type, actual: tast::Type, bindings: Vec[TypeBindin
 }
 
 fn substitute_types(values: Vec[tast::Type], bindings: Vec[TypeBinding]) -> Vec[tast::Type] {
-    let result = Vec::new();
+    let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(substitute_type(value, bindings))
     };
@@ -204,7 +205,7 @@ fn substitute_types(values: Vec[tast::Type], bindings: Vec[TypeBinding]) -> Vec[
 fn substitute_named_types(values: Vec[(string, tast::Type)], bindings: Vec[TypeBinding]) -> Vec[
     (string, tast::Type),
 ] {
-    let result = Vec::new();
+    let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         result.push((value.0, substitute_type(value.1, bindings)))
     };
@@ -296,7 +297,7 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
 }
 
 fn function_type(value: core::Function) -> tast::Type {
-    let params = Vec::new();
+    let params: Vec[tast::Type] = Vec::[];
     for param in value.params {
         params.push(param.1)
     };
@@ -304,18 +305,18 @@ fn function_type(value: core::Function) -> tast::Type {
 }
 
 fn function_is_generic(value: core::Function) -> bool {
-    if value.generics.len() > 0 {
+    if !value.generics.is_empty() {
         true
     } else {
-        let generic = Ref::new(!type_is_concrete(value.ret_ty));
+        let mut generic = !type_is_concrete(value.ret_ty);
         for param in value.params {
             if type_is_concrete(param.1) {
                 ()
             } else {
-                generic.set(true)
+                generic = true;
             }
         };
-        generic.get()
+        generic
     }
 }
 
@@ -323,16 +324,46 @@ fn find_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
     ctx.function_index[name]
 }
 
-fn hash_segments(value: string) -> Vec[string] {
-    strings::split(value, "#")
+fn inherent_function_method(value: core::Function) -> Option[string] {
+    match value.origin {
+        core::FunctionOrigin::Inherent { owner: _, method_name } => Option::Some(method_name),
+        _ => Option::None,
+    }
 }
 
-fn inherent_method_key(name: string) -> Option[(string, string)] {
-    let segments = hash_segments(name);
-    if segments.len() == 4 && segments[0] == "inherent" {
-        Option::Some((segments[1], segments[3]))
-    } else {
-        Option::None
+fn canonical_inherent_owner_type(value: tast::Type) -> tast::Type {
+    match tast::resolve_type(value) {
+        Con { name } => if strings::starts_with(name, "builtin::") {
+            tast::Type::Con { name: name.byte_slice(9, name.byte_len()) }
+        } else {
+            tast::Type::Con { name }
+        },
+        App { ty, args } => {
+            let base = canonical_inherent_owner_type(ty);
+            let values: Vec[tast::Type] = Vec::[];
+            for arg in args {
+                values.push(canonical_inherent_owner_type(arg))
+            };
+            match base {
+                Con { name: "Vec" } if values.len() == 1 => {
+                    tast::Type::VecType { elem: values[0] }
+                },
+                Con { name: "Slice" } if values.len() == 1 => {
+                    tast::Type::Slice { elem: values[0] }
+                },
+                Con { name: "Ref" } if values.len() == 1 => {
+                    tast::Type::RefType { elem: values[0] }
+                },
+                Con { name: "HashMap" } if values.len() == 2 => {
+                    tast::Type::HashMap { key: values[0], value: values[1] }
+                },
+                Con { name: "Channel" } if values.len() == 1 => {
+                    tast::Type::Channel { elem: values[0] }
+                },
+                other => tast::Type::App { ty: other, args: values },
+            }
+        },
+        other => other,
     }
 }
 
@@ -344,7 +375,7 @@ fn add_indexed_function(index: FunctionIndex, key: string, function: core::Funct
     match index[key] {
         Some(functions) => functions.push(function),
         None => {
-            let functions = Vec::new();
+            let functions: Vec[core::Function] = Vec::[];
             functions.push(function);
             index[key] = functions;
         },
@@ -354,30 +385,46 @@ fn add_indexed_function(index: FunctionIndex, key: string, function: core::Funct
 fn indexed_functions(index: FunctionIndex, key: string) -> Vec[core::Function] {
     match index[key] {
         Some(functions) => functions,
-        None => Vec::new(),
+        None => Vec::[],
     }
 }
 
-fn find_generic_inherent_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
-    match inherent_method_key(name) {
-        Some(key) => ctx.generic_inherent_index[lookup_pair_key(key.0, key.1)],
-        None => Option::None,
+fn find_inherent_function(
+    ctx: SpecializeCtx,
+    owner: tast::Type,
+    method_name: string,
+    callable_ty: tast::Type,
+) -> Option[core::Function] {
+    for function in indexed_functions(ctx.inherent_method_index, method_name) {
+        match function.origin {
+            core::FunctionOrigin::Inherent { owner: template, method_name: _ } => {
+                let bindings: Vec[TypeBinding] = Vec::[];
+                let owner_matches = unify_type(
+                    canonical_inherent_owner_type(template),
+                    canonical_inherent_owner_type(owner),
+                    bindings,
+                );
+                let callable_matches = unify_type(function_type(function), callable_ty, Vec::[]);
+                if owner_matches || callable_matches {
+                    return Option::Some(function)
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        }
     }
+    Option::None
 }
 
 fn find_callee_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
-    match find_function(ctx, name) {
-        Some(function) => Option::Some(function),
-        None => find_generic_inherent_function(ctx, name),
-    }
+    find_function(ctx, name)
 }
 
-fn trait_impl_method_name(name: string) -> Option[string] {
-    let segments = hash_segments(name);
-    if segments.len() == 4 && segments[0] == "trait_impl" {
-        Option::Some(segments[3])
-    } else {
-        Option::None
+fn trait_impl_method(value: core::Function) -> Option[string] {
+    match value.origin {
+        core::FunctionOrigin::TraitImplementation { method_name } => Option::Some(method_name),
+        _ => Option::None,
     }
 }
 
@@ -424,33 +471,19 @@ fn name_is_used(ctx: SpecializeCtx, name: string) -> bool {
     ctx.used_names.contains(name)
 }
 
-fn string_precedes(left: string, right: string) -> bool {
-    let length = if left.byte_len() < right.byte_len() {
-        left.byte_len()
+fn type_binding_compare(left: TypeBinding, right: TypeBinding) -> int {
+    if left.name < right.name {
+        -1
+    } else if left.name > right.name {
+        1
     } else {
-        right.byte_len()
-    };
-    let index = Ref::new(0);
-    while index.get() < length && left.byte_get(index.get()) == right.byte_get(index.get()) {
-        index.set(index.get() + 1)
-    };
-    if index.get() == length {
-        left.byte_len() < right.byte_len()
-    } else {
-        left.byte_get(index.get()) < right.byte_get(index.get())
+        0
     }
 }
 
 fn sorted_bindings(values: Vec[TypeBinding]) -> Vec[TypeBinding] {
-    let result = Vec::new();
-    for value in values {
-        let index = Ref::new(0);
-        while index.get() < result.len() && !string_precedes(value.name, result[index.get()].name) {
-            index.set(index.get() + 1)
-        };
-        result.insert(index.get(), value)
-    };
-    result
+    collections::sort_by(values, type_binding_compare);
+    values
 }
 
 fn instance_lookup_key(original_name: string, bindings: Vec[TypeBinding]) -> string {
@@ -471,7 +504,7 @@ fn instance_lookup_key(original_name: string, bindings: Vec[TypeBinding]) -> str
 }
 
 fn instance_base_name(ctx: SpecializeCtx, original_name: string, bindings: Vec[TypeBinding]) -> string {
-    if bindings.len() == 0 {
+    if bindings.is_empty() {
         original_name
     } else {
         match find_function(ctx, original_name) {
@@ -503,14 +536,14 @@ fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
         ctx.used_names[base] = ();
         base
     } else {
-        let index = Ref::new(1);
-        let candidate = Ref::new(base + "__mono1");
-        while name_is_used(ctx, candidate.get()) {
-            index.set(index.get() + 1);
-            candidate.set(base + "__mono" + index.get().to_string())
+        let mut index = 1;
+        let mut candidate = base + "__mono1";
+        while name_is_used(ctx, candidate) {
+            index = index + 1;
+            candidate = base + "__mono" + index.to_string();
         };
-        ctx.used_names[candidate.get()] = ();
-        candidate.get()
+        ctx.used_names[candidate] = ();
+        candidate
     }
 }
 
@@ -526,7 +559,7 @@ fn ensure_instance(ctx: SpecializeCtx, original_name: string, bindings: Vec[Type
                 None => (),
             };
             let base = instance_base_name(ctx, original_name, bindings);
-            let name = if bindings.len() == 0 {
+            let name = if bindings.is_empty() {
                 base
             } else {
                 unique_instance_name(ctx, base)
@@ -744,7 +777,7 @@ fn recursive_specialization_from(
 }
 
 fn copy_bindings(values: Vec[TypeBinding]) -> Vec[TypeBinding] {
-    let result = Vec::new();
+    let result: Vec[TypeBinding] = Vec::[];
     for value in values {
         result.push(value)
     };
@@ -779,13 +812,13 @@ fn matching_trait_selections(
     reference: tast::TraitRef,
     bindings: Vec[TypeBinding],
 ) -> Vec[TraitSelection] {
-    let selections = Vec::new();
-    let keys = Vec::new();
+    let selections: Vec[TraitSelection] = Vec::[];
+    let keys: Vec[string] = Vec::[];
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
         match function.trait_impl {
             Some(metadata) => if metadata.trait_ref.name == reference.name
                 && metadata.trait_ref.args.len() == reference.args.len() {
-                let impl_bindings = Vec::new();
+                let impl_bindings: Vec[TypeBinding] = Vec::[];
                 if unify_type(metadata.for_ty, for_ty, impl_bindings) {
                     let candidate = substitute_trait_ref(metadata.trait_ref, impl_bindings);
                     let candidate_matches = if types_are_concrete(reference.args) {
@@ -837,7 +870,7 @@ fn matching_trait_selections(
 }
 
 fn active_types_with(values: Vec[string], value: string) -> Vec[string] {
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for item in values {
         result.push(item)
     };
@@ -848,7 +881,7 @@ fn active_types_with(values: Vec[string], value: string) -> Vec[string] {
 fn normalize_types(ctx: SpecializeCtx, values: Vec[tast::Type], active: Vec[string]) -> Vec[
     tast::Type,
 ] {
-    let result = Vec::new();
+    let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(normalize_type(ctx, value, active))
     };
@@ -878,14 +911,14 @@ fn matching_projection_types(
     name: string,
     reference: tast::TraitRef,
 ) -> Vec[tast::Type] {
-    let result = Vec::new();
-    let keys = Vec::new();
+    let result: Vec[tast::Type] = Vec::[];
+    let keys: Vec[string] = Vec::[];
     for function in indexed_functions(ctx.trait_function_index, reference.name) {
         match function.trait_impl {
             Some(metadata) => {
                 if metadata.trait_ref.name == reference.name
                     && metadata.trait_ref.args.len() == reference.args.len() {
-                    let bindings = Vec::new();
+                    let bindings: Vec[TypeBinding] = Vec::[];
                     if unify_type(metadata.for_ty, base, bindings)
                         && unify_types(metadata.trait_ref.args, reference.args, bindings)
                         && complete_bindings_up_to(
@@ -1060,14 +1093,14 @@ fn type_contains_associated_projection(value: tast::Type) -> bool {
 fn specialize_type(ctx: SpecializeCtx, value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type {
     let specialized = substitute_type(value, bindings);
     if type_contains_associated_projection(specialized) {
-        normalize_type(ctx, specialized, Vec::new())
+        normalize_type(ctx, specialized, Vec::[])
     } else {
         specialized
     }
 }
 
 fn specialize_trait_ref(ctx: SpecializeCtx, value: tast::TraitRef, bindings: Vec[TypeBinding]) -> tast::TraitRef {
-    normalize_trait_ref(ctx, substitute_trait_ref(value, bindings), Vec::new())
+    normalize_trait_ref(ctx, substitute_trait_ref(value, bindings), Vec::[])
 }
 
 fn specialize_named_types(
@@ -1075,7 +1108,7 @@ fn specialize_named_types(
     values: Vec[(string, tast::Type)],
     bindings: Vec[TypeBinding],
 ) -> Vec[(string, tast::Type)] {
-    let result = Vec::new();
+    let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         result.push((value.0, specialize_type(ctx, value.1, bindings)))
     };
@@ -1200,7 +1233,7 @@ fn builtin_iterator_type(value: tast::Type) -> bool {
 }
 
 fn builtin_trait_satisfied(for_ty: tast::Type, reference: tast::TraitRef) -> bool {
-    reference.args.len() == 0
+    reference.args.is_empty()
         && match tast::resolve_type(for_ty) {
             Dyn { trait_name: name } => reference.name == name,
             other => if reference.name == "ToString" || reference.name == "Eq"
@@ -1248,6 +1281,7 @@ fn complete_bindings(ctx: SpecializeCtx, value: core::Function, bindings: Vec[Ty
 fn specialize_callable(ctx: SpecializeCtx, value: tast::Callable, bindings: Vec[TypeBinding]) -> tast::Callable {
     match value {
         Function(name) => tast::Callable::Function(name),
+        LangItem { item, function_name } => tast::Callable::LangItem { item, function_name },
         Runtime(name) => tast::Callable::Runtime(name),
         Intrinsic(name) => tast::Callable::Intrinsic(name),
         TraitMethod { trait_ref: reference, method_name: name } => {
@@ -1277,7 +1311,7 @@ fn specialize_closure_params(
     values: Vec[tast::ClosureParam],
     bindings: Vec[TypeBinding],
 ) -> Vec[tast::ClosureParam] {
-    let result = Vec::new();
+    let result: Vec[tast::ClosureParam] = Vec::[];
     for value in values {
         result.push(
             tast::ClosureParam { name: value.name, ty: specialize_type(ctx, value.ty, bindings) },
@@ -1289,7 +1323,7 @@ fn specialize_closure_params(
 fn specialize_exprs(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[core::Expr]) -> Vec[
     core::Expr,
 ] {
-    let result = Vec::new();
+    let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(specialize_expr(ctx, bindings, value))
     };
@@ -1310,7 +1344,7 @@ fn specialize_optional_expr(
 fn specialize_arms(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[core::Arm]) -> Vec[
     core::Arm,
 ] {
-    let result = Vec::new();
+    let result: Vec[core::Arm] = Vec::[];
     for value in values {
         result.push(
             core::Arm {
@@ -1323,7 +1357,7 @@ fn specialize_arms(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[c
 }
 
 fn specialize_block(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::Block) -> core::Block {
-    let stmts = Vec::new();
+    let stmts: Vec[core::LetStmt] = Vec::[];
     for stmt in value.stmts {
         stmts.push(
             core::LetStmt {
@@ -1337,7 +1371,7 @@ fn specialize_block(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core:
 }
 
 fn trait_call_types(receiver: core::Expr, args: Vec[core::Expr]) -> Vec[tast::Type] {
-    let result = Vec::new();
+    let result: Vec[tast::Type] = Vec::[];
     result.push(core::expr_type(receiver));
     for arg in args {
         result.push(core::expr_type(arg))
@@ -1351,7 +1385,7 @@ fn trait_method_bindings(
     actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
 ) -> Option[Vec[TypeBinding]] {
-    let bindings = Vec::new();
+    let bindings: Vec[TypeBinding] = Vec::[];
     let metadata = function.trait_impl?;
     if metadata.trait_ref.args.len() != reference.args.len()
         || !unify_type(metadata.for_ty, actual_types[0], bindings)
@@ -1360,7 +1394,7 @@ fn trait_method_bindings(
     } else {
         ()
     };
-    let param_types = Vec::new();
+    let param_types: Vec[tast::Type] = Vec::[];
     for param in function.params {
         param_types.push(param.1)
     };
@@ -1379,8 +1413,8 @@ fn ensure_trait_method_instance(
     actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
 ) -> (tast::TraitRef, Option[string]) {
-    let resolved = Ref::new(reference);
-    let instance_name: Ref[Option[string]] = Ref::new(Option::None);
+    let mut resolved = reference;
+    let mut instance_name: Option[string] = Option::None;
     for function in indexed_functions(
         ctx.trait_method_index,
         lookup_pair_key(reference.name, method_name),
@@ -1391,20 +1425,20 @@ fn ensure_trait_method_instance(
                 let name = ensure_instance(ctx, function.name, bindings);
                 match base_name {
                     Some(base) => if base != name {
-                        instance_name.set(Option::Some(name))
+                        instance_name = Option::Some(name);
                     } else {
                         ()
                     },
                     None => (),
                 };
-                resolved.set(specialize_trait_ref(ctx, reference, bindings))
+                resolved = specialize_trait_ref(ctx, reference, bindings);
             } else {
                 ()
             },
             None => (),
         }
     };
-    (resolved.get(), instance_name.get())
+    (resolved, instance_name)
 }
 
 fn ensure_trait_call_instance(
@@ -1428,7 +1462,7 @@ fn ensure_dyn_trait_impls(ctx: SpecializeCtx, trait_name: string, for_ty: tast::
     for function in indexed_functions(ctx.trait_function_index, trait_name) {
         match function.trait_impl {
             Some(metadata) => {
-                let bindings = Vec::new();
+                let bindings: Vec[TypeBinding] = Vec::[];
                 if unify_type(metadata.for_ty, for_ty, bindings)
                     && complete_bindings(ctx, function, bindings) {
                     ensure_instance(ctx, function.name, bindings);
@@ -1451,7 +1485,7 @@ fn specialize_found_var_with_projection_bindings(
 ) -> core::Expr {
     if function_is_generic(function) {
         if type_is_concrete(ty) {
-            let call_bindings = Vec::new();
+            let call_bindings: Vec[TypeBinding] = Vec::[];
             if unify_type(function_type(function), ty, call_bindings)
                 && (allow_projection_bindings || !has_projection_binding(call_bindings))
                 && complete_bindings(ctx, function, call_bindings) {
@@ -1498,12 +1532,23 @@ fn specialize_call(
             Some(function) => if function_is_generic(function) {
                 specialize_call_var(ctx, function, name, func_ty)
             } else {
-                core::Expr::Var {
-                    name: ensure_instance(ctx, function.name, Vec::new()),
-                    ty: func_ty,
-                }
+                core::Expr::Var { name: ensure_instance(ctx, function.name, Vec::[]), ty: func_ty }
             },
             None => core::Expr::Var { name, ty: func_ty },
+        },
+        Callable {
+            callable: tast::Callable::InherentMethod { receiver_ty: owner, method_name },
+            ty: func_ty,
+        } => match find_inherent_function(ctx, owner, method_name, func_ty) {
+            Some(function) => if function_is_generic(function) {
+                specialize_call_var(ctx, function, function.name, func_ty)
+            } else {
+                core::Expr::Var { name: ensure_instance(ctx, function.name, Vec::[]), ty: func_ty }
+            },
+            None => core::Expr::Callable {
+                callable: tast::Callable::InherentMethod { receiver_ty: owner, method_name },
+                ty: func_ty,
+            },
         },
         other => other,
     };
@@ -1668,7 +1713,7 @@ fn ensure_runtime_trait_impl(
 ) -> unit {
     let _ = ensure_trait_method_instance(
         ctx,
-        tast::TraitRef { name: trait_name, args: Vec::new() },
+        tast::TraitRef { name: trait_name, args: Vec::[] },
         method_name,
         params,
         ret_ty,
@@ -1830,15 +1875,27 @@ fn ensure_runtime_trait_impls(ctx: SpecializeCtx, functions: Vec[core::Function]
 }
 
 fn specialize_function(ctx: SpecializeCtx, instance: Instance, value: core::Function) -> core::Function {
-    let params = Vec::new();
+    let params: Vec[(string, tast::Type)] = Vec::[];
     for param in value.params {
         params.push((param.0, specialize_type(ctx, param.1, instance.bindings)))
     };
     core::Function {
         name: instance.name,
+        origin: match value.origin {
+            core::FunctionOrigin::Source => core::FunctionOrigin::Source,
+            core::FunctionOrigin::Inherent { owner, method_name } => {
+                core::FunctionOrigin::Inherent {
+                    owner: specialize_type(ctx, owner, instance.bindings),
+                    method_name,
+                }
+            },
+            core::FunctionOrigin::TraitImplementation { method_name } => {
+                core::FunctionOrigin::TraitImplementation { method_name }
+            },
+        },
         root: true,
-        generics: Vec::new(),
-        predicates: Vec::new(),
+        generics: Vec::[],
+        predicates: Vec::[],
         trait_impl: match value.trait_impl {
             Some(metadata) => Option::Some(
                 core::TraitImpl {
@@ -1867,7 +1924,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     let type_instances = value.type_instances;
     let constants = value.constants;
     let function_index: HashMap[string, core::Function] = HashMap::{};
-    let generic_inherent_index: HashMap[string, core::Function] = HashMap::{};
+    let inherent_method_index: FunctionIndex = HashMap::{};
     let trait_function_index: FunctionIndex = HashMap::{};
     let trait_method_index: FunctionIndex = HashMap::{};
     let trait_method_names: HashMap[string, string] = HashMap::{};
@@ -1875,18 +1932,14 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     for function in value.functions {
         function_index[function.name] = function;
         used_names[function.name] = ();
-        if function_is_generic(function) {
-            match inherent_method_key(function.name) {
-                Some(key) => generic_inherent_index.set(lookup_pair_key(key.0, key.1), function),
-                None => (),
-            }
-        } else {
-            ()
+        match inherent_function_method(function) {
+            Some(method_name) => add_indexed_function(inherent_method_index, method_name, function),
+            None => (),
         };
         match function.trait_impl {
             Some(metadata) => {
                 add_indexed_function(trait_function_index, metadata.trait_ref.name, function);
-                match trait_impl_method_name(function.name) {
+                match trait_impl_method(function) {
                     Some(method_name) => {
                         trait_method_names[function.name] = method_name;
                         add_indexed_function(
@@ -1904,38 +1957,40 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     let ctx = SpecializeCtx {
         functions: value.functions,
         function_index,
-        generic_inherent_index,
+        inherent_method_index,
         trait_function_index,
         trait_method_index,
         trait_method_names,
-        instances: Vec::new(),
+        instances: Vec::[],
         instance_index: HashMap::{},
-        work: Vec::new(),
+        work: Vec::[],
         used_names,
         active: Ref::new(Option::None),
         error,
     };
     for function in ctx.functions {
         if function.root && !function_is_generic(function) {
-            ensure_instance(ctx, function.name, Vec::new());
+            ensure_instance(ctx, function.name, Vec::[]);
             ()
         } else {
             ()
         }
     };
-    let output = Vec::new();
-    let index = Ref::new(0);
+    let output: Vec[core::Function] = Vec::[];
+    let mut index = 0;
     loop {
-        while index.get() < ctx.work.len() {
-            let instance = ctx.work[index.get()];
-            index.set(index.get() + 1);
+        while index < ctx.work.len() {
+            let instance = ctx.work[index];
+            index = index + 1;
             match find_function(ctx, instance.original_name) {
                 Some(function) => {
                     ctx.active.set(Option::Some(instance));
                     output.push(specialize_function(ctx, instance, function));
                     ctx.active.set(Option::None)
                 },
-                None => (),
+                None => ctx.error.set(
+                    Option::Some("missing monomorphization function " + instance.original_name),
+                ),
             }
         };
         let previous_len = ctx.work.len();

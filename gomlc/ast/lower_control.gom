@@ -10,7 +10,7 @@ fn lower_wrapped_branch(ctx: LowerCtx, node: LocatedNode, missing_message: strin
         },
         None => {
             let values = expr_children(node);
-            if values.len() > 0 {
+            if !values.is_empty() {
                 lower_expr(ctx, values[0])
             } else {
                 push_error(ctx, node_span(node), missing_message);
@@ -22,7 +22,7 @@ fn lower_wrapped_branch(ctx: LowerCtx, node: LocatedNode, missing_message: strin
 
 fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
     let patterns = pattern_children(node);
-    if patterns.len() == 0 {
+    if patterns.is_empty() {
         Option::None
     } else {
         match lower_pat(ctx, patterns[0]) {
@@ -30,7 +30,7 @@ fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
                 let guard = match first_child(node, cst::NodeKind::MATCH_ARM_GUARD) {
                     Some(guard_node) => {
                         let values = expr_children(guard_node);
-                        if values.len() > 0 {
+                        if !values.is_empty() {
                             lower_expr(ctx, values[0])
                         } else {
                             Option::None
@@ -39,7 +39,7 @@ fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
                     None => Option::None,
                 };
                 let values = expr_children(node);
-                let body = if values.len() > 0 {
+                let body = if !values.is_empty() {
                     lower_expr(ctx, values[0])
                 } else {
                     match first_child(node, cst::NodeKind::BLOCK) {
@@ -70,14 +70,14 @@ fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         Option::None
     } else {
         let values = expr_children(node);
-        if values.len() == 0 {
+        if values.is_empty() {
             push_error(ctx, node_span(node), "MatchExpr has no expr");
             Option::None
         } else {
             match lower_expr(ctx, values[0]) {
                 Some(scrutinee) => match first_child(node, cst::NodeKind::MATCH_ARM_LIST) {
                     Some(list) => {
-                        let arms: Vec[Arm] = Vec::new();
+                        let arms: Vec[Arm] = Vec::[];
                         for arm in children_of_kind(list, cst::NodeKind::MATCH_ARM) {
                             match lower_match_arm(ctx, arm) {
                                 Some(value) => arms.push(value),
@@ -104,13 +104,13 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
         match first_child(node, cst::NodeKind::EXPR_IF_COND) {
             Some(condition_node) => {
                 let patterns = pattern_children(condition_node);
-                let let_pat = if patterns.len() > 0 {
+                let let_pat = if !patterns.is_empty() {
                     lower_pat(ctx, patterns[0])
                 } else {
                     Option::None
                 };
                 let values = expr_children(condition_node);
-                if values.len() == 0 {
+                if values.is_empty() {
                     push_error(ctx, node_span(node), "If expression missing condition");
                     Option::None
                 } else {
@@ -136,7 +136,7 @@ fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                                     match else_branch {
                                         Some(else_value) => match let_pat {
                                             Some(pat) => {
-                                                let arms: Vec[Arm] = Vec::new();
+                                                let arms: Vec[Arm] = Vec::[];
                                                 arms.push(
                                                     Arm {
                                                         pat,
@@ -201,13 +201,13 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
         match first_child(node, cst::NodeKind::EXPR_WHILE_COND) {
             Some(condition_node) => {
                 let patterns = pattern_children(condition_node);
-                let let_pat = if patterns.len() > 0 {
+                let let_pat = if !patterns.is_empty() {
                     lower_pat(ctx, patterns[0])
                 } else {
                     Option::None
                 };
                 let values = expr_children(condition_node);
-                if values.len() == 0 {
+                if values.is_empty() {
                     push_error(ctx, node_span(node), "While expression missing condition");
                     Option::None
                 } else {
@@ -220,7 +220,7 @@ fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                             ) {
                                 Some(body) => match let_pat {
                                     Some(pat) => {
-                                        let arms: Vec[Arm] = Vec::new();
+                                        let arms: Vec[Arm] = Vec::[];
                                         arms.push(Arm { pat, guard: Option::None, body });
                                         arms.push(
                                             Arm {
@@ -298,10 +298,10 @@ fn lower_for_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) ->
     } else {
         let patterns = pattern_children(node);
         let values = expr_children(node);
-        if patterns.len() == 0 {
+        if patterns.is_empty() {
             push_error(ctx, node_span(node), "For expression missing pattern");
             Option::None
-        } else if values.len() == 0 {
+        } else if values.is_empty() {
             push_error(ctx, node_span(node), "For expression missing iterator");
             Option::None
         } else {
@@ -337,7 +337,7 @@ fn lower_return_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
         Option::None
     } else {
         let values = expr_children(node);
-        let value = if values.len() > 0 {
+        let value = if !values.is_empty() {
             lower_expr(ctx, values[0])
         } else {
             Option::None
@@ -351,7 +351,7 @@ fn lower_go_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
         Option::None
     } else {
         let values = expr_children(node);
-        if values.len() == 0 {
+        if values.is_empty() {
             push_error(ctx, node_span(node), "go statement missing expression");
             Option::None
         } else {

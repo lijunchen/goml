@@ -83,7 +83,7 @@ fn pretty_write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
         },
         App { ty: base, args } => {
             pretty_write_type(builder, base);
-            if args.len() > 0 {
+            if !args.is_empty() {
                 builder.write_char('[');
                 pretty_write_types(builder, args, ", ");
                 builder.write_char(']')
@@ -109,7 +109,7 @@ fn pretty_write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
 
 fn pretty_write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
     pretty_write_path(builder, value.path);
-    if value.args.len() > 0 {
+    if !value.args.is_empty() {
         builder.write_char('[');
         pretty_write_types(builder, value.args, ", ");
         builder.write_char(']')
@@ -145,7 +145,7 @@ fn pretty_find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Opt
 }
 
 fn pretty_write_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
-    if values.len() > 0 {
+    if !values.is_empty() {
         builder.write_char('[');
         pretty_write_strings(builder, values, ", ");
         builder.write_char(']')
@@ -159,7 +159,7 @@ fn pretty_write_bounded_generics(
     generics: Vec[string],
     bounds: Vec[(string, Vec[TraitRef])],
 ) -> unit {
-    if generics.len() > 0 {
+    if !generics.is_empty() {
         builder.write_char('[');
         let mut index = 0;
         for generic in generics {
@@ -170,7 +170,7 @@ fn pretty_write_bounded_generics(
             };
             builder.write_string(generic);
             match pretty_find_bounds(bounds, generic) {
-                Some(values) => if values.len() > 0 {
+                Some(values) => if !values.is_empty() {
                     builder.write_string(": ");
                     pretty_write_trait_refs(builder, values, " + ")
                 } else {
@@ -187,7 +187,7 @@ fn pretty_write_bounded_generics(
 }
 
 fn pretty_write_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
-    if values.len() > 0 {
+    if !values.is_empty() {
         builder.write_string(" where ");
         let mut index = 0;
         for value in values {
@@ -407,7 +407,7 @@ fn pretty_write_struct(builder: text::StringBuilder, value: StructDef, indent: i
     builder.write_char('}')
 }
 
-fn pretty_write_trait_method(builder: text::StringBuilder, value: TraitMethodSignature) -> unit {
+fn pretty_write_trait_method(builder: text::StringBuilder, value: TraitMethodSignature, indent: int) -> unit {
     builder.write_string("fn ");
     builder.write_string(value.name);
     pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
@@ -426,7 +426,13 @@ fn pretty_write_trait_method(builder: text::StringBuilder, value: TraitMethodSig
     builder.write_string(") -> ");
     pretty_write_type(builder, value.ret_ty);
     pretty_write_predicates(builder, value.predicates);
-    builder.write_char(';')
+    match value.body {
+        Some(body) => {
+            builder.write_char(' ');
+            pretty_write_block(builder, body, indent)
+        },
+        None => builder.write_char(';'),
+    }
 }
 
 fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int) -> unit {
@@ -435,7 +441,7 @@ fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int
     builder.write_string("trait ");
     builder.write_string(value.name);
     pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
-    if value.supertraits.len() > 0 {
+    if !value.supertraits.is_empty() {
         builder.write_string(": ");
         pretty_write_trait_refs(builder, value.supertraits, " + ")
     } else {
@@ -443,7 +449,7 @@ fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int
     };
     pretty_write_predicates(builder, value.predicates);
     builder.write_string(" {");
-    if value.associated_types.len() == 0 && value.method_sigs.len() == 0 {
+    if value.associated_types.is_empty() && value.method_sigs.is_empty() {
         builder.write_string("\n\n");
         pretty_write_spaces(builder, indent)
     } else {
@@ -451,7 +457,7 @@ fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int
             pretty_newline(builder, indent + 2);
             builder.write_string("type ");
             builder.write_string(associated.name);
-            if associated.bounds.len() > 0 {
+            if !associated.bounds.is_empty() {
                 builder.write_string(": ");
                 pretty_write_trait_refs(builder, associated.bounds, " + ")
             } else {
@@ -461,7 +467,7 @@ fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int
         };
         for method in value.method_sigs {
             pretty_newline(builder, indent + 2);
-            pretty_write_trait_method(builder, method)
+            pretty_write_trait_method(builder, method, indent + 2)
         };
         pretty_newline(builder, indent)
     };
@@ -545,7 +551,7 @@ fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int
     pretty_write_type(builder, value.for_type);
     pretty_write_predicates(builder, value.predicates);
     builder.write_string(" {");
-    if value.associated_types.len() == 0 && value.methods.len() == 0 {
+    if value.associated_types.is_empty() && value.methods.is_empty() {
         builder.write_string("\n\n");
         pretty_write_spaces(builder, indent)
     } else {
@@ -608,10 +614,33 @@ fn pretty_file(value: File) -> string {
     builder.write_string(value.package_name);
     builder.write_char(';');
     pretty_newline(builder, 0);
-    if value.uses.len() > 0 {
+    if !value.uses.is_empty() {
         for use_decl in value.uses {
             builder.write_string("use ");
             pretty_write_path(builder, use_decl.path);
+            if !use_decl.items.is_empty() {
+                builder.write_string("::{");
+                let mut index = 0;
+                for item in use_decl.items {
+                    if index > 0 {
+                        builder.write_string(", ")
+                    } else {
+                        ()
+                    };
+                    builder.write_string(item.name);
+                    match item.alias {
+                        Some(alias) => {
+                            builder.write_string(" as ");
+                            builder.write_string(alias)
+                        },
+                        None => (),
+                    };
+                    index = index + 1;
+                };
+                builder.write_char('}')
+            } else {
+                ()
+            };
             match use_decl.alias {
                 Some(alias) => {
                     builder.write_string(" as ");

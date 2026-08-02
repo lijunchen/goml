@@ -266,7 +266,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
         Make { ty, args } => {
             builder.write_string("make(");
             write_type(builder, ty);
-            if args.len() > 0 {
+            if !args.is_empty() {
                 builder.write_string(", ");
                 write_exprs(builder, args, indent)
             } else {
@@ -293,7 +293,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
                 write_expr(builder, field.1, indent + 4);
                 builder.write_char(',')
             };
-            if fields.len() > 0 {
+            if !fields.is_empty() {
                 newline(builder, indent)
             } else {
                 ()
@@ -333,7 +333,7 @@ fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit 
         newline(builder, indent + 4);
         write_stmt(builder, stmt, indent + 4)
     };
-    if value.stmts.len() > 0 {
+    if !value.stmts.is_empty() {
         newline(builder, indent)
     } else {
         ()
@@ -533,7 +533,7 @@ fn write_struct(builder: text::StringBuilder, value: StructDef) -> unit {
         builder.write_char(' ');
         write_type(builder, field.1)
     };
-    if value.fields.len() > 0 {
+    if !value.fields.is_empty() {
         newline(builder, 0)
     } else {
         ()
@@ -566,7 +566,7 @@ fn write_interface(builder: text::StringBuilder, value: InterfaceDef) -> unit {
             None => (),
         }
     };
-    if value.methods.len() > 0 {
+    if !value.methods.is_empty() {
         newline(builder, 0)
     } else {
         ()
@@ -583,7 +583,7 @@ fn write_type_def(builder: text::StringBuilder, value: TypeDef) -> unit {
 
 fn write_const_group(builder: text::StringBuilder, value: ConstGroup) -> unit {
     builder.write_string("const (");
-    let empty = value.specs.len() == 0;
+    let empty = value.specs.is_empty();
     for spec in value.specs {
         newline(builder, 4);
         builder.write_string(spec.name);

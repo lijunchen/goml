@@ -1,67 +1,80 @@
 fn main() -> unit {
-  join ret155() -> unit {
-    ()
+  let t159 = Prefix { value: "direct:" } in
+  join inline_cont199(direct/3: string) -> unit {
+    join inline_cont196(_wild155: unit) -> unit {
+      let t160 = Prefix { value: "generic:" } in
+      join inline_cont194(generic/4: string) -> unit {
+        join inline_cont191(_wild156: unit) -> unit {
+          let t161 = Prefix { value: "ufcs:" } in
+          join inline_cont186(ufcs/5: string) -> unit {
+            let inline184 = trait_impl#ToString#string#to_string(ufcs/5) in
+            let inline185 = @runtime(core.string_println)(inline184) in
+            ()
+          } in
+          let inline187 = 12 in
+          let inline188 = "ufcs:" in
+          let inline189 = trait_impl#ToString#int#to_string(inline187) in
+          let inline190 = (inline188 + inline189) in
+          jump inline_cont186(inline190)
+        } in
+        let inline192 = trait_impl#ToString#string#to_string(generic/4) in
+        let inline193 = @runtime(core.string_println)(inline192) in
+        jump inline_cont191(())
+      } in
+      let inline195 = trait_impl#RenderValue#Prefix#render__mono2(t160, 11) in
+      jump inline_cont194(inline195)
+    } in
+    let inline197 = trait_impl#ToString#string#to_string(direct/3) in
+    let inline198 = @runtime(core.string_println)(inline197) in
+    jump inline_cont196(())
   } in
-  let t156 = Prefix { value: "direct:" } in
-  let direct/3 = trait_impl#RenderValue#Prefix#render__mono1(t156, "ok") in
-  let _wild152 = println__T_string(direct/3) in
-  let t157 = Prefix { value: "generic:" } in
-  let generic/4 = render_generic__T_Prefix(t157) in
-  let _wild153 = println__T_string(generic/4) in
-  let t158 = Prefix { value: "ufcs:" } in
-  let ufcs/5 = trait_impl#RenderValue#Prefix#render__mono2(t158, 12) in
-  let _wild154 = println__T_string(ufcs/5) in
-  jump ret155()
+  let inline200 = "ok" in
+  let inline201 = "direct:" in
+  let inline202 = trait_impl#ToString#string#to_string(inline200) in
+  let inline203 = (inline201 + inline202) in
+  jump inline_cont199(inline203)
 }
 
 fn trait_impl#RenderValue#Prefix#render__mono1(self/0: Prefix, value/1: string) -> string {
-  join ret159(retv160: string) -> string {
-    retv160
+  let t164 = Prefix.value(self/0) in
+  join inline_cont204(t165: string) -> string {
+    let t166 = (t164 + t165) in
+    t166
   } in
-  let t161 = Prefix.value(self/0) in
-  let t162 = trait_impl#ToString#string#to_string(value/1) in
-  let t163 = (t161 + t162) in
-  jump ret159(t163)
+  jump inline_cont204(value/1)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret164() -> unit {
+  join inline_cont205(t168: string) -> unit {
+    let t169 = @runtime(core.string_println)(t168) in
     ()
   } in
-  let t165 = trait_impl#ToString#string#to_string(value/1) in
-  let t166 = @runtime(core.string_println)(t165) in
-  jump ret164()
+  jump inline_cont205(value/1)
 }
 
 fn render_generic__T_Prefix(renderer/2: Prefix) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
-  } in
-  let t169 = trait_impl#RenderValue#Prefix#render__mono2(renderer/2, 11) in
-  jump ret167(t169)
+  let inline207 = 11 in
+  let inline208 = Prefix.value(renderer/2) in
+  let inline209 = trait_impl#ToString#int#to_string(inline207) in
+  let inline210 = (inline208 + inline209) in
+  inline210
 }
 
 fn trait_impl#RenderValue#Prefix#render__mono2(self/0: Prefix, value/1: int) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
+  let t175 = Prefix.value(self/0) in
+  join inline_cont211(t176: string) -> string {
+    let t177 = (t175 + t176) in
+    t177
   } in
-  let t172 = Prefix.value(self/0) in
-  let t173 = trait_impl#ToString#int#to_string(value/1) in
-  let t174 = (t172 + t173) in
-  jump ret170(t174)
+  let inline212 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont211(inline212)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret175(retv176: string) -> string {
-    retv176
-  } in
-  jump ret175(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret177(retv178: string) -> string {
-    retv178
-  } in
-  let t179 = @runtime(core.int_to_string)(self/40) in
-  jump ret177(t179)
+  let t182 = @runtime(core.int_to_string)(self/40) in
+  t182
 }

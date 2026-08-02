@@ -1,54 +1,52 @@
 fn main() -> unit {
-  join ret154() -> unit {
-    ()
+  join inline_cont184(a/0: Ref[int]) -> unit {
+    let b/1 = a/0 in
+    join inline_cont181(c/2: Ref[int]) -> unit {
+      let t158 = @intrinsic(ref.ptr_eq)(a/0, a/0) in
+      join inline_cont178(_wild155: unit) -> unit {
+        let t159 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
+        let inline176 = trait_impl#ToString#bool#to_string(t159) in
+        let inline177 = @runtime(core.string_println)(inline176) in
+        ()
+      } in
+      let inline179 = trait_impl#ToString#bool#to_string(t158) in
+      let inline180 = @runtime(core.string_println)(inline179) in
+      jump inline_cont178(())
+    } in
+    let inline182 = 1 in
+    let inline183 = @intrinsic(ref.new)(inline182) in
+    jump inline_cont181(inline183)
   } in
-  let a/0 = inherent#Ref#Ref[T]#new__T_int(1) in
-  let b/1 = a/0 in
-  let c/2 = inherent#Ref#Ref[T]#new__T_int(1) in
-  let t155 = @intrinsic(ref.ptr_eq)(a/0, b/1) in
-  let _wild152 = println__T_bool(t155) in
-  let t156 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
-  let _wild153 = println__T_bool(t156) in
-  jump ret154()
+  let inline185 = 1 in
+  let inline186 = @intrinsic(ref.new)(inline185) in
+  jump inline_cont184(inline186)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  join ret157(retv158: Ref[int]) -> Ref[int] {
-    retv158
-  } in
-  let t159 = @intrinsic(ref.new)(value/207) in
-  jump ret157(t159)
+  let t162 = @intrinsic(ref.new)(value/207) in
+  t162
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join ret160() -> unit {
+  join inline_cont187(t164: string) -> unit {
+    let t165 = @runtime(core.string_println)(t164) in
     ()
   } in
-  let t161 = trait_impl#ToString#bool#to_string(value/1) in
-  let t162 = @runtime(core.string_println)(t161) in
-  jump ret160()
+  let inline188 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont187(inline188)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret163(retv164: string) -> string {
-    retv164
-  } in
-  let t165 = @runtime(core.bool_to_string)(self/37) in
-  jump ret163(t165)
+  let t168 = @runtime(core.bool_to_string)(self/37) in
+  t168
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret166(retv167: bool) -> bool {
-    retv167
-  } in
-  let t168 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret166(t168)
+  let t171 = @intrinsic(eq.primitive)(self/59, other/60) in
+  t171
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret169(retv170: uint64) -> uint64 {
-    retv170
-  } in
-  let t171 = @runtime(core.int_hash)(self/85) in
-  jump ret169(t171)
+  let t174 = @runtime(core.int_hash)(self/85) in
+  t174
 }

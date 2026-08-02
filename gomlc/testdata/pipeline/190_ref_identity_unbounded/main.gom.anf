@@ -1,175 +1,213 @@
 fn print_lookup(map/0: HashMap[Ref[Node], string], key/1: Ref[Node]) -> unit {
-  join ret165() -> unit {
-    ()
+  join inline_cont232(mtmp155: Option__string) -> unit {
+    match mtmp155 {
+      Tag_0 => {
+        let inline226 = "missing" in
+        let inline227 = trait_impl#ToString#string#to_string(inline226) in
+        let inline228 = @runtime(core.string_println)(inline227) in
+        ()
+      },
+      Tag_1 => {
+        let x156 = Option__string::Some._0(mtmp155) in
+        let value/2 = x156 in
+        let inline230 = trait_impl#ToString#string#to_string(x156) in
+        let inline231 = @runtime(core.string_println)(inline230) in
+        ()
+      },
+    }
   } in
-  let mtmp152 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/0, key/1) in
-  join k166() -> unit {
-    jump ret165()
-  } in
-  match mtmp152 {
-    Tag_0 => {
-      let t167 = println__T_string("missing") in
-      jump k166()
-    },
-    Tag_1 => {
-      let x153 = Option__string::Some._0(mtmp152) in
-      let value/2 = x153 in
-      let t168 = println__T_string(value/2) in
-      jump k166()
-    },
-  }
+  let inline233 = @intrinsic(hashmap.get)(map/0, key/1) in
+  jump inline_cont232(inline233)
 }
 
 fn main() -> unit {
-  join ret169() -> unit {
-    ()
-  } in
-  let t170 = Node { value: 1 } in
-  let first/3 = inherent#Ref#Ref[T]#new__T_Node(t170) in
+  let t173 = Node { value: 1 } in
+  let first/3 = inherent#Ref#Ref[T]#new__T_Node(t173) in
   let alias/4 = first/3 in
-  let t171 = Node { value: 1 } in
-  let distinct/5 = inherent#Ref#Ref[T]#new__T_Node(t171) in
-  let t172 = trait_impl#Eq#Ref[Node]#eq(first/3, alias/4) in
-  let _wild154 = println__T_bool(t172) in
-  let t173 = trait_impl#Eq#Ref[Node]#eq(first/3, distinct/5) in
-  let _wild155 = println__T_bool(t173) in
-  let t174 = trait_impl#Hash#Ref[Node]#hash(first/3) in
-  let t175 = trait_impl#Hash#Ref[Node]#hash(alias/4) in
-  let t176 = trait_impl#Eq#uint64#eq(t174, t175) in
-  let _wild156 = println__T_bool(t176) in
-  let map/6 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() in
-  let _wild157 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, first/3, "first") in
-  let _wild158 = print_lookup(map/6, alias/4) in
-  let _wild159 = print_lookup(map/6, distinct/5) in
-  let t177 = Node { value: 2 } in
-  let _wild160 = inherent#Ref#Ref[T]#set__T_Node(first/3, t177) in
-  let _wild161 = print_lookup(map/6, first/3) in
-  let _wild162 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, distinct/5, "distinct") in
-  let t178 = inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(map/6) in
-  let _wild163 = println__T_int(t178) in
-  let _wild164 = print_lookup(map/6, first/3) in
-  let t179 = print_lookup(map/6, distinct/5) in
-  jump ret169()
+  let t174 = Node { value: 1 } in
+  let distinct/5 = inherent#Ref#Ref[T]#new__T_Node(t174) in
+  let t175 = trait_impl#Eq#Ref[Node]#eq(first/3, first/3) in
+  let _wild157 = println__T_bool(t175) in
+  let t176 = trait_impl#Eq#Ref[Node]#eq(first/3, distinct/5) in
+  let _wild158 = println__T_bool(t176) in
+  let t177 = trait_impl#Hash#Ref[Node]#hash(first/3) in
+  let t178 = trait_impl#Hash#Ref[Node]#hash(first/3) in
+  let t179 = trait_impl#Eq#uint64#eq(t177, t178) in
+  join inline_cont273(_wild159: unit) -> unit {
+    join inline_cont271(map/6: HashMap[Ref[Node], string]) -> unit {
+      join inline_cont268(_wild160: unit) -> unit {
+        let _wild161 = print_lookup(map/6, first/3) in
+        join inline_cont262(_wild162: unit) -> unit {
+          let t180 = Node { value: 2 } in
+          join inline_cont260(_wild163: unit) -> unit {
+            join inline_cont254(_wild164: unit) -> unit {
+              join inline_cont251(_wild165: unit) -> unit {
+                join inline_cont249(t181: int) -> unit {
+                  join inline_cont246(_wild166: unit) -> unit {
+                    join inline_cont240(_wild167: unit) -> unit {
+                      let inline235 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/6, distinct/5) in
+                      match inline235 {
+                        Tag_0 => {
+                          let inline236 = println__T_string("missing") in
+                          ()
+                        },
+                        Tag_1 => {
+                          let inline237 = Option__string::Some._0(inline235) in
+                          let inline238 = inline237 in
+                          let inline239 = println__T_string(inline237) in
+                          ()
+                        },
+                      }
+                    } in
+                    let inline241 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/6, first/3) in
+                    match inline241 {
+                      Tag_0 => {
+                        let inline242 = println__T_string("missing") in
+                        jump inline_cont240(())
+                      },
+                      Tag_1 => {
+                        let inline243 = Option__string::Some._0(inline241) in
+                        let inline244 = inline243 in
+                        let inline245 = println__T_string(inline243) in
+                        jump inline_cont240(())
+                      },
+                    }
+                  } in
+                  let inline247 = trait_impl#ToString#int#to_string(t181) in
+                  let inline248 = @runtime(core.string_println)(inline247) in
+                  jump inline_cont246(())
+                } in
+                let inline250 = @intrinsic(hashmap.len)(map/6) in
+                jump inline_cont249(inline250)
+              } in
+              let inline252 = "distinct" in
+              let inline253 = @intrinsic(hashmap.set)(map/6, distinct/5, inline252) in
+              jump inline_cont251(())
+            } in
+            let inline255 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/6, first/3) in
+            match inline255 {
+              Tag_0 => {
+                let inline256 = println__T_string("missing") in
+                jump inline_cont254(())
+              },
+              Tag_1 => {
+                let inline257 = Option__string::Some._0(inline255) in
+                let inline258 = inline257 in
+                let inline259 = println__T_string(inline257) in
+                jump inline_cont254(())
+              },
+            }
+          } in
+          let inline261 = @intrinsic(ref.set)(first/3, t180) in
+          jump inline_cont260(())
+        } in
+        let inline263 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/6, distinct/5) in
+        match inline263 {
+          Tag_0 => {
+            let inline264 = println__T_string("missing") in
+            jump inline_cont262(())
+          },
+          Tag_1 => {
+            let inline265 = Option__string::Some._0(inline263) in
+            let inline266 = inline265 in
+            let inline267 = println__T_string(inline265) in
+            jump inline_cont262(())
+          },
+        }
+      } in
+      let inline269 = "first" in
+      let inline270 = @intrinsic(hashmap.set)(map/6, first/3, inline269) in
+      jump inline_cont268(())
+    } in
+    let inline272 = @intrinsic(hashmap.new)() in
+    jump inline_cont271(inline272)
+  } in
+  let inline274 = trait_impl#ToString#bool#to_string(t179) in
+  let inline275 = @runtime(core.string_println)(inline274) in
+  jump inline_cont273(())
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(self/196: HashMap[Ref[Node], string], key/197: Ref[Node]) -> Option__string {
-  join ret180(retv181: Option__string) -> Option__string {
-    retv181
-  } in
-  let t182 = @intrinsic(hashmap.get)(self/196, key/197) in
-  jump ret180(t182)
+  let t185 = @intrinsic(hashmap.get)(self/196, key/197) in
+  t185
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret183() -> unit {
+  join inline_cont276(t187: string) -> unit {
+    let t188 = @runtime(core.string_println)(t187) in
     ()
   } in
-  let t184 = trait_impl#ToString#string#to_string(value/1) in
-  let t185 = @runtime(core.string_println)(t184) in
-  jump ret183()
+  jump inline_cont276(value/1)
 }
 
 fn inherent#Ref#Ref[T]#new__T_Node(value/207: Node) -> Ref[Node] {
-  join ret186(retv187: Ref[Node]) -> Ref[Node] {
-    retv187
-  } in
-  let t188 = @intrinsic(ref.new)(value/207) in
-  jump ret186(t188)
+  let t191 = @intrinsic(ref.new)(value/207) in
+  t191
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join ret189() -> unit {
+  join inline_cont277(t193: string) -> unit {
+    let t194 = @runtime(core.string_println)(t193) in
     ()
   } in
-  let t190 = trait_impl#ToString#bool#to_string(value/1) in
-  let t191 = @runtime(core.string_println)(t190) in
-  jump ret189()
+  let inline278 = @runtime(core.bool_to_string)(value/1) in
+  jump inline_cont277(inline278)
 }
 
 fn trait_impl#Eq#Ref[Node]#eq(self/96: Ref[Node], other/97: Ref[Node]) -> bool {
-  join ret192(retv193: bool) -> bool {
-    retv193
-  } in
-  let t194 = @intrinsic(ref.ptr_eq)(self/96, other/97) in
-  jump ret192(t194)
+  let t197 = @intrinsic(ref.ptr_eq)(self/96, other/97) in
+  t197
 }
 
 fn trait_impl#Hash#Ref[Node]#hash(self/98: Ref[Node]) -> uint64 {
-  join ret195(retv196: uint64) -> uint64 {
-    retv196
-  } in
-  let t197 = @intrinsic(ref.ptr_hash)(self/98) in
-  jump ret195(t197)
+  let t200 = @intrinsic(ref.ptr_hash)(self/98) in
+  t200
 }
 
 fn trait_impl#Eq#uint64#eq(self/75: uint64, other/76: uint64) -> bool {
-  join ret198(retv199: bool) -> bool {
-    retv199
-  } in
-  let t200 = @intrinsic(eq.primitive)(self/75, other/76) in
-  jump ret198(t200)
+  let t203 = @intrinsic(eq.primitive)(self/75, other/76) in
+  t203
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() -> HashMap[Ref[Node], string] {
-  join ret201(retv202: HashMap[Ref[Node], string]) -> HashMap[Ref[Node], string] {
-    retv202
-  } in
-  let t203 = @intrinsic(hashmap.new)() in
-  jump ret201(t203)
+  let t206 = @intrinsic(hashmap.new)() in
+  t206
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(self/198: HashMap[Ref[Node], string], key/199: Ref[Node], value/200: string) -> unit {
-  join ret204() -> unit {
-    ()
-  } in
-  let t205 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
-  jump ret204()
+  let t208 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
+  ()
 }
 
 fn inherent#Ref#Ref[T]#set__T_Node(self/209: Ref[Node], value/210: Node) -> unit {
-  join ret206() -> unit {
-    ()
-  } in
-  let t207 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret206()
+  let t210 = @intrinsic(ref.set)(self/209, value/210) in
+  ()
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret208() -> unit {
+  join inline_cont279(t212: string) -> unit {
+    let t213 = @runtime(core.string_println)(t212) in
     ()
   } in
-  let t209 = trait_impl#ToString#int#to_string(value/1) in
-  let t210 = @runtime(core.string_println)(t209) in
-  jump ret208()
+  let inline280 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont279(inline280)
 }
 
 fn inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(self/203: HashMap[Ref[Node], string]) -> int {
-  join ret211(retv212: int) -> int {
-    retv212
-  } in
-  let t213 = @intrinsic(hashmap.len)(self/203) in
-  jump ret211(t213)
+  let t216 = @intrinsic(hashmap.len)(self/203) in
+  t216
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret214(retv215: string) -> string {
-    retv215
-  } in
-  jump ret214(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret216(retv217: string) -> string {
-    retv217
-  } in
-  let t218 = @runtime(core.bool_to_string)(self/37) in
-  jump ret216(t218)
+  let t221 = @runtime(core.bool_to_string)(self/37) in
+  t221
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret219(retv220: string) -> string {
-    retv220
-  } in
-  let t221 = @runtime(core.int_to_string)(self/40) in
-  jump ret219(t221)
+  let t224 = @runtime(core.int_to_string)(self/40) in
+  t224
 }

@@ -1,62 +1,64 @@
 fn main() -> unit {
-  join ret156() -> unit {
-    ()
-  } in
   let x/0 = 1 in
   let y/1 = 1 in
-  let mtmp152 = print__T_string("int32: ") in
-  let mtmp153 = println__T_int32(x/0) in
-  let mtmp154 = print__T_string("int8: ") in
-  let mtmp155 = println__T_int8(y/1) in
-  jump ret156()
+  join inline_cont187(mtmp155: unit) -> unit {
+    join inline_cont184(mtmp156: unit) -> unit {
+      join inline_cont180(mtmp157: unit) -> unit {
+        let inline178 = trait_impl#ToString#int8#to_string(y/1) in
+        let inline179 = @runtime(core.string_println)(inline178) in
+        ()
+      } in
+      let inline181 = "int8: " in
+      let inline182 = trait_impl#ToString#string#to_string(inline181) in
+      let inline183 = @runtime(core.string_print)(inline182) in
+      jump inline_cont180(())
+    } in
+    let inline185 = trait_impl#ToString#int32#to_string(x/0) in
+    let inline186 = @runtime(core.string_println)(inline185) in
+    jump inline_cont184(())
+  } in
+  let inline188 = "int32: " in
+  let inline189 = trait_impl#ToString#string#to_string(inline188) in
+  let inline190 = @runtime(core.string_print)(inline189) in
+  jump inline_cont187(())
 }
 
 fn print__T_string(value/0: string) -> unit {
-  join ret157() -> unit {
+  join inline_cont191(t161: string) -> unit {
+    let t162 = @runtime(core.string_print)(t161) in
     ()
   } in
-  let t158 = trait_impl#ToString#string#to_string(value/0) in
-  let t159 = @runtime(core.string_print)(t158) in
-  jump ret157()
+  jump inline_cont191(value/0)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret160() -> unit {
+  join inline_cont192(t164: string) -> unit {
+    let t165 = @runtime(core.string_println)(t164) in
     ()
   } in
-  let t161 = trait_impl#ToString#int32#to_string(value/1) in
-  let t162 = @runtime(core.string_println)(t161) in
-  jump ret160()
+  let inline193 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont192(inline193)
 }
 
 fn println__T_int8(value/1: int8) -> unit {
-  join ret163() -> unit {
+  join inline_cont194(t167: string) -> unit {
+    let t168 = @runtime(core.string_println)(t167) in
     ()
   } in
-  let t164 = trait_impl#ToString#int8#to_string(value/1) in
-  let t165 = @runtime(core.string_println)(t164) in
-  jump ret163()
+  let inline195 = @runtime(core.int8_to_string)(value/1) in
+  jump inline_cont194(inline195)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
-  } in
-  jump ret166(self/38)
+  self/38
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret168(retv169: string) -> string {
-    retv169
-  } in
-  let t170 = @runtime(core.int32_to_string)(self/43) in
-  jump ret168(t170)
+  let t173 = @runtime(core.int32_to_string)(self/43) in
+  t173
 }
 
 fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
-  } in
-  let t173 = @runtime(core.int8_to_string)(self/41) in
-  jump ret171(t173)
+  let t176 = @runtime(core.int8_to_string)(self/41) in
+  t176
 }

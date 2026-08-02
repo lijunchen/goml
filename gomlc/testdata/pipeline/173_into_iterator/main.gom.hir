@@ -4,7 +4,7 @@ file main.gom
         values: Vec[int32],
         conversions: Ref[int32],
     }
-    
+
     impl IntoIterator for Numbers {
       type Item = int32;
       type IntoIter = FnIterator[int32];
@@ -13,7 +13,7 @@ file main.gom
           self/0.values.iter()
       }
     }
-    
+
     fn make_numbers(local/1/1: Ref[int32], local/1/2: Ref[int32]) -> Numbers {
         builds/1.set(builds/1.get() + 1);
         let local/1/3: Vec[int32] = Vec::new();
@@ -25,7 +25,7 @@ file main.gom
             conversions: conversions/2
         }
     }
-    
+
     fn sum[S: IntoIterator](local/1/4: S) -> int32 where S::Item = int32 {
         let local/1/5 = Ref::new(0);
         for local/1/6 in source/4 {
@@ -33,7 +33,7 @@ file main.gom
         };
         total/5.get()
     }
-    
+
     fn main() -> unit {
         let local/1/7 = Ref::new(0);
         let local/1/8 = Ref::new(0);

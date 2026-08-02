@@ -38,55 +38,55 @@ pub fn offset_to_position(source: string, offset: int) -> Position {
     } else {
         offset
     };
-    let line = Ref::new(0);
-    let character = Ref::new(0);
-    let index = Ref::new(0);
-    while index.get() < limit {
-        let byte = source.byte_get(index.get());
+    let mut line = 0;
+    let mut character = 0;
+    let mut index = 0;
+    while index < limit {
+        let byte = source.byte_get(index);
         if byte == b'\n' {
-            line.set(line.get() + 1);
-            character.set(0);
-            index.set(index.get() + 1)
+            line = line + 1;
+            character = 0;
+            index = index + 1;
         } else {
             let width = utf8_width(byte);
-            if index.get() + width <= limit {
-                character.set(character.get() + utf16_width(byte));
-                index.set(index.get() + width)
+            if index + width <= limit {
+                character = character + utf16_width(byte);
+                index = index + width;
             } else {
-                index.set(limit)
+                index = limit;
             }
         }
     };
-    Position { line: line.get(), character: character.get() }
+    Position { line, character }
 }
 
 pub fn position_to_offset(source: string, position: Position) -> int {
-    let line = Ref::new(0);
-    let character = Ref::new(0);
-    let index = Ref::new(0);
-    while index.get() < source.byte_len() {
-        if line.get() == position.line && character.get() >= position.character {
-            return index.get()
+    let mut line = 0;
+    let mut character = 0;
+    let mut index = 0;
+    while index < source.byte_len() {
+        if line == position.line && character >= position.character {
+            return index
         } else {
             ()
         };
-        let byte = source.byte_get(index.get());
+        let byte = source.byte_get(index);
         if byte == b'\n' {
-            if line.get() == position.line {
-                return index.get()
+            if line == position.line {
+                return index
             } else {
-                line.set(line.get() + 1);
-                character.set(0);
-                index.set(index.get() + 1)
+                line = line + 1;
+                character = 0;
+                index = index + 1;
             }
         } else {
             let width = utf8_width(byte);
             let units = utf16_width(byte);
-            if line.get() == position.line && character.get() + units > position.character {
-                return index.get()
+            if line == position.line && character + units > position.character {
+                return index
             } else {
-                character.set(character.get() + units);
-                index.set(index.get() + width)
+                character = character + units;
+                index = index + width;
             }
         }
     };

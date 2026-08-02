@@ -42,209 +42,210 @@ type Both struct {
 func (_ Both) isMixed() {}
 
 func match_mixed_pair(pair__0 Tuple2_5int32_6string) int32 {
-    var retv171 int32
-    var x152 int32 = pair__0._0
-    var x153 string = pair__0._1
-    var jp173 int32
-    switch x153 {
+    var x155 int32 = pair__0._0
+    var x156 string = pair__0._1
+    switch x156 {
     case "zero":
-        var jp175 int32
-        switch x152 {
+        switch x155 {
         case 0:
-            jp175 = 1
+            return 1
         default:
-            jp175 = 4
+            return 4
         }
-        jp173 = jp175
     case "one":
-        var jp177 int32
-        switch x152 {
+        switch x155 {
         case 0:
-            jp177 = 2
+            return 2
         case 1:
-            jp177 = 3
+            return 3
         default:
-            jp177 = 5
+            return 5
         }
-        jp173 = jp177
     default:
-        var jp179 int32
-        switch x152 {
+        switch x155 {
         case 0:
-            jp179 = 2
+            return 2
         default:
-            jp179 = 5
+            return 5
         }
-        jp173 = jp179
     }
-    retv171 = jp173
-    return retv171
 }
 
 func match_mixed_enum(value__1 Mixed) int32 {
-    var retv181 int32
-    var jp183 int32
     switch value__1.(type) {
     case OnlyInt:
-        var x154 int32 = value__1.(OnlyInt)._0
-        var jp185 int32
-        switch x154 {
-        case 0:
-            jp185 = 6
-        default:
-            jp185 = 7
-        }
-        jp183 = jp185
-    case OnlyStr:
-        var x155 string = value__1.(OnlyStr)._0
-        var jp187 int32
-        switch x155 {
-        case "zero":
-            jp187 = 8
-        default:
-            jp187 = 9
-        }
-        jp183 = jp187
-    case Both:
-        var x156 int32 = value__1.(Both)._0
-        var x157 string = value__1.(Both)._1
-        var jp189 int32
+        var x157 int32 = value__1.(OnlyInt)._0
         switch x157 {
-        case "zero":
-            var jp191 int32
-            switch x156 {
-            case 0:
-                jp191 = 10
-            default:
-                jp191 = 12
-            }
-            jp189 = jp191
+        case 0:
+            return 6
         default:
-            var jp193 int32
-            switch x156 {
-            case 0:
-                jp193 = 11
-            default:
-                jp193 = 13
-            }
-            jp189 = jp193
+            return 7
         }
-        jp183 = jp189
+    case OnlyStr:
+        var x158 string = value__1.(OnlyStr)._0
+        switch x158 {
+        case "zero":
+            return 8
+        default:
+            return 9
+        }
+    case Both:
+        var x159 int32 = value__1.(Both)._0
+        var x160 string = value__1.(Both)._1
+        switch x160 {
+        case "zero":
+            switch x159 {
+            case 0:
+                return 10
+            default:
+                return 12
+            }
+        default:
+            switch x159 {
+            case 0:
+                return 11
+            default:
+                return 13
+            }
+        }
     default:
         panic("non-exhaustive match")
     }
-    retv181 = jp183
-    return retv181
 }
 
 func main0() struct{} {
-    var t195 Tuple2_5int32_6string = Tuple2_5int32_6string{
-        _0: 0,
-        _1: "zero",
-    }
-    var t196 int32 = match_mixed_pair(t195)
-    var t197 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t196)
-    println__T_string(t197)
     var t198 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 0,
-        _1: "other",
+        _1: "zero",
     }
     var t199 int32 = match_mixed_pair(t198)
     var t200 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t199)
     println__T_string(t200)
     var t201 Tuple2_5int32_6string = Tuple2_5int32_6string{
-        _0: 1,
-        _1: "one",
+        _0: 0,
+        _1: "other",
     }
     var t202 int32 = match_mixed_pair(t201)
     var t203 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t202)
     println__T_string(t203)
     var t204 Tuple2_5int32_6string = Tuple2_5int32_6string{
-        _0: 2,
-        _1: "zero",
+        _0: 1,
+        _1: "one",
     }
     var t205 int32 = match_mixed_pair(t204)
     var t206 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t205)
     println__T_string(t206)
     var t207 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 2,
-        _1: "two",
+        _1: "zero",
     }
     var t208 int32 = match_mixed_pair(t207)
     var t209 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t208)
-    println__T_string(t209)
-    var t210 Mixed = OnlyInt{
+    var inline292 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t209)
+    _goml_runtime_core_string_println(inline292)
+    var t210 Tuple2_5int32_6string = Tuple2_5int32_6string{
+        _0: 2,
+        _1: "two",
+    }
+    var t211 int32 = match_mixed_pair(t210)
+    var t212 string
+    var inline290 string = _goml_runtime_core_int32_to_string(t211)
+    t212 = inline290
+    var inline287 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t212)
+    _goml_runtime_core_string_println(inline287)
+    var t213 Mixed = OnlyInt{
         _0: 0,
     }
-    var t211 int32 = match_mixed_enum(t210)
-    var t212 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t211)
-    println__T_string(t212)
-    var t213 Mixed = OnlyInt{
+    var t214 int32 = match_mixed_enum(t213)
+    var t215 string
+    var inline285 string = _goml_runtime_core_int32_to_string(t214)
+    t215 = inline285
+    var inline282 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t215)
+    _goml_runtime_core_string_println(inline282)
+    var t216 Mixed = OnlyInt{
         _0: 5,
     }
-    var t214 int32 = match_mixed_enum(t213)
-    var t215 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t214)
-    println__T_string(t215)
-    var t216 Mixed = OnlyStr{
+    var t217 int32 = match_mixed_enum(t216)
+    var t218 string
+    var inline280 string = _goml_runtime_core_int32_to_string(t217)
+    t218 = inline280
+    var inline277 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t218)
+    _goml_runtime_core_string_println(inline277)
+    var t219 Mixed = OnlyStr{
         _0: "zero",
     }
-    var t217 int32 = match_mixed_enum(t216)
-    var t218 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t217)
-    println__T_string(t218)
-    var t219 Mixed = OnlyStr{
+    var t220 int32 = match_mixed_enum(t219)
+    var t221 string
+    var inline275 string = _goml_runtime_core_int32_to_string(t220)
+    t221 = inline275
+    var inline272 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t221)
+    _goml_runtime_core_string_println(inline272)
+    var t222 Mixed = OnlyStr{
         _0: "hello",
     }
-    var t220 int32 = match_mixed_enum(t219)
-    var t221 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t220)
-    println__T_string(t221)
-    var t222 Mixed = Both{
+    var t223 int32 = match_mixed_enum(t222)
+    var t224 string
+    var inline270 string = _goml_runtime_core_int32_to_string(t223)
+    t224 = inline270
+    var inline267 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t224)
+    _goml_runtime_core_string_println(inline267)
+    var t225 Mixed = Both{
         _0: 0,
         _1: "zero",
     }
-    var t223 int32 = match_mixed_enum(t222)
-    var t224 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t223)
-    println__T_string(t224)
-    var t225 Mixed = Both{
+    var t226 int32 = match_mixed_enum(t225)
+    var t227 string
+    var inline265 string = _goml_runtime_core_int32_to_string(t226)
+    t227 = inline265
+    var inline262 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t227)
+    _goml_runtime_core_string_println(inline262)
+    var t228 Mixed = Both{
         _0: 0,
         _1: "hello",
     }
-    var t226 int32 = match_mixed_enum(t225)
-    var t227 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t226)
-    println__T_string(t227)
-    var t228 Mixed = Both{
+    var t229 int32 = match_mixed_enum(t228)
+    var t230 string
+    var inline260 string = _goml_runtime_core_int32_to_string(t229)
+    t230 = inline260
+    var inline257 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t230)
+    _goml_runtime_core_string_println(inline257)
+    var t231 Mixed = Both{
         _0: 2,
         _1: "zero",
     }
-    var t229 int32 = match_mixed_enum(t228)
-    var t230 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t229)
-    println__T_string(t230)
-    var t231 Mixed = Both{
+    var t232 int32 = match_mixed_enum(t231)
+    var t233 string
+    var inline255 string = _goml_runtime_core_int32_to_string(t232)
+    t233 = inline255
+    var inline252 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t233)
+    _goml_runtime_core_string_println(inline252)
+    var t234 Mixed = Both{
         _0: 3,
         _1: "three",
     }
-    var t232 int32 = match_mixed_enum(t231)
-    var t233 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t232)
-    println__T_string(t233)
+    var t235 int32 = match_mixed_enum(t234)
+    var t236 string
+    var inline250 string = _goml_runtime_core_int32_to_string(t235)
+    t236 = inline250
+    var inline247 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t236)
+    _goml_runtime_core_string_println(inline247)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t236 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t236)
+    var t239 string
+    t239 = value__1
+    _goml_runtime_core_string_println(t239)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv239 string
-    var t240 string = _goml_runtime_core_int32_to_string(self__6)
-    retv239 = t240
-    return retv239
+    var t243 string = _goml_runtime_core_int32_to_string(self__6)
+    return t243
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv242 string
-    retv242 = self__38
-    return retv242
+    return self__38
 }
 
 func main() {

@@ -1,87 +1,105 @@
 fn main() -> unit {
-  join ret156() -> unit {
-    ()
-  } in
   let a/0 = 10 in
   let f1/11 = closure_env_f1_3 { a_0: a/0 } in
-  let result/12 = inherent#closure_env_f1_3#closure_env_f1_3#apply(f1/11, 1) in
-  let t157 = println__T_int32(result/12) in
-  jump ret156()
+  join inline_cont188(result/12: int32) -> unit {
+    let inline186 = trait_impl#ToString#int32#to_string(result/12) in
+    let inline187 = @runtime(core.string_println)(inline186) in
+    ()
+  } in
+  let inline189 = 1 in
+  let inline190 = a/0 in
+  let inline191 = 20 in
+  let inline192 = closure_env_f2_2 { a_0: a/0, b_1: inline191, x_2: inline189 } in
+  let inline193 = inherent#closure_env_f2_2#closure_env_f2_2#apply(inline192, 2) in
+  jump inline_cont188(inline193)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret158() -> unit {
+  join inline_cont194(t162: string) -> unit {
+    let t163 = @runtime(core.string_println)(t162) in
     ()
   } in
-  let t159 = trait_impl#ToString#int32#to_string(value/1) in
-  let t160 = @runtime(core.string_println)(t159) in
-  jump ret158()
+  let inline195 = @runtime(core.int32_to_string)(value/1) in
+  jump inline_cont194(inline195)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret161(retv162: string) -> string {
-    retv162
-  } in
-  let t163 = @runtime(core.int32_to_string)(self/43) in
-  jump ret161(t163)
+  let t166 = @runtime(core.int32_to_string)(self/43) in
+  t166
 }
 
-fn inherent#closure_env_f4_0#closure_env_f4_0#apply(env152: closure_env_f4_0, w/7: int32) -> int32 {
-  join ret164(retv165: int32) -> int32 {
-    retv165
-  } in
-  let a/0 = closure_env_f4_0.a_0(env152) in
-  let b/2 = closure_env_f4_0.b_1(env152) in
-  let c/4 = closure_env_f4_0.c_2(env152) in
-  let d/6 = closure_env_f4_0.d_3(env152) in
-  let x/1 = closure_env_f4_0.x_4(env152) in
-  let y/3 = closure_env_f4_0.y_5(env152) in
-  let z/5 = closure_env_f4_0.z_6(env152) in
-  let t166 = (a/0 + b/2) in
-  let t167 = (t166 + c/4) in
-  let t168 = (t167 + d/6) in
-  let t169 = (t168 + x/1) in
-  let t170 = (t169 + y/3) in
-  let t171 = (t170 + z/5) in
-  let t172 = (t171 + w/7) in
-  jump ret164(t172)
+fn inherent#closure_env_f4_0#closure_env_f4_0#apply(env155: closure_env_f4_0, w/7: int32) -> int32 {
+  let a/0 = closure_env_f4_0.a_0(env155) in
+  let b/2 = closure_env_f4_0.b_1(env155) in
+  let c/4 = closure_env_f4_0.c_2(env155) in
+  let d/6 = closure_env_f4_0.d_3(env155) in
+  let x/1 = closure_env_f4_0.x_4(env155) in
+  let y/3 = closure_env_f4_0.y_5(env155) in
+  let z/5 = closure_env_f4_0.z_6(env155) in
+  let t169 = (a/0 + b/2) in
+  let t170 = (t169 + c/4) in
+  let t171 = (t170 + d/6) in
+  let t172 = (t171 + x/1) in
+  let t173 = (t172 + y/3) in
+  let t174 = (t173 + z/5) in
+  let t175 = (t174 + w/7) in
+  t175
 }
 
-fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env153: closure_env_f3_1, z/5: int32) -> int32 {
-  join ret173(retv174: int32) -> int32 {
-    retv174
-  } in
-  let a/0 = closure_env_f3_1.a_0(env153) in
-  let b/2 = closure_env_f3_1.b_1(env153) in
-  let c/4 = closure_env_f3_1.c_2(env153) in
-  let x/1 = closure_env_f3_1.x_3(env153) in
-  let y/3 = closure_env_f3_1.y_4(env153) in
+fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env156: closure_env_f3_1, z/5: int32) -> int32 {
+  let a/0 = closure_env_f3_1.a_0(env156) in
+  let b/2 = closure_env_f3_1.b_1(env156) in
+  let c/4 = closure_env_f3_1.c_2(env156) in
+  let x/1 = closure_env_f3_1.x_3(env156) in
+  let y/3 = closure_env_f3_1.y_4(env156) in
   let d/6 = 40 in
   let f4/8 = closure_env_f4_0 { a_0: a/0, b_1: b/2, c_2: c/4, d_3: d/6, x_4: x/1, y_5: y/3, z_6: z/5 } in
-  let t175 = inherent#closure_env_f4_0#closure_env_f4_0#apply(f4/8, 4) in
-  jump ret173(t175)
+  let inline197 = 4 in
+  let inline198 = a/0 in
+  let inline199 = b/2 in
+  let inline200 = c/4 in
+  let inline201 = d/6 in
+  let inline202 = x/1 in
+  let inline203 = y/3 in
+  let inline204 = z/5 in
+  let inline205 = (a/0 + b/2) in
+  let inline206 = (inline205 + c/4) in
+  let inline207 = (inline206 + d/6) in
+  let inline208 = (inline207 + x/1) in
+  let inline209 = (inline208 + y/3) in
+  let inline210 = (inline209 + z/5) in
+  let inline211 = (inline210 + inline197) in
+  inline211
 }
 
-fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env154: closure_env_f2_2, y/3: int32) -> int32 {
-  join ret176(retv177: int32) -> int32 {
-    retv177
-  } in
-  let a/0 = closure_env_f2_2.a_0(env154) in
-  let b/2 = closure_env_f2_2.b_1(env154) in
-  let x/1 = closure_env_f2_2.x_2(env154) in
+fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env157: closure_env_f2_2, y/3: int32) -> int32 {
+  let a/0 = closure_env_f2_2.a_0(env157) in
+  let b/2 = closure_env_f2_2.b_1(env157) in
+  let x/1 = closure_env_f2_2.x_2(env157) in
   let c/4 = 30 in
   let f3/9 = closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: c/4, x_3: x/1, y_4: y/3 } in
-  let t178 = inherent#closure_env_f3_1#closure_env_f3_1#apply(f3/9, 3) in
-  jump ret176(t178)
+  let inline213 = 3 in
+  let inline214 = a/0 in
+  let inline215 = b/2 in
+  let inline216 = c/4 in
+  let inline217 = x/1 in
+  let inline218 = y/3 in
+  let inline219 = 40 in
+  let inline220 = closure_env_f4_0 { a_0: a/0, b_1: b/2, c_2: c/4, d_3: inline219, x_4: x/1, y_5: y/3, z_6: inline213 } in
+  let inline221 = inherent#closure_env_f4_0#closure_env_f4_0#apply(inline220, 4) in
+  inline221
 }
 
-fn inherent#closure_env_f1_3#closure_env_f1_3#apply(env155: closure_env_f1_3, x/1: int32) -> int32 {
-  join ret179(retv180: int32) -> int32 {
-    retv180
-  } in
-  let a/0 = closure_env_f1_3.a_0(env155) in
+fn inherent#closure_env_f1_3#closure_env_f1_3#apply(env158: closure_env_f1_3, x/1: int32) -> int32 {
+  let a/0 = closure_env_f1_3.a_0(env158) in
   let b/2 = 20 in
   let f2/10 = closure_env_f2_2 { a_0: a/0, b_1: b/2, x_2: x/1 } in
-  let t181 = inherent#closure_env_f2_2#closure_env_f2_2#apply(f2/10, 2) in
-  jump ret179(t181)
+  let inline223 = 2 in
+  let inline224 = a/0 in
+  let inline225 = b/2 in
+  let inline226 = x/1 in
+  let inline227 = 30 in
+  let inline228 = closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: inline227, x_3: x/1, y_4: inline223 } in
+  let inline229 = inherent#closure_env_f3_1#closure_env_f3_1#apply(inline228, 3) in
+  inline229
 }

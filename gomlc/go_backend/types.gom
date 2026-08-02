@@ -61,7 +61,7 @@ pub fn encode_type(value: tast::Type) -> string {
         },
         App { ty: base, args } => {
             let base_name = encode_type(base);
-            if args.len() == 0 {
+            if args.is_empty() {
                 base_name
             } else {
                 "App_" + base_name.byte_len().to_string() + base_name + "__" + join_type_parts(args)
@@ -233,7 +233,7 @@ pub fn lower_type(value: tast::Type) -> Type {
         Channel { elem } => Type::Chan { elem: lower_type(elem) },
         Param { name } => Type::Named { name: go_ident(name) },
         Func { params, ret_ty } => {
-            let lowered: Vec[Type] = Vec::new();
+            let lowered: Vec[Type] = Vec::[];
             for value in params {
                 lowered.push(lower_type(value))
             };

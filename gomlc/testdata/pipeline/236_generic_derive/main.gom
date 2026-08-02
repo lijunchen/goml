@@ -1,0 +1,59 @@
+struct NoTraits {
+    value: int,
+}
+
+struct Wrapper[T] {
+    value: T,
+}
+
+impl[T] ToString for Wrapper[T] {
+    fn to_string(self: Wrapper[T]) -> string {
+        "wrapped"
+    }
+}
+
+impl[T] Eq for Wrapper[T] {
+    fn eq(self: Wrapper[T], other: Wrapper[T]) -> bool {
+        true
+    }
+}
+
+impl[T] Hash for Wrapper[T] {
+    fn hash(self: Wrapper[T]) -> uint64 {
+        7
+    }
+}
+
+#[derive(ToString, Eq, Hash)]
+struct Generic[T, Marker] {
+    first: Wrapper[T],
+    second: Wrapper[T],
+}
+
+#[derive(ToString, Eq, Hash)]
+enum GenericChoice[T, Marker] {
+    Empty,
+    Value(Wrapper[T]),
+}
+
+fn main() -> unit {
+    let wrapped = Wrapper { value: NoTraits { value: 1 } };
+    let left: Generic[NoTraits, NoTraits] = Generic {
+        first: wrapped,
+        second: wrapped,
+    };
+    let right: Generic[NoTraits, NoTraits] = Generic {
+        first: wrapped,
+        second: wrapped,
+    };
+    println(left.to_string());
+    println(left == right);
+    println(left.hash() == right.hash());
+
+    let empty: GenericChoice[NoTraits, NoTraits] = GenericChoice::Empty;
+    let value: GenericChoice[NoTraits, NoTraits] = GenericChoice::Value(wrapped);
+    println(empty.to_string());
+    println(value.to_string());
+    println(empty != value);
+    println(value.hash() == value.hash())
+}

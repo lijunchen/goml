@@ -343,6 +343,13 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
             encode_type(builder, param.1)
         };
         encode_type(builder, method.ret_ty);
+        match method.body {
+            Some(body) => {
+                encode_some(builder);
+                encode_block(builder, body)
+            },
+            None => encode_none(builder),
+        };
         encode_close(builder)
     };
     encode_close(builder)
@@ -429,6 +436,11 @@ fn encode_block(builder: text::StringBuilder, value: Block) -> unit {
 
 fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
     match value {
+        Defer { expr, span: value_span } => {
+            encode_open(builder, "Stmt.Defer");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr)
+        },
         Let { is_mut, pat, annotation, value: expr, else_branch, span: value_span } => {
             encode_open(builder, "Stmt.Let");
             encode_span(builder, value_span);
@@ -480,6 +492,20 @@ fn encode_file(builder: text::StringBuilder, value: File) -> unit {
                 encode_string_value(builder, alias)
             },
             None => encode_none(builder),
+        };
+        encode_list(builder, use_decl.items.len());
+        for item in use_decl.items {
+            encode_open(builder, "UseItem");
+            encode_string_value(builder, item.name);
+            match item.alias {
+                Some(alias) => {
+                    encode_some(builder);
+                    encode_string_value(builder, alias)
+                },
+                None => encode_none(builder),
+            };
+            encode_span(builder, item.span);
+            encode_close(builder)
         };
         encode_close(builder)
     };

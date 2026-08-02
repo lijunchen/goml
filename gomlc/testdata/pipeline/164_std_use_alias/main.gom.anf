@@ -1,184 +1,9 @@
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  join ret152(retv153: std::bytes::Bytes) -> std::bytes::Bytes {
-    retv153
-  } in
-  let t154 = inherent#Vec#Vec[T]#new__T_uint8() in
-  let t155 = std::bytes::Bytes { values: t154 } in
-  jump ret152(t155)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -> std::bytes::Bytes {
-  join ret156(retv157: std::bytes::Bytes) -> std::bytes::Bytes {
-    retv157
-  } in
-  let t158 = inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) in
-  let t159 = std::bytes::Bytes { values: t158 } in
-  jump ret156(t159)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[uint8]) -> std::bytes::Bytes {
-  join ret160(retv161: std::bytes::Bytes) -> std::bytes::Bytes {
-    retv161
-  } in
-  let t162 = std::bytes::Bytes { values: values/1 } in
-  jump ret160(t162)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
-  join ret163(retv164: std::bytes::Bytes) -> std::bytes::Bytes {
-    retv164
-  } in
-  let t165 = inherent#string#string#to_bytes(value/2) in
-  let t166 = std::bytes::Bytes { values: t165 } in
-  jump ret163(t166)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
-  join ret167(retv168: int) -> int {
-    retv168
-  } in
-  let t169 = std::bytes::Bytes.values(self/3) in
-  let t170 = inherent#Vec#Vec[T]#len__T_uint8(t169) in
-  jump ret167(t170)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
-  join ret171(retv172: int) -> int {
-    retv172
-  } in
-  let t173 = std::bytes::Bytes.values(self/4) in
-  let t174 = inherent#Vec#Vec[T]#capacity__T_uint8(t173) in
-  jump ret171(t174)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
-  join ret175(retv176: bool) -> bool {
-    retv176
-  } in
-  let t177 = std::bytes::Bytes.values(self/5) in
-  let t178 = inherent#Vec#Vec[T]#is_empty__T_uint8(t177) in
-  jump ret175(t178)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
-  join ret179(retv180: uint8) -> uint8 {
-    retv180
-  } in
-  let t181 = std::bytes::Bytes.values(self/6) in
-  let t182 = @intrinsic(vec.get)(t181, index/7) in
-  jump ret179(t182)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
-  join ret183() -> unit {
-    ()
-  } in
-  let place_root0 = self/8 in
-  let place1 = std::bytes::Bytes.values(place_root0) in
-  let index2 = index/9 in
-  let place3 = @intrinsic(vec.get)(place1, index2) in
-  let value4 = value/10 in
-  let t184 = @intrinsic(vec.set)(place1, index2, value4) in
-  let _wild5 = t184 in
-  jump ret183()
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
-  join ret185() -> unit {
-    ()
-  } in
-  let t186 = std::bytes::Bytes.values(self/11) in
-  let t187 = inherent#Vec#Vec[T]#push__T_uint8(t186, value/12) in
-  jump ret185()
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
-  join ret188(retv189: Option__uint8) -> Option__uint8 {
-    retv189
-  } in
-  let t190 = std::bytes::Bytes.values(self/13) in
-  let t191 = inherent#Vec#Vec[T]#pop__T_uint8(t190) in
-  jump ret188(t191)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int) -> unit {
-  join ret192() -> unit {
-    ()
-  } in
-  let t193 = std::bytes::Bytes.values(self/14) in
-  let t194 = inherent#Vec#Vec[T]#reserve__T_uint8(t193, additional/15) in
-  jump ret192()
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int) -> unit {
-  join ret195() -> unit {
-    ()
-  } in
-  let t196 = std::bytes::Bytes.values(self/16) in
-  let t197 = inherent#Vec#Vec[T]#truncate__T_uint8(t196, len/17) in
-  jump ret195()
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
-  join ret198() -> unit {
-    ()
-  } in
-  let t199 = std::bytes::Bytes.values(self/18) in
-  let t200 = inherent#Vec#Vec[T]#clear__T_uint8(t199) in
-  jump ret198()
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int, end/21: int) -> Slice[uint8] {
-  join ret201(retv202: Slice[uint8]) -> Slice[uint8] {
-    retv202
-  } in
-  let t203 = std::bytes::Bytes.values(self/19) in
-  let t204 = inherent#Vec#Vec[T]#slice__T_uint8(t203, start/20, end/21) in
-  jump ret201(t204)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
-  join ret205(retv206: Vec[uint8]) -> Vec[uint8] {
-    retv206
-  } in
-  let t207 = std::bytes::Bytes.values(self/22) in
-  jump ret205(t207)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result__string__string {
-  join ret208(retv209: Result__string__string) -> Result__string__string {
-    retv209
-  } in
-  let t210 = std::bytes::Bytes.values(self/23) in
-  let mtmp6 = @runtime(core.string_from_utf8)(t210) in
-  let x7 = mtmp6.0 in
-  let x8 = mtmp6.1 in
-  let value/25 = x8 in
-  let valid/24 = x7 in
-  join k211(jp212: Result__string__string) -> Result__string__string {
-    jump ret208(jp212)
-  } in
-  if valid/24 {
-    let t213 = Result__string__string::Ok(value/25) in
-    jump k211(t213)
-  } else {
-    let t214 = Result__string__string::Err("invalid UTF-8") in
-    jump k211(t214)
-  }
-}
-
 fn std::env::args() -> Vec[string] {
-  join ret215(retv216: Vec[string]) -> Vec[string] {
-    retv216
-  } in
-  let t217 = @runtime(std.env.args)() in
-  jump ret215(t217)
+  let t157 = @runtime(std.env.args)() in
+  t157
 }
 
 fn std::env::current_dir() -> Result__string__string {
-  join ret218(retv219: Result__string__string) -> Result__string__string {
-    retv219
-  } in
   let mtmp0 = @runtime(std.env.current_dir)() in
   let x1 = mtmp0.0 in
   let x2 = mtmp0.1 in
@@ -186,22 +11,16 @@ fn std::env::current_dir() -> Result__string__string {
   let err/2 = x3 in
   let value/1 = x2 in
   let ok/0 = x1 in
-  join k220(jp221: Result__string__string) -> Result__string__string {
-    jump ret218(jp221)
-  } in
-  if ok/0 {
-    let t222 = Result__string__string::Ok(value/1) in
-    jump k220(t222)
+  if x1 {
+    let t162 = Result__string__string::Ok(x2) in
+    t162
   } else {
-    let t223 = Result__string__string::Err(err/2) in
-    jump k220(t223)
+    let t163 = Result__string__string::Err(x3) in
+    t163
   }
 }
 
 fn std::env::current_exe() -> Result__string__string {
-  join ret224(retv225: Result__string__string) -> Result__string__string {
-    retv225
-  } in
   let mtmp4 = @runtime(std.env.current_exe)() in
   let x5 = mtmp4.0 in
   let x6 = mtmp4.1 in
@@ -209,42 +28,165 @@ fn std::env::current_exe() -> Result__string__string {
   let err/5 = x7 in
   let value/4 = x6 in
   let ok/3 = x5 in
-  join k226(jp227: Result__string__string) -> Result__string__string {
-    jump ret224(jp227)
-  } in
-  if ok/3 {
-    let t228 = Result__string__string::Ok(value/4) in
-    jump k226(t228)
+  if x5 {
+    let t168 = Result__string__string::Ok(x6) in
+    t168
   } else {
-    let t229 = Result__string__string::Err(err/5) in
-    jump k226(t229)
+    let t169 = Result__string__string::Err(x7) in
+    t169
   }
 }
 
 fn std::env::var(name/6: string) -> Option__string {
-  join ret230(retv231: Option__string) -> Option__string {
-    retv231
-  } in
   let mtmp8 = @runtime(std.env.var)(name/6) in
   let x9 = mtmp8.0 in
   let x10 = mtmp8.1 in
   let value/8 = x10 in
   let found/7 = x9 in
-  join k232(jp233: Option__string) -> Option__string {
-    jump ret230(jp233)
-  } in
-  if found/7 {
-    let t234 = Option__string::Some(value/8) in
-    jump k232(t234)
+  if x9 {
+    let t174 = Option__string::Some(x10) in
+    t174
   } else {
-    jump k232(Tag_0)
+    Tag_0
+  }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
+  join inline_cont327(vec_literal/130: Vec[uint8]) -> std::bytes::Bytes {
+    let t177 = std::bytes::Bytes { values: vec_literal/130 } in
+    t177
+  } in
+  let inline328 = @intrinsic(vec.new)() in
+  jump inline_cont327(inline328)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -> std::bytes::Bytes {
+  join inline_cont329(t180: Vec[uint8]) -> std::bytes::Bytes {
+    let t181 = std::bytes::Bytes { values: t180 } in
+    t181
+  } in
+  let inline330 = @intrinsic(vec.with_capacity)(capacity/0) in
+  jump inline_cont329(inline330)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[uint8]) -> std::bytes::Bytes {
+  let t184 = std::bytes::Bytes { values: values/1 } in
+  t184
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
+  join inline_cont331(t187: Vec[uint8]) -> std::bytes::Bytes {
+    let t188 = std::bytes::Bytes { values: t187 } in
+    t188
+  } in
+  let inline332 = @runtime(core.string_to_bytes)(value/2) in
+  jump inline_cont331(inline332)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
+  let t191 = std::bytes::Bytes.values(self/3) in
+  let inline334 = @intrinsic(vec.len)(t191) in
+  inline334
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
+  let t195 = std::bytes::Bytes.values(self/4) in
+  let inline336 = @intrinsic(vec.capacity)(t195) in
+  inline336
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
+  let t199 = std::bytes::Bytes.values(self/5) in
+  let inline338 = @intrinsic(vec.len)(t199) in
+  let inline339 = trait_impl#Eq#int#eq(inline338, 0) in
+  inline339
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
+  let t203 = std::bytes::Bytes.values(self/6) in
+  let t204 = @intrinsic(vec.get)(t203, index/7) in
+  t204
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
+  let place_root0 = self/8 in
+  let place1 = std::bytes::Bytes.values(self/8) in
+  let index2 = index/9 in
+  let place3 = @intrinsic(vec.get)(place1, index/9) in
+  let value4 = value/10 in
+  let t206 = @intrinsic(vec.set)(place1, index/9, value/10) in
+  let _wild5 = t206 in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
+  let t208 = std::bytes::Bytes.values(self/11) in
+  let inline341 = @intrinsic(vec.push)(t208, value/12) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
+  let t212 = std::bytes::Bytes.values(self/13) in
+  let inline343 = inherent#Vec#Vec[T]#len__T_uint8(t212) in
+  let inline344 = trait_impl#Eq#int#eq(inline343, 0) in
+  if inline344 {
+    Tag_0
+  } else {
+    let inline345 = (inline343 - 1) in
+    let inline346 = @intrinsic(vec.get)(t212, inline345) in
+    let inline347 = (inline343 - 1) in
+    let inline348 = inherent#Vec#Vec[T]#truncate__T_uint8(t212, inline347) in
+    let inline349 = Option__uint8::Some(inline346) in
+    inline349
+  }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int) -> unit {
+  let t215 = std::bytes::Bytes.values(self/14) in
+  let inline351 = @intrinsic(vec.reserve)(t215, additional/15) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int) -> unit {
+  let t218 = std::bytes::Bytes.values(self/16) in
+  let inline353 = @intrinsic(vec.truncate)(t218, len/17) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
+  let t221 = std::bytes::Bytes.values(self/18) in
+  let inline355 = inherent#Vec#Vec[T]#truncate__T_uint8(t221, 0) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int, end/21: int) -> Slice[uint8] {
+  let t225 = std::bytes::Bytes.values(self/19) in
+  let inline357 = @intrinsic(slice.new)(t225, start/20, end/21) in
+  inline357
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
+  let t229 = std::bytes::Bytes.values(self/22) in
+  t229
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result__string__string {
+  let t232 = std::bytes::Bytes.values(self/23) in
+  let mtmp6 = @runtime(core.string_from_utf8)(t232) in
+  let x7 = mtmp6.0 in
+  let x8 = mtmp6.1 in
+  let value/25 = x8 in
+  let valid/24 = x7 in
+  if x7 {
+    let t235 = Result__string__string::Ok(x8) in
+    t235
+  } else {
+    let t236 = Result__string__string::Err("invalid UTF-8") in
+    t236
   }
 }
 
 fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
-  join ret235(retv236: Result__std::bytes::Bytes__string) -> Result__std::bytes::Bytes__string {
-    retv236
-  } in
   let mtmp0 = @runtime(std.io.read_stdin)() in
   let x1 = mtmp0.0 in
   let x2 = mtmp0.1 in
@@ -252,74 +194,62 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
   let err/6 = x3 in
   let data/5 = x2 in
   let ok/4 = x1 in
-  join k237(jp238: Result__std::bytes::Bytes__string) -> Result__std::bytes::Bytes__string {
-    jump ret235(jp238)
-  } in
-  if ok/4 {
-    let t239 = inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/5) in
-    let t240 = Result__std::bytes::Bytes__string::Ok(t239) in
-    jump k237(t240)
+  if x1 {
+    join inline_cont358(t241: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+      let t242 = Result__std::bytes::Bytes__string::Ok(t241) in
+      t242
+    } in
+    let inline359 = std::bytes::Bytes { values: x2 } in
+    jump inline_cont358(inline359)
   } else {
-    let t241 = Result__std::bytes::Bytes__string::Err(err/6) in
-    jump k237(t241)
+    let t243 = Result__std::bytes::Bytes__string::Err(x3) in
+    t243
   }
 }
 
 fn std::io::write_stdout(data/7: std::bytes::Bytes) -> Result__unit__string {
-  join ret242(retv243: Result__unit__string) -> Result__unit__string {
-    retv243
+  join inline_cont360(t246: Vec[uint8]) -> Result__unit__string {
+    let mtmp4 = @runtime(std.io.write_stdout)(t246) in
+    let x5 = mtmp4.0 in
+    let x6 = mtmp4.1 in
+    let err/9 = x6 in
+    let ok/8 = x5 in
+    if x5 {
+      let t249 = Result__unit__string::Ok(()) in
+      t249
+    } else {
+      let t250 = Result__unit__string::Err(x6) in
+      t250
+    }
   } in
-  let t244 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/7) in
-  let mtmp4 = @runtime(std.io.write_stdout)(t244) in
-  let x5 = mtmp4.0 in
-  let x6 = mtmp4.1 in
-  let err/9 = x6 in
-  let ok/8 = x5 in
-  join k245(jp246: Result__unit__string) -> Result__unit__string {
-    jump ret242(jp246)
-  } in
-  if ok/8 {
-    let t247 = Result__unit__string::Ok(()) in
-    jump k245(t247)
-  } else {
-    let t248 = Result__unit__string::Err(err/9) in
-    jump k245(t248)
-  }
+  let inline361 = std::bytes::Bytes.values(data/7) in
+  jump inline_cont360(inline361)
 }
 
 fn std::io::write_stderr(data/10: std::bytes::Bytes) -> Result__unit__string {
-  join ret249(retv250: Result__unit__string) -> Result__unit__string {
-    retv250
+  join inline_cont362(t253: Vec[uint8]) -> Result__unit__string {
+    let mtmp7 = @runtime(std.io.write_stderr)(t253) in
+    let x8 = mtmp7.0 in
+    let x9 = mtmp7.1 in
+    let err/12 = x9 in
+    let ok/11 = x8 in
+    if x8 {
+      let t256 = Result__unit__string::Ok(()) in
+      t256
+    } else {
+      let t257 = Result__unit__string::Err(x9) in
+      t257
+    }
   } in
-  let t251 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/10) in
-  let mtmp7 = @runtime(std.io.write_stderr)(t251) in
-  let x8 = mtmp7.0 in
-  let x9 = mtmp7.1 in
-  let err/12 = x9 in
-  let ok/11 = x8 in
-  join k252(jp253: Result__unit__string) -> Result__unit__string {
-    jump ret249(jp253)
-  } in
-  if ok/11 {
-    let t254 = Result__unit__string::Ok(()) in
-    jump k252(t254)
-  } else {
-    let t255 = Result__unit__string::Err(err/12) in
-    jump k252(t255)
-  }
+  let inline363 = std::bytes::Bytes.values(data/10) in
+  jump inline_cont362(inline363)
 }
 
 fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__string {
-  join ret256(retv257: Result__std::bytes::Bytes__string) -> Result__std::bytes::Bytes__string {
-    retv257
-  } in
-  let t260 = (length/13 < 0) in
-  join k258(jp259: Result__std::bytes::Bytes__string) -> Result__std::bytes::Bytes__string {
-    jump ret256(jp259)
-  } in
-  if t260 {
-    let t261 = Result__std::bytes::Bytes__string::Err("read length must be non-negative") in
-    jump k258(t261)
+  let t262 = (length/13 < 0) in
+  if t262 {
+    let t263 = Result__std::bytes::Bytes__string::Err("read length must be non-negative") in
+    t263
   } else {
     let mtmp10 = @runtime(std.io.read_stdin_exact)(length/13) in
     let x11 = mtmp10.0 in
@@ -328,178 +258,145 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
     let err/16 = x13 in
     let data/15 = x12 in
     let ok/14 = x11 in
-    join k262(jp263: Result__std::bytes::Bytes__string) -> Result__std::bytes::Bytes__string {
-      jump k258(jp263)
-    } in
-    if ok/14 {
-      let t264 = inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/15) in
-      let t265 = Result__std::bytes::Bytes__string::Ok(t264) in
-      jump k262(t265)
+    if x11 {
+      join inline_cont364(t266: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+        let t267 = Result__std::bytes::Bytes__string::Ok(t266) in
+        t267
+      } in
+      let inline365 = std::bytes::Bytes { values: x12 } in
+      jump inline_cont364(inline365)
     } else {
-      let t266 = Result__std::bytes::Bytes__string::Err(err/16) in
-      jump k262(t266)
+      let t268 = Result__std::bytes::Bytes__string::Err(x13) in
+      t268
     }
   }
 }
 
 fn main() -> unit {
-  join ret267() -> unit {
-    ()
+  join inline_cont373(t270: Vec[string]) -> unit {
+    join inline_cont371(t271: int) -> unit {
+      let t272 = (t271 > 0) in
+      join inline_cont369(t273: string) -> unit {
+        let inline367 = trait_impl#ToString#string#to_string(t273) in
+        let inline368 = @runtime(std.io.println)(inline367) in
+        ()
+      } in
+      let inline370 = @runtime(core.bool_to_string)(t272) in
+      jump inline_cont369(inline370)
+    } in
+    let inline372 = @intrinsic(vec.len)(t270) in
+    jump inline_cont371(inline372)
   } in
-  let t268 = std::env::args() in
-  let t269 = inherent#Vec#Vec[T]#len__T_string(t268) in
-  let t270 = (t269 > 0) in
-  let t271 = trait_impl#ToString#bool#to_string(t270) in
-  let t272 = std::io::println__T_string(t271) in
-  jump ret267()
+  let inline374 = @runtime(std.env.args)() in
+  jump inline_cont373(inline374)
 }
 
 fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
-  join ret273(retv274: Vec[uint8]) -> Vec[uint8] {
-    retv274
-  } in
-  let t275 = @intrinsic(vec.new)() in
-  jump ret273(t275)
+  let t277 = @intrinsic(vec.new)() in
+  t277
 }
 
 fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/125: int) -> Vec[uint8] {
-  join ret276(retv277: Vec[uint8]) -> Vec[uint8] {
-    retv277
-  } in
-  let t278 = @intrinsic(vec.with_capacity)(capacity/125) in
-  jump ret276(t278)
+  let t280 = @intrinsic(vec.with_capacity)(capacity/125) in
+  t280
 }
 
 fn inherent#string#string#to_bytes(self/24: string) -> Vec[uint8] {
-  join ret279(retv280: Vec[uint8]) -> Vec[uint8] {
-    retv280
-  } in
-  let t281 = @runtime(core.string_to_bytes)(self/24) in
-  jump ret279(t281)
+  let t283 = @runtime(core.string_to_bytes)(self/24) in
+  t283
 }
 
 fn inherent#Vec#Vec[T]#len__T_uint8(self/137: Vec[uint8]) -> int {
-  join ret282(retv283: int) -> int {
-    retv283
-  } in
-  let t284 = @intrinsic(vec.len)(self/137) in
-  jump ret282(t284)
+  let t286 = @intrinsic(vec.len)(self/137) in
+  t286
 }
 
 fn inherent#Vec#Vec[T]#capacity__T_uint8(self/138: Vec[uint8]) -> int {
-  join ret285(retv286: int) -> int {
-    retv286
-  } in
-  let t287 = @intrinsic(vec.capacity)(self/138) in
-  jump ret285(t287)
+  let t289 = @intrinsic(vec.capacity)(self/138) in
+  t289
 }
 
 fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/139: Vec[uint8]) -> bool {
-  join ret288(retv289: bool) -> bool {
-    retv289
-  } in
-  let t290 = inherent#Vec#Vec[T]#len__T_uint8(self/139) in
-  let t291 = trait_impl#Eq#int#eq(t290, 0) in
-  jump ret288(t291)
+  let t292 = @intrinsic(vec.len)(self/139) in
+  let inline376 = 0 in
+  let inline377 = @intrinsic(eq.primitive)(t292, inline376) in
+  inline377
 }
 
 fn inherent#Vec#Vec[T]#push__T_uint8(self/126: Vec[uint8], elem/127: uint8) -> unit {
-  join ret292() -> unit {
-    ()
-  } in
-  let t293 = @intrinsic(vec.push)(self/126, elem/127) in
-  jump ret292()
+  let t295 = @intrinsic(vec.push)(self/126, elem/127) in
+  ()
 }
 
 fn inherent#Vec#Vec[T]#pop__T_uint8(self/147: Vec[uint8]) -> Option__uint8 {
-  join ret294(retv295: Option__uint8) -> Option__uint8 {
-    retv295
+  join inline_cont383(len/148: int) -> Option__uint8 {
+    join inline_cont380(t300: bool) -> Option__uint8 {
+      if t300 {
+        Tag_0
+      } else {
+        let t301 = (len/148 - 1) in
+        let value/149 = @intrinsic(vec.get)(self/147, t301) in
+        let t302 = (len/148 - 1) in
+        join inline_cont378(_wild43: unit) -> Option__uint8 {
+          let t303 = Option__uint8::Some(value/149) in
+          t303
+        } in
+        let inline379 = @intrinsic(vec.truncate)(self/147, t302) in
+        jump inline_cont378(())
+      }
+    } in
+    let inline381 = 0 in
+    let inline382 = @intrinsic(eq.primitive)(len/148, inline381) in
+    jump inline_cont380(inline382)
   } in
-  let len/148 = inherent#Vec#Vec[T]#len__T_uint8(self/147) in
-  let t298 = trait_impl#Eq#int#eq(len/148, 0) in
-  join k296(jp297: Option__uint8) -> Option__uint8 {
-    jump ret294(jp297)
-  } in
-  if t298 {
-    jump k296(Tag_0)
-  } else {
-    let t299 = (len/148 - 1) in
-    let value/149 = @intrinsic(vec.get)(self/147, t299) in
-    let t300 = (len/148 - 1) in
-    let _wild43 = inherent#Vec#Vec[T]#truncate__T_uint8(self/147, t300) in
-    let t301 = Option__uint8::Some(value/149) in
-    jump k296(t301)
-  }
+  let inline384 = @intrinsic(vec.len)(self/147) in
+  jump inline_cont383(inline384)
 }
 
 fn inherent#Vec#Vec[T]#reserve__T_uint8(self/140: Vec[uint8], additional/141: int) -> unit {
-  join ret302() -> unit {
-    ()
-  } in
-  let t303 = @intrinsic(vec.reserve)(self/140, additional/141) in
-  jump ret302()
+  let t305 = @intrinsic(vec.reserve)(self/140, additional/141) in
+  ()
 }
 
 fn inherent#Vec#Vec[T]#truncate__T_uint8(self/142: Vec[uint8], len/143: int) -> unit {
-  join ret304() -> unit {
-    ()
-  } in
-  let t305 = @intrinsic(vec.truncate)(self/142, len/143) in
-  jump ret304()
+  let t307 = @intrinsic(vec.truncate)(self/142, len/143) in
+  ()
 }
 
 fn inherent#Vec#Vec[T]#clear__T_uint8(self/144: Vec[uint8]) -> unit {
-  join ret306() -> unit {
-    ()
-  } in
-  let t307 = inherent#Vec#Vec[T]#truncate__T_uint8(self/144, 0) in
-  jump ret306()
+  let inline386 = 0 in
+  let inline387 = @intrinsic(vec.truncate)(self/144, inline386) in
+  ()
 }
 
 fn inherent#Vec#Vec[T]#slice__T_uint8(self/175: Vec[uint8], start/176: int, end/177: int) -> Slice[uint8] {
-  join ret308(retv309: Slice[uint8]) -> Slice[uint8] {
-    retv309
-  } in
-  let t310 = @intrinsic(slice.new)(self/175, start/176, end/177) in
-  jump ret308(t310)
+  let t312 = @intrinsic(slice.new)(self/175, start/176, end/177) in
+  t312
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {
-  join ret311() -> unit {
+  join inline_cont388(t314: string) -> unit {
+    let t315 = @runtime(std.io.println)(t314) in
     ()
   } in
-  let t312 = trait_impl#ToString#string#to_string(value/1) in
-  let t313 = @runtime(std.io.println)(t312) in
-  jump ret311()
+  jump inline_cont388(value/1)
 }
 
 fn inherent#Vec#Vec[T]#len__T_string(self/137: Vec[string]) -> int {
-  join ret314(retv315: int) -> int {
-    retv315
-  } in
-  let t316 = @intrinsic(vec.len)(self/137) in
-  jump ret314(t316)
+  let t318 = @intrinsic(vec.len)(self/137) in
+  t318
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret317(retv318: string) -> string {
-    retv318
-  } in
-  let t319 = @runtime(core.bool_to_string)(self/37) in
-  jump ret317(t319)
+  let t321 = @runtime(core.bool_to_string)(self/37) in
+  t321
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret320(retv321: bool) -> bool {
-    retv321
-  } in
-  let t322 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret320(t322)
+  let t324 = @intrinsic(eq.primitive)(self/59, other/60) in
+  t324
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret323(retv324: string) -> string {
-    retv324
-  } in
-  jump ret323(self/38)
+  self/38
 }

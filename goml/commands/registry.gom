@@ -91,35 +91,34 @@ fn config_registry_source() -> Result[string, string] {
     )
 }
 
-fn option_local_registry(args: Vec[string], index: Ref[int]) -> Result[Option[string], string] {
-    let argument = args[index.get()];
+fn option_local_registry(args: Vec[string], index: int) -> Result[(Option[string], int), string] {
+    let argument = args[index];
     if argument == "--local-registry" {
-        if index.get() + 1 >= args.len() {
+        if index + 1 >= args.len() {
             Result::Err("--local-registry requires a value")
         } else {
-            let value = args[index.get() + 1];
-            index.set(index.get() + 2);
-            Result::Ok(Option::Some(value))
+            let value = args[index + 1];
+            Result::Ok((Option::Some(value), index + 2))
         }
     } else if util::starts_with(argument, "--local-registry=") {
         let value = argument.byte_slice(17, argument.byte_len());
         if value == "" {
             Result::Err("--local-registry requires a value")
         } else {
-            index.set(index.get() + 1);
-            Result::Ok(Option::Some(value))
+            Result::Ok((Option::Some(value), index + 1))
         }
     } else {
-        Result::Ok(Option::None)
+        Result::Ok((Option::None, index))
     }
 }
 
 fn registry_argument(args: Vec[string]) -> Result[Option[string], string] {
     let mut value: Option[string] = Option::None;
-    let index = Ref::new(2);
-    while index.get() < args.len() {
+    let mut index = 2;
+    while index < args.len() {
         let parsed = option_local_registry(args, index)?;
-        match parsed {
+        index = parsed.1;
+        match parsed.0 {
             Some(registry) => match value {
                 Some(_) => return Result::Err("--local-registry cannot be repeated"),
                 None => {
@@ -127,7 +126,7 @@ fn registry_argument(args: Vec[string]) -> Result[Option[string], string] {
                     ()
                 },
             },
-            None => return Result::Err("unexpected argument " + args[index.get()]),
+            None => return Result::Err("unexpected argument " + args[index]),
         }
     };
     Result::Ok(value)
@@ -219,38 +218,29 @@ fn section_name(line: string) -> Option[string] {
     }
 }
 
-fn has_section(lines: Vec[string], expected: string) -> bool {
-    for line in lines {
-        match section_name(line) {
-            Some(section) => if section == expected {
-                return true
-            } else {
-                ()
-            },
-            None => (),
-        }
-    };
-    false
-}
-
 fn upsert_dependency(manifest_path: string, name: string, version: string) -> Result[unit, string] {
     let source = fs::read_file(manifest_path)?;
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     let mut in_dependencies = false;
     let mut inserted = false;
+    let mut dependency_section_exists = false;
     let entry = "\"" + name + "\" = \"" + version + "\"";
     let lines = util::split_lines(source);
-    let dependency_section_exists = has_section(lines, "dependencies");
     for line in lines {
         match section_name(line) {
             Some(section) => {
-                if in_dependencies && !(inserted) {
+                if in_dependencies && !inserted {
                     result.push(entry);
                     inserted = true;
                 } else {
                     ()
                 };
                 in_dependencies = section == "dependencies";
+                if in_dependencies {
+                    dependency_section_exists = true;
+                } else {
+                    ()
+                };
                 result.push(line)
             },
             None => {
@@ -268,14 +258,14 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
         }
     };
     if !dependency_section_exists {
-        if result.len() > 0 && result[result.len() - 1] != "" {
+        if !result.is_empty() && result[result.len() - 1] != "" {
             result.push("")
         } else {
             ()
         };
         result.push("[dependencies]");
         result.push(entry)
-    } else if !(inserted) {
+    } else if !inserted {
         result.push(entry)
     } else {
         ()
@@ -285,8 +275,8 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
 
 fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, string] {
     let source = fs::read_file(manifest_path)?;
-    let result = Vec::new();
-    let buffer = Vec::new();
+    let result: Vec[string] = Vec::[];
+    let buffer: Vec[string] = Vec::[];
     let mut in_dependencies = false;
     let kept = Ref::new(0);
     let flush = |result: Vec[string], buffer: Vec[string], kept: Ref[int]| {
@@ -298,10 +288,7 @@ fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, s
         } else {
             ()
         };
-        while buffer.len() > 0 {
-            let _ = buffer.remove(0);
-            ()
-        };
+        buffer.clear();
         kept.set(0)
     };
     for line in util::split_lines(source) {
@@ -367,10 +354,11 @@ fn command_registry_root(local: Option[string]) -> Result[string, string] {
 fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string]), string] {
     let mut dependency: Option[string] = Option::None;
     let mut local: Option[string] = Option::None;
-    let index = Ref::new(2);
-    while index.get() < args.len() {
+    let mut index = 2;
+    while index < args.len() {
         let parsed = option_local_registry(args, index)?;
-        match parsed {
+        index = parsed.1;
+        match parsed.0 {
             Some(value) => match local {
                 Some(_) => return Result::Err("--local-registry cannot be repeated"),
                 None => {
@@ -379,7 +367,7 @@ fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string])
                 },
             },
             None => {
-                let argument = args[index.get()];
+                let argument = args[index];
                 if util::starts_with(argument, "-") {
                     return Result::Err("unknown option " + argument)
                 } else {
@@ -387,7 +375,7 @@ fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string])
                         Some(_) => return Result::Err("unexpected argument " + argument),
                         None => {
                             dependency = Option::Some(argument);
-                            index.set(index.get() + 1)
+                            index += 1;
                         },
                     }
                 }

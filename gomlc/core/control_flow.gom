@@ -17,7 +17,7 @@ fn tast_exprs_exit(values: Vec[tast::Expr]) -> bool {
 fn tast_stmt_exits(value: tast::Stmt) -> bool {
     match value {
         Expr { expr } => tast_expr_exits(expr),
-        Let { is_mut: _, pat: _, value: _ } | LetElse {
+        Defer { expr: _ } | Let { is_mut: _, pat: _, value: _ } | LetElse {
             is_mut: _,
             pat: _,
             value: _,
@@ -101,7 +101,7 @@ fn tast_expr_exits(value: tast::Expr) -> bool {
 }
 
 fn exit_expr_as(ctx: Lowerer, value: Expr, ty: tast::Type) -> Expr {
-    let stmts: Vec[LetStmt] = Vec::new();
+    let stmts: Vec[LetStmt] = Vec::[];
     stmts.push(LetStmt { name: gensym(ctx, "_wild"), ty: expr_type(value), value });
     Expr::Block { block: Block { stmts, tail: Option::Some(missing_expr(ty)) }, ty }
 }

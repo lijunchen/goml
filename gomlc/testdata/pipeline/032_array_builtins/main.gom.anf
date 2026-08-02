@@ -1,58 +1,59 @@
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
-  join ret158(retv159: [int32; 3]) -> [int32; 3] {
-    retv159
-  } in
   let arr/1 = arr/0 in
-  let place_root152 = arr/1 in
-  let index153 = 1 in
-  let place154 = @intrinsic(array.get)(place_root152, index153) in
-  let value155 = 42 in
-  let t160 = @intrinsic(array.set)(place_root152, index153, value155) in
-  let t161 = arr/1 = t160 in
-  let _wild156 = t161 in
-  jump ret158(arr/1)
+  let place_root155 = arr/1 in
+  let index156 = 1 in
+  let place157 = @intrinsic(array.get)(place_root155, index156) in
+  let value158 = 42 in
+  let t163 = @intrinsic(array.set)(place_root155, index156, value158) in
+  let t164 = arr/1 = t163 in
+  let _wild159 = t164 in
+  arr/1
 }
 
 fn read_array(arr/2: [int32; 3]) -> int32 {
-  join ret162(retv163: int32) -> int32 {
-    retv163
-  } in
-  let t164 = @intrinsic(array.get)(arr/2, 1) in
-  jump ret162(t164)
+  let t167 = @intrinsic(array.get)(arr/2, 1) in
+  t167
 }
 
 fn main() -> unit {
-  join ret165() -> unit {
-    ()
-  } in
   let arr/3 = [1, 2, 3] in
-  let updated/4 = update_array(arr/3) in
-  let value/5 = read_array(updated/4) in
-  let t166 = inherent#int32#int32#to_string(value/5) in
-  let mtmp157 = println__T_string(t166) in
-  jump ret165()
+  join inline_cont185(updated/4: [int32; 3]) -> unit {
+    join inline_cont183(value/5: int32) -> unit {
+      join inline_cont181(t169: string) -> unit {
+        let inline179 = trait_impl#ToString#string#to_string(t169) in
+        let inline180 = @runtime(core.string_println)(inline179) in
+        ()
+      } in
+      let inline182 = @runtime(core.int32_to_string)(value/5) in
+      jump inline_cont181(inline182)
+    } in
+    let inline184 = @intrinsic(array.get)(updated/4, 1) in
+    jump inline_cont183(inline184)
+  } in
+  let inline186 = arr/3 in
+  let inline187 = inline186 in
+  let inline188 = 1 in
+  let inline189 = @intrinsic(array.get)(inline187, inline188) in
+  let inline190 = 42 in
+  let inline191 = @intrinsic(array.set)(inline187, inline188, inline190) in
+  let inline192 = inline186 = inline191 in
+  let inline193 = inline192 in
+  jump inline_cont185(inline186)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret167() -> unit {
+  join inline_cont194(t171: string) -> unit {
+    let t172 = @runtime(core.string_println)(t171) in
     ()
   } in
-  let t168 = trait_impl#ToString#string#to_string(value/1) in
-  let t169 = @runtime(core.string_println)(t168) in
-  jump ret167()
+  jump inline_cont194(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
-  } in
-  let t172 = @runtime(core.int32_to_string)(self/6) in
-  jump ret170(t172)
+  let t175 = @runtime(core.int32_to_string)(self/6) in
+  t175
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret173(retv174: string) -> string {
-    retv174
-  } in
-  jump ret173(self/38)
+  self/38
 }

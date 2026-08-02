@@ -5,13 +5,14 @@ use gomlc::tast;
 
 fn lower_function(state: State, value: core::Function) -> Function {
     let ret_id = fresh(state, "ret");
-    let takes_arg = type_is_unit(value.ret_ty) == false;
+    let takes_arg = !type_is_unit(value.ret_ty);
     let ret_join = if takes_arg {
         let ret_value = fresh(state, "retv");
-        let params = Vec::new();
+        let params: Vec[(string, tast::Type)] = Vec::[];
         params.push((ret_value, value.ret_ty));
         JoinBind {
             name: ret_id,
+            role: JoinRole::Return,
             params,
             ret_ty: value.ret_ty,
             body: Block {
@@ -22,7 +23,8 @@ fn lower_function(state: State, value: core::Function) -> Function {
     } else {
         JoinBind {
             name: ret_id,
-            params: Vec::new(),
+            role: JoinRole::Return,
+            params: Vec::[],
             ret_ty: value.ret_ty,
             body: Block { binds: no_binds(), term: Term::Return(unit_imm()) },
         }
@@ -39,13 +41,14 @@ fn lower_function(state: State, value: core::Function) -> Function {
         },
     );
     state.return_ctx.set(previous);
-    let binds = Vec::new();
+    let binds: Vec[Bind] = Vec::[];
     binds.push(Bind::Join(ret_join));
     for bind in lowered.binds {
         binds.push(bind)
     };
     Function {
         name: value.name,
+        origin: value.origin,
         root: value.root,
         trait_impl: value.trait_impl,
         params: value.params,
@@ -64,11 +67,13 @@ pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
         loop_ctx: Ref::new(Option::None),
         return_ctx: Ref::new(Option::None),
     };
-    let functions = Vec::new();
+    let functions: Vec[Function] = Vec::[];
     for function in value.functions {
         functions.push(lower_function(state, function))
     };
-    File { functions, enums, structs, type_instances, constants }
+    let lowered = simplify(File { functions, enums, structs, type_instances, constants });
+    let inlined = simplify(inline(lowered, counter));
+    simplify(licm(simplify(commute(inlined, counter))))
 }
 
 pub fn lower(value: core::File) -> File {

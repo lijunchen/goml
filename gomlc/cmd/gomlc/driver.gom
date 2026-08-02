@@ -1,5 +1,8 @@
 package main;
 
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use gomlc::anf;
 use gomlc::ast;
 use gomlc::core;
@@ -39,8 +42,8 @@ pub enum SourceCompilation {
 struct PackageCompilation {
     hir_file: hir::File,
     core_value: core::File,
-    interface_unit: ArtifactInterfaceUnit,
-    exports: ArtifactPackageExports,
+    interface_unit: artifact::ArtifactInterfaceUnit,
+    exports: artifact::ArtifactPackageExports,
 }
 
 struct DiagnosticPosition {
@@ -69,8 +72,8 @@ struct StandardLibrary {
 
 struct ArtifactStandardPackage {
     core_value: core::File,
-    interface_unit: ArtifactInterfaceUnit,
-    environment_exports: ArtifactPackageExports,
+    interface_unit: artifact::ArtifactInterfaceUnit,
+    environment_exports: artifact::ArtifactPackageExports,
 }
 
 struct ArtifactStandardLibrary {
@@ -96,12 +99,22 @@ fn lower_builtin_core(counter: Ref[int]) -> core::File {
         Err(error) => {
             fail("error[compile]: " + error);
             core::File {
-                functions: Vec::new(),
-                enums: Vec::new(),
-                structs: Vec::new(),
-                type_instances: Vec::new(),
-                constants: Vec::new(),
+                functions: Vec::[],
+                enums: Vec::[],
+                structs: Vec::[],
+                type_instances: Vec::[],
+                constants: Vec::[],
             }
+        },
+    }
+}
+
+fn lower_go_or_fail(value: Result[go_backend::File, string]) -> go_backend::File {
+    match value {
+        Ok(file) => file,
+        Err(error) => {
+            fail("error[compile]: " + error);
+            go_backend::File { items: Vec::[] }
         },
     }
 }
@@ -135,15 +148,15 @@ fn artifact_standard_library(value: StandardLibrary) -> ArtifactStandardLibrary 
 
 fn import_path_text(value: ast::Path) -> string {
     let builder = text::StringBuilder::new();
-    let index = Ref::new(0);
+    let mut index = 0;
     for segment in value.segments {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string("::")
         } else {
             ()
         };
         builder.write_string(segment.ident);
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     builder.finish()
 }
@@ -202,7 +215,7 @@ fn has_standard_import(value: ast::LowerResult) -> bool {
 }
 
 fn dependency_enums(builtins: core::File, dependencies: Vec[core::File]) -> Vec[tast::EnumDef] {
-    let result: Vec[tast::EnumDef] = Vec::new();
+    let result: Vec[tast::EnumDef] = Vec::[];
     for value in builtins.enums {
         result.push(value)
     };
@@ -215,7 +228,7 @@ fn dependency_enums(builtins: core::File, dependencies: Vec[core::File]) -> Vec[
 }
 
 fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Vec[tast::StructDef] {
-    let result: Vec[tast::StructDef] = Vec::new();
+    let result: Vec[tast::StructDef] = Vec::[];
     for value in builtins.structs {
         result.push(value)
     };
@@ -236,17 +249,17 @@ fn compile_standard_package(
     builtins: core::File,
     deps: Vec[(string, string)],
 ) -> PackageCompilation {
-    let ast_values = Vec::new();
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    let ast_values: Vec[ast::LowerResult] = Vec::[];
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     for source in sources {
         let ast_value = ast::lower(parser::parse(source.source));
         ast_values.push(ast_value);
         inputs.push((ast_value, source.path))
     };
     let public_names = public_item_names(ast_values, package_name);
-    let hir_files = Vec::new();
+    let hir_files: Vec[hir::File] = Vec::[];
     for lowered in hir::lower_package_files(inputs, package_name) {
-        if lowered.diagnostics.len() > 0 {
+        if !lowered.diagnostics.is_empty() {
             fail("error[compile]: failed to lower standard source " + lowered.source_path)
         } else {
             ()
@@ -261,7 +274,7 @@ fn compile_standard_package(
         hir_files,
         hir_dependencies,
     );
-    if tast_value.diagnostics.len() > 0 {
+    if !tast_value.diagnostics.is_empty() {
         fail(render_typer_diagnostics(tast_value.diagnostics, hir_file.source_path, ""))
     } else {
         ()
@@ -271,19 +284,14 @@ fn compile_standard_package(
         Some(value) => value,
         None => {
             fail("error[compile]: missing typed standard package " + package_name);
-            tast::File {
-                items: Vec::new(),
-                enums: Vec::new(),
-                structs: Vec::new(),
-                constants: Vec::new(),
-            }
+            tast::File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] }
         },
     };
-    let enum_names = Vec::new();
+    let enum_names: Vec[string] = Vec::[];
     for definition in dependency_enums(builtins, core_dependencies) {
         enum_names.push(definition.name)
     };
-    let struct_names = Vec::new();
+    let struct_names: Vec[string] = Vec::[];
     for definition in dependency_structs(builtins, core_dependencies) {
         struct_names.push(definition.name)
     };
@@ -305,7 +313,7 @@ fn compile_standard_package(
         enum_names,
         struct_names,
     );
-    let interface_unit = new_artifact_interface_unit(
+    let interface_unit = interface_codec::new_unit(
         package_name,
         public_exports,
         artifact_package_interface(package_name, declared_name, public_exports),
@@ -326,11 +334,11 @@ fn required_standard_sources(package_name: string) -> Vec[resources::Source] {
         Ok(Some(value)) => value,
         Ok(None) => {
             fail("error[compile]: unknown standard package " + package_name);
-            Vec::new()
+            Vec::[]
         },
         Err(error) => {
             fail("error[compile]: " + error);
-            Vec::new()
+            Vec::[]
         },
     }
 }
@@ -340,14 +348,14 @@ fn builtin_hir_files() -> Vec[hir::File] {
         Ok(value) => value,
         Err(error) => {
             fail("error[compile]: " + error);
-            Vec::new()
+            Vec::[]
         },
     };
-    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     for source in sources {
         inputs.push((ast::lower(parser::parse(source.source)), source.path))
     };
-    let files = Vec::new();
+    let files: Vec[hir::File] = Vec::[];
     for lowered in hir::lower_package_files(inputs, "builtin") {
         match lowered.hir {
             Some(file) => files.push(file),
@@ -357,10 +365,10 @@ fn builtin_hir_files() -> Vec[hir::File] {
     files
 }
 
-fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
+fn builtin_artifact_interface_unit() -> artifact::ArtifactInterfaceUnit {
     let builtin_files = builtin_hir_files();
     let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
-    let traits = Vec::new();
+    let traits: Vec[tast::TraitInfo] = Vec::[];
     for value in signatures.traits {
         if value.name == "Iterator" || value.name == "IntoIterator" {
             ()
@@ -456,7 +464,7 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
         "ptr_eq",
         "ptr_hash",
     ];
-    let functions = Vec::new();
+    let functions: Vec[tast::FunctionScheme] = Vec::[];
     for name in contract_functions {
         match tast::builtin_function_scheme(name) {
             Some(value) => functions.push(value),
@@ -477,28 +485,23 @@ fn builtin_artifact_interface_unit() -> ArtifactInterfaceUnit {
         Some(file) => file,
         None => {
             fail("error[compile]: failed to typecheck builtin package");
-            tast::File {
-                items: Vec::new(),
-                enums: Vec::new(),
-                structs: Vec::new(),
-                constants: Vec::new(),
-            }
+            tast::File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] }
         },
     };
     let exports = artifact_package_exports(
         file,
         signatures,
         "builtin",
-        Vec::new(),
+        Vec::[],
         false,
-        Vec::new(),
-        Vec::new(),
+        Vec::[],
+        Vec::[],
     );
-    new_artifact_interface_unit(
+    interface_codec::new_unit(
         "builtin",
         exports,
         artifact_package_interface("builtin", "builtin", exports),
-        Vec::new(),
+        Vec::[],
     )
 }
 
@@ -507,15 +510,15 @@ fn builtin_artifact_dependency() -> (string, string) {
 }
 
 fn builtin_artifact_json() -> string {
-    let writer = new_artifact_json_writer(false);
-    artifact_json_interface_unit(writer, builtin_artifact_interface_unit());
-    artifact_json_finish(writer)
+    let writer = wire::new_artifact_json_writer(false);
+    interface_codec::artifact_json_interface_unit(writer, builtin_artifact_interface_unit());
+    wire::artifact_json_finish(writer)
 }
 
 fn standard_artifact_deps(builtin_hash: string, dependencies: Vec[PackageCompilation]) -> Vec[
     (string, string),
 ] {
-    let result = Vec::new();
+    let result: Vec[(string, string)] = Vec::[];
     result.push(("builtin", builtin_hash));
     for dependency in dependencies {
         result.push(
@@ -525,373 +528,132 @@ fn standard_artifact_deps(builtin_hash: string, dependencies: Vec[PackageCompila
     result
 }
 
+fn required_standard_compilation(values: Vec[PackageCompilation], package_name: string) -> PackageCompilation {
+    for value in values {
+        if value.interface_unit.package_name == package_name {
+            return value
+        } else {
+            ()
+        }
+    };
+    fail("error[compile]: standard package dependency was not compiled: " + package_name);
+    values[0]
+}
+
 fn compile_standard_library(builtins: core::File, builtin_hash: string) -> StandardLibrary {
-    let host = compile_standard_package(
-        required_standard_sources("std::internal::host"),
-        "std::internal::host",
-        "host",
-        Vec::new(),
-        Vec::new(),
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::new()),
-    );
-    let bytes = compile_standard_package(
-        required_standard_sources("std::bytes"),
-        "std::bytes",
-        "bytes",
-        Vec::new(),
-        Vec::new(),
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::new()),
-    );
-    let collections = compile_standard_package(
-        required_standard_sources("std::collections"),
-        "std::collections",
-        "collections",
-        Vec::new(),
-        Vec::new(),
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::new()),
-    );
-    let env_hir_dependencies: Vec[hir::File] = Vec::new();
-    env_hir_dependencies.push(host.hir_file);
-    let env = compile_standard_package(
-        required_standard_sources("std::env"),
-        "std::env",
-        "env",
-        env_hir_dependencies,
-        Vec::new(),
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let fs_hir_dependencies: Vec[hir::File] = Vec::new();
-    fs_hir_dependencies.push(host.hir_file);
-    fs_hir_dependencies.push(bytes.hir_file);
-    let fs_core_dependencies: Vec[core::File] = Vec::new();
-    fs_core_dependencies.push(bytes.core_value);
-    let fs = compile_standard_package(
-        required_standard_sources("std::fs"),
-        "std::fs",
-        "fs",
-        fs_hir_dependencies,
-        fs_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
-    );
-    let io_hir_dependencies: Vec[hir::File] = Vec::new();
-    io_hir_dependencies.push(host.hir_file);
-    io_hir_dependencies.push(bytes.hir_file);
-    let io_core_dependencies: Vec[core::File] = Vec::new();
-    io_core_dependencies.push(bytes.core_value);
-    let io = compile_standard_package(
-        required_standard_sources("std::io"),
-        "std::io",
-        "io",
-        io_hir_dependencies,
-        io_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
-    );
-    let path_hir_dependencies: Vec[hir::File] = Vec::new();
-    path_hir_dependencies.push(host.hir_file);
-    let path = compile_standard_package(
-        required_standard_sources("std::path"),
-        "std::path",
-        "path",
-        path_hir_dependencies,
-        Vec::new(),
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let process_hir_dependencies: Vec[hir::File] = Vec::new();
-    process_hir_dependencies.push(host.hir_file);
-    process_hir_dependencies.push(bytes.hir_file);
-    let process_core_dependencies: Vec[core::File] = Vec::new();
-    process_core_dependencies.push(bytes.core_value);
-    let process = compile_standard_package(
-        required_standard_sources("std::process"),
-        "std::process",
-        "process",
-        process_hir_dependencies,
-        process_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[bytes, host]),
-    );
-    let testing_hir_dependencies: Vec[hir::File] = Vec::new();
-    testing_hir_dependencies.push(host.hir_file);
-    let testing = compile_standard_package(
-        required_standard_sources("std::testing"),
-        "std::testing",
-        "testing",
-        testing_hir_dependencies,
-        Vec::new(),
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let text_hir_dependencies: Vec[hir::File] = Vec::new();
-    text_hir_dependencies.push(bytes.hir_file);
-    let text_core_dependencies: Vec[core::File] = Vec::new();
-    text_core_dependencies.push(bytes.core_value);
-    let text = compile_standard_package(
-        required_standard_sources("std::text"),
-        "std::text",
-        "text",
-        text_hir_dependencies,
-        text_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[bytes]),
-    );
-    let json_hir_dependencies: Vec[hir::File] = Vec::new();
-    json_hir_dependencies.push(text.hir_file);
-    let json_core_dependencies: Vec[core::File] = Vec::new();
-    json_core_dependencies.push(text.core_value);
-    let json = compile_standard_package(
-        required_standard_sources("std::json"),
-        "std::json",
-        "json",
-        json_hir_dependencies,
-        json_core_dependencies,
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[text]),
-    );
-    let num_hir_dependencies: Vec[hir::File] = Vec::new();
-    num_hir_dependencies.push(host.hir_file);
-    let num = compile_standard_package(
-        required_standard_sources("std::num"),
-        "std::num",
-        "num",
-        num_hir_dependencies,
-        Vec::new(),
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let time_hir_dependencies: Vec[hir::File] = Vec::new();
-    time_hir_dependencies.push(host.hir_file);
-    let time = compile_standard_package(
-        required_standard_sources("std::time"),
-        "std::time",
-        "time",
-        time_hir_dependencies,
-        Vec::new(),
-        builtins,
-        standard_artifact_deps(builtin_hash, Vec::[host]),
-    );
-    let root_hir_dependencies = Vec::[
-        bytes.hir_file,
-        collections.hir_file,
-        env.hir_file,
-        fs.hir_file,
-        io.hir_file,
-        num.hir_file,
-        path.hir_file,
-        process.hir_file,
-        text.hir_file,
-        json.hir_file,
-        time.hir_file,
-    ];
-    let root_core_dependencies = Vec::[
-        bytes.core_value,
-        collections.core_value,
-        env.core_value,
-        fs.core_value,
-        io.core_value,
-        num.core_value,
-        path.core_value,
-        process.core_value,
-        text.core_value,
-        json.core_value,
-        time.core_value,
-    ];
-    let root = compile_standard_package(
-        required_standard_sources("std"),
-        "std",
-        "std",
-        root_hir_dependencies,
-        root_core_dependencies,
-        builtins,
-        standard_artifact_deps(
-            builtin_hash,
-            Vec::[bytes, collections, env, fs, io, num, path, process, text, json, time],
-        ),
-    );
+    let package_names: Vec[string] = Vec::[];
+    for spec in resources::standard_package_specs() {
+        package_names.push(spec.name)
+    };
+    let compiled: Vec[PackageCompilation] = Vec::[];
+    for package_name in resources::standard_package_closure(package_names) {
+        let spec = match resources::standard_package_spec(package_name) {
+            Some(value) => value,
+            None => {
+                fail("error[compile]: unknown standard package " + package_name);
+                resources::standard_package_specs()[0]
+            },
+        };
+        let dependencies: Vec[PackageCompilation] = Vec::[];
+        let hir_dependencies: Vec[hir::File] = Vec::[];
+        let core_dependencies: Vec[core::File] = Vec::[];
+        for dependency_name in spec.dependencies {
+            let dependency = required_standard_compilation(compiled, dependency_name);
+            dependencies.push(dependency);
+            hir_dependencies.push(dependency.hir_file)
+        };
+        for dependency_name in spec.link_dependencies {
+            core_dependencies.push(
+                required_standard_compilation(compiled, dependency_name).core_value,
+            )
+        };
+        compiled.push(
+            compile_standard_package(
+                required_standard_sources(spec.name),
+                spec.name,
+                spec.declared_name,
+                hir_dependencies,
+                core_dependencies,
+                builtins,
+                standard_artifact_deps(builtin_hash, dependencies),
+            ),
+        )
+    };
     StandardLibrary {
-        root,
-        host,
-        bytes,
-        collections,
-        env,
-        fs,
-        io,
-        json,
-        num,
-        path,
-        process,
-        testing,
-        text,
-        time,
+        root: required_standard_compilation(compiled, "std"),
+        host: required_standard_compilation(compiled, "std::internal::host"),
+        bytes: required_standard_compilation(compiled, "std::bytes"),
+        collections: required_standard_compilation(compiled, "std::collections"),
+        env: required_standard_compilation(compiled, "std::env"),
+        fs: required_standard_compilation(compiled, "std::fs"),
+        io: required_standard_compilation(compiled, "std::io"),
+        json: required_standard_compilation(compiled, "std::json"),
+        num: required_standard_compilation(compiled, "std::num"),
+        path: required_standard_compilation(compiled, "std::path"),
+        process: required_standard_compilation(compiled, "std::process"),
+        testing: required_standard_compilation(compiled, "std::testing"),
+        text: required_standard_compilation(compiled, "std::text"),
+        time: required_standard_compilation(compiled, "std::time"),
     }
 }
 
+fn standard_library_package(value: StandardLibrary, package_name: string) -> PackageCompilation {
+    match package_name {
+        "std" => value.root,
+        "std::internal::host" => value.host,
+        "std::bytes" => value.bytes,
+        "std::collections" => value.collections,
+        "std::env" => value.env,
+        "std::fs" => value.fs,
+        "std::io" => value.io,
+        "std::json" => value.json,
+        "std::num" => value.num,
+        "std::path" => value.path,
+        "std::process" => value.process,
+        "std::testing" => value.testing,
+        "std::text" => value.text,
+        "std::time" => value.time,
+        _ => {
+            fail("error[compile]: unknown standard package " + package_name);
+            value.root
+        },
+    }
+}
+
+fn direct_imported_standard_package_names(ast_value: ast::LowerResult) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    for spec in resources::standard_package_specs() {
+        if imports_package(ast_value, spec.name) {
+            result.push(spec.name)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
 fn selected_standard_hir(ast_value: ast::LowerResult, standard: StandardLibrary) -> Vec[hir::File] {
-    let needs_root = imports_package(ast_value, "std");
-    let needs_fs = needs_root || imports_package(ast_value, "std::fs");
-    let needs_io = needs_root || imports_package(ast_value, "std::io");
-    let needs_process = needs_root || imports_package(ast_value, "std::process");
-    let needs_json = needs_root || imports_package(ast_value, "std::json");
-    let needs_text = needs_root || needs_json || imports_package(ast_value, "std::text");
-    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_root || needs_fs || needs_io
-        || needs_process
-        || needs_text;
-    let result: Vec[hir::File] = Vec::new();
-    if needs_bytes {
-        result.push(standard.bytes.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::collections") {
-        result.push(standard.collections.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::env") {
-        result.push(standard.env.hir_file)
-    } else {
-        ()
-    };
-    if needs_fs {
-        result.push(standard.fs.hir_file)
-    } else {
-        ()
-    };
-    if needs_io {
-        result.push(standard.io.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::path") {
-        result.push(standard.path.hir_file)
-    } else {
-        ()
-    };
-    if needs_process {
-        result.push(standard.process.hir_file)
-    } else {
-        ()
-    };
-    if imports_package(ast_value, "std::testing") {
-        result.push(standard.testing.hir_file)
-    } else {
-        ()
-    };
-    if needs_text {
-        result.push(standard.text.hir_file)
-    } else {
-        ()
-    };
-    if needs_json {
-        result.push(standard.json.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::num") {
-        result.push(standard.num.hir_file)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::time") {
-        result.push(standard.time.hir_file)
-    } else {
-        ()
-    };
-    if needs_root {
-        result.push(standard.root.hir_file)
-    } else {
-        ()
+    let result: Vec[hir::File] = Vec::[];
+    for package_name in resources::standard_package_closure(
+        direct_imported_standard_package_names(ast_value),
+    ) {
+        result.push(standard_library_package(standard, package_name).hir_file)
     };
     result
 }
 
 fn selected_standard_core(ast_value: ast::LowerResult, standard: StandardLibrary) -> Vec[core::File] {
-    let needs_root = imports_package(ast_value, "std");
-    let needs_fs = needs_root || imports_package(ast_value, "std::fs");
-    let needs_io = needs_root || imports_package(ast_value, "std::io");
-    let needs_process = needs_root || imports_package(ast_value, "std::process");
-    let needs_json = needs_root || imports_package(ast_value, "std::json");
-    let needs_text = needs_root || needs_json || imports_package(ast_value, "std::text");
-    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_root || needs_fs || needs_io
-        || needs_process
-        || needs_text;
-    let result: Vec[core::File] = Vec::new();
-    if needs_bytes {
-        result.push(standard.bytes.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::collections") {
-        result.push(standard.collections.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::env") {
-        result.push(standard.env.core_value)
-    } else {
-        ()
-    };
-    if needs_fs {
-        result.push(standard.fs.core_value)
-    } else {
-        ()
-    };
-    if needs_io {
-        result.push(standard.io.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::path") {
-        result.push(standard.path.core_value)
-    } else {
-        ()
-    };
-    if needs_process {
-        result.push(standard.process.core_value)
-    } else {
-        ()
-    };
-    if imports_package(ast_value, "std::testing") {
-        result.push(standard.testing.core_value)
-    } else {
-        ()
-    };
-    if needs_text {
-        result.push(standard.text.core_value)
-    } else {
-        ()
-    };
-    if needs_json {
-        result.push(standard.json.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::num") {
-        result.push(standard.num.core_value)
-    } else {
-        ()
-    };
-    if needs_root || imports_package(ast_value, "std::time") {
-        result.push(standard.time.core_value)
-    } else {
-        ()
-    };
-    if needs_root {
-        result.push(standard.root.core_value)
-    } else {
-        ()
+    let result: Vec[core::File] = Vec::[];
+    for package_name in resources::standard_package_link_closure(
+        direct_imported_standard_package_names(ast_value),
+    ) {
+        result.push(standard_library_package(standard, package_name).core_value)
     };
     result
 }
 
 fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Vec[tast::Diagnostic] {
-    let result = Vec::new();
+    let result: Vec[tast::Diagnostic] = Vec::[];
     for diagnostic in diagnostics {
         result.push(
             tast::Diagnostic {
@@ -901,7 +663,7 @@ fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Ve
                 source_path,
                 span: diagnostic.span,
                 primary_label: Option::None,
-                secondary_labels: Vec::new(),
+                secondary_labels: Vec::[],
                 sort_order: 0,
             },
         )
@@ -952,18 +714,18 @@ fn diagnostic_precedes(left: tast::Diagnostic, right: tast::Diagnostic) -> bool 
 }
 
 fn sorted_typer_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnostic] {
-    let result: Vec[tast::Diagnostic] = Vec::new();
+    let result: Vec[tast::Diagnostic] = Vec::[];
     for value in values {
         result.push(value)
     };
     for index in 1..result.len() {
         let value = result[index];
-        let target = Ref::new(index);
-        while target.get() > 0 && diagnostic_precedes(value, result[target.get() - 1]) {
-            result[target.get()] = result[target.get() - 1];
-            target.set(target.get() - 1)
+        let mut target = index;
+        while target > 0 && diagnostic_precedes(value, result[target - 1]) {
+            result[target] = result[target - 1];
+            target = target - 1;
         };
-        result[target.get()] = value;
+        result[target] = value;
     };
     result
 }
@@ -987,36 +749,31 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
     } else {
         offset
     };
-    let line = Ref::new(0);
-    let column = Ref::new(0);
-    let line_start = Ref::new(0);
+    let mut line = 0;
+    let mut column = 0;
+    let mut line_start = 0;
     for index in 0..limit {
         let byte = source.byte_get(index);
         if byte == b'\n' {
-            line.set(line.get() + 1);
-            column.set(0);
-            line_start.set(index + 1)
+            line = line + 1;
+            column = 0;
+            line_start = index + 1;
         } else if byte < 128 || byte >= 192 {
-            column.set(column.get() + 1)
+            column = column + 1;
         } else {
             ()
         }
     };
-    let line_end = Ref::new(line_start.get());
-    while line_end.get() < source.byte_len() {
-        let byte = source.byte_get(line_end.get());
+    let mut line_end = line_start;
+    while line_end < source.byte_len() {
+        let byte = source.byte_get(line_end);
         if byte == b'\n' || byte == b'\r' {
             break
         } else {
-            line_end.set(line_end.get() + 1)
+            line_end = line_end + 1;
         }
     };
-    DiagnosticPosition {
-        line: line.get(),
-        column: column.get(),
-        line_start: line_start.get(),
-        line_end: line_end.get(),
-    }
+    DiagnosticPosition { line, column, line_start, line_end }
 }
 
 fn repeat_char(value: char, count: int) -> string {
@@ -1028,28 +785,28 @@ fn repeat_char(value: char, count: int) -> string {
 }
 
 fn diagnostic_visual_width(value: string) -> int {
-    let width = Ref::new(0);
+    let mut width = 0;
     for character in value.chars() {
         if character == '\t' {
-            width.set(width.get() + 4 - width.get() % 4)
+            width = width + 4 - width % 4;
         } else {
-            width.set(width.get() + 1)
+            width = width + 1;
         }
     };
-    width.get()
+    width
 }
 
 fn expand_diagnostic_tabs(value: string) -> string {
     let builder = text::StringBuilder::new();
-    let width = Ref::new(0);
+    let mut width = 0;
     for character in value.chars() {
         if character == '\t' {
-            let spaces = 4 - width.get() % 4;
+            let spaces = 4 - width % 4;
             builder.write_string(repeat_char(' ', spaces));
-            width.set(width.get() + spaces)
+            width = width + spaces;
         } else {
             builder.write_char(character);
-            width.set(width.get() + 1)
+            width = width + 1;
         }
     };
     builder.finish()
@@ -1193,15 +950,15 @@ fn render_typer_diagnostics(
     fallback_source: string,
 ) -> string {
     let builder = text::StringBuilder::new();
-    let index = Ref::new(0);
+    let mut index = 0;
     for value in sorted_typer_diagnostics(values) {
-        if index.get() > 0 {
+        if index > 0 {
             builder.write_string("\n\n")
         } else {
             ()
         };
         builder.write_string(render_typer_diagnostic(value, fallback_path, fallback_source));
-        index.set(index.get() + 1)
+        index = index + 1;
     };
     builder.finish()
 }
@@ -1221,7 +978,7 @@ fn fail_on_typer_diagnostics(
 fn ast_diagnostics(diagnostics: Vec[cst::Diagnostic], stage: string, source_path: string) -> Vec[
     tast::Diagnostic,
 ] {
-    let result: Vec[tast::Diagnostic] = Vec::new();
+    let result: Vec[tast::Diagnostic] = Vec::[];
     for diagnostic in diagnostics {
         result.push(
             tast::Diagnostic {
@@ -1231,7 +988,7 @@ fn ast_diagnostics(diagnostics: Vec[cst::Diagnostic], stage: string, source_path
                 source_path,
                 span: Option::Some(ast::Span { start: diagnostic.start, end: diagnostic.end }),
                 primary_label: Option::None,
-                secondary_labels: Vec::new(),
+                secondary_labels: Vec::[],
                 sort_order: 0,
             },
         )
@@ -1245,7 +1002,7 @@ fn fail_on_ast_diagnostics(
     source_path: string,
     source: string,
 ) -> unit {
-    if diagnostics.len() > 0 {
+    if !diagnostics.is_empty() {
         fail(
             render_typer_diagnostics(
                 ast_diagnostics(diagnostics, stage, source_path),
@@ -1377,7 +1134,7 @@ fn compact_diagnostic_precedes(left: tast::Diagnostic, right: tast::Diagnostic) 
 }
 
 fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnostic] {
-    let result: Vec[tast::Diagnostic] = Vec::new();
+    let result: Vec[tast::Diagnostic] = Vec::[];
     for value in values {
         match value.severity {
             Error => result.push(value),
@@ -1386,12 +1143,12 @@ fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagno
     };
     for index in 1..result.len() {
         let value = result[index];
-        let target = Ref::new(index);
-        while target.get() > 0 && compact_diagnostic_precedes(value, result[target.get() - 1]) {
-            result[target.get()] = result[target.get() - 1];
-            target.set(target.get() - 1)
+        let mut target = index;
+        while target > 0 && compact_diagnostic_precedes(value, result[target - 1]) {
+            result[target] = result[target - 1];
+            target = target - 1;
         };
-        result[target.get()] = value;
+        result[target] = value;
     };
     result
 }
@@ -1425,13 +1182,13 @@ fn compact_typer_diagnostics(
 
 pub fn diagnostic_output(source_path: string, source: string) -> string {
     let parsed = parser::parse(source);
-    if parsed.diagnostics.len() > 0 {
+    if !parsed.diagnostics.is_empty() {
         return compact_ast_diagnostics(parsed.diagnostics, source, true)
     } else {
         ()
     };
     let ast_value = ast::lower(parsed);
-    if ast_value.diagnostics.len() > 0 {
+    if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
     } else {
         ()
@@ -1443,13 +1200,13 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
         None => (),
     };
     let ast_value = hir::expand_derives(ast_value);
-    if ast_value.diagnostics.len() > 0 {
+    if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
     } else {
         ()
     };
     let hir_value = hir::lower_expanded(ast_value, source_path);
-    if hir_value.diagnostics.len() > 0 {
+    if !hir_value.diagnostics.is_empty() {
         return compact_hir_diagnostics(hir_value.diagnostics, source)
     } else {
         ()
@@ -1463,11 +1220,11 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     };
     let hir_dependencies = match standard {
         Some(value) => selected_standard_hir(ast_value, value),
-        None => Vec::new(),
+        None => Vec::[],
     };
     let core_dependencies = match standard {
         Some(value) => selected_standard_core(ast_value, value),
-        None => Vec::new(),
+        None => Vec::[],
     };
     let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
@@ -1568,11 +1325,11 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     };
     let hir_dependencies = match standard {
         Some(value) => selected_standard_hir(ast_value, value),
-        None => Vec::new(),
+        None => Vec::[],
     };
     let core_dependencies = match standard {
         Some(value) => selected_standard_core(ast_value, value),
-        None => Vec::new(),
+        None => Vec::[],
     };
     let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
@@ -1591,7 +1348,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let mono_value = lower_mono_or_fail(core_value);
     let lift_value = lift::lower_with_counter(mono_value, counter);
     let anf_value = anf::lower_with_counter(lift_value, counter);
-    let go_value = go_backend::lower(anf_value);
+    let go_value = lower_go_or_fail(go_backend::lower(anf_value));
     Compilation {
         ast_value,
         hir_value,
@@ -1606,7 +1363,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
 
 pub fn compile_source_or_diagnostics(source_path: string, source: string) -> SourceCompilation {
     let parsed = parser::parse(source);
-    if parsed.diagnostics.len() > 0 {
+    if !parsed.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(parsed.diagnostics, source, true),
         )
@@ -1614,7 +1371,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         ()
     };
     let ast_value = ast::lower(parsed);
-    if ast_value.diagnostics.len() > 0 {
+    if !ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(ast_value.diagnostics, source, false),
         )
@@ -1628,7 +1385,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         None => (),
     };
     let ast_value = hir::expand_derives(ast_value);
-    if ast_value.diagnostics.len() > 0 {
+    if !ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(ast_value.diagnostics, source, false),
         )
@@ -1636,7 +1393,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         ()
     };
     let hir_value = hir::lower_expanded(ast_value, source_path);
-    if hir_value.diagnostics.len() > 0 {
+    if !hir_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_hir_diagnostics(hir_value.diagnostics, source),
         )
@@ -1652,11 +1409,11 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
     };
     let hir_dependencies = match standard {
         Some(value) => selected_standard_hir(ast_value, value),
-        None => Vec::new(),
+        None => Vec::[],
     };
     let core_dependencies = match standard {
         Some(value) => selected_standard_core(ast_value, value),
-        None => Vec::new(),
+        None => Vec::[],
     };
     let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
@@ -1686,7 +1443,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
             let mono_value = mono_result.file;
             let lift_value = lift::lower_with_counter(mono_value, counter);
             let anf_value = anf::lower_with_counter(lift_value, counter);
-            let go_value = go_backend::lower(anf_value);
+            let go_value = lower_go_or_fail(go_backend::lower(anf_value));
             SourceCompilation::Compiled(
                 Compilation {
                     ast_value,
@@ -1811,15 +1568,15 @@ fn ascii_whitespace_at(value: string, index: int) -> bool {
 }
 
 fn trim_ascii(value: string) -> string {
-    let start = Ref::new(0);
-    let end = Ref::new(value.byte_len());
-    while start.get() < end.get() && ascii_whitespace_at(value, start.get()) {
-        start.set(start.get() + 1)
+    let mut start = 0;
+    let mut end = value.byte_len();
+    while start < end && ascii_whitespace_at(value, start) {
+        start = start + 1;
     };
-    while end.get() > start.get() && ascii_whitespace_at(value, end.get() - 1) {
-        end.set(end.get() - 1)
+    while end > start && ascii_whitespace_at(value, end - 1) {
+        end = end - 1;
     };
-    value.byte_slice(start.get(), end.get())
+    value.byte_slice(start, end)
 }
 
 fn temp_root() -> string {

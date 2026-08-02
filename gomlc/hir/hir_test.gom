@@ -85,7 +85,7 @@ fn indents_multiline_calls_canonically() -> unit {
     let source = "struct Box { value: int32 } fn make(value: Box) -> Box { value } fn main() -> unit { let values = Vec::new().pushed(make(Box { value: 1 })).pushed(make(Box { value: 2 })); }";
     testing::assert_eq(
         encode(lower(ast::lower(parser::parse(source)), "main.gom")),
-        "package main\nfile main.gom\n  struct Box {\n        value: int32,\n    }\n    \n    fn make(local/1/0: Box) -> Box {\n        value/0\n    }\n    \n    fn main() -> unit {\n        let local/1/1 = Vec::new().pushed(def/1/1(Box {\n                  value: 1\n              })).pushed(def/1/1(Box {\n                value: 2\n            }));\n    }",
+        "package main\nfile main.gom\n  struct Box {\n        value: int32,\n    }\n\n    fn make(local/1/0: Box) -> Box {\n        value/0\n    }\n\n    fn main() -> unit {\n        let local/1/1 = Vec::new().pushed(def/1/1(Box {\n                  value: 1\n              })).pushed(def/1/1(Box {\n                value: 2\n            }));\n    }",
     )
 }
 
@@ -141,6 +141,41 @@ fn resolves_traits_imported_through_package_aliases() -> unit {
     testing::assert_eq(file.import_aliases.get(0).package_name, "vendor::traits");
     testing::assert_eq(file.use_traits.len(), 1);
     testing::assert_eq(file.use_traits.get(0), "vendor::traits::Render")
+}
+
+#[test]
+fn resolves_braced_import_items_and_aliases() -> unit {
+    let file = lowered_package_file(
+        "package app; use vendor::api::{Widget as Box, Render, make}; fn run(value: Box) -> Box { let make = |item| item; make(value) }",
+        "vendor::app",
+    );
+    testing::assert_eq(file.import_aliases.len(), 1);
+    testing::assert_eq(file.import_aliases.get(0).alias, "");
+    testing::assert_eq(file.import_aliases.get(0).package_name, "vendor::api");
+    testing::assert_eq(file.imports.len(), 3);
+    testing::assert_eq(file.imports.get(0), "vendor::api::Widget");
+    testing::assert_eq(file.imports.get(1), "vendor::api::Render");
+    testing::assert_eq(file.imports.get(2), "vendor::api::make");
+    testing::assert_eq(file.use_traits.len(), 3);
+    testing::assert_eq(file.use_traits.get(0), "vendor::api::Widget");
+    testing::assert_eq(file.use_traits.get(1), "vendor::api::Render");
+    testing::assert_eq(file.use_traits.get(2), "vendor::api::make");
+    match file.items.get(0) {
+        Function(value) => {
+            match value.params.get(0).1 {
+                Con { name } => testing::assert_eq(name, "vendor::api::Widget"),
+                _ => testing::fail("expected imported parameter type"),
+            };
+            match value.body.tail {
+                Some(Expr { kind: Call { func, args: _ }, span: _ }) => match func.kind {
+                    NameRef { name_ref: Local(_) } => (),
+                    _ => testing::fail("expected local binding to shadow imported item"),
+                },
+                _ => testing::fail("expected local call"),
+            }
+        },
+        _ => testing::fail("expected function"),
+    }
 }
 
 #[test]
@@ -300,15 +335,36 @@ fn rejects_invalid_derives() -> unit {
     );
     testing::assert_eq(unsupported.diagnostics.len(), 1);
     testing::assert_eq(unsupported.diagnostics.get(0).message, "unsupported derive target `ToJson`");
-    let generic = lower(
-        ast::lower(parser::parse("#[derive(ToString)] struct Box[T] { value: T }")),
-        "main.gom",
+}
+
+#[test]
+fn derives_generic_impls_with_field_type_predicates() -> unit {
+    let expanded = expand_derives(
+        ast::lower(
+            parser::parse("#[derive(Eq)] struct Box[T, Marker] { first: Vec[T], second: Vec[T] }"),
+        ),
     );
-    testing::assert_eq(generic.diagnostics.len(), 1);
-    testing::assert_eq(
-        generic.diagnostics.get(0).message,
-        "`#[derive(ToString)]` is not supported for generic struct `Box`",
-    )
+    testing::assert_eq(expanded.diagnostics.len(), 0);
+    match expanded.ast {
+        Some(file) => match file.items.get(1) {
+            ImplBlock(value) => {
+                testing::assert_eq(value.generics.len(), 2);
+                testing::assert_eq(value.predicates.len(), 1);
+                match value.for_type {
+                    App { ty: _, args } => testing::assert_eq(args.len(), 2),
+                    _ => testing::fail("expected generic derive target"),
+                };
+                match value.predicates.get(0) {
+                    Trait { ty: App { ty: _, args }, trait_ref: _ } => {
+                        testing::assert_eq(args.len(), 1)
+                    },
+                    _ => testing::fail("expected field-type derive predicate"),
+                }
+            },
+            _ => testing::fail("expected derived generic impl"),
+        },
+        None => testing::fail("expected expanded generic derive"),
+    }
 }
 
 #[test]

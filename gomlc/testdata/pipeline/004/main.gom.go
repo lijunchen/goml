@@ -31,61 +31,41 @@ const (
 )
 
 func main0() bool {
-    var retv156 bool
-    var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
-        _0: Blue,
-        _1: Blue,
-    }
-    var x152 Color = a__0._0
-    var x153 Color = a__0._1
-    var jp158 bool
-    switch x153 {
+    var x155 Color = Blue
+    var x156 Color = Blue
+    switch x156 {
     case Red:
-        var jp160 bool
-        switch x152 {
+        switch x155 {
         case Red:
-            jp160 = true
+            return true
         default:
-            jp160 = false
+            return false
         }
-        jp158 = jp160
     case Green:
-        var jp162 bool
-        switch x152 {
+        switch x155 {
         case Red:
-            jp162 = true
+            return true
         default:
-            jp162 = false
+            return false
         }
-        jp158 = jp162
     case Blue:
-        var jp164 bool
-        switch x152 {
+        switch x155 {
         case Blue:
-            print__T_bool(true)
-            jp164 = false
+            var inline175 bool = true
+            var inline176 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline175)
+            _goml_runtime_core_string_print(inline176)
+            return false
         default:
-            jp164 = false
+            return false
         }
-        jp158 = jp164
     default:
         panic("non-exhaustive match")
     }
-    retv156 = jp158
-    return retv156
-}
-
-func print__T_bool(value__0 bool) struct{} {
-    var t166 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
-    _goml_runtime_core_string_print(t166)
-    return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv169 string
-    var t170 string = _goml_runtime_core_bool_to_string(self__37)
-    retv169 = t170
-    return retv169
+    var t173 string = _goml_runtime_core_bool_to_string(self__37)
+    return t173
 }
 
 func main() {

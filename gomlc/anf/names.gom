@@ -3,7 +3,7 @@ package anf;
 use gomlc::core;
 
 fn parse_digits(value: string, start: int) -> int {
-    let result = Ref::new(0);
+    let mut result = 0;
     for index in start..value.byte_len() {
         let byte = value.byte_get(index);
         let digit = if byte == b'0' {
@@ -27,9 +27,9 @@ fn parse_digits(value: string, start: int) -> int {
         } else {
             9
         };
-        result.set(result.get() * 10 + digit)
+        result = result * 10 + digit;
     };
-    result.get()
+    result
 }
 
 fn trailing_number(value: string) -> Option[int] {
@@ -43,22 +43,22 @@ fn trailing_number(value: string) -> Option[int] {
     if value.byte_len() == 0 {
         Option::None
     } else {
-        let start = Ref::new(value.byte_len());
-        let index = Ref::new(value.byte_len());
-        while index.get() > 0 {
-            let next = index.get() - 1;
+        let mut start = value.byte_len();
+        let mut index = value.byte_len();
+        while index > 0 {
+            let next = index - 1;
             let byte = value.byte_get(next);
             if byte >= b'0' && byte <= b'9' {
-                start.set(next);
-                index.set(next)
+                start = next;
+                index = next;
             } else {
                 break
             }
         };
-        if start.get() == value.byte_len() {
+        if start == value.byte_len() {
             Option::None
         } else {
-            Option::Some(parse_digits(value, start.get()))
+            Option::Some(parse_digits(value, start))
         }
     }
 }

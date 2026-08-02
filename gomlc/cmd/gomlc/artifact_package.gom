@@ -1,7 +1,11 @@
 package main;
 
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
 use gomlc::ast;
 use gomlc::core;
+use gomlc::cst;
 use gomlc::hir;
 use gomlc::parser;
 use gomlc::strings;
@@ -19,8 +23,8 @@ fn artifact_builtin_interface_hash(world: PackageWorld) -> string {
     world.builtin_interface.interface_hash
 }
 
-fn artifact_find_interface_unit(values: Vec[ArtifactInterfaceUnit], package_name: string) -> Option[
-    ArtifactInterfaceUnit,
+fn artifact_find_interface_unit(values: Vec[artifact::ArtifactInterfaceUnit], package_name: string) -> Option[
+    artifact::ArtifactInterfaceUnit,
 ] {
     for offset in 0..values.len() {
         let value = values[values.len() - 1 - offset];
@@ -33,9 +37,12 @@ fn artifact_find_interface_unit(values: Vec[ArtifactInterfaceUnit], package_name
     Option::None
 }
 
-fn artifact_read_interface_units(paths: Vec[string]) -> Result[Vec[ArtifactInterfaceUnit], string] {
-    let result = Vec::new();
-    let names = Vec::new();
+fn artifact_read_interface_units(paths: Vec[string]) -> Result[
+    Vec[artifact::ArtifactInterfaceUnit],
+    string,
+] {
+    let result: Vec[artifact::ArtifactInterfaceUnit] = Vec::[];
+    let names: Vec[string] = Vec::[];
     for path_value in paths {
         let source = match fs::read_bytes(path_value) {
             Ok(value) => value,
@@ -83,7 +90,7 @@ fn artifact_standard_package(standard: ArtifactStandardLibrary, package_name: st
     }
 }
 
-fn artifact_interface_builtin_valid(world: PackageWorld, value: ArtifactInterfaceUnit) -> bool {
+fn artifact_interface_builtin_valid(world: PackageWorld, value: artifact::ArtifactInterfaceUnit) -> bool {
     if value.package_name == "builtin" {
         true
     } else {
@@ -109,9 +116,9 @@ fn artifact_resolve_interface_units(
     world: PackageWorld,
     current_package: string,
     direct_dependencies: Vec[string],
-    provided: Vec[ArtifactInterfaceUnit],
-) -> Result[Vec[ArtifactInterfaceUnit], string] {
-    let pending = Vec::new();
+    provided: Vec[artifact::ArtifactInterfaceUnit],
+) -> Result[Vec[artifact::ArtifactInterfaceUnit], string] {
+    let pending: Vec[ArtifactDependencyRequest] = Vec::[];
     for package_name in direct_dependencies {
         pending.push(
             ArtifactDependencyRequest {
@@ -121,9 +128,9 @@ fn artifact_resolve_interface_units(
             },
         )
     };
-    let resolved_names = Vec::new();
-    let resolved = Vec::new();
-    while pending.len() > 0 {
+    let resolved_names: Vec[string] = Vec::[];
+    let resolved: Vec[artifact::ArtifactInterfaceUnit] = Vec::[];
+    while !pending.is_empty() {
         let request = pending.remove(pending.len() - 1);
         if request.package_name == "builtin" {
             if artifact_dependency_hash_matches(
@@ -200,235 +207,34 @@ fn artifact_resolve_interface_units(
 }
 
 fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
-    match package_name {
-        "std" => StandardNeeds {
-            root: true,
-            bytes: true,
-            collections: true,
-            env: true,
-            fs: true,
-            io: true,
-            json: true,
-            num: true,
-            path: true,
-            process: true,
-            testing: false,
-            text: true,
-            time: true,
-        },
-        "std::bytes" => StandardNeeds {
-            root: false,
-            bytes: true,
-            collections: false,
-            env: false,
-            fs: false,
-            io: false,
-            json: false,
-            num: false,
-            path: false,
-            process: false,
-            testing: false,
-            text: false,
-            time: false,
-        },
-        "std::collections" => StandardNeeds {
-            root: false,
-            bytes: false,
-            collections: true,
-            env: false,
-            fs: false,
-            io: false,
-            json: false,
-            num: false,
-            path: false,
-            process: false,
-            testing: false,
-            text: false,
-            time: false,
-        },
-        "std::env" => StandardNeeds {
-            root: false,
-            bytes: false,
-            collections: false,
-            env: true,
-            fs: false,
-            io: false,
-            json: false,
-            num: false,
-            path: false,
-            process: false,
-            testing: false,
-            text: false,
-            time: false,
-        },
-        "std::fs" => StandardNeeds {
-            root: false,
-            bytes: true,
-            collections: false,
-            env: false,
-            fs: true,
-            io: false,
-            json: false,
-            num: false,
-            path: false,
-            process: false,
-            testing: false,
-            text: false,
-            time: false,
-        },
-        "std::io" => StandardNeeds {
-            root: false,
-            bytes: true,
-            collections: false,
-            env: false,
-            fs: false,
-            io: true,
-            json: false,
-            num: false,
-            path: false,
-            process: false,
-            testing: false,
-            text: false,
-            time: false,
-        },
-        "std::json" => StandardNeeds {
-            root: false,
-            bytes: true,
-            collections: false,
-            env: false,
-            fs: false,
-            io: false,
-            json: true,
-            num: false,
-            path: false,
-            process: false,
-            testing: false,
-            text: true,
-            time: false,
-        },
-        "std::num" => StandardNeeds {
-            root: false,
-            bytes: false,
-            collections: false,
-            env: false,
-            fs: false,
-            io: false,
-            json: false,
-            num: true,
-            path: false,
-            process: false,
-            testing: false,
-            text: false,
-            time: false,
-        },
-        "std::path" => StandardNeeds {
-            root: false,
-            bytes: false,
-            collections: false,
-            env: false,
-            fs: false,
-            io: false,
-            json: false,
-            num: false,
-            path: true,
-            process: false,
-            testing: false,
-            text: false,
-            time: false,
-        },
-        "std::process" => StandardNeeds {
-            root: false,
-            bytes: true,
-            collections: false,
-            env: false,
-            fs: false,
-            io: false,
-            json: false,
-            num: false,
-            path: false,
-            process: true,
-            testing: false,
-            text: false,
-            time: false,
-        },
-        "std::testing" => StandardNeeds {
-            root: false,
-            bytes: false,
-            collections: false,
-            env: false,
-            fs: false,
-            io: false,
-            json: false,
-            num: false,
-            path: false,
-            process: false,
-            testing: true,
-            text: false,
-            time: false,
-        },
-        "std::text" => StandardNeeds {
-            root: false,
-            bytes: true,
-            collections: false,
-            env: false,
-            fs: false,
-            io: false,
-            json: false,
-            num: false,
-            path: false,
-            process: false,
-            testing: false,
-            text: true,
-            time: false,
-        },
-        "std::time" => StandardNeeds {
-            root: false,
-            bytes: false,
-            collections: false,
-            env: false,
-            fs: false,
-            io: false,
-            json: false,
-            num: false,
-            path: false,
-            process: false,
-            testing: false,
-            text: false,
-            time: true,
-        },
-        _ => no_standard_needs(),
-    }
+    standard_needs_from_package_names(Vec::[package_name])
 }
 
 fn artifact_standard_needs_from_units(
     direct_dependencies: Vec[string],
-    units: Vec[ArtifactInterfaceUnit],
+    units: Vec[artifact::ArtifactInterfaceUnit],
 ) -> StandardNeeds {
-    let needs = Ref::new(no_standard_needs());
+    let mut needs = no_standard_needs();
     for package_name in direct_dependencies {
-        needs.set(
-            merge_standard_needs(needs.get(), artifact_standard_needs_for_package(package_name)),
-        )
+        needs = merge_standard_needs(needs, artifact_standard_needs_for_package(package_name));
     };
     for interface in units {
         for dependency in interface.deps {
-            needs.set(
-                merge_standard_needs(needs.get(), artifact_standard_needs_for_package(dependency.0)),
-            )
+            needs = merge_standard_needs(needs, artifact_standard_needs_for_package(dependency.0));
         }
     };
-    needs.get()
+    needs
 }
 
 fn artifact_dependency_environments(
-    builtin: ArtifactPackageExports,
+    builtin: artifact::ArtifactPackageExports,
     standard: ArtifactStandardLibrary,
     needs: StandardNeeds,
-    units: Vec[ArtifactInterfaceUnit],
+    units: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
-    let result: Vec[tast::DependencyEnvironment] = Vec::new();
+    let result: Vec[tast::DependencyEnvironment] = Vec::[];
     let value = artifact_dependency_environment_from_exports(builtin)?;
-    let methods = Vec::new();
+    let methods: Vec[tast::MethodInfo] = Vec::[];
     for method in value.methods {
         match method.trait_ref {
             Some(_) => if artifact_builtin_extension_iterator(method.for_type) {
@@ -439,7 +245,7 @@ fn artifact_dependency_environments(
             None => methods.push(method),
         }
     };
-    let impls = Vec::new();
+    let impls: Vec[tast::ImplInfo] = Vec::[];
     for implementation in value.impls {
         if artifact_builtin_extension_iterator(implementation.for_type) {
             impls.push(implementation)
@@ -453,7 +259,7 @@ fn artifact_dependency_environments(
             value.structs,
             value.type_aliases,
             value.constants,
-            Vec::new(),
+            Vec::[],
             value.functions,
             methods,
             impls,
@@ -482,16 +288,16 @@ fn artifact_builtin_extension_iterator(value: tast::Type) -> bool {
     }
 }
 
-fn artifact_dependency_core_types(units: Vec[ArtifactInterfaceUnit]) -> Vec[core::File] {
-    let result = Vec::new();
+fn artifact_dependency_core_types(units: Vec[artifact::ArtifactInterfaceUnit]) -> Vec[core::File] {
+    let result: Vec[core::File] = Vec::[];
     for interface in units {
         result.push(
             core::File {
-                functions: Vec::new(),
+                functions: Vec::[],
                 enums: interface.exports.enums,
                 structs: interface.exports.structs,
-                type_instances: Vec::new(),
-                constants: Vec::new(),
+                type_instances: Vec::[],
+                constants: Vec::[],
             },
         )
     };
@@ -501,11 +307,11 @@ fn artifact_dependency_core_types(units: Vec[ArtifactInterfaceUnit]) -> Vec[core
 fn artifact_direct_dependency_hashes(
     world: PackageWorld,
     names: Vec[string],
-    units: Vec[ArtifactInterfaceUnit],
+    units: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[Vec[(string, string)], string] {
-    let result = Vec::new();
+    let result: Vec[(string, string)] = Vec::[];
     result.push(("builtin", artifact_builtin_interface_hash(world)));
-    let names = sort_artifact_names(names);
+    let names = wire::sort_artifact_names(names);
     for name in names {
         if name == "builtin" {
             ()
@@ -526,14 +332,14 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
     string,
     string,
 ] {
-    let names = Vec::new();
+    let names: Vec[string] = Vec::[];
     for index in 0..values.len() {
         let value = values[index];
         match value.ast {
             Some(file) => if !file.package_explicit {
                 return Result::Err(paths[index] + " must declare `package <name>;`")
             } else {
-                if names.len() > 0 {
+                if !names.is_empty() {
                     let name = names[0];
                     if name != file.package_name {
                         return Result::Err(
@@ -552,7 +358,7 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
             None => (),
         }
     };
-    if names.len() > 0 {
+    if !names.is_empty() {
         Result::Ok(names[0])
     } else {
         Result::Err("package has no valid source files")
@@ -562,18 +368,18 @@ fn artifact_declared_package_name(values: Vec[ast::LowerResult], paths: Vec[stri
 fn artifact_validate_entrypoint(
     package_name: string,
     declared_name: string,
-    exports: ArtifactPackageExports,
+    exports: artifact::ArtifactPackageExports,
 ) -> Result[unit, string] {
     let diagnostics = artifact_entrypoint_diagnostics(package_name, declared_name, exports);
-    if diagnostics.len() == 0 {
+    if diagnostics.is_empty() {
         Result::Ok(())
     } else {
         Result::Err(diagnostics[0])
     }
 }
 
-fn artifact_find_function(functions: Vec[ArtifactFnScheme], name: string) -> Option[
-    ArtifactFnScheme,
+fn artifact_find_function(functions: Vec[artifact::ArtifactFnScheme], name: string) -> Option[
+    artifact::ArtifactFnScheme,
 ] {
     for offset in 0..functions.len() {
         let function = functions[functions.len() - 1 - offset];
@@ -589,9 +395,9 @@ fn artifact_find_function(functions: Vec[ArtifactFnScheme], name: string) -> Opt
 fn artifact_entrypoint_diagnostics(
     package_name: string,
     declared_name: string,
-    exports: ArtifactPackageExports,
+    exports: artifact::ArtifactPackageExports,
 ) -> Vec[string] {
-    let diagnostics = Vec::new();
+    let diagnostics: Vec[string] = Vec::[];
     if declared_name != "main" {
         return diagnostics
     } else {
@@ -601,13 +407,13 @@ fn artifact_entrypoint_diagnostics(
     let found = artifact_find_function(exports.functions, expected);
     match found {
         Some(function) => {
-            if function.type_params.len() > 0 {
+            if !function.type_params.is_empty() {
                 diagnostics.push("main function must not have type parameters")
             } else {
                 ()
             };
             match tast::resolve_type(function.ty) {
-                Func { params, ret_ty: _ } => if params.len() > 0 {
+                Func { params, ret_ty: _ } => if !params.is_empty() {
                     diagnostics.push("main function must not have parameters")
                 } else {
                     ()
@@ -623,7 +429,7 @@ fn artifact_entrypoint_diagnostics(
 fn artifact_dependency_type_names(builtins: core::File, dependencies: Vec[core::File], enums: bool) -> Vec[
     string,
 ] {
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     if enums {
         for definition in dependency_enums(builtins, dependencies) {
             result.push(definition.name)
@@ -641,9 +447,13 @@ fn artifact_use_has_explicit_alias(value: ast::LowerResult, package_name: string
         Some(file) => {
             for use_decl in file.uses {
                 if import_path_text(use_decl.path) == package_name {
-                    match use_decl.alias {
-                        Some(_) => return true,
-                        None => (),
+                    if !use_decl.items.is_empty() {
+                        return true
+                    } else {
+                        match use_decl.alias {
+                            Some(_) => return true,
+                            None => (),
+                        }
                     }
                 } else {
                     ()
@@ -655,9 +465,10 @@ fn artifact_use_has_explicit_alias(value: ast::LowerResult, package_name: string
     }
 }
 
-fn artifact_declared_package_alias(units: Vec[ArtifactInterfaceUnit], package_name: string) -> Option[
-    string,
-] {
+fn artifact_declared_package_alias(
+    units: Vec[artifact::ArtifactInterfaceUnit],
+    package_name: string,
+) -> Option[string] {
     for offset in 0..units.len() {
         let interface_unit = units[units.len() - 1 - offset];
         if interface_unit.package_name == package_name
@@ -673,7 +484,7 @@ fn artifact_declared_package_alias(units: Vec[ArtifactInterfaceUnit], package_na
 fn artifact_apply_declared_package_aliases(
     files: Vec[hir::File],
     sources: Vec[ast::LowerResult],
-    units: Vec[ArtifactInterfaceUnit],
+    units: Vec[artifact::ArtifactInterfaceUnit],
 ) -> unit {
     for file_index in 0..files.len() {
         let file = files[file_index];
@@ -709,7 +520,7 @@ fn standard_internal_import_diagnostics(
     paths: Vec[string],
     package_name: string,
 ) -> Vec[tast::Diagnostic] {
-    let diagnostics = Vec::new();
+    let diagnostics: Vec[tast::Diagnostic] = Vec::[];
     for index in 0..values.len() {
         match values[index].ast {
             Some(file) => for use_decl in file.uses {
@@ -723,7 +534,7 @@ fn standard_internal_import_diagnostics(
                             source_path: paths[index],
                             span: Option::None,
                             primary_label: Option::None,
-                            secondary_labels: Vec::new(),
+                            secondary_labels: Vec::[],
                             sort_order: 0,
                         },
                     )
@@ -741,7 +552,7 @@ fn without_disallowed_standard_internal_imports(value: ast::LowerResult, package
     ast::LowerResult {
         ast: match value.ast {
             Some(file) => {
-                let uses = Vec::new();
+                let uses: Vec[ast::UseDecl] = Vec::[];
                 for use_decl in file.uses {
                     if disallowed_standard_internal_import(
                         package_name,
@@ -774,8 +585,8 @@ fn compile_artifact_package(
     build: bool,
     emit_tests: bool,
 ) -> Result[ArtifactCompiledPackage, string] {
-    let parsed = Vec::new();
-    let parser_diagnostics: Vec[tast::Diagnostic] = Vec::new();
+    let parsed: Vec[cst::ParseResult] = Vec::[];
+    let parser_diagnostics: Vec[tast::Diagnostic] = Vec::[];
     for source_path in command.inputs {
         let value = parser::parse(read_source(source_path));
         for diagnostic in ast_diagnostics(value.diagnostics, "parser", source_path) {
@@ -785,7 +596,7 @@ fn compile_artifact_package(
     };
     fail_on_typer_diagnostics(parser_diagnostics, "", "");
     let ast_values = ast::lower_package(parsed);
-    let lower_diagnostics: Vec[tast::Diagnostic] = Vec::new();
+    let lower_diagnostics: Vec[tast::Diagnostic] = Vec::[];
     for index in 0..ast_values.len() {
         for diagnostic in ast_diagnostics(
             ast_values[index].diagnostics,
@@ -805,12 +616,12 @@ fn compile_artifact_package(
     let public_names = public_item_names(ast_values, command.package_name);
     let test_candidates = collect_package_test_candidates(ast_values, command.inputs);
     fail_on_typer_diagnostics(test_candidates.diagnostics, "", "");
-    let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
-    let derive_diagnostics: Vec[tast::Diagnostic] = Vec::new();
-    let source_needs = Ref::new(no_standard_needs());
+    let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    let derive_diagnostics: Vec[tast::Diagnostic] = Vec::[];
+    let mut source_needs = no_standard_needs();
     for index in 0..ast_values.len() {
         let ast_value = ast_values[index];
-        source_needs.set(merge_standard_needs(source_needs.get(), source_standard_needs(ast_value)));
+        source_needs = merge_standard_needs(source_needs, source_standard_needs(ast_value));
         let expanded = hir::expand_derives(
             without_disallowed_standard_internal_imports(ast_value, command.package_name),
         );
@@ -820,7 +631,7 @@ fn compile_artifact_package(
         hir_inputs.push((expanded, command.inputs[index]))
     };
     fail_on_typer_diagnostics(derive_diagnostics, "", "");
-    let hir_files = Vec::new();
+    let hir_files: Vec[hir::File] = Vec::[];
     for lowered in hir::lower_expanded_package_files(hir_inputs, command.package_name) {
         hir_files.push(checked_hir_file(lowered, command.package_name))
     };
@@ -839,7 +650,7 @@ fn compile_artifact_package(
     )?;
     artifact_apply_declared_package_aliases(hir_files, ast_values, dependency_units);
     let needs = merge_standard_needs(
-        source_needs.get(),
+        source_needs,
         artifact_standard_needs_from_units(dependency_names, dependency_units),
     );
     let environments = artifact_dependency_environments(
@@ -897,7 +708,7 @@ fn compile_artifact_package(
                     source_path: "",
                     span: Option::None,
                     primary_label: Option::None,
-                    secondary_labels: Vec::new(),
+                    secondary_labels: Vec::[],
                     sort_order: 0,
                 },
             )
@@ -915,7 +726,7 @@ fn compile_artifact_package(
         Err(error) => return Result::Err("error[typer]: " + error),
     };
     let deps = artifact_direct_dependency_hashes(world, dependency_names, dependency_units)?;
-    let generated_interface = new_artifact_interface_unit(
+    let generated_interface = interface_codec::new_unit(
         command.package_name,
         public_exports,
         artifact_package_interface(command.package_name, declared_name, public_exports),
@@ -939,7 +750,7 @@ fn compile_artifact_package(
     Result::Ok(
         ArtifactCompiledPackage {
             interface_unit,
-            core_unit: ArtifactCoreUnit {
+            core_unit: artifact::ArtifactCoreUnit {
                 package_name: command.package_name,
                 declared_name,
                 interface_hash: interface_unit.interface_hash,
@@ -950,16 +761,16 @@ fn compile_artifact_package(
                 tests: if emit_tests {
                     test_validation.tests
                 } else {
-                    Vec::new()
+                    Vec::[]
                 },
             },
         },
     )
 }
 
-fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[ArtifactCoreUnit], string] {
-    let result = Vec::new();
-    let names = Vec::new();
+fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::ArtifactCoreUnit], string] {
+    let result: Vec[artifact::ArtifactCoreUnit] = Vec::[];
+    let names: Vec[string] = Vec::[];
     for path_value in paths {
         let source = match fs::read_bytes(path_value) {
             Ok(value) => value,
@@ -979,8 +790,8 @@ fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[ArtifactCoreUnit],
     Result::Ok(result)
 }
 
-fn artifact_find_core_unit(values: Vec[ArtifactCoreUnit], package_name: string) -> Option[
-    ArtifactCoreUnit,
+fn artifact_find_core_unit(values: Vec[artifact::ArtifactCoreUnit], package_name: string) -> Option[
+    artifact::ArtifactCoreUnit,
 ] {
     for offset in 0..values.len() {
         let value = values[values.len() - 1 - offset];
@@ -998,16 +809,16 @@ fn artifact_link_dependency_name(package_name: string) -> bool {
         && !strings::starts_with(package_name, "std::")
 }
 
-fn artifact_reachable_core_units(roots: Vec[string], values: Vec[ArtifactCoreUnit]) -> Result[
-    Vec[ArtifactCoreUnit],
+fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::ArtifactCoreUnit]) -> Result[
+    Vec[artifact::ArtifactCoreUnit],
     string,
 ] {
-    let pending = Vec::new();
+    let pending: Vec[string] = Vec::[];
     for root in roots {
         pending.push(root)
     };
-    let names = Vec::new();
-    while pending.len() > 0 {
+    let names: Vec[string] = Vec::[];
+    while !pending.is_empty() {
         let package_name = pending.remove(pending.len() - 1);
         if vecs::contains(names, package_name) {
             ()
@@ -1025,7 +836,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[ArtifactCoreUni
             }
         }
     };
-    let result = Vec::new();
+    let result: Vec[artifact::ArtifactCoreUnit] = Vec::[];
     for value in values {
         if vecs::contains(names, value.package_name) {
             result.push(value)
@@ -1036,7 +847,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[ArtifactCoreUni
     Result::Ok(result)
 }
 
-fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[ArtifactCoreUnit]) -> Result[
+fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[artifact::ArtifactCoreUnit]) -> Result[
     unit,
     string,
 ] {
@@ -1084,20 +895,18 @@ fn artifact_validate_link_core_units(world: PackageWorld, values: Vec[ArtifactCo
     Result::Ok(())
 }
 
-fn artifact_core_standard_needs(values: Vec[ArtifactCoreUnit]) -> StandardNeeds {
-    let needs = Ref::new(no_standard_needs());
+fn artifact_core_standard_needs(values: Vec[artifact::ArtifactCoreUnit]) -> StandardNeeds {
+    let mut needs = no_standard_needs();
     for value in values {
         for dependency in value.deps {
-            needs.set(
-                merge_standard_needs(needs.get(), artifact_standard_needs_for_package(dependency.0)),
-            )
+            needs = merge_standard_needs(needs, artifact_standard_needs_for_package(dependency.0));
         }
     };
-    needs.get()
+    needs
 }
 
-fn artifact_core_compilation(value: ArtifactCoreUnit) -> ArtifactCompilation {
-    let dependency_names = Vec::new();
+fn artifact_core_compilation(value: artifact::ArtifactCoreUnit) -> ArtifactCompilation {
+    let dependency_names: Vec[string] = Vec::[];
     for dependency in value.deps {
         if artifact_link_dependency_name(dependency.0) {
             dependency_names.push(dependency.0)
@@ -1112,11 +921,11 @@ fn artifact_core_compilation(value: ArtifactCoreUnit) -> ArtifactCompilation {
     }
 }
 
-fn artifact_core_compilations(values: Vec[ArtifactCoreUnit]) -> Result[
+fn artifact_core_compilations(values: Vec[artifact::ArtifactCoreUnit]) -> Result[
     Vec[ArtifactCompilation],
     string,
 ] {
-    let result = Vec::new();
+    let result: Vec[ArtifactCompilation] = Vec::[];
     for value in values {
         result.push(artifact_core_compilation(value))
     };

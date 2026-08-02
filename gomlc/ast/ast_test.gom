@@ -81,6 +81,23 @@ fn lowers_items_types_and_float_values() -> unit {
 }
 
 #[test]
+fn lowers_attribute_names_and_arguments_structurally() -> unit {
+    let file = lowered_file("#[vendor::intrinsic(\"runtime\")] extern fn probe() -> unit;");
+    match file.items.get(0) {
+        ExternFunction(value) => {
+            let attribute = value.attrs.get(0);
+            testing::assert_eq(attribute.name, "intrinsic");
+            testing::assert_eq(attribute.args.len(), 1);
+            match attribute.args.get(0) {
+                AttributeArg::String(value) => testing::assert_eq(value, "runtime"),
+                _ => testing::fail("expected string attribute argument"),
+            }
+        },
+        _ => testing::fail("expected extern function"),
+    }
+}
+
+#[test]
 fn lowers_unicode_strings_and_constructor_patterns() -> unit {
     let source = "enum Choice { Empty, Text(string) } fn read(value: Choice) -> string { let prefix = \"λ\\u0041🙂\"; match value { Choice::Text(text) => prefix + text, Choice::Empty => prefix } }";
     let file = lowered_file(source);

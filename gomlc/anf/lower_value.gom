@@ -9,7 +9,7 @@ fn try_imm(value: core::Expr) -> Option[Imm] {
             Option::Some(Imm::Callable { callable, ty })
         },
         Prim { value, ty } => Option::Some(Imm::Prim { value, ty }),
-        Constr { constructor, args, ty } => if args.len() == 0 {
+        Constr { constructor, args, ty } => if args.is_empty() {
             match constructor.tag {
                 Some(tag) => Option::Some(Imm::Tag { index: tag, ty }),
                 None => Option::None,
@@ -86,7 +86,8 @@ fn lower_list(state: State, values: Vec[core::Expr], k: (Vec[Imm]) -> Block) -> 
             ()
         }
     };
-    lower_list_from(state, values, 0, Vec::new(), k)
+    let result: Vec[Imm] = Vec::[];
+    lower_list_from(state, values, 0, result, k)
 }
 
 fn lower_value(state: State, value: core::Expr, k: (Value) -> Block) -> Block {

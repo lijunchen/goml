@@ -1,0 +1,101 @@
+package artifact;
+
+use gomlc::core;
+use gomlc::tast;
+
+pub struct ArtifactFnScheme {
+    pub name: string,
+    pub type_params: Vec[string],
+    pub constraints: Vec[tast::TypePredicate],
+    pub ty: tast::Type,
+    pub body: tast::Callable,
+}
+
+pub struct ArtifactAssociatedTypeDef {
+    pub name: string,
+    pub bounds: Vec[tast::TraitRef],
+}
+
+pub struct ArtifactTraitDef {
+    pub name: string,
+    pub params: Vec[string],
+    pub predicates: Vec[tast::TypePredicate],
+    pub supertraits: Vec[tast::TraitRef],
+    pub associated_types: Vec[ArtifactAssociatedTypeDef],
+    pub methods: Vec[ArtifactFnScheme],
+}
+
+pub struct ArtifactImplDef {
+    pub params: Vec[string],
+    pub constraints: Vec[tast::TypePredicate],
+    pub associated_types: Vec[(string, tast::Type)],
+    pub methods: Vec[ArtifactFnScheme],
+    pub valid: bool,
+}
+
+pub struct ArtifactTraitImpl {
+    pub trait_ref: tast::TraitRef,
+    pub for_ty: tast::Type,
+    pub definition: ArtifactImplDef,
+}
+
+pub enum ArtifactInherentImplKey {
+    Exact(tast::Type),
+    Constr(string),
+}
+
+pub struct ArtifactInherentImpl {
+    pub key: ArtifactInherentImplKey,
+    pub definition: ArtifactImplDef,
+}
+
+pub struct ArtifactPackageExports {
+    pub enum_type_names: Vec[string],
+    pub struct_type_names: Vec[string],
+    pub type_aliases: Vec[tast::TypeAliasInfo],
+    pub enums: Vec[tast::EnumDef],
+    pub structs: Vec[tast::StructDef],
+    pub traits: Vec[ArtifactTraitDef],
+    pub trait_impls: Vec[ArtifactTraitImpl],
+    pub inherent_impls: Vec[ArtifactInherentImpl],
+    pub functions: Vec[ArtifactFnScheme],
+    pub constants: Vec[tast::ConstantScheme],
+}
+
+pub struct ArtifactPackageInterface {
+    pub package_name: string,
+    pub name: string,
+    pub value_exports: Vec[(string, int)],
+    pub enum_variants: Vec[(string, Vec[string])],
+}
+
+pub struct ArtifactInterfaceUnit {
+    pub package_name: string,
+    pub exports: ArtifactPackageExports,
+    pub package_interface: ArtifactPackageInterface,
+    pub deps: Vec[(string, string)],
+    pub interface_hash: string,
+}
+
+pub struct ArtifactTestDescriptor {
+    pub id: string,
+    pub package_name: string,
+    pub symbol: string,
+    pub display_name: string,
+    pub source_path: string,
+    pub start: int,
+    pub end: int,
+    pub ignored: bool,
+    pub ignore_reason: Option[string],
+}
+
+pub struct ArtifactCoreUnit {
+    pub package_name: string,
+    pub declared_name: string,
+    pub interface_hash: string,
+    pub exports: ArtifactPackageExports,
+    pub core_ir: core::File,
+    pub deps: Vec[(string, string)],
+    pub sources: Vec[string],
+    pub tests: Vec[ArtifactTestDescriptor],
+}

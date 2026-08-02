@@ -509,7 +509,10 @@ fn iterator_fold(iterator/117: I, initial/118: A, combine/119: (A, T) -> A) -> A
 }
 
 fn iterator_collect(iterator/122: I) -> Vec[T] {
-  let values/123 = inherent#Vec#Vec[T]#new() in
+  let values/123 = {
+    let vec_literal/10204 = inherent#Vec#Vec[T]#new() in
+    vec_literal/10204
+  } in
   let _wild36 = loop {
     let _wild35 = {
       let mtmp33 = trait_call[Iterator::next](iterator/122) in
@@ -545,7 +548,7 @@ fn inherent#Vec#Vec[T]#push[T](self/126: Vec[T], elem/127: T) -> unit {
 }
 
 fn inherent#Vec#Vec[T]#pushed[T](self/128: Vec[T], elem/129: T) -> Vec[T] {
-  let result/130 = inherent#Vec#Vec[T]#new() in
+  let result/130 = inherent#Vec#Vec[T]#with_capacity((inherent#Vec#Vec[T]#len(self/128) + 1)) in
   let index/131 = 0 in
   let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len(self/128)) {
       {
@@ -578,7 +581,7 @@ fn inherent#Vec#Vec[T]#capacity[T](self/138: Vec[T]) -> int {
 }
 
 fn inherent#Vec#Vec[T]#is_empty[T](self/139: Vec[T]) -> bool {
-  trait_impl#Eq#int#eq(inherent#Vec#Vec[T]#len(self/139), 0)
+  trait_call[Eq::eq](@intrinsic(vec.len)(self/139), 0)
 }
 
 fn inherent#Vec#Vec[T]#reserve[T](self/140: Vec[T], additional/141: int) -> unit {
@@ -595,7 +598,7 @@ fn inherent#Vec#Vec[T]#clear[T](self/144: Vec[T]) -> unit {
 
 fn inherent#Vec#Vec[T]#last[T](self/145: Vec[T]) -> Option[T] {
   let len/146 = inherent#Vec#Vec[T]#len(self/145) in
-  if trait_impl#Eq#int#eq(len/146, 0) {
+  if trait_call[Eq::eq](len/146, 0) {
       {
         Option::None
       }
@@ -608,7 +611,7 @@ fn inherent#Vec#Vec[T]#last[T](self/145: Vec[T]) -> Option[T] {
 
 fn inherent#Vec#Vec[T]#pop[T](self/147: Vec[T]) -> Option[T] {
   let len/148 = inherent#Vec#Vec[T]#len(self/147) in
-  if trait_impl#Eq#int#eq(len/148, 0) {
+  if trait_call[Eq::eq](len/148, 0) {
       {
         Option::None
       }
@@ -663,7 +666,7 @@ fn inherent#Vec#Vec[T]#swap_remove[T](self/154: Vec[T], index/155: int) -> T {
 
 fn inherent#Vec#Vec[T]#insert[T](self/158: Vec[T], index/159: int, value/160: T) -> unit {
   let len/161 = inherent#Vec#Vec[T]#len(self/158) in
-  if trait_impl#Eq#int#eq(index/159, len/161) {
+  if trait_call[Eq::eq](index/159, len/161) {
       {
         inherent#Vec#Vec[T]#push(self/158, value/160)
       }
@@ -939,7 +942,7 @@ fn inherent#string#string#starts_with(self/228: string, prefix/229: string) -> b
   } else {
       false
   } {
-      trait_impl#Eq#string#eq(inherent#string#string#byte_slice(self/228, 0, inherent#string#string#byte_len(prefix/229)), prefix/229)
+      trait_call[Eq::eq](inherent#string#string#byte_slice(self/228, 0, inherent#string#string#byte_len(prefix/229)), prefix/229)
   } else {
       false
   }
@@ -954,7 +957,7 @@ fn inherent#string#string#ends_with(self/230: string, suffix/231: string) -> boo
       {
         let start/232 = (inherent#string#string#byte_len(self/230) - inherent#string#string#byte_len(suffix/231)) in
         if inherent#string#string#is_char_boundary(self/230, start/232) {
-            trait_impl#Eq#string#eq(inherent#string#string#byte_slice(self/230, start/232, inherent#string#string#byte_len(self/230)), suffix/231)
+            trait_call[Eq::eq](inherent#string#string#byte_slice(self/230, start/232, inherent#string#string#byte_len(self/230)), suffix/231)
         } else {
             false
         }
@@ -963,7 +966,7 @@ fn inherent#string#string#ends_with(self/230: string, suffix/231: string) -> boo
 }
 
 fn inherent#string#string#contains(self/233: string, expected/234: string) -> bool {
-  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(expected/234), 0) {
+  if trait_call[Eq::eq](inherent#string#string#byte_len(expected/234), 0) {
       {
         true
       }
@@ -995,7 +998,7 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
                               } else {
                                   false
                               } {
-                                  trait_impl#Eq#string#eq(inherent#string#string#byte_slice(self/233, start/235, end/236), expected/234)
+                                  trait_call[Eq::eq](inherent#string#string#byte_slice(self/233, start/235, end/236), expected/234)
                               } else {
                                   false
                               } {
@@ -1107,7 +1110,7 @@ fn trait_impl#Iterator#SkipIterator[I]#next[I](self/243: SkipIterator[I]) -> Opt
 }
 
 fn trait_impl#Iterator#ChainIterator[T,A,B]#next[T, A, B](self/244: ChainIterator[T, A, B]) -> Option[T] {
-  let _wild122 = if trait_impl#Eq#bool#eq(inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244)), false) {
+  let _wild122 = if (!inherent#Ref#Ref[bool]#get(ChainIterator.first_done(self/244))) {
       {
         {
           let mtmp120 = trait_call[Iterator::next](ChainIterator.first(self/244)) in
@@ -1208,7 +1211,7 @@ fn iterator_any(iterator/256: I, predicate/257: (T) -> bool) -> bool {
 }
 
 fn iterator_all(iterator/258: I, predicate/259: (T) -> bool) -> bool {
-  trait_impl#Eq#bool#eq(iterator_any(iterator/258, |value/260: T| => trait_impl#Eq#bool#eq(predicate/259(value/260), false)), false)
+  (!iterator_any(iterator/258, |value/260: T| => (!predicate/259(value/260))))
 }
 
 fn iterator_count(iterator/261: I) -> int {
@@ -1253,7 +1256,7 @@ fn inherent#Option#Option[T]#is_some[T](self/263: Option[T]) -> bool {
 }
 
 fn inherent#Option#Option[T]#is_none[T](self/264: Option[T]) -> bool {
-  trait_impl#Eq#bool#eq(inherent#Option#Option[T]#is_some(self/264), false)
+  (!inherent#Option#Option[T]#is_some(self/264))
 }
 
 fn inherent#Option#Option[T]#unwrap_or[T](self/265: Option[T], fallback/266: T) -> T {
@@ -1308,7 +1311,7 @@ fn inherent#Result#Result[T,E]#is_ok[T, E](self/271: Result[T, E]) -> bool {
 }
 
 fn inherent#Result#Result[T,E]#is_err[T, E](self/272: Result[T, E]) -> bool {
-  trait_impl#Eq#bool#eq(inherent#Result#Result[T,E]#is_ok(self/272), false)
+  (!inherent#Result#Result[T,E]#is_ok(self/272))
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/273: Result[T, E], fallback/274: T) -> T {
@@ -1354,120 +1357,150 @@ fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](self/276: Result[T, E], fall
   }
 }
 
-fn inherent#Option#Option[T]#map[T, U](self/280: Option[T], map_fn/281: (T) -> U) -> Option[U] {
-  match self/280 {
+fn __goml_builtin_range_inclusive(start/280: int, end/281: int) -> FnIterator[int] {
+  let current/282 = @intrinsic(ref.new)(start/280) in
+  let finished/283 = @intrinsic(ref.new)(false) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    if if @intrinsic(ref.get)(finished/283) {
+        true
+    } else {
+        (@intrinsic(ref.get)(current/282) > end/281)
+    } {
+        {
+          Option::None
+        }
+    } else {
+        {
+          let value/284 = @intrinsic(ref.get)(current/282) in
+          let _wild145 = if trait_call[Eq::eq](value/284, end/281) {
+              {
+                let _wild143 = @intrinsic(ref.set)(finished/283, true) in
+              }
+          } else {
+              {
+                let _wild144 = @intrinsic(ref.set)(current/282, (value/284 + 1)) in
+              }
+          } in
+          Option::Some(value/284)
+        }
+    }
+  })
+}
+
+fn inherent#Option#Option[T]#map[T, U](self/285: Option[T], map_fn/286: (T) -> U) -> Option[U] {
+  match self/285 {
     Option::None => {
       Option::None
     },
-    Option::Some(x143) => {
+    Option::Some(x146) => {
       {
-        let x143 = Option::Some._0(self/280) in
+        let x146 = Option::Some._0(self/285) in
         {
-          let value/282 = x143 in
-          Option::Some(map_fn/281(value/282))
+          let value/287 = x146 in
+          Option::Some(map_fn/286(value/287))
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#and_then[T, U](self/283: Option[T], next/284: (T) -> Option[U]) -> Option[U] {
-  match self/283 {
+fn inherent#Option#Option[T]#and_then[T, U](self/288: Option[T], next/289: (T) -> Option[U]) -> Option[U] {
+  match self/288 {
     Option::None => {
       Option::None
     },
-    Option::Some(x144) => {
+    Option::Some(x147) => {
       {
-        let x144 = Option::Some._0(self/283) in
+        let x147 = Option::Some._0(self/288) in
         {
-          let value/285 = x144 in
-          next/284(value/285)
+          let value/290 = x147 in
+          next/289(value/290)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> Result[T, E] {
-  match self/286 {
+fn inherent#Option#Option[T]#ok_or[T, E](self/291: Option[T], error/292: E) -> Result[T, E] {
+  match self/291 {
     Option::None => {
-      Result::Err(error/287)
+      Result::Err(error/292)
     },
-    Option::Some(x145) => {
+    Option::Some(x148) => {
       {
-        let x145 = Option::Some._0(self/286) in
+        let x148 = Option::Some._0(self/291) in
         {
-          let value/288 = x145 in
-          Result::Ok(value/288)
+          let value/293 = x148 in
+          Result::Ok(value/293)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
-  match self/289 {
-    Result::Ok(x146) => {
+fn inherent#Result#Result[T,E]#map[T, E, U](self/294: Result[T, E], map_fn/295: (T) -> U) -> Result[U, E] {
+  match self/294 {
+    Result::Ok(x149) => {
       {
-        let x146 = Result::Ok._0(self/289) in
+        let x149 = Result::Ok._0(self/294) in
         {
-          let value/291 = x146 in
-          Result::Ok(map_fn/290(value/291))
+          let value/296 = x149 in
+          Result::Ok(map_fn/295(value/296))
         }
       }
     },
-    Result::Err(x147) => {
+    Result::Err(x150) => {
       {
-        let x147 = Result::Err._0(self/289) in
+        let x150 = Result::Err._0(self/294) in
         {
-          let error/292 = x147 in
-          Result::Err(error/292)
-        }
-      }
-    },
-  }
-}
-
-fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
-  match self/293 {
-    Result::Ok(x148) => {
-      {
-        let x148 = Result::Ok._0(self/293) in
-        {
-          let value/295 = x148 in
-          Result::Ok(value/295)
-        }
-      }
-    },
-    Result::Err(x149) => {
-      {
-        let x149 = Result::Err._0(self/293) in
-        {
-          let error/296 = x149 in
-          Result::Err(map_fn/294(error/296))
+          let error/297 = x150 in
+          Result::Err(error/297)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
-  match self/297 {
-    Result::Ok(x150) => {
+fn inherent#Result#Result[T,E]#map_err[T, E, F](self/298: Result[T, E], map_fn/299: (E) -> F) -> Result[T, F] {
+  match self/298 {
+    Result::Ok(x151) => {
       {
-        let x150 = Result::Ok._0(self/297) in
+        let x151 = Result::Ok._0(self/298) in
         {
-          let value/299 = x150 in
-          next/298(value/299)
+          let value/300 = x151 in
+          Result::Ok(value/300)
         }
       }
     },
-    Result::Err(x151) => {
+    Result::Err(x152) => {
       {
-        let x151 = Result::Err._0(self/297) in
+        let x152 = Result::Err._0(self/298) in
         {
-          let error/300 = x151 in
-          Result::Err(error/300)
+          let error/301 = x152 in
+          Result::Err(map_fn/299(error/301))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#and_then[T, E, U](self/302: Result[T, E], next/303: (T) -> Result[U, E]) -> Result[U, E] {
+  match self/302 {
+    Result::Ok(x153) => {
+      {
+        let x153 = Result::Ok._0(self/302) in
+        {
+          let value/304 = x153 in
+          next/303(value/304)
+        }
+      }
+    },
+    Result::Err(x154) => {
+      {
+        let x154 = Result::Err._0(self/302) in
+        {
+          let error/305 = x154 in
+          Result::Err(error/305)
         }
       }
     },
@@ -1476,19 +1509,19 @@ fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/29
 
 fn print_chars(value/0: string) -> unit {
   {
-    let for_iter152 = trait_call[IntoIterator::into_iter](inherent#string#string#chars(value/0)) in
+    let for_iter155 = trait_call[IntoIterator::into_iter](inherent#string#string#chars(value/0)) in
     while true {
         {
-          let for_next153 = trait_call[Iterator::next](for_iter152) in
-          match for_next153 {
+          let for_next156 = trait_call[Iterator::next](for_iter155) in
+          match for_next156 {
             Option::None => {
               break
             },
-            Option::Some(x154) => {
+            Option::Some(x157) => {
               {
-                let x154 = Option::Some._0(for_next153) in
+                let x157 = Option::Some._0(for_next156) in
                 {
-                  let character/1 = x154 in
+                  let character/1 = x157 in
                   {
                     println(character/1)
                   }
@@ -1503,28 +1536,28 @@ fn print_chars(value/0: string) -> unit {
 
 fn print_char_indices(value/2: string) -> unit {
   {
-    let for_iter155 = trait_call[IntoIterator::into_iter](inherent#string#string#char_indices(value/2)) in
+    let for_iter158 = trait_call[IntoIterator::into_iter](inherent#string#string#char_indices(value/2)) in
     while true {
         {
-          let for_next156 = trait_call[Iterator::next](for_iter155) in
-          match for_next156 {
+          let for_next159 = trait_call[Iterator::next](for_iter158) in
+          match for_next159 {
             Option::None => {
               break
             },
-            Option::Some(x157) => {
+            Option::Some(x160) => {
               {
-                let x157 = Option::Some._0(for_next156) in
+                let x160 = Option::Some._0(for_next159) in
                 {
-                  let item/3 = x157 in
+                  let item/3 = x160 in
                   {
-                    let mtmp158 = item/3 in
+                    let mtmp161 = item/3 in
                     {
-                      let x159 = mtmp158.0 in
-                      let x160 = mtmp158.1 in
+                      let x162 = mtmp161.0 in
+                      let x163 = mtmp161.1 in
                       {
-                        let character/5 = x160 in
+                        let character/5 = x163 in
                         {
-                          let index/4 = x159 in
+                          let index/4 = x162 in
                           {
                             println(((inherent#int#int#to_string(index/4) + ":") + inherent#char#char#to_string(character/5)))
                           }
@@ -1543,40 +1576,40 @@ fn print_char_indices(value/2: string) -> unit {
 
 fn main() -> unit {
   let value/6 = "a你好😀z" in
-  let _wild161 = println(inherent#string#string#byte_len(value/6)) in
-  let _wild162 = println(inherent#string#string#len(value/6)) in
-  let _wild163 = println(inherent#string#string#get(value/6, 0)) in
-  let _wild164 = println(inherent#string#string#get(value/6, 1)) in
-  let _wild165 = println(inherent#string#string#get(value/6, 4)) in
-  let _wild166 = println(inherent#string#string#get(value/6, 7)) in
-  let _wild167 = println(inherent#string#string#get(value/6, 11)) in
-  let _wild168 = println(inherent#string#string#is_char_boundary(value/6, 0)) in
-  let _wild169 = println(inherent#string#string#is_char_boundary(value/6, 2)) in
-  let _wild170 = println(inherent#string#string#is_char_boundary(value/6, 7)) in
-  let _wild171 = println(inherent#string#string#is_char_boundary(value/6, 12)) in
-  let _wild172 = println(inherent#string#string#byte_slice(value/6, 1, 7)) in
-  let _wild179 = {
-    let mtmp173 = inherent#string#string#decode_at(value/6, 7) in
-    match mtmp173 {
+  let _wild164 = println(inherent#string#string#byte_len(value/6)) in
+  let _wild165 = println(inherent#string#string#len(value/6)) in
+  let _wild166 = println(inherent#string#string#get(value/6, 0)) in
+  let _wild167 = println(inherent#string#string#get(value/6, 1)) in
+  let _wild168 = println(inherent#string#string#get(value/6, 4)) in
+  let _wild169 = println(inherent#string#string#get(value/6, 7)) in
+  let _wild170 = println(inherent#string#string#get(value/6, 11)) in
+  let _wild171 = println(inherent#string#string#is_char_boundary(value/6, 0)) in
+  let _wild172 = println(inherent#string#string#is_char_boundary(value/6, 2)) in
+  let _wild173 = println(inherent#string#string#is_char_boundary(value/6, 7)) in
+  let _wild174 = println(inherent#string#string#is_char_boundary(value/6, 12)) in
+  let _wild175 = println(inherent#string#string#byte_slice(value/6, 1, 7)) in
+  let _wild182 = {
+    let mtmp176 = inherent#string#string#decode_at(value/6, 7) in
+    match mtmp176 {
       Option::None => {
         println("missing")
       },
-      Option::Some(x174) => {
+      Option::Some(x177) => {
         {
-          let x174 = Option::Some._0(mtmp173) in
+          let x177 = Option::Some._0(mtmp176) in
           {
-            let decoded/7 = x174 in
+            let decoded/7 = x177 in
             {
-              let mtmp175 = decoded/7 in
+              let mtmp178 = decoded/7 in
               {
-                let x176 = mtmp175.0 in
-                let x177 = mtmp175.1 in
+                let x179 = mtmp178.0 in
+                let x180 = mtmp178.1 in
                 {
-                  let width/9 = x177 in
+                  let width/9 = x180 in
                   {
-                    let character/8 = x176 in
+                    let character/8 = x179 in
                     {
-                      let _wild178 = println(character/8) in
+                      let _wild181 = println(character/8) in
                       println(width/9)
                     }
                   }
@@ -1588,77 +1621,60 @@ fn main() -> unit {
       },
     }
   } in
-  let _wild180 = print_chars(value/6) in
-  let _wild181 = print_char_indices(value/6) in
+  let _wild183 = print_chars(value/6) in
+  let _wild184 = print_char_indices(value/6) in
   let bytes/10 = inherent#string#string#to_bytes(value/6) in
-  let _wild182 = println(inherent#Vec#Vec[uint8]#len(bytes/10)) in
-  let _wild183 = println(inherent#Vec#Vec[uint8]#get(bytes/10, 0)) in
-  let _wild184 = println(inherent#Vec#Vec[uint8]#get(bytes/10, 1)) in
-  let mtmp185 = @runtime(core.string_from_utf8)(bytes/10) in
+  let _wild185 = println(inherent#Vec#Vec[uint8]#len(bytes/10)) in
+  let _wild186 = println(inherent#Vec#Vec[uint8]#get(bytes/10, 0)) in
+  let _wild187 = println(inherent#Vec#Vec[uint8]#get(bytes/10, 1)) in
+  let mtmp188 = @runtime(core.string_from_utf8)(bytes/10) in
   {
-    let x186 = mtmp185.0 in
-    let x187 = mtmp185.1 in
+    let x189 = mtmp188.0 in
+    let x190 = mtmp188.1 in
     {
-      let roundtrip/12 = x187 in
+      let roundtrip/12 = x190 in
       {
-        let roundtrip_valid/11 = x186 in
+        let roundtrip_valid/11 = x189 in
         {
-          let _wild188 = println(roundtrip_valid/11) in
-          let _wild189 = println(roundtrip/12) in
+          let _wild191 = println(roundtrip_valid/11) in
+          let _wild192 = println(roundtrip/12) in
           let invalid/13 = inherent#Vec#Vec[uint8]#new() in
-          let _wild190 = inherent#Vec#Vec[uint8]#push(invalid/13, 255) in
-          let _wild191 = inherent#Vec#Vec[uint8]#push(invalid/13, 254) in
-          let mtmp192 = @runtime(core.string_from_utf8)(invalid/13) in
+          let _wild193 = inherent#Vec#Vec[uint8]#push(invalid/13, 255) in
+          let _wild194 = inherent#Vec#Vec[uint8]#push(invalid/13, 254) in
+          let mtmp195 = @runtime(core.string_from_utf8)(invalid/13) in
           {
-            let x193 = mtmp192.0 in
-            let x194 = mtmp192.1 in
+            let x196 = mtmp195.0 in
+            let x197 = mtmp195.1 in
             {
-              let invalid_text/15 = x194 in
+              let invalid_text/15 = x197 in
               {
-                let invalid_valid/14 = x193 in
+                let invalid_valid/14 = x196 in
                 {
-                  let _wild195 = println(invalid_valid/14) in
-                  let _wild196 = println(trait_impl#Eq#string#eq(invalid_text/15, "")) in
+                  let _wild198 = println(invalid_valid/14) in
+                  let _wild199 = println(trait_call[Eq::eq](invalid_text/15, "")) in
                   let parts/16 = inherent#Vec#Vec[string]#with_capacity(3) in
-                  let _wild197 = inherent#Vec#Vec[string]#push(parts/16, "hello") in
-                  let _wild198 = inherent#Vec#Vec[string]#push(parts/16, "，") in
-                  let _wild199 = inherent#Vec#Vec[string]#push(parts/16, "世界") in
-                  let _wild200 = println((inherent#Vec#Vec[string]#capacity(parts/16) >= 3)) in
-                  let _wild201 = println(@runtime(core.string_concat)(parts/16)) in
+                  let _wild200 = inherent#Vec#Vec[string]#push(parts/16, "hello") in
+                  let _wild201 = inherent#Vec#Vec[string]#push(parts/16, "，") in
+                  let _wild202 = inherent#Vec#Vec[string]#push(parts/16, "世界") in
+                  let _wild203 = println((inherent#Vec#Vec[string]#capacity(parts/16) >= 3)) in
+                  let _wild204 = println(@runtime(core.string_concat)(parts/16)) in
                   let values/17 = inherent#Vec#Vec[int32]#with_capacity(1) in
-                  let _wild202 = println(inherent#Vec#Vec[int32]#len(values/17)) in
-                  let _wild203 = println((inherent#Vec#Vec[int32]#capacity(values/17) >= 1)) in
-                  let _wild204 = inherent#Vec#Vec[int32]#reserve(values/17, 100) in
-                  let _wild205 = println((inherent#Vec#Vec[int32]#capacity(values/17) >= 100)) in
-                  let _wild206 = inherent#Vec#Vec[int32]#push(values/17, 1) in
-                  let _wild207 = inherent#Vec#Vec[int32]#push(values/17, 2) in
-                  let _wild208 = inherent#Vec#Vec[int32]#push(values/17, 3) in
-                  let _wild209 = inherent#Vec#Vec[int32]#insert(values/17, 1, 9) in
-                  let _wild210 = println(inherent#Vec#Vec[int32]#len(values/17)) in
-                  let _wild211 = println(inherent#Vec#Vec[int32]#remove(values/17, 2)) in
-                  let _wild212 = println(inherent#Vec#Vec[int32]#swap_remove(values/17, 0)) in
-                  let _wild213 = inherent#Vec#Vec[int32]#reverse(values/17) in
-                  let _wild214 = println(inherent#Vec#Vec[int32]#get(values/17, 0)) in
-                  let _wild215 = println(inherent#Vec#Vec[int32]#get(values/17, 1)) in
-                  let _wild218 = {
-                    let mtmp216 = inherent#Vec#Vec[int32]#last(values/17) in
-                    match mtmp216 {
-                      Option::None => {
-                        println(-1)
-                      },
-                      Option::Some(x217) => {
-                        {
-                          let x217 = Option::Some._0(mtmp216) in
-                          {
-                            let value/18 = x217 in
-                            println(value/18)
-                          }
-                        }
-                      },
-                    }
-                  } in
+                  let _wild205 = println(inherent#Vec#Vec[int32]#len(values/17)) in
+                  let _wild206 = println((inherent#Vec#Vec[int32]#capacity(values/17) >= 1)) in
+                  let _wild207 = inherent#Vec#Vec[int32]#reserve(values/17, 100) in
+                  let _wild208 = println((inherent#Vec#Vec[int32]#capacity(values/17) >= 100)) in
+                  let _wild209 = inherent#Vec#Vec[int32]#push(values/17, 1) in
+                  let _wild210 = inherent#Vec#Vec[int32]#push(values/17, 2) in
+                  let _wild211 = inherent#Vec#Vec[int32]#push(values/17, 3) in
+                  let _wild212 = inherent#Vec#Vec[int32]#insert(values/17, 1, 9) in
+                  let _wild213 = println(inherent#Vec#Vec[int32]#len(values/17)) in
+                  let _wild214 = println(inherent#Vec#Vec[int32]#remove(values/17, 2)) in
+                  let _wild215 = println(inherent#Vec#Vec[int32]#swap_remove(values/17, 0)) in
+                  let _wild216 = inherent#Vec#Vec[int32]#reverse(values/17) in
+                  let _wild217 = println(inherent#Vec#Vec[int32]#get(values/17, 0)) in
+                  let _wild218 = println(inherent#Vec#Vec[int32]#get(values/17, 1)) in
                   let _wild221 = {
-                    let mtmp219 = inherent#Vec#Vec[int32]#pop(values/17) in
+                    let mtmp219 = inherent#Vec#Vec[int32]#last(values/17) in
                     match mtmp219 {
                       Option::None => {
                         println(-1)
@@ -1667,50 +1683,67 @@ fn main() -> unit {
                         {
                           let x220 = Option::Some._0(mtmp219) in
                           {
-                            let value/19 = x220 in
+                            let value/18 = x220 in
+                            println(value/18)
+                          }
+                        }
+                      },
+                    }
+                  } in
+                  let _wild224 = {
+                    let mtmp222 = inherent#Vec#Vec[int32]#pop(values/17) in
+                    match mtmp222 {
+                      Option::None => {
+                        println(-1)
+                      },
+                      Option::Some(x223) => {
+                        {
+                          let x223 = Option::Some._0(mtmp222) in
+                          {
+                            let value/19 = x223 in
                             println(value/19)
                           }
                         }
                       },
                     }
                   } in
-                  let _wild222 = inherent#Vec#Vec[int32]#truncate(values/17, 0) in
-                  let _wild223 = println(inherent#Vec#Vec[int32]#is_empty(values/17)) in
-                  let _wild224 = inherent#Vec#Vec[int32]#push(values/17, 42) in
-                  let _wild225 = inherent#Vec#Vec[int32]#clear(values/17) in
-                  let _wild226 = println(inherent#Vec#Vec[int32]#len(values/17)) in
+                  let _wild225 = inherent#Vec#Vec[int32]#truncate(values/17, 0) in
+                  let _wild226 = println(inherent#Vec#Vec[int32]#is_empty(values/17)) in
+                  let _wild227 = inherent#Vec#Vec[int32]#push(values/17, 42) in
+                  let _wild228 = inherent#Vec#Vec[int32]#clear(values/17) in
+                  let _wild229 = println(inherent#Vec#Vec[int32]#len(values/17)) in
                   let map/20 = inherent#HashMap#HashMap[string,int32]#new() in
-                  let _wild227 = inherent#HashMap#HashMap[string,int32]#set(map/20, "a", 1) in
-                  let _wild228 = inherent#HashMap#HashMap[string,int32]#set(map/20, "b", 2) in
+                  let _wild230 = inherent#HashMap#HashMap[string,int32]#set(map/20, "a", 1) in
+                  let _wild231 = inherent#HashMap#HashMap[string,int32]#set(map/20, "b", 2) in
                   let entries/21 = inherent#HashMap#HashMap[string,int32]#entries(map/20) in
-                  let _wild229 = println(inherent#Vec#Vec[(string,int32)]#len(entries/21)) in
-                  let _wild230 = inherent#HashMap#HashMap[string,int32]#set(map/20, "c", 3) in
-                  let _wild231 = inherent#HashMap#HashMap[string,int32]#remove(map/20, "a") in
                   let _wild232 = println(inherent#Vec#Vec[(string,int32)]#len(entries/21)) in
+                  let _wild233 = inherent#HashMap#HashMap[string,int32]#set(map/20, "c", 3) in
+                  let _wild234 = inherent#HashMap#HashMap[string,int32]#remove(map/20, "a") in
+                  let _wild235 = println(inherent#Vec#Vec[(string,int32)]#len(entries/21)) in
                   let seen_a/22 = inherent#Ref#Ref[bool]#new(false) in
                   let seen_b/23 = inherent#Ref#Ref[bool]#new(false) in
-                  let _wild241 = {
-                    let for_source233 = entries/21 in
-                    let for_limit234 = @intrinsic(vec.len)(for_source233) in
-                    let for_index235 = 0 in
-                    while (for_index235 < for_limit234) {
+                  let _wild244 = {
+                    let for_source236 = entries/21 in
+                    let for_limit237 = @intrinsic(vec.len)(for_source236) in
+                    let for_index238 = 0 in
+                    while (for_index238 < for_limit237) {
                         {
-                          let for_item236 = @intrinsic(vec.get)(for_source233, for_index235) in
-                          let _wild237 = for_index235 = (for_index235 + 1) in
+                          let for_item239 = @intrinsic(vec.get)(for_source236, for_index238) in
+                          let _wild240 = for_index238 = (for_index238 + 1) in
                           {
-                            let entry/24 = for_item236 in
+                            let entry/24 = for_item239 in
                             {
-                              let mtmp238 = entry/24 in
+                              let mtmp241 = entry/24 in
                               {
-                                let x239 = mtmp238.0 in
-                                let x240 = mtmp238.1 in
+                                let x242 = mtmp241.0 in
+                                let x243 = mtmp241.1 in
                                 {
-                                  let item_value/26 = x240 in
+                                  let item_value/26 = x243 in
                                   {
-                                    let key/25 = x239 in
+                                    let key/25 = x242 in
                                     {
-                                      if if trait_impl#Eq#string#eq(key/25, "a") {
-                                          trait_impl#Eq#int32#eq(item_value/26, 1)
+                                      if if trait_call[Eq::eq](key/25, "a") {
+                                          trait_call[Eq::eq](item_value/26, 1)
                                       } else {
                                           false
                                       } {
@@ -1718,8 +1751,8 @@ fn main() -> unit {
                                             inherent#Ref#Ref[bool]#set(seen_a/22, true)
                                           }
                                       } else {
-                                          if if trait_impl#Eq#string#eq(key/25, "b") {
-                                              trait_impl#Eq#int32#eq(item_value/26, 2)
+                                          if if trait_call[Eq::eq](key/25, "b") {
+                                              trait_call[Eq::eq](item_value/26, 2)
                                           } else {
                                               false
                                           } {
@@ -1741,7 +1774,7 @@ fn main() -> unit {
                         }
                     }
                   } in
-                  let _wild242 = println(inherent#Ref#Ref[bool]#get(seen_a/22)) in
+                  let _wild245 = println(inherent#Ref#Ref[bool]#get(seen_a/22)) in
                   println(inherent#Ref#Ref[bool]#get(seen_b/23))
                 }
               }

@@ -4,7 +4,7 @@ use gomlc::cst;
 use gomlc::lexer;
 
 fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
-    if parser.at(lexer::TokenKind::LetKeyword) == false {
+    if !parser.at(lexer::TokenKind::LetKeyword) {
         Option::None
     } else {
         let marker = parser.open();
@@ -56,4 +56,20 @@ fn finish_assign_stmt(parser: Parser, target: MarkerClosed, operator: lexer::Tok
 fn wrap_expr_stmt(parser: Parser, expression: MarkerClosed) -> MarkerClosed {
     let marker = expression.precede(parser);
     parser.close(marker, cst::NodeKind::STMT_EXPR)
+}
+
+fn defer_stmt(parser: Parser) -> Option[MarkerClosed] {
+    if !parser.at(lexer::TokenKind::DeferKeyword) {
+        Option::None
+    } else {
+        let marker = parser.open();
+        parser.expect(lexer::TokenKind::DeferKeyword);
+        if marker_is_none(expr(parser)) {
+            parser.advance_with_error("defer statement expected an expression")
+        } else {
+            ()
+        };
+        parser.expect(lexer::TokenKind::Semi);
+        Option::Some(parser.close(marker, cst::NodeKind::STMT_DEFER))
+    }
 }

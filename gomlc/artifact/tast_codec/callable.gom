@@ -1,0 +1,110 @@
+package tast_codec;
+
+use gomlc::artifact::wire as wire;
+use gomlc::resources;
+use gomlc::tast;
+
+pub struct ArtifactCallable {
+    pub name: string,
+    pub kind: string,
+    pub id: Option[string],
+}
+
+fn invalid_artifact_callable(value: string) -> ArtifactCallable {
+    ArtifactCallable { name: value, kind: "invalid", id: Option::None }
+}
+
+pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
+    match value {
+        Function(value) => ArtifactCallable { name: value, kind: "goml", id: Option::Some(value) },
+        LangItem { item: _, function_name } => {
+            ArtifactCallable { name: function_name, kind: "goml", id: Option::Some(function_name) }
+        },
+        Runtime(value) => match resources::runtime_abi_by_key(value) {
+            Some(spec) => ArtifactCallable {
+                name: if value.byte_len() >= 4 && value.byte_slice(0, 4) == "std." {
+                    "std::internal::host::" + spec.source_name
+                } else {
+                    spec.source_name
+                },
+                kind: "runtime",
+                id: Option::Some(spec.artifact_id),
+            },
+            None => invalid_artifact_callable(value),
+        },
+        Intrinsic(value) => match resources::intrinsic_abi_by_key(value) {
+            Some(spec) => ArtifactCallable {
+                name: spec.source_name,
+                kind: "intrinsic",
+                id: Option::Some(spec.artifact_id),
+            },
+            None => invalid_artifact_callable(value),
+        },
+        TraitMethod { trait_ref: _, method_name: _ } | DynTraitMethod {
+            trait_name: _,
+            dispatch_name: _,
+            method_name: _,
+        } | InherentMethod { receiver_ty: _, method_name: _ } => {
+            invalid_artifact_callable("unresolved callable")
+        },
+    }
+}
+
+pub fn artifact_json_callable_body(writer: wire::ArtifactJsonWriter, value: ArtifactCallable) -> unit {
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, "kind");
+    wire::artifact_json_string(writer, value.kind);
+    match value.id {
+        Some(value) => {
+            wire::artifact_json_name(writer, "id");
+            wire::artifact_json_string(writer, value)
+        },
+        None => (),
+    };
+    wire::artifact_json_end_object(writer)
+}
+
+pub fn artifact_intrinsic_key_from_id(value: string) -> Option[string] {
+    match resources::intrinsic_abi_by_id(value) {
+        Some(spec) => Option::Some(spec.key),
+        None => Option::None,
+    }
+}
+
+pub fn artifact_runtime_key_from_id(value: string) -> Option[string] {
+    match resources::runtime_abi_by_id(value) {
+        Some(spec) => Option::Some(spec.key),
+        None => Option::None,
+    }
+}
+
+pub fn artifact_decode_callable_body(name: string, value: wire::ArtifactValue) -> Result[
+    tast::Callable,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "callable body")?;
+    let kind = wire::artifact_json_field_string(object, "kind")?;
+    if kind == "goml" {
+        match wire::artifact_json_optional_field(object, "id")? {
+            Some(value) => Result::Ok(
+                tast::Callable::Function(wire::artifact_json_string_value(value, "callable id")?),
+            ),
+            None => Result::Ok(tast::Callable::Function(name)),
+        }
+    } else {
+        let id = wire::artifact_json_field_string(object, "id")?;
+        if kind == "intrinsic" {
+            match artifact_intrinsic_key_from_id(id) {
+                Some(value) => Result::Ok(tast::Callable::Intrinsic(value)),
+                None => Result::Err(wire::artifact_decode_error("intrinsic id")),
+            }
+        } else if kind == "runtime" {
+            match artifact_runtime_key_from_id(id) {
+                Some(value) => Result::Ok(tast::Callable::Runtime(value)),
+                None => Result::Err(wire::artifact_decode_error("runtime hook id")),
+            }
+        } else {
+            Result::Err(wire::artifact_decode_error("callable kind"))
+        }
+    }
+}

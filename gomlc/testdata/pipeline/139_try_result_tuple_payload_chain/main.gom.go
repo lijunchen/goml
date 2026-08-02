@@ -47,109 +47,89 @@ type Result__string__string_Err struct {
 func (_ Result__string__string_Err) isResult__string__string() {}
 
 func split_host_port(ok__0 bool) _goml_m_Result_____o_string_c_string_q_____string {
-    var retv163 _goml_m_Result_____o_string_c_string_q_____string
-    var jp165 _goml_m_Result_____o_string_c_string_q_____string
     if ok__0 {
-        var t166 Tuple2_6string_6string = Tuple2_6string_6string{
+        var t169 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "localhost",
             _1: "8080",
         }
-        var t167 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Ok{
-            _0: t166,
+        var t170 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Ok{
+            _0: t169,
         }
-        jp165 = t167
+        return t170
     } else {
-        var t168 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Err{
+        var t171 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Err{
             _0: "missing port",
         }
-        jp165 = t168
+        return t171
     }
-    retv163 = jp165
-    return retv163
-}
-
-func pair(ok__1 bool) _goml_m_Result_____o_string_c_string_q_____string {
-    var retv170 _goml_m_Result_____o_string_c_string_q_____string
-    var t171 _goml_m_Result_____o_string_c_string_q_____string = split_host_port(ok__1)
-    retv170 = t171
-    return retv170
 }
 
 func render(ok__2 bool) Result__string__string {
-    var retv173 Result__string__string
-    var mtmp152 _goml_m_Result_____o_string_c_string_q_____string = pair(ok__2)
-    var jp175 Tuple2_6string_6string
-    switch mtmp152.(type) {
+    var mtmp155 _goml_m_Result_____o_string_c_string_q_____string
+    var inline204 _goml_m_Result_____o_string_c_string_q_____string = split_host_port(ok__2)
+    mtmp155 = inline204
+    var jp178 Tuple2_6string_6string
+    switch mtmp155.(type) {
     case _goml_m_Result_____o_string_c_string_q_____string_Ok:
-        var x153 Tuple2_6string_6string = mtmp152.(_goml_m_Result_____o_string_c_string_q_____string_Ok)._0
-        var try_value__17 Tuple2_6string_6string = x153
-        jp175 = try_value__17
-        var mtmp155 Tuple2_6string_6string = jp175
-        var x156 string = mtmp155._0
-        var x157 string = mtmp155._1
-        var port__4 string = x157
-        var host__3 string = x156
-        var t176 string = host__3 + "="
-        var t177 string = t176 + port__4
-        var t178 Result__string__string = Result__string__string_Ok{
-            _0: t177,
+        var x156 Tuple2_6string_6string = mtmp155.(_goml_m_Result_____o_string_c_string_q_____string_Ok)._0
+        jp178 = x156
+        var x159 string = jp178._0
+        var x160 string = jp178._1
+        var t179 string = x159 + "="
+        var t180 string = t179 + x160
+        var t181 Result__string__string = Result__string__string_Ok{
+            _0: t180,
         }
-        retv173 = t178
-        return retv173
+        return t181
     case _goml_m_Result_____o_string_c_string_q_____string_Err:
-        var x154 string = mtmp152.(_goml_m_Result_____o_string_c_string_q_____string_Err)._0
-        var try_residual__17 string = x154
-        var t179 Result__string__string = Result__string__string_Err{
-            _0: try_residual__17,
+        var x157 string = mtmp155.(_goml_m_Result_____o_string_c_string_q_____string_Err)._0
+        var t182 Result__string__string = Result__string__string_Err{
+            _0: x157,
         }
-        retv173 = t179
-        return retv173
+        return t182
     default:
         panic("non-exhaustive match")
     }
-}
-
-func show(res__5 Result__string__string) string {
-    var retv181 string
-    var jp183 string
-    switch res__5.(type) {
-    case Result__string__string_Ok:
-        var x158 string = res__5.(Result__string__string_Ok)._0
-        var value__6 string = x158
-        var t184 string = "ok " + value__6
-        jp183 = t184
-    case Result__string__string_Err:
-        var x159 string = res__5.(Result__string__string_Err)._0
-        var err__7 string = x159
-        var t185 string = "err " + err__7
-        jp183 = t185
-    default:
-        panic("non-exhaustive match")
-    }
-    retv181 = jp183
-    return retv181
 }
 
 func main0() struct{} {
-    var t187 Result__string__string = render(true)
-    var t188 string = show(t187)
-    println__T_string(t188)
-    var t189 Result__string__string = render(false)
-    var t190 string = show(t189)
-    println__T_string(t190)
-    return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t192)
+    var t190 Result__string__string = render(true)
+    var t191 string
+    switch t190.(type) {
+    case Result__string__string_Ok:
+        var inline219 string = t190.(Result__string__string_Ok)._0
+        var inline221 string = "ok " + inline219
+        t191 = inline221
+    case Result__string__string_Err:
+        var inline222 string = t190.(Result__string__string_Err)._0
+        var inline224 string = "err " + inline222
+        t191 = inline224
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline216)
+    var t192 Result__string__string = render(false)
+    var t193 string
+    switch t192.(type) {
+    case Result__string__string_Ok:
+        var inline209 string = t192.(Result__string__string_Ok)._0
+        var inline211 string = "ok " + inline209
+        t193 = inline211
+    case Result__string__string_Err:
+        var inline212 string = t192.(Result__string__string_Err)._0
+        var inline214 string = "err " + inline212
+        t193 = inline214
+    default:
+        panic("non-exhaustive match")
+    }
+    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
+    _goml_runtime_core_string_println(inline206)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv195 string
-    retv195 = self__38
-    return retv195
+    return self__38
 }
 
 func main() {

@@ -1,26 +1,20 @@
 fn main() -> unit {
-  join ret153() -> unit {
-    ()
-  } in
   let name/0 = "Alice" in
   let p/1 = Person { name: name/0 } in
-  let t154 = Person.name(p/1) in
-  let _wild152 = println__T_string(t154) in
-  jump ret153()
+  let t157 = name/0 in
+  let inline164 = trait_impl#ToString#string#to_string(name/0) in
+  let inline165 = @runtime(core.string_println)(inline164) in
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret155() -> unit {
+  join inline_cont166(t159: string) -> unit {
+    let t160 = @runtime(core.string_println)(t159) in
     ()
   } in
-  let t156 = trait_impl#ToString#string#to_string(value/1) in
-  let t157 = @runtime(core.string_println)(t156) in
-  jump ret155()
+  jump inline_cont166(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret158(retv159: string) -> string {
-    retv159
-  } in
-  jump ret158(self/38)
+  self/38
 }

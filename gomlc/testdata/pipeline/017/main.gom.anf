@@ -1,54 +1,55 @@
 fn trait_impl#ToString#(int,int)#to_string(self/0: (int, int)) -> string {
-  join ret155(retv156: string) -> string {
-    retv156
-  } in
-  jump ret155("(?, ?)")
+  "(?, ?)"
 }
 
 fn main() -> unit {
-  join ret157() -> unit {
-    ()
-  } in
   let x/1 = 123 in
-  let t158 = trait_impl#ToString#int#to_string(x/1) in
-  let mtmp152 = println__T_string(t158) in
-  let x/2 = true in
-  let t159 = trait_impl#ToString#bool#to_string(x/2) in
-  let mtmp153 = println__T_string(t159) in
-  let x/3 = (3, 4) in
-  let t160 = trait_impl#ToString#(int,int)#to_string(x/3) in
-  let mtmp154 = println__T_string(t160) in
-  jump ret157()
+  join inline_cont187(t161: string) -> unit {
+    join inline_cont184(mtmp155: unit) -> unit {
+      let x/2 = true in
+      join inline_cont182(t162: string) -> unit {
+        join inline_cont179(mtmp156: unit) -> unit {
+          let x/3 = (3, 4) in
+          join inline_cont178(t163: string) -> unit {
+            let inline176 = trait_impl#ToString#string#to_string(t163) in
+            let inline177 = @runtime(core.string_println)(inline176) in
+            ()
+          } in
+          jump inline_cont178("(?, ?)")
+        } in
+        let inline180 = trait_impl#ToString#string#to_string(t162) in
+        let inline181 = @runtime(core.string_println)(inline180) in
+        jump inline_cont179(())
+      } in
+      let inline183 = @runtime(core.bool_to_string)(x/2) in
+      jump inline_cont182(inline183)
+    } in
+    let inline185 = trait_impl#ToString#string#to_string(t161) in
+    let inline186 = @runtime(core.string_println)(inline185) in
+    jump inline_cont184(())
+  } in
+  let inline188 = @runtime(core.int_to_string)(x/1) in
+  jump inline_cont187(inline188)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret161() -> unit {
+  join inline_cont189(t165: string) -> unit {
+    let t166 = @runtime(core.string_println)(t165) in
     ()
   } in
-  let t162 = trait_impl#ToString#string#to_string(value/1) in
-  let t163 = @runtime(core.string_println)(t162) in
-  jump ret161()
+  jump inline_cont189(value/1)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret164(retv165: string) -> string {
-    retv165
-  } in
-  let t166 = @runtime(core.int_to_string)(self/40) in
-  jump ret164(t166)
+  let t169 = @runtime(core.int_to_string)(self/40) in
+  t169
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
-  } in
-  let t169 = @runtime(core.bool_to_string)(self/37) in
-  jump ret167(t169)
+  let t172 = @runtime(core.bool_to_string)(self/37) in
+  t172
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret170(retv171: string) -> string {
-    retv171
-  } in
-  jump ret170(self/38)
+  self/38
 }

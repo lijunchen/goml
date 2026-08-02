@@ -106,13 +106,13 @@ fn find_type_instance(ctx: TypeCtx, base_name: string, args: Vec[tast::Type]) ->
 }
 
 fn find_type_instance_by_name(ctx: TypeCtx, name: string) -> Option[TypeInstance] {
-    let index = Ref::new(ctx.instances.len() - 1);
-    while index.get() >= 0 {
-        let instance = ctx.instances[index.get()];
+    let mut index = ctx.instances.len() - 1;
+    while index >= 0 {
+        let instance = ctx.instances[index];
         if instance.name == name {
             return Option::Some(instance)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -145,14 +145,14 @@ fn unique_type_name(ctx: TypeCtx, base: string) -> string {
         ctx.used_names[base] = ();
         base
     } else {
-        let index = Ref::new(1);
-        let candidate = Ref::new(base + "__mono1");
-        while type_name_is_used(ctx, candidate.get()) {
-            index.set(index.get() + 1);
-            candidate.set(base + "__mono" + index.get().to_string())
+        let mut index = 1;
+        let mut candidate = base + "__mono1";
+        while type_name_is_used(ctx, candidate) {
+            index = index + 1;
+            candidate = base + "__mono" + index.to_string();
         };
-        ctx.used_names[candidate.get()] = ();
-        candidate.get()
+        ctx.used_names[candidate] = ();
+        candidate
     }
 }
 
@@ -189,7 +189,7 @@ fn ensure_type_instance(ctx: TypeCtx, base_name: string, args: Vec[tast::Type]) 
 fn expand_specialized_type_aliases_list(ctx: TypeCtx, values: Vec[tast::Type], path: Vec[string]) -> Vec[
     tast::Type,
 ] {
-    let result: Vec[tast::Type] = Vec::new();
+    let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(expand_specialized_type_aliases_from(ctx, value, path))
     };
@@ -270,30 +270,30 @@ fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: tast::Type, path: V
 }
 
 fn expand_specialized_type_aliases(ctx: TypeCtx, value: tast::Type) -> tast::Type {
-    expand_specialized_type_aliases_from(ctx, value, Vec::new())
+    expand_specialized_type_aliases_from(ctx, value, Vec::[])
 }
 
 fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[tast::EnumDef] {
-    let index = Ref::new(ctx.enums.len() - 1);
-    while index.get() >= 0 {
-        let value = ctx.enums[index.get()];
+    let mut index = ctx.enums.len() - 1;
+    while index >= 0 {
+        let value = ctx.enums[index];
         if value.name == name {
             return Option::Some(value)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
 }
 
 fn find_generic_struct(ctx: TypeCtx, name: string) -> Option[tast::StructDef] {
-    let index = Ref::new(ctx.structs.len() - 1);
-    while index.get() >= 0 {
-        let value = ctx.structs[index.get()];
+    let mut index = ctx.structs.len() - 1;
+    while index >= 0 {
+        let value = ctx.structs[index];
         if value.name == name {
             return Option::Some(value)
         } else {
-            index.set(index.get() - 1)
+            index = index - 1;
         }
     };
     Option::None
@@ -304,13 +304,13 @@ fn type_instance_parameters(ctx: TypeCtx, name: string) -> Vec[string] {
         Some(value) => value.generics,
         None => match find_generic_struct(ctx, name) {
             Some(value) => value.generics,
-            None => Vec::new(),
+            None => Vec::[],
         },
     }
 }
 
 fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[tast::Type]) -> Vec[TypeBinding] {
-    let result: Vec[TypeBinding] = Vec::new();
+    let result: Vec[TypeBinding] = Vec::[];
     let params = type_instance_parameters(ctx, name);
     for index in 0..params.len() {
         if index < args.len() {
@@ -381,7 +381,7 @@ fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[t
 }
 
 fn collapse_types(ctx: TypeCtx, values: Vec[tast::Type]) -> Vec[tast::Type] {
-    let result = Vec::new();
+    let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(collapse_type(ctx, value))
     };
@@ -391,7 +391,7 @@ fn collapse_types(ctx: TypeCtx, values: Vec[tast::Type]) -> Vec[tast::Type] {
 fn collapse_named_types(ctx: TypeCtx, values: Vec[(string, tast::Type)]) -> Vec[
     (string, tast::Type),
 ] {
-    let result = Vec::new();
+    let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         result.push((value.0, collapse_type(ctx, value.1)))
     };
@@ -444,7 +444,7 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
             let args = collapse_types(ctx, args);
             match base {
                 Con { name } => {
-                    if args.len() > 0 && types_are_concrete(args) {
+                    if !args.is_empty() && types_are_concrete(args) {
                         tast::Type::Con { name: ensure_type_instance(ctx, name, args) }
                     } else {
                         tast::Type::App { ty: tast::Type::Con { name }, args }
@@ -475,11 +475,11 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
 }
 
 fn constructor_variant(name: string) -> string {
-    let separator = Ref::new(-1);
+    let mut separator = -1;
     if name.byte_len() > 1 {
         for index in 0..name.byte_len() - 1 {
             if strings::starts_with_at(name, index, "::") {
-                separator.set(index)
+                separator = index;
             } else {
                 ()
             }
@@ -487,10 +487,10 @@ fn constructor_variant(name: string) -> string {
     } else {
         ()
     };
-    if separator.get() < 0 {
+    if separator < 0 {
         ""
     } else {
-        name.byte_slice(separator.get(), name.byte_len())
+        name.byte_slice(separator, name.byte_len())
     }
 }
 
@@ -519,7 +519,7 @@ fn update_constructor(value: tast::Constructor, owner_type: tast::Type) -> tast:
 }
 
 fn collapse_closure_params(ctx: TypeCtx, values: Vec[tast::ClosureParam]) -> Vec[tast::ClosureParam] {
-    let result = Vec::new();
+    let result: Vec[tast::ClosureParam] = Vec::[];
     for value in values {
         result.push(tast::ClosureParam { name: value.name, ty: collapse_type(ctx, value.ty) })
     };
@@ -529,7 +529,7 @@ fn collapse_closure_params(ctx: TypeCtx, values: Vec[tast::ClosureParam]) -> Vec
 fn collapse_function_params(ctx: TypeCtx, values: Vec[(string, tast::Type)]) -> Vec[
     (string, tast::Type),
 ] {
-    let result = Vec::new();
+    let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         result.push((value.0, collapse_type(ctx, value.1)))
     };
@@ -537,7 +537,7 @@ fn collapse_function_params(ctx: TypeCtx, values: Vec[(string, tast::Type)]) -> 
 }
 
 fn trait_impl_name(reference: tast::TraitRef, for_type: tast::Type, method_name: string) -> string {
-    let dispatch = if reference.args.len() == 0 {
+    let dispatch = if reference.args.is_empty() {
         compact_type(for_type)
     } else {
         let builder = text::StringBuilder::new();
@@ -558,7 +558,7 @@ fn trait_impl_name(reference: tast::TraitRef, for_type: tast::Type, method_name:
 }
 
 fn lower_exprs(ctx: TypeCtx, values: Vec[core::Expr]) -> Vec[core::Expr] {
-    let result = Vec::new();
+    let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(lower_expr(ctx, value))
     };
@@ -573,7 +573,7 @@ fn lower_optional_expr(ctx: TypeCtx, value: Option[core::Expr]) -> Option[core::
 }
 
 fn lower_arms(ctx: TypeCtx, values: Vec[core::Arm]) -> Vec[core::Arm] {
-    let result = Vec::new();
+    let result: Vec[core::Arm] = Vec::[];
     for value in values {
         result.push(
             core::Arm { lhs: lower_expr(ctx, value.lhs), body: lower_expr(ctx, value.body) },
@@ -583,7 +583,7 @@ fn lower_arms(ctx: TypeCtx, values: Vec[core::Arm]) -> Vec[core::Arm] {
 }
 
 fn lower_block(ctx: TypeCtx, value: core::Block) -> core::Block {
-    let stmts = Vec::new();
+    let stmts: Vec[core::LetStmt] = Vec::[];
     for stmt in value.stmts {
         stmts.push(
             core::LetStmt {
@@ -612,7 +612,7 @@ fn lower_trait_call(
     let receiver_ty = core::expr_type(receiver);
     match tast::resolve_type(receiver_ty) {
         Dyn { trait_name: name } => {
-            if reference.args.len() == 0 && reference.name == name {
+            if reference.args.is_empty() && reference.name == name {
                 core::Expr::DynCall { trait_name: name, method_name, receiver, args, ty }
             } else {
                 lower_static_trait_call(reference, method_name, instance_name, receiver, args, ty)
@@ -631,8 +631,8 @@ fn lower_static_trait_call(
     ty: tast::Type,
 ) -> core::Expr {
     let receiver_ty = core::expr_type(receiver);
-    let params = Vec::new();
-    let call_args = Vec::new();
+    let params: Vec[tast::Type] = Vec::[];
+    let call_args: Vec[core::Expr] = Vec::[];
     params.push(receiver_ty);
     call_args.push(receiver);
     for arg in args {
@@ -824,11 +824,11 @@ fn collect_type_names(ctx: TypeCtx, value: tast::Type) -> unit {
 }
 
 fn constructor_owner(name: string) -> string {
-    let separator = Ref::new(-1);
+    let mut separator = -1;
     if name.byte_len() > 1 {
         for index in 0..name.byte_len() - 1 {
             if strings::starts_with_at(name, index, "::") {
-                separator.set(index)
+                separator = index;
             } else {
                 ()
             }
@@ -836,10 +836,10 @@ fn constructor_owner(name: string) -> string {
     } else {
         ()
     };
-    if separator.get() < 0 {
+    if separator < 0 {
         name
     } else {
-        name.byte_slice(0, separator.get())
+        name.byte_slice(0, separator)
     }
 }
 
@@ -949,12 +949,12 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
 
 fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
     let ctx = TypeCtx {
-        instances: Vec::new(),
+        instances: Vec::[],
         instance_index: HashMap::{},
         used_names: HashMap::{},
         enums: value.enums,
         structs: value.structs,
-        active_instances: Vec::new(),
+        active_instances: Vec::[],
         error,
     };
     for function in value.functions {
@@ -993,16 +993,35 @@ fn lower_trait_impl(ctx: TypeCtx, value: Option[core::TraitImpl]) -> Option[core
     }
 }
 
+fn lower_function_origin(ctx: TypeCtx, value: core::FunctionOrigin) -> core::FunctionOrigin {
+    match value {
+        Source => core::FunctionOrigin::Source,
+        Inherent { owner, method_name } => core::FunctionOrigin::Inherent {
+            owner: collapse_type(ctx, owner),
+            method_name,
+        },
+        TraitImplementation { method_name } => {
+            core::FunctionOrigin::TraitImplementation { method_name }
+        },
+    }
+}
+
 fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
+    let original_trait_impl = function.trait_impl;
     let trait_impl = lower_trait_impl(ctx, function.trait_impl);
-    let name = match (trait_impl, trait_impl_method_name(function.name)) {
-        (Some(metadata), Some(method_name)) => {
-            trait_impl_name(metadata.trait_ref, metadata.for_ty, method_name)
+    let origin = lower_function_origin(ctx, function.origin);
+    let name = match (original_trait_impl, trait_impl, origin) {
+        (Some(original), Some(lowered), core::FunctionOrigin::TraitImplementation { method_name }) => if function.name
+            == trait_impl_name(original.trait_ref, original.for_ty, method_name) {
+            trait_impl_name(lowered.trait_ref, lowered.for_ty, method_name)
+        } else {
+            function.name
         },
         _ => function.name,
     };
     core::Function {
         name,
+        origin,
         root: function.root,
         generics: function.generics,
         predicates: function.predicates,
@@ -1020,11 +1039,11 @@ pub fn lower_checked(value: core::File) -> LowerResult {
     let error = Ref::new(Option::None);
     let value = specialize(value, error);
     let ctx = type_ctx(value, error);
-    let functions = Vec::new();
+    let functions: Vec[core::Function] = Vec::[];
     for function in value.functions {
         functions.push(lower_function(ctx, function))
     };
-    let type_instances: Vec[core::TypeInstance] = Vec::new();
+    let type_instances: Vec[core::TypeInstance] = Vec::[];
     for instance in ctx.instances {
         type_instances.push(
             core::TypeInstance {

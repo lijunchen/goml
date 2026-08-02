@@ -11,7 +11,7 @@ fn is_pattern_first(kind: lexer::TokenKind) -> bool {
 }
 
 fn pattern(parser: Parser) -> Option[MarkerClosed] {
-    if parser.enter_pattern() == false {
+    if !parser.enter_pattern() {
         Option::None
     } else {
         let result = or_pattern(parser);
@@ -24,7 +24,7 @@ fn or_pattern(parser: Parser) -> Option[MarkerClosed] {
     match alias_pattern(parser) {
         None => Option::None,
         Some(initial) => {
-            if parser.at(lexer::TokenKind::Pipe) == false {
+            if !parser.at(lexer::TokenKind::Pipe) {
                 Option::Some(initial)
             } else {
                 let marker = initial.precede(parser);
@@ -68,8 +68,8 @@ fn range_pattern(parser: Parser) -> Option[MarkerClosed] {
         None => Option::None,
         Some(value) => {
             let kind = parser.peek();
-            if token_is(kind, lexer::TokenKind::DotDot) == false
-                && token_is(kind, lexer::TokenKind::DotDotEq) == false {
+            if !token_is(kind, lexer::TokenKind::DotDot)
+                && !token_is(kind, lexer::TokenKind::DotDotEq) {
                 Option::Some(value)
             } else {
                 let marker = value.precede(parser);
@@ -86,7 +86,7 @@ fn range_pattern(parser: Parser) -> Option[MarkerClosed] {
 }
 
 fn parse_pattern_list(parser: Parser) -> unit {
-    if is_pattern_first(parser.peek()) == false {
+    if !is_pattern_first(parser.peek()) {
         ()
     } else {
         let _ = pattern(parser);
@@ -139,7 +139,7 @@ fn negative_pattern(parser: Parser) -> MarkerClosed {
 }
 
 fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
-    if is_pattern_first(parser.peek()) == false {
+    if !is_pattern_first(parser.peek()) {
         let marker = parser.open();
         parser.error("expected a pattern");
         let _ = parser.close(marker, cst::NodeKind::ErrorTree);
@@ -182,9 +182,9 @@ fn tuple_pattern(parser: Parser) -> MarkerClosed {
 fn ident_pattern(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     let next = parser.nth(1);
-    let simple = token_is(next, lexer::TokenKind::ColonColon) == false
-        && token_is(next, lexer::TokenKind::LParen) == false
-        && token_is(next, lexer::TokenKind::LBrace) == false;
+    let simple = !token_is(next, lexer::TokenKind::ColonColon)
+        && !token_is(next, lexer::TokenKind::LParen)
+        && !token_is(next, lexer::TokenKind::LBrace);
     if simple && parser.at_lower_ident() {
         parser.expect_lower_ident("pattern binding");
         parser.close(marker, cst::NodeKind::PATTERN_VARIABLE)
@@ -207,7 +207,7 @@ fn array_pattern(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
     let mut has_rest = false;
-    while parser.eof() == false && parser.at(lexer::TokenKind::RBracket) == false {
+    while !parser.eof() && !parser.at(lexer::TokenKind::RBracket) {
         let bound_rest = parser.at(lexer::TokenKind::Ident)
             && token_is(parser.nth(1), lexer::TokenKind::At)
             && token_is(parser.nth(2), lexer::TokenKind::DotDot);
@@ -226,9 +226,9 @@ fn array_pattern(parser: Parser) -> MarkerClosed {
         };
         if parser.eat(lexer::TokenKind::Comma) {
             ()
-        } else if parser.at(lexer::TokenKind::RBracket) == false {
+        } else if !parser.at(lexer::TokenKind::RBracket) {
             parser.error("expected `,` or `]` in array pattern");
-            if parser.eof() == false {
+            if !parser.eof() {
                 parser.advance()
             } else {
                 ()
@@ -257,7 +257,7 @@ fn struct_pattern_field_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBrace);
     let mut has_rest = false;
-    while parser.eof() == false && parser.at(lexer::TokenKind::RBrace) == false {
+    while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) {
         if parser.at(lexer::TokenKind::DotDot) {
             if has_rest {
                 parser.error("struct pattern can contain at most one `..`")
@@ -267,7 +267,7 @@ fn struct_pattern_field_list(parser: Parser) -> unit {
             let _ = rest_pattern(parser);
             has_rest = true;
             parser.eat(lexer::TokenKind::Comma);
-            if parser.at(lexer::TokenKind::RBrace) == false {
+            if !parser.at(lexer::TokenKind::RBrace) {
                 parser.error("`..` must be the last item in a struct pattern")
             } else {
                 ()

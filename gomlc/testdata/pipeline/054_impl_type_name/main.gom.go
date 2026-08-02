@@ -33,53 +33,42 @@ type Location struct {
 func (_ Location) isShape() {}
 
 func _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(self__0 Point) string {
-    var retv160 string
-    var mtmp152 Point = self__0
-    var x153 int32 = mtmp152.x
-    var x154 int32 = mtmp152.y
-    var y__2 int32 = x154
-    var x__1 int32 = x153
-    var t161 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__1)
-    var prefix__3 string = "Point(" + t161
-    var t162 string = prefix__3 + ", "
-    var t163 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__2)
-    var t164 string = t162 + t163
-    var t165 string = t164 + ")"
-    retv160 = t165
-    return retv160
+    var x156 int32 = self__0.x
+    var x157 int32 = self__0.y
+    var t164 string
+    var inline197 string = _goml_runtime_core_int32_to_string(x156)
+    t164 = inline197
+    var prefix__3 string = "Point(" + t164
+    var t165 string = prefix__3 + ", "
+    var t166 string
+    var inline195 string = _goml_runtime_core_int32_to_string(x157)
+    t166 = inline195
+    var t167 string = t165 + t166
+    var t168 string = t167 + ")"
+    return t168
 }
 
 func _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(self__4 Shape) string {
-    var retv167 string
-    var jp169 string
     switch self__4.(type) {
     case Unit:
-        jp169 = "Unit"
+        return "Unit"
     case Location:
-        var x155 Point = self__4.(Location)._0
-        var point__5 Point = x155
-        var t170 string = _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(point__5)
-        var t171 string = "Shape::" + t170
-        jp169 = t171
+        var x158 Point = self__4.(Location)._0
+        var t173 string
+        var inline200 int32 = x158.x
+        var inline201 int32 = x158.y
+        var inline204 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline200)
+        var inline205 string = "Point(" + inline204
+        var inline206 string = inline205 + ", "
+        var inline207 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline201)
+        var inline208 string = inline206 + inline207
+        var inline209 string = inline208 + ")"
+        t173 = inline209
+        var t174 string = "Shape::" + t173
+        return t174
     default:
         panic("non-exhaustive match")
     }
-    retv167 = jp169
-    return retv167
-}
-
-func show_point(point__6 Point) string {
-    var retv173 string
-    var t174 string = _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(point__6)
-    retv173 = t174
-    return retv173
-}
-
-func show_shape(shape__7 Shape) string {
-    var retv176 string
-    var t177 string = _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(shape__7)
-    retv176 = t177
-    return retv176
 }
 
 func main0() struct{} {
@@ -87,40 +76,39 @@ func main0() struct{} {
         x: 7,
         y: 9,
     }
-    var t179 string = show_point(point__8)
-    println__T_string(t179)
+    var t182 string
+    var inline241 string = _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(point__8)
+    t182 = inline241
+    var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
+    _goml_runtime_core_string_println(inline238)
     var unit_shape__9 Shape = Unit{}
-    var t180 string = show_shape(unit_shape__9)
-    println__T_string(t180)
-    var t181 Point = Point{
+    var t183 string
+    var inline236 string = _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(unit_shape__9)
+    t183 = inline236
+    var inline233 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t183)
+    _goml_runtime_core_string_println(inline233)
+    var t184 Point = Point{
         x: 1,
         y: 2,
     }
     var location_shape__10 Shape = Location{
-        _0: t181,
+        _0: t184,
     }
-    var t182 string = show_shape(location_shape__10)
-    println__T_string(t182)
+    var t185 string
+    var inline231 string = _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(location_shape__10)
+    t185 = inline231
+    var inline228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t185)
+    _goml_runtime_core_string_println(inline228)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv184 string
-    var t185 string = _goml_runtime_core_int32_to_string(self__6)
-    retv184 = t185
-    return retv184
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t187 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t187)
-    return struct{}{}
+    var t188 string = _goml_runtime_core_int32_to_string(self__6)
+    return t188
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv190 string
-    retv190 = self__38
-    return retv190
+    return self__38
 }
 
 func main() {

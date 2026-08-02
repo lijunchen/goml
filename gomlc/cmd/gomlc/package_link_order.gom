@@ -1,5 +1,6 @@
 package main;
 
+use gomlc::artifact::wire as wire;
 use gomlc::hir;
 use gomlc::vecs;
 
@@ -10,7 +11,7 @@ struct PackageOrderNode {
 }
 
 fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
-    let result = Vec::new();
+    let result: Vec[string] = Vec::[];
     for value in values {
         for dependency in value.import_aliases {
             if vecs::contains(result, dependency.package_name) {
@@ -46,8 +47,8 @@ fn package_node_is_ready(value: PackageOrderNode, remaining: Vec[PackageOrderNod
 }
 
 fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string] {
-    let remaining = Vec::new();
-    let names = Vec::new();
+    let remaining: Vec[PackageOrderNode] = Vec::[];
+    let names: Vec[string] = Vec::[];
     for value in values {
         if vecs::contains(names, value.name) {
             return Result::Err("duplicate core provided for package " + value.name)
@@ -56,23 +57,23 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
             remaining.push(value)
         }
     };
-    let result = Vec::new();
-    while remaining.len() > 0 {
-        let candidate = Ref::new(-1);
+    let result: Vec[int] = Vec::[];
+    while !remaining.is_empty() {
+        let mut candidate = -1;
         for index in 0..remaining.len() {
             let value = remaining[index];
             if package_node_is_ready(value, remaining)
-                && (candidate.get() < 0
-                    || artifact_string_less(value.name, remaining[candidate.get()].name)) {
-                candidate.set(index)
+                && (candidate < 0
+                    || wire::artifact_string_less(value.name, remaining[candidate].name)) {
+                candidate = index;
             } else {
                 ()
             }
         };
-        if candidate.get() < 0 {
+        if candidate < 0 {
             return Result::Err("package dependency cycle detected in core inputs")
         } else {
-            result.push(remaining.remove(candidate.get()).position)
+            result.push(remaining.remove(candidate).position)
         }
     };
     Result::Ok(result)
@@ -82,7 +83,7 @@ fn order_artifact_compilations(values: Vec[ArtifactCompilation]) -> Result[
     Vec[ArtifactCompilation],
     string,
 ] {
-    let nodes = Vec::new();
+    let nodes: Vec[PackageOrderNode] = Vec::[];
     for index in 0..values.len() {
         let value = values[index];
         nodes.push(
@@ -95,7 +96,7 @@ fn order_artifact_compilations(values: Vec[ArtifactCompilation]) -> Result[
     };
     match order_package_nodes(nodes) {
         Ok(order) => {
-            let result = Vec::new();
+            let result: Vec[ArtifactCompilation] = Vec::[];
             for index in order {
                 result.push(values[index])
             };

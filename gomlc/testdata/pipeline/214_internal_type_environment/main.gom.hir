@@ -4,27 +4,27 @@ file main.gom
         x: int32,
         y: int32,
     }
-    
+
     struct Wrapper[T] {
         value: T,
     }
-    
+
     struct Node {
         value: int32,
         next: List,
     }
-    
+
     enum List {
         Cons(Node),
         Nil
     }
-    
+
     enum Shape[T] {
         Dot(Point),
         Wrapped(Wrapper[T]),
         Origin
     }
-    
+
     impl Point {
       fn new(local/1/0: int32, local/1/1: int32) -> Self {
           Point {
@@ -45,12 +45,12 @@ file main.gom
           }
       }
     }
-    
+
     fn wrap[T](local/1/4: T) -> T {
         let local/1/6 = |local/1/5: T| item/5;
         id/6(value/4)
     }
-    
+
     fn shape_value(local/1/7: Shape[int32]) -> int32 {
         match value/7 {
             ctor(def/1/4::v0)(local/1/8) => point/8.x + point/8.y,
@@ -58,14 +58,14 @@ file main.gom
             ctor(def/1/4::v2) => 0,
         }
     }
-    
+
     fn list_value(local/1/10: List) -> int32 {
         match value/10 {
             ctor(def/1/3::v0)(local/1/11) => node/11.value + def/1/8(node/11.next),
             ctor(def/1/3::v1) => 0,
         }
     }
-    
+
     fn main() -> unit {
         let local/1/12 = 1;
         let local/1/14 = |local/1/13| value/13 + offset/12;

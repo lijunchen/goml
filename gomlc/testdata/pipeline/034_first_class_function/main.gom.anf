@@ -1,105 +1,119 @@
 fn double(x/0: int32) -> int32 {
-  join ret159(retv160: int32) -> int32 {
-    retv160
-  } in
-  let t161 = (x/0 * 2) in
-  jump ret159(t161)
+  let t164 = (x/0 * 2) in
+  t164
 }
 
 fn increment(x/1: int32) -> int32 {
-  join ret162(retv163: int32) -> int32 {
-    retv163
-  } in
-  let t164 = (x/1 + 1) in
-  jump ret162(t164)
+  let t167 = (x/1 + 1) in
+  t167
 }
 
 fn apply_once(f/2: (int32) -> int32, value/3: int32) -> int32 {
-  join ret165(retv166: int32) -> int32 {
-    retv166
-  } in
-  let t167 = f/2(value/3) in
-  jump ret165(t167)
+  let t170 = f/2(value/3) in
+  t170
 }
 
 fn compose(f/4: (int32) -> int32, g/5: (int32) -> int32, value/6: int32) -> int32 {
-  join ret168(retv169: int32) -> int32 {
-    retv169
-  } in
-  let t170 = g/5(value/6) in
-  let t171 = f/4(t170) in
-  jump ret168(t171)
+  let t173 = g/5(value/6) in
+  let t174 = f/4(t173) in
+  t174
 }
 
 fn main() -> unit {
-  join ret172() -> unit {
-    ()
-  } in
   let local/7 = double in
-  let first/8 = apply_once(local/7, 4) in
-  let composed/9 = compose(double, increment, first/8) in
-  let closure_apply/11 = closure_env_closure_apply_0 {} in
-  let closure_result/12 = inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(closure_apply/11, composed/9) in
-  let global_invoker/15 = closure_env_global_invoker_1 {} in
-  let invoked_with_global/16 = inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(global_invoker/15, double, 3) in
-  let composer_closure/18 = closure_env_composer_closure_2 {} in
-  let composed_by_closure/19 = inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(composer_closure/18, 5) in
-  let printer/20 = println__T_string in
-  let t173 = inherent#int32#int32#to_string(composed/9) in
-  let mtmp152 = printer/20(t173) in
-  let t174 = inherent#int32#int32#to_string(closure_result/12) in
-  let mtmp153 = printer/20(t174) in
-  let t175 = inherent#int32#int32#to_string(invoked_with_global/16) in
-  let mtmp154 = printer/20(t175) in
-  let t176 = inherent#int32#int32#to_string(composed_by_closure/19) in
-  let mtmp155 = printer/20(t176) in
-  jump ret172()
+  join inline_cont228(first/8: int32) -> unit {
+    join inline_cont225(composed/9: int32) -> unit {
+      let closure_apply/11 = closure_env_closure_apply_0 {} in
+      join inline_cont223(closure_result/12: int32) -> unit {
+        let global_invoker/15 = closure_env_global_invoker_1 {} in
+        join inline_cont220(invoked_with_global/16: int32) -> unit {
+          let composer_closure/18 = closure_env_composer_closure_2 {} in
+          join inline_cont217(composed_by_closure/19: int32) -> unit {
+            let printer/20 = println__T_string in
+            join inline_cont215(t176: string) -> unit {
+              join inline_cont212(mtmp155: unit) -> unit {
+                join inline_cont210(t177: string) -> unit {
+                  join inline_cont207(mtmp156: unit) -> unit {
+                    join inline_cont205(t178: string) -> unit {
+                      join inline_cont202(mtmp157: unit) -> unit {
+                        join inline_cont200(t179: string) -> unit {
+                          let inline198 = trait_impl#ToString#string#to_string(t179) in
+                          let inline199 = @runtime(core.string_println)(inline198) in
+                          ()
+                        } in
+                        let inline201 = @runtime(core.int32_to_string)(composed_by_closure/19) in
+                        jump inline_cont200(inline201)
+                      } in
+                      let inline203 = trait_impl#ToString#string#to_string(t178) in
+                      let inline204 = @runtime(core.string_println)(inline203) in
+                      jump inline_cont202(())
+                    } in
+                    let inline206 = @runtime(core.int32_to_string)(invoked_with_global/16) in
+                    jump inline_cont205(inline206)
+                  } in
+                  let inline208 = trait_impl#ToString#string#to_string(t177) in
+                  let inline209 = @runtime(core.string_println)(inline208) in
+                  jump inline_cont207(())
+                } in
+                let inline211 = @runtime(core.int32_to_string)(closure_result/12) in
+                jump inline_cont210(inline211)
+              } in
+              let inline213 = trait_impl#ToString#string#to_string(t176) in
+              let inline214 = @runtime(core.string_println)(inline213) in
+              jump inline_cont212(())
+            } in
+            let inline216 = @runtime(core.int32_to_string)(composed/9) in
+            jump inline_cont215(inline216)
+          } in
+          let inline218 = 5 in
+          let inline219 = compose(double, increment, inline218) in
+          jump inline_cont217(inline219)
+        } in
+        let inline221 = 3 in
+        let inline222 = apply_once(double, inline221) in
+        jump inline_cont220(inline222)
+      } in
+      let inline224 = apply_once(increment, composed/9) in
+      jump inline_cont223(inline224)
+    } in
+    let inline226 = increment(first/8) in
+    let inline227 = double(inline226) in
+    jump inline_cont225(inline227)
+  } in
+  let inline229 = 4 in
+  let inline230 = double(inline229) in
+  jump inline_cont228(inline230)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret177() -> unit {
+  join inline_cont231(t181: string) -> unit {
+    let t182 = @runtime(core.string_println)(t181) in
     ()
   } in
-  let t178 = trait_impl#ToString#string#to_string(value/1) in
-  let t179 = @runtime(core.string_println)(t178) in
-  jump ret177()
+  jump inline_cont231(value/1)
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret180(retv181: string) -> string {
-    retv181
-  } in
-  let t182 = @runtime(core.int32_to_string)(self/6) in
-  jump ret180(t182)
+  let t185 = @runtime(core.int32_to_string)(self/6) in
+  t185
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret183(retv184: string) -> string {
-    retv184
-  } in
-  jump ret183(self/38)
+  self/38
 }
 
-fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(env156: closure_env_closure_apply_0, value/10: int32) -> int32 {
-  join ret185(retv186: int32) -> int32 {
-    retv186
-  } in
-  let t187 = apply_once(increment, value/10) in
-  jump ret185(t187)
+fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(env159: closure_env_closure_apply_0, value/10: int32) -> int32 {
+  let inline233 = increment(value/10) in
+  inline233
 }
 
-fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(env157: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
-  join ret188(retv189: int32) -> int32 {
-    retv189
-  } in
-  let t190 = apply_once(func_to_call/13, value/14) in
-  jump ret188(t190)
+fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(env160: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
+  let inline235 = func_to_call/13(value/14) in
+  inline235
 }
 
-fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(env158: closure_env_composer_closure_2, value/17: int32) -> int32 {
-  join ret191(retv192: int32) -> int32 {
-    retv192
-  } in
-  let t193 = compose(double, increment, value/17) in
-  jump ret191(t193)
+fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(env161: closure_env_composer_closure_2, value/17: int32) -> int32 {
+  let inline237 = increment(value/17) in
+  let inline238 = double(inline237) in
+  inline238
 }

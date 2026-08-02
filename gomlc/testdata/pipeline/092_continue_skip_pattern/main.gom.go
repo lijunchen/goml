@@ -33,87 +33,67 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 }
 
 func main0() struct{} {
-    var i__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop160:
+    var i__0 *ref_int_x
+    var inline226 int = 0
+    var inline227 *ref_int_x = ref__Ref_3int(inline226)
+    i__0 = inline227
+    Loop_loop163:
     for {
-        var t161 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-        var t162 bool = t161 < 8
-        if t162 {
-            var t163 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-            var t164 int = t163 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(i__0, t164)
-            var t170 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-            var t171 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t170, 3)
-            if t171 {
+        var t164 int
+        var inline220 int = ref_get__Ref_3int(i__0)
+        t164 = inline220
+        var t165 bool = t164 < 8
+        if t165 {
+            var t166 int
+            var inline218 int = ref_get__Ref_3int(i__0)
+            t166 = inline218
+            var t167 int = t166 + 1
+            ref_set__Ref_3int(i__0, t167)
+            var t173 int
+            var inline214 int = ref_get__Ref_3int(i__0)
+            t173 = inline214
+            var t174 bool
+            var inline211 int = 3
+            var inline212 bool = t173 == inline211
+            t174 = inline212
+            if t174 {
                 continue
             } else {
-                var t168 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-                var t169 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t168, 6)
-                if t169 {
+                var t171 int
+                var inline209 int = ref_get__Ref_3int(i__0)
+                t171 = inline209
+                var t172 bool
+                var inline206 int = 6
+                var inline207 bool = t171 == inline206
+                t172 = inline207
+                if t172 {
                     continue
                 } else {
-                    var t167 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__0)
-                    println__T_int(t167)
+                    var t170 int
+                    var inline204 int = ref_get__Ref_3int(i__0)
+                    t170 = inline204
+                    var inline201 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t170)
+                    _goml_runtime_core_string_println(inline201)
                     continue
                 }
             }
         } else {
-            break Loop_loop160
+            break Loop_loop163
         }
     }
-    println__T_string("done")
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv173 *ref_int_x
-    var t174 *ref_int_x = ref__Ref_3int(value__207)
-    retv173 = t174
-    return retv173
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv176 int
-    var t177 int = ref_get__Ref_3int(self__208)
-    retv176 = t177
-    return retv176
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
-    ref_set__Ref_3int(self__209, value__210)
-    return struct{}{}
-}
-
-func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__59 int, other__60 int) bool {
-    var retv181 bool
-    var t182 bool = self__59 == other__60
-    retv181 = t182
-    return retv181
-}
-
-func println__T_int(value__1 int) struct{} {
-    var t184 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
-    _goml_runtime_core_string_println(t184)
-    return struct{}{}
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t187 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t187)
+    var inline222 string = "done"
+    var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline222)
+    _goml_runtime_core_string_println(inline223)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv190 string
-    var t191 string = _goml_runtime_core_int_to_string(self__40)
-    retv190 = t191
-    return retv190
+    var t194 string = _goml_runtime_core_int_to_string(self__40)
+    return t194
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv193 string
-    retv193 = self__38
-    return retv193
+    return self__38
 }
 
 func main() {

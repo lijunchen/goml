@@ -4,22 +4,22 @@ file main.gom
         x: int32,
         y: int32,
     }
-    
+
     struct Flag {
         value: bool,
     }
-    
+
     struct Counter {
         cell: Ref[int32],
     }
-    
+
     trait Display {
       fn show(Self) -> string;
       fn show_with(Self, string, string) -> string;
       fn tick(Self) -> unit;
       fn bump(Self, int32) -> int32;
     }
-    
+
     impl Display for Point {
       fn show(local/1/0: Point) -> string {
           "Point(" + self/0.x.to_string() + "," + self/0.y.to_string() + ")"
@@ -34,7 +34,7 @@ file main.gom
           self/5.x + self/5.y + delta/6
       }
     }
-    
+
     impl Display for Flag {
       fn show(local/1/7: Flag) -> string {
           if self/7.value {
@@ -61,7 +61,7 @@ file main.gom
           }
       }
     }
-    
+
     impl Display for Counter {
       fn show(local/1/14: Counter) -> string {
           "Counter(" + self/14.cell.get().to_string() + ")"
@@ -80,25 +80,25 @@ file main.gom
           next/22
       }
     }
-    
+
     fn show_dyn(local/1/23: dyn Display) -> string {
         Display::show_with(x/23, "<", ">")
     }
-    
+
     fn call_via_closure(local/1/24: dyn Display, local/1/25: string) -> string {
         let local/1/28: (dyn Display, string) -> string = |local/1/26: dyn Display, local/1/27: string| Display::show_with(v/26, t/27, t/27);
         f/28(x/24, tag/25)
     }
-    
+
     fn make_renderer(local/1/29: string) -> (dyn Display) -> string {
         |local/1/30: dyn Display| Display::show_with(x/30, tag/29, tag/29)
     }
-    
+
     fn bump_and_show(local/1/31: dyn Display, local/1/32: int32) -> string {
         let _ = Display::tick(x/31);
         Display::show_with(x/31, "[", "]") + ":" + Display::bump(x/31, delta/32).to_string()
     }
-    
+
     fn main() -> unit {
         let local/1/33 = Point {
             x: 1,

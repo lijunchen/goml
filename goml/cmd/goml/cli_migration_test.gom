@@ -406,6 +406,12 @@ fn project_build_links_every_main_package() -> unit {
     testing::assert(
         fs::is_file(path::join(root, "_artifact/build/pkg/alice/app/cmd/client/goml_generated.go")),
     );
+    let dry_run = test_support::project_command("build", "", Vec::["--dry-run"], root);
+    test_support::assert_success(dry_run);
+    test_support::assert_contains(
+        test_support::stdout(dry_run),
+        "gomlc link --input _artifact/build/pkg/alice/app/cmd/client/client.core --output _artifact/build/pkg/alice/app/cmd/client/goml_generated.go --entry alice::app::cmd::client",
+    );
     let rejected = test_support::run(
         Vec::["build", "cmd/server", "--compiler", test_support::gomlc_binary()],
         root,
@@ -480,6 +486,9 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
     test_support::assert_contains(stdout, "demo::math::add_works ... ok");
     test_support::assert_contains(stdout, "demo::math::private_helper_works ... ok");
     test_support::assert_contains(stdout, "2 passed; 0 failed; 1 ignored");
+    let stderr = test_support::stderr(tested);
+    test_support::assert_contains(stderr, "[--------------------] 0/3 running tests");
+    test_support::assert_contains(stderr, "[####################] 3/3 finished");
     let listed = test_support::project_command("test", "", Vec::["--list"], root);
     test_support::assert_success(listed);
     test_support::assert_contains(test_support::stdout(listed), "demo::math::ignored_case: ignored");

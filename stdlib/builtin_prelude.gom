@@ -507,7 +507,7 @@ where
 }
 
 fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T] where I::Item = T {
-    let values: Vec[T] = Vec::new();
+    let values: Vec[T] = Vec::[];
     loop {
         match Iterator::next(iterator) {
             Some(value) => values.push(value),
@@ -531,7 +531,7 @@ impl[T] Vec[T] {
     }
 
     fn pushed(self: Self, elem: T) -> Self {
-        let result: Vec[T] = Vec::new();
+        let result: Vec[T] = Vec::with_capacity(self.len() + 1);
         let mut index = 0;
         while index < self.len() {
             result.push(self[index]);
@@ -558,7 +558,7 @@ impl[T] Vec[T] {
     }
 
     fn is_empty(self: Self) -> bool {
-        self.len() == 0
+        vec_len(self) == 0
     }
 
     fn reserve(self: Self, additional: int) -> unit {
@@ -815,6 +815,7 @@ fn __goml_builtin_range(start: int, end: int) -> FnIterator[int] {
     )
 }
 
+#[lang("range")]
 fn range(start: int, end: int) -> FnIterator[int] {
     __goml_builtin_range(start, end)
 }
@@ -947,7 +948,7 @@ where
     type Item = T;
 
     fn next(self: Self) -> Option[T] {
-        if self.first_done.get() == false {
+        if !self.first_done.get() {
             match Iterator::next(self.first) {
                 Some(value) => return Option::Some(value),
                 None => self.first_done.set(true),
@@ -1013,7 +1014,7 @@ fn iterator_any[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool whe
 }
 
 fn iterator_all[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I::Item = T {
-    iterator_any(iterator, |value: T| predicate(value) == false) == false
+    !iterator_any(iterator, |value: T| !predicate(value))
 }
 
 fn iterator_count[I: Iterator](iterator: I) -> int {
@@ -1038,7 +1039,7 @@ impl[T] Option[T] {
     }
 
     fn is_none(self: Option[T]) -> bool {
-        self.is_some() == false
+        !self.is_some()
     }
 
     fn unwrap_or(self: Option[T], fallback: T) -> T {
@@ -1065,7 +1066,7 @@ impl[T, E] Result[T, E] {
     }
 
     fn is_err(self: Result[T, E]) -> bool {
-        self.is_ok() == false
+        !self.is_ok()
     }
 
     fn unwrap_or(self: Result[T, E], fallback: T) -> T {
@@ -1081,6 +1082,27 @@ impl[T, E] Result[T, E] {
             Err(error) => fallback(error),
         }
     }
+}
+
+#[lang("range_inclusive")]
+fn __goml_builtin_range_inclusive(start: int, end: int) -> FnIterator[int] {
+    let mut current = start;
+    let mut finished = false;
+    FnIterator::from_fn(
+        || {
+            if finished || current > end {
+                Option::None
+            } else {
+                let value = current;
+                if value == end {
+                    finished = true;
+                } else {
+                    current = value + 1;
+                };
+                Option::Some(value)
+            }
+        },
+    )
 }
 
 impl[T] Option[T] {

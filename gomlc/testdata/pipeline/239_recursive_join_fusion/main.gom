@@ -1,0 +1,26 @@
+fn find(wanted: int) -> Option[int] {
+    let current = Ref::new(0);
+    loop {
+        let value = current.get();
+        if value >= 5 {
+            return Option::None;
+        } else if value == wanted {
+            return Option::Some(value);
+        } else {
+            current.set(value + 1);
+        };
+    };
+    Option::None
+}
+
+fn any(wanted: int) -> bool {
+    match find(wanted) {
+        Some(_) => true,
+        None => false,
+    }
+}
+
+fn main() -> unit {
+    println(any(3));
+    println(any(8));
+}

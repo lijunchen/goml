@@ -14,40 +14,28 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func loop_return_unit(flag__0 bool) struct{} {
-    for {
-        if flag__0 {
-            return struct{}{}
-        } else {
-            return struct{}{}
-        }
+    if flag__0 {
+        return struct{}{}
+    } else {
+        return struct{}{}
     }
-    return struct{}{}
 }
 
 func loop_return() int32 {
-    var retv165 int32
-    retv165 = 5
-    return retv165
+    return 5
 }
 
 func main0() struct{} {
     loop_return_unit(true)
-    var t169 int32 = loop_return()
-    println__T_int32(t169)
-    return struct{}{}
-}
-
-func println__T_int32(value__1 int32) struct{} {
-    var t174 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t174)
+    var t172 int32 = loop_return()
+    var inline185 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t172)
+    _goml_runtime_core_string_println(inline185)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv179 string
-    var t180 string = _goml_runtime_core_int32_to_string(self__43)
-    retv179 = t180
-    return retv179
+    var t183 string = _goml_runtime_core_int32_to_string(self__43)
+    return t183
 }
 
 func main() {

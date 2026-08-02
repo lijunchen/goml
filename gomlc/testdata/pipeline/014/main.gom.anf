@@ -1,99 +1,90 @@
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
-  join ret164() -> unit {
-    ()
-  } in
-  let x152 = x/0.0 in
-  let x153 = x/0.1 in
-  join k165() -> unit {
-    jump ret164()
-  } in
-  match x153 {
+  let x155 = x/0.0 in
+  let x156 = x/0.1 in
+  match x156 {
     true => {
-      let x154 = y/1.0 in
-      let x155 = y/1.1 in
-      join k166() -> unit {
-        jump k165()
-      } in
-      match x155 {
+      let x157 = y/1.0 in
+      let x158 = y/1.1 in
+      match x158 {
         true => {
-          join k167() -> unit {
-            jump k166()
-          } in
-          match x154 {
+          match x157 {
             true => {
-              let t168 = println__T_string("case4") in
-              jump k167()
+              let inline200 = "case4" in
+              let inline201 = trait_impl#ToString#string#to_string(inline200) in
+              let inline202 = @runtime(core.string_println)(inline201) in
+              ()
             },
             false => {
-              let t169 = println__T_string("case3") in
-              jump k167()
+              let inline204 = "case3" in
+              let inline205 = trait_impl#ToString#string#to_string(inline204) in
+              let inline206 = @runtime(core.string_println)(inline205) in
+              ()
             },
           }
         },
         false => {
-          let t170 = println__T_string("case4") in
-          jump k166()
+          let inline208 = "case4" in
+          let inline209 = trait_impl#ToString#string#to_string(inline208) in
+          let inline210 = @runtime(core.string_println)(inline209) in
+          ()
         },
       }
     },
     false => {
-      join k171() -> unit {
-        jump k165()
-      } in
-      match x152 {
+      match x155 {
         true => {
-          let x156 = y/1.0 in
-          let x157 = y/1.1 in
-          join k172() -> unit {
-            jump k171()
-          } in
-          match x157 {
+          let x159 = y/1.0 in
+          let x160 = y/1.1 in
+          match x160 {
             true => {
-              join k173() -> unit {
-                jump k172()
-              } in
-              match x156 {
+              match x159 {
                 true => {
-                  let t174 = println__T_string("case2") in
-                  jump k173()
+                  let inline212 = "case2" in
+                  let inline213 = trait_impl#ToString#string#to_string(inline212) in
+                  let inline214 = @runtime(core.string_println)(inline213) in
+                  ()
                 },
                 false => {
-                  let t175 = println__T_string("case1") in
-                  jump k173()
+                  let inline216 = "case1" in
+                  let inline217 = trait_impl#ToString#string#to_string(inline216) in
+                  let inline218 = @runtime(core.string_println)(inline217) in
+                  ()
                 },
               }
             },
             false => {
-              let t176 = println__T_string("case2") in
-              jump k172()
+              let inline220 = "case2" in
+              let inline221 = trait_impl#ToString#string#to_string(inline220) in
+              let inline222 = @runtime(core.string_println)(inline221) in
+              ()
             },
           }
         },
         false => {
-          let x158 = y/1.0 in
-          let x159 = y/1.1 in
-          join k177() -> unit {
-            jump k171()
-          } in
-          match x159 {
+          let x161 = y/1.0 in
+          let x162 = y/1.1 in
+          match x162 {
             true => {
-              join k178() -> unit {
-                jump k177()
-              } in
-              match x158 {
+              match x161 {
                 true => {
-                  let t179 = println__T_string("case4") in
-                  jump k178()
+                  let inline224 = "case4" in
+                  let inline225 = trait_impl#ToString#string#to_string(inline224) in
+                  let inline226 = @runtime(core.string_println)(inline225) in
+                  ()
                 },
                 false => {
-                  let t180 = println__T_string("case3") in
-                  jump k178()
+                  let inline228 = "case3" in
+                  let inline229 = trait_impl#ToString#string#to_string(inline228) in
+                  let inline230 = @runtime(core.string_println)(inline229) in
+                  ()
                 },
               }
             },
             false => {
-              let t181 = println__T_string("case4") in
-              jump k177()
+              let inline232 = "case4" in
+              let inline233 = trait_impl#ToString#string#to_string(inline232) in
+              let inline234 = @runtime(core.string_println)(inline233) in
+              ()
             },
           }
         },
@@ -103,36 +94,29 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
 }
 
 fn main() -> unit {
-  join ret182() -> unit {
-    ()
-  } in
-  let t183 = (true, false) in
-  let t184 = (false, true) in
-  let mtmp160 = test_nested_match(t183, t184) in
-  let t185 = (true, false) in
   let t186 = (true, false) in
-  let mtmp161 = test_nested_match(t185, t186) in
   let t187 = (false, true) in
-  let t188 = (false, true) in
-  let mtmp162 = test_nested_match(t187, t188) in
-  let t189 = (false, true) in
-  let t190 = (true, false) in
-  let mtmp163 = test_nested_match(t189, t190) in
-  jump ret182()
+  let mtmp163 = test_nested_match(t186, t187) in
+  let t188 = (true, false) in
+  let t189 = (true, false) in
+  let mtmp164 = test_nested_match(t188, t189) in
+  let t190 = (false, true) in
+  let t191 = (false, true) in
+  let mtmp165 = test_nested_match(t190, t191) in
+  let t192 = (false, true) in
+  let t193 = (true, false) in
+  let mtmp166 = test_nested_match(t192, t193) in
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret191() -> unit {
+  join inline_cont235(t195: string) -> unit {
+    let t196 = @runtime(core.string_println)(t195) in
     ()
   } in
-  let t192 = trait_impl#ToString#string#to_string(value/1) in
-  let t193 = @runtime(core.string_println)(t192) in
-  jump ret191()
+  jump inline_cont235(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
-  } in
-  jump ret194(self/38)
+  self/38
 }

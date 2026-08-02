@@ -32,36 +32,19 @@ type dyn__Display struct {
     vtable *dyn__Display_vtable
 }
 
-func build() int32 {
-    var retv157 int32
-    retv157 = 9
-    return retv157
-}
-
 func main0() struct{} {
-    var t159 int32 = build()
-    var t160 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t159)
-    println__T_string(t160)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv163 string
-    var t164 string = _goml_runtime_core_int32_to_string(self__6)
-    retv163 = t164
-    return retv163
-}
-
-func println__T_string(value__1 string) struct{} {
-    var t166 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t166)
+    var t162 int32
+    t162 = 9
+    var t163 string
+    var inline179 string = _goml_runtime_core_int32_to_string(t162)
+    t163 = inline179
+    var inline176 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t163)
+    _goml_runtime_core_string_println(inline176)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv169 string
-    retv169 = self__38
-    return retv169
+    return self__38
 }
 
 func main() {

@@ -1,16 +1,19 @@
 package main;
 
+use gomlc::artifact::core_codec as core_codec;
+use gomlc::artifact::interface_codec as interface_codec;
+use gomlc::artifact::wire as wire;
 use std::bytes;
 use std::testing;
 
 #[test]
 fn artifact_readers_accept_only_gaf() -> unit {
     let interface = binary_interface_fixture();
-    let interface_data = match encode_artifact_interface_binary(interface) {
+    let interface_data = match interface_codec::encode_binary(interface) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
-            artifact_binary_magic()
+            wire::artifact_binary_magic()
         },
     };
     match decode_artifact_interface_bytes(interface_data) {
@@ -22,11 +25,11 @@ fn artifact_readers_accept_only_gaf() -> unit {
         Err(_) => (),
     };
     let core = binary_core_fixture();
-    let core_data = match encode_artifact_core_binary(core) {
+    let core_data = match core_codec::encode_binary(core) {
         Ok(value) => value,
         Err(error) => {
             testing::fail(error);
-            artifact_binary_magic()
+            wire::artifact_binary_magic()
         },
     };
     match decode_artifact_core_bytes(core_data) {

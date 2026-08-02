@@ -1,63 +1,61 @@
 fn trait_impl#Named#Point#name(self/0: Point) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
-  } in
-  jump ret156("point")
+  "point"
 }
 
 fn trait_impl#Display#Point#show(self/1: Point, prefix/2: string) -> string {
-  join ret158(retv159: string) -> string {
-    retv159
+  let t163 = Point.value(self/1) in
+  join inline_cont180(t164: string) -> string {
+    let t165 = (prefix/2 + t164) in
+    t165
   } in
-  let t160 = Point.value(self/1) in
-  let t161 = inherent#int32#int32#to_string(t160) in
-  let t162 = (prefix/2 + t161) in
-  jump ret158(t162)
+  let inline181 = @runtime(core.int32_to_string)(t163) in
+  jump inline_cont180(inline181)
 }
 
 fn render(value/3: dyn Display) -> unit {
-  join ret163() -> unit {
-    ()
+  let t167 = dyn_call[Display::show](value/3, "value=") in
+  join inline_cont188(_wild155: unit) -> unit {
+    let t168 = dyn_call[Display::name](value/3) in
+    join inline_cont185(_wild156: unit) -> unit {
+      let t169 = dyn_call[Display::show](value/3, "again=") in
+      let inline183 = trait_impl#ToString#string#to_string(t169) in
+      let inline184 = @runtime(core.string_println)(inline183) in
+      ()
+    } in
+    let inline186 = trait_impl#ToString#string#to_string(t168) in
+    let inline187 = @runtime(core.string_println)(inline186) in
+    jump inline_cont185(())
   } in
-  let t164 = dyn_call[Display::show](value/3, "value=") in
-  let _wild152 = println__T_string(t164) in
-  let t165 = dyn_call[Display::name](value/3) in
-  let _wild153 = println__T_string(t165) in
-  let t166 = dyn_call[Display::show](value/3, "again=") in
-  let _wild154 = println__T_string(t166) in
-  jump ret163()
+  let inline189 = trait_impl#ToString#string#to_string(t167) in
+  let inline190 = @runtime(core.string_println)(inline189) in
+  jump inline_cont188(())
 }
 
 fn main() -> unit {
-  join ret167() -> unit {
-    ()
-  } in
-  let t168 = Point { value: 7 } in
-  let value/4 = to_dyn[Display]{Point}(t168) in
-  let _wild155 = render(value/4) in
-  jump ret167()
+  let t171 = Point { value: 7 } in
+  let value/4 = to_dyn[Display]{Point}(t171) in
+  let inline192 = dyn_call[Display::show](value/4, "value=") in
+  let inline193 = println__T_string(inline192) in
+  let inline194 = dyn_call[Display::name](value/4) in
+  let inline195 = println__T_string(inline194) in
+  let inline196 = dyn_call[Display::show](value/4, "again=") in
+  let inline197 = println__T_string(inline196) in
+  ()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
-  } in
-  let t171 = @runtime(core.int32_to_string)(self/6) in
-  jump ret169(t171)
+  let t174 = @runtime(core.int32_to_string)(self/6) in
+  t174
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret172() -> unit {
+  join inline_cont198(t176: string) -> unit {
+    let t177 = @runtime(core.string_println)(t176) in
     ()
   } in
-  let t173 = trait_impl#ToString#string#to_string(value/1) in
-  let t174 = @runtime(core.string_println)(t173) in
-  jump ret172()
+  jump inline_cont198(value/1)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret175(retv176: string) -> string {
-    retv176
-  } in
-  jump ret175(self/38)
+  self/38
 }

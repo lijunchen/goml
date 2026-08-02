@@ -6,7 +6,7 @@ use gomlc::numeric;
 use std::text;
 
 fn lower_block(ctx: LowerCtx, node: LocatedNode) -> Option[Block] {
-    let stmts: Vec[Stmt] = Vec::new();
+    let stmts: Vec[Stmt] = Vec::[];
     for stmt in stmt_children(node) {
         match lower_stmt(ctx, stmt) {
             Some(value) => stmts.push(value),
@@ -14,7 +14,7 @@ fn lower_block(ctx: LowerCtx, node: LocatedNode) -> Option[Block] {
         }
     };
     let tails = expr_children(node);
-    let tail = if tails.len() > 0 {
+    let tail = if !tails.is_empty() {
         lower_expr(ctx, tails[0])
     } else {
         Option::None
@@ -27,10 +27,10 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
         STMT_LET => {
             let patterns = pattern_children(node);
             let values = expr_children(node);
-            if patterns.len() == 0 {
+            if patterns.is_empty() {
                 push_error(ctx, node_span(node), "Let statement missing pattern");
                 Option::None
-            } else if values.len() == 0 {
+            } else if values.is_empty() {
                 push_error(ctx, node_span(node), "Let statement missing value");
                 Option::None
             } else {
@@ -38,7 +38,7 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                     Some(pat) => match lower_expr(ctx, values[0]) {
                         Some(value) => {
                             let types = type_children(node);
-                            let annotation = if types.len() > 0 {
+                            let annotation = if !types.is_empty() {
                                 lower_ty(ctx, types[0])
                             } else {
                                 Option::None
@@ -81,16 +81,16 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                 match lower_expr(ctx, values[0]) {
                     Some(target) => match lower_expr(ctx, values[1]) {
                         Some(value) => {
-                            let op = Ref::new(AssignmentOp::Plain);
+                            let mut op = AssignmentOp::Plain;
                             for token in direct_tokens(node) {
                                 match compound_assignment_operator(token.token.kind) {
-                                    Some(value) => op.set(AssignmentOp::Compound(value)),
+                                    Some(value) => {
+                                        op = AssignmentOp::Compound(value);
+                                    },
                                     None => (),
                                 }
                             };
-                            Option::Some(
-                                Stmt::Assign { target, op: op.get(), value, span: node_span(node) },
-                            )
+                            Option::Some(Stmt::Assign { target, op, value, span: node_span(node) })
                         },
                         None => Option::None,
                     },
@@ -100,12 +100,24 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
         },
         STMT_EXPR => {
             let values = expr_children(node);
-            if values.len() == 0 {
+            if values.is_empty() {
                 push_error(ctx, node_span(node), "Expression statement missing expression");
                 Option::None
             } else {
                 match lower_expr(ctx, values[0]) {
                     Some(value) => Option::Some(Stmt::Expr { expr: value, span: node_span(node) }),
+                    None => Option::None,
+                }
+            }
+        },
+        STMT_DEFER => {
+            let values = expr_children(node);
+            if values.is_empty() {
+                push_error(ctx, node_span(node), "Defer statement missing expression");
+                Option::None
+            } else {
+                match lower_expr(ctx, values[0]) {
+                    Some(value) => Option::Some(Stmt::Defer { expr: value, span: node_span(node) }),
                     None => Option::None,
                 }
             }
@@ -151,21 +163,23 @@ fn unicode_escape_character(value: string, start: int) -> Option[char] {
     } else {
         ()
     };
-    let code = Ref::new(0);
+    let mut code = 0;
     for cursor in start..start + 4 {
         match hex_value(value.byte_get(cursor)) {
-            Some(part) => code.set(code.get() * 16 + part),
+            Some(part) => {
+                code = code * 16 + part;
+            },
             None => return Option::None,
         }
     };
-    char_from_uint32(code.get())
+    char_from_uint32(code)
 }
 
 fn unescape_string(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
         if byte != b'\\' {
             let width = if byte < 128 {
                 1
@@ -176,13 +190,13 @@ fn unescape_string(value: string) -> string {
             } else {
                 4
             };
-            builder.write_string(value.byte_slice(index.get(), index.get() + width));
-            index.set(index.get() + width)
-        } else if index.get() + 1 >= value.byte_len() {
+            builder.write_string(value.byte_slice(index, index + width));
+            index = index + width;
+        } else if index + 1 >= value.byte_len() {
             builder.write_string("\\");
-            index.set(index.get() + 1)
+            index = index + 1;
         } else {
-            let escaped = value.byte_get(index.get() + 1);
+            let escaped = value.byte_get(index + 1);
             match escaped {
                 34 => builder.write_string("\""),
                 92 => builder.write_string("\\"),
@@ -193,20 +207,20 @@ fn unescape_string(value: string) -> string {
                 102 => builder.write_string("\f"),
                 47 => builder.write_string("/"),
                 117 => {
-                    match unicode_escape_character(value, index.get() + 2) {
+                    match unicode_escape_character(value, index + 2) {
                         Some(character) => {
                             builder.write_string(character.to_string())
                         },
                         None => (),
                     };
-                    index.set(index.get() + 4)
+                    index = index + 4;
                 },
                 _ => {
                     builder.write_string("\\");
-                    builder.write_string(value.byte_slice(index.get() + 1, index.get() + 2))
+                    builder.write_string(value.byte_slice(index + 1, index + 2))
                 },
             };
-            index.set(index.get() + 2)
+            index = index + 2;
         }
     };
     builder.finish()
@@ -214,13 +228,13 @@ fn unescape_string(value: string) -> string {
 
 fn collapse_interpolated_braces(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
-    let index = Ref::new(0);
-    while index.get() < value.byte_len() {
-        let byte = value.byte_get(index.get());
-        if (byte == b'{' || byte == b'}') && index.get() + 1 < value.byte_len()
-            && value.byte_get(index.get() + 1) == byte {
-            builder.write_string(value.byte_slice(index.get(), index.get() + 1));
-            index.set(index.get() + 2)
+    let mut index = 0;
+    while index < value.byte_len() {
+        let byte = value.byte_get(index);
+        if (byte == b'{' || byte == b'}') && index + 1 < value.byte_len()
+            && value.byte_get(index + 1) == byte {
+            builder.write_string(value.byte_slice(index, index + 1));
+            index = index + 2;
         } else {
             let width = if byte < 128 {
                 1
@@ -231,8 +245,8 @@ fn collapse_interpolated_braces(value: string) -> string {
             } else {
                 4
             };
-            builder.write_string(value.byte_slice(index.get(), index.get() + width));
-            index.set(index.get() + width)
+            builder.write_string(value.byte_slice(index, index + width));
+            index = index + width;
         }
     };
     builder.finish()
@@ -244,8 +258,8 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to interpolated string") {
         Option::None
     } else {
-        let parts: Vec[InterpolatedStringPart] = Vec::new();
-        let cursor = Ref::new(node.start);
+        let parts: Vec[InterpolatedStringPart] = Vec::[];
+        let mut cursor = node.start;
         for element in cst::node_children(node.node) {
             match element {
                 Token(token) => {
@@ -260,13 +274,13 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
                     }
                 },
                 Node(child) => {
-                    let located = LocatedNode { node: child, start: cursor.get() };
+                    let located = LocatedNode { node: child, start: cursor };
                     if cst::node_kind_equal(
                         node_kind(located),
                         cst::NodeKind::INTERPOLATED_STRING_EXPR,
                     ) {
                         let values = expr_children(located);
-                        if values.len() > 0 {
+                        if !values.is_empty() {
                             match lower_expr(ctx, values[0]) {
                                 Some(value) => {
                                     parts.push(InterpolatedStringPart::Expr(value))
@@ -285,7 +299,7 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
                     }
                 },
             };
-            cursor.set(cursor.get() + cst::element_byte_len(element))
+            cursor = cursor + cst::element_byte_len(element);
         };
         Option::Some(Expr::InterpolatedString { parts, span: node_span(node) })
     }
@@ -296,33 +310,31 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
         Some(token) => {
             let value = token.token.text;
             let builder = text::StringBuilder::with_capacity(value.byte_len());
-            let line_start = Ref::new(0);
-            while line_start.get() <= value.byte_len() {
-                let line_end = Ref::new(line_start.get());
-                while line_end.get() < value.byte_len() && value.byte_get(line_end.get()) != b'\n' {
-                    line_end.set(line_end.get() + 1)
+            let mut line_start = 0;
+            while line_start <= value.byte_len() {
+                let mut line_end = line_start;
+                while line_end < value.byte_len() && value.byte_get(line_end) != b'\n' {
+                    line_end = line_end + 1;
                 };
-                let marker = Ref::new(line_start.get());
-                while marker.get() < line_end.get()
-                    && (value.byte_get(marker.get()) == b' '
-                        || value.byte_get(marker.get()) == b'\t') {
-                    marker.set(marker.get() + 1)
+                let mut marker = line_start;
+                while marker < line_end
+                    && (value.byte_get(marker) == b' ' || value.byte_get(marker) == b'\t') {
+                    marker = marker + 1;
                 };
-                if marker.get() + 2 > line_end.get()
-                    || value.byte_slice(marker.get(), marker.get() + 2) != "\\\\" {
+                if marker + 2 > line_end || value.byte_slice(marker, marker + 2) != "\\\\" {
                     push_error(ctx, token_span(token), "Invalid multiline string content");
                     return Option::None
                 } else {
-                    if line_start.get() > 0 {
+                    if line_start > 0 {
                         builder.write_string("\n")
                     } else {
                         ()
                     };
-                    builder.write_string(value.byte_slice(marker.get() + 2, line_end.get()));
-                    if line_end.get() >= value.byte_len() {
-                        line_start.set(value.byte_len() + 1)
+                    builder.write_string(value.byte_slice(marker + 2, line_end));
+                    if line_end >= value.byte_len() {
+                        line_start = value.byte_len() + 1;
                     } else {
-                        line_start.set(line_end.get() + 1)
+                        line_start = line_end + 1;
                     }
                 }
             };
@@ -336,7 +348,7 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
 }
 
 fn reject_trailing(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr], message: string) -> bool {
-    if trailing_args.len() == 0 {
+    if trailing_args.is_empty() {
         false
     } else {
         push_error(ctx, node_span(node), message);
@@ -353,7 +365,7 @@ struct LowerIdentParts {
 fn lower_type_application_args(ctx: LowerCtx, node: LocatedNode) -> Vec[TypeExpr] {
     match first_child(node, cst::NodeKind::TYPE_PARAM_LIST) {
         Some(list) => lower_type_list(ctx, list),
-        None => Vec::new(),
+        None => Vec::[],
     }
 }
 
@@ -374,15 +386,11 @@ fn lower_type_application_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path]
 
 fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts] {
     let applications = children_of_kind(node, cst::NodeKind::TYPE_TAPP);
-    if applications.len() == 0 {
+    if applications.is_empty() {
         match first_child(node, cst::NodeKind::PATH) {
             Some(path_node) => match lower_path(ctx, path_node) {
                 Some(path) => Option::Some(
-                    LowerIdentParts {
-                        path,
-                        owner_type_args: Vec::new(),
-                        member_type_args: Vec::new(),
-                    },
+                    LowerIdentParts { path, owner_type_args: Vec::[], member_type_args: Vec::[] },
                 ),
                 None => Option::None,
             },
@@ -408,13 +416,13 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
                     }
                 } else {
                     let paths = children_of_kind(node, cst::NodeKind::PATH);
-                    if paths.len() > 0 {
+                    if !paths.is_empty() {
                         match lower_path(ctx, paths[0]) {
                             Some(member_path) => Option::Some(
                                 LowerIdentParts {
                                     path: append_path_segments(first_path, member_path),
                                     owner_type_args: first_args,
-                                    member_type_args: Vec::new(),
+                                    member_type_args: Vec::[],
                                 },
                             ),
                             None => Option::None,
@@ -423,7 +431,7 @@ fn lower_ident_parts(ctx: LowerCtx, node: LocatedNode) -> Option[LowerIdentParts
                         Option::Some(
                             LowerIdentParts {
                                 path: first_path,
-                                owner_type_args: Vec::new(),
+                                owner_type_args: Vec::[],
                                 member_type_args: first_args,
                             },
                         )
@@ -443,7 +451,7 @@ fn lower_closure_param(ctx: LowerCtx, node: LocatedNode) -> Option[ClosureParam]
     match ident {
         Some(name_token) => {
             let types = type_children(node);
-            let ty = if types.len() > 0 {
+            let ty = if !types.is_empty() {
                 lower_ty(ctx, types[0])
             } else {
                 Option::None
@@ -461,7 +469,7 @@ fn lower_closure(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to closure expression") {
         Option::None
     } else {
-        let params: Vec[ClosureParam] = Vec::new();
+        let params: Vec[ClosureParam] = Vec::[];
         match first_child(node, cst::NodeKind::CLOSURE_PARAM_LIST) {
             Some(list) => for param in children_of_kind(list, cst::NodeKind::CLOSURE_PARAM) {
                 match lower_closure_param(ctx, param) {
@@ -485,7 +493,7 @@ fn lower_closure(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
                 },
                 None => {
                     let values = expr_children(body_node);
-                    if values.len() > 0 {
+                    if !values.is_empty() {
                         match lower_expr(ctx, values[0]) {
                             Some(body) => Option::Some(
                                 Expr::Closure { params, body, span: node_span(node) },
@@ -513,7 +521,7 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
         match first_child(node, cst::NodeKind::PATH) {
             Some(path_node) => match lower_path(ctx, path_node) {
                 Some(path) => {
-                    let fields: Vec[(string, Expr)] = Vec::new();
+                    let fields: Vec[(string, Expr)] = Vec::[];
                     match first_child(node, cst::NodeKind::STRUCT_LITERAL_FIELD_LIST) {
                         Some(list) => for field in children_of_kind(
                             list,
@@ -522,7 +530,7 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                             match first_token(field, lexer::TokenKind::Ident) {
                                 Some(name_token) => {
                                     let values = expr_children(field);
-                                    if values.len() > 0 {
+                                    if !values.is_empty() {
                                         match lower_expr(ctx, values[0]) {
                                             Some(value) => fields.push(
                                                 (name_token.token.text, value),
@@ -537,8 +545,8 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                                                     path: path_from_single_ident(
                                                         name_token.token.text,
                                                     ),
-                                                    owner_type_args: Vec::new(),
-                                                    member_type_args: Vec::new(),
+                                                    owner_type_args: Vec::[],
+                                                    member_type_args: Vec::[],
                                                     span: node_span(field),
                                                 },
                                             ),
@@ -554,7 +562,7 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                         Some(list) => match first_child(list, cst::NodeKind::STRUCT_LITERAL_UPDATE) {
                             Some(update) => {
                                 let values = expr_children(update);
-                                if values.len() > 0 {
+                                if !values.is_empty() {
                                     lower_expr(ctx, values[0])
                                 } else {
                                     Option::None
@@ -576,14 +584,14 @@ fn lower_struct_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
 }
 
 fn lower_expr(ctx: LowerCtx, node: LocatedNode) -> Option[Expr] {
-    lower_expr_with_args(ctx, node, Vec::new())
+    lower_expr_with_args(ctx, node, Vec::[])
 }
 
 fn lower_vec_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to Vec literal") {
         Option::None
     } else {
-        let items: Vec[Expr] = Vec::new();
+        let items: Vec[Expr] = Vec::[];
         for value in expr_children(node) {
             match lower_expr(ctx, value) {
                 Some(item) => items.push(item),
@@ -598,7 +606,7 @@ fn lower_hashmap_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Ex
     if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to HashMap literal") {
         Option::None
     } else {
-        let entries: Vec[(Expr, Expr)] = Vec::new();
+        let entries: Vec[(Expr, Expr)] = Vec::[];
         for entry in children_of_kind(node, cst::NodeKind::HASHMAP_LITERAL_ENTRY) {
             let values = expr_children(entry);
             if values.len() == 2 {
@@ -702,7 +710,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_TUPLE => lower_expr_sequence(ctx, node, trailing_args, true),
             EXPR_PAREN => {
                 let values = expr_children(node);
-                if values.len() > 0 {
+                if !values.is_empty() {
                     lower_expr_with_args(ctx, values[0], trailing_args)
                 } else {
                     Option::None
@@ -730,7 +738,7 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                 Option::None
             } else {
                 let values = expr_children(node);
-                let value = if values.len() > 0 {
+                let value = if !values.is_empty() {
                     lower_expr(ctx, values[0])
                 } else {
                     Option::None
@@ -848,7 +856,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
     } else {
         ()
     };
-    let result: Vec[string] = Vec::new();
+    let result: Vec[string] = Vec::[];
     let mut index = 2;
     while index + 1 < value.byte_len() {
         let byte = value.byte_get(index);
@@ -906,7 +914,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
     } else {
         ()
     };
-    let result: Vec[string] = Vec::new();
+    let result: Vec[string] = Vec::[];
     for index in start..end {
         let byte = value.byte_get(index);
         if byte > 127 {
@@ -1040,7 +1048,7 @@ fn lower_ident_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
     match lower_ident_parts(ctx, node) {
         Some(parts) => match path_last(parts.path) {
             Some(last) => {
-                let base = if parts.owner_type_args.len() == 0 && parts.member_type_args.len() == 0
+                let base = if parts.owner_type_args.is_empty() && parts.member_type_args.is_empty()
                     && ident_starts_upper(last) {
                     Expr::ConstructorValue { constructor: parts.path, span: node_span(node) }
                 } else {
@@ -1077,7 +1085,7 @@ fn lower_expr_sequence(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr
     ) {
         Option::None
     } else {
-        let items: Vec[Expr] = Vec::new();
+        let items: Vec[Expr] = Vec::[];
         for child in expr_children(node) {
             match lower_expr(ctx, child) {
                 Some(value) => items.push(value),

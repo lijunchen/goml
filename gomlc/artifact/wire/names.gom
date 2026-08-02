@@ -1,0 +1,32 @@
+package wire;
+
+pub fn artifact_string_less(left: string, right: string) -> bool {
+    let common = if left.byte_len() < right.byte_len() {
+        left.byte_len()
+    } else {
+        right.byte_len()
+    };
+    for index in 0..common {
+        if left.byte_get(index) < right.byte_get(index) {
+            return true
+        } else if left.byte_get(index) > right.byte_get(index) {
+            return false
+        } else {
+            ()
+        }
+    };
+    left.byte_len() < right.byte_len()
+}
+
+pub fn sort_artifact_names(values: Vec[string]) -> Vec[string] {
+    for index in 1..values.len() {
+        let current = values[index];
+        let mut destination = index;
+        while destination > 0 && artifact_string_less(current, values[destination - 1]) {
+            values[destination] = values[destination - 1];
+            destination = destination - 1;
+        };
+        values[destination] = current;
+    };
+    values
+}

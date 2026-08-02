@@ -1,5 +1,6 @@
 package main;
 
+use gomlc::artifact::wire as wire;
 use gomlc::strings;
 use std::io;
 use std::text;
@@ -9,19 +10,18 @@ struct PackageInfoArgs {
 }
 
 fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string] {
-    let inputs = Vec::new();
-    let format: Ref[Option[string]] = Ref::new(Option::None);
-    let index = Ref::new(2);
-    let positional = Ref::new(false);
-    while index.get() < args.len() {
-        let argument = args[index.get()];
-        if positional.get() == false && argument == "--" {
-            positional.set(true);
-            index.set(index.get() + 1)
-        } else if positional.get() == false && cli_help_argument(argument) {
+    let inputs: Vec[string] = Vec::[];
+    let mut format: Option[string] = Option::None;
+    let mut index = 2;
+    let mut positional = false;
+    while index < args.len() {
+        let argument = args[index];
+        if !positional && argument == "--" {
+            positional = true;
+            index += 1;
+        } else if !positional && cli_help_argument(argument) {
             return Result::Err(cli_help_signal())
-        } else if positional.get() == false
-            && option_string_present(inline_cli_value(argument, "--help")) {
+        } else if !positional && option_string_present(inline_cli_value(argument, "--help")) {
             let value = match inline_cli_value(argument, "--help") {
                 Some(value) => value,
                 None => "",
@@ -33,14 +33,14 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
                     "gomlc package-info --help --input <INPUT>...",
                 ),
             )
-        } else if positional.get() {
+        } else if positional {
             return Result::Err(unexpected_argument_error("package-info", argument, false))
         } else if argument == "--input" {
-            index.set(index.get() + 1);
+            index += 1;
             let previous_len = inputs.len();
-            while index.get() < args.len() && !cli_option(args[index.get()]) {
-                inputs.push(args[index.get()]);
-                index.set(index.get() + 1)
+            while index < args.len() && !cli_option(args[index]) {
+                inputs.push(args[index]);
+                index += 1;
             };
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
@@ -56,29 +56,29 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
             } else {
                 inputs.push(value);
-                index.set(index.get() + 1);
-                while index.get() < args.len() && !cli_option(args[index.get()]) {
-                    inputs.push(args[index.get()]);
-                    index.set(index.get() + 1)
+                index += 1;
+                while index < args.len() && !cli_option(args[index]) {
+                    inputs.push(args[index]);
+                    index += 1;
                 }
             }
         } else if argument == "--format" {
-            if index.get() + 1 >= args.len() || cli_option(args[index.get() + 1]) {
+            if index + 1 >= args.len() || cli_option(args[index + 1]) {
                 return Result::Err(value_required_error("--format <FORMAT>", Option::None))
-            } else if option_string_present(format.get()) {
+            } else if option_string_present(format) {
                 return Result::Err(repeated_argument_error("package-info", "--format <FORMAT>"))
             } else {
-                format.set(Option::Some(args[index.get() + 1]));
-                index.set(index.get() + 2)
+                format = Option::Some(args[index + 1]);
+                index += 2;
             }
         } else if option_string_present(inline_cli_value(argument, "--format")) {
             if option_string_empty(inline_cli_value(argument, "--format")) {
                 return Result::Err(value_required_error("--format <FORMAT>", Option::None))
-            } else if option_string_present(format.get()) {
+            } else if option_string_present(format) {
                 return Result::Err(repeated_argument_error("package-info", "--format <FORMAT>"))
             } else {
-                format.set(inline_cli_value(argument, "--format"));
-                index.set(index.get() + 1)
+                format = inline_cli_value(argument, "--format");
+                index += 1;
             }
         } else {
             return Result::Err(
@@ -90,7 +90,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
             )
         }
     };
-    let selected_format = match format.get() {
+    let selected_format = match format {
         Some(value) => value,
         None => "json",
     };
@@ -100,7 +100,7 @@ fn parse_package_info_args(args: Vec[string]) -> Result[PackageInfoArgs, string]
                 + "' for '--format <FORMAT>'\n  [possible values: json]\n\n"
                 + cli_error_footer(),
         )
-    } else if inputs.len() == 0 {
+    } else if inputs.is_empty() {
         Result::Err(
             missing_required_arguments_error_with_usage(
                 Vec::["--input <INPUT>..."],
@@ -248,23 +248,63 @@ fn package_info_parse_use(scanner: PackageInfoScanner, source_path: string) -> R
     let path = text::StringBuilder::new();
     path.write_string(first);
     package_info_skip_trivia(scanner);
-    while package_info_at_text(scanner, "::") {
-        scanner.index.set(scanner.index.get() + 2);
-        match package_info_read_ident(scanner) {
-            Some(value) => {
-                path.write_string("::");
-                path.write_string(value);
-                package_info_skip_trivia(scanner)
-            },
-            None => {
-                return Result::Err(
+    let mut braced = false;
+    while package_info_consume_text(scanner, "::") {
+        if package_info_consume_text(scanner, "{") {
+            braced = true;
+            if package_info_consume_text(scanner, "}") {
+                return Result::Err(package_info_error(source_path, "use item list cannot be empty"))
+            } else {
+                ()
+            };
+            let mut done = false;
+            while !done {
+                match package_info_read_ident(scanner) {
+                    Some(_) => (),
+                    None => return Result::Err(
+                        package_info_error(source_path, "expected an imported item"),
+                    ),
+                };
+                if package_info_consume_keyword(scanner, "as") {
+                    match package_info_read_ident(scanner) {
+                        Some(_) => (),
+                        None => return Result::Err(
+                            package_info_error(source_path, "expected use item alias"),
+                        ),
+                    }
+                } else {
+                    ()
+                };
+                if package_info_consume_text(scanner, ",") {
+                    if package_info_consume_text(scanner, "}") {
+                        done = true;
+                    } else {
+                        ()
+                    }
+                } else if package_info_consume_text(scanner, "}") {
+                    done = true;
+                } else {
+                    return Result::Err(
+                        package_info_error(source_path, "expected ',' or '}' in use item list"),
+                    )
+                }
+            };
+            break
+        } else {
+            match package_info_read_ident(scanner) {
+                Some(value) => {
+                    path.write_string("::");
+                    path.write_string(value);
+                    package_info_skip_trivia(scanner)
+                },
+                None => return Result::Err(
                     package_info_error(source_path, "expected a path segment after '::'"),
-                )
-            },
+                ),
+            }
         }
     };
     let alias: Ref[Option[string]] = Ref::new(Option::None);
-    if package_info_consume_keyword(scanner, "as") {
+    if !braced && package_info_consume_keyword(scanner, "as") {
         match package_info_read_ident(scanner) {
             Some(value) => if package_info_lower_ident(value) {
                 alias.set(Option::Some(value))
@@ -313,7 +353,7 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
     } else {
         ("main", false)
     };
-    let uses = Vec::new();
+    let uses: Vec[PackageInfoUse] = Vec::[];
     package_info_skip_trivia(scanner);
     while package_info_consume_keyword(scanner, "use") {
         uses.push(package_info_parse_use(scanner, source_path)?);
@@ -329,47 +369,47 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
 }
 
 fn package_info_json(args: PackageInfoArgs) -> string {
-    let writer = new_artifact_json_writer(false);
-    artifact_json_begin_object(writer);
-    artifact_json_name(writer, "files");
-    artifact_json_begin_array(writer);
+    let writer = wire::new_artifact_json_writer(false);
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, "files");
+    wire::artifact_json_begin_array(writer);
     for source_path in args.inputs {
         let source = read_source(source_path);
         let file = match parse_package_info_file(source_path, source) {
             Ok(value) => value,
             Err(error) => {
                 fail(error);
-                PackageInfoFile { package_name: "", package_explicit: false, uses: Vec::new() }
+                PackageInfoFile { package_name: "", package_explicit: false, uses: Vec::[] }
             },
         };
-        artifact_json_begin_object(writer);
-        artifact_json_name(writer, "package");
-        artifact_json_string(writer, file.package_name);
-        artifact_json_name(writer, "package_explicit");
-        artifact_json_bool(writer, file.package_explicit);
-        artifact_json_name(writer, "path");
-        artifact_json_string(writer, source_path);
-        artifact_json_name(writer, "uses");
-        artifact_json_begin_array(writer);
+        wire::artifact_json_begin_object(writer);
+        wire::artifact_json_name(writer, "package");
+        wire::artifact_json_string(writer, file.package_name);
+        wire::artifact_json_name(writer, "package_explicit");
+        wire::artifact_json_bool(writer, file.package_explicit);
+        wire::artifact_json_name(writer, "path");
+        wire::artifact_json_string(writer, source_path);
+        wire::artifact_json_name(writer, "uses");
+        wire::artifact_json_begin_array(writer);
         for use_decl in file.uses {
-            artifact_json_begin_object(writer);
-            artifact_json_name(writer, "alias");
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "alias");
             match use_decl.alias {
-                Some(value) => artifact_json_string(writer, value),
-                None => artifact_json_null(writer),
+                Some(value) => wire::artifact_json_string(writer, value),
+                None => wire::artifact_json_null(writer),
             };
-            artifact_json_name(writer, "path");
-            artifact_json_string(writer, use_decl.path);
-            artifact_json_end_object(writer)
+            wire::artifact_json_name(writer, "path");
+            wire::artifact_json_string(writer, use_decl.path);
+            wire::artifact_json_end_object(writer)
         };
-        artifact_json_end_array(writer);
-        artifact_json_end_object(writer)
+        wire::artifact_json_end_array(writer);
+        wire::artifact_json_end_object(writer)
     };
-    artifact_json_end_array(writer);
-    artifact_json_name(writer, "protocol_version");
-    artifact_json_number(writer, "1");
-    artifact_json_end_object(writer);
-    artifact_json_finish(writer)
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_name(writer, "protocol_version");
+    wire::artifact_json_number(writer, "1");
+    wire::artifact_json_end_object(writer);
+    wire::artifact_json_finish(writer)
 }
 
 fn run_package_info(args: Vec[string]) -> unit {

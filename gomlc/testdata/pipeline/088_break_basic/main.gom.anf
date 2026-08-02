@@ -1,111 +1,112 @@
 fn main() -> unit {
-  join ret157() -> unit {
-    ()
-  } in
-  let i/0 = inherent#Ref#Ref[T]#new__T_int(0) in
-  join exit158() -> unit {
-    let _wild155 = () in
-    let mtmp156 = println__T_string("done") in
-    jump ret157()
-  } in
-  joinrec {
-    join loop159() -> unit {
-      let t160 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-      let t161 = (t160 < 10) in
-      if t161 {
-        let t166 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-        let t167 = trait_impl#Eq#int#eq(t166, 5) in
-        join k162() -> unit {
-          let _wild152 = () in
-          let t163 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-          let mtmp153 = println__T_int(t163) in
-          let t164 = inherent#Ref#Ref[T]#get__T_int(i/0) in
-          let t165 = (t164 + 1) in
-          let _wild154 = inherent#Ref#Ref[T]#set__T_int(i/0, t165) in
-          jump loop159()
-        } in
-        if t167 {
-          jump exit158()
-        } else {
-          jump k162()
-        }
-      } else {
-        jump exit158()
-      }
+  join inline_cont216(i/0: Ref[int]) -> unit {
+    join exit161() -> unit {
+      let _wild158 = () in
+      let inline213 = "done" in
+      let inline214 = trait_impl#ToString#string#to_string(inline213) in
+      let inline215 = @runtime(core.string_println)(inline214) in
+      ()
     } in
+    joinrec {
+      join loop162() -> unit {
+        join inline_cont210(t163: int) -> unit {
+          let t164 = (t163 < 10) in
+          if t164 {
+            join inline_cont208(t169: int) -> unit {
+              join inline_cont205(t170: bool) -> unit {
+                join k165() -> unit {
+                  let _wild155 = () in
+                  join inline_cont203(t166: int) -> unit {
+                    join inline_cont200(mtmp156: unit) -> unit {
+                      join inline_cont198(t167: int) -> unit {
+                        let t168 = (t167 + 1) in
+                        let inline197 = @intrinsic(ref.set)(i/0, t168) in
+                        jump loop162()
+                      } in
+                      let inline199 = @intrinsic(ref.get)(i/0) in
+                      jump inline_cont198(inline199)
+                    } in
+                    let inline201 = trait_impl#ToString#int#to_string(t166) in
+                    let inline202 = @runtime(core.string_println)(inline201) in
+                    jump inline_cont200(())
+                  } in
+                  let inline204 = @intrinsic(ref.get)(i/0) in
+                  jump inline_cont203(inline204)
+                } in
+                if t170 {
+                  jump exit161()
+                } else {
+                  jump k165()
+                }
+              } in
+              let inline206 = 5 in
+              let inline207 = @intrinsic(eq.primitive)(t169, inline206) in
+              jump inline_cont205(inline207)
+            } in
+            let inline209 = @intrinsic(ref.get)(i/0) in
+            jump inline_cont208(inline209)
+          } else {
+            jump exit161()
+          }
+        } in
+        let inline211 = @intrinsic(ref.get)(i/0) in
+        jump inline_cont210(inline211)
+      } in
+    } in
+    jump loop162()
   } in
-  jump loop159()
+  let inline217 = 0 in
+  let inline218 = @intrinsic(ref.new)(inline217) in
+  jump inline_cont216(inline218)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  join ret168(retv169: Ref[int]) -> Ref[int] {
-    retv169
-  } in
-  let t170 = @intrinsic(ref.new)(value/207) in
-  jump ret168(t170)
+  let t173 = @intrinsic(ref.new)(value/207) in
+  t173
 }
 
 fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  join ret171(retv172: int) -> int {
-    retv172
-  } in
-  let t173 = @intrinsic(ref.get)(self/208) in
-  jump ret171(t173)
+  let t176 = @intrinsic(ref.get)(self/208) in
+  t176
 }
 
 fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  join ret174(retv175: bool) -> bool {
-    retv175
-  } in
-  let t176 = @intrinsic(eq.primitive)(self/59, other/60) in
-  jump ret174(t176)
+  let t179 = @intrinsic(eq.primitive)(self/59, other/60) in
+  t179
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret177() -> unit {
+  join inline_cont219(t181: string) -> unit {
+    let t182 = @runtime(core.string_println)(t181) in
     ()
   } in
-  let t178 = trait_impl#ToString#int#to_string(value/1) in
-  let t179 = @runtime(core.string_println)(t178) in
-  jump ret177()
+  let inline220 = @runtime(core.int_to_string)(value/1) in
+  jump inline_cont219(inline220)
 }
 
 fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  join ret180() -> unit {
-    ()
-  } in
-  let t181 = @intrinsic(ref.set)(self/209, value/210) in
-  jump ret180()
+  let t184 = @intrinsic(ref.set)(self/209, value/210) in
+  ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret182() -> unit {
+  join inline_cont221(t186: string) -> unit {
+    let t187 = @runtime(core.string_println)(t186) in
     ()
   } in
-  let t183 = trait_impl#ToString#string#to_string(value/1) in
-  let t184 = @runtime(core.string_println)(t183) in
-  jump ret182()
+  jump inline_cont221(value/1)
 }
 
 fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  join ret185(retv186: string) -> string {
-    retv186
-  } in
-  let t187 = @runtime(core.int_to_string)(self/40) in
-  jump ret185(t187)
+  let t190 = @runtime(core.int_to_string)(self/40) in
+  t190
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret188(retv189: string) -> string {
-    retv189
-  } in
-  jump ret188(self/38)
+  self/38
 }
 
 fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  join ret190(retv191: uint64) -> uint64 {
-    retv191
-  } in
-  let t192 = @runtime(core.int_hash)(self/85) in
-  jump ret190(t192)
+  let t195 = @runtime(core.int_hash)(self/85) in
+  t195
 }

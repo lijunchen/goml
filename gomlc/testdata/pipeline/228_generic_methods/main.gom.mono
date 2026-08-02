@@ -1,15 +1,15 @@
 fn main() -> unit {
   let first/4 = Box__int { value: 42 } in
   let text/6 = inherent#Box#Box[T]#map__T_int__U_string(first/4, |value/5| inherent#int#int#to_string(value/5)) in
-  let _wild153 = println__T_string(Box__string.value(text/6)) in
+  let _wild156 = println__T_string(Box__string.value(text/6)) in
   let second/7 = Box__int { value: 7 } in
   let explicit/9 = inherent#Box#Box[T]#map__T_int__U_string(second/7, |value/8| inherent#int#int#to_string(value/8)) in
-  let _wild154 = println__T_string(Box__string.value(explicit/9)) in
+  let _wild157 = println__T_string(Box__string.value(explicit/9)) in
   let third/10 = Box__int { value: 9 } in
   let static_call/12 = inherent#Box#Box[T]#map__T_int__U_string(third/10, |value/11| inherent#int#int#to_string(value/11)) in
-  let _wild155 = println__T_string(Box__string.value(static_call/12)) in
+  let _wild158 = println__T_string(Box__string.value(static_call/12)) in
   let rendered/13 = inherent#Box#Box[T]#render__T_string__U_int(Box__string { value: "value" }, 5) in
-  let _wild156 = println__T_string(rendered/13) in
+  let _wild159 = println__T_string(rendered/13) in
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
@@ -25,7 +25,7 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn inherent#Box#Box[T]#render__T_string__U_int(self/2: Box__string, value/3: int) -> string {
-  let mtmp152 = self/2 in
+  let mtmp155 = self/2 in
   {
     ("value:" + trait_impl#ToString#int#to_string(value/3))
   }

@@ -1,5 +1,6 @@
 package anf;
 
+use gomlc::core;
 use gomlc::strings;
 use gomlc::tast;
 use std::text;
@@ -25,6 +26,7 @@ fn dyn_method_name(value: string) -> string {
 fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
     match value {
         Function(name) => builder.write_string(name),
+        LangItem { item: _, function_name } => builder.write_string(function_name),
         Runtime(name) => {
             builder.write_string("@runtime(");
             builder.write_string(name);
@@ -49,9 +51,7 @@ fn write_callable(builder: text::StringBuilder, value: tast::Callable) -> unit {
             builder.write_string(name)
         },
         InherentMethod { receiver_ty: owner, method_name: name } => {
-            tast::write_type(builder, owner);
-            builder.write_string("::");
-            builder.write_string(name)
+            builder.write_string(core::inherent_method_name(owner, name))
         },
     }
 }
@@ -82,7 +82,7 @@ fn write_imms(builder: text::StringBuilder, values: Vec[Imm]) -> unit {
 fn write_constructor(builder: text::StringBuilder, constructor: tast::Constructor, args: Vec[Imm]) -> unit {
     builder.write_string(constructor.name);
     if constructor.is_struct {
-        if constructor.fields.len() == 0 && args.len() == 0 {
+        if constructor.fields.is_empty() && args.is_empty() {
             builder.write_string(" {}")
         } else if constructor.fields.len() == args.len() {
             builder.write_string(" { ");
@@ -97,14 +97,14 @@ fn write_constructor(builder: text::StringBuilder, constructor: tast::Constructo
                 write_imm(builder, args[index])
             };
             builder.write_string(" }")
-        } else if args.len() > 0 {
+        } else if !args.is_empty() {
             builder.write_char('(');
             write_imms(builder, args);
             builder.write_char(')')
         } else {
             ()
         }
-    } else if args.len() > 0 {
+    } else if !args.is_empty() {
         builder.write_char('(');
         write_imms(builder, args);
         builder.write_char(')')
@@ -192,7 +192,7 @@ fn write_value(builder: text::StringBuilder, value: Value) -> unit {
             builder.write_string(dyn_method_name(method_name));
             builder.write_string("](");
             write_imm(builder, receiver);
-            if args.len() > 0 {
+            if !args.is_empty() {
                 builder.write_string(", ");
                 write_imms(builder, args)
             } else {
@@ -352,7 +352,7 @@ pub fn encode(value: File) -> string {
         };
         tast::write_constant(builder, value.constants[index])
     };
-    if value.constants.len() > 0 && value.functions.len() > 0 {
+    if !value.constants.is_empty() && !value.functions.is_empty() {
         builder.write_string("\n\n")
     } else {
         ()
