@@ -1,0 +1,275 @@
+fn early_return() -> int {
+  join ret205(retv206: int) -> int {
+    retv206
+  } in
+  let defer_return155 = 7 in
+  let _defer156 = println__T_string("return:inner") in
+  let _defer157 = println__T_string("return:outer") in
+  jump ret205(defer_return155)
+}
+
+fn maybe(value/0: Option__int) -> Option__int {
+  join ret207(retv208: Option__int) -> Option__int {
+    retv208
+  } in
+  join k209(jp210: int) -> Option__int {
+    let number/1 = jp210 in
+    let defer_result166 = Option__int::Some(number/1) in
+    let _defer167 = println__T_string("try:cleanup") in
+    jump ret207(defer_result166)
+  } in
+  match value/0 {
+    Tag_0 => {
+      let defer_return164 = Tag_0 in
+      let _defer165 = println__T_string("try:cleanup") in
+      jump ret207(defer_return164)
+    },
+    Tag_1 => {
+      let x163 = Option__int::Some._0(value/0) in
+      let try_value/15 = x163 in
+      jump k209(try_value/15)
+    },
+  }
+}
+
+fn loop_cleanup() -> unit {
+  join ret211() -> unit {
+    ()
+  } in
+  let index/2 = inherent#Ref#Ref[T]#new__T_int(0) in
+  join exit212() -> unit {
+    jump ret211()
+  } in
+  joinrec {
+    join loop213() -> unit {
+      let t214 = inherent#Ref#Ref[T]#get__T_int(index/2) in
+      let t215 = (t214 < 3) in
+      if t215 {
+        let current/3 = inherent#Ref#Ref[T]#get__T_int(index/2) in
+        let t216 = (current/3 + 1) in
+        let _wild168 = inherent#Ref#Ref[T]#set__T_int(index/2, t216) in
+        let t220 = trait_impl#Eq#int#eq(current/3, 0) in
+        join k217() -> unit {
+          let defer_result169 = () in
+          let t218 = inherent#int#int#to_string(current/3) in
+          let t219 = ("loop:" + t218) in
+          let _defer174 = println__T_string(t219) in
+          jump loop213()
+        } in
+        if t220 {
+          let t221 = inherent#int#int#to_string(current/3) in
+          let t222 = ("loop:" + t221) in
+          let _defer170 = println__T_string(t222) in
+          jump loop213()
+        } else {
+          let t224 = trait_impl#Eq#int#eq(current/3, 1) in
+          join k223() -> unit {
+            jump k217()
+          } in
+          if t224 {
+            let t225 = inherent#int#int#to_string(current/3) in
+            let t226 = ("loop:" + t225) in
+            let _defer172 = println__T_string(t226) in
+            jump exit212()
+          } else {
+            jump k223()
+          }
+        }
+      } else {
+        jump exit212()
+      }
+    } in
+  } in
+  jump loop213()
+}
+
+fn observed_at_exit() -> unit {
+  join ret227() -> unit {
+    ()
+  } in
+  let value/4 = inherent#Ref#Ref[T]#new__T_string("before") in
+  let defer_result175 = inherent#Ref#Ref[T]#set__T_string(value/4, "after") in
+  let t228 = inherent#Ref#Ref[T]#get__T_string(value/4) in
+  let t229 = ("observed:" + t228) in
+  let _defer176 = println__T_string(t229) in
+  jump ret227()
+}
+
+fn pattern_cleanup(value/5: Option__int) -> int {
+  join ret230(retv231: int) -> int {
+    retv231
+  } in
+  let mtmp177 = value/5 in
+  join k232(jp233: int) -> int {
+    jump ret230(jp233)
+  } in
+  match mtmp177 {
+    Tag_1 => {
+      let x179 = Option__int::Some._0(mtmp177) in
+      let number/6 = x179 in
+      let mtmp180 = (number/6, 2) in
+      let x181 = mtmp180.0 in
+      let x182 = mtmp180.1 in
+      let right/8 = x182 in
+      let left/7 = x181 in
+      let defer_tast_result178 = (left/7 + right/8) in
+      let _wild183 = println__T_string("pattern:cleanup") in
+      jump k232(defer_tast_result178)
+    },
+    _ => {
+      let defer_return184 = 0 in
+      let _defer185 = println__T_string("pattern:cleanup") in
+      jump ret230(defer_return184)
+    },
+  }
+}
+
+fn closure_cleanup() -> unit {
+  join ret234() -> unit {
+    ()
+  } in
+  let run/9 = closure_env_run_0 {} in
+  let _wild189 = inherent#closure_env_run_0#closure_env_run_0#apply(run/9) in
+  let defer_result190 = println__T_string("closure:after") in
+  let _defer191 = println__T_string("closure:outer") in
+  jump ret234()
+}
+
+fn main() -> unit {
+  join ret235() -> unit {
+    ()
+  } in
+  let defer_result192 = println__T_string("body") in
+  let _defer193 = println__T_string("block") in
+  let _wild194 = defer_result192 in
+  let t236 = early_return() in
+  let t237 = inherent#int#int#to_string(t236) in
+  let _wild195 = println__T_string(t237) in
+  let mtmp196 = maybe(Tag_0) in
+  let _wild198 = loop_cleanup() in
+  let _wild199 = observed_at_exit() in
+  let t238 = Option__int::Some(3) in
+  let t239 = pattern_cleanup(t238) in
+  let t240 = inherent#int#int#to_string(t239) in
+  let _wild200 = println__T_string(t240) in
+  let t241 = pattern_cleanup(Tag_0) in
+  let t242 = inherent#int#int#to_string(t241) in
+  let _wild201 = println__T_string(t242) in
+  let defer_tast_result197 = closure_cleanup() in
+  let _wild202 = println__T_string("main:second") in
+  let _wild203 = println__T_string("main:first") in
+  jump ret235()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret243() -> unit {
+    ()
+  } in
+  let t244 = trait_impl#ToString#string#to_string(value/1) in
+  let t245 = @runtime(core.string_println)(t244) in
+  jump ret243()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
+  join ret246(retv247: Ref[int]) -> Ref[int] {
+    retv247
+  } in
+  let t248 = @intrinsic(ref.new)(value/207) in
+  jump ret246(t248)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
+  join ret249(retv250: int) -> int {
+    retv250
+  } in
+  let t251 = @intrinsic(ref.get)(self/208) in
+  jump ret249(t251)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
+  join ret252() -> unit {
+    ()
+  } in
+  let t253 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret252()
+}
+
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  join ret254(retv255: bool) -> bool {
+    retv255
+  } in
+  let t256 = @intrinsic(eq.primitive)(self/59, other/60) in
+  jump ret254(t256)
+}
+
+fn inherent#int#int#to_string(self/5: int) -> string {
+  join ret257(retv258: string) -> string {
+    retv258
+  } in
+  let t259 = @runtime(core.int_to_string)(self/5) in
+  jump ret257(t259)
+}
+
+fn inherent#Ref#Ref[T]#new__T_string(value/207: string) -> Ref[string] {
+  join ret260(retv261: Ref[string]) -> Ref[string] {
+    retv261
+  } in
+  let t262 = @intrinsic(ref.new)(value/207) in
+  jump ret260(t262)
+}
+
+fn inherent#Ref#Ref[T]#set__T_string(self/209: Ref[string], value/210: string) -> unit {
+  join ret263() -> unit {
+    ()
+  } in
+  let t264 = @intrinsic(ref.set)(self/209, value/210) in
+  jump ret263()
+}
+
+fn inherent#Ref#Ref[T]#get__T_string(self/208: Ref[string]) -> string {
+  join ret265(retv266: string) -> string {
+    retv266
+  } in
+  let t267 = @intrinsic(ref.get)(self/208) in
+  jump ret265(t267)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret268(retv269: string) -> string {
+    retv269
+  } in
+  jump ret268(self/38)
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  join ret270(retv271: uint64) -> uint64 {
+    retv271
+  } in
+  let t272 = @runtime(core.int_hash)(self/85) in
+  jump ret270(t272)
+}
+
+fn trait_impl#Eq#string#eq(self/55: string, other/56: string) -> bool {
+  join ret273(retv274: bool) -> bool {
+    retv274
+  } in
+  let t275 = @intrinsic(eq.primitive)(self/55, other/56) in
+  jump ret273(t275)
+}
+
+fn trait_impl#Hash#string#hash(self/83: string) -> uint64 {
+  join ret276(retv277: uint64) -> uint64 {
+    retv277
+  } in
+  let t278 = @runtime(core.string_hash)(self/83) in
+  jump ret276(t278)
+}
+
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env204: closure_env_run_0) -> unit {
+  join ret279() -> unit {
+    ()
+  } in
+  let defer_result187 = println__T_string("closure:body") in
+  let _defer188 = println__T_string("closure:inner") in
+  jump ret279()
+}

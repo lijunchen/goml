@@ -1,0 +1,83 @@
+package main;
+fn early_return() -> int {
+    defer println("return:outer");
+    {
+        defer println("return:inner");
+        return 7;
+    };
+    0
+}
+
+fn maybe(value: Option[int]) -> Option[int] {
+    defer println("try:cleanup");
+    let number = value?;
+    Option::Some(number)
+}
+
+fn loop_cleanup() -> unit {
+    let index = Ref::new(0);
+    while index.get() < 3 {
+        {
+            let current = index.get();
+            defer println("loop:" + current.to_string());
+            index.set(current + 1);
+            if current == 0 {
+                {
+                    continue;
+                }
+            } else {
+                if current == 1 {
+                    {
+                        break;
+                    }
+                } else {
+                    {
+                        ()
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn observed_at_exit() -> unit {
+    let value = Ref::new("before");
+    defer println("observed:" + value.get());
+    value.set("after")
+}
+
+fn pattern_cleanup(value: Option[int]) -> int {
+    defer println("pattern:cleanup");
+    let Option::Some(number) = value else {
+        return 0;
+    };
+    let (left, right) = (number, 2);
+    left + right
+}
+
+fn closure_cleanup() -> unit {
+    defer println("closure:outer");
+    let run = || {
+        defer println("closure:inner");
+        println("closure:body")
+    };
+    run();
+    println("closure:after")
+}
+
+fn main() -> unit {
+    defer println("main:first");
+    defer println("main:second");
+    {
+        defer println("block");
+        println("body")
+    };
+    println(early_return().to_string());
+    let _ = maybe(Option::None);
+    loop_cleanup();
+    observed_at_exit();
+    println(pattern_cleanup(Option::Some(3)).to_string());
+    println(pattern_cleanup(Option::None).to_string());
+    closure_cleanup()
+}
+
