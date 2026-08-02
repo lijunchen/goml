@@ -1425,7 +1425,7 @@ Current limitations:
 
 ## Properties and Derivations
 
-User source code currently supports deriving `ToString`, `Eq` and `Hash` for non-generic structures and enumerations:
+User source code supports deriving `ToString`, `Eq` and `Hash` for structures and enumerations, including generic types:
 
 ```goml
 #[derive(ToString, Eq, Hash)]
@@ -1433,9 +1433,15 @@ struct Key {
     name: string,
     version: int32,
 }
+
+#[derive(ToString, Eq, Hash)]
+enum Entry[T, Marker] {
+    Empty,
+    Value(Vec[T]),
+}
 ```
 
-All fields or variant payloads must support the derived trait.Generic structures and enumerations do not currently support these derives.Except for `#[test]` and `#[ignore]` in the next section, other attributes and `extern fn` are used for the compiler's own runtime, intrinsic and lang items; ordinary GoML projects cannot use this to bind any Go symbols.
+All fields or variant payloads must support the derived trait. For a generic definition, the generated impl constrains each distinct field or payload type that mentions a type parameter. In the example above the constraint is on `Vec[T]`, while the unused phantom parameter `Marker` receives no constraint. Except for `#[test]` and `#[ignore]` in the next section, other attributes and `extern fn` are used for the compiler's own runtime, intrinsic and lang items; ordinary GoML projects cannot use this to bind any Go symbols.
 
 Derived `Eq` provides `Eq::eq(left, right)`, making the type usable with `==` / `!=` and satisfying the key constraints of `HashMap`.
 
@@ -1632,7 +1638,7 @@ Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`
 
 The basic scalar types all implement `ToString`.String concatenation uses `+`.
 
-The signatures of built-in key-related traits are `Eq::eq(self, other: Self) -> bool` and `Hash::hash(self) -> uint64`; user types can be handwritten impl, and non-generic structures and enumerations can also be generated using derive.
+The signatures of built-in key-related traits are `Eq::eq(self, other: Self) -> bool` and `Hash::hash(self) -> uint64`; user types can be handwritten impl, and structures and enumerations can also be generated using derive.
 
 ### `Ref[T]`
 

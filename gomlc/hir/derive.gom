@@ -3,6 +3,7 @@ package hir;
 use gomlc::ast;
 use gomlc::cst;
 use gomlc::strings;
+use gomlc::vecs;
 
 fn dummy_span() -> ast::Span {
     ast::span(0, 0)
@@ -49,6 +50,140 @@ fn type_for_name(name: string) -> ast::TypeExpr {
     ast::TypeExpr::Con { path: one_segment_path(name) }
 }
 
+fn type_for_generics(name: string, generics: Vec[string]) -> ast::TypeExpr {
+    if generics.is_empty() {
+        type_for_name(name)
+    } else {
+        let args: Vec[ast::TypeExpr] = Vec::[];
+        for generic in generics {
+            args.push(type_for_name(generic))
+        };
+        ast::TypeExpr::App { ty: type_for_name(name), args }
+    }
+}
+
+fn path_key(value: ast::Path) -> string {
+    let mut result = "";
+    for segment in value.segments {
+        if result == "" {
+            result = segment.ident;
+        } else {
+            result = result + "::" + segment.ident;
+        }
+    };
+    result
+}
+
+fn type_key(value: ast::TypeExpr) -> string {
+    match value {
+        Unit => "unit",
+        Bool => "bool",
+        Int => "int",
+        Int8 => "int8",
+        Int16 => "int16",
+        Int32 => "int32",
+        Int64 => "int64",
+        Uint => "uint",
+        Uint8 => "uint8",
+        Uint16 => "uint16",
+        Uint32 => "uint32",
+        Uint64 => "uint64",
+        Float32 => "float32",
+        Float64 => "float64",
+        String => "string",
+        Char => "char",
+        Tuple { items } => {
+            let mut result = "(";
+            for item in items {
+                result = result + type_key(item) + ",";
+            };
+            result + ")"
+        },
+        Con { path } => path_key(path),
+        Dyn { trait_path } => "dyn " + path_key(trait_path),
+        App { ty, args } => {
+            let mut result = type_key(ty) + "[";
+            for arg in args {
+                result = result + type_key(arg) + ",";
+            };
+            result + "]"
+        },
+        Array { len, elem } => "[" + type_key(elem) + ";" + len + "]",
+        Func { params, ret_ty } => {
+            let mut result = "fn(";
+            for param in params {
+                result = result + type_key(param) + ",";
+            };
+            result + ")->" + type_key(ret_ty)
+        },
+    }
+}
+
+fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
+    match value {
+        Con { path } => if path.segments.len() == 1 {
+            vecs::contains(generics, path.segments[0].ident)
+        } else {
+            false
+        },
+        Tuple { items } => {
+            for item in items {
+                if type_mentions_generics(item, generics) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            false
+        },
+        App { ty, args } => {
+            if type_mentions_generics(ty, generics) {
+                true
+            } else {
+                for arg in args {
+                    if type_mentions_generics(arg, generics) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
+        },
+        Array { len: _, elem } => type_mentions_generics(elem, generics),
+        Func { params, ret_ty } => {
+            for param in params {
+                if type_mentions_generics(param, generics) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            type_mentions_generics(ret_ty, generics)
+        },
+        _ => false,
+    }
+}
+
+fn derive_predicates(
+    field_types: Vec[ast::TypeExpr],
+    generics: Vec[string],
+    trait_name: string,
+) -> Vec[ast::Predicate] {
+    let result: Vec[ast::Predicate] = Vec::[];
+    let seen: Vec[string] = Vec::[];
+    for ty in field_types {
+        let key = type_key(ty);
+        if type_mentions_generics(ty, generics) && !vecs::contains(seen, key) {
+            seen.push(key);
+            result.push(ast::Predicate::Trait { ty, trait_ref: trait_ref(trait_name) })
+        } else {
+            ()
+        }
+    };
+    result
+}
+
 fn derives(attrs: Vec[ast::Attribute], name: string) -> bool {
     for attr in attrs {
         if attr.name == "derive" {
@@ -75,9 +210,6 @@ fn supported_derive(value: string) -> bool {
 
 fn validate_derive_attributes(
     attrs: Vec[ast::Attribute],
-    generics: Vec[string],
-    kind: string,
-    name: string,
     diagnostics: Vec[cst::Diagnostic],
 ) -> unit {
     for attr in attrs {
@@ -87,13 +219,6 @@ fn validate_derive_attributes(
                     ast::AttributeArg::Ident(target) => {
                         let message = if !supported_derive(target) {
                             Option::Some("unsupported derive target `" + target + "`")
-                        } else if !generics.is_empty() {
-                            Option::Some(
-                                "`#[derive(" + target + ")]` is not supported for generic " + kind
-                                    + " `"
-                                    + name
-                                    + "`",
-                            )
                         } else {
                             Option::None
                         };
@@ -118,16 +243,10 @@ fn validate_file_derives(value: ast::File, diagnostics: Vec[cst::Diagnostic]) ->
         match item {
             StructDef(definition) => validate_derive_attributes(
                 definition.attrs,
-                definition.generics,
-                "struct",
-                definition.name,
                 diagnostics,
             ),
             EnumDef(definition) => validate_derive_attributes(
                 definition.attrs,
-                definition.generics,
-                "enum",
-                definition.name,
                 diagnostics,
             ),
             _ => (),
@@ -255,20 +374,44 @@ fn make_method(
     }
 }
 
-fn make_impl(trait_name: string, target_name: string, method: ast::Function) -> ast::ImplBlock {
+fn make_impl(
+    trait_name: string,
+    target_name: string,
+    generics: Vec[string],
+    field_types: Vec[ast::TypeExpr],
+    method: ast::Function,
+) -> ast::ImplBlock {
     let methods: Vec[ast::Function] = Vec::[];
     methods.push(method);
     ast::ImplBlock {
         attrs: empty_attributes(),
-        generics: empty_strings(),
+        generics,
         generic_bounds: empty_bounds(),
-        predicates: empty_predicates(),
+        predicates: derive_predicates(field_types, generics, trait_name),
         associated_types: empty_associated_types(),
         trait_ref: Option::Some(trait_ref(trait_name)),
-        for_type: type_for_name(target_name),
+        for_type: type_for_generics(target_name, generics),
         for_type_span: dummy_span(),
         methods,
     }
+}
+
+fn struct_field_types(value: ast::StructDef) -> Vec[ast::TypeExpr] {
+    let result: Vec[ast::TypeExpr] = Vec::[];
+    for field in value.fields {
+        result.push(field.1)
+    };
+    result
+}
+
+fn enum_payload_types(value: ast::EnumDef) -> Vec[ast::TypeExpr] {
+    let result: Vec[ast::TypeExpr] = Vec::[];
+    for variant in value.variants {
+        for ty in enum_field_types(variant.fields) {
+            result.push(ty)
+        }
+    };
+    result
 }
 
 fn struct_to_string_body(value: ast::StructDef) -> ast::Expr {
@@ -562,12 +705,15 @@ fn two_params(
 }
 
 fn derive_struct_to_string(value: ast::StructDef) -> ast::ImplBlock {
+    let target = type_for_generics(value.name, value.generics);
     make_impl(
         "ToString",
         value.name,
+        value.generics,
+        struct_field_types(value),
         make_method(
             "to_string",
-            one_param("self", type_for_name(value.name)),
+            one_param("self", target),
             ast::TypeExpr::String,
             struct_to_string_body(value),
         ),
@@ -575,12 +721,15 @@ fn derive_struct_to_string(value: ast::StructDef) -> ast::ImplBlock {
 }
 
 fn derive_enum_to_string(value: ast::EnumDef) -> ast::ImplBlock {
+    let target = type_for_generics(value.name, value.generics);
     make_impl(
         "ToString",
         value.name,
+        value.generics,
+        enum_payload_types(value),
         make_method(
             "to_string",
-            one_param("self", type_for_name(value.name)),
+            one_param("self", target),
             ast::TypeExpr::String,
             enum_to_string_body(value),
         ),
@@ -588,12 +737,15 @@ fn derive_enum_to_string(value: ast::EnumDef) -> ast::ImplBlock {
 }
 
 fn derive_struct_eq(value: ast::StructDef) -> ast::ImplBlock {
+    let target = type_for_generics(value.name, value.generics);
     make_impl(
         "Eq",
         value.name,
+        value.generics,
+        struct_field_types(value),
         make_method(
             "eq",
-            two_params("self", type_for_name(value.name), "other", type_for_name(value.name)),
+            two_params("self", target, "other", target),
             ast::TypeExpr::Bool,
             struct_eq_body(value),
         ),
@@ -601,12 +753,15 @@ fn derive_struct_eq(value: ast::StructDef) -> ast::ImplBlock {
 }
 
 fn derive_enum_eq(value: ast::EnumDef) -> ast::ImplBlock {
+    let target = type_for_generics(value.name, value.generics);
     make_impl(
         "Eq",
         value.name,
+        value.generics,
+        enum_payload_types(value),
         make_method(
             "eq",
-            two_params("self", type_for_name(value.name), "other", type_for_name(value.name)),
+            two_params("self", target, "other", target),
             ast::TypeExpr::Bool,
             enum_eq_body(value),
         ),
@@ -614,12 +769,15 @@ fn derive_enum_eq(value: ast::EnumDef) -> ast::ImplBlock {
 }
 
 fn derive_struct_hash(value: ast::StructDef) -> ast::ImplBlock {
+    let target = type_for_generics(value.name, value.generics);
     make_impl(
         "Hash",
         value.name,
+        value.generics,
+        struct_field_types(value),
         make_method(
             "hash",
-            one_param("self", type_for_name(value.name)),
+            one_param("self", target),
             ast::TypeExpr::Uint64,
             struct_hash_body(value),
         ),
@@ -627,12 +785,15 @@ fn derive_struct_hash(value: ast::StructDef) -> ast::ImplBlock {
 }
 
 fn derive_enum_hash(value: ast::EnumDef) -> ast::ImplBlock {
+    let target = type_for_generics(value.name, value.generics);
     make_impl(
         "Hash",
         value.name,
+        value.generics,
+        enum_payload_types(value),
         make_method(
             "hash",
-            one_param("self", type_for_name(value.name)),
+            one_param("self", target),
             ast::TypeExpr::Uint64,
             enum_hash_body(value),
         ),
@@ -641,17 +802,17 @@ fn derive_enum_hash(value: ast::EnumDef) -> ast::ImplBlock {
 
 fn derived_struct_impls(value: ast::StructDef) -> Vec[ast::ImplBlock] {
     let result: Vec[ast::ImplBlock] = Vec::[];
-    if value.generics.is_empty() && derives(value.attrs, "ToString") {
+    if derives(value.attrs, "ToString") {
         result.push(derive_struct_to_string(value))
     } else {
         ()
     };
-    if value.generics.is_empty() && derives(value.attrs, "Eq") {
+    if derives(value.attrs, "Eq") {
         result.push(derive_struct_eq(value))
     } else {
         ()
     };
-    if value.generics.is_empty() && derives(value.attrs, "Hash") {
+    if derives(value.attrs, "Hash") {
         result.push(derive_struct_hash(value))
     } else {
         ()
@@ -661,17 +822,17 @@ fn derived_struct_impls(value: ast::StructDef) -> Vec[ast::ImplBlock] {
 
 fn derived_enum_impls(value: ast::EnumDef) -> Vec[ast::ImplBlock] {
     let result: Vec[ast::ImplBlock] = Vec::[];
-    if value.generics.is_empty() && derives(value.attrs, "ToString") {
+    if derives(value.attrs, "ToString") {
         result.push(derive_enum_to_string(value))
     } else {
         ()
     };
-    if value.generics.is_empty() && derives(value.attrs, "Eq") {
+    if derives(value.attrs, "Eq") {
         result.push(derive_enum_eq(value))
     } else {
         ()
     };
-    if value.generics.is_empty() && derives(value.attrs, "Hash") {
+    if derives(value.attrs, "Hash") {
         result.push(derive_enum_hash(value))
     } else {
         ()

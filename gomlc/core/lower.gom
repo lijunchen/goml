@@ -154,22 +154,13 @@ fn bool_expr(value: bool) -> Expr {
 }
 
 fn trait_eq_call(trait_name: string, left: Expr, right: Expr) -> Expr {
-    let ty = expr_type(left);
-    let params: Vec[tast::Type] = Vec::[];
-    params.push(ty);
-    params.push(ty);
     let args: Vec[Expr] = Vec::[];
-    args.push(left);
     args.push(right);
-    Expr::Call {
-        func: Expr::Var {
-            name: trait_impl_method_name(
-                tast::TraitRef { name: trait_name, args: Vec::[] },
-                ty,
-                "eq",
-            ),
-            ty: tast::Type::Func { params, ret_ty: tast::Type::Bool },
-        },
+    Expr::TraitCall {
+        trait_ref: tast::TraitRef { name: trait_name, args: Vec::[] },
+        method_name: "eq",
+        instance_name: Option::None,
+        receiver: left,
         args,
         ty: tast::Type::Bool,
     }
