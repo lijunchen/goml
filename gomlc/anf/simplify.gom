@@ -1,0 +1,840 @@
+package anf;
+
+use gomlc::tast;
+
+enum KnownValue {
+    Alias(Imm),
+    Constr {
+        constructor: tast::Constructor,
+        args: Vec[Imm],
+        ty: tast::Type,
+    },
+    Tuple {
+        items: Vec[Imm],
+        ty: tast::Type,
+    },
+}
+
+struct KnownBinding {
+    name: string,
+    value: KnownValue,
+}
+
+fn copy_known_bindings(values: Vec[KnownBinding]) -> Vec[KnownBinding] {
+    let result: Vec[KnownBinding] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn find_known_binding(values: Vec[KnownBinding], name: string) -> Option[KnownValue] {
+    let mut index = values.len() - 1;
+    while index >= 0 {
+        let value = values[index];
+        if value.name == name {
+            return Option::Some(value.value)
+        } else {
+            index = index - 1;
+        }
+    };
+    Option::None
+}
+
+fn copy_imms(values: Vec[Imm]) -> Vec[Imm] {
+    let result: Vec[Imm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn resolve_known_imm_from(value: Imm, known: Vec[KnownBinding], depth: int) -> Imm {
+    if depth >= 64 {
+        value
+    } else {
+        match value {
+            Var { name, ty: _ } => match find_known_binding(known, name) {
+                Some(Alias(replacement)) => resolve_known_imm_from(replacement, known, depth + 1),
+                _ => value,
+            },
+            _ => value,
+        }
+    }
+}
+
+fn resolve_known_imm(value: Imm, known: Vec[KnownBinding]) -> Imm {
+    resolve_known_imm_from(value, known, 0)
+}
+
+fn simplify_known_imms(values: Vec[Imm], known: Vec[KnownBinding]) -> Vec[Imm] {
+    let result: Vec[Imm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(resolve_known_imm(value, known))
+    };
+    result
+}
+
+fn optional_int_equal(left: Option[int], right: Option[int]) -> bool {
+    match left {
+        Some(left) => match right {
+            Some(right) => left == right,
+            None => false,
+        },
+        None => right.is_none(),
+    }
+}
+
+fn constructors_equal(left: tast::Constructor, right: tast::Constructor) -> bool {
+    left.name == right.name && left.is_struct == right.is_struct
+        && optional_int_equal(left.tag, right.tag)
+}
+
+fn imms_stable(values: Vec[Imm], assigned: HashMap[string, unit]) -> bool {
+    for value in values {
+        match value {
+            Var { name, ty: _ } => if assigned.contains(name) {
+                return false
+            } else {
+                ()
+            },
+            _ => (),
+        }
+    };
+    true
+}
+
+fn record_known_value(
+    known: Vec[KnownBinding],
+    name: string,
+    value: Value,
+    assigned: HashMap[string, unit],
+) -> unit {
+    if assigned.contains(name) {
+        return ()
+    } else {
+        ()
+    };
+    match value {
+        Imm(value) => match value {
+            Var { name: source, ty: _ } => if assigned.contains(source) {
+                ()
+            } else {
+                known.push(KnownBinding { name, value: KnownValue::Alias(value) })
+            },
+            _ => known.push(KnownBinding { name, value: KnownValue::Alias(value) }),
+        },
+        Constr { constructor, args, ty } => if imms_stable(args, assigned) {
+            known.push(
+                KnownBinding {
+                    name,
+                    value: KnownValue::Constr { constructor, args: copy_imms(args), ty },
+                },
+            )
+        } else {
+            ()
+        },
+        Tuple { items, ty } => if imms_stable(items, assigned) {
+            known.push(
+                KnownBinding { name, value: KnownValue::Tuple { items: copy_imms(items), ty } },
+            )
+        } else {
+            ()
+        },
+        _ => (),
+    }
+}
+
+fn known_constructor_field(
+    known: Vec[KnownBinding],
+    expr: Imm,
+    constructor: tast::Constructor,
+    field_index: int,
+    ty: tast::Type,
+) -> Option[Imm] {
+    match resolve_known_imm(expr, known) {
+        Var { name, ty: _ } => match find_known_binding(known, name) {
+            Some(Constr { constructor: present, args, ty: _ }) => {
+                if constructors_equal(present, constructor) && field_index >= 0
+                    && field_index < args.len()
+                    && tast::types_equal(imm_type(args[field_index]), ty) {
+                    Option::Some(args[field_index])
+                } else {
+                    Option::None
+                }
+            },
+            _ => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
+fn known_tuple_field(known: Vec[KnownBinding], expr: Imm, index: int, ty: tast::Type) -> Option[Imm] {
+    match resolve_known_imm(expr, known) {
+        Var { name, ty: _ } => match find_known_binding(known, name) {
+            Some(Tuple { items, ty: _ }) => {
+                if index >= 0 && index < items.len()
+                    && tast::types_equal(imm_type(items[index]), ty) {
+                    Option::Some(items[index])
+                } else {
+                    Option::None
+                }
+            },
+            _ => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
+fn simplify_known_value(value: Value, known: Vec[KnownBinding]) -> Value {
+    match value {
+        Imm(value) => Value::Imm(resolve_known_imm(value, known)),
+        Constr { constructor, args, ty } => {
+            Value::Constr { constructor, args: simplify_known_imms(args, known), ty }
+        },
+        Tuple { items, ty } => Value::Tuple { items: simplify_known_imms(items, known), ty },
+        Array { items, ty } => Value::Array { items: simplify_known_imms(items, known), ty },
+        ConstrGet { expr, constructor, field_index, ty } => {
+            match known_constructor_field(known, expr, constructor, field_index, ty) {
+                Some(value) => Value::Imm(resolve_known_imm(value, known)),
+                None => Value::ConstrGet {
+                    expr: resolve_known_imm(expr, known),
+                    constructor,
+                    field_index,
+                    ty,
+                },
+            }
+        },
+        Unary { op, expr, ty } => Value::Unary { op, expr: resolve_known_imm(expr, known), ty },
+        Cast { expr, ty } => Value::Cast { expr: resolve_known_imm(expr, known), ty },
+        Binary { op, lhs, rhs, ty } => Value::Binary {
+            op,
+            lhs: resolve_known_imm(lhs, known),
+            rhs: resolve_known_imm(rhs, known),
+            ty,
+        },
+        Assign { name, value, target_ty, ty } => Value::Assign {
+            name,
+            value: resolve_known_imm(value, known),
+            target_ty,
+            ty,
+        },
+        Call { func, args, ty } => Value::Call {
+            func: resolve_known_imm(func, known),
+            args: simplify_known_imms(args, known),
+            ty,
+        },
+        ToDyn { trait_name, for_ty, expr, ty } => Value::ToDyn {
+            trait_name,
+            for_ty,
+            expr: resolve_known_imm(expr, known),
+            ty,
+        },
+        DynCall { trait_name, method_name, receiver, args, ty } => Value::DynCall {
+            trait_name,
+            method_name,
+            receiver: resolve_known_imm(receiver, known),
+            args: simplify_known_imms(args, known),
+            ty,
+        },
+        Go { closure, ty } => Value::Go { closure: resolve_known_imm(closure, known), ty },
+        Proj { tuple, index, ty } => match known_tuple_field(known, tuple, index, ty) {
+            Some(value) => Value::Imm(resolve_known_imm(value, known)),
+            None => Value::Proj { tuple: resolve_known_imm(tuple, known), index, ty },
+        },
+    }
+}
+
+fn collect_assigned_value(result: HashMap[string, unit], value: Value) -> unit {
+    match value {
+        Assign { name, .. } => {
+            result[name] = ();
+        },
+        _ => (),
+    }
+}
+
+fn collect_assigned_term(result: HashMap[string, unit], value: Term) -> unit {
+    match value {
+        If { then_, else_, .. } => {
+            collect_assigned_block(result, then_);
+            collect_assigned_block(result, else_)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                collect_assigned_block(result, arm.body)
+            };
+            match default {
+                Some(body) => collect_assigned_block(result, body),
+                None => (),
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => (),
+    }
+}
+
+fn collect_assigned_block(result: HashMap[string, unit], value: Block) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(value) => collect_assigned_value(result, value.value),
+            Join(value) => collect_assigned_block(result, value.body),
+            JoinRec(values) => for value in values {
+                collect_assigned_block(result, value.body)
+            },
+        }
+    };
+    collect_assigned_term(result, value.term)
+}
+
+fn assigned_names(value: Block) -> HashMap[string, unit] {
+    let result: HashMap[string, unit] = HashMap::{};
+    collect_assigned_block(result, value);
+    result
+}
+
+fn primitive_equal(left: tast::Primitive, right: tast::Primitive) -> bool {
+    match left {
+        Unit => match right {
+            Unit => true,
+            _ => false,
+        },
+        Bool { value: left } => match right {
+            Bool { value: right } => left == right,
+            _ => false,
+        },
+        Int { value: left } => match right {
+            Int { value: right } => left == right,
+            _ => false,
+        },
+        Int8 { value: left } => match right {
+            Int8 { value: right } => left == right,
+            _ => false,
+        },
+        Int16 { value: left } => match right {
+            Int16 { value: right } => left == right,
+            _ => false,
+        },
+        Int32 { value: left } => match right {
+            Int32 { value: right } => left == right,
+            _ => false,
+        },
+        Int64 { value: left } => match right {
+            Int64 { value: right } => left == right,
+            _ => false,
+        },
+        Uint { value: left } => match right {
+            Uint { value: right } => left == right,
+            _ => false,
+        },
+        Uint8 { value: left } => match right {
+            Uint8 { value: right } => left == right,
+            _ => false,
+        },
+        Uint16 { value: left } => match right {
+            Uint16 { value: right } => left == right,
+            _ => false,
+        },
+        Uint32 { value: left } => match right {
+            Uint32 { value: right } => left == right,
+            _ => false,
+        },
+        Uint64 { value: left } => match right {
+            Uint64 { value: right } => left == right,
+            _ => false,
+        },
+        Float { value: left } => match right {
+            Float { value: right } => left == right,
+            _ => false,
+        },
+        Float32 { value: left } => match right {
+            Float32 { value: right } => left == right,
+            _ => false,
+        },
+        Float64 { value: left } => match right {
+            Float64 { value: right } => left == right,
+            _ => false,
+        },
+        String { value: left } => match right {
+            String { value: right } => left == right,
+            _ => false,
+        },
+        Char { value: left } => match right {
+            Char { value: right } => left == right,
+            _ => false,
+        },
+    }
+}
+
+fn known_match_scrutinee(value: Imm, known: Vec[KnownBinding]) -> Option[Imm] {
+    let resolved = resolve_known_imm(value, known);
+    match resolved {
+        Var { name, ty } => match find_known_binding(known, name) {
+            Some(Constr { constructor, args: _, ty: owner_ty }) => match constructor.tag {
+                Some(index) => Option::Some(Imm::Tag { index, ty: owner_ty }),
+                None => Option::None,
+            },
+            Some(Alias(value)) => Option::Some(resolve_known_imm(value, known)),
+            _ => Option::Some(Imm::Var { name, ty }),
+        },
+        _ => Option::Some(resolved),
+    }
+}
+
+fn match_imms_equal(left: Imm, right: Imm) -> bool {
+    match left {
+        Tag { index: left, ty: left_ty } => match right {
+            Tag { index: right, ty: right_ty } => {
+                left == right && tast::types_equal(left_ty, right_ty)
+            },
+            _ => false,
+        },
+        Prim { value: left, ty: left_ty } => match right {
+            Prim { value: right, ty: right_ty } => {
+                primitive_equal(left, right) && tast::types_equal(left_ty, right_ty)
+            },
+            _ => false,
+        },
+        Callable { callable: _, ty: _ } | Var { name: _, ty: _ } => false,
+    }
+}
+
+fn select_known_match_arm(
+    scrutinee: Imm,
+    arms: Vec[Arm],
+    default: Option[Block],
+    known: Vec[KnownBinding],
+) -> Option[Block] {
+    let scrutinee = known_match_scrutinee(scrutinee, known)?;
+    match scrutinee {
+        Tag { .. } | Prim { .. } => {
+            for arm in arms {
+                if match_imms_equal(scrutinee, arm.lhs) {
+                    return Option::Some(arm.body)
+                } else {
+                    ()
+                }
+            };
+            default
+        },
+        Callable { .. } | Var { .. } => Option::None,
+    }
+}
+
+fn simplify_known_term(value: Term, known: Vec[KnownBinding], assigned: HashMap[string, unit]) -> Block {
+    match value {
+        Return(value) => Block {
+            binds: Vec::[],
+            term: Term::Return(resolve_known_imm(value, known)),
+        },
+        Jump { target, args, ret_ty } => Block {
+            binds: Vec::[],
+            term: Term::Jump { target, args: simplify_known_imms(args, known), ret_ty },
+        },
+        If { cond, then_, else_, ret_ty } => {
+            let cond = resolve_known_imm(cond, known);
+            match cond {
+                Prim { value: tast::Primitive::Bool { value }, ty: _ } => {
+                    if value {
+                        simplify_known_block_with(then_, copy_known_bindings(known), assigned)
+                    } else {
+                        simplify_known_block_with(else_, copy_known_bindings(known), assigned)
+                    }
+                },
+                _ => Block {
+                    binds: Vec::[],
+                    term: Term::If {
+                        cond,
+                        then_: simplify_known_block_with(
+                            then_,
+                            copy_known_bindings(known),
+                            assigned,
+                        ),
+                        else_: simplify_known_block_with(
+                            else_,
+                            copy_known_bindings(known),
+                            assigned,
+                        ),
+                        ret_ty,
+                    },
+                },
+            }
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            match select_known_match_arm(scrutinee, arms, default, known) {
+                Some(body) => simplify_known_block_with(body, copy_known_bindings(known), assigned),
+                None => {
+                    let lowered_arms: Vec[Arm] = Vec::with_capacity(arms.len());
+                    for arm in arms {
+                        lowered_arms.push(
+                            Arm {
+                                lhs: resolve_known_imm(arm.lhs, known),
+                                body: simplify_known_block_with(
+                                    arm.body,
+                                    copy_known_bindings(known),
+                                    assigned,
+                                ),
+                            },
+                        )
+                    };
+                    Block {
+                        binds: Vec::[],
+                        term: Term::Match {
+                            scrutinee: resolve_known_imm(scrutinee, known),
+                            arms: lowered_arms,
+                            default: match default {
+                                Some(body) => Option::Some(
+                                    simplify_known_block_with(
+                                        body,
+                                        copy_known_bindings(known),
+                                        assigned,
+                                    ),
+                                ),
+                                None => Option::None,
+                            },
+                            ret_ty,
+                        },
+                    }
+                },
+            }
+        },
+        Unreachable { ty } => Block { binds: Vec::[], term: Term::Unreachable { ty } },
+    }
+}
+
+fn simplify_known_block_with(
+    value: Block,
+    parent_known: Vec[KnownBinding],
+    assigned: HashMap[string, unit],
+) -> Block {
+    let known = copy_known_bindings(parent_known);
+    let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    for bind in value.binds {
+        match bind {
+            Let(value) => {
+                let lowered = LetBind {
+                    name: value.name,
+                    value: simplify_known_value(value.value, known),
+                    ty: value.ty,
+                };
+                binds.push(Bind::Let(lowered));
+                record_known_value(known, lowered.name, lowered.value, assigned)
+            },
+            Join(value) => binds.push(
+                Bind::Join(
+                    JoinBind {
+                        name: value.name,
+                        role: value.role,
+                        params: value.params,
+                        ret_ty: value.ret_ty,
+                        body: simplify_known_block_with(
+                            value.body,
+                            copy_known_bindings(known),
+                            assigned,
+                        ),
+                    },
+                ),
+            ),
+            JoinRec(values) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    lowered.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: simplify_known_block_with(
+                                value.body,
+                                copy_known_bindings(known),
+                                assigned,
+                            ),
+                        },
+                    )
+                };
+                binds.push(Bind::JoinRec(lowered))
+            },
+        }
+    };
+    let tail = simplify_known_term(value.term, known, assigned);
+    for bind in tail.binds {
+        binds.push(bind)
+    };
+    Block { binds, term: tail.term }
+}
+
+fn simplify_known_block(value: Block) -> Block {
+    let assigned = assigned_names(value);
+    simplify_known_block_with(value, Vec::[], assigned)
+}
+
+fn count_join_uses_term(value: Term, target: string) -> int {
+    match value {
+        Jump { target: present, .. } => if present == target {
+            1
+        } else {
+            0
+        },
+        If { then_, else_, .. } => {
+            count_join_uses_block(then_, target) + count_join_uses_block(else_, target)
+        },
+        Match { arms, default, .. } => {
+            let mut result = 0;
+            for arm in arms {
+                result = result + count_join_uses_block(arm.body, target);
+            };
+            match default {
+                Some(body) => result + count_join_uses_block(body, target),
+                None => result,
+            }
+        },
+        Return(_) | Unreachable { .. } => 0,
+    }
+}
+
+fn count_join_uses_block(value: Block, target: string) -> int {
+    let mut result = 0;
+    for bind in value.binds {
+        match bind {
+            Let(_) => (),
+            Join(value) => {
+                result = result + count_join_uses_block(value.body, target);
+            },
+            JoinRec(values) => for value in values {
+                result = result + count_join_uses_block(value.body, target);
+            },
+        }
+    };
+    result + count_join_uses_term(value.term, target)
+}
+
+fn substitute_join_imm(value: Imm, params: Vec[(string, tast::Type)], args: Vec[Imm]) -> Imm {
+    match value {
+        Var { name, ty: _ } => {
+            for index in 0..params.len() {
+                if params[index].0 == name && index < args.len() {
+                    return args[index]
+                } else {
+                    ()
+                }
+            };
+            value
+        },
+        _ => value,
+    }
+}
+
+fn substitute_join_imms(values: Vec[Imm], params: Vec[(string, tast::Type)], args: Vec[Imm]) -> Vec[
+    Imm,
+] {
+    let result: Vec[Imm] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(substitute_join_imm(value, params, args))
+    };
+    result
+}
+
+fn rewrite_simple_join_term(value: Term, join: JoinBind) -> Term {
+    match value {
+        Jump { target, args, ret_ty } => if target == join.name {
+            match join.body.term {
+                Return(value) => Term::Return(substitute_join_imm(value, join.params, args)),
+                Jump { target, args: forwarded, ret_ty: forwarded_ty } => Term::Jump {
+                    target,
+                    args: substitute_join_imms(forwarded, join.params, args),
+                    ret_ty: forwarded_ty,
+                },
+                _ => Term::Jump { target, args, ret_ty },
+            }
+        } else {
+            Term::Jump { target, args, ret_ty }
+        },
+        If { cond, then_, else_, ret_ty } => Term::If {
+            cond,
+            then_: rewrite_simple_join_block(then_, join),
+            else_: rewrite_simple_join_block(else_, join),
+            ret_ty,
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(Arm { lhs: arm.lhs, body: rewrite_simple_join_block(arm.body, join) })
+            };
+            Term::Match {
+                scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(rewrite_simple_join_block(body, join)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Return(value) => Term::Return(value),
+        Unreachable { ty } => Term::Unreachable { ty },
+    }
+}
+
+fn rewrite_simple_join_block(value: Block, join: JoinBind) -> Block {
+    let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    for bind in value.binds {
+        match bind {
+            Let(value) => binds.push(Bind::Let(value)),
+            Join(value) => binds.push(
+                Bind::Join(
+                    JoinBind {
+                        name: value.name,
+                        role: value.role,
+                        params: value.params,
+                        ret_ty: value.ret_ty,
+                        body: rewrite_simple_join_block(value.body, join),
+                    },
+                ),
+            ),
+            JoinRec(values) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    lowered.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: rewrite_simple_join_block(value.body, join),
+                        },
+                    )
+                };
+                binds.push(Bind::JoinRec(lowered))
+            },
+        }
+    };
+    Block { binds, term: rewrite_simple_join_term(value.term, join) }
+}
+
+fn join_is_simple(value: JoinBind) -> bool {
+    match value.role {
+        JoinRole::LoopExit => false,
+        JoinRole::Continuation | JoinRole::Return => if !value.body.binds.is_empty() {
+            false
+        } else {
+            match value.body.term {
+                Return(_) | Jump { .. } => true,
+                If { .. } | Match { .. } | Unreachable { .. } => false,
+            }
+        },
+    }
+}
+
+fn prepend_simplified_bind(value: Bind, rest: Block) -> Block {
+    let binds: Vec[Bind] = Vec::with_capacity(rest.binds.len() + 1);
+    binds.push(value);
+    for bind in rest.binds {
+        binds.push(bind)
+    };
+    Block { binds, term: rest.term }
+}
+
+fn simplify_join_binds(values: Vec[Bind], index: int, term: Term) -> Block {
+    if index >= values.len() {
+        Block { binds: Vec::[], term }
+    } else {
+        let bind = values[index];
+        let rest = simplify_join_binds(values, index + 1, term);
+        match bind {
+            Let(value) => prepend_simplified_bind(Bind::Let(value), rest),
+            Join(value) => {
+                let join = JoinBind {
+                    name: value.name,
+                    role: value.role,
+                    params: value.params,
+                    ret_ty: value.ret_ty,
+                    body: simplify_join_block(value.body),
+                };
+                if count_join_uses_block(rest, join.name) == 0 {
+                    rest
+                } else if join_is_simple(join) {
+                    rewrite_simple_join_block(rest, join)
+                } else {
+                    prepend_simplified_bind(Bind::Join(join), rest)
+                }
+            },
+            JoinRec(values) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    lowered.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: simplify_join_block(value.body),
+                        },
+                    )
+                };
+                prepend_simplified_bind(Bind::JoinRec(lowered), rest)
+            },
+        }
+    }
+}
+
+fn simplify_join_term(value: Term) -> Term {
+    match value {
+        If { cond, then_, else_, ret_ty } => Term::If {
+            cond,
+            then_: simplify_join_block(then_),
+            else_: simplify_join_block(else_),
+            ret_ty,
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(Arm { lhs: arm.lhs, body: simplify_join_block(arm.body) })
+            };
+            Term::Match {
+                scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(simplify_join_block(body)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Return(value) => Term::Return(value),
+        Jump { target, args, ret_ty } => Term::Jump { target, args, ret_ty },
+        Unreachable { ty } => Term::Unreachable { ty },
+    }
+}
+
+fn simplify_join_block(value: Block) -> Block {
+    simplify_join_binds(value.binds, 0, simplify_join_term(value.term))
+}
+
+fn simplify_function(value: Function) -> Function {
+    let mut body = value.body;
+    for _ in 0..4 {
+        body = simplify_join_block(simplify_known_block(body));
+    };
+    Function {
+        name: value.name,
+        origin: value.origin,
+        root: value.root,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body,
+    }
+}
+
+pub fn simplify(value: File) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(simplify_function(function))
+    };
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+    }
+}

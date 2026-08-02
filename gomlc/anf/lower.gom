@@ -71,7 +71,7 @@ pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
     for function in value.functions {
         functions.push(lower_function(state, function))
     };
-    File { functions, enums, structs, type_instances, constants }
+    simplify(File { functions, enums, structs, type_instances, constants })
 }
 
 pub fn lower(value: core::File) -> File {
