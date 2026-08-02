@@ -1866,6 +1866,28 @@ fn preserves_builtin_range_language_item_identity() -> unit {
 }
 
 #[test]
+fn preserves_builtin_inclusive_range_language_item_identity() -> unit {
+    let file = checked_file("fn main() -> unit { for value in 1..=3 { println(value) } }");
+    match file.items.get(0) {
+        Function(value) => match value.body.tail {
+            Some(For {
+                iterator: Call {
+                    func: Callable { callable: LangItem { item, function_name }, ty: _ },
+                    args: _,
+                    ty: _,
+                },
+                ..,
+            }) => {
+                testing::assert_eq(item, "range_inclusive");
+                testing::assert_eq(function_name, "__goml_builtin_range_inclusive")
+            },
+            _ => testing::fail("expected inclusive range language item"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
 fn preserves_bare_generic_static_owner() -> unit {
     let source = "struct Box[T] { value: T } impl[T] Box[T] { fn new(value: T) -> Self { Box { value } } } fn make() -> Box[int32] { Box::new(1) }";
     let file = checked_file(source);
