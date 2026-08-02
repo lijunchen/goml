@@ -285,11 +285,12 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_span(builder, value_span);
             encode_expr(builder, expr)
         },
-        Range { start, end, span: value_span } => {
+        Range { start, end, inclusive, span: value_span } => {
             encode_open(builder, "Expr.Range");
             encode_span(builder, value_span);
             encode_expr(builder, start);
-            encode_expr(builder, end)
+            encode_expr(builder, end);
+            encode_bool_value(builder, inclusive)
         },
         Binary { op, lhs, rhs, span: value_span } => {
             encode_open(builder, "Expr.Binary");

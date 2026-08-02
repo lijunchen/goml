@@ -416,9 +416,13 @@ fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> 
             pretty_write_expr(builder, expr, indent);
             builder.write_char('?')
         },
-        Range { start, end, span: _ } => {
+        Range { start, end, inclusive, span: _ } => {
             pretty_write_expr(builder, start, indent);
-            builder.write_string("..");
+            if inclusive {
+                builder.write_string("..=")
+            } else {
+                builder.write_string("..")
+            };
             pretty_write_expr(builder, end, indent)
         },
         Binary { op, lhs, rhs, span: _ } => {

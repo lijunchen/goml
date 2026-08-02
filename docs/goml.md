@@ -765,15 +765,19 @@ There are no exponentiation, null coalescing or user-defined operators.
 
 ### range expression
 
-`start..end` constructs an incrementing half-open `FnIterator[int]`, which can be used directly in `for`:
+`start..end` constructs an incrementing half-open `FnIterator[int]`, and `start..=end` constructs an inclusive iterator. Both can be used directly in `for`:
 
 ```goml
 for value in 0..10 {
     println(value)
 }
+
+for value in 0..=10 {
+    println(value)
+}
 ```
 
-Both ends are `int`; the range is empty when `start >= end`.Range expressions cannot be chained, and there is currently no `..=` in the expression position.The `..` and `..=` in the pattern are another set of range pattern syntax.
+Both ends are `int`. A half-open range is empty when `start >= end`; an inclusive range is empty when `start > end` and contains one value when both ends are equal. Each endpoint is evaluated once from left to right. Inclusive iteration does not compute `end + 1`, so the maximum `int` endpoint does not overflow. Range expressions cannot be chained. Open ranges, character ranges, and custom step syntax are not supported. The `..` and `..=` in patterns are a separate range-pattern syntax.
 
 ## control flow
 
@@ -1983,7 +1987,7 @@ for_expression = "for" pattern "in" expression block
 closure       = "||" (expression | block)
               | "|" closure_params? "|" (expression | block)
 cast          = expression "as" integer_type
-range_expression = expression ".." expression
+range_expression = expression (".." | "..=") expression
 
 pattern       = or_pattern
 or_pattern    = alias_pattern ("|" alias_pattern)*

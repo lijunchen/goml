@@ -774,7 +774,8 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                 let mut parsed_comparison = false;
                 while !parser.eof() {
                     let operator = parser.peek();
-                    if token_is(operator, lexer::TokenKind::DotDot) {
+                    if token_is(operator, lexer::TokenKind::DotDot)
+                        || token_is(operator, lexer::TokenKind::DotDotEq) {
                         if min_bp > 0 {
                             break
                         } else if parsed_range {
@@ -782,7 +783,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                             expect_expr_bp_with_message(
                                 parser,
                                 1,
-                                "expected a range endpoint after `..`",
+                                "expected a range endpoint after range operator",
                             );
                         } else {
                             let marker = lhs.precede(parser);
@@ -790,7 +791,7 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                             expect_expr_bp_with_message(
                                 parser,
                                 1,
-                                "expected a range endpoint after `..`",
+                                "expected a range endpoint after range operator",
                             );
                             lhs = marker.completed(parser, cst::NodeKind::EXPR_RANGE);
                             parsed_range = true;

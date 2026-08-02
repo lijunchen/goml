@@ -3610,13 +3610,18 @@ fn check_try_expr(ctx: Checker, index: int, source: hir::Expr, span: ast::Span) 
     }
 }
 
-fn check_range_expr(ctx: Checker, start: hir::Expr, end: hir::Expr) -> Expr {
+fn check_range_expr(ctx: Checker, start: hir::Expr, end: hir::Expr, inclusive: bool) -> Expr {
     let start = check_expr(ctx, start, Option::Some(Type::Int));
     let end = check_expr(ctx, end, Option::Some(Type::Int));
     let args: Vec[Expr] = Vec::[];
     args.push(start);
     args.push(end);
-    match builtin_function_scheme("__goml_builtin_range") {
+    let function_name = if inclusive {
+        "__goml_builtin_range_inclusive"
+    } else {
+        "__goml_builtin_range"
+    };
+    match builtin_function_scheme(function_name) {
         Some(scheme) => {
             let (callable, function_ty) = instantiate_scheme(ctx, scheme, Vec::[]);
             match function_ty {
@@ -4367,7 +4372,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 let source_span = value.span;
                 check_try_expr(ctx, index, value, ast::span(source_span.start, source_span.end + 1))
             },
-            Range { start, end } => check_range_expr(ctx, start, end),
+            Range { start, end, inclusive } => check_range_expr(ctx, start, end, inclusive),
             Binary { op, lhs: left, rhs: right } => {
                 check_binary_expr(ctx, op, left, right, Option::None)
             },
@@ -4523,8 +4528,8 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
                 coerce_expr(ctx, result, expected)
             }
         },
-        Range { start, end } => {
-            coerce_expr(ctx, check_range_expr(ctx, start, end), expected)
+        Range { start, end, inclusive } => {
+            coerce_expr(ctx, check_range_expr(ctx, start, end, inclusive), expected)
         },
         Binary { op, lhs: left, rhs: right } => {
             let result = check_binary_expr(ctx, op, left, right, expected);

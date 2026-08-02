@@ -143,7 +143,7 @@ fn last_string(values: Vec[string]) -> Option[string] {
 }
 
 fn starts_with_std(values: Vec[string]) -> bool {
-        !values.is_empty() && values.len() > 1 && values[0] == "std"
+    !values.is_empty() && values.len() > 1 && values[0] == "std"
 }
 
 fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec[string]] {
@@ -920,13 +920,7 @@ fn lower_expr_value(
                             let name = join_segments(copy_strings(parts));
                             match find_definition(ctx, name) {
                                 Some(def_id) => ExprKind::NameRef { name_ref: NameRef::Def(def_id) },
-                                None => static_member(
-                                    parts,
-                                    Vec::[],
-                                    Vec::[],
-                                    Vec::[],
-                                    Vec::[],
-                                ),
+                                None => static_member(parts, Vec::[], Vec::[], Vec::[], Vec::[]),
                             }
                         }
                     },
@@ -1133,9 +1127,10 @@ fn lower_expr_value(
             depth: 0,
             expr: lower_expr(ctx, expr, env, type_params),
         },
-        Range { start, end, span: _ } => ExprKind::Range {
+        Range { start, end, inclusive, span: _ } => ExprKind::Range {
             start: lower_expr(ctx, start, env, type_params),
             end: lower_expr(ctx, end, env, type_params),
+            inclusive,
         },
         Binary { op, lhs, rhs, span: _ } => ExprKind::Binary {
             op,

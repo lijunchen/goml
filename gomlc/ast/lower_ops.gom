@@ -118,7 +118,11 @@ fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr]
                     match result {
                         Call { func: next_func, args: next_args, span: next_span } => {
                             next_args.push(arg);
-                            result = Expr::Call { func: next_func, args: next_args, span: next_span };
+                            result = Expr::Call {
+                                func: next_func,
+                                args: next_args,
+                                span: next_span,
+                            };
                         },
                         _ => (),
                     }
@@ -389,7 +393,12 @@ fn lower_range_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
             Some(start) => match lower_expr(ctx, values[1]) {
                 Some(end) => apply_trailing_args(
                     ctx,
-                    Expr::Range { start, end, span: node_span(node) },
+                    Expr::Range {
+                        start,
+                        end,
+                        inclusive: has_token(node, lexer::TokenKind::DotDotEq),
+                        span: node_span(node),
+                    },
                     trailing_args,
                     node_span(node),
                 ),

@@ -1084,6 +1084,27 @@ impl[T, E] Result[T, E] {
     }
 }
 
+#[lang("range_inclusive")]
+fn __goml_builtin_range_inclusive(start: int, end: int) -> FnIterator[int] {
+    let mut current = start;
+    let mut finished = false;
+    FnIterator::from_fn(
+        || {
+            if finished || current > end {
+                Option::None
+            } else {
+                let value = current;
+                if value == end {
+                    finished = true;
+                } else {
+                    current = value + 1;
+                };
+                Option::Some(value)
+            }
+        },
+    )
+}
+
 impl[T] Option[T] {
     fn map[U](self: Option[T], map_fn: (T) -> U) -> Option[U] {
         match self {

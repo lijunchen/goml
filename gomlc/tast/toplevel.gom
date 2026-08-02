@@ -402,7 +402,7 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
             tuple: expr,
             index: _,
         } | Field { expr, .. } | Go { expr } => report_unresolved_expr(ctx, expr),
-        Range { start, end } | Binary { op: _, lhs: start, rhs: end } | Index {
+        Range { start, end, inclusive: _ } | Binary { op: _, lhs: start, rhs: end } | Index {
             base: start,
             index: end,
         } => {
@@ -2581,7 +2581,7 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
             attach_expr_diagnostic_spans(ctx, func);
             attach_expr_list_diagnostic_spans(ctx, args)
         },
-        Range { start, end } | Binary { op: _, lhs: start, rhs: end } | Index {
+        Range { start, end, inclusive: _ } | Binary { op: _, lhs: start, rhs: end } | Index {
             base: start,
             index: end,
         } => {

@@ -781,9 +781,13 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             write_expr(builder, expr, indent);
             builder.write_char('?')
         },
-        Range { start, end } => {
+        Range { start, end, inclusive } => {
             write_expr(builder, start, indent);
-            builder.write_string("..");
+            if inclusive {
+                builder.write_string("..=")
+            } else {
+                builder.write_string("..")
+            };
             write_expr(builder, end, indent)
         },
         Binary { op, lhs, rhs } => {
@@ -1244,7 +1248,7 @@ fn encode_file(value: File) -> string {
         if index == 0 {
             newline(builder, 2)
         } else {
-            newline(builder, 4);
+            newline(builder, 0);
             newline(builder, 4)
         };
         write_item(builder, item, 4);
