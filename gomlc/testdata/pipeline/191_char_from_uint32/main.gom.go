@@ -54,32 +54,21 @@ type Some struct {
 func (_ Some) isOption__char() {}
 
 func show_scalar(value__0 uint32) struct{} {
-    var mtmp155 Option__char
+    var commute_field255 rune
     var inline204 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
     var inline205 bool = inline204._0
     var inline206 rune = inline204._1
     if inline205 {
-        var inline209 Option__char = Some{
-            _0: inline206,
-        }
-        mtmp155 = inline209
+        commute_field255 = inline206
+        var t170 uint32 = uint32(rune(commute_field255))
+        var inline201 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(t170)
+        _goml_runtime_core_string_println(inline201)
+        return struct{}{}
     } else {
-        mtmp155 = None{}
-    }
-    switch mtmp155.(type) {
-    case None:
         var inline197 string = "none"
         var inline198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline197)
         _goml_runtime_core_string_println(inline198)
         return struct{}{}
-    case Some:
-        var x156 rune = mtmp155.(Some)._0
-        var t170 uint32 = uint32(rune(x156))
-        var inline201 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(t170)
-        _goml_runtime_core_string_println(inline201)
-        return struct{}{}
-    default:
-        panic("non-exhaustive match")
     }
 }
 
@@ -125,35 +114,24 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var mtmp165 Option__char
+    var commute_field258 rune
     var inline220 uint32 = 128512
     var inline221 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(inline220)
     var inline222 bool = inline221._0
     var inline223 rune = inline221._1
     if inline222 {
-        var inline226 Option__char = Some{
-            _0: inline223,
-        }
-        mtmp165 = inline226
-    } else {
-        mtmp165 = None{}
-    }
-    switch mtmp165.(type) {
-    case None:
-        var inline211 string = "none"
-        var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline211)
-        _goml_runtime_core_string_println(inline212)
-        return struct{}{}
-    case Some:
-        var x166 rune = mtmp165.(Some)._0
+        commute_field258 = inline223
         var t175 string
-        var inline218 string = _goml_runtime_core_char_to_string(x166)
+        var inline218 string = _goml_runtime_core_char_to_string(commute_field258)
         t175 = inline218
         var inline215 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t175)
         _goml_runtime_core_string_println(inline215)
         return struct{}{}
-    default:
-        panic("non-exhaustive match")
+    } else {
+        var inline211 string = "none"
+        var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline211)
+        _goml_runtime_core_string_println(inline212)
+        return struct{}{}
     }
 }
 

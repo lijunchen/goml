@@ -16,27 +16,23 @@ fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
     t174
   } in
   if flag/1 {
-    join inline_cont200(mtmp155: Result__int32__string) -> Result__int32__string {
-      match mtmp155 {
-        Tag_0 => {
-          let x156 = Result__int32__string::Ok._0(mtmp155) in
-          let try_value/13 = x156 in
-          jump k171(x156)
-        },
-        Tag_1 => {
-          let x157 = Result__int32__string::Err._0(mtmp155) in
-          let try_residual/13 = x157 in
-          let t177 = Result__int32__string::Err(x157) in
-          t177
-        },
-      }
+    join commute_arm246(commute_field245: int32) -> Result__int32__string {
+      let x156 = commute_field245 in
+      let try_value/13 = commute_field245 in
+      jump k171(commute_field245)
+    } in
+    join commute_arm248(commute_field247: string) -> Result__int32__string {
+      let x157 = commute_field247 in
+      let try_residual/13 = commute_field247 in
+      let t177 = Result__int32__string::Err(commute_field247) in
+      t177
     } in
     if fallback/2 {
       let inline201 = Result__int32__string::Ok(5) in
-      jump inline_cont200(inline201)
+      jump commute_arm246(5)
     } else {
       let inline202 = Result__int32__string::Err("bad-branch") in
-      jump inline_cont200(inline202)
+      jump commute_arm248("bad-branch")
     }
   } else {
     jump k171(10)

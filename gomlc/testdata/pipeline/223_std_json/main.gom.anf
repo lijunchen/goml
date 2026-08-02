@@ -212,22 +212,18 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(self/7:
 }
 
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/9: std::text::StringBuilder, value/10: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont1596(mtmp5: Result__string__string) -> Result__unit__string {
-    match mtmp5 {
-      Tag_0 => {
-        let x6 = Result__string__string::Ok._0(mtmp5) in
-        let text/11 = x6 in
-        let _wild8 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/9, x6) in
-        let t267 = Result__unit__string::Ok(()) in
-        t267
-      },
-      Tag_1 => {
-        let x7 = Result__string__string::Err._0(mtmp5) in
-        let error/12 = x7 in
-        let t268 = Result__unit__string::Err(x7) in
-        t268
-      },
-    }
+  join commute_arm2435(commute_field2434: string) -> Result__unit__string {
+    let x6 = commute_field2434 in
+    let text/11 = commute_field2434 in
+    let _wild8 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/9, commute_field2434) in
+    let t267 = Result__unit__string::Ok(()) in
+    t267
+  } in
+  join commute_arm2437(commute_field2436: string) -> Result__unit__string {
+    let x7 = commute_field2436 in
+    let error/12 = commute_field2436 in
+    let t268 = Result__unit__string::Err(commute_field2436) in
+    t268
   } in
   let inline1597 = std::bytes::Bytes.values(value/10) in
   let inline1598 = @runtime(core.string_from_utf8)(inline1597) in
@@ -237,10 +233,10 @@ fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(self/9
   let inline1602 = inline1599 in
   if inline1599 {
     let inline1603 = Result__string__string::Ok(inline1600) in
-    jump inline_cont1596(inline1603)
+    jump commute_arm2435(inline1600)
   } else {
     let inline1604 = Result__string__string::Err("invalid UTF-8") in
-    jump inline_cont1596(inline1604)
+    jump commute_arm2437("invalid UTF-8")
   }
 }
 
@@ -1411,34 +1407,30 @@ fn std::json::parse_hex_quad(value/6: std::json::JsonParser) -> Result__uint32__
 }
 
 fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::text::StringBuilder, codepoint/12: uint32) -> Result__unit__string {
-  join inline_cont1879(mtmp9: Option__char) -> Result__unit__string {
-    match mtmp9 {
-      Tag_0 => {
-        join inline_cont1868(t615: string) -> Result__unit__string {
-          let t616 = Result__unit__string::Err(t615) in
-          t616
-        } in
-        let inline1869 = "invalid unicode codepoint" in
-        let inline1870 = ("" + inline1869) in
-        let inline1871 = (inline1870 + " at byte ") in
-        let inline1872 = std::json::JsonParser.index(value/10) in
-        let inline1873 = inherent#Ref#Ref[T]#get__T_int(inline1872) in
-        let inline1874 = inherent#int#int#to_string(inline1873) in
-        let inline1875 = (inline1871 + inline1874) in
-        jump inline_cont1868(inline1875)
-      },
-      Tag_1 => {
-        let x10 = Option__char::Some._0(mtmp9) in
-        let character/13 = x10 in
-        join inline_cont1876(_wild11: unit) -> Result__unit__string {
-          let t617 = Result__unit__string::Ok(()) in
-          t617
-        } in
-        let inline1877 = inherent#char#char#to_string(x10) in
-        let inline1878 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/11, inline1877) in
-        jump inline_cont1876(())
-      },
-    }
+  join commute_arm2441() -> Result__unit__string {
+    join inline_cont1868(t615: string) -> Result__unit__string {
+      let t616 = Result__unit__string::Err(t615) in
+      t616
+    } in
+    let inline1869 = "invalid unicode codepoint" in
+    let inline1870 = ("" + inline1869) in
+    let inline1871 = (inline1870 + " at byte ") in
+    let inline1872 = std::json::JsonParser.index(value/10) in
+    let inline1873 = inherent#Ref#Ref[T]#get__T_int(inline1872) in
+    let inline1874 = inherent#int#int#to_string(inline1873) in
+    let inline1875 = (inline1871 + inline1874) in
+    jump inline_cont1868(inline1875)
+  } in
+  join commute_arm2443(commute_field2442: char) -> Result__unit__string {
+    let x10 = commute_field2442 in
+    let character/13 = commute_field2442 in
+    join inline_cont1876(_wild11: unit) -> Result__unit__string {
+      let t617 = Result__unit__string::Ok(()) in
+      t617
+    } in
+    let inline1877 = inherent#char#char#to_string(commute_field2442) in
+    let inline1878 = inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(builder/11, inline1877) in
+    jump inline_cont1876(())
   } in
   let inline1880 = @runtime(core.char_from_uint32)(codepoint/12) in
   let inline1881 = inline1880.0 in
@@ -1447,9 +1439,9 @@ fn std::json::write_codepoint(value/10: std::json::JsonParser, builder/11: std::
   let inline1884 = inline1881 in
   if inline1881 {
     let inline1885 = Option__char::Some(inline1882) in
-    jump inline_cont1879(inline1885)
+    jump commute_arm2443(inline1882)
   } else {
-    jump inline_cont1879(Tag_0)
+    jump commute_arm2441()
   }
 }
 
@@ -3659,32 +3651,28 @@ fn main() -> unit {
           Tag_1 => {
             let x170 = Option__std::json::Value::Some._0(mtmp169) in
             let field/7 = x170 in
-            join inline_cont2402(mtmp171: Option__bool) -> unit {
-              match mtmp171 {
-                Tag_0 => {
-                  let inline2396 = "invalid stable" in
-                  let inline2397 = trait_impl#ToString#string#to_string(inline2396) in
-                  let inline2398 = @runtime(core.string_println)(inline2397) in
-                  jump k1398()
-                },
-                Tag_1 => {
-                  let x172 = Option__bool::Some._0(mtmp171) in
-                  let stable/8 = x172 in
-                  let inline2400 = trait_impl#ToString#bool#to_string(x172) in
-                  let inline2401 = @runtime(core.string_println)(inline2400) in
-                  jump k1398()
-                },
-              }
+            join commute_arm2451() -> unit {
+              let inline2396 = "invalid stable" in
+              let inline2397 = trait_impl#ToString#string#to_string(inline2396) in
+              let inline2398 = @runtime(core.string_println)(inline2397) in
+              jump k1398()
+            } in
+            join commute_arm2453(commute_field2452: bool) -> unit {
+              let x172 = commute_field2452 in
+              let stable/8 = commute_field2452 in
+              let inline2400 = trait_impl#ToString#bool#to_string(commute_field2452) in
+              let inline2401 = @runtime(core.string_println)(inline2400) in
+              jump k1398()
             } in
             match x170 {
               Tag_4 => {
                 let inline2403 = std::json::Value::Bool._0(x170) in
                 let inline2404 = inline2403 in
                 let inline2405 = Option__bool::Some(inline2403) in
-                jump inline_cont2402(inline2405)
+                jump commute_arm2453(inline2403)
               },
               _ => {
-                jump inline_cont2402(Tag_0)
+                jump commute_arm2451()
               },
             }
           },
@@ -3741,32 +3729,28 @@ fn main() -> unit {
       Tag_1 => {
         let x160 = Option__std::json::Value::Some._0(mtmp159) in
         let field/3 = x160 in
-        join inline_cont2372(mtmp161: Option__string) -> unit {
-          match mtmp161 {
-            Tag_0 => {
-              let inline2366 = "invalid name" in
-              let inline2367 = trait_impl#ToString#string#to_string(inline2366) in
-              let inline2368 = @runtime(core.string_println)(inline2367) in
-              jump k1396()
-            },
-            Tag_1 => {
-              let x162 = Option__string::Some._0(mtmp161) in
-              let name/4 = x162 in
-              let inline2370 = trait_impl#ToString#string#to_string(x162) in
-              let inline2371 = @runtime(core.string_println)(inline2370) in
-              jump k1396()
-            },
-          }
+        join commute_arm2457() -> unit {
+          let inline2366 = "invalid name" in
+          let inline2367 = trait_impl#ToString#string#to_string(inline2366) in
+          let inline2368 = @runtime(core.string_println)(inline2367) in
+          jump k1396()
+        } in
+        join commute_arm2459(commute_field2458: string) -> unit {
+          let x162 = commute_field2458 in
+          let name/4 = commute_field2458 in
+          let inline2370 = trait_impl#ToString#string#to_string(commute_field2458) in
+          let inline2371 = @runtime(core.string_println)(inline2370) in
+          jump k1396()
         } in
         match x160 {
           Tag_2 => {
             let inline2373 = std::json::Value::String._0(x160) in
             let inline2374 = inline2373 in
             let inline2375 = Option__string::Some(inline2373) in
-            jump inline_cont2372(inline2375)
+            jump commute_arm2459(inline2373)
           },
           _ => {
-            jump inline_cont2372(Tag_0)
+            jump commute_arm2457()
           },
         }
       },

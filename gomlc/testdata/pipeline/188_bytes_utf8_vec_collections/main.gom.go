@@ -1199,7 +1199,7 @@ func _goml_m_inherent_i_closure__en_h3f9733c4625dbd2f543c79fa467f2508_hars__0_i_
     var self__25 string = env246.self_0
     var index__26 *ref_int_x = env246.index_1
     var t566 int = ref_get__Ref_3int(index__26)
-    var mtmp7 _goml_m_Option_____o_char_c_int_q_
+    var commute_field751 Tuple2_4char_3int
     var inline725 Tuple3_4bool_4char_3int = _goml_runtime_core_string_decode_utf8_at(self__25, t566)
     var inline726 bool = inline725._0
     var inline727 rune = inline725._1
@@ -1209,20 +1209,9 @@ func _goml_m_inherent_i_closure__en_h3f9733c4625dbd2f543c79fa467f2508_hars__0_i_
             _0: inline727,
             _1: inline728,
         }
-        var inline733 _goml_m_Option_____o_char_c_int_q_ = _goml_m_Option_____o_char_c_int_q__Some{
-            _0: inline732,
-        }
-        mtmp7 = inline733
-    } else {
-        mtmp7 = _goml_m_Option_____o_char_c_int_q__None{}
-    }
-    switch mtmp7.(type) {
-    case _goml_m_Option_____o_char_c_int_q__None:
-        return Option__char_None{}
-    case _goml_m_Option_____o_char_c_int_q__Some:
-        var x8 Tuple2_4char_3int = mtmp7.(_goml_m_Option_____o_char_c_int_q__Some)._0
-        var x10 rune = x8._0
-        var x11 int = x8._1
+        commute_field751 = inline732
+        var x10 rune = commute_field751._0
+        var x11 int = commute_field751._1
         var compound_old12 int = ref_get__Ref_3int(index__26)
         var t569 int = compound_old12 + x11
         ref_set__Ref_3int(index__26, t569)
@@ -1230,8 +1219,8 @@ func _goml_m_inherent_i_closure__en_h3f9733c4625dbd2f543c79fa467f2508_hars__0_i_
             _0: x10,
         }
         return t571
-    default:
-        panic("non-exhaustive match")
+    } else {
+        return Option__char_None{}
     }
 }
 
@@ -1239,7 +1228,7 @@ func _goml_m_inherent_i_closure__en_hf9055ebad38fcb339d5a880925418115_ices__1_i_
     var index__31 *ref_int_x = env247.index_0
     var self__30 string = env247.self_1
     var current__32 int = ref_get__Ref_3int(index__31)
-    var mtmp15 _goml_m_Option_____o_char_c_int_q_
+    var commute_field754 Tuple2_4char_3int
     var inline735 Tuple3_4bool_4char_3int = _goml_runtime_core_string_decode_utf8_at(self__30, current__32)
     var inline736 bool = inline735._0
     var inline737 rune = inline735._1
@@ -1249,20 +1238,9 @@ func _goml_m_inherent_i_closure__en_hf9055ebad38fcb339d5a880925418115_ices__1_i_
             _0: inline737,
             _1: inline738,
         }
-        var inline743 _goml_m_Option_____o_char_c_int_q_ = _goml_m_Option_____o_char_c_int_q__Some{
-            _0: inline742,
-        }
-        mtmp15 = inline743
-    } else {
-        mtmp15 = _goml_m_Option_____o_char_c_int_q__None{}
-    }
-    switch mtmp15.(type) {
-    case _goml_m_Option_____o_char_c_int_q__None:
-        return _goml_m_Option_____o_int_c_char_q__None{}
-    case _goml_m_Option_____o_char_c_int_q__Some:
-        var x16 Tuple2_4char_3int = mtmp15.(_goml_m_Option_____o_char_c_int_q__Some)._0
-        var x18 rune = x16._0
-        var x19 int = x16._1
+        commute_field754 = inline742
+        var x18 rune = commute_field754._0
+        var x19 int = commute_field754._1
         var t576 int = current__32 + x19
         ref_set__Ref_3int(index__31, t576)
         var t577 Tuple2_3int_4char = Tuple2_3int_4char{
@@ -1273,8 +1251,8 @@ func _goml_m_inherent_i_closure__en_hf9055ebad38fcb339d5a880925418115_ices__1_i_
             _0: t577,
         }
         return t578
-    default:
-        panic("non-exhaustive match")
+    } else {
+        return _goml_m_Option_____o_int_c_char_q__None{}
     }
 }
 

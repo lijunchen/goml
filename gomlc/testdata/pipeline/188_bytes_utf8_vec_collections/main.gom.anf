@@ -935,28 +935,21 @@ fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_stri
   let self/25 = closure_env_inherent_string_string_chars_0.self_0(env246) in
   let index/26 = closure_env_inherent_string_string_chars_0.index_1(env246) in
   let t566 = @intrinsic(ref.get)(index/26) in
-  join inline_cont724(mtmp7: Option__(char,int)) -> Option__char {
-    match mtmp7 {
-      Tag_0 => {
-        Tag_0
-      },
-      Tag_1 => {
-        let x8 = Option__(char,int)::Some._0(mtmp7) in
-        let decoded/27 = x8 in
-        let mtmp9 = x8 in
-        let x10 = x8.0 in
-        let x11 = x8.1 in
-        let width/29 = x11 in
-        let value/28 = x10 in
-        let compound_old12 = @intrinsic(ref.get)(index/26) in
-        let compound_value13 = x11 in
-        let t569 = (compound_old12 + x11) in
-        let t570 = @intrinsic(ref.set)(index/26, t569) in
-        let _wild14 = t570 in
-        let t571 = Option__char::Some(x10) in
-        t571
-      },
-    }
+  join commute_arm752(commute_field751: (char, int)) -> Option__char {
+    let x8 = commute_field751 in
+    let decoded/27 = commute_field751 in
+    let mtmp9 = commute_field751 in
+    let x10 = commute_field751.0 in
+    let x11 = commute_field751.1 in
+    let width/29 = x11 in
+    let value/28 = x10 in
+    let compound_old12 = @intrinsic(ref.get)(index/26) in
+    let compound_value13 = x11 in
+    let t569 = (compound_old12 + x11) in
+    let t570 = @intrinsic(ref.set)(index/26, t569) in
+    let _wild14 = t570 in
+    let t571 = Option__char::Some(x10) in
+    t571
   } in
   let inline725 = @runtime(core.string_decode_utf8_at)(self/25, t566) in
   let inline726 = inline725.0 in
@@ -968,9 +961,9 @@ fn inherent#closure_env_inherent_string_string_chars_0#closure_env_inherent_stri
   if inline726 {
     let inline732 = (inline727, inline728) in
     let inline733 = Option__(char,int)::Some(inline732) in
-    jump inline_cont724(inline733)
+    jump commute_arm752(inline732)
   } else {
-    jump inline_cont724(Tag_0)
+    Tag_0
   }
 }
 
@@ -978,26 +971,19 @@ fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inhere
   let index/31 = closure_env_inherent_string_string_char_indices_1.index_0(env247) in
   let self/30 = closure_env_inherent_string_string_char_indices_1.self_1(env247) in
   let current/32 = @intrinsic(ref.get)(index/31) in
-  join inline_cont734(mtmp15: Option__(char,int)) -> Option__(int,char) {
-    match mtmp15 {
-      Tag_0 => {
-        Tag_0
-      },
-      Tag_1 => {
-        let x16 = Option__(char,int)::Some._0(mtmp15) in
-        let decoded/33 = x16 in
-        let mtmp17 = x16 in
-        let x18 = x16.0 in
-        let x19 = x16.1 in
-        let width/35 = x19 in
-        let value/34 = x18 in
-        let t576 = (current/32 + x19) in
-        let _wild20 = @intrinsic(ref.set)(index/31, t576) in
-        let t577 = (current/32, x18) in
-        let t578 = Option__(int,char)::Some(t577) in
-        t578
-      },
-    }
+  join commute_arm755(commute_field754: (char, int)) -> Option__(int,char) {
+    let x16 = commute_field754 in
+    let decoded/33 = commute_field754 in
+    let mtmp17 = commute_field754 in
+    let x18 = commute_field754.0 in
+    let x19 = commute_field754.1 in
+    let width/35 = x19 in
+    let value/34 = x18 in
+    let t576 = (current/32 + x19) in
+    let _wild20 = @intrinsic(ref.set)(index/31, t576) in
+    let t577 = (current/32, x18) in
+    let t578 = Option__(int,char)::Some(t577) in
+    t578
   } in
   let inline735 = @runtime(core.string_decode_utf8_at)(self/30, current/32) in
   let inline736 = inline735.0 in
@@ -1009,8 +995,8 @@ fn inherent#closure_env_inherent_string_string_char_indices_1#closure_env_inhere
   if inline736 {
     let inline742 = (inline737, inline738) in
     let inline743 = Option__(char,int)::Some(inline742) in
-    jump inline_cont734(inline743)
+    jump commute_arm755(inline742)
   } else {
-    jump inline_cont734(Tag_0)
+    Tag_0
   }
 }

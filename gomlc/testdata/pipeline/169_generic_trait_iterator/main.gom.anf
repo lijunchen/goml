@@ -518,20 +518,13 @@ fn inherent#Vec#Vec[T]#push__T_string(self/126: Vec[string], elem/127: string) -
 
 fn trait_impl#Iterator#MapIterator__int32__int32__Counter#next(self/103: MapIterator__int32__int32__Counter) -> Option__int32 {
   let t347 = MapIterator__int32__int32__Counter.iterator(self/103) in
-  join inline_cont487(mtmp21: Option__int32) -> Option__int32 {
-    match mtmp21 {
-      Tag_0 => {
-        Tag_0
-      },
-      Tag_1 => {
-        let x22 = Option__int32::Some._0(mtmp21) in
-        let value/104 = x22 in
-        let t350 = MapIterator__int32__int32__Counter.map_fn(self/103) in
-        let t351 = t350(x22) in
-        let t352 = Option__int32::Some(t351) in
-        t352
-      },
-    }
+  join commute_arm506(commute_field505: int32) -> Option__int32 {
+    let x22 = commute_field505 in
+    let value/104 = commute_field505 in
+    let t350 = MapIterator__int32__int32__Counter.map_fn(self/103) in
+    let t351 = t350(commute_field505) in
+    let t352 = Option__int32::Some(t351) in
+    t352
   } in
   let inline488 = Counter.current(t347) in
   let inline489 = inherent#Ref#Ref[T]#get__T_int32(inline488) in
@@ -542,9 +535,9 @@ fn trait_impl#Iterator#MapIterator__int32__int32__Counter#next(self/103: MapIter
     let inline493 = (inline489 + 1) in
     let inline494 = inherent#Ref#Ref[T]#set__T_int32(inline492, inline493) in
     let inline495 = Option__int32::Some(inline489) in
-    jump inline_cont487(inline495)
+    jump commute_arm506(inline489)
   } else {
-    jump inline_cont487(Tag_0)
+    Tag_0
   }
 }
 

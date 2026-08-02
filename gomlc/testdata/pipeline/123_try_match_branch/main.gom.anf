@@ -28,27 +28,23 @@ fn choose(choice/2: Choice) -> Result__int32__string {
     Tag_0 => {
       let x155 = Choice::Left._0(choice/2) in
       let ok/3 = x155 in
-      join inline_cont226(mtmp158: Result__int32__string) -> Result__int32__string {
-        match mtmp158 {
-          Tag_0 => {
-            let x159 = Result__int32__string::Ok._0(mtmp158) in
-            let try_value/21 = x159 in
-            jump k185(x159)
-          },
-          Tag_1 => {
-            let x160 = Result__int32__string::Err._0(mtmp158) in
-            let try_residual/21 = x160 in
-            let t190 = Result__int32__string::Err(x160) in
-            t190
-          },
-        }
+      join commute_arm275(commute_field274: int32) -> Result__int32__string {
+        let x159 = commute_field274 in
+        let try_value/21 = commute_field274 in
+        jump k185(commute_field274)
+      } in
+      join commute_arm277(commute_field276: string) -> Result__int32__string {
+        let x160 = commute_field276 in
+        let try_residual/21 = commute_field276 in
+        let t190 = Result__int32__string::Err(commute_field276) in
+        t190
       } in
       if x155 {
         let inline227 = Result__int32__string::Ok(10) in
-        jump inline_cont226(inline227)
+        jump commute_arm275(10)
       } else {
         let inline228 = Result__int32__string::Err("left failed") in
-        jump inline_cont226(inline228)
+        jump commute_arm277("left failed")
       }
     },
     Tag_1 => {

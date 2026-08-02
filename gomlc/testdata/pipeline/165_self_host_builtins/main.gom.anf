@@ -134,32 +134,28 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::B
 }
 
 fn std::fs::read_file(path/0: string) -> Result__string__string {
-  join inline_cont439(mtmp0: Result__std::bytes::Bytes__string) -> Result__string__string {
-    match mtmp0 {
-      Tag_0 => {
-        let x1 = Result__std::bytes::Bytes__string::Ok._0(mtmp0) in
-        let data/1 = x1 in
-        let inline431 = std::bytes::Bytes.values(x1) in
-        let inline432 = @runtime(core.string_from_utf8)(inline431) in
-        let inline433 = inline432.0 in
-        let inline434 = inline432.1 in
-        let inline435 = inline434 in
-        let inline436 = inline433 in
-        if inline433 {
-          let inline437 = Result__string__string::Ok(inline434) in
-          inline437
-        } else {
-          let inline438 = Result__string__string::Err("invalid UTF-8") in
-          inline438
-        }
-      },
-      Tag_1 => {
-        let x2 = Result__std::bytes::Bytes__string::Err._0(mtmp0) in
-        let error/2 = x2 in
-        let t231 = Result__string__string::Err(x2) in
-        t231
-      },
+  join commute_arm535(commute_field534: std::bytes::Bytes) -> Result__string__string {
+    let x1 = commute_field534 in
+    let data/1 = commute_field534 in
+    let inline431 = std::bytes::Bytes.values(commute_field534) in
+    let inline432 = @runtime(core.string_from_utf8)(inline431) in
+    let inline433 = inline432.0 in
+    let inline434 = inline432.1 in
+    let inline435 = inline434 in
+    let inline436 = inline433 in
+    if inline433 {
+      let inline437 = Result__string__string::Ok(inline434) in
+      inline437
+    } else {
+      let inline438 = Result__string__string::Err("invalid UTF-8") in
+      inline438
     }
+  } in
+  join commute_arm537(commute_field536: string) -> Result__string__string {
+    let x2 = commute_field536 in
+    let error/2 = commute_field536 in
+    let t231 = Result__string__string::Err(commute_field536) in
+    t231
   } in
   let inline440 = @runtime(std.fs.read_bytes)(path/0) in
   let inline441 = inline440.0 in
@@ -171,10 +167,10 @@ fn std::fs::read_file(path/0: string) -> Result__string__string {
   if inline441 {
     let inline447 = inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(inline442) in
     let inline448 = Result__std::bytes::Bytes__string::Ok(inline447) in
-    jump inline_cont439(inline448)
+    jump commute_arm535(inline447)
   } else {
     let inline449 = Result__std::bytes::Bytes__string::Err(inline443) in
-    jump inline_cont439(inline449)
+    jump commute_arm537(inline443)
   }
 }
 

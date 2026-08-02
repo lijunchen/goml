@@ -56,34 +56,21 @@ func choose(choice__2 Choice) Result__int32__string {
     switch choice__2.(type) {
     case Left:
         var x155 bool = choice__2.(Left)._0
-        var mtmp158 Result__int32__string
+        var commute_field274 int32
+        var commute_field276 string
         if x155 {
-            var inline227 Result__int32__string = Ok{
-                _0: 10,
-            }
-            mtmp158 = inline227
-        } else {
-            var inline228 Result__int32__string = Err{
-                _0: "left failed",
-            }
-            mtmp158 = inline228
-        }
-        switch mtmp158.(type) {
-        case Ok:
-            var x159 int32 = mtmp158.(Ok)._0
-            jp186 = x159
+            commute_field274 = 10
+            jp186 = commute_field274
             var t187 Result__int32__string = Ok{
                 _0: jp186,
             }
             return t187
-        case Err:
-            var x160 string = mtmp158.(Err)._0
+        } else {
+            commute_field276 = "left failed"
             var t190 Result__int32__string = Err{
-                _0: x160,
+                _0: commute_field276,
             }
             return t190
-        default:
-            panic("non-exhaustive match")
         }
     case Right:
         var x156 bool = choice__2.(Right)._0

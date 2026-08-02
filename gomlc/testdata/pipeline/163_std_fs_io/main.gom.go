@@ -247,27 +247,16 @@ func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string
 }
 
 func _goml_m_std_p_fs_p_read__file(path__0 string) Result__string__string {
-    var mtmp0 _goml_m_Result____std_p_bytes_p_Bytes____string
+    var commute_field536 _goml_m_std_p_bytes_p_Bytes
+    var commute_field538 string
     var inline439 Tuple3_4bool_10Vec_5uint8_6string = _goml_runtime_std_fs_read_bytes(path__0)
     var inline440 bool = inline439._0
     var inline441 *_goml_vec_uint8 = inline439._1
     var inline442 string = inline439._2
     if inline440 {
         var inline446 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__vec(inline441)
-        var inline447 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Ok{
-            _0: inline446,
-        }
-        mtmp0 = inline447
-    } else {
-        var inline448 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Err{
-            _0: inline442,
-        }
-        mtmp0 = inline448
-    }
-    switch mtmp0.(type) {
-    case _goml_m_Result____std_p_bytes_p_Bytes____string_Ok:
-        var x1 _goml_m_std_p_bytes_p_Bytes = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____string_Ok)._0
-        var inline430 *_goml_vec_uint8 = x1.values
+        commute_field536 = inline446
+        var inline430 *_goml_vec_uint8 = commute_field536.values
         var inline431 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(inline430)
         var inline432 bool = inline431._0
         var inline433 string = inline431._1
@@ -282,14 +271,12 @@ func _goml_m_std_p_fs_p_read__file(path__0 string) Result__string__string {
             }
             return inline437
         }
-    case _goml_m_Result____std_p_bytes_p_Bytes____string_Err:
-        var x2 string = mtmp0.(_goml_m_Result____std_p_bytes_p_Bytes____string_Err)._0
+    } else {
+        commute_field538 = inline442
         var t230 Result__string__string = Result__string__string_Err{
-            _0: x2,
+            _0: commute_field538,
         }
         return t230
-    default:
-        panic("non-exhaustive match")
     }
 }
 

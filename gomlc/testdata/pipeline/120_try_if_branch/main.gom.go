@@ -46,35 +46,22 @@ func parse(flag__0 bool) Result__int32__string {
 func bump(flag__1 bool, fallback__2 bool) Result__int32__string {
     var jp172 int32
     if flag__1 {
-        var mtmp155 Result__int32__string
+        var commute_field245 int32
+        var commute_field247 string
         if fallback__2 {
-            var inline201 Result__int32__string = Ok{
-                _0: 5,
-            }
-            mtmp155 = inline201
-        } else {
-            var inline202 Result__int32__string = Err{
-                _0: "bad-branch",
-            }
-            mtmp155 = inline202
-        }
-        switch mtmp155.(type) {
-        case Ok:
-            var x156 int32 = mtmp155.(Ok)._0
-            jp172 = x156
+            commute_field245 = 5
+            jp172 = commute_field245
             var t173 int32 = jp172 + 1
             var t174 Result__int32__string = Ok{
                 _0: t173,
             }
             return t174
-        case Err:
-            var x157 string = mtmp155.(Err)._0
+        } else {
+            commute_field247 = "bad-branch"
             var t177 Result__int32__string = Err{
-                _0: x157,
+                _0: commute_field247,
             }
             return t177
-        default:
-            panic("non-exhaustive match")
         }
     } else {
         jp172 = 10

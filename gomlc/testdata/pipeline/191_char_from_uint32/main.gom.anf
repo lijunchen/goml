@@ -1,21 +1,17 @@
 fn show_scalar(value/0: uint32) -> unit {
-  join inline_cont203(mtmp155: Option__char) -> unit {
-    match mtmp155 {
-      Tag_0 => {
-        let inline197 = "none" in
-        let inline198 = trait_impl#ToString#string#to_string(inline197) in
-        let inline199 = @runtime(core.string_println)(inline198) in
-        ()
-      },
-      Tag_1 => {
-        let x156 = Option__char::Some._0(mtmp155) in
-        let result/1 = x156 in
-        let t170 = (x156 as uint32) in
-        let inline201 = trait_impl#ToString#uint32#to_string(t170) in
-        let inline202 = @runtime(core.string_println)(inline201) in
-        ()
-      },
-    }
+  join commute_arm254() -> unit {
+    let inline197 = "none" in
+    let inline198 = trait_impl#ToString#string#to_string(inline197) in
+    let inline199 = @runtime(core.string_println)(inline198) in
+    ()
+  } in
+  join commute_arm256(commute_field255: char) -> unit {
+    let x156 = commute_field255 in
+    let result/1 = commute_field255 in
+    let t170 = (commute_field255 as uint32) in
+    let inline201 = trait_impl#ToString#uint32#to_string(t170) in
+    let inline202 = @runtime(core.string_println)(inline201) in
+    ()
   } in
   let inline204 = @runtime(core.char_from_uint32)(value/0) in
   let inline205 = inline204.0 in
@@ -24,9 +20,9 @@ fn show_scalar(value/0: uint32) -> unit {
   let inline208 = inline205 in
   if inline205 {
     let inline209 = Option__char::Some(inline206) in
-    jump inline_cont203(inline209)
+    jump commute_arm256(inline206)
   } else {
-    jump inline_cont203(Tag_0)
+    jump commute_arm254()
   }
 }
 
@@ -39,26 +35,22 @@ fn main() -> unit {
   join inline_cont243(_wild162: unit) -> unit {
     join inline_cont235(_wild163: unit) -> unit {
       join inline_cont227(_wild164: unit) -> unit {
-        join inline_cont219(mtmp165: Option__char) -> unit {
-          match mtmp165 {
-            Tag_0 => {
-              let inline211 = "none" in
-              let inline212 = trait_impl#ToString#string#to_string(inline211) in
-              let inline213 = @runtime(core.string_println)(inline212) in
-              ()
-            },
-            Tag_1 => {
-              let x166 = Option__char::Some._0(mtmp165) in
-              let result/2 = x166 in
-              join inline_cont217(t175: string) -> unit {
-                let inline215 = trait_impl#ToString#string#to_string(t175) in
-                let inline216 = @runtime(core.string_println)(inline215) in
-                ()
-              } in
-              let inline218 = @runtime(core.char_to_string)(x166) in
-              jump inline_cont217(inline218)
-            },
-          }
+        join commute_arm257() -> unit {
+          let inline211 = "none" in
+          let inline212 = trait_impl#ToString#string#to_string(inline211) in
+          let inline213 = @runtime(core.string_println)(inline212) in
+          ()
+        } in
+        join commute_arm259(commute_field258: char) -> unit {
+          let x166 = commute_field258 in
+          let result/2 = commute_field258 in
+          join inline_cont217(t175: string) -> unit {
+            let inline215 = trait_impl#ToString#string#to_string(t175) in
+            let inline216 = @runtime(core.string_println)(inline215) in
+            ()
+          } in
+          let inline218 = @runtime(core.char_to_string)(commute_field258) in
+          jump inline_cont217(inline218)
         } in
         let inline220 = 128512 in
         let inline221 = @runtime(core.char_from_uint32)(inline220) in
@@ -68,9 +60,9 @@ fn main() -> unit {
         let inline225 = inline222 in
         if inline222 {
           let inline226 = Option__char::Some(inline223) in
-          jump inline_cont219(inline226)
+          jump commute_arm259(inline223)
         } else {
-          jump inline_cont219(Tag_0)
+          jump commute_arm257()
         }
       } in
       let inline228 = 1114112 in

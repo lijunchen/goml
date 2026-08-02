@@ -722,20 +722,19 @@ func _goml_m_std_p_json_p_parse__hex__quad(value__6 _goml_m_std_p_json_p_JsonPar
 }
 
 func _goml_m_std_p_json_p_write__codepoint(value__10 _goml_m_std_p_json_p_JsonParser, builder__11 _goml_m_std_p_text_p_StringBuilder, codepoint__12 uint32) Result__unit__string {
-    var mtmp9 Option__char
+    var commute_field2442 rune
     var inline1880 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(codepoint__12)
     var inline1881 bool = inline1880._0
     var inline1882 rune = inline1880._1
     if inline1881 {
-        var inline1885 Option__char = Option__char_Some{
-            _0: inline1882,
+        commute_field2442 = inline1882
+        var inline1877 string = _goml_m_inherent_i_char_i_char_i_to__string(commute_field2442)
+        _goml_m_inherent_i_std_p_text__h0034629766b91c65ed1f7160ea470eda_i_write__string(builder__11, inline1877)
+        var t617 Result__unit__string = Result__unit__string_Ok{
+            _0: struct{}{},
         }
-        mtmp9 = inline1885
+        return t617
     } else {
-        mtmp9 = Option__char_None{}
-    }
-    switch mtmp9.(type) {
-    case Option__char_None:
         var t615 string
         var inline1869 string = "invalid unicode codepoint"
         var inline1870 string = "" + inline1869
@@ -749,16 +748,6 @@ func _goml_m_std_p_json_p_write__codepoint(value__10 _goml_m_std_p_json_p_JsonPa
             _0: t615,
         }
         return t616
-    case Option__char_Some:
-        var x10 rune = mtmp9.(Option__char_Some)._0
-        var inline1877 string = _goml_m_inherent_i_char_i_char_i_to__string(x10)
-        _goml_m_inherent_i_std_p_text__h0034629766b91c65ed1f7160ea470eda_i_write__string(builder__11, inline1877)
-        var t617 Result__unit__string = Result__unit__string_Ok{
-            _0: struct{}{},
-        }
-        return t617
-    default:
-        panic("non-exhaustive match")
     }
 }
 
@@ -2951,103 +2940,215 @@ func main0() struct{} {
             var inline2362 string = "missing name"
             var inline2363 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2362)
             _goml_runtime_core_string_println(inline2363)
+            var mtmp164 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp1395, "version")
+            switch mtmp164.(type) {
+            case _goml_m_Option____std_p_json_p_Value_None:
+                var inline2377 string = "missing version"
+                var inline2378 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2377)
+                _goml_runtime_core_string_println(inline2378)
+            case _goml_m_Option____std_p_json_p_Value_Some:
+                var x165 _goml_m_std_p_json_p_Value = mtmp164.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                var mtmp166 Option__int
+                switch x165.(type) {
+                case Number:
+                    var inline2388 string = x165.(Number)._0
+                    var inline2390 Option__int = _goml_m_std_p_json_p_parse__json__int__text(inline2388)
+                    mtmp166 = inline2390
+                default:
+                    mtmp166 = Option__int_None{}
+                }
+                switch mtmp166.(type) {
+                case Option__int_None:
+                    var inline2381 string = "invalid version"
+                    var inline2382 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2381)
+                    _goml_runtime_core_string_println(inline2382)
+                case Option__int_Some:
+                    var x167 int = mtmp166.(Option__int_Some)._0
+                    var inline2385 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x167)
+                    _goml_runtime_core_string_println(inline2385)
+                default:
+                    panic("non-exhaustive match")
+                }
+            default:
+                panic("non-exhaustive match")
+            }
+            var mtmp169 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp1395, "stable")
+            switch mtmp169.(type) {
+            case _goml_m_Option____std_p_json_p_Value_None:
+                var inline2392 string = "missing stable"
+                var inline2393 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2392)
+                _goml_runtime_core_string_println(inline2393)
+                var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                println__T_string(t1399)
+                return struct{}{}
+            case _goml_m_Option____std_p_json_p_Value_Some:
+                var x170 _goml_m_std_p_json_p_Value = mtmp169.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                var commute_field2452 bool
+                switch x170.(type) {
+                case Bool:
+                    var inline2403 bool = x170.(Bool)._0
+                    commute_field2452 = inline2403
+                    var inline2400 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(commute_field2452)
+                    _goml_runtime_core_string_println(inline2400)
+                    var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                    println__T_string(t1399)
+                    return struct{}{}
+                default:
+                    var inline2396 string = "invalid stable"
+                    var inline2397 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2396)
+                    _goml_runtime_core_string_println(inline2397)
+                    var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                    println__T_string(t1399)
+                    return struct{}{}
+                }
+            default:
+                panic("non-exhaustive match")
+            }
         case _goml_m_Option____std_p_json_p_Value_Some:
             var x160 _goml_m_std_p_json_p_Value = mtmp159.(_goml_m_Option____std_p_json_p_Value_Some)._0
-            var mtmp161 Option__string
+            var commute_field2458 string
             switch x160.(type) {
             case String:
                 var inline2373 string = x160.(String)._0
-                var inline2375 Option__string = Option__string_Some{
-                    _0: inline2373,
+                commute_field2458 = inline2373
+                var inline2370 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(commute_field2458)
+                _goml_runtime_core_string_println(inline2370)
+                var mtmp164 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp1395, "version")
+                switch mtmp164.(type) {
+                case _goml_m_Option____std_p_json_p_Value_None:
+                    var inline2377 string = "missing version"
+                    var inline2378 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2377)
+                    _goml_runtime_core_string_println(inline2378)
+                case _goml_m_Option____std_p_json_p_Value_Some:
+                    var x165 _goml_m_std_p_json_p_Value = mtmp164.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                    var mtmp166 Option__int
+                    switch x165.(type) {
+                    case Number:
+                        var inline2388 string = x165.(Number)._0
+                        var inline2390 Option__int = _goml_m_std_p_json_p_parse__json__int__text(inline2388)
+                        mtmp166 = inline2390
+                    default:
+                        mtmp166 = Option__int_None{}
+                    }
+                    switch mtmp166.(type) {
+                    case Option__int_None:
+                        var inline2381 string = "invalid version"
+                        var inline2382 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2381)
+                        _goml_runtime_core_string_println(inline2382)
+                    case Option__int_Some:
+                        var x167 int = mtmp166.(Option__int_Some)._0
+                        var inline2385 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x167)
+                        _goml_runtime_core_string_println(inline2385)
+                    default:
+                        panic("non-exhaustive match")
+                    }
+                default:
+                    panic("non-exhaustive match")
                 }
-                mtmp161 = inline2375
+                var mtmp169 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp1395, "stable")
+                switch mtmp169.(type) {
+                case _goml_m_Option____std_p_json_p_Value_None:
+                    var inline2392 string = "missing stable"
+                    var inline2393 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2392)
+                    _goml_runtime_core_string_println(inline2393)
+                    var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                    println__T_string(t1399)
+                    return struct{}{}
+                case _goml_m_Option____std_p_json_p_Value_Some:
+                    var x170 _goml_m_std_p_json_p_Value = mtmp169.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                    var commute_field2452 bool
+                    switch x170.(type) {
+                    case Bool:
+                        var inline2403 bool = x170.(Bool)._0
+                        commute_field2452 = inline2403
+                        var inline2400 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(commute_field2452)
+                        _goml_runtime_core_string_println(inline2400)
+                        var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                        println__T_string(t1399)
+                        return struct{}{}
+                    default:
+                        var inline2396 string = "invalid stable"
+                        var inline2397 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2396)
+                        _goml_runtime_core_string_println(inline2397)
+                        var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                        println__T_string(t1399)
+                        return struct{}{}
+                    }
+                default:
+                    panic("non-exhaustive match")
+                }
             default:
-                mtmp161 = Option__string_None{}
-            }
-            switch mtmp161.(type) {
-            case Option__string_None:
                 var inline2366 string = "invalid name"
                 var inline2367 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2366)
                 _goml_runtime_core_string_println(inline2367)
-            case Option__string_Some:
-                var x162 string = mtmp161.(Option__string_Some)._0
-                var inline2370 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x162)
-                _goml_runtime_core_string_println(inline2370)
-            default:
-                panic("non-exhaustive match")
-            }
-        default:
-            panic("non-exhaustive match")
-        }
-        var mtmp164 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp1395, "version")
-        switch mtmp164.(type) {
-        case _goml_m_Option____std_p_json_p_Value_None:
-            var inline2377 string = "missing version"
-            var inline2378 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2377)
-            _goml_runtime_core_string_println(inline2378)
-        case _goml_m_Option____std_p_json_p_Value_Some:
-            var x165 _goml_m_std_p_json_p_Value = mtmp164.(_goml_m_Option____std_p_json_p_Value_Some)._0
-            var mtmp166 Option__int
-            switch x165.(type) {
-            case Number:
-                var inline2388 string = x165.(Number)._0
-                var inline2390 Option__int = _goml_m_std_p_json_p_parse__json__int__text(inline2388)
-                mtmp166 = inline2390
-            default:
-                mtmp166 = Option__int_None{}
-            }
-            switch mtmp166.(type) {
-            case Option__int_None:
-                var inline2381 string = "invalid version"
-                var inline2382 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2381)
-                _goml_runtime_core_string_println(inline2382)
-            case Option__int_Some:
-                var x167 int = mtmp166.(Option__int_Some)._0
-                var inline2385 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x167)
-                _goml_runtime_core_string_println(inline2385)
-            default:
-                panic("non-exhaustive match")
-            }
-        default:
-            panic("non-exhaustive match")
-        }
-        var mtmp169 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp1395, "stable")
-        switch mtmp169.(type) {
-        case _goml_m_Option____std_p_json_p_Value_None:
-            var inline2392 string = "missing stable"
-            var inline2393 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2392)
-            _goml_runtime_core_string_println(inline2393)
-        case _goml_m_Option____std_p_json_p_Value_Some:
-            var x170 _goml_m_std_p_json_p_Value = mtmp169.(_goml_m_Option____std_p_json_p_Value_Some)._0
-            var mtmp171 Option__bool
-            switch x170.(type) {
-            case Bool:
-                var inline2403 bool = x170.(Bool)._0
-                var inline2405 Option__bool = Option__bool_Some{
-                    _0: inline2403,
+                var mtmp164 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp1395, "version")
+                switch mtmp164.(type) {
+                case _goml_m_Option____std_p_json_p_Value_None:
+                    var inline2377 string = "missing version"
+                    var inline2378 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2377)
+                    _goml_runtime_core_string_println(inline2378)
+                case _goml_m_Option____std_p_json_p_Value_Some:
+                    var x165 _goml_m_std_p_json_p_Value = mtmp164.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                    var mtmp166 Option__int
+                    switch x165.(type) {
+                    case Number:
+                        var inline2388 string = x165.(Number)._0
+                        var inline2390 Option__int = _goml_m_std_p_json_p_parse__json__int__text(inline2388)
+                        mtmp166 = inline2390
+                    default:
+                        mtmp166 = Option__int_None{}
+                    }
+                    switch mtmp166.(type) {
+                    case Option__int_None:
+                        var inline2381 string = "invalid version"
+                        var inline2382 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2381)
+                        _goml_runtime_core_string_println(inline2382)
+                    case Option__int_Some:
+                        var x167 int = mtmp166.(Option__int_Some)._0
+                        var inline2385 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(x167)
+                        _goml_runtime_core_string_println(inline2385)
+                    default:
+                        panic("non-exhaustive match")
+                    }
+                default:
+                    panic("non-exhaustive match")
                 }
-                mtmp171 = inline2405
-            default:
-                mtmp171 = Option__bool_None{}
-            }
-            switch mtmp171.(type) {
-            case Option__bool_None:
-                var inline2396 string = "invalid stable"
-                var inline2397 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2396)
-                _goml_runtime_core_string_println(inline2397)
-            case Option__bool_Some:
-                var x172 bool = mtmp171.(Option__bool_Some)._0
-                var inline2400 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x172)
-                _goml_runtime_core_string_println(inline2400)
-            default:
-                panic("non-exhaustive match")
+                var mtmp169 _goml_m_Option____std_p_json_p_Value = _goml_m_std_p_json_p_field(jp1395, "stable")
+                switch mtmp169.(type) {
+                case _goml_m_Option____std_p_json_p_Value_None:
+                    var inline2392 string = "missing stable"
+                    var inline2393 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2392)
+                    _goml_runtime_core_string_println(inline2393)
+                    var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                    println__T_string(t1399)
+                    return struct{}{}
+                case _goml_m_Option____std_p_json_p_Value_Some:
+                    var x170 _goml_m_std_p_json_p_Value = mtmp169.(_goml_m_Option____std_p_json_p_Value_Some)._0
+                    var commute_field2452 bool
+                    switch x170.(type) {
+                    case Bool:
+                        var inline2403 bool = x170.(Bool)._0
+                        commute_field2452 = inline2403
+                        var inline2400 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(commute_field2452)
+                        _goml_runtime_core_string_println(inline2400)
+                        var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                        println__T_string(t1399)
+                        return struct{}{}
+                    default:
+                        var inline2396 string = "invalid stable"
+                        var inline2397 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline2396)
+                        _goml_runtime_core_string_println(inline2397)
+                        var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
+                        println__T_string(t1399)
+                        return struct{}{}
+                    }
+                default:
+                    panic("non-exhaustive match")
+                }
             }
         default:
             panic("non-exhaustive match")
         }
-        var t1399 string = _goml_m_std_p_json_p_encode(jp1395)
-        println__T_string(t1399)
-        return struct{}{}
     case _goml_m_Result____std_p_json_p_Value____string_Err:
         var x157 string = mtmp155.(_goml_m_Result____std_p_json_p_Value____string_Err)._0
         var inline2359 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x157)
