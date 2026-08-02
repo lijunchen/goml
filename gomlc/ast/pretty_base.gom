@@ -1,134 +1,86 @@
 package ast;
 
+use gomlc::pretty as doc;
 use gomlc::vecs;
 use std::text;
 
-fn pretty_write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in 0..count {
-        builder.write_char(' ')
-    }
-}
-
-fn pretty_newline(builder: text::StringBuilder, indent: int) -> unit {
-    builder.write_char('\n');
-    pretty_write_spaces(builder, indent)
-}
-
-fn pretty_write_path(builder: text::StringBuilder, value: Path) -> unit {
-    let mut index = 0;
+fn pretty_path_doc(value: Path) -> doc::Doc {
+    let values: Vec[doc::Doc] = Vec::with_capacity(value.segments.len());
     for segment in value.segments {
-        if index > 0 {
-            builder.write_string("::")
-        } else {
-            ()
-        };
-        builder.write_string(segment.ident);
-        index = index + 1;
-    }
+        values.push(doc::text(segment.ident))
+    };
+    doc::join(doc::text("::"), values)
 }
 
-fn pretty_write_strings(builder: text::StringBuilder, values: Vec[string], separator: string) -> unit {
-    let mut index = 0;
+fn pretty_type_docs(values: Vec[TypeExpr]) -> Vec[doc::Doc] {
+    let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
     for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        builder.write_string(value);
-        index = index + 1;
-    }
+        result.push(pretty_type_doc(value))
+    };
+    result
 }
 
-fn pretty_write_types(builder: text::StringBuilder, values: Vec[TypeExpr], separator: string) -> unit {
-    let mut index = 0;
-    for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        pretty_write_type(builder, value);
-        index = index + 1;
-    }
-}
-
-fn pretty_write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
+fn pretty_type_doc(value: TypeExpr) -> doc::Doc {
     match value {
-        Unit => builder.write_string("unit"),
-        Bool => builder.write_string("bool"),
-        Int => builder.write_string("int"),
-        Int8 => builder.write_string("int8"),
-        Int16 => builder.write_string("int16"),
-        Int32 => builder.write_string("int32"),
-        Int64 => builder.write_string("int64"),
-        Uint => builder.write_string("uint"),
-        Uint8 => builder.write_string("uint8"),
-        Uint16 => builder.write_string("uint16"),
-        Uint32 => builder.write_string("uint32"),
-        Uint64 => builder.write_string("uint64"),
-        Float32 => builder.write_string("float32"),
-        Float64 => builder.write_string("float64"),
-        String => builder.write_string("string"),
-        Char => builder.write_string("char"),
-        Tuple { items: values } => {
-            builder.write_char('(');
-            pretty_write_types(builder, values, ", ");
-            builder.write_char(')')
-        },
-        Con { path } => pretty_write_path(builder, path),
-        Dyn { trait_path: path } => {
-            builder.write_string("dyn ");
-            pretty_write_path(builder, path)
-        },
+        Unit => doc::text("unit"),
+        Bool => doc::text("bool"),
+        Int => doc::text("int"),
+        Int8 => doc::text("int8"),
+        Int16 => doc::text("int16"),
+        Int32 => doc::text("int32"),
+        Int64 => doc::text("int64"),
+        Uint => doc::text("uint"),
+        Uint8 => doc::text("uint8"),
+        Uint16 => doc::text("uint16"),
+        Uint32 => doc::text("uint32"),
+        Uint64 => doc::text("uint64"),
+        Float32 => doc::text("float32"),
+        Float64 => doc::text("float64"),
+        String => doc::text("string"),
+        Char => doc::text("char"),
+        Tuple { items: values } => doc::delimited("(", ",", ")", pretty_type_docs(values)),
+        Con { path } => pretty_path_doc(path),
+        Dyn { trait_path: path } => doc::append(doc::text("dyn "), pretty_path_doc(path)),
         App { ty: base, args } => {
-            pretty_write_type(builder, base);
-            if !args.is_empty() {
-                builder.write_char('[');
-                pretty_write_types(builder, args, ", ");
-                builder.write_char(']')
+            if args.is_empty() {
+                pretty_type_doc(base)
             } else {
-                ()
+                doc::append(
+                    pretty_type_doc(base),
+                    doc::delimited("[", ",", "]", pretty_type_docs(args)),
+                )
             }
         },
-        Array { len: length, elem: element } => {
-            builder.write_char('[');
-            pretty_write_type(builder, element);
-            builder.write_string("; ");
-            builder.write_string(length);
-            builder.write_char(']')
-        },
-        Func { params, ret_ty } => {
-            builder.write_char('(');
-            pretty_write_types(builder, params, ", ");
-            builder.write_string(") -> ");
-            pretty_write_type(builder, ret_ty)
-        },
+        Array { len: length, elem: element } => doc::concat(
+            Vec::[doc::text("["), pretty_type_doc(element), doc::text("; " + length + "]")],
+        ),
+        Func { params, ret_ty } => doc::concat(
+            Vec::[
+                doc::delimited("(", ",", ")", pretty_type_docs(params)),
+                doc::text(" -> "),
+                pretty_type_doc(ret_ty),
+            ],
+        ),
     }
 }
 
-fn pretty_write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
-    pretty_write_path(builder, value.path);
-    if !value.args.is_empty() {
-        builder.write_char('[');
-        pretty_write_types(builder, value.args, ", ");
-        builder.write_char(']')
+fn pretty_trait_ref_doc(value: TraitRef) -> doc::Doc {
+    if value.args.is_empty() {
+        pretty_path_doc(value.path)
     } else {
-        ()
+        doc::append(
+            pretty_path_doc(value.path),
+            doc::delimited("[", ",", "]", pretty_type_docs(value.args)),
+        )
     }
 }
 
-fn pretty_write_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef], separator: string) -> unit {
-    let mut index = 0;
+fn pretty_trait_ref_docs(values: Vec[TraitRef]) -> Vec[doc::Doc] {
+    let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
     for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        pretty_write_trait_ref(builder, value);
-        index = index + 1;
-    }
+        result.push(pretty_trait_ref_doc(value))
+    };
+    result
 }
 
 fn pretty_find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Option[Vec[TraitRef]] {
@@ -144,94 +96,89 @@ fn pretty_find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Opt
     Option::None
 }
 
-fn pretty_write_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
-    if !values.is_empty() {
-        builder.write_char('[');
-        pretty_write_strings(builder, values, ", ");
-        builder.write_char(']')
+fn pretty_generics_doc(values: Vec[string]) -> doc::Doc {
+    if values.is_empty() {
+        doc::nil()
     } else {
-        ()
-    }
-}
-
-fn pretty_write_bounded_generics(
-    builder: text::StringBuilder,
-    generics: Vec[string],
-    bounds: Vec[(string, Vec[TraitRef])],
-) -> unit {
-    if !generics.is_empty() {
-        builder.write_char('[');
-        let mut index = 0;
-        for generic in generics {
-            if index > 0 {
-                builder.write_string(", ")
-            } else {
-                ()
-            };
-            builder.write_string(generic);
-            match pretty_find_bounds(bounds, generic) {
-                Some(values) => if !values.is_empty() {
-                    builder.write_string(": ");
-                    pretty_write_trait_refs(builder, values, " + ")
-                } else {
-                    ()
-                },
-                None => (),
-            };
-            index = index + 1;
-        };
-        builder.write_char(']')
-    } else {
-        ()
-    }
-}
-
-fn pretty_write_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
-    if !values.is_empty() {
-        builder.write_string(" where ");
-        let mut index = 0;
+        let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
         for value in values {
-            if index > 0 {
-                builder.write_string(", ")
-            } else {
-                ()
-            };
-            match value {
-                Trait { ty, trait_ref } => {
-                    pretty_write_type(builder, ty);
-                    builder.write_string(": ");
-                    pretty_write_trait_ref(builder, trait_ref)
-                },
-                Equality { lhs, rhs } => {
-                    pretty_write_type(builder, lhs);
-                    builder.write_string(" = ");
-                    pretty_write_type(builder, rhs)
-                },
-            };
-            index = index + 1;
-        }
-    } else {
-        ()
-    }
-}
-
-fn pretty_write_attributes(builder: text::StringBuilder, values: Vec[Attribute]) -> unit {
-    let mut index = 0;
-    for value in values {
-        if index > 0 {
-            builder.write_char('\n')
-        } else {
-            ()
+            result.push(doc::text(value))
         };
-        builder.write_string(value.text);
-        index = index + 1;
+        doc::delimited("[", ",", "]", result)
     }
 }
 
-fn pretty_write_visibility(builder: text::StringBuilder, value: Visibility) -> unit {
+fn pretty_bounded_generics_doc(generics: Vec[string], bounds: Vec[(string, Vec[TraitRef])]) -> doc::Doc {
+    if generics.is_empty() {
+        doc::nil()
+    } else {
+        let values: Vec[doc::Doc] = Vec::with_capacity(generics.len());
+        for generic in generics {
+            let suffix = match pretty_find_bounds(bounds, generic) {
+                Some(values) => if values.is_empty() {
+                    doc::nil()
+                } else {
+                    doc::append(
+                        doc::text(": "),
+                        doc::join(doc::text(" + "), pretty_trait_ref_docs(values)),
+                    )
+                },
+                None => doc::nil(),
+            };
+            values.push(doc::append(doc::text(generic), suffix))
+        };
+        doc::delimited("[", ",", "]", values)
+    }
+}
+
+fn pretty_predicate_doc(value: Predicate) -> doc::Doc {
     match value {
-        Private => (),
-        Public => builder.write_string("pub "),
+        Trait { ty, trait_ref } => doc::concat(
+            Vec::[pretty_type_doc(ty), doc::text(": "), pretty_trait_ref_doc(trait_ref)],
+        ),
+        Equality { lhs, rhs } => doc::concat(
+            Vec::[pretty_type_doc(lhs), doc::text(" = "), pretty_type_doc(rhs)],
+        ),
+    }
+}
+
+fn pretty_predicates_doc(values: Vec[Predicate]) -> doc::Doc {
+    if values.is_empty() {
+        doc::nil()
+    } else {
+        let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
+        for value in values {
+            result.push(pretty_predicate_doc(value))
+        };
+        doc::group(
+            doc::concat(
+                Vec::[
+                    doc::text(" where"),
+                    doc::nest(
+                        2,
+                        doc::append(
+                            doc::line(),
+                            doc::join(doc::append(doc::text(","), doc::line()), result),
+                        ),
+                    ),
+                ],
+            ),
+        )
+    }
+}
+
+fn pretty_attributes_doc(values: Vec[Attribute]) -> doc::Doc {
+    let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(doc::text(value.text))
+    };
+    doc::concat(result)
+}
+
+fn pretty_visibility_doc(value: Visibility) -> doc::Doc {
+    match value {
+        Private => doc::nil(),
+        Public => doc::text("pub "),
     }
 }
 
@@ -307,6 +254,12 @@ fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> un
     builder.write_char('"')
 }
 
+fn pretty_quoted_string_doc(value: string) -> doc::Doc {
+    let builder = text::StringBuilder::new();
+    pretty_write_quoted_string(builder, value);
+    doc::text(builder.finish())
+}
+
 fn pretty_unary_symbol(value: UnaryOp) -> string {
     match value {
         Neg => "-",
@@ -338,341 +291,342 @@ fn pretty_binary_symbol(value: BinaryOp) -> string {
     }
 }
 
-fn pretty_write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) -> unit {
-    pretty_write_attributes(builder, value.attrs);
-    pretty_write_visibility(builder, value.visibility);
-    builder.write_string("enum ");
-    builder.write_string(value.name);
-    pretty_write_generics(builder, value.generics);
-    builder.write_string(" {");
-    let mut index = 0;
-    for variant in value.variants {
-        if index > 0 {
-            builder.write_char(',')
-        } else {
-            ()
-        };
-        pretty_newline(builder, indent + 4);
-        builder.write_string(variant.name);
-        match variant.fields {
-            Unit => (),
-            Tuple(types) => {
-                builder.write_char('(');
-                pretty_write_types(builder, types, ", ");
-                builder.write_char(')')
-            },
-            Struct(fields) => {
-                builder.write_string(" { ");
-                let mut field_index = 0;
-                for field in fields {
-                    if field_index > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
-                    builder.write_string(field.0);
-                    builder.write_string(": ");
-                    pretty_write_type(builder, field.1);
-                    field_index = field_index + 1;
-                };
-                builder.write_string(" }")
-            },
-        };
-        index = index + 1;
-    };
-    pretty_newline(builder, indent);
-    builder.write_char('}')
-}
-
-fn pretty_write_struct(builder: text::StringBuilder, value: StructDef, indent: int) -> unit {
-    pretty_write_attributes(builder, value.attrs);
-    pretty_write_visibility(builder, value.visibility);
-    builder.write_string("struct ");
-    builder.write_string(value.name);
-    pretty_write_generics(builder, value.generics);
-    builder.write_string(" {");
-    for field in value.fields {
-        pretty_newline(builder, indent + 4);
-        if vecs::contains(value.public_fields, field.0) {
-            builder.write_string("pub ")
-        } else {
-            ()
-        };
-        builder.write_string(field.0);
-        builder.write_string(": ");
-        pretty_write_type(builder, field.1);
-        builder.write_char(',')
-    };
-    pretty_newline(builder, indent);
-    builder.write_char('}')
-}
-
-fn pretty_write_trait_method(builder: text::StringBuilder, value: TraitMethodSignature, indent: int) -> unit {
-    builder.write_string("fn ");
-    builder.write_string(value.name);
-    pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
-    builder.write_char('(');
-    for index in 0..value.params.len() {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        let param = value.params[index];
-        builder.write_string(param.0);
-        builder.write_string(": ");
-        pretty_write_type(builder, param.1)
-    };
-    builder.write_string(") -> ");
-    pretty_write_type(builder, value.ret_ty);
-    pretty_write_predicates(builder, value.predicates);
-    match value.body {
-        Some(body) => {
-            builder.write_char(' ');
-            pretty_write_block(builder, body, indent)
-        },
-        None => builder.write_char(';'),
-    }
-}
-
-fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int) -> unit {
-    pretty_write_attributes(builder, value.attrs);
-    pretty_write_visibility(builder, value.visibility);
-    builder.write_string("trait ");
-    builder.write_string(value.name);
-    pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
-    if !value.supertraits.is_empty() {
-        builder.write_string(": ");
-        pretty_write_trait_refs(builder, value.supertraits, " + ")
-    } else {
-        ()
-    };
-    pretty_write_predicates(builder, value.predicates);
-    builder.write_string(" {");
-    if value.associated_types.is_empty() && value.method_sigs.is_empty() {
-        builder.write_string("\n\n");
-        pretty_write_spaces(builder, indent)
-    } else {
-        for associated in value.associated_types {
-            pretty_newline(builder, indent + 2);
-            builder.write_string("type ");
-            builder.write_string(associated.name);
-            if !associated.bounds.is_empty() {
-                builder.write_string(": ");
-                pretty_write_trait_refs(builder, associated.bounds, " + ")
-            } else {
-                ()
+fn pretty_enum_variant_doc(value: EnumVariant) -> doc::Doc {
+    match value.fields {
+        Unit => doc::text(value.name),
+        Tuple(types) => doc::append(
+            doc::text(value.name),
+            doc::delimited("(", ",", ")", pretty_type_docs(types)),
+        ),
+        Struct(fields) => {
+            let values: Vec[doc::Doc] = Vec::with_capacity(fields.len());
+            for field in fields {
+                values.push(doc::concat(Vec::[doc::text(field.0 + ": "), pretty_type_doc(field.1)]))
             };
-            builder.write_char(';')
-        };
-        for method in value.method_sigs {
-            pretty_newline(builder, indent + 2);
-            pretty_write_trait_method(builder, method, indent + 2)
-        };
-        pretty_newline(builder, indent)
-    };
-    builder.write_char('}')
-}
-
-fn pretty_write_function(builder: text::StringBuilder, value: Function, indent: int) -> unit {
-    pretty_write_attributes(builder, value.attrs);
-    pretty_write_visibility(builder, value.visibility);
-    builder.write_string("fn ");
-    builder.write_string(value.name);
-    pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
-    builder.write_char('(');
-    let mut index = 0;
-    for param in value.params {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        builder.write_string(param.0);
-        builder.write_string(": ");
-        pretty_write_type(builder, param.1);
-        index = index + 1;
-    };
-    builder.write_char(')');
-    match value.ret_ty {
-        Some(ty) => {
-            builder.write_string(" -> ");
-            pretty_write_type(builder, ty)
+            pretty_record_doc(doc::text(value.name), values)
         },
-        None => (),
-    };
-    pretty_write_predicates(builder, value.predicates);
-    builder.write_char(' ');
-    pretty_write_block(builder, value.body, indent)
-}
-
-fn pretty_write_extern(builder: text::StringBuilder, value: ExternFunction) -> unit {
-    pretty_write_attributes(builder, value.attrs);
-    pretty_write_visibility(builder, value.visibility);
-    builder.write_string("extern fn ");
-    builder.write_string(value.name);
-    pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
-    builder.write_char('(');
-    let mut index = 0;
-    for param in value.params {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        builder.write_string(param.0);
-        builder.write_string(": ");
-        pretty_write_type(builder, param.1);
-        index = index + 1;
-    };
-    builder.write_char(')');
-    match value.ret_ty {
-        Some(ty) => {
-            builder.write_string(" -> ");
-            pretty_write_type(builder, ty)
-        },
-        None => (),
-    };
-    pretty_write_predicates(builder, value.predicates)
-}
-
-fn pretty_write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> unit {
-    pretty_write_attributes(builder, value.attrs);
-    builder.write_string("impl");
-    pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
-    builder.write_char(' ');
-    match value.trait_ref {
-        Some(trait_ref) => {
-            pretty_write_trait_ref(builder, trait_ref);
-            builder.write_string(" for ")
-        },
-        None => (),
-    };
-    pretty_write_type(builder, value.for_type);
-    pretty_write_predicates(builder, value.predicates);
-    builder.write_string(" {");
-    if value.associated_types.is_empty() && value.methods.is_empty() {
-        builder.write_string("\n\n");
-        pretty_write_spaces(builder, indent)
-    } else {
-        for associated in value.associated_types {
-            pretty_newline(builder, indent + 2);
-            builder.write_string("type ");
-            builder.write_string(associated.0);
-            builder.write_string(" = ");
-            pretty_write_type(builder, associated.1);
-            builder.write_char(';')
-        };
-        for method in value.methods {
-            pretty_newline(builder, indent + 2);
-            pretty_write_function(builder, method, indent + 2)
-        };
-        pretty_newline(builder, indent)
-    };
-    builder.write_char('}')
-}
-
-fn pretty_write_type_alias(builder: text::StringBuilder, value: TypeAlias) -> unit {
-    pretty_write_attributes(builder, value.attrs);
-    pretty_write_visibility(builder, value.visibility);
-    builder.write_string("type ");
-    builder.write_string(value.name);
-    pretty_write_generics(builder, value.generics);
-    builder.write_string(" = ");
-    pretty_write_type(builder, value.ty);
-    builder.write_char(';')
-}
-
-fn pretty_write_constant(builder: text::StringBuilder, value: Constant) -> unit {
-    pretty_write_attributes(builder, value.attrs);
-    pretty_write_visibility(builder, value.visibility);
-    builder.write_string("const ");
-    builder.write_string(value.name);
-    builder.write_string(": ");
-    pretty_write_type(builder, value.ty);
-    builder.write_string(" = ");
-    pretty_write_expr(builder, value.value, 0);
-    builder.write_char(';')
-}
-
-fn pretty_write_item(builder: text::StringBuilder, value: Item, indent: int) -> unit {
-    match value {
-        EnumDef(value) => pretty_write_enum(builder, value, indent),
-        StructDef(value) => pretty_write_struct(builder, value, indent),
-        TraitDef(value) => pretty_write_trait(builder, value, indent),
-        ImplBlock(value) => pretty_write_impl(builder, value, indent),
-        Function(value) => pretty_write_function(builder, value, indent),
-        ExternFunction(value) => pretty_write_extern(builder, value),
-        TypeAlias(value) => pretty_write_type_alias(builder, value),
-        Constant(value) => pretty_write_constant(builder, value),
     }
+}
+
+fn pretty_enum_doc(value: EnumDef) -> doc::Doc {
+    let variants: Vec[doc::Doc] = Vec::with_capacity(value.variants.len());
+    for variant in value.variants {
+        variants.push(pretty_enum_variant_doc(variant))
+    };
+    let body = if variants.is_empty() {
+        doc::text("{}")
+    } else {
+        doc::concat(
+            Vec::[
+                doc::text("{"),
+                doc::nest(
+                    4,
+                    doc::append(
+                        doc::hardline(),
+                        doc::join(doc::append(doc::text(","), doc::hardline()), variants),
+                    ),
+                ),
+                doc::hardline(),
+                doc::text("}"),
+            ],
+        )
+    };
+    doc::concat(
+        Vec::[
+            pretty_attributes_doc(value.attrs),
+            pretty_visibility_doc(value.visibility),
+            doc::text("enum " + value.name),
+            pretty_generics_doc(value.generics),
+            doc::text(" "),
+            body,
+        ],
+    )
+}
+
+fn pretty_struct_doc(value: StructDef) -> doc::Doc {
+    let fields: Vec[doc::Doc] = Vec::with_capacity(value.fields.len());
+    for field in value.fields {
+        fields.push(
+            doc::concat(
+                Vec::[
+                    if vecs::contains(value.public_fields, field.0) {
+                        doc::text("pub ")
+                    } else {
+                        doc::nil()
+                    },
+                    doc::text(field.0 + ": "),
+                    pretty_type_doc(field.1),
+                    doc::text(","),
+                ],
+            ),
+        )
+    };
+    doc::concat(
+        Vec::[
+            pretty_attributes_doc(value.attrs),
+            pretty_visibility_doc(value.visibility),
+            doc::text("struct " + value.name),
+            pretty_generics_doc(value.generics),
+            doc::text(" "),
+            pretty_braced_docs(fields, 4),
+        ],
+    )
+}
+
+fn pretty_named_params_doc(values: Vec[(string, TypeExpr)]) -> doc::Doc {
+    let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(doc::concat(Vec::[doc::text(value.0 + ": "), pretty_type_doc(value.1)]))
+    };
+    doc::delimited("(", ",", ")", result)
+}
+
+fn pretty_trait_method_doc(value: TraitMethodSignature) -> doc::Doc {
+    let signature = doc::concat(
+        Vec::[
+            doc::text("fn " + value.name),
+            pretty_bounded_generics_doc(value.generics, value.generic_bounds),
+            pretty_named_params_doc(value.params),
+            doc::text(" -> "),
+            pretty_type_doc(value.ret_ty),
+            pretty_predicates_doc(value.predicates),
+        ],
+    );
+    match value.body {
+        Some(body) => doc::concat(Vec::[signature, doc::text(" "), pretty_block_doc(body)]),
+        None => doc::append(signature, doc::text(";")),
+    }
+}
+
+fn pretty_trait_doc(value: TraitDef) -> doc::Doc {
+    let supertraits = if value.supertraits.is_empty() {
+        doc::nil()
+    } else {
+        doc::append(
+            doc::text(": "),
+            doc::join(doc::text(" + "), pretty_trait_ref_docs(value.supertraits)),
+        )
+    };
+    let members: Vec[doc::Doc] = Vec::with_capacity(
+        value.associated_types.len() + value.method_sigs.len(),
+    );
+    for associated in value.associated_types {
+        let bounds = if associated.bounds.is_empty() {
+            doc::nil()
+        } else {
+            doc::append(
+                doc::text(": "),
+                doc::join(doc::text(" + "), pretty_trait_ref_docs(associated.bounds)),
+            )
+        };
+        members.push(
+            doc::concat(Vec::[doc::text("type " + associated.name), bounds, doc::text(";")]),
+        )
+    };
+    for method in value.method_sigs {
+        members.push(pretty_trait_method_doc(method))
+    };
+    doc::block(
+        doc::concat(
+            Vec::[
+                pretty_attributes_doc(value.attrs),
+                pretty_visibility_doc(value.visibility),
+                doc::text("trait " + value.name),
+                pretty_bounded_generics_doc(value.generics, value.generic_bounds),
+                supertraits,
+                pretty_predicates_doc(value.predicates),
+            ],
+        ),
+        members,
+    )
+}
+
+fn pretty_optional_return_doc(value: Option[TypeExpr]) -> doc::Doc {
+    match value {
+        Some(ty) => doc::append(doc::text(" -> "), pretty_type_doc(ty)),
+        None => doc::nil(),
+    }
+}
+
+fn pretty_function_doc(value: Function) -> doc::Doc {
+    doc::concat(
+        Vec::[
+            pretty_attributes_doc(value.attrs),
+            pretty_visibility_doc(value.visibility),
+            doc::text("fn " + value.name),
+            pretty_bounded_generics_doc(value.generics, value.generic_bounds),
+            pretty_named_params_doc(value.params),
+            pretty_optional_return_doc(value.ret_ty),
+            pretty_predicates_doc(value.predicates),
+            doc::text(" "),
+            pretty_block_doc(value.body),
+        ],
+    )
+}
+
+fn pretty_extern_doc(value: ExternFunction) -> doc::Doc {
+    doc::concat(
+        Vec::[
+            pretty_attributes_doc(value.attrs),
+            pretty_visibility_doc(value.visibility),
+            doc::text("extern fn " + value.name),
+            pretty_bounded_generics_doc(value.generics, value.generic_bounds),
+            pretty_named_params_doc(value.params),
+            pretty_optional_return_doc(value.ret_ty),
+            pretty_predicates_doc(value.predicates),
+        ],
+    )
+}
+
+fn pretty_impl_doc(value: ImplBlock) -> doc::Doc {
+    let trait_doc = match value.trait_ref {
+        Some(reference) => {
+            doc::concat(Vec::[pretty_trait_ref_doc(reference), doc::text(" for ")])
+        },
+        None => doc::nil(),
+    };
+    let members: Vec[doc::Doc] = Vec::with_capacity(
+        value.associated_types.len() + value.methods.len(),
+    );
+    for associated in value.associated_types {
+        members.push(
+            doc::concat(
+                Vec::[
+                    doc::text("type " + associated.0 + " = "),
+                    pretty_type_doc(associated.1),
+                    doc::text(";"),
+                ],
+            ),
+        )
+    };
+    for method in value.methods {
+        members.push(pretty_function_doc(method))
+    };
+    doc::block(
+        doc::concat(
+            Vec::[
+                pretty_attributes_doc(value.attrs),
+                doc::text("impl"),
+                pretty_bounded_generics_doc(value.generics, value.generic_bounds),
+                doc::text(" "),
+                trait_doc,
+                pretty_type_doc(value.for_type),
+                pretty_predicates_doc(value.predicates),
+            ],
+        ),
+        members,
+    )
+}
+
+fn pretty_type_alias_doc(value: TypeAlias) -> doc::Doc {
+    doc::concat(
+        Vec::[
+            pretty_attributes_doc(value.attrs),
+            pretty_visibility_doc(value.visibility),
+            doc::text("type " + value.name),
+            pretty_generics_doc(value.generics),
+            doc::text(" = "),
+            pretty_type_doc(value.ty),
+            doc::text(";"),
+        ],
+    )
+}
+
+fn pretty_constant_doc(value: Constant) -> doc::Doc {
+    doc::concat(
+        Vec::[
+            pretty_attributes_doc(value.attrs),
+            doc::group(
+                doc::concat(
+                    Vec::[
+                        pretty_visibility_doc(value.visibility),
+                        doc::text("const " + value.name + ": "),
+                        pretty_type_doc(value.ty),
+                        doc::text(" ="),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(value.value))),
+                        doc::text(";"),
+                    ],
+                ),
+            ),
+        ],
+    )
+}
+
+fn pretty_item_doc(value: Item) -> doc::Doc {
+    match value {
+        EnumDef(value) => pretty_enum_doc(value),
+        StructDef(value) => pretty_struct_doc(value),
+        TraitDef(value) => pretty_trait_doc(value),
+        ImplBlock(value) => pretty_impl_doc(value),
+        Function(value) => pretty_function_doc(value),
+        ExternFunction(value) => pretty_extern_doc(value),
+        TypeAlias(value) => pretty_type_alias_doc(value),
+        Constant(value) => pretty_constant_doc(value),
+    }
+}
+
+fn pretty_use_item_doc(value: UseItem) -> doc::Doc {
+    match value.alias {
+        Some(alias) => doc::text(value.name + " as " + alias),
+        None => doc::text(value.name),
+    }
+}
+
+fn pretty_use_doc(value: UseDecl) -> doc::Doc {
+    let items = if value.items.is_empty() {
+        doc::nil()
+    } else {
+        let values: Vec[doc::Doc] = Vec::with_capacity(value.items.len());
+        for item in value.items {
+            values.push(pretty_use_item_doc(item))
+        };
+        doc::delimited("::{", ",", "}", values)
+    };
+    let alias = match value.alias {
+        Some(alias) => doc::text(" as " + alias),
+        None => doc::nil(),
+    };
+    doc::concat(Vec::[doc::text("use "), pretty_path_doc(value.path), items, alias, doc::text(";")])
 }
 
 fn pretty_file(value: File) -> string {
-    let builder = text::StringBuilder::new();
-    builder.write_string("package ");
-    builder.write_string(value.package_name);
-    builder.write_char(';');
-    pretty_newline(builder, 0);
-    if !value.uses.is_empty() {
-        for use_decl in value.uses {
-            builder.write_string("use ");
-            pretty_write_path(builder, use_decl.path);
-            if !use_decl.items.is_empty() {
-                builder.write_string("::{");
-                let mut index = 0;
-                for item in use_decl.items {
-                    if index > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
-                    builder.write_string(item.name);
-                    match item.alias {
-                        Some(alias) => {
-                            builder.write_string(" as ");
-                            builder.write_string(alias)
-                        },
-                        None => (),
-                    };
-                    index = index + 1;
-                };
-                builder.write_char('}')
-            } else {
-                ()
-            };
-            match use_decl.alias {
-                Some(alias) => {
-                    builder.write_string(" as ");
-                    builder.write_string(alias)
-                },
-                None => (),
-            };
-            builder.write_char(';');
-            pretty_newline(builder, 0)
-        };
-        pretty_newline(builder, 0)
+    let uses: Vec[doc::Doc] = Vec::with_capacity(value.uses.len());
+    for value in value.uses {
+        uses.push(pretty_use_doc(value))
+    };
+    let items: Vec[doc::Doc] = Vec::with_capacity(value.items.len());
+    for value in value.items {
+        items.push(pretty_item_doc(value))
+    };
+    let values: Vec[doc::Doc] = Vec::new();
+    values.push(doc::text("package " + value.package_name + ";"));
+    values.push(doc::hardline());
+    if !uses.is_empty() {
+        values.push(doc::stack(uses));
+        values.push(doc::hardline());
+        values.push(doc::hardline())
     } else {
         ()
     };
-    for item in value.items {
-        pretty_write_item(builder, item, 0);
-        pretty_newline(builder, 0);
-        pretty_newline(builder, 0)
+    if !items.is_empty() {
+        values.push(doc::join(doc::concat(Vec::[doc::hardline(), doc::hardline()]), items));
+        values.push(doc::hardline());
+        values.push(doc::hardline())
+    } else {
+        ()
     };
-    builder.finish()
+    doc::pretty(100, doc::concat(values))
 }
 
 pub fn pretty(value: LowerResult) -> string {
     match value.ast {
         Some(file) => pretty_file(file),
         None => {
-            let builder = text::StringBuilder::new();
+            let values: Vec[doc::Doc] = Vec::with_capacity(value.diagnostics.len());
             for diagnostic in value.diagnostics {
-                builder.write_string(diagnostic.message);
-                builder.write_char('\n')
+                values.push(doc::append(doc::text(diagnostic.message), doc::hardline()))
             };
-            builder.finish()
+            doc::layout(doc::concat(values))
         },
     }
 }

@@ -1,5 +1,6 @@
 package ast;
 
+use gomlc::pretty as doc;
 use std::text;
 
 fn pretty_decimal_byte(value: string) -> uint8 {
@@ -29,139 +30,20 @@ fn pretty_write_byte_string(builder: text::StringBuilder, values: Vec[string]) -
     builder.write_char('"')
 }
 
-fn pretty_write_exprs(
-    builder: text::StringBuilder,
-    values: Vec[Expr],
-    separator: string,
-    indent: int,
-) -> unit {
-    let mut index = 0;
-    for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        pretty_write_expr(builder, value, indent);
-        index = index + 1;
-    }
+fn pretty_byte_literal_doc(value: string) -> doc::Doc {
+    let builder = text::StringBuilder::new();
+    pretty_write_byte_literal(builder, value);
+    doc::text(builder.finish())
 }
 
-fn pretty_write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit {
-    if value.stmts.is_empty() {
-        match value.tail {
-            None => builder.write_string("{}"),
-            Some(tail) => {
-                builder.write_char('{');
-                pretty_newline(builder, indent + 4);
-                pretty_write_expr(builder, tail, indent + 4);
-                pretty_newline(builder, indent);
-                builder.write_char('}')
-            },
-        }
-    } else {
-        builder.write_char('{');
-        for stmt in value.stmts {
-            pretty_newline(builder, indent + 4);
-            pretty_write_stmt(builder, stmt, indent + 4);
-            builder.write_char(';')
-        };
-        match value.tail {
-            Some(tail) => {
-                pretty_newline(builder, indent + 4);
-                pretty_write_expr(builder, tail, indent + 4)
-            },
-            None => (),
-        };
-        pretty_newline(builder, indent);
-        builder.write_char('}')
-    }
+fn pretty_byte_string_doc(values: Vec[string]) -> doc::Doc {
+    let builder = text::StringBuilder::new();
+    pretty_write_byte_string(builder, values);
+    doc::text(builder.finish())
 }
 
-fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
-    match value {
-        Defer { expr, span: _ } => {
-            builder.write_string("defer ");
-            pretty_write_expr(builder, expr, indent)
-        },
-        Let { is_mut, pat, annotation, value: expr, else_branch, span: _ } => {
-            builder.write_string("let ");
-            if is_mut {
-                builder.write_string("mut ")
-            } else {
-                ()
-            };
-            pretty_write_pat(builder, pat, indent);
-            match annotation {
-                Some(ty) => {
-                    builder.write_string(": ");
-                    pretty_write_type(builder, ty)
-                },
-                None => (),
-            };
-            builder.write_string(" = ");
-            pretty_write_expr(builder, expr, indent);
-            match else_branch {
-                Some(value) => {
-                    builder.write_string(" else ");
-                    pretty_write_expr(builder, value, indent)
-                },
-                None => (),
-            }
-        },
-        Assign { target, op, value: expr, span: _ } => {
-            pretty_write_expr(builder, target, indent);
-            builder.write_char(' ');
-            match op {
-                Compound(value) => builder.write_string(pretty_binary_symbol(value)),
-                Plain => (),
-            };
-            builder.write_string("= ");
-            pretty_write_expr(builder, expr, indent)
-        },
-        Expr { expr, span: _ } => pretty_write_expr(builder, expr, indent),
-    }
-}
-
-fn pretty_write_path_expr(
-    builder: text::StringBuilder,
-    path: Path,
-    owner_type_args: Vec[TypeExpr],
-    member_type_args: Vec[TypeExpr],
-) -> unit {
-    if owner_type_args.is_empty() {
-        pretty_write_path(builder, path)
-    } else {
-        let last = path.segments.len() - 1;
-        for index in 0..last {
-            if index > 0 {
-                builder.write_string("::")
-            } else {
-                ()
-            };
-            builder.write_string(path.segments[index].ident)
-        };
-        builder.write_string("::");
-        builder.write_char('[');
-        pretty_write_types(builder, owner_type_args, ", ");
-        builder.write_char(']');
-        if last > 0 {
-            builder.write_string("::");
-            builder.write_string(path.segments[last].ident)
-        } else {
-            ()
-        }
-    };
-    if !member_type_args.is_empty() {
-        builder.write_string("::[");
-        pretty_write_types(builder, member_type_args, ", ");
-        builder.write_char(']')
-    } else {
-        ()
-    }
-}
-
-fn pretty_write_interpolated_text(builder: text::StringBuilder, value: string) -> unit {
+fn pretty_interpolated_text_doc(value: string) -> doc::Doc {
+    let builder = text::StringBuilder::new();
     let mut index = 0;
     while index < value.byte_len() {
         let byte = value.byte_get(index);
@@ -184,297 +66,428 @@ fn pretty_write_interpolated_text(builder: text::StringBuilder, value: string) -
             builder.write_string(value.byte_slice(index, index + width))
         };
         index = index + pretty_utf8_width(byte);
+    };
+    doc::text(builder.finish())
+}
+
+fn pretty_expr_docs(values: Vec[Expr]) -> Vec[doc::Doc] {
+    let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(pretty_expr_doc(value))
+    };
+    result
+}
+
+fn pretty_pat_docs(values: Vec[Pat]) -> Vec[doc::Doc] {
+    let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(pretty_pat_doc(value))
+    };
+    result
+}
+
+fn pretty_record_doc(header: doc::Doc, values: Vec[doc::Doc]) -> doc::Doc {
+    if values.is_empty() {
+        doc::append(header, doc::text(" {}"))
+    } else {
+        doc::group(
+            doc::concat(
+                Vec::[
+                    header,
+                    doc::text(" {"),
+                    doc::nest(
+                        2,
+                        doc::append(
+                            doc::line(),
+                            doc::join(doc::append(doc::text(","), doc::line()), values),
+                        ),
+                    ),
+                    doc::line(),
+                    doc::text("}"),
+                ],
+            ),
+        )
     }
 }
 
-fn pretty_write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
+fn pretty_braced_docs(values: Vec[doc::Doc], indentation: int) -> doc::Doc {
+    if values.is_empty() {
+        doc::text("{}")
+    } else {
+        doc::concat(
+            Vec::[
+                doc::text("{"),
+                doc::nest(indentation, doc::append(doc::hardline(), doc::stack(values))),
+                doc::hardline(),
+                doc::text("}"),
+            ],
+        )
+    }
+}
+
+fn pretty_block_doc(value: Block) -> doc::Doc {
+    let values: Vec[doc::Doc] = Vec::with_capacity(
+        value.stmts.len()
+            + if value.tail.is_some() {
+                1
+            } else {
+                0
+            },
+    );
+    for statement in value.stmts {
+        values.push(doc::append(pretty_stmt_doc(statement), doc::text(";")))
+    };
+    match value.tail {
+        Some(tail) => values.push(pretty_expr_doc(tail)),
+        None => (),
+    };
+    pretty_braced_docs(values, 4)
+}
+
+fn pretty_stmt_doc(value: Stmt) -> doc::Doc {
     match value {
-        Path { path, owner_type_args, member_type_args, span: _ } => pretty_write_path_expr(
-            builder,
-            path,
-            owner_type_args,
-            member_type_args,
+        Defer { expr, span: _ } => doc::group(
+            doc::concat(
+                Vec::[
+                    doc::text("defer"),
+                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
+                ],
+            ),
         ),
-        Unit { span: _ } => builder.write_string("()"),
-        Bool { value, span: _ } => builder.write_string(
+        Let { is_mut, pat, annotation, value: expr, else_branch, span: _ } => {
+            let annotation_doc = match annotation {
+                Some(ty) => doc::append(doc::text(": "), pretty_type_doc(ty)),
+                None => doc::nil(),
+            };
+            let else_doc = match else_branch {
+                Some(value) => doc::concat(
+                    Vec::[
+                        doc::text(" else"),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(value))),
+                    ],
+                ),
+                None => doc::nil(),
+            };
+            doc::group(
+                doc::concat(
+                    Vec::[
+                        doc::text(
+                            if is_mut {
+                                "let mut "
+                            } else {
+                                "let "
+                            },
+                        ),
+                        pretty_pat_doc(pat),
+                        annotation_doc,
+                        doc::text(" ="),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
+                        else_doc,
+                    ],
+                ),
+            )
+        },
+        Assign { target, op, value: expr, span: _ } => doc::group(
+            doc::concat(
+                Vec::[
+                    pretty_expr_doc(target),
+                    doc::text(
+                        match op {
+                            Compound(value) => " " + pretty_binary_symbol(value) + "=",
+                            Plain => " =",
+                        },
+                    ),
+                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(expr))),
+                ],
+            ),
+        ),
+        Expr { expr, span: _ } => pretty_expr_doc(expr),
+    }
+}
+
+fn pretty_path_expr_doc(path: Path, owner_type_args: Vec[TypeExpr], member_type_args: Vec[TypeExpr]) -> doc::Doc {
+    let owner = if owner_type_args.is_empty() {
+        pretty_path_doc(path)
+    } else {
+        let last = path.segments.len() - 1;
+        let prefixes: Vec[doc::Doc] = Vec::with_capacity(last);
+        for index in 0..last {
+            prefixes.push(doc::text(path.segments[index].ident))
+        };
+        doc::concat(
+            Vec::[
+                doc::join(doc::text("::"), prefixes),
+                doc::text("::"),
+                doc::delimited("[", ",", "]", pretty_type_docs(owner_type_args)),
+                if last > 0 {
+                    doc::text("::" + path.segments[last].ident)
+                } else {
+                    doc::nil()
+                },
+            ],
+        )
+    };
+    if member_type_args.is_empty() {
+        owner
+    } else {
+        doc::concat(
+            Vec::[
+                owner,
+                doc::text("::"),
+                doc::delimited("[", ",", "]", pretty_type_docs(member_type_args)),
+            ],
+        )
+    }
+}
+
+fn pretty_arm_doc(value: Arm) -> doc::Doc {
+    let guard = match value.guard {
+        Some(guard) => doc::append(doc::text(" if "), pretty_expr_doc(guard)),
+        None => doc::nil(),
+    };
+    doc::group(
+        doc::concat(
+            Vec::[
+                pretty_pat_doc(value.pat),
+                guard,
+                doc::text(" =>"),
+                doc::nest(2, doc::append(doc::line(), pretty_expr_doc(value.body))),
+                doc::text(","),
+            ],
+        ),
+    )
+}
+
+fn pretty_expr_doc(value: Expr) -> doc::Doc {
+    match value {
+        Path { path, owner_type_args, member_type_args, span: _ } => {
+            pretty_path_expr_doc(path, owner_type_args, member_type_args)
+        },
+        Unit { span: _ } => doc::text("()"),
+        Bool { value, span: _ } => doc::text(
             if value {
                 "true"
             } else {
                 "false"
             },
         ),
-        Int { value, span: _ } => builder.write_string(value),
-        Float { value, span: _ } => builder.write_string(value.to_string()),
-        String { value, span: _ } => pretty_write_quoted_string(builder, value),
+        Int { value, span: _ } => doc::text(value),
+        Float { value, span: _ } => doc::text(value.to_string()),
+        String { value, span: _ } => pretty_quoted_string_doc(value),
         InterpolatedString { parts, span: _ } => {
-            builder.write_string("f\"");
+            let values: Vec[doc::Doc] = Vec::with_capacity(parts.len() + 2);
+            values.push(doc::text("f\""));
             for part in parts {
                 match part {
-                    Text(value) => {
-                        pretty_write_interpolated_text(builder, value)
-                    },
-                    Expr(value) => {
-                        builder.write_char('{');
-                        pretty_write_expr(builder, value, indent);
-                        builder.write_char('}')
-                    },
+                    Text(value) => values.push(pretty_interpolated_text_doc(value)),
+                    Expr(value) => values.push(
+                        doc::concat(Vec::[doc::text("{"), pretty_expr_doc(value), doc::text("}")]),
+                    ),
                 }
             };
-            builder.write_char('"')
+            values.push(doc::text("\""));
+            doc::concat(values)
         },
-        Char { value, span: _ } => {
-            builder.write_char('\'');
-            builder.write_string(value);
-            builder.write_char('\'')
-        },
-        Byte { value, span: _ } => pretty_write_byte_literal(builder, value),
-        ByteString { values, span: _ } => pretty_write_byte_string(builder, values),
-        ConstructorValue { constructor: path, span: _ } => {
-            pretty_write_path(builder, path)
-        },
+        Char { value, span: _ } => doc::text("'" + value + "'"),
+        Byte { value, span: _ } => pretty_byte_literal_doc(value),
+        ByteString { values, span: _ } => pretty_byte_string_doc(values),
+        ConstructorValue { constructor: path, span: _ } => pretty_path_doc(path),
         Constr { constructor: path, args, span: _ } => {
-            pretty_write_path(builder, path);
-            if !args.is_empty() {
-                builder.write_char('(');
-                pretty_write_exprs(builder, args, ", ", indent);
-                builder.write_char(')')
+            if args.is_empty() {
+                pretty_path_doc(path)
             } else {
-                ()
+                doc::append(
+                    pretty_path_doc(path),
+                    doc::delimited("(", ",", ")", pretty_expr_docs(args)),
+                )
             }
         },
         StructLiteral { name: path, fields, base, span: _ } => {
-            pretty_write_path(builder, path);
-            builder.write_string(" {");
-            if fields.is_empty() && base.is_none() {
-                builder.write_char('}')
-            } else {
-                let mut index = 0;
-                for field in fields {
-                    if index > 0 {
-                        builder.write_char(',')
+            let values: Vec[doc::Doc] = Vec::with_capacity(
+                fields.len()
+                    + if base.is_some() {
+                        1
                     } else {
-                        ()
-                    };
-                    pretty_newline(builder, indent + 4);
-                    builder.write_string(field.0);
-                    builder.write_string(": ");
-                    pretty_write_expr(builder, field.1, indent + 4);
-                    index = index + 1;
-                };
-                match base {
-                    Some(value) => {
-                        if index > 0 {
-                            builder.write_char(',')
-                        } else {
-                            ()
-                        };
-                        pretty_newline(builder, indent + 4);
-                        builder.write_string("..");
-                        pretty_write_expr(builder, value, indent + 4)
+                        0
                     },
-                    None => (),
-                };
-                pretty_newline(builder, indent);
-                builder.write_char('}')
-            }
+            );
+            for field in fields {
+                values.push(doc::concat(Vec::[doc::text(field.0 + ": "), pretty_expr_doc(field.1)]))
+            };
+            match base {
+                Some(value) => {
+                    values.push(doc::append(doc::text(".."), pretty_expr_doc(value)))
+                },
+                None => (),
+            };
+            pretty_record_doc(pretty_path_doc(path), values)
         },
         Tuple { items: values, span: _ } => {
-            builder.write_char('(');
-            pretty_write_exprs(builder, values, ", ", indent);
-            builder.write_char(')')
+            doc::delimited("(", ",", ")", pretty_expr_docs(values))
         },
         Array { items: values, span: _ } => {
-            builder.write_char('[');
-            pretty_write_exprs(builder, values, ", ", indent);
-            builder.write_char(']')
+            doc::delimited("[", ",", "]", pretty_expr_docs(values))
         },
         VecLiteral { items: values, span: _ } => {
-            builder.write_string("Vec::[");
-            pretty_write_exprs(builder, values, ", ", indent);
-            builder.write_char(']')
+            doc::delimited("Vec::[", ",", "]", pretty_expr_docs(values))
         },
         HashMapLiteral { entries, span: _ } => {
-            builder.write_string("HashMap::{");
-            let mut index = 0;
+            let values: Vec[doc::Doc] = Vec::with_capacity(entries.len());
             for entry in entries {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                pretty_write_expr(builder, entry.0, indent);
-                builder.write_string(" => ");
-                pretty_write_expr(builder, entry.1, indent);
-                index = index + 1;
+                values.push(
+                    doc::group(
+                        doc::concat(
+                            Vec::[
+                                pretty_expr_doc(entry.0),
+                                doc::text(" =>"),
+                                doc::nest(2, doc::append(doc::line(), pretty_expr_doc(entry.1))),
+                            ],
+                        ),
+                    ),
+                )
             };
-            builder.write_char('}')
+            doc::delimited("HashMap::{", ",", "}", values)
         },
         Closure { params, body, span: _ } => {
-            builder.write_char('|');
-            let mut index = 0;
+            let values: Vec[doc::Doc] = Vec::with_capacity(params.len());
             for param in params {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
+                let ty = match param.ty {
+                    Some(ty) => doc::append(doc::text(": "), pretty_type_doc(ty)),
+                    None => doc::nil(),
                 };
-                builder.write_string(param.name);
-                match param.ty {
-                    Some(ty) => {
-                        builder.write_string(": ");
-                        pretty_write_type(builder, ty)
-                    },
-                    None => (),
-                };
-                index = index + 1;
+                values.push(doc::append(doc::text(param.name), ty))
             };
-            builder.write_string("| ");
-            pretty_write_expr(builder, body, indent)
+            let parameters = if values.is_empty() {
+                doc::text("||")
+            } else {
+                doc::delimited("|", ",", "|", values)
+            };
+            doc::group(
+                doc::concat(
+                    Vec::[
+                        parameters,
+                        doc::text(" =>"),
+                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(body))),
+                    ],
+                ),
+            )
         },
         Match { expr, arms, span: _ } => {
-            builder.write_string("match ");
-            pretty_write_expr(builder, expr, indent);
-            builder.write_string(" {");
+            let values: Vec[doc::Doc] = Vec::with_capacity(arms.len());
             for arm in arms {
-                pretty_newline(builder, indent + 4);
-                pretty_write_arm(builder, arm, indent + 4)
+                values.push(pretty_arm_doc(arm))
             };
-            pretty_newline(builder, indent);
-            builder.write_char('}')
+            doc::concat(
+                Vec::[
+                    doc::text("match "),
+                    pretty_expr_doc(expr),
+                    doc::text(" "),
+                    pretty_braced_docs(values, 4),
+                ],
+            )
         },
-        If { cond, then_branch, else_branch, span: _ } => {
-            builder.write_string("if ");
-            pretty_write_expr(builder, cond, indent);
-            builder.write_string(" {");
-            pretty_newline(builder, indent + 4);
-            pretty_write_expr(builder, then_branch, indent + 4);
-            pretty_newline(builder, indent);
-            builder.write_string("} else {");
-            pretty_newline(builder, indent + 4);
-            pretty_write_expr(builder, else_branch, indent + 4);
-            pretty_newline(builder, indent);
-            builder.write_char('}')
+        If { cond, then_branch, else_branch, span: _ } => doc::concat(
+            Vec::[
+                doc::text("if "),
+                pretty_expr_doc(cond),
+                doc::text(" "),
+                pretty_braced_docs(Vec::[pretty_expr_doc(then_branch)], 4),
+                doc::text(" else "),
+                pretty_braced_docs(Vec::[pretty_expr_doc(else_branch)], 4),
+            ],
+        ),
+        While { cond, body, span: _ } => doc::concat(
+            Vec::[
+                doc::text("while "),
+                pretty_expr_doc(cond),
+                doc::text(" "),
+                pretty_braced_docs(Vec::[pretty_expr_doc(body)], 4),
+            ],
+        ),
+        Loop { body, span: _ } => doc::append(doc::text("loop "), pretty_expr_doc(body)),
+        For { pat, iterator, body, span: _ } => doc::group(
+            doc::concat(
+                Vec::[
+                    doc::text("for "),
+                    pretty_pat_doc(pat),
+                    doc::text(" in"),
+                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(iterator))),
+                    doc::text(" "),
+                    pretty_expr_doc(body),
+                ],
+            ),
+        ),
+        Break { value, span: _ } => match value {
+            Some(expr) => doc::append(doc::text("break "), pretty_expr_doc(expr)),
+            None => doc::text("break"),
         },
-        While { cond, body, span: _ } => {
-            builder.write_string("while ");
-            pretty_write_expr(builder, cond, indent);
-            builder.write_string(" {");
-            pretty_newline(builder, indent + 4);
-            pretty_write_expr(builder, body, indent + 4);
-            pretty_newline(builder, indent);
-            builder.write_char('}')
+        Continue { span: _ } => doc::text("continue"),
+        Return { expr, span: _ } => match expr {
+            Some(value) => doc::append(doc::text("return "), pretty_expr_doc(value)),
+            None => doc::text("return"),
         },
-        Loop { body, span: _ } => {
-            builder.write_string("loop ");
-            pretty_write_expr(builder, body, indent)
-        },
-        For { pat, iterator, body, span: _ } => {
-            builder.write_string("for ");
-            pretty_write_pat(builder, pat, indent);
-            builder.write_string(" in ");
-            pretty_write_expr(builder, iterator, indent);
-            builder.write_char(' ');
-            pretty_write_expr(builder, body, indent)
-        },
-        Break { value, span: _ } => {
-            builder.write_string("break");
-            match value {
-                Some(expr) => {
-                    builder.write_char(' ');
-                    pretty_write_expr(builder, expr, indent)
-                },
-                None => (),
-            }
-        },
-        Continue { span: _ } => builder.write_string("continue"),
-        Return { expr, span: _ } => {
-            builder.write_string("return");
-            match expr {
-                Some(value) => {
-                    builder.write_char(' ');
-                    pretty_write_expr(builder, value, indent)
-                },
-                None => (),
-            }
-        },
-        Go { expr, span: _ } => {
-            builder.write_string("go ");
-            pretty_write_expr(builder, expr, indent)
-        },
-        Call { func, args, span: _ } => {
-            pretty_write_expr(builder, func, indent);
-            builder.write_char('(');
-            pretty_write_exprs(builder, args, ", ", indent + 2);
-            builder.write_char(')')
-        },
+        Go { expr, span: _ } => doc::append(doc::text("go "), pretty_expr_doc(expr)),
+        Call { func, args, span: _ } => doc::append(
+            pretty_expr_doc(func),
+            doc::delimited("(", ",", ")", pretty_expr_docs(args)),
+        ),
         Unary { op, expr, span: _ } => {
-            builder.write_string(pretty_unary_symbol(op));
-            pretty_write_expr(builder, expr, indent)
+            doc::append(doc::text(pretty_unary_symbol(op)), pretty_expr_doc(expr))
         },
-        Cast { expr, ty, span: _ } => {
-            pretty_write_expr(builder, expr, indent);
-            builder.write_string(" as ");
-            pretty_write_type(builder, ty)
-        },
-        Try { expr, span: _ } => {
-            pretty_write_expr(builder, expr, indent);
-            builder.write_char('?')
-        },
-        Range { start, end, inclusive, span: _ } => {
-            pretty_write_expr(builder, start, indent);
-            if inclusive {
-                builder.write_string("..=")
-            } else {
-                builder.write_string("..")
-            };
-            pretty_write_expr(builder, end, indent)
-        },
-        Binary { op, lhs, rhs, span: _ } => {
-            pretty_write_expr(builder, lhs, indent);
-            builder.write_char(' ');
-            builder.write_string(pretty_binary_symbol(op));
-            builder.write_char(' ');
-            pretty_write_expr(builder, rhs, indent)
-        },
+        Cast { expr, ty, span: _ } => doc::group(
+            doc::concat(
+                Vec::[
+                    pretty_expr_doc(expr),
+                    doc::text(" as"),
+                    doc::nest(2, doc::append(doc::line(), pretty_type_doc(ty))),
+                ],
+            ),
+        ),
+        Try { expr, span: _ } => doc::append(pretty_expr_doc(expr), doc::text("?")),
+        Range { start, end, inclusive, span: _ } => doc::concat(
+            Vec::[
+                pretty_expr_doc(start),
+                doc::text(
+                    if inclusive {
+                        "..="
+                    } else {
+                        ".."
+                    },
+                ),
+                pretty_expr_doc(end),
+            ],
+        ),
+        Binary { op, lhs, rhs, span: _ } => doc::group(
+            doc::concat(
+                Vec::[
+                    pretty_expr_doc(lhs),
+                    doc::text(" " + pretty_binary_symbol(op)),
+                    doc::nest(2, doc::append(doc::line(), pretty_expr_doc(rhs))),
+                ],
+            ),
+        ),
         Proj { tuple: expr, index, span: _ } => {
-            pretty_write_expr(builder, expr, indent);
-            builder.write_char('.');
-            builder.write_string(index.to_string())
+            doc::append(pretty_expr_doc(expr), doc::text("." + index.to_string()))
         },
         Field { expr, field_name: field, method_type_args, span: _ } => {
-            pretty_write_expr(builder, expr, indent);
-            builder.write_char('.');
-            builder.write_string(field);
-            if !method_type_args.is_empty() {
-                builder.write_string("::[");
-                pretty_write_types(builder, method_type_args, ", ");
-                builder.write_char(']')
+            let base = doc::append(pretty_expr_doc(expr), doc::text("." + field));
+            if method_type_args.is_empty() {
+                base
             } else {
-                ()
+                doc::concat(
+                    Vec::[
+                        base,
+                        doc::text("::"),
+                        doc::delimited("[", ",", "]", pretty_type_docs(method_type_args)),
+                    ],
+                )
             }
         },
-        Index { base, index, span: _ } => {
-            pretty_write_expr(builder, base, indent);
-            builder.write_char('[');
-            pretty_write_expr(builder, index, indent);
-            builder.write_char(']')
-        },
-        Block { block, span: _ } => pretty_write_block(builder, block, indent),
+        Index { base, index, span: _ } => doc::concat(
+            Vec::[pretty_expr_doc(base), doc::text("["), pretty_expr_doc(index), doc::text("]")],
+        ),
+        Block { block, span: _ } => pretty_block_doc(block),
     }
-}
-
-fn pretty_write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
-    pretty_write_pat(builder, value.pat, indent);
-    match value.guard {
-        Some(guard) => {
-            builder.write_string(" if ");
-            pretty_write_expr(builder, guard, indent)
-        },
-        None => (),
-    };
-    builder.write_string(" => ");
-    pretty_write_expr(builder, value.body, indent + 2);
-    builder.write_char(',')
 }
 
 fn pretty_pat_is_or(value: Pat) -> bool {
@@ -484,149 +497,106 @@ fn pretty_pat_is_or(value: Pat) -> bool {
     }
 }
 
-fn pretty_write_pats(builder: text::StringBuilder, values: Vec[Pat], separator: string, indent: int) -> unit {
-    let mut index = 0;
-    for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        pretty_write_pat(builder, value, indent);
-        index = index + 1;
-    }
-}
-
-fn pretty_write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
+fn pretty_pat_doc(value: Pat) -> doc::Doc {
     match value {
-        Var { name, span: _ } => builder.write_string(name),
-        Unit { span: _ } => builder.write_string("()"),
-        Bool { value, span: _ } => builder.write_string(
+        Var { name, span: _ } => doc::text(name),
+        Unit { span: _ } => doc::text("()"),
+        Bool { value, span: _ } => doc::text(
             if value {
                 "true"
             } else {
                 "false"
             },
         ),
-        Int { value, span: _ } => builder.write_string(value),
-        Float { value, span: _ } => builder.write_string(value),
-        String { value, span: _ } => pretty_write_quoted_string(builder, value),
-        Char { value, span: _ } => {
-            builder.write_char('\'');
-            builder.write_string(value);
-            builder.write_char('\'')
-        },
-        Byte { value, span: _ } => pretty_write_byte_literal(builder, value),
+        Int { value, span: _ } => doc::text(value),
+        Float { value, span: _ } => doc::text(value),
+        String { value, span: _ } => pretty_quoted_string_doc(value),
+        Char { value, span: _ } => doc::text("'" + value + "'"),
+        Byte { value, span: _ } => pretty_byte_literal_doc(value),
         Constr { constructor: path, args, span: _ } => {
-            pretty_write_path(builder, path);
-            if !args.is_empty() {
-                builder.write_char('(');
-                pretty_write_pats(builder, args, ", ", indent);
-                builder.write_char(')')
+            if args.is_empty() {
+                pretty_path_doc(path)
             } else {
-                ()
+                doc::append(
+                    pretty_path_doc(path),
+                    doc::delimited("(", ",", ")", pretty_pat_docs(args)),
+                )
             }
         },
         Struct { name: path, fields, has_rest, span: _ } => {
-            pretty_write_path(builder, path);
-            if fields.is_empty() && !has_rest {
-                builder.write_string(" {}")
+            let values: Vec[doc::Doc] = Vec::with_capacity(
+                fields.len()
+                    + if has_rest {
+                        1
+                    } else {
+                        0
+                    },
+            );
+            for field in fields {
+                values.push(doc::concat(Vec::[doc::text(field.0 + ": "), pretty_pat_doc(field.1)]))
+            };
+            if has_rest {
+                values.push(doc::text(".."))
             } else {
-                builder.write_string(" { ");
-                let mut index = 0;
-                for field in fields {
-                    if index > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
-                    builder.write_string(field.0);
-                    builder.write_string(": ");
-                    pretty_write_pat(builder, field.1, indent);
-                    index = index + 1;
-                };
-                if has_rest {
-                    if index > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
-                    builder.write_string("..")
-                } else {
-                    ()
-                };
-                builder.write_string(" }")
-            }
+                ()
+            };
+            pretty_record_doc(pretty_path_doc(path), values)
         },
         Tuple { items: values, span: _ } => {
-            builder.write_char('(');
-            pretty_write_pats(builder, values, ", ", indent);
-            builder.write_char(')')
+            doc::delimited("(", ",", ")", pretty_pat_docs(values))
         },
         Array { prefix, rest, suffix, span: _ } => {
-            builder.write_char('[');
-            let mut count = 0;
+            let values: Vec[doc::Doc] = Vec::with_capacity(
+                prefix.len() + suffix.len()
+                    + if rest.is_some() {
+                        1
+                    } else {
+                        0
+                    },
+            );
             for value in prefix {
-                if count > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                pretty_write_pat(builder, value, indent);
-                count = count + 1;
+                values.push(pretty_pat_doc(value))
             };
             match rest {
-                Some(value) => {
-                    if count > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
+                Some(value) => values.push(
                     match value.binding {
-                        Some(name) => {
-                            builder.write_string(name);
-                            builder.write_string(" @ ..")
-                        },
-                        None => builder.write_string(".."),
-                    };
-                    count = count + 1;
-                },
+                        Some(name) => doc::text(name + " @ .."),
+                        None => doc::text(".."),
+                    },
+                ),
                 None => (),
             };
             for value in suffix {
-                if count > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                pretty_write_pat(builder, value, indent);
-                count = count + 1;
+                values.push(pretty_pat_doc(value))
             };
-            builder.write_char(']')
+            doc::delimited("[", ",", "]", values)
         },
-        Alias { name, pat, span: _ } => {
-            builder.write_string(name);
-            builder.write_string(" @ ");
-            if pretty_pat_is_or(pat) {
-                builder.write_char('(');
-                pretty_write_pat(builder, pat, indent);
-                builder.write_char(')')
-            } else {
-                pretty_write_pat(builder, pat, indent)
-            }
-        },
-        Or { pats: values, span: _ } => pretty_write_pats(builder, values, " | ", indent),
-        Range { start, end, inclusive, span: _ } => {
-            pretty_write_pat(builder, start, indent);
-            builder.write_string(
-                if inclusive {
-                    "..="
+        Alias { name, pat, span: _ } => doc::concat(
+            Vec::[
+                doc::text(name + " @ "),
+                if pretty_pat_is_or(pat) {
+                    doc::delimited("(", ",", ")", Vec::[pretty_pat_doc(pat)])
                 } else {
-                    ".."
+                    pretty_pat_doc(pat)
                 },
-            );
-            pretty_write_pat(builder, end, indent)
-        },
-        Wild { span: _ } => builder.write_char('_'),
+            ],
+        ),
+        Or { pats: values, span: _ } => doc::group(
+            doc::join(doc::append(doc::text(" |"), doc::line()), pretty_pat_docs(values)),
+        ),
+        Range { start, end, inclusive, span: _ } => doc::concat(
+            Vec::[
+                pretty_pat_doc(start),
+                doc::text(
+                    if inclusive {
+                        "..="
+                    } else {
+                        ".."
+                    },
+                ),
+                pretty_pat_doc(end),
+            ],
+        ),
+        Wild { span: _ } => doc::text("_"),
     }
 }
