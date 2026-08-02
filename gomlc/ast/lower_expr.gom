@@ -112,6 +112,21 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                 }
             }
         },
+        STMT_DEFER => {
+            let values = expr_children(node);
+            if values.is_empty() {
+                push_error(ctx, node_span(node), "Defer statement missing expression");
+                Option::None
+            } else {
+                match lower_expr(ctx, values[0]) {
+                    Some(value) => Option::Some(Stmt::Defer {
+                        expr: value,
+                        span: node_span(node),
+                    }),
+                    None => Option::None,
+                }
+            }
+        },
         _ => Option::None,
     }
 }

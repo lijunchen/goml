@@ -470,6 +470,10 @@ fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit 
 
 fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
+        Defer { expr } => {
+            builder.write_string("defer ");
+            write_expr(builder, expr, indent)
+        },
         Let { is_mut, pat, annotation, value: expr, else_branch } => {
             builder.write_string("let ");
             if is_mut {

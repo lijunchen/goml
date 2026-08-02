@@ -31,6 +31,7 @@ fn collect_mutable_exprs(values: Vec[tast::Expr], result: Vec[(string, tast::Typ
 fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => collect_mutable_expr(expr, result),
             Let { is_mut, pat: pattern, value: expr } => {
                 if is_mut {
                     match pattern {
@@ -180,6 +181,7 @@ fn collect_bound_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit {
 fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => collect_bound_expr(expr, result),
             Let { is_mut: _, pat: pattern, value: expr } => {
                 collect_pattern_names(pattern, result);
                 collect_bound_expr(expr, result)
@@ -284,6 +286,7 @@ fn collect_reference_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit
 fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => collect_reference_expr(expr, result),
             Let { is_mut: _, pat: _, value: expr } => collect_reference_expr(expr, result),
             LetElse { is_mut: _, pat: _, value: expr, else_branch } => {
                 collect_reference_expr(expr, result);
@@ -383,6 +386,7 @@ fn collect_capture_exprs(values: Vec[tast::Expr], result: Vec[string]) -> unit {
 fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => collect_capture_expr(expr, result),
             Let { is_mut: _, pat: _, value: expr } => collect_capture_expr(expr, result),
             LetElse { is_mut: _, pat: _, value: expr, else_branch } => {
                 collect_capture_expr(expr, result);

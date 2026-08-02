@@ -882,6 +882,9 @@ fn lower_block(
     let stmts: Vec[Stmt] = Vec::[];
     for stmt in value.stmts {
         match stmt {
+            Defer { expr, span: _ } => stmts.push(
+                Stmt::Defer { expr: lower_expr(ctx, expr, env, type_params) },
+            ),
             Let { is_mut, pat, annotation, value: expr, else_branch, span: _ } => {
                 let lowered_expr = lower_expr(ctx, expr, env, type_params);
                 let lowered_else = match else_branch {

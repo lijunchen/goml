@@ -5113,6 +5113,18 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
 
 fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
     match value {
+        Defer { expr } => {
+            if hir_expr_contains_defer_control(expr) {
+                push_diagnostic_at(
+                    ctx,
+                    "`defer` expression cannot contain `return`, `break`, `continue`, or `?`",
+                    Option::Some(expr.span),
+                )
+            } else {
+                ()
+            };
+            Stmt::Defer { expr: check_expr(ctx, expr, Option::Some(Type::Unit)) }
+        },
         Let { is_mut, pat, annotation, value: source, else_branch } => {
             let closure_value = match source.kind {
                 Closure { params: _, body: _ } => true,
@@ -5255,6 +5267,151 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
             Stmt::Assign { target: checked.0, op, value: source }
         },
         Expr { expr: value } => Stmt::Expr { expr: check_expr(ctx, value, Option::None) },
+    }
+}
+
+fn hir_expr_list_contains_defer_control(values: Vec[hir::Expr]) -> bool {
+    for value in values {
+        if hir_expr_contains_defer_control(value) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn hir_block_contains_defer_control(value: hir::Block) -> bool {
+    for stmt in value.stmts {
+        match stmt {
+            Defer { expr } | Expr { expr } => if hir_expr_contains_defer_control(expr) {
+                return true
+            } else {
+                ()
+            },
+            Let { is_mut: _, pat: _, annotation: _, value, else_branch } => {
+                if hir_expr_contains_defer_control(value) {
+                    return true
+                } else {
+                    ()
+                };
+                match else_branch {
+                    Some(value) => if hir_expr_contains_defer_control(value) {
+                        return true
+                    } else {
+                        ()
+                    },
+                    None => (),
+                }
+            },
+            Assign { target, op: _, value } => if hir_expr_contains_defer_control(target)
+                || hir_expr_contains_defer_control(value) {
+                return true
+            } else {
+                ()
+            },
+        }
+    };
+    match value.tail {
+        Some(value) => hir_expr_contains_defer_control(value),
+        None => false,
+    }
+}
+
+fn hir_expr_contains_defer_control(value: hir::Expr) -> bool {
+    match value.kind {
+        Break { value: _ } | Continue | Return { expr: _ } | Try { depth: _, expr: _ } => true,
+        Closure { params: _, body: _ } => false,
+        Constr { constructor: _, args } => hir_expr_list_contains_defer_control(args),
+        StructLiteral { name: _, fields, base } => {
+            for field in fields {
+                if hir_expr_contains_defer_control(field.1) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            match base {
+                Some(value) => hir_expr_contains_defer_control(value),
+                None => false,
+            }
+        },
+        Tuple { items: values } | Array { items: values } | VecLiteral { items: values } => {
+            hir_expr_list_contains_defer_control(values)
+        },
+        HashMapLiteral { entries } => {
+            for entry in entries {
+                if hir_expr_contains_defer_control(entry.0)
+                    || hir_expr_contains_defer_control(entry.1) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            false
+        },
+        InterpolatedString { parts } => {
+            for part in parts {
+                match part {
+                    Expr(value) => if hir_expr_contains_defer_control(value) {
+                        return true
+                    } else {
+                        ()
+                    },
+                    Text(_) => (),
+                }
+            };
+            false
+        },
+        Call { func, args } => {
+            hir_expr_contains_defer_control(func) || hir_expr_list_contains_defer_control(args)
+        },
+        Unary { op: _, expr } | Cast { expr, ty: _ } | Go { expr } | Field { expr, .. } => {
+            hir_expr_contains_defer_control(expr)
+        },
+        Binary { op: _, lhs, rhs } => {
+            hir_expr_contains_defer_control(lhs) || hir_expr_contains_defer_control(rhs)
+        },
+        Proj { tuple, index: _ } => hir_expr_contains_defer_control(tuple),
+        Index { base, index } => {
+            hir_expr_contains_defer_control(base) || hir_expr_contains_defer_control(index)
+        },
+        Block { block } => hir_block_contains_defer_control(block),
+        If { cond, then_branch, else_branch } => {
+            hir_expr_contains_defer_control(cond) || hir_expr_contains_defer_control(then_branch)
+                || hir_expr_contains_defer_control(else_branch)
+        },
+        Match { expr, arms } => {
+            if hir_expr_contains_defer_control(expr) {
+                return true
+            } else {
+                ()
+            };
+            for arm in arms {
+                match arm.guard {
+                    Some(guard) => if hir_expr_contains_defer_control(guard) {
+                        return true
+                    } else {
+                        ()
+                    },
+                    None => (),
+                };
+                if hir_expr_contains_defer_control(arm.body) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            false
+        },
+        While { cond, body } => {
+            hir_expr_contains_defer_control(cond) || hir_expr_contains_defer_control(body)
+        },
+        Loop { body } => hir_expr_contains_defer_control(body),
+        For { pat: _, iterator, body } => {
+            hir_expr_contains_defer_control(iterator) || hir_expr_contains_defer_control(body)
+        },
+        _ => false,
     }
 }
 

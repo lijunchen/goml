@@ -63,7 +63,7 @@ Enumeration construction should use `Enum::Variant`.Patterns may omit `Enum::` b
 Common keywords include:
 
 ```text
-package use as pub fn struct enum trait impl for type const where
+package use as pub fn struct enum trait impl for type const where defer
 let mut if else match while loop for in break continue return go dyn
 true false unit bool int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
 float32 float64 string char extern
@@ -608,6 +608,21 @@ fn run() -> unit {
 ```
 
 `let`, ordinary assignments, and general non-tail expression statements require semicolons.When used as statements and followed by code, `if`, `match`, `while`, `loop` and `for` can omit the semicolon; other expression statements still require semicolons.Functions, structures, enumerations, traits, impl and blocks themselves are not declared with a semicolon after them.
+
+`defer expression;` registers a `unit` expression to run when the current lexical block is left. Deferred expressions run in last-in-first-out order on normal completion and when `return`, `?`, `break`, or `continue` crosses their block. A return or break value is evaluated before cleanup begins. Each loop-body block has its own cleanup stack, so a deferred expression registered during one iteration runs before that iteration exits.
+
+Unlike Go's `defer`, GoML does not evaluate call arguments when the statement is reached. The complete expression is evaluated at block exit, so reads through `Ref` observe the value at cleanup time. A closure body is a separate control-flow scope. Deferred expressions cannot contain `return`, `break`, `continue`, or `?`, and cleanup during an unrecovered runtime panic is not currently guaranteed. The compiler lowers cleanup to ordinary structured control flow and never emits a Go `defer` statement.
+
+```goml
+fn work() -> unit {
+    let state = Ref::new("open");
+    defer println("closing:" + state.get());
+    defer println("flush");
+    state.set("ready")
+}
+```
+
+This prints `flush` first, then `closing:ready`.
 
 ### `let`, type annotations and shadowing
 
@@ -1984,6 +1999,7 @@ type_list     = type ("," type)* ","?
 
 block         = "{" statement* expression? "}"
 statement     = "let" "mut"? pattern (":" type)? "=" expression ("else" block)? ";"
+              | "defer" expression ";"
               | assign_target assignment_operator expression ";"
               | expression ";"
               | control_expression

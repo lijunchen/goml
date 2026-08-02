@@ -9,6 +9,9 @@ struct Lowerer {
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     optimize_builtin_iterators: bool,
+    cleanups: Vec[tast::Expr],
+    loop_cleanup_depths: Vec[int],
+    cleanup_lowering_depth: Ref[int],
 }
 
 struct EnumCase {
@@ -1271,7 +1274,27 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
         Tuple { items, ty } => Expr::Tuple { items: lower_exprs(ctx, items), ty },
         Array { items, ty } => Expr::Array { items: lower_exprs(ctx, items), ty },
         Closure { params, body, ty } => {
-            Expr::Closure { params, body: lower_expr(ctx, body), ty }
+            let saved_cleanups: Vec[tast::Expr] = Vec::[];
+            for value in ctx.cleanups {
+                saved_cleanups.push(value)
+            };
+            let saved_loop_depths: Vec[int] = Vec::[];
+            for value in ctx.loop_cleanup_depths {
+                saved_loop_depths.push(value)
+            };
+            let saved_cleanup_lowering_depth = ctx.cleanup_lowering_depth.get();
+            ctx.cleanups.truncate(0);
+            ctx.loop_cleanup_depths.truncate(0);
+            ctx.cleanup_lowering_depth.set(0);
+            let body = lower_expr(ctx, body);
+            for value in saved_cleanups {
+                ctx.cleanups.push(value)
+            };
+            for value in saved_loop_depths {
+                ctx.loop_cleanup_depths.push(value)
+            };
+            ctx.cleanup_lowering_depth.set(saved_cleanup_lowering_depth);
+            Expr::Closure { params, body, ty }
         },
         Block { block, ty } => Expr::Block { block: lower_block(ctx, block, ty), ty },
         Match { expr: source, arms, ty } => lower_match(ctx, source, arms, ty),
@@ -1282,9 +1305,18 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             ty,
         },
         While { cond, body, ty } => {
-            Expr::While { cond: lower_expr(ctx, cond), body: lower_expr(ctx, body), ty }
+            let cond = lower_expr(ctx, cond);
+            ctx.loop_cleanup_depths.push(ctx.cleanups.len());
+            let body = lower_expr(ctx, body);
+            ctx.loop_cleanup_depths.truncate(ctx.loop_cleanup_depths.len() - 1);
+            Expr::While { cond, body, ty }
         },
-        Loop { body, ty } => Expr::Loop { body: lower_expr(ctx, body), ty },
+        Loop { body, ty } => {
+            ctx.loop_cleanup_depths.push(ctx.cleanups.len());
+            let body = lower_expr(ctx, body);
+            ctx.loop_cleanup_depths.truncate(ctx.loop_cleanup_depths.len() - 1);
+            Expr::Loop { body, ty }
+        },
         For {
             pat: pattern,
             iterator,
@@ -1293,22 +1325,23 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             iterator_ty,
             body,
             ty: _,
-        } => lower_for(ctx, pattern, iterator, into_iterator, iterator_trait, iterator_ty, body),
-        Break { value, ty } => Expr::Break {
-            value: match value {
-                Some(expr) => Option::Some(lower_expr(ctx, expr)),
-                None => Option::None,
-            },
-            ty,
+        } => {
+            ctx.loop_cleanup_depths.push(ctx.cleanups.len());
+            let result = lower_for(
+                ctx,
+                pattern,
+                iterator,
+                into_iterator,
+                iterator_trait,
+                iterator_ty,
+                body,
+            );
+            ctx.loop_cleanup_depths.truncate(ctx.loop_cleanup_depths.len() - 1);
+            result
         },
-        Continue { ty } => Expr::Continue { ty },
-        Return { expr: value, ty } => Expr::Return {
-            expr: match value {
-                Some(expr) => Option::Some(lower_expr(ctx, expr)),
-                None => Option::None,
-            },
-            ty,
-        },
+        Break { value, ty } => lower_break(ctx, value, ty),
+        Continue { ty } => lower_continue(ctx, ty),
+        Return { expr: value, ty } => lower_return(ctx, value, ty),
         Go { expr: value, ty } => Expr::Go { expr: lower_expr(ctx, value), ty },
         Call { func: function, args, ty } => lower_call(ctx, function, args, ty),
         Unary { op: Neg, expr: Prim { value, ty: _ }, ty } => {
@@ -1372,6 +1405,129 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
     }
 }
 
+fn lower_cleanup_stmts(ctx: Lowerer, start: int) -> Vec[LetStmt] {
+    let result: Vec[LetStmt] = Vec::[];
+    let mut index = ctx.cleanups.len();
+    while index > start {
+        index = index - 1;
+        ctx.cleanup_lowering_depth.set(ctx.cleanup_lowering_depth.get() + 1);
+        let value = lower_expr(ctx, ctx.cleanups[index]);
+        ctx.cleanup_lowering_depth.set(ctx.cleanup_lowering_depth.get() - 1);
+        result.push(LetStmt { name: gensym(ctx, "_defer"), value, ty: tast::Type::Unit })
+    };
+    result
+}
+
+fn lower_break(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Expr {
+    let start = if ctx.loop_cleanup_depths.is_empty() {
+        0
+    } else {
+        ctx.loop_cleanup_depths[ctx.loop_cleanup_depths.len() - 1]
+    };
+    if ctx.cleanup_lowering_depth.get() > 0 || ctx.cleanups.len() == start {
+        Expr::Break {
+            value: match value {
+                Some(expr) => Option::Some(lower_expr(ctx, expr)),
+                None => Option::None,
+            },
+            ty,
+        }
+    } else {
+        match value {
+            Some(source) => {
+                let value_ty = tast::expr_type(source);
+                let name = gensym(ctx, "defer_break");
+                let stmts: Vec[LetStmt] = Vec::[];
+                stmts.push(LetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
+                for stmt in lower_cleanup_stmts(ctx, start) {
+                    stmts.push(stmt)
+                };
+                Expr::Block {
+                    block: Block {
+                        stmts,
+                        tail: Option::Some(
+                            Expr::Break {
+                                value: Option::Some(Expr::Var { name, ty: value_ty }),
+                                ty,
+                            },
+                        ),
+                    },
+                    ty,
+                }
+            },
+            None => Expr::Block {
+                block: Block {
+                    stmts: lower_cleanup_stmts(ctx, start),
+                    tail: Option::Some(Expr::Break { value: Option::None, ty }),
+                },
+                ty,
+            },
+        }
+    }
+}
+
+fn lower_continue(ctx: Lowerer, ty: tast::Type) -> Expr {
+    let start = if ctx.loop_cleanup_depths.is_empty() {
+        0
+    } else {
+        ctx.loop_cleanup_depths[ctx.loop_cleanup_depths.len() - 1]
+    };
+    if ctx.cleanup_lowering_depth.get() > 0 || ctx.cleanups.len() == start {
+        Expr::Continue { ty }
+    } else {
+        Expr::Block {
+            block: Block {
+                stmts: lower_cleanup_stmts(ctx, start),
+                tail: Option::Some(Expr::Continue { ty }),
+            },
+            ty,
+        }
+    }
+}
+
+fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Expr {
+    if ctx.cleanup_lowering_depth.get() > 0 || ctx.cleanups.is_empty() {
+        Expr::Return {
+            expr: match value {
+                Some(expr) => Option::Some(lower_expr(ctx, expr)),
+                None => Option::None,
+            },
+            ty,
+        }
+    } else {
+        match value {
+            Some(source) => {
+                let value_ty = tast::expr_type(source);
+                let name = gensym(ctx, "defer_return");
+                let stmts: Vec[LetStmt] = Vec::[];
+                stmts.push(LetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
+                for stmt in lower_cleanup_stmts(ctx, 0) {
+                    stmts.push(stmt)
+                };
+                Expr::Block {
+                    block: Block {
+                        stmts,
+                        tail: Option::Some(
+                            Expr::Return {
+                                expr: Option::Some(Expr::Var { name, ty: value_ty }),
+                                ty,
+                            },
+                        ),
+                    },
+                    ty,
+                }
+            },
+            None => Expr::Block {
+                block: Block {
+                    stmts: lower_cleanup_stmts(ctx, 0),
+                    tail: Option::Some(Expr::Return { expr: Option::None, ty }),
+                },
+                ty,
+            },
+        }
+    }
+}
+
 fn prepend_stmt(value: LetStmt, rest: Block) -> Block {
     let stmts: Vec[LetStmt] = Vec::[];
     stmts.push(value);
@@ -1382,14 +1538,48 @@ fn prepend_stmt(value: LetStmt, rest: Block) -> Block {
 }
 
 fn remaining_tast_block(
+    ctx: Lowerer,
     stmts: Vec[tast::Stmt],
     index: int,
     tail: Option[tast::Expr],
     ty: tast::Type,
+    cleanup_start: int,
 ) -> tast::Expr {
     let remaining: Vec[tast::Stmt] = Vec::[];
     for current in index..stmts.len() {
         remaining.push(stmts[current])
+    };
+    let tail = match tail {
+        Some(value) => {
+            let value_ty = tast::expr_type(value);
+            let name = gensym(ctx, "defer_tast_result");
+            let stmts: Vec[tast::Stmt] = Vec::[];
+            stmts.push(
+                tast::Stmt::Let { is_mut: false, pat: tast::Pat::Var { name, ty: value_ty }, value },
+            );
+            let mut cleanup_index = ctx.cleanups.len();
+            while cleanup_index > cleanup_start {
+                cleanup_index = cleanup_index - 1;
+                stmts.push(tast::Stmt::Expr { expr: ctx.cleanups[cleanup_index] })
+            };
+            Option::Some(
+                tast::Expr::Block {
+                    block: tast::Block {
+                        stmts,
+                        tail: Option::Some(tast::Expr::Var { name, ty: value_ty }),
+                    },
+                    ty: value_ty,
+                },
+            )
+        },
+        None => {
+            let mut cleanup_index = ctx.cleanups.len();
+            while cleanup_index > cleanup_start {
+                cleanup_index = cleanup_index - 1;
+                remaining.push(tast::Stmt::Expr { expr: ctx.cleanups[cleanup_index] })
+            };
+            Option::None
+        },
     };
     tast::Expr::Block { block: tast::Block { stmts: remaining, tail }, ty }
 }
@@ -1444,20 +1634,43 @@ fn lower_block_from(
     index: int,
     tail: Option[tast::Expr],
     ty: tast::Type,
+    cleanup_start: int,
 ) -> Block {
     if index >= stmts.len() {
-        Block {
-            stmts: Vec::[],
-            tail: match tail {
-                Some(value) => Option::Some(lower_expr(ctx, value)),
-                None => Option::None,
-            },
+        if ctx.cleanups.len() == cleanup_start {
+            Block {
+                stmts: Vec::[],
+                tail: match tail {
+                    Some(value) => Option::Some(lower_expr(ctx, value)),
+                    None => Option::None,
+                },
+            }
+        } else {
+            match tail {
+                Some(value) => if tast_expr_exits(value) {
+                    Block { stmts: Vec::[], tail: Option::Some(lower_expr(ctx, value)) }
+                } else {
+                    let value_ty = tast::expr_type(value);
+                    let name = gensym(ctx, "defer_result");
+                    let result: Vec[LetStmt] = Vec::[];
+                    result.push(LetStmt { name, value: lower_expr(ctx, value), ty: value_ty });
+                    for stmt in lower_cleanup_stmts(ctx, cleanup_start) {
+                        result.push(stmt)
+                    };
+                    Block { stmts: result, tail: Option::Some(Expr::Var { name, ty: value_ty }) }
+                },
+                None => Block { stmts: lower_cleanup_stmts(ctx, cleanup_start), tail: Option::None },
+            }
         }
     } else {
         match stmts[index] {
+            Defer { expr } => {
+                ctx.cleanups.push(expr);
+                lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start)
+            },
             Let { is_mut: _, pat: Var { name, ty: pat_ty }, value } => {
                 let core_value = lower_expr(ctx, value);
-                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
                 prepend_stmt(LetStmt { name, value: core_value, ty: pat_ty }, rest)
             },
             Let { is_mut: _, pat: pattern, value } => {
@@ -1466,7 +1679,7 @@ fn lower_block_from(
                 let name = gensym(ctx, "mtmp");
                 match plan_flat_pattern(ctx, name, pattern) {
                     Some(plan) => {
-                        let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                        let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
                         let result: Vec[LetStmt] = Vec::[];
                         result.push(LetStmt { name, value: core_value, ty: value_ty });
                         Block {
@@ -1477,7 +1690,14 @@ fn lower_block_from(
                         }
                     },
                     None => {
-                        let body = remaining_tast_block(stmts, index + 1, tail, ty);
+                        let body = remaining_tast_block(
+                            ctx,
+                            stmts,
+                            index + 1,
+                            tail,
+                            ty,
+                            cleanup_start,
+                        );
                         let matched = lower_pattern_continuation(
                             ctx,
                             name,
@@ -1497,7 +1717,7 @@ fn lower_block_from(
                 let value_ty = tast::expr_type(value);
                 let core_value = lower_expr(ctx, value);
                 let name = gensym(ctx, "mtmp");
-                let body = remaining_tast_block(stmts, index + 1, tail, ty);
+                let body = remaining_tast_block(ctx, stmts, index + 1, tail, ty, cleanup_start);
                 let matched = lower_pattern_continuation(
                     ctx,
                     name,
@@ -1515,13 +1735,13 @@ fn lower_block_from(
                 let value_ty = tast::expr_type(value);
                 let core_value = lower_expr(ctx, value);
                 let name = gensym(ctx, "_wild");
-                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
                 prepend_stmt(LetStmt { name, value: core_value, ty: value_ty }, rest)
             },
             Assign { target, op, value } => {
                 let action = lower_assignment(ctx, target, op, value);
                 let binding = gensym(ctx, "_wild");
-                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty, cleanup_start);
                 prepend_stmt(LetStmt { name: binding, value: action, ty: tast::Type::Unit }, rest)
             },
         }
@@ -1529,7 +1749,10 @@ fn lower_block_from(
 }
 
 fn lower_block(ctx: Lowerer, value: tast::Block, ty: tast::Type) -> Block {
-    lower_block_from(ctx, value.stmts, 0, value.tail, ty)
+    let cleanup_start = ctx.cleanups.len();
+    let result = lower_block_from(ctx, value.stmts, 0, value.tail, ty, cleanup_start);
+    ctx.cleanups.truncate(cleanup_start);
+    result
 }
 
 fn lower_function(
@@ -1591,6 +1814,9 @@ fn lower_file_with_types(
         enums: all_enums,
         structs: all_structs,
         optimize_builtin_iterators,
+        cleanups: Vec::[],
+        loop_cleanup_depths: Vec::[],
+        cleanup_lowering_depth: Ref::new(0),
     };
     let functions: Vec[Function] = Vec::[];
     for item in value.items {

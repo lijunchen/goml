@@ -436,6 +436,11 @@ fn encode_block(builder: text::StringBuilder, value: Block) -> unit {
 
 fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
     match value {
+        Defer { expr, span: value_span } => {
+            encode_open(builder, "Stmt.Defer");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr)
+        },
         Let { is_mut, pat, annotation, value: expr, else_branch, span: value_span } => {
             encode_open(builder, "Stmt.Let");
             encode_span(builder, value_span);

@@ -1106,6 +1106,9 @@ fn block(parser: Parser) -> unit {
         } else if parser.at(lexer::TokenKind::LetKeyword) {
             let _ = let_stmt(parser);
             ()
+        } else if parser.at(lexer::TokenKind::DeferKeyword) {
+            let _ = defer_stmt(parser);
+            ()
         } else if is_expr_first(parser.peek()) {
             let semicolon_optional = match parser.peek() {
                 IfKeyword | MatchKeyword | WhileKeyword | LoopKeyword | ForKeyword => true,

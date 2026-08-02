@@ -80,6 +80,10 @@ fn pretty_write_block(builder: text::StringBuilder, value: Block, indent: int) -
 
 fn pretty_write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
     match value {
+        Defer { expr, span: _ } => {
+            builder.write_string("defer ");
+            pretty_write_expr(builder, expr, indent)
+        },
         Let { is_mut, pat, annotation, value: expr, else_branch, span: _ } => {
             builder.write_string("let ");
             if is_mut {

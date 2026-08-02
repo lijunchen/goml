@@ -57,3 +57,19 @@ fn wrap_expr_stmt(parser: Parser, expression: MarkerClosed) -> MarkerClosed {
     let marker = expression.precede(parser);
     parser.close(marker, cst::NodeKind::STMT_EXPR)
 }
+
+fn defer_stmt(parser: Parser) -> Option[MarkerClosed] {
+    if !parser.at(lexer::TokenKind::DeferKeyword) {
+        Option::None
+    } else {
+        let marker = parser.open();
+        parser.expect(lexer::TokenKind::DeferKeyword);
+        if marker_is_none(expr(parser)) {
+            parser.advance_with_error("defer statement expected an expression")
+        } else {
+            ()
+        };
+        parser.expect(lexer::TokenKind::Semi);
+        Option::Some(parser.close(marker, cst::NodeKind::STMT_DEFER))
+    }
+}

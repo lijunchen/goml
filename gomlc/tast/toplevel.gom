@@ -148,6 +148,7 @@ fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
     for stmt in value.stmts {
         stmts.push(
             match stmt {
+                Defer { expr } => Stmt::Defer { expr: resolve_deferred_expr(ctx, expr) },
                 Let { is_mut, pat, value } => Stmt::Let {
                     is_mut,
                     pat,
@@ -290,6 +291,7 @@ fn report_unresolved_exprs(ctx: Checker, values: Vec[hir::Expr]) -> unit {
 fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => report_unresolved_expr(ctx, expr),
             Let { is_mut: _, pat, annotation, value, else_branch } => {
                 if annotation.is_none() && pattern_has_unresolved_inference(ctx, pat) {
                     push_inference_diagnostic_at(ctx, pat.span, 1);
@@ -2544,6 +2546,7 @@ fn attach_expr_list_diagnostic_spans(ctx: Checker, values: Vec[hir::Expr]) -> un
 fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> unit {
     for stmt in value.stmts {
         match stmt {
+            Defer { expr } => attach_expr_diagnostic_spans(ctx, expr),
             Let { is_mut: _, pat: _, annotation: _, value, else_branch } => {
                 attach_expr_diagnostic_spans(ctx, value);
                 match else_branch {

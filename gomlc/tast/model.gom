@@ -346,6 +346,9 @@ pub struct Block {
 }
 
 pub enum Stmt {
+    Defer {
+        expr: Expr,
+    },
     Let {
         is_mut: bool,
         pat: Pat,
