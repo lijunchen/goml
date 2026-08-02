@@ -1,67 +1,69 @@
 fn main() -> unit {
-  join inline_cont201(running/0: Ref[bool]) -> unit {
+  join inline_cont210(running/0: Ref[bool]) -> unit {
     join exit159() -> unit {
       let _wild157 = () in
-      let t160 = @runtime(core.string_println)("ok") in
+      let inline207 = "ok" in
+      let inline208 = trait_impl#ToString#string#to_string(inline207) in
+      let inline209 = @runtime(core.string_println)(inline208) in
       ()
     } in
     joinrec {
       join loop161() -> unit {
-        join inline_cont199(t162: bool) -> unit {
+        join inline_cont204(t162: bool) -> unit {
           if t162 {
             let event/1 = Tag_0 in
             join k163() -> unit {
               let _wild155 = () in
-              join inline_cont196(scanning/3: Ref[bool]) -> unit {
+              join inline_cont201(scanning/3: Ref[bool]) -> unit {
                 join exit164() -> unit {
                   let _wild156 = () in
-                  let inline194 = false in
-                  let inline195 = @intrinsic(ref.set)(running/0, inline194) in
+                  let inline199 = false in
+                  let inline200 = @intrinsic(ref.set)(running/0, inline199) in
                   jump loop161()
                 } in
                 joinrec {
                   join loop166() -> unit {
-                    join inline_cont191(t167: bool) -> unit {
+                    join inline_cont196(t167: bool) -> unit {
                       if t167 {
                         jump loop166()
                       } else {
                         jump exit164()
                       }
                     } in
-                    let inline192 = @intrinsic(ref.get)(scanning/3) in
-                    jump inline_cont191(inline192)
+                    let inline197 = @intrinsic(ref.get)(scanning/3) in
+                    jump inline_cont196(inline197)
                   } in
                 } in
                 jump loop166()
               } in
-              let inline197 = false in
-              let inline198 = @intrinsic(ref.new)(inline197) in
-              jump inline_cont196(inline198)
+              let inline202 = false in
+              let inline203 = @intrinsic(ref.new)(inline202) in
+              jump inline_cont201(inline203)
             } in
             match event/1 {
               Tag_0 => {
-                join inline_cont188(scanning/2: Ref[bool]) -> unit {
+                join inline_cont193(scanning/2: Ref[bool]) -> unit {
                   join exit168() -> unit {
                     jump k163()
                   } in
                   joinrec {
                     join loop169() -> unit {
-                      join inline_cont186(t170: bool) -> unit {
+                      join inline_cont191(t170: bool) -> unit {
                         if t170 {
                           jump loop169()
                         } else {
                           jump exit168()
                         }
                       } in
-                      let inline187 = @intrinsic(ref.get)(scanning/2) in
-                      jump inline_cont186(inline187)
+                      let inline192 = @intrinsic(ref.get)(scanning/2) in
+                      jump inline_cont191(inline192)
                     } in
                   } in
                   jump loop169()
                 } in
-                let inline189 = false in
-                let inline190 = @intrinsic(ref.new)(inline189) in
-                jump inline_cont188(inline190)
+                let inline194 = false in
+                let inline195 = @intrinsic(ref.new)(inline194) in
+                jump inline_cont193(inline195)
               },
               Tag_1 => {
                 jump k163()
@@ -77,15 +79,15 @@ fn main() -> unit {
             jump exit159()
           }
         } in
-        let inline200 = @intrinsic(ref.get)(running/0) in
-        jump inline_cont199(inline200)
+        let inline205 = @intrinsic(ref.get)(running/0) in
+        jump inline_cont204(inline205)
       } in
     } in
     jump loop161()
   } in
-  let inline202 = true in
-  let inline203 = @intrinsic(ref.new)(inline202) in
-  jump inline_cont201(inline203)
+  let inline211 = true in
+  let inline212 = @intrinsic(ref.new)(inline211) in
+  jump inline_cont210(inline212)
 }
 
 fn inherent#Ref#Ref[T]#new__T_bool(value/207: bool) -> Ref[bool] {
@@ -103,9 +105,21 @@ fn inherent#Ref#Ref[T]#set__T_bool(self/209: Ref[bool], value/210: bool) -> unit
   ()
 }
 
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont213(t180: string) -> unit {
+    let t181 = @runtime(core.string_println)(t180) in
+    ()
+  } in
+  jump inline_cont213(value/1)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
+}
+
 fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
-  let t181 = @intrinsic(eq.primitive)(self/53, other/54) in
-  t181
+  let t186 = @intrinsic(eq.primitive)(self/53, other/54) in
+  t186
 }
 
 fn trait_impl#Hash#bool#hash(self/82: bool) -> uint64 {

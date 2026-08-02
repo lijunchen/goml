@@ -36,8 +36,8 @@ fn describe_dyn(value/6: dyn Describe) -> string {
 
 fn main() -> unit {
     let default_value/7: DefaultValue = DefaultValue { name: "value" };
-    (@runtime(core.string_println) : (string) -> unit)((Describe::describe : (DefaultValue) -> string)((default_value/7 : DefaultValue)));
-    (@runtime(core.string_println) : (string) -> unit)((Keep::keep : (DefaultValue, string) -> string)((default_value/7 : DefaultValue), "generic"));
-    (@runtime(core.string_println) : (string) -> unit)((Describe::describe : (OverrideValue) -> string)(OverrideValue {}));
-    (@runtime(core.string_println) : (string) -> unit)((describe_dyn : (dyn Describe) -> string)(to_dyn[Describe]{DefaultValue}((default_value/7 : DefaultValue))));
+    (println : (string) -> unit)((Describe::describe : (DefaultValue) -> string)((default_value/7 : DefaultValue)));
+    (println : (string) -> unit)((Keep::keep : (DefaultValue, string) -> string)((default_value/7 : DefaultValue), "generic"));
+    (println : (string) -> unit)((Describe::describe : (OverrideValue) -> string)(OverrideValue {}));
+    (println : (string) -> unit)((describe_dyn : (dyn Describe) -> string)(to_dyn[Describe]{DefaultValue}((default_value/7 : DefaultValue))));
 }

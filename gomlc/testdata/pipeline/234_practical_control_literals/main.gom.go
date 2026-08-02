@@ -108,9 +108,10 @@ func nested_loop_value() int {
 }
 
 func main0() struct{} {
-    _goml_runtime_core_string_println("C:\\tmp\\\"quoted\\\"")
+    println__T_string("C:\\tmp\\\"quoted\\\"")
     var t212 string = "" + "}"
-    _goml_runtime_core_string_println(t212)
+    var inline303 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t212)
+    _goml_runtime_core_string_println(inline303)
     var t213 Option__int = Some{
         _0: 11,
     }
@@ -167,6 +168,13 @@ func main0() struct{} {
     t228 = inline265
     var inline262 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t228)
     _goml_runtime_core_string_println(inline262)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    var t238 string
+    t238 = value__1
+    _goml_runtime_core_string_println(t238)
     return struct{}{}
 }
 

@@ -5,65 +5,90 @@ fn trait_impl#Provider#Number#get(self/0: Number) -> int32 {
 
 fn main() -> unit {
   let t162 = Number { value: 42 } in
-  join inline_cont200(t163: int32) -> unit {
-    join inline_cont198(t164: string) -> unit {
-      let _wild155 = @runtime(core.string_println)(t164) in
-      let t165 = Number { value: 7 } in
-      join inline_cont196(value/4: int32) -> unit {
-        join inline_cont194(t166: string) -> unit {
-          let _wild156 = @runtime(core.string_println)(t166) in
-          let t167 = Box__string { value: "generic" } in
-          join inline_cont192(t168: string) -> unit {
-            let _wild157 = @runtime(core.string_println)(t168) in
-            let t169 = Number { value: 11 } in
-            join inline_cont190(t170: int32) -> unit {
-              join inline_cont188(t171: string) -> unit {
-                let t172 = @runtime(core.string_println)(t171) in
-                ()
+  join inline_cont217(t163: int32) -> unit {
+    join inline_cont215(t164: string) -> unit {
+      join inline_cont212(_wild155: unit) -> unit {
+        let t165 = Number { value: 7 } in
+        join inline_cont210(value/4: int32) -> unit {
+          join inline_cont208(t166: string) -> unit {
+            join inline_cont205(_wild156: unit) -> unit {
+              let t167 = Box__string { value: "generic" } in
+              join inline_cont203(t168: string) -> unit {
+                join inline_cont200(_wild157: unit) -> unit {
+                  let t169 = Number { value: 11 } in
+                  join inline_cont198(t170: int32) -> unit {
+                    join inline_cont196(t171: string) -> unit {
+                      let inline194 = trait_impl#ToString#string#to_string(t171) in
+                      let inline195 = @runtime(core.string_println)(inline194) in
+                      ()
+                    } in
+                    let inline197 = @runtime(core.int32_to_string)(t170) in
+                    jump inline_cont196(inline197)
+                  } in
+                  let inline199 = 11 in
+                  jump inline_cont198(inline199)
+                } in
+                let inline201 = trait_impl#ToString#string#to_string(t168) in
+                let inline202 = @runtime(core.string_println)(inline201) in
+                jump inline_cont200(())
               } in
-              let inline189 = @runtime(core.int32_to_string)(t170) in
-              jump inline_cont188(inline189)
+              let inline204 = trait_impl#Provider#Box__string#get(t167) in
+              jump inline_cont203(inline204)
             } in
-            let inline191 = 11 in
-            jump inline_cont190(inline191)
+            let inline206 = trait_impl#ToString#string#to_string(t166) in
+            let inline207 = @runtime(core.string_println)(inline206) in
+            jump inline_cont205(())
           } in
-          let inline193 = trait_impl#Provider#Box__string#get(t167) in
-          jump inline_cont192(inline193)
+          let inline209 = @runtime(core.int32_to_string)(value/4) in
+          jump inline_cont208(inline209)
         } in
-        let inline195 = @runtime(core.int32_to_string)(value/4) in
-        jump inline_cont194(inline195)
+        let inline211 = trait_impl#Provider#Number#get(t165) in
+        jump inline_cont210(inline211)
       } in
-      let inline197 = trait_impl#Provider#Number#get(t165) in
-      jump inline_cont196(inline197)
+      let inline213 = trait_impl#ToString#string#to_string(t164) in
+      let inline214 = @runtime(core.string_println)(inline213) in
+      jump inline_cont212(())
     } in
-    let inline199 = @runtime(core.int32_to_string)(t163) in
-    jump inline_cont198(inline199)
+    let inline216 = @runtime(core.int32_to_string)(t163) in
+    jump inline_cont215(inline216)
   } in
-  let inline201 = trait_impl#Provider#Number#get(t162) in
-  jump inline_cont200(inline201)
+  let inline218 = trait_impl#Provider#Number#get(t162) in
+  jump inline_cont217(inline218)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont219(t174: string) -> unit {
+    let t175 = @runtime(core.string_println)(t174) in
+    ()
+  } in
+  jump inline_cont219(value/1)
 }
 
 fn read__P_Number(provider/2: Number) -> int32 {
-  let inline203 = Number.value(provider/2) in
-  inline203
+  let inline221 = Number.value(provider/2) in
+  inline221
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  let t178 = @runtime(core.int32_to_string)(self/6) in
-  t178
+  let t181 = @runtime(core.int32_to_string)(self/6) in
+  t181
 }
 
 fn read_as__P_Number__T_int32(provider/3: Number) -> int32 {
-  let inline205 = Number.value(provider/3) in
-  inline205
+  let inline223 = Number.value(provider/3) in
+  inline223
 }
 
 fn read__P_Box[string](provider/2: Box__string) -> string {
-  let inline207 = Box__string.value(provider/2) in
-  inline207
+  let inline225 = Box__string.value(provider/2) in
+  inline225
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }
 
 fn trait_impl#Provider#Box__string#get(self/1: Box__string) -> string {
-  let t187 = Box__string.value(self/1) in
-  t187
+  let t192 = Box__string.value(self/1) in
+  t192
 }

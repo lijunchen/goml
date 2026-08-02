@@ -5,36 +5,61 @@ const greeting: string = ("constant" + " value");
 const enabled: bool = true;
 
 fn main() -> unit {
-  join inline_cont176(t159: string) -> unit {
-    let _wild155 = @runtime(core.string_println)(t159) in
-    join inline_cont174(t160: string) -> unit {
-      let _wild156 = @runtime(core.string_println)(t160) in
-      let _wild157 = @runtime(core.string_println)(greeting) in
-      join inline_cont172(t161: string) -> unit {
-        let t162 = @runtime(core.string_println)(t161) in
-        ()
+  join inline_cont193(t159: string) -> unit {
+    join inline_cont190(_wild155: unit) -> unit {
+      join inline_cont188(t160: string) -> unit {
+        join inline_cont185(_wild156: unit) -> unit {
+          join inline_cont182(_wild157: unit) -> unit {
+            join inline_cont180(t161: string) -> unit {
+              let inline178 = trait_impl#ToString#string#to_string(t161) in
+              let inline179 = @runtime(core.string_println)(inline178) in
+              ()
+            } in
+            let inline181 = @runtime(core.bool_to_string)(enabled) in
+            jump inline_cont180(inline181)
+          } in
+          let inline183 = trait_impl#ToString#string#to_string(greeting) in
+          let inline184 = @runtime(core.string_println)(inline183) in
+          jump inline_cont182(())
+        } in
+        let inline186 = trait_impl#ToString#string#to_string(t160) in
+        let inline187 = @runtime(core.string_println)(inline186) in
+        jump inline_cont185(())
       } in
-      let inline173 = @runtime(core.bool_to_string)(enabled) in
-      jump inline_cont172(inline173)
+      let inline189 = @runtime(core.uint8_to_string)(mask) in
+      jump inline_cont188(inline189)
     } in
-    let inline175 = @runtime(core.uint8_to_string)(mask) in
-    jump inline_cont174(inline175)
+    let inline191 = trait_impl#ToString#string#to_string(t159) in
+    let inline192 = @runtime(core.string_println)(inline191) in
+    jump inline_cont190(())
   } in
-  let inline177 = @runtime(core.int_to_string)(answer) in
-  jump inline_cont176(inline177)
+  let inline194 = @runtime(core.int_to_string)(answer) in
+  jump inline_cont193(inline194)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont195(t164: string) -> unit {
+    let t165 = @runtime(core.string_println)(t164) in
+    ()
+  } in
+  jump inline_cont195(value/1)
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  let t165 = @runtime(core.int_to_string)(self/5) in
-  t165
-}
-
-fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
-  let t168 = @runtime(core.uint8_to_string)(self/45) in
+  let t168 = @runtime(core.int_to_string)(self/5) in
   t168
 }
 
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  let t171 = @runtime(core.bool_to_string)(self/37) in
+fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
+  let t171 = @runtime(core.uint8_to_string)(self/45) in
   t171
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  let t174 = @runtime(core.bool_to_string)(self/37) in
+  t174
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

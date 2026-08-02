@@ -30,32 +30,38 @@ func main0() struct{} {
         value: 5,
     }
     var t158 string
-    var inline191 int = _goml_m_trait__impl_i_Parent_i__l_int_r__x40_Box____int_i_parent(t157)
-    var inline192 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline191)
-    var inline193 string = _goml_m_trait__impl_i_Render_i_Box____int_i_render(t157)
-    var inline194 string = inline192 + inline193
-    var inline195 string = _goml_m_trait__impl_i_Child_i__l_int_r__x40_Box____int_i_child(t157)
-    var inline196 string = inline194 + inline195
-    t158 = inline196
-    _goml_runtime_core_string_println(t158)
+    var inline202 int = _goml_m_trait__impl_i_Parent_i__l_int_r__x40_Box____int_i_parent(t157)
+    var inline203 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline202)
+    var inline204 string = _goml_m_trait__impl_i_Render_i_Box____int_i_render(t157)
+    var inline205 string = inline203 + inline204
+    var inline206 string = _goml_m_trait__impl_i_Child_i__l_int_r__x40_Box____int_i_child(t157)
+    var inline207 string = inline205 + inline206
+    t158 = inline207
+    var inline199 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t158)
+    _goml_runtime_core_string_println(inline199)
     var t159 int32
-    var inline189 int32 = 6
-    t159 = inline189
+    var inline197 int32 = 6
+    t159 = inline197
     var t160 string
-    var inline187 string = _goml_runtime_core_int32_to_string(t159)
-    t160 = inline187
-    _goml_runtime_core_string_println(t160)
+    var inline195 string = _goml_runtime_core_int32_to_string(t159)
+    t160 = inline195
+    var inline192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t160)
+    _goml_runtime_core_string_println(inline192)
     return struct{}{}
 }
 
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    return self__38
+}
+
 func _goml_m_trait__impl_i_Parent_i__l_int_r__x40_Box____int_i_parent(self__0 Box__int) int {
-    var t178 int = self__0.value
-    return t178
+    var t183 int = self__0.value
+    return t183
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var t181 string = _goml_runtime_core_int_to_string(self__40)
-    return t181
+    var t186 string = _goml_runtime_core_int_to_string(self__40)
+    return t186
 }
 
 func _goml_m_trait__impl_i_Render_i_Box____int_i_render(self__1 Box__int) string {

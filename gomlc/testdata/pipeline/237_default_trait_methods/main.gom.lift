@@ -20,10 +20,10 @@ fn describe_dyn(value/6: dyn Describe) -> string {
 
 fn main() -> unit {
   let default_value/7 = DefaultValue { name: "value" } in
-  let _wild155 = @runtime(core.string_println)(trait_impl#Describe#DefaultValue#describe(default_value/7)) in
-  let _wild156 = @runtime(core.string_println)(trait_impl#Keep#DefaultValue#keep__mono1(default_value/7, "generic")) in
-  let _wild157 = @runtime(core.string_println)(trait_impl#Describe#OverrideValue#describe(OverrideValue {})) in
-  let _wild158 = @runtime(core.string_println)(describe_dyn(to_dyn[Describe]{DefaultValue}(default_value/7))) in
+  let _wild155 = println__T_string(trait_impl#Describe#DefaultValue#describe(default_value/7)) in
+  let _wild156 = println__T_string(trait_impl#Keep#DefaultValue#keep__mono1(default_value/7, "generic")) in
+  let _wild157 = println__T_string(trait_impl#Describe#OverrideValue#describe(OverrideValue {})) in
+  let _wild158 = println__T_string(describe_dyn(to_dyn[Describe]{DefaultValue}(default_value/7))) in
   ()
 }
 
@@ -31,8 +31,16 @@ fn trait_default#Describe#describe__Self_DefaultValue(self/0: DefaultValue) -> s
   ("default:" + trait_impl#Describe#DefaultValue#name(self/0))
 }
 
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
 fn trait_impl#Keep#DefaultValue#keep__mono1(default_arg0: DefaultValue, default_arg1: string) -> string {
   trait_default#Keep#keep__Self_DefaultValue__T_string(default_arg0, default_arg1)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }
 
 fn trait_default#Keep#keep__Self_DefaultValue__T_string(self/1: DefaultValue, value/2: string) -> string {

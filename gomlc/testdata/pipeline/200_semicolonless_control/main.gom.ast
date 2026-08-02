@@ -2,29 +2,29 @@ package main;
 fn main() -> unit {
     if true {
         {
-            string_println("if")
+            println("if")
         }
     } else {
         {
-            string_println("else")
+            println("else")
         }
     };
     match 1 {
-        1 => string_println("match"),
+        1 => println("match"),
         _ => (),
     };
     let index = Ref::new(0);
     while index.get() < 2 {
         {
-            string_println(index.get().to_string());
+            println(index.get().to_string());
             index.set(index.get() + 1)
         }
     };
     let values: Vec[string] = Vec::new();
     values.push("for");
     for value in values {
-        string_println(value)
+        println(value)
     };
-    string_println("done")
+    println("done")
 }
 

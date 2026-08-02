@@ -18,52 +18,52 @@ fn main() -> unit {
     (number/9 : int) += 3;
     (number/9 : int) *= 2;
     (number/9 : int) >>= 1;
-    (@runtime(core.string_println) : (string) -> unit)((int::to_string : (int) -> string)((number/9 : int)));
+    (println : (string) -> unit)((int::to_string : (int) -> string)((number/9 : int)));
     let mut direct/10: Point = Point { x: 3, y: 4 };
     (direct/10 : Point).x += 5;
-    (@runtime(core.string_println) : (string) -> unit)("" + (int::to_string : (int) -> string)((direct/10 : Point).x) + "," + (int::to_string : (int) -> string)((direct/10 : Point).y));
+    (println : (string) -> unit)("" + (int::to_string : (int) -> string)((direct/10 : Point).x) + "," + (int::to_string : (int) -> string)((direct/10 : Point).y));
     let mut pair/11: (int, int) = (2, 9);
     (pair/11 : (int, int)).0 *= 3;
-    (@runtime(core.string_println) : (string) -> unit)("" + (int::to_string : (int) -> string)((pair/11 : (int, int)).0) + "," + (int::to_string : (int) -> string)((pair/11 : (int, int)).1));
+    (println : (string) -> unit)("" + (int::to_string : (int) -> string)((pair/11 : (int, int)).0) + "," + (int::to_string : (int) -> string)((pair/11 : (int, int)).1));
     let log/12: Ref[string] = (Ref[string]::new : (string) -> Ref[string])("");
     let base/13: Point = Point { x: 1, y: 2 };
     let updated/14: Point = {
-        let struct_update_field/801/0: int = (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "F", 7);
-        let struct_update_base/801: Point = (record_point : (Ref[string], string, Point) -> Point)((log/12 : Ref[string]), "B", (base/13 : Point));
-        Point { x: (struct_update_field/801/0 : int), y: (struct_update_base/801 : Point).y }
+        let struct_update_field/780/0: int = (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "F", 7);
+        let struct_update_base/780: Point = (record_point : (Ref[string], string, Point) -> Point)((log/12 : Ref[string]), "B", (base/13 : Point));
+        Point { x: (struct_update_field/780/0 : int), y: (struct_update_base/780 : Point).y }
     };
-    (@runtime(core.string_println) : (string) -> unit)((Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string])));
-    (@runtime(core.string_println) : (string) -> unit)("" + (int::to_string : (int) -> string)((updated/14 : Point).x) + "," + (int::to_string : (int) -> string)((updated/14 : Point).y));
+    (println : (string) -> unit)((Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string])));
+    (println : (string) -> unit)("" + (int::to_string : (int) -> string)((updated/14 : Point).x) + "," + (int::to_string : (int) -> string)((updated/14 : Point).y));
     (Ref[string]::set : (Ref[string], string) -> unit)((log/12 : Ref[string]), "");
     let values/15: Vec[int] = {
-        let vec_literal/1002: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-        (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1002 : Vec[int]), (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "A", 10));
-        (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1002 : Vec[int]), (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "B", 20));
-        (vec_literal/1002 : Vec[int])
+        let vec_literal/967: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+        (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/967 : Vec[int]), (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "A", 10));
+        (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/967 : Vec[int]), (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "B", 20));
+        (vec_literal/967 : Vec[int])
     };
     (record_vec : (Ref[string], string, Vec[int]) -> Vec[int])((log/12 : Ref[string]), "R", (values/15 : Vec[int]))[(record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "I", 1)] += (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "V", 5);
-    (@runtime(core.string_println) : (string) -> unit)((Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string])));
-    (@runtime(core.string_println) : (string) -> unit)("" + (int::to_string : (int) -> string)((Vec[int]::get : (Vec[int], int) -> int)((values/15 : Vec[int]), 0)) + "," + (int::to_string : (int) -> string)((Vec[int]::get : (Vec[int], int) -> int)((values/15 : Vec[int]), 1)));
+    (println : (string) -> unit)((Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string])));
+    (println : (string) -> unit)("" + (int::to_string : (int) -> string)((Vec[int]::get : (Vec[int], int) -> int)((values/15 : Vec[int]), 0)) + "," + (int::to_string : (int) -> string)((Vec[int]::get : (Vec[int], int) -> int)((values/15 : Vec[int]), 1)));
     (Ref[string]::set : (Ref[string], string) -> unit)((log/12 : Ref[string]), "");
     let table/16: HashMap[string, int] = {
-        let hashmap_literal/1275: HashMap[string, int] = (HashMap[string, int]::new : () -> HashMap[string, int])();
-        (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)((hashmap_literal/1275 : HashMap[string, int]), "" + "k" + (int::to_string : (int) -> string)((record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "K", 1)), (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "V", 11));
-        (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)((hashmap_literal/1275 : HashMap[string, int]), "same", (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "A", 1));
-        (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)((hashmap_literal/1275 : HashMap[string, int]), "same", (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "B", 2));
-        (hashmap_literal/1275 : HashMap[string, int])
+        let hashmap_literal/1226: HashMap[string, int] = (HashMap[string, int]::new : () -> HashMap[string, int])();
+        (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)((hashmap_literal/1226 : HashMap[string, int]), "" + "k" + (int::to_string : (int) -> string)((record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "K", 1)), (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "V", 11));
+        (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)((hashmap_literal/1226 : HashMap[string, int]), "same", (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "A", 1));
+        (HashMap[string, int]::set : (HashMap[string, int], string, int) -> unit)((hashmap_literal/1226 : HashMap[string, int]), "same", (record : (Ref[string], string, int) -> int)((log/12 : Ref[string]), "B", 2));
+        (hashmap_literal/1226 : HashMap[string, int])
     };
-    (@runtime(core.string_println) : (string) -> unit)((Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string])));
-    (@runtime(core.string_println) : (string) -> unit)(match (HashMap[string, int]::get : (HashMap[string, int], string) -> Option[int])((table/16 : HashMap[string, int]), "same") {
+    (println : (string) -> unit)((Ref[string]::get : (Ref[string]) -> string)((log/12 : Ref[string])));
+    (println : (string) -> unit)(match (HashMap[string, int]::get : (HashMap[string, int], string) -> Option[int])((table/16 : HashMap[string, int]), "same") {
         Option::Some(value/17: int) => (int::to_string : (int) -> string)((value/17 : int)),
         Option::None => "missing",
     });
     let empty_values/18: Vec[int] = {
-        let vec_literal/1633: Vec[int] = (Vec[int]::new : () -> Vec[int])();
-        (vec_literal/1633 : Vec[int])
+        let vec_literal/1570: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+        (vec_literal/1570 : Vec[int])
     };
     let empty_table/19: HashMap[string, int] = {
-        let hashmap_literal/1686: HashMap[string, int] = (HashMap[string, int]::new : () -> HashMap[string, int])();
-        (hashmap_literal/1686 : HashMap[string, int])
+        let hashmap_literal/1623: HashMap[string, int] = (HashMap[string, int]::new : () -> HashMap[string, int])();
+        (hashmap_literal/1623 : HashMap[string, int])
     };
-    (@runtime(core.string_println) : (string) -> unit)("" + "empty=" + (int::to_string : (int) -> string)((Vec[int]::len : (Vec[int]) -> int)((empty_values/18 : Vec[int])) + (HashMap[string, int]::len : (HashMap[string, int]) -> int)((empty_table/19 : HashMap[string, int]))) + " {ok}");
+    (println : (string) -> unit)("" + "empty=" + (int::to_string : (int) -> string)((Vec[int]::len : (Vec[int]) -> int)((empty_values/18 : Vec[int])) + (HashMap[string, int]::len : (HashMap[string, int]) -> int)((empty_table/19 : HashMap[string, int]))) + " {ok}");
 }

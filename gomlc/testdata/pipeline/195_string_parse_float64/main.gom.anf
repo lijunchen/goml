@@ -4,55 +4,88 @@ fn main() -> unit {
   let x157 = mtmp155.1 in
   let value/1 = x157 in
   let valid/0 = x156 in
-  join inline_cont193(t170: string) -> unit {
-    let _wild158 = @runtime(core.string_println)(t170) in
-    join inline_cont191(t171: string) -> unit {
-      let _wild159 = @runtime(core.string_println)(t171) in
-      let mtmp160 = @runtime(core.string_parse_float32)("3.14") in
-      let x161 = mtmp160.0 in
-      let x162 = mtmp160.1 in
-      let rounded/3 = x162 in
-      let rounded_valid/2 = x161 in
-      join inline_cont189(t172: string) -> unit {
-        let _wild163 = @runtime(core.string_println)(t172) in
-        join inline_cont187(t173: string) -> unit {
-          let _wild164 = @runtime(core.string_println)(t173) in
-          let mtmp165 = @runtime(core.string_parse_float64)("not-a-number") in
-          let x166 = mtmp165.0 in
-          let x167 = mtmp165.1 in
-          let fallback/5 = x167 in
-          let invalid/4 = x166 in
-          join inline_cont185(t174: string) -> unit {
-            let _wild168 = @runtime(core.string_println)(t174) in
-            join inline_cont183(t175: string) -> unit {
-              let t176 = @runtime(core.string_println)(t175) in
-              ()
+  join inline_cont216(t170: string) -> unit {
+    join inline_cont213(_wild158: unit) -> unit {
+      join inline_cont211(t171: string) -> unit {
+        join inline_cont208(_wild159: unit) -> unit {
+          let mtmp160 = @runtime(core.string_parse_float32)("3.14") in
+          let x161 = mtmp160.0 in
+          let x162 = mtmp160.1 in
+          let rounded/3 = x162 in
+          let rounded_valid/2 = x161 in
+          join inline_cont206(t172: string) -> unit {
+            join inline_cont203(_wild163: unit) -> unit {
+              join inline_cont201(t173: string) -> unit {
+                join inline_cont198(_wild164: unit) -> unit {
+                  let mtmp165 = @runtime(core.string_parse_float64)("not-a-number") in
+                  let x166 = mtmp165.0 in
+                  let x167 = mtmp165.1 in
+                  let fallback/5 = x167 in
+                  let invalid/4 = x166 in
+                  join inline_cont196(t174: string) -> unit {
+                    join inline_cont193(_wild168: unit) -> unit {
+                      join inline_cont191(t175: string) -> unit {
+                        let inline189 = trait_impl#ToString#string#to_string(t175) in
+                        let inline190 = @runtime(core.string_println)(inline189) in
+                        ()
+                      } in
+                      let inline192 = @runtime(core.float64_to_string)(x167) in
+                      jump inline_cont191(inline192)
+                    } in
+                    let inline194 = trait_impl#ToString#string#to_string(t174) in
+                    let inline195 = @runtime(core.string_println)(inline194) in
+                    jump inline_cont193(())
+                  } in
+                  let inline197 = @runtime(core.bool_to_string)(x166) in
+                  jump inline_cont196(inline197)
+                } in
+                let inline199 = trait_impl#ToString#string#to_string(t173) in
+                let inline200 = @runtime(core.string_println)(inline199) in
+                jump inline_cont198(())
+              } in
+              let inline202 = @runtime(core.float64_to_string)(x162) in
+              jump inline_cont201(inline202)
             } in
-            let inline184 = @runtime(core.float64_to_string)(x167) in
-            jump inline_cont183(inline184)
+            let inline204 = trait_impl#ToString#string#to_string(t172) in
+            let inline205 = @runtime(core.string_println)(inline204) in
+            jump inline_cont203(())
           } in
-          let inline186 = @runtime(core.bool_to_string)(x166) in
-          jump inline_cont185(inline186)
+          let inline207 = @runtime(core.bool_to_string)(x161) in
+          jump inline_cont206(inline207)
         } in
-        let inline188 = @runtime(core.float64_to_string)(x162) in
-        jump inline_cont187(inline188)
+        let inline209 = trait_impl#ToString#string#to_string(t171) in
+        let inline210 = @runtime(core.string_println)(inline209) in
+        jump inline_cont208(())
       } in
-      let inline190 = @runtime(core.bool_to_string)(x161) in
-      jump inline_cont189(inline190)
+      let inline212 = @runtime(core.float64_to_string)(x157) in
+      jump inline_cont211(inline212)
     } in
-    let inline192 = @runtime(core.float64_to_string)(x157) in
-    jump inline_cont191(inline192)
+    let inline214 = trait_impl#ToString#string#to_string(t170) in
+    let inline215 = @runtime(core.string_println)(inline214) in
+    jump inline_cont213(())
   } in
-  let inline194 = @runtime(core.bool_to_string)(x156) in
-  jump inline_cont193(inline194)
+  let inline217 = @runtime(core.bool_to_string)(x156) in
+  jump inline_cont216(inline217)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont218(t178: string) -> unit {
+    let t179 = @runtime(core.string_println)(t178) in
+    ()
+  } in
+  jump inline_cont218(value/1)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  let t179 = @runtime(core.bool_to_string)(self/37) in
-  t179
+  let t182 = @runtime(core.bool_to_string)(self/37) in
+  t182
 }
 
 fn trait_impl#ToString#float64#to_string(self/50: float64) -> string {
-  let t182 = @runtime(core.float64_to_string)(self/50) in
-  t182
+  let t185 = @runtime(core.float64_to_string)(self/50) in
+  t185
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

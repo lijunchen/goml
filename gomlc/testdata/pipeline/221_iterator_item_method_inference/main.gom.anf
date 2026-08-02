@@ -4,7 +4,7 @@ fn trait_impl#Iterator#Values#next(self/0: Values) -> Option__int32 {
 
 fn main() -> unit {
   let t163 = Values {} in
-  join inline_cont176(for_iter155: Values) -> unit {
+  join inline_cont184(for_iter155: Values) -> unit {
     join exit164() -> unit {
       let _wild159 = () in
       ()
@@ -16,14 +16,26 @@ fn main() -> unit {
     } in
     jump loop165()
   } in
-  jump inline_cont176(t163)
+  jump inline_cont184(t163)
 }
 
 fn trait_impl#IntoIterator#Values#into_iter(self/109: Values) -> Values {
   self/109
 }
 
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont185(t171: string) -> unit {
+    let t172 = @runtime(core.string_println)(t171) in
+    ()
+  } in
+  jump inline_cont185(value/1)
+}
+
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  let t172 = @runtime(core.int32_to_string)(self/6) in
-  t172
+  let t175 = @runtime(core.int32_to_string)(self/6) in
+  t175
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

@@ -50,8 +50,8 @@ fn matches_raw_path(value/7: string) -> bool {
 }
 
 fn main() -> unit {
-    (@runtime(core.string_println) : (string) -> unit)("C:\\tmp\\\"quoted\\\"");
-    (@runtime(core.string_println) : (string) -> unit)("" + "}");
+    (println : (string) -> unit)("C:\\tmp\\\"quoted\\\"");
+    (println : (string) -> unit)("" + "}");
     (println : (string) -> unit)((int::to_string : (int) -> string)((unwrap_or_negative : (Option[int]) -> int)(Option::Some(11))));
     (println : (string) -> unit)((int::to_string : (int) -> string)((unwrap_or_negative : (Option[int]) -> int)(Option::None)));
     (println : (string) -> unit)((int::to_string : (int) -> string)((count_to : (int) -> int)(4)));

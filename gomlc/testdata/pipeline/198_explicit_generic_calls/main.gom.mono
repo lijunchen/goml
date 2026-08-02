@@ -1,6 +1,10 @@
 fn main() -> unit {
-  let _wild155 = @runtime(core.string_println)(identity__T_string("direct")) in
-  @runtime(core.string_println)(inherent#int32#int32#to_string(identity__T_int32(42)))
+  let _wild155 = println__T_string(identity__T_string("direct")) in
+  println__T_string(inherent#int32#int32#to_string(identity__T_int32(42)))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn identity__T_string(value/0: string) -> string {
@@ -13,4 +17,8 @@ fn identity__T_int32(value/0: int32) -> int32 {
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
   @runtime(core.int32_to_string)(self/6)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

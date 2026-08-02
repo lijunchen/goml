@@ -3,9 +3,23 @@ fn stop() -> unit {
 }
 
 fn main() -> unit {
-  join inline_cont160(_wild156: unit) -> unit {
-    let t159 = @runtime(core.string_println)("continued") in
+  join inline_cont169(_wild156: unit) -> unit {
+    let inline166 = "continued" in
+    let inline167 = trait_impl#ToString#string#to_string(inline166) in
+    let inline168 = @runtime(core.string_println)(inline167) in
     ()
   } in
-  jump inline_cont160(())
+  jump inline_cont169(())
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join inline_cont170(t161: string) -> unit {
+    let t162 = @runtime(core.string_println)(t161) in
+    ()
+  } in
+  jump inline_cont170(value/1)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

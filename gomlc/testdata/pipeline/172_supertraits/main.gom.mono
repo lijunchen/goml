@@ -1,7 +1,11 @@
 fn main() -> unit {
-  let _wild155 = @runtime(core.string_println)(describe__B_Box[int]__T_int(Box__int { value: 5 })) in
+  let _wild155 = println__T_string(describe__B_Box[int]__T_int(Box__int { value: 5 })) in
   let value/4 = Box__int32 { value: 6 } in
-  @runtime(core.string_println)(inherent#int32#int32#to_string(trait_impl#Parent#[int32]@Box__int32#parent(value/4)))
+  println__T_string(inherent#int32#int32#to_string(trait_impl#Parent#[int32]@Box__int32#parent(value/4)))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn describe__B_Box[int]__T_int(value/3: Box__int) -> string {
@@ -14,6 +18,10 @@ fn trait_impl#Parent#[int32]@Box__int32#parent(self/0: Box__int32) -> int32 {
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
   @runtime(core.int32_to_string)(self/6)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }
 
 fn trait_impl#Parent#[int]@Box__int#parent(self/0: Box__int) -> int {

@@ -19,9 +19,9 @@ fn read_as[P, T](provider/3: P) -> T where P: Provider, P::Item = T, P::Item: To
 }
 
 fn main() -> unit {
-    (@runtime(core.string_println) : (string) -> unit)((int32::to_string : (int32) -> string)((read : (Number) -> int32)(Number { value: 42 })));
+    (println : (string) -> unit)((int32::to_string : (int32) -> string)((read : (Number) -> int32)(Number { value: 42 })));
     let value/4: int32 = (read_as : (Number) -> int32)(Number { value: 7 });
-    (@runtime(core.string_println) : (string) -> unit)((int32::to_string : (int32) -> string)((value/4 : int32)));
-    (@runtime(core.string_println) : (string) -> unit)((read : (Box[string]) -> string)(Box { value: "generic" }));
-    (@runtime(core.string_println) : (string) -> unit)((int32::to_string : (int32) -> string)((Provider::get : (Number) -> int32)(Number { value: 11 })))
+    (println : (string) -> unit)((int32::to_string : (int32) -> string)((value/4 : int32)));
+    (println : (string) -> unit)((read : (Box[string]) -> string)(Box { value: "generic" }));
+    (println : (string) -> unit)((int32::to_string : (int32) -> string)((Provider::get : (Number) -> int32)(Number { value: 11 })))
 }

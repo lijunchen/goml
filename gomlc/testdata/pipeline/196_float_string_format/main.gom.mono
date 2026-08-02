@@ -1,16 +1,24 @@
 fn main() -> unit {
-  let _wild155 = @runtime(core.string_println)(trait_impl#ToString#float64#to_string(18318654708.7)) in
-  let _wild156 = @runtime(core.string_println)(trait_impl#ToString#float64#to_string(0.0000001)) in
+  let _wild155 = println__T_string(trait_impl#ToString#float64#to_string(18318654708.7)) in
+  let _wild156 = println__T_string(trait_impl#ToString#float64#to_string(0.0000001)) in
   let zero/0 = 0 in
   let negative_one/1 = (-1) in
-  let _wild157 = @runtime(core.string_println)(trait_impl#ToString#float64#to_string((negative_one/1 * zero/0))) in
-  let _wild158 = @runtime(core.string_println)(trait_impl#ToString#float64#to_string((1 / zero/0))) in
-  let _wild159 = @runtime(core.string_println)(trait_impl#ToString#float64#to_string(((-1) / zero/0))) in
-  let _wild160 = @runtime(core.string_println)(trait_impl#ToString#float64#to_string((zero/0 / zero/0))) in
+  let _wild157 = println__T_string(trait_impl#ToString#float64#to_string((negative_one/1 * zero/0))) in
+  let _wild158 = println__T_string(trait_impl#ToString#float64#to_string((1 / zero/0))) in
+  let _wild159 = println__T_string(trait_impl#ToString#float64#to_string(((-1) / zero/0))) in
+  let _wild160 = println__T_string(trait_impl#ToString#float64#to_string((zero/0 / zero/0))) in
   let wide/2 = 12345678 in
-  @runtime(core.string_println)(trait_impl#ToString#float64#to_string(wide/2))
+  println__T_string(trait_impl#ToString#float64#to_string(wide/2))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn trait_impl#ToString#float64#to_string(self/50: float64) -> string {
   @runtime(core.float64_to_string)(self/50)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }

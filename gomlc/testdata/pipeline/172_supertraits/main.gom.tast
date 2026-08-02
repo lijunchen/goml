@@ -21,7 +21,7 @@ fn describe[T, B](value/3: B) -> string where B: Child[T], T: ToString, T: Eq, B
 }
 
 fn main() -> unit {
-    (@runtime(core.string_println) : (string) -> unit)((describe : (Box[int]) -> string)(Box { value: 5 }));
+    (println : (string) -> unit)((describe : (Box[int]) -> string)(Box { value: 5 }));
     let value/4: Box[int32] = Box { value: 6 };
-    (@runtime(core.string_println) : (string) -> unit)((int32::to_string : (int32) -> string)((Parent[int32]::parent : (Box[int32]) -> int32)((value/4 : Box[int32]))))
+    (println : (string) -> unit)((int32::to_string : (int32) -> string)((Parent[int32]::parent : (Box[int32]) -> int32)((value/4 : Box[int32]))))
 }

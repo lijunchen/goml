@@ -1524,9 +1524,9 @@ fn read_as(provider/3: P) -> T {
 }
 
 fn main() -> unit {
-  let _wild155 = @runtime(core.string_println)(inherent#int32#int32#to_string(read(Number { value: 42 }))) in
+  let _wild155 = println(inherent#int32#int32#to_string(read(Number { value: 42 }))) in
   let value/4 = read_as(Number { value: 7 }) in
-  let _wild156 = @runtime(core.string_println)(inherent#int32#int32#to_string(value/4)) in
-  let _wild157 = @runtime(core.string_println)(read(Box { value: "generic" })) in
-  @runtime(core.string_println)(inherent#int32#int32#to_string(trait_call[Provider::get](Number { value: 11 })))
+  let _wild156 = println(inherent#int32#int32#to_string(value/4)) in
+  let _wild157 = println(read(Box { value: "generic" })) in
+  println(inherent#int32#int32#to_string(trait_call[Provider::get](Number { value: 11 })))
 }

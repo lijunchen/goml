@@ -25,7 +25,7 @@ fn main() -> unit {
       } in
       inherent#Ref#Ref[T]#set__T_bool(running/0, false)
   } in
-  @runtime(core.string_println)("ok")
+  println__T_string("ok")
 }
 
 fn inherent#Ref#Ref[T]#new__T_bool(value/207: bool) -> Ref[bool] {
@@ -38,6 +38,14 @@ fn inherent#Ref#Ref[T]#get__T_bool(self/208: Ref[bool]) -> bool {
 
 fn inherent#Ref#Ref[T]#set__T_bool(self/209: Ref[bool], value/210: bool) -> unit {
   @intrinsic(ref.set)(self/209, value/210)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  self/38
 }
 
 fn trait_impl#Eq#bool#eq(self/53: bool, other/54: bool) -> bool {
