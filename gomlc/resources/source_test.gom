@@ -2,6 +2,23 @@ package resources;
 
 use std::testing;
 
+fn assert_strings(actual: Vec[string], expected: Vec[string]) -> unit {
+    testing::assert_eq(actual.len(), expected.len());
+    for index in 0..actual.len() {
+        testing::assert_eq(actual[index], expected[index])
+    }
+}
+
+fn required_abi(value: Option[CallableAbiSpec]) -> CallableAbiSpec {
+    match value {
+        Some(spec) => spec,
+        None => {
+            testing::fail("expected callable ABI entry");
+            callable_abi("", "", "", Vec::[])
+        },
+    }
+}
+
 #[test]
 fn loads_builtin_sources_from_toolchain_lib() -> unit {
     match builtin_sources() {
@@ -28,5 +45,65 @@ fn ignores_unknown_standard_package() -> unit {
     match standard_sources("example::unknown") {
         Ok(value) => testing::assert(value.is_none()),
         Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog() -> unit {
+    let fs = match standard_package_spec("std::fs") {
+        Some(value) => value,
+        None => {
+            testing::fail("expected std::fs package metadata");
+            standard_package("", "", "", Vec::[], Vec::[], Vec::[])
+        },
+    };
+    testing::assert_eq(fs.declared_name, "fs");
+    assert_strings(fs.source_paths, Vec::["std/fs/fs.gom"]);
+    assert_strings(fs.dependencies, Vec::["std::bytes", "std::internal::host"]);
+    assert_strings(fs.link_dependencies, Vec::["std::bytes"]);
+    assert_strings(
+        standard_package_children("std"),
+        Vec::[
+            "bytes",
+            "collections",
+            "env",
+            "fs",
+            "internal",
+            "io",
+            "json",
+            "num",
+            "path",
+            "process",
+            "testing",
+            "text",
+            "time",
+        ],
+    );
+    assert_strings(standard_package_children("std::internal"), Vec::["host"]);
+    assert_strings(
+        standard_package_closure(Vec::["std::json", "std::fs"]),
+        Vec::["std::bytes", "std::text", "std::json", "std::internal::host", "std::fs"],
+    );
+    assert_strings(
+        standard_package_link_closure(Vec::["std::json", "std::fs"]),
+        Vec::["std::bytes", "std::text", "std::json", "std::fs"],
+    )
+}
+
+#[test]
+fn callable_abi_catalog_round_trips_keys_and_ids() -> unit {
+    for spec in intrinsic_abi_specs() {
+        testing::assert_eq(
+            required_abi(intrinsic_abi_by_key(spec.key)).artifact_id,
+            spec.artifact_id,
+        );
+        testing::assert_eq(required_abi(intrinsic_abi_by_id(spec.artifact_id)).key, spec.key)
+    };
+    for spec in standard_runtime_abi_specs() {
+        testing::assert_eq(required_abi(runtime_abi_by_key(spec.key)).artifact_id, spec.artifact_id);
+        testing::assert_eq(required_abi(runtime_abi_by_id(spec.artifact_id)).key, spec.key)
+    };
+    for id in core_runtime_keys() {
+        testing::assert_eq(required_abi(runtime_abi_by_id(id)).key, "core." + id)
     }
 }

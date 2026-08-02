@@ -28,13 +28,25 @@ fn test_builtins(counter: Ref[int]) -> core::File {
     }
 }
 
+fn required_lower(value: Result[File, string]) -> File {
+    match value {
+        Ok(file) => file,
+        Err(error) => {
+            testing::fail(error);
+            File { items: Vec::[] }
+        },
+    }
+}
+
 fn lower_source(source: string) -> File {
-    lower(
-        anf::lower(
-            lift::lower(
-                mono::lower(
-                    core::lower(
-                        tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
+    required_lower(
+        lower(
+            anf::lower(
+                lift::lower(
+                    mono::lower(
+                        core::lower(
+                            tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
+                        ),
                     ),
                 ),
             ),
@@ -51,21 +63,25 @@ fn lower_linked_source(source: string) -> File {
         builtins.enums,
         builtins.structs,
     );
-    lower(anf::lower(lift::lower(mono::lower(core::link_with_builtins(builtins, user)))))
+    required_lower(
+        lower(anf::lower(lift::lower(mono::lower(core::link_with_builtins(builtins, user))))),
+    )
 }
 
 fn lower_test_source(source: string, test_cases: Vec[(string, string)]) -> File {
-    lower_tests(
-        anf::lower(
-            lift::lower(
-                mono::lower(
-                    core::lower(
-                        tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
+    required_lower(
+        lower_tests(
+            anf::lower(
+                lift::lower(
+                    mono::lower(
+                        core::lower(
+                            tast::check(hir::lower(ast::lower(parser::parse(source)), "main.gom")),
+                        ),
                     ),
                 ),
             ),
+            test_cases,
         ),
-        test_cases,
     )
 }
 
@@ -482,6 +498,155 @@ fn emits_value_and_infinite_loops_without_expanding_continuations() -> unit {
     testing::assert(string_contains(output, " = 7\n            break Loop_loop_expr"));
     testing::assert(string_contains(output, "func spin() int {\n    for {"));
     testing::assert(!string_contains(output, "panic(\"unreachable\")"))
+}
+
+#[test]
+fn recognizes_recursive_joins_independently_of_their_names() -> unit {
+    let ty = tast::Type::Unit;
+    let recursive = anf::JoinBind {
+        name: "renamed_control_node",
+        role: anf::JoinRole::Continuation,
+        params: Vec::[],
+        ret_ty: ty,
+        body: anf::Block {
+            binds: Vec::[],
+            term: anf::Term::Jump { target: "renamed_control_node", args: Vec::[], ret_ty: ty },
+        },
+    };
+    let recursive_group: Vec[anf::JoinBind] = Vec::[];
+    recursive_group.push(recursive);
+    let binds: Vec[anf::Bind] = Vec::[];
+    binds.push(anf::Bind::JoinRec(recursive_group));
+    let functions: Vec[anf::Function] = Vec::[];
+    functions.push(
+        anf::Function {
+            name: "main",
+            origin: core::FunctionOrigin::Source,
+            root: true,
+            trait_impl: Option::None,
+            params: Vec::[],
+            ret_ty: ty,
+            body: anf::Block {
+                binds,
+                term: anf::Term::Jump { target: "renamed_control_node", args: Vec::[], ret_ty: ty },
+            },
+        },
+    );
+    let output = encode(
+        required_lower(
+            lower(
+                anf::File {
+                    functions,
+                    enums: Vec::[],
+                    structs: Vec::[],
+                    type_instances: Vec::[],
+                    constants: Vec::[],
+                },
+            ),
+        ),
+    );
+    testing::assert(string_contains(output, "func main0() struct{} {\n    for {"));
+    testing::assert(!string_contains(output, "panic(\"unreachable\")"))
+}
+
+#[test]
+fn rejects_unsupported_mutually_recursive_join_groups_before_emission() -> unit {
+    let ty = tast::Type::Unit;
+    let joins: Vec[anf::JoinBind] = Vec::[];
+    joins.push(
+        anf::JoinBind {
+            name: "first",
+            role: anf::JoinRole::Continuation,
+            params: Vec::[],
+            ret_ty: ty,
+            body: anf::Block {
+                binds: Vec::[],
+                term: anf::Term::Jump { target: "second", args: Vec::[], ret_ty: ty },
+            },
+        },
+    );
+    joins.push(
+        anf::JoinBind {
+            name: "second",
+            role: anf::JoinRole::Continuation,
+            params: Vec::[],
+            ret_ty: ty,
+            body: anf::Block {
+                binds: Vec::[],
+                term: anf::Term::Jump { target: "first", args: Vec::[], ret_ty: ty },
+            },
+        },
+    );
+    let functions: Vec[anf::Function] = Vec::[];
+    functions.push(
+        anf::Function {
+            name: "cycle",
+            origin: core::FunctionOrigin::Source,
+            root: true,
+            trait_impl: Option::None,
+            params: Vec::[],
+            ret_ty: ty,
+            body: anf::Block {
+                binds: Vec::[anf::Bind::JoinRec(joins)],
+                term: anf::Term::Jump { target: "first", args: Vec::[], ret_ty: ty },
+            },
+        },
+    );
+    match lower(
+        anf::File {
+            functions,
+            enums: Vec::[],
+            structs: Vec::[],
+            type_instances: Vec::[],
+            constants: Vec::[],
+        },
+    ) {
+        Err(error) => testing::assert_eq(
+            error,
+            "in function cycle: Go backend requires each recursive join group to contain exactly one join",
+        ),
+        Ok(_) => testing::fail("expected recursive join validation error"),
+    }
+}
+
+fn callable_file(callable: tast::Callable) -> anf::File {
+    let ty = tast::Type::Func { params: Vec::[], ret_ty: tast::Type::Unit };
+    anf::File {
+        functions: Vec::[
+            anf::Function {
+                name: "invalid_callable",
+                origin: core::FunctionOrigin::Source,
+                root: true,
+                trait_impl: Option::None,
+                params: Vec::[],
+                ret_ty: ty,
+                body: anf::Block {
+                    binds: Vec::[],
+                    term: anf::Term::Return(anf::Imm::Callable { callable, ty }),
+                },
+            },
+        ],
+        enums: Vec::[],
+        structs: Vec::[],
+        type_instances: Vec::[],
+        constants: Vec::[],
+    }
+}
+
+#[test]
+fn rejects_unknown_runtime_hooks_before_emission() -> unit {
+    match lower(callable_file(tast::Callable::Runtime("vendor.unknown"))) {
+        Err(error) => testing::assert_eq(error, "unknown runtime hook vendor.unknown"),
+        Ok(_) => testing::fail("expected runtime hook validation error"),
+    }
+}
+
+#[test]
+fn rejects_unknown_intrinsics_before_emission() -> unit {
+    match lower(callable_file(tast::Callable::Intrinsic("vendor.unknown"))) {
+        Err(error) => testing::assert_eq(error, "unknown intrinsic vendor.unknown"),
+        Ok(_) => testing::fail("expected intrinsic validation error"),
+    }
 }
 
 #[test]
@@ -1000,7 +1165,7 @@ fn protects_index_intrinsics_from_user_functions() -> unit {
     testing::assert(string_contains(output, "func array_get(arr__0 [2]int32"));
     testing::assert(string_contains(output, "array_get__Array_2_5int32(a__17, 1)"));
     testing::assert(string_contains(output, "s__22[1]"));
-    testing::assert(string_contains(output, "_goml_m_core_t_string__get("));
+    testing::assert(string_contains(output, "_goml_runtime_core_string_get("));
     testing::assert(string_contains(output, "hashmap_get__HashMap_6string_5int32(m__"));
     testing::assert(!string_contains(output, "_goml_m_array_t_get"));
     testing::assert(!string_contains(output, "_goml_m_vec_t_get"));

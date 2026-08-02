@@ -310,6 +310,15 @@ fn lowers_builtin_iterators_without_iterator_protocols() -> unit {
 }
 
 #[test]
+fn does_not_optimize_user_function_named_range() -> unit {
+    let source = "fn range(start: int, end: int) -> FnIterator[int] { FnIterator::from_fn(|| Option::None) } fn each() -> unit { for value in range(2, 4) { println(value) } }";
+    let encoded = encode(lower_optimized_source(source));
+    testing::assert(string_contains(encoded, "trait_call[IntoIterator::into_iter]"));
+    testing::assert(string_contains(encoded, "trait_call[Iterator::next]"));
+    testing::assert(!string_contains(encoded, "for_index"))
+}
+
+#[test]
 fn lowers_flat_struct_bindings_in_field_order() -> unit {
     let source = "struct Pair { left: int32, right: string } fn right(pair: Pair) -> string { let Pair { left: _, right } = pair; right }";
     testing::assert_eq(
