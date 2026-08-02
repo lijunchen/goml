@@ -1,0 +1,266 @@
+package pretty;
+
+use std::testing;
+use std::text as std_text;
+
+fn assert_pretty(width: int, value: Doc, expected: string) -> unit {
+    testing::assert_eq(pretty(width, value), expected)
+}
+
+#[test]
+fn nil_is_the_unit_of_append() -> unit {
+    let value = append(text("left"), nest(2, append(line(), text("right"))));
+    testing::assert_eq(layout(append(nil(), value)), layout(value));
+    testing::assert_eq(layout(append(value, nil())), layout(value))
+}
+
+#[test]
+fn append_is_associative() -> unit {
+    let first = text("a");
+    let second = nest(2, append(line(), text("b")));
+    let third = append(line(), text("c"));
+    let left = append(append(first, second), third);
+    let right = append(first, append(second, third));
+    testing::assert_eq(layout(left), layout(right));
+    testing::assert_eq(layout(left), "a\n  b\nc")
+}
+
+#[test]
+fn nesting_only_changes_indentation_after_a_line() -> unit {
+    testing::assert_eq(layout(nest(4, text("start"))), "start");
+    testing::assert_eq(
+        layout(append(nest(2, append(line(), text("inside"))), append(line(), text("outside")))),
+        "\n  inside\noutside",
+    );
+    testing::assert_eq(layout(nest(2, line())), "\n  ")
+}
+
+#[test]
+fn nesting_distributes_and_adds() -> unit {
+    let left = append(text("a"), append(line(), append(text("b"), append(line(), text("c")))));
+    let distributed = append(
+        nest(3, text("a")),
+        nest(3, append(line(), append(text("b"), append(line(), text("c"))))),
+    );
+    testing::assert_eq(layout(nest(3, left)), layout(distributed));
+    testing::assert_eq(layout(nest(2, nest(3, left))), layout(nest(5, left)));
+    testing::assert_eq(layout(nest(-4, left)), layout(left))
+}
+
+#[test]
+fn text_normalizes_embedded_newlines() -> unit {
+    testing::assert_eq(layout(nest(2, text("a\nb\n"))), "a\n  b\n  ");
+    testing::assert_eq(layout(text("")), "");
+    testing::assert_eq(pretty(20, group(text("a\nb"))), "a b")
+}
+
+#[test]
+fn group_uses_flat_layout_exactly_at_the_width() -> unit {
+    let value = group(above(text("abc"), text("de")));
+    assert_pretty(6, value, "abc de");
+    assert_pretty(5, value, "abc\nde");
+    assert_pretty(0, value, "abc\nde")
+}
+
+#[test]
+fn group_accounts_for_the_existing_column() -> unit {
+    let value = append(text("xx"), group(above(text("abc"), text("d"))));
+    assert_pretty(7, value, "xxabc d");
+    assert_pretty(6, value, "xxabc\nd")
+}
+
+#[test]
+fn nested_groups_choose_independently() -> unit {
+    let value = group(above(text("a"), group(above(text("bb"), text("cc")))));
+    assert_pretty(7, value, "a bb cc");
+    assert_pretty(6, value, "a\nbb cc");
+    assert_pretty(4, value, "a\nbb\ncc");
+    testing::assert_eq(pretty(4, group(value)), pretty(4, value))
+}
+
+#[test]
+fn unavoidable_overflow_uses_the_shorter_first_line() -> unit {
+    let value = group(above(text("abcdefgh"), text("x")));
+    assert_pretty(3, value, "abcdefgh\nx")
+}
+
+#[test]
+fn concat_join_and_folddoc_cover_empty_and_nil_elements() -> unit {
+    testing::assert_eq(layout(concat(Vec::[])), "");
+    testing::assert_eq(layout(concat(Vec::[text("a"), nil(), text("b")])), "ab");
+    testing::assert_eq(layout(join(text(","), Vec::[])), "");
+    testing::assert_eq(layout(join(text(","), Vec::[text("a"), nil(), text("b")])), "a,,b");
+    testing::assert_eq(layout(folddoc(above, Vec::[text("a"), text("b"), text("c")])), "a\nb\nc");
+    testing::assert_eq(layout(folddoc(append, Vec::[])), "");
+    testing::assert_eq(layout(folddoc(append, Vec::[text("only")])), "only")
+}
+
+#[test]
+fn spread_stack_beside_and_above_match_the_paper() -> unit {
+    testing::assert_eq(layout(spread(Vec::[text("a"), text("b"), text("c")])), "a b c");
+    testing::assert_eq(layout(stack(Vec::[text("a"), text("b"), text("c")])), "a\nb\nc");
+    testing::assert_eq(layout(beside(text("a"), text("b"))), "a b");
+    testing::assert_eq(layout(above(text("a"), text("b"))), "a\nb")
+}
+
+#[test]
+fn softline_and_bracket_have_flat_and_broken_layouts() -> unit {
+    let soft = append(text("a"), append(softline(), text("b")));
+    assert_pretty(3, soft, "a b");
+    assert_pretty(2, soft, "a\nb");
+    assert_pretty(3, soft_beside(text("a"), text("b")), "a b");
+    assert_pretty(2, soft_beside(text("a"), text("b")), "a\nb");
+    let value = bracket("[", spread(Vec::[text("a"), text("b")]), "]");
+    assert_pretty(7, value, "[ a b ]");
+    assert_pretty(6, value, "[\n  a b\n]")
+}
+
+#[test]
+fn fill_greedily_packs_plain_documents() -> unit {
+    let value = fill(Vec::[text("aaa"), text("bb"), text("c"), text("dddd")]);
+    assert_pretty(100, value, "aaa bb c dddd");
+    assert_pretty(6, value, "aaa bb\nc dddd");
+    assert_pretty(5, value, "aaa\nbb c\ndddd");
+    testing::assert_eq(pretty(5, group(value)), pretty(5, value));
+    testing::assert_eq(pretty(5, fill(Vec::[])), "");
+    testing::assert_eq(pretty(5, fill(Vec::[text("only")])), "only")
+}
+
+#[test]
+fn fill_flattens_a_document_only_when_put_beside_another() -> unit {
+    let element = group(above(text("<em>"), above(text("word"), text("</em>"))));
+    let value = fill(Vec::[text("before"), element, text("after")]);
+    assert_pretty(40, value, "before <em> word </em> after");
+    assert_pretty(16, value, "before\n<em> word </em>\nafter");
+    assert_pretty(13, value, "before\n<em>\nword\n</em>\nafter")
+}
+
+#[test]
+fn fill_copies_its_input_vector() -> unit {
+    let values = Vec::[text("a"), text("b")];
+    let value = fill(values);
+    values.set(0, text("changed"));
+    testing::assert_eq(pretty(20, value), "a b")
+}
+
+#[test]
+fn fillwords_collapses_ascii_whitespace() -> unit {
+    let value = fillwords("  alpha\tbeta\n gamma\r\n ");
+    assert_pretty(40, value, "alpha beta gamma");
+    assert_pretty(10, value, "alpha beta\ngamma");
+    testing::assert_eq(pretty(10, fillwords(" \n\t ")), "")
+}
+
+#[test]
+fn unicode_width_is_counted_in_scalars_not_bytes() -> unit {
+    testing::assert_eq(text_width("语言a"), 3);
+    let value = group(above(text("语言"), text("a")));
+    assert_pretty(4, value, "语言 a");
+    assert_pretty(3, value, "语言\na")
+}
+
+enum Tree {
+    Node(string, Vec[Tree]),
+}
+
+fn show_tree(value: Tree) -> Doc {
+    match value {
+        Node(label, children) => group(
+            append(text(label), nest(text_width(label), show_bracket(children))),
+        ),
+    }
+}
+
+fn show_bracket(values: Vec[Tree]) -> Doc {
+    if values.len() == 0 {
+        nil()
+    } else {
+        append(text("["), append(nest(1, show_trees(values, 0)), text("]")))
+    }
+}
+
+fn show_trees(values: Vec[Tree], index: int) -> Doc {
+    if index + 1 >= values.len() {
+        show_tree(values.get(index))
+    } else {
+        append(
+            show_tree(values.get(index)),
+            append(text(","), append(line(), show_trees(values, index + 1))),
+        )
+    }
+}
+
+fn paper_tree() -> Tree {
+    Tree::Node(
+        "aaa",
+        Vec::[
+            Tree::Node("bbbbb", Vec::[Tree::Node("ccc", Vec::[]), Tree::Node("dd", Vec::[])]),
+            Tree::Node("eee", Vec::[]),
+            Tree::Node(
+                "ffff",
+                Vec::[
+                    Tree::Node("gg", Vec::[]),
+                    Tree::Node("hhh", Vec::[]),
+                    Tree::Node("ii", Vec::[]),
+                ],
+            ),
+        ],
+    )
+}
+
+#[test]
+fn reproduces_wadlers_tree_example_at_width_30() -> unit {
+    testing::assert_eq(
+        pretty(30, show_tree(paper_tree())),
+        "aaa[bbbbb[ccc, dd],\n    eee,\n    ffff[gg, hhh, ii]]",
+    )
+}
+
+#[test]
+fn explicit_work_stack_handles_deep_left_association() -> unit {
+    let mut value = nil();
+    for _ in range(0, 5000) {
+        value = append(value, text("x"));
+    };
+    testing::assert_eq(pretty(80, value).byte_len(), 5000)
+}
+
+#[test]
+fn fill_is_constructed_lazily_for_many_choices() -> unit {
+    let values: Vec[Doc] = Vec::new();
+    for _ in range(0, 250) {
+        values.push(text("x"))
+    };
+    let rendered = pretty(9, fill(values));
+    let lines = std_text::lines(rendered);
+    testing::assert_eq(lines.len(), 50);
+    for value in lines {
+        testing::assert_eq(value, "x x x x x")
+    }
+}
+
+#[test]
+fn doc_methods_are_equivalent_to_functions() -> unit {
+    let with_functions = pretty(3, group(append(text("a"), nest(2, append(line(), text("b"))))));
+    let with_methods = text("a").then(line().then(text("b")).indented(2)).grouped().render(3);
+    testing::assert_eq(with_methods, with_functions)
+}
+
+#[test]
+fn hard_lines_and_break_lines_have_distinct_flat_layouts() -> unit {
+    let with_space = group(append(text("a"), append(line(), text("b"))));
+    let without_space = group(append(text("a"), append(break_line(), text("b"))));
+    let forced = group(append(text("a"), append(hardline(), text("b"))));
+    testing::assert_eq(pretty(10, with_space), "a b");
+    testing::assert_eq(pretty(10, without_space), "ab");
+    testing::assert_eq(pretty(10, forced), "a\nb")
+}
+
+#[test]
+fn delimited_and_block_build_structured_documents() -> unit {
+    let arguments = delimited("(", ",", ")", Vec::[text("first"), text("second")]);
+    testing::assert_eq(pretty(20, arguments), "(first, second)");
+    testing::assert_eq(pretty(8, arguments), "(\n  first,\n  second\n)");
+    let body = block(text("fn main()"), Vec::[text("first"), text("second")]);
+    testing::assert_eq(layout(body), "fn main() {\n  first\n  second\n}")
+}
