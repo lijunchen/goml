@@ -2449,7 +2449,8 @@ fn rounds_float32_literals() -> unit {
 #[test]
 fn indents_array_control_flow_expressions() -> unit {
     let file = checked_file("fn choose(flag: bool) -> [int32; 1] { [if flag { 1 } else { 2 }] }");
-    let expected = "fn choose(flag/0: bool) -> [int32; 1] {\n" + "    [if (flag/0 : bool) {\n"
+    let expected = "fn choose(flag/0: bool) -> [int32; 1] {\n" + "    [\n"
+        + "      if (flag/0 : bool) {\n"
         + "          {\n"
         + "              1\n"
         + "          }\n"
@@ -2457,7 +2458,8 @@ fn indents_array_control_flow_expressions() -> unit {
         + "          {\n"
         + "              2\n"
         + "          }\n"
-        + "      }]\n"
+        + "      }\n"
+        + "    ]\n"
         + "}";
     testing::assert_eq(encode_file(file), expected)
 }

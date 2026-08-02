@@ -264,3 +264,9 @@ fn delimited_and_block_build_structured_documents() -> unit {
     let body = block(text("fn main()"), Vec::[text("first"), text("second")]);
     testing::assert_eq(layout(body), "fn main() {\n  first\n  second\n}")
 }
+
+#[test]
+fn compact_uses_the_fully_flat_layout() -> unit {
+    let value = enclose("(", join(append(text(","), line()), Vec::[text("a"), text("b")]), ")");
+    testing::assert_eq(compact(value), "(a, b)")
+}
