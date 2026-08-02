@@ -2492,7 +2492,14 @@ fn builtin_associated_type(name: string, bounds: Vec[TraitRef]) -> AssociatedTyp
 }
 
 fn builtin_trait_method(name: string, params: Vec[Type], ret_ty: Type) -> TraitMethodInfo {
-    TraitMethodInfo { name, generics: Vec::[], predicates: Vec::[], params, ret_ty }
+    TraitMethodInfo {
+        name,
+        generics: Vec::[],
+        predicates: Vec::[],
+        params,
+        ret_ty,
+        default_name: Option::None,
+    }
 }
 
 pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {

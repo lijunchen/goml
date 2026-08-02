@@ -532,6 +532,11 @@ fn artifact_interface_binary_callable(reader: ArtifactInterfaceBinaryReader, nam
     if kind == "goml" {
         if count == 1 {
             Result::Ok(tast::Callable::Function(name))
+        } else if count == 2 {
+            artifact_interface_binary_field(reader, "id")?;
+            Result::Ok(
+                tast::Callable::Function(artifact_interface_binary_string(reader, "callable id")?),
+            )
         } else {
             Result::Err(artifact_interface_binary_error("callable body"))
         }

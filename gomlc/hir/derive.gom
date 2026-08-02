@@ -840,6 +840,75 @@ fn derived_enum_impls(value: ast::EnumDef) -> Vec[ast::ImplBlock] {
     result
 }
 
+fn trait_default_name(trait_name: string, method_name: string) -> string {
+    "trait_default#" + trait_name + "#" + method_name
+}
+
+fn trait_default_ref(value: ast::TraitDef) -> ast::TraitRef {
+    let args: Vec[ast::TypeExpr] = Vec::[];
+    for generic in value.generics {
+        args.push(type_for_name(generic))
+    };
+    ast::TraitRef { path: one_segment_path(value.name), args }
+}
+
+fn trait_default_function(
+    trait_def: ast::TraitDef,
+    method: ast::TraitMethodSignature,
+    body: ast::Block,
+) -> ast::Function {
+    let generics = copy_strings(trait_def.generics);
+    generics.push("Self");
+    for generic in method.generics {
+        generics.push(generic)
+    };
+    let generic_bounds: Vec[(string, Vec[ast::TraitRef])] = Vec::[];
+    for bound in trait_def.generic_bounds {
+        generic_bounds.push(bound)
+    };
+    let self_bounds: Vec[ast::TraitRef] = Vec::[];
+    self_bounds.push(trait_default_ref(trait_def));
+    generic_bounds.push(("Self", self_bounds));
+    for bound in method.generic_bounds {
+        generic_bounds.push(bound)
+    };
+    let predicates: Vec[ast::Predicate] = Vec::[];
+    for predicate in trait_def.predicates {
+        predicates.push(predicate)
+    };
+    for predicate in method.predicates {
+        predicates.push(predicate)
+    };
+    let param_type_spans: Vec[ast::Span] = Vec::[];
+    for _ in method.params {
+        param_type_spans.push(dummy_span())
+    };
+    ast::Function {
+        attrs: empty_attributes(),
+        visibility: ast::Visibility::Private,
+        name: trait_default_name(trait_def.name, method.name),
+        generics,
+        generic_bounds,
+        predicates,
+        params: method.params,
+        param_type_spans,
+        ret_ty: Option::Some(method.ret_ty),
+        ret_ty_span: Option::Some(dummy_span()),
+        body,
+    }
+}
+
+fn trait_default_functions(value: ast::TraitDef) -> Vec[ast::Function] {
+    let result: Vec[ast::Function] = Vec::[];
+    for method in value.method_sigs {
+        match method.body {
+            Some(body) => result.push(trait_default_function(value, method, body)),
+            None => (),
+        }
+    };
+    result
+}
+
 fn expand_file_derives(value: ast::File) -> ast::File {
     let items: Vec[ast::Item] = Vec::[];
     for item in value.items {
@@ -853,6 +922,11 @@ fn expand_file_derives(value: ast::File) -> ast::File {
             EnumDef(definition) => {
                 for impl_block in derived_enum_impls(definition) {
                     items.push(ast::Item::ImplBlock(impl_block))
+                }
+            },
+            TraitDef(definition) => {
+                for function in trait_default_functions(definition) {
+                    items.push(ast::Item::Function(function))
                 }
             },
             _ => (),

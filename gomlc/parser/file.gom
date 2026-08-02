@@ -533,7 +533,6 @@ fn trait_method_list(parser: Parser) -> unit {
     while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
         if parser.at(lexer::TokenKind::FnKeyword) {
             trait_method(parser);
-            parser.expect(lexer::TokenKind::Semi);
             ()
         } else if parser.at(lexer::TokenKind::TypeKeyword) {
             trait_associated_type(parser)
@@ -569,6 +568,11 @@ fn trait_method(parser: Parser) -> unit {
         where_clause(parser)
     } else {
         ()
+    };
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        parser.expect(lexer::TokenKind::Semi)
     };
     let _ = parser.close(marker, cst::NodeKind::TRAIT_METHOD_SIG);
     ()

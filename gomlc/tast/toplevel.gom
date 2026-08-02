@@ -958,8 +958,8 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 for_type,
                 associated_types,
                 methods,
-                value.generics.len(),
-                predicates.len(),
+                value.generics,
+                predicates,
             );
             if base.diagnostics.len() > validation_start {
                 invalid = true;
@@ -1507,8 +1507,8 @@ fn validate_trait_impl(
     for_type: Type,
     associated_types: Vec[(string, Type)],
     methods: Vec[Function],
-    owner_generic_count: int,
-    owner_predicate_count: int,
+    owner_generics: Vec[string],
+    owner_predicates: Vec[TypePredicate],
 ) -> unit {
     match find_trait(ctx, reference.name) {
         Some(info) => {
@@ -1537,6 +1537,25 @@ fn validate_trait_impl(
                     },
                 )
             };
+            for expected in info.methods {
+                if !contains_function_named(methods, expected.name) {
+                    match expected.default_name {
+                        Some(default_name) => methods.push(
+                            default_trait_method(
+                                ctx,
+                                expected,
+                                default_name,
+                                substitutions,
+                                owner_generics,
+                                owner_predicates,
+                            ),
+                        ),
+                        None => (),
+                    }
+                } else {
+                    ()
+                }
+            };
             let seen: Vec[string] = Vec::[];
             for method in methods {
                 match find_trait_method(info, method.name) {
@@ -1555,8 +1574,8 @@ fn validate_trait_impl(
                             expected,
                             method,
                             substitutions,
-                            owner_generic_count,
-                            owner_predicate_count,
+                            owner_generics.len(),
+                            owner_predicates.len(),
                         )
                     },
                     None => push_diagnostic(
@@ -1566,7 +1585,7 @@ fn validate_trait_impl(
                 }
             };
             for expected in info.methods {
-                if !vecs::contains(seen, expected.name) {
+                if !vecs::contains(seen, expected.name) && expected.default_name.is_none() {
                     push_diagnostic(
                         ctx,
                         "Trait " + reference.name + " implementation for " + type_text(for_type)
@@ -1580,6 +1599,70 @@ fn validate_trait_impl(
             ctx.projection_aliases.truncate(projection_alias_count)
         },
         None => (),
+    }
+}
+
+fn contains_function_named(values: Vec[Function], name: string) -> bool {
+    for value in values {
+        if value.name == name {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn default_trait_method(
+    ctx: Checker,
+    expected: TraitMethodInfo,
+    default_name: string,
+    substitutions: Vec[TypeSubst],
+    owner_generics: Vec[string],
+    owner_predicates: Vec[TypePredicate],
+) -> Function {
+    let generics = append_names(owner_generics, expected.generics);
+    for generic in expected.generics {
+        substitutions.push(
+            TypeSubst { name: generic, ty: Type::Param { name: generic } },
+        )
+    };
+    let params: Vec[(string, Type)] = Vec::[];
+    let args: Vec[Expr] = Vec::[];
+    let param_types: Vec[Type] = Vec::[];
+    for index in 0..expected.params.len() {
+        let name = "default_arg" + index.to_string();
+        let ty = resolve_impl_alias_type(ctx, substitute_type(expected.params[index], substitutions));
+        params.push((name, ty));
+        args.push(Expr::Var { name, ty });
+        param_types.push(ty)
+    };
+    let ret_ty = resolve_impl_alias_type(ctx, substitute_type(expected.ret_ty, substitutions));
+    let predicates = append_predicates(
+        owner_predicates,
+        substitute_predicates(expected.predicates, substitutions),
+    );
+    let function_ty = Type::Func { params: param_types, ret_ty };
+    Function {
+        visibility: ast::Visibility::Private,
+        name: expected.name,
+        generics,
+        predicates,
+        params,
+        ret_ty,
+        body: Block {
+            stmts: Vec::[],
+            tail: Option::Some(
+                Expr::Call {
+                    func: Expr::Callable {
+                        callable: Callable::Function(default_name),
+                        ty: function_ty,
+                    },
+                    args,
+                    ty: ret_ty,
+                },
+            ),
+        },
     }
 }
 
@@ -2759,6 +2842,7 @@ fn check_file_with_package(
             },
         }
     };
+    append_default_trait_method_schemes(ctx);
     validate_local_definitions(ctx, local_enum_count, local_struct_count, local_trait_count);
     expand_in_scope_supertraits(ctx);
     validate_impl_overlaps(ctx);
@@ -2815,6 +2899,89 @@ fn check_file_with_package(
         tast: Option::Some(File { items, enums, structs, constants }),
         diagnostics: order_extern_diagnostics(ctx),
         typeck_results: ctx.typeck_results,
+    }
+}
+
+fn contains_impl_method_scheme(
+    values: Vec[MethodInfo],
+    implementation: ImplInfo,
+    method_name: string,
+) -> bool {
+    for value in values {
+        match value.trait_ref {
+            Some(reference) => if value.function.name == method_name
+                && trait_ref_equal(reference, implementation.trait_ref)
+                && types_equal(value.for_type, implementation.for_type) {
+                return true
+            } else {
+                ()
+            },
+            None => (),
+        }
+    };
+    false
+}
+
+fn default_trait_method_scheme(
+    ctx: Checker,
+    implementation: ImplInfo,
+    info: TraitInfo,
+    method: TraitMethodInfo,
+) -> MethodInfo {
+    let substitutions = trait_substitutions(
+        ctx,
+        info,
+        implementation.trait_ref,
+        Option::Some(implementation.for_type),
+    );
+    let method_substitutions = substitutions;
+    for generic in method.generics {
+        method_substitutions.push(
+            TypeSubst { name: generic, ty: Type::Param { name: generic } },
+        )
+    };
+    let params: Vec[Type] = Vec::[];
+    for param in method.params {
+        params.push(substitute_type(param, method_substitutions))
+    };
+    let callable = Callable::TraitMethod {
+        trait_ref: implementation.trait_ref,
+        method_name: method.name,
+    };
+    MethodInfo {
+        owner_generics: implementation.generics,
+        method_generics: method.generics,
+        owner_predicate_count: implementation.predicates.len(),
+        trait_ref: Option::Some(implementation.trait_ref),
+        for_type: implementation.for_type,
+        function: FunctionScheme {
+            def_id: Option::None,
+            name: method.name,
+            generics: append_names(implementation.generics, method.generics),
+            predicates: append_predicates(
+                implementation.predicates,
+                substitute_predicates(method.predicates, method_substitutions),
+            ),
+            params,
+            ret_ty: substitute_type(method.ret_ty, method_substitutions),
+            callable,
+        },
+    }
+}
+
+fn append_default_trait_method_schemes(ctx: Checker) -> unit {
+    for implementation in ctx.impls {
+        match find_trait(ctx, implementation.trait_ref.name) {
+            Some(info) => for method in info.methods {
+                if method.default_name.is_some()
+                    && !contains_impl_method_scheme(ctx.methods, implementation, method.name) {
+                    ctx.methods.push(default_trait_method_scheme(ctx, implementation, info, method))
+                } else {
+                    ()
+                }
+            },
+            None => (),
+        }
     }
 }
 

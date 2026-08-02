@@ -16,9 +16,17 @@ fn invalid_artifact_callable(value: string) -> ArtifactCallable {
 
 pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
     match value {
-        Function(value) => ArtifactCallable { name: value, kind: "goml", id: Option::None },
+        Function(value) => ArtifactCallable {
+            name: value,
+            kind: "goml",
+            id: Option::Some(value),
+        },
         LangItem { item: _, function_name } => {
-            ArtifactCallable { name: function_name, kind: "goml", id: Option::None }
+            ArtifactCallable {
+                name: function_name,
+                kind: "goml",
+                id: Option::Some(function_name),
+            }
         },
         Runtime(value) => match resources::runtime_abi_by_key(value) {
             Some(spec) => ArtifactCallable {
@@ -85,7 +93,12 @@ pub fn artifact_decode_callable_body(name: string, value: wire::ArtifactValue) -
     let object = wire::artifact_json_object(value, "callable body")?;
     let kind = wire::artifact_json_field_string(object, "kind")?;
     if kind == "goml" {
-        Result::Ok(tast::Callable::Function(name))
+        match wire::artifact_json_optional_field(object, "id")? {
+            Some(value) => Result::Ok(
+                tast::Callable::Function(wire::artifact_json_string_value(value, "callable id")?),
+            ),
+            None => Result::Ok(tast::Callable::Function(name)),
+        }
     } else {
         let id = wire::artifact_json_field_string(object, "id")?;
         if kind == "intrinsic" {

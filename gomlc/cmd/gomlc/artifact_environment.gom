@@ -167,6 +167,14 @@ fn artifact_dependency_trait(value: artifact::ArtifactTraitDef) -> Result[tast::
                 predicates: artifact_dependency_trait_predicates(method.constraints),
                 params: function_type.params,
                 ret_ty: function_type.ret_ty,
+                default_name: match method.body {
+                    tast::Callable::Function(name) => if name == method.name {
+                        Option::None
+                    } else {
+                        Option::Some(name)
+                    },
+                    _ => Option::None,
+                },
             },
         )
     };

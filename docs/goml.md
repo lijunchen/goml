@@ -1254,7 +1254,25 @@ where
 }
 ```
 
-Trait methods have no default implementation. They may declare their own type parameters and constraints:
+Trait methods may provide a default body. An impl may omit such a method and will inherit the default; an explicitly declared impl method overrides it. Default bodies are checked using the trait's generic parameters, predicates, associated types, and `Self`, and remain available across package boundaries:
+
+```goml
+trait Named {
+    fn name(self) -> string;
+
+    fn describe(self) -> string {
+        "named:" + self.name()
+    }
+}
+
+impl Named for Point {
+    fn name(self) -> string {
+        "point"
+    }
+}
+```
+
+Trait methods may also declare their own type parameters and constraints:
 
 ```goml
 trait Convert {
@@ -1940,7 +1958,8 @@ type_names    = "[" upper_ident ("," upper_ident)* "]"
 trait_def     = "trait" upper_ident generic_params? (":" trait_set)? where_clause?
                 "{" trait_member* "}"
 trait_member  = "type" upper_ident (":" trait_set)? ";"
-              | "fn" lower_ident generic_params? param_list return_type? where_clause? ";"
+              | "fn" lower_ident generic_params? param_list return_type? where_clause?
+                (";" | block)
 
 impl_def      = "impl" generic_params? trait_ref "for" type where_clause?
                 "{" impl_member* "}"

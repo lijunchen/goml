@@ -343,6 +343,13 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
             encode_type(builder, param.1)
         };
         encode_type(builder, method.ret_ty);
+        match method.body {
+            Some(body) => {
+                encode_some(builder);
+                encode_block(builder, body)
+            },
+            None => encode_none(builder),
+        };
         encode_close(builder)
     };
     encode_close(builder)

@@ -1427,6 +1427,12 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
                 params,
                 ret_ty_span: ast_type_head_span(method.ret_ty),
                 ret_ty: lower_type(ctx, method.ret_ty, method_type_params),
+                default_name: match method.body {
+                    Some(_) => Option::Some(
+                        full_name(ctx.package_name, "trait_default#" + value.name + "#" + method.name),
+                    ),
+                    None => Option::None,
+                },
             },
         )
     };

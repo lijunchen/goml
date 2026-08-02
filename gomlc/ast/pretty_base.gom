@@ -407,7 +407,11 @@ fn pretty_write_struct(builder: text::StringBuilder, value: StructDef, indent: i
     builder.write_char('}')
 }
 
-fn pretty_write_trait_method(builder: text::StringBuilder, value: TraitMethodSignature) -> unit {
+fn pretty_write_trait_method(
+    builder: text::StringBuilder,
+    value: TraitMethodSignature,
+    indent: int,
+) -> unit {
     builder.write_string("fn ");
     builder.write_string(value.name);
     pretty_write_bounded_generics(builder, value.generics, value.generic_bounds);
@@ -426,7 +430,13 @@ fn pretty_write_trait_method(builder: text::StringBuilder, value: TraitMethodSig
     builder.write_string(") -> ");
     pretty_write_type(builder, value.ret_ty);
     pretty_write_predicates(builder, value.predicates);
-    builder.write_char(';')
+    match value.body {
+        Some(body) => {
+            builder.write_char(' ');
+            pretty_write_block(builder, body, indent)
+        },
+        None => builder.write_char(';'),
+    }
 }
 
 fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int) -> unit {
@@ -461,7 +471,7 @@ fn pretty_write_trait(builder: text::StringBuilder, value: TraitDef, indent: int
         };
         for method in value.method_sigs {
             pretty_newline(builder, indent + 2);
-            pretty_write_trait_method(builder, method)
+            pretty_write_trait_method(builder, method, indent + 2)
         };
         pretty_newline(builder, indent)
     };

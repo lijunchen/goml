@@ -165,7 +165,12 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
                     value.name,
                     trait_names,
                 ),
-                body: tast::Callable::Function(method.name),
+                body: tast::Callable::Function(
+                    match method.default_name {
+                        Some(name) => name,
+                        None => method.name,
+                    },
+                ),
             },
         )
     };
