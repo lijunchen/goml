@@ -63,7 +63,7 @@ fn preserves_exiting_accessor_subexpressions() -> unit {
     let source = "fn proj_case() -> int32 { let _: int32 = (return 1).0; 0 } fn index_case() -> int32 { let _: int32 = (return 1)[0]; 0 } fn field_case() -> int32 { let _: int32 = (return 1).value; 0 }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn proj_case() -> int32 {\n  let mtmp1 = {\n    let _wild0 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}\n\nfn index_case() -> int32 {\n  let mtmp3 = {\n    let _wild2 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}\n\nfn field_case() -> int32 {\n  let mtmp5 = {\n    let _wild4 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}",
+        "fn proj_case() -> int32 {\n  let mtmp1 =\n    {\n      let _wild0 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}\n\nfn index_case() -> int32 {\n  let mtmp3 =\n    {\n      let _wild2 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}\n\nfn field_case() -> int32 {\n  let mtmp5 =\n    {\n      let _wild4 = return 1 in\n      @intrinsic(compiler.missing)(\"\")\n    } in\n  {\n    0\n  }\n}",
     )
 }
 
@@ -196,7 +196,7 @@ fn boxes_mutable_locals_captured_by_closures() -> unit {
     let source = "fn main() -> int32 { let mut x = 0; let inc = || { x = x + 1; x }; inc() }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> int32 {\n  let x/0 = @intrinsic(ref.new)(0) in\n  let inc/1 = || => {\n    let _wild0 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in\n    @intrinsic(ref.get)(x/0)\n  } in\n  inc/1()\n}",
+        "fn main() -> int32 {\n  let x/0 = @intrinsic(ref.new)(0) in\n  let inc/1 =\n    || => {\n      let _wild0 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in\n      @intrinsic(ref.get)(x/0)\n    } in\n  inc/1()\n}",
     )
 }
 
