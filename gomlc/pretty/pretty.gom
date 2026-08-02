@@ -554,6 +554,10 @@ pub fn layout(value: Doc) -> string {
     pretty(-1, value)
 }
 
+pub fn compact(value: Doc) -> string {
+    pretty(0, flatten(value))
+}
+
 impl Doc {
     pub fn then(self: Doc, other: Doc) -> Doc {
         append(self, other)
