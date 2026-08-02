@@ -1,0 +1,121 @@
+package main;
+struct NoTraits {
+    value: int,
+}
+
+struct Wrapper[T] {
+    value: T,
+}
+
+impl[T] ToString for Wrapper[T] {
+  fn to_string(self: Wrapper[T]) -> string {
+      "wrapped"
+  }
+}
+
+impl[T] Eq for Wrapper[T] {
+  fn eq(self: Wrapper[T], other: Wrapper[T]) -> bool {
+      true
+  }
+}
+
+impl[T] Hash for Wrapper[T] {
+  fn hash(self: Wrapper[T]) -> uint64 {
+      7
+  }
+}
+
+#[derive(ToString, Eq, Hash)]
+struct Generic[T, Marker] {
+    first: Wrapper[T],
+    second: Wrapper[T],
+}
+
+impl[T, Marker] ToString for Generic[T, Marker] where Wrapper[T]: ToString {
+  fn to_string(self: Generic[T, Marker]) -> string {
+      let Generic { first: first, second: second } = self;
+      "Generic { " + "first: " + first.to_string() + ", " + "second: " + second.to_string() + " }"
+  }
+}
+
+impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq {
+  fn eq(self: Generic[T, Marker], other: Generic[T, Marker]) -> bool {
+      true && Eq::eq(self.first, other.first) && Eq::eq(self.second, other.second)
+  }
+}
+
+impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
+  fn hash(self: Generic[T, Marker]) -> uint64 {
+      let h: uint64 = 14695981039346656037;
+      let h = h * 1099511628211 + Hash::hash(self.first);
+      let h = h * 1099511628211 + Hash::hash(self.second);
+      h
+  }
+}
+
+#[derive(ToString, Eq, Hash)]
+enum GenericChoice[T, Marker] {
+    Empty,
+    Value(Wrapper[T])
+}
+
+impl[T, Marker] ToString for GenericChoice[T, Marker] where Wrapper[T]: ToString {
+  fn to_string(self: GenericChoice[T, Marker]) -> string {
+      match self {
+          GenericChoice::Empty => "GenericChoice::Empty",
+          GenericChoice::Value(__field0) => "GenericChoice::Value(" + __field0.to_string() + ")",
+      }
+  }
+}
+
+impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {
+  fn eq(self: GenericChoice[T, Marker], other: GenericChoice[T, Marker]) -> bool {
+      match (self, other) {
+          (GenericChoice::Empty, GenericChoice::Empty) => true,
+          (GenericChoice::Value(__l1_0), GenericChoice::Value(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
+          _ => false,
+      }
+  }
+}
+
+impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
+  fn hash(self: GenericChoice[T, Marker]) -> uint64 {
+      match self {
+          GenericChoice::Empty => {
+                let h: uint64 = 14695981039346656037 + 1;
+                h
+            },
+          GenericChoice::Value(__field1_0) => {
+                let h: uint64 = 14695981039346656037 + 2;
+                let h = h * 1099511628211 + Hash::hash(__field1_0);
+                h
+            },
+      }
+  }
+}
+
+fn main() -> unit {
+    let wrapped = Wrapper {
+        value: NoTraits {
+            value: 1
+        }
+    };
+    let left: Generic[NoTraits, NoTraits] = Generic {
+        first: wrapped,
+        second: wrapped
+    };
+    let right: Generic[NoTraits, NoTraits] = Generic {
+        first: wrapped,
+        second: wrapped
+    };
+    println(left.to_string());
+    println(left == right);
+    println(left.hash() == right.hash());
+    let empty: GenericChoice[NoTraits, NoTraits] = GenericChoice::Empty;
+    let value: GenericChoice[NoTraits, NoTraits] = GenericChoice::Value(wrapped);
+    println(empty.to_string());
+    println(value.to_string());
+    println(empty != value);
+    println(value.hash() == value.hash())
+}
+

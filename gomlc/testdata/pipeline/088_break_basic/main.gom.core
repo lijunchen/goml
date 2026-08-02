@@ -581,7 +581,7 @@ fn inherent#Vec#Vec[T]#capacity[T](self/138: Vec[T]) -> int {
 }
 
 fn inherent#Vec#Vec[T]#is_empty[T](self/139: Vec[T]) -> bool {
-  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/139), 0)
+  trait_call[Eq::eq](@intrinsic(vec.len)(self/139), 0)
 }
 
 fn inherent#Vec#Vec[T]#reserve[T](self/140: Vec[T], additional/141: int) -> unit {
@@ -598,7 +598,7 @@ fn inherent#Vec#Vec[T]#clear[T](self/144: Vec[T]) -> unit {
 
 fn inherent#Vec#Vec[T]#last[T](self/145: Vec[T]) -> Option[T] {
   let len/146 = inherent#Vec#Vec[T]#len(self/145) in
-  if trait_impl#Eq#int#eq(len/146, 0) {
+  if trait_call[Eq::eq](len/146, 0) {
       {
         Option::None
       }
@@ -611,7 +611,7 @@ fn inherent#Vec#Vec[T]#last[T](self/145: Vec[T]) -> Option[T] {
 
 fn inherent#Vec#Vec[T]#pop[T](self/147: Vec[T]) -> Option[T] {
   let len/148 = inherent#Vec#Vec[T]#len(self/147) in
-  if trait_impl#Eq#int#eq(len/148, 0) {
+  if trait_call[Eq::eq](len/148, 0) {
       {
         Option::None
       }
@@ -666,7 +666,7 @@ fn inherent#Vec#Vec[T]#swap_remove[T](self/154: Vec[T], index/155: int) -> T {
 
 fn inherent#Vec#Vec[T]#insert[T](self/158: Vec[T], index/159: int, value/160: T) -> unit {
   let len/161 = inherent#Vec#Vec[T]#len(self/158) in
-  if trait_impl#Eq#int#eq(index/159, len/161) {
+  if trait_call[Eq::eq](index/159, len/161) {
       {
         inherent#Vec#Vec[T]#push(self/158, value/160)
       }
@@ -942,7 +942,7 @@ fn inherent#string#string#starts_with(self/228: string, prefix/229: string) -> b
   } else {
       false
   } {
-      trait_impl#Eq#string#eq(inherent#string#string#byte_slice(self/228, 0, inherent#string#string#byte_len(prefix/229)), prefix/229)
+      trait_call[Eq::eq](inherent#string#string#byte_slice(self/228, 0, inherent#string#string#byte_len(prefix/229)), prefix/229)
   } else {
       false
   }
@@ -957,7 +957,7 @@ fn inherent#string#string#ends_with(self/230: string, suffix/231: string) -> boo
       {
         let start/232 = (inherent#string#string#byte_len(self/230) - inherent#string#string#byte_len(suffix/231)) in
         if inherent#string#string#is_char_boundary(self/230, start/232) {
-            trait_impl#Eq#string#eq(inherent#string#string#byte_slice(self/230, start/232, inherent#string#string#byte_len(self/230)), suffix/231)
+            trait_call[Eq::eq](inherent#string#string#byte_slice(self/230, start/232, inherent#string#string#byte_len(self/230)), suffix/231)
         } else {
             false
         }
@@ -966,7 +966,7 @@ fn inherent#string#string#ends_with(self/230: string, suffix/231: string) -> boo
 }
 
 fn inherent#string#string#contains(self/233: string, expected/234: string) -> bool {
-  if trait_impl#Eq#int#eq(inherent#string#string#byte_len(expected/234), 0) {
+  if trait_call[Eq::eq](inherent#string#string#byte_len(expected/234), 0) {
       {
         true
       }
@@ -998,7 +998,7 @@ fn inherent#string#string#contains(self/233: string, expected/234: string) -> bo
                               } else {
                                   false
                               } {
-                                  trait_impl#Eq#string#eq(inherent#string#string#byte_slice(self/233, start/235, end/236), expected/234)
+                                  trait_call[Eq::eq](inherent#string#string#byte_slice(self/233, start/235, end/236), expected/234)
                               } else {
                                   false
                               } {
@@ -1372,7 +1372,7 @@ fn __goml_builtin_range_inclusive(start/280: int, end/281: int) -> FnIterator[in
     } else {
         {
           let value/284 = @intrinsic(ref.get)(current/282) in
-          let _wild145 = if trait_impl#Eq#int#eq(value/284, end/281) {
+          let _wild145 = if trait_call[Eq::eq](value/284, end/281) {
               {
                 let _wild143 = @intrinsic(ref.set)(finished/283, true) in
               }
@@ -1511,7 +1511,7 @@ fn main() -> unit {
   let i/0 = inherent#Ref#Ref[int]#new(0) in
   let _wild158 = while (inherent#Ref#Ref[int]#get(i/0) < 10) {
       {
-        let _wild155 = if trait_impl#Eq#int#eq(inherent#Ref#Ref[int]#get(i/0), 5) {
+        let _wild155 = if trait_call[Eq::eq](inherent#Ref#Ref[int]#get(i/0), 5) {
             {
               break
             }

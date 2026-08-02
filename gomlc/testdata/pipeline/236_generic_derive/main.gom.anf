@@ -1,0 +1,254 @@
+fn main() -> unit {
+  join ret172() -> unit {
+    ()
+  } in
+  let t173 = NoTraits { value: 1 } in
+  let wrapped/24 = Wrapper__NoTraits { value: t173 } in
+  let left/25 = Generic__NoTraits__NoTraits { first: wrapped/24, second: wrapped/24 } in
+  let right/26 = Generic__NoTraits__NoTraits { first: wrapped/24, second: wrapped/24 } in
+  let t174 = trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(left/25) in
+  let _wild166 = println__T_string(t174) in
+  let t175 = trait_impl#Eq#Generic__NoTraits__NoTraits#eq(left/25, right/26) in
+  let _wild167 = println__T_bool(t175) in
+  let t176 = trait_impl#Hash#Generic__NoTraits__NoTraits#hash(left/25) in
+  let t177 = trait_impl#Hash#Generic__NoTraits__NoTraits#hash(right/26) in
+  let t178 = trait_impl#Eq#uint64#eq(t176, t177) in
+  let _wild168 = println__T_bool(t178) in
+  let empty/27 = Tag_0 in
+  let value/28 = GenericChoice__NoTraits__NoTraits::Value(wrapped/24) in
+  let t179 = trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(empty/27) in
+  let _wild169 = println__T_string(t179) in
+  let t180 = trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(value/28) in
+  let _wild170 = println__T_string(t180) in
+  let t181 = trait_impl#Eq#GenericChoice__NoTraits__NoTraits#eq(empty/27, value/28) in
+  let t182 = (!t181) in
+  let _wild171 = println__T_bool(t182) in
+  let t183 = trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28) in
+  let t184 = trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28) in
+  let t185 = trait_impl#Eq#uint64#eq(t183, t184) in
+  let t186 = println__T_bool(t185) in
+  jump ret172()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret187() -> unit {
+    ()
+  } in
+  let t188 = trait_impl#ToString#string#to_string(value/1) in
+  let t189 = @runtime(core.string_println)(t188) in
+  jump ret187()
+}
+
+fn trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(self/4: Generic__NoTraits__NoTraits) -> string {
+  join ret190(retv191: string) -> string {
+    retv191
+  } in
+  let mtmp155 = self/4 in
+  let x156 = Generic__NoTraits__NoTraits.first(mtmp155) in
+  let x157 = Generic__NoTraits__NoTraits.second(mtmp155) in
+  let second/6 = x157 in
+  let first/5 = x156 in
+  let t192 = ("Generic { " + "first: ") in
+  let t193 = trait_impl#ToString#Wrapper__NoTraits#to_string(first/5) in
+  let t194 = (t192 + t193) in
+  let t195 = (t194 + ", ") in
+  let t196 = (t195 + "second: ") in
+  let t197 = trait_impl#ToString#Wrapper__NoTraits#to_string(second/6) in
+  let t198 = (t196 + t197) in
+  let t199 = (t198 + " }") in
+  jump ret190(t199)
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  join ret200() -> unit {
+    ()
+  } in
+  let t201 = trait_impl#ToString#bool#to_string(value/1) in
+  let t202 = @runtime(core.string_println)(t201) in
+  jump ret200()
+}
+
+fn trait_impl#Eq#Generic__NoTraits__NoTraits#eq(self/7: Generic__NoTraits__NoTraits, other/8: Generic__NoTraits__NoTraits) -> bool {
+  join ret203(retv204: bool) -> bool {
+    retv204
+  } in
+  join k207(jp208: bool) -> bool {
+    join k205(jp206: bool) -> bool {
+      jump ret203(jp206)
+    } in
+    if jp208 {
+      let t209 = Generic__NoTraits__NoTraits.second(self/7) in
+      let t210 = Generic__NoTraits__NoTraits.second(other/8) in
+      let t211 = trait_impl#Eq#Wrapper__NoTraits#eq(t209, t210) in
+      jump k205(t211)
+    } else {
+      jump k205(false)
+    }
+  } in
+  if true {
+    let t212 = Generic__NoTraits__NoTraits.first(self/7) in
+    let t213 = Generic__NoTraits__NoTraits.first(other/8) in
+    let t214 = trait_impl#Eq#Wrapper__NoTraits#eq(t212, t213) in
+    jump k207(t214)
+  } else {
+    jump k207(false)
+  }
+}
+
+fn trait_impl#Hash#Generic__NoTraits__NoTraits#hash(self/9: Generic__NoTraits__NoTraits) -> uint64 {
+  join ret215(retv216: uint64) -> uint64 {
+    retv216
+  } in
+  let h/10 = 14695981039346656037 in
+  let t217 = (h/10 * 1099511628211) in
+  let t218 = Generic__NoTraits__NoTraits.first(self/9) in
+  let t219 = trait_impl#Hash#Wrapper__NoTraits#hash(t218) in
+  let h/11 = (t217 + t219) in
+  let t220 = (h/11 * 1099511628211) in
+  let t221 = Generic__NoTraits__NoTraits.second(self/9) in
+  let t222 = trait_impl#Hash#Wrapper__NoTraits#hash(t221) in
+  let h/12 = (t220 + t222) in
+  jump ret215(h/12)
+}
+
+fn trait_impl#Eq#uint64#eq(self/75: uint64, other/76: uint64) -> bool {
+  join ret223(retv224: bool) -> bool {
+    retv224
+  } in
+  let t225 = @intrinsic(eq.primitive)(self/75, other/76) in
+  jump ret223(t225)
+}
+
+fn trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(self/13: GenericChoice__NoTraits__NoTraits) -> string {
+  join ret226(retv227: string) -> string {
+    retv227
+  } in
+  join k228(jp229: string) -> string {
+    jump ret226(jp229)
+  } in
+  match self/13 {
+    Tag_0 => {
+      jump k228("GenericChoice::Empty")
+    },
+    Tag_1 => {
+      let x158 = GenericChoice__NoTraits__NoTraits::Value._0(self/13) in
+      let __field0/14 = x158 in
+      let t230 = trait_impl#ToString#Wrapper__NoTraits#to_string(__field0/14) in
+      let t231 = ("GenericChoice::Value(" + t230) in
+      let t232 = (t231 + ")") in
+      jump k228(t232)
+    },
+  }
+}
+
+fn trait_impl#Eq#GenericChoice__NoTraits__NoTraits#eq(self/15: GenericChoice__NoTraits__NoTraits, other/16: GenericChoice__NoTraits__NoTraits) -> bool {
+  join ret233(retv234: bool) -> bool {
+    retv234
+  } in
+  let mtmp159 = (self/15, other/16) in
+  let x160 = mtmp159.0 in
+  let x161 = mtmp159.1 in
+  join k235(jp236: bool) -> bool {
+    jump ret233(jp236)
+  } in
+  match x161 {
+    Tag_0 => {
+      join k237(jp238: bool) -> bool {
+        jump k235(jp238)
+      } in
+      match x160 {
+        Tag_0 => {
+          jump k237(true)
+        },
+        _ => {
+          jump k237(false)
+        },
+      }
+    },
+    Tag_1 => {
+      let x162 = GenericChoice__NoTraits__NoTraits::Value._0(x161) in
+      join k239(jp240: bool) -> bool {
+        jump k235(jp240)
+      } in
+      match x160 {
+        Tag_1 => {
+          let x164 = GenericChoice__NoTraits__NoTraits::Value._0(x160) in
+          let __l1_0/17 = x164 in
+          let __r1_0/18 = x162 in
+          join k241(jp242: bool) -> bool {
+            jump k239(jp242)
+          } in
+          if true {
+            let t243 = trait_impl#Eq#Wrapper__NoTraits#eq(__l1_0/17, __r1_0/18) in
+            jump k241(t243)
+          } else {
+            jump k241(false)
+          }
+        },
+        _ => {
+          jump k239(false)
+        },
+      }
+    },
+  }
+}
+
+fn trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(self/19: GenericChoice__NoTraits__NoTraits) -> uint64 {
+  join ret244(retv245: uint64) -> uint64 {
+    retv245
+  } in
+  join k246(jp247: uint64) -> uint64 {
+    jump ret244(jp247)
+  } in
+  match self/19 {
+    Tag_0 => {
+      let h/20 = (14695981039346656037 + 1) in
+      jump k246(h/20)
+    },
+    Tag_1 => {
+      let x165 = GenericChoice__NoTraits__NoTraits::Value._0(self/19) in
+      let __field1_0/21 = x165 in
+      let h/22 = (14695981039346656037 + 2) in
+      let t248 = (h/22 * 1099511628211) in
+      let t249 = trait_impl#Hash#Wrapper__NoTraits#hash(__field1_0/21) in
+      let h/23 = (t248 + t249) in
+      jump k246(h/23)
+    },
+  }
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret250(retv251: string) -> string {
+    retv251
+  } in
+  jump ret250(self/38)
+}
+
+fn trait_impl#ToString#Wrapper__NoTraits#to_string(self/0: Wrapper__NoTraits) -> string {
+  join ret252(retv253: string) -> string {
+    retv253
+  } in
+  jump ret252("wrapped")
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  join ret254(retv255: string) -> string {
+    retv255
+  } in
+  let t256 = @runtime(core.bool_to_string)(self/37) in
+  jump ret254(t256)
+}
+
+fn trait_impl#Eq#Wrapper__NoTraits#eq(self/1: Wrapper__NoTraits, other/2: Wrapper__NoTraits) -> bool {
+  join ret257(retv258: bool) -> bool {
+    retv258
+  } in
+  jump ret257(true)
+}
+
+fn trait_impl#Hash#Wrapper__NoTraits#hash(self/3: Wrapper__NoTraits) -> uint64 {
+  join ret259(retv260: uint64) -> uint64 {
+    retv260
+  } in
+  jump ret259(7)
+}
