@@ -485,6 +485,97 @@ fn commute_arm_params(
     result
 }
 
+fn remove_commute_alias_term(value: Term) -> Term {
+    match value {
+        If { cond, then_, else_, ret_ty } => Term::If {
+            cond,
+            then_: remove_commute_aliases(then_),
+            else_: remove_commute_aliases(else_),
+            ret_ty,
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(Arm { lhs: arm.lhs, body: remove_commute_aliases(arm.body) })
+            };
+            Term::Match {
+                scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(remove_commute_aliases(body)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Return(value) => Term::Return(value),
+        Jump { target, args, ret_ty } => Term::Jump { target, args, ret_ty },
+        Unreachable { ty } => Term::Unreachable { ty },
+    }
+}
+
+fn remove_commute_alias_binds(values: Vec[Bind], index: int, term: Term) -> Block {
+    if index >= values.len() {
+        Block { binds: Vec::[], term }
+    } else {
+        let bind = values[index];
+        let rest = remove_commute_alias_binds(values, index + 1, term);
+        match bind {
+            Let(value) => match value.value {
+                Imm(_) => if block_uses_name(rest, value.name) {
+                    prepend_commute_bind(Bind::Let(value), rest)
+                } else {
+                    rest
+                },
+                _ => prepend_commute_bind(Bind::Let(value), rest),
+            },
+            Join(value) => prepend_commute_bind(
+                Bind::Join(
+                    JoinBind {
+                        name: value.name,
+                        role: value.role,
+                        params: value.params,
+                        ret_ty: value.ret_ty,
+                        body: remove_commute_aliases(value.body),
+                    },
+                ),
+                rest,
+            ),
+            JoinRec(values) => {
+                let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    lowered.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: remove_commute_aliases(value.body),
+                        },
+                    )
+                };
+                prepend_commute_bind(Bind::JoinRec(lowered), rest)
+            },
+        }
+    }
+}
+
+fn remove_commute_aliases(value: Block) -> Block {
+    remove_commute_alias_binds(value.binds, 0, remove_commute_alias_term(value.term))
+}
+
+fn live_commute_fields(values: Vec[CommuteField], body: Block) -> Vec[CommuteField] {
+    let result: Vec[CommuteField] = Vec::[];
+    for value in values {
+        if block_uses_name(body, value.name) {
+            result.push(value)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
 fn build_commute_arm(
     value: Arm,
     params: Vec[(string, tast::Type)],
@@ -498,7 +589,8 @@ fn build_commute_arm(
     } else {
         collect_commute_block_fields(fields, value.body, scrutinee, counter)
     };
-    let body = replace_commute_block(value.body, fields, scrutinee);
+    let body = remove_commute_aliases(replace_commute_block(value.body, fields, scrutinee));
+    let fields = live_commute_fields(fields, body);
     let keep_scrutinee = block_uses_name(body, scrutinee);
     CommuteArm {
         selector: value.lhs,
@@ -523,7 +615,8 @@ fn build_commute_default(
     } else {
         collect_commute_block_fields(fields, value, scrutinee, counter)
     };
-    let body = replace_commute_block(value, fields, scrutinee);
+    let body = remove_commute_aliases(replace_commute_block(value, fields, scrutinee));
+    let fields = live_commute_fields(fields, body);
     let keep_scrutinee = block_uses_name(body, scrutinee);
     CommuteDefault {
         target: fresh_commute(counter, "commute_default"),
