@@ -23,6 +23,6 @@ jobs:
         with:
           just-version: '1.40.0'
       - name: Install Yaegi interpreter
-        run: go install github.com/traefik/yaegi/cmd/yaegi@v0.16.1
+        run: curl -sfL https://raw.githubusercontent.com/traefik/yaegi/master/install.sh | bash -s -- -b "$(go env GOPATH)/bin" v0.16.1
       - name: Self-hosted CI
         run: just ci
