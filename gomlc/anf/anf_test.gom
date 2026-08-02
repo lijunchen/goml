@@ -264,7 +264,7 @@ fn simplifies_linear_aliases_and_tuple_projections() -> unit {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let mtmp0 = () in\n  let t8 = (true, false) in\n  let a/0 = (true, false, t8) in\n  let x1 = true in\n  let x2 = false in\n  let x3 = t8 in\n  let x4 = true in\n  let x5 = false in\n  let w/4 = false in\n  let z/3 = true in\n  let y/2 = false in\n  let x/1 = true in\n  let b/5 = false in\n  let mtmp6 = print(false) in\n  ()\n}",
+        "fn main() -> unit {\n  let mtmp0 = () in\n  let t8 = (true, false) in\n  let a/0 = (true, false, t8) in\n  let x1 = true in\n  let x2 = false in\n  let x3 = t8 in\n  let x4 = true in\n  let x5 = false in\n  let w/4 = x5 in\n  let z/3 = x4 in\n  let y/2 = x2 in\n  let x/1 = x1 in\n  let b/5 = x5 in\n  let mtmp6 = print(x5) in\n  ()\n}",
     )
 }
 
@@ -282,7 +282,7 @@ fn simplifies_known_constructor_matches_and_projections() -> unit {
     let source = "enum T { A, B(bool, unit) } fn main() { let t = B(true, ()); match t { A => println((1).to_string()), B(true, ()) => println((2).to_string()), B(false, ()) => println((3).to_string()), } }";
     testing::assert_eq(
         encode(lower_source(source)),
-        "fn main() -> unit {\n  let t/0 = T::B(true, ()) in\n  let x0 = true in\n  let x1 = () in\n  let t8 = inherent#int#int#to_string(2) in\n  let t9 = println(t8) in\n  ()\n}",
+        "fn main() -> unit {\n  let t/0 = T::B(true, ()) in\n  let x0 = true in\n  let x1 = () in\n  match x1 {\n    () => {\n      match x0 {\n        true => {\n          let t8 = inherent#int#int#to_string(2) in\n          let t9 = println(t8) in\n          ()\n        },\n        false => {\n          let t10 = inherent#int#int#to_string(3) in\n          let t11 = println(t10) in\n          ()\n        },\n      }\n    },\n  }\n}",
     )
 }
 
