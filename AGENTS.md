@@ -162,7 +162,7 @@ package main;
 use alice::myapp::utils;
 
 fn main() -> unit {
-    string_println(utils::message())
+    println(utils::message())
 }
 ```
 
@@ -455,7 +455,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Concurrency and Side Effects
 
 * `go expr;` starts concurrent execution, commonly used with zero-argument closures.
-* Common built-ins for I/O and debugging: `string_print/string_println`, and `_to_string` for basic types or derived `to_string`.
+* Common built-ins for I/O and debugging: `print` and `println`, plus `to_string` for builtin types and values implementing `ToString`.
 
 ### Attributes and Derivation
 

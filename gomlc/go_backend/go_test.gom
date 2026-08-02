@@ -669,7 +669,7 @@ fn preserves_all_exit_while_conditions() -> unit {
 
 #[test]
 fn preserves_reused_loop_labels() -> unit {
-    let source = "enum Event { Open, Close, Advance, Error, } fn main() -> unit { let running = Ref::new(true); while running.get() { let event = Event::Open; match event { Event::Open => { let scanning = Ref::new(false); while scanning.get() {} }, Event::Close => (), Event::Advance => (), Event::Error => (), }; let scanning = Ref::new(false); while scanning.get() {}; running.set(false) }; string_println(\"ok\") }";
+    let source = "enum Event { Open, Close, Advance, Error, } fn main() -> unit { let running = Ref::new(true); while running.get() { let event = Event::Open; match event { Event::Open => { let scanning = Ref::new(false); while scanning.get() {} }, Event::Close => (), Event::Advance => (), Event::Error => (), }; let scanning = Ref::new(false); while scanning.get() {}; running.set(false) }; println(\"ok\") }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(output, "Loop_loop6:\n    for {"));
     testing::assert(string_contains(output, "Loop_loop11__2:"));

@@ -2208,7 +2208,7 @@ fn preserves_associated_into_iterator_item_projection() -> unit {
 
 #[test]
 fn resolves_iterator_item_for_for_loop_method_calls() -> unit {
-    let source = "struct Values {} impl Iterator for Values { type Item = int32; fn next(self: Values) -> Option[int32] { Option::None } } fn main() -> unit { for value in (Values {}) { string_println(value.to_string()); }; }";
+    let source = "struct Values {} impl Iterator for Values { type Item = int32; fn next(self: Values) -> Option[int32] { Option::None } } fn main() -> unit { for value in (Values {}) { println(value.to_string()); }; }";
     let result = check_for_link(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
     testing::assert_eq(result.diagnostics.len(), 0)
 }
