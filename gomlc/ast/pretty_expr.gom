@@ -362,15 +362,7 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
             } else {
                 doc::delimited("|", ",", "|", values)
             };
-            doc::group(
-                doc::concat(
-                    Vec::[
-                        parameters,
-                        doc::text(" =>"),
-                        doc::nest(2, doc::append(doc::line(), pretty_expr_doc(body))),
-                    ],
-                ),
-            )
+            doc::concat(Vec::[parameters, doc::text(" "), pretty_expr_doc(body)])
         },
         Match { expr, arms, span: _ } => {
             let values: Vec[doc::Doc] = Vec::with_capacity(arms.len());
