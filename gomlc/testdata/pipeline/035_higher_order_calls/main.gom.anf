@@ -1,92 +1,92 @@
 fn double(x/0: int32) -> int32 {
-  join ret155(retv156: int32) -> int32 {
-    retv156
-  } in
-  let t157 = (x/0 * 2) in
-  jump ret155(t157)
-}
-
-fn increment(x/1: int32) -> int32 {
   join ret158(retv159: int32) -> int32 {
     retv159
   } in
-  let t160 = (x/1 + 1) in
+  let t160 = (x/0 * 2) in
   jump ret158(t160)
 }
 
-fn chooser(flag/2: bool) -> (int32) -> int32 {
-  join ret161(retv162: (int32) -> int32) -> (int32) -> int32 {
+fn increment(x/1: int32) -> int32 {
+  join ret161(retv162: int32) -> int32 {
     retv162
   } in
-  join k163(jp164: (int32) -> int32) -> (int32) -> int32 {
-    jump ret161(jp164)
+  let t163 = (x/1 + 1) in
+  jump ret161(t163)
+}
+
+fn chooser(flag/2: bool) -> (int32) -> int32 {
+  join ret164(retv165: (int32) -> int32) -> (int32) -> int32 {
+    retv165
+  } in
+  join k166(jp167: (int32) -> int32) -> (int32) -> int32 {
+    jump ret164(jp167)
   } in
   if flag/2 {
-    jump k163(double)
+    jump k166(double)
   } else {
-    jump k163(increment)
+    jump k166(increment)
   }
 }
 
 fn main() -> unit {
-  join ret165() -> unit {
+  join ret168() -> unit {
     ()
   } in
   let xs/3 = [double, increment] in
   let f/4 = @intrinsic(array.get)(xs/3, 0) in
   let g/5 = @intrinsic(array.get)(xs/3, 1) in
-  let t166 = f/4(10) in
-  let t167 = g/5(t166) in
-  let mtmp152 = println__T_int32(t167) in
+  let t169 = f/4(10) in
+  let t170 = g/5(t169) in
+  let mtmp155 = println__T_int32(t170) in
   let chosen/6 = chooser(true) in
   let applied/7 = chosen/6(5) in
-  let t168 = chooser(false) in
-  let direct/8 = t168(5) in
+  let t171 = chooser(false) in
+  let direct/8 = t171(5) in
   let printer/9 = println__T_string in
-  let t169 = inherent#int32#int32#to_string(applied/7) in
-  let mtmp153 = printer/9(t169) in
-  let t170 = inherent#int32#int32#to_string(direct/8) in
-  let mtmp154 = printer/9(t170) in
-  jump ret165()
+  let t172 = inherent#int32#int32#to_string(applied/7) in
+  let mtmp156 = printer/9(t172) in
+  let t173 = inherent#int32#int32#to_string(direct/8) in
+  let mtmp157 = printer/9(t173) in
+  jump ret168()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret171() -> unit {
-    ()
-  } in
-  let t172 = trait_impl#ToString#int32#to_string(value/1) in
-  let t173 = @runtime(core.string_println)(t172) in
-  jump ret171()
-}
-
-fn println__T_string(value/1: string) -> unit {
   join ret174() -> unit {
     ()
   } in
-  let t175 = trait_impl#ToString#string#to_string(value/1) in
+  let t175 = trait_impl#ToString#int32#to_string(value/1) in
   let t176 = @runtime(core.string_println)(t175) in
   jump ret174()
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret177(retv178: string) -> string {
-    retv178
+fn println__T_string(value/1: string) -> unit {
+  join ret177() -> unit {
+    ()
   } in
-  let t179 = @runtime(core.int32_to_string)(self/6) in
-  jump ret177(t179)
+  let t178 = trait_impl#ToString#string#to_string(value/1) in
+  let t179 = @runtime(core.string_println)(t178) in
+  jump ret177()
 }
 
-fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
+fn inherent#int32#int32#to_string(self/6: int32) -> string {
   join ret180(retv181: string) -> string {
     retv181
   } in
-  let t182 = @runtime(core.int32_to_string)(self/43) in
+  let t182 = @runtime(core.int32_to_string)(self/6) in
   jump ret180(t182)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
   join ret183(retv184: string) -> string {
     retv184
   } in
-  jump ret183(self/38)
+  let t185 = @runtime(core.int32_to_string)(self/43) in
+  jump ret183(t185)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret186(retv187: string) -> string {
+    retv187
+  } in
+  jump ret186(self/38)
 }

@@ -3,40 +3,40 @@ fn trait_impl#ToString#Key#to_string(self/0: Key) -> string {
     Key::Empty => {
       "Key::Empty"
     },
-    Key::Point(x152, x153) => {
-      let x152 = Key::Point._0(self/0) in
-      let x153 = Key::Point._1(self/0) in
-      let __field1/2 = x153 in
-      let __field0/1 = x152 in
+    Key::Point(x155, x156) => {
+      let x155 = Key::Point._0(self/0) in
+      let x156 = Key::Point._1(self/0) in
+      let __field1/2 = x156 in
+      let __field0/1 = x155 in
       (((((("Key::Point { " + "x: ") + inherent#int32#int32#to_string(__field0/1)) + ", ") + "y: ") + inherent#int32#int32#to_string(__field1/2)) + " }")
     },
   }
 }
 
 fn trait_impl#Eq#Key#eq(self/3: Key, other/4: Key) -> bool {
-  let mtmp154 = (self/3, other/4) in
-  let x155 = mtmp154.0 in
-  let x156 = mtmp154.1 in
-  match x156 {
+  let mtmp157 = (self/3, other/4) in
+  let x158 = mtmp157.0 in
+  let x159 = mtmp157.1 in
+  match x159 {
     Key::Empty => {
-      match x155 {
+      match x158 {
         Key::Empty => {
           true
         },
         _ => false,
       }
     },
-    Key::Point(x157, x158) => {
-      let x157 = Key::Point._0(x156) in
-      let x158 = Key::Point._1(x156) in
-      match x155 {
-        Key::Point(x161, x162) => {
-          let x161 = Key::Point._0(x155) in
-          let x162 = Key::Point._1(x155) in
-          let __l1_1/6 = x162 in
-          let __l1_0/5 = x161 in
-          let __r1_1/8 = x158 in
-          let __r1_0/7 = x157 in
+    Key::Point(x160, x161) => {
+      let x160 = Key::Point._0(x159) in
+      let x161 = Key::Point._1(x159) in
+      match x158 {
+        Key::Point(x164, x165) => {
+          let x164 = Key::Point._0(x158) in
+          let x165 = Key::Point._1(x158) in
+          let __l1_1/6 = x165 in
+          let __l1_0/5 = x164 in
+          let __r1_1/8 = x161 in
+          let __r1_0/7 = x160 in
           if if true {
               trait_impl#Eq#int32#eq(__l1_0/5, __r1_0/7)
           } else {
@@ -59,11 +59,11 @@ fn trait_impl#Hash#Key#hash(self/9: Key) -> uint64 {
       let h/10 = (14695981039346656037 + 1) in
       h/10
     },
-    Key::Point(x163, x164) => {
-      let x163 = Key::Point._0(self/9) in
-      let x164 = Key::Point._1(self/9) in
-      let __field1_1/12 = x164 in
-      let __field1_0/11 = x163 in
+    Key::Point(x166, x167) => {
+      let x166 = Key::Point._0(self/9) in
+      let x167 = Key::Point._1(self/9) in
+      let __field1_1/12 = x167 in
+      let __field1_0/11 = x166 in
       let h/13 = (14695981039346656037 + 2) in
       let h/14 = ((h/13 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/11)) in
       let h/15 = ((h/14 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_1/12)) in
@@ -77,16 +77,16 @@ fn score(value/16: Message__string) -> int32 {
     Message__string::Quit => {
       0
     },
-    Message__string::Write(x165) => {
-      let x165 = Message__string::Write._0(value/16) in
+    Message__string::Write(x168) => {
+      let x168 = Message__string::Write._0(value/16) in
       1
     },
-    Message__string::Move(x166, x167, x168) => {
-      let x166 = Message__string::Move._0(value/16) in
-      let x167 = Message__string::Move._1(value/16) in
-      let x168 = Message__string::Move._2(value/16) in
-      let vertical/18 = x167 in
-      let x/17 = x166 in
+    Message__string::Move(x169, x170, x171) => {
+      let x169 = Message__string::Move._0(value/16) in
+      let x170 = Message__string::Move._1(value/16) in
+      let x171 = Message__string::Move._2(value/16) in
+      let vertical/18 = x170 in
+      let x/17 = x169 in
       (x/17 + vertical/18)
     },
   }
@@ -97,16 +97,16 @@ fn label(value/19: Message__string) -> string {
     Message__string::Quit => {
       "quit"
     },
-    Message__string::Write(x169) => {
-      let x169 = Message__string::Write._0(value/19) in
-      let text/21 = x169 in
+    Message__string::Write(x172) => {
+      let x172 = Message__string::Write._0(value/19) in
+      let text/21 = x172 in
       text/21
     },
-    Message__string::Move(x170, x171, x172) => {
-      let x170 = Message__string::Move._0(value/19) in
-      let x171 = Message__string::Move._1(value/19) in
-      let x172 = Message__string::Move._2(value/19) in
-      let label/20 = x172 in
+    Message__string::Move(x173, x174, x175) => {
+      let x173 = Message__string::Move._0(value/19) in
+      let x174 = Message__string::Move._1(value/19) in
+      let x175 = Message__string::Move._2(value/19) in
+      let label/20 = x175 in
       label/20
     },
   }
@@ -117,10 +117,10 @@ fn main() -> unit {
   let direction/23 = "north" in
   let first/24 = Message__string::Move(x/22, 4, direction/23) in
   let second/25 = Message__string::Move(3, 4, "north") in
-  let _wild173 = println__T_int32(score(first/24)) in
-  let _wild174 = println__T_string(label(second/25)) in
-  let _wild175 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
-  let _wild176 = println__T_bool(trait_impl#Eq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
+  let _wild176 = println__T_int32(score(first/24)) in
+  let _wild177 = println__T_string(label(second/25)) in
+  let _wild178 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
+  let _wild179 = println__T_bool(trait_impl#Eq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
   ()
 }
 

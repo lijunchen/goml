@@ -7,14 +7,14 @@ fn cut_prefix(case_id/0: int32) -> Option__string {
 }
 
 fn trim_go(case_id/1: int32) -> Option__string {
-  let suffix/2 = let mtmp152 = cut_prefix(case_id/1) in
-  match mtmp152 {
+  let suffix/2 = let mtmp155 = cut_prefix(case_id/1) in
+  match mtmp155 {
     Option__string::None => {
       return Option__string::None
     },
-    Option__string::Some(x153) => {
-      let x153 = Option__string::Some._0(mtmp152) in
-      let try_value/13 = x153 in
+    Option__string::Some(x156) => {
+      let x156 = Option__string::Some._0(mtmp155) in
+      let try_value/13 = x156 in
       try_value/13
     },
   } in
@@ -26,17 +26,17 @@ fn show(opt/3: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x154) => {
-      let x154 = Option__string::Some._0(opt/3) in
-      let value/4 = x154 in
+    Option__string::Some(x157) => {
+      let x157 = Option__string::Some._0(opt/3) in
+      let value/4 = x157 in
       ("some " + value/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild155 = println__T_string(show(trim_go(0))) in
-  let _wild156 = println__T_string(show(trim_go(1))) in
+  let _wild158 = println__T_string(show(trim_go(0))) in
+  let _wild159 = println__T_string(show(trim_go(1))) in
   ()
 }
 

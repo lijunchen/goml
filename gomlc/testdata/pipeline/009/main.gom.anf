@@ -1,54 +1,54 @@
 fn test(t/0: T) -> unit {
-  join ret158() -> unit {
+  join ret161() -> unit {
     ()
   } in
-  join k159() -> unit {
-    jump ret158()
+  join k162() -> unit {
+    jump ret161()
   } in
   match t/0 {
     Tag_0 => {
-      let t160 = inherent#int#int#to_string(1) in
-      let t161 = println__T_string(t160) in
-      jump k159()
+      let t163 = inherent#int#int#to_string(1) in
+      let t164 = println__T_string(t163) in
+      jump k162()
     },
     Tag_1 => {
-      let x152 = T::B._0(t/0) in
-      let x153 = T::B._1(t/0) in
-      join k162() -> unit {
-        jump k159()
+      let x155 = T::B._0(t/0) in
+      let x156 = T::B._1(t/0) in
+      join k165() -> unit {
+        jump k162()
       } in
-      match x153 {
+      match x156 {
         true => {
-          join k163() -> unit {
-            jump k162()
+          join k166() -> unit {
+            jump k165()
           } in
-          match x152 {
+          match x155 {
             true => {
-              let t164 = inherent#int#int#to_string(4) in
-              let t165 = println__T_string(t164) in
-              jump k163()
+              let t167 = inherent#int#int#to_string(4) in
+              let t168 = println__T_string(t167) in
+              jump k166()
             },
             false => {
-              let t166 = inherent#int#int#to_string(3) in
-              let t167 = println__T_string(t166) in
-              jump k163()
+              let t169 = inherent#int#int#to_string(3) in
+              let t170 = println__T_string(t169) in
+              jump k166()
             },
           }
         },
         false => {
-          join k168() -> unit {
-            jump k162()
+          join k171() -> unit {
+            jump k165()
           } in
-          match x152 {
+          match x155 {
             true => {
-              let t169 = inherent#int#int#to_string(4) in
-              let t170 = println__T_string(t169) in
-              jump k168()
+              let t172 = inherent#int#int#to_string(4) in
+              let t173 = println__T_string(t172) in
+              jump k171()
             },
             false => {
-              let t171 = inherent#int#int#to_string(2) in
-              let t172 = println__T_string(t171) in
-              jump k168()
+              let t174 = inherent#int#int#to_string(2) in
+              let t175 = println__T_string(t174) in
+              jump k171()
             },
           }
         },
@@ -58,39 +58,39 @@ fn test(t/0: T) -> unit {
 }
 
 fn main() -> unit {
-  join ret173() -> unit {
+  join ret176() -> unit {
     ()
   } in
-  let t174 = T::B(true, true) in
-  let mtmp154 = test(t174) in
-  let t175 = T::B(false, true) in
-  let mtmp155 = test(t175) in
-  let t176 = T::B(false, false) in
-  let mtmp156 = test(t176) in
-  let mtmp157 = test(Tag_0) in
-  jump ret173()
+  let t177 = T::B(true, true) in
+  let mtmp157 = test(t177) in
+  let t178 = T::B(false, true) in
+  let mtmp158 = test(t178) in
+  let t179 = T::B(false, false) in
+  let mtmp159 = test(t179) in
+  let mtmp160 = test(Tag_0) in
+  jump ret176()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret177() -> unit {
+  join ret180() -> unit {
     ()
   } in
-  let t178 = trait_impl#ToString#string#to_string(value/1) in
-  let t179 = @runtime(core.string_println)(t178) in
-  jump ret177()
+  let t181 = trait_impl#ToString#string#to_string(value/1) in
+  let t182 = @runtime(core.string_println)(t181) in
+  jump ret180()
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
-  join ret180(retv181: string) -> string {
-    retv181
-  } in
-  let t182 = @runtime(core.int_to_string)(self/5) in
-  jump ret180(t182)
-}
-
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
   join ret183(retv184: string) -> string {
     retv184
   } in
-  jump ret183(self/38)
+  let t185 = @runtime(core.int_to_string)(self/5) in
+  jump ret183(t185)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret186(retv187: string) -> string {
+    retv187
+  } in
+  jump ret186(self/38)
 }

@@ -13,7 +13,7 @@ fn inherent#Counter#Counter#new(start/4: int32, end/5: int32) -> Counter {
 fn trait_impl#Iterator#Counter#next(self/6: Counter) -> Option__int32 {
   let current/7 = inherent#Ref#Ref[T]#get__T_int32(Counter.current(self/6)) in
   if (current/7 < Counter.end(self/6)) {
-      let _wild152 = inherent#Ref#Ref[T]#set__T_int32(Counter.current(self/6), (current/7 + 1)) in
+      let _wild155 = inherent#Ref#Ref[T]#set__T_int32(Counter.current(self/6), (current/7 + 1)) in
       Option__int32::Some(current/7)
   } else {
       Option__int32::None
@@ -21,42 +21,42 @@ fn trait_impl#Iterator#Counter#next(self/6: Counter) -> Option__int32 {
 }
 
 fn main() -> unit {
-  let _wild153 = println__T_int32(trait_impl#Convert#[int32]@Token#convert(Token {})) in
-  let _wild154 = println__T_string(trait_impl#Convert#[string]@Token#convert(Token {})) in
+  let _wild156 = println__T_int32(trait_impl#Convert#[int32]@Token#convert(Token {})) in
+  let _wild157 = println__T_string(trait_impl#Convert#[string]@Token#convert(Token {})) in
   let converted/8 = convert_to__T_int32__V_Token(Token {}) in
-  let _wild155 = println__T_int32(converted/8) in
-  let _wild156 = println__T_string(trait_impl#Marker#[int32]@Any#marker(Any {})) in
-  let _wild157 = println__T_string(trait_impl#Marker#[string]@Any#marker(Any {})) in
-  let _wild158 = println__T_string(trait_impl#Marker#[Vec[int32]]@Any#marker(Any {})) in
+  let _wild158 = println__T_int32(converted/8) in
+  let _wild159 = println__T_string(trait_impl#Marker#[int32]@Any#marker(Any {})) in
+  let _wild160 = println__T_string(trait_impl#Marker#[string]@Any#marker(Any {})) in
+  let _wild161 = println__T_string(trait_impl#Marker#[Vec[int32]]@Any#marker(Any {})) in
   let mapped/10 = iterator_map__A_int32__B_int32__I_Counter(inherent#Counter#Counter#new(0, 8), closure_env_main_0 {}) in
   let filtered/12 = iterator_filter__I_MapIterator[int32,int32,Counter]__T_int32(mapped/10, closure_env_main_1 {}) in
   let limited/13 = iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]](filtered/12, 3) in
-  let _wild163 = let for_iter159 = trait_impl#IntoIterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#into_iter(limited/13) in
+  let _wild166 = let for_iter162 = trait_impl#IntoIterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#into_iter(limited/13) in
   while true {
-      let for_next160 = trait_impl#Iterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#next(for_iter159) in
-      match for_next160 {
+      let for_next163 = trait_impl#Iterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#next(for_iter162) in
+      match for_next163 {
         Option__int32::None => {
           break
         },
-        Option__int32::Some(x161) => {
-          let x161 = Option__int32::Some._0(for_next160) in
-          let value/14 = x161 in
-          let _wild162 = println__T_int32(value/14) in
+        Option__int32::Some(x164) => {
+          let x164 = Option__int32::Some._0(for_next163) in
+          let value/14 = x164 in
+          let _wild165 = println__T_int32(value/14) in
           ()
         },
       }
   } in
   let sum/17 = iterator_fold__A_int__I_FnIterator[int]__T_int(range(1, 5), 0, closure_env_main_2 {}) in
-  let _wild164 = println__T_int(sum/17) in
+  let _wild167 = println__T_int(sum/17) in
   let texts/19 = iterator_collect__I_MapIterator[int,string,FnIterator[int]]__T_string(iterator_map__A_int__B_string__I_FnIterator[int](range(1, 4), closure_env_main_3 {})) in
-  let _wild171 = let for_source165 = texts/19 in
-  let for_limit166 = @intrinsic(vec.len)(for_source165) in
-  let for_index167 = 0 in
-  while (for_index167 < for_limit166) {
-      let for_item168 = @intrinsic(vec.get)(for_source165, for_index167) in
-      let _wild169 = for_index167 = (for_index167 + 1) in
-      let text/20 = for_item168 in
-      let _wild170 = println__T_string(text/20) in
+  let _wild174 = let for_source168 = texts/19 in
+  let for_limit169 = @intrinsic(vec.len)(for_source168) in
+  let for_index170 = 0 in
+  while (for_index170 < for_limit169) {
+      let for_item171 = @intrinsic(vec.get)(for_source168, for_index170) in
+      let _wild172 = for_index170 = (for_index170 + 1) in
+      let text/20 = for_item171 in
+      let _wild173 = println__T_string(text/20) in
       ()
   } in
   ()
@@ -290,25 +290,25 @@ fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
   @runtime(core.int_hash)(self/85)
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env172: closure_env_main_0, value/9: int32) -> int32 {
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env175: closure_env_main_0, value/9: int32) -> int32 {
   (value/9 * 2)
 }
 
-fn inherent#closure_env_main_1#closure_env_main_1#apply(env173: closure_env_main_1, value/11: int32) -> bool {
+fn inherent#closure_env_main_1#closure_env_main_1#apply(env176: closure_env_main_1, value/11: int32) -> bool {
   (value/11 > 4)
 }
 
-fn inherent#closure_env_main_2#closure_env_main_2#apply(env174: closure_env_main_2, total/15: int, value/16: int) -> int {
+fn inherent#closure_env_main_2#closure_env_main_2#apply(env177: closure_env_main_2, total/15: int, value/16: int) -> int {
   (total/15 + value/16)
 }
 
-fn inherent#closure_env_main_3#closure_env_main_3#apply(env175: closure_env_main_3, value/18: int) -> string {
+fn inherent#closure_env_main_3#closure_env_main_3#apply(env178: closure_env_main_3, value/18: int) -> string {
   ("v" + inherent#int#int#to_string(value/18))
 }
 
-fn inherent#closure_env_goml_builtin_range_4#closure_env_goml_builtin_range_4#apply(env176: closure_env_goml_builtin_range_4) -> Option__int {
-  let current/220 = closure_env_goml_builtin_range_4.current_0(env176) in
-  let end/219 = closure_env_goml_builtin_range_4.end_1(env176) in
+fn inherent#closure_env_goml_builtin_range_4#closure_env_goml_builtin_range_4#apply(env179: closure_env_goml_builtin_range_4) -> Option__int {
+  let current/220 = closure_env_goml_builtin_range_4.current_0(env179) in
+  let end/219 = closure_env_goml_builtin_range_4.end_1(env179) in
   let value/221 = @intrinsic(ref.get)(current/220) in
   if (value/221 < end/219) {
       let _wild104 = @intrinsic(ref.set)(current/220, (value/221 + 1)) in

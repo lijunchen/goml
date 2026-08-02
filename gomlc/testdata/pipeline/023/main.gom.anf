@@ -1,52 +1,52 @@
 fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
-  join ret170(retv171: int32) -> int32 {
-    retv171
+  join ret173(retv174: int32) -> int32 {
+    retv174
   } in
-  let x152 = pair/0.0 in
-  let x153 = pair/0.1 in
-  join k172(jp173: int32) -> int32 {
-    jump ret170(jp173)
+  let x155 = pair/0.0 in
+  let x156 = pair/0.1 in
+  join k175(jp176: int32) -> int32 {
+    jump ret173(jp176)
   } in
-  match x153 {
+  match x156 {
     "zero" => {
-      join k174(jp175: int32) -> int32 {
-        jump k172(jp175)
+      join k177(jp178: int32) -> int32 {
+        jump k175(jp178)
       } in
-      match x152 {
+      match x155 {
         0 => {
-          jump k174(1)
+          jump k177(1)
         },
         _ => {
-          jump k174(4)
+          jump k177(4)
         },
       }
     },
     "one" => {
-      join k176(jp177: int32) -> int32 {
-        jump k172(jp177)
+      join k179(jp180: int32) -> int32 {
+        jump k175(jp180)
       } in
-      match x152 {
+      match x155 {
         0 => {
-          jump k176(2)
+          jump k179(2)
         },
         1 => {
-          jump k176(3)
+          jump k179(3)
         },
         _ => {
-          jump k176(5)
+          jump k179(5)
         },
       }
     },
     _ => {
-      join k178(jp179: int32) -> int32 {
-        jump k172(jp179)
+      join k181(jp182: int32) -> int32 {
+        jump k175(jp182)
       } in
-      match x152 {
+      match x155 {
         0 => {
-          jump k178(2)
+          jump k181(2)
         },
         _ => {
-          jump k178(5)
+          jump k181(5)
         },
       }
     },
@@ -54,71 +54,71 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
 }
 
 fn match_mixed_enum(value/1: Mixed) -> int32 {
-  join ret180(retv181: int32) -> int32 {
-    retv181
+  join ret183(retv184: int32) -> int32 {
+    retv184
   } in
-  join k182(jp183: int32) -> int32 {
-    jump ret180(jp183)
+  join k185(jp186: int32) -> int32 {
+    jump ret183(jp186)
   } in
   match value/1 {
     Tag_0 => {
-      let x154 = Mixed::OnlyInt._0(value/1) in
-      join k184(jp185: int32) -> int32 {
-        jump k182(jp185)
+      let x157 = Mixed::OnlyInt._0(value/1) in
+      join k187(jp188: int32) -> int32 {
+        jump k185(jp188)
       } in
-      match x154 {
+      match x157 {
         0 => {
-          jump k184(6)
+          jump k187(6)
         },
         _ => {
-          jump k184(7)
+          jump k187(7)
         },
       }
     },
     Tag_1 => {
-      let x155 = Mixed::OnlyStr._0(value/1) in
-      join k186(jp187: int32) -> int32 {
-        jump k182(jp187)
+      let x158 = Mixed::OnlyStr._0(value/1) in
+      join k189(jp190: int32) -> int32 {
+        jump k185(jp190)
       } in
-      match x155 {
+      match x158 {
         "zero" => {
-          jump k186(8)
+          jump k189(8)
         },
         _ => {
-          jump k186(9)
+          jump k189(9)
         },
       }
     },
     Tag_2 => {
-      let x156 = Mixed::Both._0(value/1) in
-      let x157 = Mixed::Both._1(value/1) in
-      join k188(jp189: int32) -> int32 {
-        jump k182(jp189)
+      let x159 = Mixed::Both._0(value/1) in
+      let x160 = Mixed::Both._1(value/1) in
+      join k191(jp192: int32) -> int32 {
+        jump k185(jp192)
       } in
-      match x157 {
+      match x160 {
         "zero" => {
-          join k190(jp191: int32) -> int32 {
-            jump k188(jp191)
+          join k193(jp194: int32) -> int32 {
+            jump k191(jp194)
           } in
-          match x156 {
+          match x159 {
             0 => {
-              jump k190(10)
+              jump k193(10)
             },
             _ => {
-              jump k190(12)
+              jump k193(12)
             },
           }
         },
         _ => {
-          join k192(jp193: int32) -> int32 {
-            jump k188(jp193)
+          join k195(jp196: int32) -> int32 {
+            jump k191(jp196)
           } in
-          match x156 {
+          match x159 {
             0 => {
-              jump k192(11)
+              jump k195(11)
             },
             _ => {
-              jump k192(13)
+              jump k195(13)
             },
           }
         },
@@ -128,84 +128,84 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
 }
 
 fn main() -> unit {
-  join ret194() -> unit {
+  join ret197() -> unit {
     ()
   } in
-  let t195 = (0, "zero") in
-  let t196 = match_mixed_pair(t195) in
-  let t197 = inherent#int32#int32#to_string(t196) in
-  let mtmp158 = println__T_string(t197) in
-  let t198 = (0, "other") in
+  let t198 = (0, "zero") in
   let t199 = match_mixed_pair(t198) in
   let t200 = inherent#int32#int32#to_string(t199) in
-  let mtmp159 = println__T_string(t200) in
-  let t201 = (1, "one") in
+  let mtmp161 = println__T_string(t200) in
+  let t201 = (0, "other") in
   let t202 = match_mixed_pair(t201) in
   let t203 = inherent#int32#int32#to_string(t202) in
-  let mtmp160 = println__T_string(t203) in
-  let t204 = (2, "zero") in
+  let mtmp162 = println__T_string(t203) in
+  let t204 = (1, "one") in
   let t205 = match_mixed_pair(t204) in
   let t206 = inherent#int32#int32#to_string(t205) in
-  let mtmp161 = println__T_string(t206) in
-  let t207 = (2, "two") in
+  let mtmp163 = println__T_string(t206) in
+  let t207 = (2, "zero") in
   let t208 = match_mixed_pair(t207) in
   let t209 = inherent#int32#int32#to_string(t208) in
-  let mtmp162 = println__T_string(t209) in
-  let t210 = Mixed::OnlyInt(0) in
-  let t211 = match_mixed_enum(t210) in
+  let mtmp164 = println__T_string(t209) in
+  let t210 = (2, "two") in
+  let t211 = match_mixed_pair(t210) in
   let t212 = inherent#int32#int32#to_string(t211) in
-  let mtmp163 = println__T_string(t212) in
-  let t213 = Mixed::OnlyInt(5) in
+  let mtmp165 = println__T_string(t212) in
+  let t213 = Mixed::OnlyInt(0) in
   let t214 = match_mixed_enum(t213) in
   let t215 = inherent#int32#int32#to_string(t214) in
-  let mtmp164 = println__T_string(t215) in
-  let t216 = Mixed::OnlyStr("zero") in
+  let mtmp166 = println__T_string(t215) in
+  let t216 = Mixed::OnlyInt(5) in
   let t217 = match_mixed_enum(t216) in
   let t218 = inherent#int32#int32#to_string(t217) in
-  let mtmp165 = println__T_string(t218) in
-  let t219 = Mixed::OnlyStr("hello") in
+  let mtmp167 = println__T_string(t218) in
+  let t219 = Mixed::OnlyStr("zero") in
   let t220 = match_mixed_enum(t219) in
   let t221 = inherent#int32#int32#to_string(t220) in
-  let mtmp166 = println__T_string(t221) in
-  let t222 = Mixed::Both(0, "zero") in
+  let mtmp168 = println__T_string(t221) in
+  let t222 = Mixed::OnlyStr("hello") in
   let t223 = match_mixed_enum(t222) in
   let t224 = inherent#int32#int32#to_string(t223) in
-  let mtmp167 = println__T_string(t224) in
-  let t225 = Mixed::Both(0, "hello") in
+  let mtmp169 = println__T_string(t224) in
+  let t225 = Mixed::Both(0, "zero") in
   let t226 = match_mixed_enum(t225) in
   let t227 = inherent#int32#int32#to_string(t226) in
-  let mtmp168 = println__T_string(t227) in
-  let t228 = Mixed::Both(2, "zero") in
+  let mtmp170 = println__T_string(t227) in
+  let t228 = Mixed::Both(0, "hello") in
   let t229 = match_mixed_enum(t228) in
   let t230 = inherent#int32#int32#to_string(t229) in
-  let mtmp169 = println__T_string(t230) in
-  let t231 = Mixed::Both(3, "three") in
+  let mtmp171 = println__T_string(t230) in
+  let t231 = Mixed::Both(2, "zero") in
   let t232 = match_mixed_enum(t231) in
   let t233 = inherent#int32#int32#to_string(t232) in
-  let t234 = println__T_string(t233) in
-  jump ret194()
+  let mtmp172 = println__T_string(t233) in
+  let t234 = Mixed::Both(3, "three") in
+  let t235 = match_mixed_enum(t234) in
+  let t236 = inherent#int32#int32#to_string(t235) in
+  let t237 = println__T_string(t236) in
+  jump ret197()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret235() -> unit {
+  join ret238() -> unit {
     ()
   } in
-  let t236 = trait_impl#ToString#string#to_string(value/1) in
-  let t237 = @runtime(core.string_println)(t236) in
-  jump ret235()
+  let t239 = trait_impl#ToString#string#to_string(value/1) in
+  let t240 = @runtime(core.string_println)(t239) in
+  jump ret238()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret238(retv239: string) -> string {
-    retv239
-  } in
-  let t240 = @runtime(core.int32_to_string)(self/6) in
-  jump ret238(t240)
-}
-
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
   join ret241(retv242: string) -> string {
     retv242
   } in
-  jump ret241(self/38)
+  let t243 = @runtime(core.int32_to_string)(self/6) in
+  jump ret241(t243)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret244(retv245: string) -> string {
+    retv245
+  } in
+  jump ret244(self/38)
 }

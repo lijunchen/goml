@@ -1357,120 +1357,150 @@ fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](self/276: Result[T, E], fall
   }
 }
 
-fn inherent#Option#Option[T]#map[T, U](self/280: Option[T], map_fn/281: (T) -> U) -> Option[U] {
-  match self/280 {
+fn __goml_builtin_range_inclusive(start/280: int, end/281: int) -> FnIterator[int] {
+  let current/282 = @intrinsic(ref.new)(start/280) in
+  let finished/283 = @intrinsic(ref.new)(false) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    if if @intrinsic(ref.get)(finished/283) {
+        true
+    } else {
+        (@intrinsic(ref.get)(current/282) > end/281)
+    } {
+        {
+          Option::None
+        }
+    } else {
+        {
+          let value/284 = @intrinsic(ref.get)(current/282) in
+          let _wild145 = if trait_impl#Eq#int#eq(value/284, end/281) {
+              {
+                let _wild143 = @intrinsic(ref.set)(finished/283, true) in
+              }
+          } else {
+              {
+                let _wild144 = @intrinsic(ref.set)(current/282, (value/284 + 1)) in
+              }
+          } in
+          Option::Some(value/284)
+        }
+    }
+  })
+}
+
+fn inherent#Option#Option[T]#map[T, U](self/285: Option[T], map_fn/286: (T) -> U) -> Option[U] {
+  match self/285 {
     Option::None => {
       Option::None
     },
-    Option::Some(x143) => {
+    Option::Some(x146) => {
       {
-        let x143 = Option::Some._0(self/280) in
+        let x146 = Option::Some._0(self/285) in
         {
-          let value/282 = x143 in
-          Option::Some(map_fn/281(value/282))
+          let value/287 = x146 in
+          Option::Some(map_fn/286(value/287))
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#and_then[T, U](self/283: Option[T], next/284: (T) -> Option[U]) -> Option[U] {
-  match self/283 {
+fn inherent#Option#Option[T]#and_then[T, U](self/288: Option[T], next/289: (T) -> Option[U]) -> Option[U] {
+  match self/288 {
     Option::None => {
       Option::None
     },
-    Option::Some(x144) => {
+    Option::Some(x147) => {
       {
-        let x144 = Option::Some._0(self/283) in
+        let x147 = Option::Some._0(self/288) in
         {
-          let value/285 = x144 in
-          next/284(value/285)
+          let value/290 = x147 in
+          next/289(value/290)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> Result[T, E] {
-  match self/286 {
+fn inherent#Option#Option[T]#ok_or[T, E](self/291: Option[T], error/292: E) -> Result[T, E] {
+  match self/291 {
     Option::None => {
-      Result::Err(error/287)
+      Result::Err(error/292)
     },
-    Option::Some(x145) => {
+    Option::Some(x148) => {
       {
-        let x145 = Option::Some._0(self/286) in
+        let x148 = Option::Some._0(self/291) in
         {
-          let value/288 = x145 in
-          Result::Ok(value/288)
+          let value/293 = x148 in
+          Result::Ok(value/293)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
-  match self/289 {
-    Result::Ok(x146) => {
+fn inherent#Result#Result[T,E]#map[T, E, U](self/294: Result[T, E], map_fn/295: (T) -> U) -> Result[U, E] {
+  match self/294 {
+    Result::Ok(x149) => {
       {
-        let x146 = Result::Ok._0(self/289) in
+        let x149 = Result::Ok._0(self/294) in
         {
-          let value/291 = x146 in
-          Result::Ok(map_fn/290(value/291))
+          let value/296 = x149 in
+          Result::Ok(map_fn/295(value/296))
         }
       }
     },
-    Result::Err(x147) => {
+    Result::Err(x150) => {
       {
-        let x147 = Result::Err._0(self/289) in
+        let x150 = Result::Err._0(self/294) in
         {
-          let error/292 = x147 in
-          Result::Err(error/292)
-        }
-      }
-    },
-  }
-}
-
-fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
-  match self/293 {
-    Result::Ok(x148) => {
-      {
-        let x148 = Result::Ok._0(self/293) in
-        {
-          let value/295 = x148 in
-          Result::Ok(value/295)
-        }
-      }
-    },
-    Result::Err(x149) => {
-      {
-        let x149 = Result::Err._0(self/293) in
-        {
-          let error/296 = x149 in
-          Result::Err(map_fn/294(error/296))
+          let error/297 = x150 in
+          Result::Err(error/297)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
-  match self/297 {
-    Result::Ok(x150) => {
+fn inherent#Result#Result[T,E]#map_err[T, E, F](self/298: Result[T, E], map_fn/299: (E) -> F) -> Result[T, F] {
+  match self/298 {
+    Result::Ok(x151) => {
       {
-        let x150 = Result::Ok._0(self/297) in
+        let x151 = Result::Ok._0(self/298) in
         {
-          let value/299 = x150 in
-          next/298(value/299)
+          let value/300 = x151 in
+          Result::Ok(value/300)
         }
       }
     },
-    Result::Err(x151) => {
+    Result::Err(x152) => {
       {
-        let x151 = Result::Err._0(self/297) in
+        let x152 = Result::Err._0(self/298) in
         {
-          let error/300 = x151 in
-          Result::Err(error/300)
+          let error/301 = x152 in
+          Result::Err(map_fn/299(error/301))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#and_then[T, E, U](self/302: Result[T, E], next/303: (T) -> Result[U, E]) -> Result[U, E] {
+  match self/302 {
+    Result::Ok(x153) => {
+      {
+        let x153 = Result::Ok._0(self/302) in
+        {
+          let value/304 = x153 in
+          next/303(value/304)
+        }
+      }
+    },
+    Result::Err(x154) => {
+      {
+        let x154 = Result::Err._0(self/302) in
+        {
+          let error/305 = x154 in
+          Result::Err(error/305)
         }
       }
     },
@@ -1510,62 +1540,62 @@ fn show_i64(value/7: int64) -> unit {
 }
 
 fn unsigned_ops() -> unit {
-  let _wild152 = show_u8((13 % 5)) in
-  let _wild153 = show_u8((12 & 10)) in
-  let _wild154 = show_u8((12 | 3)) in
-  let _wild155 = show_u8((12 ^ 10)) in
-  let _wild156 = show_u8((1 << 7)) in
-  let _wild157 = show_u8((128 >> 7)) in
-  let _wild158 = show_u8((~0)) in
-  let _wild159 = show_u8((1 << 8)) in
-  let _wild160 = show_u16((513 % 256)) in
-  let _wild161 = show_u16((3855 & 255)) in
-  let _wild162 = show_u16((3840 | 15)) in
-  let _wild163 = show_u16((43690 ^ 3855)) in
-  let _wild164 = show_u16((1 << 15)) in
-  let _wild165 = show_u16((32768 >> 15)) in
-  let _wild166 = show_u16((~0)) in
-  let _wild167 = show_u32((1000000001 % 1000)) in
-  let _wild168 = show_u32((4042322160 & 252645135)) in
-  let _wild169 = show_u32((4042322160 | 252645135)) in
-  let _wild170 = show_u32((4042322160 ^ 252645135)) in
-  let _wild171 = show_u32((1 << 31)) in
-  let _wild172 = show_u32((2147483648 >> 31)) in
-  let _wild173 = show_u32((~0)) in
-  let _wild174 = show_u64((1000000000001 % 1000)) in
-  let _wild175 = show_u64((17361641481138401520 & 1085102592571150095)) in
-  let _wild176 = show_u64((17361641481138401520 | 1085102592571150095)) in
-  let _wild177 = show_u64((17361641481138401520 ^ 1085102592571150095)) in
-  let _wild178 = show_u64((1 << 63)) in
-  let _wild179 = show_u64((9223372036854775808 >> 63)) in
+  let _wild155 = show_u8((13 % 5)) in
+  let _wild156 = show_u8((12 & 10)) in
+  let _wild157 = show_u8((12 | 3)) in
+  let _wild158 = show_u8((12 ^ 10)) in
+  let _wild159 = show_u8((1 << 7)) in
+  let _wild160 = show_u8((128 >> 7)) in
+  let _wild161 = show_u8((~0)) in
+  let _wild162 = show_u8((1 << 8)) in
+  let _wild163 = show_u16((513 % 256)) in
+  let _wild164 = show_u16((3855 & 255)) in
+  let _wild165 = show_u16((3840 | 15)) in
+  let _wild166 = show_u16((43690 ^ 3855)) in
+  let _wild167 = show_u16((1 << 15)) in
+  let _wild168 = show_u16((32768 >> 15)) in
+  let _wild169 = show_u16((~0)) in
+  let _wild170 = show_u32((1000000001 % 1000)) in
+  let _wild171 = show_u32((4042322160 & 252645135)) in
+  let _wild172 = show_u32((4042322160 | 252645135)) in
+  let _wild173 = show_u32((4042322160 ^ 252645135)) in
+  let _wild174 = show_u32((1 << 31)) in
+  let _wild175 = show_u32((2147483648 >> 31)) in
+  let _wild176 = show_u32((~0)) in
+  let _wild177 = show_u64((1000000000001 % 1000)) in
+  let _wild178 = show_u64((17361641481138401520 & 1085102592571150095)) in
+  let _wild179 = show_u64((17361641481138401520 | 1085102592571150095)) in
+  let _wild180 = show_u64((17361641481138401520 ^ 1085102592571150095)) in
+  let _wild181 = show_u64((1 << 63)) in
+  let _wild182 = show_u64((9223372036854775808 >> 63)) in
   show_u64((~0))
 }
 
 fn signed_ops() -> unit {
-  let _wild180 = show_i8((-13 % 5)) in
-  let _wild181 = show_i8((-8 >> 2)) in
-  let _wild182 = show_i8((1 << 6)) in
-  let _wild183 = show_i8((~0)) in
-  let _wild184 = show_i8((-1 >> 7)) in
-  let _wild185 = show_i16((-513 % 256)) in
-  let _wild186 = show_i16(((-32767 - 1) >> 15)) in
-  let _wild187 = show_i16((1 << 14)) in
-  let _wild188 = show_i16((~255)) in
-  let _wild189 = show_i32((-1000000001 % 1000)) in
-  let _wild190 = show_i32(((-2147483647 - 1) >> 31)) in
-  let _wild191 = show_i32((1 << 30)) in
-  let _wild192 = show_i32((~65535)) in
-  let _wild193 = show_i64((-1000000000001 % 1000)) in
-  let _wild194 = show_i64((-9223372036854775807 >> 62)) in
-  let _wild195 = show_i64((1 << 62)) in
+  let _wild183 = show_i8((-13 % 5)) in
+  let _wild184 = show_i8((-8 >> 2)) in
+  let _wild185 = show_i8((1 << 6)) in
+  let _wild186 = show_i8((~0)) in
+  let _wild187 = show_i8((-1 >> 7)) in
+  let _wild188 = show_i16((-513 % 256)) in
+  let _wild189 = show_i16(((-32767 - 1) >> 15)) in
+  let _wild190 = show_i16((1 << 14)) in
+  let _wild191 = show_i16((~255)) in
+  let _wild192 = show_i32((-1000000001 % 1000)) in
+  let _wild193 = show_i32(((-2147483647 - 1) >> 31)) in
+  let _wild194 = show_i32((1 << 30)) in
+  let _wild195 = show_i32((~65535)) in
+  let _wild196 = show_i64((-1000000000001 % 1000)) in
+  let _wild197 = show_i64((-9223372036854775807 >> 62)) in
+  let _wild198 = show_i64((1 << 62)) in
   show_i64((~4294967295))
 }
 
 fn precedence() -> unit {
-  let _wild196 = show_u8((1 | (2 ^ (3 & 1)))) in
-  let _wild197 = show_u8((1 << (2 + 1))) in
-  let _wild198 = println(trait_call[ToString::to_string](trait_impl#Eq#int#eq((1 | 2), 3))) in
-  let _wild199 = println(trait_call[ToString::to_string](((8 >> 1) < 5))) in
+  let _wild199 = show_u8((1 | (2 ^ (3 & 1)))) in
+  let _wild200 = show_u8((1 << (2 + 1))) in
+  let _wild201 = println(trait_call[ToString::to_string](trait_impl#Eq#int#eq((1 | 2), 3))) in
+  let _wild202 = println(trait_call[ToString::to_string](((8 >> 1) < 5))) in
   show_u8(((~1) & 15))
 }
 
@@ -1583,30 +1613,30 @@ fn casts() -> unit {
   let sixty_five/18 = 65 in
   let max_u32/19 = 4294967295 in
   let three_hundred/20 = 300 in
-  let _wild200 = show_u8((five_eleven/8 as uint8)) in
-  let _wild201 = show_u8((two_fifty_six/9 as uint8)) in
-  let _wild202 = show_u8((negative_one_i16/10 as uint8)) in
-  let _wild203 = show_i8((two_fifty_five/11 as int8)) in
-  let _wild204 = show_i8((one_twenty_eight/12 as int8)) in
-  let _wild205 = show_i8((negative_one_twenty_nine/13 as int8)) in
-  let _wild206 = show_i16((max_u16/14 as int16)) in
-  let _wild207 = show_u16((negative_one_i32/15 as uint16)) in
-  let _wild208 = show_u64((negative_one_i8/16 as uint64)) in
-  let _wild209 = show_i32((max_u64/17 as int32)) in
-  let _wild210 = show_u32((sixty_five/18 as uint32)) in
-  let _wild211 = show_i64((max_u32/19 as int64)) in
-  let _wild212 = show_u32(('A' as uint32)) in
-  let _wild215 = {
-    let mtmp213 = char_from_uint32(128512) in
-    match mtmp213 {
+  let _wild203 = show_u8((five_eleven/8 as uint8)) in
+  let _wild204 = show_u8((two_fifty_six/9 as uint8)) in
+  let _wild205 = show_u8((negative_one_i16/10 as uint8)) in
+  let _wild206 = show_i8((two_fifty_five/11 as int8)) in
+  let _wild207 = show_i8((one_twenty_eight/12 as int8)) in
+  let _wild208 = show_i8((negative_one_twenty_nine/13 as int8)) in
+  let _wild209 = show_i16((max_u16/14 as int16)) in
+  let _wild210 = show_u16((negative_one_i32/15 as uint16)) in
+  let _wild211 = show_u64((negative_one_i8/16 as uint64)) in
+  let _wild212 = show_i32((max_u64/17 as int32)) in
+  let _wild213 = show_u32((sixty_five/18 as uint32)) in
+  let _wild214 = show_i64((max_u32/19 as int64)) in
+  let _wild215 = show_u32(('A' as uint32)) in
+  let _wild218 = {
+    let mtmp216 = char_from_uint32(128512) in
+    match mtmp216 {
       Option::None => {
         println("invalid")
       },
-      Option::Some(x214) => {
+      Option::Some(x217) => {
         {
-          let x214 = Option::Some._0(mtmp213) in
+          let x217 = Option::Some._0(mtmp216) in
           {
-            let value/21 = x214 in
+            let value/21 = x217 in
             println(inherent#char#char#to_string(value/21))
           }
         }
@@ -1621,9 +1651,9 @@ fn contextual(value/22: uint8) -> uint8 {
 }
 
 fn main() -> unit {
-  let _wild216 = unsigned_ops() in
-  let _wild217 = signed_ops() in
-  let _wild218 = precedence() in
-  let _wild219 = casts() in
+  let _wild219 = unsigned_ops() in
+  let _wild220 = signed_ops() in
+  let _wild221 = precedence() in
+  let _wild222 = casts() in
   show_u8(contextual(10))
 }

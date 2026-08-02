@@ -7,7 +7,7 @@ file main.gom
             Option::None
         }
     }
-    
+
     fn maybe_secondary(local/1/1: bool) -> Option[int32] {
         if flag/1 {
             Option::Some(9)
@@ -15,7 +15,7 @@ file main.gom
             Option::None
         }
     }
-    
+
     fn mixed(local/1/2: bool, local/1/3: bool) -> Option[string] {
         let local/1/4 = def/1/0(primary/2)?;
         let local/1/6 = match def/1/1(secondary/3) {
@@ -24,14 +24,14 @@ file main.gom
         };
         Option::Some("value=" + value/4.to_string() + "," + label/6)
     }
-    
+
     fn show(local/1/7: Option[string]) -> string {
         match opt/7 {
             Option::Some(local/1/8) => "some=" + value/8,
             Option::None => "none",
         }
     }
-    
+
     fn main() -> unit {
         println(def/1/3(def/1/2(true, true)));
         println(def/1/3(def/1/2(true, false)));

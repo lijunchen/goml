@@ -1,51 +1,51 @@
 fn trait_impl#Mark#int32#mark(self/0: int32) -> unit {
-  join ret154() -> unit {
+  join ret157() -> unit {
     ()
   } in
-  jump ret154()
+  jump ret157()
 }
 
 fn main() -> unit {
-  join ret155() -> unit {
+  join ret158() -> unit {
     ()
   } in
   let first/3 = 1 in
   let second/4 = 2 in
-  let t156 = apply__T_int32(first/3) in
-  let _wild152 = println__T_int32(t156) in
-  let t157 = trait_impl#Extra#int32#extra(second/4) in
-  let _wild153 = println__T_int32(t157) in
-  jump ret155()
-}
-
-fn println__T_int32(value/1: int32) -> unit {
-  join ret158() -> unit {
-    ()
-  } in
-  let t159 = trait_impl#ToString#int32#to_string(value/1) in
-  let t160 = @runtime(core.string_println)(t159) in
+  let t159 = apply__T_int32(first/3) in
+  let _wild155 = println__T_int32(t159) in
+  let t160 = trait_impl#Extra#int32#extra(second/4) in
+  let _wild156 = println__T_int32(t160) in
   jump ret158()
 }
 
-fn apply__T_int32(value/2: int32) -> int32 {
-  join ret161(retv162: int32) -> int32 {
-    retv162
+fn println__T_int32(value/1: int32) -> unit {
+  join ret161() -> unit {
+    ()
   } in
-  let t163 = trait_impl#Extra#int32#extra(value/2) in
-  jump ret161(t163)
+  let t162 = trait_impl#ToString#int32#to_string(value/1) in
+  let t163 = @runtime(core.string_println)(t162) in
+  jump ret161()
 }
 
-fn trait_impl#Extra#int32#extra(self/1: int32) -> int32 {
+fn apply__T_int32(value/2: int32) -> int32 {
   join ret164(retv165: int32) -> int32 {
     retv165
   } in
-  jump ret164(42)
+  let t166 = trait_impl#Extra#int32#extra(value/2) in
+  jump ret164(t166)
+}
+
+fn trait_impl#Extra#int32#extra(self/1: int32) -> int32 {
+  join ret167(retv168: int32) -> int32 {
+    retv168
+  } in
+  jump ret167(42)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
+  join ret169(retv170: string) -> string {
+    retv170
   } in
-  let t168 = @runtime(core.int32_to_string)(self/43) in
-  jump ret166(t168)
+  let t171 = @runtime(core.int32_to_string)(self/43) in
+  jump ret169(t171)
 }

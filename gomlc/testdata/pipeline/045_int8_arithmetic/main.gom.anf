@@ -1,46 +1,46 @@
 fn a_value() -> int8 {
-  join ret163(retv164: int8) -> int8 {
-    retv164
+  join ret166(retv167: int8) -> int8 {
+    retv167
   } in
-  jump ret163(90)
+  jump ret166(90)
 }
 
 fn b_value() -> int8 {
-  join ret165(retv166: int8) -> int8 {
-    retv166
+  join ret168(retv169: int8) -> int8 {
+    retv169
   } in
-  jump ret165(-20)
+  jump ret168(-20)
 }
 
 fn c_value() -> int8 {
-  join ret167(retv168: int8) -> int8 {
-    retv168
+  join ret170(retv171: int8) -> int8 {
+    retv171
   } in
-  jump ret167(3)
+  jump ret170(3)
 }
 
 fn show_int8(label/0: string, value/1: int8) -> unit {
-  join ret169() -> unit {
-    ()
-  } in
-  let t170 = trait_impl#ToString#int8#to_string(value/1) in
-  let t171 = (label/0 + t170) in
-  let mtmp152 = println__T_string(t171) in
-  jump ret169()
-}
-
-fn show_bool(label/2: string, value/3: bool) -> unit {
   join ret172() -> unit {
     ()
   } in
-  let t173 = trait_impl#ToString#bool#to_string(value/3) in
-  let t174 = (label/2 + t173) in
-  let mtmp153 = println__T_string(t174) in
+  let t173 = trait_impl#ToString#int8#to_string(value/1) in
+  let t174 = (label/0 + t173) in
+  let mtmp155 = println__T_string(t174) in
   jump ret172()
 }
 
-fn main() -> unit {
+fn show_bool(label/2: string, value/3: bool) -> unit {
   join ret175() -> unit {
+    ()
+  } in
+  let t176 = trait_impl#ToString#bool#to_string(value/3) in
+  let t177 = (label/2 + t176) in
+  let mtmp156 = println__T_string(t177) in
+  jump ret175()
+}
+
+fn main() -> unit {
+  join ret178() -> unit {
     ()
   } in
   let a/4 = a_value() in
@@ -52,46 +52,46 @@ fn main() -> unit {
   let quot/10 = (a/4 / c/6) in
   let neg/11 = (-b/5) in
   let less/12 = (b/5 < a/4) in
-  let mtmp154 = show_int8("a=", a/4) in
-  let mtmp155 = show_int8("b=", b/5) in
-  let mtmp156 = show_int8("c=", c/6) in
-  let mtmp157 = show_int8("sum=", sum/7) in
-  let mtmp158 = show_int8("diff=", diff/8) in
-  let mtmp159 = show_int8("prod=", prod/9) in
-  let mtmp160 = show_int8("quot=", quot/10) in
-  let mtmp161 = show_int8("neg=", neg/11) in
-  let mtmp162 = show_bool("b<a=", less/12) in
-  jump ret175()
+  let mtmp157 = show_int8("a=", a/4) in
+  let mtmp158 = show_int8("b=", b/5) in
+  let mtmp159 = show_int8("c=", c/6) in
+  let mtmp160 = show_int8("sum=", sum/7) in
+  let mtmp161 = show_int8("diff=", diff/8) in
+  let mtmp162 = show_int8("prod=", prod/9) in
+  let mtmp163 = show_int8("quot=", quot/10) in
+  let mtmp164 = show_int8("neg=", neg/11) in
+  let mtmp165 = show_bool("b<a=", less/12) in
+  jump ret178()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret176() -> unit {
+  join ret179() -> unit {
     ()
   } in
-  let t177 = trait_impl#ToString#string#to_string(value/1) in
-  let t178 = @runtime(core.string_println)(t177) in
-  jump ret176()
+  let t180 = trait_impl#ToString#string#to_string(value/1) in
+  let t181 = @runtime(core.string_println)(t180) in
+  jump ret179()
 }
 
 fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
-  join ret179(retv180: string) -> string {
-    retv180
-  } in
-  let t181 = @runtime(core.int8_to_string)(self/41) in
-  jump ret179(t181)
-}
-
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
   join ret182(retv183: string) -> string {
     retv183
   } in
-  let t184 = @runtime(core.bool_to_string)(self/37) in
+  let t184 = @runtime(core.int8_to_string)(self/41) in
   jump ret182(t184)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
   join ret185(retv186: string) -> string {
     retv186
   } in
-  jump ret185(self/38)
+  let t187 = @runtime(core.bool_to_string)(self/37) in
+  jump ret185(t187)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret188(retv189: string) -> string {
+    retv189
+  } in
+  jump ret188(self/38)
 }

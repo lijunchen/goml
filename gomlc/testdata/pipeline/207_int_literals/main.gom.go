@@ -87,29 +87,29 @@ func ref_get__Ref_6uint32(reference *ref_uint32_x) uint32 {
 }
 
 func increment(value__0 uint8) uint8 {
-    var retv164 uint8
-    var t165 uint8 = value__0 + 1
-    retv164 = t165
-    return retv164
-}
-
-func one_float32() float32 {
-    var retv167 float32
-    retv167 = 1
+    var retv167 uint8
+    var t168 uint8 = value__0 + 1
+    retv167 = t168
     return retv167
 }
 
+func one_float32() float32 {
+    var retv170 float32
+    retv170 = 1
+    return retv170
+}
+
 func two_int16() int16 {
-    var retv169 int16
-    retv169 = 2
-    return retv169
+    var retv172 int16
+    retv172 = 2
+    return retv172
 }
 
 func read_uint32(value__1 *ref_uint32_x) uint32 {
-    var retv171 uint32
-    var t172 uint32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(value__1)
-    retv171 = t172
-    return retv171
+    var retv174 uint32
+    var t175 uint32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(value__1)
+    retv174 = t175
+    return retv174
 }
 
 func main0() struct{} {
@@ -117,149 +117,149 @@ func main0() struct{} {
     var default_float__3 float64 = 0.5
     var small__4 uint8 = 41
     var inferred__5 [2]uint8 = [2]uint8{small__4, 2}
-    var jp175 uint8
+    var jp178 uint8
     if true {
-        jp175 = 1
+        jp178 = 1
     } else {
-        jp175 = small__4
+        jp178 = small__4
     }
-    var branch__6 uint8 = jp175
+    var branch__6 uint8 = jp178
     var values__7 [2]uint16 = [2]uint16{10, 20}
     var delayed__8 *ref_uint32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(0)
     var byte__9 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get("A", 0)
-    var t176 int = default_integer__2 + 2
-    var t177 string = _goml_m_inherent_i_int_i_int_i_to__string(t176)
-    println__T_string(t177)
-    var t178 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(default_float__3)
-    println__T_string(t178)
-    var t179 uint8 = increment(small__4)
-    var t180 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(t179)
+    var t179 int = default_integer__2 + 2
+    var t180 string = _goml_m_inherent_i_int_i_int_i_to__string(t179)
     println__T_string(t180)
-    var t181 uint8 = array_get__Array_2_5uint8(inferred__5, 1)
-    var t182 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(t181)
-    println__T_string(t182)
-    var t183 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(branch__6)
+    var t181 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(default_float__3)
+    println__T_string(t181)
+    var t182 uint8 = increment(small__4)
+    var t183 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(t182)
     println__T_string(t183)
-    var t184 uint16 = array_get__Array_2_6uint16(values__7, 1)
-    var t185 string = _goml_m_trait__impl_i_ToString_i_uint16_i_to__string(t184)
+    var t184 uint8 = array_get__Array_2_5uint8(inferred__5, 1)
+    var t185 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(t184)
     println__T_string(t185)
-    var t186 float32 = one_float32()
-    var t187 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(t186)
-    println__T_string(t187)
-    var t188 int16 = two_int16()
-    var t189 string = _goml_m_trait__impl_i_ToString_i_int16_i_to__string(t188)
-    println__T_string(t189)
-    var t190 uint32 = read_uint32(delayed__8)
-    var t191 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(t190)
-    println__T_string(t191)
-    var t192 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__9, 65)
-    var t193 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t192)
-    println__T_string(t193)
-    var jp195 string
+    var t186 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(branch__6)
+    println__T_string(t186)
+    var t187 uint16 = array_get__Array_2_6uint16(values__7, 1)
+    var t188 string = _goml_m_trait__impl_i_ToString_i_uint16_i_to__string(t187)
+    println__T_string(t188)
+    var t189 float32 = one_float32()
+    var t190 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(t189)
+    println__T_string(t190)
+    var t191 int16 = two_int16()
+    var t192 string = _goml_m_trait__impl_i_ToString_i_int16_i_to__string(t191)
+    println__T_string(t192)
+    var t193 uint32 = read_uint32(delayed__8)
+    var t194 string = _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(t193)
+    println__T_string(t194)
+    var t195 bool = _goml_m_trait__impl_i_Eq_i_uint8_i_eq(byte__9, 65)
+    var t196 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t195)
+    println__T_string(t196)
+    var jp198 string
     switch byte__9 {
     case 65:
-        jp195 = "byte"
+        jp198 = "byte"
     default:
-        jp195 = "other"
+        jp198 = "other"
     }
-    println__T_string(jp195)
+    println__T_string(jp198)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__208 *ref_uint32_x) uint32 {
-    var retv197 uint32
-    var t198 uint32 = ref_get__Ref_6uint32(self__208)
-    retv197 = t198
-    return retv197
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__207 uint32) *ref_uint32_x {
-    var retv200 *ref_uint32_x
-    var t201 *ref_uint32_x = ref__Ref_6uint32(value__207)
+    var retv200 uint32
+    var t201 uint32 = ref_get__Ref_6uint32(self__208)
     retv200 = t201
     return retv200
 }
 
-func _goml_m_inherent_i_string_i_string_i_byte__get(self__12 string, index__13 int) uint8 {
-    var retv203 uint8
-    var t204 uint8 = _goml_runtime_core_string_byte_get(self__12, index__13)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__207 uint32) *ref_uint32_x {
+    var retv203 *ref_uint32_x
+    var t204 *ref_uint32_x = ref__Ref_6uint32(value__207)
     retv203 = t204
     return retv203
 }
 
+func _goml_m_inherent_i_string_i_string_i_byte__get(self__12 string, index__13 int) uint8 {
+    var retv206 uint8
+    var t207 uint8 = _goml_runtime_core_string_byte_get(self__12, index__13)
+    retv206 = t207
+    return retv206
+}
+
 func println__T_string(value__1 string) struct{} {
-    var t206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t206)
+    var t209 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t209)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv209 string
-    var t210 string = _goml_runtime_core_int_to_string(self__5)
-    retv209 = t210
-    return retv209
-}
-
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__50 float64) string {
     var retv212 string
-    var t213 string = _goml_runtime_core_float64_to_string(self__50)
+    var t213 string = _goml_runtime_core_int_to_string(self__5)
     retv212 = t213
     return retv212
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__50 float64) string {
     var retv215 string
-    var t216 string = _goml_runtime_core_uint8_to_string(self__45)
+    var t216 string = _goml_runtime_core_float64_to_string(self__50)
     retv215 = t216
     return retv215
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint16_i_to__string(self__46 uint16) string {
+func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
     var retv218 string
-    var t219 string = _goml_runtime_core_uint16_to_string(self__46)
+    var t219 string = _goml_runtime_core_uint8_to_string(self__45)
     retv218 = t219
     return retv218
 }
 
-func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__49 float32) string {
+func _goml_m_trait__impl_i_ToString_i_uint16_i_to__string(self__46 uint16) string {
     var retv221 string
-    var t222 string = _goml_runtime_core_float32_to_string(self__49)
+    var t222 string = _goml_runtime_core_uint16_to_string(self__46)
     retv221 = t222
     return retv221
 }
 
-func _goml_m_trait__impl_i_ToString_i_int16_i_to__string(self__42 int16) string {
+func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__49 float32) string {
     var retv224 string
-    var t225 string = _goml_runtime_core_int16_to_string(self__42)
+    var t225 string = _goml_runtime_core_float32_to_string(self__49)
     retv224 = t225
     return retv224
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(self__47 uint32) string {
+func _goml_m_trait__impl_i_ToString_i_int16_i_to__string(self__42 int16) string {
     var retv227 string
-    var t228 string = _goml_runtime_core_uint32_to_string(self__47)
+    var t228 string = _goml_runtime_core_int16_to_string(self__42)
     retv227 = t228
     return retv227
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint8_i_eq(self__69 uint8, other__70 uint8) bool {
-    var retv230 bool
-    var t231 bool = self__69 == other__70
+func _goml_m_trait__impl_i_ToString_i_uint32_i_to__string(self__47 uint32) string {
+    var retv230 string
+    var t231 string = _goml_runtime_core_uint32_to_string(self__47)
     retv230 = t231
     return retv230
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv233 string
-    var t234 string = _goml_runtime_core_bool_to_string(self__37)
+func _goml_m_trait__impl_i_Eq_i_uint8_i_eq(self__69 uint8, other__70 uint8) bool {
+    var retv233 bool
+    var t234 bool = self__69 == other__70
     retv233 = t234
     return retv233
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
     var retv236 string
-    retv236 = self__38
+    var t237 string = _goml_runtime_core_bool_to_string(self__37)
+    retv236 = t237
     return retv236
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
+    var retv239 string
+    retv239 = self__38
+    return retv239
 }
 
 func main() {

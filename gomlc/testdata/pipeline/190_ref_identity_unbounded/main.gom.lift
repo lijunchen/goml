@@ -1,12 +1,12 @@
 fn print_lookup(map/0: HashMap[Ref[Node], string], key/1: Ref[Node]) -> unit {
-  let mtmp152 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/0, key/1) in
-  match mtmp152 {
+  let mtmp155 = inherent#HashMap#HashMap[K,V]#get__K_Ref[Node]__V_string(map/0, key/1) in
+  match mtmp155 {
     Option__string::None => {
       println__T_string("missing")
     },
-    Option__string::Some(x153) => {
-      let x153 = Option__string::Some._0(mtmp152) in
-      let value/2 = x153 in
+    Option__string::Some(x156) => {
+      let x156 = Option__string::Some._0(mtmp155) in
+      let value/2 = x156 in
       println__T_string(value/2)
     },
   }
@@ -16,18 +16,18 @@ fn main() -> unit {
   let first/3 = inherent#Ref#Ref[T]#new__T_Node(Node { value: 1 }) in
   let alias/4 = first/3 in
   let distinct/5 = inherent#Ref#Ref[T]#new__T_Node(Node { value: 1 }) in
-  let _wild154 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, alias/4)) in
-  let _wild155 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, distinct/5)) in
-  let _wild156 = println__T_bool(trait_impl#Eq#uint64#eq(trait_impl#Hash#Ref[Node]#hash(first/3), trait_impl#Hash#Ref[Node]#hash(alias/4))) in
+  let _wild157 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, alias/4)) in
+  let _wild158 = println__T_bool(trait_impl#Eq#Ref[Node]#eq(first/3, distinct/5)) in
+  let _wild159 = println__T_bool(trait_impl#Eq#uint64#eq(trait_impl#Hash#Ref[Node]#hash(first/3), trait_impl#Hash#Ref[Node]#hash(alias/4))) in
   let map/6 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Node]__V_string() in
-  let _wild157 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, first/3, "first") in
-  let _wild158 = print_lookup(map/6, alias/4) in
-  let _wild159 = print_lookup(map/6, distinct/5) in
-  let _wild160 = inherent#Ref#Ref[T]#set__T_Node(first/3, Node { value: 2 }) in
-  let _wild161 = print_lookup(map/6, first/3) in
-  let _wild162 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, distinct/5, "distinct") in
-  let _wild163 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(map/6)) in
+  let _wild160 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, first/3, "first") in
+  let _wild161 = print_lookup(map/6, alias/4) in
+  let _wild162 = print_lookup(map/6, distinct/5) in
+  let _wild163 = inherent#Ref#Ref[T]#set__T_Node(first/3, Node { value: 2 }) in
   let _wild164 = print_lookup(map/6, first/3) in
+  let _wild165 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Node]__V_string(map/6, distinct/5, "distinct") in
+  let _wild166 = println__T_int(inherent#HashMap#HashMap[K,V]#len__K_Ref[Node]__V_string(map/6)) in
+  let _wild167 = print_lookup(map/6, first/3) in
   print_lookup(map/6, distinct/5)
 }
 

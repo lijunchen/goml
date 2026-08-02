@@ -4,16 +4,16 @@ file main.gom
         x: int32,
         y: int32,
     }
-    
+
     enum Shape {
         Unit,
         Location(Point)
     }
-    
+
     trait TypeName {
       fn type_name(Self) -> string;
     }
-    
+
     impl TypeName for Point {
       fn type_name(local/1/0: Self) -> string {
           let Point { x: local/1/1, y: local/1/2 } = self/0;
@@ -21,7 +21,7 @@ file main.gom
           prefix/3 + ", " + y/2.to_string() + ")"
       }
     }
-    
+
     impl TypeName for Shape {
       fn type_name(local/1/4: Self) -> string {
           match self/4 {
@@ -30,15 +30,15 @@ file main.gom
           }
       }
     }
-    
+
     fn show_point(local/1/6: Point) -> string {
         TypeName::type_name(point/6)
     }
-    
+
     fn show_shape(local/1/7: Shape) -> string {
         TypeName::type_name(shape/7)
     }
-    
+
     fn main() -> unit {
         let local/1/8 = Point {
             x: 7,

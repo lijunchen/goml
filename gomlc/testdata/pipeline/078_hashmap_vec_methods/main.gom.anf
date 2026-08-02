@@ -1,49 +1,49 @@
 fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
-  join ret175(retv176: bool) -> bool {
-    retv176
+  join ret178(retv179: bool) -> bool {
+    retv179
   } in
-  let mtmp152 = (self/0, other/1) in
-  let x153 = mtmp152.0 in
-  let x154 = mtmp152.1 in
-  join k177(jp178: bool) -> bool {
-    jump ret175(jp178)
+  let mtmp155 = (self/0, other/1) in
+  let x156 = mtmp155.0 in
+  let x157 = mtmp155.1 in
+  join k180(jp181: bool) -> bool {
+    jump ret178(jp181)
   } in
-  match x154 {
+  match x157 {
     Tag_0 => {
-      join k179(jp180: bool) -> bool {
-        jump k177(jp180)
+      join k182(jp183: bool) -> bool {
+        jump k180(jp183)
       } in
-      match x153 {
+      match x156 {
         Tag_0 => {
-          jump k179(true)
+          jump k182(true)
         },
         _ => {
-          jump k179(false)
+          jump k182(false)
         },
       }
     },
     Tag_1 => {
-      let x155 = Key::B._0(x154) in
-      join k181(jp182: bool) -> bool {
-        jump k177(jp182)
+      let x158 = Key::B._0(x157) in
+      join k184(jp185: bool) -> bool {
+        jump k180(jp185)
       } in
-      match x153 {
+      match x156 {
         Tag_1 => {
-          let x157 = Key::B._0(x153) in
-          let __l1_0/2 = x157 in
-          let __r1_0/3 = x155 in
-          join k183(jp184: bool) -> bool {
-            jump k181(jp184)
+          let x160 = Key::B._0(x156) in
+          let __l1_0/2 = x160 in
+          let __r1_0/3 = x158 in
+          join k186(jp187: bool) -> bool {
+            jump k184(jp187)
           } in
           if true {
-            let t185 = trait_impl#Eq#int32#eq(__l1_0/2, __r1_0/3) in
-            jump k183(t185)
+            let t188 = trait_impl#Eq#int32#eq(__l1_0/2, __r1_0/3) in
+            jump k186(t188)
           } else {
-            jump k183(false)
+            jump k186(false)
           }
         },
         _ => {
-          jump k181(false)
+          jump k184(false)
         },
       }
     },
@@ -51,246 +51,246 @@ fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
 }
 
 fn trait_impl#Hash#Key#hash(self/4: Key) -> uint64 {
-  join ret186(retv187: uint64) -> uint64 {
-    retv187
+  join ret189(retv190: uint64) -> uint64 {
+    retv190
   } in
-  join k188(jp189: uint64) -> uint64 {
-    jump ret186(jp189)
+  join k191(jp192: uint64) -> uint64 {
+    jump ret189(jp192)
   } in
   match self/4 {
     Tag_0 => {
       let h/5 = (14695981039346656037 + 1) in
-      jump k188(h/5)
+      jump k191(h/5)
     },
     Tag_1 => {
-      let x158 = Key::B._0(self/4) in
-      let __field1_0/6 = x158 in
+      let x161 = Key::B._0(self/4) in
+      let __field1_0/6 = x161 in
       let h/7 = (14695981039346656037 + 2) in
-      let t190 = (h/7 * 1099511628211) in
-      let t191 = trait_impl#Hash#int32#hash(__field1_0/6) in
-      let h/8 = (t190 + t191) in
-      jump k188(h/8)
+      let t193 = (h/7 * 1099511628211) in
+      let t194 = trait_impl#Hash#int32#hash(__field1_0/6) in
+      let h/8 = (t193 + t194) in
+      jump k191(h/8)
     },
   }
 }
 
 fn print_opt_int(x/9: Option__int32) -> unit {
-  join ret192() -> unit {
+  join ret195() -> unit {
     ()
   } in
-  join k193() -> unit {
-    jump ret192()
+  join k196() -> unit {
+    jump ret195()
   } in
   match x/9 {
     Tag_0 => {
-      let t194 = println__T_string("none") in
-      jump k193()
+      let t197 = println__T_string("none") in
+      jump k196()
     },
     Tag_1 => {
-      let x159 = Option__int32::Some._0(x/9) in
-      let v/10 = x159 in
-      let t195 = println__T_int32(v/10) in
-      jump k193()
+      let x162 = Option__int32::Some._0(x/9) in
+      let v/10 = x162 in
+      let t198 = println__T_int32(v/10) in
+      jump k196()
     },
   }
 }
 
 fn main() -> unit {
-  join ret196() -> unit {
+  join ret199() -> unit {
     ()
   } in
   let v/11 = inherent#Vec#Vec[T]#new__T_int() in
-  let _wild160 = inherent#Vec#Vec[T]#push__T_int(v/11, 10) in
-  let _wild161 = inherent#Vec#Vec[T]#push__T_int(v/11, 20) in
-  let _wild162 = inherent#Vec#Vec[T]#push__T_int(v/11, 30) in
-  let t197 = inherent#Vec#Vec[T]#get__T_int(v/11, 0) in
-  let _wild163 = println__T_int(t197) in
-  let t198 = inherent#Vec#Vec[T]#get__T_int(v/11, 1) in
-  let _wild164 = println__T_int(t198) in
-  let t199 = inherent#Vec#Vec[T]#get__T_int(v/11, 2) in
-  let _wild165 = println__T_int(t199) in
-  let t200 = inherent#Vec#Vec[T]#len__T_int(v/11) in
+  let _wild163 = inherent#Vec#Vec[T]#push__T_int(v/11, 10) in
+  let _wild164 = inherent#Vec#Vec[T]#push__T_int(v/11, 20) in
+  let _wild165 = inherent#Vec#Vec[T]#push__T_int(v/11, 30) in
+  let t200 = inherent#Vec#Vec[T]#get__T_int(v/11, 0) in
   let _wild166 = println__T_int(t200) in
+  let t201 = inherent#Vec#Vec[T]#get__T_int(v/11, 1) in
+  let _wild167 = println__T_int(t201) in
+  let t202 = inherent#Vec#Vec[T]#get__T_int(v/11, 2) in
+  let _wild168 = println__T_int(t202) in
+  let t203 = inherent#Vec#Vec[T]#len__T_int(v/11) in
+  let _wild169 = println__T_int(t203) in
   let m/12 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() in
-  let _wild167 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, Tag_0, 10) in
-  let t201 = Key::B(1) in
-  let _wild168 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, t201, 20) in
-  let t202 = inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12) in
-  let _wild169 = println__T_int(t202) in
-  let t203 = inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m/12, Tag_0) in
-  let _wild170 = print_opt_int(t203) in
+  let _wild170 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, Tag_0, 10) in
   let t204 = Key::B(1) in
-  let t205 = inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, t204) in
-  let _wild171 = println__T_bool(t205) in
-  let t206 = Key::B(1) in
-  let _wild172 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m/12, t206) in
+  let _wild171 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, t204, 20) in
+  let t205 = inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12) in
+  let _wild172 = println__T_int(t205) in
+  let t206 = inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m/12, Tag_0) in
+  let _wild173 = print_opt_int(t206) in
   let t207 = Key::B(1) in
   let t208 = inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, t207) in
-  let _wild173 = println__T_bool(t208) in
-  let t209 = inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12) in
-  let _wild174 = println__T_int(t209) in
-  jump ret196()
+  let _wild174 = println__T_bool(t208) in
+  let t209 = Key::B(1) in
+  let _wild175 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m/12, t209) in
+  let t210 = Key::B(1) in
+  let t211 = inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, t210) in
+  let _wild176 = println__T_bool(t211) in
+  let t212 = inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12) in
+  let _wild177 = println__T_int(t212) in
+  jump ret199()
 }
 
 fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret210(retv211: bool) -> bool {
-    retv211
-  } in
-  let t212 = @intrinsic(eq.primitive)(self/65, other/66) in
-  jump ret210(t212)
-}
-
-fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret213(retv214: uint64) -> uint64 {
+  join ret213(retv214: bool) -> bool {
     retv214
   } in
-  let t215 = @runtime(core.int32_hash)(self/88) in
+  let t215 = @intrinsic(eq.primitive)(self/65, other/66) in
   jump ret213(t215)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join ret216() -> unit {
-    ()
+fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
+  join ret216(retv217: uint64) -> uint64 {
+    retv217
   } in
-  let t217 = trait_impl#ToString#string#to_string(value/1) in
-  let t218 = @runtime(core.string_println)(t217) in
-  jump ret216()
+  let t218 = @runtime(core.int32_hash)(self/88) in
+  jump ret216(t218)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
+fn println__T_string(value/1: string) -> unit {
   join ret219() -> unit {
     ()
   } in
-  let t220 = trait_impl#ToString#int32#to_string(value/1) in
+  let t220 = trait_impl#ToString#string#to_string(value/1) in
   let t221 = @runtime(core.string_println)(t220) in
   jump ret219()
 }
 
-fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
-  join ret222(retv223: Vec[int]) -> Vec[int] {
-    retv223
+fn println__T_int32(value/1: int32) -> unit {
+  join ret222() -> unit {
+    ()
   } in
-  let t224 = @intrinsic(vec.new)() in
-  jump ret222(t224)
+  let t223 = trait_impl#ToString#int32#to_string(value/1) in
+  let t224 = @runtime(core.string_println)(t223) in
+  jump ret222()
+}
+
+fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
+  join ret225(retv226: Vec[int]) -> Vec[int] {
+    retv226
+  } in
+  let t227 = @intrinsic(vec.new)() in
+  jump ret225(t227)
 }
 
 fn inherent#Vec#Vec[T]#push__T_int(self/126: Vec[int], elem/127: int) -> unit {
-  join ret225() -> unit {
+  join ret228() -> unit {
     ()
   } in
-  let t226 = @intrinsic(vec.push)(self/126, elem/127) in
-  jump ret225()
+  let t229 = @intrinsic(vec.push)(self/126, elem/127) in
+  jump ret228()
 }
 
 fn println__T_int(value/1: int) -> unit {
-  join ret227() -> unit {
+  join ret230() -> unit {
     ()
   } in
-  let t228 = trait_impl#ToString#int#to_string(value/1) in
-  let t229 = @runtime(core.string_println)(t228) in
-  jump ret227()
+  let t231 = trait_impl#ToString#int#to_string(value/1) in
+  let t232 = @runtime(core.string_println)(t231) in
+  jump ret230()
 }
 
 fn inherent#Vec#Vec[T]#get__T_int(self/132: Vec[int], index/133: int) -> int {
-  join ret230(retv231: int) -> int {
-    retv231
-  } in
-  let t232 = @intrinsic(vec.get)(self/132, index/133) in
-  jump ret230(t232)
-}
-
-fn inherent#Vec#Vec[T]#len__T_int(self/137: Vec[int]) -> int {
   join ret233(retv234: int) -> int {
     retv234
   } in
-  let t235 = @intrinsic(vec.len)(self/137) in
+  let t235 = @intrinsic(vec.get)(self/132, index/133) in
   jump ret233(t235)
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() -> HashMap[Key, int32] {
-  join ret236(retv237: HashMap[Key, int32]) -> HashMap[Key, int32] {
+fn inherent#Vec#Vec[T]#len__T_int(self/137: Vec[int]) -> int {
+  join ret236(retv237: int) -> int {
     retv237
   } in
-  let t238 = @intrinsic(hashmap.new)() in
+  let t238 = @intrinsic(vec.len)(self/137) in
   jump ret236(t238)
 }
 
+fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() -> HashMap[Key, int32] {
+  join ret239(retv240: HashMap[Key, int32]) -> HashMap[Key, int32] {
+    retv240
+  } in
+  let t241 = @intrinsic(hashmap.new)() in
+  jump ret239(t241)
+}
+
 fn inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(self/198: HashMap[Key, int32], key/199: Key, value/200: int32) -> unit {
-  join ret239() -> unit {
+  join ret242() -> unit {
     ()
   } in
-  let t240 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
-  jump ret239()
+  let t243 = @intrinsic(hashmap.set)(self/198, key/199, value/200) in
+  jump ret242()
 }
 
 fn inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(self/203: HashMap[Key, int32]) -> int {
-  join ret241(retv242: int) -> int {
-    retv242
-  } in
-  let t243 = @intrinsic(hashmap.len)(self/203) in
-  jump ret241(t243)
-}
-
-fn inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(self/196: HashMap[Key, int32], key/197: Key) -> Option__int32 {
-  join ret244(retv245: Option__int32) -> Option__int32 {
+  join ret244(retv245: int) -> int {
     retv245
   } in
-  let t246 = @intrinsic(hashmap.get)(self/196, key/197) in
+  let t246 = @intrinsic(hashmap.len)(self/203) in
   jump ret244(t246)
 }
 
+fn inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(self/196: HashMap[Key, int32], key/197: Key) -> Option__int32 {
+  join ret247(retv248: Option__int32) -> Option__int32 {
+    retv248
+  } in
+  let t249 = @intrinsic(hashmap.get)(self/196, key/197) in
+  jump ret247(t249)
+}
+
 fn println__T_bool(value/1: bool) -> unit {
-  join ret247() -> unit {
+  join ret250() -> unit {
     ()
   } in
-  let t248 = trait_impl#ToString#bool#to_string(value/1) in
-  let t249 = @runtime(core.string_println)(t248) in
-  jump ret247()
+  let t251 = trait_impl#ToString#bool#to_string(value/1) in
+  let t252 = @runtime(core.string_println)(t251) in
+  jump ret250()
 }
 
 fn inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(self/204: HashMap[Key, int32], key/205: Key) -> bool {
-  join ret250(retv251: bool) -> bool {
-    retv251
+  join ret253(retv254: bool) -> bool {
+    retv254
   } in
-  let t252 = @intrinsic(hashmap.contains)(self/204, key/205) in
-  jump ret250(t252)
+  let t255 = @intrinsic(hashmap.contains)(self/204, key/205) in
+  jump ret253(t255)
 }
 
 fn inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(self/201: HashMap[Key, int32], key/202: Key) -> unit {
-  join ret253() -> unit {
+  join ret256() -> unit {
     ()
   } in
-  let t254 = @intrinsic(hashmap.remove)(self/201, key/202) in
-  jump ret253()
+  let t257 = @intrinsic(hashmap.remove)(self/201, key/202) in
+  jump ret256()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret255(retv256: string) -> string {
-    retv256
+  join ret258(retv259: string) -> string {
+    retv259
   } in
-  jump ret255(self/38)
+  jump ret258(self/38)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret257(retv258: string) -> string {
-    retv258
-  } in
-  let t259 = @runtime(core.int32_to_string)(self/43) in
-  jump ret257(t259)
-}
-
-fn trait_impl#ToString#int#to_string(self/40: int) -> string {
   join ret260(retv261: string) -> string {
     retv261
   } in
-  let t262 = @runtime(core.int_to_string)(self/40) in
+  let t262 = @runtime(core.int32_to_string)(self/43) in
   jump ret260(t262)
 }
 
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+fn trait_impl#ToString#int#to_string(self/40: int) -> string {
   join ret263(retv264: string) -> string {
     retv264
   } in
-  let t265 = @runtime(core.bool_to_string)(self/37) in
+  let t265 = @runtime(core.int_to_string)(self/40) in
   jump ret263(t265)
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  join ret266(retv267: string) -> string {
+    retv267
+  } in
+  let t268 = @runtime(core.bool_to_string)(self/37) in
+  jump ret266(t268)
 }

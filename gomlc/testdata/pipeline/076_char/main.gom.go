@@ -19,40 +19,40 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var c__0 rune = 65
-    var t155 string = _goml_m_inherent_i_char_i_char_i_to__string(c__0)
-    println__T_string(t155)
+    var t158 string = _goml_m_inherent_i_char_i_char_i_to__string(c__0)
+    println__T_string(t158)
     var d__1 rune = 98
-    var jp157 string
+    var jp160 string
     switch d__1 {
     case 97:
-        jp157 = "A"
+        jp160 = "A"
     case 98:
-        jp157 = "B"
+        jp160 = "B"
     default:
-        jp157 = "?"
+        jp160 = "?"
     }
-    var out__2 string = jp157
+    var out__2 string = jp160
     println__T_string(out__2)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t159 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t159)
+    var t162 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t162)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_char_i_char_i_to__string(self__7 rune) string {
-    var retv162 string
-    var t163 string = _goml_runtime_core_char_to_string(self__7)
-    retv162 = t163
-    return retv162
+    var retv165 string
+    var t166 string = _goml_runtime_core_char_to_string(self__7)
+    retv165 = t166
+    return retv165
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv165 string
-    retv165 = self__38
-    return retv165
+    var retv168 string
+    retv168 = self__38
+    return retv168
 }
 
 func main() {

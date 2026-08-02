@@ -4,17 +4,17 @@ file main.gom
         left: int32,
         right: int32,
     }
-    
+
     enum Maybe {
         None,
         Some(int32)
     }
-    
+
     enum Either {
         Left(int32),
         Right(int32)
     }
-    
+
     fn unwrap_either(local/1/0: Either) -> int32 {
         match value/0 {
             local/1/1 @ (ctor(def/1/2::v0)(local/1/2) | ctor(def/1/2::v1)(local/1/2)) => shared/2 + match whole/1 {
@@ -23,14 +23,14 @@ file main.gom
               },
         }
     }
-    
+
     fn char_group(local/1/3: char) -> string {
         match value/3 {
             'a'..='c' => "abc",
             _ => "other",
         }
     }
-    
+
     fn describe(local/1/4: Maybe, local/1/5: Vec[int32], local/1/6: Slice[int32]) -> string {
         let local/1/9 = match value/4 {
             ctor(def/1/1::v1)(local/1/7) => {
@@ -56,7 +56,7 @@ file main.gom
         };
         from_if/9 + "/" + from_vec/12 + "/" + from_slice/15
     }
-    
+
     fn main() -> unit {
         let local/1/16 = Pair {
             left: 3,

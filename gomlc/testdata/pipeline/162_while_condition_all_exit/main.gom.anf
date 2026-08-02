@@ -1,87 +1,87 @@
 fn loop_return_unit(flag/0: bool) -> unit {
-  join ret159() -> unit {
+  join ret162() -> unit {
     ()
   } in
-  join exit160() -> unit {
-    let _wild153 = () in
-    jump ret159()
+  join exit163() -> unit {
+    let _wild156 = () in
+    jump ret162()
   } in
   joinrec {
-    join loop161() -> unit {
-      join k162(jp163: bool) -> unit {
-        if jp163 {
-          let _wild152 = println__T_string("unreachable") in
-          jump loop161()
+    join loop164() -> unit {
+      join k165(jp166: bool) -> unit {
+        if jp166 {
+          let _wild155 = println__T_string("unreachable") in
+          jump loop164()
         } else {
-          jump exit160()
+          jump exit163()
         }
       } in
       if flag/0 {
-        jump ret159()
+        jump ret162()
       } else {
-        jump ret159()
+        jump ret162()
       }
     } in
   } in
-  jump loop161()
+  jump loop164()
 }
 
 fn loop_return() -> int32 {
-  join ret164(retv165: int32) -> int32 {
-    retv165
+  join ret167(retv168: int32) -> int32 {
+    retv168
   } in
-  join exit166() -> int32 {
-    let _wild156 = () in
-    jump ret164(0)
+  join exit169() -> int32 {
+    let _wild159 = () in
+    jump ret167(0)
   } in
   joinrec {
-    join loop167() -> int32 {
-      let mtmp154 = 0 in
-      jump ret164(5)
+    join loop170() -> int32 {
+      let mtmp157 = 0 in
+      jump ret167(5)
     } in
   } in
-  jump loop167()
+  jump loop170()
 }
 
 fn main() -> unit {
-  join ret168() -> unit {
+  join ret171() -> unit {
     ()
   } in
-  let _wild157 = loop_return_unit(true) in
-  let t169 = loop_return() in
-  let _wild158 = println__T_int32(t169) in
-  jump ret168()
+  let _wild160 = loop_return_unit(true) in
+  let t172 = loop_return() in
+  let _wild161 = println__T_int32(t172) in
+  jump ret171()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret170() -> unit {
-    ()
-  } in
-  let t171 = trait_impl#ToString#string#to_string(value/1) in
-  let t172 = @runtime(core.string_println)(t171) in
-  jump ret170()
-}
-
-fn println__T_int32(value/1: int32) -> unit {
   join ret173() -> unit {
     ()
   } in
-  let t174 = trait_impl#ToString#int32#to_string(value/1) in
+  let t174 = trait_impl#ToString#string#to_string(value/1) in
   let t175 = @runtime(core.string_println)(t174) in
   jump ret173()
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
+fn println__T_int32(value/1: int32) -> unit {
+  join ret176() -> unit {
+    ()
   } in
-  jump ret176(self/38)
+  let t177 = trait_impl#ToString#int32#to_string(value/1) in
+  let t178 = @runtime(core.string_println)(t177) in
+  jump ret176()
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret179(retv180: string) -> string {
+    retv180
+  } in
+  jump ret179(self/38)
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret178(retv179: string) -> string {
-    retv179
+  join ret181(retv182: string) -> string {
+    retv182
   } in
-  let t180 = @runtime(core.int32_to_string)(self/43) in
-  jump ret178(t180)
+  let t183 = @runtime(core.int32_to_string)(self/43) in
+  jump ret181(t183)
 }

@@ -18,50 +18,50 @@ type Boxed struct {
 }
 
 func _goml_m_inherent_i_Boxed_i_Boxed_i_format(self__0 Boxed) string {
-    var retv155 string
-    retv155 = "inherent"
-    return retv155
+    var retv158 string
+    retv158 = "inherent"
+    return retv158
 }
 
 func _goml_m_trait__impl_i_Render_i_Boxed_i_format(self__1 Boxed) string {
-    var retv157 string
-    var t158 int32 = self__1.value
-    var t159 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t158)
-    retv157 = t159
-    return retv157
+    var retv160 string
+    var t161 int32 = self__1.value
+    var t162 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t161)
+    retv160 = t162
+    return retv160
 }
 
 func main0() struct{} {
-    var t161 Boxed = Boxed{
+    var t164 Boxed = Boxed{
         value: 9,
     }
-    var t162 string = _goml_m_inherent_i_Boxed_i_Boxed_i_format(t161)
-    println__T_string(t162)
-    var t163 Boxed = Boxed{
+    var t165 string = _goml_m_inherent_i_Boxed_i_Boxed_i_format(t164)
+    println__T_string(t165)
+    var t166 Boxed = Boxed{
         value: 9,
     }
-    var t164 string = _goml_m_trait__impl_i_Render_i_Boxed_i_format(t163)
-    println__T_string(t164)
+    var t167 string = _goml_m_trait__impl_i_Render_i_Boxed_i_format(t166)
+    println__T_string(t167)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv166 string
-    var t167 string = _goml_runtime_core_int32_to_string(self__6)
-    retv166 = t167
-    return retv166
+    var retv169 string
+    var t170 string = _goml_runtime_core_int32_to_string(self__6)
+    retv169 = t170
+    return retv169
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t169 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t169)
+    var t172 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t172)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv172 string
-    retv172 = self__38
-    return retv172
+    var retv175 string
+    retv175 = self__38
+    return retv175
 }
 
 func main() {

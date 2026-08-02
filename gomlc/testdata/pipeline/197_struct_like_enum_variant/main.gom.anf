@@ -1,90 +1,90 @@
 fn trait_impl#ToString#Key#to_string(self/0: Key) -> string {
-  join ret177(retv178: string) -> string {
-    retv178
+  join ret180(retv181: string) -> string {
+    retv181
   } in
-  join k179(jp180: string) -> string {
-    jump ret177(jp180)
+  join k182(jp183: string) -> string {
+    jump ret180(jp183)
   } in
   match self/0 {
     Tag_0 => {
-      jump k179("Key::Empty")
+      jump k182("Key::Empty")
     },
     Tag_1 => {
-      let x152 = Key::Point._0(self/0) in
-      let x153 = Key::Point._1(self/0) in
-      let __field1/2 = x153 in
-      let __field0/1 = x152 in
-      let t181 = ("Key::Point { " + "x: ") in
-      let t182 = inherent#int32#int32#to_string(__field0/1) in
-      let t183 = (t181 + t182) in
-      let t184 = (t183 + ", ") in
-      let t185 = (t184 + "y: ") in
-      let t186 = inherent#int32#int32#to_string(__field1/2) in
-      let t187 = (t185 + t186) in
-      let t188 = (t187 + " }") in
-      jump k179(t188)
+      let x155 = Key::Point._0(self/0) in
+      let x156 = Key::Point._1(self/0) in
+      let __field1/2 = x156 in
+      let __field0/1 = x155 in
+      let t184 = ("Key::Point { " + "x: ") in
+      let t185 = inherent#int32#int32#to_string(__field0/1) in
+      let t186 = (t184 + t185) in
+      let t187 = (t186 + ", ") in
+      let t188 = (t187 + "y: ") in
+      let t189 = inherent#int32#int32#to_string(__field1/2) in
+      let t190 = (t188 + t189) in
+      let t191 = (t190 + " }") in
+      jump k182(t191)
     },
   }
 }
 
 fn trait_impl#Eq#Key#eq(self/3: Key, other/4: Key) -> bool {
-  join ret189(retv190: bool) -> bool {
-    retv190
+  join ret192(retv193: bool) -> bool {
+    retv193
   } in
-  let mtmp154 = (self/3, other/4) in
-  let x155 = mtmp154.0 in
-  let x156 = mtmp154.1 in
-  join k191(jp192: bool) -> bool {
-    jump ret189(jp192)
+  let mtmp157 = (self/3, other/4) in
+  let x158 = mtmp157.0 in
+  let x159 = mtmp157.1 in
+  join k194(jp195: bool) -> bool {
+    jump ret192(jp195)
   } in
-  match x156 {
+  match x159 {
     Tag_0 => {
-      join k193(jp194: bool) -> bool {
-        jump k191(jp194)
+      join k196(jp197: bool) -> bool {
+        jump k194(jp197)
       } in
-      match x155 {
+      match x158 {
         Tag_0 => {
-          jump k193(true)
+          jump k196(true)
         },
         _ => {
-          jump k193(false)
+          jump k196(false)
         },
       }
     },
     Tag_1 => {
-      let x157 = Key::Point._0(x156) in
-      let x158 = Key::Point._1(x156) in
-      join k195(jp196: bool) -> bool {
-        jump k191(jp196)
+      let x160 = Key::Point._0(x159) in
+      let x161 = Key::Point._1(x159) in
+      join k198(jp199: bool) -> bool {
+        jump k194(jp199)
       } in
-      match x155 {
+      match x158 {
         Tag_1 => {
-          let x161 = Key::Point._0(x155) in
-          let x162 = Key::Point._1(x155) in
-          let __l1_1/6 = x162 in
-          let __l1_0/5 = x161 in
-          let __r1_1/8 = x158 in
-          let __r1_0/7 = x157 in
-          join k199(jp200: bool) -> bool {
-            join k197(jp198: bool) -> bool {
-              jump k195(jp198)
+          let x164 = Key::Point._0(x158) in
+          let x165 = Key::Point._1(x158) in
+          let __l1_1/6 = x165 in
+          let __l1_0/5 = x164 in
+          let __r1_1/8 = x161 in
+          let __r1_0/7 = x160 in
+          join k202(jp203: bool) -> bool {
+            join k200(jp201: bool) -> bool {
+              jump k198(jp201)
             } in
-            if jp200 {
-              let t201 = trait_impl#Eq#int32#eq(__l1_1/6, __r1_1/8) in
-              jump k197(t201)
+            if jp203 {
+              let t204 = trait_impl#Eq#int32#eq(__l1_1/6, __r1_1/8) in
+              jump k200(t204)
             } else {
-              jump k197(false)
+              jump k200(false)
             }
           } in
           if true {
-            let t202 = trait_impl#Eq#int32#eq(__l1_0/5, __r1_0/7) in
-            jump k199(t202)
+            let t205 = trait_impl#Eq#int32#eq(__l1_0/5, __r1_0/7) in
+            jump k202(t205)
           } else {
-            jump k199(false)
+            jump k202(false)
           }
         },
         _ => {
-          jump k195(false)
+          jump k198(false)
         },
       }
     },
@@ -92,179 +92,179 @@ fn trait_impl#Eq#Key#eq(self/3: Key, other/4: Key) -> bool {
 }
 
 fn trait_impl#Hash#Key#hash(self/9: Key) -> uint64 {
-  join ret203(retv204: uint64) -> uint64 {
-    retv204
+  join ret206(retv207: uint64) -> uint64 {
+    retv207
   } in
-  join k205(jp206: uint64) -> uint64 {
-    jump ret203(jp206)
+  join k208(jp209: uint64) -> uint64 {
+    jump ret206(jp209)
   } in
   match self/9 {
     Tag_0 => {
       let h/10 = (14695981039346656037 + 1) in
-      jump k205(h/10)
+      jump k208(h/10)
     },
     Tag_1 => {
-      let x163 = Key::Point._0(self/9) in
-      let x164 = Key::Point._1(self/9) in
-      let __field1_1/12 = x164 in
-      let __field1_0/11 = x163 in
+      let x166 = Key::Point._0(self/9) in
+      let x167 = Key::Point._1(self/9) in
+      let __field1_1/12 = x167 in
+      let __field1_0/11 = x166 in
       let h/13 = (14695981039346656037 + 2) in
-      let t207 = (h/13 * 1099511628211) in
-      let t208 = trait_impl#Hash#int32#hash(__field1_0/11) in
-      let h/14 = (t207 + t208) in
-      let t209 = (h/14 * 1099511628211) in
-      let t210 = trait_impl#Hash#int32#hash(__field1_1/12) in
-      let h/15 = (t209 + t210) in
-      jump k205(h/15)
+      let t210 = (h/13 * 1099511628211) in
+      let t211 = trait_impl#Hash#int32#hash(__field1_0/11) in
+      let h/14 = (t210 + t211) in
+      let t212 = (h/14 * 1099511628211) in
+      let t213 = trait_impl#Hash#int32#hash(__field1_1/12) in
+      let h/15 = (t212 + t213) in
+      jump k208(h/15)
     },
   }
 }
 
 fn score(value/16: Message__string) -> int32 {
-  join ret211(retv212: int32) -> int32 {
-    retv212
+  join ret214(retv215: int32) -> int32 {
+    retv215
   } in
-  join k213(jp214: int32) -> int32 {
-    jump ret211(jp214)
+  join k216(jp217: int32) -> int32 {
+    jump ret214(jp217)
   } in
   match value/16 {
     Tag_0 => {
-      jump k213(0)
+      jump k216(0)
     },
     Tag_1 => {
-      let x165 = Message__string::Write._0(value/16) in
-      jump k213(1)
+      let x168 = Message__string::Write._0(value/16) in
+      jump k216(1)
     },
     Tag_2 => {
-      let x166 = Message__string::Move._0(value/16) in
-      let x167 = Message__string::Move._1(value/16) in
-      let x168 = Message__string::Move._2(value/16) in
-      let vertical/18 = x167 in
-      let x/17 = x166 in
-      let t215 = (x/17 + vertical/18) in
-      jump k213(t215)
+      let x169 = Message__string::Move._0(value/16) in
+      let x170 = Message__string::Move._1(value/16) in
+      let x171 = Message__string::Move._2(value/16) in
+      let vertical/18 = x170 in
+      let x/17 = x169 in
+      let t218 = (x/17 + vertical/18) in
+      jump k216(t218)
     },
   }
 }
 
 fn label(value/19: Message__string) -> string {
-  join ret216(retv217: string) -> string {
-    retv217
+  join ret219(retv220: string) -> string {
+    retv220
   } in
-  join k218(jp219: string) -> string {
-    jump ret216(jp219)
+  join k221(jp222: string) -> string {
+    jump ret219(jp222)
   } in
   match value/19 {
     Tag_0 => {
-      jump k218("quit")
+      jump k221("quit")
     },
     Tag_1 => {
-      let x169 = Message__string::Write._0(value/19) in
-      let text/21 = x169 in
-      jump k218(text/21)
+      let x172 = Message__string::Write._0(value/19) in
+      let text/21 = x172 in
+      jump k221(text/21)
     },
     Tag_2 => {
-      let x170 = Message__string::Move._0(value/19) in
-      let x171 = Message__string::Move._1(value/19) in
-      let x172 = Message__string::Move._2(value/19) in
-      let label/20 = x172 in
-      jump k218(label/20)
+      let x173 = Message__string::Move._0(value/19) in
+      let x174 = Message__string::Move._1(value/19) in
+      let x175 = Message__string::Move._2(value/19) in
+      let label/20 = x175 in
+      jump k221(label/20)
     },
   }
 }
 
 fn main() -> unit {
-  join ret220() -> unit {
+  join ret223() -> unit {
     ()
   } in
   let x/22 = 3 in
   let direction/23 = "north" in
   let first/24 = Message__string::Move(x/22, 4, direction/23) in
   let second/25 = Message__string::Move(3, 4, "north") in
-  let t221 = score(first/24) in
-  let _wild173 = println__T_int32(t221) in
-  let t222 = label(second/25) in
-  let _wild174 = println__T_string(t222) in
-  let t223 = Key::Point(1, 2) in
-  let t224 = trait_impl#ToString#Key#to_string(t223) in
-  let _wild175 = println__T_string(t224) in
-  let t225 = Key::Point(1, 2) in
+  let t224 = score(first/24) in
+  let _wild176 = println__T_int32(t224) in
+  let t225 = label(second/25) in
+  let _wild177 = println__T_string(t225) in
   let t226 = Key::Point(1, 2) in
-  let t227 = trait_impl#Eq#Key#eq(t225, t226) in
-  let _wild176 = println__T_bool(t227) in
-  jump ret220()
+  let t227 = trait_impl#ToString#Key#to_string(t226) in
+  let _wild178 = println__T_string(t227) in
+  let t228 = Key::Point(1, 2) in
+  let t229 = Key::Point(1, 2) in
+  let t230 = trait_impl#Eq#Key#eq(t228, t229) in
+  let _wild179 = println__T_bool(t230) in
+  jump ret223()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret228(retv229: string) -> string {
-    retv229
-  } in
-  let t230 = @runtime(core.int32_to_string)(self/6) in
-  jump ret228(t230)
-}
-
-fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  join ret231(retv232: bool) -> bool {
+  join ret231(retv232: string) -> string {
     retv232
   } in
-  let t233 = @intrinsic(eq.primitive)(self/65, other/66) in
+  let t233 = @runtime(core.int32_to_string)(self/6) in
   jump ret231(t233)
 }
 
-fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
-  join ret234(retv235: uint64) -> uint64 {
+fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
+  join ret234(retv235: bool) -> bool {
     retv235
   } in
-  let t236 = @runtime(core.int32_hash)(self/88) in
+  let t236 = @intrinsic(eq.primitive)(self/65, other/66) in
   jump ret234(t236)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  join ret237() -> unit {
-    ()
+fn trait_impl#Hash#int32#hash(self/88: int32) -> uint64 {
+  join ret237(retv238: uint64) -> uint64 {
+    retv238
   } in
-  let t238 = trait_impl#ToString#int32#to_string(value/1) in
-  let t239 = @runtime(core.string_println)(t238) in
-  jump ret237()
+  let t239 = @runtime(core.int32_hash)(self/88) in
+  jump ret237(t239)
 }
 
-fn println__T_string(value/1: string) -> unit {
+fn println__T_int32(value/1: int32) -> unit {
   join ret240() -> unit {
     ()
   } in
-  let t241 = trait_impl#ToString#string#to_string(value/1) in
+  let t241 = trait_impl#ToString#int32#to_string(value/1) in
   let t242 = @runtime(core.string_println)(t241) in
   jump ret240()
 }
 
-fn println__T_bool(value/1: bool) -> unit {
+fn println__T_string(value/1: string) -> unit {
   join ret243() -> unit {
     ()
   } in
-  let t244 = trait_impl#ToString#bool#to_string(value/1) in
+  let t244 = trait_impl#ToString#string#to_string(value/1) in
   let t245 = @runtime(core.string_println)(t244) in
   jump ret243()
 }
 
-fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret246(retv247: string) -> string {
-    retv247
+fn println__T_bool(value/1: bool) -> unit {
+  join ret246() -> unit {
+    ()
   } in
-  let t248 = @runtime(core.int32_to_string)(self/43) in
-  jump ret246(t248)
+  let t247 = trait_impl#ToString#bool#to_string(value/1) in
+  let t248 = @runtime(core.string_println)(t247) in
+  jump ret246()
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
   join ret249(retv250: string) -> string {
     retv250
   } in
-  jump ret249(self/38)
+  let t251 = @runtime(core.int32_to_string)(self/43) in
+  jump ret249(t251)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret252(retv253: string) -> string {
+    retv253
+  } in
+  jump ret252(self/38)
 }
 
 fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  join ret251(retv252: string) -> string {
-    retv252
+  join ret254(retv255: string) -> string {
+    retv255
   } in
-  let t253 = @runtime(core.bool_to_string)(self/37) in
-  jump ret251(t253)
+  let t256 = @runtime(core.bool_to_string)(self/37) in
+  jump ret254(t256)
 }

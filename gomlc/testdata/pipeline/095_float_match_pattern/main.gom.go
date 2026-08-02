@@ -10,49 +10,49 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func classify(x__0 float64) string {
-    var retv158 string
-    var jp160 string
+    var retv161 string
+    var jp163 string
     switch x__0 {
     case 0:
-        jp160 = "zero"
+        jp163 = "zero"
     case 1:
-        jp160 = "one"
+        jp163 = "one"
     case -1:
-        jp160 = "minus one"
+        jp163 = "minus one"
     case 3.14:
-        jp160 = "pi"
+        jp163 = "pi"
     default:
-        jp160 = "other"
+        jp163 = "other"
     }
-    retv158 = jp160
-    return retv158
+    retv161 = jp163
+    return retv161
 }
 
 func main0() struct{} {
-    var t162 string = classify(0)
-    println__T_string(t162)
-    var t163 string = classify(1)
-    println__T_string(t163)
-    var t164 float64 = -1
-    var t165 string = classify(t164)
+    var t165 string = classify(0)
     println__T_string(t165)
-    var t166 string = classify(3.14)
+    var t166 string = classify(1)
     println__T_string(t166)
-    var t167 string = classify(42)
-    println__T_string(t167)
+    var t167 float64 = -1
+    var t168 string = classify(t167)
+    println__T_string(t168)
+    var t169 string = classify(3.14)
+    println__T_string(t169)
+    var t170 string = classify(42)
+    println__T_string(t170)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t169 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t169)
+    var t172 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t172)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv172 string
-    retv172 = self__38
-    return retv172
+    var retv175 string
+    retv175 = self__38
+    return retv175
 }
 
 func main() {

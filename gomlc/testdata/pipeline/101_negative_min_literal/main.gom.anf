@@ -1,44 +1,44 @@
 fn main() -> unit {
-  join ret154() -> unit {
-    ()
-  } in
-  let a/0 = -128 in
-  let t155 = trait_impl#ToString#int8#to_string(a/0) in
-  let _wild152 = println__T_string(t155) in
-  let b/1 = -32768 in
-  let t156 = trait_impl#ToString#int16#to_string(b/1) in
-  let _wild153 = println__T_string(t156) in
-  jump ret154()
-}
-
-fn println__T_string(value/1: string) -> unit {
   join ret157() -> unit {
     ()
   } in
-  let t158 = trait_impl#ToString#string#to_string(value/1) in
-  let t159 = @runtime(core.string_println)(t158) in
+  let a/0 = -128 in
+  let t158 = trait_impl#ToString#int8#to_string(a/0) in
+  let _wild155 = println__T_string(t158) in
+  let b/1 = -32768 in
+  let t159 = trait_impl#ToString#int16#to_string(b/1) in
+  let _wild156 = println__T_string(t159) in
   jump ret157()
 }
 
-fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
-  join ret160(retv161: string) -> string {
-    retv161
+fn println__T_string(value/1: string) -> unit {
+  join ret160() -> unit {
+    ()
   } in
-  let t162 = @runtime(core.int8_to_string)(self/41) in
-  jump ret160(t162)
+  let t161 = trait_impl#ToString#string#to_string(value/1) in
+  let t162 = @runtime(core.string_println)(t161) in
+  jump ret160()
 }
 
-fn trait_impl#ToString#int16#to_string(self/42: int16) -> string {
+fn trait_impl#ToString#int8#to_string(self/41: int8) -> string {
   join ret163(retv164: string) -> string {
     retv164
   } in
-  let t165 = @runtime(core.int16_to_string)(self/42) in
+  let t165 = @runtime(core.int8_to_string)(self/41) in
   jump ret163(t165)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+fn trait_impl#ToString#int16#to_string(self/42: int16) -> string {
   join ret166(retv167: string) -> string {
     retv167
   } in
-  jump ret166(self/38)
+  let t168 = @runtime(core.int16_to_string)(self/42) in
+  jump ret166(t168)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret169(retv170: string) -> string {
+    retv170
+  } in
+  jump ret169(self/38)
 }

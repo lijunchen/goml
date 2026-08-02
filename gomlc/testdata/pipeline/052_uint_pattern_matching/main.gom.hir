@@ -4,7 +4,7 @@ file main.gom
         start: uint32,
         end: uint64,
     }
-    
+
     fn is_flag8(local/1/0: uint8) -> bool {
         match value/0 {
             0 => true,
@@ -12,7 +12,7 @@ file main.gom
             _ => false,
         }
     }
-    
+
     fn is_flag16(local/1/1: uint16) -> bool {
         match value/1 {
             1024 => true,
@@ -20,7 +20,7 @@ file main.gom
             _ => false,
         }
     }
-    
+
     fn is_flag32(local/1/2: uint32) -> bool {
         match value/2 {
             4000000000 => true,
@@ -28,7 +28,7 @@ file main.gom
             _ => false,
         }
     }
-    
+
     fn is_flag64(local/1/3: uint64) -> bool {
         match value/3 {
             900000000 => true,
@@ -36,7 +36,7 @@ file main.gom
             _ => false,
         }
     }
-    
+
     fn match_struct(local/1/4: Counter) -> bool {
         match counter/4 {
             Counter { start: 4000000000, end: 900000000 } => true,
@@ -44,11 +44,11 @@ file main.gom
             _ => false,
         }
     }
-    
+
     fn report(local/1/5: string, local/1/6: bool) -> string {
         label/5 + value/6.to_string()
     }
-    
+
     fn main() {
         let local/1/7 = Counter {
             start: 4000000000,

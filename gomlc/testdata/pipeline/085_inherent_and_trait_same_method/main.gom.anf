@@ -1,52 +1,52 @@
 fn inherent#Boxed#Boxed#format(self/0: Boxed) -> string {
-  join ret154(retv155: string) -> string {
-    retv155
+  join ret157(retv158: string) -> string {
+    retv158
   } in
-  jump ret154("inherent")
+  jump ret157("inherent")
 }
 
 fn trait_impl#Render#Boxed#format(self/1: Boxed) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
+  join ret159(retv160: string) -> string {
+    retv160
   } in
-  let t158 = Boxed.value(self/1) in
-  let t159 = inherent#int32#int32#to_string(t158) in
-  jump ret156(t159)
+  let t161 = Boxed.value(self/1) in
+  let t162 = inherent#int32#int32#to_string(t161) in
+  jump ret159(t162)
 }
 
 fn main() -> unit {
-  join ret160() -> unit {
+  join ret163() -> unit {
     ()
   } in
-  let t161 = Boxed { value: 9 } in
-  let t162 = inherent#Boxed#Boxed#format(t161) in
-  let _wild152 = println__T_string(t162) in
-  let t163 = Boxed { value: 9 } in
-  let t164 = trait_impl#Render#Boxed#format(t163) in
-  let _wild153 = println__T_string(t164) in
-  jump ret160()
+  let t164 = Boxed { value: 9 } in
+  let t165 = inherent#Boxed#Boxed#format(t164) in
+  let _wild155 = println__T_string(t165) in
+  let t166 = Boxed { value: 9 } in
+  let t167 = trait_impl#Render#Boxed#format(t166) in
+  let _wild156 = println__T_string(t167) in
+  jump ret163()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret165(retv166: string) -> string {
-    retv166
+  join ret168(retv169: string) -> string {
+    retv169
   } in
-  let t167 = @runtime(core.int32_to_string)(self/6) in
-  jump ret165(t167)
+  let t170 = @runtime(core.int32_to_string)(self/6) in
+  jump ret168(t170)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret168() -> unit {
+  join ret171() -> unit {
     ()
   } in
-  let t169 = trait_impl#ToString#string#to_string(value/1) in
-  let t170 = @runtime(core.string_println)(t169) in
-  jump ret168()
+  let t172 = trait_impl#ToString#string#to_string(value/1) in
+  let t173 = @runtime(core.string_println)(t172) in
+  jump ret171()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
+  join ret174(retv175: string) -> string {
+    retv175
   } in
-  jump ret171(self/38)
+  jump ret174(self/38)
 }

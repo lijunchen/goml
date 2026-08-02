@@ -1,67 +1,67 @@
 fn trait_impl#Base#Value#base(self/0: Value) -> string {
-  join ret153(retv154: string) -> string {
-    retv154
+  join ret156(retv157: string) -> string {
+    retv157
   } in
-  jump ret153("B")
+  jump ret156("B")
 }
 
 fn trait_impl#Left#Value#left(self/1: Value) -> string {
-  join ret155(retv156: string) -> string {
-    retv156
+  join ret158(retv159: string) -> string {
+    retv159
   } in
-  jump ret155("L")
+  jump ret158("L")
 }
 
 fn trait_impl#Right#Value#right(self/2: Value) -> string {
-  join ret157(retv158: string) -> string {
-    retv158
+  join ret160(retv161: string) -> string {
+    retv161
   } in
-  jump ret157("R")
+  jump ret160("R")
 }
 
 fn trait_impl#Diamond#Value#diamond(self/3: Value) -> string {
-  join ret159(retv160: string) -> string {
-    retv160
+  join ret162(retv163: string) -> string {
+    retv163
   } in
-  jump ret159("D")
+  jump ret162("D")
 }
 
 fn main() -> unit {
-  join ret161() -> unit {
-    ()
-  } in
-  let t162 = Value {} in
-  let t163 = describe__T_Value(t162) in
-  let _wild152 = println__T_string(t163) in
-  jump ret161()
-}
-
-fn println__T_string(value/1: string) -> unit {
   join ret164() -> unit {
     ()
   } in
-  let t165 = trait_impl#ToString#string#to_string(value/1) in
-  let t166 = @runtime(core.string_println)(t165) in
+  let t165 = Value {} in
+  let t166 = describe__T_Value(t165) in
+  let _wild155 = println__T_string(t166) in
   jump ret164()
 }
 
-fn describe__T_Value(value/4: Value) -> string {
-  join ret167(retv168: string) -> string {
-    retv168
+fn println__T_string(value/1: string) -> unit {
+  join ret167() -> unit {
+    ()
   } in
-  let t169 = trait_impl#Base#Value#base(value/4) in
-  let t170 = trait_impl#Left#Value#left(value/4) in
-  let t171 = (t169 + t170) in
-  let t172 = trait_impl#Right#Value#right(value/4) in
-  let t173 = (t171 + t172) in
-  let t174 = trait_impl#Diamond#Value#diamond(value/4) in
-  let t175 = (t173 + t174) in
-  jump ret167(t175)
+  let t168 = trait_impl#ToString#string#to_string(value/1) in
+  let t169 = @runtime(core.string_println)(t168) in
+  jump ret167()
+}
+
+fn describe__T_Value(value/4: Value) -> string {
+  join ret170(retv171: string) -> string {
+    retv171
+  } in
+  let t172 = trait_impl#Base#Value#base(value/4) in
+  let t173 = trait_impl#Left#Value#left(value/4) in
+  let t174 = (t172 + t173) in
+  let t175 = trait_impl#Right#Value#right(value/4) in
+  let t176 = (t174 + t175) in
+  let t177 = trait_impl#Diamond#Value#diamond(value/4) in
+  let t178 = (t176 + t177) in
+  jump ret170(t178)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret176(retv177: string) -> string {
-    retv177
+  join ret179(retv180: string) -> string {
+    retv180
   } in
-  jump ret176(self/38)
+  jump ret179(self/38)
 }

@@ -168,270 +168,270 @@ type Value struct {
 func (_ Value) isBoxed__int() {}
 
 func classify(value__0 First__int) string {
-    var retv192 string
-    var jp194 string
+    var retv195 string
+    var jp197 string
     switch value__0.(type) {
     case First__int_Shared:
-        var x152 int = value__0.(First__int_Shared)._0
-        var number__1 int = x152
-        var t195 string = _goml_m_inherent_i_int_i_int_i_to__string(number__1)
-        var t196 string = "shared:" + t195
-        jp194 = t196
+        var x155 int = value__0.(First__int_Shared)._0
+        var number__1 int = x155
+        var t198 string = _goml_m_inherent_i_int_i_int_i_to__string(number__1)
+        var t199 string = "shared:" + t198
+        jp197 = t199
     case Idle:
-        jp194 = "idle"
+        jp197 = "idle"
     case Data:
-        var x153 int = value__0.(Data)._0
-        var x154 string = value__0.(Data)._1
-        var label__3 string = x154
-        var value__2 int = x153
-        var t197 string = label__3 + ":"
-        var t198 string = _goml_m_inherent_i_int_i_int_i_to__string(value__2)
-        var t199 string = t197 + t198
-        jp194 = t199
+        var x156 int = value__0.(Data)._0
+        var x157 string = value__0.(Data)._1
+        var label__3 string = x157
+        var value__2 int = x156
+        var t200 string = label__3 + ":"
+        var t201 string = _goml_m_inherent_i_int_i_int_i_to__string(value__2)
+        var t202 string = t200 + t201
+        jp197 = t202
     default:
         panic("non-exhaustive match")
     }
-    retv192 = jp194
-    return retv192
+    retv195 = jp197
+    return retv195
 }
 
 func nested(value__4 Option__Result__int__string) string {
-    var retv201 string
-    var jp203 string
+    var retv204 string
+    var jp206 string
     switch value__4.(type) {
     case Option__Result__int__string_None:
-        jp203 = "none"
+        jp206 = "none"
     case Option__Result__int__string_Some:
-        var x155 Result__int__string = value__4.(Option__Result__int__string_Some)._0
-        var jp205 string
-        switch x155.(type) {
+        var x158 Result__int__string = value__4.(Option__Result__int__string_Some)._0
+        var jp208 string
+        switch x158.(type) {
         case Ok:
-            var x156 int = x155.(Ok)._0
-            var number__5 int = x156
-            var t206 string = _goml_m_inherent_i_int_i_int_i_to__string(number__5)
-            var t207 string = "ok:" + t206
-            jp205 = t207
+            var x159 int = x158.(Ok)._0
+            var number__5 int = x159
+            var t209 string = _goml_m_inherent_i_int_i_int_i_to__string(number__5)
+            var t210 string = "ok:" + t209
+            jp208 = t210
         case Err:
-            var x157 string = x155.(Err)._0
-            var message__6 string = x157
-            var t208 string = "err:" + message__6
-            jp205 = t208
+            var x160 string = x158.(Err)._0
+            var message__6 string = x160
+            var t211 string = "err:" + message__6
+            jp208 = t211
         default:
             panic("non-exhaustive match")
         }
-        jp203 = jp205
+        jp206 = jp208
     default:
         panic("non-exhaustive match")
     }
-    retv201 = jp203
-    return retv201
+    retv204 = jp206
+    return retv204
 }
 
 func optional_number(value__7 Option__int) int {
-    var retv210 int
-    var jp212 int
+    var retv213 int
+    var jp215 int
     switch value__7.(type) {
     case Option__int_Some:
-        var x158 int = value__7.(Option__int_Some)._0
-        var number__8 int = x158
-        jp212 = number__8
+        var x161 int = value__7.(Option__int_Some)._0
+        var number__8 int = x161
+        jp215 = number__8
     default:
-        jp212 = 0
+        jp215 = 0
     }
-    retv210 = jp212
-    return retv210
+    retv213 = jp215
+    return retv213
 }
 
 func is_non_shared(value__9 First__int) bool {
-    var retv214 bool
-    var jp216 bool
+    var retv217 bool
+    var jp219 bool
     switch value__9.(type) {
     case First__int_Shared:
-        jp216 = false
+        jp219 = false
     case Idle:
-        jp216 = true
+        jp219 = true
     case Data:
-        jp216 = true
+        jp219 = true
     default:
         panic("non-exhaustive match")
     }
-    retv214 = jp216
-    return retv214
+    retv217 = jp219
+    return retv217
 }
 
 func take_once(value__10 Option__int) int {
-    var retv218 int
+    var retv221 int
     var current__11 *ref_Option__int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_int_r_(value__10)
     var result__12 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    Loop_loop221:
+    Loop_loop224:
     for {
         if true {
-            var mtmp162 Option__int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_int_r_(current__11)
-            switch mtmp162.(type) {
+            var mtmp165 Option__int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_int_r_(current__11)
+            switch mtmp165.(type) {
             case Option__int_Some:
-                var x163 int = mtmp162.(Option__int_Some)._0
-                var number__13 int = x163
+                var x166 int = mtmp165.(Option__int_Some)._0
+                var number__13 int = x166
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(result__12, number__13)
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_int_r_(current__11, Option__int_None{})
                 continue
             default:
-                break Loop_loop221
+                break Loop_loop224
             }
         } else {
-            break Loop_loop221
+            break Loop_loop224
         }
     }
-    var t220 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(result__12)
-    retv218 = t220
-    return retv218
+    var t223 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(result__12)
+    retv221 = t223
+    return retv221
 }
 
 func unbox(value__14 Boxed__int) int {
-    var retv224 int
-    var mtmp167 Boxed__int = value__14
-    var jp226 int
-    switch mtmp167.(type) {
+    var retv227 int
+    var mtmp170 Boxed__int = value__14
+    var jp229 int
+    switch mtmp170.(type) {
     case Value:
-        var x168 int = mtmp167.(Value)._0
-        var number__15 int = x168
-        jp226 = number__15
+        var x171 int = mtmp170.(Value)._0
+        var number__15 int = x171
+        jp229 = number__15
     default:
         panic("non-exhaustive match")
     }
-    retv224 = jp226
-    return retv224
+    retv227 = jp229
+    return retv227
 }
 
 func sum_boxed(values__16 *_goml_vec_Boxed__int) int {
-    var retv228 int
+    var retv231 int
     var result__17 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
-    var for_source169 *_goml_vec_Boxed__int = values__16
-    var for_limit170 int = vec_len__Vec_10Boxed__int(for_source169)
-    var for_index171 int = 0
-    Loop_loop231:
+    var for_source172 *_goml_vec_Boxed__int = values__16
+    var for_limit173 int = vec_len__Vec_10Boxed__int(for_source172)
+    var for_index174 int = 0
+    Loop_loop234:
     for {
-        var t232 bool = for_index171 < for_limit170
-        if t232 {
-            var for_item172 Boxed__int = vec_get__Vec_10Boxed__int(for_source169, for_index171)
-            var t233 int = for_index171 + 1
-            for_index171 = t233
-            switch for_item172.(type) {
+        var t235 bool = for_index174 < for_limit173
+        if t235 {
+            var for_item175 Boxed__int = vec_get__Vec_10Boxed__int(for_source172, for_index174)
+            var t236 int = for_index174 + 1
+            for_index174 = t236
+            switch for_item175.(type) {
             case Value:
-                var x174 int = for_item172.(Value)._0
-                var number__18 int = x174
-                var t235 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(result__17)
-                var t236 int = t235 + number__18
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(result__17, t236)
+                var x177 int = for_item175.(Value)._0
+                var number__18 int = x177
+                var t238 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(result__17)
+                var t239 int = t238 + number__18
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(result__17, t239)
             default:
                 panic("non-exhaustive match")
             }
             continue
         } else {
-            break Loop_loop231
+            break Loop_loop234
         }
     }
-    var t230 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(result__17)
-    retv228 = t230
-    return retv228
+    var t233 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(result__17)
+    retv231 = t233
+    return retv231
 }
 
 func main0() struct{} {
     var vec_literal__1450 *_goml_vec_Boxed__int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__Boxed_l_int_r_()
-    var t238 Boxed__int = Value{
+    var t241 Boxed__int = Value{
         _0: 19,
     }
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(vec_literal__1450, t238)
-    var t239 Boxed__int = Value{
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(vec_literal__1450, t241)
+    var t242 Boxed__int = Value{
         _0: 23,
     }
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(vec_literal__1450, t239)
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(vec_literal__1450, t242)
     var boxed__19 *_goml_vec_Boxed__int = vec_literal__1450
-    var t240 First__int = First__int_Shared{
+    var t243 First__int = First__int_Shared{
         _0: 7,
-    }
-    var t241 string = classify(t240)
-    println__T_string(t241)
-    var t242 string = classify(Idle{})
-    println__T_string(t242)
-    var t243 First__int = Data{
-        _0: 9,
-        _1: "data",
     }
     var t244 string = classify(t243)
     println__T_string(t244)
-    var t245 Result__int__string = Ok{
-        _0: 11,
+    var t245 string = classify(Idle{})
+    println__T_string(t245)
+    var t246 First__int = Data{
+        _0: 9,
+        _1: "data",
     }
-    var t246 Option__Result__int__string = Option__Result__int__string_Some{
-        _0: t245,
-    }
-    var t247 string = nested(t246)
+    var t247 string = classify(t246)
     println__T_string(t247)
-    var t248 Result__int__string = Err{
-        _0: "bad",
+    var t248 Result__int__string = Ok{
+        _0: 11,
     }
     var t249 Option__Result__int__string = Option__Result__int__string_Some{
         _0: t248,
     }
     var t250 string = nested(t249)
     println__T_string(t250)
-    var t251 string = nested(Option__Result__int__string_None{})
-    println__T_string(t251)
-    var t252 Option__int = Option__int_Some{
+    var t251 Result__int__string = Err{
+        _0: "bad",
+    }
+    var t252 Option__Result__int__string = Option__Result__int__string_Some{
+        _0: t251,
+    }
+    var t253 string = nested(t252)
+    println__T_string(t253)
+    var t254 string = nested(Option__Result__int__string_None{})
+    println__T_string(t254)
+    var t255 Option__int = Option__int_Some{
         _0: 13,
     }
-    var t253 int = optional_number(t252)
-    println__T_int(t253)
-    var t254 int = optional_number(Option__int_None{})
-    println__T_int(t254)
-    var t255 bool = is_non_shared(Idle{})
-    println__T_bool(t255)
-    var t256 First__int = First__int_Shared{
+    var t256 int = optional_number(t255)
+    println__T_int(t256)
+    var t257 int = optional_number(Option__int_None{})
+    println__T_int(t257)
+    var t258 bool = is_non_shared(Idle{})
+    println__T_bool(t258)
+    var t259 First__int = First__int_Shared{
         _0: 1,
     }
-    var t257 bool = is_non_shared(t256)
-    println__T_bool(t257)
-    var t258 Option__int = Option__int_Some{
+    var t260 bool = is_non_shared(t259)
+    println__T_bool(t260)
+    var t261 Option__int = Option__int_Some{
         _0: 15,
     }
-    var t259 int = take_once(t258)
-    println__T_int(t259)
-    var t260 Boxed__int = Value{
+    var t262 int = take_once(t261)
+    println__T_int(t262)
+    var t263 Boxed__int = Value{
         _0: 17,
     }
-    var t261 int = unbox(t260)
-    println__T_int(t261)
-    var t262 int = sum_boxed(boxed__19)
-    println__T_int(t262)
+    var t264 int = unbox(t263)
+    println__T_int(t264)
+    var t265 int = sum_boxed(boxed__19)
+    println__T_int(t265)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int_i_int_i_to__string(self__5 int) string {
-    var retv265 string
-    var t266 string = _goml_runtime_core_int_to_string(self__5)
-    retv265 = t266
-    return retv265
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_int_r_(value__207 Option__int) *ref_Option__int_x {
-    var retv268 *ref_Option__int_x
-    var t269 *ref_Option__int_x = ref__Ref_11Option__int(value__207)
+    var retv268 string
+    var t269 string = _goml_runtime_core_int_to_string(self__5)
     retv268 = t269
     return retv268
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
-    var retv271 *ref_int_x
-    var t272 *ref_int_x = ref__Ref_3int(value__207)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_int_r_(value__207 Option__int) *ref_Option__int_x {
+    var retv271 *ref_Option__int_x
+    var t272 *ref_Option__int_x = ref__Ref_11Option__int(value__207)
     retv271 = t272
     return retv271
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_int_r_(self__208 *ref_Option__int_x) Option__int {
-    var retv274 Option__int
-    var t275 Option__int = ref_get__Ref_11Option__int(self__208)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__207 int) *ref_int_x {
+    var retv274 *ref_int_x
+    var t275 *ref_int_x = ref__Ref_3int(value__207)
     retv274 = t275
     return retv274
+}
+
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_int_r_(self__208 *ref_Option__int_x) Option__int {
+    var retv277 Option__int
+    var t278 Option__int = ref_get__Ref_11Option__int(self__208)
+    retv277 = t278
+    return retv277
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__209 *ref_int_x, value__210 int) struct{} {
@@ -445,17 +445,17 @@ func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_int_r_(self__209 *
 }
 
 func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__208 *ref_int_x) int {
-    var retv281 int
-    var t282 int = ref_get__Ref_3int(self__208)
-    retv281 = t282
-    return retv281
+    var retv284 int
+    var t285 int = ref_get__Ref_3int(self__208)
+    retv284 = t285
+    return retv284
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__Boxed_l_int_r_() *_goml_vec_Boxed__int {
-    var retv284 *_goml_vec_Boxed__int
-    var t285 *_goml_vec_Boxed__int = vec_new__Vec_10Boxed__int()
-    retv284 = t285
-    return retv284
+    var retv287 *_goml_vec_Boxed__int
+    var t288 *_goml_vec_Boxed__int = vec_new__Vec_10Boxed__int()
+    retv287 = t288
+    return retv287
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(self__126 *_goml_vec_Boxed__int, elem__127 Boxed__int) struct{} {
@@ -464,41 +464,41 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(self__126 *
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t289 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t289)
-    return struct{}{}
-}
-
-func println__T_int(value__1 int) struct{} {
-    var t292 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
+    var t292 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
     _goml_runtime_core_string_println(t292)
     return struct{}{}
 }
 
-func println__T_bool(value__1 bool) struct{} {
-    var t295 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__1)
+func println__T_int(value__1 int) struct{} {
+    var t295 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(value__1)
     _goml_runtime_core_string_println(t295)
     return struct{}{}
 }
 
+func println__T_bool(value__1 bool) struct{} {
+    var t298 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__1)
+    _goml_runtime_core_string_println(t298)
+    return struct{}{}
+}
+
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv298 string
-    retv298 = self__38
-    return retv298
+    var retv301 string
+    retv301 = self__38
+    return retv301
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
-    var retv300 string
-    var t301 string = _goml_runtime_core_int_to_string(self__40)
-    retv300 = t301
-    return retv300
+    var retv303 string
+    var t304 string = _goml_runtime_core_int_to_string(self__40)
+    retv303 = t304
+    return retv303
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var retv303 string
-    var t304 string = _goml_runtime_core_bool_to_string(self__37)
-    retv303 = t304
-    return retv303
+    var retv306 string
+    var t307 string = _goml_runtime_core_bool_to_string(self__37)
+    retv306 = t307
+    return retv306
 }
 
 func main() {

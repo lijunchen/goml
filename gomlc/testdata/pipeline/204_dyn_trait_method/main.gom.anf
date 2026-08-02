@@ -1,63 +1,63 @@
 fn trait_impl#Named#Point#name(self/0: Point) -> string {
-  join ret156(retv157: string) -> string {
-    retv157
+  join ret159(retv160: string) -> string {
+    retv160
   } in
-  jump ret156("point")
+  jump ret159("point")
 }
 
 fn trait_impl#Display#Point#show(self/1: Point, prefix/2: string) -> string {
-  join ret158(retv159: string) -> string {
-    retv159
+  join ret161(retv162: string) -> string {
+    retv162
   } in
-  let t160 = Point.value(self/1) in
-  let t161 = inherent#int32#int32#to_string(t160) in
-  let t162 = (prefix/2 + t161) in
-  jump ret158(t162)
+  let t163 = Point.value(self/1) in
+  let t164 = inherent#int32#int32#to_string(t163) in
+  let t165 = (prefix/2 + t164) in
+  jump ret161(t165)
 }
 
 fn render(value/3: dyn Display) -> unit {
-  join ret163() -> unit {
+  join ret166() -> unit {
     ()
   } in
-  let t164 = dyn_call[Display::show](value/3, "value=") in
-  let _wild152 = println__T_string(t164) in
-  let t165 = dyn_call[Display::name](value/3) in
-  let _wild153 = println__T_string(t165) in
-  let t166 = dyn_call[Display::show](value/3, "again=") in
-  let _wild154 = println__T_string(t166) in
-  jump ret163()
+  let t167 = dyn_call[Display::show](value/3, "value=") in
+  let _wild155 = println__T_string(t167) in
+  let t168 = dyn_call[Display::name](value/3) in
+  let _wild156 = println__T_string(t168) in
+  let t169 = dyn_call[Display::show](value/3, "again=") in
+  let _wild157 = println__T_string(t169) in
+  jump ret166()
 }
 
 fn main() -> unit {
-  join ret167() -> unit {
+  join ret170() -> unit {
     ()
   } in
-  let t168 = Point { value: 7 } in
-  let value/4 = to_dyn[Display]{Point}(t168) in
-  let _wild155 = render(value/4) in
-  jump ret167()
+  let t171 = Point { value: 7 } in
+  let value/4 = to_dyn[Display]{Point}(t171) in
+  let _wild158 = render(value/4) in
+  jump ret170()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret169(retv170: string) -> string {
-    retv170
+  join ret172(retv173: string) -> string {
+    retv173
   } in
-  let t171 = @runtime(core.int32_to_string)(self/6) in
-  jump ret169(t171)
+  let t174 = @runtime(core.int32_to_string)(self/6) in
+  jump ret172(t174)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret172() -> unit {
+  join ret175() -> unit {
     ()
   } in
-  let t173 = trait_impl#ToString#string#to_string(value/1) in
-  let t174 = @runtime(core.string_println)(t173) in
-  jump ret172()
+  let t176 = trait_impl#ToString#string#to_string(value/1) in
+  let t177 = @runtime(core.string_println)(t176) in
+  jump ret175()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret175(retv176: string) -> string {
-    retv176
+  join ret178(retv179: string) -> string {
+    retv179
   } in
-  jump ret175(self/38)
+  jump ret178(self/38)
 }

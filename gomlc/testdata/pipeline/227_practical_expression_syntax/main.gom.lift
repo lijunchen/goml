@@ -1,76 +1,76 @@
 fn record(log/0: Ref[string], label/1: string, value/2: int) -> int {
-  let _wild152 = inherent#Ref#Ref[T]#set__T_string(log/0, (inherent#Ref#Ref[T]#get__T_string(log/0) + label/1)) in
+  let _wild155 = inherent#Ref#Ref[T]#set__T_string(log/0, (inherent#Ref#Ref[T]#get__T_string(log/0) + label/1)) in
   value/2
 }
 
 fn record_point(log/3: Ref[string], label/4: string, value/5: Point) -> Point {
-  let _wild153 = inherent#Ref#Ref[T]#set__T_string(log/3, (inherent#Ref#Ref[T]#get__T_string(log/3) + label/4)) in
+  let _wild156 = inherent#Ref#Ref[T]#set__T_string(log/3, (inherent#Ref#Ref[T]#get__T_string(log/3) + label/4)) in
   value/5
 }
 
 fn record_vec(log/6: Ref[string], label/7: string, value/8: Vec[int]) -> Vec[int] {
-  let _wild154 = inherent#Ref#Ref[T]#set__T_string(log/6, (inherent#Ref#Ref[T]#get__T_string(log/6) + label/7)) in
+  let _wild157 = inherent#Ref#Ref[T]#set__T_string(log/6, (inherent#Ref#Ref[T]#get__T_string(log/6) + label/7)) in
   value/8
 }
 
 fn main() -> unit {
   let number/9 = 5 in
-  let _wild157 = let compound_old155 = number/9 in
-  let compound_value156 = 3 in
-  number/9 = (compound_old155 + compound_value156) in
   let _wild160 = let compound_old158 = number/9 in
-  let compound_value159 = 2 in
-  number/9 = (compound_old158 * compound_value159) in
+  let compound_value159 = 3 in
+  number/9 = (compound_old158 + compound_value159) in
   let _wild163 = let compound_old161 = number/9 in
-  let compound_value162 = 1 in
-  number/9 = (compound_old161 >> compound_value162) in
-  let _wild164 = @runtime(core.string_println)(inherent#int#int#to_string(number/9)) in
+  let compound_value162 = 2 in
+  number/9 = (compound_old161 * compound_value162) in
+  let _wild166 = let compound_old164 = number/9 in
+  let compound_value165 = 1 in
+  number/9 = (compound_old164 >> compound_value165) in
+  let _wild167 = @runtime(core.string_println)(inherent#int#int#to_string(number/9)) in
   let direct/10 = Point { x: 3, y: 4 } in
-  let _wild168 = let place_root165 = direct/10 in
-  let place166 = Point.x(place_root165) in
-  let value167 = 5 in
-  direct/10 = Point { x: (place166 + value167), y: Point.y(place_root165) } in
-  let _wild169 = @runtime(core.string_println)(((("" + inherent#int#int#to_string(Point.x(direct/10))) + ",") + inherent#int#int#to_string(Point.y(direct/10)))) in
+  let _wild171 = let place_root168 = direct/10 in
+  let place169 = Point.x(place_root168) in
+  let value170 = 5 in
+  direct/10 = Point { x: (place169 + value170), y: Point.y(place_root168) } in
+  let _wild172 = @runtime(core.string_println)(((("" + inherent#int#int#to_string(Point.x(direct/10))) + ",") + inherent#int#int#to_string(Point.y(direct/10)))) in
   let pair/11 = (2, 9) in
-  let _wild173 = let place_root170 = pair/11 in
-  let place171 = place_root170.0 in
-  let value172 = 3 in
-  pair/11 = ((place171 * value172), place_root170.1) in
-  let _wild174 = @runtime(core.string_println)(((("" + inherent#int#int#to_string(pair/11.0)) + ",") + inherent#int#int#to_string(pair/11.1))) in
+  let _wild176 = let place_root173 = pair/11 in
+  let place174 = place_root173.0 in
+  let value175 = 3 in
+  pair/11 = ((place174 * value175), place_root173.1) in
+  let _wild177 = @runtime(core.string_println)(((("" + inherent#int#int#to_string(pair/11.0)) + ",") + inherent#int#int#to_string(pair/11.1))) in
   let log/12 = inherent#Ref#Ref[T]#new__T_string("") in
   let base/13 = Point { x: 1, y: 2 } in
   let updated/14 = let struct_update_field/801/0 = record(log/12, "F", 7) in
   let struct_update_base/801 = record_point(log/12, "B", base/13) in
   Point { x: struct_update_field/801/0, y: Point.y(struct_update_base/801) } in
-  let _wild175 = @runtime(core.string_println)(inherent#Ref#Ref[T]#get__T_string(log/12)) in
-  let _wild176 = @runtime(core.string_println)(((("" + inherent#int#int#to_string(Point.x(updated/14))) + ",") + inherent#int#int#to_string(Point.y(updated/14)))) in
-  let _wild177 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
+  let _wild178 = @runtime(core.string_println)(inherent#Ref#Ref[T]#get__T_string(log/12)) in
+  let _wild179 = @runtime(core.string_println)(((("" + inherent#int#int#to_string(Point.x(updated/14))) + ",") + inherent#int#int#to_string(Point.y(updated/14)))) in
+  let _wild180 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
   let values/15 = let vec_literal/1002 = inherent#Vec#Vec[T]#new__T_int() in
-  let _wild178 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1002, record(log/12, "A", 10)) in
-  let _wild179 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1002, record(log/12, "B", 20)) in
+  let _wild181 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1002, record(log/12, "A", 10)) in
+  let _wild182 = inherent#Vec#Vec[T]#push__T_int(vec_literal/1002, record(log/12, "B", 20)) in
   vec_literal/1002 in
-  let _wild184 = let place_root180 = record_vec(log/12, "R", values/15) in
-  let index181 = record(log/12, "I", 1) in
-  let place182 = @intrinsic(vec.get)(place_root180, index181) in
-  let value183 = record(log/12, "V", 5) in
-  @intrinsic(vec.set)(place_root180, index181, (place182 + value183)) in
-  let _wild185 = @runtime(core.string_println)(inherent#Ref#Ref[T]#get__T_string(log/12)) in
-  let _wild186 = @runtime(core.string_println)(((("" + inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(values/15, 0))) + ",") + inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(values/15, 1)))) in
-  let _wild187 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
+  let _wild187 = let place_root183 = record_vec(log/12, "R", values/15) in
+  let index184 = record(log/12, "I", 1) in
+  let place185 = @intrinsic(vec.get)(place_root183, index184) in
+  let value186 = record(log/12, "V", 5) in
+  @intrinsic(vec.set)(place_root183, index184, (place185 + value186)) in
+  let _wild188 = @runtime(core.string_println)(inherent#Ref#Ref[T]#get__T_string(log/12)) in
+  let _wild189 = @runtime(core.string_println)(((("" + inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(values/15, 0))) + ",") + inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(values/15, 1)))) in
+  let _wild190 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
   let table/16 = let hashmap_literal/1275 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int() in
-  let _wild188 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int(hashmap_literal/1275, (("" + "k") + inherent#int#int#to_string(record(log/12, "K", 1))), record(log/12, "V", 11)) in
-  let _wild189 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int(hashmap_literal/1275, "same", record(log/12, "A", 1)) in
-  let _wild190 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int(hashmap_literal/1275, "same", record(log/12, "B", 2)) in
+  let _wild191 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int(hashmap_literal/1275, (("" + "k") + inherent#int#int#to_string(record(log/12, "K", 1))), record(log/12, "V", 11)) in
+  let _wild192 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int(hashmap_literal/1275, "same", record(log/12, "A", 1)) in
+  let _wild193 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int(hashmap_literal/1275, "same", record(log/12, "B", 2)) in
   hashmap_literal/1275 in
-  let _wild191 = @runtime(core.string_println)(inherent#Ref#Ref[T]#get__T_string(log/12)) in
-  let _wild194 = @runtime(core.string_println)(let mtmp192 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int(table/16, "same") in
-  match mtmp192 {
+  let _wild194 = @runtime(core.string_println)(inherent#Ref#Ref[T]#get__T_string(log/12)) in
+  let _wild197 = @runtime(core.string_println)(let mtmp195 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int(table/16, "same") in
+  match mtmp195 {
     Option__int::None => {
       "missing"
     },
-    Option__int::Some(x193) => {
-      let x193 = Option__int::Some._0(mtmp192) in
-      let value/17 = x193 in
+    Option__int::Some(x196) => {
+      let x196 = Option__int::Some._0(mtmp195) in
+      let value/17 = x196 in
       inherent#int#int#to_string(value/17)
     },
   }) in
@@ -78,7 +78,7 @@ fn main() -> unit {
   vec_literal/1633 in
   let empty_table/19 = let hashmap_literal/1686 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int() in
   hashmap_literal/1686 in
-  let _wild195 = @runtime(core.string_println)(((("" + "empty=") + inherent#int#int#to_string((inherent#Vec#Vec[T]#len__T_int(empty_values/18) + inherent#HashMap#HashMap[K,V]#len__K_string__V_int(empty_table/19)))) + " {ok}")) in
+  let _wild198 = @runtime(core.string_println)(((("" + "empty=") + inherent#int#int#to_string((inherent#Vec#Vec[T]#len__T_int(empty_values/18) + inherent#HashMap#HashMap[K,V]#len__K_string__V_int(empty_table/19)))) + " {ok}")) in
   ()
 }
 

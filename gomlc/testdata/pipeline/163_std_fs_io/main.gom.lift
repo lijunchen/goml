@@ -288,14 +288,14 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
 
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
-    Result__string__string::Ok(x152) => {
-      let x152 = Result__string__string::Ok._0(res/0) in
-      let value/1 = x152 in
+    Result__string__string::Ok(x155) => {
+      let x155 = Result__string__string::Ok._0(res/0) in
+      let value/1 = x155 in
       value/1
     },
-    Result__string__string::Err(x153) => {
-      let x153 = Result__string__string::Err._0(res/0) in
-      let err/2 = x153 in
+    Result__string__string::Err(x156) => {
+      let x156 = Result__string__string::Err._0(res/0) in
+      let err/2 = x156 in
       ("err " + err/2)
     },
   }
@@ -303,24 +303,24 @@ fn show_read(res/0: Result__string__string) -> string {
 
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
   match res/3 {
-    Result__Vec[string]__string::Ok(x154) => {
-      let x154 = Result__Vec[string]__string::Ok._0(res/3) in
-      let names/4 = x154 in
+    Result__Vec[string]__string::Ok(x157) => {
+      let x157 = Result__Vec[string]__string::Ok._0(res/3) in
+      let names/4 = x157 in
       trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(names/4) > 0))
     },
-    Result__Vec[string]__string::Err(x155) => {
-      let x155 = Result__Vec[string]__string::Err._0(res/3) in
-      let err/5 = x155 in
+    Result__Vec[string]__string::Err(x158) => {
+      let x158 = Result__Vec[string]__string::Err._0(res/3) in
+      let err/5 = x158 in
       ("err " + err/5)
     },
   }
 }
 
 fn main() -> unit {
-  let mtmp156 = std::fs::write_file("goml-std-test.txt", "std-ok") in
-  let _wild157 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
-  let _wild158 = std::io::println__T_string(trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))) in
-  let _wild159 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
+  let mtmp159 = std::fs::write_file("goml-std-test.txt", "std-ok") in
+  let _wild160 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
+  let _wild161 = std::io::println__T_string(trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))) in
+  let _wild162 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
   ()
 }
 

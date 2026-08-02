@@ -37,60 +37,60 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var retv155 string
-    var t156 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    retv155 = t156
-    return retv155
+    var retv158 string
+    var t159 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
+    retv158 = t159
+    return retv158
 }
 
 func main0() struct{} {
     var value__3 int32 = 42
     var f__4 func() string = mk_renderer__T_int32(value__3)
-    var t158 string = f__4()
-    println__T_string(t158)
+    var t161 string = f__4()
+    println__T_string(t161)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var retv160 string
-    var t161 string = _goml_runtime_core_int32_to_string(self__6)
-    retv160 = t161
-    return retv160
+    var retv163 string
+    var t164 string = _goml_runtime_core_int32_to_string(self__6)
+    retv163 = t164
+    return retv163
 }
 
 func mk_renderer__T_int32(x__1 int32) func() string {
-    var retv163 func() string
+    var retv166 func() string
     var d__2 dyn__Display = dyn__Display{
         data: int32(x__1),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t164 closure_env_mk_renderer_T_int32_0 = closure_env_mk_renderer_T_int32_0{
+    var t167 closure_env_mk_renderer_T_int32_0 = closure_env_mk_renderer_T_int32_0{
         d_0: d__2,
     }
-    retv163 = func() string {
-        return _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(t164)
+    retv166 = func() string {
+        return _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(t167)
     }
-    return retv163
+    return retv166
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t166 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t166)
+    var t169 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t169)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv169 string
-    retv169 = self__38
-    return retv169
+    var retv172 string
+    retv172 = self__38
+    return retv172
 }
 
-func _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(env153 closure_env_mk_renderer_T_int32_0) string {
-    var retv171 string
-    var d__2 dyn__Display = env153.d_0
-    var t172 string = d__2.vtable.show(d__2.data)
-    retv171 = t172
-    return retv171
+func _goml_m_inherent_i_closure__en_hdbe3b8bac53e729aca2514d7798cc493_nt32__0_i_apply(env156 closure_env_mk_renderer_T_int32_0) string {
+    var retv174 string
+    var d__2 dyn__Display = env156.d_0
+    var t175 string = d__2.vtable.show(d__2.data)
+    retv174 = t175
+    return retv174
 }
 
 func main() {

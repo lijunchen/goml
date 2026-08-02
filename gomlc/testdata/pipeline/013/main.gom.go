@@ -22,21 +22,21 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t156 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t156)
+    var t159 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t159)
     return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t159 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
-    _goml_runtime_core_string_print(t159)
+    var t162 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t162)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv162 string
-    retv162 = self__38
-    return retv162
+    var retv165 string
+    retv165 = self__38
+    return retv165
 }
 
 func main() {

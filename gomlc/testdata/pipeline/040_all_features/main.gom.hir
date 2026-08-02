@@ -5,22 +5,22 @@ file main.gom
         count: Ref[int32],
         toggled: Ref[bool],
     }
-    
+
     enum Record[T] {
         Value(T),
         Pair(T, T),
         Empty
     }
-    
+
     enum Maybe[T] {
         Some(T),
         None
     }
-    
+
     trait Describe {
       fn describe(Self) -> string;
     }
-    
+
     impl Describe for Tracker {
       fn describe(local/1/0: Tracker) -> string {
           let Tracker { label: local/1/1, count: local/1/2, toggled: local/1/3 } = self/0;
@@ -33,7 +33,7 @@ file main.gom
           with_flag_label/9 + flag/5.to_string() + ")"
       }
     }
-    
+
     impl Describe for Record[int32] {
       fn describe(local/1/10: Record[int32]) -> string {
           match self/10 {
@@ -46,7 +46,7 @@ file main.gom
           }
       }
     }
-    
+
     impl Describe for Record[string] {
       fn describe(local/1/15: Record[string]) -> string {
           match self/15 {
@@ -59,7 +59,7 @@ file main.gom
           }
       }
     }
-    
+
     fn choose[T](local/1/20: bool, local/1/21: T, local/1/22: T) -> T {
         if flag/20 {
             when_true/21
@@ -67,31 +67,31 @@ file main.gom
             when_false/22
         }
     }
-    
+
     fn map_maybe[T, U](local/1/23: Maybe[T], local/1/24: (T) -> U) -> Maybe[U] {
         match value/23 {
             Some(local/1/25) => ctor(def/1/2::v0)(f/24(inner/25)),
             None => ctor(def/1/2::v1),
         }
     }
-    
+
     fn format_total(local/1/26: int32) -> string {
         "total: " + total/26.to_string()
     }
-    
+
     fn increment(local/1/27: int32) -> int32 {
         value/27 + 1
     }
-    
+
     fn triple(local/1/28: int32) -> int32 {
         value/28 * 3
     }
-    
+
     fn pair_join(local/1/29: (string, string)) -> string {
         let (local/1/30, local/1/31) = parts/29;
         left/30 + " -> " + right/31
     }
-    
+
     fn run_transforms(local/1/32: int32, local/1/33: [(int32) -> int32; 2]) -> [int32; 2] {
         let local/1/34 = transforms/33[0];
         let local/1/35 = transforms/33[1];
@@ -101,7 +101,7 @@ file main.gom
         results/38[1] = second_result/37;
         results/38
     }
-    
+
     fn gather(local/1/39: Record[int32]) -> Maybe[int32] {
         match record/39 {
             Value(local/1/40) => ctor(def/1/2::v0)(value/40),
@@ -109,7 +109,7 @@ file main.gom
             Empty => ctor(def/1/2::v1),
         }
     }
-    
+
     fn build_counter(local/1/42: string, local/1/43: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
         let local/1/44 = Ref::new(start/43);
         let local/1/45 = Ref::new(false);
@@ -134,7 +134,7 @@ file main.gom
         };
         (tracker/46, snapshot/47, bump/50, flip/53)
     }
-    
+
     fn main() {
         let (local/1/54, local/1/55, local/1/56, local/1/57) = def/1/15("goml", 2);
         let local/1/58 = Describe::describe(tracker/54);

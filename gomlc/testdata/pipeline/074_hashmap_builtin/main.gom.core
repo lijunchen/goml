@@ -1357,120 +1357,150 @@ fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](self/276: Result[T, E], fall
   }
 }
 
-fn inherent#Option#Option[T]#map[T, U](self/280: Option[T], map_fn/281: (T) -> U) -> Option[U] {
-  match self/280 {
+fn __goml_builtin_range_inclusive(start/280: int, end/281: int) -> FnIterator[int] {
+  let current/282 = @intrinsic(ref.new)(start/280) in
+  let finished/283 = @intrinsic(ref.new)(false) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    if if @intrinsic(ref.get)(finished/283) {
+        true
+    } else {
+        (@intrinsic(ref.get)(current/282) > end/281)
+    } {
+        {
+          Option::None
+        }
+    } else {
+        {
+          let value/284 = @intrinsic(ref.get)(current/282) in
+          let _wild145 = if trait_impl#Eq#int#eq(value/284, end/281) {
+              {
+                let _wild143 = @intrinsic(ref.set)(finished/283, true) in
+              }
+          } else {
+              {
+                let _wild144 = @intrinsic(ref.set)(current/282, (value/284 + 1)) in
+              }
+          } in
+          Option::Some(value/284)
+        }
+    }
+  })
+}
+
+fn inherent#Option#Option[T]#map[T, U](self/285: Option[T], map_fn/286: (T) -> U) -> Option[U] {
+  match self/285 {
     Option::None => {
       Option::None
     },
-    Option::Some(x143) => {
+    Option::Some(x146) => {
       {
-        let x143 = Option::Some._0(self/280) in
+        let x146 = Option::Some._0(self/285) in
         {
-          let value/282 = x143 in
-          Option::Some(map_fn/281(value/282))
+          let value/287 = x146 in
+          Option::Some(map_fn/286(value/287))
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#and_then[T, U](self/283: Option[T], next/284: (T) -> Option[U]) -> Option[U] {
-  match self/283 {
+fn inherent#Option#Option[T]#and_then[T, U](self/288: Option[T], next/289: (T) -> Option[U]) -> Option[U] {
+  match self/288 {
     Option::None => {
       Option::None
     },
-    Option::Some(x144) => {
+    Option::Some(x147) => {
       {
-        let x144 = Option::Some._0(self/283) in
+        let x147 = Option::Some._0(self/288) in
         {
-          let value/285 = x144 in
-          next/284(value/285)
+          let value/290 = x147 in
+          next/289(value/290)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> Result[T, E] {
-  match self/286 {
+fn inherent#Option#Option[T]#ok_or[T, E](self/291: Option[T], error/292: E) -> Result[T, E] {
+  match self/291 {
     Option::None => {
-      Result::Err(error/287)
+      Result::Err(error/292)
     },
-    Option::Some(x145) => {
+    Option::Some(x148) => {
       {
-        let x145 = Option::Some._0(self/286) in
+        let x148 = Option::Some._0(self/291) in
         {
-          let value/288 = x145 in
-          Result::Ok(value/288)
+          let value/293 = x148 in
+          Result::Ok(value/293)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
-  match self/289 {
-    Result::Ok(x146) => {
+fn inherent#Result#Result[T,E]#map[T, E, U](self/294: Result[T, E], map_fn/295: (T) -> U) -> Result[U, E] {
+  match self/294 {
+    Result::Ok(x149) => {
       {
-        let x146 = Result::Ok._0(self/289) in
+        let x149 = Result::Ok._0(self/294) in
         {
-          let value/291 = x146 in
-          Result::Ok(map_fn/290(value/291))
+          let value/296 = x149 in
+          Result::Ok(map_fn/295(value/296))
         }
       }
     },
-    Result::Err(x147) => {
+    Result::Err(x150) => {
       {
-        let x147 = Result::Err._0(self/289) in
+        let x150 = Result::Err._0(self/294) in
         {
-          let error/292 = x147 in
-          Result::Err(error/292)
-        }
-      }
-    },
-  }
-}
-
-fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
-  match self/293 {
-    Result::Ok(x148) => {
-      {
-        let x148 = Result::Ok._0(self/293) in
-        {
-          let value/295 = x148 in
-          Result::Ok(value/295)
-        }
-      }
-    },
-    Result::Err(x149) => {
-      {
-        let x149 = Result::Err._0(self/293) in
-        {
-          let error/296 = x149 in
-          Result::Err(map_fn/294(error/296))
+          let error/297 = x150 in
+          Result::Err(error/297)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
-  match self/297 {
-    Result::Ok(x150) => {
+fn inherent#Result#Result[T,E]#map_err[T, E, F](self/298: Result[T, E], map_fn/299: (E) -> F) -> Result[T, F] {
+  match self/298 {
+    Result::Ok(x151) => {
       {
-        let x150 = Result::Ok._0(self/297) in
+        let x151 = Result::Ok._0(self/298) in
         {
-          let value/299 = x150 in
-          next/298(value/299)
+          let value/300 = x151 in
+          Result::Ok(value/300)
         }
       }
     },
-    Result::Err(x151) => {
+    Result::Err(x152) => {
       {
-        let x151 = Result::Err._0(self/297) in
+        let x152 = Result::Err._0(self/298) in
         {
-          let error/300 = x151 in
-          Result::Err(error/300)
+          let error/301 = x152 in
+          Result::Err(map_fn/299(error/301))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#and_then[T, E, U](self/302: Result[T, E], next/303: (T) -> Result[U, E]) -> Result[U, E] {
+  match self/302 {
+    Result::Ok(x153) => {
+      {
+        let x153 = Result::Ok._0(self/302) in
+        {
+          let value/304 = x153 in
+          next/303(value/304)
+        }
+      }
+    },
+    Result::Err(x154) => {
+      {
+        let x154 = Result::Err._0(self/302) in
+        {
+          let error/305 = x154 in
+          Result::Err(error/305)
         }
       }
     },
@@ -1498,30 +1528,30 @@ fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
 
 fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
   {
-    let mtmp152 = (self/6, other/7) in
+    let mtmp155 = (self/6, other/7) in
     {
-      let x153 = mtmp152.0 in
-      let x154 = mtmp152.1 in
-      match x154 {
+      let x156 = mtmp155.0 in
+      let x157 = mtmp155.1 in
+      match x157 {
         Key::A => {
-          match x153 {
+          match x156 {
             Key::A => {
               true
             },
             _ => false,
           }
         },
-        Key::B(x155) => {
+        Key::B(x158) => {
           {
-            let x155 = Key::B._0(x154) in
-            match x153 {
-              Key::B(x159) => {
+            let x158 = Key::B._0(x157) in
+            match x156 {
+              Key::B(x162) => {
                 {
-                  let x159 = Key::B._0(x153) in
+                  let x162 = Key::B._0(x156) in
                   {
-                    let __l1_0/8 = x159 in
+                    let __l1_0/8 = x162 in
                     {
-                      let __r1_0/9 = x155 in
+                      let __r1_0/9 = x158 in
                       if true {
                           trait_call[Eq::eq](__l1_0/8, __r1_0/9)
                       } else {
@@ -1535,17 +1565,17 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
             }
           }
         },
-        Key::P(x156) => {
+        Key::P(x159) => {
           {
-            let x156 = Key::P._0(x154) in
-            match x153 {
-              Key::P(x162) => {
+            let x159 = Key::P._0(x157) in
+            match x156 {
+              Key::P(x165) => {
                 {
-                  let x162 = Key::P._0(x153) in
+                  let x165 = Key::P._0(x156) in
                   {
-                    let __l2_0/10 = x162 in
+                    let __l2_0/10 = x165 in
                     {
-                      let __r2_0/11 = x156 in
+                      let __r2_0/11 = x159 in
                       if true {
                           trait_call[Eq::eq](__l2_0/10, __r2_0/11)
                       } else {
@@ -1572,11 +1602,11 @@ fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
         h/13
       }
     },
-    Key::B(x163) => {
+    Key::B(x166) => {
       {
-        let x163 = Key::B._0(self/12) in
+        let x166 = Key::B._0(self/12) in
         {
-          let __field1_0/14 = x163 in
+          let __field1_0/14 = x166 in
           {
             let h/15 = (14695981039346656037 + 2) in
             let h/16 = ((h/15 * 1099511628211) + trait_call[Hash::hash](__field1_0/14)) in
@@ -1585,11 +1615,11 @@ fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
         }
       }
     },
-    Key::P(x164) => {
+    Key::P(x167) => {
       {
-        let x164 = Key::P._0(self/12) in
+        let x167 = Key::P._0(self/12) in
         {
-          let __field2_0/17 = x164 in
+          let __field2_0/17 = x167 in
           {
             let h/18 = (14695981039346656037 + 3) in
             let h/19 = ((h/18 * 1099511628211) + trait_call[Hash::hash](__field2_0/17)) in
@@ -1606,11 +1636,11 @@ fn print_opt_int(x/20: Option[int32]) -> unit {
     Option::None => {
       println("none")
     },
-    Option::Some(x165) => {
+    Option::Some(x168) => {
       {
-        let x165 = Option::Some._0(x/20) in
+        let x168 = Option::Some._0(x/20) in
         {
-          let v/21 = x165 in
+          let v/21 = x168 in
           println(v/21)
         }
       }
@@ -1620,26 +1650,26 @@ fn print_opt_int(x/20: Option[int32]) -> unit {
 
 fn main() -> unit {
   let m1/22 = inherent#HashMap#HashMap[Key,int32]#new() in
-  let _wild166 = inherent#HashMap#HashMap[Key,int32]#set(m1/22, Key::A, 10) in
-  let _wild167 = inherent#HashMap#HashMap[Key,int32]#set(m1/22, Key::B(1), 20) in
-  let _wild168 = println(inherent#HashMap#HashMap[Key,int32]#len(m1/22)) in
-  let _wild169 = print_opt_int(inherent#HashMap#HashMap[Key,int32]#get(m1/22, Key::A)) in
-  let _wild170 = println(inherent#HashMap#HashMap[Key,int32]#contains(m1/22, Key::B(1))) in
-  let _wild171 = inherent#HashMap#HashMap[Key,int32]#remove(m1/22, Key::B(1)) in
-  let _wild172 = println(inherent#HashMap#HashMap[Key,int32]#contains(m1/22, Key::B(1))) in
-  let _wild173 = println(inherent#HashMap#HashMap[Key,int32]#len(m1/22)) in
+  let _wild169 = inherent#HashMap#HashMap[Key,int32]#set(m1/22, Key::A, 10) in
+  let _wild170 = inherent#HashMap#HashMap[Key,int32]#set(m1/22, Key::B(1), 20) in
+  let _wild171 = println(inherent#HashMap#HashMap[Key,int32]#len(m1/22)) in
+  let _wild172 = print_opt_int(inherent#HashMap#HashMap[Key,int32]#get(m1/22, Key::A)) in
+  let _wild173 = println(inherent#HashMap#HashMap[Key,int32]#contains(m1/22, Key::B(1))) in
+  let _wild174 = inherent#HashMap#HashMap[Key,int32]#remove(m1/22, Key::B(1)) in
+  let _wild175 = println(inherent#HashMap#HashMap[Key,int32]#contains(m1/22, Key::B(1))) in
+  let _wild176 = println(inherent#HashMap#HashMap[Key,int32]#len(m1/22)) in
   let m2/23 = inherent#HashMap#HashMap[Ref[Point],int32]#new() in
   let p1/24 = inherent#Ref#Ref[Point]#new(Point { x: 1, y: 2 }) in
   let p2/25 = inherent#Ref#Ref[Point]#new(Point { x: 1, y: 2 }) in
-  let _wild174 = inherent#HashMap#HashMap[Ref[Point],int32]#set(m2/23, p1/24, 99) in
-  let _wild175 = print_opt_int(inherent#HashMap#HashMap[Ref[Point],int32]#get(m2/23, p1/24)) in
-  let _wild176 = print_opt_int(inherent#HashMap#HashMap[Ref[Point],int32]#get(m2/23, p2/25)) in
-  let _wild177 = inherent#Ref#Ref[Point]#set(p1/24, Point { x: 9, y: 8 }) in
+  let _wild177 = inherent#HashMap#HashMap[Ref[Point],int32]#set(m2/23, p1/24, 99) in
   let _wild178 = print_opt_int(inherent#HashMap#HashMap[Ref[Point],int32]#get(m2/23, p1/24)) in
-  let _wild179 = println(trait_call[Eq::eq](p1/24, p2/25)) in
+  let _wild179 = print_opt_int(inherent#HashMap#HashMap[Ref[Point],int32]#get(m2/23, p2/25)) in
+  let _wild180 = inherent#Ref#Ref[Point]#set(p1/24, Point { x: 9, y: 8 }) in
+  let _wild181 = print_opt_int(inherent#HashMap#HashMap[Ref[Point],int32]#get(m2/23, p1/24)) in
+  let _wild182 = println(trait_call[Eq::eq](p1/24, p2/25)) in
   let m3/26 = inherent#HashMap#HashMap[Ref[Key],int32]#new() in
   let k1/27 = inherent#Ref#Ref[Key]#new(Key::B(7)) in
   let k2/28 = k1/27 in
-  let _wild180 = inherent#HashMap#HashMap[Ref[Key],int32]#set(m3/26, k1/27, 123) in
-  let _wild181 = print_opt_int(inherent#HashMap#HashMap[Ref[Key],int32]#get(m3/26, k2/28)) in
+  let _wild183 = inherent#HashMap#HashMap[Ref[Key],int32]#set(m3/26, k1/27, 123) in
+  let _wild184 = print_opt_int(inherent#HashMap#HashMap[Ref[Key],int32]#get(m3/26, k2/28)) in
 }

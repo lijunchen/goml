@@ -1357,120 +1357,150 @@ fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](self/276: Result[T, E], fall
   }
 }
 
-fn inherent#Option#Option[T]#map[T, U](self/280: Option[T], map_fn/281: (T) -> U) -> Option[U] {
-  match self/280 {
+fn __goml_builtin_range_inclusive(start/280: int, end/281: int) -> FnIterator[int] {
+  let current/282 = @intrinsic(ref.new)(start/280) in
+  let finished/283 = @intrinsic(ref.new)(false) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    if if @intrinsic(ref.get)(finished/283) {
+        true
+    } else {
+        (@intrinsic(ref.get)(current/282) > end/281)
+    } {
+        {
+          Option::None
+        }
+    } else {
+        {
+          let value/284 = @intrinsic(ref.get)(current/282) in
+          let _wild145 = if trait_impl#Eq#int#eq(value/284, end/281) {
+              {
+                let _wild143 = @intrinsic(ref.set)(finished/283, true) in
+              }
+          } else {
+              {
+                let _wild144 = @intrinsic(ref.set)(current/282, (value/284 + 1)) in
+              }
+          } in
+          Option::Some(value/284)
+        }
+    }
+  })
+}
+
+fn inherent#Option#Option[T]#map[T, U](self/285: Option[T], map_fn/286: (T) -> U) -> Option[U] {
+  match self/285 {
     Option::None => {
       Option::None
     },
-    Option::Some(x143) => {
+    Option::Some(x146) => {
       {
-        let x143 = Option::Some._0(self/280) in
+        let x146 = Option::Some._0(self/285) in
         {
-          let value/282 = x143 in
-          Option::Some(map_fn/281(value/282))
+          let value/287 = x146 in
+          Option::Some(map_fn/286(value/287))
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#and_then[T, U](self/283: Option[T], next/284: (T) -> Option[U]) -> Option[U] {
-  match self/283 {
+fn inherent#Option#Option[T]#and_then[T, U](self/288: Option[T], next/289: (T) -> Option[U]) -> Option[U] {
+  match self/288 {
     Option::None => {
       Option::None
     },
-    Option::Some(x144) => {
+    Option::Some(x147) => {
       {
-        let x144 = Option::Some._0(self/283) in
+        let x147 = Option::Some._0(self/288) in
         {
-          let value/285 = x144 in
-          next/284(value/285)
+          let value/290 = x147 in
+          next/289(value/290)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> Result[T, E] {
-  match self/286 {
+fn inherent#Option#Option[T]#ok_or[T, E](self/291: Option[T], error/292: E) -> Result[T, E] {
+  match self/291 {
     Option::None => {
-      Result::Err(error/287)
+      Result::Err(error/292)
     },
-    Option::Some(x145) => {
+    Option::Some(x148) => {
       {
-        let x145 = Option::Some._0(self/286) in
+        let x148 = Option::Some._0(self/291) in
         {
-          let value/288 = x145 in
-          Result::Ok(value/288)
+          let value/293 = x148 in
+          Result::Ok(value/293)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
-  match self/289 {
-    Result::Ok(x146) => {
+fn inherent#Result#Result[T,E]#map[T, E, U](self/294: Result[T, E], map_fn/295: (T) -> U) -> Result[U, E] {
+  match self/294 {
+    Result::Ok(x149) => {
       {
-        let x146 = Result::Ok._0(self/289) in
+        let x149 = Result::Ok._0(self/294) in
         {
-          let value/291 = x146 in
-          Result::Ok(map_fn/290(value/291))
+          let value/296 = x149 in
+          Result::Ok(map_fn/295(value/296))
         }
       }
     },
-    Result::Err(x147) => {
+    Result::Err(x150) => {
       {
-        let x147 = Result::Err._0(self/289) in
+        let x150 = Result::Err._0(self/294) in
         {
-          let error/292 = x147 in
-          Result::Err(error/292)
-        }
-      }
-    },
-  }
-}
-
-fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
-  match self/293 {
-    Result::Ok(x148) => {
-      {
-        let x148 = Result::Ok._0(self/293) in
-        {
-          let value/295 = x148 in
-          Result::Ok(value/295)
-        }
-      }
-    },
-    Result::Err(x149) => {
-      {
-        let x149 = Result::Err._0(self/293) in
-        {
-          let error/296 = x149 in
-          Result::Err(map_fn/294(error/296))
+          let error/297 = x150 in
+          Result::Err(error/297)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
-  match self/297 {
-    Result::Ok(x150) => {
+fn inherent#Result#Result[T,E]#map_err[T, E, F](self/298: Result[T, E], map_fn/299: (E) -> F) -> Result[T, F] {
+  match self/298 {
+    Result::Ok(x151) => {
       {
-        let x150 = Result::Ok._0(self/297) in
+        let x151 = Result::Ok._0(self/298) in
         {
-          let value/299 = x150 in
-          next/298(value/299)
+          let value/300 = x151 in
+          Result::Ok(value/300)
         }
       }
     },
-    Result::Err(x151) => {
+    Result::Err(x152) => {
       {
-        let x151 = Result::Err._0(self/297) in
+        let x152 = Result::Err._0(self/298) in
         {
-          let error/300 = x151 in
-          Result::Err(error/300)
+          let error/301 = x152 in
+          Result::Err(map_fn/299(error/301))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#and_then[T, E, U](self/302: Result[T, E], next/303: (T) -> Result[U, E]) -> Result[U, E] {
+  match self/302 {
+    Result::Ok(x153) => {
+      {
+        let x153 = Result::Ok._0(self/302) in
+        {
+          let value/304 = x153 in
+          next/303(value/304)
+        }
+      }
+    },
+    Result::Err(x154) => {
+      {
+        let x154 = Result::Err._0(self/302) in
+        {
+          let error/305 = x154 in
+          Result::Err(error/305)
         }
       }
     },
@@ -1501,7 +1531,7 @@ fn trait_impl#Iterator#Counter#next(self/6: Counter) -> Option[int32] {
   let current/7 = inherent#Ref#Ref[int32]#get(Counter.current(self/6)) in
   if (current/7 < Counter.end(self/6)) {
       {
-        let _wild152 = inherent#Ref#Ref[int32]#set(Counter.current(self/6), (current/7 + 1)) in
+        let _wild155 = inherent#Ref#Ref[int32]#set(Counter.current(self/6), (current/7 + 1)) in
         Option::Some(current/7)
       }
   } else {
@@ -1512,32 +1542,32 @@ fn trait_impl#Iterator#Counter#next(self/6: Counter) -> Option[int32] {
 }
 
 fn main() -> unit {
-  let _wild153 = println(trait_call[Convert[int32]::convert](Token {})) in
-  let _wild154 = println(trait_call[Convert[string]::convert](Token {})) in
+  let _wild156 = println(trait_call[Convert[int32]::convert](Token {})) in
+  let _wild157 = println(trait_call[Convert[string]::convert](Token {})) in
   let converted/8 = convert_to(Token {}) in
-  let _wild155 = println(converted/8) in
-  let _wild156 = println(trait_call[Marker[int32]::marker](Any {})) in
-  let _wild157 = println(trait_call[Marker[string]::marker](Any {})) in
-  let _wild158 = println(trait_call[Marker[Vec[int32]]::marker](Any {})) in
+  let _wild158 = println(converted/8) in
+  let _wild159 = println(trait_call[Marker[int32]::marker](Any {})) in
+  let _wild160 = println(trait_call[Marker[string]::marker](Any {})) in
+  let _wild161 = println(trait_call[Marker[Vec[int32]]::marker](Any {})) in
   let mapped/10 = iterator_map(inherent#Counter#Counter#new(0, 8), |value/9: int32| => (value/9 * 2)) in
   let filtered/12 = iterator_filter(mapped/10, |value/11: int32| => (value/11 > 4)) in
   let limited/13 = iterator_take(filtered/12, 3) in
-  let _wild163 = {
-    let for_iter159 = trait_call[IntoIterator::into_iter](limited/13) in
+  let _wild166 = {
+    let for_iter162 = trait_call[IntoIterator::into_iter](limited/13) in
     while true {
         {
-          let for_next160 = trait_call[Iterator::next](for_iter159) in
-          match for_next160 {
+          let for_next163 = trait_call[Iterator::next](for_iter162) in
+          match for_next163 {
             Option::None => {
               break
             },
-            Option::Some(x161) => {
+            Option::Some(x164) => {
               {
-                let x161 = Option::Some._0(for_next160) in
+                let x164 = Option::Some._0(for_next163) in
                 {
-                  let value/14 = x161 in
+                  let value/14 = x164 in
                   {
-                    let _wild162 = println(value/14) in
+                    let _wild165 = println(value/14) in
                   }
                 }
               }
@@ -1549,20 +1579,20 @@ fn main() -> unit {
   let sum/17 = iterator_fold(range(1, 5), 0, |total/15: int, value/16: int| => {
     (total/15 + value/16)
   }) in
-  let _wild164 = println(sum/17) in
+  let _wild167 = println(sum/17) in
   let texts/19 = iterator_collect(iterator_map(range(1, 4), |value/18: int| => ("v" + inherent#int#int#to_string(value/18)))) in
-  let _wild171 = {
-    let for_source165 = texts/19 in
-    let for_limit166 = @intrinsic(vec.len)(for_source165) in
-    let for_index167 = 0 in
-    while (for_index167 < for_limit166) {
+  let _wild174 = {
+    let for_source168 = texts/19 in
+    let for_limit169 = @intrinsic(vec.len)(for_source168) in
+    let for_index170 = 0 in
+    while (for_index170 < for_limit169) {
         {
-          let for_item168 = @intrinsic(vec.get)(for_source165, for_index167) in
-          let _wild169 = for_index167 = (for_index167 + 1) in
+          let for_item171 = @intrinsic(vec.get)(for_source168, for_index170) in
+          let _wild172 = for_index170 = (for_index170 + 1) in
           {
-            let text/20 = for_item168 in
+            let text/20 = for_item171 in
             {
-              let _wild170 = println(text/20) in
+              let _wild173 = println(text/20) in
             }
           }
         }

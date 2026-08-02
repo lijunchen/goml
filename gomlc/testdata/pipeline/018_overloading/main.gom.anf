@@ -1,103 +1,103 @@
 fn trait_impl#Arith#int32#add(self/0: int32, other/1: int32) -> int32 {
-  join ret156(retv157: int32) -> int32 {
-    retv157
-  } in
-  let t158 = (self/0 + other/1) in
-  jump ret156(t158)
-}
-
-fn trait_impl#Arith#int32#less(self/2: int32, other/3: int32) -> bool {
-  join ret159(retv160: bool) -> bool {
+  join ret159(retv160: int32) -> int32 {
     retv160
   } in
-  let t161 = (self/2 < other/3) in
+  let t161 = (self/0 + other/1) in
   jump ret159(t161)
 }
 
-fn trait_impl#Output#int32#output(self/4: int32) -> unit {
-  join ret162() -> unit {
-    ()
+fn trait_impl#Arith#int32#less(self/2: int32, other/3: int32) -> bool {
+  join ret162(retv163: bool) -> bool {
+    retv163
   } in
-  let t163 = trait_impl#ToString#int32#to_string(self/4) in
-  let t164 = println__T_string(t163) in
-  jump ret162()
+  let t164 = (self/2 < other/3) in
+  jump ret162(t164)
 }
 
-fn trait_impl#Output#bool#output(self/5: bool) -> unit {
+fn trait_impl#Output#int32#output(self/4: int32) -> unit {
   join ret165() -> unit {
     ()
   } in
-  let t166 = trait_impl#ToString#bool#to_string(self/5) in
+  let t166 = trait_impl#ToString#int32#to_string(self/4) in
   let t167 = println__T_string(t166) in
   jump ret165()
 }
 
-fn main() -> unit {
+fn trait_impl#Output#bool#output(self/5: bool) -> unit {
   join ret168() -> unit {
+    ()
+  } in
+  let t169 = trait_impl#ToString#bool#to_string(self/5) in
+  let t170 = println__T_string(t169) in
+  jump ret168()
+}
+
+fn main() -> unit {
+  join ret171() -> unit {
     ()
   } in
   let a/7 = id__T_int32(1) in
   let b/8 = id__T_int32(2) in
   let c/9 = trait_impl#Arith#int32#add(a/7, b/8) in
-  let mtmp152 = trait_impl#Output#int32#output(c/9) in
+  let mtmp155 = trait_impl#Output#int32#output(c/9) in
   let a/10 = id__T_int32(3) in
   let b/11 = id__T_int32(4) in
   let c/12 = trait_impl#Arith#int32#less(a/10, b/11) in
-  let mtmp153 = trait_impl#Output#bool#output(c/12) in
-  let mtmp154 = id__T_string("abc") in
-  let mtmp155 = id__T_bool(true) in
-  jump ret168()
+  let mtmp156 = trait_impl#Output#bool#output(c/12) in
+  let mtmp157 = id__T_string("abc") in
+  let mtmp158 = id__T_bool(true) in
+  jump ret171()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret169() -> unit {
+  join ret172() -> unit {
     ()
   } in
-  let t170 = trait_impl#ToString#string#to_string(value/1) in
-  let t171 = @runtime(core.string_println)(t170) in
-  jump ret169()
+  let t173 = trait_impl#ToString#string#to_string(value/1) in
+  let t174 = @runtime(core.string_println)(t173) in
+  jump ret172()
 }
 
 fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  join ret172(retv173: string) -> string {
-    retv173
-  } in
-  let t174 = @runtime(core.int32_to_string)(self/43) in
-  jump ret172(t174)
-}
-
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
   join ret175(retv176: string) -> string {
     retv176
   } in
-  let t177 = @runtime(core.bool_to_string)(self/37) in
+  let t177 = @runtime(core.int32_to_string)(self/43) in
   jump ret175(t177)
 }
 
-fn id__T_int32(x/6: int32) -> int32 {
-  join ret178(retv179: int32) -> int32 {
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  join ret178(retv179: string) -> string {
     retv179
   } in
-  jump ret178(x/6)
+  let t180 = @runtime(core.bool_to_string)(self/37) in
+  jump ret178(t180)
+}
+
+fn id__T_int32(x/6: int32) -> int32 {
+  join ret181(retv182: int32) -> int32 {
+    retv182
+  } in
+  jump ret181(x/6)
 }
 
 fn id__T_string(x/6: string) -> string {
-  join ret180(retv181: string) -> string {
-    retv181
+  join ret183(retv184: string) -> string {
+    retv184
   } in
-  jump ret180(x/6)
+  jump ret183(x/6)
 }
 
 fn id__T_bool(x/6: bool) -> bool {
-  join ret182(retv183: bool) -> bool {
-    retv183
+  join ret185(retv186: bool) -> bool {
+    retv186
   } in
-  jump ret182(x/6)
+  jump ret185(x/6)
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret184(retv185: string) -> string {
-    retv185
+  join ret187(retv188: string) -> string {
+    retv188
   } in
-  jump ret184(self/38)
+  jump ret187(self/38)
 }

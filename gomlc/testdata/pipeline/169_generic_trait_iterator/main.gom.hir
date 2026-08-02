@@ -3,44 +3,44 @@ file main.gom
   trait Convert[T] {
       fn convert(Self) -> T;
     }
-    
+
     struct Token {
     }
-    
+
     impl Convert[int32] for Token {
       fn convert(local/1/0: Token) -> int32 {
           7
       }
     }
-    
+
     impl Convert[string] for Token {
       fn convert(local/1/1: Token) -> string {
           "seven"
       }
     }
-    
+
     fn convert_to[T, V: Convert[T]](local/1/2: V) -> T {
         value/2.convert()
     }
-    
+
     trait Marker[T] {
       fn marker(Self) -> string;
     }
-    
+
     struct Any {
     }
-    
+
     impl[T] Marker[T] for Any {
       fn marker(local/1/3: Any) -> string {
           "marked"
       }
     }
-    
+
     struct Counter {
         current: Ref[int32],
         end: int32,
     }
-    
+
     impl Counter {
       fn new(local/1/4: int32, local/1/5: int32) -> Self {
           Counter {
@@ -49,7 +49,7 @@ file main.gom
           }
       }
     }
-    
+
     impl Iterator for Counter {
       type Item = int32;
       fn next(local/1/6: Self) -> Option[int32] {
@@ -62,7 +62,7 @@ file main.gom
           }
       }
     }
-    
+
     fn main() -> unit {
         println(Convert[int32]::convert(Token {}));
         println(Convert[string]::convert(Token {}));

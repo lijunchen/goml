@@ -3,22 +3,22 @@ file main.gom
   trait Display {
       fn show(Self) -> string;
     }
-    
+
     impl Display for int32 {
       fn show(local/1/0: int32) -> string {
           self/0.to_string()
       }
     }
-    
+
     enum Boxed {
         One(dyn Display)
     }
-    
+
     fn build() -> int32 {
         let _: Boxed = ctor(def/1/2::v0)(return 9);
         0
     }
-    
+
     fn main() -> unit {
         println(def/1/3().to_string())
     }

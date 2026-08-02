@@ -25,29 +25,29 @@ func loop_return_unit(flag__0 bool) struct{} {
 }
 
 func loop_return() int32 {
-    var retv165 int32
-    retv165 = 5
-    return retv165
+    var retv168 int32
+    retv168 = 5
+    return retv168
 }
 
 func main0() struct{} {
     loop_return_unit(true)
-    var t169 int32 = loop_return()
-    println__T_int32(t169)
+    var t172 int32 = loop_return()
+    println__T_int32(t172)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t174 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t174)
+    var t177 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t177)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv179 string
-    var t180 string = _goml_runtime_core_int32_to_string(self__43)
-    retv179 = t180
-    return retv179
+    var retv182 string
+    var t183 string = _goml_runtime_core_int32_to_string(self__43)
+    retv182 = t183
+    return retv182
 }
 
 func main() {

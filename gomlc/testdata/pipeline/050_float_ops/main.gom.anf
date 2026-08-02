@@ -1,46 +1,46 @@
 fn show32(label/0: string, value/1: float32) -> unit {
-  join ret162() -> unit {
+  join ret165() -> unit {
     ()
   } in
-  let t163 = trait_impl#ToString#float32#to_string(value/1) in
-  let message/2 = (label/0 + t163) in
-  let mtmp152 = println__T_string(message/2) in
-  jump ret162()
+  let t166 = trait_impl#ToString#float32#to_string(value/1) in
+  let message/2 = (label/0 + t166) in
+  let mtmp155 = println__T_string(message/2) in
+  jump ret165()
 }
 
 fn show64(label/3: string, value/4: float64) -> unit {
-  join ret164() -> unit {
+  join ret167() -> unit {
     ()
   } in
-  let t165 = trait_impl#ToString#float64#to_string(value/4) in
-  let message/5 = (label/3 + t165) in
-  let mtmp153 = println__T_string(message/5) in
-  jump ret164()
+  let t168 = trait_impl#ToString#float64#to_string(value/4) in
+  let message/5 = (label/3 + t168) in
+  let mtmp156 = println__T_string(message/5) in
+  jump ret167()
 }
 
 fn lerp32(a/6: float32, b/7: float32, weight/8: float32) -> float32 {
-  join ret166(retv167: float32) -> float32 {
-    retv167
+  join ret169(retv170: float32) -> float32 {
+    retv170
   } in
   let delta/9 = (b/7 - a/6) in
-  let t168 = (delta/9 * weight/8) in
-  let t169 = (a/6 + t168) in
-  jump ret166(t169)
+  let t171 = (delta/9 * weight/8) in
+  let t172 = (a/6 + t171) in
+  jump ret169(t172)
 }
 
 fn midpoint_energy(x/10: float64, y/11: float64) -> float64 {
-  join ret170(retv171: float64) -> float64 {
-    retv171
+  join ret173(retv174: float64) -> float64 {
+    retv174
   } in
-  let t172 = (x/10 * x/10) in
-  let t173 = (y/11 * y/11) in
-  let sum/12 = (t172 + t173) in
-  let t174 = (sum/12 / 2) in
-  jump ret170(t174)
+  let t175 = (x/10 * x/10) in
+  let t176 = (y/11 * y/11) in
+  let sum/12 = (t175 + t176) in
+  let t177 = (sum/12 / 2) in
+  jump ret173(t177)
 }
 
 fn main() -> unit {
-  join ret175() -> unit {
+  join ret178() -> unit {
     ()
   } in
   let start32/13 = 1.25 in
@@ -56,62 +56,62 @@ fn main() -> unit {
   let quarter/23 = 0.25 in
   let energy/24 = midpoint_energy(dx/21, dy/22) in
   let neg_dx/25 = (-dx/21) in
-  let t176 = (energy/24 + dy/22) in
-  let t177 = (dx/21 * quarter/23) in
-  let adjusted/26 = (t176 - t177) in
+  let t179 = (energy/24 + dy/22) in
+  let t180 = (dx/21 * quarter/23) in
+  let adjusted/26 = (t179 - t180) in
   let threshold/27 = 4 in
   let less64/28 = (adjusted/26 < threshold/27) in
-  let _wild154 = show32("mid32=", mid32/17) in
-  let _wild155 = show32("neg_end32=", neg_end32/18) in
-  let _wild156 = show32("ratio32=", ratio32/19) in
-  let t178 = trait_impl#ToString#bool#to_string(less32/20) in
-  let t179 = ("less32=" + t178) in
-  let mtmp157 = println__T_string(t179) in
-  let _wild158 = show64("energy=", energy/24) in
-  let _wild159 = show64("neg_dx=", neg_dx/25) in
-  let _wild160 = show64("adjusted=", adjusted/26) in
-  let t180 = trait_impl#ToString#bool#to_string(less64/28) in
-  let t181 = ("less64=" + t180) in
-  let mtmp161 = println__T_string(t181) in
-  jump ret175()
+  let _wild157 = show32("mid32=", mid32/17) in
+  let _wild158 = show32("neg_end32=", neg_end32/18) in
+  let _wild159 = show32("ratio32=", ratio32/19) in
+  let t181 = trait_impl#ToString#bool#to_string(less32/20) in
+  let t182 = ("less32=" + t181) in
+  let mtmp160 = println__T_string(t182) in
+  let _wild161 = show64("energy=", energy/24) in
+  let _wild162 = show64("neg_dx=", neg_dx/25) in
+  let _wild163 = show64("adjusted=", adjusted/26) in
+  let t183 = trait_impl#ToString#bool#to_string(less64/28) in
+  let t184 = ("less64=" + t183) in
+  let mtmp164 = println__T_string(t184) in
+  jump ret178()
 }
 
 fn trait_impl#ToString#float32#to_string(self/49: float32) -> string {
-  join ret182(retv183: string) -> string {
-    retv183
+  join ret185(retv186: string) -> string {
+    retv186
   } in
-  let t184 = @runtime(core.float32_to_string)(self/49) in
-  jump ret182(t184)
+  let t187 = @runtime(core.float32_to_string)(self/49) in
+  jump ret185(t187)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret185() -> unit {
+  join ret188() -> unit {
     ()
   } in
-  let t186 = trait_impl#ToString#string#to_string(value/1) in
-  let t187 = @runtime(core.string_println)(t186) in
-  jump ret185()
+  let t189 = trait_impl#ToString#string#to_string(value/1) in
+  let t190 = @runtime(core.string_println)(t189) in
+  jump ret188()
 }
 
 fn trait_impl#ToString#float64#to_string(self/50: float64) -> string {
-  join ret188(retv189: string) -> string {
-    retv189
-  } in
-  let t190 = @runtime(core.float64_to_string)(self/50) in
-  jump ret188(t190)
-}
-
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
   join ret191(retv192: string) -> string {
     retv192
   } in
-  let t193 = @runtime(core.bool_to_string)(self/37) in
+  let t193 = @runtime(core.float64_to_string)(self/50) in
   jump ret191(t193)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
   join ret194(retv195: string) -> string {
     retv195
   } in
-  jump ret194(self/38)
+  let t196 = @runtime(core.bool_to_string)(self/37) in
+  jump ret194(t196)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret197(retv198: string) -> string {
+    retv198
+  } in
+  jump ret197(self/38)
 }

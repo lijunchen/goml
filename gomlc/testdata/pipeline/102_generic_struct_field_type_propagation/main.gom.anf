@@ -1,45 +1,45 @@
 fn main() -> unit {
-  join ret154() -> unit {
+  join ret157() -> unit {
     ()
   } in
   let p/0 = Pair__uint8__float32 { first: 10, second: 3.14 } in
-  let t155 = Pair__uint8__float32.first(p/0) in
-  let t156 = trait_impl#ToString#uint8#to_string(t155) in
-  let _wild152 = println__T_string(t156) in
-  let t157 = Pair__uint8__float32.second(p/0) in
-  let t158 = trait_impl#ToString#float32#to_string(t157) in
-  let _wild153 = println__T_string(t158) in
-  jump ret154()
+  let t158 = Pair__uint8__float32.first(p/0) in
+  let t159 = trait_impl#ToString#uint8#to_string(t158) in
+  let _wild155 = println__T_string(t159) in
+  let t160 = Pair__uint8__float32.second(p/0) in
+  let t161 = trait_impl#ToString#float32#to_string(t160) in
+  let _wild156 = println__T_string(t161) in
+  jump ret157()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret159() -> unit {
+  join ret162() -> unit {
     ()
   } in
-  let t160 = trait_impl#ToString#string#to_string(value/1) in
-  let t161 = @runtime(core.string_println)(t160) in
-  jump ret159()
+  let t163 = trait_impl#ToString#string#to_string(value/1) in
+  let t164 = @runtime(core.string_println)(t163) in
+  jump ret162()
 }
 
 fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
-  join ret162(retv163: string) -> string {
-    retv163
-  } in
-  let t164 = @runtime(core.uint8_to_string)(self/45) in
-  jump ret162(t164)
-}
-
-fn trait_impl#ToString#float32#to_string(self/49: float32) -> string {
   join ret165(retv166: string) -> string {
     retv166
   } in
-  let t167 = @runtime(core.float32_to_string)(self/49) in
+  let t167 = @runtime(core.uint8_to_string)(self/45) in
   jump ret165(t167)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+fn trait_impl#ToString#float32#to_string(self/49: float32) -> string {
   join ret168(retv169: string) -> string {
     retv169
   } in
-  jump ret168(self/38)
+  let t170 = @runtime(core.float32_to_string)(self/49) in
+  jump ret168(t170)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret171(retv172: string) -> string {
+    retv172
+  } in
+  jump ret171(self/38)
 }

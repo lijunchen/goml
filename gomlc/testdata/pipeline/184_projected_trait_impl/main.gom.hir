@@ -4,34 +4,34 @@ file main.gom
       type Item;
       fn get(Self) -> Self::Item;
     }
-    
+
     trait Pick[T] {
       fn pick(Self) -> T;
     }
-    
+
     impl[S: Source] Pick[S::Item] for S {
       fn pick(local/1/0: S) -> S::Item {
           Source::get(self/0)
       }
     }
-    
+
     struct Value {
         value: int32,
     }
-    
+
     impl Source for Value {
       type Item = int32;
       fn get(local/1/1: Value) -> int32 {
           self/1.value
       }
     }
-    
+
     fn copy[S: Source + Pick[S::Item]](local/1/2: S) -> S::Item {
         let local/1/3: S::Item = Pick[S::Item]::pick(source/2);
         let local/1/5 = |local/1/4: S::Item| item/4;
         identity/5(value/3)
     }
-    
+
     fn main() -> unit {
         let local/1/6: int32 = Value {
             value: 41

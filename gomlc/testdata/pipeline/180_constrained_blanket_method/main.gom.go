@@ -16,37 +16,37 @@ func _goml_runtime_core_string_println(s string) struct{} {
 func main0() struct{} {
     var first__3 int32 = 1
     var second__4 int32 = 2
-    var t156 int32 = apply__T_int32(first__3)
-    println__T_int32(t156)
-    var t157 int32 = _goml_m_trait__impl_i_Extra_i_int32_i_extra(second__4)
-    println__T_int32(t157)
+    var t159 int32 = apply__T_int32(first__3)
+    println__T_int32(t159)
+    var t160 int32 = _goml_m_trait__impl_i_Extra_i_int32_i_extra(second__4)
+    println__T_int32(t160)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t159 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t159)
+    var t162 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t162)
     return struct{}{}
 }
 
 func apply__T_int32(value__2 int32) int32 {
-    var retv162 int32
-    var t163 int32 = _goml_m_trait__impl_i_Extra_i_int32_i_extra(value__2)
-    retv162 = t163
-    return retv162
-}
-
-func _goml_m_trait__impl_i_Extra_i_int32_i_extra(self__1 int32) int32 {
     var retv165 int32
-    retv165 = 42
+    var t166 int32 = _goml_m_trait__impl_i_Extra_i_int32_i_extra(value__2)
+    retv165 = t166
     return retv165
 }
 
+func _goml_m_trait__impl_i_Extra_i_int32_i_extra(self__1 int32) int32 {
+    var retv168 int32
+    retv168 = 42
+    return retv168
+}
+
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var retv167 string
-    var t168 string = _goml_runtime_core_int32_to_string(self__43)
-    retv167 = t168
-    return retv167
+    var retv170 string
+    var t171 string = _goml_runtime_core_int32_to_string(self__43)
+    retv170 = t171
+    return retv170
 }
 
 func main() {

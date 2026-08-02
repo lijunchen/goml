@@ -1,99 +1,99 @@
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
-  join ret164() -> unit {
+  join ret167() -> unit {
     ()
   } in
-  let x152 = x/0.0 in
-  let x153 = x/0.1 in
-  join k165() -> unit {
-    jump ret164()
+  let x155 = x/0.0 in
+  let x156 = x/0.1 in
+  join k168() -> unit {
+    jump ret167()
   } in
-  match x153 {
+  match x156 {
     true => {
-      let x154 = y/1.0 in
-      let x155 = y/1.1 in
-      join k166() -> unit {
-        jump k165()
+      let x157 = y/1.0 in
+      let x158 = y/1.1 in
+      join k169() -> unit {
+        jump k168()
       } in
-      match x155 {
+      match x158 {
         true => {
-          join k167() -> unit {
-            jump k166()
+          join k170() -> unit {
+            jump k169()
           } in
-          match x154 {
+          match x157 {
             true => {
-              let t168 = println__T_string("case4") in
-              jump k167()
+              let t171 = println__T_string("case4") in
+              jump k170()
             },
             false => {
-              let t169 = println__T_string("case3") in
-              jump k167()
+              let t172 = println__T_string("case3") in
+              jump k170()
             },
           }
         },
         false => {
-          let t170 = println__T_string("case4") in
-          jump k166()
+          let t173 = println__T_string("case4") in
+          jump k169()
         },
       }
     },
     false => {
-      join k171() -> unit {
-        jump k165()
+      join k174() -> unit {
+        jump k168()
       } in
-      match x152 {
+      match x155 {
         true => {
-          let x156 = y/1.0 in
-          let x157 = y/1.1 in
-          join k172() -> unit {
-            jump k171()
+          let x159 = y/1.0 in
+          let x160 = y/1.1 in
+          join k175() -> unit {
+            jump k174()
           } in
-          match x157 {
+          match x160 {
             true => {
-              join k173() -> unit {
-                jump k172()
+              join k176() -> unit {
+                jump k175()
               } in
-              match x156 {
+              match x159 {
                 true => {
-                  let t174 = println__T_string("case2") in
-                  jump k173()
+                  let t177 = println__T_string("case2") in
+                  jump k176()
                 },
                 false => {
-                  let t175 = println__T_string("case1") in
-                  jump k173()
+                  let t178 = println__T_string("case1") in
+                  jump k176()
                 },
               }
             },
             false => {
-              let t176 = println__T_string("case2") in
-              jump k172()
+              let t179 = println__T_string("case2") in
+              jump k175()
             },
           }
         },
         false => {
-          let x158 = y/1.0 in
-          let x159 = y/1.1 in
-          join k177() -> unit {
-            jump k171()
+          let x161 = y/1.0 in
+          let x162 = y/1.1 in
+          join k180() -> unit {
+            jump k174()
           } in
-          match x159 {
+          match x162 {
             true => {
-              join k178() -> unit {
-                jump k177()
+              join k181() -> unit {
+                jump k180()
               } in
-              match x158 {
+              match x161 {
                 true => {
-                  let t179 = println__T_string("case4") in
-                  jump k178()
+                  let t182 = println__T_string("case4") in
+                  jump k181()
                 },
                 false => {
-                  let t180 = println__T_string("case3") in
-                  jump k178()
+                  let t183 = println__T_string("case3") in
+                  jump k181()
                 },
               }
             },
             false => {
-              let t181 = println__T_string("case4") in
-              jump k177()
+              let t184 = println__T_string("case4") in
+              jump k180()
             },
           }
         },
@@ -103,36 +103,36 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
 }
 
 fn main() -> unit {
-  join ret182() -> unit {
+  join ret185() -> unit {
     ()
   } in
-  let t183 = (true, false) in
-  let t184 = (false, true) in
-  let mtmp160 = test_nested_match(t183, t184) in
-  let t185 = (true, false) in
   let t186 = (true, false) in
-  let mtmp161 = test_nested_match(t185, t186) in
   let t187 = (false, true) in
-  let t188 = (false, true) in
-  let mtmp162 = test_nested_match(t187, t188) in
-  let t189 = (false, true) in
-  let t190 = (true, false) in
-  let mtmp163 = test_nested_match(t189, t190) in
-  jump ret182()
+  let mtmp163 = test_nested_match(t186, t187) in
+  let t188 = (true, false) in
+  let t189 = (true, false) in
+  let mtmp164 = test_nested_match(t188, t189) in
+  let t190 = (false, true) in
+  let t191 = (false, true) in
+  let mtmp165 = test_nested_match(t190, t191) in
+  let t192 = (false, true) in
+  let t193 = (true, false) in
+  let mtmp166 = test_nested_match(t192, t193) in
+  jump ret185()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret191() -> unit {
+  join ret194() -> unit {
     ()
   } in
-  let t192 = trait_impl#ToString#string#to_string(value/1) in
-  let t193 = @runtime(core.string_println)(t192) in
-  jump ret191()
+  let t195 = trait_impl#ToString#string#to_string(value/1) in
+  let t196 = @runtime(core.string_println)(t195) in
+  jump ret194()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
+  join ret197(retv198: string) -> string {
+    retv198
   } in
-  jump ret194(self/38)
+  jump ret197(self/38)
 }

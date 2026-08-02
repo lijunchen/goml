@@ -4,18 +4,18 @@ file main.gom
       type Items: IntoIterator;
       fn items(Self) -> Self::Items;
     }
-    
+
     struct Numbers {
         values: Vec[int32],
     }
-    
+
     impl Batch for Numbers {
       type Items = Vec[int32];
       fn items(local/1/0: Numbers) -> Vec[int32] {
           self/0.values
       }
     }
-    
+
     fn count[B: Batch](local/1/1: B) -> int32 {
         let local/1/2 = Ref::new(0);
         for _ in Batch::items(batch/1) {
@@ -23,7 +23,7 @@ file main.gom
         };
         total/2.get()
     }
-    
+
     fn main() -> unit {
         let local/1/3: Vec[int32] = Vec::new();
         values/3.push(10);

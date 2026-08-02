@@ -1,100 +1,100 @@
 fn parse(flag/0: bool) -> Result__int32__string {
-  join ret158(retv159: Result__int32__string) -> Result__int32__string {
-    retv159
+  join ret161(retv162: Result__int32__string) -> Result__int32__string {
+    retv162
   } in
-  join k160(jp161: Result__int32__string) -> Result__int32__string {
-    jump ret158(jp161)
+  join k163(jp164: Result__int32__string) -> Result__int32__string {
+    jump ret161(jp164)
   } in
   if flag/0 {
-    let t162 = Result__int32__string::Ok(41) in
-    jump k160(t162)
+    let t165 = Result__int32__string::Ok(41) in
+    jump k163(t165)
   } else {
-    let t163 = Result__int32__string::Err("bad") in
-    jump k160(t163)
+    let t166 = Result__int32__string::Err("bad") in
+    jump k163(t166)
   }
 }
 
 fn compute(flag/1: bool) -> Result__int32__string {
-  join ret164(retv165: Result__int32__string) -> Result__int32__string {
-    retv165
+  join ret167(retv168: Result__int32__string) -> Result__int32__string {
+    retv168
   } in
-  let mtmp152 = parse(flag/1) in
-  join k166(jp167: int32) -> Result__int32__string {
-    let value/2 = jp167 in
-    let t168 = (value/2 + 1) in
-    let t169 = Result__int32__string::Ok(t168) in
-    jump ret164(t169)
+  let mtmp155 = parse(flag/1) in
+  join k169(jp170: int32) -> Result__int32__string {
+    let value/2 = jp170 in
+    let t171 = (value/2 + 1) in
+    let t172 = Result__int32__string::Ok(t171) in
+    jump ret167(t172)
   } in
-  match mtmp152 {
+  match mtmp155 {
     Tag_0 => {
-      let x153 = Result__int32__string::Err._0(mtmp152) in
-      let try_residual/12 = x153 in
-      let t170 = Result__int32__string::Err(try_residual/12) in
-      jump ret164(t170)
+      let x156 = Result__int32__string::Err._0(mtmp155) in
+      let try_residual/12 = x156 in
+      let t173 = Result__int32__string::Err(try_residual/12) in
+      jump ret167(t173)
     },
     Tag_1 => {
-      let x154 = Result__int32__string::Ok._0(mtmp152) in
-      let try_value/12 = x154 in
-      jump k166(try_value/12)
+      let x157 = Result__int32__string::Ok._0(mtmp155) in
+      let try_value/12 = x157 in
+      jump k169(try_value/12)
     },
   }
 }
 
 fn show(value/3: Result__int32__string) -> string {
-  join ret171(retv172: string) -> string {
-    retv172
+  join ret174(retv175: string) -> string {
+    retv175
   } in
-  join k173(jp174: string) -> string {
-    jump ret171(jp174)
+  join k176(jp177: string) -> string {
+    jump ret174(jp177)
   } in
   match value/3 {
     Tag_0 => {
-      let x155 = Result__int32__string::Err._0(value/3) in
-      let error/5 = x155 in
-      jump k173(error/5)
+      let x158 = Result__int32__string::Err._0(value/3) in
+      let error/5 = x158 in
+      jump k176(error/5)
     },
     Tag_1 => {
-      let x156 = Result__int32__string::Ok._0(value/3) in
-      let value/4 = x156 in
-      let t175 = inherent#int32#int32#to_string(value/4) in
-      jump k173(t175)
+      let x159 = Result__int32__string::Ok._0(value/3) in
+      let value/4 = x159 in
+      let t178 = inherent#int32#int32#to_string(value/4) in
+      jump k176(t178)
     },
   }
 }
 
 fn main() -> unit {
-  join ret176() -> unit {
+  join ret179() -> unit {
     ()
   } in
-  let t177 = compute(true) in
-  let t178 = show(t177) in
-  let _wild157 = println__T_string(t178) in
-  let t179 = compute(false) in
-  let t180 = show(t179) in
-  let t181 = println__T_string(t180) in
-  jump ret176()
+  let t180 = compute(true) in
+  let t181 = show(t180) in
+  let _wild160 = println__T_string(t181) in
+  let t182 = compute(false) in
+  let t183 = show(t182) in
+  let t184 = println__T_string(t183) in
+  jump ret179()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret182(retv183: string) -> string {
-    retv183
+  join ret185(retv186: string) -> string {
+    retv186
   } in
-  let t184 = @runtime(core.int32_to_string)(self/6) in
-  jump ret182(t184)
+  let t187 = @runtime(core.int32_to_string)(self/6) in
+  jump ret185(t187)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret185() -> unit {
+  join ret188() -> unit {
     ()
   } in
-  let t186 = trait_impl#ToString#string#to_string(value/1) in
-  let t187 = @runtime(core.string_println)(t186) in
-  jump ret185()
+  let t189 = trait_impl#ToString#string#to_string(value/1) in
+  let t190 = @runtime(core.string_println)(t189) in
+  jump ret188()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret188(retv189: string) -> string {
-    retv189
+  join ret191(retv192: string) -> string {
+    retv192
   } in
-  jump ret188(self/38)
+  jump ret191(self/38)
 }

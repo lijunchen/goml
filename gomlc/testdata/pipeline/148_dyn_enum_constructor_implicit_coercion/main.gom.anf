@@ -1,78 +1,78 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret157(retv158: string) -> string {
-    retv158
-  } in
-  let t159 = inherent#int32#int32#to_string(self/0) in
-  jump ret157(t159)
-}
-
-fn render(value/1: Boxed) -> string {
   join ret160(retv161: string) -> string {
     retv161
   } in
-  join k162(jp163: string) -> string {
-    jump ret160(jp163)
+  let t162 = inherent#int32#int32#to_string(self/0) in
+  jump ret160(t162)
+}
+
+fn render(value/1: Boxed) -> string {
+  join ret163(retv164: string) -> string {
+    retv164
+  } in
+  join k165(jp166: string) -> string {
+    jump ret163(jp166)
   } in
   match value/1 {
     Tag_0 => {
-      let x152 = Boxed::One._0(value/1) in
-      let inner/2 = x152 in
-      let t164 = dyn_call[Display::show](inner/2) in
-      jump k162(t164)
+      let x155 = Boxed::One._0(value/1) in
+      let inner/2 = x155 in
+      let t167 = dyn_call[Display::show](inner/2) in
+      jump k165(t167)
     },
     Tag_1 => {
-      let x153 = Boxed::Pair._0(value/1) in
-      let x154 = Boxed::Pair._1(value/1) in
-      let right/4 = x154 in
-      let left/3 = x153 in
-      let t165 = dyn_call[Display::show](left/3) in
-      let t166 = (t165 + "-") in
-      let t167 = dyn_call[Display::show](right/4) in
-      let t168 = (t166 + t167) in
-      jump k162(t168)
+      let x156 = Boxed::Pair._0(value/1) in
+      let x157 = Boxed::Pair._1(value/1) in
+      let right/4 = x157 in
+      let left/3 = x156 in
+      let t168 = dyn_call[Display::show](left/3) in
+      let t169 = (t168 + "-") in
+      let t170 = dyn_call[Display::show](right/4) in
+      let t171 = (t169 + t170) in
+      jump k165(t171)
     },
   }
 }
 
 fn main() -> unit {
-  join ret169() -> unit {
+  join ret172() -> unit {
     ()
   } in
   let one/5 = 42 in
   let left/6 = 7 in
   let right/7 = 9 in
-  let t170 = to_dyn[Display]{int32}(one/5) in
-  let t171 = Boxed::One(t170) in
-  let t172 = render(t171) in
-  let _wild155 = println__T_string(t172) in
-  let t173 = to_dyn[Display]{int32}(left/6) in
-  let t174 = to_dyn[Display]{int32}(right/7) in
-  let t175 = Boxed::Pair(t173, t174) in
-  let t176 = render(t175) in
-  let _wild156 = println__T_string(t176) in
-  jump ret169()
+  let t173 = to_dyn[Display]{int32}(one/5) in
+  let t174 = Boxed::One(t173) in
+  let t175 = render(t174) in
+  let _wild158 = println__T_string(t175) in
+  let t176 = to_dyn[Display]{int32}(left/6) in
+  let t177 = to_dyn[Display]{int32}(right/7) in
+  let t178 = Boxed::Pair(t176, t177) in
+  let t179 = render(t178) in
+  let _wild159 = println__T_string(t179) in
+  jump ret172()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret177(retv178: string) -> string {
-    retv178
+  join ret180(retv181: string) -> string {
+    retv181
   } in
-  let t179 = @runtime(core.int32_to_string)(self/6) in
-  jump ret177(t179)
+  let t182 = @runtime(core.int32_to_string)(self/6) in
+  jump ret180(t182)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret180() -> unit {
+  join ret183() -> unit {
     ()
   } in
-  let t181 = trait_impl#ToString#string#to_string(value/1) in
-  let t182 = @runtime(core.string_println)(t181) in
-  jump ret180()
+  let t184 = trait_impl#ToString#string#to_string(value/1) in
+  let t185 = @runtime(core.string_println)(t184) in
+  jump ret183()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret183(retv184: string) -> string {
-    retv184
+  join ret186(retv187: string) -> string {
+    retv187
   } in
-  jump ret183(self/38)
+  jump ret186(self/38)
 }

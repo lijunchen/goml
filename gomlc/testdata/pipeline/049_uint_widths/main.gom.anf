@@ -1,5 +1,5 @@
 fn main() -> unit {
-  join ret153() -> unit {
+  join ret156() -> unit {
     ()
   } in
   let start8/0 = 200 in
@@ -18,67 +18,67 @@ fn main() -> unit {
   let add64/13 = 4000000000 in
   let sum64/14 = (start64/12 + add64/13) in
   let diff64/15 = (sum64/14 - add64/13) in
-  let t154 = trait_impl#ToString#uint8#to_string(sum8/2) in
-  let t155 = (t154 + ", ") in
-  let t156 = trait_impl#ToString#uint8#to_string(neg8/3) in
-  let t157 = (t155 + t156) in
-  let t158 = (t157 + "; ") in
-  let t159 = trait_impl#ToString#uint16#to_string(diff16/7) in
+  let t157 = trait_impl#ToString#uint8#to_string(sum8/2) in
+  let t158 = (t157 + ", ") in
+  let t159 = trait_impl#ToString#uint8#to_string(neg8/3) in
   let t160 = (t158 + t159) in
   let t161 = (t160 + "; ") in
-  let t162 = trait_impl#ToString#uint32#to_string(neg32/11) in
+  let t162 = trait_impl#ToString#uint16#to_string(diff16/7) in
   let t163 = (t161 + t162) in
   let t164 = (t163 + "; ") in
-  let t165 = trait_impl#ToString#uint64#to_string(diff64/15) in
-  let message/16 = (t164 + t165) in
-  let _wild152 = println__T_string(message/16) in
-  jump ret153()
+  let t165 = trait_impl#ToString#uint32#to_string(neg32/11) in
+  let t166 = (t164 + t165) in
+  let t167 = (t166 + "; ") in
+  let t168 = trait_impl#ToString#uint64#to_string(diff64/15) in
+  let message/16 = (t167 + t168) in
+  let _wild155 = println__T_string(message/16) in
+  jump ret156()
 }
 
 fn trait_impl#ToString#uint8#to_string(self/45: uint8) -> string {
-  join ret166(retv167: string) -> string {
-    retv167
-  } in
-  let t168 = @runtime(core.uint8_to_string)(self/45) in
-  jump ret166(t168)
-}
-
-fn trait_impl#ToString#uint16#to_string(self/46: uint16) -> string {
   join ret169(retv170: string) -> string {
     retv170
   } in
-  let t171 = @runtime(core.uint16_to_string)(self/46) in
+  let t171 = @runtime(core.uint8_to_string)(self/45) in
   jump ret169(t171)
 }
 
-fn trait_impl#ToString#uint32#to_string(self/47: uint32) -> string {
+fn trait_impl#ToString#uint16#to_string(self/46: uint16) -> string {
   join ret172(retv173: string) -> string {
     retv173
   } in
-  let t174 = @runtime(core.uint32_to_string)(self/47) in
+  let t174 = @runtime(core.uint16_to_string)(self/46) in
   jump ret172(t174)
 }
 
-fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
+fn trait_impl#ToString#uint32#to_string(self/47: uint32) -> string {
   join ret175(retv176: string) -> string {
     retv176
   } in
-  let t177 = @runtime(core.uint64_to_string)(self/48) in
+  let t177 = @runtime(core.uint32_to_string)(self/47) in
   jump ret175(t177)
 }
 
+fn trait_impl#ToString#uint64#to_string(self/48: uint64) -> string {
+  join ret178(retv179: string) -> string {
+    retv179
+  } in
+  let t180 = @runtime(core.uint64_to_string)(self/48) in
+  jump ret178(t180)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret178() -> unit {
+  join ret181() -> unit {
     ()
   } in
-  let t179 = trait_impl#ToString#string#to_string(value/1) in
-  let t180 = @runtime(core.string_println)(t179) in
-  jump ret178()
+  let t182 = trait_impl#ToString#string#to_string(value/1) in
+  let t183 = @runtime(core.string_println)(t182) in
+  jump ret181()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret181(retv182: string) -> string {
-    retv182
+  join ret184(retv185: string) -> string {
+    retv185
   } in
-  jump ret181(self/38)
+  jump ret184(self/38)
 }

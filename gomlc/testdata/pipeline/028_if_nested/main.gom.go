@@ -10,50 +10,50 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func classify(x__0 int32) string {
-    var retv159 string
-    var t162 bool = x__0 < 0
-    var jp161 string
-    if t162 {
-        jp161 = "negative"
+    var retv162 string
+    var t165 bool = x__0 < 0
+    var jp164 string
+    if t165 {
+        jp164 = "negative"
     } else {
-        var t165 bool = 0 < x__0
-        var jp164 string
-        if t165 {
-            jp164 = "positive"
+        var t168 bool = 0 < x__0
+        var jp167 string
+        if t168 {
+            jp167 = "positive"
         } else {
-            jp164 = "zero"
+            jp167 = "zero"
         }
-        jp161 = jp164
+        jp164 = jp167
     }
-    retv159 = jp161
-    return retv159
+    retv162 = jp164
+    return retv162
 }
 
 func triangle_type(a__1 int32, b__2 int32, c__3 int32) string {
-    var retv167 string
-    var t170 bool = a__1 < b__2
-    var jp169 string
-    if t170 {
-        var t173 bool = b__2 < c__3
-        var jp172 string
-        if t173 {
-            jp172 = "ascending"
-        } else {
-            jp172 = "peak"
-        }
-        jp169 = jp172
-    } else {
-        var t176 bool = a__1 < c__3
+    var retv170 string
+    var t173 bool = a__1 < b__2
+    var jp172 string
+    if t173 {
+        var t176 bool = b__2 < c__3
         var jp175 string
         if t176 {
-            jp175 = "valley"
+            jp175 = "ascending"
         } else {
-            jp175 = "flat"
+            jp175 = "peak"
         }
-        jp169 = jp175
+        jp172 = jp175
+    } else {
+        var t179 bool = a__1 < c__3
+        var jp178 string
+        if t179 {
+            jp178 = "valley"
+        } else {
+            jp178 = "flat"
+        }
+        jp172 = jp178
     }
-    retv167 = jp169
-    return retv167
+    retv170 = jp172
+    return retv170
 }
 
 func main0() struct{} {
@@ -73,15 +73,15 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t179 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t179)
+    var t182 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t182)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    var retv182 string
-    retv182 = self__38
-    return retv182
+    var retv185 string
+    retv185 = self__38
+    return retv185
 }
 
 func main() {

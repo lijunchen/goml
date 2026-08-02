@@ -10,14 +10,14 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
   let value/6 = if top/1 {
       match mode/2 {
         Mode::Take => {
-          let inner/4 = let mtmp152 = maybe_num(inner_flag/3) in
-          match mtmp152 {
+          let inner/4 = let mtmp155 = maybe_num(inner_flag/3) in
+          match mtmp155 {
             Option__int32::None => {
               return Option__int32::None
             },
-            Option__int32::Some(x153) => {
-              let x153 = Option__int32::Some._0(mtmp152) in
-              let try_value/13 = x153 in
+            Option__int32::Some(x156) => {
+              let x156 = Option__int32::Some._0(mtmp155) in
+              let try_value/13 = x156 in
               try_value/13
             },
           } in
@@ -28,14 +28,14 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
         },
       }
   } else {
-      let inner/5 = let mtmp154 = maybe_num(inner_flag/3) in
-      match mtmp154 {
+      let inner/5 = let mtmp157 = maybe_num(inner_flag/3) in
+      match mtmp157 {
         Option__int32::None => {
           return Option__int32::None
         },
-        Option__int32::Some(x155) => {
-          let x155 = Option__int32::Some._0(mtmp154) in
-          let try_value/24 = x155 in
+        Option__int32::Some(x158) => {
+          let x158 = Option__int32::Some._0(mtmp157) in
+          let try_value/24 = x158 in
           try_value/24
         },
       } in
@@ -49,18 +49,18 @@ fn show(opt/7: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x156) => {
-      let x156 = Option__int32::Some._0(opt/7) in
-      let value/8 = x156 in
+    Option__int32::Some(x159) => {
+      let x159 = Option__int32::Some._0(opt/7) in
+      let value/8 = x159 in
       ("some=" + inherent#int32#int32#to_string(value/8))
     },
   }
 }
 
 fn main() -> unit {
-  let _wild157 = println__T_string(show(nested(true, Mode::Take, true))) in
-  let _wild158 = println__T_string(show(nested(true, Mode::Skip, false))) in
-  let _wild159 = println__T_string(show(nested(false, Mode::Take, false))) in
+  let _wild160 = println__T_string(show(nested(true, Mode::Take, true))) in
+  let _wild161 = println__T_string(show(nested(true, Mode::Skip, false))) in
+  let _wild162 = println__T_string(show(nested(false, Mode::Take, false))) in
   ()
 }
 

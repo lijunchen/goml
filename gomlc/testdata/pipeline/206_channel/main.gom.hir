@@ -3,12 +3,12 @@ file main.gom
   fn make_string_channel() -> Channel[string] {
         Channel[string]::new(0)
     }
-    
+
     fn roundtrip[T](local/1/0: Channel[T], local/1/1: T) -> Option[T] {
         go || channel/0.send(value/1);
         channel/0.recv()
     }
-    
+
     fn main() -> unit {
         let local/1/2 = Channel[int]::new(2);
         buffered/2.send(10);

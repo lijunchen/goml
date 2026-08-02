@@ -1357,120 +1357,150 @@ fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](self/276: Result[T, E], fall
   }
 }
 
-fn inherent#Option#Option[T]#map[T, U](self/280: Option[T], map_fn/281: (T) -> U) -> Option[U] {
-  match self/280 {
+fn __goml_builtin_range_inclusive(start/280: int, end/281: int) -> FnIterator[int] {
+  let current/282 = @intrinsic(ref.new)(start/280) in
+  let finished/283 = @intrinsic(ref.new)(false) in
+  inherent#FnIterator#FnIterator#from_fn(|| => {
+    if if @intrinsic(ref.get)(finished/283) {
+        true
+    } else {
+        (@intrinsic(ref.get)(current/282) > end/281)
+    } {
+        {
+          Option::None
+        }
+    } else {
+        {
+          let value/284 = @intrinsic(ref.get)(current/282) in
+          let _wild145 = if trait_impl#Eq#int#eq(value/284, end/281) {
+              {
+                let _wild143 = @intrinsic(ref.set)(finished/283, true) in
+              }
+          } else {
+              {
+                let _wild144 = @intrinsic(ref.set)(current/282, (value/284 + 1)) in
+              }
+          } in
+          Option::Some(value/284)
+        }
+    }
+  })
+}
+
+fn inherent#Option#Option[T]#map[T, U](self/285: Option[T], map_fn/286: (T) -> U) -> Option[U] {
+  match self/285 {
     Option::None => {
       Option::None
     },
-    Option::Some(x143) => {
+    Option::Some(x146) => {
       {
-        let x143 = Option::Some._0(self/280) in
+        let x146 = Option::Some._0(self/285) in
         {
-          let value/282 = x143 in
-          Option::Some(map_fn/281(value/282))
+          let value/287 = x146 in
+          Option::Some(map_fn/286(value/287))
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#and_then[T, U](self/283: Option[T], next/284: (T) -> Option[U]) -> Option[U] {
-  match self/283 {
+fn inherent#Option#Option[T]#and_then[T, U](self/288: Option[T], next/289: (T) -> Option[U]) -> Option[U] {
+  match self/288 {
     Option::None => {
       Option::None
     },
-    Option::Some(x144) => {
+    Option::Some(x147) => {
       {
-        let x144 = Option::Some._0(self/283) in
+        let x147 = Option::Some._0(self/288) in
         {
-          let value/285 = x144 in
-          next/284(value/285)
+          let value/290 = x147 in
+          next/289(value/290)
         }
       }
     },
   }
 }
 
-fn inherent#Option#Option[T]#ok_or[T, E](self/286: Option[T], error/287: E) -> Result[T, E] {
-  match self/286 {
+fn inherent#Option#Option[T]#ok_or[T, E](self/291: Option[T], error/292: E) -> Result[T, E] {
+  match self/291 {
     Option::None => {
-      Result::Err(error/287)
+      Result::Err(error/292)
     },
-    Option::Some(x145) => {
+    Option::Some(x148) => {
       {
-        let x145 = Option::Some._0(self/286) in
+        let x148 = Option::Some._0(self/291) in
         {
-          let value/288 = x145 in
-          Result::Ok(value/288)
+          let value/293 = x148 in
+          Result::Ok(value/293)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#map[T, E, U](self/289: Result[T, E], map_fn/290: (T) -> U) -> Result[U, E] {
-  match self/289 {
-    Result::Ok(x146) => {
+fn inherent#Result#Result[T,E]#map[T, E, U](self/294: Result[T, E], map_fn/295: (T) -> U) -> Result[U, E] {
+  match self/294 {
+    Result::Ok(x149) => {
       {
-        let x146 = Result::Ok._0(self/289) in
+        let x149 = Result::Ok._0(self/294) in
         {
-          let value/291 = x146 in
-          Result::Ok(map_fn/290(value/291))
+          let value/296 = x149 in
+          Result::Ok(map_fn/295(value/296))
         }
       }
     },
-    Result::Err(x147) => {
+    Result::Err(x150) => {
       {
-        let x147 = Result::Err._0(self/289) in
+        let x150 = Result::Err._0(self/294) in
         {
-          let error/292 = x147 in
-          Result::Err(error/292)
-        }
-      }
-    },
-  }
-}
-
-fn inherent#Result#Result[T,E]#map_err[T, E, F](self/293: Result[T, E], map_fn/294: (E) -> F) -> Result[T, F] {
-  match self/293 {
-    Result::Ok(x148) => {
-      {
-        let x148 = Result::Ok._0(self/293) in
-        {
-          let value/295 = x148 in
-          Result::Ok(value/295)
-        }
-      }
-    },
-    Result::Err(x149) => {
-      {
-        let x149 = Result::Err._0(self/293) in
-        {
-          let error/296 = x149 in
-          Result::Err(map_fn/294(error/296))
+          let error/297 = x150 in
+          Result::Err(error/297)
         }
       }
     },
   }
 }
 
-fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/298: (T) -> Result[U, E]) -> Result[U, E] {
-  match self/297 {
-    Result::Ok(x150) => {
+fn inherent#Result#Result[T,E]#map_err[T, E, F](self/298: Result[T, E], map_fn/299: (E) -> F) -> Result[T, F] {
+  match self/298 {
+    Result::Ok(x151) => {
       {
-        let x150 = Result::Ok._0(self/297) in
+        let x151 = Result::Ok._0(self/298) in
         {
-          let value/299 = x150 in
-          next/298(value/299)
+          let value/300 = x151 in
+          Result::Ok(value/300)
         }
       }
     },
-    Result::Err(x151) => {
+    Result::Err(x152) => {
       {
-        let x151 = Result::Err._0(self/297) in
+        let x152 = Result::Err._0(self/298) in
         {
-          let error/300 = x151 in
-          Result::Err(error/300)
+          let error/301 = x152 in
+          Result::Err(map_fn/299(error/301))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#and_then[T, E, U](self/302: Result[T, E], next/303: (T) -> Result[U, E]) -> Result[U, E] {
+  match self/302 {
+    Result::Ok(x153) => {
+      {
+        let x153 = Result::Ok._0(self/302) in
+        {
+          let value/304 = x153 in
+          next/303(value/304)
+        }
+      }
+    },
+    Result::Err(x154) => {
+      {
+        let x154 = Result::Err._0(self/302) in
+        {
+          let error/305 = x154 in
+          Result::Err(error/305)
         }
       }
     },
@@ -1479,11 +1509,11 @@ fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/29
 
 fn classify(value/0: First[int]) -> string {
   match value/0 {
-    First::Shared(x152) => {
+    First::Shared(x155) => {
       {
-        let x152 = First::Shared._0(value/0) in
+        let x155 = First::Shared._0(value/0) in
         {
-          let number/1 = x152 in
+          let number/1 = x155 in
           ("shared:" + inherent#int#int#to_string(number/1))
         }
       }
@@ -1491,14 +1521,14 @@ fn classify(value/0: First[int]) -> string {
     First::Idle => {
       "idle"
     },
-    First::Data(x153, x154) => {
+    First::Data(x156, x157) => {
       {
-        let x153 = First::Data._0(value/0) in
-        let x154 = First::Data._1(value/0) in
+        let x156 = First::Data._0(value/0) in
+        let x157 = First::Data._1(value/0) in
         {
-          let label/3 = x154 in
+          let label/3 = x157 in
           {
-            let value/2 = x153 in
+            let value/2 = x156 in
             ((label/3 + ":") + inherent#int#int#to_string(value/2))
           }
         }
@@ -1512,24 +1542,24 @@ fn nested(value/4: Option[Result[int, string]]) -> string {
     Option::None => {
       "none"
     },
-    Option::Some(x155) => {
+    Option::Some(x158) => {
       {
-        let x155 = Option::Some._0(value/4) in
-        match x155 {
-          Result::Ok(x156) => {
+        let x158 = Option::Some._0(value/4) in
+        match x158 {
+          Result::Ok(x159) => {
             {
-              let x156 = Result::Ok._0(x155) in
+              let x159 = Result::Ok._0(x158) in
               {
-                let number/5 = x156 in
+                let number/5 = x159 in
                 ("ok:" + inherent#int#int#to_string(number/5))
               }
             }
           },
-          Result::Err(x157) => {
+          Result::Err(x160) => {
             {
-              let x157 = Result::Err._0(x155) in
+              let x160 = Result::Err._0(x158) in
               {
-                let message/6 = x157 in
+                let message/6 = x160 in
                 ("err:" + message/6)
               }
             }
@@ -1542,11 +1572,11 @@ fn nested(value/4: Option[Result[int, string]]) -> string {
 
 fn optional_number(value/7: Option[int]) -> int {
   match value/7 {
-    Option::Some(x158) => {
+    Option::Some(x161) => {
       {
-        let x158 = Option::Some._0(value/7) in
+        let x161 = Option::Some._0(value/7) in
         {
-          let number/8 = x158 in
+          let number/8 = x161 in
           {
             number/8
           }
@@ -1561,19 +1591,19 @@ fn optional_number(value/7: Option[int]) -> int {
 
 fn is_non_shared(value/9: First[int]) -> bool {
   match value/9 {
-    First::Shared(x159) => {
+    First::Shared(x162) => {
       {
-        let x159 = First::Shared._0(value/9) in
+        let x162 = First::Shared._0(value/9) in
         false
       }
     },
     First::Idle => {
       true
     },
-    First::Data(x160, x161) => {
+    First::Data(x163, x164) => {
       {
-        let x160 = First::Data._0(value/9) in
-        let x161 = First::Data._1(value/9) in
+        let x163 = First::Data._0(value/9) in
+        let x164 = First::Data._1(value/9) in
         true
       }
     },
@@ -1583,18 +1613,18 @@ fn is_non_shared(value/9: First[int]) -> bool {
 fn take_once(value/10: Option[int]) -> int {
   let current/11 = inherent#Ref#Ref[Option[int]]#new(value/10) in
   let result/12 = inherent#Ref#Ref[int]#new(0) in
-  let _wild166 = while true {
+  let _wild169 = while true {
       {
-        let mtmp162 = inherent#Ref#Ref[Option[int]]#get(current/11) in
-        match mtmp162 {
-          Option::Some(x163) => {
+        let mtmp165 = inherent#Ref#Ref[Option[int]]#get(current/11) in
+        match mtmp165 {
+          Option::Some(x166) => {
             {
-              let x163 = Option::Some._0(mtmp162) in
+              let x166 = Option::Some._0(mtmp165) in
               {
-                let number/13 = x163 in
+                let number/13 = x166 in
                 {
-                  let _wild164 = inherent#Ref#Ref[int]#set(result/12, number/13) in
-                  let _wild165 = inherent#Ref#Ref[Option[int]]#set(current/11, Option::None) in
+                  let _wild167 = inherent#Ref#Ref[int]#set(result/12, number/13) in
+                  let _wild168 = inherent#Ref#Ref[Option[int]]#set(current/11, Option::None) in
                 }
               }
             }
@@ -1607,13 +1637,13 @@ fn take_once(value/10: Option[int]) -> int {
 }
 
 fn unbox(value/14: Boxed[int]) -> int {
-  let mtmp167 = value/14 in
-  match mtmp167 {
-    Boxed::Value(x168) => {
+  let mtmp170 = value/14 in
+  match mtmp170 {
+    Boxed::Value(x171) => {
       {
-        let x168 = Boxed::Value._0(mtmp167) in
+        let x171 = Boxed::Value._0(mtmp170) in
         {
-          let number/15 = x168 in
+          let number/15 = x171 in
           {
             number/15
           }
@@ -1625,22 +1655,22 @@ fn unbox(value/14: Boxed[int]) -> int {
 
 fn sum_boxed(values/16: Vec[Boxed[int]]) -> int {
   let result/17 = inherent#Ref#Ref[int]#new(0) in
-  let _wild176 = {
-    let for_source169 = values/16 in
-    let for_limit170 = @intrinsic(vec.len)(for_source169) in
-    let for_index171 = 0 in
-    while (for_index171 < for_limit170) {
+  let _wild179 = {
+    let for_source172 = values/16 in
+    let for_limit173 = @intrinsic(vec.len)(for_source172) in
+    let for_index174 = 0 in
+    while (for_index174 < for_limit173) {
         {
-          let for_item172 = @intrinsic(vec.get)(for_source169, for_index171) in
-          let _wild173 = for_index171 = (for_index171 + 1) in
-          match for_item172 {
-            Boxed::Value(x174) => {
+          let for_item175 = @intrinsic(vec.get)(for_source172, for_index174) in
+          let _wild176 = for_index174 = (for_index174 + 1) in
+          match for_item175 {
+            Boxed::Value(x177) => {
               {
-                let x174 = Boxed::Value._0(for_item172) in
+                let x177 = Boxed::Value._0(for_item175) in
                 {
-                  let number/18 = x174 in
+                  let number/18 = x177 in
                   {
-                    let _wild175 = inherent#Ref#Ref[int]#set(result/17, (inherent#Ref#Ref[int]#get(result/17) + number/18)) in
+                    let _wild178 = inherent#Ref#Ref[int]#set(result/17, (inherent#Ref#Ref[int]#get(result/17) + number/18)) in
                   }
                 }
               }
@@ -1655,21 +1685,21 @@ fn sum_boxed(values/16: Vec[Boxed[int]]) -> int {
 fn main() -> unit {
   let boxed/19 = {
     let vec_literal/1450 = inherent#Vec#Vec[Boxed[int]]#new() in
-    let _wild177 = inherent#Vec#Vec[Boxed[int]]#push(vec_literal/1450, Boxed::Value(19)) in
-    let _wild178 = inherent#Vec#Vec[Boxed[int]]#push(vec_literal/1450, Boxed::Value(23)) in
+    let _wild180 = inherent#Vec#Vec[Boxed[int]]#push(vec_literal/1450, Boxed::Value(19)) in
+    let _wild181 = inherent#Vec#Vec[Boxed[int]]#push(vec_literal/1450, Boxed::Value(23)) in
     vec_literal/1450
   } in
-  let _wild179 = println(classify(First::Shared(7))) in
-  let _wild180 = println(classify(First::Idle)) in
-  let _wild181 = println(classify(First::Data(9, "data"))) in
-  let _wild182 = println(nested(Option::Some(Result::Ok(11)))) in
-  let _wild183 = println(nested(Option::Some(Result::Err("bad")))) in
-  let _wild184 = println(nested(Option::None)) in
-  let _wild185 = println(optional_number(Option::Some(13))) in
-  let _wild186 = println(optional_number(Option::None)) in
-  let _wild187 = println(is_non_shared(First::Idle)) in
-  let _wild188 = println(is_non_shared(First::Shared(1))) in
-  let _wild189 = println(take_once(Option::Some(15))) in
-  let _wild190 = println(unbox(Boxed::Value(17))) in
+  let _wild182 = println(classify(First::Shared(7))) in
+  let _wild183 = println(classify(First::Idle)) in
+  let _wild184 = println(classify(First::Data(9, "data"))) in
+  let _wild185 = println(nested(Option::Some(Result::Ok(11)))) in
+  let _wild186 = println(nested(Option::Some(Result::Err("bad")))) in
+  let _wild187 = println(nested(Option::None)) in
+  let _wild188 = println(optional_number(Option::Some(13))) in
+  let _wild189 = println(optional_number(Option::None)) in
+  let _wild190 = println(is_non_shared(First::Idle)) in
+  let _wild191 = println(is_non_shared(First::Shared(1))) in
+  let _wild192 = println(take_once(Option::Some(15))) in
+  let _wild193 = println(unbox(Boxed::Value(17))) in
   println(sum_boxed(boxed/19))
 }

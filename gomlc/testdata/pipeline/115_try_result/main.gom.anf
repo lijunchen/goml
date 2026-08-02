@@ -1,120 +1,120 @@
 fn parse_flag(flag/0: bool) -> Result__int32__string {
-  join ret160(retv161: Result__int32__string) -> Result__int32__string {
-    retv161
+  join ret163(retv164: Result__int32__string) -> Result__int32__string {
+    retv164
   } in
-  join k162(jp163: Result__int32__string) -> Result__int32__string {
-    jump ret160(jp163)
+  join k165(jp166: Result__int32__string) -> Result__int32__string {
+    jump ret163(jp166)
   } in
   if flag/0 {
-    let t164 = Result__int32__string::Ok(7) in
-    jump k162(t164)
+    let t167 = Result__int32__string::Ok(7) in
+    jump k165(t167)
   } else {
-    let t165 = Result__int32__string::Err("nope") in
-    jump k162(t165)
+    let t168 = Result__int32__string::Err("nope") in
+    jump k165(t168)
   }
 }
 
 fn add(a/1: int32, b/2: int32) -> int32 {
-  join ret166(retv167: int32) -> int32 {
-    retv167
-  } in
-  let t168 = (a/1 + b/2) in
-  jump ret166(t168)
-}
-
-fn plus_one(flag/3: bool) -> Result__int32__string {
-  join ret169(retv170: Result__int32__string) -> Result__int32__string {
+  join ret169(retv170: int32) -> int32 {
     retv170
   } in
-  let run/5 = closure_env_run_0 { flag_0: flag/3 } in
-  let t171 = inherent#closure_env_run_0#closure_env_run_0#apply(run/5) in
+  let t171 = (a/1 + b/2) in
   jump ret169(t171)
 }
 
-fn show(res/6: Result__int32__string) -> string {
-  join ret172(retv173: string) -> string {
+fn plus_one(flag/3: bool) -> Result__int32__string {
+  join ret172(retv173: Result__int32__string) -> Result__int32__string {
     retv173
   } in
-  join k174(jp175: string) -> string {
-    jump ret172(jp175)
+  let run/5 = closure_env_run_0 { flag_0: flag/3 } in
+  let t174 = inherent#closure_env_run_0#closure_env_run_0#apply(run/5) in
+  jump ret172(t174)
+}
+
+fn show(res/6: Result__int32__string) -> string {
+  join ret175(retv176: string) -> string {
+    retv176
+  } in
+  join k177(jp178: string) -> string {
+    jump ret175(jp178)
   } in
   match res/6 {
     Tag_0 => {
-      let x155 = Result__int32__string::Ok._0(res/6) in
-      let value/7 = x155 in
-      let t176 = inherent#int32#int32#to_string(value/7) in
-      let t177 = ("ok=" + t176) in
-      jump k174(t177)
+      let x158 = Result__int32__string::Ok._0(res/6) in
+      let value/7 = x158 in
+      let t179 = inherent#int32#int32#to_string(value/7) in
+      let t180 = ("ok=" + t179) in
+      jump k177(t180)
     },
     Tag_1 => {
-      let x156 = Result__int32__string::Err._0(res/6) in
-      let err/8 = x156 in
-      let t178 = ("err=" + err/8) in
-      jump k174(t178)
+      let x159 = Result__int32__string::Err._0(res/6) in
+      let err/8 = x159 in
+      let t181 = ("err=" + err/8) in
+      jump k177(t181)
     },
   }
 }
 
 fn main() -> unit {
-  join ret179() -> unit {
+  join ret182() -> unit {
     ()
   } in
-  let t180 = plus_one(true) in
-  let t181 = show(t180) in
-  let _wild157 = println__T_string(t181) in
-  let t182 = plus_one(false) in
-  let t183 = show(t182) in
-  let _wild158 = println__T_string(t183) in
-  jump ret179()
+  let t183 = plus_one(true) in
+  let t184 = show(t183) in
+  let _wild160 = println__T_string(t184) in
+  let t185 = plus_one(false) in
+  let t186 = show(t185) in
+  let _wild161 = println__T_string(t186) in
+  jump ret182()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret184(retv185: string) -> string {
-    retv185
+  join ret187(retv188: string) -> string {
+    retv188
   } in
-  let t186 = @runtime(core.int32_to_string)(self/6) in
-  jump ret184(t186)
+  let t189 = @runtime(core.int32_to_string)(self/6) in
+  jump ret187(t189)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret187() -> unit {
+  join ret190() -> unit {
     ()
   } in
-  let t188 = trait_impl#ToString#string#to_string(value/1) in
-  let t189 = @runtime(core.string_println)(t188) in
-  jump ret187()
+  let t191 = trait_impl#ToString#string#to_string(value/1) in
+  let t192 = @runtime(core.string_println)(t191) in
+  jump ret190()
 }
 
 fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  join ret190(retv191: string) -> string {
-    retv191
+  join ret193(retv194: string) -> string {
+    retv194
   } in
-  jump ret190(self/38)
+  jump ret193(self/38)
 }
 
-fn inherent#closure_env_run_0#closure_env_run_0#apply(env159: closure_env_run_0) -> Result__int32__string {
-  join ret192(retv193: Result__int32__string) -> Result__int32__string {
-    retv193
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env162: closure_env_run_0) -> Result__int32__string {
+  join ret195(retv196: Result__int32__string) -> Result__int32__string {
+    retv196
   } in
-  let flag/3 = closure_env_run_0.flag_0(env159) in
-  let mtmp152 = parse_flag(flag/3) in
-  join k194(jp195: int32) -> Result__int32__string {
-    let value/4 = jp195 in
-    let t196 = add(value/4, 1) in
-    let t197 = Result__int32__string::Ok(t196) in
-    jump ret192(t197)
+  let flag/3 = closure_env_run_0.flag_0(env162) in
+  let mtmp155 = parse_flag(flag/3) in
+  join k197(jp198: int32) -> Result__int32__string {
+    let value/4 = jp198 in
+    let t199 = add(value/4, 1) in
+    let t200 = Result__int32__string::Ok(t199) in
+    jump ret195(t200)
   } in
-  match mtmp152 {
+  match mtmp155 {
     Tag_0 => {
-      let x153 = Result__int32__string::Ok._0(mtmp152) in
-      let try_value/15 = x153 in
-      jump k194(try_value/15)
+      let x156 = Result__int32__string::Ok._0(mtmp155) in
+      let try_value/15 = x156 in
+      jump k197(try_value/15)
     },
     Tag_1 => {
-      let x154 = Result__int32__string::Err._0(mtmp152) in
-      let try_residual/15 = x154 in
-      let t198 = Result__int32__string::Err(try_residual/15) in
-      jump ret192(t198)
+      let x157 = Result__int32__string::Err._0(mtmp155) in
+      let try_residual/15 = x157 in
+      let t201 = Result__int32__string::Err(try_residual/15) in
+      jump ret195(t201)
     },
   }
 }

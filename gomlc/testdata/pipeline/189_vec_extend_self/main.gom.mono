@@ -1,15 +1,15 @@
 fn print_values(values/0: Vec[int32]) -> unit {
-  let _wild152 = println__T_int(inherent#Vec#Vec[T]#len__T_int32(values/0)) in
+  let _wild155 = println__T_int(inherent#Vec#Vec[T]#len__T_int32(values/0)) in
   {
-    let for_source153 = values/0 in
-    let for_limit154 = @intrinsic(vec.len)(for_source153) in
-    let for_index155 = 0 in
-    while (for_index155 < for_limit154) {
+    let for_source156 = values/0 in
+    let for_limit157 = @intrinsic(vec.len)(for_source156) in
+    let for_index158 = 0 in
+    while (for_index158 < for_limit157) {
         {
-          let for_item156 = @intrinsic(vec.get)(for_source153, for_index155) in
-          let _wild157 = for_index155 = (for_index155 + 1) in
+          let for_item159 = @intrinsic(vec.get)(for_source156, for_index158) in
+          let _wild160 = for_index158 = (for_index158 + 1) in
           {
-            let value/1 = for_item156 in
+            let value/1 = for_item159 in
             {
               println__T_int32(value/1)
             }
@@ -21,19 +21,19 @@ fn print_values(values/0: Vec[int32]) -> unit {
 
 fn main() -> unit {
   let values/2 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild158 = inherent#Vec#Vec[T]#push__T_int32(values/2, 1) in
-  let _wild159 = inherent#Vec#Vec[T]#push__T_int32(values/2, 2) in
-  let _wild160 = inherent#Vec#Vec[T]#push__T_int32(values/2, 3) in
-  let _wild161 = inherent#Vec#Vec[T]#extend__T_int32(values/2, values/2) in
-  let _wild162 = print_values(values/2) in
+  let _wild161 = inherent#Vec#Vec[T]#push__T_int32(values/2, 1) in
+  let _wild162 = inherent#Vec#Vec[T]#push__T_int32(values/2, 2) in
+  let _wild163 = inherent#Vec#Vec[T]#push__T_int32(values/2, 3) in
+  let _wild164 = inherent#Vec#Vec[T]#extend__T_int32(values/2, values/2) in
+  let _wild165 = print_values(values/2) in
   let aliased/3 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild163 = inherent#Vec#Vec[T]#push__T_int32(aliased/3, 4) in
-  let _wild164 = inherent#Vec#Vec[T]#push__T_int32(aliased/3, 5) in
+  let _wild166 = inherent#Vec#Vec[T]#push__T_int32(aliased/3, 4) in
+  let _wild167 = inherent#Vec#Vec[T]#push__T_int32(aliased/3, 5) in
   let same/4 = aliased/3 in
-  let _wild165 = inherent#Vec#Vec[T]#extend__T_int32(aliased/3, same/4) in
-  let _wild166 = print_values(aliased/3) in
+  let _wild168 = inherent#Vec#Vec[T]#extend__T_int32(aliased/3, same/4) in
+  let _wild169 = print_values(aliased/3) in
   let empty/5 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild167 = inherent#Vec#Vec[T]#extend__T_int32(empty/5, empty/5) in
+  let _wild170 = inherent#Vec#Vec[T]#extend__T_int32(empty/5, empty/5) in
   print_values(empty/5)
 }
 

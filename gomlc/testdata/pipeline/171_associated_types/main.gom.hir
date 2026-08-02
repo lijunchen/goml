@@ -4,37 +4,37 @@ file main.gom
       type Item: ToString;
       fn get(Self) -> Self::Item;
     }
-    
+
     struct Number {
         value: int32,
     }
-    
+
     struct Box[T] {
         value: T,
     }
-    
+
     impl Provider for Number {
       type Item = int32;
       fn get(local/1/0: Number) -> int32 {
           self/0.value
       }
     }
-    
+
     impl[T: ToString] Provider for Box[T] {
       type Item = T;
       fn get(local/1/1: Box[T]) -> T {
           self/1.value
       }
     }
-    
+
     fn read[P: Provider](local/1/2: P) -> P::Item {
         provider/2.get()
     }
-    
+
     fn read_as[P, T](local/1/3: P) -> T where P: Provider, P::Item = T {
         provider/3.get()
     }
-    
+
     fn main() -> unit {
         string_println(def/1/5(Number {
                 value: 42

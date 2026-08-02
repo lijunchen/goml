@@ -1,25 +1,25 @@
 fn show_int(label/0: string, value/1: int32) -> unit {
-  join ret164() -> unit {
-    ()
-  } in
-  let t165 = inherent#int32#int32#to_string(value/1) in
-  let t166 = (label/0 + t165) in
-  let mtmp152 = println__T_string(t166) in
-  jump ret164()
-}
-
-fn show_bool(label/2: string, value/3: bool) -> unit {
   join ret167() -> unit {
     ()
   } in
-  let t168 = trait_impl#ToString#bool#to_string(value/3) in
-  let t169 = (label/2 + t168) in
-  let mtmp153 = println__T_string(t169) in
+  let t168 = inherent#int32#int32#to_string(value/1) in
+  let t169 = (label/0 + t168) in
+  let mtmp155 = println__T_string(t169) in
   jump ret167()
 }
 
-fn main() -> unit {
+fn show_bool(label/2: string, value/3: bool) -> unit {
   join ret170() -> unit {
+    ()
+  } in
+  let t171 = trait_impl#ToString#bool#to_string(value/3) in
+  let t172 = (label/2 + t171) in
+  let mtmp156 = println__T_string(t172) in
+  jump ret170()
+}
+
+fn main() -> unit {
+  join ret173() -> unit {
     ()
   } in
   let base/4 = 10 in
@@ -27,107 +27,107 @@ fn main() -> unit {
   let diff/6 = (sum/5 - 3) in
   let prod/7 = (diff/6 * 2) in
   let quot/8 = (prod/7 / 4) in
-  let mtmp154 = show_int("sum=", sum/5) in
-  let mtmp155 = show_int("diff=", diff/6) in
-  let mtmp156 = show_int("prod=", prod/7) in
-  let mtmp157 = show_int("quot=", quot/8) in
-  join k171(jp172: bool) -> unit {
-    let and_result/9 = jp172 in
-    join k173(jp174: bool) -> unit {
-      let or_result/10 = jp174 in
+  let mtmp157 = show_int("sum=", sum/5) in
+  let mtmp158 = show_int("diff=", diff/6) in
+  let mtmp159 = show_int("prod=", prod/7) in
+  let mtmp160 = show_int("quot=", quot/8) in
+  join k174(jp175: bool) -> unit {
+    let and_result/9 = jp175 in
+    join k176(jp177: bool) -> unit {
+      let or_result/10 = jp177 in
       let not_result/11 = (!false) in
-      let t185 = (!and_result/9) in
-      join k177(jp178: bool) -> unit {
-        join k175(jp176: bool) -> unit {
-          let mixed/12 = jp176 in
-          let mtmp160 = show_bool("and=", and_result/9) in
-          let mtmp161 = show_bool("or=", or_result/10) in
-          let mtmp162 = show_bool("not=", not_result/11) in
-          let mtmp163 = show_bool("mixed=", mixed/12) in
-          jump ret170()
+      let t188 = (!and_result/9) in
+      join k180(jp181: bool) -> unit {
+        join k178(jp179: bool) -> unit {
+          let mixed/12 = jp179 in
+          let mtmp163 = show_bool("and=", and_result/9) in
+          let mtmp164 = show_bool("or=", or_result/10) in
+          let mtmp165 = show_bool("not=", not_result/11) in
+          let mtmp166 = show_bool("mixed=", mixed/12) in
+          jump ret173()
         } in
-        if jp178 {
-          jump k175(true)
+        if jp181 {
+          jump k178(true)
         } else {
-          let t179 = (diff/6 - quot/8) in
-          let t180 = (t179 + base/4) in
-          let t181 = (sum/5 / 2) in
-          let mtmp159 = (t180 - t181) in
-          join k182(jp183: bool) -> unit {
-            let t184 = (!jp183) in
-            jump k175(t184)
+          let t182 = (diff/6 - quot/8) in
+          let t183 = (t182 + base/4) in
+          let t184 = (sum/5 / 2) in
+          let mtmp162 = (t183 - t184) in
+          join k185(jp186: bool) -> unit {
+            let t187 = (!jp186) in
+            jump k178(t187)
           } in
-          match mtmp159 {
+          match mtmp162 {
             0 => {
-              jump k182(false)
+              jump k185(false)
             },
             _ => {
-              jump k182(true)
+              jump k185(true)
             },
           }
         }
       } in
-      if t185 {
-        let t186 = (prod/7 * base/4) in
-        let t187 = (sum/5 + t186) in
-        let t188 = (prod/7 / 2) in
-        let mtmp158 = (t187 - t188) in
-        join k189(jp190: bool) -> unit {
-          jump k177(jp190)
+      if t188 {
+        let t189 = (prod/7 * base/4) in
+        let t190 = (sum/5 + t189) in
+        let t191 = (prod/7 / 2) in
+        let mtmp161 = (t190 - t191) in
+        join k192(jp193: bool) -> unit {
+          jump k180(jp193)
         } in
-        match mtmp158 {
+        match mtmp161 {
           0 => {
-            jump k189(false)
+            jump k192(false)
           },
           _ => {
-            jump k189(true)
+            jump k192(true)
           },
         }
       } else {
-        jump k177(false)
+        jump k180(false)
       }
     } in
     if true {
-      jump k173(true)
+      jump k176(true)
     } else {
-      jump k173(false)
+      jump k176(false)
     }
   } in
   if true {
-    jump k171(false)
+    jump k174(false)
   } else {
-    jump k171(false)
+    jump k174(false)
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret191() -> unit {
+  join ret194() -> unit {
     ()
   } in
-  let t192 = trait_impl#ToString#string#to_string(value/1) in
-  let t193 = @runtime(core.string_println)(t192) in
-  jump ret191()
+  let t195 = trait_impl#ToString#string#to_string(value/1) in
+  let t196 = @runtime(core.string_println)(t195) in
+  jump ret194()
 }
 
 fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  join ret194(retv195: string) -> string {
-    retv195
-  } in
-  let t196 = @runtime(core.int32_to_string)(self/6) in
-  jump ret194(t196)
-}
-
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
   join ret197(retv198: string) -> string {
     retv198
   } in
-  let t199 = @runtime(core.bool_to_string)(self/37) in
+  let t199 = @runtime(core.int32_to_string)(self/6) in
   jump ret197(t199)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
   join ret200(retv201: string) -> string {
     retv201
   } in
-  jump ret200(self/38)
+  let t202 = @runtime(core.bool_to_string)(self/37) in
+  jump ret200(t202)
+}
+
+fn trait_impl#ToString#string#to_string(self/38: string) -> string {
+  join ret203(retv204: string) -> string {
+    retv204
+  } in
+  jump ret203(self/38)
 }
