@@ -574,3 +574,43 @@ fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
         ),
     )
 }
+
+fn required_position(value: string, expected: string) -> int {
+    match strings::find(value, expected) {
+        Some(position) => position,
+        None => {
+            testing::fail("missing " + expected);
+            0
+        },
+    }
+}
+
+#[test]
+fn hoists_safe_loop_invariants() -> unit {
+    let source = "fn work(base: int, count: int) -> int { let mut index = 0; let mut result = 0; while index < count { let square = base * base; let scaled = square * 17; let offset = scaled + base; result = result + offset; index = index + 1; }; result }";
+    let lowered = lower_source(source);
+    match verify(lowered) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let output = encoded_function(encode(lowered), "work");
+    let loop_position = required_position(output, "joinrec");
+    testing::assert(required_position(output, "let square/4 = (base/0 * base/0)") < loop_position);
+    testing::assert(required_position(output, "let scaled/5 = (square/4 * 17)") < loop_position);
+    testing::assert(required_position(output, "let offset/6 = (scaled/5 + base/0)") < loop_position);
+    testing::assert(required_position(output, "let t") > loop_position)
+}
+
+#[test]
+fn preserves_trapping_and_mutable_loop_values() -> unit {
+    let source = "fn work(divisor: int, count: int) -> int { let mut index = 0; let mut changing = 1; let mut result = 0; while index < count { let quotient = 100 / divisor; let derived = changing + 1; result = result + quotient + derived; changing = changing + 1; index = index + 1; }; result }";
+    let lowered = lower_source(source);
+    match verify(lowered) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    let output = encoded_function(encode(lowered), "work");
+    let loop_position = required_position(output, "joinrec");
+    testing::assert(required_position(output, "let quotient/5 = (100 / divisor/0)") > loop_position);
+    testing::assert(required_position(output, "let derived/6 = (changing/3 + 1)") > loop_position)
+}
