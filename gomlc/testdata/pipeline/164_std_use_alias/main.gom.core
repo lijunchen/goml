@@ -1477,6 +1477,93 @@ fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/29
   }
 }
 
+fn std::env::args() -> Vec[string] {
+  @runtime(std.env.args)()
+}
+
+fn std::env::current_dir() -> Result[string, string] {
+  let mtmp0 = @runtime(std.env.current_dir)() in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    let x3 = mtmp0.2 in
+    {
+      let err/2 = x3 in
+      {
+        let value/1 = x2 in
+        {
+          let ok/0 = x1 in
+          {
+            if ok/0 {
+                {
+                  Result::Ok(value/1)
+                }
+            } else {
+                {
+                  Result::Err(err/2)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::env::current_exe() -> Result[string, string] {
+  let mtmp4 = @runtime(std.env.current_exe)() in
+  {
+    let x5 = mtmp4.0 in
+    let x6 = mtmp4.1 in
+    let x7 = mtmp4.2 in
+    {
+      let err/5 = x7 in
+      {
+        let value/4 = x6 in
+        {
+          let ok/3 = x5 in
+          {
+            if ok/3 {
+                {
+                  Result::Ok(value/4)
+                }
+            } else {
+                {
+                  Result::Err(err/5)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::env::var(name/6: string) -> Option[string] {
+  let mtmp8 = @runtime(std.env.var)(name/6) in
+  {
+    let x9 = mtmp8.0 in
+    let x10 = mtmp8.1 in
+    {
+      let value/8 = x10 in
+      {
+        let found/7 = x9 in
+        {
+          if found/7 {
+              {
+                Option::Some(value/8)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
   std::bytes::Bytes { values: {
     let vec_literal/130 = inherent#Vec#Vec[uint8]#new() in
@@ -1568,93 +1655,6 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::B
           } else {
               {
                 Result::Err("invalid UTF-8")
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::env::args() -> Vec[string] {
-  @runtime(std.env.args)()
-}
-
-fn std::env::current_dir() -> Result[string, string] {
-  let mtmp0 = @runtime(std.env.current_dir)() in
-  {
-    let x1 = mtmp0.0 in
-    let x2 = mtmp0.1 in
-    let x3 = mtmp0.2 in
-    {
-      let err/2 = x3 in
-      {
-        let value/1 = x2 in
-        {
-          let ok/0 = x1 in
-          {
-            if ok/0 {
-                {
-                  Result::Ok(value/1)
-                }
-            } else {
-                {
-                  Result::Err(err/2)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::env::current_exe() -> Result[string, string] {
-  let mtmp4 = @runtime(std.env.current_exe)() in
-  {
-    let x5 = mtmp4.0 in
-    let x6 = mtmp4.1 in
-    let x7 = mtmp4.2 in
-    {
-      let err/5 = x7 in
-      {
-        let value/4 = x6 in
-        {
-          let ok/3 = x5 in
-          {
-            if ok/3 {
-                {
-                  Result::Ok(value/4)
-                }
-            } else {
-                {
-                  Result::Err(err/5)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::env::var(name/6: string) -> Option[string] {
-  let mtmp8 = @runtime(std.env.var)(name/6) in
-  {
-    let x9 = mtmp8.0 in
-    let x10 = mtmp8.1 in
-    {
-      let value/8 = x10 in
-      {
-        let found/7 = x9 in
-        {
-          if found/7 {
-              {
-                Option::Some(value/8)
-              }
-          } else {
-              {
-                Option::None
               }
           }
         }

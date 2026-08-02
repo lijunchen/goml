@@ -1,6 +1,6 @@
 fn countdown(start/0: int32) -> FnIterator[int32] {
     let current/1: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])((start/0 : int32));
-    (FnIterator::from_fn : (() -> Option[int32]) -> FnIterator[int32])(|| => {
+    (FnIterator[int32]::from_fn : (() -> Option[int32]) -> FnIterator[int32])(|| => {
         let value/2: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((current/1 : Ref[int32]));
         if (value/2 : int32) > 0 {
             {

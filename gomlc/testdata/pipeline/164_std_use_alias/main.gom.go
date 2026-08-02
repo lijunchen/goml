@@ -24,10 +24,6 @@ func _goml_runtime_std_io_println(value string) struct{} {
     return struct{}{}
 }
 
-type _goml_vec_uint8 struct {
-    items []uint8
-}
-
 type _goml_vec_string struct {
     items []string
 }
@@ -36,15 +32,19 @@ func vec_len__Vec_6string(vec *_goml_vec_string) int {
     return int(len(vec.items))
 }
 
-type Tuple2_4bool_6string struct {
-    _0 bool
-    _1 string
+type _goml_vec_uint8 struct {
+    items []uint8
 }
 
 type Tuple3_4bool_6string_6string struct {
     _0 bool
     _1 string
     _2 string
+}
+
+type Tuple2_4bool_6string struct {
+    _0 bool
+    _1 string
 }
 
 type Tuple3_4bool_10Vec_5uint8_6string struct {
@@ -56,20 +56,6 @@ type Tuple3_4bool_10Vec_5uint8_6string struct {
 type _goml_m_std_p_bytes_p_Bytes struct {
     values *_goml_vec_uint8
 }
-
-type Option__uint8 interface {
-    isOption__uint8()
-}
-
-type Option__uint8_None struct {}
-
-func (_ Option__uint8_None) isOption__uint8() {}
-
-type Option__uint8_Some struct {
-    _0 uint8
-}
-
-func (_ Option__uint8_Some) isOption__uint8() {}
 
 type Result__string__string interface {
     isResult__string__string()
@@ -100,6 +86,20 @@ type Option__string_Some struct {
 }
 
 func (_ Option__string_Some) isOption__string() {}
+
+type Option__uint8 interface {
+    isOption__uint8()
+}
+
+type Option__uint8_None struct {}
+
+func (_ Option__uint8_None) isOption__uint8() {}
+
+type Option__uint8_Some struct {
+    _0 uint8
+}
+
+func (_ Option__uint8_Some) isOption__uint8() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____string interface {
     is_goml_m_Result____std_p_bytes_p_Bytes____string()
@@ -134,10 +134,10 @@ type Result__unit__string_Err struct {
 func (_ Result__unit__string_Err) isResult__unit__string() {}
 
 func _goml_m_std_p_env_p_args() *_goml_vec_string {
-    var retv215 *_goml_vec_string
-    var t216 *_goml_vec_string = _goml_runtime_std_env_args()
-    retv215 = t216
-    return retv215
+    var retv153 *_goml_vec_string
+    var t154 *_goml_vec_string = _goml_runtime_std_env_args()
+    retv153 = t154
+    return retv153
 }
 
 func main0() struct{} {

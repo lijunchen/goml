@@ -1479,7 +1479,7 @@ fn inherent#Result#Result[T,E]#and_then[T, E, U](self/297: Result[T, E], next/29
 
 fn countdown(start/0: int32) -> FnIterator[int32] {
   let current/1 = inherent#Ref#Ref[int32]#new(start/0) in
-  inherent#FnIterator#FnIterator#from_fn(|| => {
+  inherent#FnIterator#FnIterator[int32]#from_fn(|| => {
     let value/2 = inherent#Ref#Ref[int32]#get(current/1) in
     if (value/2 > 0) {
         {

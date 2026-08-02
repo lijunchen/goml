@@ -621,16 +621,16 @@ func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__40 int) string {
     return retv343
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__int(capacity__125 int) *_goml_vec_int {
-    var retv346 *_goml_vec_int
-    var t347 *_goml_vec_int = vec_with_capacity__Vec_3int(capacity__125)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int(self__137 *_goml_vec_int) int {
+    var retv346 int
+    var t347 int = vec_len__Vec_3int(self__137)
     retv346 = t347
     return retv346
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int(self__137 *_goml_vec_int) int {
-    var retv349 int
-    var t350 int = vec_len__Vec_3int(self__137)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__int(capacity__125 int) *_goml_vec_int {
+    var retv349 *_goml_vec_int
+    var t350 *_goml_vec_int = vec_with_capacity__Vec_3int(capacity__125)
     retv349 = t350
     return retv349
 }
@@ -640,16 +640,16 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int(self__126 *_goml_vec_i
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__int32(capacity__125 int) *_goml_vec_int32 {
-    var retv354 *_goml_vec_int32
-    var t355 *_goml_vec_int32 = vec_with_capacity__Vec_5int32(capacity__125)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__137 *_goml_vec_int32) int {
+    var retv354 int
+    var t355 int = vec_len__Vec_5int32(self__137)
     retv354 = t355
     return retv354
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__137 *_goml_vec_int32) int {
-    var retv357 int
-    var t358 int = vec_len__Vec_5int32(self__137)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T__int32(capacity__125 int) *_goml_vec_int32 {
+    var retv357 *_goml_vec_int32
+    var t358 *_goml_vec_int32 = vec_with_capacity__Vec_5int32(capacity__125)
     retv357 = t358
     return retv357
 }
@@ -659,16 +659,16 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__126 *_goml_vec
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T___l_int32_x3b_2_r_(capacity__125 int) *_goml_vec_Array_2_5int32 {
-    var retv362 *_goml_vec_Array_2_5int32
-    var t363 *_goml_vec_Array_2_5int32 = vec_with_capacity__Vec_14Array_2_5int32(capacity__125)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T___l_int32_x3b_2_r_(self__137 *_goml_vec_Array_2_5int32) int {
+    var retv362 int
+    var t363 int = vec_len__Vec_14Array_2_5int32(self__137)
     retv362 = t363
     return retv362
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T___l_int32_x3b_2_r_(self__137 *_goml_vec_Array_2_5int32) int {
-    var retv365 int
-    var t366 int = vec_len__Vec_14Array_2_5int32(self__137)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_with__capacity____T___l_int32_x3b_2_r_(capacity__125 int) *_goml_vec_Array_2_5int32 {
+    var retv365 *_goml_vec_Array_2_5int32
+    var t366 *_goml_vec_Array_2_5int32 = vec_with_capacity__Vec_14Array_2_5int32(capacity__125)
     retv365 = t366
     return retv365
 }
