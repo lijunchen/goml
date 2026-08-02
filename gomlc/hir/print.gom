@@ -1,135 +1,89 @@
 package hir;
 
 use gomlc::ast;
+use gomlc::pretty;
 use std::text;
 
-fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in 0..count {
-        builder.write_char(' ')
-    }
-}
-
-fn newline(builder: text::StringBuilder, indent: int) -> unit {
-    builder.write_char('\n');
-    write_spaces(builder, indent)
-}
-
-fn write_joined_strings(builder: text::StringBuilder, values: Vec[string], separator: string) -> unit {
-    let mut index = 0;
+fn type_docs(values: Vec[TypeExpr]) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        builder.write_string(value);
-        index = index + 1;
-    }
+        result.push(type_doc(value))
+    };
+    result
 }
 
-fn write_types(builder: text::StringBuilder, values: Vec[TypeExpr], separator: string) -> unit {
-    let mut index = 0;
-    for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        write_type(builder, value);
-        index = index + 1;
-    }
-}
-
-fn write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
+fn type_doc(value: TypeExpr) -> pretty::Doc {
     match value {
-        Unit => builder.write_string("unit"),
-        Bool => builder.write_string("bool"),
-        Int => builder.write_string("int"),
-        Int8 => builder.write_string("int8"),
-        Int16 => builder.write_string("int16"),
-        Int32 => builder.write_string("int32"),
-        Int64 => builder.write_string("int64"),
-        Uint => builder.write_string("uint"),
-        Uint8 => builder.write_string("uint8"),
-        Uint16 => builder.write_string("uint16"),
-        Uint32 => builder.write_string("uint32"),
-        Uint64 => builder.write_string("uint64"),
-        Float32 => builder.write_string("float32"),
-        Float64 => builder.write_string("float64"),
-        String => builder.write_string("string"),
-        Char => builder.write_string("char"),
-        Tuple { items: values } => {
-            builder.write_char('(');
-            write_types(builder, values, ", ");
-            builder.write_char(')')
-        },
-        Con { name } => builder.write_string(name),
+        Unit => pretty::text("unit"),
+        Bool => pretty::text("bool"),
+        Int => pretty::text("int"),
+        Int8 => pretty::text("int8"),
+        Int16 => pretty::text("int16"),
+        Int32 => pretty::text("int32"),
+        Int64 => pretty::text("int64"),
+        Uint => pretty::text("uint"),
+        Uint8 => pretty::text("uint8"),
+        Uint16 => pretty::text("uint16"),
+        Uint32 => pretty::text("uint32"),
+        Uint64 => pretty::text("uint64"),
+        Float32 => pretty::text("float32"),
+        Float64 => pretty::text("float64"),
+        String => pretty::text("string"),
+        Char => pretty::text("char"),
+        Tuple { items: values } => pretty::delimited("(", ",", ")", type_docs(values)),
+        Con { name } => pretty::text(name),
         Projection { base, associated } => {
-            write_type(builder, base);
-            builder.write_string("::");
-            builder.write_string(associated)
+            pretty::append(type_doc(base), pretty::text("::" + associated))
         },
-        Dyn { trait_name: name } => {
-            builder.write_string("dyn ");
-            builder.write_string(name)
-        },
+        Dyn { trait_name: name } => pretty::text("dyn " + name),
         App { ty: base, args } => {
-            write_type(builder, base);
-            if !args.is_empty() {
-                builder.write_char('[');
-                write_types(builder, args, ", ");
-                builder.write_char(']')
+            if args.is_empty() {
+                type_doc(base)
             } else {
-                ()
+                pretty::append(type_doc(base), pretty::delimited("[", ",", "]", type_docs(args)))
             }
         },
-        Array { len: length, elem: element } => {
-            builder.write_char('[');
-            write_type(builder, element);
-            builder.write_string("; ");
-            builder.write_string(length);
-            builder.write_char(']')
-        },
-        Func { params, ret_ty } => {
-            builder.write_char('(');
-            write_types(builder, params, ", ");
-            builder.write_string(") -> ");
-            write_type(builder, ret_ty)
-        },
+        Array { len: length, elem: element } => pretty::concat(
+            Vec::[pretty::text("["), type_doc(element), pretty::text("; " + length + "]")],
+        ),
+        Func { params, ret_ty } => pretty::concat(
+            Vec::[
+                pretty::delimited("(", ",", ")", type_docs(params)),
+                pretty::text(" -> "),
+                type_doc(ret_ty),
+            ],
+        ),
     }
 }
 
-fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
-    builder.write_string(value.name);
-    if !value.args.is_empty() {
-        builder.write_char('[');
-        write_types(builder, value.args, ", ");
-        builder.write_char(']')
+fn trait_ref_doc(value: TraitRef) -> pretty::Doc {
+    if value.args.is_empty() {
+        pretty::text(value.name)
     } else {
-        ()
+        pretty::append(
+            pretty::text(value.name),
+            pretty::delimited("[", ",", "]", type_docs(value.args)),
+        )
     }
 }
 
-fn write_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef], separator: string) -> unit {
-    let mut index = 0;
+fn trait_ref_docs(values: Vec[TraitRef]) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        write_trait_ref(builder, value);
-        index = index + 1;
-    }
+        result.push(trait_ref_doc(value))
+    };
+    result
 }
 
-fn write_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
-    if !values.is_empty() {
-        builder.write_char('[');
-        write_joined_strings(builder, values, ", ");
-        builder.write_char(']')
+fn generics_doc(values: Vec[string]) -> pretty::Doc {
+    if values.is_empty() {
+        pretty::nil()
     } else {
-        ()
+        let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+        for value in values {
+            result.push(pretty::text(value))
+        };
+        pretty::delimited("[", ",", "]", result)
     }
 }
 
@@ -146,125 +100,114 @@ fn find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Option[Vec
     Option::None
 }
 
-fn write_bounded_generics(
-    builder: text::StringBuilder,
-    generics: Vec[string],
-    bounds: Vec[(string, Vec[TraitRef])],
-) -> unit {
-    if !generics.is_empty() {
-        builder.write_char('[');
-        let mut index = 0;
+fn bounded_generics_doc(generics: Vec[string], bounds: Vec[(string, Vec[TraitRef])]) -> pretty::Doc {
+    if generics.is_empty() {
+        pretty::nil()
+    } else {
+        let values: Vec[pretty::Doc] = Vec::with_capacity(generics.len());
         for generic in generics {
-            if index > 0 {
-                builder.write_string(", ")
-            } else {
-                ()
-            };
-            builder.write_string(generic);
-            match find_bounds(bounds, generic) {
+            let suffix = match find_bounds(bounds, generic) {
                 Some(values) => {
-                    if !values.is_empty() {
-                        builder.write_string(": ");
-                        write_trait_refs(builder, values, " + ")
+                    if values.is_empty() {
+                        pretty::nil()
                     } else {
-                        ()
+                        pretty::append(
+                            pretty::text(": "),
+                            pretty::join(pretty::text(" + "), trait_ref_docs(values)),
+                        )
                     }
                 },
-                None => (),
+                None => pretty::nil(),
             };
-            index = index + 1;
+            values.push(pretty::append(pretty::text(generic), suffix))
         };
-        builder.write_char(']')
-    } else {
-        ()
+        pretty::delimited("[", ",", "]", values)
     }
 }
 
-fn write_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
-    if !values.is_empty() {
-        builder.write_string(" where ");
-        let mut index = 0;
-        for value in values {
-            if index > 0 {
-                builder.write_string(", ")
-            } else {
-                ()
-            };
-            match value {
-                Trait { ty, trait_ref } => {
-                    write_type(builder, ty);
-                    builder.write_string(": ");
-                    write_trait_ref(builder, trait_ref)
-                },
-                Equality { lhs, rhs } => {
-                    write_type(builder, lhs);
-                    builder.write_string(" = ");
-                    write_type(builder, rhs)
-                },
-            };
-            index = index + 1;
-        }
-    } else {
-        ()
-    }
-}
-
-fn write_attributes(builder: text::StringBuilder, values: Vec[ast::Attribute]) -> unit {
-    for value in values {
-        builder.write_string(value.text)
-    }
-}
-
-fn write_local_debug(builder: text::StringBuilder, value: LocalId) -> unit {
-    builder.write_string("local/");
-    builder.write_string(value.pkg.to_string());
-    builder.write_char('/');
-    builder.write_string(value.index.to_string())
-}
-
-fn write_local_name(builder: text::StringBuilder, value: LocalId) -> unit {
-    builder.write_string(value.hint);
-    builder.write_char('/');
-    builder.write_string(value.index.to_string())
-}
-
-fn write_def(builder: text::StringBuilder, value: DefId) -> unit {
-    builder.write_string("def/");
-    builder.write_string(value.pkg.to_string());
-    builder.write_char('/');
-    builder.write_string(value.index.to_string())
-}
-
-fn write_name_ref(builder: text::StringBuilder, value: NameRef) -> unit {
+fn predicate_doc(value: Predicate) -> pretty::Doc {
     match value {
-        Local(local) => write_local_name(builder, local),
-        Def(def_id) => write_def(builder, def_id),
-        Other(name) => builder.write_string(name),
-    }
-}
-
-fn write_constructor(builder: text::StringBuilder, value: ConstructorRef) -> unit {
-    match value {
-        Resolved { enum_def: def_id, variant_index: variant } => {
-            builder.write_string("ctor(");
-            write_def(builder, def_id);
-            builder.write_string("::v");
-            builder.write_string(variant.to_string());
-            builder.write_char(')')
-        },
-        Unresolved(name) => builder.write_string(name),
-    }
-}
-
-fn write_pattern_head(builder: text::StringBuilder, value: PatternHead) -> unit {
-    match value {
-        Resolved { enum_def, variant_index, span: _ } => write_constructor(
-            builder,
-            ConstructorRef::Resolved { enum_def, variant_index },
+        Trait { ty, trait_ref } => pretty::concat(
+            Vec::[type_doc(ty), pretty::text(": "), trait_ref_doc(trait_ref)],
         ),
-        Qualified { name, span: _ } | Contextual { name, span: _ } => {
-            builder.write_string(name)
+        Equality { lhs, rhs } => pretty::concat(
+            Vec::[type_doc(lhs), pretty::text(" = "), type_doc(rhs)],
+        ),
+    }
+}
+
+fn predicates_doc(values: Vec[Predicate]) -> pretty::Doc {
+    if values.is_empty() {
+        pretty::nil()
+    } else {
+        let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+        for value in values {
+            result.push(predicate_doc(value))
+        };
+        pretty::group(
+            pretty::concat(
+                Vec::[
+                    pretty::text(" where"),
+                    pretty::nest(
+                        2,
+                        pretty::append(
+                            pretty::line(),
+                            pretty::join(pretty::append(pretty::text(","), pretty::line()), result),
+                        ),
+                    ),
+                ],
+            ),
+        )
+    }
+}
+
+fn attributes_doc(values: Vec[ast::Attribute]) -> pretty::Doc {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(pretty::text(value.text))
+    };
+    pretty::concat(result)
+}
+
+fn local_debug_doc(value: LocalId) -> pretty::Doc {
+    pretty::text("local/" + value.pkg.to_string() + "/" + value.index.to_string())
+}
+
+fn local_name_doc(value: LocalId) -> pretty::Doc {
+    pretty::text(value.hint + "/" + value.index.to_string())
+}
+
+fn def_doc(value: DefId) -> pretty::Doc {
+    pretty::text("def/" + value.pkg.to_string() + "/" + value.index.to_string())
+}
+
+fn name_ref_doc(value: NameRef) -> pretty::Doc {
+    match value {
+        Local(local) => local_name_doc(local),
+        Def(def_id) => def_doc(def_id),
+        Other(name) => pretty::text(name),
+    }
+}
+
+fn constructor_doc(value: ConstructorRef) -> pretty::Doc {
+    match value {
+        Resolved { enum_def: def_id, variant_index: variant } => pretty::concat(
+            Vec::[
+                pretty::text("ctor("),
+                def_doc(def_id),
+                pretty::text("::v" + variant.to_string() + ")"),
+            ],
+        ),
+        Unresolved(name) => pretty::text(name),
+    }
+}
+
+fn pattern_head_doc(value: PatternHead) -> pretty::Doc {
+    match value {
+        Resolved { enum_def, variant_index, span: _ } => {
+            constructor_doc(ConstructorRef::Resolved { enum_def, variant_index })
         },
+        Qualified { name, span: _ } | Contextual { name, span: _ } => pretty::text(name),
     }
 }
 
@@ -424,129 +367,222 @@ fn binary_symbol(value: ast::BinaryOp) -> string {
     }
 }
 
-fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], separator: string, indent: int) -> unit {
-    let mut index = 0;
+fn quoted_string_doc(value: string) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_quoted_string(builder, value);
+    pretty::text(builder.finish())
+}
+
+fn byte_literal_doc(value: string) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_byte_literal(builder, value);
+    pretty::text(builder.finish())
+}
+
+fn byte_string_doc(values: Vec[string]) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_byte_string(builder, values);
+    pretty::text(builder.finish())
+}
+
+fn interpolated_text_doc(value: string) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_interpolated_text(builder, value);
+    pretty::text(builder.finish())
+}
+
+fn expr_docs(values: Vec[Expr]) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        write_expr(builder, value, indent);
-        index = index + 1;
-    }
+        result.push(expr_doc(value))
+    };
+    result
 }
 
-fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit {
-    if value.stmts.is_empty() {
-        match value.tail {
-            None => builder.write_string("{}"),
-            Some(tail) => {
-                builder.write_char('{');
-                newline(builder, indent + 4);
-                write_expr(builder, tail, indent + 4);
-                newline(builder, indent);
-                builder.write_char('}')
-            },
-        }
+fn pat_docs(values: Vec[Pat]) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(pat_doc(value))
+    };
+    result
+}
+
+fn record_doc(header: pretty::Doc, values: Vec[pretty::Doc]) -> pretty::Doc {
+    if values.is_empty() {
+        pretty::append(header, pretty::text(" {}"))
     } else {
-        builder.write_char('{');
-        for stmt in value.stmts {
-            newline(builder, indent + 4);
-            write_stmt(builder, stmt, indent + 4);
-            builder.write_char(';')
-        };
-        match value.tail {
-            Some(tail) => {
-                newline(builder, indent + 4);
-                write_expr(builder, tail, indent + 4)
-            },
-            None => (),
-        };
-        newline(builder, indent);
-        builder.write_char('}')
+        pretty::group(
+            pretty::concat(
+                Vec::[
+                    header,
+                    pretty::text(" {"),
+                    pretty::nest(
+                        2,
+                        pretty::append(
+                            pretty::line(),
+                            pretty::join(pretty::append(pretty::text(","), pretty::line()), values),
+                        ),
+                    ),
+                    pretty::line(),
+                    pretty::text("}"),
+                ],
+            ),
+        )
     }
 }
 
-fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
-    match value {
-        Defer { expr } => {
-            builder.write_string("defer ");
-            write_expr(builder, expr, indent)
-        },
-        Let { is_mut, pat, annotation, value: expr, else_branch } => {
-            builder.write_string("let ");
-            if is_mut {
-                builder.write_string("mut ")
+fn braced_docs(values: Vec[pretty::Doc], indentation: int) -> pretty::Doc {
+    if values.is_empty() {
+        pretty::text("{}")
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::text("{"),
+                pretty::nest(indentation, pretty::append(pretty::hardline(), pretty::stack(values))),
+                pretty::hardline(),
+                pretty::text("}"),
+            ],
+        )
+    }
+}
+
+fn block_doc(value: Block) -> pretty::Doc {
+    let values: Vec[pretty::Doc] = Vec::with_capacity(
+        value.stmts.len()
+            + if value.tail.is_some() {
+                1
             } else {
-                ()
+                0
+            },
+    );
+    for statement in value.stmts {
+        values.push(pretty::append(stmt_doc(statement), pretty::text(";")))
+    };
+    match value.tail {
+        Some(tail) => values.push(expr_doc(tail)),
+        None => (),
+    };
+    braced_docs(values, 4)
+}
+
+fn stmt_doc(value: Stmt) -> pretty::Doc {
+    match value {
+        Defer { expr } => pretty::group(
+            pretty::concat(
+                Vec::[
+                    pretty::text("defer"),
+                    pretty::nest(2, pretty::append(pretty::line(), expr_doc(expr))),
+                ],
+            ),
+        ),
+        Let { is_mut, pat, annotation, value: expr, else_branch } => {
+            let annotation_doc = match annotation {
+                Some(ty) => pretty::append(pretty::text(": "), type_doc(ty)),
+                None => pretty::nil(),
             };
-            write_pat(builder, pat, indent);
-            match annotation {
-                Some(ty) => {
-                    builder.write_string(": ");
-                    write_type(builder, ty)
-                },
-                None => (),
+            let else_doc = match else_branch {
+                Some(value) => pretty::concat(
+                    Vec::[
+                        pretty::text(" else"),
+                        pretty::nest(2, pretty::append(pretty::line(), expr_doc(value))),
+                    ],
+                ),
+                None => pretty::nil(),
             };
-            builder.write_string(" = ");
-            write_expr(builder, expr, indent);
-            match else_branch {
-                Some(value) => {
-                    builder.write_string(" else ");
-                    write_expr(builder, value, indent)
-                },
-                None => (),
-            }
+            pretty::group(
+                pretty::concat(
+                    Vec::[
+                        pretty::text(
+                            if is_mut {
+                                "let mut "
+                            } else {
+                                "let "
+                            },
+                        ),
+                        pat_doc(pat),
+                        annotation_doc,
+                        pretty::text(" ="),
+                        pretty::nest(2, pretty::append(pretty::line(), expr_doc(expr))),
+                        else_doc,
+                    ],
+                ),
+            )
         },
-        Assign { target, op, value: expr } => {
-            write_expr(builder, target, indent);
-            builder.write_char(' ');
-            match op {
-                Compound(value) => builder.write_string(binary_symbol(value)),
-                Plain => (),
-            };
-            builder.write_string("= ");
-            write_expr(builder, expr, indent)
-        },
-        Expr { expr } => write_expr(builder, expr, indent),
+        Assign { target, op, value: expr } => pretty::group(
+            pretty::concat(
+                Vec::[
+                    expr_doc(target),
+                    pretty::text(
+                        match op {
+                            Compound(value) => " " + binary_symbol(value) + "=",
+                            Plain => " =",
+                        },
+                    ),
+                    pretty::nest(2, pretty::append(pretty::line(), expr_doc(expr))),
+                ],
+            ),
+        ),
+        Expr { expr } => expr_doc(expr),
     }
 }
 
-fn write_static_member(
-    builder: text::StringBuilder,
+fn static_member_doc(
     owner: string,
     member: string,
     owner_type_args: Vec[TypeExpr],
     member_type_args: Vec[TypeExpr],
-) -> unit {
-    if owner_type_args.is_empty() {
-        if owner != "" {
-            builder.write_string(owner);
-            builder.write_string("::")
-        } else {
-            ()
-        };
-        builder.write_string(member)
+) -> pretty::Doc {
+    let owner_doc = if owner_type_args.is_empty() {
+        pretty::text(
+            if owner == "" {
+                member
+            } else {
+                owner + "::" + member
+            },
+        )
     } else {
-        builder.write_string(owner);
-        builder.write_char('[');
-        write_types(builder, owner_type_args, ", ");
-        builder.write_string("]::");
-        builder.write_string(member)
+        pretty::concat(
+            Vec::[
+                pretty::text(owner),
+                pretty::delimited("[", ",", "]", type_docs(owner_type_args)),
+                pretty::text("::" + member),
+            ],
+        )
     };
-    if !member_type_args.is_empty() {
-        builder.write_string("::[");
-        write_types(builder, member_type_args, ", ");
-        builder.write_char(']')
+    if member_type_args.is_empty() {
+        owner_doc
     } else {
-        ()
+        pretty::concat(
+            Vec::[
+                owner_doc,
+                pretty::text("::"),
+                pretty::delimited("[", ",", "]", type_docs(member_type_args)),
+            ],
+        )
     }
 }
 
-fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
+fn arm_doc(value: Arm) -> pretty::Doc {
+    let guard = match value.guard {
+        Some(guard) => pretty::append(pretty::text(" if "), expr_doc(guard)),
+        None => pretty::nil(),
+    };
+    pretty::group(
+        pretty::concat(
+            Vec::[
+                pat_doc(value.pat),
+                guard,
+                pretty::text(" =>"),
+                pretty::nest(2, pretty::append(pretty::line(), expr_doc(value.body))),
+                pretty::text(","),
+            ],
+        ),
+    )
+}
+
+fn expr_doc(value: Expr) -> pretty::Doc {
     match value.kind {
-        NameRef { name_ref: value } => write_name_ref(builder, value),
+        NameRef { name_ref: value } => name_ref_doc(value),
         StaticMember {
             owner,
             member,
@@ -554,292 +590,222 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
             owner_type_arg_spans: _,
             member_type_args,
             member_type_arg_spans: _,
-        } => {
-            write_static_member(builder, owner, member, owner_type_args, member_type_args)
-        },
-        Unit => builder.write_string("()"),
-        Bool { value } => builder.write_string(
+        } => static_member_doc(owner, member, owner_type_args, member_type_args),
+        Unit => pretty::text("()"),
+        Bool { value } => pretty::text(
             if value {
                 "true"
             } else {
                 "false"
             },
         ),
-        Int { value } => builder.write_string(value),
-        Float { value } => builder.write_string(value.to_string()),
-        String { value } => write_quoted_string(builder, value),
+        Int { value } => pretty::text(value),
+        Float { value } => pretty::text(value.to_string()),
+        String { value } => quoted_string_doc(value),
         InterpolatedString { parts } => {
-            builder.write_string("f\"");
+            let values: Vec[pretty::Doc] = Vec::with_capacity(parts.len() + 2);
+            values.push(pretty::text("f\""));
             for part in parts {
                 match part {
-                    Text(value) => {
-                        write_interpolated_text(builder, value)
-                    },
-                    Expr(value) => {
-                        builder.write_char('{');
-                        write_expr(builder, value, indent);
-                        builder.write_char('}')
-                    },
+                    Text(value) => values.push(interpolated_text_doc(value)),
+                    Expr(value) => values.push(
+                        pretty::concat(Vec::[pretty::text("{"), expr_doc(value), pretty::text("}")]),
+                    ),
                 }
             };
-            builder.write_char('"')
+            values.push(pretty::text("\""));
+            pretty::concat(values)
         },
-        Char { value } => {
-            builder.write_char('\'');
-            builder.write_string(value);
-            builder.write_char('\'')
-        },
-        Byte { value } => write_byte_literal(builder, value),
-        ByteString { values } => write_byte_string(builder, values),
-        ConstructorValue { constructor } => {
-            write_constructor(builder, constructor)
-        },
+        Char { value } => pretty::text("'" + value + "'"),
+        Byte { value } => byte_literal_doc(value),
+        ByteString { values } => byte_string_doc(values),
+        ConstructorValue { constructor } => constructor_doc(constructor),
         Constr { constructor, args } => {
-            write_constructor(builder, constructor);
-            if !args.is_empty() {
-                builder.write_char('(');
-                write_exprs(builder, args, ", ", indent);
-                builder.write_char(')')
+            if args.is_empty() {
+                constructor_doc(constructor)
             } else {
-                ()
+                pretty::append(
+                    constructor_doc(constructor),
+                    pretty::delimited("(", ",", ")", expr_docs(args)),
+                )
             }
         },
         StructLiteral { name, fields, base } => {
-            builder.write_string(name);
-            builder.write_string(" {");
-            if fields.is_empty() && base.is_none() {
-                builder.write_char('}')
-            } else {
-                let mut index = 0;
-                for field in fields {
-                    if index > 0 {
-                        builder.write_char(',')
+            let values: Vec[pretty::Doc] = Vec::with_capacity(
+                fields.len()
+                    + if base.is_some() {
+                        1
                     } else {
-                        ()
-                    };
-                    newline(builder, indent + 4);
-                    builder.write_string(field.0);
-                    builder.write_string(": ");
-                    write_expr(builder, field.1, indent + 4);
-                    index = index + 1;
-                };
-                match base {
-                    Some(value) => {
-                        if index > 0 {
-                            builder.write_char(',')
-                        } else {
-                            ()
-                        };
-                        newline(builder, indent + 4);
-                        builder.write_string("..");
-                        write_expr(builder, value, indent + 4)
+                        0
                     },
-                    None => (),
-                };
-                newline(builder, indent);
-                builder.write_char('}')
-            }
-        },
-        Tuple { items: values } => {
-            builder.write_char('(');
-            write_exprs(builder, values, ", ", indent);
-            builder.write_char(')')
-        },
-        Array { items: values } => {
-            builder.write_char('[');
-            write_exprs(builder, values, ", ", indent);
-            builder.write_char(']')
-        },
-        VecLiteral { items: values } => {
-            builder.write_string("Vec::[");
-            write_exprs(builder, values, ", ", indent);
-            builder.write_char(']')
-        },
-        HashMapLiteral { entries } => {
-            builder.write_string("HashMap::{");
-            let mut index = 0;
-            for entry in entries {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                write_expr(builder, entry.0, indent);
-                builder.write_string(" => ");
-                write_expr(builder, entry.1, indent);
-                index = index + 1;
+            );
+            for field in fields {
+                values.push(pretty::concat(Vec::[pretty::text(field.0 + ": "), expr_doc(field.1)]))
             };
-            builder.write_char('}')
+            match base {
+                Some(value) => values.push(pretty::append(pretty::text(".."), expr_doc(value))),
+                None => (),
+            };
+            record_doc(pretty::text(name), values)
+        },
+        Tuple { items: values } => pretty::delimited("(", ",", ")", expr_docs(values)),
+        Array { items: values } => pretty::delimited("[", ",", "]", expr_docs(values)),
+        VecLiteral { items: values } => pretty::delimited("Vec::[", ",", "]", expr_docs(values)),
+        HashMapLiteral { entries } => {
+            let values: Vec[pretty::Doc] = Vec::with_capacity(entries.len());
+            for entry in entries {
+                values.push(
+                    pretty::group(
+                        pretty::concat(
+                            Vec::[
+                                expr_doc(entry.0),
+                                pretty::text(" =>"),
+                                pretty::nest(2, pretty::append(pretty::line(), expr_doc(entry.1))),
+                            ],
+                        ),
+                    ),
+                )
+            };
+            pretty::delimited("HashMap::{", ",", "}", values)
         },
         Closure { params, body } => {
-            builder.write_char('|');
-            let mut index = 0;
+            let values: Vec[pretty::Doc] = Vec::with_capacity(params.len());
             for param in params {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
+                let ty = match param.ty {
+                    Some(ty) => pretty::append(pretty::text(": "), type_doc(ty)),
+                    None => pretty::nil(),
                 };
-                write_local_debug(builder, param.name);
-                match param.ty {
-                    Some(ty) => {
-                        builder.write_string(": ");
-                        write_type(builder, ty)
-                    },
-                    None => (),
-                };
-                index = index + 1;
+                values.push(pretty::append(local_debug_doc(param.name), ty))
             };
-            builder.write_string("| ");
-            write_expr(builder, body, indent)
+            let parameters = if values.is_empty() {
+                pretty::text("||")
+            } else {
+                pretty::delimited("|", ",", "|", values)
+            };
+            pretty::group(
+                pretty::concat(
+                    Vec::[
+                        parameters,
+                        pretty::text(" =>"),
+                        pretty::nest(2, pretty::append(pretty::line(), expr_doc(body))),
+                    ],
+                ),
+            )
         },
         Match { expr, arms } => {
-            builder.write_string("match ");
-            write_expr(builder, expr, indent);
-            builder.write_string(" {");
+            let values: Vec[pretty::Doc] = Vec::with_capacity(arms.len());
             for arm in arms {
-                newline(builder, indent + 4);
-                write_arm(builder, arm, indent + 4)
+                values.push(arm_doc(arm))
             };
-            newline(builder, indent);
-            builder.write_char('}')
+            pretty::concat(
+                Vec::[
+                    pretty::text("match "),
+                    expr_doc(expr),
+                    pretty::text(" "),
+                    braced_docs(values, 4),
+                ],
+            )
         },
-        If { cond, then_branch, else_branch } => {
-            builder.write_string("if ");
-            write_expr(builder, cond, indent);
-            builder.write_char(' ');
-            write_expr(builder, then_branch, indent);
-            builder.write_string(" else ");
-            write_expr(builder, else_branch, indent)
+        If { cond, then_branch, else_branch } => pretty::concat(
+            Vec::[
+                pretty::text("if "),
+                expr_doc(cond),
+                pretty::text(" "),
+                expr_doc(then_branch),
+                pretty::text(" else "),
+                expr_doc(else_branch),
+            ],
+        ),
+        While { cond, body } => pretty::concat(
+            Vec::[
+                pretty::text("while "),
+                expr_doc(cond),
+                pretty::text(" "),
+                braced_docs(Vec::[expr_doc(body)], 4),
+            ],
+        ),
+        Loop { body } => pretty::append(pretty::text("loop "), expr_doc(body)),
+        For { pat, iterator, body } => pretty::group(
+            pretty::concat(
+                Vec::[
+                    pretty::text("for "),
+                    pat_doc(pat),
+                    pretty::text(" in"),
+                    pretty::nest(2, pretty::append(pretty::line(), expr_doc(iterator))),
+                    pretty::text(" "),
+                    expr_doc(body),
+                ],
+            ),
+        ),
+        Break { value } => match value {
+            Some(expr) => pretty::append(pretty::text("break "), expr_doc(expr)),
+            None => pretty::text("break"),
         },
-        While { cond, body } => {
-            builder.write_string("while ");
-            write_expr(builder, cond, indent);
-            builder.write_string(" {");
-            newline(builder, indent + 4);
-            write_expr(builder, body, indent + 4);
-            newline(builder, indent);
-            builder.write_char('}')
+        Continue => pretty::text("continue"),
+        Return { expr } => match expr {
+            Some(value) => pretty::append(pretty::text("return "), expr_doc(value)),
+            None => pretty::text("return"),
         },
-        Loop { body } => {
-            builder.write_string("loop ");
-            write_expr(builder, body, indent)
-        },
-        For { pat, iterator, body } => {
-            builder.write_string("for ");
-            write_pat(builder, pat, indent);
-            builder.write_string(" in ");
-            write_expr(builder, iterator, indent);
-            builder.write_char(' ');
-            write_expr(builder, body, indent)
-        },
-        Break { value } => {
-            builder.write_string("break");
-            match value {
-                Some(expr) => {
-                    builder.write_char(' ');
-                    write_expr(builder, expr, indent)
-                },
-                None => (),
-            }
-        },
-        Continue => builder.write_string("continue"),
-        Return { expr } => {
-            builder.write_string("return");
-            match expr {
-                Some(value) => {
-                    builder.write_char(' ');
-                    write_expr(builder, value, indent)
-                },
-                None => (),
-            }
-        },
-        Go { expr } => {
-            builder.write_string("go ");
-            write_expr(builder, expr, indent)
-        },
-        Call { func, args } => {
-            write_expr(
-                builder,
-                func,
-                if args.is_empty() {
-                    indent
-                } else {
-                    indent + 2
-                },
-            );
-            builder.write_char('(');
-            write_exprs(builder, args, ", ", indent + 2);
-            builder.write_char(')')
-        },
-        Unary { op, expr } => {
-            builder.write_string(unary_symbol(op));
-            write_expr(builder, expr, indent)
-        },
-        Cast { expr, ty } => {
-            write_expr(builder, expr, indent);
-            builder.write_string(" as ");
-            write_type(builder, ty)
-        },
-        Try { depth: _, expr } => {
-            write_expr(builder, expr, indent);
-            builder.write_char('?')
-        },
-        Range { start, end, inclusive } => {
-            write_expr(builder, start, indent);
-            if inclusive {
-                builder.write_string("..=")
-            } else {
-                builder.write_string("..")
-            };
-            write_expr(builder, end, indent)
-        },
-        Binary { op, lhs, rhs } => {
-            write_expr(builder, lhs, indent);
-            builder.write_char(' ');
-            builder.write_string(binary_symbol(op));
-            builder.write_char(' ');
-            write_expr(builder, rhs, indent)
-        },
+        Go { expr } => pretty::append(pretty::text("go "), expr_doc(expr)),
+        Call { func, args } => pretty::append(
+            expr_doc(func),
+            pretty::delimited("(", ",", ")", expr_docs(args)),
+        ),
+        Unary { op, expr } => pretty::append(pretty::text(unary_symbol(op)), expr_doc(expr)),
+        Cast { expr, ty } => pretty::group(
+            pretty::concat(
+                Vec::[
+                    expr_doc(expr),
+                    pretty::text(" as"),
+                    pretty::nest(2, pretty::append(pretty::line(), type_doc(ty))),
+                ],
+            ),
+        ),
+        Try { depth: _, expr } => pretty::append(expr_doc(expr), pretty::text("?")),
+        Range { start, end, inclusive } => pretty::concat(
+            Vec::[
+                expr_doc(start),
+                pretty::text(
+                    if inclusive {
+                        "..="
+                    } else {
+                        ".."
+                    },
+                ),
+                expr_doc(end),
+            ],
+        ),
+        Binary { op, lhs, rhs } => pretty::group(
+            pretty::concat(
+                Vec::[
+                    expr_doc(lhs),
+                    pretty::text(" " + binary_symbol(op)),
+                    pretty::nest(2, pretty::append(pretty::line(), expr_doc(rhs))),
+                ],
+            ),
+        ),
         Proj { tuple: expr, index } => {
-            write_expr(builder, expr, indent);
-            builder.write_char('.');
-            builder.write_string(index.to_string())
+            pretty::append(expr_doc(expr), pretty::text("." + index.to_string()))
         },
         Field { expr, field_name: field, method_type_args } => {
-            write_expr(builder, expr, indent);
-            builder.write_char('.');
-            builder.write_string(field);
-            if !method_type_args.is_empty() {
-                builder.write_string("::[");
-                write_types(builder, method_type_args, ", ");
-                builder.write_char(']')
+            let base = pretty::append(expr_doc(expr), pretty::text("." + field));
+            if method_type_args.is_empty() {
+                base
             } else {
-                ()
+                pretty::concat(
+                    Vec::[
+                        base,
+                        pretty::text("::"),
+                        pretty::delimited("[", ",", "]", type_docs(method_type_args)),
+                    ],
+                )
             }
         },
-        Index { base, index } => {
-            write_expr(builder, base, indent);
-            builder.write_char('[');
-            write_expr(builder, index, indent);
-            builder.write_char(']')
-        },
-        Block { block } => write_block(builder, block, indent),
+        Index { base, index } => pretty::concat(
+            Vec::[expr_doc(base), pretty::text("["), expr_doc(index), pretty::text("]")],
+        ),
+        Block { block } => block_doc(block),
     }
-}
-
-fn write_arm(builder: text::StringBuilder, value: Arm, indent: int) -> unit {
-    write_pat(builder, value.pat, indent);
-    match value.guard {
-        Some(guard) => {
-            builder.write_string(" if ");
-            write_expr(builder, guard, indent)
-        },
-        None => (),
-    };
-    builder.write_string(" => ");
-    write_expr(builder, value.body, indent + 2);
-    builder.write_char(',')
 }
 
 fn pat_is_or(value: Pat) -> bool {
@@ -849,428 +815,430 @@ fn pat_is_or(value: Pat) -> bool {
     }
 }
 
-fn write_pats(builder: text::StringBuilder, values: Vec[Pat], separator: string, indent: int) -> unit {
-    let mut index = 0;
-    for value in values {
-        if index > 0 {
-            builder.write_string(separator)
-        } else {
-            ()
-        };
-        write_pat(builder, value, indent);
-        index = index + 1;
-    }
-}
-
-fn write_pat(builder: text::StringBuilder, value: Pat, indent: int) -> unit {
+fn pat_doc(value: Pat) -> pretty::Doc {
     match value.kind {
-        Var { name: local } => write_local_debug(builder, local),
-        Unit => builder.write_string("()"),
-        Bool { value } => builder.write_string(
+        Var { name: local } => local_debug_doc(local),
+        Unit => pretty::text("()"),
+        Bool { value } => pretty::text(
             if value {
                 "true"
             } else {
                 "false"
             },
         ),
-        Int { value } => builder.write_string(value),
-        Float { value } => builder.write_string(value),
-        String { value } => write_quoted_string(builder, value),
-        Char { value } => {
-            builder.write_char('\'');
-            builder.write_string(value);
-            builder.write_char('\'')
-        },
-        Byte { value } => write_byte_literal(builder, value),
+        Int { value } => pretty::text(value),
+        Float { value } => pretty::text(value),
+        String { value } => quoted_string_doc(value),
+        Char { value } => pretty::text("'" + value + "'"),
+        Byte { value } => byte_literal_doc(value),
         Constr { head, args } => {
-            write_pattern_head(builder, head);
-            if !args.is_empty() {
-                builder.write_char('(');
-                write_pats(builder, args, ", ", indent);
-                builder.write_char(')')
+            if args.is_empty() {
+                pattern_head_doc(head)
             } else {
-                ()
+                pretty::append(
+                    pattern_head_doc(head),
+                    pretty::delimited("(", ",", ")", pat_docs(args)),
+                )
             }
         },
         Struct { head, fields, has_rest } => {
-            write_pattern_head(builder, head);
-            if fields.is_empty() && !has_rest {
-                builder.write_string(" {}")
+            let values: Vec[pretty::Doc] = Vec::with_capacity(
+                fields.len()
+                    + if has_rest {
+                        1
+                    } else {
+                        0
+                    },
+            );
+            for field in fields {
+                values.push(pretty::concat(Vec::[pretty::text(field.0 + ": "), pat_doc(field.1)]))
+            };
+            if has_rest {
+                values.push(pretty::text(".."))
             } else {
-                builder.write_string(" { ");
-                let mut index = 0;
-                for field in fields {
-                    if index > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
-                    builder.write_string(field.0);
-                    builder.write_string(": ");
-                    write_pat(builder, field.1, indent);
-                    index = index + 1;
-                };
-                if has_rest {
-                    if index > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
-                    builder.write_string("..")
-                } else {
-                    ()
-                };
-                builder.write_string(" }")
-            }
+                ()
+            };
+            record_doc(pattern_head_doc(head), values)
         },
-        Tuple { items: values } => {
-            builder.write_char('(');
-            write_pats(builder, values, ", ", indent);
-            builder.write_char(')')
-        },
+        Tuple { items: values } => pretty::delimited("(", ",", ")", pat_docs(values)),
         Array { prefix, rest, suffix } => {
-            builder.write_char('[');
-            let mut count = 0;
+            let values: Vec[pretty::Doc] = Vec::with_capacity(
+                prefix.len() + suffix.len()
+                    + if rest.is_some() {
+                        1
+                    } else {
+                        0
+                    },
+            );
             for value in prefix {
-                if count > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                write_pat(builder, value, indent);
-                count = count + 1;
+                values.push(pat_doc(value))
             };
             match rest {
-                Some(value) => {
-                    if count > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
+                Some(value) => values.push(
                     match value.binding {
                         Some(local) => {
-                            write_local_debug(builder, local);
-                            builder.write_string(" @ ..")
+                            pretty::append(local_debug_doc(local), pretty::text(" @ .."))
                         },
-                        None => builder.write_string(".."),
-                    };
-                    count = count + 1;
-                },
+                        None => pretty::text(".."),
+                    },
+                ),
                 None => (),
             };
             for value in suffix {
-                if count > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                write_pat(builder, value, indent);
-                count = count + 1;
+                values.push(pat_doc(value))
             };
-            builder.write_char(']')
+            pretty::delimited("[", ",", "]", values)
         },
-        Alias { name: local, pat } => {
-            write_local_debug(builder, local);
-            builder.write_string(" @ ");
-            if pat_is_or(pat) {
-                builder.write_char('(');
-                write_pat(builder, pat, indent);
-                builder.write_char(')')
-            } else {
-                write_pat(builder, pat, indent)
-            }
-        },
-        Or { pats: values } => write_pats(builder, values, " | ", indent),
-        Range { start, end, inclusive } => {
-            write_pat(builder, start, indent);
-            builder.write_string(
-                if inclusive {
-                    "..="
+        Alias { name: local, pat } => pretty::concat(
+            Vec::[
+                local_debug_doc(local),
+                pretty::text(" @ "),
+                if pat_is_or(pat) {
+                    pretty::delimited("(", ",", ")", Vec::[pat_doc(pat)])
                 } else {
-                    ".."
+                    pat_doc(pat)
                 },
-            );
-            write_pat(builder, end, indent)
-        },
-        Wild => builder.write_char('_'),
+            ],
+        ),
+        Or { pats: values } => pretty::group(
+            pretty::join(pretty::append(pretty::text(" |"), pretty::line()), pat_docs(values)),
+        ),
+        Range { start, end, inclusive } => pretty::concat(
+            Vec::[
+                pat_doc(start),
+                pretty::text(
+                    if inclusive {
+                        "..="
+                    } else {
+                        ".."
+                    },
+                ),
+                pat_doc(end),
+            ],
+        ),
+        Wild => pretty::text("_"),
     }
 }
 
-fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int) -> unit {
-    write_attributes(builder, value.attrs);
-    builder.write_string("enum ");
-    builder.write_string(value.name);
-    write_generics(builder, value.generics);
-    builder.write_string(" {");
-    let mut index = 0;
+fn enum_variant_doc(value: EnumVariant) -> pretty::Doc {
+    match value.fields {
+        Unit => pretty::text(value.name),
+        Tuple(types) => pretty::append(
+            pretty::text(value.name),
+            pretty::delimited("(", ",", ")", type_docs(types)),
+        ),
+        Struct(fields) => {
+            let values: Vec[pretty::Doc] = Vec::with_capacity(fields.len());
+            for field in fields {
+                values.push(pretty::concat(Vec::[pretty::text(field.0 + ": "), type_doc(field.1)]))
+            };
+            record_doc(pretty::text(value.name), values)
+        },
+    }
+}
+
+fn enum_doc(value: EnumDef) -> pretty::Doc {
+    let variants: Vec[pretty::Doc] = Vec::with_capacity(value.variants.len());
     for variant in value.variants {
-        if index > 0 {
-            builder.write_char(',')
-        } else {
-            ()
-        };
-        newline(builder, indent + 4);
-        builder.write_string(variant.name);
-        match variant.fields {
-            Unit => (),
-            Tuple(types) => {
-                builder.write_char('(');
-                write_types(builder, types, ", ");
-                builder.write_char(')')
-            },
-            Struct(fields) => {
-                builder.write_string(" { ");
-                let mut field_index = 0;
-                for field in fields {
-                    if field_index > 0 {
-                        builder.write_string(", ")
-                    } else {
-                        ()
-                    };
-                    builder.write_string(field.0);
-                    builder.write_string(": ");
-                    write_type(builder, field.1);
-                    field_index = field_index + 1;
-                };
-                builder.write_string(" }")
-            },
-        };
-        index = index + 1;
+        variants.push(enum_variant_doc(variant))
     };
-    newline(builder, indent);
-    builder.write_char('}')
-}
-
-fn write_struct(builder: text::StringBuilder, value: StructDef, indent: int) -> unit {
-    write_attributes(builder, value.attrs);
-    builder.write_string("struct ");
-    builder.write_string(value.name);
-    write_generics(builder, value.generics);
-    builder.write_string(" {");
-    for field in value.fields {
-        newline(builder, indent + 4);
-        builder.write_string(field.0);
-        builder.write_string(": ");
-        write_type(builder, field.1);
-        builder.write_char(',')
-    };
-    newline(builder, indent);
-    builder.write_char('}')
-}
-
-fn write_trait_method(builder: text::StringBuilder, value: TraitMethodSignature) -> unit {
-    builder.write_string("fn ");
-    builder.write_string(value.name);
-    write_bounded_generics(builder, value.generics, value.generic_bounds);
-    builder.write_char('(');
-    write_types(builder, value.params, ", ");
-    builder.write_string(") -> ");
-    write_type(builder, value.ret_ty);
-    write_predicates(builder, value.predicates);
-    builder.write_char(';')
-}
-
-fn write_trait(builder: text::StringBuilder, value: TraitDef, indent: int) -> unit {
-    write_attributes(builder, value.attrs);
-    builder.write_string("trait ");
-    builder.write_string(value.name);
-    write_bounded_generics(builder, value.generics, value.generic_bounds);
-    if !value.supertraits.is_empty() {
-        builder.write_string(": ");
-        write_trait_refs(builder, value.supertraits, " + ")
+    let body = if variants.is_empty() {
+        pretty::text("{}")
     } else {
-        ()
+        pretty::concat(
+            Vec::[
+                pretty::text("{"),
+                pretty::nest(
+                    4,
+                    pretty::append(
+                        pretty::hardline(),
+                        pretty::join(
+                            pretty::append(pretty::text(","), pretty::hardline()),
+                            variants,
+                        ),
+                    ),
+                ),
+                pretty::hardline(),
+                pretty::text("}"),
+            ],
+        )
     };
-    write_predicates(builder, value.predicates);
-    builder.write_string(" {");
+    pretty::concat(
+        Vec::[
+            attributes_doc(value.attrs),
+            pretty::text("enum " + value.name),
+            generics_doc(value.generics),
+            pretty::text(" "),
+            body,
+        ],
+    )
+}
+
+fn struct_doc(value: StructDef) -> pretty::Doc {
+    let fields: Vec[pretty::Doc] = Vec::with_capacity(value.fields.len());
+    for field in value.fields {
+        fields.push(
+            pretty::concat(
+                Vec::[pretty::text(field.0 + ": "), type_doc(field.1), pretty::text(",")],
+            ),
+        )
+    };
+    pretty::concat(
+        Vec::[
+            attributes_doc(value.attrs),
+            pretty::text("struct " + value.name),
+            generics_doc(value.generics),
+            pretty::text(" "),
+            braced_docs(fields, 4),
+        ],
+    )
+}
+
+fn trait_method_doc(value: TraitMethodSignature) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            pretty::text("fn " + value.name),
+            bounded_generics_doc(value.generics, value.generic_bounds),
+            pretty::delimited("(", ",", ")", type_docs(value.params)),
+            pretty::text(" -> "),
+            type_doc(value.ret_ty),
+            predicates_doc(value.predicates),
+            pretty::text(";"),
+        ],
+    )
+}
+
+fn trait_doc(value: TraitDef) -> pretty::Doc {
+    let supertraits = if value.supertraits.is_empty() {
+        pretty::nil()
+    } else {
+        pretty::append(
+            pretty::text(": "),
+            pretty::join(pretty::text(" + "), trait_ref_docs(value.supertraits)),
+        )
+    };
+    let members: Vec[pretty::Doc] = Vec::with_capacity(
+        value.associated_types.len() + value.method_sigs.len(),
+    );
     for associated in value.associated_types {
-        newline(builder, indent + 2);
-        builder.write_string("type ");
-        builder.write_string(associated.name);
-        if !associated.bounds.is_empty() {
-            builder.write_string(": ");
-            write_trait_refs(builder, associated.bounds, " + ")
+        let bounds = if associated.bounds.is_empty() {
+            pretty::nil()
         } else {
-            ()
+            pretty::append(
+                pretty::text(": "),
+                pretty::join(pretty::text(" + "), trait_ref_docs(associated.bounds)),
+            )
         };
-        builder.write_char(';')
+        members.push(
+            pretty::concat(
+                Vec::[pretty::text("type " + associated.name), bounds, pretty::text(";")],
+            ),
+        )
     };
     for method in value.method_sigs {
-        newline(builder, indent + 2);
-        write_trait_method(builder, method)
+        members.push(trait_method_doc(method))
     };
-    newline(builder, indent);
-    builder.write_char('}')
+    pretty::block(
+        pretty::concat(
+            Vec::[
+                attributes_doc(value.attrs),
+                pretty::text("trait " + value.name),
+                bounded_generics_doc(value.generics, value.generic_bounds),
+                supertraits,
+                predicates_doc(value.predicates),
+            ],
+        ),
+        members,
+    )
 }
 
-fn write_function(builder: text::StringBuilder, value: Function, indent: int) -> unit {
-    write_attributes(builder, value.attrs);
-    builder.write_string("fn ");
-    builder.write_string(value.name);
-    write_bounded_generics(builder, value.generics, value.generic_bounds);
-    builder.write_char('(');
-    let mut index = 0;
-    for param in value.params {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        write_local_debug(builder, param.0);
-        builder.write_string(": ");
-        write_type(builder, param.1);
-        index = index + 1;
+fn local_params_doc(values: Vec[(LocalId, TypeExpr)]) -> pretty::Doc {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            pretty::concat(Vec::[local_debug_doc(value.0), pretty::text(": "), type_doc(value.1)]),
+        )
     };
-    builder.write_char(')');
-    match value.ret_ty {
-        Some(ty) => {
-            builder.write_string(" -> ");
-            write_type(builder, ty)
-        },
-        None => (),
-    };
-    write_predicates(builder, value.predicates);
-    builder.write_char(' ');
-    write_block(builder, value.body, indent)
+    pretty::delimited("(", ",", ")", result)
 }
 
-fn write_extern(builder: text::StringBuilder, value: ExternFunction) -> unit {
-    write_attributes(builder, value.attrs);
-    builder.write_string("extern fn ");
-    builder.write_string(value.name);
-    write_bounded_generics(builder, value.generics, value.generic_bounds);
-    builder.write_char('(');
-    let mut index = 0;
-    for param in value.params {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        builder.write_string(param.0);
-        builder.write_string(": ");
-        write_type(builder, param.1);
-        index = index + 1;
+fn named_params_doc(values: Vec[(string, TypeExpr)]) -> pretty::Doc {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(pretty::concat(Vec::[pretty::text(value.0 + ": "), type_doc(value.1)]))
     };
-    builder.write_char(')');
-    match value.ret_ty {
-        Some(ty) => {
-            builder.write_string(" -> ");
-            write_type(builder, ty)
-        },
-        None => (),
-    };
-    write_predicates(builder, value.predicates)
+    pretty::delimited("(", ",", ")", result)
 }
 
-fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int) -> unit {
-    write_attributes(builder, value.attrs);
-    builder.write_string("impl");
-    write_bounded_generics(builder, value.generics, value.generic_bounds);
-    builder.write_char(' ');
-    match value.trait_ref {
-        Some(trait_ref) => {
-            write_trait_ref(builder, trait_ref);
-            builder.write_string(" for ")
-        },
-        None => (),
+fn optional_return_doc(value: Option[TypeExpr]) -> pretty::Doc {
+    match value {
+        Some(ty) => pretty::append(pretty::text(" -> "), type_doc(ty)),
+        None => pretty::nil(),
+    }
+}
+
+fn function_doc(value: Function) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            attributes_doc(value.attrs),
+            pretty::text("fn " + value.name),
+            bounded_generics_doc(value.generics, value.generic_bounds),
+            local_params_doc(value.params),
+            optional_return_doc(value.ret_ty),
+            predicates_doc(value.predicates),
+            pretty::text(" "),
+            block_doc(value.body),
+        ],
+    )
+}
+
+fn extern_doc(value: ExternFunction) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            attributes_doc(value.attrs),
+            pretty::text("extern fn " + value.name),
+            bounded_generics_doc(value.generics, value.generic_bounds),
+            named_params_doc(value.params),
+            optional_return_doc(value.ret_ty),
+            predicates_doc(value.predicates),
+        ],
+    )
+}
+
+fn impl_doc(value: ImplBlock) -> pretty::Doc {
+    let trait_doc = match value.trait_ref {
+        Some(reference) => pretty::concat(Vec::[trait_ref_doc(reference), pretty::text(" for ")]),
+        None => pretty::nil(),
     };
-    write_type(builder, value.for_type);
-    write_predicates(builder, value.predicates);
-    builder.write_string(" {");
+    let members: Vec[pretty::Doc] = Vec::with_capacity(
+        value.associated_types.len() + value.methods.len(),
+    );
     for associated in value.associated_types {
-        newline(builder, indent + 2);
-        builder.write_string("type ");
-        builder.write_string(associated.0);
-        builder.write_string(" = ");
-        write_type(builder, associated.1);
-        builder.write_char(';')
+        members.push(
+            pretty::concat(
+                Vec::[
+                    pretty::text("type " + associated.0 + " = "),
+                    type_doc(associated.1),
+                    pretty::text(";"),
+                ],
+            ),
+        )
     };
     for method in value.methods {
-        newline(builder, indent + 2);
-        write_function(builder, method, indent + 2)
+        members.push(function_doc(method))
     };
-    if value.associated_types.is_empty() && value.methods.is_empty() {
-        newline(builder, indent)
-    } else {
-        ()
-    };
-    newline(builder, indent);
-    builder.write_char('}')
+    pretty::block(
+        pretty::concat(
+            Vec::[
+                attributes_doc(value.attrs),
+                pretty::text("impl"),
+                bounded_generics_doc(value.generics, value.generic_bounds),
+                pretty::text(" "),
+                trait_doc,
+                type_doc(value.for_type),
+                predicates_doc(value.predicates),
+            ],
+        ),
+        members,
+    )
 }
 
-fn write_type_alias(builder: text::StringBuilder, value: TypeAlias) -> unit {
-    write_attributes(builder, value.attrs);
-    builder.write_string("type ");
-    builder.write_string(value.name);
-    write_generics(builder, value.generics);
-    builder.write_string(" = ");
-    write_type(builder, value.ty);
-    builder.write_char(';')
+fn type_alias_doc(value: TypeAlias) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            attributes_doc(value.attrs),
+            pretty::text("type " + value.name),
+            generics_doc(value.generics),
+            pretty::text(" = "),
+            type_doc(value.ty),
+            pretty::text(";"),
+        ],
+    )
 }
 
-fn write_constant(builder: text::StringBuilder, value: Constant) -> unit {
-    write_attributes(builder, value.attrs);
-    builder.write_string("const ");
-    builder.write_string(value.name);
-    builder.write_string(": ");
-    write_type(builder, value.ty);
-    builder.write_string(" = ");
-    write_expr(builder, value.value, 0);
-    builder.write_char(';')
+fn constant_doc(value: Constant) -> pretty::Doc {
+    pretty::group(
+        pretty::concat(
+            Vec::[
+                attributes_doc(value.attrs),
+                pretty::text("const " + value.name + ": "),
+                type_doc(value.ty),
+                pretty::text(" ="),
+                pretty::nest(2, pretty::append(pretty::line(), expr_doc(value.value))),
+                pretty::text(";"),
+            ],
+        ),
+    )
 }
 
-fn write_item(builder: text::StringBuilder, value: Item, indent: int) -> unit {
+fn item_doc(value: Item) -> pretty::Doc {
     match value {
-        EnumDef(value) => write_enum(builder, value, indent),
-        StructDef(value) => write_struct(builder, value, indent),
-        TraitDef(value) => write_trait(builder, value, indent),
-        ImplBlock(value) => write_impl(builder, value, indent),
-        Function(value) => write_function(builder, value, indent),
-        ExternFunction(value) => write_extern(builder, value),
-        TypeAlias(value) => write_type_alias(builder, value),
-        Constant(value) => write_constant(builder, value),
+        EnumDef(value) => enum_doc(value),
+        StructDef(value) => struct_doc(value),
+        TraitDef(value) => trait_doc(value),
+        ImplBlock(value) => impl_doc(value),
+        Function(value) => function_doc(value),
+        ExternFunction(value) => extern_doc(value),
+        TypeAlias(value) => type_alias_doc(value),
+        Constant(value) => constant_doc(value),
     }
 }
 
 fn encode_file(value: File) -> string {
-    let builder = text::StringBuilder::new();
-    builder.write_string("package ");
-    builder.write_string(value.package_name);
-    if !value.imports.is_empty() {
-        newline(builder, 2);
-        builder.write_string("imports ");
-        write_joined_strings(builder, value.imports, ", ")
-    } else {
-        ()
-    };
-    newline(builder, 0);
-    builder.write_string("file ");
-    builder.write_string(value.path);
-    let mut index = 0;
+    let items: Vec[pretty::Doc] = Vec::with_capacity(value.items.len());
     for item in value.items {
-        if index == 0 {
-            newline(builder, 2)
-        } else {
-            newline(builder, 0);
-            newline(builder, 4)
-        };
-        write_item(builder, item, 4);
-        index = index + 1;
+        items.push(item_doc(item))
     };
-    builder.finish()
+    let imports = if value.imports.is_empty() {
+        pretty::nil()
+    } else {
+        let values: Vec[pretty::Doc] = Vec::with_capacity(value.imports.len());
+        for value in value.imports {
+            values.push(pretty::text(value))
+        };
+        pretty::nest(
+            2,
+            pretty::concat(
+                Vec::[
+                    pretty::hardline(),
+                    pretty::text("imports "),
+                    pretty::join(pretty::text(", "), values),
+                ],
+            ),
+        )
+    };
+    let item_docs = if items.is_empty() {
+        pretty::nil()
+    } else {
+        let values: Vec[pretty::Doc] = Vec::with_capacity(items.len());
+        for item in items {
+            values.push(pretty::nest(2, pretty::append(pretty::hardline(), item)))
+        };
+        pretty::join(pretty::hardline(), values)
+    };
+    pretty::pretty(
+        100,
+        pretty::concat(
+            Vec::[
+                pretty::text("package " + value.package_name),
+                imports,
+                pretty::hardline(),
+                pretty::text("file " + value.path),
+                item_docs,
+            ],
+        ),
+    )
 }
 
 pub fn encode(value: LowerResult) -> string {
     match value.hir {
         Some(file) => encode_file(file),
         None => {
-            let builder = text::StringBuilder::new();
+            let values: Vec[pretty::Doc] = Vec::with_capacity(value.diagnostics.len());
             for diagnostic in value.diagnostics {
-                builder.write_string(diagnostic.message);
-                builder.write_char('\n')
+                values.push(pretty::append(pretty::text(diagnostic.message), pretty::hardline()))
             };
-            builder.finish()
+            pretty::layout(pretty::concat(values))
         },
     }
 }
