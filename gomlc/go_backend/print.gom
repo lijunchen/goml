@@ -1,17 +1,7 @@
 package go_backend;
 
+use gomlc::pretty;
 use std::text;
-
-fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
-    for _ in 0..count {
-        builder.write_char(' ')
-    }
-}
-
-fn newline(builder: text::StringBuilder, indent: int) -> unit {
-    builder.write_char('\n');
-    write_spaces(builder, indent)
-}
 
 fn utf8_width(value: uint8) -> int {
     if value < 128 {
@@ -74,637 +64,630 @@ fn write_string_literal(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
-fn write_type(builder: text::StringBuilder, value: Type) -> unit {
+fn string_literal_doc(value: string) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_string_literal(builder, value);
+    pretty::text(builder.finish())
+}
+
+fn type_docs(values: Vec[Type]) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(type_doc(value))
+    };
+    result
+}
+
+fn fixed_delimited_doc(left: string, right: string, values: Vec[pretty::Doc]) -> pretty::Doc {
+    pretty::concat(
+        Vec::[pretty::text(left), pretty::join(pretty::text(", "), values), pretty::text(right)],
+    )
+}
+
+fn type_doc(value: Type) -> pretty::Doc {
     match value {
-        Void => builder.write_string("void"),
-        Any => builder.write_string("any"),
-        Unit => builder.write_string("struct{}"),
-        Bool => builder.write_string("bool"),
-        Int => builder.write_string("int"),
-        Int8 => builder.write_string("int8"),
-        Int16 => builder.write_string("int16"),
-        Int32 => builder.write_string("int32"),
-        Int64 => builder.write_string("int64"),
-        Uint => builder.write_string("uint"),
-        Uint8 => builder.write_string("uint8"),
-        Uint16 => builder.write_string("uint16"),
-        Uint32 => builder.write_string("uint32"),
-        Uint64 => builder.write_string("uint64"),
-        Float32 => builder.write_string("float32"),
-        Float64 => builder.write_string("float64"),
-        String => builder.write_string("string"),
-        Char => builder.write_string("rune"),
-        Named { name } => builder.write_string(name),
-        Pointer { elem: inner } => {
-            builder.write_char('*');
-            write_type(builder, inner)
-        },
+        Void => pretty::text("void"),
+        Any => pretty::text("any"),
+        Unit => pretty::text("struct{}"),
+        Bool => pretty::text("bool"),
+        Int => pretty::text("int"),
+        Int8 => pretty::text("int8"),
+        Int16 => pretty::text("int16"),
+        Int32 => pretty::text("int32"),
+        Int64 => pretty::text("int64"),
+        Uint => pretty::text("uint"),
+        Uint8 => pretty::text("uint8"),
+        Uint16 => pretty::text("uint16"),
+        Uint32 => pretty::text("uint32"),
+        Uint64 => pretty::text("uint64"),
+        Float32 => pretty::text("float32"),
+        Float64 => pretty::text("float64"),
+        String => pretty::text("string"),
+        Char => pretty::text("rune"),
+        Named { name } => pretty::text(name),
+        Pointer { elem: inner } => pretty::append(pretty::text("*"), type_doc(inner)),
         Array { len: length, elem: inner } => {
-            builder.write_char('[');
-            builder.write_string(length.to_string());
-            builder.write_char(']');
-            write_type(builder, inner)
+            pretty::append(pretty::text("[" + length.to_string() + "]"), type_doc(inner))
         },
-        Slice { elem: inner } => {
-            builder.write_string("[]");
-            write_type(builder, inner)
-        },
-        Map { key, value } => {
-            builder.write_string("map[");
-            write_type(builder, key);
-            builder.write_char(']');
-            write_type(builder, value)
-        },
-        Chan { elem } => {
-            builder.write_string("chan ");
-            write_type(builder, elem)
-        },
+        Slice { elem: inner } => pretty::append(pretty::text("[]"), type_doc(inner)),
+        Map { key, value } => pretty::concat(
+            Vec::[pretty::text("map["), type_doc(key), pretty::text("]"), type_doc(value)],
+        ),
+        Chan { elem } => pretty::append(pretty::text("chan "), type_doc(elem)),
         Func { params, ret_ty } => {
-            builder.write_string("func(");
-            for index in 0..params.len() {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                write_type(builder, params[index])
+            let result = match ret_ty {
+                Void => pretty::nil(),
+                _ => pretty::append(pretty::text(" "), type_doc(ret_ty)),
             };
-            builder.write_char(')');
-            match ret_ty {
-                Void => (),
-                _ => {
-                    builder.write_char(' ');
-                    write_type(builder, ret_ty)
-                },
-            }
+            pretty::concat(
+                Vec::[
+                    pretty::text("func"),
+                    fixed_delimited_doc("(", ")", type_docs(params)),
+                    result,
+                ],
+            )
         },
         Multi { items: values } => {
-            builder.write_char('(');
-            for index in 0..values.len() {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                write_type(builder, values[index])
-            };
-            builder.write_char(')')
+            fixed_delimited_doc("(", ")", type_docs(values))
         },
     }
 }
 
-fn write_unary(builder: text::StringBuilder, value: UnaryOp) -> unit {
-    builder.write_string(
-        match value {
-            Neg => "-",
-            Not => "!",
-            BitNot => "^",
-            Address => "&",
-            Deref => "*",
-        },
-    )
-}
-
-fn write_binary(builder: text::StringBuilder, value: BinaryOp) -> unit {
-    builder.write_string(
-        match value {
-            Add => "+",
-            Sub => "-",
-            Mul => "*",
-            Div => "/",
-            Rem => "%",
-            BitAnd => "&",
-            BitOr => "|",
-            BitXor => "^",
-            Shl => "<<",
-            Shr => ">>",
-            Less => "<",
-            Greater => ">",
-            LessEq => "<=",
-            GreaterEq => ">=",
-            Eq => "==",
-            NotEq => "!=",
-            And => "&&",
-            Or => "||",
-        },
-    )
-}
-
-fn write_exprs(builder: text::StringBuilder, values: Vec[Expr], indent: int) -> unit {
-    for index in 0..values.len() {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        write_expr(builder, values[index], indent)
-    }
-}
-
-fn write_expr(builder: text::StringBuilder, value: Expr, indent: int) -> unit {
+fn unary_symbol(value: UnaryOp) -> string {
     match value {
-        Nil => builder.write_string("nil"),
-        Unit => builder.write_string("struct{}{}"),
-        Var { name } => builder.write_string(name),
-        Bool { value } => builder.write_string(
+        Neg => "-",
+        Not => "!",
+        BitNot => "^",
+        Address => "&",
+        Deref => "*",
+    }
+}
+
+fn binary_symbol(value: BinaryOp) -> string {
+    match value {
+        Add => "+",
+        Sub => "-",
+        Mul => "*",
+        Div => "/",
+        Rem => "%",
+        BitAnd => "&",
+        BitOr => "|",
+        BitXor => "^",
+        Shl => "<<",
+        Shr => ">>",
+        Less => "<",
+        Greater => ">",
+        LessEq => "<=",
+        GreaterEq => ">=",
+        Eq => "==",
+        NotEq => "!=",
+        And => "&&",
+        Or => "||",
+    }
+}
+
+fn expr_docs(values: Vec[Expr]) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(expr_doc(value))
+    };
+    result
+}
+
+fn named_params_doc(values: Vec[(string, Type)]) -> pretty::Doc {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(pretty::concat(Vec::[pretty::text(value.0 + " "), type_doc(value.1)]))
+    };
+    fixed_delimited_doc("(", ")", result)
+}
+
+fn names_doc(values: Vec[string]) -> pretty::Doc {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(pretty::text(value))
+    };
+    pretty::join(pretty::text(", "), result)
+}
+
+fn expr_doc(value: Expr) -> pretty::Doc {
+    match value {
+        Nil => pretty::text("nil"),
+        Unit => pretty::text("struct{}{}"),
+        Var { name } => pretty::text(name),
+        Bool { value } => pretty::text(
             if value {
                 "true"
             } else {
                 "false"
             },
         ),
-        Int { value } | Float { value } => builder.write_string(value),
-        String { value } => write_string_literal(builder, value),
+        Int { value } | Float { value } => pretty::text(value),
+        String { value } => string_literal_doc(value),
         Call { func, args } => {
-            write_expr(builder, func, indent);
-            builder.write_char('(');
-            write_exprs(builder, args, indent);
-            builder.write_char(')')
+            pretty::append(expr_doc(func), fixed_delimited_doc("(", ")", expr_docs(args)))
         },
         Unary { op, expr } => {
-            write_unary(builder, op);
-            write_expr(builder, expr, indent)
+            pretty::append(pretty::text(unary_symbol(op)), expr_doc(expr))
         },
-        Binary { op, lhs, rhs } => {
-            write_expr(builder, lhs, indent);
-            builder.write_char(' ');
-            write_binary(builder, op);
-            builder.write_char(' ');
-            write_expr(builder, rhs, indent)
-        },
+        Binary { op, lhs, rhs } => pretty::concat(
+            Vec::[expr_doc(lhs), pretty::text(" " + binary_symbol(op) + " "), expr_doc(rhs)],
+        ),
         Field { expr: value, field_name: field } => {
-            write_expr(builder, value, indent);
-            builder.write_char('.');
-            builder.write_string(field)
+            pretty::append(expr_doc(value), pretty::text("." + field))
         },
-        Index { base: value, index } => {
-            write_expr(builder, value, indent);
-            builder.write_char('[');
-            write_expr(builder, index, indent);
-            builder.write_char(']')
-        },
-        Slice { base: value, start, end } => {
-            write_expr(builder, value, indent);
-            builder.write_char('[');
-            write_expr(builder, start, indent);
-            builder.write_char(':');
-            write_expr(builder, end, indent);
-            builder.write_char(']')
-        },
-        Cast { expr, ty } => {
-            write_expr(builder, expr, indent);
-            builder.write_string(".(");
-            write_type(builder, ty);
-            builder.write_char(')')
-        },
+        Index { base: value, index } => pretty::concat(
+            Vec::[expr_doc(value), pretty::text("["), expr_doc(index), pretty::text("]")],
+        ),
+        Slice { base: value, start, end } => pretty::concat(
+            Vec::[
+                expr_doc(value),
+                pretty::text("["),
+                expr_doc(start),
+                pretty::text(":"),
+                expr_doc(end),
+                pretty::text("]"),
+            ],
+        ),
+        Cast { expr, ty } => pretty::concat(
+            Vec::[expr_doc(expr), pretty::text(".("), type_doc(ty), pretty::text(")")],
+        ),
         Convert { ty, expr } => {
-            write_type(builder, ty);
-            builder.write_char('(');
-            write_expr(builder, expr, indent);
-            builder.write_char(')')
+            pretty::append(type_doc(ty), fixed_delimited_doc("(", ")", Vec::[expr_doc(expr)]))
         },
         Make { ty, args } => {
-            builder.write_string("make(");
-            write_type(builder, ty);
-            if !args.is_empty() {
-                builder.write_string(", ");
-                write_exprs(builder, args, indent)
-            } else {
-                ()
+            let values: Vec[pretty::Doc] = Vec::with_capacity(args.len() + 1);
+            values.push(type_doc(ty));
+            for value in args {
+                values.push(expr_doc(value))
             };
-            builder.write_char(')')
+            pretty::append(pretty::text("make"), fixed_delimited_doc("(", ")", values))
         },
-        Send { channel, value } => {
-            write_expr(builder, channel, indent);
-            builder.write_string(" <- ");
-            write_expr(builder, value, indent)
-        },
-        Receive { channel } => {
-            builder.write_string("<-");
-            write_expr(builder, channel, indent)
-        },
+        Send { channel, value } => pretty::concat(
+            Vec::[expr_doc(channel), pretty::text(" <- "), expr_doc(value)],
+        ),
+        Receive { channel } => pretty::append(pretty::text("<-"), expr_doc(channel)),
         StructLiteral { ty, fields } => {
-            write_type(builder, ty);
-            builder.write_char('{');
+            let values: Vec[pretty::Doc] = Vec::with_capacity(fields.len());
             for field in fields {
-                newline(builder, indent + 4);
-                builder.write_string(field.0);
-                builder.write_string(": ");
-                write_expr(builder, field.1, indent + 4);
-                builder.write_char(',')
+                values.push(
+                    pretty::concat(
+                        Vec::[pretty::text(field.0 + ": "), expr_doc(field.1), pretty::text(",")],
+                    ),
+                )
             };
-            if !fields.is_empty() {
-                newline(builder, indent)
+            if values.is_empty() {
+                pretty::append(type_doc(ty), pretty::text("{}"))
             } else {
-                ()
-            };
-            builder.write_char('}')
+                pretty::concat(
+                    Vec::[
+                        type_doc(ty),
+                        pretty::text("{"),
+                        pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(values))),
+                        pretty::hardline(),
+                        pretty::text("}"),
+                    ],
+                )
+            }
         },
         ArrayLiteral { ty, items: values } => {
-            write_type(builder, ty);
-            builder.write_char('{');
-            write_exprs(builder, values, indent);
-            builder.write_char('}')
+            pretty::append(type_doc(ty), fixed_delimited_doc("{", "}", expr_docs(values)))
         },
-        FuncLit { params, ret_ty, body } => {
-            builder.write_string("func(");
-            for index in 0..params.len() {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                let param = params[index];
-                builder.write_string(param.0);
-                builder.write_char(' ');
-                write_type(builder, param.1)
-            };
-            builder.write_string(") ");
-            write_type(builder, ret_ty);
-            builder.write_char(' ');
-            write_block(builder, body, indent)
-        },
+        FuncLit { params, ret_ty, body } => pretty::concat(
+            Vec::[
+                pretty::text("func"),
+                named_params_doc(params),
+                pretty::text(" "),
+                type_doc(ret_ty),
+                pretty::text(" "),
+                block_doc(body),
+            ],
+        ),
     }
 }
 
-fn write_block(builder: text::StringBuilder, value: Block, indent: int) -> unit {
-    builder.write_char('{');
-    for stmt in value.stmts {
-        newline(builder, indent + 4);
-        write_stmt(builder, stmt, indent + 4)
+fn stmt_docs(value: Block) -> Vec[pretty::Doc] {
+    let result: Vec[pretty::Doc] = Vec::with_capacity(value.stmts.len());
+    for value in value.stmts {
+        result.push(stmt_doc(value))
     };
-    if !value.stmts.is_empty() {
-        newline(builder, indent)
-    } else {
-        ()
-    };
-    builder.write_char('}')
+    result
 }
 
-fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int) -> unit {
+fn block_doc(value: Block) -> pretty::Doc {
+    let values = stmt_docs(value);
+    if values.is_empty() {
+        pretty::text("{}")
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::text("{"),
+                pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(values))),
+                pretty::hardline(),
+                pretty::text("}"),
+            ],
+        )
+    }
+}
+
+fn switch_case_doc(value: SwitchCase) -> pretty::Doc {
+    let body = stmt_docs(value.body);
+    if body.is_empty() {
+        pretty::append(
+            pretty::text("case "),
+            pretty::append(expr_doc(value.value), pretty::text(":")),
+        )
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::text("case "),
+                expr_doc(value.value),
+                pretty::text(":"),
+                pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(body))),
+            ],
+        )
+    }
+}
+
+fn type_switch_case_doc(value: TypeSwitchCase) -> pretty::Doc {
+    let body = stmt_docs(value.body);
+    if body.is_empty() {
+        pretty::concat(Vec::[pretty::text("case "), type_doc(value.ty), pretty::text(":")])
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::text("case "),
+                type_doc(value.ty),
+                pretty::text(":"),
+                pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(body))),
+            ],
+        )
+    }
+}
+
+fn default_case_doc(value: Block) -> pretty::Doc {
+    let body = stmt_docs(value);
+    if body.is_empty() {
+        pretty::text("default:")
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::text("default:"),
+                pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(body))),
+            ],
+        )
+    }
+}
+
+fn switch_body_doc(values: Vec[pretty::Doc]) -> pretty::Doc {
+    if values.is_empty() {
+        pretty::text("{}")
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::text("{"),
+                pretty::append(pretty::hardline(), pretty::stack(values)),
+                pretty::hardline(),
+                pretty::text("}"),
+            ],
+        )
+    }
+}
+
+fn stmt_doc(value: Stmt) -> pretty::Doc {
     match value {
-        Expr { expr } => write_expr(builder, expr, indent),
-        Go { call: expr } => {
-            builder.write_string("go ");
-            write_expr(builder, expr, indent)
-        },
+        Expr { expr } => expr_doc(expr),
+        Go { call: expr } => pretty::append(pretty::text("go "), expr_doc(expr)),
         Var { name, ty, value: initial } => {
-            builder.write_string("var ");
-            builder.write_string(name);
-            builder.write_char(' ');
-            write_type(builder, ty);
-            match initial {
-                Some(expr) => {
-                    builder.write_string(" = ");
-                    write_expr(builder, expr, indent)
-                },
-                None => (),
-            }
-        },
-        Assign { name, value: expr } => {
-            builder.write_string(name);
-            builder.write_string(" = ");
-            write_expr(builder, expr, indent)
-        },
-        FieldAssign { target, field_name: field, value: expr } => {
-            write_expr(builder, target, indent);
-            builder.write_char('.');
-            builder.write_string(field);
-            builder.write_string(" = ");
-            write_expr(builder, expr, indent)
-        },
-        IndexAssign { base: target, index, value: expr } => {
-            write_expr(builder, target, indent);
-            builder.write_char('[');
-            write_expr(builder, index, indent);
-            builder.write_string("] = ");
-            write_expr(builder, expr, indent)
-        },
-        MultiAssign { names, value: expr } => {
-            for index in 0..names.len() {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                builder.write_string(names[index])
+            let initial_doc = match initial {
+                Some(expr) => pretty::concat(Vec::[pretty::text(" = "), expr_doc(expr)]),
+                None => pretty::nil(),
             };
-            builder.write_string(" = ");
-            write_expr(builder, expr, indent)
+            pretty::concat(Vec::[pretty::text("var " + name + " "), type_doc(ty), initial_doc])
         },
-        Return { expr } => {
-            builder.write_string("return");
-            match expr {
-                Some(value) => {
-                    builder.write_char(' ');
-                    write_expr(builder, value, indent)
-                },
-                None => (),
-            }
+        Assign { name, value: expr } => pretty::concat(
+            Vec::[pretty::text(name + " = "), expr_doc(expr)],
+        ),
+        FieldAssign { target, field_name: field, value: expr } => pretty::concat(
+            Vec::[expr_doc(target), pretty::text("." + field + " = "), expr_doc(expr)],
+        ),
+        IndexAssign { base: target, index, value: expr } => pretty::concat(
+            Vec::[
+                expr_doc(target),
+                pretty::text("["),
+                expr_doc(index),
+                pretty::text("] = "),
+                expr_doc(expr),
+            ],
+        ),
+        MultiAssign { names, value: expr } => pretty::concat(
+            Vec::[names_doc(names), pretty::text(" = "), expr_doc(expr)],
+        ),
+        Return { expr } => match expr {
+            Some(value) => pretty::append(pretty::text("return "), expr_doc(value)),
+            None => pretty::text("return"),
         },
-        ReturnMulti { exprs: values } => {
-            builder.write_string("return ");
-            write_exprs(builder, values, indent)
-        },
+        ReturnMulti { exprs: values } => pretty::concat(
+            Vec::[pretty::text("return "), pretty::join(pretty::text(", "), expr_docs(values))],
+        ),
         If { cond, then_, else_ } => {
-            builder.write_string("if ");
-            write_expr(builder, cond, indent);
-            builder.write_char(' ');
-            write_block(builder, then_, indent);
-            match else_ {
-                Some(value) => {
-                    builder.write_string(" else ");
-                    write_block(builder, value, indent)
-                },
-                None => (),
-            }
-        },
-        Loop { body } => {
-            builder.write_string("for ");
-            write_block(builder, body, indent)
-        },
-        LabeledLoop { label, body } => {
-            builder.write_string(label);
-            builder.write_string(":\n");
-            write_spaces(builder, indent);
-            builder.write_string("for ");
-            write_block(builder, body, indent)
-        },
-        Range { names, expr, body } => {
-            builder.write_string("for ");
-            for index in 0..names.len() {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {
-                    ()
-                };
-                builder.write_string(names[index])
+            let else_doc = match else_ {
+                Some(value) => pretty::concat(Vec::[pretty::text(" else "), block_doc(value)]),
+                None => pretty::nil(),
             };
-            builder.write_string(" := range ");
-            write_expr(builder, expr, indent);
-            builder.write_char(' ');
-            write_block(builder, body, indent)
+            pretty::concat(
+                Vec::[
+                    pretty::text("if "),
+                    expr_doc(cond),
+                    pretty::text(" "),
+                    block_doc(then_),
+                    else_doc,
+                ],
+            )
         },
-        Break => builder.write_string("break"),
-        BreakLabel { label } => {
-            builder.write_string("break ");
-            builder.write_string(label)
-        },
-        Continue => builder.write_string("continue"),
+        Loop { body } => pretty::append(pretty::text("for "), block_doc(body)),
+        LabeledLoop { label, body } => pretty::concat(
+            Vec::[
+                pretty::text(label + ":"),
+                pretty::hardline(),
+                pretty::text("for "),
+                block_doc(body),
+            ],
+        ),
+        Range { names, expr, body } => pretty::concat(
+            Vec::[
+                pretty::text("for "),
+                names_doc(names),
+                pretty::text(" := range "),
+                expr_doc(expr),
+                pretty::text(" "),
+                block_doc(body),
+            ],
+        ),
+        Break => pretty::text("break"),
+        BreakLabel { label } => pretty::text("break " + label),
+        Continue => pretty::text("continue"),
         Switch { expr, cases, default } => {
-            builder.write_string("switch ");
-            write_expr(builder, expr, indent);
-            builder.write_string(" {");
-            for case in cases {
-                newline(builder, indent);
-                builder.write_string("case ");
-                write_expr(builder, case.value, indent);
-                builder.write_char(':');
-                for stmt in case.body.stmts {
-                    newline(builder, indent + 4);
-                    write_stmt(builder, stmt, indent + 4)
-                }
+            let values: Vec[pretty::Doc] = Vec::with_capacity(
+                cases.len()
+                    + if default.is_some() {
+                        1
+                    } else {
+                        0
+                    },
+            );
+            for value in cases {
+                values.push(switch_case_doc(value))
             };
             match default {
-                Some(body) => {
-                    newline(builder, indent);
-                    builder.write_string("default:");
-                    for stmt in body.stmts {
-                        newline(builder, indent + 4);
-                        write_stmt(builder, stmt, indent + 4)
-                    }
-                },
+                Some(body) => values.push(default_case_doc(body)),
                 None => (),
             };
-            newline(builder, indent);
-            builder.write_char('}')
+            pretty::concat(
+                Vec::[
+                    pretty::text("switch "),
+                    expr_doc(expr),
+                    pretty::text(" "),
+                    switch_body_doc(values),
+                ],
+            )
         },
         TypeSwitch { binding: bind, expr, cases, default } => {
-            builder.write_string("switch ");
-            match bind {
-                Some(name) => {
-                    builder.write_string(name);
-                    builder.write_string(" := ")
-                },
-                None => (),
+            let binding = match bind {
+                Some(name) => pretty::text(name + " := "),
+                None => pretty::nil(),
             };
-            write_expr(builder, expr, indent);
-            builder.write_string(".(type) {");
-            for case in cases {
-                newline(builder, indent);
-                builder.write_string("case ");
-                write_type(builder, case.ty);
-                builder.write_char(':');
-                for stmt in case.body.stmts {
-                    newline(builder, indent + 4);
-                    write_stmt(builder, stmt, indent + 4)
-                }
+            let values: Vec[pretty::Doc] = Vec::with_capacity(
+                cases.len()
+                    + if default.is_some() {
+                        1
+                    } else {
+                        0
+                    },
+            );
+            for value in cases {
+                values.push(type_switch_case_doc(value))
             };
             match default {
-                Some(body) => {
-                    newline(builder, indent);
-                    builder.write_string("default:");
-                    for stmt in body.stmts {
-                        newline(builder, indent + 4);
-                        write_stmt(builder, stmt, indent + 4)
-                    }
-                },
+                Some(body) => values.push(default_case_doc(body)),
                 None => (),
             };
-            newline(builder, indent);
-            builder.write_char('}')
+            pretty::concat(
+                Vec::[
+                    pretty::text("switch "),
+                    binding,
+                    expr_doc(expr),
+                    pretty::text(".(type) "),
+                    switch_body_doc(values),
+                ],
+            )
         },
-        Panic { message } => {
-            builder.write_string("panic(");
-            write_string_literal(builder, message);
-            builder.write_char(')')
-        },
-        Unreachable => builder.write_string("panic(\"unreachable\")"),
+        Panic { message } => pretty::append(
+            pretty::text("panic"),
+            fixed_delimited_doc("(", ")", Vec::[string_literal_doc(message)]),
+        ),
+        Unreachable => pretty::text("panic(\"unreachable\")"),
     }
 }
 
-fn write_struct(builder: text::StringBuilder, value: StructDef) -> unit {
-    builder.write_string("type ");
-    builder.write_string(value.name);
-    builder.write_string(" struct {");
+fn declaration_block_doc(header: pretty::Doc, values: Vec[pretty::Doc]) -> pretty::Doc {
+    if values.is_empty() {
+        pretty::append(header, pretty::text(" {}"))
+    } else {
+        pretty::concat(
+            Vec::[
+                header,
+                pretty::text(" {"),
+                pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(values))),
+                pretty::hardline(),
+                pretty::text("}"),
+            ],
+        )
+    }
+}
+
+fn struct_doc(value: StructDef) -> pretty::Doc {
+    let fields: Vec[pretty::Doc] = Vec::with_capacity(value.fields.len());
     for field in value.fields {
-        newline(builder, 4);
-        builder.write_string(field.0);
-        builder.write_char(' ');
-        write_type(builder, field.1)
+        fields.push(pretty::concat(Vec::[pretty::text(field.0 + " "), type_doc(field.1)]))
     };
-    if !value.fields.is_empty() {
-        newline(builder, 0)
+    declaration_block_doc(pretty::text("type " + value.name + " struct"), fields)
+}
+
+fn interface_method_doc(value: InterfaceMethod) -> pretty::Doc {
+    let result = match value.ret_ty {
+        Some(ty) => pretty::append(pretty::text(" "), type_doc(ty)),
+        None => pretty::nil(),
+    };
+    pretty::concat(
+        Vec::[
+            pretty::text(value.name),
+            fixed_delimited_doc("(", ")", type_docs(value.params)),
+            result,
+        ],
+    )
+}
+
+fn interface_doc(value: InterfaceDef) -> pretty::Doc {
+    let methods: Vec[pretty::Doc] = Vec::with_capacity(value.methods.len());
+    for value in value.methods {
+        methods.push(interface_method_doc(value))
+    };
+    declaration_block_doc(pretty::text("type " + value.name + " interface"), methods)
+}
+
+fn type_def_doc(value: TypeDef) -> pretty::Doc {
+    pretty::concat(Vec::[pretty::text("type " + value.name + " "), type_doc(value.ty)])
+}
+
+fn const_spec_doc(value: ConstSpec) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            pretty::text(value.name + " "),
+            type_doc(value.ty),
+            pretty::text(" = "),
+            expr_doc(value.value),
+        ],
+    )
+}
+
+fn const_group_doc(value: ConstGroup) -> pretty::Doc {
+    let values: Vec[pretty::Doc] = Vec::with_capacity(value.specs.len());
+    for value in value.specs {
+        values.push(const_spec_doc(value))
+    };
+    if values.is_empty() {
+        pretty::concat(
+            Vec::[
+                pretty::text("const ("),
+                pretty::hardline(),
+                pretty::hardline(),
+                pretty::text(")"),
+            ],
+        )
     } else {
-        ()
-    };
-    builder.write_char('}')
+        pretty::concat(
+            Vec::[
+                pretty::text("const ("),
+                pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(values))),
+                pretty::hardline(),
+                pretty::text(")"),
+            ],
+        )
+    }
 }
 
-fn write_interface(builder: text::StringBuilder, value: InterfaceDef) -> unit {
-    builder.write_string("type ");
-    builder.write_string(value.name);
-    builder.write_string(" interface {");
-    for method in value.methods {
-        newline(builder, 4);
-        builder.write_string(method.name);
-        builder.write_char('(');
-        for index in 0..method.params.len() {
-            if index > 0 {
-                builder.write_string(", ")
-            } else {
-                ()
-            };
-            write_type(builder, method.params[index])
-        };
-        builder.write_char(')');
-        match method.ret_ty {
-            Some(ty) => {
-                builder.write_char(' ');
-                write_type(builder, ty)
-            },
-            None => (),
-        }
-    };
-    if !value.methods.is_empty() {
-        newline(builder, 0)
-    } else {
-        ()
-    };
-    builder.write_char('}')
-}
-
-fn write_type_def(builder: text::StringBuilder, value: TypeDef) -> unit {
-    builder.write_string("type ");
-    builder.write_string(value.name);
-    builder.write_char(' ');
-    write_type(builder, value.ty)
-}
-
-fn write_const_group(builder: text::StringBuilder, value: ConstGroup) -> unit {
-    builder.write_string("const (");
-    let empty = value.specs.is_empty();
-    for spec in value.specs {
-        newline(builder, 4);
-        builder.write_string(spec.name);
-        builder.write_char(' ');
-        write_type(builder, spec.ty);
-        builder.write_string(" = ");
-        write_expr(builder, spec.value, 4)
-    };
-    if empty {
-        newline(builder, 0)
-    } else {
-        ()
-    };
-    newline(builder, 0);
-    builder.write_char(')')
-}
-
-fn write_import_group(builder: text::StringBuilder, values: Vec[(string, string)]) -> unit {
-    builder.write_string("import (");
+fn import_group_doc(values: Vec[(string, string)]) -> pretty::Doc {
+    let imports: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
-        newline(builder, 4);
-        builder.write_string(value.0);
-        builder.write_char(' ');
-        write_string_literal(builder, value.1)
+        imports.push(
+            pretty::concat(Vec::[pretty::text(value.0 + " "), string_literal_doc(value.1)]),
+        )
     };
-    newline(builder, 0);
-    builder.write_char(')')
+    pretty::concat(
+        Vec::[
+            pretty::text("import ("),
+            pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(imports))),
+            pretty::hardline(),
+            pretty::text(")"),
+        ],
+    )
 }
 
-fn write_function(builder: text::StringBuilder, value: Function) -> unit {
-    builder.write_string("func ");
-    builder.write_string(value.name);
-    builder.write_char('(');
-    for index in 0..value.params.len() {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        let param = value.params[index];
-        builder.write_string(param.0);
-        builder.write_char(' ');
-        write_type(builder, param.1)
-    };
-    builder.write_char(')');
-    match value.ret_ty {
-        Some(ty) => {
-            builder.write_char(' ');
-            write_type(builder, ty)
-        },
-        None => (),
-    };
-    builder.write_char(' ');
-    write_block(builder, value.body, 0)
-}
-
-fn write_global(builder: text::StringBuilder, value: Global) -> unit {
-    builder.write_string("var ");
-    builder.write_string(value.name);
-    match value.ty {
-        Some(ty) => {
-            builder.write_char(' ');
-            write_type(builder, ty)
-        },
-        None => (),
-    };
-    builder.write_string(" = ");
-    write_expr(builder, value.value, 0)
-}
-
-fn write_method(builder: text::StringBuilder, value: Method) -> unit {
-    builder.write_string("func (");
-    builder.write_string(value.receiver.0);
-    builder.write_char(' ');
-    write_type(builder, value.receiver.1);
-    builder.write_string(") ");
-    builder.write_string(value.name);
-    builder.write_char('(');
-    for index in 0..value.params.len() {
-        if index > 0 {
-            builder.write_string(", ")
-        } else {
-            ()
-        };
-        let param = value.params[index];
-        builder.write_string(param.0);
-        builder.write_char(' ');
-        write_type(builder, param.1)
-    };
-    builder.write_char(')');
-    match value.ret_ty {
-        Some(ty) => {
-            builder.write_char(' ');
-            write_type(builder, ty)
-        },
-        None => (),
-    };
-    builder.write_char(' ');
-    write_block(builder, value.body, 0)
-}
-
-fn write_item(builder: text::StringBuilder, value: Item) -> unit {
+fn optional_result_doc(value: Option[Type]) -> pretty::Doc {
     match value {
-        ImportGroup(value) => write_import_group(builder, value),
-        TypeDef(value) => write_type_def(builder, value),
-        ConstGroup(value) => write_const_group(builder, value),
-        Global(value) => write_global(builder, value),
-        Interface(value) => write_interface(builder, value),
-        Struct(value) => write_struct(builder, value),
-        Function(value) => write_function(builder, value),
-        Method(value) => write_method(builder, value),
+        Some(ty) => pretty::append(pretty::text(" "), type_doc(ty)),
+        None => pretty::nil(),
+    }
+}
+
+fn function_doc(value: Function) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            pretty::text("func " + value.name),
+            named_params_doc(value.params),
+            optional_result_doc(value.ret_ty),
+            pretty::text(" "),
+            block_doc(value.body),
+        ],
+    )
+}
+
+fn global_doc(value: Global) -> pretty::Doc {
+    let ty = match value.ty {
+        Some(ty) => pretty::append(pretty::text(" "), type_doc(ty)),
+        None => pretty::nil(),
+    };
+    pretty::concat(
+        Vec::[pretty::text("var " + value.name), ty, pretty::text(" = "), expr_doc(value.value)],
+    )
+}
+
+fn method_doc(value: Method) -> pretty::Doc {
+    pretty::concat(
+        Vec::[
+            pretty::text("func ("),
+            pretty::concat(Vec::[pretty::text(value.receiver.0 + " "), type_doc(value.receiver.1)]),
+            pretty::text(") " + value.name),
+            named_params_doc(value.params),
+            optional_result_doc(value.ret_ty),
+            pretty::text(" "),
+            block_doc(value.body),
+        ],
+    )
+}
+
+fn item_doc(value: Item) -> pretty::Doc {
+    match value {
+        ImportGroup(value) => import_group_doc(value),
+        TypeDef(value) => type_def_doc(value),
+        ConstGroup(value) => const_group_doc(value),
+        Global(value) => global_doc(value),
+        Interface(value) => interface_doc(value),
+        Struct(value) => struct_doc(value),
+        Function(value) => function_doc(value),
+        Method(value) => method_doc(value),
     }
 }
 
 pub fn encode(value: File) -> string {
-    let builder = text::StringBuilder::new();
-    builder.write_string("package main");
-    for item in value.items {
-        builder.write_string("\n\n");
-        write_item(builder, item)
+    let items: Vec[pretty::Doc] = Vec::with_capacity(value.items.len());
+    for value in value.items {
+        items.push(item_doc(value))
     };
-    builder.write_char('\n');
-    builder.finish()
+    let body = if items.is_empty() {
+        pretty::nil()
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::hardline(),
+                pretty::hardline(),
+                pretty::join(pretty::concat(Vec::[pretty::hardline(), pretty::hardline()]), items),
+            ],
+        )
+    };
+    pretty::pretty(
+        100,
+        pretty::concat(Vec::[pretty::text("package main"), body, pretty::hardline()]),
+    )
 }
