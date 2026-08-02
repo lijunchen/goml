@@ -1,6 +1,7 @@
 package tast;
 
 use gomlc::ast;
+use gomlc::pretty;
 use std::text;
 
 fn write_spaces(builder: text::StringBuilder, count: int) -> unit {
@@ -1006,6 +1007,30 @@ pub fn write_constant(builder: text::StringBuilder, value: Constant) -> unit {
     builder.write_string(" = ");
     write_const_expr(builder, value.value);
     builder.write_char(';')
+}
+
+pub fn type_doc(value: Type) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_type(builder, value);
+    pretty::text(builder.finish())
+}
+
+pub fn trait_ref_doc(value: TraitRef) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_trait_ref(builder, value);
+    pretty::text(builder.finish())
+}
+
+pub fn primitive_doc(value: Primitive) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_primitive(builder, value);
+    pretty::text(builder.finish())
+}
+
+pub fn constant_doc(value: Constant) -> pretty::Doc {
+    let builder = text::StringBuilder::new();
+    write_constant(builder, value);
+    pretty::text(builder.finish())
 }
 
 fn encode_file(value: File) -> string {
