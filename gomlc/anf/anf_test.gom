@@ -195,6 +195,41 @@ fn preserves_loop_exit_joins() -> unit {
 }
 
 #[test]
+fn preserves_closure_conversion_joins() -> unit {
+    let function_ty = tast::Type::Func { params: Vec::[], ret_ty: tast::Type::String };
+    let params: Vec[(string, tast::Type)] = Vec::[];
+    params.push(("result", function_ty));
+    let join = JoinBind {
+        name: "return",
+        role: JoinRole::Return,
+        params,
+        ret_ty: function_ty,
+        body: Block {
+            binds: Vec::[],
+            term: Term::Return(Imm::Var { name: "result", ty: function_ty }),
+        },
+    };
+    let binds: Vec[Bind] = Vec::[];
+    binds.push(Bind::Join(join));
+    let args: Vec[Imm] = Vec::[];
+    args.push(Imm::Var { name: "environment", ty: tast::Type::Con { name: "closure_env_test_0" } });
+    let optimized = simplify(
+        verifier_file(
+            Block { binds, term: Term::Jump { target: "return", args, ret_ty: function_ty } },
+            function_ty,
+        ),
+    );
+    match verify(optimized) {
+        Ok(_) => (),
+        Err(message) => testing::fail(message),
+    };
+    match optimized.functions[0].body.binds.get(0) {
+        Join(value) => testing::assert_eq(value.name, "return"),
+        _ => testing::fail("expected closure conversion join"),
+    }
+}
+
+#[test]
 fn does_not_propagate_assigned_bindings() -> unit {
     let binds: Vec[Bind] = Vec::[];
     binds.push(
