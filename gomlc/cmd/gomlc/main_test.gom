@@ -239,12 +239,12 @@ fn parses_version_formats() -> unit {
 
 #[test]
 fn parses_package_information_without_lowering_file_bodies() -> unit {
-    let source = "// header\npackage sample;\nuse alpha::beta;\nuse gamma::delta as other;\nfn main() -> unit { let _ = \"use hidden::path;\"; }";
+    let source = "// header\npackage sample;\nuse alpha::beta;\nuse gamma::delta as other;\nuse theta::api::{Thing, make as create,};\nfn main() -> unit { let _ = \"use hidden::path;\"; }";
     match parse_package_info_file("main.gom", source) {
         Ok(value) => {
             testing::assert_eq(value.package_name, "sample");
             testing::assert(value.package_explicit);
-            testing::assert_eq(value.uses.len(), 2);
+            testing::assert_eq(value.uses.len(), 3);
             testing::assert_eq(value.uses.get(0).path, "alpha::beta");
             match value.uses.get(0).alias {
                 None => (),
@@ -254,7 +254,9 @@ fn parses_package_information_without_lowering_file_bodies() -> unit {
             match value.uses.get(1).alias {
                 Some(alias) => testing::assert_eq(alias, "other"),
                 None => testing::fail("expected use alias"),
-            }
+            };
+            testing::assert_eq(value.uses.get(2).path, "theta::api");
+            testing::assert(value.uses.get(2).alias.is_none())
         },
         Err(error) => testing::fail(error),
     };

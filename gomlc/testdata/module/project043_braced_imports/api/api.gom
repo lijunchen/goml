@@ -1,0 +1,28 @@
+package api;
+
+pub const answer: int = 42;
+
+pub type Label = string;
+
+pub struct Box {
+    pub value: int,
+}
+
+pub enum Choice {
+    Yes,
+    No,
+}
+
+pub trait Describe {
+    fn describe(self) -> string;
+}
+
+impl Describe for Box {
+    fn describe(self: Box) -> string {
+        self.value.to_string()
+    }
+}
+
+pub fn make(value: int) -> Box {
+    Box { value }
+}

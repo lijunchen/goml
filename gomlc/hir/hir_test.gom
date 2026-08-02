@@ -144,6 +144,41 @@ fn resolves_traits_imported_through_package_aliases() -> unit {
 }
 
 #[test]
+fn resolves_braced_import_items_and_aliases() -> unit {
+    let file = lowered_package_file(
+        "package app; use vendor::api::{Widget as Box, Render, make}; fn run(value: Box) -> Box { let make = |item| item; make(value) }",
+        "vendor::app",
+    );
+    testing::assert_eq(file.import_aliases.len(), 1);
+    testing::assert_eq(file.import_aliases.get(0).alias, "");
+    testing::assert_eq(file.import_aliases.get(0).package_name, "vendor::api");
+    testing::assert_eq(file.imports.len(), 3);
+    testing::assert_eq(file.imports.get(0), "vendor::api::Widget");
+    testing::assert_eq(file.imports.get(1), "vendor::api::Render");
+    testing::assert_eq(file.imports.get(2), "vendor::api::make");
+    testing::assert_eq(file.use_traits.len(), 3);
+    testing::assert_eq(file.use_traits.get(0), "vendor::api::Widget");
+    testing::assert_eq(file.use_traits.get(1), "vendor::api::Render");
+    testing::assert_eq(file.use_traits.get(2), "vendor::api::make");
+    match file.items.get(0) {
+        Function(value) => {
+            match value.params.get(0).1 {
+                Con { name } => testing::assert_eq(name, "vendor::api::Widget"),
+                _ => testing::fail("expected imported parameter type"),
+            };
+            match value.body.tail {
+                Some(Expr { kind: Call { func, args: _ }, span: _ }) => match func.kind {
+                    NameRef { name_ref: Local(_) } => (),
+                    _ => testing::fail("expected local binding to shadow imported item"),
+                },
+                _ => testing::fail("expected local call"),
+            }
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
 fn exposes_derived_impls_without_lowering_them_twice() -> unit {
     let expanded = expand_derives(
         ast::lower(parser::parse("#[derive(Eq, Hash)] struct Key { value: int32 }")),

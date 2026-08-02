@@ -1,0 +1,25 @@
+package main;
+
+use tests::braced_imports::api::{
+    Box as ImportedBox,
+    Choice,
+    Describe,
+    Label,
+    answer,
+    make as create,
+};
+
+fn label(value: Label) -> string {
+    value
+}
+
+fn main() -> unit {
+    let value: ImportedBox = create(answer);
+    println(value.describe());
+    match Choice::Yes {
+        Choice::Yes => println("yes"),
+        Choice::No => println("no"),
+    };
+    let create = |number| number + 1;
+    println(create(4))
+}
