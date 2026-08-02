@@ -1,0 +1,72 @@
+fn find(wanted/0: int) -> Option__int {
+  let current/1 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let _wild159 = loop {
+    let value/2 = inherent#Ref#Ref[T]#get__T_int(current/1) in
+    let _wild158 = if (value/2 >= 5) {
+        {
+          let _wild155 = return Option__int::None in
+        }
+    } else {
+        if trait_impl#Eq#int#eq(value/2, wanted/0) {
+            {
+              let _wild156 = return Option__int::Some(value/2) in
+            }
+        } else {
+            {
+              let _wild157 = inherent#Ref#Ref[T]#set__T_int(current/1, (value/2 + 1)) in
+            }
+        }
+    } in
+  } in
+  Option__int::None
+}
+
+fn any(wanted/3: int) -> bool {
+  {
+    let mtmp160 = find(wanted/3) in
+    match mtmp160 {
+      Option__int::None => {
+        false
+      },
+      Option__int::Some(x161) => {
+        {
+          let x161 = Option__int::Some._0(mtmp160) in
+          true
+        }
+      },
+    }
+  }
+}
+
+fn main() -> unit {
+  let _wild162 = println__T_bool(any(3)) in
+  let _wild163 = println__T_bool(any(8)) in
+}
+
+fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/207)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/208)
+}
+
+fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
+  @intrinsic(eq.primitive)(self/59, other/60)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
+  @intrinsic(ref.set)(self/209, value/210)
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
+}
+
+fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
+  @runtime(core.bool_to_string)(self/37)
+}
+
+fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
+  @runtime(core.int_hash)(self/85)
+}

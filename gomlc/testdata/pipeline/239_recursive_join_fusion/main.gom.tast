@@ -1,0 +1,34 @@
+fn find(wanted/0: int) -> Option[int] {
+    let current/1: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    loop {
+        let value/2: int = (Ref[int]::get : (Ref[int]) -> int)((current/1 : Ref[int]));
+        if (value/2 : int) >= 5 {
+            {
+                return Option::None;
+            }
+        } else {
+            if (value/2 : int) == (wanted/0 : int) {
+                {
+                    return Option::Some((value/2 : int));
+                }
+            } else {
+                {
+                    (Ref[int]::set : (Ref[int], int) -> unit)((current/1 : Ref[int]), (value/2 : int) + 1);
+                }
+            }
+        };
+    };
+    Option::None
+}
+
+fn any(wanted/3: int) -> bool {
+    match (find : (int) -> Option[int])((wanted/3 : int)) {
+        Option::Some(_ : int) => true,
+        Option::None => false,
+    }
+}
+
+fn main() -> unit {
+    (println : (bool) -> unit)((any : (int) -> bool)(3));
+    (println : (bool) -> unit)((any : (int) -> bool)(8));
+}
