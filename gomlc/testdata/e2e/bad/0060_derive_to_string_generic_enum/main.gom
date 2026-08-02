@@ -4,9 +4,11 @@ enum Option[T] {
     None,
 }
 
+struct Hidden {}
+
 fn main() {
-    let a: Option[int32] = Option::Some(42);
-    let b: Option[int32] = Option::None;
+    let a: Option[Hidden] = Option::Some(Hidden {});
+    let b: Option[Hidden] = Option::None;
     println(a.to_string());
     println(b.to_string());
 }

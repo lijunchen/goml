@@ -335,15 +335,38 @@ fn rejects_invalid_derives() -> unit {
     );
     testing::assert_eq(unsupported.diagnostics.len(), 1);
     testing::assert_eq(unsupported.diagnostics.get(0).message, "unsupported derive target `ToJson`");
-    let generic = lower(
-        ast::lower(parser::parse("#[derive(ToString)] struct Box[T] { value: T }")),
-        "main.gom",
+}
+
+#[test]
+fn derives_generic_impls_with_field_type_predicates() -> unit {
+    let expanded = expand_derives(
+        ast::lower(
+            parser::parse(
+                "#[derive(Eq)] struct Box[T, Marker] { first: Vec[T], second: Vec[T] }",
+            ),
+        ),
     );
-    testing::assert_eq(generic.diagnostics.len(), 1);
-    testing::assert_eq(
-        generic.diagnostics.get(0).message,
-        "`#[derive(ToString)]` is not supported for generic struct `Box`",
-    )
+    testing::assert_eq(expanded.diagnostics.len(), 0);
+    match expanded.ast {
+        Some(file) => match file.items.get(1) {
+            ImplBlock(value) => {
+                testing::assert_eq(value.generics.len(), 2);
+                testing::assert_eq(value.predicates.len(), 1);
+                match value.for_type {
+                    App { ty: _, args } => testing::assert_eq(args.len(), 2),
+                    _ => testing::fail("expected generic derive target"),
+                };
+                match value.predicates.get(0) {
+                    Trait { ty: App { ty: _, args }, trait_ref: _ } => {
+                        testing::assert_eq(args.len(), 1)
+                    },
+                    _ => testing::fail("expected field-type derive predicate"),
+                }
+            },
+            _ => testing::fail("expected derived generic impl"),
+        },
+        None => testing::fail("expected expanded generic derive"),
+    }
 }
 
 #[test]
