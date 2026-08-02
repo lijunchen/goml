@@ -16,7 +16,7 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 8. `let` and assignment statements must end with a semicolon.Local binding must be declared with `let mut` before reassignment; the semicolon can be omitted for `if`, `match`, `while`, `loop` and `for` as statements.
 9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
-11. Before using trait method syntax across packages, import the package first and then write `use alias::Trait;`; when in doubt, use UFCS: `Trait::method(value)`.
+11. Before using trait method syntax across packages, import the package and trait with `use alias::Trait;` or a braced import; when in doubt, use UFCS: `Trait::method(value)`.
 12. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, Go `var` / `:=` or user `extern fn`.
 13. The test function uses `#[test]`, which must have no parameters, no type parameters and return `unit`; the white-box test is placed in `*_test.gom` of the same package, and the black-box test is placed in the `tests/` directory of the package under test.
 
@@ -54,7 +54,7 @@ Ordinary identifiers only use ASCII and are of the form:
 
 The single `_` is a wildcard character, not an ordinary variable name.The current syntax enforces the first letter case of name categories:
 
-- Package names, `use ... as` aliases, functions, methods, parameters, local bindings and fields must start with a lowercase letter or `_`;
+- Package names, package aliases in `use ... as`, functions, methods, parameters, local bindings and fields must start with a lowercase letter or `_`; aliases inside braced imports may follow the naming convention of the imported item;
 - Structures, enumerations, traits, enumeration variants, generic parameters, and associated types must start with a capital letter;
 - Paths retain the appropriate case for the referenced name.
 
@@ -275,14 +275,26 @@ After importing the package, access its public items through local aliases:
 let request = http_client::new_request();
 ```
 
-There are currently no globs, braced imports, or plain single imports.The following special form only adds traits from a loaded package to the method calling scope:
+Braced imports bring selected public top-level items directly into the current file. Functions, constants, structs, enums, type aliases, and traits can be imported, and each item may be renamed independently:
+
+```goml
+use alice::rendering::api::{Canvas, Color as Paint, Render, render_to_string};
+
+fn describe(canvas: Canvas) -> string {
+    render_to_string(canvas)
+}
+```
+
+The path before the braces is always a package path. Nested braced imports, `self`, glob imports with `*`, enum-variant imports, and subpackage aggregation are not supported. Imported names remain file-local, and normal top-level visibility rules apply.
+
+The following special form also adds a trait from an already loaded package to the method calling scope:
 
 ```goml
 use alice::rendering::api;
 use api::Render;
 ```
 
-Afterwards, the specific value can be written as `value.render()`.Even if the trait is not added to the method scope, you can still write a qualified call to `api::Render::render(value)`.
+Importing `Render` in a braced list also adds it to the method scope. Afterwards, the specific value can be written as `value.render()`.Even if the trait is not added to the method scope, you can still write a qualified call to `api::Render::render(value)`.
 
 The following path models are not supported:
 
@@ -1875,7 +1887,7 @@ Sorting mutates a `Vec[T]` in place. Both `sort_by` and `stable_sort_by` are sta
 | `float_value as int32` | Floating point to integer conversion is not supported; use dedicated parsing or conversion APIs |
 | `dyn A + B` | Single `dyn A`, or redesign the combined trait |
 | `dyn TraitWithAssociatedType` | dyn traits cannot have type parameters or associated types |
-| `use pkg::{A, B}` | Use `package::A` after `use full::package;` |
+| `use pkg::*` | List the required public items explicitly with `use pkg::{A, B};` |
 | `mod`、`crate::`、`super::` | Directory packages and canonical `use` paths |
 | `fn helper` inside function | Top-level function or local closure |
 | User `extern fn` | Use the API provided by compiler/prelude/stdlib |
@@ -1887,7 +1899,9 @@ The following EBNF only describes the canonical form that should be generated; `
 ```text
 file          = package_decl? use_decl* item*
 package_decl  = "package" lower_ident ";"
-use_decl      = "use" path ("as" lower_ident)? ";"
+use_decl      = "use" path ("as" lower_ident | "::" "{" use_items "}")? ";"
+use_items     = use_item ("," use_item)* ","?
+use_item      = ident ("as" ident)?
 path          = ident ("::" ident)*
 
 item          = attribute* visibility? function

@@ -397,7 +397,29 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
                 } else {
                     Option::None
                 };
-                Option::Some(UseDecl { path, alias })
+                let items: Vec[UseItem] = Vec::[];
+                match first_child(node, cst::NodeKind::USE_ITEM_LIST) {
+                    Some(list) => for item in children_of_kind(list, cst::NodeKind::USE_ITEM) {
+                        let names = tokens_of_kind(item, lexer::TokenKind::Ident);
+                        if !names.is_empty() {
+                            items.push(
+                                UseItem {
+                                    name: names[0].token.text,
+                                    alias: if names.len() > 1 {
+                                        Option::Some(names[1].token.text)
+                                    } else {
+                                        Option::None
+                                    },
+                                    span: token_span(names[0]),
+                                },
+                            )
+                        } else {
+                            ()
+                        }
+                    },
+                    None => (),
+                };
+                Option::Some(UseDecl { path, alias, items })
             },
             None => Option::None,
         },

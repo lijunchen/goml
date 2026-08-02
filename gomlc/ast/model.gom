@@ -86,6 +86,13 @@ pub struct File {
 pub struct UseDecl {
     pub path: Path,
     pub alias: Option[string],
+    pub items: Vec[UseItem],
+}
+
+pub struct UseItem {
+    pub name: string,
+    pub alias: Option[string],
+    pub span: Span,
 }
 
 pub enum Visibility {

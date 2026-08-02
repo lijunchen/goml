@@ -27,6 +27,7 @@ fn function_context(
         numeric_literal_constraints: Vec::[],
         defer_coercion_depth: Ref::new(0),
         package_aliases: base.package_aliases,
+        imported_items: base.imported_items,
         in_scope_traits: base.in_scope_traits,
         enums: base.enums,
         structs: base.structs,
@@ -79,6 +80,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         numeric_literal_constraints: base.numeric_literal_constraints,
         defer_coercion_depth: base.defer_coercion_depth,
         package_aliases: base.package_aliases,
+        imported_items: base.imported_items,
         in_scope_traits: base.in_scope_traits,
         enums: base.enums,
         structs: base.structs,
@@ -2701,6 +2703,24 @@ fn check_file_with_package(
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     };
+    for imported in value.imports {
+        match find_trait(ctx, imported) {
+            Some(_) => if !vecs::contains(ctx.in_scope_traits, imported) {
+                ctx.in_scope_traits.push(imported)
+            } else {
+                ()
+            },
+            None => if find_enum_by_name(ctx, imported).is_some()
+                || find_struct_by_name(ctx, imported).is_some()
+                || find_type_alias(ctx, imported).is_some()
+                || find_constant_by_name(ctx, imported).is_some()
+                || find_function_by_name(ctx, imported).is_some() {
+                ()
+            } else {
+                push_diagnostic_at(ctx, "Imported item " + imported + " not found", Option::None)
+            },
+        }
+    };
     for index in 0..ctx.constants.len() {
         let constant = ctx.constants[index];
         ctx.constants.set(
@@ -2731,7 +2751,9 @@ fn check_file_with_package(
     for trait_name in value.use_traits {
         match find_trait(ctx, trait_name) {
             Some(_) => (),
-            None => {
+            None => if vecs::contains(value.imports, trait_name) {
+                ()
+            } else {
                 push_global_diagnostic(ctx, "Could not infer type");
                 push_diagnostic_at(ctx, "Unknown trait " + trait_name, Option::None)
             },

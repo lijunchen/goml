@@ -167,6 +167,17 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
             let mut index = file.uses.len() - 1;
             while index >= 0 {
                 let use_decl = file.uses[index];
+                for item in use_decl.items {
+                    let candidate = match item.alias {
+                        Some(name) => name,
+                        None => item.name,
+                    };
+                    if candidate == alias {
+                        return Option::Some(path_text(use_decl.path) + "::" + item.name)
+                    } else {
+                        ()
+                    }
+                };
                 let candidate = match use_decl.alias {
                     Some(name) => name,
                     None => last_path_segment(use_decl.path),

@@ -248,23 +248,65 @@ fn package_info_parse_use(scanner: PackageInfoScanner, source_path: string) -> R
     let path = text::StringBuilder::new();
     path.write_string(first);
     package_info_skip_trivia(scanner);
-    while package_info_at_text(scanner, "::") {
-        scanner.index.set(scanner.index.get() + 2);
-        match package_info_read_ident(scanner) {
-            Some(value) => {
-                path.write_string("::");
-                path.write_string(value);
-                package_info_skip_trivia(scanner)
-            },
-            None => {
+    let mut braced = false;
+    while package_info_consume_text(scanner, "::") {
+        if package_info_consume_text(scanner, "{") {
+            braced = true;
+            if package_info_consume_text(scanner, "}") {
                 return Result::Err(
-                    package_info_error(source_path, "expected a path segment after '::'"),
+                    package_info_error(source_path, "use item list cannot be empty"),
                 )
-            },
+            } else {
+                ()
+            };
+            let mut done = false;
+            while !done {
+                match package_info_read_ident(scanner) {
+                    Some(_) => (),
+                    None => return Result::Err(
+                        package_info_error(source_path, "expected an imported item"),
+                    ),
+                };
+                if package_info_consume_keyword(scanner, "as") {
+                    match package_info_read_ident(scanner) {
+                        Some(_) => (),
+                        None => return Result::Err(
+                            package_info_error(source_path, "expected use item alias"),
+                        ),
+                    }
+                } else {
+                    ()
+                };
+                if package_info_consume_text(scanner, ",") {
+                    if package_info_consume_text(scanner, "}") {
+                        done = true;
+                    } else {
+                        ()
+                    }
+                } else if package_info_consume_text(scanner, "}") {
+                    done = true;
+                } else {
+                    return Result::Err(
+                        package_info_error(source_path, "expected ',' or '}' in use item list"),
+                    )
+                }
+            };
+            break
+        } else {
+            match package_info_read_ident(scanner) {
+                Some(value) => {
+                    path.write_string("::");
+                    path.write_string(value);
+                    package_info_skip_trivia(scanner)
+                },
+                None => return Result::Err(
+                    package_info_error(source_path, "expected a path segment after '::'"),
+                ),
+            }
         }
     };
     let alias: Ref[Option[string]] = Ref::new(Option::None);
-    if package_info_consume_keyword(scanner, "as") {
+    if !braced && package_info_consume_keyword(scanner, "as") {
         match package_info_read_ident(scanner) {
             Some(value) => if package_info_lower_ident(value) {
                 alias.set(Option::Some(value))

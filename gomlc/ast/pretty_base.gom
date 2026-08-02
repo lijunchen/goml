@@ -612,6 +612,29 @@ fn pretty_file(value: File) -> string {
         for use_decl in value.uses {
             builder.write_string("use ");
             pretty_write_path(builder, use_decl.path);
+            if !use_decl.items.is_empty() {
+                builder.write_string("::{");
+                let mut index = 0;
+                for item in use_decl.items {
+                    if index > 0 {
+                        builder.write_string(", ")
+                    } else {
+                        ()
+                    };
+                    builder.write_string(item.name);
+                    match item.alias {
+                        Some(alias) => {
+                            builder.write_string(" as ");
+                            builder.write_string(alias)
+                        },
+                        None => (),
+                    };
+                    index = index + 1;
+                };
+                builder.write_char('}')
+            } else {
+                ()
+            };
             match use_decl.alias {
                 Some(alias) => {
                     builder.write_string(" as ");

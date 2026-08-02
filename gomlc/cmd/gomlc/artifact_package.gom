@@ -447,9 +447,13 @@ fn artifact_use_has_explicit_alias(value: ast::LowerResult, package_name: string
         Some(file) => {
             for use_decl in file.uses {
                 if import_path_text(use_decl.path) == package_name {
-                    match use_decl.alias {
-                        Some(_) => return true,
-                        None => (),
+                    if !use_decl.items.is_empty() {
+                        return true
+                    } else {
+                        match use_decl.alias {
+                            Some(_) => return true,
+                            None => (),
+                        }
                     }
                 } else {
                     ()

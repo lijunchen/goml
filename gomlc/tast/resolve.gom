@@ -1674,7 +1674,30 @@ fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> 
 
 fn method_trait_in_scope(ctx: Checker, value: MethodInfo) -> bool {
     match value.trait_ref {
-        Some(reference) => vecs::contains(ctx.in_scope_traits, reference.name),
+        Some(reference) => if vecs::contains(ctx.in_scope_traits, reference.name) {
+            true
+        } else if vecs::contains(ctx.imported_items, reference.name) {
+            true
+        } else if short_name(reference.name) == reference.name {
+            let mut found = false;
+            for name in ctx.in_scope_traits {
+                if short_name(name) == reference.name {
+                    found = true;
+                } else {
+                    ()
+                }
+            };
+            for name in ctx.imported_items {
+                if short_name(name) == reference.name {
+                    found = true;
+                } else {
+                    ()
+                }
+            };
+            found
+        } else {
+            false
+        },
         None => true,
     }
 }

@@ -93,19 +93,69 @@ fn use_decl(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::UseKeyword);
     if parser.at(lexer::TokenKind::Ident) {
-        parse_path_always(parser)
+        use_path(parser)
     } else if !parser.eof() {
         parser.advance_with_error("expected a path after `use`")
     } else {
         ()
     };
-    if parser.eat(lexer::TokenKind::AsKeyword) {
+    if parser.at(lexer::TokenKind::LBrace) {
+        use_item_list(parser)
+    } else if parser.eat(lexer::TokenKind::AsKeyword) {
         parser.expect_lower_ident("use alias")
     } else {
         ()
     };
     parser.expect(lexer::TokenKind::Semi);
     let _ = parser.close(marker, cst::NodeKind::USE);
+    ()
+}
+
+fn use_path(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    while parser.at(lexer::TokenKind::ColonColon)
+        && parser.nth(1) == lexer::TokenKind::Ident {
+        parser.advance();
+        parser.advance()
+    };
+    if parser.at(lexer::TokenKind::ColonColon)
+        && parser.nth(1) == lexer::TokenKind::LBrace {
+        parser.advance()
+    } else {
+        ()
+    };
+    let _ = parser.close(marker, cst::NodeKind::PATH);
+    ()
+}
+
+fn use_item_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBrace);
+    if parser.at(lexer::TokenKind::RBrace) {
+        parser.error("use item list cannot be empty")
+    } else {
+        ()
+    };
+    while !parser.eof() && !parser.at(lexer::TokenKind::RBrace) {
+        let item = parser.open();
+        parser.expect(lexer::TokenKind::Ident);
+        if parser.eat(lexer::TokenKind::AsKeyword) {
+            parser.expect(lexer::TokenKind::Ident)
+        } else {
+            ()
+        };
+        let _ = parser.close(item, cst::NodeKind::USE_ITEM);
+        if parser.eat(lexer::TokenKind::Comma) {
+            ()
+        } else if !parser.at(lexer::TokenKind::RBrace) {
+            parser.advance_with_error("expected ',' or '}' in use item list")
+        } else {
+            ()
+        }
+    };
+    parser.expect(lexer::TokenKind::RBrace);
+    let _ = parser.close(marker, cst::NodeKind::USE_ITEM_LIST);
     ()
 }
 

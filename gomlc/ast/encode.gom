@@ -481,6 +481,20 @@ fn encode_file(builder: text::StringBuilder, value: File) -> unit {
             },
             None => encode_none(builder),
         };
+        encode_list(builder, use_decl.items.len());
+        for item in use_decl.items {
+            encode_open(builder, "UseItem");
+            encode_string_value(builder, item.name);
+            match item.alias {
+                Some(alias) => {
+                    encode_some(builder);
+                    encode_string_value(builder, alias)
+                },
+                None => encode_none(builder),
+            };
+            encode_span(builder, item.span);
+            encode_close(builder)
+        };
         encode_close(builder)
     };
     encode_list(builder, value.items.len());

@@ -14,6 +14,7 @@ struct EnumInfo {
 struct AliasEntry {
     alias: string,
     target: Vec[string],
+    item: bool,
 }
 
 struct ResolvedUses {
@@ -147,9 +148,9 @@ fn starts_with_std(values: Vec[string]) -> bool {
 }
 
 fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec[string]] {
-    if target.len() > 1 {
+    if !target.is_empty() {
         for alias in aliases {
-            if alias.alias == target[0] {
+            if !alias.item && alias.alias == target[0] {
                 let expanded = copy_strings(alias.target);
                 for index in 1..target.len() {
                     expanded.push(target[index])
@@ -170,25 +171,55 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
     let traits: Vec[string] = Vec::[];
     let diagnostics: Vec[string] = Vec::[];
     for use_decl in file.uses {
-        match use_decl.alias {
-            Some(alias) => aliases.push(AliasEntry { alias, target: path_segments(use_decl.path) }),
-            None => (),
+        if use_decl.items.is_empty() {
+            match use_decl.alias {
+                Some(alias) => aliases.push(
+                    AliasEntry { alias, target: path_segments(use_decl.path), item: false },
+                ),
+                None => (),
+            }
+        } else {
+            ()
         }
     };
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
-        match expand_use_alias(aliases, target) {
-            Some(expanded) => match use_decl.alias {
-                Some(_) => (),
-                None => traits.push(join_segments(expanded)),
-            },
-            None => match use_decl.alias {
-                Some(_) => (),
-                None => match last_string(target) {
-                    Some(default_alias) => aliases.push(AliasEntry { alias: default_alias, target }),
-                    None => (),
+        if !use_decl.items.is_empty() {
+            let base = match expand_use_alias(aliases, target) {
+                Some(expanded) => expanded,
+                None => target,
+            };
+            for item in use_decl.items {
+                let item_target = copy_strings(base);
+                item_target.push(item.name);
+                aliases.push(
+                    AliasEntry {
+                        alias: match item.alias {
+                            Some(alias) => alias,
+                            None => item.name,
+                        },
+                        target: item_target,
+                        item: true,
+                    },
+                );
+                traits.push(join_segments(item_target))
+            }
+        } else {
+            match expand_use_alias(aliases, target) {
+                Some(expanded) => match use_decl.alias {
+                    Some(_) => (),
+                    None => traits.push(join_segments(expanded)),
                 },
-            },
+                None => match use_decl.alias {
+                    Some(_) => (),
+                    None => match last_string(target) {
+                        Some(default_alias) => aliases.push(
+                            AliasEntry { alias: default_alias, target, item: false },
+                        ),
+                        None => (),
+                    },
+                },
+            }
         }
     };
     for index in 0..aliases.len() {
@@ -196,9 +227,15 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
         for previous_index in 0..index {
             let previous = aliases[previous_index];
             if join_segments(previous.target) == join_segments(current.target) {
-                diagnostics.push("Duplicate package use " + join_segments(current.target))
+                diagnostics.push(
+                    if current.item {
+                        "Duplicate imported item " + join_segments(current.target)
+                    } else {
+                        "Duplicate package use " + join_segments(current.target)
+                    },
+                )
             } else if previous.alias == current.alias {
-                diagnostics.push("Ambiguous package use alias " + current.alias)
+                diagnostics.push("Ambiguous use alias " + current.alias)
             } else {
                 ()
             }
@@ -217,25 +254,44 @@ fn trait_uses_from_file(file: ast::File) -> Vec[string] {
 
 fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
     let result: Vec[ImportAlias] = Vec::[];
+    for use_decl in file.uses {
+        if !use_decl.items.is_empty() {
+            result.push(ImportAlias { alias: "", package_name: join_segments(path_segments(use_decl.path)) })
+        } else {
+            ()
+        }
+    };
     for entry in aliases_from_file(file) {
-        result.push(ImportAlias { alias: entry.alias, package_name: join_segments(entry.target) })
+        if entry.item {
+            ()
+        } else {
+            result.push(
+                ImportAlias { alias: entry.alias, package_name: join_segments(entry.target) },
+            )
+        }
     };
     result
 }
 
 fn imports_from_file(file: ast::File) -> Vec[string] {
     let result: Vec[string] = Vec::[];
-    let _ = file;
+    for entry in resolved_uses_from_file(file).aliases {
+        if entry.item {
+            result.push(join_segments(entry.target))
+        } else {
+            ()
+        }
+    };
     result
 }
 
 fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = path_segments(path);
-    if values.len() < 2 || !ctx.qualify_imports {
+    if values.is_empty() || !ctx.qualify_imports {
         values
     } else {
         for alias in ctx.aliases {
-            if alias.alias == values[0] {
+            if alias.alias == values[0] && (alias.item || values.len() > 1) {
                 let result: Vec[string] = Vec::[];
                 for segment in alias.target {
                     result.push(segment)
@@ -901,19 +957,26 @@ fn lower_expr_value(
                 match constructor_ref(ctx, path) {
                     Some(constructor) => ExprKind::ConstructorValue { constructor },
                     None => {
+                        if path.segments.len() == 1 {
+                            match find_binding(env, path.segments[0].ident) {
+                                Some(local) => return ExprKind::NameRef {
+                                    name_ref: NameRef::Local(local),
+                                },
+                                None => (),
+                            }
+                        } else {
+                            ()
+                        };
                         let parts = qualified_segments(ctx, path);
                         if parts.len() == 1 {
                             let name = parts[0];
                             ExprKind::NameRef {
-                                name_ref: match find_binding(env, name) {
-                                    Some(local) => NameRef::Local(local),
-                                    None => match find_definition(
-                                        ctx,
-                                        full_name(ctx.package_name, name),
-                                    ) {
+                                name_ref: match find_definition(
+                                    ctx,
+                                    full_name(ctx.package_name, name),
+                                ) {
                                         Some(def_id) => NameRef::Def(def_id),
                                         None => NameRef::Other(name),
-                                    },
                                 },
                             }
                         } else {
@@ -1475,8 +1538,21 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
 }
 
 fn file_context(base: LowerCtx, file: ast::File, diagnostics: Vec[Diagnostic]) -> LowerCtx {
-    for message in resolved_uses_from_file(file).diagnostics {
+    let resolved = resolved_uses_from_file(file);
+    for message in resolved.diagnostics {
         diagnostics.push(Diagnostic { message, span: Option::None })
+    };
+    for entry in resolved.aliases {
+        if entry.item && find_definition(base, full_name(base.package_name, entry.alias)).is_some() {
+            diagnostics.push(
+                Diagnostic {
+                    message: "Imported item alias " + entry.alias + " conflicts with a local item",
+                    span: Option::None,
+                },
+            )
+        } else {
+            ()
+        }
     };
     LowerCtx {
         package_name: base.package_name,
@@ -1485,7 +1561,7 @@ fn file_context(base: LowerCtx, file: ast::File, diagnostics: Vec[Diagnostic]) -
         enums: base.enums,
         nominal_types: base.nominal_types,
         traits: base.traits,
-        aliases: aliases_from_file(file),
+        aliases: resolved.aliases,
         qualify_imports: base.qualify_imports,
         local_counter: base.local_counter,
         method_counter: base.method_counter,
