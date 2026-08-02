@@ -55,15 +55,19 @@ fn inherent#Vec#Vec[T]#get__T_int32(self/132: Vec[int32], index/133: int) -> int
 }
 
 fn inherent#Vec#Vec[T]#pushed__T_int32(self/128: Vec[int32], elem/129: int32) -> Vec[int32] {
-  let result/130 = inherent#Vec#Vec[T]#with_capacity__T_int32((inherent#Vec#Vec[T]#len__T_int32(self/128) + 1)) in
+  let result/130 =
+    inherent#Vec#Vec[T]#with_capacity__T_int32((inherent#Vec#Vec[T]#len__T_int32(self/128) + 1)) in
   let index/131 = 0 in
-  let _wild41 = while (index/131 < inherent#Vec#Vec[T]#len__T_int32(self/128)) {
-      let _wild37 = inherent#Vec#Vec[T]#push__T_int32(result/130, @intrinsic(vec.get)(self/128, index/131)) in
-      let _wild40 = let compound_old38 = index/131 in
-      let compound_value39 = 1 in
-      index/131 = (compound_old38 + compound_value39) in
-      ()
-  } in
+  let _wild41 =
+    while (index/131 < inherent#Vec#Vec[T]#len__T_int32(self/128)) {
+        let _wild37 =
+          inherent#Vec#Vec[T]#push__T_int32(result/130, @intrinsic(vec.get)(self/128, index/131)) in
+        let _wild40 =
+          let compound_old38 = index/131 in
+          let compound_value39 = 1 in
+          index/131 = (compound_old38 + compound_value39) in
+        ()
+    } in
   let _wild42 = inherent#Vec#Vec[T]#push__T_int32(result/130, elem/129) in
   result/130
 }

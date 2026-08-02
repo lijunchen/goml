@@ -15,32 +15,34 @@ fn add(a/1: int32, b/2: int32) -> int32 {
 }
 
 fn plus_one(flag/3: bool) -> Result__int32__string {
-  let run/5 = || {
-    let value/4 = {
-      let mtmp155 = parse_flag(flag/3) in
-      match mtmp155 {
-        Result__int32__string::Ok(x156) => {
-          {
-            let x156 = Result__int32__string::Ok._0(mtmp155) in
-            {
-              let try_value/15 = x156 in
-              try_value/15
-            }
+  let run/5 =
+    || {
+      let value/4 =
+        {
+          let mtmp155 = parse_flag(flag/3) in
+          match mtmp155 {
+            Result__int32__string::Ok(x156) => {
+              {
+                let x156 = Result__int32__string::Ok._0(mtmp155) in
+                {
+                  let try_value/15 = x156 in
+                  try_value/15
+                }
+              }
+            },
+            Result__int32__string::Err(x157) => {
+              {
+                let x157 = Result__int32__string::Err._0(mtmp155) in
+                {
+                  let try_residual/15 = x157 in
+                  return Result__int32__string::Err(try_residual/15)
+                }
+              }
+            },
           }
-        },
-        Result__int32__string::Err(x157) => {
-          {
-            let x157 = Result__int32__string::Err._0(mtmp155) in
-            {
-              let try_residual/15 = x157 in
-              return Result__int32__string::Err(try_residual/15)
-            }
-          }
-        },
-      }
+        } in
+      Result__int32__string::Ok(add(value/4, 1))
     } in
-    Result__int32__string::Ok(add(value/4, 1))
-  } in
   run/5()
 }
 

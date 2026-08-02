@@ -7,40 +7,43 @@ fn maybe_num(flag/0: bool) -> Option__int32 {
 }
 
 fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
-  let value/6 = if top/1 {
-      match mode/2 {
-        Mode::Take => {
-          let inner/4 = let mtmp155 = maybe_num(inner_flag/3) in
-          match mtmp155 {
+  let value/6 =
+    if top/1 {
+        match mode/2 {
+          Mode::Take => {
+            let inner/4 =
+              let mtmp155 = maybe_num(inner_flag/3) in
+              match mtmp155 {
+                Option__int32::None => {
+                  return Option__int32::None
+                },
+                Option__int32::Some(x156) => {
+                  let x156 = Option__int32::Some._0(mtmp155) in
+                  let try_value/13 = x156 in
+                  try_value/13
+                },
+              } in
+            (inner/4 + 1)
+          },
+          Mode::Skip => {
+            20
+          },
+        }
+    } else {
+        let inner/5 =
+          let mtmp157 = maybe_num(inner_flag/3) in
+          match mtmp157 {
             Option__int32::None => {
               return Option__int32::None
             },
-            Option__int32::Some(x156) => {
-              let x156 = Option__int32::Some._0(mtmp155) in
-              let try_value/13 = x156 in
-              try_value/13
+            Option__int32::Some(x158) => {
+              let x158 = Option__int32::Some._0(mtmp157) in
+              let try_value/24 = x158 in
+              try_value/24
             },
           } in
-          (inner/4 + 1)
-        },
-        Mode::Skip => {
-          20
-        },
-      }
-  } else {
-      let inner/5 = let mtmp157 = maybe_num(inner_flag/3) in
-      match mtmp157 {
-        Option__int32::None => {
-          return Option__int32::None
-        },
-        Option__int32::Some(x158) => {
-          let x158 = Option__int32::Some._0(mtmp157) in
-          let try_value/24 = x158 in
-          try_value/24
-        },
-      } in
-      (inner/5 + 2)
-  } in
+        (inner/5 + 2)
+    } in
   Option__int32::Some(value/6)
 }
 

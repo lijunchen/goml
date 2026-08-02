@@ -1,32 +1,36 @@
 fn choose(flag/0: bool) -> int32 {
-  let value/1 = if flag/0 {
-      return 10
-  } else {
-      20
-  } in
+  let value/1 =
+    if flag/0 {
+        return 10
+    } else {
+        20
+    } in
   (value/1 + 1)
 }
 
 fn continue_branch() -> unit {
   let count/2 = inherent#Ref#Ref[T]#new__T_int(0) in
   while (inherent#Ref#Ref[T]#get__T_int(count/2) < 2) {
-      let _wild155 = inherent#Ref#Ref[T]#set__T_int(count/2, (inherent#Ref#Ref[T]#get__T_int(count/2) + 1)) in
-      let value/3 = if trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(count/2), 1) {
-          continue
-      } else {
-          7
-      } in
+      let _wild155 =
+        inherent#Ref#Ref[T]#set__T_int(count/2, (inherent#Ref#Ref[T]#get__T_int(count/2) + 1)) in
+      let value/3 =
+        if trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(count/2), 1) {
+            continue
+        } else {
+            7
+        } in
       println__T_int(value/3)
   }
 }
 
 fn break_branch(stop/4: bool) -> unit {
   while true {
-      let value/5 = if stop/4 {
-          break
-      } else {
-          9
-      } in
+      let value/5 =
+        if stop/4 {
+            break
+        } else {
+            9
+        } in
       let _wild156 = println__T_int(value/5) in
       break
   }

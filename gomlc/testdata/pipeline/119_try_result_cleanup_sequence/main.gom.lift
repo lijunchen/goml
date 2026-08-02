@@ -15,33 +15,35 @@ fn close_handle(handle/1: Handle, ok/2: bool) -> Result__unit__string {
 }
 
 fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result__string__string {
-  let handle/5 = let mtmp155 = open_handle(open_ok/3) in
-  match mtmp155 {
-    Result__Handle__string::Ok(x156) => {
-      let x156 = Result__Handle__string::Ok._0(mtmp155) in
-      let try_value/24 = x156 in
-      try_value/24
-    },
-    Result__Handle__string::Err(x157) => {
-      let x157 = Result__Handle__string::Err._0(mtmp155) in
-      let try_residual/24 = x157 in
-      return Result__string__string::Err(try_residual/24)
-    },
-  } in
+  let handle/5 =
+    let mtmp155 = open_handle(open_ok/3) in
+    match mtmp155 {
+      Result__Handle__string::Ok(x156) => {
+        let x156 = Result__Handle__string::Ok._0(mtmp155) in
+        let try_value/24 = x156 in
+        try_value/24
+      },
+      Result__Handle__string::Err(x157) => {
+        let x157 = Result__Handle__string::Err._0(mtmp155) in
+        let try_residual/24 = x157 in
+        return Result__string__string::Err(try_residual/24)
+      },
+    } in
   let name/6 = Handle.name(handle/5) in
-  let _wild161 = let mtmp158 = close_handle(handle/5, close_ok/4) in
-  match mtmp158 {
-    Result__unit__string::Ok(x159) => {
-      let x159 = Result__unit__string::Ok._0(mtmp158) in
-      let try_value/31 = x159 in
-      try_value/31
-    },
-    Result__unit__string::Err(x160) => {
-      let x160 = Result__unit__string::Err._0(mtmp158) in
-      let try_residual/31 = x160 in
-      return Result__string__string::Err(try_residual/31)
-    },
-  } in
+  let _wild161 =
+    let mtmp158 = close_handle(handle/5, close_ok/4) in
+    match mtmp158 {
+      Result__unit__string::Ok(x159) => {
+        let x159 = Result__unit__string::Ok._0(mtmp158) in
+        let try_value/31 = x159 in
+        try_value/31
+      },
+      Result__unit__string::Err(x160) => {
+        let x160 = Result__unit__string::Err._0(mtmp158) in
+        let try_residual/31 = x160 in
+        return Result__string__string::Err(try_residual/31)
+      },
+    } in
   Result__string__string::Ok(("closed " + name/6))
 }
 

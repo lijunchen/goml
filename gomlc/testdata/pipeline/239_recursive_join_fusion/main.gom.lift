@@ -1,19 +1,21 @@
 fn find(wanted/0: int) -> Option__int {
   let current/1 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild159 = loop let value/2 = inherent#Ref#Ref[T]#get__T_int(current/1) in
-  let _wild158 = if (value/2 >= 5) {
-      let _wild155 = return Option__int::None in
-      ()
-  } else {
-      if trait_impl#Eq#int#eq(value/2, wanted/0) {
-          let _wild156 = return Option__int::Some(value/2) in
+  let _wild159 =
+    loop let value/2 = inherent#Ref#Ref[T]#get__T_int(current/1) in
+    let _wild158 =
+      if (value/2 >= 5) {
+          let _wild155 = return Option__int::None in
           ()
       } else {
-          let _wild157 = inherent#Ref#Ref[T]#set__T_int(current/1, (value/2 + 1)) in
-          ()
-      }
-  } in
-  () in
+          if trait_impl#Eq#int#eq(value/2, wanted/0) {
+              let _wild156 = return Option__int::Some(value/2) in
+              ()
+          } else {
+              let _wild157 = inherent#Ref#Ref[T]#set__T_int(current/1, (value/2 + 1)) in
+              ()
+          }
+      } in
+    () in
   Option__int::None
 }
 

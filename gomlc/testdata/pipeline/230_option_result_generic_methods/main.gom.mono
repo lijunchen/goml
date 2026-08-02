@@ -1,28 +1,72 @@
 fn main() -> unit {
   let some/0 = Option__int::Some(3) in
-  let mapped/2 = inherent#Option#Option[T]#map__T_int__U_string(some/0, |value/1| inherent#int#int#to_string(value/1)) in
-  let _wild155 = println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(mapped/2, "missing")) in
-  let static_mapped/4 = inherent#Option#Option[T]#map__T_int__U_string(some/0, |value/3| ("static:" + inherent#int#int#to_string(value/3))) in
-  let _wild156 = println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(static_mapped/4, "missing")) in
-  let chained/6 = inherent#Option#Option[T]#and_then__T_int__U_string(some/0, |value/5| Option__string::Some(("value:" + inherent#int#int#to_string(value/5)))) in
-  let _wild157 = println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(chained/6, "missing")) in
+  let mapped/2 =
+    inherent#Option#Option[T]#map__T_int__U_string(
+      some/0,
+      |value/1| inherent#int#int#to_string(value/1)
+    ) in
+  let _wild155 =
+    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(mapped/2, "missing")) in
+  let static_mapped/4 =
+    inherent#Option#Option[T]#map__T_int__U_string(
+      some/0,
+      |value/3| ("static:" + inherent#int#int#to_string(value/3))
+    ) in
+  let _wild156 =
+    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(static_mapped/4, "missing")) in
+  let chained/6 =
+    inherent#Option#Option[T]#and_then__T_int__U_string(
+      some/0,
+      |value/5| Option__string::Some(("value:" + inherent#int#int#to_string(value/5)))
+    ) in
+  let _wild157 =
+    println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(chained/6, "missing")) in
   let none/7 = Option__int::None in
   let converted/8 = inherent#Option#Option[T]#ok_or__E_string__T_int(none/7, "none") in
-  let _wild158 = println__T_int(inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(converted/8, |error/9| inherent#string#string#len(error/9))) in
+  let _wild158 =
+    println__T_int(
+      inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(
+        converted/8,
+        |error/9| inherent#string#string#len(error/9)
+      )
+    ) in
   let ok/10 = Result__int__string::Ok(5) in
-  let _wild159 = println__T_int(inherent#Result#Result[T,E]#unwrap_or__E_string__T_int(inherent#Result#Result[T,E]#map__E_string__T_int__U_int(ok/10, |value/11| (value/11 + 2)), 0)) in
+  let _wild159 =
+    println__T_int(
+      inherent#Result#Result[T,E]#unwrap_or__E_string__T_int(
+        inherent#Result#Result[T,E]#map__E_string__T_int__U_int(ok/10, |value/11| (value/11 + 2)),
+        0
+      )
+    ) in
   let error/12 = Result__int__string::Err("bad") in
-  let mapped_error/14 = inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(error/12, |value/13| inherent#string#string#len(value/13)) in
-  let _wild160 = println__T_int(inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(mapped_error/14, |value/15| value/15)) in
-  let next/17 = inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(ok/10, |value/16| Result__string__string::Ok(("next:" + inherent#int#int#to_string(value/16)))) in
-  let _wild161 = println__T_string(inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(next/17, "missing")) in
+  let mapped_error/14 =
+    inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(
+      error/12,
+      |value/13| inherent#string#string#len(value/13)
+    ) in
+  let _wild160 =
+    println__T_int(
+      inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(mapped_error/14, |value/15| value/15)
+    ) in
+  let next/17 =
+    inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(
+      ok/10,
+      |value/16| Result__string__string::Ok(("next:" + inherent#int#int#to_string(value/16)))
+    ) in
+  let _wild161 =
+    println__T_string(
+      inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(next/17, "missing")
+    ) in
 }
 
 fn inherent#int#int#to_string(self/5: int) -> string {
   @runtime(core.int_to_string)(self/5)
 }
 
-fn inherent#Option#Option[T]#map__T_int__U_string(self/285: Option__int, map_fn/286: (int) -> string) -> Option__string {
+fn inherent#Option#Option[T]#map__T_int__U_string(
+  self/285: Option__int,
+  map_fn/286: (int) -> string
+) -> Option__string {
   match self/285 {
     Option__int::None => {
       Option__string::None
@@ -43,7 +87,10 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Option#Option[T]#unwrap_or__T_string(self/265: Option__string, fallback/266: string) -> string {
+fn inherent#Option#Option[T]#unwrap_or__T_string(
+  self/265: Option__string,
+  fallback/266: string
+) -> string {
   match self/265 {
     Option__string::None => {
       fallback/266
@@ -60,7 +107,10 @@ fn inherent#Option#Option[T]#unwrap_or__T_string(self/265: Option__string, fallb
   }
 }
 
-fn inherent#Option#Option[T]#and_then__T_int__U_string(self/288: Option__int, next/289: (int) -> Option__string) -> Option__string {
+fn inherent#Option#Option[T]#and_then__T_int__U_string(
+  self/288: Option__int,
+  next/289: (int) -> Option__string
+) -> Option__string {
   match self/288 {
     Option__int::None => {
       Option__string::None
@@ -77,7 +127,10 @@ fn inherent#Option#Option[T]#and_then__T_int__U_string(self/288: Option__int, ne
   }
 }
 
-fn inherent#Option#Option[T]#ok_or__E_string__T_int(self/291: Option__int, error/292: string) -> Result__int__string {
+fn inherent#Option#Option[T]#ok_or__E_string__T_int(
+  self/291: Option__int,
+  error/292: string
+) -> Result__int__string {
   match self/291 {
     Option__int::None => {
       Result__int__string::Err(error/292)
@@ -102,7 +155,10 @@ fn inherent#string#string#len(self/8: string) -> int {
   @runtime(core.string_len)(self/8)
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(self/276: Result__int__string, fallback/277: (string) -> int) -> int {
+fn inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(
+  self/276: Result__int__string,
+  fallback/277: (string) -> int
+) -> int {
   match self/276 {
     Result__int__string::Ok(x141) => {
       {
@@ -125,7 +181,10 @@ fn inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(self/276: Result_
   }
 }
 
-fn inherent#Result#Result[T,E]#map__E_string__T_int__U_int(self/294: Result__int__string, map_fn/295: (int) -> int) -> Result__int__string {
+fn inherent#Result#Result[T,E]#map__E_string__T_int__U_int(
+  self/294: Result__int__string,
+  map_fn/295: (int) -> int
+) -> Result__int__string {
   match self/294 {
     Result__int__string::Ok(x149) => {
       {
@@ -148,7 +207,10 @@ fn inherent#Result#Result[T,E]#map__E_string__T_int__U_int(self/294: Result__int
   }
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_int(self/273: Result__int__string, fallback/274: int) -> int {
+fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_int(
+  self/273: Result__int__string,
+  fallback/274: int
+) -> int {
   match self/273 {
     Result__int__string::Ok(x139) => {
       {
@@ -168,7 +230,10 @@ fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_int(self/273: Result__int_
   }
 }
 
-fn inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(self/298: Result__int__string, map_fn/299: (string) -> int) -> Result__int__int {
+fn inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(
+  self/298: Result__int__string,
+  map_fn/299: (string) -> int
+) -> Result__int__int {
   match self/298 {
     Result__int__string::Ok(x151) => {
       {
@@ -191,7 +256,10 @@ fn inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(self/298: Result_
   }
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(self/276: Result__int__int, fallback/277: (int) -> int) -> int {
+fn inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(
+  self/276: Result__int__int,
+  fallback/277: (int) -> int
+) -> int {
   match self/276 {
     Result__int__int::Ok(x141) => {
       {
@@ -214,7 +282,10 @@ fn inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(self/276: Result__in
   }
 }
 
-fn inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(self/302: Result__int__string, next/303: (int) -> Result__string__string) -> Result__string__string {
+fn inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(
+  self/302: Result__int__string,
+  next/303: (int) -> Result__string__string
+) -> Result__string__string {
   match self/302 {
     Result__int__string::Ok(x153) => {
       {
@@ -237,7 +308,10 @@ fn inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(self/302: Res
   }
 }
 
-fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(self/273: Result__string__string, fallback/274: string) -> string {
+fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(
+  self/273: Result__string__string,
+  fallback/274: string
+) -> string {
   match self/273 {
     Result__string__string::Ok(x139) => {
       {

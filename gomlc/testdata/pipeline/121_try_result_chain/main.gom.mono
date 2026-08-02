@@ -11,56 +11,58 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 }
 
 fn normalize_text(ok/1: bool) -> Result__string__string {
-  let text/2 = {
-    let mtmp155 = parse_text(ok/1) in
-    match mtmp155 {
-      Result__string__string::Ok(x156) => {
-        {
-          let x156 = Result__string__string::Ok._0(mtmp155) in
+  let text/2 =
+    {
+      let mtmp155 = parse_text(ok/1) in
+      match mtmp155 {
+        Result__string__string::Ok(x156) => {
           {
-            let try_value/12 = x156 in
-            try_value/12
+            let x156 = Result__string__string::Ok._0(mtmp155) in
+            {
+              let try_value/12 = x156 in
+              try_value/12
+            }
           }
-        }
-      },
-      Result__string__string::Err(x157) => {
-        {
-          let x157 = Result__string__string::Err._0(mtmp155) in
+        },
+        Result__string__string::Err(x157) => {
           {
-            let try_residual/12 = x157 in
-            return Result__string__string::Err(try_residual/12)
+            let x157 = Result__string__string::Err._0(mtmp155) in
+            {
+              let try_residual/12 = x157 in
+              return Result__string__string::Err(try_residual/12)
+            }
           }
-        }
-      },
-    }
-  } in
+        },
+      }
+    } in
   Result__string__string::Ok((text/2 + "!"))
 }
 
 fn decorate_text(ok/3: bool) -> Result__string__string {
-  let text/4 = {
-    let mtmp158 = normalize_text(ok/3) in
-    match mtmp158 {
-      Result__string__string::Ok(x159) => {
-        {
-          let x159 = Result__string__string::Ok._0(mtmp158) in
+  let text/4 =
+    {
+      let mtmp158 = normalize_text(ok/3) in
+      match mtmp158 {
+        Result__string__string::Ok(x159) => {
           {
-            let try_value/20 = x159 in
-            try_value/20
+            let x159 = Result__string__string::Ok._0(mtmp158) in
+            {
+              let try_value/20 = x159 in
+              try_value/20
+            }
           }
-        }
-      },
-      Result__string__string::Err(x160) => {
-        {
-          let x160 = Result__string__string::Err._0(mtmp158) in
+        },
+        Result__string__string::Err(x160) => {
           {
-            let try_residual/20 = x160 in
-            return Result__string__string::Err(try_residual/20)
+            let x160 = Result__string__string::Err._0(mtmp158) in
+            {
+              let try_residual/20 = x160 in
+              return Result__string__string::Err(try_residual/20)
+            }
           }
-        }
-      },
-    }
-  } in
+        },
+      }
+    } in
   Result__string__string::Ok((("[" + text/4) + "]"))
 }
 

@@ -11,32 +11,34 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 }
 
 fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
-  let run/4 = || {
-    let text/3 = {
-      let mtmp155 = parse_text(ok/2) in
-      match mtmp155 {
-        Result__string__string::Ok(x156) => {
-          {
-            let x156 = Result__string__string::Ok._0(mtmp155) in
-            {
-              let try_value/12 = x156 in
-              try_value/12
-            }
+  let run/4 =
+    || {
+      let text/3 =
+        {
+          let mtmp155 = parse_text(ok/2) in
+          match mtmp155 {
+            Result__string__string::Ok(x156) => {
+              {
+                let x156 = Result__string__string::Ok._0(mtmp155) in
+                {
+                  let try_value/12 = x156 in
+                  try_value/12
+                }
+              }
+            },
+            Result__string__string::Err(x157) => {
+              {
+                let x157 = Result__string__string::Err._0(mtmp155) in
+                {
+                  let try_residual/12 = x157 in
+                  return Result__string__string::Err(try_residual/12)
+                }
+              }
+            },
           }
-        },
-        Result__string__string::Err(x157) => {
-          {
-            let x157 = Result__string__string::Err._0(mtmp155) in
-            {
-              let try_residual/12 = x157 in
-              return Result__string__string::Err(try_residual/12)
-            }
-          }
-        },
-      }
+        } in
+      Result__string__string::Ok(((prefix/1 + ":") + text/3))
     } in
-    Result__string__string::Ok(((prefix/1 + ":") + text/3))
-  } in
   run/4()
 }
 

@@ -1,5 +1,9 @@
 fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
-  let _wild155 = inherent#Ref#Ref[T]#set__T_int32(counter/0, (inherent#Ref#Ref[T]#get__T_int32(counter/0) + 1)) in
+  let _wild155 =
+    inherent#Ref#Ref[T]#set__T_int32(
+      counter/0,
+      (inherent#Ref#Ref[T]#get__T_int32(counter/0) + 1)
+    ) in
   if ok/1 {
       Result__int32__string::Ok(inherent#Ref#Ref[T]#get__T_int32(counter/0))
   } else {
@@ -8,19 +12,20 @@ fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
 }
 
 fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
-  let value/4 = let mtmp156 = bump(counter/2, ok/3) in
-  match mtmp156 {
-    Result__int32__string::Ok(x157) => {
-      let x157 = Result__int32__string::Ok._0(mtmp156) in
-      let try_value/23 = x157 in
-      try_value/23
-    },
-    Result__int32__string::Err(x158) => {
-      let x158 = Result__int32__string::Err._0(mtmp156) in
-      let try_residual/23 = x158 in
-      return Result__int32__string::Err(try_residual/23)
-    },
-  } in
+  let value/4 =
+    let mtmp156 = bump(counter/2, ok/3) in
+    match mtmp156 {
+      Result__int32__string::Ok(x157) => {
+        let x157 = Result__int32__string::Ok._0(mtmp156) in
+        let try_value/23 = x157 in
+        try_value/23
+      },
+      Result__int32__string::Err(x158) => {
+        let x158 = Result__int32__string::Err._0(mtmp156) in
+        let try_residual/23 = x158 in
+        return Result__int32__string::Err(try_residual/23)
+      },
+    } in
   Result__int32__string::Ok((value/4 + inherent#Ref#Ref[T]#get__T_int32(counter/2)))
 }
 
@@ -42,7 +47,8 @@ fn show(res/5: Result__int32__string) -> string {
 fn run(ok/8: bool) -> string {
   let counter/9 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let result/10 = use_try(counter/9, ok/8) in
-  ((show(result/10) + " count=") + inherent#int32#int32#to_string(inherent#Ref#Ref[T]#get__T_int32(counter/9)))
+  ((show(result/10) + " count=") +
+    inherent#int32#int32#to_string(inherent#Ref#Ref[T]#get__T_int32(counter/9)))
 }
 
 fn main() -> unit {

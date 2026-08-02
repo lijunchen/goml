@@ -13,39 +13,46 @@ fn step(i/0: int32) -> Option__int32 {
 fn accumulate(limit/1: int32) -> Option__int32 {
   let sum/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild160 = while (inherent#Ref#Ref[T]#get__T_int32(i/3) < limit/1) {
-      {
-        let cur/4 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
-        let _wild155 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
-        let _wild156 = if trait_impl#Eq#int32#eq(cur/4, 1) {
-            {
-              continue
-            }
-        } else {
-            {
-              ()
-            }
-        } in
-        let value/5 = {
-          let mtmp157 = step(cur/4) in
-          match mtmp157 {
-            Option__int32::None => {
-              return Option__int32::None
-            },
-            Option__int32::Some(x158) => {
-              {
-                let x158 = Option__int32::Some._0(mtmp157) in
+  let _wild160 =
+    while (inherent#Ref#Ref[T]#get__T_int32(i/3) < limit/1) {
+        {
+          let cur/4 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
+          let _wild155 = inherent#Ref#Ref[T]#set__T_int32(i/3, (cur/4 + 1)) in
+          let _wild156 =
+            if trait_impl#Eq#int32#eq(cur/4, 1) {
                 {
-                  let try_value/43 = x158 in
-                  try_value/43
+                  continue
                 }
+            } else {
+                {
+                  ()
+                }
+            } in
+          let value/5 =
+            {
+              let mtmp157 = step(cur/4) in
+              match mtmp157 {
+                Option__int32::None => {
+                  return Option__int32::None
+                },
+                Option__int32::Some(x158) => {
+                  {
+                    let x158 = Option__int32::Some._0(mtmp157) in
+                    {
+                      let try_value/43 = x158 in
+                      try_value/43
+                    }
+                  }
+                },
               }
-            },
-          }
-        } in
-        let _wild159 = inherent#Ref#Ref[T]#set__T_int32(sum/2, (inherent#Ref#Ref[T]#get__T_int32(sum/2) + value/5)) in
-      }
-  } in
+            } in
+          let _wild159 =
+            inherent#Ref#Ref[T]#set__T_int32(
+              sum/2,
+              (inherent#Ref#Ref[T]#get__T_int32(sum/2) + value/5)
+            ) in
+        }
+    } in
   Option__int32::Some(inherent#Ref#Ref[T]#get__T_int32(sum/2))
 }
 

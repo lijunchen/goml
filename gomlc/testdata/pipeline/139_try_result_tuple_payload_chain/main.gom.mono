@@ -15,29 +15,30 @@ fn pair(ok/1: bool) -> Result__(string,string)__string {
 }
 
 fn render(ok/2: bool) -> Result__string__string {
-  let mtmp158 = {
-    let mtmp155 = pair(ok/2) in
-    match mtmp155 {
-      Result__(string,string)__string::Ok(x156) => {
-        {
-          let x156 = Result__(string,string)__string::Ok._0(mtmp155) in
+  let mtmp158 =
+    {
+      let mtmp155 = pair(ok/2) in
+      match mtmp155 {
+        Result__(string,string)__string::Ok(x156) => {
           {
-            let try_value/17 = x156 in
-            try_value/17
+            let x156 = Result__(string,string)__string::Ok._0(mtmp155) in
+            {
+              let try_value/17 = x156 in
+              try_value/17
+            }
           }
-        }
-      },
-      Result__(string,string)__string::Err(x157) => {
-        {
-          let x157 = Result__(string,string)__string::Err._0(mtmp155) in
+        },
+        Result__(string,string)__string::Err(x157) => {
           {
-            let try_residual/17 = x157 in
-            return Result__string__string::Err(try_residual/17)
+            let x157 = Result__(string,string)__string::Err._0(mtmp155) in
+            {
+              let try_residual/17 = x157 in
+              return Result__string__string::Err(try_residual/17)
+            }
           }
-        }
-      },
-    }
-  } in
+        },
+      }
+    } in
   {
     let x159 = mtmp158.0 in
     let x160 = mtmp158.1 in

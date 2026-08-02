@@ -27,11 +27,18 @@ fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/126: Vec[dyn Display], elem/127: dyn Display) -> unit {
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(
+  self/126: Vec[dyn Display],
+  elem/127: dyn Display
+) -> unit {
   @intrinsic(vec.push)(self/126, elem/127)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_dynDisplay(self/175: Vec[dyn Display], start/176: int, end/177: int) -> Slice[dyn Display] {
+fn inherent#Vec#Vec[T]#slice__T_dynDisplay(
+  self/175: Vec[dyn Display],
+  start/176: int,
+  end/177: int
+) -> Slice[dyn Display] {
   @intrinsic(slice.new)(self/175, start/176, end/177)
 }
 
@@ -39,7 +46,11 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Slice#Slice[T]#sub__T_dynDisplay(self/187: Slice[dyn Display], start/188: int, end/189: int) -> Slice[dyn Display] {
+fn inherent#Slice#Slice[T]#sub__T_dynDisplay(
+  self/187: Slice[dyn Display],
+  start/188: int,
+  end/189: int
+) -> Slice[dyn Display] {
   @intrinsic(slice.sub)(self/187, start/188, end/189)
 }
 

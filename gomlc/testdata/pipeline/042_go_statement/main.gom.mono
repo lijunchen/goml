@@ -4,14 +4,16 @@ fn child(signal/0: Ref[int32]) -> unit {
 
 fn main() -> unit {
   let signal/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild155 = go || {
-    child(signal/1)
-  } in
-  let _wild156 = while (inherent#Ref#Ref[T]#get__T_int32(signal/1) < 1) {
-      {
-        ()
-      }
-  } in
+  let _wild155 =
+    go || {
+      child(signal/1)
+    } in
+  let _wild156 =
+    while (inherent#Ref#Ref[T]#get__T_int32(signal/1) < 1) {
+        {
+          ()
+        }
+    } in
   let _wild157 = println__T_string("main") in
 }
 

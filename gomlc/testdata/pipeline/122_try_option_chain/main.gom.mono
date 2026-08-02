@@ -23,40 +23,42 @@ fn maybe_double(value/1: int32) -> Option__int32 {
 }
 
 fn maybe_total(flag/2: bool) -> Option__int32 {
-  let a/3 = {
-    let mtmp155 = maybe_seed(flag/2) in
-    match mtmp155 {
-      Option__int32::None => {
-        return Option__int32::None
-      },
-      Option__int32::Some(x156) => {
-        {
-          let x156 = Option__int32::Some._0(mtmp155) in
+  let a/3 =
+    {
+      let mtmp155 = maybe_seed(flag/2) in
+      match mtmp155 {
+        Option__int32::None => {
+          return Option__int32::None
+        },
+        Option__int32::Some(x156) => {
           {
-            let try_value/22 = x156 in
-            try_value/22
+            let x156 = Option__int32::Some._0(mtmp155) in
+            {
+              let try_value/22 = x156 in
+              try_value/22
+            }
           }
-        }
-      },
-    }
-  } in
-  let b/4 = {
-    let mtmp157 = maybe_double(a/3) in
-    match mtmp157 {
-      Option__int32::None => {
-        return Option__int32::None
-      },
-      Option__int32::Some(x158) => {
-        {
-          let x158 = Option__int32::Some._0(mtmp157) in
+        },
+      }
+    } in
+  let b/4 =
+    {
+      let mtmp157 = maybe_double(a/3) in
+      match mtmp157 {
+        Option__int32::None => {
+          return Option__int32::None
+        },
+        Option__int32::Some(x158) => {
           {
-            let try_value/26 = x158 in
-            try_value/26
+            let x158 = Option__int32::Some._0(mtmp157) in
+            {
+              let try_value/26 = x158 in
+              try_value/26
+            }
           }
-        }
-      },
-    }
-  } in
+        },
+      }
+    } in
   Option__int32::Some((a/3 + b/4))
 }
 

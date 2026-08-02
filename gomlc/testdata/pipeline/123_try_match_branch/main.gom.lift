@@ -15,47 +15,49 @@ fn read_right(ok/1: bool) -> Result__int32__string {
 }
 
 fn choose(choice/2: Choice) -> Result__int32__string {
-  let value/6 = match choice/2 {
-    Choice::Left(x155) => {
-      let x155 = Choice::Left._0(choice/2) in
-      let ok/3 = x155 in
-      let mtmp158 = read_left(ok/3) in
-      match mtmp158 {
-        Result__int32__string::Ok(x159) => {
-          let x159 = Result__int32__string::Ok._0(mtmp158) in
-          let try_value/21 = x159 in
-          try_value/21
-        },
-        Result__int32__string::Err(x160) => {
-          let x160 = Result__int32__string::Err._0(mtmp158) in
-          let try_residual/21 = x160 in
-          return Result__int32__string::Err(try_residual/21)
-        },
-      }
-    },
-    Choice::Right(x156) => {
-      let x156 = Choice::Right._0(choice/2) in
-      let ok/4 = x156 in
-      (let mtmp161 = read_right(ok/4) in
-      match mtmp161 {
-        Result__int32__string::Ok(x162) => {
-          let x162 = Result__int32__string::Ok._0(mtmp161) in
-          let try_value/25 = x162 in
-          try_value/25
-        },
-        Result__int32__string::Err(x163) => {
-          let x163 = Result__int32__string::Err._0(mtmp161) in
-          let try_residual/25 = x163 in
-          return Result__int32__string::Err(try_residual/25)
-        },
-      } + 1)
-    },
-    Choice::Keep(x157) => {
-      let x157 = Choice::Keep._0(choice/2) in
-      let value/5 = x157 in
-      value/5
-    },
-  } in
+  let value/6 =
+    match choice/2 {
+      Choice::Left(x155) => {
+        let x155 = Choice::Left._0(choice/2) in
+        let ok/3 = x155 in
+        let mtmp158 = read_left(ok/3) in
+        match mtmp158 {
+          Result__int32__string::Ok(x159) => {
+            let x159 = Result__int32__string::Ok._0(mtmp158) in
+            let try_value/21 = x159 in
+            try_value/21
+          },
+          Result__int32__string::Err(x160) => {
+            let x160 = Result__int32__string::Err._0(mtmp158) in
+            let try_residual/21 = x160 in
+            return Result__int32__string::Err(try_residual/21)
+          },
+        }
+      },
+      Choice::Right(x156) => {
+        let x156 = Choice::Right._0(choice/2) in
+        let ok/4 = x156 in
+        (let mtmp161 = read_right(ok/4) in
+        match mtmp161 {
+          Result__int32__string::Ok(x162) => {
+            let x162 = Result__int32__string::Ok._0(mtmp161) in
+            let try_value/25 = x162 in
+            try_value/25
+          },
+          Result__int32__string::Err(x163) => {
+            let x163 = Result__int32__string::Err._0(mtmp161) in
+            let try_residual/25 = x163 in
+            return Result__int32__string::Err(try_residual/25)
+          },
+        } +
+          1)
+      },
+      Choice::Keep(x157) => {
+        let x157 = Choice::Keep._0(choice/2) in
+        let value/5 = x157 in
+        value/5
+      },
+    } in
   Result__int32__string::Ok(value/6)
 }
 

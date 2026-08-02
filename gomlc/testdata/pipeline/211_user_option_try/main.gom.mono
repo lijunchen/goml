@@ -11,23 +11,24 @@ fn maybe_value(flag/0: bool) -> Option__int32 {
 }
 
 fn compute(flag/1: bool) -> Option__int32 {
-  let value/2 = {
-    let mtmp155 = maybe_value(flag/1) in
-    match mtmp155 {
-      Option__int32::Some(x156) => {
-        {
-          let x156 = Option__int32::Some._0(mtmp155) in
+  let value/2 =
+    {
+      let mtmp155 = maybe_value(flag/1) in
+      match mtmp155 {
+        Option__int32::Some(x156) => {
           {
-            let try_value/11 = x156 in
-            try_value/11
+            let x156 = Option__int32::Some._0(mtmp155) in
+            {
+              let try_value/11 = x156 in
+              try_value/11
+            }
           }
-        }
-      },
-      Option__int32::None => {
-        return Option__int32::None
-      },
-    }
-  } in
+        },
+        Option__int32::None => {
+          return Option__int32::None
+        },
+      }
+    } in
   Option__int32::Some((value/2 + 1))
 }
 

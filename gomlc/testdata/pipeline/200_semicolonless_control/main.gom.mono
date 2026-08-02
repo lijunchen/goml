@@ -1,48 +1,55 @@
 fn main() -> unit {
-  let _wild155 = if true {
-      {
-        println__T_string("if")
+  let _wild155 =
+    if true {
+        {
+          println__T_string("if")
+        }
+    } else {
+        {
+          println__T_string("else")
+        }
+    } in
+  let _wild157 =
+    {
+      let mtmp156 = 1 in
+      match mtmp156 {
+        1 => {
+          println__T_string("match")
+        },
+        _ => (),
       }
-  } else {
-      {
-        println__T_string("else")
-      }
-  } in
-  let _wild157 = {
-    let mtmp156 = 1 in
-    match mtmp156 {
-      1 => {
-        println__T_string("match")
-      },
-      _ => (),
-    }
-  } in
+    } in
   let index/0 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild159 = while (inherent#Ref#Ref[T]#get__T_int(index/0) < 2) {
-      {
-        let _wild158 = println__T_string(inherent#int#int#to_string(inherent#Ref#Ref[T]#get__T_int(index/0))) in
-        inherent#Ref#Ref[T]#set__T_int(index/0, (inherent#Ref#Ref[T]#get__T_int(index/0) + 1))
-      }
-  } in
+  let _wild159 =
+    while (inherent#Ref#Ref[T]#get__T_int(index/0) < 2) {
+        {
+          let _wild158 =
+            println__T_string(
+              inherent#int#int#to_string(inherent#Ref#Ref[T]#get__T_int(index/0))
+            ) in
+          inherent#Ref#Ref[T]#set__T_int(index/0, (inherent#Ref#Ref[T]#get__T_int(index/0) + 1))
+        }
+    } in
   let values/1 = inherent#Vec#Vec[T]#new__T_string() in
   let _wild160 = inherent#Vec#Vec[T]#push__T_string(values/1, "for") in
-  let _wild166 = {
-    let for_source161 = values/1 in
-    let for_limit162 = @intrinsic(vec.len)(for_source161) in
-    let for_index163 = 0 in
-    while (for_index163 < for_limit162) {
-        {
-          let for_item164 = @intrinsic(vec.get)(for_source161, for_index163) in
-          let _wild165 = for_index163 = (for_index163 + 1) in
+  let _wild166 =
+    {
+      let for_source161 = values/1 in
+      let for_limit162 = @intrinsic(vec.len)(for_source161) in
+      let for_index163 = 0 in
+      while (for_index163 < for_limit162) {
           {
-            let value/2 = for_item164 in
+            let for_item164 = @intrinsic(vec.get)(for_source161, for_index163) in
+            let _wild165 = for_index163 = (for_index163 + 1) in
             {
-              println__T_string(value/2)
+              let value/2 = for_item164 in
+              {
+                println__T_string(value/2)
+              }
             }
           }
-        }
-    }
-  } in
+      }
+    } in
   println__T_string("done")
 }
 

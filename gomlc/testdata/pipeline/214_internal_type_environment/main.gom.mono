@@ -60,7 +60,12 @@ fn main() -> unit {
   let combined/16 = inherent#Point#Point#copy(point/15, inherent#Point#Point#origin()) in
   let wrapped/17 = Shape__int32::Wrapped(Wrapper__int32 { value: wrap__T_int32(4) }) in
   let list/18 = List::Cons(Node { value: 5, next: List::Nil }) in
-  println__T_string(inherent#int32#int32#to_string((((Point.x(combined/16) + Point.y(combined/16)) + shape_value(wrapped/17)) + list_value(list/18))))
+  println__T_string(
+    inherent#int32#int32#to_string(
+      (((Point.x(combined/16) + Point.y(combined/16)) + shape_value(wrapped/17)) +
+        list_value(list/18))
+    )
+  )
 }
 
 fn wrap__T_int32(value/4: int32) -> int32 {

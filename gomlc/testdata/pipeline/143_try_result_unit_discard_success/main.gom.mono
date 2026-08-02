@@ -11,29 +11,30 @@ fn step(ok/0: bool) -> Result__unit__string {
 }
 
 fn run(ok/1: bool) -> Result__unit__string {
-  let mtmp158 = {
-    let mtmp155 = step(ok/1) in
-    match mtmp155 {
-      Result__unit__string::Ok(x156) => {
-        {
-          let x156 = Result__unit__string::Ok._0(mtmp155) in
+  let mtmp158 =
+    {
+      let mtmp155 = step(ok/1) in
+      match mtmp155 {
+        Result__unit__string::Ok(x156) => {
           {
-            let try_value/12 = x156 in
-            try_value/12
+            let x156 = Result__unit__string::Ok._0(mtmp155) in
+            {
+              let try_value/12 = x156 in
+              try_value/12
+            }
           }
-        }
-      },
-      Result__unit__string::Err(x157) => {
-        {
-          let x157 = Result__unit__string::Err._0(mtmp155) in
+        },
+        Result__unit__string::Err(x157) => {
           {
-            let try_residual/12 = x157 in
-            return Result__unit__string::Err(try_residual/12)
+            let x157 = Result__unit__string::Err._0(mtmp155) in
+            {
+              let try_residual/12 = x157 in
+              return Result__unit__string::Err(try_residual/12)
+            }
           }
-        }
-      },
-    }
-  } in
+        },
+      }
+    } in
   {
     Result__unit__string::Ok(())
   }

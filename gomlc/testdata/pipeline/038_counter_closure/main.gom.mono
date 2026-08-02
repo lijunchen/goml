@@ -1,18 +1,20 @@
 fn make_counter() -> (() -> int32, () -> unit) {
   let cell/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let next/2 = || {
-    let next/1 = (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1) in
-    let mtmp155 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
-    {
-      next/1
-    }
-  } in
-  let reset/3 = || {
-    let mtmp156 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
-    {
-      ()
-    }
-  } in
+  let next/2 =
+    || {
+      let next/1 = (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1) in
+      let mtmp155 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
+      {
+        next/1
+      }
+    } in
+  let reset/3 =
+    || {
+      let mtmp156 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
+      {
+        ()
+      }
+    } in
   (next/2, reset/3)
 }
 
@@ -47,7 +49,8 @@ fn main() -> unit {
                     {
                       let mtmp166 = println__T_string(inherent#int32#int32#to_string(third/9)) in
                       {
-                        let mtmp167 = println__T_string(inherent#int32#int32#to_string(fourth/12)) in
+                        let mtmp167 =
+                          println__T_string(inherent#int32#int32#to_string(fourth/12)) in
                         {
                           ()
                         }

@@ -3,110 +3,119 @@ fn range(start/0: int32, end/1: int32) -> int32 {
 }
 
 fn endpoint(calls/2: Ref[int], value/3: int) -> int {
-  let _wild155 = inherent#Ref#Ref[T]#set__T_int(calls/2, (inherent#Ref#Ref[T]#get__T_int(calls/2) + 1)) in
+  let _wild155 =
+    inherent#Ref#Ref[T]#set__T_int(calls/2, (inherent#Ref#Ref[T]#get__T_int(calls/2) + 1)) in
   value/3
 }
 
 fn main() -> unit {
-  let _wild161 = {
-    let for_index156 = 1 in
-    let for_limit157 = 4 in
-    while (for_index156 < for_limit157) {
-        {
-          let for_item158 = for_index156 in
-          let _wild159 = for_index156 = (for_index156 + 1) in
+  let _wild161 =
+    {
+      let for_index156 = 1 in
+      let for_limit157 = 4 in
+      while (for_index156 < for_limit157) {
           {
-            let value/4 = for_item158 in
+            let for_item158 = for_index156 in
+            let _wild159 = for_index156 = (for_index156 + 1) in
             {
-              let _wild160 = println__T_int(value/4) in
+              let value/4 = for_item158 in
+              {
+                let _wild160 = println__T_int(value/4) in
+              }
             }
           }
-        }
-    }
-  } in
+      }
+    } in
   let calls/5 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild168 = {
-    let for_index162 = endpoint(calls/5, 4) in
-    let for_limit163 = endpoint(calls/5, 6) in
-    let for_done164 = (for_index162 > for_limit163) in
-    while (!for_done164) {
-        {
-          let for_item165 = for_index162 in
-          let _wild166 = if (for_index162 == for_limit163) {
-              for_done164 = true
-          } else {
-              for_index162 = (for_index162 + 1)
-          } in
+  let _wild168 =
+    {
+      let for_index162 = endpoint(calls/5, 4) in
+      let for_limit163 = endpoint(calls/5, 6) in
+      let for_done164 = (for_index162 > for_limit163) in
+      while (!for_done164) {
           {
-            let value/6 = for_item165 in
+            let for_item165 = for_index162 in
+            let _wild166 =
+              if (for_index162 == for_limit163) {
+                  for_done164 = true
+              } else {
+                  for_index162 = (for_index162 + 1)
+              } in
             {
-              let _wild167 = println__T_int(value/6) in
+              let value/6 = for_item165 in
+              {
+                let _wild167 = println__T_int(value/6) in
+              }
             }
           }
-        }
-    }
-  } in
-  let _wild175 = {
-    let for_index169 = 3 in
-    let for_limit170 = 1 in
-    let for_done171 = (for_index169 > for_limit170) in
-    while (!for_done171) {
-        {
-          let for_item172 = for_index169 in
-          let _wild173 = if (for_index169 == for_limit170) {
-              for_done171 = true
-          } else {
-              for_index169 = (for_index169 + 1)
-          } in
+      }
+    } in
+  let _wild175 =
+    {
+      let for_index169 = 3 in
+      let for_limit170 = 1 in
+      let for_done171 = (for_index169 > for_limit170) in
+      while (!for_done171) {
           {
-            let value/7 = for_item172 in
+            let for_item172 = for_index169 in
+            let _wild173 =
+              if (for_index169 == for_limit170) {
+                  for_done171 = true
+              } else {
+                  for_index169 = (for_index169 + 1)
+              } in
             {
-              let _wild174 = println__T_int(value/7) in
+              let value/7 = for_item172 in
+              {
+                let _wild174 = println__T_int(value/7) in
+              }
             }
           }
-        }
-    }
-  } in
+      }
+    } in
   let maximum/8 = 9223372036854775807 in
-  let _wild182 = {
-    let for_index176 = maximum/8 in
-    let for_limit177 = maximum/8 in
-    let for_done178 = (for_index176 > for_limit177) in
-    while (!for_done178) {
-        {
-          let for_item179 = for_index176 in
-          let _wild180 = if (for_index176 == for_limit177) {
-              for_done178 = true
-          } else {
-              for_index176 = (for_index176 + 1)
-          } in
+  let _wild182 =
+    {
+      let for_index176 = maximum/8 in
+      let for_limit177 = maximum/8 in
+      let for_done178 = (for_index176 > for_limit177) in
+      while (!for_done178) {
           {
-            let value/9 = for_item179 in
+            let for_item179 = for_index176 in
+            let _wild180 =
+              if (for_index176 == for_limit177) {
+                  for_done178 = true
+              } else {
+                  for_index176 = (for_index176 + 1)
+              } in
             {
-              let _wild181 = println__T_int(value/9) in
+              let value/9 = for_item179 in
+              {
+                let _wild181 = println__T_int(value/9) in
+              }
             }
           }
-        }
-    }
-  } in
+      }
+    } in
   let iterator/10 = __goml_builtin_range_inclusive(8, 8) in
-  let _wild185 = {
-    let mtmp183 = trait_impl#Iterator#FnIterator__int#next(iterator/10) in
-    match mtmp183 {
-      Option__int::None => {
-        println__T_string("missing")
-      },
-      Option__int::Some(x184) => {
-        {
-          let x184 = Option__int::Some._0(mtmp183) in
+  let _wild185 =
+    {
+      let mtmp183 = trait_impl#Iterator#FnIterator__int#next(iterator/10) in
+      match mtmp183 {
+        Option__int::None => {
+          println__T_string("missing")
+        },
+        Option__int::Some(x184) => {
           {
-            let value/11 = x184 in
-            println__T_int(value/11)
+            let x184 = Option__int::Some._0(mtmp183) in
+            {
+              let value/11 = x184 in
+              println__T_int(value/11)
+            }
           }
-        }
-      },
-    }
-  } in
+        },
+      }
+    } in
   let _wild186 = println__T_int(inherent#Ref#Ref[T]#get__T_int(calls/5)) in
   let _wild187 = println__T_int32(range(10, 20)) in
 }
@@ -130,31 +139,34 @@ fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
 fn __goml_builtin_range_inclusive(start/280: int, end/281: int) -> FnIterator__int {
   let current/282 = @intrinsic(ref.new)(start/280) in
   let finished/283 = @intrinsic(ref.new)(false) in
-  inherent#FnIterator#FnIterator[T]#from_fn__T_int(|| {
-    if if @intrinsic(ref.get)(finished/283) {
-        true
-    } else {
-        (@intrinsic(ref.get)(current/282) > end/281)
-    } {
-        {
-          Option__int::None
-        }
-    } else {
-        {
-          let value/284 = @intrinsic(ref.get)(current/282) in
-          let _wild145 = if trait_impl#Eq#int#eq(value/284, end/281) {
-              {
-                let _wild143 = @intrinsic(ref.set)(finished/283, true) in
-              }
-          } else {
-              {
-                let _wild144 = @intrinsic(ref.set)(current/282, (value/284 + 1)) in
-              }
-          } in
-          Option__int::Some(value/284)
-        }
+  inherent#FnIterator#FnIterator[T]#from_fn__T_int(
+    || {
+      if if @intrinsic(ref.get)(finished/283) {
+          true
+      } else {
+          (@intrinsic(ref.get)(current/282) > end/281)
+      } {
+          {
+            Option__int::None
+          }
+      } else {
+          {
+            let value/284 = @intrinsic(ref.get)(current/282) in
+            let _wild145 =
+              if trait_impl#Eq#int#eq(value/284, end/281) {
+                  {
+                    let _wild143 = @intrinsic(ref.set)(finished/283, true) in
+                  }
+              } else {
+                  {
+                    let _wild144 = @intrinsic(ref.set)(current/282, (value/284 + 1)) in
+                  }
+              } in
+            Option__int::Some(value/284)
+          }
+      }
     }
-  })
+  )
 }
 
 fn trait_impl#Iterator#FnIterator__int#next(self/102: FnIterator__int) -> Option__int {
@@ -177,7 +189,9 @@ fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
   @intrinsic(eq.primitive)(self/59, other/60)
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(next_fn/101: () -> Option__int) -> FnIterator__int {
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
+  next_fn/101: () -> Option__int
+) -> FnIterator__int {
   FnIterator__int { next_fn: next_fn/101 }
 }
 

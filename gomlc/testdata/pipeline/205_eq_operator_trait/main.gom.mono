@@ -9,26 +9,38 @@ fn main() -> unit {
   let _wild156 = println__T_bool((!trait_impl#Eq#AlwaysDifferent#eq(first/2, second/3))) in
   let left_tuple/4 = (AlwaysDifferent { value: 1 }, 2) in
   let right_tuple/5 = (AlwaysDifferent { value: 1 }, 2) in
-  let _wild159 = println__T_bool({
-    let _eq_lhs157 = left_tuple/4 in
-    let _eq_rhs158 = right_tuple/5 in
-    if trait_impl#Eq#AlwaysDifferent#eq(_eq_lhs157.0, _eq_rhs158.0) {
-        trait_impl#Eq#int#eq(_eq_lhs157.1, _eq_rhs158.1)
-    } else {
-        false
-    }
-  }) in
+  let _wild159 =
+    println__T_bool(
+      {
+        let _eq_lhs157 = left_tuple/4 in
+        let _eq_rhs158 = right_tuple/5 in
+        if trait_impl#Eq#AlwaysDifferent#eq(_eq_lhs157.0, _eq_rhs158.0) {
+            trait_impl#Eq#int#eq(_eq_lhs157.1, _eq_rhs158.1)
+        } else {
+            false
+        }
+      }
+    ) in
   let left_array/6 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
   let right_array/7 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
-  let _wild162 = println__T_bool({
-    let _eq_lhs160 = left_array/6 in
-    let _eq_rhs161 = right_array/7 in
-    if trait_impl#Eq#AlwaysDifferent#eq(@intrinsic(array.get)(_eq_lhs160, 0), @intrinsic(array.get)(_eq_rhs161, 0)) {
-        trait_impl#Eq#AlwaysDifferent#eq(@intrinsic(array.get)(_eq_lhs160, 1), @intrinsic(array.get)(_eq_rhs161, 1))
-    } else {
-        false
-    }
-  }) in
+  let _wild162 =
+    println__T_bool(
+      {
+        let _eq_lhs160 = left_array/6 in
+        let _eq_rhs161 = right_array/7 in
+        if trait_impl#Eq#AlwaysDifferent#eq(
+          @intrinsic(array.get)(_eq_lhs160, 0),
+          @intrinsic(array.get)(_eq_rhs161, 0)
+        ) {
+            trait_impl#Eq#AlwaysDifferent#eq(
+              @intrinsic(array.get)(_eq_lhs160, 1),
+              @intrinsic(array.get)(_eq_rhs161, 1)
+            )
+        } else {
+            false
+        }
+      }
+    ) in
 }
 
 fn println__T_bool(value/1: bool) -> unit {

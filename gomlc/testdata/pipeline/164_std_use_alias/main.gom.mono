@@ -86,17 +86,23 @@ fn std::env::var(name/6: string) -> Option__string {
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes { values: {
-    let vec_literal/130 = inherent#Vec#Vec[T]#new__T_uint8() in
-    vec_literal/130
-  } }
+  std::bytes::Bytes {
+    values: {
+      let vec_literal/130 = inherent#Vec#Vec[T]#new__T_uint8() in
+      vec_literal/130
+    }
+  }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
+  capacity/0: int
+) -> std::bytes::Bytes {
   std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[uint8]) -> std::bytes::Bytes {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
+  values/1: Vec[uint8]
+) -> std::bytes::Bytes {
   std::bytes::Bytes { values: values/1 }
 }
 
@@ -116,22 +122,33 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Byt
   inherent#Vec#Vec[T]#is_empty__T_uint8(std::bytes::Bytes.values(self/5))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int) -> uint8 {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
+  self/6: std::bytes::Bytes,
+  index/7: int
+) -> uint8 {
   @intrinsic(vec.get)(std::bytes::Bytes.values(self/6), index/7)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int, value/10: uint8) -> unit {
-  let _wild5 = {
-    let place_root0 = self/8 in
-    let place1 = std::bytes::Bytes.values(place_root0) in
-    let index2 = index/9 in
-    let place3 = @intrinsic(vec.get)(place1, index2) in
-    let value4 = value/10 in
-    @intrinsic(vec.set)(place1, index2, value4)
-  } in
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
+  self/8: std::bytes::Bytes,
+  index/9: int,
+  value/10: uint8
+) -> unit {
+  let _wild5 =
+    {
+      let place_root0 = self/8 in
+      let place1 = std::bytes::Bytes.values(place_root0) in
+      let index2 = index/9 in
+      let place3 = @intrinsic(vec.get)(place1, index2) in
+      let value4 = value/10 in
+      @intrinsic(vec.set)(place1, index2, value4)
+    } in
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
+  self/11: std::bytes::Bytes,
+  value/12: uint8
+) -> unit {
   inherent#Vec#Vec[T]#push__T_uint8(std::bytes::Bytes.values(self/11), value/12)
 }
 
@@ -139,11 +156,17 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) 
   inherent#Vec#Vec[T]#pop__T_uint8(std::bytes::Bytes.values(self/13))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
+  self/14: std::bytes::Bytes,
+  additional/15: int
+) -> unit {
   inherent#Vec#Vec[T]#reserve__T_uint8(std::bytes::Bytes.values(self/14), additional/15)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int) -> unit {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
+  self/16: std::bytes::Bytes,
+  len/17: int
+) -> unit {
   inherent#Vec#Vec[T]#truncate__T_uint8(std::bytes::Bytes.values(self/16), len/17)
 }
 
@@ -151,7 +174,11 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes
   inherent#Vec#Vec[T]#clear__T_uint8(std::bytes::Bytes.values(self/18))
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int, end/21: int) -> Slice[uint8] {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
+  self/19: std::bytes::Bytes,
+  start/20: int,
+  end/21: int
+) -> Slice[uint8] {
   inherent#Vec#Vec[T]#slice__T_uint8(std::bytes::Bytes.values(self/19), start/20, end/21)
 }
 
@@ -159,7 +186,9 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Byte
   std::bytes::Bytes.values(self/22)
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result__string__string {
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
+  self/23: std::bytes::Bytes
+) -> Result__string__string {
   let mtmp6 = @runtime(core.string_from_utf8)(std::bytes::Bytes.values(self/23)) in
   {
     let x7 = mtmp6.0 in
@@ -199,7 +228,9 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
           {
             if ok/4 {
                 {
-                  Result__std::bytes::Bytes__string::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/5))
+                  Result__std::bytes::Bytes__string::Ok(
+                    inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/5)
+                  )
                 }
             } else {
                 {
@@ -214,7 +245,8 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
 }
 
 fn std::io::write_stdout(data/7: std::bytes::Bytes) -> Result__unit__string {
-  let mtmp4 = @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/7)) in
+  let mtmp4 =
+    @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/7)) in
   {
     let x5 = mtmp4.0 in
     let x6 = mtmp4.1 in
@@ -239,7 +271,8 @@ fn std::io::write_stdout(data/7: std::bytes::Bytes) -> Result__unit__string {
 }
 
 fn std::io::write_stderr(data/10: std::bytes::Bytes) -> Result__unit__string {
-  let mtmp7 = @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/10)) in
+  let mtmp7 =
+    @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/10)) in
   {
     let x8 = mtmp7.0 in
     let x9 = mtmp7.1 in
@@ -284,7 +317,9 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
                 {
                   if ok/14 {
                       {
-                        Result__std::bytes::Bytes__string::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/15))
+                        Result__std::bytes::Bytes__string::Ok(
+                          inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/15)
+                        )
                       }
                   } else {
                       {
@@ -301,7 +336,9 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
 }
 
 fn main() -> unit {
-  std::io::println__T_string(trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(std::env::args()) > 0)))
+  std::io::println__T_string(
+    trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(std::env::args()) > 0))
+  )
 }
 
 fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
@@ -359,7 +396,11 @@ fn inherent#Vec#Vec[T]#clear__T_uint8(self/144: Vec[uint8]) -> unit {
   inherent#Vec#Vec[T]#truncate__T_uint8(self/144, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/175: Vec[uint8], start/176: int, end/177: int) -> Slice[uint8] {
+fn inherent#Vec#Vec[T]#slice__T_uint8(
+  self/175: Vec[uint8],
+  start/176: int,
+  end/177: int
+) -> Slice[uint8] {
   @intrinsic(slice.new)(self/175, start/176, end/177)
 }
 

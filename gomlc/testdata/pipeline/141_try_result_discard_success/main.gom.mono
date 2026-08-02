@@ -11,29 +11,30 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 }
 
 fn check(ok/1: bool) -> Result__string__string {
-  let mtmp158 = {
-    let mtmp155 = parse_text(ok/1) in
-    match mtmp155 {
-      Result__string__string::Ok(x156) => {
-        {
-          let x156 = Result__string__string::Ok._0(mtmp155) in
+  let mtmp158 =
+    {
+      let mtmp155 = parse_text(ok/1) in
+      match mtmp155 {
+        Result__string__string::Ok(x156) => {
           {
-            let try_value/12 = x156 in
-            try_value/12
+            let x156 = Result__string__string::Ok._0(mtmp155) in
+            {
+              let try_value/12 = x156 in
+              try_value/12
+            }
           }
-        }
-      },
-      Result__string__string::Err(x157) => {
-        {
-          let x157 = Result__string__string::Err._0(mtmp155) in
+        },
+        Result__string__string::Err(x157) => {
           {
-            let try_residual/12 = x157 in
-            return Result__string__string::Err(try_residual/12)
+            let x157 = Result__string__string::Err._0(mtmp155) in
+            {
+              let try_residual/12 = x157 in
+              return Result__string__string::Err(try_residual/12)
+            }
           }
-        }
-      },
-    }
-  } in
+        },
+      }
+    } in
   {
     Result__string__string::Ok("ok")
   }

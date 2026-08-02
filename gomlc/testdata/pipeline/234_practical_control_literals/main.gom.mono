@@ -12,9 +12,10 @@ fn unwrap_or_negative(value/0: Option__int) -> int {
         }
       }
     },
-    _ => {
-      let _wild157 = return -1 in
-    },
+    _ =>
+      {
+        let _wild157 = return -1 in
+      },
   }
 }
 
@@ -22,13 +23,14 @@ fn count_to(limit/2: int) -> int {
   let counter/3 = inherent#Ref#Ref[T]#new__T_int(0) in
   loop {
     let current/4 = inherent#Ref#Ref[T]#get__T_int(counter/3) in
-    let _wild159 = if (current/4 >= limit/2) {
-        {
-          let _wild158 = break current/4 in
-        }
-    } else {
-        ()
-    } in
+    let _wild159 =
+      if (current/4 >= limit/2) {
+          {
+            let _wild158 = break current/4 in
+          }
+      } else {
+          ()
+      } in
     let _wild160 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
   }
 }
@@ -48,18 +50,20 @@ fn loop_option(value/5: Option__int) -> int {
           }
         }
       },
-      _ => {
-        let _wild164 = break -2 in
-      },
+      _ =>
+        {
+          let _wild164 = break -2 in
+        },
     }
   }
 }
 
 fn nested_loop_value() -> int {
   loop {
-    let _wild166 = loop {
-      let _wild165 = break in
-    } in
+    let _wild166 =
+      loop {
+        let _wild165 = break in
+      } in
     let _wild167 = break 7 in
   }
 }
@@ -82,13 +86,16 @@ fn matches_raw_path(value/7: string) -> bool {
 fn main() -> unit {
   let _wild168 = println__T_string("C:\\tmp\\\"quoted\\\"") in
   let _wild169 = println__T_string(("" + "}")) in
-  let _wild170 = println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::Some(11)))) in
-  let _wild171 = println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
+  let _wild170 =
+    println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::Some(11)))) in
+  let _wild171 =
+    println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
   let _wild172 = println__T_string(inherent#int#int#to_string(count_to(4))) in
   let _wild173 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
   let _wild174 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
   let _wild175 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
-  let _wild176 = println__T_string(trait_impl#ToString#bool#to_string(matches_raw_path("C:\\tmp"))) in
+  let _wild176 =
+    println__T_string(trait_impl#ToString#bool#to_string(matches_raw_path("C:\\tmp"))) in
 }
 
 fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {

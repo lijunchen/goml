@@ -8,7 +8,9 @@ fn point32_to_string(p/0: Point) -> string {
       {
         let x/1 = x156 in
         {
-          (((("Point { x: " + inherent#int32#int32#to_string(x/1)) + ", y: ") + inherent#int32#int32#to_string(y/2)) + " }")
+          (((("Point { x: " + inherent#int32#int32#to_string(x/1)) + ", y: ") +
+            inherent#int32#int32#to_string(y/2)) +
+            " }")
         }
       }
     }
@@ -42,7 +44,11 @@ fn line_to_string(l/4: Line) -> string {
         {
           let from/5 = x159 in
           {
-            (((((("Line { from: " + point32_to_string(from/5)) + ", to: ") + point32_to_string(to/6)) + ", color: ") + color_to_string(color/7)) + " }")
+            (((((("Line { from: " + point32_to_string(from/5)) + ", to: ") +
+              point32_to_string(to/6)) +
+              ", color: ") +
+              color_to_string(color/7)) +
+              " }")
           }
         }
       }
@@ -67,22 +73,23 @@ fn point_type(p/8: Point) -> string {
               "up"
             }
           },
-          _ => {
-            let y/9 = x163 in
+          _ =>
             {
+              let y/9 = x163 in
               {
-                let mtmp164 = (0 < y/9) in
-                match mtmp164 {
-                  true => {
-                    "above"
-                  },
-                  false => {
-                    "below"
-                  },
+                {
+                  let mtmp164 = (0 < y/9) in
+                  match mtmp164 {
+                    true => {
+                      "above"
+                    },
+                    false => {
+                      "below"
+                    },
+                  }
                 }
               }
-            }
-          },
+            },
         }
       },
       1 => {

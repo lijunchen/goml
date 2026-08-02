@@ -16,10 +16,12 @@ fn main() -> unit {
   let base/6 = 5 in
   let add_base/8 = |x/7| (x/7 + base/6) in
   let result/9 = add_base/8(7) in
-  let printer/13 = |prefix/10, value/11| {
-    let message/12 = (prefix/10 + inherent#int32#int32#to_string(value/11)) in
-    println__T_string(message/12)
-  } in
+  let printer/13 =
+    |prefix/10,
+    value/11| {
+      let message/12 = (prefix/10 + inherent#int32#int32#to_string(value/11)) in
+      println__T_string(message/12)
+    } in
   let mtmp156 = printer/13("result: ", result/9) in
   {
     let unused/15 = |y/14| (y/14 + result/9) in
@@ -31,33 +33,41 @@ fn main() -> unit {
       {
         let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
         let point/20 = Point { x: 10, y: 20 } in
-        let play_list_and_point/25 = || {
-          match list123/19 {
-            IntList::Nil => {
-              println__T_string("Empty list")
-            },
-            IntList::Cons(x159, x160) => {
-              {
-                let x159 = IntList::Cons._0(list123/19) in
-                let x160 = IntList::Cons._1(list123/19) in
+        let play_list_and_point/25 =
+          || {
+            match list123/19 {
+              IntList::Nil => {
+                println__T_string("Empty list")
+              },
+              IntList::Cons(x159, x160) => {
                 {
-                  let tail/22 = x160 in
+                  let x159 = IntList::Cons._0(list123/19) in
+                  let x160 = IntList::Cons._1(list123/19) in
                   {
-                    let head/21 = x159 in
+                    let tail/22 = x160 in
                     {
-                      let mtmp161 = println__T_string(inherent#int32#int32#to_string(head/21)) in
+                      let head/21 = x159 in
                       {
+                        let mtmp161 = println__T_string(inherent#int32#int32#to_string(head/21)) in
                         {
-                          let x162 = Point.x(point/20) in
-                          let x163 = Point.y(point/20) in
                           {
-                            let y/24 = x163 in
+                            let x162 = Point.x(point/20) in
+                            let x163 = Point.y(point/20) in
                             {
-                              let x/23 = x162 in
+                              let y/24 = x163 in
                               {
-                                let mtmp164 = println__T_string((((("Point: (" + inherent#int32#int32#to_string(x/23)) + ", ") + inherent#int32#int32#to_string(y/24)) + ")")) in
+                                let x/23 = x162 in
                                 {
-                                  ()
+                                  let mtmp164 =
+                                    println__T_string(
+                                      (((("Point: (" + inherent#int32#int32#to_string(x/23)) +
+                                        ", ") +
+                                        inherent#int32#int32#to_string(y/24)) +
+                                        ")")
+                                    ) in
+                                  {
+                                    ()
+                                  }
                                 }
                               }
                             }
@@ -67,10 +77,9 @@ fn main() -> unit {
                     }
                   }
                 }
-              }
-            },
-          }
-        } in
+              },
+            }
+          } in
         let mtmp165 = play_list_and_point/25() in
         {
           ()

@@ -1,7 +1,11 @@
 fn main() -> unit {
   let value/3 = Maybe__int::Some(3) in
   {
-    let mtmp156 = inherent#Maybe#Maybe[T]#map__T_int__U_string(value/3, |item/4| inherent#int#int#to_string(item/4)) in
+    let mtmp156 =
+      inherent#Maybe#Maybe[T]#map__T_int__U_string(
+        value/3,
+        |item/4| inherent#int#int#to_string(item/4)
+      ) in
     match mtmp156 {
       Maybe__string::None => {
         println__T_string("none")
@@ -23,7 +27,10 @@ fn inherent#int#int#to_string(self/5: int) -> string {
   @runtime(core.int_to_string)(self/5)
 }
 
-fn inherent#Maybe#Maybe[T]#map__T_int__U_string(self/0: Maybe__int, map_fn/1: (int) -> string) -> Maybe__string {
+fn inherent#Maybe#Maybe[T]#map__T_int__U_string(
+  self/0: Maybe__int,
+  map_fn/1: (int) -> string
+) -> Maybe__string {
   match self/0 {
     Maybe__int::None => {
       Maybe__string::None

@@ -1,38 +1,43 @@
 fn add_after_match(flag/0: bool) -> int32 {
-  let value/1 = match flag/0 {
-    true => {
-      return 5
-    },
-    false => {
-      7
-    },
-  } in
+  let value/1 =
+    match flag/0 {
+      true => {
+        return 5
+      },
+      false => {
+        7
+      },
+    } in
   (value/1 + 1)
 }
 
 fn receiver_after_match(flag/2: bool) -> string {
-  inherent#int#int#to_string(match flag/2 {
-    true => {
-      return "early"
-    },
-    false => {
-      7
-    },
-  })
+  inherent#int#int#to_string(
+    match flag/2 {
+      true => {
+        return "early"
+      },
+      false => {
+        7
+      },
+    }
+  )
 }
 
 fn closure_after_match(flag/3: bool) -> int32 {
-  let f/6 = |inner/4| {
-    let value/5 = match inner/4 {
-      true => {
-        return 2
-      },
-      false => {
-        4
-      },
+  let f/6 =
+    |inner/4| {
+      let value/5 =
+        match inner/4 {
+          true => {
+            return 2
+          },
+          false => {
+            4
+          },
+        } in
+      (value/5 + 3)
     } in
-    (value/5 + 3)
-  } in
   f/6(flag/3)
 }
 

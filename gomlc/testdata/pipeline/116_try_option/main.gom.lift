@@ -11,17 +11,22 @@ fn add(a/1: int32, b/2: int32) -> int32 {
 }
 
 fn plus_two(flag/3: bool) -> Option__int32 {
-  Option__int32::Some(add(let mtmp155 = maybe_value(flag/3) in
-  match mtmp155 {
-    Option__int32::None => {
-      return Option__int32::None
-    },
-    Option__int32::Some(x156) => {
-      let x156 = Option__int32::Some._0(mtmp155) in
-      let try_value/15 = x156 in
-      try_value/15
-    },
-  }, 2))
+  Option__int32::Some(
+    add(
+      let mtmp155 = maybe_value(flag/3) in
+      match mtmp155 {
+        Option__int32::None => {
+          return Option__int32::None
+        },
+        Option__int32::Some(x156) => {
+          let x156 = Option__int32::Some._0(mtmp155) in
+          let try_value/15 = x156 in
+          try_value/15
+        },
+      },
+      2
+    )
+  )
 }
 
 fn show(opt/4: Option__int32) -> string {

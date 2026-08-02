@@ -11,37 +11,38 @@ fn parse(flag/0: bool) -> Result__int32__string {
 }
 
 fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
-  let value/3 = if flag/1 {
-      {
+  let value/3 =
+    if flag/1 {
         {
-          let mtmp155 = parse(fallback/2) in
-          match mtmp155 {
-            Result__int32__string::Ok(x156) => {
-              {
-                let x156 = Result__int32__string::Ok._0(mtmp155) in
+          {
+            let mtmp155 = parse(fallback/2) in
+            match mtmp155 {
+              Result__int32__string::Ok(x156) => {
                 {
-                  let try_value/13 = x156 in
-                  try_value/13
+                  let x156 = Result__int32__string::Ok._0(mtmp155) in
+                  {
+                    let try_value/13 = x156 in
+                    try_value/13
+                  }
                 }
-              }
-            },
-            Result__int32__string::Err(x157) => {
-              {
-                let x157 = Result__int32__string::Err._0(mtmp155) in
+              },
+              Result__int32__string::Err(x157) => {
                 {
-                  let try_residual/13 = x157 in
-                  return Result__int32__string::Err(try_residual/13)
+                  let x157 = Result__int32__string::Err._0(mtmp155) in
+                  {
+                    let try_residual/13 = x157 in
+                    return Result__int32__string::Err(try_residual/13)
+                  }
                 }
-              }
-            },
+              },
+            }
           }
         }
-      }
-  } else {
-      {
-        10
-      }
-  } in
+    } else {
+        {
+          10
+        }
+    } in
   Result__int32__string::Ok((value/3 + 1))
 }
 

@@ -1,5 +1,6 @@
 fn bump(cell/0: Ref[int32]) -> int32 {
-  let mtmp155 = inherent#Ref#Ref[T]#set__T_int32(cell/0, (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1)) in
+  let mtmp155 =
+    inherent#Ref#Ref[T]#set__T_int32(cell/0, (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1)) in
   inherent#Ref#Ref[T]#get__T_int32(cell/0)
 }
 
@@ -18,20 +19,26 @@ fn nested_total(cell/3: Ref[Ref[int32]]) -> int32 {
 
 fn alias_bump(cell/6: Ref[int32]) -> int32 {
   let alias/7 = cell/6 in
-  let mtmp158 = inherent#Ref#Ref[T]#set__T_int32(alias/7, (inherent#Ref#Ref[T]#get__T_int32(alias/7) + 5)) in
+  let mtmp158 =
+    inherent#Ref#Ref[T]#set__T_int32(alias/7, (inherent#Ref#Ref[T]#get__T_int32(alias/7) + 5)) in
   inherent#Ref#Ref[T]#get__T_int32(alias/7)
 }
 
 fn pair_sum() -> int32 {
   let first/8 = inherent#Ref#Ref[T]#new__T_int32(4) in
   let second/9 = inherent#Ref#Ref[T]#new__T_int32(6) in
-  let mtmp159 = inherent#Ref#Ref[T]#set__T_int32(first/8, (inherent#Ref#Ref[T]#get__T_int32(first/8) + inherent#Ref#Ref[T]#get__T_int32(second/9))) in
+  let mtmp159 =
+    inherent#Ref#Ref[T]#set__T_int32(
+      first/8,
+      (inherent#Ref#Ref[T]#get__T_int32(first/8) + inherent#Ref#Ref[T]#get__T_int32(second/9))
+    ) in
   (inherent#Ref#Ref[T]#get__T_int32(first/8) + inherent#Ref#Ref[T]#get__T_int32(second/9))
 }
 
 fn reassign_nested(nested/10: Ref[Ref[int32]]) -> int32 {
   let inner/11 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/10) in
-  let mtmp160 = inherent#Ref#Ref[T]#set__T_int32(inner/11, (inherent#Ref#Ref[T]#get__T_int32(inner/11) + 7)) in
+  let mtmp160 =
+    inherent#Ref#Ref[T]#set__T_int32(inner/11, (inherent#Ref#Ref[T]#get__T_int32(inner/11) + 7)) in
   inherent#Ref#Ref[T]#get__T_int32(inner/11)
 }
 
@@ -43,24 +50,39 @@ fn main() -> unit {
   let flipped/16 = flip(toggler/13) in
   let flipped_again/17 = flip(toggler/13) in
   let inner/18 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/14) in
-  let mtmp161 = inherent#Ref#Ref[T]#set__T_int32(inner/18, (inherent#Ref#Ref[T]#get__T_int32(inner/18) + bumped/15)) in
+  let mtmp161 =
+    inherent#Ref#Ref[T]#set__T_int32(
+      inner/18,
+      (inherent#Ref#Ref[T]#get__T_int32(inner/18) + bumped/15)
+    ) in
   let nested_total_val/19 = nested_total(nested/14) in
   let alias_total/20 = alias_bump(counter/12) in
   let pair_total/21 = pair_sum() in
   let reassigned/22 = reassign_nested(nested/14) in
   let bool_check/23 = (!false) in
-  let mtmp162 = println__T_string(inherent#int32#int32#to_string((bumped/15 + inherent#Ref#Ref[T]#get__T_int32(counter/12)))) in
-  let mtmp163 = println__T_string(inherent#int32#int32#to_string(((nested_total_val/19 + alias_total/20) + reassigned/22))) in
+  let mtmp162 =
+    println__T_string(
+      inherent#int32#int32#to_string((bumped/15 + inherent#Ref#Ref[T]#get__T_int32(counter/12)))
+    ) in
+  let mtmp163 =
+    println__T_string(
+      inherent#int32#int32#to_string(((nested_total_val/19 + alias_total/20) + reassigned/22))
+    ) in
   let mtmp164 = println__T_string(inherent#int32#int32#to_string(pair_total/21)) in
-  let mtmp165 = println__T_string(trait_impl#ToString#bool#to_string(if if flipped/16 {
-      flipped_again/17
-  } else {
-      false
-  } {
-      bool_check/23
-  } else {
-      false
-  })) in
+  let mtmp165 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(
+        if if flipped/16 {
+            flipped_again/17
+        } else {
+            false
+        } {
+            bool_check/23
+        } else {
+            false
+        }
+      )
+    ) in
   ()
 }
 
