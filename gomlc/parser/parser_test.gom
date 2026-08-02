@@ -183,8 +183,8 @@ fn postfix_expressions_bind_tighter_than_prefix_operators() -> unit {
 }
 
 #[test]
-fn recovers_legacy_extern_type_declarations() -> unit {
-    let source = "extern \"go\" \"time\" \"Duration\" type Duration\nfn main() -> unit { () }";
+fn recovers_non_function_extern_declarations() -> unit {
+    let source = "extern bogus;\nfn main() -> unit { () }";
     let result = parse(source);
     testing::assert_eq(result.diagnostics.len(), 1);
     testing::assert_eq(
