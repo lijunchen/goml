@@ -1,0 +1,573 @@
+package pretty;
+
+use std::text as std_text;
+
+pub struct Doc {
+    node: DocNode,
+}
+
+enum DocNode {
+    Nil,
+    Append(Doc, Doc),
+    Nest(int, Doc),
+    Text(string, int),
+    Line,
+    HardLine,
+    BreakLine,
+    Union(Doc, Doc),
+    Flatten(Doc),
+    Fill(Vec[Doc]),
+}
+
+enum Task {
+    Document(int, bool, Doc),
+    Fill(int, bool, Vec[Doc], int, bool),
+}
+
+enum Tasks {
+    Done,
+    More(Task, Tasks),
+}
+
+enum FitFallbacks {
+    NoFallback,
+    Fallback(int, Tasks, FitFallbacks),
+}
+
+fn doc(node: DocNode) -> Doc {
+    Doc { node }
+}
+
+pub fn nil() -> Doc {
+    doc(DocNode::Nil)
+}
+
+pub fn text_width(value: string) -> int {
+    let width = Ref::new(0);
+    for _ in value.chars() {
+        width.set(width.get() + 1)
+    };
+    width.get()
+}
+
+fn raw_text(value: string) -> Doc {
+    if value == "" {
+        nil()
+    } else {
+        doc(DocNode::Text(value, text_width(value)))
+    }
+}
+
+pub fn text(value: string) -> Doc {
+    let pieces: Vec[Doc] = Vec::new();
+    let start = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == b'\n' {
+            pieces.push(raw_text(value.byte_slice(start.get(), index)));
+            pieces.push(line());
+            start.set(index + 1)
+        } else {
+            ()
+        }
+    };
+    pieces.push(raw_text(value.byte_slice(start.get(), value.byte_len())));
+    concat(pieces)
+}
+
+pub fn line() -> Doc {
+    doc(DocNode::Line)
+}
+
+pub fn hardline() -> Doc {
+    doc(DocNode::HardLine)
+}
+
+pub fn break_line() -> Doc {
+    doc(DocNode::BreakLine)
+}
+
+pub fn space() -> Doc {
+    raw_text(" ")
+}
+
+pub fn append(left: Doc, right: Doc) -> Doc {
+    match left.node {
+        Nil => right,
+        _ => match right.node {
+            Nil => left,
+            _ => doc(DocNode::Append(left, right)),
+        },
+    }
+}
+
+pub fn concat(values: Vec[Doc]) -> Doc {
+    let mut result = nil();
+    let mut index = values.len();
+    while index > 0 {
+        index = index - 1;
+        result = append(values.get(index), result);
+    };
+    result
+}
+
+pub fn join(separator: Doc, values: Vec[Doc]) -> Doc {
+    if values.len() == 0 {
+        return nil()
+    } else {
+        ()
+    };
+    let mut index = values.len() - 1;
+    let mut result = values.get(index);
+    while index > 0 {
+        index = index - 1;
+        result = append(values.get(index), append(separator, result));
+    };
+    result
+}
+
+pub fn folddoc(combine: (Doc, Doc) -> Doc, values: Vec[Doc]) -> Doc {
+    if values.len() == 0 {
+        return nil()
+    } else {
+        ()
+    };
+    let mut index = values.len() - 1;
+    let mut result = values.get(index);
+    while index > 0 {
+        index = index - 1;
+        result = combine(values.get(index), result);
+    };
+    result
+}
+
+fn result_is_nil(value: Doc) -> bool {
+    match value.node {
+        Nil => true,
+        _ => false,
+    }
+}
+
+pub fn nest(indentation: int, value: Doc) -> Doc {
+    if indentation <= 0 || result_is_nil(value) {
+        value
+    } else {
+        doc(DocNode::Nest(indentation, value))
+    }
+}
+
+fn flatten(value: Doc) -> Doc {
+    match value.node {
+        Nil | Text(_, _) => value,
+        Flatten(_) => value,
+        _ => doc(DocNode::Flatten(value)),
+    }
+}
+
+fn union(left: Doc, right: Doc) -> Doc {
+    doc(DocNode::Union(left, right))
+}
+
+pub fn group(value: Doc) -> Doc {
+    match value.node {
+        Nil | Text(_, _) | HardLine | Flatten(_) | Union(_, _) | Fill(_) => value,
+        _ => union(flatten(value), value),
+    }
+}
+
+pub fn softline() -> Doc {
+    group(line())
+}
+
+pub fn softbreak() -> Doc {
+    group(break_line())
+}
+
+pub fn soft_beside(left: Doc, right: Doc) -> Doc {
+    append(left, append(softline(), right))
+}
+
+pub fn beside(left: Doc, right: Doc) -> Doc {
+    append(left, append(space(), right))
+}
+
+pub fn above(top: Doc, bottom: Doc) -> Doc {
+    append(top, append(line(), bottom))
+}
+
+pub fn spread(values: Vec[Doc]) -> Doc {
+    join(space(), values)
+}
+
+pub fn stack(values: Vec[Doc]) -> Doc {
+    join(hardline(), values)
+}
+
+pub fn enclose(left: string, value: Doc, right: string) -> Doc {
+    group(
+        append(
+            text(left),
+            append(nest(2, append(break_line(), value)), append(break_line(), text(right))),
+        ),
+    )
+}
+
+pub fn delimited(left: string, separator: string, right: string, values: Vec[Doc]) -> Doc {
+    if values.is_empty() {
+        text(left + right)
+    } else {
+        enclose(left, join(append(text(separator), line()), values), right)
+    }
+}
+
+pub fn block(header: Doc, values: Vec[Doc]) -> Doc {
+    if values.is_empty() {
+        append(header, text(" {}"))
+    } else {
+        append(
+            header,
+            append(
+                text(" {"),
+                append(nest(2, append(hardline(), stack(values))), append(hardline(), text("}"))),
+            ),
+        )
+    }
+}
+
+pub fn bracket(left: string, value: Doc, right: string) -> Doc {
+    group(append(text(left), append(nest(2, append(line(), value)), append(line(), text(right)))))
+}
+
+fn copy_docs(values: Vec[Doc]) -> Vec[Doc] {
+    let result = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+pub fn fill(values: Vec[Doc]) -> Doc {
+    if values.len() == 0 {
+        nil()
+    } else if values.len() == 1 {
+        values.get(0)
+    } else {
+        doc(DocNode::Fill(copy_docs(values)))
+    }
+}
+
+fn is_word_separator(value: char) -> bool {
+    value == ' ' || value == '\t' || value == '\n' || value == '\r' || value == '\u000b'
+        || value == '\u000c'
+}
+
+pub fn fillwords(value: string) -> Doc {
+    let words: Vec[Doc] = Vec::new();
+    let current = std_text::StringBuilder::new();
+    let inside = Ref::new(false);
+    for character in value.chars() {
+        if is_word_separator(character) {
+            if inside.get() {
+                words.push(text(current.finish()));
+                current.clear();
+                inside.set(false)
+            } else {
+                ()
+            }
+        } else {
+            current.write_char(character);
+            inside.set(true)
+        }
+    };
+    if inside.get() {
+        words.push(text(current.finish()))
+    } else {
+        ()
+    };
+    fill(words)
+}
+
+fn push_document(rest: Tasks, indentation: int, flat: bool, value: Doc) -> Tasks {
+    Tasks::More(Task::Document(indentation, flat, value), rest)
+}
+
+fn push_fill(
+    rest: Tasks,
+    indentation: int,
+    flat: bool,
+    values: Vec[Doc],
+    index: int,
+    head_flat: bool,
+) -> Tasks {
+    Tasks::More(Task::Fill(indentation, flat, values, index, head_flat), rest)
+}
+
+fn append_tasks(rest: Tasks, indentation: int, flat: bool, left: Doc, right: Doc) -> Tasks {
+    push_document(push_document(rest, indentation, flat, right), indentation, flat, left)
+}
+
+fn flat_fill_tasks(rest: Tasks, indentation: int, values: Vec[Doc], index: int) -> Tasks {
+    let current = values.get(index);
+    if index + 1 >= values.len() {
+        push_document(rest, indentation, true, current)
+    } else {
+        push_document(
+            push_document(
+                push_fill(rest, indentation, true, values, index + 1, true),
+                indentation,
+                false,
+                space(),
+            ),
+            indentation,
+            true,
+            current,
+        )
+    }
+}
+
+fn fill_choice_tasks(rest: Tasks, indentation: int, values: Vec[Doc], index: int, head_flat: bool) -> (
+    Tasks,
+    Tasks,
+) {
+    let current = values.get(index);
+    let left = push_document(
+        push_document(
+            push_fill(rest, indentation, false, values, index + 1, true),
+            indentation,
+            false,
+            space(),
+        ),
+        indentation,
+        true,
+        current,
+    );
+    let right = push_document(
+        push_document(
+            push_fill(rest, indentation, false, values, index + 1, false),
+            indentation,
+            false,
+            line(),
+        ),
+        indentation,
+        head_flat,
+        current,
+    );
+    (left, right)
+}
+
+fn fits(initial: int, initial_tasks: Tasks) -> bool {
+    let mut available = initial;
+    let mut tasks = initial_tasks;
+    let mut fallbacks = FitFallbacks::NoFallback;
+    while true {
+        if available < 0 {
+            match fallbacks {
+                NoFallback => return false,
+                Fallback(saved, saved_tasks, remaining) => {
+                    available = saved;
+                    tasks = saved_tasks;
+                    fallbacks = remaining;
+                },
+            };
+            continue
+        } else {
+            ()
+        };
+        match tasks {
+            Done => return true,
+            More(task, rest) => match task {
+                Document(indentation, flat, value) => match value.node {
+                    Nil => {
+                        tasks = rest;
+                    },
+                    Append(left, right) => {
+                        tasks = append_tasks(rest, indentation, flat, left, right);
+                    },
+                    Nest(amount, nested) => {
+                        tasks = push_document(
+                            rest,
+                            if flat {
+                                indentation
+                            } else {
+                                indentation + amount
+                            },
+                            flat,
+                            nested,
+                        );
+                    },
+                    Text(_, width) => {
+                        available = available - width;
+                        tasks = rest;
+                    },
+                    Line => if flat {
+                        available = available - 1;
+                        tasks = rest;
+                    } else {
+                        return true
+                    },
+                    HardLine => if flat {
+                        return false
+                    } else {
+                        return true
+                    },
+                    BreakLine => if flat {
+                        tasks = rest;
+                    } else {
+                        return true
+                    },
+                    Union(left, right) => if flat {
+                        tasks = push_document(rest, indentation, true, left);
+                    } else {
+                        let right_tasks = push_document(rest, indentation, false, right);
+                        fallbacks = FitFallbacks::Fallback(available, right_tasks, fallbacks);
+                        tasks = push_document(rest, indentation, false, left);
+                    },
+                    Flatten(nested) => {
+                        tasks = push_document(rest, indentation, true, nested);
+                    },
+                    Fill(values) => {
+                        tasks = push_fill(rest, indentation, flat, values, 0, false);
+                    },
+                },
+                Fill(indentation, flat, values, index, head_flat) => if flat {
+                    tasks = flat_fill_tasks(rest, indentation, values, index);
+                } else if index + 1 >= values.len() {
+                    tasks = push_document(rest, indentation, head_flat, values.get(index));
+                } else {
+                    let (left, right) = fill_choice_tasks(
+                        rest,
+                        indentation,
+                        values,
+                        index,
+                        head_flat,
+                    );
+                    fallbacks = FitFallbacks::Fallback(available, right, fallbacks);
+                    tasks = left;
+                },
+            },
+        }
+    };
+    false
+}
+
+fn write_line(output: std_text::StringBuilder, indentation: int) -> unit {
+    output.write_char('\n');
+    for _ in range(0, indentation) {
+        output.write_char(' ')
+    }
+}
+
+pub fn pretty(width: int, value: Doc) -> string {
+    let output = std_text::StringBuilder::new();
+    let mut column = 0;
+    let mut tasks = push_document(Tasks::Done, 0, false, value);
+    while true {
+        match tasks {
+            Done => return output.finish(),
+            More(task, rest) => match task {
+                Document(indentation, flat, current) => match current.node {
+                    Nil => {
+                        tasks = rest;
+                    },
+                    Append(left, right) => {
+                        tasks = append_tasks(rest, indentation, flat, left, right);
+                    },
+                    Nest(amount, nested) => {
+                        tasks = push_document(
+                            rest,
+                            if flat {
+                                indentation
+                            } else {
+                                indentation + amount
+                            },
+                            flat,
+                            nested,
+                        );
+                    },
+                    Text(content, content_width) => {
+                        output.write_string(content);
+                        column = column + content_width;
+                        tasks = rest;
+                    },
+                    Line => if flat {
+                        output.write_char(' ');
+                        column = column + 1;
+                        tasks = rest;
+                    } else {
+                        write_line(output, indentation);
+                        column = indentation;
+                        tasks = rest;
+                    },
+                    HardLine => {
+                        write_line(output, indentation);
+                        column = indentation;
+                        tasks = rest;
+                    },
+                    BreakLine => if flat {
+                        tasks = rest;
+                    } else {
+                        write_line(output, indentation);
+                        column = indentation;
+                        tasks = rest;
+                    },
+                    Union(left, right) => if flat {
+                        tasks = push_document(rest, indentation, true, left);
+                    } else {
+                        let left_tasks = push_document(rest, indentation, false, left);
+                        if fits(width - column, left_tasks) {
+                            tasks = push_document(rest, indentation, false, left);
+                        } else {
+                            tasks = push_document(rest, indentation, false, right);
+                        }
+                    },
+                    Flatten(nested) => {
+                        tasks = push_document(rest, indentation, true, nested);
+                    },
+                    Fill(values) => {
+                        tasks = push_fill(rest, indentation, flat, values, 0, false);
+                    },
+                },
+                Fill(indentation, flat, values, index, head_flat) => if flat {
+                    tasks = flat_fill_tasks(rest, indentation, values, index);
+                } else if index + 1 >= values.len() {
+                    tasks = push_document(rest, indentation, head_flat, values.get(index));
+                } else {
+                    let (left, right) = fill_choice_tasks(
+                        rest,
+                        indentation,
+                        values,
+                        index,
+                        head_flat,
+                    );
+                    if fits(width - column, left) {
+                        tasks = left;
+                    } else {
+                        tasks = right;
+                    }
+                },
+            },
+        }
+    };
+    output.finish()
+}
+
+pub fn layout(value: Doc) -> string {
+    pretty(-1, value)
+}
+
+impl Doc {
+    pub fn then(self: Doc, other: Doc) -> Doc {
+        append(self, other)
+    }
+
+    pub fn indented(self: Doc, indentation: int) -> Doc {
+        nest(indentation, self)
+    }
+
+    pub fn grouped(self: Doc) -> Doc {
+        group(self)
+    }
+
+    pub fn render(self: Doc, width: int) -> string {
+        pretty(width, self)
+    }
+}
