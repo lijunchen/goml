@@ -1,0 +1,347 @@
+package anf;
+
+use gomlc::ast;
+
+struct LicmJoinResult {
+    hoisted: Vec[LetBind],
+    value: JoinBind,
+}
+
+struct LicmBlockResult {
+    hoisted: Vec[LetBind],
+    value: Block,
+}
+
+fn licm_binary_is_total(value: ast::BinaryOp) -> bool {
+    match value {
+        Div | Rem | Shl | Shr => false,
+        Add | Sub | Mul | BitAnd | BitOr | BitXor | And | Or | Less | Greater | LessEq | GreaterEq | Eq | NotEq => true,
+    }
+}
+
+fn licm_assigned_contains(values: Vec[HashMap[string, unit]], name: string) -> bool {
+    for value in values {
+        if value.contains(name) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn licm_imm_is_stable(
+    value: Imm,
+    local: HashMap[string, unit],
+    invariant: HashMap[string, unit],
+    params: HashMap[string, unit],
+    assigned: Vec[HashMap[string, unit]],
+) -> bool {
+    match value {
+        Var { name, ty: _ } => !licm_assigned_contains(assigned, name) && !params.contains(name)
+            && (!local.contains(name) || invariant.contains(name)),
+        Callable { .. } | Prim { .. } | Tag { .. } => true,
+    }
+}
+
+fn licm_value_is_movable(
+    value: Value,
+    local: HashMap[string, unit],
+    invariant: HashMap[string, unit],
+    params: HashMap[string, unit],
+    assigned: Vec[HashMap[string, unit]],
+) -> bool {
+    match value {
+        Unary { expr, .. } | Cast { expr, .. } => {
+            licm_imm_is_stable(expr, local, invariant, params, assigned)
+        },
+        Binary { op, lhs, rhs, .. } => licm_binary_is_total(op)
+            && licm_imm_is_stable(lhs, local, invariant, params, assigned)
+            && licm_imm_is_stable(rhs, local, invariant, params, assigned),
+        Imm(_) | Constr { .. } | Tuple { .. } | Array { .. } | ConstrGet { .. } | Assign { .. } | Call {
+            ..,
+        } | ToDyn { .. } | DynCall { .. } | Go { .. } | Proj { .. } => false,
+    }
+}
+
+fn licm_collect_local_names(value: Block, result: HashMap[string, unit]) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(value) => {
+                result[value.name] = ();
+            },
+            Join(value) => licm_collect_local_names(value.body, result),
+            JoinRec(_) => (),
+        }
+    };
+    match value.term {
+        If { then_, else_, .. } => {
+            licm_collect_local_names(then_, result);
+            licm_collect_local_names(else_, result)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                licm_collect_local_names(arm.body, result)
+            };
+            match default {
+                Some(body) => licm_collect_local_names(body, result),
+                None => (),
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => (),
+    }
+}
+
+fn licm_collect_param_names(value: Block, result: HashMap[string, unit]) -> unit {
+    for bind in value.binds {
+        match bind {
+            Let(_) => (),
+            Join(value) => {
+                for param in value.params {
+                    result[param.0] = ();
+                };
+                licm_collect_param_names(value.body, result)
+            },
+            JoinRec(_) => (),
+        }
+    };
+    match value.term {
+        If { then_, else_, .. } => {
+            licm_collect_param_names(then_, result);
+            licm_collect_param_names(else_, result)
+        },
+        Match { arms, default, .. } => {
+            for arm in arms {
+                licm_collect_param_names(arm.body, result)
+            };
+            match default {
+                Some(body) => licm_collect_param_names(body, result),
+                None => (),
+            }
+        },
+        Return(_) | Jump { .. } | Unreachable { .. } => (),
+    }
+}
+
+fn licm_append_hoisted(target: Vec[LetBind], values: Vec[LetBind]) -> unit {
+    for value in values {
+        target.push(value)
+    }
+}
+
+fn licm_extract_term(
+    value: Term,
+    local: HashMap[string, unit],
+    invariant: HashMap[string, unit],
+    params: HashMap[string, unit],
+    assigned: Vec[HashMap[string, unit]],
+    hoisted: Vec[LetBind],
+) -> Term {
+    match value {
+        If { cond, then_, else_, ret_ty } => {
+            let then_result = licm_extract_block(then_, local, invariant, params, assigned);
+            licm_append_hoisted(hoisted, then_result.hoisted);
+            let else_result = licm_extract_block(else_, local, invariant, params, assigned);
+            licm_append_hoisted(hoisted, else_result.hoisted);
+            Term::If { cond, then_: then_result.value, else_: else_result.value, ret_ty }
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                let result = licm_extract_block(arm.body, local, invariant, params, assigned);
+                licm_append_hoisted(hoisted, result.hoisted);
+                lowered.push(Arm { lhs: arm.lhs, body: result.value })
+            };
+            Term::Match {
+                scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => {
+                        let result = licm_extract_block(body, local, invariant, params, assigned);
+                        licm_append_hoisted(hoisted, result.hoisted);
+                        Option::Some(result.value)
+                    },
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Return(value) => Term::Return(value),
+        Jump { target, args, ret_ty } => Term::Jump { target, args, ret_ty },
+        Unreachable { ty } => Term::Unreachable { ty },
+    }
+}
+
+fn licm_extract_block(
+    value: Block,
+    local: HashMap[string, unit],
+    invariant: HashMap[string, unit],
+    params: HashMap[string, unit],
+    assigned: Vec[HashMap[string, unit]],
+) -> LicmBlockResult {
+    let hoisted: Vec[LetBind] = Vec::[];
+    let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    for bind in value.binds {
+        match bind {
+            Let(binding) => if !licm_assigned_contains(assigned, binding.name)
+                && licm_value_is_movable(binding.value, local, invariant, params, assigned) {
+                invariant[binding.name] = ();
+                hoisted.push(binding)
+            } else {
+                binds.push(Bind::Let(binding))
+            },
+            Join(binding) => {
+                let result = licm_extract_block(binding.body, local, invariant, params, assigned);
+                licm_append_hoisted(hoisted, result.hoisted);
+                binds.push(
+                    Bind::Join(
+                        JoinBind {
+                            name: binding.name,
+                            role: binding.role,
+                            params: binding.params,
+                            ret_ty: binding.ret_ty,
+                            body: result.value,
+                        },
+                    ),
+                )
+            },
+            JoinRec(values) => binds.push(Bind::JoinRec(values)),
+        }
+    };
+    let term = licm_extract_term(value.term, local, invariant, params, assigned, hoisted);
+    LicmBlockResult { hoisted, value: Block { binds, term } }
+}
+
+fn licm_join(value: JoinBind, assigned: Vec[HashMap[string, unit]]) -> LicmJoinResult {
+    let local: HashMap[string, unit] = HashMap::{};
+    licm_collect_local_names(value.body, local);
+    let params: HashMap[string, unit] = HashMap::{};
+    for param in value.params {
+        params[param.0] = ();
+    };
+    licm_collect_param_names(value.body, params);
+    let invariant: HashMap[string, unit] = HashMap::{};
+    let result = licm_extract_block(value.body, local, invariant, params, assigned);
+    LicmJoinResult {
+        hoisted: result.hoisted,
+        value: JoinBind {
+            name: value.name,
+            role: value.role,
+            params: value.params,
+            ret_ty: value.ret_ty,
+            body: result.value,
+        },
+    }
+}
+
+fn licm_joinrec(values: Vec[JoinBind]) -> (Vec[LetBind], Vec[JoinBind]) {
+    let assigned: Vec[HashMap[string, unit]] = Vec::with_capacity(values.len());
+    for value in values {
+        assigned.push(assigned_names(value.body))
+    };
+    let hoisted: Vec[LetBind] = Vec::[];
+    let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
+    for value in values {
+        let result = licm_join(value, assigned);
+        for binding in result.hoisted {
+            hoisted.push(binding)
+        };
+        lowered.push(result.value)
+    };
+    (hoisted, lowered)
+}
+
+fn licm_term(value: Term) -> Term {
+    match value {
+        If { cond, then_, else_, ret_ty } => Term::If {
+            cond,
+            then_: licm_block(then_),
+            else_: licm_block(else_),
+            ret_ty,
+        },
+        Match { scrutinee, arms, default, ret_ty } => {
+            let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
+            for arm in arms {
+                lowered.push(Arm { lhs: arm.lhs, body: licm_block(arm.body) })
+            };
+            Term::Match {
+                scrutinee,
+                arms: lowered,
+                default: match default {
+                    Some(body) => Option::Some(licm_block(body)),
+                    None => Option::None,
+                },
+                ret_ty,
+            }
+        },
+        Return(value) => Term::Return(value),
+        Jump { target, args, ret_ty } => Term::Jump { target, args, ret_ty },
+        Unreachable { ty } => Term::Unreachable { ty },
+    }
+}
+
+fn licm_block(value: Block) -> Block {
+    let binds: Vec[Bind] = Vec::with_capacity(value.binds.len());
+    for bind in value.binds {
+        match bind {
+            Let(value) => binds.push(Bind::Let(value)),
+            Join(value) => binds.push(
+                Bind::Join(
+                    JoinBind {
+                        name: value.name,
+                        role: value.role,
+                        params: value.params,
+                        ret_ty: value.ret_ty,
+                        body: licm_block(value.body),
+                    },
+                ),
+            ),
+            JoinRec(values) => {
+                let nested: Vec[JoinBind] = Vec::with_capacity(values.len());
+                for value in values {
+                    nested.push(
+                        JoinBind {
+                            name: value.name,
+                            role: value.role,
+                            params: value.params,
+                            ret_ty: value.ret_ty,
+                            body: licm_block(value.body),
+                        },
+                    )
+                };
+                let lowered = licm_joinrec(nested);
+                for binding in lowered.0 {
+                    binds.push(Bind::Let(binding))
+                };
+                binds.push(Bind::JoinRec(lowered.1))
+            },
+        }
+    };
+    Block { binds, term: licm_term(value.term) }
+}
+
+fn licm_function(value: Function) -> Function {
+    Function {
+        name: value.name,
+        origin: value.origin,
+        root: value.root,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: licm_block(value.body),
+    }
+}
+
+pub fn licm(value: File) -> File {
+    let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
+    for function in value.functions {
+        functions.push(licm_function(function))
+    };
+    File {
+        functions,
+        enums: value.enums,
+        structs: value.structs,
+        type_instances: value.type_instances,
+        constants: value.constants,
+    }
+}
