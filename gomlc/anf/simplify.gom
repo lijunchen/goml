@@ -108,6 +108,7 @@ fn record_known_value(
     known: Vec[KnownBinding],
     name: string,
     value: Value,
+    ty: tast::Type,
     assigned: HashMap[string, unit],
 ) -> unit {
     if assigned.contains(name) {
@@ -117,12 +118,13 @@ fn record_known_value(
     };
     match value {
         Imm(value) => match value {
-            Var { name: source, ty: _ } => if assigned.contains(source) {
+            Var { name: source, ty: source_ty } => if assigned.contains(source)
+                || !tast::types_equal(source_ty, ty) {
                 ()
             } else {
                 known.push(KnownBinding { name, value: KnownValue::Alias(value) })
             },
-            _ => known.push(KnownBinding { name, value: KnownValue::Alias(value) }),
+            _ => (),
         },
         Constr { constructor, args, ty } => if imms_stable(args, assigned) {
             known.push(
@@ -517,7 +519,7 @@ fn simplify_known_block_with(
                     ty: value.ty,
                 };
                 binds.push(Bind::Let(lowered));
-                record_known_value(known, lowered.name, lowered.value, assigned)
+                record_known_value(known, lowered.name, lowered.value, lowered.ty, assigned)
             },
             Join(value) => binds.push(
                 Bind::Join(
