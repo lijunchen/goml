@@ -2,7 +2,6 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_utf8 "unicode/utf8"
 )
 
 func _goml_runtime_core_bool_to_string(x bool) string {
@@ -13,20 +12,15 @@ func _goml_runtime_core_bool_to_string(x bool) string {
     }
 }
 
+func _goml_runtime_core_string_get(s string, i int) rune {
+    return rune(s[i])
+}
+
 func _goml_runtime_core_char_to_string(x rune) string {
-    if !_goml_utf8.ValidRune(x) {
-        panic("invalid char")
-    }
     return string(x)
 }
 
 func _goml_runtime_core_char_from_uint32(value uint32) Tuple2_4bool_4char {
-    if value > 1114111 || value >= 55296 && value <= 57343 {
-        return Tuple2_4bool_4char{
-            _0: false,
-            _1: 0,
-        }
-    }
     return Tuple2_4bool_4char{
         _0: true,
         _1: rune(value),
@@ -90,234 +84,234 @@ type Some struct {
 func (_ Some) isOption__char() {}
 
 func show_u8(value__0 uint8) struct{} {
-    var inline405 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(value__0)
-    _goml_runtime_core_string_println(inline405)
+    var inline445 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(value__0)
+    _goml_runtime_core_string_println(inline445)
     return struct{}{}
 }
 
 func unsigned_ops() struct{} {
-    var t240_lhs uint8 = 13
-    var t240_rhs uint8 = 5
-    var t240 uint8 = t240_lhs % t240_rhs
-    show_u8(t240)
-    var t241_lhs uint8 = 12
-    var t241_rhs uint8 = 10
-    var t241 uint8 = t241_lhs & t241_rhs
-    show_u8(t241)
-    var t242_lhs uint8 = 12
-    var t242_rhs uint8 = 3
-    var t242 uint8 = t242_lhs | t242_rhs
-    show_u8(t242)
-    var t243_lhs uint8 = 12
-    var t243_rhs uint8 = 10
-    var t243 uint8 = t243_lhs ^ t243_rhs
-    show_u8(t243)
-    var t244_lhs uint8 = 1
-    var t244_rhs int = 7
-    var t244 uint8 = t244_lhs << t244_rhs
-    show_u8(t244)
-    var t245_lhs uint8 = 128
-    var t245_rhs int = 7
-    var t245 uint8 = t245_lhs >> t245_rhs
-    println__T_uint8(t245)
-    var t246_operand uint8 = 0
-    var t246 uint8 = ^t246_operand
-    println__T_uint8(t246)
-    var t247_lhs uint8 = 1
-    var t247_rhs int = 8
-    var t247 uint8 = t247_lhs << t247_rhs
-    println__T_uint8(t247)
-    var t248_lhs uint16 = 513
-    var t248_rhs uint16 = 256
-    var t248 uint16 = t248_lhs % t248_rhs
-    println__T_uint16(t248)
-    var t249_lhs uint16 = 3855
-    var t249_rhs uint16 = 255
-    var t249 uint16 = t249_lhs & t249_rhs
-    println__T_uint16(t249)
-    var t250_lhs uint16 = 3840
-    var t250_rhs uint16 = 15
-    var t250 uint16 = t250_lhs | t250_rhs
-    println__T_uint16(t250)
-    var t251_lhs uint16 = 43690
-    var t251_rhs uint16 = 3855
-    var t251 uint16 = t251_lhs ^ t251_rhs
-    println__T_uint16(t251)
-    var t252_lhs uint16 = 1
-    var t252_rhs int = 15
-    var t252 uint16 = t252_lhs << t252_rhs
-    println__T_uint16(t252)
-    var t253_lhs uint16 = 32768
-    var t253_rhs int = 15
-    var t253 uint16 = t253_lhs >> t253_rhs
-    println__T_uint16(t253)
-    var t254_operand uint16 = 0
-    var t254 uint16 = ^t254_operand
-    println__T_uint16(t254)
-    var t255_lhs uint32 = 1000000001
-    var t255_rhs uint32 = 1000
-    var t255 uint32 = t255_lhs % t255_rhs
-    println__T_uint32(t255)
-    var t256_lhs uint32 = 4042322160
-    var t256_rhs uint32 = 252645135
-    var t256 uint32 = t256_lhs & t256_rhs
-    println__T_uint32(t256)
-    var t257_lhs uint32 = 4042322160
-    var t257_rhs uint32 = 252645135
-    var t257 uint32 = t257_lhs | t257_rhs
-    println__T_uint32(t257)
-    var t258_lhs uint32 = 4042322160
-    var t258_rhs uint32 = 252645135
-    var t258 uint32 = t258_lhs ^ t258_rhs
-    println__T_uint32(t258)
-    var t259_lhs uint32 = 1
-    var t259_rhs int = 31
-    var t259 uint32 = t259_lhs << t259_rhs
-    println__T_uint32(t259)
-    var t260_lhs uint32 = 2147483648
-    var t260_rhs int = 31
-    var t260 uint32 = t260_lhs >> t260_rhs
-    println__T_uint32(t260)
-    var t261_operand uint32 = 0
-    var t261 uint32 = ^t261_operand
-    println__T_uint32(t261)
-    var t262_lhs uint64 = 1000000000001
-    var t262_rhs uint64 = 1000
-    var t262 uint64 = t262_lhs % t262_rhs
-    println__T_uint64(t262)
-    var t263_lhs uint64 = 17361641481138401520
-    var t263_rhs uint64 = 1085102592571150095
-    var t263 uint64 = t263_lhs & t263_rhs
-    println__T_uint64(t263)
-    var t264_lhs uint64 = 17361641481138401520
-    var t264_rhs uint64 = 1085102592571150095
-    var t264 uint64 = t264_lhs | t264_rhs
-    println__T_uint64(t264)
-    var t265_lhs uint64 = 17361641481138401520
-    var t265_rhs uint64 = 1085102592571150095
-    var t265 uint64 = t265_lhs ^ t265_rhs
-    println__T_uint64(t265)
-    var t266_lhs uint64 = 1
-    var t266_rhs int = 63
-    var t266 uint64 = t266_lhs << t266_rhs
-    println__T_uint64(t266)
-    var t267_lhs uint64 = 9223372036854775808
-    var t267_rhs int = 63
-    var t267 uint64 = t267_lhs >> t267_rhs
-    println__T_uint64(t267)
-    var t268_operand uint64 = 0
-    var t268 uint64 = ^t268_operand
-    println__T_uint64(t268)
+    var t262_lhs uint8 = 13
+    var t262_rhs uint8 = 5
+    var t262 uint8 = t262_lhs % t262_rhs
+    show_u8(t262)
+    var t263_lhs uint8 = 12
+    var t263_rhs uint8 = 10
+    var t263 uint8 = t263_lhs & t263_rhs
+    show_u8(t263)
+    var t264_lhs uint8 = 12
+    var t264_rhs uint8 = 3
+    var t264 uint8 = t264_lhs | t264_rhs
+    show_u8(t264)
+    var t265_lhs uint8 = 12
+    var t265_rhs uint8 = 10
+    var t265 uint8 = t265_lhs ^ t265_rhs
+    show_u8(t265)
+    var t266_lhs uint8 = 1
+    var t266_rhs int = 7
+    var t266 uint8 = t266_lhs << t266_rhs
+    show_u8(t266)
+    var t267_lhs uint8 = 128
+    var t267_rhs int = 7
+    var t267 uint8 = t267_lhs >> t267_rhs
+    println__T_uint8(t267)
+    var t268_operand uint8 = 0
+    var t268 uint8 = ^t268_operand
+    println__T_uint8(t268)
+    var t269_lhs uint8 = 1
+    var t269_rhs int = 8
+    var t269 uint8 = t269_lhs << t269_rhs
+    println__T_uint8(t269)
+    var t270_lhs uint16 = 513
+    var t270_rhs uint16 = 256
+    var t270 uint16 = t270_lhs % t270_rhs
+    println__T_uint16(t270)
+    var t271_lhs uint16 = 3855
+    var t271_rhs uint16 = 255
+    var t271 uint16 = t271_lhs & t271_rhs
+    println__T_uint16(t271)
+    var t272_lhs uint16 = 3840
+    var t272_rhs uint16 = 15
+    var t272 uint16 = t272_lhs | t272_rhs
+    println__T_uint16(t272)
+    var t273_lhs uint16 = 43690
+    var t273_rhs uint16 = 3855
+    var t273 uint16 = t273_lhs ^ t273_rhs
+    println__T_uint16(t273)
+    var t274_lhs uint16 = 1
+    var t274_rhs int = 15
+    var t274 uint16 = t274_lhs << t274_rhs
+    println__T_uint16(t274)
+    var t275_lhs uint16 = 32768
+    var t275_rhs int = 15
+    var t275 uint16 = t275_lhs >> t275_rhs
+    println__T_uint16(t275)
+    var t276_operand uint16 = 0
+    var t276 uint16 = ^t276_operand
+    println__T_uint16(t276)
+    var t277_lhs uint32 = 1000000001
+    var t277_rhs uint32 = 1000
+    var t277 uint32 = t277_lhs % t277_rhs
+    println__T_uint32(t277)
+    var t278_lhs uint32 = 4042322160
+    var t278_rhs uint32 = 252645135
+    var t278 uint32 = t278_lhs & t278_rhs
+    println__T_uint32(t278)
+    var t279_lhs uint32 = 4042322160
+    var t279_rhs uint32 = 252645135
+    var t279 uint32 = t279_lhs | t279_rhs
+    println__T_uint32(t279)
+    var t280_lhs uint32 = 4042322160
+    var t280_rhs uint32 = 252645135
+    var t280 uint32 = t280_lhs ^ t280_rhs
+    println__T_uint32(t280)
+    var t281_lhs uint32 = 1
+    var t281_rhs int = 31
+    var t281 uint32 = t281_lhs << t281_rhs
+    println__T_uint32(t281)
+    var t282_lhs uint32 = 2147483648
+    var t282_rhs int = 31
+    var t282 uint32 = t282_lhs >> t282_rhs
+    println__T_uint32(t282)
+    var t283_operand uint32 = 0
+    var t283 uint32 = ^t283_operand
+    println__T_uint32(t283)
+    var t284_lhs uint64 = 1000000000001
+    var t284_rhs uint64 = 1000
+    var t284 uint64 = t284_lhs % t284_rhs
+    println__T_uint64(t284)
+    var t285_lhs uint64 = 17361641481138401520
+    var t285_rhs uint64 = 1085102592571150095
+    var t285 uint64 = t285_lhs & t285_rhs
+    println__T_uint64(t285)
+    var t286_lhs uint64 = 17361641481138401520
+    var t286_rhs uint64 = 1085102592571150095
+    var t286 uint64 = t286_lhs | t286_rhs
+    println__T_uint64(t286)
+    var t287_lhs uint64 = 17361641481138401520
+    var t287_rhs uint64 = 1085102592571150095
+    var t287 uint64 = t287_lhs ^ t287_rhs
+    println__T_uint64(t287)
+    var t288_lhs uint64 = 1
+    var t288_rhs int = 63
+    var t288 uint64 = t288_lhs << t288_rhs
+    println__T_uint64(t288)
+    var t289_lhs uint64 = 9223372036854775808
+    var t289_rhs int = 63
+    var t289 uint64 = t289_lhs >> t289_rhs
+    println__T_uint64(t289)
+    var t290_operand uint64 = 0
+    var t290 uint64 = ^t290_operand
+    println__T_uint64(t290)
     return struct{}{}
 }
 
 func signed_ops() struct{} {
-    var t271_lhs int8 = -13
-    var t271_rhs int8 = 5
-    var t271 int8 = t271_lhs % t271_rhs
-    println__T_int8(t271)
-    var t272_lhs int8 = -8
-    var t272_rhs int = 2
-    var t272 int8 = t272_lhs >> t272_rhs
-    println__T_int8(t272)
-    var t273_lhs int8 = 1
-    var t273_rhs int = 6
-    var t273 int8 = t273_lhs << t273_rhs
-    println__T_int8(t273)
-    var t274_operand int8 = 0
-    var t274 int8 = ^t274_operand
-    println__T_int8(t274)
-    var t275_lhs int8 = -1
-    var t275_rhs int = 7
-    var t275 int8 = t275_lhs >> t275_rhs
-    println__T_int8(t275)
-    var t276_lhs int16 = -513
-    var t276_rhs int16 = 256
-    var t276 int16 = t276_lhs % t276_rhs
-    println__T_int16(t276)
-    var t277 int16 = -32767 - 1
-    var t278_rhs int = 15
-    var t278 int16 = t277 >> t278_rhs
-    println__T_int16(t278)
-    var t279_lhs int16 = 1
-    var t279_rhs int = 14
-    var t279 int16 = t279_lhs << t279_rhs
-    println__T_int16(t279)
-    var t280_operand int16 = 255
-    var t280 int16 = ^t280_operand
-    println__T_int16(t280)
-    var t281_lhs int32 = -1000000001
-    var t281_rhs int32 = 1000
-    var t281 int32 = t281_lhs % t281_rhs
-    println__T_int32(t281)
-    var t282 int32 = -2147483647 - 1
-    var t283_rhs int = 31
-    var t283 int32 = t282 >> t283_rhs
-    println__T_int32(t283)
-    var t284_lhs int32 = 1
-    var t284_rhs int = 30
-    var t284 int32 = t284_lhs << t284_rhs
-    println__T_int32(t284)
-    var t285_operand int32 = 65535
-    var t285 int32 = ^t285_operand
-    println__T_int32(t285)
-    var t286_lhs int64 = -1000000000001
-    var t286_rhs int64 = 1000
-    var t286 int64 = t286_lhs % t286_rhs
-    println__T_int64(t286)
-    var t287_lhs int64 = -9223372036854775807
-    var t287_rhs int = 62
-    var t287 int64 = t287_lhs >> t287_rhs
-    println__T_int64(t287)
-    var t288_lhs int64 = 1
-    var t288_rhs int = 62
-    var t288 int64 = t288_lhs << t288_rhs
-    println__T_int64(t288)
-    var t289_operand int64 = 4294967295
-    var t289 int64 = ^t289_operand
-    println__T_int64(t289)
+    var t293_lhs int8 = -13
+    var t293_rhs int8 = 5
+    var t293 int8 = t293_lhs % t293_rhs
+    println__T_int8(t293)
+    var t294_lhs int8 = -8
+    var t294_rhs int = 2
+    var t294 int8 = t294_lhs >> t294_rhs
+    println__T_int8(t294)
+    var t295_lhs int8 = 1
+    var t295_rhs int = 6
+    var t295 int8 = t295_lhs << t295_rhs
+    println__T_int8(t295)
+    var t296_operand int8 = 0
+    var t296 int8 = ^t296_operand
+    println__T_int8(t296)
+    var t297_lhs int8 = -1
+    var t297_rhs int = 7
+    var t297 int8 = t297_lhs >> t297_rhs
+    println__T_int8(t297)
+    var t298_lhs int16 = -513
+    var t298_rhs int16 = 256
+    var t298 int16 = t298_lhs % t298_rhs
+    println__T_int16(t298)
+    var t299 int16 = -32767 - 1
+    var t300_rhs int = 15
+    var t300 int16 = t299 >> t300_rhs
+    println__T_int16(t300)
+    var t301_lhs int16 = 1
+    var t301_rhs int = 14
+    var t301 int16 = t301_lhs << t301_rhs
+    println__T_int16(t301)
+    var t302_operand int16 = 255
+    var t302 int16 = ^t302_operand
+    println__T_int16(t302)
+    var t303_lhs int32 = -1000000001
+    var t303_rhs int32 = 1000
+    var t303 int32 = t303_lhs % t303_rhs
+    println__T_int32(t303)
+    var t304 int32 = -2147483647 - 1
+    var t305_rhs int = 31
+    var t305 int32 = t304 >> t305_rhs
+    println__T_int32(t305)
+    var t306_lhs int32 = 1
+    var t306_rhs int = 30
+    var t306 int32 = t306_lhs << t306_rhs
+    println__T_int32(t306)
+    var t307_operand int32 = 65535
+    var t307 int32 = ^t307_operand
+    println__T_int32(t307)
+    var t308_lhs int64 = -1000000000001
+    var t308_rhs int64 = 1000
+    var t308 int64 = t308_lhs % t308_rhs
+    println__T_int64(t308)
+    var t309_lhs int64 = -9223372036854775807
+    var t309_rhs int = 62
+    var t309 int64 = t309_lhs >> t309_rhs
+    println__T_int64(t309)
+    var t310_lhs int64 = 1
+    var t310_rhs int = 62
+    var t310 int64 = t310_lhs << t310_rhs
+    println__T_int64(t310)
+    var t311_operand int64 = 4294967295
+    var t311 int64 = ^t311_operand
+    println__T_int64(t311)
     return struct{}{}
 }
 
 func precedence() struct{} {
-    var t292_lhs uint8 = 3
-    var t292_rhs uint8 = 1
-    var t292 uint8 = t292_lhs & t292_rhs
-    var t293_lhs uint8 = 2
-    var t293 uint8 = t293_lhs ^ t292
-    var t294_lhs uint8 = 1
-    var t294 uint8 = t294_lhs | t293
-    println__T_uint8(t294)
-    var t295 int = 2 + 1
-    var t296_lhs uint8 = 1
-    var t296 uint8 = t296_lhs << t295
-    println__T_uint8(t296)
-    var t297_lhs int = 1
-    var t297_rhs int = 2
-    var t297 int = t297_lhs | t297_rhs
-    var t298 bool
-    var inline523 int = 3
-    var inline524 bool = t297 == inline523
-    t298 = inline524
-    var t299 string
-    var inline521 string = _goml_runtime_core_bool_to_string(t298)
-    t299 = inline521
-    var inline518 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t299)
-    _goml_runtime_core_string_println(inline518)
-    var t300_lhs int = 8
-    var t300_rhs int = 1
-    var t300 int = t300_lhs >> t300_rhs
-    var t301 bool = t300 < 5
-    var t302 string
-    var inline516 string = _goml_runtime_core_bool_to_string(t301)
-    t302 = inline516
-    var inline513 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t302)
-    _goml_runtime_core_string_println(inline513)
-    var t303_operand uint8 = 1
-    var t303 uint8 = ^t303_operand
-    var t304_rhs uint8 = 15
-    var t304 uint8 = t303 & t304_rhs
-    println__T_uint8(t304)
+    var t314_lhs uint8 = 3
+    var t314_rhs uint8 = 1
+    var t314 uint8 = t314_lhs & t314_rhs
+    var t315_lhs uint8 = 2
+    var t315 uint8 = t315_lhs ^ t314
+    var t316_lhs uint8 = 1
+    var t316 uint8 = t316_lhs | t315
+    println__T_uint8(t316)
+    var t317 int = 2 + 1
+    var t318_lhs uint8 = 1
+    var t318 uint8 = t318_lhs << t317
+    println__T_uint8(t318)
+    var t319_lhs int = 1
+    var t319_rhs int = 2
+    var t319 int = t319_lhs | t319_rhs
+    var t320 bool
+    var inline563 int = 3
+    var inline564 bool = t319 == inline563
+    t320 = inline564
+    var t321 string
+    var inline561 string = _goml_runtime_core_bool_to_string(t320)
+    t321 = inline561
+    var inline558 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t321)
+    _goml_runtime_core_string_println(inline558)
+    var t322_lhs int = 8
+    var t322_rhs int = 1
+    var t322 int = t322_lhs >> t322_rhs
+    var t323 bool = t322 < 5
+    var t324 string
+    var inline556 string = _goml_runtime_core_bool_to_string(t323)
+    t324 = inline556
+    var inline553 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t324)
+    _goml_runtime_core_string_println(inline553)
+    var t325_operand uint8 = 1
+    var t325 uint8 = ^t325_operand
+    var t326_rhs uint8 = 15
+    var t326 uint8 = t325 & t326_rhs
+    println__T_uint8(t326)
     return struct{}{}
 }
 
@@ -335,64 +329,64 @@ func casts() struct{} {
     var sixty_five__18 uint8 = 65
     var max_u32__19 uint32 = 4294967295
     var three_hundred__20 uint16 = 300
-    var t307 uint8 = uint8(uint16(five_eleven__8))
-    println__T_uint8(t307)
-    var t308 uint8 = uint8(uint16(two_fifty_six__9))
-    println__T_uint8(t308)
-    var t309 uint8 = uint8(int16(negative_one_i16__10))
-    println__T_uint8(t309)
-    var t310 int8 = int8(uint8(two_fifty_five__11))
-    println__T_int8(t310)
-    var t311 int8 = int8(uint8(one_twenty_eight__12))
-    println__T_int8(t311)
-    var t312 int8 = int8(int16(negative_one_twenty_nine__13))
-    println__T_int8(t312)
-    var t313 int16 = int16(uint16(max_u16__14))
-    println__T_int16(t313)
-    var t314 uint16 = uint16(int32(negative_one_i32__15))
-    println__T_uint16(t314)
-    var t315 uint64 = uint64(int8(negative_one_i8__16))
-    println__T_uint64(t315)
-    var t316 int32 = int32(uint64(max_u64__17))
-    println__T_int32(t316)
-    var t317 uint32 = uint32(uint8(sixty_five__18))
-    println__T_uint32(t317)
-    var t318 int64 = int64(uint32(max_u32__19))
-    println__T_int64(t318)
-    var t319_source rune = 65
-    var t319 uint32 = uint32(rune(t319_source))
-    println__T_uint32(t319)
-    var mtmp216 Option__char
-    var inline541 uint32 = 128512
-    var inline542 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(inline541)
-    var inline543 bool = inline542._0
-    var inline544 rune = inline542._1
-    if inline543 {
-        var inline547 Option__char = Some{
-            _0: inline544,
+    var t329 uint8 = uint8(uint16(five_eleven__8))
+    println__T_uint8(t329)
+    var t330 uint8 = uint8(uint16(two_fifty_six__9))
+    println__T_uint8(t330)
+    var t331 uint8 = uint8(int16(negative_one_i16__10))
+    println__T_uint8(t331)
+    var t332 int8 = int8(uint8(two_fifty_five__11))
+    println__T_int8(t332)
+    var t333 int8 = int8(uint8(one_twenty_eight__12))
+    println__T_int8(t333)
+    var t334 int8 = int8(int16(negative_one_twenty_nine__13))
+    println__T_int8(t334)
+    var t335 int16 = int16(uint16(max_u16__14))
+    println__T_int16(t335)
+    var t336 uint16 = uint16(int32(negative_one_i32__15))
+    println__T_uint16(t336)
+    var t337 uint64 = uint64(int8(negative_one_i8__16))
+    println__T_uint64(t337)
+    var t338 int32 = int32(uint64(max_u64__17))
+    println__T_int32(t338)
+    var t339 uint32 = uint32(uint8(sixty_five__18))
+    println__T_uint32(t339)
+    var t340 int64 = int64(uint32(max_u32__19))
+    println__T_int64(t340)
+    var t341_source rune = 65
+    var t341 uint32 = uint32(rune(t341_source))
+    println__T_uint32(t341)
+    var mtmp238 Option__char
+    var inline581 uint32 = 128512
+    var inline582 bool = utf8_valid_scalar(inline581)
+    if inline582 {
+        var inline583 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(inline581)
+        var inline585 rune = inline583._1
+        var inline587 Option__char = Some{
+            _0: inline585,
         }
-        mtmp216 = inline547
+        mtmp238 = inline587
     } else {
-        mtmp216 = None{}
+        mtmp238 = None{}
     }
-    switch mtmp216.(type) {
+    switch mtmp238.(type) {
     case None:
-        var inline530 string = "invalid"
-        var inline531 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline530)
-        _goml_runtime_core_string_println(inline531)
+        var inline570 string = "invalid"
+        var inline571 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline570)
+        _goml_runtime_core_string_println(inline571)
     case Some:
-        var x217 rune = mtmp216.(Some)._0
-        var t325 string
-        var inline537 string = _goml_runtime_core_char_to_string(x217)
-        t325 = inline537
-        var inline534 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t325)
-        _goml_runtime_core_string_println(inline534)
+        var x239 rune = mtmp238.(Some)._0
+        var t347 string
+        var inline577 string = char_to_string(x239)
+        t347 = inline577
+        var inline574 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t347)
+        _goml_runtime_core_string_println(inline574)
     default:
         panic("non-exhaustive match")
     }
-    var t321 uint8 = uint8(uint16(three_hundred__20))
-    var t322 uint32 = uint32(uint8(t321))
-    println__T_uint32(t322)
+    var t343 uint8 = uint8(uint16(three_hundred__20))
+    var t344 uint32 = uint32(uint8(t343))
+    println__T_uint32(t344)
     return struct{}{}
 }
 
@@ -401,93 +395,138 @@ func main0() struct{} {
     signed_ops()
     precedence()
     casts()
-    var t335 uint8
-    var inline577 uint8 = 10
-    var inline578 uint8 = ^inline577
-    var inline579_rhs uint8 = 15
-    var inline579 uint8 = inline578 & inline579_rhs
-    var inline580_lhs uint8 = 1
-    var inline580_rhs int = 4
-    var inline580 uint8 = inline580_lhs << inline580_rhs
-    var inline581_rhs uint8 = 31
-    var inline581 uint8 = inline580 % inline581_rhs
-    var inline582 uint8 = inline579 | inline581
-    t335 = inline582
-    println__T_uint8(t335)
+    var t357 uint8
+    var inline617 uint8 = 10
+    var inline618 uint8 = ^inline617
+    var inline619_rhs uint8 = 15
+    var inline619 uint8 = inline618 & inline619_rhs
+    var inline620_lhs uint8 = 1
+    var inline620_rhs int = 4
+    var inline620 uint8 = inline620_lhs << inline620_rhs
+    var inline621_rhs uint8 = 31
+    var inline621 uint8 = inline620 % inline621_rhs
+    var inline622 uint8 = inline619 | inline621
+    t357 = inline622
+    println__T_uint8(t357)
     return struct{}{}
 }
 
-func println__T_uint8(value__1 uint8) struct{} {
-    var t338 string
-    var inline584 string = _goml_runtime_core_uint8_to_string(value__1)
-    t338 = inline584
-    _goml_runtime_core_string_println(t338)
+func println__T_uint8(value__31 uint8) struct{} {
+    var t360 string
+    var inline624 string = _goml_runtime_core_uint8_to_string(value__31)
+    t360 = inline624
+    _goml_runtime_core_string_println(t360)
     return struct{}{}
 }
 
-func println__T_uint16(value__1 uint16) struct{} {
-    var t341 string
-    var inline586 string = _goml_runtime_core_uint16_to_string(value__1)
-    t341 = inline586
-    _goml_runtime_core_string_println(t341)
+func println__T_uint16(value__31 uint16) struct{} {
+    var t363 string
+    var inline626 string = _goml_runtime_core_uint16_to_string(value__31)
+    t363 = inline626
+    _goml_runtime_core_string_println(t363)
     return struct{}{}
 }
 
-func println__T_uint32(value__1 uint32) struct{} {
-    var t344 string
-    var inline588 string = _goml_runtime_core_uint32_to_string(value__1)
-    t344 = inline588
-    _goml_runtime_core_string_println(t344)
+func println__T_uint32(value__31 uint32) struct{} {
+    var t366 string
+    var inline628 string = _goml_runtime_core_uint32_to_string(value__31)
+    t366 = inline628
+    _goml_runtime_core_string_println(t366)
     return struct{}{}
 }
 
-func println__T_uint64(value__1 uint64) struct{} {
-    var t347 string
-    var inline590 string = _goml_runtime_core_uint64_to_string(value__1)
-    t347 = inline590
-    _goml_runtime_core_string_println(t347)
+func println__T_uint64(value__31 uint64) struct{} {
+    var t369 string
+    var inline630 string = _goml_runtime_core_uint64_to_string(value__31)
+    t369 = inline630
+    _goml_runtime_core_string_println(t369)
     return struct{}{}
 }
 
-func println__T_int8(value__1 int8) struct{} {
-    var t350 string
-    var inline592 string = _goml_runtime_core_int8_to_string(value__1)
-    t350 = inline592
-    _goml_runtime_core_string_println(t350)
+func println__T_int8(value__31 int8) struct{} {
+    var t372 string
+    var inline632 string = _goml_runtime_core_int8_to_string(value__31)
+    t372 = inline632
+    _goml_runtime_core_string_println(t372)
     return struct{}{}
 }
 
-func println__T_int16(value__1 int16) struct{} {
-    var t353 string
-    var inline594 string = _goml_runtime_core_int16_to_string(value__1)
-    t353 = inline594
-    _goml_runtime_core_string_println(t353)
+func println__T_int16(value__31 int16) struct{} {
+    var t375 string
+    var inline634 string = _goml_runtime_core_int16_to_string(value__31)
+    t375 = inline634
+    _goml_runtime_core_string_println(t375)
     return struct{}{}
 }
 
-func println__T_int32(value__1 int32) struct{} {
-    var t356 string
-    var inline596 string = _goml_runtime_core_int32_to_string(value__1)
-    t356 = inline596
-    _goml_runtime_core_string_println(t356)
+func println__T_int32(value__31 int32) struct{} {
+    var t378 string
+    var inline636 string = _goml_runtime_core_int32_to_string(value__31)
+    t378 = inline636
+    _goml_runtime_core_string_println(t378)
     return struct{}{}
 }
 
-func println__T_int64(value__1 int64) struct{} {
-    var t359 string
-    var inline598 string = _goml_runtime_core_int64_to_string(value__1)
-    t359 = inline598
-    _goml_runtime_core_string_println(t359)
+func println__T_int64(value__31 int64) struct{} {
+    var t381 string
+    var inline638 string = _goml_runtime_core_int64_to_string(value__31)
+    t381 = inline638
+    _goml_runtime_core_string_println(t381)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__45 uint8) string {
-    var t380 string = _goml_runtime_core_uint8_to_string(self__45)
-    return t380
+func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__74 uint8) string {
+    var t403 string = _goml_runtime_core_uint8_to_string(self__74)
+    return t403
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
+}
+
+func utf8_valid_scalar(value__4 uint32) bool {
+    var t431 bool = value__4 <= 1114111
+    if t431 {
+        var t435 bool = value__4 >= 55296
+        var jp433 bool
+        if t435 {
+            var t436 bool = value__4 <= 57343
+            jp433 = t436
+        } else {
+            jp433 = false
+        }
+        var t434 bool = !jp433
+        return t434
+    } else {
+        return false
+    }
+}
+
+func char_to_string(value__29 rune) string {
+    var t441 uint32 = uint32(rune(value__29))
+    var t442 bool
+    var inline653 bool = t441 <= 1114111
+    if inline653 {
+        var inline654 bool = t441 >= 55296
+        var inline656 bool
+        if inline654 {
+            var inline658 bool = t441 <= 57343
+            inline656 = inline658
+        } else {
+            inline656 = false
+        }
+        var inline657 bool = !inline656
+        t442 = inline657
+    } else {
+        t442 = false
+    }
+    if t442 {
+        var t443 string = _goml_runtime_core_char_to_string(value__29)
+        return t443
+    } else {
+        _goml_runtime_core_string_get("", -1)
+        return ""
+    }
 }
 
 func main() {

@@ -34,60 +34,60 @@ func main0() struct{} {
     var quot__10 int8 = a__4 / c__6
     var neg__11 int8 = -b__5
     var less__12 bool = b__5 < a__4
-    var inline241 string = "a="
-    var inline242 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(a__4)
-    var inline243 string = inline241 + inline242
-    println__T_string(inline243)
-    var inline236 string = "b="
-    var inline237 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(b__5)
-    var inline238 string = inline236 + inline237
-    println__T_string(inline238)
-    var inline231 string = "c="
-    var inline232 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(c__6)
-    var inline233 string = inline231 + inline232
-    println__T_string(inline233)
-    var inline226 string = "sum="
-    var inline227 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(sum__7)
-    var inline228 string = inline226 + inline227
-    println__T_string(inline228)
-    var inline221 string = "diff="
-    var inline222 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(diff__8)
-    var inline223 string = inline221 + inline222
-    println__T_string(inline223)
-    var inline216 string = "prod="
-    var inline217 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(prod__9)
-    var inline218 string = inline216 + inline217
-    println__T_string(inline218)
-    var inline211 string = "quot="
-    var inline212 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(quot__10)
-    var inline213 string = inline211 + inline212
-    println__T_string(inline213)
-    var inline206 string = "neg="
-    var inline207 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(neg__11)
-    var inline208 string = inline206 + inline207
-    println__T_string(inline208)
-    var inline201 string = "b<a="
-    var inline202 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less__12)
-    var inline203 string = inline201 + inline202
-    println__T_string(inline203)
+    var inline263 string = "a="
+    var inline264 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(a__4)
+    var inline265 string = inline263 + inline264
+    println__T_string(inline265)
+    var inline258 string = "b="
+    var inline259 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(b__5)
+    var inline260 string = inline258 + inline259
+    println__T_string(inline260)
+    var inline253 string = "c="
+    var inline254 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(c__6)
+    var inline255 string = inline253 + inline254
+    println__T_string(inline255)
+    var inline248 string = "sum="
+    var inline249 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(sum__7)
+    var inline250 string = inline248 + inline249
+    println__T_string(inline250)
+    var inline243 string = "diff="
+    var inline244 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(diff__8)
+    var inline245 string = inline243 + inline244
+    println__T_string(inline245)
+    var inline238 string = "prod="
+    var inline239 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(prod__9)
+    var inline240 string = inline238 + inline239
+    println__T_string(inline240)
+    var inline233 string = "quot="
+    var inline234 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(quot__10)
+    var inline235 string = inline233 + inline234
+    println__T_string(inline235)
+    var inline228 string = "neg="
+    var inline229 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(neg__11)
+    var inline230 string = inline228 + inline229
+    println__T_string(inline230)
+    var inline223 string = "b<a="
+    var inline224 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less__12)
+    var inline225 string = inline223 + inline224
+    println__T_string(inline225)
     return struct{}{}
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t180 string
-    t180 = value__1
-    _goml_runtime_core_string_println(t180)
+func println__T_string(value__31 string) struct{} {
+    var t202 string
+    t202 = value__31
+    _goml_runtime_core_string_println(t202)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__41 int8) string {
-    var t184 string = _goml_runtime_core_int8_to_string(self__41)
-    return t184
+func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__70 int8) string {
+    var t206 string = _goml_runtime_core_int8_to_string(self__70)
+    return t206
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var t187 string = _goml_runtime_core_bool_to_string(self__37)
-    return t187
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
+    var t209 string = _goml_runtime_core_bool_to_string(self__66)
+    return t209
 }
 
 func main() {

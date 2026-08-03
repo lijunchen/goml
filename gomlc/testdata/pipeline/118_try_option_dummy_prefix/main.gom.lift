@@ -8,14 +8,14 @@ fn cut_prefix(case_id/0: int32) -> Option__string {
 
 fn trim_go(case_id/1: int32) -> Option__string {
   let suffix/2 =
-    let mtmp155 = cut_prefix(case_id/1) in
-    match mtmp155 {
+    let mtmp177 = cut_prefix(case_id/1) in
+    match mtmp177 {
       Option__string::None => {
         return Option__string::None
       },
-      Option__string::Some(x156) => {
-        let x156 = Option__string::Some._0(mtmp155) in
-        let try_value/13 = x156 in
+      Option__string::Some(x178) => {
+        let x178 = Option__string::Some._0(mtmp177) in
+        let try_value/13 = x178 in
         try_value/13
       },
     } in
@@ -27,28 +27,28 @@ fn show(opt/3: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x157) => {
-      let x157 = Option__string::Some._0(opt/3) in
-      let value/4 = x157 in
+    Option__string::Some(x179) => {
+      let x179 = Option__string::Some._0(opt/3) in
+      let value/4 = x179 in
       ("some " + value/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild158 = println__T_string(show(trim_go(0))) in
-  let _wild159 = println__T_string(show(trim_go(1))) in
+  let _wild180 = println__T_string(show(trim_go(0))) in
+  let _wild181 = println__T_string(show(trim_go(1))) in
   ()
 }
 
-fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  @intrinsic(eq.primitive)(self/65, other/66)
+fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
+  @intrinsic(eq.primitive)(self/94, other/95)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

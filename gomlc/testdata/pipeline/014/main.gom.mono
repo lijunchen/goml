@@ -1,15 +1,15 @@
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
   {
-    let x155 = x/0.0 in
-    let x156 = x/0.1 in
-    match x156 {
+    let x177 = x/0.0 in
+    let x178 = x/0.1 in
+    match x178 {
       true => {
         {
-          let x157 = y/1.0 in
-          let x158 = y/1.1 in
-          match x158 {
+          let x179 = y/1.0 in
+          let x180 = y/1.1 in
+          match x180 {
             true => {
-              match x157 {
+              match x179 {
                 true => {
                   println__T_string("case4")
                 },
@@ -25,14 +25,14 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
         }
       },
       false => {
-        match x155 {
+        match x177 {
           true => {
             {
-              let x159 = y/1.0 in
-              let x160 = y/1.1 in
-              match x160 {
+              let x181 = y/1.0 in
+              let x182 = y/1.1 in
+              match x182 {
                 true => {
-                  match x159 {
+                  match x181 {
                     true => {
                       println__T_string("case2")
                     },
@@ -49,11 +49,11 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
           },
           false => {
             {
-              let x161 = y/1.0 in
-              let x162 = y/1.1 in
-              match x162 {
+              let x183 = y/1.0 in
+              let x184 = y/1.1 in
+              match x184 {
                 true => {
-                  match x161 {
+                  match x183 {
                     true => {
                       println__T_string("case4")
                     },
@@ -75,13 +75,13 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
 }
 
 fn main() -> unit {
-  let mtmp163 = test_nested_match((true, false), (false, true)) in
+  let mtmp185 = test_nested_match((true, false), (false, true)) in
   {
-    let mtmp164 = test_nested_match((true, false), (true, false)) in
+    let mtmp186 = test_nested_match((true, false), (true, false)) in
     {
-      let mtmp165 = test_nested_match((false, true), (false, true)) in
+      let mtmp187 = test_nested_match((false, true), (false, true)) in
       {
-        let mtmp166 = test_nested_match((false, true), (true, false)) in
+        let mtmp188 = test_nested_match((false, true), (true, false)) in
         {
           ()
         }
@@ -90,10 +90,10 @@ fn main() -> unit {
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

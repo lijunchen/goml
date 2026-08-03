@@ -34,28 +34,28 @@ const (
 )
 
 func main0() struct{} {
-    var t159 string
-    var inline194 string = _goml_runtime_core_int_to_string(answer)
-    t159 = inline194
-    var inline191 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t159)
-    _goml_runtime_core_string_println(inline191)
-    var t160 string
-    var inline189 string = _goml_runtime_core_uint8_to_string(mask)
-    t160 = inline189
-    var inline186 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t160)
-    _goml_runtime_core_string_println(inline186)
-    var inline183 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(greeting)
-    _goml_runtime_core_string_println(inline183)
-    var t161 string
-    var inline181 string = _goml_runtime_core_bool_to_string(enabled)
-    t161 = inline181
-    var inline178 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t161)
-    _goml_runtime_core_string_println(inline178)
+    var t181 string
+    var inline216 string = _goml_runtime_core_int_to_string(answer)
+    t181 = inline216
+    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t181)
+    _goml_runtime_core_string_println(inline213)
+    var t182 string
+    var inline211 string = _goml_runtime_core_uint8_to_string(mask)
+    t182 = inline211
+    var inline208 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
+    _goml_runtime_core_string_println(inline208)
+    var inline205 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(greeting)
+    _goml_runtime_core_string_println(inline205)
+    var t183 string
+    var inline203 string = _goml_runtime_core_bool_to_string(enabled)
+    t183 = inline203
+    var inline200 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t183)
+    _goml_runtime_core_string_println(inline200)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

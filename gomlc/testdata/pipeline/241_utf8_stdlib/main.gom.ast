@@ -1,0 +1,63 @@
+package main;
+fn check_utf8(bytes: Vec[byte], expected: bool) -> unit {
+    let expected_length = bytes.len();
+    let (valid, value) = string_from_utf8(bytes);
+    println(valid == expected);
+    if valid {
+        {
+            println(value.byte_len() == expected_length)
+        }
+    } else {
+        {
+            println(value == "")
+        }
+    }
+}
+
+fn check_scalar(bytes: Vec[byte], expected: uint32, expected_width: int) -> unit {
+    let (valid, value) = string_from_utf8(bytes);
+    println(valid);
+    match value.decode_at(0) {
+        Some(decoded) =>
+          {
+              let (character, width) = decoded;
+              println(character as uint32 == expected);
+              println(width == expected_width)
+          },
+        None =>
+          {
+              println(false);
+              println(false)
+          },
+    }
+}
+
+fn main() -> unit {
+    check_utf8(Vec::[], true);
+    check_utf8(Vec::[0], true);
+    check_utf8(Vec::[127], true);
+    check_scalar(Vec::[194, 128], 128, 2);
+    check_scalar(Vec::[223, 191], 2047, 2);
+    check_scalar(Vec::[224, 160, 128], 2048, 3);
+    check_scalar(Vec::[237, 159, 191], 55295, 3);
+    check_scalar(Vec::[238, 128, 128], 57344, 3);
+    check_scalar(Vec::[239, 191, 189], 65533, 3);
+    check_scalar(Vec::[239, 191, 191], 65535, 3);
+    check_scalar(Vec::[240, 144, 128, 128], 65536, 4);
+    check_scalar(Vec::[244, 143, 191, 191], 1114111, 4);
+    check_utf8(Vec::[128], false);
+    check_utf8(Vec::[191], false);
+    check_utf8(Vec::[192, 128], false);
+    check_utf8(Vec::[193, 191], false);
+    check_utf8(Vec::[194], false);
+    check_utf8(Vec::[194, 127], false);
+    check_utf8(Vec::[224, 159, 191], false);
+    check_utf8(Vec::[225, 128], false);
+    check_utf8(Vec::[225, 128, 127], false);
+    check_utf8(Vec::[237, 160, 128], false);
+    check_utf8(Vec::[240, 143, 191, 191], false);
+    check_utf8(Vec::[240, 144, 128], false);
+    check_utf8(Vec::[244, 144, 128, 128], false);
+    check_utf8(Vec::[245, 128, 128, 128], false)
+}
+

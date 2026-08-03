@@ -8,16 +8,16 @@ fn parse(flag/0: bool) -> Result__int32__string {
 
 fn compute(flag/1: bool) -> Result__int32__string {
   let value/2 =
-    let mtmp155 = parse(flag/1) in
-    match mtmp155 {
-      Result__int32__string::Err(x156) => {
-        let x156 = Result__int32__string::Err._0(mtmp155) in
-        let try_residual/12 = x156 in
+    let mtmp177 = parse(flag/1) in
+    match mtmp177 {
+      Result__int32__string::Err(x178) => {
+        let x178 = Result__int32__string::Err._0(mtmp177) in
+        let try_residual/12 = x178 in
         return Result__int32__string::Err(try_residual/12)
       },
-      Result__int32__string::Ok(x157) => {
-        let x157 = Result__int32__string::Ok._0(mtmp155) in
-        let try_value/12 = x157 in
+      Result__int32__string::Ok(x179) => {
+        let x179 = Result__int32__string::Ok._0(mtmp177) in
+        let try_value/12 = x179 in
         try_value/12
       },
     } in
@@ -26,32 +26,32 @@ fn compute(flag/1: bool) -> Result__int32__string {
 
 fn show(value/3: Result__int32__string) -> string {
   match value/3 {
-    Result__int32__string::Err(x158) => {
-      let x158 = Result__int32__string::Err._0(value/3) in
-      let error/5 = x158 in
+    Result__int32__string::Err(x180) => {
+      let x180 = Result__int32__string::Err._0(value/3) in
+      let error/5 = x180 in
       error/5
     },
-    Result__int32__string::Ok(x159) => {
-      let x159 = Result__int32__string::Ok._0(value/3) in
-      let value/4 = x159 in
+    Result__int32__string::Ok(x181) => {
+      let x181 = Result__int32__string::Ok._0(value/3) in
+      let value/4 = x181 in
       inherent#int32#int32#to_string(value/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild160 = println__T_string(show(compute(true))) in
+  let _wild182 = println__T_string(show(compute(true))) in
   println__T_string(show(compute(false)))
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

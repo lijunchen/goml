@@ -6,7 +6,7 @@ fn main() -> unit {
       (@runtime(core.int_to_string) : (int) -> string)((native/0 : int)) +
         (@runtime(core.int8_to_string) : (int8) -> string)((small/1 : int8)) +
         (@runtime(core.uint8_to_string) : (uint8) -> string)((unsigned/2 : uint8)) +
-        (@runtime(core.string_byte_slice) : (string, int, int) -> string)("abcd", 1, 3);
+        (string_byte_slice : (string, int, int) -> string)("abcd", 1, 3);
     let value/4: Ref[int32] = (@intrinsic(ref.new) : (int32) -> Ref[int32])(1);
     (@intrinsic(ref.set) : (Ref[int32], int32) -> unit)((value/4 : Ref[int32]), 2);
     let same/5: bool =

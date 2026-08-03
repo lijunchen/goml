@@ -1,12 +1,12 @@
 fn trait_impl#ToString#Point#to_string(self/0: Point) -> string {
-  let mtmp155 = self/0 in
+  let mtmp177 = self/0 in
   {
-    let x156 = Point.x(mtmp155) in
-    let x157 = Point.y(mtmp155) in
+    let x178 = Point.x(mtmp177) in
+    let x179 = Point.y(mtmp177) in
     {
-      let y/2 = x157 in
+      let y/2 = x179 in
       {
-        let x/1 = x156 in
+        let x/1 = x178 in
         {
           (((((("Point { " + "x: ") + inherent#int32#int32#to_string(x/1)) + ", ") + "y: ") +
             inherent#int32#int32#to_string(y/2)) +
@@ -22,14 +22,14 @@ fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
     Message::Quit => {
       "Message::Quit"
     },
-    Message::Move(x158, x159) => {
+    Message::Move(x180, x181) => {
       {
-        let x158 = Message::Move._0(self/3) in
-        let x159 = Message::Move._1(self/3) in
+        let x180 = Message::Move._0(self/3) in
+        let x181 = Message::Move._1(self/3) in
         {
-          let __field1/5 = x159 in
+          let __field1/5 = x181 in
           {
-            let __field0/4 = x158 in
+            let __field0/4 = x180 in
             (((("Message::Move(" + inherent#int32#int32#to_string(__field0/4)) + ", ") +
               inherent#int32#int32#to_string(__field1/5)) +
               ")")
@@ -37,11 +37,11 @@ fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
         }
       }
     },
-    Message::Write(x160) => {
+    Message::Write(x182) => {
       {
-        let x160 = Message::Write._0(self/3) in
+        let x182 = Message::Write._0(self/3) in
         {
-          let __field0/6 = x160 in
+          let __field0/6 = x182 in
           (("Message::Write(" + __field0/6) + ")")
         }
       }
@@ -55,20 +55,20 @@ fn main() -> unit {
   let mv/9 = trait_impl#ToString#Message#to_string(Message::Move(1, 2)) in
   let text/10 = trait_impl#ToString#Message#to_string(Message::Write("done")) in
   let exit/11 = trait_impl#ToString#Message#to_string(Message::Quit) in
-  let _wild161 = println__T_string(summary/8) in
-  let _wild162 = println__T_string(mv/9) in
-  let _wild163 = println__T_string(text/10) in
-  let _wild164 = println__T_string(exit/11) in
+  let _wild183 = println__T_string(summary/8) in
+  let _wild184 = println__T_string(mv/9) in
+  let _wild185 = println__T_string(text/10) in
+  let _wild186 = println__T_string(exit/11) in
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

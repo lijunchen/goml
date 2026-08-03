@@ -12,15 +12,15 @@ func _goml_runtime_core_string_println(s string) struct{} {
 func main0() struct{} {
     var poem__0 string = "roses are red\nviolets are blue\n\"quotes\" stay quoted\nbackslash \\\\\\\\ stays too"
     var trailing_blank__1 string = "line one\n\nline three"
-    var inline167 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(poem__0)
-    _goml_runtime_core_string_println(inline167)
-    var inline164 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(trailing_blank__1)
-    _goml_runtime_core_string_println(inline164)
+    var inline189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(poem__0)
+    _goml_runtime_core_string_println(inline189)
+    var inline186 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(trailing_blank__1)
+    _goml_runtime_core_string_println(inline186)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

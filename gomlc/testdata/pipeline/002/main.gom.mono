@@ -2,11 +2,11 @@ fn main() -> unit {
   let a/0 = (true, false) in
   let b/1 =
     {
-      let x155 = a/0.0 in
-      let x156 = a/0.1 in
-      match x156 {
+      let x177 = a/0.0 in
+      let x178 = a/0.1 in
+      match x178 {
         true => {
-          match x155 {
+          match x177 {
             true => {
               (false, false)
             },
@@ -16,7 +16,7 @@ fn main() -> unit {
           }
         },
         false => {
-          match x155 {
+          match x177 {
             true => {
               (false, true)
             },
@@ -29,22 +29,22 @@ fn main() -> unit {
     } in
   let b_1/3 =
     {
-      let x157 = b/1.0 in
-      let x158 = b/1.1 in
+      let x179 = b/1.0 in
+      let x180 = b/1.1 in
       {
-        let w/2 = x158 in
+        let w/2 = x180 in
         w/2
       }
     } in
   let c/4 =
     {
-      let mtmp159 = (true, b_1/3) in
+      let mtmp181 = (true, b_1/3) in
       {
-        let x160 = mtmp159.0 in
-        let x161 = mtmp159.1 in
-        match x161 {
+        let x182 = mtmp181.0 in
+        let x183 = mtmp181.1 in
+        match x183 {
           true => {
-            match x160 {
+            match x182 {
               true => {
                 println__T_string(inherent#int#int#to_string(3))
               },
@@ -54,7 +54,7 @@ fn main() -> unit {
             }
           },
           false => {
-            match x160 {
+            match x182 {
               true => {
                 println__T_string(inherent#int#int#to_string(2))
               },
@@ -69,18 +69,18 @@ fn main() -> unit {
   println__T_string(trait_impl#ToString#unit#to_string(c/4))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn inherent#int#int#to_string(self/5: int) -> string {
-  @runtime(core.int_to_string)(self/5)
+fn inherent#int#int#to_string(self/34: int) -> string {
+  @runtime(core.int_to_string)(self/34)
 }
 
-fn trait_impl#ToString#unit#to_string(self/36: unit) -> string {
-  @runtime(core.unit_to_string)(self/36)
+fn trait_impl#ToString#unit#to_string(self/65: unit) -> string {
+  @runtime(core.unit_to_string)(self/65)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

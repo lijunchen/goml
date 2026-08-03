@@ -31,31 +31,31 @@ func (_ Cons) isIntList() {}
 func print_int_list(xs__0 IntList) struct{} {
     switch xs__0.(type) {
     case Nil:
-        var inline214 string = "Nil"
-        var inline215 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline214)
-        _goml_runtime_core_string_println(inline215)
+        var inline236 string = "Nil"
+        var inline237 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline236)
+        _goml_runtime_core_string_println(inline237)
         return struct{}{}
     case Cons:
-        var x155 int32 = xs__0.(Cons)._0
-        var x156 IntList = xs__0.(Cons)._1
-        var inline235 string = "Cons"
-        var inline236 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline235)
-        _goml_runtime_core_string_println(inline236)
-        var inline231 string = "("
-        var inline232 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline231)
-        _goml_runtime_core_string_println(inline232)
-        var t183 string
-        var inline229 string = _goml_runtime_core_int32_to_string(x155)
-        t183 = inline229
-        var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t183)
-        _goml_runtime_core_string_println(inline226)
-        var inline222 string = ", "
-        var inline223 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline222)
-        _goml_runtime_core_string_println(inline223)
-        print_int_list(x156)
-        var inline218 string = ")"
-        var inline219 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline218)
-        _goml_runtime_core_string_println(inline219)
+        var x177 int32 = xs__0.(Cons)._0
+        var x178 IntList = xs__0.(Cons)._1
+        var inline257 string = "Cons"
+        var inline258 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline257)
+        _goml_runtime_core_string_println(inline258)
+        var inline253 string = "("
+        var inline254 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline253)
+        _goml_runtime_core_string_println(inline254)
+        var t205 string
+        var inline251 string = _goml_runtime_core_int32_to_string(x177)
+        t205 = inline251
+        var inline248 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t205)
+        _goml_runtime_core_string_println(inline248)
+        var inline244 string = ", "
+        var inline245 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline244)
+        _goml_runtime_core_string_println(inline245)
+        print_int_list(x178)
+        var inline240 string = ")"
+        var inline241 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline240)
+        _goml_runtime_core_string_println(inline241)
         return struct{}{}
     default:
         panic("non-exhaustive match")
@@ -67,14 +67,14 @@ func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
     case Nil:
         return acc__4
     case Cons:
-        var x163 int32 = xs__3.(Cons)._0
-        var x164 IntList = xs__3.(Cons)._1
-        var t188 IntList = Cons{
-            _0: x163,
+        var x185 int32 = xs__3.(Cons)._0
+        var x186 IntList = xs__3.(Cons)._1
+        var t210 IntList = Cons{
+            _0: x185,
             _1: acc__4,
         }
-        var t189 IntList = int_list_rev_aux(x164, t188)
-        return t189
+        var t211 IntList = int_list_rev_aux(x186, t210)
+        return t211
     default:
         panic("non-exhaustive match")
     }
@@ -85,10 +85,10 @@ func int_list_length(xs__8 IntList) int32 {
     case Nil:
         return 0
     case Cons:
-        var x166 IntList = xs__8.(Cons)._1
-        var t197 int32 = int_list_length(x166)
-        var t198 int32 = 1 + t197
-        return t198
+        var x188 IntList = xs__8.(Cons)._1
+        var t219 int32 = int_list_length(x188)
+        var t220 int32 = 1 + t219
+        return t220
     default:
         panic("non-exhaustive match")
     }
@@ -97,69 +97,69 @@ func int_list_length(xs__8 IntList) int32 {
 func main0() struct{} {
     var x__11 IntList = Nil{}
     print_int_list(x__11)
-    var inline277 string = ""
-    var inline278 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline277)
-    _goml_runtime_core_string_println(inline278)
+    var inline299 string = ""
+    var inline300 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline299)
+    _goml_runtime_core_string_println(inline300)
     println__T_string("Length: ")
-    var inline273 int32 = int_list_length(x__11)
-    var inline274 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline273)
-    println__T_string(inline274)
+    var inline295 int32 = int_list_length(x__11)
+    var inline296 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline295)
+    println__T_string(inline296)
     var x__12 IntList = Cons{
         _0: 1,
         _1: Nil{},
     }
     print_int_list(x__12)
-    var inline268 string = ""
-    var inline269 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline268)
-    _goml_runtime_core_string_println(inline269)
+    var inline290 string = ""
+    var inline291 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline290)
+    _goml_runtime_core_string_println(inline291)
     println__T_string("Length: ")
-    var inline264 int32 = int_list_length(x__12)
-    var inline265 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline264)
-    println__T_string(inline265)
-    var t203 IntList = Cons{
+    var inline286 int32 = int_list_length(x__12)
+    var inline287 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline286)
+    println__T_string(inline287)
+    var t225 IntList = Cons{
         _0: 3,
         _1: Nil{},
     }
-    var t204 IntList = Cons{
+    var t226 IntList = Cons{
         _0: 2,
-        _1: t203,
+        _1: t225,
     }
     var x__13 IntList = Cons{
         _0: 1,
-        _1: t204,
+        _1: t226,
     }
     print_int_list(x__13)
-    var inline259 string = ""
-    var inline260 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline259)
-    _goml_runtime_core_string_println(inline260)
+    var inline281 string = ""
+    var inline282 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline281)
+    _goml_runtime_core_string_println(inline282)
     println__T_string("Length: ")
-    var inline255 int32 = int_list_length(x__13)
-    var inline256 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline255)
-    println__T_string(inline256)
+    var inline277 int32 = int_list_length(x__13)
+    var inline278 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline277)
+    println__T_string(inline278)
     var y__14 IntList
-    var inline252 IntList = int_list_rev_aux(x__13, Nil{})
-    y__14 = inline252
+    var inline274 IntList = int_list_rev_aux(x__13, Nil{})
+    y__14 = inline274
     print_int_list(y__14)
-    var inline248 string = ""
-    var inline249 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline248)
-    _goml_runtime_core_string_println(inline249)
+    var inline270 string = ""
+    var inline271 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline270)
+    _goml_runtime_core_string_println(inline271)
     return struct{}{}
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t206 string
-    t206 = value__1
-    _goml_runtime_core_string_println(t206)
+func println__T_string(value__31 string) struct{} {
+    var t228 string
+    t228 = value__31
+    _goml_runtime_core_string_println(t228)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t210 string = _goml_runtime_core_int32_to_string(self__6)
-    return t210
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
+    var t232 string = _goml_runtime_core_int32_to_string(self__35)
+    return t232
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

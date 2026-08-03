@@ -1,12 +1,12 @@
 fn trait_impl#TypeName#Point#type_name(self/0: Point) -> string {
-  let mtmp155 = self/0 in
+  let mtmp177 = self/0 in
   {
-    let x156 = Point.x(mtmp155) in
-    let x157 = Point.y(mtmp155) in
+    let x178 = Point.x(mtmp177) in
+    let x179 = Point.y(mtmp177) in
     {
-      let y/2 = x157 in
+      let y/2 = x179 in
       {
-        let x/1 = x156 in
+        let x/1 = x178 in
         {
           let prefix/3 = ("Point(" + inherent#int32#int32#to_string(x/1)) in
           (((prefix/3 + ", ") + inherent#int32#int32#to_string(y/2)) + ")")
@@ -21,11 +21,11 @@ fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
     Shape::Unit => {
       "Unit"
     },
-    Shape::Location(x158) => {
+    Shape::Location(x180) => {
       {
-        let x158 = Shape::Location._0(self/4) in
+        let x180 = Shape::Location._0(self/4) in
         {
-          let point/5 = x158 in
+          let point/5 = x180 in
           ("Shape::" + trait_impl#TypeName#Point#type_name(point/5))
         }
       }
@@ -43,13 +43,13 @@ fn show_shape(shape/7: Shape) -> string {
 
 fn main() -> unit {
   let point/8 = Point { x: 7, y: 9 } in
-  let mtmp159 = println__T_string(show_point(point/8)) in
+  let mtmp181 = println__T_string(show_point(point/8)) in
   {
     let unit_shape/9 = Shape::Unit in
-    let mtmp160 = println__T_string(show_shape(unit_shape/9)) in
+    let mtmp182 = println__T_string(show_shape(unit_shape/9)) in
     {
       let location_shape/10 = Shape::Location(Point { x: 1, y: 2 }) in
-      let mtmp161 = println__T_string(show_shape(location_shape/10)) in
+      let mtmp183 = println__T_string(show_shape(location_shape/10)) in
       {
         ()
       }
@@ -57,14 +57,14 @@ fn main() -> unit {
   }
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

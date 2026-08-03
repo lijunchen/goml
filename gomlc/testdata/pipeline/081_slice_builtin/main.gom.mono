@@ -1,62 +1,62 @@
 fn main() -> unit {
   let v/0 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild155 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
-  let _wild156 = inherent#Vec#Vec[T]#push__T_int32(v/0, 20) in
-  let _wild157 = inherent#Vec#Vec[T]#push__T_int32(v/0, 30) in
-  let _wild158 = inherent#Vec#Vec[T]#push__T_int32(v/0, 40) in
+  let _wild177 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
+  let _wild178 = inherent#Vec#Vec[T]#push__T_int32(v/0, 20) in
+  let _wild179 = inherent#Vec#Vec[T]#push__T_int32(v/0, 30) in
+  let _wild180 = inherent#Vec#Vec[T]#push__T_int32(v/0, 40) in
   let s/1 = inherent#Vec#Vec[T]#slice__T_int32(v/0, 1, 4) in
-  let _wild159 = println__T_int(inherent#Slice#Slice[T]#len__T_int32(s/1)) in
-  let _wild160 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 0)) in
-  let _wild161 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 1)) in
-  let _wild162 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 2)) in
+  let _wild181 = println__T_int(inherent#Slice#Slice[T]#len__T_int32(s/1)) in
+  let _wild182 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 0)) in
+  let _wild183 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 1)) in
+  let _wild184 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 2)) in
   let t/2 = inherent#Slice#Slice[T]#sub__T_int32(s/1, 1, 3) in
-  let _wild163 = println__T_int(inherent#Slice#Slice[T]#len__T_int32(t/2)) in
-  let _wild164 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(t/2, 0)) in
-  let _wild165 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(t/2, 1)) in
+  let _wild185 = println__T_int(inherent#Slice#Slice[T]#len__T_int32(t/2)) in
+  let _wild186 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(t/2, 0)) in
+  let _wild187 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(t/2, 1)) in
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/126: Vec[int32], elem/127: int32) -> unit {
-  @intrinsic(vec.push)(self/126, elem/127)
+fn inherent#Vec#Vec[T]#push__T_int32(self/155: Vec[int32], elem/156: int32) -> unit {
+  @intrinsic(vec.push)(self/155, elem/156)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_int32(self/175: Vec[int32], start/176: int, end/177: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_int32(self/204: Vec[int32], start/205: int, end/206: int) -> Slice[
   int32
 ] {
-  @intrinsic(slice.new)(self/175, start/176, end/177)
+  @intrinsic(slice.new)(self/204, start/205, end/206)
 }
 
-fn println__T_int(value/1: int) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/1))
+fn println__T_int(value/31: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
 }
 
-fn inherent#Slice#Slice[T]#len__T_int32(self/186: Slice[int32]) -> int {
-  @intrinsic(slice.len)(self/186)
+fn inherent#Slice#Slice[T]#len__T_int32(self/215: Slice[int32]) -> int {
+  @intrinsic(slice.len)(self/215)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_int32(value/31: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/31))
 }
 
-fn inherent#Slice#Slice[T]#get__T_int32(self/184: Slice[int32], index/185: int) -> int32 {
-  @intrinsic(slice.get)(self/184, index/185)
+fn inherent#Slice#Slice[T]#get__T_int32(self/213: Slice[int32], index/214: int) -> int32 {
+  @intrinsic(slice.get)(self/213, index/214)
 }
 
 fn inherent#Slice#Slice[T]#sub__T_int32(
-  self/187: Slice[int32],
-  start/188: int,
-  end/189: int
+  self/216: Slice[int32],
+  start/217: int,
+  end/218: int
 ) -> Slice[int32] {
-  @intrinsic(slice.sub)(self/187, start/188, end/189)
+  @intrinsic(slice.sub)(self/216, start/217, end/218)
 }
 
-fn trait_impl#ToString#int#to_string(self/40: int) -> string {
-  @runtime(core.int_to_string)(self/40)
+fn trait_impl#ToString#int#to_string(self/69: int) -> string {
+  @runtime(core.int_to_string)(self/69)
 }
 
-fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  @runtime(core.int32_to_string)(self/43)
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  @runtime(core.int32_to_string)(self/72)
 }

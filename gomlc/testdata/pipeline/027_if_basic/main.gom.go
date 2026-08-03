@@ -15,40 +15,40 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var yes__3 int32
-    var inline189 bool = true
-    var inline190 int32 = 10
-    var inline191 int32 = 99
-    if inline189 {
-        yes__3 = inline190
+    var inline211 bool = true
+    var inline212 int32 = 10
+    var inline213 int32 = 99
+    if inline211 {
+        yes__3 = inline212
     } else {
-        yes__3 = inline191
+        yes__3 = inline213
     }
     var no__4 int32
-    var inline185 bool = false
-    var inline186 int32 = 10
-    var inline187 int32 = 99
-    if inline185 {
-        no__4 = inline186
+    var inline207 bool = false
+    var inline208 int32 = 10
+    var inline209 int32 = 99
+    if inline207 {
+        no__4 = inline208
     } else {
-        no__4 = inline187
+        no__4 = inline209
     }
-    var t162 string
-    var inline183 string = _goml_runtime_core_int32_to_string(yes__3)
-    t162 = inline183
-    var t163 string = "yes=" + t162
-    var inline180 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t163)
-    _goml_runtime_core_string_println(inline180)
-    var t164 string
-    var inline178 string = _goml_runtime_core_int32_to_string(no__4)
-    t164 = inline178
-    var t165 string = "no=" + t164
-    var inline175 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t165)
-    _goml_runtime_core_string_println(inline175)
+    var t184 string
+    var inline205 string = _goml_runtime_core_int32_to_string(yes__3)
+    t184 = inline205
+    var t185 string = "yes=" + t184
+    var inline202 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t185)
+    _goml_runtime_core_string_println(inline202)
+    var t186 string
+    var inline200 string = _goml_runtime_core_int32_to_string(no__4)
+    t186 = inline200
+    var t187 string = "no=" + t186
+    var inline197 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t187)
+    _goml_runtime_core_string_println(inline197)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

@@ -17,52 +17,52 @@ fn plus_one(flag/3: bool) -> Result__int32__string {
 
 fn show(res/6: Result__int32__string) -> string {
   match res/6 {
-    Result__int32__string::Ok(x158) => {
-      let x158 = Result__int32__string::Ok._0(res/6) in
-      let value/7 = x158 in
+    Result__int32__string::Ok(x180) => {
+      let x180 = Result__int32__string::Ok._0(res/6) in
+      let value/7 = x180 in
       ("ok=" + inherent#int32#int32#to_string(value/7))
     },
-    Result__int32__string::Err(x159) => {
-      let x159 = Result__int32__string::Err._0(res/6) in
-      let err/8 = x159 in
+    Result__int32__string::Err(x181) => {
+      let x181 = Result__int32__string::Err._0(res/6) in
+      let err/8 = x181 in
       ("err=" + err/8)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild160 = println__T_string(show(plus_one(true))) in
-  let _wild161 = println__T_string(show(plus_one(false))) in
+  let _wild182 = println__T_string(show(plus_one(true))) in
+  let _wild183 = println__T_string(show(plus_one(false))) in
   ()
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }
 
 fn inherent#closure_env_run_0#closure_env_run_0#apply(
-  env162: closure_env_run_0
+  env184: closure_env_run_0
 ) -> Result__int32__string {
-  let flag/3 = closure_env_run_0.flag_0(env162) in
+  let flag/3 = closure_env_run_0.flag_0(env184) in
   let value/4 =
-    let mtmp155 = parse_flag(flag/3) in
-    match mtmp155 {
-      Result__int32__string::Ok(x156) => {
-        let x156 = Result__int32__string::Ok._0(mtmp155) in
-        let try_value/15 = x156 in
+    let mtmp177 = parse_flag(flag/3) in
+    match mtmp177 {
+      Result__int32__string::Ok(x178) => {
+        let x178 = Result__int32__string::Ok._0(mtmp177) in
+        let try_value/15 = x178 in
         try_value/15
       },
-      Result__int32__string::Err(x157) => {
-        let x157 = Result__int32__string::Err._0(mtmp155) in
-        let try_residual/15 = x157 in
+      Result__int32__string::Err(x179) => {
+        let x179 = Result__int32__string::Err._0(mtmp177) in
+        let try_residual/15 = x179 in
         return Result__int32__string::Err(try_residual/15)
       },
     } in

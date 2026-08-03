@@ -29,15 +29,15 @@ type Tuple3_4bool_4bool_18Tuple2_4bool_4bool struct {
 }
 
 func main0() struct{} {
-    var x160 bool = false
-    var inline171 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x160)
-    _goml_runtime_core_string_print(inline171)
+    var x182 bool = false
+    var inline193 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x182)
+    _goml_runtime_core_string_print(inline193)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var t169 string = _goml_runtime_core_bool_to_string(self__37)
-    return t169
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
+    var t191 string = _goml_runtime_core_bool_to_string(self__66)
+    return t191
 }
 
 func main() {

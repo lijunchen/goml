@@ -14,14 +14,14 @@ type Buffer struct {
 }
 
 func main0() struct{} {
-    var inline165 string = "array"
-    var inline166 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline165)
-    _goml_runtime_core_string_print(inline166)
+    var inline187 string = "array"
+    var inline188 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline187)
+    _goml_runtime_core_string_print(inline188)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

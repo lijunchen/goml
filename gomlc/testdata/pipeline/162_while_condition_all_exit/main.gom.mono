@@ -1,5 +1,5 @@
 fn loop_return_unit(flag/0: bool) -> unit {
-  let _wild156 =
+  let _wild178 =
     while if flag/0 {
         {
           return
@@ -10,41 +10,41 @@ fn loop_return_unit(flag/0: bool) -> unit {
         }
     } {
         {
-          let _wild155 = println__T_string("unreachable") in
+          let _wild177 = println__T_string("unreachable") in
         }
     } in
 }
 
 fn loop_return() -> int32 {
-  let _wild159 =
+  let _wild181 =
     while {
-      let mtmp157 = 0 in
+      let mtmp179 = 0 in
       return 5
     } {
         {
-          let _wild158 = println__T_string("unreachable") in
+          let _wild180 = println__T_string("unreachable") in
         }
     } in
   0
 }
 
 fn main() -> unit {
-  let _wild160 = loop_return_unit(true) in
-  let _wild161 = println__T_int32(loop_return()) in
+  let _wild182 = loop_return_unit(true) in
+  let _wild183 = println__T_int32(loop_return()) in
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_int32(value/31: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }
 
-fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  @runtime(core.int32_to_string)(self/43)
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  @runtime(core.int32_to_string)(self/72)
 }

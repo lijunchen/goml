@@ -1,26 +1,26 @@
 fn summarize(event/0: FloatEvent) -> string {
   match event/0 {
-    FloatEvent::Sample32(x155, x156) => {
+    FloatEvent::Sample32(x177, x178) => {
       {
-        let x155 = FloatEvent::Sample32._0(event/0) in
-        let x156 = FloatEvent::Sample32._1(event/0) in
+        let x177 = FloatEvent::Sample32._0(event/0) in
+        let x178 = FloatEvent::Sample32._1(event/0) in
         {
-          let value/2 = x156 in
+          let value/2 = x178 in
           {
-            let label/1 = x155 in
+            let label/1 = x177 in
             (label/1 + trait_impl#ToString#float32#to_string(value/2))
           }
         }
       }
     },
-    FloatEvent::Sample64(x157, x158) => {
+    FloatEvent::Sample64(x179, x180) => {
       {
-        let x157 = FloatEvent::Sample64._0(event/0) in
-        let x158 = FloatEvent::Sample64._1(event/0) in
+        let x179 = FloatEvent::Sample64._0(event/0) in
+        let x180 = FloatEvent::Sample64._1(event/0) in
         {
-          let value/4 = x158 in
+          let value/4 = x180 in
           {
-            let label/3 = x157 in
+            let label/3 = x179 in
             (label/3 + trait_impl#ToString#float64#to_string(value/4))
           }
         }
@@ -31,12 +31,12 @@ fn summarize(event/0: FloatEvent) -> string {
 
 fn compare(values/5: (float32, float64)) -> string {
   {
-    let x159 = values/5.0 in
-    let x160 = values/5.1 in
+    let x181 = values/5.0 in
+    let x182 = values/5.1 in
     {
-      let right/7 = x160 in
+      let right/7 = x182 in
       {
-        let left/6 = x159 in
+        let left/6 = x181 in
         {
           let limit32/8 = 1 in
           let limit64/9 = 5 in
@@ -62,28 +62,28 @@ fn main() -> unit {
   let message/20 =
     ((((summarize(first/15) + summarize(second/16)) + summarize(third/17)) + compare(tuple/18)) +
       compare(tuple_other/19)) in
-  let mtmp161 = println__T_string(message/20) in
+  let mtmp183 = println__T_string(message/20) in
   {
     ()
   }
 }
 
-fn trait_impl#ToString#float32#to_string(self/49: float32) -> string {
-  @runtime(core.float32_to_string)(self/49)
+fn trait_impl#ToString#float32#to_string(self/78: float32) -> string {
+  @runtime(core.float32_to_string)(self/78)
 }
 
-fn trait_impl#ToString#float64#to_string(self/50: float64) -> string {
-  @runtime(core.float64_to_string)(self/50)
+fn trait_impl#ToString#float64#to_string(self/79: float64) -> string {
+  @runtime(core.float64_to_string)(self/79)
 }
 
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  @runtime(core.bool_to_string)(self/37)
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  @runtime(core.bool_to_string)(self/66)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

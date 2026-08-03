@@ -20,24 +20,24 @@ type None struct {}
 func (_ None) isMaybe__int32() {}
 
 func main0() int32 {
-    var commute_field193 int32
-    var inline191 int32 = 5
-    commute_field193 = inline191
+    var commute_field215 int32
+    var inline213 int32 = 5
+    commute_field215 = inline213
     var pt__7 Point
-    var inline188 int32 = 7
-    var inline189 Point = Point{
-        x: commute_field193,
-        y: inline188,
+    var inline210 int32 = 7
+    var inline211 Point = Point{
+        x: commute_field215,
+        y: inline210,
     }
-    pt__7 = inline189
-    var t175 int32 = pt__7.x
-    var t178 int32
-    var inline182 int32 = pt__7.x
-    var inline183 int32 = pt__7.y
-    var inline186 int32 = inline182 + inline183
-    t178 = inline186
-    var t179 int32 = t175 + t178
-    return t179
+    pt__7 = inline211
+    var t197 int32 = pt__7.x
+    var t200 int32
+    var inline204 int32 = pt__7.x
+    var inline205 int32 = pt__7.y
+    var inline208 int32 = inline204 + inline205
+    t200 = inline208
+    var t201 int32 = t197 + t200
+    return t201
 }
 
 func main() {

@@ -27,15 +27,15 @@ func loop_return() int32 {
 
 func main0() struct{} {
     loop_return_unit(true)
-    var t172 int32 = loop_return()
-    var inline185 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t172)
-    _goml_runtime_core_string_println(inline185)
+    var t194 int32 = loop_return()
+    var inline207 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t194)
+    _goml_runtime_core_string_println(inline207)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__43 int32) string {
-    var t183 string = _goml_runtime_core_int32_to_string(self__43)
-    return t183
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
+    var t205 string = _goml_runtime_core_int32_to_string(self__72)
+    return t205
 }
 
 func main() {

@@ -10,67 +10,67 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var t164 string
-    var inline192 int32 = -1
-    switch inline192 {
+    var t186 string
+    var inline214 int32 = -1
+    switch inline214 {
     case -1:
-        t164 = "minus one"
+        t186 = "minus one"
     case 0:
-        t164 = "zero"
+        t186 = "zero"
     case 1:
-        t164 = "one"
+        t186 = "one"
     default:
-        t164 = "other"
+        t186 = "other"
     }
-    var inline189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t164)
-    _goml_runtime_core_string_println(inline189)
-    var t165 string
-    var inline187 int32 = 0
-    switch inline187 {
+    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
+    _goml_runtime_core_string_println(inline211)
+    var t187 string
+    var inline209 int32 = 0
+    switch inline209 {
     case -1:
-        t165 = "minus one"
+        t187 = "minus one"
     case 0:
-        t165 = "zero"
+        t187 = "zero"
     case 1:
-        t165 = "one"
+        t187 = "one"
     default:
-        t165 = "other"
+        t187 = "other"
     }
-    var inline184 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t165)
-    _goml_runtime_core_string_println(inline184)
-    var t166 string
-    var inline182 int32 = 1
-    switch inline182 {
+    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t187)
+    _goml_runtime_core_string_println(inline206)
+    var t188 string
+    var inline204 int32 = 1
+    switch inline204 {
     case -1:
-        t166 = "minus one"
+        t188 = "minus one"
     case 0:
-        t166 = "zero"
+        t188 = "zero"
     case 1:
-        t166 = "one"
+        t188 = "one"
     default:
-        t166 = "other"
+        t188 = "other"
     }
-    var inline179 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t166)
-    _goml_runtime_core_string_println(inline179)
-    var t167 string
-    var inline177 int32 = 42
-    switch inline177 {
+    var inline201 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t188)
+    _goml_runtime_core_string_println(inline201)
+    var t189 string
+    var inline199 int32 = 42
+    switch inline199 {
     case -1:
-        t167 = "minus one"
+        t189 = "minus one"
     case 0:
-        t167 = "zero"
+        t189 = "zero"
     case 1:
-        t167 = "one"
+        t189 = "one"
     default:
-        t167 = "other"
+        t189 = "other"
     }
-    var inline174 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t167)
-    _goml_runtime_core_string_println(inline174)
+    var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
+    _goml_runtime_core_string_println(inline196)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

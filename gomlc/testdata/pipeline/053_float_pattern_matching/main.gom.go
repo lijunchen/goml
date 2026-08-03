@@ -66,21 +66,21 @@ func (_ Sample64) isFloatEvent() {}
 func summarize(event__0 FloatEvent) string {
     switch event__0.(type) {
     case Sample32:
-        var x155 string = event__0.(Sample32)._0
-        var x156 float32 = event__0.(Sample32)._1
-        var t166 string
-        var inline201 string = _goml_runtime_core_float32_to_string(x156)
-        t166 = inline201
-        var t167 string = x155 + t166
-        return t167
+        var x177 string = event__0.(Sample32)._0
+        var x178 float32 = event__0.(Sample32)._1
+        var t188 string
+        var inline223 string = _goml_runtime_core_float32_to_string(x178)
+        t188 = inline223
+        var t189 string = x177 + t188
+        return t189
     case Sample64:
-        var x157 string = event__0.(Sample64)._0
-        var x158 float64 = event__0.(Sample64)._1
-        var t168 string
-        var inline203 string = _goml_runtime_core_float64_to_string(x158)
-        t168 = inline203
-        var t169 string = x157 + t168
-        return t169
+        var x179 string = event__0.(Sample64)._0
+        var x180 float64 = event__0.(Sample64)._1
+        var t190 string
+        var inline225 string = _goml_runtime_core_float64_to_string(x180)
+        t190 = inline225
+        var t191 string = x179 + t190
+        return t191
     default:
         panic("non-exhaustive match")
     }
@@ -98,60 +98,60 @@ func main0() struct{} {
         _0: "f32_b=",
         _1: second_value__13,
     }
-    var t178 string = summarize(first__15)
-    var t179 string = summarize(second__16)
-    var t180 string = t178 + t179
-    var t181 string
-    var inline246 string = "f64="
-    var inline250 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(third_value__14)
-    var inline251 string = inline246 + inline250
-    t181 = inline251
-    var t182 string = t180 + t181
-    var t183 string
-    var inline226 float32 = 0.75
-    var inline227 float64 = 4
-    var inline230 float32 = 1
-    var inline231 float64 = 5
-    var inline232 bool = inline226 < inline230
-    var inline233 bool = inline227 < inline231
-    var inline234 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline232)
-    var inline235 string = "left<1?=" + inline234
-    var inline236 string = inline235 + ",right<5?="
-    var inline237 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline233)
-    var inline238 string = inline236 + inline237
-    t183 = inline238
-    var t184 string = t182 + t183
-    var t185 string
-    var inline212 float32 = 1.5
-    var inline213 float64 = 7.25
-    var inline216 float32 = 1
-    var inline217 float64 = 5
-    var inline218 bool = inline212 < inline216
-    var inline219 bool = inline213 < inline217
-    var inline220 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline218)
-    var inline221 string = "left<1?=" + inline220
-    var inline222 string = inline221 + ",right<5?="
-    var inline223 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline219)
-    var inline224 string = inline222 + inline223
-    t185 = inline224
-    var message__20 string = t184 + t185
-    var inline209 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__20)
-    _goml_runtime_core_string_println(inline209)
+    var t200 string = summarize(first__15)
+    var t201 string = summarize(second__16)
+    var t202 string = t200 + t201
+    var t203 string
+    var inline268 string = "f64="
+    var inline272 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(third_value__14)
+    var inline273 string = inline268 + inline272
+    t203 = inline273
+    var t204 string = t202 + t203
+    var t205 string
+    var inline248 float32 = 0.75
+    var inline249 float64 = 4
+    var inline252 float32 = 1
+    var inline253 float64 = 5
+    var inline254 bool = inline248 < inline252
+    var inline255 bool = inline249 < inline253
+    var inline256 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline254)
+    var inline257 string = "left<1?=" + inline256
+    var inline258 string = inline257 + ",right<5?="
+    var inline259 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline255)
+    var inline260 string = inline258 + inline259
+    t205 = inline260
+    var t206 string = t204 + t205
+    var t207 string
+    var inline234 float32 = 1.5
+    var inline235 float64 = 7.25
+    var inline238 float32 = 1
+    var inline239 float64 = 5
+    var inline240 bool = inline234 < inline238
+    var inline241 bool = inline235 < inline239
+    var inline242 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline240)
+    var inline243 string = "left<1?=" + inline242
+    var inline244 string = inline243 + ",right<5?="
+    var inline245 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline241)
+    var inline246 string = inline244 + inline245
+    t207 = inline246
+    var message__20 string = t206 + t207
+    var inline231 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(message__20)
+    _goml_runtime_core_string_println(inline231)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__50 float64) string {
-    var t191 string = _goml_runtime_core_float64_to_string(self__50)
-    return t191
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__79 float64) string {
+    var t213 string = _goml_runtime_core_float64_to_string(self__79)
+    return t213
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var t194 string = _goml_runtime_core_bool_to_string(self__37)
-    return t194
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
+    var t216 string = _goml_runtime_core_bool_to_string(self__66)
+    return t216
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

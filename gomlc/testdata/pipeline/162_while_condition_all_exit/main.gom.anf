@@ -1,6 +1,6 @@
 fn loop_return_unit(flag/0: bool) -> unit {
   joinrec {
-    join loop164() -> unit {
+    join loop186() -> unit {
       if flag/0 {
         ()
       } else {
@@ -8,49 +8,49 @@ fn loop_return_unit(flag/0: bool) -> unit {
       }
     } in
   } in
-  jump loop164()
+  jump loop186()
 }
 
 fn loop_return() -> int32 {
   joinrec {
-    join loop170() -> int32 {
-      let mtmp157 = 0 in
+    join loop192() -> int32 {
+      let mtmp179 = 0 in
       5
     } in
   } in
-  jump loop170()
+  jump loop192()
 }
 
 fn main() -> unit {
-  let _wild160 = loop_return_unit(true) in
-  let t172 = loop_return() in
-  let inline185 = trait_impl#ToString#int32#to_string(t172) in
-  let inline186 = @runtime(core.string_println)(inline185) in
+  let _wild182 = loop_return_unit(true) in
+  let t194 = loop_return() in
+  let inline207 = trait_impl#ToString#int32#to_string(t194) in
+  let inline208 = @runtime(core.string_println)(inline207) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont187(t174: string) -> unit {
-    let t175 = @runtime(core.string_println)(t174) in
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont209(t196: string) -> unit {
+    let t197 = @runtime(core.string_println)(t196) in
     ()
   } in
-  jump inline_cont187(value/1)
+  jump inline_cont209(value/31)
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  join inline_cont188(t177: string) -> unit {
-    let t178 = @runtime(core.string_println)(t177) in
+fn println__T_int32(value/31: int32) -> unit {
+  join inline_cont210(t199: string) -> unit {
+    let t200 = @runtime(core.string_println)(t199) in
     ()
   } in
-  let inline189 = @runtime(core.int32_to_string)(value/1) in
-  jump inline_cont188(inline189)
+  let inline211 = @runtime(core.int32_to_string)(value/31) in
+  jump inline_cont210(inline211)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }
 
-fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  let t183 = @runtime(core.int32_to_string)(self/43) in
-  t183
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  let t205 = @runtime(core.int32_to_string)(self/72) in
+  t205
 }

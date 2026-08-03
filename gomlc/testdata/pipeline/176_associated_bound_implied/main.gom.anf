@@ -1,42 +1,42 @@
 fn trait_impl#Label#string#label(self/0: string) -> string {
-  let t158 = ("label:" + self/0) in
-  t158
+  let t180 = ("label:" + self/0) in
+  t180
 }
 
 fn trait_impl#Source#TextSource#get(self/1: TextSource) -> string {
-  let t161 = TextSource.value(self/1) in
-  t161
+  let t183 = TextSource.value(self/1) in
+  t183
 }
 
 fn main() -> unit {
-  let t163 = TextSource { value: "goml" } in
-  join inline_cont177(t164: string) -> unit {
-    let inline175 = trait_impl#ToString#string#to_string(t164) in
-    let inline176 = @runtime(core.string_println)(inline175) in
+  let t185 = TextSource { value: "goml" } in
+  join inline_cont199(t186: string) -> unit {
+    let inline197 = trait_impl#ToString#string#to_string(t186) in
+    let inline198 = @runtime(core.string_println)(inline197) in
     ()
   } in
-  let inline178 = trait_impl#Source#TextSource#get(t163) in
-  let inline179 = trait_impl#Label#string#label(inline178) in
-  jump inline_cont177(inline179)
+  let inline200 = trait_impl#Source#TextSource#get(t185) in
+  let inline201 = trait_impl#Label#string#label(inline200) in
+  jump inline_cont199(inline201)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont180(t166: string) -> unit {
-    let t167 = @runtime(core.string_println)(t166) in
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont202(t188: string) -> unit {
+    let t189 = @runtime(core.string_println)(t188) in
     ()
   } in
-  jump inline_cont180(value/1)
+  jump inline_cont202(value/31)
 }
 
 fn render__S_TextSource(source/2: TextSource) -> string {
-  join inline_cont183(t170: string) -> string {
-    let inline182 = ("label:" + t170) in
-    inline182
+  join inline_cont205(t192: string) -> string {
+    let inline204 = ("label:" + t192) in
+    inline204
   } in
-  let inline184 = TextSource.value(source/2) in
-  jump inline_cont183(inline184)
+  let inline206 = TextSource.value(source/2) in
+  jump inline_cont205(inline206)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

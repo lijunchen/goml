@@ -20,26 +20,26 @@ type Tuple2_5int32_6string struct {
 
 func main0() struct{} {
     var value__3 Tuple2_5int32_6string
-    var inline178 int32 = 1
-    var inline179 string = "x"
-    var inline180 Tuple2_5int32_6string = Tuple2_5int32_6string{
-        _0: inline178,
-        _1: inline179,
+    var inline200 int32 = 1
+    var inline201 string = "x"
+    var inline202 Tuple2_5int32_6string = Tuple2_5int32_6string{
+        _0: inline200,
+        _1: inline201,
     }
-    value__3 = inline180
-    var t159 int32 = value__3._0
-    var t160 string
-    var inline176 string = _goml_runtime_core_int32_to_string(t159)
-    t160 = inline176
-    var t161 string = value__3._1
-    var t162 string = t160 + t161
-    var inline173 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t162)
-    _goml_runtime_core_string_println(inline173)
+    value__3 = inline202
+    var t181 int32 = value__3._0
+    var t182 string
+    var inline198 string = _goml_runtime_core_int32_to_string(t181)
+    t182 = inline198
+    var t183 string = value__3._1
+    var t184 string = t182 + t183
+    var inline195 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t184)
+    _goml_runtime_core_string_println(inline195)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

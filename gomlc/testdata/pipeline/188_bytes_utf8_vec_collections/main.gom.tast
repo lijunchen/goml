@@ -60,14 +60,14 @@ fn main() -> unit {
       (Vec[uint8]::get : (Vec[uint8], int) -> uint8)((bytes/10 : Vec[uint8]), 1)
     );
     let (roundtrip_valid/11: bool, roundtrip/12: string) =
-      (@runtime(core.string_from_utf8) : (Vec[uint8]) -> (bool, string))((bytes/10 : Vec[uint8]));
+      (string_from_utf8 : (Vec[uint8]) -> (bool, string))((bytes/10 : Vec[uint8]));
     (println : (bool) -> unit)((roundtrip_valid/11 : bool));
     (println : (string) -> unit)((roundtrip/12 : string));
     let invalid/13: Vec[uint8] = (Vec[uint8]::new : () -> Vec[uint8])();
     (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((invalid/13 : Vec[uint8]), 255);
     (Vec[uint8]::push : (Vec[uint8], uint8) -> unit)((invalid/13 : Vec[uint8]), 254);
     let (invalid_valid/14: bool, invalid_text/15: string) =
-      (@runtime(core.string_from_utf8) : (Vec[uint8]) -> (bool, string))((invalid/13 : Vec[uint8]));
+      (string_from_utf8 : (Vec[uint8]) -> (bool, string))((invalid/13 : Vec[uint8]));
     (println : (bool) -> unit)((invalid_valid/14 : bool));
     (println : (bool) -> unit)((invalid_text/15 : string) == "");
     let parts/16: Vec[string] = (Vec[string]::with_capacity : (int) -> Vec[string])(3);

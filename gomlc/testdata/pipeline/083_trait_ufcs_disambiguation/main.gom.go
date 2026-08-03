@@ -24,29 +24,29 @@ func _goml_m_trait__impl_i_B_i_S_i_pick(self__1 S) int32 {
 }
 
 func main0() struct{} {
-    var t162 S = S{}
-    var t163 int32
-    var inline195 int32 = _goml_m_trait__impl_i_A_i_S_i_pick(t162)
-    t163 = inline195
-    var t164 string
-    var inline193 string = _goml_runtime_core_int32_to_string(t163)
-    t164 = inline193
-    var inline190 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t164)
-    _goml_runtime_core_string_println(inline190)
-    var t165 S = S{}
-    var t166 int32
-    var inline188 int32 = _goml_m_trait__impl_i_B_i_S_i_pick(t165)
-    t166 = inline188
-    var t167 string
-    var inline186 string = _goml_runtime_core_int32_to_string(t166)
-    t167 = inline186
-    var inline183 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t167)
-    _goml_runtime_core_string_println(inline183)
+    var t184 S = S{}
+    var t185 int32
+    var inline217 int32 = _goml_m_trait__impl_i_A_i_S_i_pick(t184)
+    t185 = inline217
+    var t186 string
+    var inline215 string = _goml_runtime_core_int32_to_string(t185)
+    t186 = inline215
+    var inline212 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t186)
+    _goml_runtime_core_string_println(inline212)
+    var t187 S = S{}
+    var t188 int32
+    var inline210 int32 = _goml_m_trait__impl_i_B_i_S_i_pick(t187)
+    t188 = inline210
+    var t189 string
+    var inline208 string = _goml_runtime_core_int32_to_string(t188)
+    t189 = inline208
+    var inline205 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
+    _goml_runtime_core_string_println(inline205)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

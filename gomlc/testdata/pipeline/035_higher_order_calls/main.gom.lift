@@ -18,32 +18,32 @@ fn main() -> unit {
   let xs/3 = [double, increment] in
   let f/4 = @intrinsic(array.get)(xs/3, 0) in
   let g/5 = @intrinsic(array.get)(xs/3, 1) in
-  let mtmp155 = println__T_int32(g/5(f/4(10))) in
+  let mtmp177 = println__T_int32(g/5(f/4(10))) in
   let chosen/6 = chooser(true) in
   let applied/7 = chosen/6(5) in
   let direct/8 = chooser(false)(5) in
   let printer/9 = println__T_string in
-  let mtmp156 = printer/9(inherent#int32#int32#to_string(applied/7)) in
-  let mtmp157 = printer/9(inherent#int32#int32#to_string(direct/8)) in
+  let mtmp178 = printer/9(inherent#int32#int32#to_string(applied/7)) in
+  let mtmp179 = printer/9(inherent#int32#int32#to_string(direct/8)) in
   ()
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_int32(value/31: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/31))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  @runtime(core.int32_to_string)(self/43)
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  @runtime(core.int32_to_string)(self/72)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

@@ -66,46 +66,46 @@ func dyn__Show__vtable__int32() *dyn__Show_vtable {
 }
 
 func _goml_m_trait__impl_i_Show_i_int32_i_show(self__0 int32) string {
-    var inline187 string = _goml_runtime_core_int32_to_string(self__0)
-    return inline187
+    var inline209 string = _goml_runtime_core_int32_to_string(self__0)
+    return inline209
 }
 
 func _goml_m_trait__impl_i_Show_i_Wrap_i_show(self__1 Wrap) string {
-    var t163 string = self__1.value
-    return t163
+    var t185 string = self__1.value
+    return t185
 }
 
 func main0() struct{} {
     var values__2 *_goml_vec_Dyn_Show
-    var inline199 *_goml_vec_Dyn_Show = vec_new__Vec_8Dyn_Show()
-    values__2 = inline199
+    var inline221 *_goml_vec_Dyn_Show = vec_new__Vec_8Dyn_Show()
+    values__2 = inline221
     var value__3 int32 = 10
-    var t165 dyn__Show = dyn__Show{
+    var t187 dyn__Show = dyn__Show{
         data: int32(value__3),
         vtable: dyn__Show__vtable__int32(),
     }
-    vec_push__Vec_8Dyn_Show(values__2, t165)
-    var t166 Wrap = Wrap{
+    vec_push__Vec_8Dyn_Show(values__2, t187)
+    var t188 Wrap = Wrap{
         value: "ok",
     }
-    var t167 dyn__Show = dyn__Show{
-        data: t166,
+    var t189 dyn__Show = dyn__Show{
+        data: t188,
         vtable: dyn__Show__vtable__Wrap(),
     }
-    vec_push__Vec_8Dyn_Show(values__2, t167)
-    var t168 dyn__Show = vec_get__Vec_8Dyn_Show(values__2, 0)
-    var t169 string = t168.vtable.show(t168.data)
-    var inline192 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t169)
-    _goml_runtime_core_string_println(inline192)
-    var t170 dyn__Show = vec_get__Vec_8Dyn_Show(values__2, 1)
-    var t171 string = t170.vtable.show(t170.data)
-    var inline189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t171)
-    _goml_runtime_core_string_println(inline189)
+    vec_push__Vec_8Dyn_Show(values__2, t189)
+    var t190 dyn__Show = vec_get__Vec_8Dyn_Show(values__2, 0)
+    var t191 string = t190.vtable.show(t190.data)
+    var inline214 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline214)
+    var t192 dyn__Show = vec_get__Vec_8Dyn_Show(values__2, 1)
+    var t193 string = t192.vtable.show(t192.data)
+    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
+    _goml_runtime_core_string_println(inline211)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

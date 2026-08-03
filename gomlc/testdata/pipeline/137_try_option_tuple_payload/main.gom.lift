@@ -7,22 +7,22 @@ fn cut_pair(ok/0: bool) -> Option__(string,string) {
 }
 
 fn describe(ok/1: bool) -> Option__string {
-  let mtmp157 =
-    let mtmp155 = cut_pair(ok/1) in
-    match mtmp155 {
+  let mtmp179 =
+    let mtmp177 = cut_pair(ok/1) in
+    match mtmp177 {
       Option__(string,string)::None => {
         return Option__string::None
       },
-      Option__(string,string)::Some(x156) => {
-        let x156 = Option__(string,string)::Some._0(mtmp155) in
-        let try_value/13 = x156 in
+      Option__(string,string)::Some(x178) => {
+        let x178 = Option__(string,string)::Some._0(mtmp177) in
+        let try_value/13 = x178 in
         try_value/13
       },
     } in
-  let x158 = mtmp157.0 in
-  let x159 = mtmp157.1 in
-  let after/3 = x159 in
-  let before/2 = x158 in
+  let x180 = mtmp179.0 in
+  let x181 = mtmp179.1 in
+  let after/3 = x181 in
+  let before/2 = x180 in
   Option__string::Some(((before/2 + "|") + after/3))
 }
 
@@ -31,24 +31,24 @@ fn show(opt/4: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x160) => {
-      let x160 = Option__string::Some._0(opt/4) in
-      let value/5 = x160 in
+    Option__string::Some(x182) => {
+      let x182 = Option__string::Some._0(opt/4) in
+      let value/5 = x182 in
       ("some " + value/5)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild161 = println__T_string(show(describe(true))) in
-  let _wild162 = println__T_string(show(describe(false))) in
+  let _wild183 = println__T_string(show(describe(true))) in
+  let _wild184 = println__T_string(show(describe(false))) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

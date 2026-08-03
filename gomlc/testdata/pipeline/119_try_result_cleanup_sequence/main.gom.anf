@@ -1,178 +1,178 @@
 fn open_handle(ok/0: bool) -> Result__Handle__string {
   if ok/0 {
-    let t171 = Handle { name: "config" } in
-    let t172 = Result__Handle__string::Ok(t171) in
-    t172
+    let t193 = Handle { name: "config" } in
+    let t194 = Result__Handle__string::Ok(t193) in
+    t194
   } else {
-    let t173 = Result__Handle__string::Err("open failed") in
-    t173
+    let t195 = Result__Handle__string::Err("open failed") in
+    t195
   }
 }
 
 fn close_handle(handle/1: Handle, ok/2: bool) -> Result__unit__string {
   if ok/2 {
-    let t178 = Result__unit__string::Ok(()) in
-    t178
+    let t200 = Result__unit__string::Ok(()) in
+    t200
   } else {
-    let t179 = Handle.name(handle/1) in
-    let t180 = ("close failed for " + t179) in
-    let t181 = Result__unit__string::Err(t180) in
-    t181
+    let t201 = Handle.name(handle/1) in
+    let t202 = ("close failed for " + t201) in
+    let t203 = Result__unit__string::Err(t202) in
+    t203
   }
 }
 
 fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result__string__string {
-  join inline_cont214(mtmp155: Result__Handle__string) -> Result__string__string {
-    join k184(jp185: Handle) -> Result__string__string {
-      let handle/5 = jp185 in
-      let name/6 = Handle.name(jp185) in
-      join inline_cont209(mtmp158: Result__unit__string) -> Result__string__string {
-        join k186() -> Result__string__string {
-          let _wild161 = () in
-          let t187 = ("closed " + name/6) in
-          let t188 = Result__string__string::Ok(t187) in
-          t188
+  join inline_cont236(mtmp177: Result__Handle__string) -> Result__string__string {
+    join k206(jp207: Handle) -> Result__string__string {
+      let handle/5 = jp207 in
+      let name/6 = Handle.name(jp207) in
+      join inline_cont231(mtmp180: Result__unit__string) -> Result__string__string {
+        join k208() -> Result__string__string {
+          let _wild183 = () in
+          let t209 = ("closed " + name/6) in
+          let t210 = Result__string__string::Ok(t209) in
+          t210
         } in
-        match mtmp158 {
+        match mtmp180 {
           Tag_0 => {
-            let x159 = Result__unit__string::Ok._0(mtmp158) in
-            let try_value/31 = x159 in
-            jump k186()
+            let x181 = Result__unit__string::Ok._0(mtmp180) in
+            let try_value/31 = x181 in
+            jump k208()
           },
           Tag_1 => {
-            let x160 = Result__unit__string::Err._0(mtmp158) in
-            let try_residual/31 = x160 in
-            let t189 = Result__string__string::Err(x160) in
-            t189
+            let x182 = Result__unit__string::Err._0(mtmp180) in
+            let try_residual/31 = x182 in
+            let t211 = Result__string__string::Err(x182) in
+            t211
           },
         }
       } in
       if close_ok/4 {
-        let inline210 = Result__unit__string::Ok(()) in
-        jump inline_cont209(inline210)
+        let inline232 = Result__unit__string::Ok(()) in
+        jump inline_cont231(inline232)
       } else {
-        let inline211 = Handle.name(jp185) in
-        let inline212 = ("close failed for " + inline211) in
-        let inline213 = Result__unit__string::Err(inline212) in
-        jump inline_cont209(inline213)
+        let inline233 = Handle.name(jp207) in
+        let inline234 = ("close failed for " + inline233) in
+        let inline235 = Result__unit__string::Err(inline234) in
+        jump inline_cont231(inline235)
       }
     } in
-    match mtmp155 {
+    match mtmp177 {
       Tag_0 => {
-        let x156 = Result__Handle__string::Ok._0(mtmp155) in
-        let try_value/24 = x156 in
-        jump k184(x156)
+        let x178 = Result__Handle__string::Ok._0(mtmp177) in
+        let try_value/24 = x178 in
+        jump k206(x178)
       },
       Tag_1 => {
-        let x157 = Result__Handle__string::Err._0(mtmp155) in
-        let try_residual/24 = x157 in
-        let t190 = Result__string__string::Err(x157) in
-        t190
+        let x179 = Result__Handle__string::Err._0(mtmp177) in
+        let try_residual/24 = x179 in
+        let t212 = Result__string__string::Err(x179) in
+        t212
       },
     }
   } in
   if open_ok/3 {
-    let inline215 = Handle { name: "config" } in
-    let inline216 = Result__Handle__string::Ok(inline215) in
-    jump inline_cont214(inline216)
+    let inline237 = Handle { name: "config" } in
+    let inline238 = Result__Handle__string::Ok(inline237) in
+    jump inline_cont236(inline238)
   } else {
-    let inline217 = Result__Handle__string::Err("open failed") in
-    jump inline_cont214(inline217)
+    let inline239 = Result__Handle__string::Err("open failed") in
+    jump inline_cont236(inline239)
   }
 }
 
 fn show(res/7: Result__string__string) -> string {
   match res/7 {
     Tag_0 => {
-      let x162 = Result__string__string::Ok._0(res/7) in
-      let value/8 = x162 in
-      let t195 = ("ok " + x162) in
-      t195
+      let x184 = Result__string__string::Ok._0(res/7) in
+      let value/8 = x184 in
+      let t217 = ("ok " + x184) in
+      t217
     },
     Tag_1 => {
-      let x163 = Result__string__string::Err._0(res/7) in
-      let err/9 = x163 in
-      let t196 = ("err " + x163) in
-      t196
+      let x185 = Result__string__string::Err._0(res/7) in
+      let err/9 = x185 in
+      let t218 = ("err " + x185) in
+      t218
     },
   }
 }
 
 fn main() -> unit {
-  let t198 = use_handle(true, true) in
-  join inline_cont241(t199: string) -> unit {
-    join inline_cont238(_wild164: unit) -> unit {
-      let t200 = use_handle(false, true) in
-      join inline_cont231(t201: string) -> unit {
-        join inline_cont228(_wild165: unit) -> unit {
-          let t202 = use_handle(true, false) in
-          join inline_cont221(t203: string) -> unit {
-            let inline219 = trait_impl#ToString#string#to_string(t203) in
-            let inline220 = @runtime(core.string_println)(inline219) in
+  let t220 = use_handle(true, true) in
+  join inline_cont263(t221: string) -> unit {
+    join inline_cont260(_wild186: unit) -> unit {
+      let t222 = use_handle(false, true) in
+      join inline_cont253(t223: string) -> unit {
+        join inline_cont250(_wild187: unit) -> unit {
+          let t224 = use_handle(true, false) in
+          join inline_cont243(t225: string) -> unit {
+            let inline241 = trait_impl#ToString#string#to_string(t225) in
+            let inline242 = @runtime(core.string_println)(inline241) in
             ()
           } in
-          match t202 {
+          match t224 {
             Tag_0 => {
-              let inline222 = Result__string__string::Ok._0(t202) in
-              let inline223 = inline222 in
-              let inline224 = ("ok " + inline222) in
-              jump inline_cont221(inline224)
+              let inline244 = Result__string__string::Ok._0(t224) in
+              let inline245 = inline244 in
+              let inline246 = ("ok " + inline244) in
+              jump inline_cont243(inline246)
             },
             Tag_1 => {
-              let inline225 = Result__string__string::Err._0(t202) in
-              let inline226 = inline225 in
-              let inline227 = ("err " + inline225) in
-              jump inline_cont221(inline227)
+              let inline247 = Result__string__string::Err._0(t224) in
+              let inline248 = inline247 in
+              let inline249 = ("err " + inline247) in
+              jump inline_cont243(inline249)
             },
           }
         } in
-        let inline229 = trait_impl#ToString#string#to_string(t201) in
-        let inline230 = @runtime(core.string_println)(inline229) in
-        jump inline_cont228(())
+        let inline251 = trait_impl#ToString#string#to_string(t223) in
+        let inline252 = @runtime(core.string_println)(inline251) in
+        jump inline_cont250(())
       } in
-      match t200 {
+      match t222 {
         Tag_0 => {
-          let inline232 = Result__string__string::Ok._0(t200) in
-          let inline233 = inline232 in
-          let inline234 = ("ok " + inline232) in
-          jump inline_cont231(inline234)
+          let inline254 = Result__string__string::Ok._0(t222) in
+          let inline255 = inline254 in
+          let inline256 = ("ok " + inline254) in
+          jump inline_cont253(inline256)
         },
         Tag_1 => {
-          let inline235 = Result__string__string::Err._0(t200) in
-          let inline236 = inline235 in
-          let inline237 = ("err " + inline235) in
-          jump inline_cont231(inline237)
+          let inline257 = Result__string__string::Err._0(t222) in
+          let inline258 = inline257 in
+          let inline259 = ("err " + inline257) in
+          jump inline_cont253(inline259)
         },
       }
     } in
-    let inline239 = trait_impl#ToString#string#to_string(t199) in
-    let inline240 = @runtime(core.string_println)(inline239) in
-    jump inline_cont238(())
+    let inline261 = trait_impl#ToString#string#to_string(t221) in
+    let inline262 = @runtime(core.string_println)(inline261) in
+    jump inline_cont260(())
   } in
-  match t198 {
+  match t220 {
     Tag_0 => {
-      let inline242 = Result__string__string::Ok._0(t198) in
-      let inline243 = inline242 in
-      let inline244 = ("ok " + inline242) in
-      jump inline_cont241(inline244)
+      let inline264 = Result__string__string::Ok._0(t220) in
+      let inline265 = inline264 in
+      let inline266 = ("ok " + inline264) in
+      jump inline_cont263(inline266)
     },
     Tag_1 => {
-      let inline245 = Result__string__string::Err._0(t198) in
-      let inline246 = inline245 in
-      let inline247 = ("err " + inline245) in
-      jump inline_cont241(inline247)
+      let inline267 = Result__string__string::Err._0(t220) in
+      let inline268 = inline267 in
+      let inline269 = ("err " + inline267) in
+      jump inline_cont263(inline269)
     },
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont248(t205: string) -> unit {
-    let t206 = @runtime(core.string_println)(t205) in
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont270(t227: string) -> unit {
+    let t228 = @runtime(core.string_println)(t227) in
     ()
   } in
-  jump inline_cont248(value/1)
+  jump inline_cont270(value/31)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

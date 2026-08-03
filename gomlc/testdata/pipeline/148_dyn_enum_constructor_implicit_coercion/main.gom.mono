@@ -4,23 +4,23 @@ fn trait_impl#Display#int32#show(self/0: int32) -> string {
 
 fn render(value/1: Boxed) -> string {
   match value/1 {
-    Boxed::One(x155) => {
+    Boxed::One(x177) => {
       {
-        let x155 = Boxed::One._0(value/1) in
+        let x177 = Boxed::One._0(value/1) in
         {
-          let inner/2 = x155 in
+          let inner/2 = x177 in
           dyn_call[Display::show](inner/2)
         }
       }
     },
-    Boxed::Pair(x156, x157) => {
+    Boxed::Pair(x178, x179) => {
       {
-        let x156 = Boxed::Pair._0(value/1) in
-        let x157 = Boxed::Pair._1(value/1) in
+        let x178 = Boxed::Pair._0(value/1) in
+        let x179 = Boxed::Pair._1(value/1) in
         {
-          let right/4 = x157 in
+          let right/4 = x179 in
           {
-            let left/3 = x156 in
+            let left/3 = x178 in
             ((dyn_call[Display::show](left/3) + "-") + dyn_call[Display::show](right/4))
           }
         }
@@ -33,21 +33,21 @@ fn main() -> unit {
   let one/5 = 42 in
   let left/6 = 7 in
   let right/7 = 9 in
-  let _wild158 = println__T_string(render(Boxed::One(to_dyn[Display]{int32}(one/5)))) in
-  let _wild159 =
+  let _wild180 = println__T_string(render(Boxed::One(to_dyn[Display]{int32}(one/5)))) in
+  let _wild181 =
     println__T_string(
       render(Boxed::Pair(to_dyn[Display]{int32}(left/6), to_dyn[Display]{int32}(right/7)))
     ) in
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

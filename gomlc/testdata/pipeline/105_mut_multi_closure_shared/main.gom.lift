@@ -2,41 +2,41 @@ fn main() -> unit {
   let x/0 = @intrinsic(ref.new)(0) in
   let inc/1 = closure_env_inc_0 { x_0: x/0 } in
   let get/2 = closure_env_get_1 { x_0: x/0 } in
-  let mtmp156 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
-  let _wild157 =
+  let mtmp178 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
+  let _wild179 =
     println__T_string(
       inherent#int#int#to_string(inherent#closure_env_get_1#closure_env_get_1#apply(get/2))
     ) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn inherent#int#int#to_string(self/5: int) -> string {
-  @runtime(core.int_to_string)(self/5)
+fn inherent#int#int#to_string(self/34: int) -> string {
+  @runtime(core.int_to_string)(self/34)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }
 
-fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  @intrinsic(eq.primitive)(self/59, other/60)
+fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
+  @intrinsic(eq.primitive)(self/88, other/89)
 }
 
-fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  @runtime(core.int_hash)(self/85)
+fn trait_impl#Hash#int#hash(self/114: int) -> uint64 {
+  @runtime(core.int_hash)(self/114)
 }
 
-fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env158: closure_env_inc_0) -> int {
-  let x/0 = closure_env_inc_0.x_0(env158) in
-  let _wild155 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in
+fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env180: closure_env_inc_0) -> int {
+  let x/0 = closure_env_inc_0.x_0(env180) in
+  let _wild177 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in
   @intrinsic(ref.get)(x/0)
 }
 
-fn inherent#closure_env_get_1#closure_env_get_1#apply(env159: closure_env_get_1) -> int {
-  let x/0 = closure_env_get_1.x_0(env159) in
+fn inherent#closure_env_get_1#closure_env_get_1#apply(env181: closure_env_get_1) -> int {
+  let x/0 = closure_env_get_1.x_0(env181) in
   @intrinsic(ref.get)(x/0)
 }

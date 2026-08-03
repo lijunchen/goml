@@ -1,9 +1,9 @@
 fn point32_to_string(p/0: Point) -> string {
-  let mtmp155 = p/0 in
-  let x156 = Point.x(mtmp155) in
-  let x157 = Point.y(mtmp155) in
-  let y/2 = x157 in
-  let x/1 = x156 in
+  let mtmp177 = p/0 in
+  let x178 = Point.x(mtmp177) in
+  let x179 = Point.y(mtmp177) in
+  let y/2 = x179 in
+  let x/1 = x178 in
   (((("Point { x: " + inherent#int32#int32#to_string(x/1)) + ", y: ") +
     inherent#int32#int32#to_string(y/2)) +
     " }")
@@ -24,13 +24,13 @@ fn color_to_string(c/3: Color) -> string {
 }
 
 fn line_to_string(l/4: Line) -> string {
-  let mtmp158 = l/4 in
-  let x159 = Line.from(mtmp158) in
-  let x160 = Line.to(mtmp158) in
-  let x161 = Line.color(mtmp158) in
-  let color/7 = x161 in
-  let to/6 = x160 in
-  let from/5 = x159 in
+  let mtmp180 = l/4 in
+  let x181 = Line.from(mtmp180) in
+  let x182 = Line.to(mtmp180) in
+  let x183 = Line.color(mtmp180) in
+  let color/7 = x183 in
+  let to/6 = x182 in
+  let from/5 = x181 in
   (((((("Line { from: " + point32_to_string(from/5)) + ", to: ") + point32_to_string(to/6)) +
     ", color: ") +
     color_to_string(color/7)) +
@@ -38,11 +38,11 @@ fn line_to_string(l/4: Line) -> string {
 }
 
 fn point_type(p/8: Point) -> string {
-  let x162 = Point.x(p/8) in
-  let x163 = Point.y(p/8) in
-  match x162 {
+  let x184 = Point.x(p/8) in
+  let x185 = Point.y(p/8) in
+  match x184 {
     0 => {
-      match x163 {
+      match x185 {
         0 => {
           "origin"
         },
@@ -50,9 +50,9 @@ fn point_type(p/8: Point) -> string {
           "up"
         },
         _ =>
-          let y/9 = x163 in
-          let mtmp164 = (0 < y/9) in
-          match mtmp164 {
+          let y/9 = x185 in
+          let mtmp186 = (0 < y/9) in
+          match mtmp186 {
             true => {
               "above"
             },
@@ -63,7 +63,7 @@ fn point_type(p/8: Point) -> string {
       }
     },
     1 => {
-      match x163 {
+      match x185 {
         0 => {
           "right"
         },
@@ -76,20 +76,20 @@ fn point_type(p/8: Point) -> string {
 
 fn main() -> unit {
   let p0/10 = Point { x: 0, y: 0 } in
-  let mtmp165 = println__T_string(point_type(p0/10)) in
+  let mtmp187 = println__T_string(point_type(p0/10)) in
   let p1/11 = Point { x: 10, y: 10 } in
   let line/12 = Line { from: p0/10, to: p1/11, color: Color::Red } in
   println__T_string(line_to_string(line/12))
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

@@ -1,110 +1,110 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  let inline331 = @runtime(core.int32_to_string)(self/0) in
-  inline331
+  let inline353 = @runtime(core.int32_to_string)(self/0) in
+  inline353
 }
 
 fn trait_impl#Debug#int32#show(self/1: int32) -> string {
-  join inline_cont332(t164: string) -> string {
-    let t165 = ("i32(" + t164) in
-    let t166 = (t165 + ")") in
-    t166
+  join inline_cont354(t186: string) -> string {
+    let t187 = ("i32(" + t186) in
+    let t188 = (t187 + ")") in
+    t188
   } in
-  let inline333 = @runtime(core.int32_to_string)(self/1) in
-  jump inline_cont332(inline333)
+  let inline355 = @runtime(core.int32_to_string)(self/1) in
+  jump inline_cont354(inline355)
 }
 
 fn trait_impl#MyEq#int32#eq(self/2: int32, other/3: int32) -> bool {
-  let inline335 = @intrinsic(eq.primitive)(self/2, other/3) in
-  inline335
+  let inline357 = @intrinsic(eq.primitive)(self/2, other/3) in
+  inline357
 }
 
 fn trait_impl#MyHash#int32#hash(self/4: int32) -> int32 {
-  let t172 = (self/4 * 16777619) in
-  let t173 = (t172 + 216613626) in
-  t173
+  let t194 = (self/4 * 16777619) in
+  let t195 = (t194 + 216613626) in
+  t195
 }
 
 fn trait_impl#Add#int32#add(self/5: int32, other/6: int32) -> int32 {
-  let t176 = (self/5 + other/6) in
-  t176
+  let t198 = (self/5 + other/6) in
+  t198
 }
 
 fn trait_impl#Scale#int32#scale(self/7: int32, factor/8: int32) -> int32 {
-  let t179 = (self/7 * factor/8) in
-  t179
+  let t201 = (self/7 * factor/8) in
+  t201
 }
 
 fn trait_impl#Inspect#int32#inspect(self/9: int32) -> string {
-  join inline_cont336(t182: string) -> string {
-    let t183 = ("<" + t182) in
-    let t184 = (t183 + ">") in
-    t184
+  join inline_cont358(t204: string) -> string {
+    let t205 = ("<" + t204) in
+    let t206 = (t205 + ">") in
+    t206
   } in
-  let inline337 = @runtime(core.int32_to_string)(self/9) in
-  jump inline_cont336(inline337)
+  let inline359 = @runtime(core.int32_to_string)(self/9) in
+  jump inline_cont358(inline359)
 }
 
 fn trait_impl#Display#Boxed#show(self/10: Boxed) -> string {
-  let t187 = Boxed.value(self/10) in
-  join inline_cont338(t188: string) -> string {
-    let t189 = ("Boxed(" + t188) in
-    let t190 = (t189 + ")") in
-    t190
+  let t209 = Boxed.value(self/10) in
+  join inline_cont360(t210: string) -> string {
+    let t211 = ("Boxed(" + t210) in
+    let t212 = (t211 + ")") in
+    t212
   } in
-  let inline339 = @runtime(core.int32_to_string)(t187) in
-  jump inline_cont338(inline339)
+  let inline361 = @runtime(core.int32_to_string)(t209) in
+  jump inline_cont360(inline361)
 }
 
 fn trait_impl#Debug#Boxed#show(self/11: Boxed) -> string {
-  let t193 = Boxed.value(self/11) in
-  join inline_cont340(t194: string) -> string {
-    let t195 = ("Boxed{value=" + t194) in
-    let t196 = (t195 + "}") in
-    t196
+  let t215 = Boxed.value(self/11) in
+  join inline_cont362(t216: string) -> string {
+    let t217 = ("Boxed{value=" + t216) in
+    let t218 = (t217 + "}") in
+    t218
   } in
-  let inline341 = @runtime(core.int32_to_string)(t193) in
-  jump inline_cont340(inline341)
+  let inline363 = @runtime(core.int32_to_string)(t215) in
+  jump inline_cont362(inline363)
 }
 
 fn trait_impl#MyEq#Boxed#eq(self/12: Boxed, other/13: Boxed) -> bool {
-  let t199 = Boxed.value(self/12) in
-  let t200 = Boxed.value(other/13) in
-  let inline343 = @intrinsic(eq.primitive)(t199, t200) in
-  inline343
+  let t221 = Boxed.value(self/12) in
+  let t222 = Boxed.value(other/13) in
+  let inline365 = @intrinsic(eq.primitive)(t221, t222) in
+  inline365
 }
 
 fn trait_impl#MyHash#Boxed#hash(self/14: Boxed) -> int32 {
-  let t204 = Boxed.value(self/14) in
-  let t205 = (t204 * 31) in
-  let t206 = (t205 + 7) in
-  let t207 = (t206 * 1315423911) in
-  t207
+  let t226 = Boxed.value(self/14) in
+  let t227 = (t226 * 31) in
+  let t228 = (t227 + 7) in
+  let t229 = (t228 * 1315423911) in
+  t229
 }
 
 fn trait_impl#Add#Boxed#add(self/15: Boxed, other/16: Boxed) -> Boxed {
-  let t210 = Boxed.value(self/15) in
-  let t211 = Boxed.value(other/16) in
-  let t212 = (t210 + t211) in
-  let t213 = Boxed { value: t212 } in
-  t213
+  let t232 = Boxed.value(self/15) in
+  let t233 = Boxed.value(other/16) in
+  let t234 = (t232 + t233) in
+  let t235 = Boxed { value: t234 } in
+  t235
 }
 
 fn trait_impl#Scale#Boxed#scale(self/17: Boxed, factor/18: int32) -> Boxed {
-  let t216 = Boxed.value(self/17) in
-  let t217 = (t216 * factor/18) in
-  let t218 = Boxed { value: t217 } in
-  t218
+  let t238 = Boxed.value(self/17) in
+  let t239 = (t238 * factor/18) in
+  let t240 = Boxed { value: t239 } in
+  t240
 }
 
 fn trait_impl#Inspect#Boxed#inspect(self/19: Boxed) -> string {
-  let t221 = Boxed.value(self/19) in
-  join inline_cont344(t222: string) -> string {
-    let t223 = ("[" + t222) in
-    let t224 = (t223 + "]") in
-    t224
+  let t243 = Boxed.value(self/19) in
+  join inline_cont366(t244: string) -> string {
+    let t245 = ("[" + t244) in
+    let t246 = (t245 + "]") in
+    t246
   } in
-  let inline345 = @runtime(core.int32_to_string)(t221) in
-  jump inline_cont344(inline345)
+  let inline367 = @runtime(core.int32_to_string)(t243) in
+  jump inline_cont366(inline367)
 }
 
 fn bool_text(x/20: bool) -> string {
@@ -123,229 +123,229 @@ fn main() -> unit {
   let first/49 = 1 in
   let second/50 = 2 in
   let third/51 = 3 in
-  join inline_cont383(t230: string) -> unit {
-    join inline_cont380(mtmp155: unit) -> unit {
-      let t231 = Boxed { value: 99 } in
-      let t232 = Boxed { value: 3 } in
-      let t233 = Boxed { value: 4 } in
-      join inline_cont377(t234: string) -> unit {
-        join inline_cont374(mtmp156: unit) -> unit {
-          join inline_cont363(t235: string) -> unit {
-            join inline_cont360(mtmp157: unit) -> unit {
-              let t236 = Boxed { value: 1 } in
-              let t237 = Boxed { value: 5 } in
-              let t238 = Boxed { value: 6 } in
-              let t239 = Boxed { value: 7 } in
-              join inline_cont349(t240: string) -> unit {
-                let inline347 = trait_impl#ToString#string#to_string(t240) in
-                let inline348 = @runtime(core.string_println)(inline347) in
+  join inline_cont405(t252: string) -> unit {
+    join inline_cont402(mtmp177: unit) -> unit {
+      let t253 = Boxed { value: 99 } in
+      let t254 = Boxed { value: 3 } in
+      let t255 = Boxed { value: 4 } in
+      join inline_cont399(t256: string) -> unit {
+        join inline_cont396(mtmp178: unit) -> unit {
+          join inline_cont385(t257: string) -> unit {
+            join inline_cont382(mtmp179: unit) -> unit {
+              let t258 = Boxed { value: 1 } in
+              let t259 = Boxed { value: 5 } in
+              let t260 = Boxed { value: 6 } in
+              let t261 = Boxed { value: 7 } in
+              join inline_cont371(t262: string) -> unit {
+                let inline369 = trait_impl#ToString#string#to_string(t262) in
+                let inline370 = @runtime(core.string_println)(inline369) in
                 ()
               } in
-              let inline350 = trait_impl#Add#Boxed#add(t237, t238) in
-              let inline351 = trait_impl#Add#Boxed#add(inline350, t239) in
-              let inline352 = tag_text__Q_Boxed(t236) in
-              let inline353 = trait_impl#MyHash#Boxed#hash(inline351) in
-              let inline354 = (inline352 + " ") in
-              let inline355 = trait_impl#Inspect#Boxed#inspect(inline351) in
-              let inline356 = (inline354 + inline355) in
-              let inline357 = inherent#int32#int32#to_string(inline353) in
-              let inline358 = (" @" + inline357) in
-              let inline359 = (inline356 + inline358) in
-              jump inline_cont349(inline359)
+              let inline372 = trait_impl#Add#Boxed#add(t259, t260) in
+              let inline373 = trait_impl#Add#Boxed#add(inline372, t261) in
+              let inline374 = tag_text__Q_Boxed(t258) in
+              let inline375 = trait_impl#MyHash#Boxed#hash(inline373) in
+              let inline376 = (inline374 + " ") in
+              let inline377 = trait_impl#Inspect#Boxed#inspect(inline373) in
+              let inline378 = (inline376 + inline377) in
+              let inline379 = inherent#int32#int32#to_string(inline375) in
+              let inline380 = (" @" + inline379) in
+              let inline381 = (inline378 + inline380) in
+              jump inline_cont371(inline381)
             } in
-            let inline361 = trait_impl#ToString#string#to_string(t235) in
-            let inline362 = @runtime(core.string_println)(inline361) in
-            jump inline_cont360(())
+            let inline383 = trait_impl#ToString#string#to_string(t257) in
+            let inline384 = @runtime(core.string_println)(inline383) in
+            jump inline_cont382(())
           } in
-          let inline364 = trait_impl#Add#int32#add(first/49, second/50) in
-          let inline365 = trait_impl#Add#int32#add(inline364, third/51) in
-          let inline366 = tag_text__Q_int32(sum_tag/48) in
-          let inline367 = trait_impl#MyHash#int32#hash(inline365) in
-          let inline368 = (inline366 + " ") in
-          let inline369 = trait_impl#Inspect#int32#inspect(inline365) in
-          let inline370 = (inline368 + inline369) in
-          let inline371 = inherent#int32#int32#to_string(inline367) in
-          let inline372 = (" @" + inline371) in
-          let inline373 = (inline370 + inline372) in
-          jump inline_cont363(inline373)
+          let inline386 = trait_impl#Add#int32#add(first/49, second/50) in
+          let inline387 = trait_impl#Add#int32#add(inline386, third/51) in
+          let inline388 = tag_text__Q_int32(sum_tag/48) in
+          let inline389 = trait_impl#MyHash#int32#hash(inline387) in
+          let inline390 = (inline388 + " ") in
+          let inline391 = trait_impl#Inspect#int32#inspect(inline387) in
+          let inline392 = (inline390 + inline391) in
+          let inline393 = inherent#int32#int32#to_string(inline389) in
+          let inline394 = (" @" + inline393) in
+          let inline395 = (inline392 + inline394) in
+          jump inline_cont385(inline395)
         } in
-        let inline375 = trait_impl#ToString#string#to_string(t234) in
-        let inline376 = @runtime(core.string_println)(inline375) in
-        jump inline_cont374(())
+        let inline397 = trait_impl#ToString#string#to_string(t256) in
+        let inline398 = @runtime(core.string_println)(inline397) in
+        jump inline_cont396(())
       } in
-      let inline378 = combine_scaled__T_Boxed(t232, t233, 2) in
-      let inline379 = report_pair__Q_Boxed__T_Boxed(t231, t232, t233, inline378) in
-      jump inline_cont377(inline379)
+      let inline400 = combine_scaled__T_Boxed(t254, t255, 2) in
+      let inline401 = report_pair__Q_Boxed__T_Boxed(t253, t254, t255, inline400) in
+      jump inline_cont399(inline401)
     } in
-    let inline381 = trait_impl#ToString#string#to_string(t230) in
-    let inline382 = @runtime(core.string_println)(inline381) in
-    jump inline_cont380(())
+    let inline403 = trait_impl#ToString#string#to_string(t252) in
+    let inline404 = @runtime(core.string_println)(inline403) in
+    jump inline_cont402(())
   } in
-  let inline384 = combine_scaled__T_int32(left/46, right/47, 2) in
-  let inline385 = report_pair__Q_int32__T_int32(tag/45, left/46, right/47, inline384) in
-  jump inline_cont383(inline385)
+  let inline406 = combine_scaled__T_int32(left/46, right/47, 2) in
+  let inline407 = report_pair__Q_int32__T_int32(tag/45, left/46, right/47, inline406) in
+  jump inline_cont405(inline407)
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  let t243 = @runtime(core.int32_to_string)(self/6) in
-  t243
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  let t265 = @runtime(core.int32_to_string)(self/35) in
+  t265
 }
 
-fn trait_impl#Eq#int32#eq(self/65: int32, other/66: int32) -> bool {
-  let t246 = @intrinsic(eq.primitive)(self/65, other/66) in
-  t246
+fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
+  let t268 = @intrinsic(eq.primitive)(self/94, other/95) in
+  t268
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont386(t248: string) -> unit {
-    let t249 = @runtime(core.string_println)(t248) in
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont408(t270: string) -> unit {
+    let t271 = @runtime(core.string_println)(t270) in
     ()
   } in
-  jump inline_cont386(value/1)
+  jump inline_cont408(value/31)
 }
 
 fn full_report__Q_int32__T_int32(tag/34: int32, a/35: int32, b/36: int32) -> string {
-  join inline_cont400(combined/37: int32) -> string {
-    let inline388 = trait_impl#MyEq#int32#eq(a/35, b/36) in
-    let inline389 = tag_text__Q_int32(tag/34) in
-    let inline390 = show_both__T_int32(combined/37) in
-    let inline391 = trait_impl#MyHash#int32#hash(combined/37) in
-    let inline392 = (inline389 + " ") in
-    let inline393 = (inline392 + inline390) in
-    let inline394 = bool_text(inline388) in
-    let inline395 = (" | eq=" + inline394) in
-    let inline396 = inherent#int32#int32#to_string(inline391) in
-    let inline397 = (" | hash=" + inline396) in
-    let inline398 = (inline395 + inline397) in
-    let inline399 = (inline393 + inline398) in
-    inline399
+  join inline_cont422(combined/37: int32) -> string {
+    let inline410 = trait_impl#MyEq#int32#eq(a/35, b/36) in
+    let inline411 = tag_text__Q_int32(tag/34) in
+    let inline412 = show_both__T_int32(combined/37) in
+    let inline413 = trait_impl#MyHash#int32#hash(combined/37) in
+    let inline414 = (inline411 + " ") in
+    let inline415 = (inline414 + inline412) in
+    let inline416 = bool_text(inline410) in
+    let inline417 = (" | eq=" + inline416) in
+    let inline418 = inherent#int32#int32#to_string(inline413) in
+    let inline419 = (" | hash=" + inline418) in
+    let inline420 = (inline417 + inline419) in
+    let inline421 = (inline415 + inline420) in
+    inline421
   } in
-  let inline401 = 2 in
-  let inline402 = trait_impl#Add#int32#add(a/35, b/36) in
-  let inline403 = trait_impl#Scale#int32#scale(inline402, inline401) in
-  jump inline_cont400(inline403)
+  let inline423 = 2 in
+  let inline424 = trait_impl#Add#int32#add(a/35, b/36) in
+  let inline425 = trait_impl#Scale#int32#scale(inline424, inline423) in
+  jump inline_cont422(inline425)
 }
 
 fn full_report__Q_Boxed__T_Boxed(tag/34: Boxed, a/35: Boxed, b/36: Boxed) -> string {
-  join inline_cont417(combined/37: Boxed) -> string {
-    let inline405 = trait_impl#MyEq#Boxed#eq(a/35, b/36) in
-    let inline406 = tag_text__Q_Boxed(tag/34) in
-    let inline407 = show_both__T_Boxed(combined/37) in
-    let inline408 = trait_impl#MyHash#Boxed#hash(combined/37) in
-    let inline409 = (inline406 + " ") in
-    let inline410 = (inline409 + inline407) in
-    let inline411 = bool_text(inline405) in
-    let inline412 = (" | eq=" + inline411) in
-    let inline413 = inherent#int32#int32#to_string(inline408) in
-    let inline414 = (" | hash=" + inline413) in
-    let inline415 = (inline412 + inline414) in
-    let inline416 = (inline410 + inline415) in
-    inline416
+  join inline_cont439(combined/37: Boxed) -> string {
+    let inline427 = trait_impl#MyEq#Boxed#eq(a/35, b/36) in
+    let inline428 = tag_text__Q_Boxed(tag/34) in
+    let inline429 = show_both__T_Boxed(combined/37) in
+    let inline430 = trait_impl#MyHash#Boxed#hash(combined/37) in
+    let inline431 = (inline428 + " ") in
+    let inline432 = (inline431 + inline429) in
+    let inline433 = bool_text(inline427) in
+    let inline434 = (" | eq=" + inline433) in
+    let inline435 = inherent#int32#int32#to_string(inline430) in
+    let inline436 = (" | hash=" + inline435) in
+    let inline437 = (inline434 + inline436) in
+    let inline438 = (inline432 + inline437) in
+    inline438
   } in
-  let inline418 = 2 in
-  let inline419 = trait_impl#Add#Boxed#add(a/35, b/36) in
-  let inline420 = trait_impl#Scale#Boxed#scale(inline419, inline418) in
-  jump inline_cont417(inline420)
+  let inline440 = 2 in
+  let inline441 = trait_impl#Add#Boxed#add(a/35, b/36) in
+  let inline442 = trait_impl#Scale#Boxed#scale(inline441, inline440) in
+  jump inline_cont439(inline442)
 }
 
 fn sum_and_tag__Q_int32__T_int32(tag/38: int32, x/39: int32, y/40: int32, z/41: int32) -> string {
-  join inline_cont438(t258: int32) -> string {
-    join inline_cont436(total/42: int32) -> string {
-      join inline_cont430(header/43: string) -> string {
-        join inline_cont427(h/44: int32) -> string {
-          let t259 = (header/43 + " ") in
-          join inline_cont423(t260: string) -> string {
-            let t261 = (t259 + t260) in
-            join inline_cont421(t262: string) -> string {
-              let t263 = (" @" + t262) in
-              let t264 = (t261 + t263) in
-              t264
-            } in
-            let inline422 = @runtime(core.int32_to_string)(h/44) in
-            jump inline_cont421(inline422)
-          } in
-          let inline424 = inherent#int32#int32#to_string(total/42) in
-          let inline425 = ("<" + inline424) in
-          let inline426 = (inline425 + ">") in
-          jump inline_cont423(inline426)
-        } in
-        let inline428 = (total/42 * 16777619) in
-        let inline429 = (inline428 + 216613626) in
-        jump inline_cont427(inline429)
-      } in
-      let inline431 = trait_impl#Debug#int32#show(tag/38) in
-      let inline432 = (inline431 + "#") in
-      let inline433 = trait_impl#MyHash#int32#hash(tag/38) in
-      let inline434 = inherent#int32#int32#to_string(inline433) in
-      let inline435 = (inline432 + inline434) in
-      jump inline_cont430(inline435)
-    } in
-    let inline437 = (t258 + z/41) in
-    jump inline_cont436(inline437)
-  } in
-  let inline439 = (x/39 + y/40) in
-  jump inline_cont438(inline439)
-}
-
-fn sum_and_tag__Q_Boxed__T_Boxed(tag/38: Boxed, x/39: Boxed, y/40: Boxed, z/41: Boxed) -> string {
-  join inline_cont463(t267: Boxed) -> string {
-    join inline_cont458(total/42: Boxed) -> string {
+  join inline_cont460(t280: int32) -> string {
+    join inline_cont458(total/42: int32) -> string {
       join inline_cont452(header/43: string) -> string {
-        join inline_cont447(h/44: int32) -> string {
-          let t268 = (header/43 + " ") in
-          join inline_cont442(t269: string) -> string {
-            let t270 = (t268 + t269) in
-            join inline_cont440(t271: string) -> string {
-              let t272 = (" @" + t271) in
-              let t273 = (t270 + t272) in
-              t273
+        join inline_cont449(h/44: int32) -> string {
+          let t281 = (header/43 + " ") in
+          join inline_cont445(t282: string) -> string {
+            let t283 = (t281 + t282) in
+            join inline_cont443(t284: string) -> string {
+              let t285 = (" @" + t284) in
+              let t286 = (t283 + t285) in
+              t286
             } in
-            let inline441 = @runtime(core.int32_to_string)(h/44) in
-            jump inline_cont440(inline441)
+            let inline444 = @runtime(core.int32_to_string)(h/44) in
+            jump inline_cont443(inline444)
           } in
-          let inline443 = Boxed.value(total/42) in
-          let inline444 = inherent#int32#int32#to_string(inline443) in
-          let inline445 = ("[" + inline444) in
-          let inline446 = (inline445 + "]") in
-          jump inline_cont442(inline446)
+          let inline446 = inherent#int32#int32#to_string(total/42) in
+          let inline447 = ("<" + inline446) in
+          let inline448 = (inline447 + ">") in
+          jump inline_cont445(inline448)
         } in
-        let inline448 = Boxed.value(total/42) in
-        let inline449 = (inline448 * 31) in
-        let inline450 = (inline449 + 7) in
-        let inline451 = (inline450 * 1315423911) in
-        jump inline_cont447(inline451)
+        let inline450 = (total/42 * 16777619) in
+        let inline451 = (inline450 + 216613626) in
+        jump inline_cont449(inline451)
       } in
-      let inline453 = trait_impl#Debug#Boxed#show(tag/38) in
+      let inline453 = trait_impl#Debug#int32#show(tag/38) in
       let inline454 = (inline453 + "#") in
-      let inline455 = trait_impl#MyHash#Boxed#hash(tag/38) in
+      let inline455 = trait_impl#MyHash#int32#hash(tag/38) in
       let inline456 = inherent#int32#int32#to_string(inline455) in
       let inline457 = (inline454 + inline456) in
       jump inline_cont452(inline457)
     } in
-    let inline459 = Boxed.value(t267) in
-    let inline460 = Boxed.value(z/41) in
-    let inline461 = (inline459 + inline460) in
-    let inline462 = Boxed { value: inline461 } in
-    jump inline_cont458(inline462)
+    let inline459 = (t280 + z/41) in
+    jump inline_cont458(inline459)
   } in
-  let inline464 = Boxed.value(x/39) in
-  let inline465 = Boxed.value(y/40) in
-  let inline466 = (inline464 + inline465) in
-  let inline467 = Boxed { value: inline466 } in
-  jump inline_cont463(inline467)
+  let inline461 = (x/39 + y/40) in
+  jump inline_cont460(inline461)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn sum_and_tag__Q_Boxed__T_Boxed(tag/38: Boxed, x/39: Boxed, y/40: Boxed, z/41: Boxed) -> string {
+  join inline_cont485(t289: Boxed) -> string {
+    join inline_cont480(total/42: Boxed) -> string {
+      join inline_cont474(header/43: string) -> string {
+        join inline_cont469(h/44: int32) -> string {
+          let t290 = (header/43 + " ") in
+          join inline_cont464(t291: string) -> string {
+            let t292 = (t290 + t291) in
+            join inline_cont462(t293: string) -> string {
+              let t294 = (" @" + t293) in
+              let t295 = (t292 + t294) in
+              t295
+            } in
+            let inline463 = @runtime(core.int32_to_string)(h/44) in
+            jump inline_cont462(inline463)
+          } in
+          let inline465 = Boxed.value(total/42) in
+          let inline466 = inherent#int32#int32#to_string(inline465) in
+          let inline467 = ("[" + inline466) in
+          let inline468 = (inline467 + "]") in
+          jump inline_cont464(inline468)
+        } in
+        let inline470 = Boxed.value(total/42) in
+        let inline471 = (inline470 * 31) in
+        let inline472 = (inline471 + 7) in
+        let inline473 = (inline472 * 1315423911) in
+        jump inline_cont469(inline473)
+      } in
+      let inline475 = trait_impl#Debug#Boxed#show(tag/38) in
+      let inline476 = (inline475 + "#") in
+      let inline477 = trait_impl#MyHash#Boxed#hash(tag/38) in
+      let inline478 = inherent#int32#int32#to_string(inline477) in
+      let inline479 = (inline476 + inline478) in
+      jump inline_cont474(inline479)
+    } in
+    let inline481 = Boxed.value(t289) in
+    let inline482 = Boxed.value(z/41) in
+    let inline483 = (inline481 + inline482) in
+    let inline484 = Boxed { value: inline483 } in
+    jump inline_cont480(inline484)
+  } in
+  let inline486 = Boxed.value(x/39) in
+  let inline487 = Boxed.value(y/40) in
+  let inline488 = (inline486 + inline487) in
+  let inline489 = Boxed { value: inline488 } in
+  jump inline_cont485(inline489)
+}
+
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }
 
 fn combine_scaled__T_int32(a/23: int32, b/24: int32, factor/25: int32) -> int32 {
-  join inline_cont470(t278: int32) -> int32 {
-    let inline469 = (t278 * factor/25) in
-    inline469
+  join inline_cont492(t300: int32) -> int32 {
+    let inline491 = (t300 * factor/25) in
+    inline491
   } in
-  let inline471 = (a/23 + b/24) in
-  jump inline_cont470(inline471)
+  let inline493 = (a/23 + b/24) in
+  jump inline_cont492(inline493)
 }
 
 fn report_pair__Q_int32__T_int32(
@@ -354,62 +354,62 @@ fn report_pair__Q_int32__T_int32(
   b/28: int32,
   combined/29: int32
 ) -> string {
-  join inline_cont489(same/30: bool) -> string {
-    join inline_cont483(header/31: string) -> string {
-      join inline_cont478(repr/32: string) -> string {
-        join inline_cont475(h/33: int32) -> string {
-          let t282 = (header/31 + " ") in
-          let t283 = (t282 + repr/32) in
-          join inline_cont474(t284: string) -> string {
-            let t285 = (" | eq=" + t284) in
-            join inline_cont472(t286: string) -> string {
-              let t287 = (" | hash=" + t286) in
-              let t288 = (t285 + t287) in
-              let t289 = (t283 + t288) in
-              t289
+  join inline_cont511(same/30: bool) -> string {
+    join inline_cont505(header/31: string) -> string {
+      join inline_cont500(repr/32: string) -> string {
+        join inline_cont497(h/33: int32) -> string {
+          let t304 = (header/31 + " ") in
+          let t305 = (t304 + repr/32) in
+          join inline_cont496(t306: string) -> string {
+            let t307 = (" | eq=" + t306) in
+            join inline_cont494(t308: string) -> string {
+              let t309 = (" | hash=" + t308) in
+              let t310 = (t307 + t309) in
+              let t311 = (t305 + t310) in
+              t311
             } in
-            let inline473 = @runtime(core.int32_to_string)(h/33) in
-            jump inline_cont472(inline473)
+            let inline495 = @runtime(core.int32_to_string)(h/33) in
+            jump inline_cont494(inline495)
           } in
           if same/30 {
-            jump inline_cont474("true")
+            jump inline_cont496("true")
           } else {
-            jump inline_cont474("false")
+            jump inline_cont496("false")
           }
         } in
-        let inline476 = (combined/29 * 16777619) in
-        let inline477 = (inline476 + 216613626) in
-        jump inline_cont475(inline477)
+        let inline498 = (combined/29 * 16777619) in
+        let inline499 = (inline498 + 216613626) in
+        jump inline_cont497(inline499)
       } in
-      let inline479 = trait_impl#Debug#int32#show(combined/29) in
-      let inline480 = (inline479 + " / ") in
-      let inline481 = trait_impl#Display#int32#show(combined/29) in
-      let inline482 = (inline480 + inline481) in
-      jump inline_cont478(inline482)
+      let inline501 = trait_impl#Debug#int32#show(combined/29) in
+      let inline502 = (inline501 + " / ") in
+      let inline503 = trait_impl#Display#int32#show(combined/29) in
+      let inline504 = (inline502 + inline503) in
+      jump inline_cont500(inline504)
     } in
-    let inline484 = trait_impl#Debug#int32#show(tag/26) in
-    let inline485 = (inline484 + "#") in
-    let inline486 = trait_impl#MyHash#int32#hash(tag/26) in
-    let inline487 = inherent#int32#int32#to_string(inline486) in
-    let inline488 = (inline485 + inline487) in
-    jump inline_cont483(inline488)
+    let inline506 = trait_impl#Debug#int32#show(tag/26) in
+    let inline507 = (inline506 + "#") in
+    let inline508 = trait_impl#MyHash#int32#hash(tag/26) in
+    let inline509 = inherent#int32#int32#to_string(inline508) in
+    let inline510 = (inline507 + inline509) in
+    jump inline_cont505(inline510)
   } in
-  let inline490 = trait_impl#Eq#int32#eq(a/27, b/28) in
-  jump inline_cont489(inline490)
+  let inline512 = trait_impl#Eq#int32#eq(a/27, b/28) in
+  jump inline_cont511(inline512)
 }
 
 fn combine_scaled__T_Boxed(a/23: Boxed, b/24: Boxed, factor/25: int32) -> Boxed {
-  join inline_cont495(t292: Boxed) -> Boxed {
-    let inline492 = Boxed.value(t292) in
-    let inline493 = (inline492 * factor/25) in
-    let inline494 = Boxed { value: inline493 } in
-    inline494
+  join inline_cont517(t314: Boxed) -> Boxed {
+    let inline514 = Boxed.value(t314) in
+    let inline515 = (inline514 * factor/25) in
+    let inline516 = Boxed { value: inline515 } in
+    inline516
   } in
-  let inline496 = Boxed.value(a/23) in
-  let inline497 = Boxed.value(b/24) in
-  let inline498 = (inline496 + inline497) in
-  let inline499 = Boxed { value: inline498 } in
-  jump inline_cont495(inline499)
+  let inline518 = Boxed.value(a/23) in
+  let inline519 = Boxed.value(b/24) in
+  let inline520 = (inline518 + inline519) in
+  let inline521 = Boxed { value: inline520 } in
+  jump inline_cont517(inline521)
 }
 
 fn report_pair__Q_Boxed__T_Boxed(
@@ -418,131 +418,131 @@ fn report_pair__Q_Boxed__T_Boxed(
   b/28: Boxed,
   combined/29: Boxed
 ) -> string {
-  join inline_cont519(same/30: bool) -> string {
-    join inline_cont513(header/31: string) -> string {
-      join inline_cont508(repr/32: string) -> string {
-        join inline_cont503(h/33: int32) -> string {
-          let t296 = (header/31 + " ") in
-          let t297 = (t296 + repr/32) in
-          join inline_cont502(t298: string) -> string {
-            let t299 = (" | eq=" + t298) in
-            join inline_cont500(t300: string) -> string {
-              let t301 = (" | hash=" + t300) in
-              let t302 = (t299 + t301) in
-              let t303 = (t297 + t302) in
-              t303
+  join inline_cont541(same/30: bool) -> string {
+    join inline_cont535(header/31: string) -> string {
+      join inline_cont530(repr/32: string) -> string {
+        join inline_cont525(h/33: int32) -> string {
+          let t318 = (header/31 + " ") in
+          let t319 = (t318 + repr/32) in
+          join inline_cont524(t320: string) -> string {
+            let t321 = (" | eq=" + t320) in
+            join inline_cont522(t322: string) -> string {
+              let t323 = (" | hash=" + t322) in
+              let t324 = (t321 + t323) in
+              let t325 = (t319 + t324) in
+              t325
             } in
-            let inline501 = @runtime(core.int32_to_string)(h/33) in
-            jump inline_cont500(inline501)
+            let inline523 = @runtime(core.int32_to_string)(h/33) in
+            jump inline_cont522(inline523)
           } in
           if same/30 {
-            jump inline_cont502("true")
+            jump inline_cont524("true")
           } else {
-            jump inline_cont502("false")
+            jump inline_cont524("false")
           }
         } in
-        let inline504 = Boxed.value(combined/29) in
-        let inline505 = (inline504 * 31) in
-        let inline506 = (inline505 + 7) in
-        let inline507 = (inline506 * 1315423911) in
-        jump inline_cont503(inline507)
+        let inline526 = Boxed.value(combined/29) in
+        let inline527 = (inline526 * 31) in
+        let inline528 = (inline527 + 7) in
+        let inline529 = (inline528 * 1315423911) in
+        jump inline_cont525(inline529)
       } in
-      let inline509 = trait_impl#Debug#Boxed#show(combined/29) in
-      let inline510 = (inline509 + " / ") in
-      let inline511 = trait_impl#Display#Boxed#show(combined/29) in
-      let inline512 = (inline510 + inline511) in
-      jump inline_cont508(inline512)
+      let inline531 = trait_impl#Debug#Boxed#show(combined/29) in
+      let inline532 = (inline531 + " / ") in
+      let inline533 = trait_impl#Display#Boxed#show(combined/29) in
+      let inline534 = (inline532 + inline533) in
+      jump inline_cont530(inline534)
     } in
-    let inline514 = trait_impl#Debug#Boxed#show(tag/26) in
-    let inline515 = (inline514 + "#") in
-    let inline516 = trait_impl#MyHash#Boxed#hash(tag/26) in
-    let inline517 = inherent#int32#int32#to_string(inline516) in
-    let inline518 = (inline515 + inline517) in
-    jump inline_cont513(inline518)
+    let inline536 = trait_impl#Debug#Boxed#show(tag/26) in
+    let inline537 = (inline536 + "#") in
+    let inline538 = trait_impl#MyHash#Boxed#hash(tag/26) in
+    let inline539 = inherent#int32#int32#to_string(inline538) in
+    let inline540 = (inline537 + inline539) in
+    jump inline_cont535(inline540)
   } in
-  let inline520 = Boxed.value(a/27) in
-  let inline521 = Boxed.value(b/28) in
-  let inline522 = trait_impl#Eq#int32#eq(inline520, inline521) in
-  jump inline_cont519(inline522)
+  let inline542 = Boxed.value(a/27) in
+  let inline543 = Boxed.value(b/28) in
+  let inline544 = trait_impl#Eq#int32#eq(inline542, inline543) in
+  jump inline_cont541(inline544)
 }
 
 fn tag_text__Q_int32(tag/22: int32) -> string {
-  join inline_cont528(t306: string) -> string {
-    let t307 = (t306 + "#") in
-    join inline_cont525(t308: int32) -> string {
-      join inline_cont523(t309: string) -> string {
-        let t310 = (t307 + t309) in
-        t310
+  join inline_cont550(t328: string) -> string {
+    let t329 = (t328 + "#") in
+    join inline_cont547(t330: int32) -> string {
+      join inline_cont545(t331: string) -> string {
+        let t332 = (t329 + t331) in
+        t332
       } in
-      let inline524 = @runtime(core.int32_to_string)(t308) in
-      jump inline_cont523(inline524)
+      let inline546 = @runtime(core.int32_to_string)(t330) in
+      jump inline_cont545(inline546)
     } in
-    let inline526 = (tag/22 * 16777619) in
-    let inline527 = (inline526 + 216613626) in
-    jump inline_cont525(inline527)
+    let inline548 = (tag/22 * 16777619) in
+    let inline549 = (inline548 + 216613626) in
+    jump inline_cont547(inline549)
   } in
-  let inline529 = inherent#int32#int32#to_string(tag/22) in
-  let inline530 = ("i32(" + inline529) in
-  let inline531 = (inline530 + ")") in
-  jump inline_cont528(inline531)
+  let inline551 = inherent#int32#int32#to_string(tag/22) in
+  let inline552 = ("i32(" + inline551) in
+  let inline553 = (inline552 + ")") in
+  jump inline_cont550(inline553)
 }
 
 fn tag_text__Q_Boxed(tag/22: Boxed) -> string {
-  join inline_cont539(t313: string) -> string {
-    let t314 = (t313 + "#") in
-    join inline_cont534(t315: int32) -> string {
-      join inline_cont532(t316: string) -> string {
-        let t317 = (t314 + t316) in
-        t317
+  join inline_cont561(t335: string) -> string {
+    let t336 = (t335 + "#") in
+    join inline_cont556(t337: int32) -> string {
+      join inline_cont554(t338: string) -> string {
+        let t339 = (t336 + t338) in
+        t339
       } in
-      let inline533 = @runtime(core.int32_to_string)(t315) in
-      jump inline_cont532(inline533)
+      let inline555 = @runtime(core.int32_to_string)(t337) in
+      jump inline_cont554(inline555)
     } in
-    let inline535 = Boxed.value(tag/22) in
-    let inline536 = (inline535 * 31) in
-    let inline537 = (inline536 + 7) in
-    let inline538 = (inline537 * 1315423911) in
-    jump inline_cont534(inline538)
+    let inline557 = Boxed.value(tag/22) in
+    let inline558 = (inline557 * 31) in
+    let inline559 = (inline558 + 7) in
+    let inline560 = (inline559 * 1315423911) in
+    jump inline_cont556(inline560)
   } in
-  let inline540 = Boxed.value(tag/22) in
-  let inline541 = inherent#int32#int32#to_string(inline540) in
-  let inline542 = ("Boxed{value=" + inline541) in
-  let inline543 = (inline542 + "}") in
-  jump inline_cont539(inline543)
+  let inline562 = Boxed.value(tag/22) in
+  let inline563 = inherent#int32#int32#to_string(inline562) in
+  let inline564 = ("Boxed{value=" + inline563) in
+  let inline565 = (inline564 + "}") in
+  jump inline_cont561(inline565)
 }
 
 fn show_both__T_int32(x/21: int32) -> string {
-  join inline_cont546(t320: string) -> string {
-    let t321 = (t320 + " / ") in
-    join inline_cont544(t322: string) -> string {
-      let t323 = (t321 + t322) in
-      t323
+  join inline_cont568(t342: string) -> string {
+    let t343 = (t342 + " / ") in
+    join inline_cont566(t344: string) -> string {
+      let t345 = (t343 + t344) in
+      t345
     } in
-    let inline545 = inherent#int32#int32#to_string(x/21) in
-    jump inline_cont544(inline545)
+    let inline567 = inherent#int32#int32#to_string(x/21) in
+    jump inline_cont566(inline567)
   } in
-  let inline547 = inherent#int32#int32#to_string(x/21) in
-  let inline548 = ("i32(" + inline547) in
-  let inline549 = (inline548 + ")") in
-  jump inline_cont546(inline549)
+  let inline569 = inherent#int32#int32#to_string(x/21) in
+  let inline570 = ("i32(" + inline569) in
+  let inline571 = (inline570 + ")") in
+  jump inline_cont568(inline571)
 }
 
 fn show_both__T_Boxed(x/21: Boxed) -> string {
-  join inline_cont555(t326: string) -> string {
-    let t327 = (t326 + " / ") in
-    join inline_cont550(t328: string) -> string {
-      let t329 = (t327 + t328) in
-      t329
+  join inline_cont577(t348: string) -> string {
+    let t349 = (t348 + " / ") in
+    join inline_cont572(t350: string) -> string {
+      let t351 = (t349 + t350) in
+      t351
     } in
-    let inline551 = Boxed.value(x/21) in
-    let inline552 = inherent#int32#int32#to_string(inline551) in
-    let inline553 = ("Boxed(" + inline552) in
-    let inline554 = (inline553 + ")") in
-    jump inline_cont550(inline554)
+    let inline573 = Boxed.value(x/21) in
+    let inline574 = inherent#int32#int32#to_string(inline573) in
+    let inline575 = ("Boxed(" + inline574) in
+    let inline576 = (inline575 + ")") in
+    jump inline_cont572(inline576)
   } in
-  let inline556 = Boxed.value(x/21) in
-  let inline557 = inherent#int32#int32#to_string(inline556) in
-  let inline558 = ("Boxed{value=" + inline557) in
-  let inline559 = (inline558 + "}") in
-  jump inline_cont555(inline559)
+  let inline578 = Boxed.value(x/21) in
+  let inline579 = inherent#int32#int32#to_string(inline578) in
+  let inline580 = ("Boxed{value=" + inline579) in
+  let inline581 = (inline580 + "}") in
+  jump inline_cont577(inline581)
 }

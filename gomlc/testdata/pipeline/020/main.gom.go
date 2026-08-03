@@ -73,17 +73,17 @@ func (_ Shape__unit_Origin) isShape__unit() {}
 func bounce_int(shape__0 Shape__int32) Shape__int32 {
     switch shape__0.(type) {
     case Shape__int32_Dot:
-        var x155 Point = shape__0.(Shape__int32_Dot)._0
-        var t184 Shape__int32 = Shape__int32_Dot{
-            _0: x155,
+        var x177 Point = shape__0.(Shape__int32_Dot)._0
+        var t206 Shape__int32 = Shape__int32_Dot{
+            _0: x177,
         }
-        return t184
+        return t206
     case Shape__int32_Wrapped:
-        var x156 Wrapper__int32 = shape__0.(Shape__int32_Wrapped)._0
-        var t185 Shape__int32 = Shape__int32_Wrapped{
-            _0: x156,
+        var x178 Wrapper__int32 = shape__0.(Shape__int32_Wrapped)._0
+        var t207 Shape__int32 = Shape__int32_Wrapped{
+            _0: x178,
         }
-        return t185
+        return t207
     case Shape__int32_Origin:
         return Shape__int32_Origin{}
     default:
@@ -92,69 +92,69 @@ func bounce_int(shape__0 Shape__int32) Shape__int32 {
 }
 
 func point32_to_string(point__8 Point) string {
-    var x160 int32 = point__8.x
-    var x161 int32 = point__8.y
-    var t197 string
-    var inline265 string = _goml_runtime_core_int32_to_string(x160)
-    t197 = inline265
-    var with_x__11 string = "Point { x: " + t197
+    var x182 int32 = point__8.x
+    var x183 int32 = point__8.y
+    var t219 string
+    var inline287 string = _goml_runtime_core_int32_to_string(x182)
+    t219 = inline287
+    var with_x__11 string = "Point { x: " + t219
     var with_y_label__12 string = with_x__11 + ", y: "
-    var t198 string
-    var inline263 string = _goml_runtime_core_int32_to_string(x161)
-    t198 = inline263
-    var with_y__13 string = with_y_label__12 + t198
-    var t199 string = with_y__13 + " }"
-    return t199
+    var t220 string
+    var inline285 string = _goml_runtime_core_int32_to_string(x183)
+    t220 = inline285
+    var with_y__13 string = with_y_label__12 + t220
+    var t221 string = with_y__13 + " }"
+    return t221
 }
 
 func wrapper_int32_to_string(wrapper__14 Wrapper__int32) string {
-    var x163 int32 = wrapper__14.value
-    var t202 string
-    var inline267 string = _goml_runtime_core_int32_to_string(x163)
-    t202 = inline267
-    var prefix__16 string = "Wrapper[int32] { value: " + t202
-    var t203 string = prefix__16 + " }"
-    return t203
+    var x185 int32 = wrapper__14.value
+    var t224 string
+    var inline289 string = _goml_runtime_core_int32_to_string(x185)
+    t224 = inline289
+    var prefix__16 string = "Wrapper[int32] { value: " + t224
+    var t225 string = prefix__16 + " }"
+    return t225
 }
 
 func wrapper_unit_to_string(wrapper__17 Wrapper__unit) string {
-    var x165 struct{} = wrapper__17.value
-    var t206 string
-    var inline269 string = _goml_runtime_core_unit_to_string(x165)
-    t206 = inline269
-    var prefix__19 string = "Wrapper[unit] { value: " + t206
-    var t207 string = prefix__19 + " }"
-    return t207
+    var x187 struct{} = wrapper__17.value
+    var t228 string
+    var inline291 string = _goml_runtime_core_unit_to_string(x187)
+    t228 = inline291
+    var prefix__19 string = "Wrapper[unit] { value: " + t228
+    var t229 string = prefix__19 + " }"
+    return t229
 }
 
 func shape_int32_to_string(shape__20 Shape__int32) string {
     switch shape__20.(type) {
     case Shape__int32_Dot:
-        var x166 Point = shape__20.(Shape__int32_Dot)._0
-        var t212 string
-        var inline272 int32 = x166.x
-        var inline273 int32 = x166.y
-        var inline276 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline272)
-        var inline277 string = "Point { x: " + inline276
-        var inline278 string = inline277 + ", y: "
-        var inline279 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline273)
-        var inline280 string = inline278 + inline279
-        var inline281 string = inline280 + " }"
-        t212 = inline281
-        var prefix__22 string = "Shape::Dot(" + t212
-        var t213 string = prefix__22 + ")"
-        return t213
+        var x188 Point = shape__20.(Shape__int32_Dot)._0
+        var t234 string
+        var inline294 int32 = x188.x
+        var inline295 int32 = x188.y
+        var inline298 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline294)
+        var inline299 string = "Point { x: " + inline298
+        var inline300 string = inline299 + ", y: "
+        var inline301 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline295)
+        var inline302 string = inline300 + inline301
+        var inline303 string = inline302 + " }"
+        t234 = inline303
+        var prefix__22 string = "Shape::Dot(" + t234
+        var t235 string = prefix__22 + ")"
+        return t235
     case Shape__int32_Wrapped:
-        var x167 Wrapper__int32 = shape__20.(Shape__int32_Wrapped)._0
-        var t214 string
-        var inline284 int32 = x167.value
-        var inline286 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline284)
-        var inline287 string = "Wrapper[int32] { value: " + inline286
-        var inline288 string = inline287 + " }"
-        t214 = inline288
-        var prefix__24 string = "Shape::Wrapped(" + t214
-        var t215 string = prefix__24 + ")"
-        return t215
+        var x189 Wrapper__int32 = shape__20.(Shape__int32_Wrapped)._0
+        var t236 string
+        var inline306 int32 = x189.value
+        var inline308 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline306)
+        var inline309 string = "Wrapper[int32] { value: " + inline308
+        var inline310 string = inline309 + " }"
+        t236 = inline310
+        var prefix__24 string = "Shape::Wrapped(" + t236
+        var t237 string = prefix__24 + ")"
+        return t237
     case Shape__int32_Origin:
         return "Shape::Origin"
     default:
@@ -165,31 +165,31 @@ func shape_int32_to_string(shape__20 Shape__int32) string {
 func shape_unit_to_string(shape__25 Shape__unit) string {
     switch shape__25.(type) {
     case Shape__unit_Dot:
-        var x168 Point = shape__25.(Shape__unit_Dot)._0
-        var t220 string
-        var inline291 int32 = x168.x
-        var inline292 int32 = x168.y
-        var inline295 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline291)
-        var inline296 string = "Point { x: " + inline295
-        var inline297 string = inline296 + ", y: "
-        var inline298 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline292)
-        var inline299 string = inline297 + inline298
-        var inline300 string = inline299 + " }"
-        t220 = inline300
-        var prefix__27 string = "Shape::Dot(" + t220
-        var t221 string = prefix__27 + ")"
-        return t221
+        var x190 Point = shape__25.(Shape__unit_Dot)._0
+        var t242 string
+        var inline313 int32 = x190.x
+        var inline314 int32 = x190.y
+        var inline317 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline313)
+        var inline318 string = "Point { x: " + inline317
+        var inline319 string = inline318 + ", y: "
+        var inline320 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline314)
+        var inline321 string = inline319 + inline320
+        var inline322 string = inline321 + " }"
+        t242 = inline322
+        var prefix__27 string = "Shape::Dot(" + t242
+        var t243 string = prefix__27 + ")"
+        return t243
     case Shape__unit_Wrapped:
-        var x169 Wrapper__unit = shape__25.(Shape__unit_Wrapped)._0
-        var t222 string
-        var inline303 struct{} = x169.value
-        var inline305 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline303)
-        var inline306 string = "Wrapper[unit] { value: " + inline305
-        var inline307 string = inline306 + " }"
-        t222 = inline307
-        var prefix__29 string = "Shape::Wrapped(" + t222
-        var t223 string = prefix__29 + ")"
-        return t223
+        var x191 Wrapper__unit = shape__25.(Shape__unit_Wrapped)._0
+        var t244 string
+        var inline325 struct{} = x191.value
+        var inline327 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(inline325)
+        var inline328 string = "Wrapper[unit] { value: " + inline327
+        var inline329 string = inline328 + " }"
+        t244 = inline329
+        var prefix__29 string = "Shape::Wrapped(" + t244
+        var t245 string = prefix__29 + ")"
+        return t245
     case Shape__unit_Origin:
         return "Shape::Origin"
     default:
@@ -198,101 +198,101 @@ func shape_unit_to_string(shape__25 Shape__unit) string {
 }
 
 func main0() struct{} {
-    var t225 Point = Point{
+    var t247 Point = Point{
         x: 3,
         y: 4,
     }
-    var t226 string = point32_to_string(t225)
-    println__T_string(t226)
-    var t227 Wrapper__int32 = Wrapper__int32{
+    var t248 string = point32_to_string(t247)
+    println__T_string(t248)
+    var t249 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
-    var t228 string = wrapper_int32_to_string(t227)
-    println__T_string(t228)
-    var t229 Wrapper__unit = Wrapper__unit{
+    var t250 string = wrapper_int32_to_string(t249)
+    println__T_string(t250)
+    var t251 Wrapper__unit = Wrapper__unit{
         value: struct{}{},
     }
-    var t230 string = wrapper_unit_to_string(t229)
-    println__T_string(t230)
+    var t252 string = wrapper_unit_to_string(t251)
+    println__T_string(t252)
     var bounced_origin__30 Shape__int32 = bounce_int(Shape__int32_Origin{})
-    var t231 Point = Point{
+    var t253 Point = Point{
         x: 3,
         y: 4,
     }
-    var t232 Shape__int32 = Shape__int32_Dot{
-        _0: t231,
+    var t254 Shape__int32 = Shape__int32_Dot{
+        _0: t253,
     }
-    var t233 string = shape_int32_to_string(t232)
-    println__T_string(t233)
-    var t234 Wrapper__int32 = Wrapper__int32{
+    var t255 string = shape_int32_to_string(t254)
+    println__T_string(t255)
+    var t256 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
-    var t235 Shape__int32 = Shape__int32_Wrapped{
-        _0: t234,
+    var t257 Shape__int32 = Shape__int32_Wrapped{
+        _0: t256,
     }
-    var t236 string = shape_int32_to_string(t235)
-    var inline346 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t236)
-    _goml_runtime_core_string_println(inline346)
-    var t237 string = shape_int32_to_string(bounced_origin__30)
-    var inline343 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t237)
-    _goml_runtime_core_string_println(inline343)
-    var t238 Point = Point{
+    var t258 string = shape_int32_to_string(t257)
+    var inline368 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t258)
+    _goml_runtime_core_string_println(inline368)
+    var t259 string = shape_int32_to_string(bounced_origin__30)
+    var inline365 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t259)
+    _goml_runtime_core_string_println(inline365)
+    var t260 Point = Point{
         x: 3,
         y: 4,
     }
-    var t239 Shape__unit = Shape__unit_Dot{
-        _0: t238,
+    var t261 Shape__unit = Shape__unit_Dot{
+        _0: t260,
     }
-    var t240 string = shape_unit_to_string(t239)
-    var inline340 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t240)
-    _goml_runtime_core_string_println(inline340)
-    var t241 Wrapper__unit = Wrapper__unit{
+    var t262 string = shape_unit_to_string(t261)
+    var inline362 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t262)
+    _goml_runtime_core_string_println(inline362)
+    var t263 Wrapper__unit = Wrapper__unit{
         value: struct{}{},
     }
-    var t242 Shape__unit = Shape__unit_Wrapped{
-        _0: t241,
+    var t264 Shape__unit = Shape__unit_Wrapped{
+        _0: t263,
     }
-    var t243 string = shape_unit_to_string(t242)
-    var inline337 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t243)
-    _goml_runtime_core_string_println(inline337)
-    var t244 string
-    t244 = "Shape::Origin"
-    var inline323 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t244)
-    _goml_runtime_core_string_println(inline323)
-    var t245 Shape__int32
-    t245 = Shape__int32_Origin{}
-    switch t245.(type) {
+    var t265 string = shape_unit_to_string(t264)
+    var inline359 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t265)
+    _goml_runtime_core_string_println(inline359)
+    var t266 string
+    t266 = "Shape::Origin"
+    var inline345 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t266)
+    _goml_runtime_core_string_println(inline345)
+    var t267 Shape__int32
+    t267 = Shape__int32_Origin{}
+    switch t267.(type) {
     case Shape__int32_Dot:
     case Shape__int32_Wrapped:
     case Shape__int32_Origin:
     default:
         panic("non-exhaustive match")
     }
-    var inline309 string = "struct enums!"
-    var inline310 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline309)
-    _goml_runtime_core_string_println(inline310)
+    var inline331 string = "struct enums!"
+    var inline332 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline331)
+    _goml_runtime_core_string_println(inline332)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__6 int32) string {
-    var t249 string = _goml_runtime_core_int32_to_string(self__6)
-    return t249
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
+    var t271 string = _goml_runtime_core_int32_to_string(self__35)
+    return t271
 }
 
-func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__36 struct{}) string {
-    var t252 string = _goml_runtime_core_unit_to_string(self__36)
-    return t252
+func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__65 struct{}) string {
+    var t274 string = _goml_runtime_core_unit_to_string(self__65)
+    return t274
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t254 string
-    t254 = value__1
-    _goml_runtime_core_string_println(t254)
+func println__T_string(value__31 string) struct{} {
+    var t276 string
+    t276 = value__31
+    _goml_runtime_core_string_println(t276)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

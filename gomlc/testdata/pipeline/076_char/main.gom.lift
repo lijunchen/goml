@@ -1,6 +1,6 @@
 fn main() -> unit {
   let c/0 = 'A' in
-  let _wild155 = println__T_string(inherent#char#char#to_string(c/0)) in
+  let _wild177 = println__T_string(inherent#char#char#to_string(c/0)) in
   let d/1 = 'b' in
   let out/2 =
     match d/1 {
@@ -12,18 +12,39 @@ fn main() -> unit {
       },
       _ => "?",
     } in
-  let _wild156 = println__T_string(out/2) in
+  let _wild178 = println__T_string(out/2) in
   ()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn inherent#char#char#to_string(self/7: char) -> string {
-  @runtime(core.char_to_string)(self/7)
+fn inherent#char#char#to_string(self/36: char) -> string {
+  char_to_string(self/36)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
+}
+
+fn char_to_string(value/29: char) -> string {
+  if utf8_valid_scalar((value/29 as uint32)) {
+      @runtime(core.char_to_string)(value/29)
+  } else {
+      let mtmp21 = @runtime(core.string_get)("", -1) in
+      ""
+  }
+}
+
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  if (value/4 <= 1114111) {
+      (!if (value/4 >= 55296) {
+          (value/4 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
+  }
 }

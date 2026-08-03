@@ -23,85 +23,85 @@ type Tuple2_4bool_4bool struct {
 }
 
 func main0() struct{} {
-    var x155 bool = true
-    var x156 bool = false
-    var jp164 Tuple2_4bool_4bool
-    switch x156 {
+    var x177 bool = true
+    var x178 bool = false
+    var jp186 Tuple2_4bool_4bool
+    switch x178 {
     case true:
-        switch x155 {
+        switch x177 {
         case true:
-            var t180 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+            var t202 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: false,
                 _1: false,
             }
-            jp164 = t180
+            jp186 = t202
         case false:
-            var t181 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+            var t203 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: true,
                 _1: false,
             }
-            jp164 = t181
+            jp186 = t203
         default:
             panic("non-exhaustive match")
         }
     case false:
-        switch x155 {
+        switch x177 {
         case true:
-            var t184 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+            var t206 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: false,
                 _1: true,
             }
-            jp164 = t184
+            jp186 = t206
         case false:
-            var t185 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+            var t207 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: true,
                 _1: true,
             }
-            jp164 = t185
+            jp186 = t207
         default:
             panic("non-exhaustive match")
         }
     default:
         panic("non-exhaustive match")
     }
-    var x158 bool = jp164._1
-    var x160 bool = true
-    switch x158 {
+    var x180 bool = jp186._1
+    var x182 bool = true
+    switch x180 {
     case true:
-        switch x160 {
+        switch x182 {
         case true:
-            var t169 string
-            var inline201 int = 3
-            var inline202 string = _goml_runtime_core_int_to_string(inline201)
-            t169 = inline202
-            var inline198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t169)
-            _goml_runtime_core_string_println(inline198)
+            var t191 string
+            var inline223 int = 3
+            var inline224 string = _goml_runtime_core_int_to_string(inline223)
+            t191 = inline224
+            var inline220 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+            _goml_runtime_core_string_println(inline220)
         case false:
-            var t171 string
-            var inline207 int = 1
-            var inline208 string = _goml_runtime_core_int_to_string(inline207)
-            t171 = inline208
-            var inline204 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t171)
-            _goml_runtime_core_string_println(inline204)
+            var t193 string
+            var inline229 int = 1
+            var inline230 string = _goml_runtime_core_int_to_string(inline229)
+            t193 = inline230
+            var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t193)
+            _goml_runtime_core_string_println(inline226)
         default:
             panic("non-exhaustive match")
         }
     case false:
-        switch x160 {
+        switch x182 {
         case true:
-            var t174 string
-            var inline213 int = 2
-            var inline214 string = _goml_runtime_core_int_to_string(inline213)
-            t174 = inline214
-            var inline210 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t174)
-            _goml_runtime_core_string_println(inline210)
+            var t196 string
+            var inline235 int = 2
+            var inline236 string = _goml_runtime_core_int_to_string(inline235)
+            t196 = inline236
+            var inline232 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+            _goml_runtime_core_string_println(inline232)
         case false:
-            var t176 string
-            var inline219 int = 0
-            var inline220 string = _goml_runtime_core_int_to_string(inline219)
-            t176 = inline220
-            var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t176)
-            _goml_runtime_core_string_println(inline216)
+            var t198 string
+            var inline241 int = 0
+            var inline242 string = _goml_runtime_core_int_to_string(inline241)
+            t198 = inline242
+            var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
+            _goml_runtime_core_string_println(inline238)
         default:
             panic("non-exhaustive match")
         }
@@ -109,16 +109,16 @@ func main0() struct{} {
         panic("non-exhaustive match")
     }
     var c__4 struct{} = struct{}{}
-    var t166 string
-    var inline225 string = _goml_runtime_core_unit_to_string(c__4)
-    t166 = inline225
-    var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t166)
-    _goml_runtime_core_string_println(inline222)
+    var t188 string
+    var inline247 string = _goml_runtime_core_unit_to_string(c__4)
+    t188 = inline247
+    var inline244 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t188)
+    _goml_runtime_core_string_println(inline244)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

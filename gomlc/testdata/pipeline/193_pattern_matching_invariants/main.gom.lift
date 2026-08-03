@@ -1,10 +1,10 @@
 fn absurd(value/0: Never) -> int32 {
-  let _wild155 = value/0 in
+  let _wild177 = value/0 in
   @intrinsic(compiler.missing)("")
 }
 
 fn absurd_loop(value/1: Loop) -> int32 {
-  let _wild156 = value/1 in
+  let _wild178 = value/1 in
   @intrinsic(compiler.missing)("")
 }
 
@@ -17,8 +17,8 @@ fn maybe_never(value/2: MaybeNever) -> int32 {
 }
 
 fn empty_never_vec(value/3: Vec[Never]) -> int32 {
-  let match158 = value/3 in
-  if (@intrinsic(vec.len)(match158) == 0) {
+  let match180 = value/3 in
+  if (@intrinsic(vec.len)(match180) == 0) {
       0
   } else {
       @intrinsic(compiler.missing)("")
@@ -26,19 +26,19 @@ fn empty_never_vec(value/3: Vec[Never]) -> int32 {
 }
 
 fn sequence_coverage(value/4: Vec[bool]) -> int32 {
-  let match159 = value/4 in
-  if (@intrinsic(vec.len)(match159) == 0) {
+  let match181 = value/4 in
+  if (@intrinsic(vec.len)(match181) == 0) {
       0
   } else {
-      if (@intrinsic(vec.len)(match159) == 1) {
+      if (@intrinsic(vec.len)(match181) == 1) {
           1
       } else {
-          if (@intrinsic(vec.len)(match159) >= 2) {
-              if (@intrinsic(vec.get)(match159, 0) == true) {
+          if (@intrinsic(vec.len)(match181) >= 2) {
+              if (@intrinsic(vec.get)(match181, 0) == true) {
                   2
               } else {
-                  if (@intrinsic(vec.len)(match159) >= 2) {
-                      if (@intrinsic(vec.get)(match159, 0) == false) {
+                  if (@intrinsic(vec.len)(match181) >= 2) {
+                      if (@intrinsic(vec.get)(match181, 0) == false) {
                           3
                       } else {
                           @intrinsic(compiler.missing)("")
@@ -48,8 +48,8 @@ fn sequence_coverage(value/4: Vec[bool]) -> int32 {
                   }
               }
           } else {
-              if (@intrinsic(vec.len)(match159) >= 2) {
-                  if (@intrinsic(vec.get)(match159, 0) == false) {
+              if (@intrinsic(vec.len)(match181) >= 2) {
+                  if (@intrinsic(vec.get)(match181, 0) == false) {
                       3
                   } else {
                       @intrinsic(compiler.missing)("")
@@ -63,11 +63,11 @@ fn sequence_coverage(value/4: Vec[bool]) -> int32 {
 }
 
 fn unwrap(value/5: Single) -> int32 {
-  let mtmp160 = value/5 in
-  match mtmp160 {
-    Single::Only(x161) => {
-      let x161 = Single::Only._0(mtmp160) in
-      let inner/6 = x161 in
+  let mtmp182 = value/5 in
+  match mtmp182 {
+    Single::Only(x183) => {
+      let x183 = Single::Only._0(mtmp182) in
+      let inner/6 = x183 in
       inner/6
     },
   }
@@ -94,27 +94,27 @@ fn signed_zero(value/8: float64) -> string {
 }
 
 fn main() -> unit {
-  let mtmp162 = (Single::Only(12)) in
-  let x163 = mtmp162.0 in
-  let single/9 = x163 in
-  let _wild164 = println__T_int32(unwrap(single/9)) in
-  let _wild165 = println__T_int32(decide(true)) in
-  let _wild166 = println__T_string(signed_zero(0)) in
+  let mtmp184 = (Single::Only(12)) in
+  let x185 = mtmp184.0 in
+  let single/9 = x185 in
+  let _wild186 = println__T_int32(unwrap(single/9)) in
+  let _wild187 = println__T_int32(decide(true)) in
+  let _wild188 = println__T_string(signed_zero(0)) in
   ()
 }
 
-fn println__T_int32(value/1: int32) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+fn println__T_int32(value/31: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/31))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#int32#to_string(self/43: int32) -> string {
-  @runtime(core.int32_to_string)(self/43)
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  @runtime(core.int32_to_string)(self/72)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

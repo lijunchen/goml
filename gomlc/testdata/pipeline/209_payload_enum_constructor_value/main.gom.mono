@@ -11,14 +11,14 @@ fn sum(values/3: List__int32) -> int32 {
     List__int32::Nil => {
       0
     },
-    List__int32::Cons(x155, x156) => {
+    List__int32::Cons(x177, x178) => {
       {
-        let x155 = List__int32::Cons._0(values/3) in
-        let x156 = List__int32::Cons._1(values/3) in
+        let x177 = List__int32::Cons._0(values/3) in
+        let x178 = List__int32::Cons._1(values/3) in
         {
-          let rest/5 = x156 in
+          let rest/5 = x178 in
           {
-            let value/4 = x155 in
+            let value/4 = x177 in
             (value/4 + sum(rest/5))
           }
         }
@@ -33,14 +33,14 @@ fn main() -> unit {
   println__T_string(inherent#int32#int32#to_string(sum(values/7)))
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

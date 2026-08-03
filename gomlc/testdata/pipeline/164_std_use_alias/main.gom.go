@@ -53,6 +53,17 @@ type Tuple3_4bool_10Vec_5uint8_6string struct {
     _2 string
 }
 
+type Tuple3_4bool_4char_3int struct {
+    _0 bool
+    _1 rune
+    _2 int
+}
+
+type Tuple2_4bool_4char struct {
+    _0 bool
+    _1 rune
+}
+
 type _goml_m_std_p_bytes_p_Bytes struct {
     values *_goml_vec_uint8
 }
@@ -133,24 +144,38 @@ type Result__unit__string_Err struct {
 
 func (_ Result__unit__string_Err) isResult__unit__string() {}
 
+type Option__char interface {
+    isOption__char()
+}
+
+type Option__char_None struct {}
+
+func (_ Option__char_None) isOption__char() {}
+
+type Option__char_Some struct {
+    _0 rune
+}
+
+func (_ Option__char_Some) isOption__char() {}
+
 func main0() struct{} {
-    var t270 *_goml_vec_string
-    var inline374 *_goml_vec_string = _goml_runtime_std_env_args()
-    t270 = inline374
-    var t271 int
-    var inline372 int = vec_len__Vec_6string(t270)
-    t271 = inline372
-    var t272 bool = t271 > 0
-    var t273 string
-    var inline370 string = _goml_runtime_core_bool_to_string(t272)
-    t273 = inline370
-    var inline367 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t273)
-    _goml_runtime_std_io_println(inline367)
+    var t292 *_goml_vec_string
+    var inline567 *_goml_vec_string = _goml_runtime_std_env_args()
+    t292 = inline567
+    var t293 int
+    var inline565 int = vec_len__Vec_6string(t292)
+    t293 = inline565
+    var t294 bool = t293 > 0
+    var t295 string
+    var inline563 string = _goml_runtime_core_bool_to_string(t294)
+    t295 = inline563
+    var inline560 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t295)
+    _goml_runtime_std_io_println(inline560)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

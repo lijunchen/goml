@@ -23,22 +23,22 @@ type Tuple2_4bool_4bool struct {
 }
 
 func main0() struct{} {
-    var x155 bool = true
-    var x156 bool = false
-    switch x155 {
+    var x177 bool = true
+    var x178 bool = false
+    switch x177 {
     case true:
-        var inline172 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x156)
-        _goml_runtime_core_string_print(inline172)
+        var inline194 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x178)
+        _goml_runtime_core_string_print(inline194)
     case false:
     default:
         panic("non-exhaustive match")
     }
-    var x158 bool = true
-    var x159 bool = true
-    switch x158 {
+    var x180 bool = true
+    var x181 bool = true
+    switch x180 {
     case true:
-        var inline175 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x159)
-        _goml_runtime_core_string_print(inline175)
+        var inline197 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(x181)
+        _goml_runtime_core_string_print(inline197)
         return struct{}{}
     case false:
         return struct{}{}
@@ -47,9 +47,9 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__37 bool) string {
-    var t170 string = _goml_runtime_core_bool_to_string(self__37)
-    return t170
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
+    var t192 string = _goml_runtime_core_bool_to_string(self__66)
+    return t192
 }
 
 func main() {

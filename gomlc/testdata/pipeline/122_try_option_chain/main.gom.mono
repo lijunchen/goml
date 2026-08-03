@@ -25,16 +25,16 @@ fn maybe_double(value/1: int32) -> Option__int32 {
 fn maybe_total(flag/2: bool) -> Option__int32 {
   let a/3 =
     {
-      let mtmp155 = maybe_seed(flag/2) in
-      match mtmp155 {
+      let mtmp177 = maybe_seed(flag/2) in
+      match mtmp177 {
         Option__int32::None => {
           return Option__int32::None
         },
-        Option__int32::Some(x156) => {
+        Option__int32::Some(x178) => {
           {
-            let x156 = Option__int32::Some._0(mtmp155) in
+            let x178 = Option__int32::Some._0(mtmp177) in
             {
-              let try_value/22 = x156 in
+              let try_value/22 = x178 in
               try_value/22
             }
           }
@@ -43,16 +43,16 @@ fn maybe_total(flag/2: bool) -> Option__int32 {
     } in
   let b/4 =
     {
-      let mtmp157 = maybe_double(a/3) in
-      match mtmp157 {
+      let mtmp179 = maybe_double(a/3) in
+      match mtmp179 {
         Option__int32::None => {
           return Option__int32::None
         },
-        Option__int32::Some(x158) => {
+        Option__int32::Some(x180) => {
           {
-            let x158 = Option__int32::Some._0(mtmp157) in
+            let x180 = Option__int32::Some._0(mtmp179) in
             {
-              let try_value/26 = x158 in
+              let try_value/26 = x180 in
               try_value/26
             }
           }
@@ -67,11 +67,11 @@ fn show(opt/5: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x159) => {
+    Option__int32::Some(x181) => {
       {
-        let x159 = Option__int32::Some._0(opt/5) in
+        let x181 = Option__int32::Some._0(opt/5) in
         {
-          let value/6 = x159 in
+          let value/6 = x181 in
           ("some=" + inherent#int32#int32#to_string(value/6))
         }
       }
@@ -80,18 +80,18 @@ fn show(opt/5: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild160 = println__T_string(show(maybe_total(true))) in
-  let _wild161 = println__T_string(show(maybe_total(false))) in
+  let _wild182 = println__T_string(show(maybe_total(true))) in
+  let _wild183 = println__T_string(show(maybe_total(false))) in
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

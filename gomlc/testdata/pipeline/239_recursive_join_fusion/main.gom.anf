@@ -1,141 +1,141 @@
 fn find(wanted/0: int) -> Option__int {
-  join inline_cont208(current/1: Ref[int]) -> Option__int {
+  join inline_cont230(current/1: Ref[int]) -> Option__int {
     joinrec {
-      join loop_expr168() -> Option__int {
-        join inline_cont206(value/2: int) -> Option__int {
-          let t170 = (value/2 >= 5) in
-          join k169() -> Option__int {
-            let _wild158 = () in
-            jump loop_expr168()
+      join loop_expr190() -> Option__int {
+        join inline_cont228(value/2: int) -> Option__int {
+          let t192 = (value/2 >= 5) in
+          join k191() -> Option__int {
+            let _wild180 = () in
+            jump loop_expr190()
           } in
-          if t170 {
+          if t192 {
             Tag_0
           } else {
-            join inline_cont204(t172: bool) -> Option__int {
-              if t172 {
-                let t173 = Option__int::Some(value/2) in
-                t173
+            join inline_cont226(t194: bool) -> Option__int {
+              if t194 {
+                let t195 = Option__int::Some(value/2) in
+                t195
               } else {
-                let t174 = (value/2 + 1) in
-                let inline203 = @intrinsic(ref.set)(current/1, t174) in
-                jump k169()
+                let t196 = (value/2 + 1) in
+                let inline225 = @intrinsic(ref.set)(current/1, t196) in
+                jump k191()
               }
             } in
-            let inline205 = @intrinsic(eq.primitive)(value/2, wanted/0) in
-            jump inline_cont204(inline205)
+            let inline227 = @intrinsic(eq.primitive)(value/2, wanted/0) in
+            jump inline_cont226(inline227)
           }
         } in
-        let inline207 = @intrinsic(ref.get)(current/1) in
-        jump inline_cont206(inline207)
+        let inline229 = @intrinsic(ref.get)(current/1) in
+        jump inline_cont228(inline229)
       } in
     } in
-    jump loop_expr168()
+    jump loop_expr190()
   } in
-  let inline209 = 0 in
-  let inline210 = @intrinsic(ref.new)(inline209) in
-  jump inline_cont208(inline210)
+  let inline231 = 0 in
+  let inline232 = @intrinsic(ref.new)(inline231) in
+  jump inline_cont230(inline232)
 }
 
 fn any(wanted/3: int) -> bool {
-  let inline212 = inherent#Ref#Ref[T]#new__T_int(0) in
+  let inline234 = inherent#Ref#Ref[T]#new__T_int(0) in
   joinrec {
-    join inline_join213() -> bool {
-      let inline214 = inherent#Ref#Ref[T]#get__T_int(inline212) in
-      let inline215 = (inline214 >= 5) in
-      join inline_join216() -> bool {
-        let inline217 = () in
-        jump inline_join213()
+    join inline_join235() -> bool {
+      let inline236 = inherent#Ref#Ref[T]#get__T_int(inline234) in
+      let inline237 = (inline236 >= 5) in
+      join inline_join238() -> bool {
+        let inline239 = () in
+        jump inline_join235()
       } in
-      if inline215 {
+      if inline237 {
         false
       } else {
-        let inline218 = trait_impl#Eq#int#eq(inline214, wanted/3) in
-        if inline218 {
-          let inline219 = Option__int::Some(inline214) in
+        let inline240 = trait_impl#Eq#int#eq(inline236, wanted/3) in
+        if inline240 {
+          let inline241 = Option__int::Some(inline236) in
           true
         } else {
-          let inline220 = (inline214 + 1) in
-          let inline221 = inherent#Ref#Ref[T]#set__T_int(inline212, inline220) in
-          jump inline_join216()
+          let inline242 = (inline236 + 1) in
+          let inline243 = inherent#Ref#Ref[T]#set__T_int(inline234, inline242) in
+          jump inline_join238()
         }
       }
     } in
   } in
-  jump inline_join213()
+  jump inline_join235()
 }
 
 fn main() -> unit {
-  join inline_cont232(t180: bool) -> unit {
-    join inline_cont229(_wild162: unit) -> unit {
-      join inline_cont225(t181: bool) -> unit {
-        let inline223 = trait_impl#ToString#bool#to_string(t181) in
-        let inline224 = @runtime(core.string_println)(inline223) in
+  join inline_cont254(t202: bool) -> unit {
+    join inline_cont251(_wild184: unit) -> unit {
+      join inline_cont247(t203: bool) -> unit {
+        let inline245 = trait_impl#ToString#bool#to_string(t203) in
+        let inline246 = @runtime(core.string_println)(inline245) in
         ()
       } in
-      let inline226 = 8 in
-      let inline227 = find(inline226) in
-      match inline227 {
+      let inline248 = 8 in
+      let inline249 = find(inline248) in
+      match inline249 {
         Tag_0 => {
-          jump inline_cont225(false)
+          jump inline_cont247(false)
         },
         Tag_1 => {
-          let inline228 = Option__int::Some._0(inline227) in
-          jump inline_cont225(true)
+          let inline250 = Option__int::Some._0(inline249) in
+          jump inline_cont247(true)
         },
       }
     } in
-    let inline230 = trait_impl#ToString#bool#to_string(t180) in
-    let inline231 = @runtime(core.string_println)(inline230) in
-    jump inline_cont229(())
+    let inline252 = trait_impl#ToString#bool#to_string(t202) in
+    let inline253 = @runtime(core.string_println)(inline252) in
+    jump inline_cont251(())
   } in
-  let inline233 = 3 in
-  let inline234 = find(inline233) in
-  match inline234 {
+  let inline255 = 3 in
+  let inline256 = find(inline255) in
+  match inline256 {
     Tag_0 => {
-      jump inline_cont232(false)
+      jump inline_cont254(false)
     },
     Tag_1 => {
-      let inline235 = Option__int::Some._0(inline234) in
-      jump inline_cont232(true)
+      let inline257 = Option__int::Some._0(inline256) in
+      jump inline_cont254(true)
     },
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/207: int) -> Ref[int] {
-  let t184 = @intrinsic(ref.new)(value/207) in
-  t184
+fn inherent#Ref#Ref[T]#new__T_int(value/236: int) -> Ref[int] {
+  let t206 = @intrinsic(ref.new)(value/236) in
+  t206
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/208: Ref[int]) -> int {
-  let t187 = @intrinsic(ref.get)(self/208) in
-  t187
+fn inherent#Ref#Ref[T]#get__T_int(self/237: Ref[int]) -> int {
+  let t209 = @intrinsic(ref.get)(self/237) in
+  t209
 }
 
-fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  let t190 = @intrinsic(eq.primitive)(self/59, other/60) in
-  t190
+fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
+  let t212 = @intrinsic(eq.primitive)(self/88, other/89) in
+  t212
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/209: Ref[int], value/210: int) -> unit {
-  let t192 = @intrinsic(ref.set)(self/209, value/210) in
+fn inherent#Ref#Ref[T]#set__T_int(self/238: Ref[int], value/239: int) -> unit {
+  let t214 = @intrinsic(ref.set)(self/238, value/239) in
   ()
 }
 
-fn println__T_bool(value/1: bool) -> unit {
-  join inline_cont236(t194: string) -> unit {
-    let t195 = @runtime(core.string_println)(t194) in
+fn println__T_bool(value/31: bool) -> unit {
+  join inline_cont258(t216: string) -> unit {
+    let t217 = @runtime(core.string_println)(t216) in
     ()
   } in
-  let inline237 = @runtime(core.bool_to_string)(value/1) in
-  jump inline_cont236(inline237)
+  let inline259 = @runtime(core.bool_to_string)(value/31) in
+  jump inline_cont258(inline259)
 }
 
-fn trait_impl#ToString#bool#to_string(self/37: bool) -> string {
-  let t198 = @runtime(core.bool_to_string)(self/37) in
-  t198
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  let t220 = @runtime(core.bool_to_string)(self/66) in
+  t220
 }
 
-fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  let t201 = @runtime(core.int_hash)(self/85) in
-  t201
+fn trait_impl#Hash#int#hash(self/114: int) -> uint64 {
+  let t223 = @runtime(core.int_hash)(self/114) in
+  t223
 }

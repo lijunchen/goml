@@ -1,0 +1,540 @@
+fn check_utf8(bytes/0: Vec[uint8], expected/1: bool) -> unit {
+  let expected_length/2 = inherent#Vec#Vec[T]#len__T_uint8(bytes/0) in
+  let mtmp177 = string_from_utf8(bytes/0) in
+  let x178 = mtmp177.0 in
+  let x179 = mtmp177.1 in
+  let value/4 = x179 in
+  let valid/3 = x178 in
+  let _wild180 = println__T_bool(trait_impl#Eq#bool#eq(valid/3, expected/1)) in
+  if valid/3 {
+      println__T_bool(
+        trait_impl#Eq#int#eq(inherent#string#string#byte_len(value/4), expected_length/2)
+      )
+  } else {
+      println__T_bool(trait_impl#Eq#string#eq(value/4, ""))
+  }
+}
+
+fn check_scalar(bytes/5: Vec[uint8], expected/6: uint32, expected_width/7: int) -> unit {
+  let mtmp181 = string_from_utf8(bytes/5) in
+  let x182 = mtmp181.0 in
+  let x183 = mtmp181.1 in
+  let value/9 = x183 in
+  let valid/8 = x182 in
+  let _wild184 = println__T_bool(valid/8) in
+  let mtmp185 = inherent#string#string#decode_at(value/9, 0) in
+  match mtmp185 {
+    Option__(char,int)::None => {
+      let _wild187 = println__T_bool(false) in
+      println__T_bool(false)
+    },
+    Option__(char,int)::Some(x186) => {
+      let x186 = Option__(char,int)::Some._0(mtmp185) in
+      let decoded/10 = x186 in
+      let mtmp188 = decoded/10 in
+      let x189 = mtmp188.0 in
+      let x190 = mtmp188.1 in
+      let width/12 = x190 in
+      let character/11 = x189 in
+      let _wild191 =
+        println__T_bool(trait_impl#Eq#uint32#eq((character/11 as uint32), expected/6)) in
+      println__T_bool(trait_impl#Eq#int#eq(width/12, expected_width/7))
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild192 =
+    check_utf8(
+      let vec_literal/793 = inherent#Vec#Vec[T]#new__T_uint8() in
+      vec_literal/793,
+      true
+    ) in
+  let _wild194 =
+    check_utf8(
+      let vec_literal/824 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild193 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/824, 0) in
+      vec_literal/824,
+      true
+    ) in
+  let _wild196 =
+    check_utf8(
+      let vec_literal/856 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild195 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/856, 127) in
+      vec_literal/856,
+      true
+    ) in
+  let _wild199 =
+    check_scalar(
+      let vec_literal/892 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild197 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/892, 194) in
+      let _wild198 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/892, 128) in
+      vec_literal/892,
+      128,
+      2
+    ) in
+  let _wild202 =
+    check_scalar(
+      let vec_literal/935 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild200 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/935, 223) in
+      let _wild201 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/935, 191) in
+      vec_literal/935,
+      2047,
+      2
+    ) in
+  let _wild206 =
+    check_scalar(
+      let vec_literal/979 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild203 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/979, 224) in
+      let _wild204 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/979, 160) in
+      let _wild205 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/979, 128) in
+      vec_literal/979,
+      2048,
+      3
+    ) in
+  let _wild210 =
+    check_scalar(
+      let vec_literal/1028 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild207 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1028, 237) in
+      let _wild208 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1028, 159) in
+      let _wild209 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1028, 191) in
+      vec_literal/1028,
+      55295,
+      3
+    ) in
+  let _wild214 =
+    check_scalar(
+      let vec_literal/1078 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild211 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1078, 238) in
+      let _wild212 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1078, 128) in
+      let _wild213 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1078, 128) in
+      vec_literal/1078,
+      57344,
+      3
+    ) in
+  let _wild218 =
+    check_scalar(
+      let vec_literal/1128 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild215 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1128, 239) in
+      let _wild216 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1128, 191) in
+      let _wild217 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1128, 189) in
+      vec_literal/1128,
+      65533,
+      3
+    ) in
+  let _wild222 =
+    check_scalar(
+      let vec_literal/1178 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild219 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1178, 239) in
+      let _wild220 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1178, 191) in
+      let _wild221 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1178, 191) in
+      vec_literal/1178,
+      65535,
+      3
+    ) in
+  let _wild227 =
+    check_scalar(
+      let vec_literal/1228 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild223 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1228, 240) in
+      let _wild224 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1228, 144) in
+      let _wild225 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1228, 128) in
+      let _wild226 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1228, 128) in
+      vec_literal/1228,
+      65536,
+      4
+    ) in
+  let _wild232 =
+    check_scalar(
+      let vec_literal/1283 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild228 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1283, 244) in
+      let _wild229 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1283, 143) in
+      let _wild230 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1283, 191) in
+      let _wild231 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1283, 191) in
+      vec_literal/1283,
+      1114111,
+      4
+    ) in
+  let _wild234 =
+    check_utf8(
+      let vec_literal/1338 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild233 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1338, 128) in
+      vec_literal/1338,
+      false
+    ) in
+  let _wild236 =
+    check_utf8(
+      let vec_literal/1373 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild235 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1373, 191) in
+      vec_literal/1373,
+      false
+    ) in
+  let _wild239 =
+    check_utf8(
+      let vec_literal/1408 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild237 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1408, 192) in
+      let _wild238 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1408, 128) in
+      vec_literal/1408,
+      false
+    ) in
+  let _wild242 =
+    check_utf8(
+      let vec_literal/1448 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild240 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1448, 193) in
+      let _wild241 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1448, 191) in
+      vec_literal/1448,
+      false
+    ) in
+  let _wild244 =
+    check_utf8(
+      let vec_literal/1488 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild243 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1488, 194) in
+      vec_literal/1488,
+      false
+    ) in
+  let _wild247 =
+    check_utf8(
+      let vec_literal/1523 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild245 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1523, 194) in
+      let _wild246 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1523, 127) in
+      vec_literal/1523,
+      false
+    ) in
+  let _wild251 =
+    check_utf8(
+      let vec_literal/1563 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild248 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1563, 224) in
+      let _wild249 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1563, 159) in
+      let _wild250 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1563, 191) in
+      vec_literal/1563,
+      false
+    ) in
+  let _wild254 =
+    check_utf8(
+      let vec_literal/1608 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild252 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1608, 225) in
+      let _wild253 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1608, 128) in
+      vec_literal/1608,
+      false
+    ) in
+  let _wild258 =
+    check_utf8(
+      let vec_literal/1648 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild255 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1648, 225) in
+      let _wild256 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1648, 128) in
+      let _wild257 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1648, 127) in
+      vec_literal/1648,
+      false
+    ) in
+  let _wild262 =
+    check_utf8(
+      let vec_literal/1693 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild259 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1693, 237) in
+      let _wild260 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1693, 160) in
+      let _wild261 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1693, 128) in
+      vec_literal/1693,
+      false
+    ) in
+  let _wild267 =
+    check_utf8(
+      let vec_literal/1738 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild263 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1738, 240) in
+      let _wild264 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1738, 143) in
+      let _wild265 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1738, 191) in
+      let _wild266 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1738, 191) in
+      vec_literal/1738,
+      false
+    ) in
+  let _wild271 =
+    check_utf8(
+      let vec_literal/1788 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild268 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1788, 240) in
+      let _wild269 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1788, 144) in
+      let _wild270 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1788, 128) in
+      vec_literal/1788,
+      false
+    ) in
+  let _wild276 =
+    check_utf8(
+      let vec_literal/1833 = inherent#Vec#Vec[T]#new__T_uint8() in
+      let _wild272 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1833, 244) in
+      let _wild273 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1833, 144) in
+      let _wild274 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1833, 128) in
+      let _wild275 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1833, 128) in
+      vec_literal/1833,
+      false
+    ) in
+  check_utf8(
+    let vec_literal/1883 = inherent#Vec#Vec[T]#new__T_uint8() in
+    let _wild277 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1883, 245) in
+    let _wild278 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1883, 128) in
+    let _wild279 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1883, 128) in
+    let _wild280 = inherent#Vec#Vec[T]#push__T_uint8(vec_literal/1883, 128) in
+    vec_literal/1883,
+    false
+  )
+}
+
+fn inherent#Vec#Vec[T]#len__T_uint8(self/166: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/166)
+}
+
+fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
+  let x11 = mtmp10.0 in
+  let x12 = mtmp10.1 in
+  let value/25 = x12 in
+  let index/26 = 0 in
+  let _wild20 =
+    while (index/26 < inherent#string#string#byte_len(value/25)) {
+        let mtmp13 = string_decode_utf8_at(value/25, index/26) in
+        let x14 = mtmp13.0 in
+        let x15 = mtmp13.1 in
+        let x16 = mtmp13.2 in
+        let width/28 = x16 in
+        let valid/27 = x14 in
+        if valid/27 {
+            let _wild19 =
+              let compound_old17 = index/26 in
+              let compound_value18 = width/28 in
+              index/26 = (compound_old17 + compound_value18) in
+            ()
+        } else {
+            return (false, "")
+        }
+    } in
+  (true, value/25)
+}
+
+fn println__T_bool(value/31: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
+}
+
+fn trait_impl#Eq#bool#eq(self/82: bool, other/83: bool) -> bool {
+  @intrinsic(eq.primitive)(self/82, other/83)
+}
+
+fn inherent#string#string#byte_len(self/38: string) -> int {
+  @runtime(core.string_len)(self/38)
+}
+
+fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
+  @intrinsic(eq.primitive)(self/88, other/89)
+}
+
+fn trait_impl#Eq#string#eq(self/84: string, other/85: string) -> bool {
+  @intrinsic(eq.primitive)(self/84, other/85)
+}
+
+fn inherent#string#string#decode_at(self/48: string, index/49: int) -> Option__(char,int) {
+  let mtmp25 = string_decode_utf8_at(self/48, index/49) in
+  let x26 = mtmp25.0 in
+  let x27 = mtmp25.1 in
+  let x28 = mtmp25.2 in
+  let width/52 = x28 in
+  let value/51 = x27 in
+  let valid/50 = x26 in
+  if valid/50 {
+      Option__(char,int)::Some((value/51, width/52))
+  } else {
+      Option__(char,int)::None
+  }
+}
+
+fn trait_impl#Eq#uint32#eq(self/102: uint32, other/103: uint32) -> bool {
+  @intrinsic(eq.primitive)(self/102, other/103)
+}
+
+fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push__T_uint8(self/155: Vec[uint8], elem/156: uint8) -> unit {
+  @intrinsic(vec.push)(self/155, elem/156)
+}
+
+fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+  let length/7 = inherent#string#string#byte_len(value/5) in
+  let _wild2 =
+    if if (index/6 < 0) {
+        true
+    } else {
+        (index/6 >= length/7)
+    } {
+        return utf8_invalid_decode()
+    } else {
+        ()
+    } in
+  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as uint32) in
+  if (first/8 < 128) {
+      utf8_valid_decode(first/8, 1)
+  } else {
+      if (first/8 < 194) {
+          utf8_invalid_decode()
+      } else {
+          if (first/8 < 224) {
+              let _wild3 =
+                if ((length/7 - index/6) < 2) {
+                    return utf8_invalid_decode()
+                } else {
+                    ()
+                } in
+              let second/9 = (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+              if utf8_invalid_continuation(second/9) {
+                  utf8_invalid_decode()
+              } else {
+                  utf8_valid_decode((((first/8 & 31) << 6) | (second/9 & 63)), 2)
+              }
+          } else {
+              if (first/8 < 240) {
+                  let _wild4 =
+                    if ((length/7 - index/6) < 3) {
+                        return utf8_invalid_decode()
+                    } else {
+                        ()
+                    } in
+                  let second/10 =
+                    (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                  let third/11 =
+                    (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                  if if if if utf8_invalid_continuation(second/10) {
+                      true
+                  } else {
+                      utf8_invalid_continuation(third/11)
+                  } {
+                      true
+                  } else {
+                      if trait_impl#Eq#uint32#eq(first/8, 224) {
+                          (second/10 < 160)
+                      } else {
+                          false
+                      }
+                  } {
+                      true
+                  } else {
+                      if trait_impl#Eq#uint32#eq(first/8, 237) {
+                          (second/10 >= 160)
+                      } else {
+                          false
+                      }
+                  } {
+                      utf8_invalid_decode()
+                  } else {
+                      utf8_valid_decode(
+                        ((((first/8 & 15) << 12) | ((second/10 & 63) << 6)) | (third/11 & 63)),
+                        3
+                      )
+                  }
+              } else {
+                  if (first/8 < 245) {
+                      let _wild5 =
+                        if ((length/7 - index/6) < 4) {
+                            return utf8_invalid_decode()
+                        } else {
+                            ()
+                        } in
+                      let second/12 =
+                        (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                      let third/13 =
+                        (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                      let fourth/14 =
+                        (inherent#string#string#byte_get(value/5, (index/6 + 3)) as uint32) in
+                      if if if if if utf8_invalid_continuation(second/12) {
+                          true
+                      } else {
+                          utf8_invalid_continuation(third/13)
+                      } {
+                          true
+                      } else {
+                          utf8_invalid_continuation(fourth/14)
+                      } {
+                          true
+                      } else {
+                          if trait_impl#Eq#uint32#eq(first/8, 240) {
+                              (second/12 < 144)
+                          } else {
+                              false
+                          }
+                      } {
+                          true
+                      } else {
+                          if trait_impl#Eq#uint32#eq(first/8, 244) {
+                              (second/12 > 143)
+                          } else {
+                              false
+                          }
+                      } {
+                          utf8_invalid_decode()
+                      } else {
+                          utf8_valid_decode(
+                            (((((first/8 & 7) << 18) | ((second/12 & 63) << 12)) |
+                              ((third/13 & 63) << 6)) |
+                              (fourth/14 & 63)),
+                            4
+                          )
+                      }
+                  } else {
+                      utf8_invalid_decode()
+                  }
+              }
+          }
+      }
+  }
+}
+
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  @runtime(core.bool_to_string)(self/66)
+}
+
+fn utf8_invalid_decode() -> (bool, char, int) {
+  (false, '\0', 0)
+}
+
+fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/41, index/42)
+}
+
+fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+  let mtmp0 = char_from_uint32(value/0) in
+  match mtmp0 {
+    Option__char::None => {
+      utf8_invalid_decode()
+    },
+    Option__char::Some(x1) => {
+      let x1 = Option__char::Some._0(mtmp0) in
+      let character/2 = x1 in
+      (true, character/2, width/1)
+    },
+  }
+}
+
+fn utf8_invalid_continuation(value/3: uint32) -> bool {
+  if (value/3 < 128) {
+      true
+  } else {
+      (value/3 > 191)
+  }
+}
+
+fn char_from_uint32(value/32: uint32) -> Option__char {
+  if utf8_valid_scalar(value/32) {
+      let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
+      let x23 = mtmp22.0 in
+      let x24 = mtmp22.1 in
+      let character/33 = x24 in
+      Option__char::Some(character/33)
+  } else {
+      Option__char::None
+  }
+}
+
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  if (value/4 <= 1114111) {
+      (!if (value/4 >= 55296) {
+          (value/4 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
+  }
+}

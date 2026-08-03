@@ -22,45 +22,45 @@ type RightSource struct {
 }
 
 func _goml_m_trait__impl_i_Mark_i_int32_i_marked(self__0 int32) string {
-    var t158 string
-    var inline187 string = _goml_runtime_core_int32_to_string(self__0)
-    t158 = inline187
-    var t159 string = "m" + t158
-    return t159
+    var t180 string
+    var inline209 string = _goml_runtime_core_int32_to_string(self__0)
+    t180 = inline209
+    var t181 string = "m" + t180
+    return t181
 }
 
 func _goml_m_trait__impl_i_Source_i_LeftSource_i_get(self__1 LeftSource) int32 {
-    var t162 int32 = self__1.value
-    return t162
+    var t184 int32 = self__1.value
+    return t184
 }
 
 func _goml_m_trait__impl_i_Source_i_RightSource_i_get(self__2 RightSource) int32 {
-    var t165 int32 = self__2.value
-    return t165
+    var t187 int32 = self__2.value
+    return t187
 }
 
 func main0() struct{} {
-    var t167 LeftSource = LeftSource{
+    var t189 LeftSource = LeftSource{
         value: 3,
     }
-    var t168 RightSource = RightSource{
+    var t190 RightSource = RightSource{
         value: 4,
     }
-    var t169 string
-    var inline192 int32 = _goml_m_trait__impl_i_Source_i_LeftSource_i_get(t167)
-    var inline193 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline192)
-    var inline194 string = inline193 + ":"
-    var inline195 int32 = _goml_m_trait__impl_i_Source_i_RightSource_i_get(t168)
-    var inline196 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline195)
-    var inline197 string = inline194 + inline196
-    t169 = inline197
-    var inline189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t169)
-    _goml_runtime_core_string_println(inline189)
+    var t191 string
+    var inline214 int32 = _goml_m_trait__impl_i_Source_i_LeftSource_i_get(t189)
+    var inline215 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline214)
+    var inline216 string = inline215 + ":"
+    var inline217 int32 = _goml_m_trait__impl_i_Source_i_RightSource_i_get(t190)
+    var inline218 string = _goml_m_trait__impl_i_Mark_i_int32_i_marked(inline217)
+    var inline219 string = inline216 + inline218
+    t191 = inline219
+    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline211)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__38 string) string {
-    return self__38
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
+    return self__67
 }
 
 func main() {

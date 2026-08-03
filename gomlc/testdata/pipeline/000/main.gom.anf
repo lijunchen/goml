@@ -13,89 +13,89 @@ fn trait_impl#ToString#Color#to_string(self/0: Color) -> string {
 }
 
 fn trait_impl#ToString#Point#to_string(self/1: Point) -> string {
-  let mtmp155 = self/1 in
-  let x156 = Point.x(self/1) in
-  let x157 = Point.y(self/1) in
-  let x158 = Point.color(self/1) in
-  let color/4 = x158 in
-  let y/3 = x157 in
-  let x/2 = x156 in
-  let t172 = ("Point { " + "x: ") in
-  join inline_cont227(t173: string) -> string {
-    let t174 = (t172 + t173) in
-    let t175 = (t174 + ", ") in
-    let t176 = (t175 + "y: ") in
-    join inline_cont225(t177: string) -> string {
-      let t178 = (t176 + t177) in
-      let t179 = (t178 + ", ") in
-      let t180 = (t179 + "color: ") in
-      join inline_cont224(t181: string) -> string {
-        let t182 = (t180 + t181) in
-        let t183 = (t182 + " }") in
-        t183
+  let mtmp177 = self/1 in
+  let x178 = Point.x(self/1) in
+  let x179 = Point.y(self/1) in
+  let x180 = Point.color(self/1) in
+  let color/4 = x180 in
+  let y/3 = x179 in
+  let x/2 = x178 in
+  let t194 = ("Point { " + "x: ") in
+  join inline_cont249(t195: string) -> string {
+    let t196 = (t194 + t195) in
+    let t197 = (t196 + ", ") in
+    let t198 = (t197 + "y: ") in
+    join inline_cont247(t199: string) -> string {
+      let t200 = (t198 + t199) in
+      let t201 = (t200 + ", ") in
+      let t202 = (t201 + "color: ") in
+      join inline_cont246(t203: string) -> string {
+        let t204 = (t202 + t203) in
+        let t205 = (t204 + " }") in
+        t205
       } in
-      match x158 {
+      match x180 {
         Tag_0 => {
-          jump inline_cont224("Color::Red")
+          jump inline_cont246("Color::Red")
         },
         Tag_1 => {
-          jump inline_cont224("Color::Green")
+          jump inline_cont246("Color::Green")
         },
         Tag_2 => {
-          jump inline_cont224("Color::Blue")
+          jump inline_cont246("Color::Blue")
         },
       }
     } in
-    let inline226 = @runtime(core.int32_to_string)(x157) in
-    jump inline_cont225(inline226)
+    let inline248 = @runtime(core.int32_to_string)(x179) in
+    jump inline_cont247(inline248)
   } in
-  let inline228 = @runtime(core.int32_to_string)(x156) in
-  jump inline_cont227(inline228)
+  let inline250 = @runtime(core.int32_to_string)(x178) in
+  jump inline_cont249(inline250)
 }
 
 fn inherent#Point#Point#new(x/5: int32, y/6: int32, color/7: Color) -> Point {
-  let t186 = Point { x: x/5, y: y/6, color: color/7 } in
-  t186
+  let t208 = Point { x: x/5, y: y/6, color: color/7 } in
+  t208
 }
 
 fn trait_impl#ToString#Line#to_string(self/8: Line) -> string {
-  let mtmp159 = self/8 in
-  let x160 = Line.from(self/8) in
-  let x161 = Line.to(self/8) in
-  let x162 = Line.color(self/8) in
-  let color/11 = x162 in
-  let to/10 = x161 in
-  let from/9 = x160 in
-  let t189 = ("Line { " + "from: ") in
-  let t190 = trait_impl#ToString#Point#to_string(x160) in
-  let t191 = (t189 + t190) in
-  let t192 = (t191 + ", ") in
-  let t193 = (t192 + "to: ") in
-  let t194 = trait_impl#ToString#Point#to_string(x161) in
-  let t195 = (t193 + t194) in
-  let t196 = (t195 + ", ") in
-  let t197 = (t196 + "color: ") in
-  join inline_cont229(t198: string) -> string {
-    let t199 = (t197 + t198) in
-    let t200 = (t199 + " }") in
-    t200
+  let mtmp181 = self/8 in
+  let x182 = Line.from(self/8) in
+  let x183 = Line.to(self/8) in
+  let x184 = Line.color(self/8) in
+  let color/11 = x184 in
+  let to/10 = x183 in
+  let from/9 = x182 in
+  let t211 = ("Line { " + "from: ") in
+  let t212 = trait_impl#ToString#Point#to_string(x182) in
+  let t213 = (t211 + t212) in
+  let t214 = (t213 + ", ") in
+  let t215 = (t214 + "to: ") in
+  let t216 = trait_impl#ToString#Point#to_string(x183) in
+  let t217 = (t215 + t216) in
+  let t218 = (t217 + ", ") in
+  let t219 = (t218 + "color: ") in
+  join inline_cont251(t220: string) -> string {
+    let t221 = (t219 + t220) in
+    let t222 = (t221 + " }") in
+    t222
   } in
-  match x162 {
+  match x184 {
     Tag_0 => {
-      jump inline_cont229("Color::Red")
+      jump inline_cont251("Color::Red")
     },
     Tag_1 => {
-      jump inline_cont229("Color::Green")
+      jump inline_cont251("Color::Green")
     },
     Tag_2 => {
-      jump inline_cont229("Color::Blue")
+      jump inline_cont251("Color::Blue")
     },
   }
 }
 
 fn inherent#Line#Line#new(from/12: Point, to/13: Point, color/14: Color) -> Line {
-  let t203 = Line { from: from/12, to: to/13, color: color/14 } in
-  t203
+  let t225 = Line { from: from/12, to: to/13, color: color/14 } in
+  t225
 }
 
 fn trait_impl#ToString#LineList#to_string(self/15: LineList) -> string {
@@ -104,58 +104,58 @@ fn trait_impl#ToString#LineList#to_string(self/15: LineList) -> string {
       "LineList::Nil"
     },
     Tag_1 => {
-      let x163 = LineList::Cons._0(self/15) in
-      let x164 = LineList::Cons._1(self/15) in
-      let __field1/17 = x164 in
-      let __field0/16 = x163 in
-      let t208 = trait_impl#ToString#Line#to_string(x163) in
-      let t209 = ("LineList::Cons(" + t208) in
-      let t210 = (t209 + ", ") in
-      let t211 = trait_impl#ToString#LineList#to_string(x164) in
-      let t212 = (t210 + t211) in
-      let t213 = (t212 + ")") in
-      t213
+      let x185 = LineList::Cons._0(self/15) in
+      let x186 = LineList::Cons._1(self/15) in
+      let __field1/17 = x186 in
+      let __field0/16 = x185 in
+      let t230 = trait_impl#ToString#Line#to_string(x185) in
+      let t231 = ("LineList::Cons(" + t230) in
+      let t232 = (t231 + ", ") in
+      let t233 = trait_impl#ToString#LineList#to_string(x186) in
+      let t234 = (t232 + t233) in
+      let t235 = (t234 + ")") in
+      t235
     },
   }
 }
 
 fn main() -> unit {
-  join inline_cont239(from/18: Point) -> unit {
-    join inline_cont235(to/19: Point) -> unit {
-      join inline_cont233(line/20: Line) -> unit {
+  join inline_cont261(from/18: Point) -> unit {
+    join inline_cont257(to/19: Point) -> unit {
+      join inline_cont255(line/20: Line) -> unit {
         let lines/21 = LineList::Cons(line/20, Tag_0) in
-        let t215 = trait_impl#ToString#LineList#to_string(lines/21) in
-        let inline231 = trait_impl#ToString#string#to_string(t215) in
-        let inline232 = @runtime(core.string_println)(inline231) in
+        let t237 = trait_impl#ToString#LineList#to_string(lines/21) in
+        let inline253 = trait_impl#ToString#string#to_string(t237) in
+        let inline254 = @runtime(core.string_println)(inline253) in
         ()
       } in
-      let inline234 = Line { from: from/18, to: to/19, color: Tag_2 } in
-      jump inline_cont233(inline234)
+      let inline256 = Line { from: from/18, to: to/19, color: Tag_2 } in
+      jump inline_cont255(inline256)
     } in
-    let inline236 = 30 in
-    let inline237 = 40 in
-    let inline238 = Point { x: inline236, y: inline237, color: Tag_1 } in
-    jump inline_cont235(inline238)
+    let inline258 = 30 in
+    let inline259 = 40 in
+    let inline260 = Point { x: inline258, y: inline259, color: Tag_1 } in
+    jump inline_cont257(inline260)
   } in
-  let inline240 = 10 in
-  let inline241 = 20 in
-  let inline242 = Point { x: inline240, y: inline241, color: Tag_0 } in
-  jump inline_cont239(inline242)
+  let inline262 = 10 in
+  let inline263 = 20 in
+  let inline264 = Point { x: inline262, y: inline263, color: Tag_0 } in
+  jump inline_cont261(inline264)
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  let t218 = @runtime(core.int32_to_string)(self/6) in
-  t218
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  let t240 = @runtime(core.int32_to_string)(self/35) in
+  t240
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join inline_cont243(t220: string) -> unit {
-    let t221 = @runtime(core.string_println)(t220) in
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont265(t242: string) -> unit {
+    let t243 = @runtime(core.string_println)(t242) in
     ()
   } in
-  jump inline_cont243(value/1)
+  jump inline_cont265(value/31)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }

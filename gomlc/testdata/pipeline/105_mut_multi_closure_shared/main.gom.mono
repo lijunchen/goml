@@ -2,32 +2,32 @@ fn main() -> unit {
   let x/0 = @intrinsic(ref.new)(0) in
   let inc/1 =
     || {
-      let _wild155 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in
+      let _wild177 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in
       @intrinsic(ref.get)(x/0)
     } in
   let get/2 = || @intrinsic(ref.get)(x/0) in
-  let mtmp156 = inc/1() in
+  let mtmp178 = inc/1() in
   {
-    let _wild157 = println__T_string(inherent#int#int#to_string(get/2())) in
+    let _wild179 = println__T_string(inherent#int#int#to_string(get/2())) in
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn inherent#int#int#to_string(self/5: int) -> string {
-  @runtime(core.int_to_string)(self/5)
+fn inherent#int#int#to_string(self/34: int) -> string {
+  @runtime(core.int_to_string)(self/34)
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }
 
-fn trait_impl#Eq#int#eq(self/59: int, other/60: int) -> bool {
-  @intrinsic(eq.primitive)(self/59, other/60)
+fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
+  @intrinsic(eq.primitive)(self/88, other/89)
 }
 
-fn trait_impl#Hash#int#hash(self/85: int) -> uint64 {
-  @runtime(core.int_hash)(self/85)
+fn trait_impl#Hash#int#hash(self/114: int) -> uint64 {
+  @runtime(core.int_hash)(self/114)
 }

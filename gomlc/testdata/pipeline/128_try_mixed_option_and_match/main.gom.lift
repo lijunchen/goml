@@ -16,26 +16,26 @@ fn maybe_secondary(flag/1: bool) -> Option__int32 {
 
 fn mixed(primary/2: bool, secondary/3: bool) -> Option__string {
   let value/4 =
-    let mtmp155 = maybe_primary(primary/2) in
-    match mtmp155 {
+    let mtmp177 = maybe_primary(primary/2) in
+    match mtmp177 {
       Option__int32::None => {
         return Option__string::None
       },
-      Option__int32::Some(x156) => {
-        let x156 = Option__int32::Some._0(mtmp155) in
-        let try_value/18 = x156 in
+      Option__int32::Some(x178) => {
+        let x178 = Option__int32::Some._0(mtmp177) in
+        let try_value/18 = x178 in
         try_value/18
       },
     } in
   let label/6 =
-    let mtmp157 = maybe_secondary(secondary/3) in
-    match mtmp157 {
+    let mtmp179 = maybe_secondary(secondary/3) in
+    match mtmp179 {
       Option__int32::None => {
         "extra=none"
       },
-      Option__int32::Some(x158) => {
-        let x158 = Option__int32::Some._0(mtmp157) in
-        let extra/5 = x158 in
+      Option__int32::Some(x180) => {
+        let x180 = Option__int32::Some._0(mtmp179) in
+        let extra/5 = x180 in
         ("extra=" + inherent#int32#int32#to_string(extra/5))
       },
     } in
@@ -47,29 +47,29 @@ fn show(opt/7: Option__string) -> string {
     Option__string::None => {
       "none"
     },
-    Option__string::Some(x159) => {
-      let x159 = Option__string::Some._0(opt/7) in
-      let value/8 = x159 in
+    Option__string::Some(x181) => {
+      let x181 = Option__string::Some._0(opt/7) in
+      let value/8 = x181 in
       ("some=" + value/8)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild160 = println__T_string(show(mixed(true, true))) in
-  let _wild161 = println__T_string(show(mixed(true, false))) in
-  let _wild162 = println__T_string(show(mixed(false, true))) in
+  let _wild182 = println__T_string(show(mixed(true, true))) in
+  let _wild183 = println__T_string(show(mixed(true, false))) in
+  let _wild184 = println__T_string(show(mixed(false, true))) in
   ()
 }
 
-fn inherent#int32#int32#to_string(self/6: int32) -> string {
-  @runtime(core.int32_to_string)(self/6)
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
 }
 
-fn println__T_string(value/1: string) -> unit {
-  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#string#to_string(self/38: string) -> string {
-  self/38
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
 }
