@@ -1,10 +1,10 @@
 package registry;
 
 use gomlang::bootstrap_goml::manifest;
-use gomlang::bootstrap_goml::util;
 use std::env;
 use std::fs;
 use std::path;
+use std::text;
 
 pub struct SemVersion {
     pub major: int,
@@ -45,7 +45,7 @@ fn decimal_number(value: string) -> Option[int] {
 }
 
 pub fn parse_sem_version(value: string) -> Result[SemVersion, string] {
-    let parts = util::split(value, ".");
+    let parts = text::split(value, ".");
     if parts.len() != 3 {
         return Result::Err("invalid semver `" + value + "`")
     } else {
@@ -98,9 +98,9 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
     let source = fs::read_file(path::join(root, "index.toml"))?;
     let entries: Vec[RegistryEntry] = Vec::[];
     let mut current: Option[string] = Option::None;
-    for original in util::split_lines(source) {
-        let line = util::trim(original);
-        if util::starts_with(line, "[modules.") {
+    for original in text::lines(source) {
+        let line = text::trim(original);
+        if line.starts_with("[modules.") {
             let values = quoted_values(line);
             if values.len() != 1 {
                 return Result::Err("invalid registry module table " + line)
@@ -110,7 +110,7 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
             }
         } else {
             match current {
-                Some(_) => if util::starts_with(line, "latest") {
+                Some(_) => if line.starts_with("latest") {
                     let values = quoted_values(line);
                     if values.len() != 1 {
                         return Result::Err("invalid registry latest value")
@@ -126,7 +126,7 @@ fn load_index(root: string) -> Result[Vec[RegistryEntry], string] {
                             },
                         )
                     }
-                } else if util::starts_with(line, "versions") {
+                } else if line.starts_with("versions") {
                     let index = entries.len() - 1;
                     let entry = entries[index];
                     entries.set(
@@ -173,7 +173,7 @@ fn valid_identifier(value: string) -> bool {
 }
 
 pub fn validate_coordinate(value: string) -> Result[unit, string] {
-    let parts = util::split(value, "::");
+    let parts = text::split(value, "::");
     if parts.len() != 2 || !valid_identifier(parts[0]) || !valid_identifier(parts[1]) {
         Result::Err("invalid module coordinate `" + value + "`: expected owner::module")
     } else if parts[0] == "std" {
@@ -195,7 +195,7 @@ fn find_entry(entries: Vec[RegistryEntry], name: string) -> Option[RegistryEntry
 }
 
 fn module_directory_unchecked(root: string, name: string, version: string) -> string {
-    let parts = util::split(name, "::");
+    let parts = text::split(name, "::");
     path::join(path::join(path::join(root, parts[0]), parts[1]), version)
 }
 
@@ -382,7 +382,7 @@ pub fn resolve(module_root: string) -> Result[Vec[ResolvedModule], string] {
 }
 
 pub fn module_matches_package(module_name: string, package_name: string) -> bool {
-    package_name == module_name || util::starts_with(package_name, module_name + "::")
+    package_name == module_name || package_name.starts_with(module_name + "::")
 }
 
 pub fn package_directory(module: ResolvedModule, package_name: string) -> Option[string] {
@@ -391,7 +391,7 @@ pub fn package_directory(module: ResolvedModule, package_name: string) -> Option
     } else if module_matches_package(module.name, package_name) {
         let mut result = module.root;
         let suffix = package_name.byte_slice(module.name.byte_len() + 2, package_name.byte_len());
-        for segment in util::split(suffix, "::") {
+        for segment in text::split(suffix, "::") {
             result = path::join(result, segment);
         };
         Option::Some(result)
@@ -401,7 +401,7 @@ pub fn package_directory(module: ResolvedModule, package_name: string) -> Option
 }
 
 pub fn artifact_prefix(module: ResolvedModule) -> string {
-    let parts = util::split(module.name, "::");
+    let parts = text::split(module.name, "::");
     path::join(
         path::join(path::join(path::join("deps", parts[0]), parts[1]), module.version),
         "pkg",

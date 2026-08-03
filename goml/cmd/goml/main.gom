@@ -71,7 +71,7 @@ fn command_help(command: string) -> string {
 
 fn inline_value(argument: string, name: string) -> Option[string] {
     let prefix = f"{name}=";
-    if util::starts_with(argument, prefix) {
+    if argument.starts_with(prefix) {
         Option::Some(argument.byte_slice(prefix.byte_len(), argument.byte_len()))
     } else {
         Option::None
@@ -119,7 +119,7 @@ fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
                     target_dir = Option::Some(value);
                 },
             },
-            None => if util::starts_with(argument, "-") {
+            None => if argument.starts_with("-") {
                 return Result::Err(f"unknown option {argument}")
             } else {
                 return Result::Err(f"unexpected argument {argument}")
@@ -156,7 +156,7 @@ fn parse_fmt(args: Vec[string]) -> Result[FmtArgs, string] {
                         formatter = Option::Some(value);
                     },
                 },
-                None => if util::starts_with(argument, "-") {
+                None => if argument.starts_with("-") {
                     return Result::Err(f"unknown option {argument}")
                 } else {
                     return Result::Err(f"unexpected argument {argument}")
@@ -168,11 +168,11 @@ fn parse_fmt(args: Vec[string]) -> Result[FmtArgs, string] {
 }
 
 fn parse_duration(value: string) -> Result[int, string] {
-    let parts = if util::ends_with(value, "ms") {
+    let parts = if value.ends_with("ms") {
         (value.byte_slice(0, value.byte_len() - 2), 1)
-    } else if util::ends_with(value, "s") {
+    } else if value.ends_with("s") {
         (value.byte_slice(0, value.byte_len() - 1), 1000)
-    } else if util::ends_with(value, "m") {
+    } else if value.ends_with("m") {
         (value.byte_slice(0, value.byte_len() - 1), 60000)
     } else {
         return Result::Err("duration must end in ms, s, or m")
@@ -317,7 +317,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                                     } else {
                                         return Result::Err("--format must be text or json")
                                     },
-                                    None => if util::starts_with(argument, "-") {
+                                    None => if argument.starts_with("-") {
                                         return Result::Err(f"unknown option {argument}")
                                     } else if test_filter.is_some() {
                                         return Result::Err(f"unexpected argument {argument}")
@@ -339,7 +339,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                             },
                             Err(message) => return Result::Err(message),
                         },
-                        None => if util::starts_with(argument, "-") {
+                        None => if argument.starts_with("-") {
                             return Result::Err(f"unknown option {argument}")
                         } else if command == "run" && targets.is_empty() {
                             targets.push(argument);

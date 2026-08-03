@@ -2,13 +2,13 @@ package commands;
 
 use gomlang::bootstrap_goml::manifest;
 use gomlang::bootstrap_goml::registry;
-use gomlang::bootstrap_goml::util;
 use std::bytes;
 use std::env;
 use std::fs;
 use std::io;
 use std::path;
 use std::process;
+use std::text;
 
 fn command_output(value: bytes::Bytes) -> string {
     match value.to_string() {
@@ -27,7 +27,7 @@ fn run_git(arguments: Vec[string]) -> Result[unit, string] {
     if process::ExitStatus::success(process::Output::status(output)) {
         Result::Ok(())
     } else {
-        let message = util::trim(command_output(process::Output::stderr(output)));
+        let message = text::trim(command_output(process::Output::stderr(output)));
         if message == "" {
             Result::Err("git command failed")
         } else {
@@ -53,11 +53,11 @@ fn config_registry_source() -> Result[string, string] {
     };
     let source = fs::read_file(config)?;
     let mut section = "";
-    for original in util::split_lines(source) {
-        let line = util::trim(original);
-        if util::starts_with(line, "[") && util::ends_with(line, "]") {
+    for original in text::lines(source) {
+        let line = text::trim(original);
+        if line.starts_with("[") && line.ends_with("]") {
             section = line.byte_slice(1, line.byte_len() - 1);
-        } else if section == "registry" && util::starts_with(line, "default") {
+        } else if section == "registry" && line.starts_with("default") {
             let mut equals = -1;
             for index in 0..line.byte_len() {
                 if equals < 0 && line.byte_get(index) == b'=' {
@@ -67,7 +67,7 @@ fn config_registry_source() -> Result[string, string] {
                 }
             };
             if equals >= 0 {
-                let value = util::trim(line.byte_slice(equals + 1, line.byte_len()));
+                let value = text::trim(line.byte_slice(equals + 1, line.byte_len()));
                 if value.byte_len() >= 2 && value.byte_get(0) == b'"'
                     && value.byte_get(value.byte_len() - 1) == b'"' {
                     let value = value.byte_slice(1, value.byte_len() - 1);
@@ -100,7 +100,7 @@ fn option_local_registry(args: Vec[string], index: int) -> Result[(Option[string
             let value = args[index + 1];
             Result::Ok((Option::Some(value), index + 2))
         }
-    } else if util::starts_with(argument, "--local-registry=") {
+    } else if argument.starts_with("--local-registry=") {
         let value = argument.byte_slice(17, argument.byte_len());
         if value == "" {
             Result::Err("--local-registry requires a value")
@@ -187,7 +187,7 @@ fn module_root() -> Result[string, string] {
 }
 
 fn dependency_line_name(line: string) -> Option[string] {
-    let line = util::trim(line);
+    let line = text::trim(line);
     if line.byte_len() < 3 || line.byte_get(0) != b'"' {
         return Option::None
     } else {
@@ -195,8 +195,8 @@ fn dependency_line_name(line: string) -> Option[string] {
     };
     for index in 1..line.byte_len() {
         if line.byte_get(index) == b'"' {
-            let rest = util::trim(line.byte_slice(index + 1, line.byte_len()));
-            if util::starts_with(rest, "=") {
+            let rest = text::trim(line.byte_slice(index + 1, line.byte_len()));
+            if rest.starts_with("=") {
                 return Option::Some(line.byte_slice(1, index))
             } else {
                 return Option::None
@@ -209,10 +209,10 @@ fn dependency_line_name(line: string) -> Option[string] {
 }
 
 fn section_name(line: string) -> Option[string] {
-    let line = util::trim(line);
+    let line = text::trim(line);
     if line.byte_len() >= 2 && line.byte_get(0) == b'['
         && line.byte_get(line.byte_len() - 1) == b']' {
-        Option::Some(util::trim(line.byte_slice(1, line.byte_len() - 1)))
+        Option::Some(text::trim(line.byte_slice(1, line.byte_len() - 1)))
     } else {
         Option::None
     }
@@ -225,7 +225,7 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
     let mut inserted = false;
     let mut dependency_section_exists = false;
     let entry = "\"" + name + "\" = \"" + version + "\"";
-    let lines = util::split_lines(source);
+    let lines = text::lines(source);
     for line in lines {
         match section_name(line) {
             Some(section) => {
@@ -270,7 +270,7 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
     } else {
         ()
     };
-    fs::write_file(manifest_path, util::join(result, "\n") + "\n")
+    fs::write_file(manifest_path, text::join(result, "\n") + "\n")
 }
 
 fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, string] {
@@ -291,7 +291,7 @@ fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, s
         buffer.clear();
         kept.set(0)
     };
-    for line in util::split_lines(source) {
+    for line in text::lines(source) {
         match section_name(line) {
             Some(section) => {
                 if in_dependencies {
@@ -330,7 +330,7 @@ fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, s
         let _ = result.remove(result.len() - 1);
         ()
     };
-    fs::write_file(manifest_path, util::join(result, "\n") + "\n")
+    fs::write_file(manifest_path, text::join(result, "\n") + "\n")
 }
 
 fn command_registry_root(local: Option[string]) -> Result[string, string] {
@@ -368,7 +368,7 @@ fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string])
             },
             None => {
                 let argument = args[index];
-                if util::starts_with(argument, "-") {
+                if argument.starts_with("-") {
                     return Result::Err("unknown option " + argument)
                 } else {
                     match dependency {
@@ -392,7 +392,7 @@ pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
     let parsed = dependency_command_args(args)?;
     let spec = parsed.0;
     let local = parsed.1;
-    let parts = util::split(spec, "@");
+    let parts = text::split(spec, "@");
     if parts.len() > 2 {
         return Result::Err("invalid dependency " + spec)
     } else {
@@ -414,7 +414,7 @@ pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
 
 pub fn remove_dependency(args: Vec[string]) -> Result[unit, string] {
     let parsed = dependency_command_args(args)?;
-    let name = util::trim(parsed.0);
+    let name = text::trim(parsed.0);
     registry::validate_coordinate(name)?;
     let module = module_root()?;
     remove_dependency_line(path::join(module, "goml.toml"), name)?;

@@ -1,6 +1,5 @@
 package test_support;
 
-use gomlang::bootstrap_goml::util;
 use std::bytes;
 use std::env;
 use std::fs;
@@ -131,7 +130,7 @@ pub fn assert_failure(output: process::Output) -> unit {
 }
 
 pub fn assert_contains(value: string, expected: string) -> unit {
-    if util::contains(value, expected) {
+    if value.contains(expected) {
         ()
     } else {
         testing::fail("expected text to contain:\n" + expected + "\nactual:\n" + value)
@@ -139,7 +138,7 @@ pub fn assert_contains(value: string, expected: string) -> unit {
 }
 
 pub fn assert_not_contains(value: string, unexpected: string) -> unit {
-    if util::contains(value, unexpected) {
+    if value.contains(unexpected) {
         testing::fail("expected text not to contain:\n" + unexpected + "\nactual:\n" + value)
     } else {
         ()

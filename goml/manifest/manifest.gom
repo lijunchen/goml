@@ -1,6 +1,5 @@
 package manifest;
 
-use gomlang::bootstrap_goml::util;
 use std::fs;
 use std::path;
 use std::text;
@@ -37,7 +36,7 @@ fn strip_comment(value: string) -> string {
 }
 
 fn parse_string(value: string) -> Result[string, string] {
-    let value = util::trim(value);
+    let value = text::trim(value);
     if value.byte_len() < 2 || value.byte_get(0) != b'"'
         || value.byte_get(value.byte_len() - 1) != b'"' {
         return Result::Err("manifest values must be quoted strings")
@@ -89,7 +88,7 @@ fn valid_segment(value: string) -> bool {
 }
 
 fn validate_module_path(value: string) -> Result[unit, string] {
-    let segments = util::split(value, "::");
+    let segments = text::split(value, "::");
     if segments.is_empty() {
         return Result::Err("module.path is empty")
     } else {
@@ -109,14 +108,14 @@ fn validate_target_dir(value: string) -> Result[unit, string] {
     if value == "" || path::is_absolute(value) {
         Result::Err("build.target-dir must be a non-empty relative path")
     } else {
-        for segment in util::split(value, "/") {
+        for segment in text::split(value, "/") {
             if segment == ".." {
                 return Result::Err("build.target-dir must stay inside the module")
             } else {
                 ()
             }
         };
-        for segment in util::split(value, "\\") {
+        for segment in text::split(value, "\\") {
             if segment == ".." {
                 return Result::Err("build.target-dir must stay inside the module")
             } else {
@@ -133,13 +132,13 @@ pub fn load(path: string) -> Result[Manifest, string] {
     let mut module_path: Option[string] = Option::None;
     let mut target_dir = "_artifact";
     let dependencies: Vec[Dependency] = Vec::[];
-    for original in util::split_lines(source) {
-        let line = util::trim(strip_comment(original));
+    for original in text::lines(source) {
+        let line = text::trim(strip_comment(original));
         if line == "" {
             ()
         } else if line.byte_len() >= 2 && line.byte_get(0) == b'['
             && line.byte_get(line.byte_len() - 1) == b']' {
-            section = util::trim(line.byte_slice(1, line.byte_len() - 1));
+            section = text::trim(line.byte_slice(1, line.byte_len() - 1));
         } else {
             let mut equals = -1;
             for index in 0..line.byte_len() {
@@ -154,7 +153,7 @@ pub fn load(path: string) -> Result[Manifest, string] {
             } else {
                 ()
             };
-            let key = util::trim(line.byte_slice(0, equals));
+            let key = text::trim(line.byte_slice(0, equals));
             let value = parse_string(line.byte_slice(equals + 1, line.byte_len()))?;
             if section == "module" && key == "path" {
                 module_path = Option::Some(value);

@@ -1,6 +1,7 @@
 package project;
 
 use gomlang::bootstrap_goml::util;
+use std::collections;
 use std::fs;
 use std::io;
 use std::path;
@@ -22,7 +23,7 @@ fn package_artifact_base(root: string, graph: Graph, package_name: string) -> st
         return path::join(root, package_name)
     };
     let mut result = path::join(root, package_value.artifact_prefix);
-    for segment in util::split(package_name, "::") {
+    for segment in text::split(package_name, "::") {
         result = path::join(result, segment);
     };
     path::join(result, last_segment(package_name))
@@ -40,7 +41,7 @@ fn extension(value: string, suffix: string) -> string {
 }
 
 fn last_segment(value: string) -> string {
-    let segments = util::split(value, "::");
+    let segments = text::split(value, "::");
     if segments.is_empty() {
         value
     } else {
@@ -50,8 +51,8 @@ fn last_segment(value: string) -> string {
 
 fn executable_path_for(context: Context, entry_package: string) -> string {
     let mut result = path::join(context.artifact_root, "bin");
-    let module_segments = util::split(context.graph.module_path, "::");
-    let entry_segments = util::split(entry_package, "::");
+    let module_segments = text::split(context.graph.module_path, "::");
+    let entry_segments = text::split(entry_package, "::");
     for index in module_segments.len()..entry_segments.len() {
         result = path::join(result, entry_segments[index]);
     };
@@ -880,7 +881,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     } else {
                         following
                     };
-                    if producer >= 0 && !util::int_vec_contains(dependencies, producer) {
+                    if producer >= 0 && !collections::contains(dependencies, producer) {
                         dependencies.push(producer)
                     } else {
                         ()
@@ -898,7 +899,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                         },
                         None => (),
                     };
-                    if previous >= 0 && !util::int_vec_contains(dependencies, previous) {
+                    if previous >= 0 && !collections::contains(dependencies, previous) {
                         dependencies.push(previous)
                     } else {
                         ()
@@ -922,7 +923,7 @@ fn build_node(nodes: Vec[BuildNode], index: int) -> Option[BuildNode] {
 
 fn build_node_ready(node: BuildNode, completed: Vec[int]) -> bool {
     for dependency in node.dependencies {
-        if !util::int_vec_contains(completed, dependency) {
+        if !collections::contains(completed, dependency) {
             return false
         } else {
             ()

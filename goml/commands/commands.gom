@@ -1,6 +1,5 @@
 package commands;
 
-use gomlang::bootstrap_goml::util;
 use std::env;
 use std::fs;
 use std::io;
@@ -172,7 +171,7 @@ pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
                 base = args[index + 1];
                 index += 2;
             }
-        } else if util::starts_with(argument, "--path=") {
+        } else if argument.starts_with("--path=") {
             let value = argument.byte_slice(7, argument.byte_len());
             if value == "" {
                 return Result::Err("--path requires a value")
@@ -180,7 +179,7 @@ pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
                 base = value;
                 index += 1;
             }
-        } else if util::starts_with(argument, "-") {
+        } else if argument.starts_with("-") {
             return Result::Err("unknown option " + argument)
         } else {
             match name {

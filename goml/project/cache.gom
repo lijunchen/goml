@@ -1,6 +1,5 @@
 package project;
 
-use gomlang::bootstrap_goml::util;
 use std::fs;
 use std::path;
 use std::text;
@@ -364,7 +363,7 @@ fn cache_is_fresh(context: Context, spec: CacheSpec, fingerprint: string) -> Res
         ()
     };
     let source = fs::read_file(record_path)?;
-    let lines = util::split(source, "\n");
+    let lines = text::split(source, "\n");
     if lines.len() != spec.outputs.len() + 1 || lines[0] != fingerprint {
         return Result::Ok(false)
     } else {

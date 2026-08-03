@@ -3,9 +3,11 @@ package main;
 use gomlang::bootstrap_goml::manifest;
 use gomlang::bootstrap_goml::project;
 use gomlang::bootstrap_goml::util;
+use std::collections;
 use std::json;
 use std::path;
 use std::testing;
+use std::text;
 
 fn project_context(entry_package: string) -> project::Context {
     project::Context {
@@ -75,13 +77,13 @@ fn rejects_invalid_fmt_options() -> unit {
 
 #[test]
 fn utility_text_operations_are_deterministic() -> unit {
-    testing::assert_eq(util::trim(" \tvalue\r\n"), "value");
-    testing::assert(util::starts_with("abc", "ab"));
-    testing::assert(util::ends_with("abc", "bc"));
-    testing::assert(util::contains("abcdef", "cde"));
-    testing::assert(util::string_vec_contains(Vec::["goml", "gomlc"], "gomlc"));
-    testing::assert(util::int_vec_contains(Vec::[1, 2], 2));
-    testing::assert_eq(util::join(util::sorted_unique(Vec::["b", "a", "b"]), ","), "a,b")
+    testing::assert_eq(text::trim(" \tvalue\r\n"), "value");
+    testing::assert("abc".starts_with("ab"));
+    testing::assert("abc".ends_with("bc"));
+    testing::assert("abcdef".contains("cde"));
+    testing::assert(collections::contains(Vec::["goml", "gomlc"], "gomlc"));
+    testing::assert(collections::contains(Vec::[1, 2], 2));
+    testing::assert_eq(text::join(util::sorted_unique(Vec::["b", "a", "b"]), ","), "a,b")
 }
 
 #[test]

@@ -4,6 +4,7 @@ use gomlang::bootstrap_goml::manifest;
 use gomlang::bootstrap_goml::registry;
 use gomlang::bootstrap_goml::util;
 use std::bytes;
+use std::collections;
 use std::env;
 use std::fs;
 use std::json;
@@ -80,7 +81,7 @@ fn target_directory(target: string) -> Result[string, string] {
 
 fn path_inside(root: string, value: string) -> bool {
     value == root
-        || (util::starts_with(value, root) && value.byte_len() > root.byte_len()
+        || (value.starts_with(root) && value.byte_len() > root.byte_len()
             && (value.byte_get(root.byte_len()) == b'/' || value.byte_get(root.byte_len()) == b'\\'))
 }
 
@@ -128,7 +129,7 @@ fn package_name_for_directory(module_dir: string, module_path: string, directory
     if segments.is_empty() {
         Result::Ok(module_path)
     } else {
-        Result::Ok(module_path + "::" + util::join(segments, "::"))
+        Result::Ok(module_path + "::" + text::join(segments, "::"))
     }
 }
 
@@ -139,12 +140,12 @@ fn directory_for_package(module_dir: string, module_path: string, package_name: 
         Option::Some(module_dir)
     } else {
         let prefix = module_path + "::";
-        if !util::starts_with(package_name, prefix) {
+        if !package_name.starts_with(prefix) {
             Option::None
         } else {
             let mut result = module_dir;
             let suffix = package_name.byte_slice(prefix.byte_len(), package_name.byte_len());
-            for segment in util::split(suffix, "::") {
+            for segment in text::split(suffix, "::") {
                 result = path::join(result, segment);
                 if fs::is_file(path::join(result, "goml.toml")) {
                     return Option::None
@@ -169,7 +170,7 @@ fn source_files(directory: string, include_tests: bool) -> Result[Vec[string], s
             }
             && (include_tests
                 || match path::file_name(source_path) {
-                    Some(value) => !util::ends_with(value, "_test.gom"),
+                    Some(value) => !value.ends_with("_test.gom"),
                     None => false,
                 }) {
             result.push(source_path)
@@ -352,7 +353,7 @@ fn source_by_name(sources: Vec[ModuleSource], name: string) -> Option[ModuleSour
 fn source_for_package(sources: Vec[ModuleSource], package_name: string) -> Option[ModuleSource] {
     let mut selected: Option[ModuleSource] = Option::None;
     for source in sources {
-        if package_name == source.name || util::starts_with(package_name, source.name + "::") {
+        if package_name == source.name || package_name.starts_with(source.name + "::") {
             match selected {
                 Some(current) => if source.name.byte_len() > current.name.byte_len() {
                     selected = Option::Some(source);
@@ -444,16 +445,16 @@ fn local_import(sources: Vec[ModuleSource], current_module: string, import_path:
     Option[string],
     string,
 ] {
-    if import_path == "std" || util::starts_with(import_path, "std::") {
+    if import_path == "std" || import_path.starts_with("std::") {
         Result::Ok(Option::None)
     } else {
         let Some(current) = source_by_name(sources, current_module) else {
             return Result::Err("missing module source " + current_module)
         };
         let prefix = current_module + "::";
-        if util::starts_with(import_path, prefix) {
+        if import_path.starts_with(prefix) {
             let suffix = import_path.byte_slice(prefix.byte_len(), import_path.byte_len());
-            for segment in util::split(suffix, "::") {
+            for segment in text::split(suffix, "::") {
                 if segment == "tests" {
                     return Result::Err("test-only package " + import_path + " cannot be imported")
                 } else {
@@ -675,14 +676,14 @@ fn collect_package_directories(
                 None => false,
             }
             && match path::file_name(value) {
-                Some(file_name) => !util::ends_with(file_name, "_test.gom"),
+                Some(file_name) => !file_name.ends_with("_test.gom"),
                 None => false,
             } {
             source_files.push(value)
         } else if fs::is_dir(value) && value != artifact_root {
             if name == "tests" {
                 test_directories.push(value)
-            } else if name != "testdata" && !util::starts_with(name, ".") {
+            } else if name != "testdata" && !name.starts_with(".") {
                 children.push(value)
             } else {
                 ()
@@ -1082,7 +1083,7 @@ pub fn internal_test_graphs(context: Context) -> Result[Vec[Graph], string] {
         let files = source_files(package_value.directory, true)?;
         let test_files: Vec[string] = Vec::[];
         for file in files {
-            if !util::string_vec_contains(package_value.files, file) {
+            if !collections::contains(package_value.files, file) {
                 test_files.push(file);
                 all_files.push(file)
             } else {

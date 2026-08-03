@@ -1,13 +1,13 @@
 package main;
 
 use gomlang::bootstrap_goml::test_support;
-use gomlang::bootstrap_goml::util;
 use gomlang::bootstrap_goml::version;
 use std::bytes;
 use std::fs;
 use std::path;
 use std::process;
 use std::testing;
+use std::text;
 
 fn migration_deep_ref_type(depth: int) -> string {
     let result = Ref::new("int32");
@@ -788,7 +788,7 @@ fn migration_wide_fields(count: int) -> string {
     for idx in range(0, count) {
         parts.push("f" + idx.to_string() + ": int32")
     };
-    util::join(parts, ", ")
+    text::join(parts, ", ")
 }
 
 fn migration_wide_values(count: int) -> string {
@@ -796,7 +796,7 @@ fn migration_wide_values(count: int) -> string {
     for idx in range(0, count) {
         parts.push("f" + idx.to_string() + ": " + idx.to_string())
     };
-    util::join(parts, ", ")
+    text::join(parts, ", ")
 }
 
 fn migration_wide_pattern(count: int) -> string {
@@ -804,7 +804,7 @@ fn migration_wide_pattern(count: int) -> string {
     for idx in range(0, count) {
         parts.push("f" + idx.to_string() + ": x" + idx.to_string())
     };
-    util::join(parts, ", ")
+    text::join(parts, ", ")
 }
 
 fn migration_wide_sum(count: int) -> string {
@@ -812,7 +812,7 @@ fn migration_wide_sum(count: int) -> string {
     for idx in range(0, count) {
         parts.push("x" + idx.to_string())
     };
-    util::join(parts, " + ")
+    text::join(parts, " + ")
 }
 
 fn migration_wide_struct_program(field_count: int, sum_count: int) -> string {

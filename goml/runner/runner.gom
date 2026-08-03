@@ -108,7 +108,7 @@ fn load_tests(group: Group) -> Result[Vec[Test], string] {
 
 fn selected(test: Test, options: Options) -> bool {
     let filter_matches = match options.filter {
-        Some(value) => util::contains(test.display_name, value),
+        Some(value) => test.display_name.contains(value),
         None => true,
     };
     filter_matches && (!options.ignored || test.ignored)
