@@ -2077,63 +2077,6 @@ fn resolves_trait_methods_from_call_context() -> unit {
 }
 
 #[test]
-fn infers_iterator_adapter_builtins() -> unit {
-    let source = "fn exercise() -> Vec[string] { let mapped = iterator_map(range(0, 4), |value: int| value + 1); let filtered = iterator_filter(mapped, |value: int| value > 1); let limited = iterator_take(filtered, 2); for value in limited { let _: int = value; }; let _: int = iterator_fold(range(0, 4), 0, |total: int, value: int| total + value); iterator_collect(iterator_map(range(0, 2), |value: int| value.to_string())) }";
-    let file = checked_file(source);
-    match file.items.get(0) {
-        Function(value) => {
-            let expected: Vec[string] = Vec::new();
-            expected.push("MapIterator");
-            expected.push("FilterIterator");
-            expected.push("TakeIterator");
-            for index in range(0, 3) {
-                match value.body.stmts.get(index) {
-                    Let { is_mut: _, pat: _, value: expression } => match type_constructor_name(
-                        resolve_type(expr_type(expression)),
-                    ) {
-                        Some(name) => testing::assert_eq(name, expected.get(index)),
-                        None => testing::fail("expected iterator adapter type"),
-                    },
-                    _ => testing::fail("expected iterator adapter binding"),
-                }
-            };
-            match value.body.stmts.get(3) {
-                Expr {
-                    expr: For {
-                        pat: Var { name: _, ty: Int },
-                        iterator: _,
-                        into_iter_trait_ref: _,
-                        iterator_trait_ref: _,
-                        iterator_ty: _,
-                        body: _,
-                        ty: Unit,
-                    },
-                } => (),
-                _ => testing::fail("expected int adapter iteration"),
-            };
-            match value.body.stmts.get(4) {
-                Let { is_mut: _, pat: Wild { ty: pattern_ty }, value: expression } => {
-                    match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
-                        (Int, Int) => (),
-                        _ => testing::fail("expected int iterator fold"),
-                    }
-                },
-                _ => testing::fail("expected iterator fold binding"),
-            };
-            match value.body.tail {
-                Some(Call {
-                    func: Callable { callable: Function(name), ty: _ },
-                    args: _,
-                    ty: VecType { elem: String },
-                }) => testing::assert_eq(name, "iterator_collect"),
-                _ => testing::fail("expected string iterator collection"),
-            }
-        },
-        _ => testing::fail("expected iterator exercise function"),
-    }
-}
-
-#[test]
 fn resolves_builtin_for_iterator_types() -> unit {
     let source = "fn iterate(numbers: Vec[int32], words: Slice[string]) -> unit { for _ in numbers {}; for _ in words {}; }";
     let file = checked_file(source);

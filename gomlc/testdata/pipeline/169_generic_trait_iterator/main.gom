@@ -1,3 +1,5 @@
+use std::iter;
+
 trait Convert[T] {
     fn convert(self: Self) -> T;
 }
@@ -69,19 +71,19 @@ fn main() -> unit {
     println(Marker::[string]::marker(Any {}));
     println(Marker::[Vec[int32]]::marker(Any {}));
 
-    let mapped = iterator_map(Counter::new(0, 8), |value: int32| value * 2);
-    let filtered = iterator_filter(mapped, |value: int32| value > 4);
-    let limited = iterator_take(filtered, 3);
+    let mapped = iter::map(Counter::new(0, 8), |value: int32| value * 2);
+    let filtered = iter::filter(mapped, |value: int32| value > 4);
+    let limited = iter::take(filtered, 3);
     for value in limited {
         println(value);
     };
 
-    let sum = iterator_fold(range(1, 5), 0, |total: int, value: int| {
+    let sum = iter::fold(range(1, 5), 0, |total: int, value: int| {
         total + value
     });
     println(sum);
 
-    let texts: Vec[string] = iterator_collect(iterator_map(
+    let texts: Vec[string] = iter::collect(iter::map(
         range(1, 4),
         |value: int| "v" + value.to_string(),
     ));

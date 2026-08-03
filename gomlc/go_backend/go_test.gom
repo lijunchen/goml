@@ -680,31 +680,6 @@ fn emits_vec_runtime_structs() -> unit {
 }
 
 #[test]
-fn emits_builtin_iterator_structs() -> unit {
-    let source = "fn main() -> unit { let mapped = iterator_map(range(0, 4), |value: int| value + 1); let filtered = iterator_filter(mapped, |value: int| value > 1); let limited = iterator_take(filtered, 2); for value in limited { println(value); }; }";
-    let output = encode(lower_source(source));
-    testing::assert(
-        string_contains(
-            output,
-            "type MapIterator__int__int__FnIterator__int struct {\n    iterator FnIterator__int\n    map_fn func(int) int\n}",
-        ),
-    );
-    testing::assert(
-        string_contains(
-            output,
-            "type FilterIterator__int__MapIterator__int__int__FnIterator__int struct {\n    iterator MapIterator__int__int__FnIterator__int\n    predicate func(int) bool\n}",
-        ),
-    );
-    testing::assert(string_contains(output, "type TakeIterator__"));
-    testing::assert(
-        string_contains(
-            output,
-            "struct {\n    iterator FilterIterator__int__MapIterator__int__int__FnIterator__int\n    remaining *ref_int_x\n}",
-        ),
-    )
-}
-
-#[test]
 fn emits_hashmap_and_dyn_hash_runtime() -> unit {
     let source = "impl Eq for dyn Hash { fn eq(self: dyn Hash, other: dyn Hash) -> bool { Hash::hash(self) == Hash::hash(other) } } fn main() -> unit { let h: HashMap[Ref[dyn Hash], string] = HashMap::new(); let inner: dyn Hash = 1; let r = Ref::new(inner); h.set(r, \"one\"); println(h.contains(r).to_string()); }";
     testing::assert_eq(
