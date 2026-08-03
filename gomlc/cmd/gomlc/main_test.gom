@@ -141,6 +141,7 @@ fn tracks_host_api_package_link_needs() -> unit {
     testing::assert(needs.testing);
     testing::assert(!needs.root);
     testing::assert(!needs.ascii);
+    testing::assert(!needs.cmp);
     testing::assert(!needs.collections);
     testing::assert(!needs.env);
     testing::assert(!needs.fs);
@@ -169,6 +170,7 @@ fn tracks_standard_root_package_needs() -> unit {
     testing::assert(needs.root);
     testing::assert(needs.ascii);
     testing::assert(needs.bytes);
+    testing::assert(needs.cmp);
     testing::assert(needs.collections);
     testing::assert(needs.env);
     testing::assert(needs.fs);
@@ -194,7 +196,22 @@ fn tracks_ascii_and_iter_package_needs() -> unit {
     testing::assert(needs.iter);
     testing::assert(!needs.root);
     testing::assert(!needs.bytes);
+    testing::assert(!needs.cmp);
     testing::assert(!needs.text)
+}
+
+#[test]
+fn tracks_cmp_and_collections_package_needs() -> unit {
+    let direct = source_standard_needs(
+        ast::lower(parser::parse("package main; use std::cmp; fn main() -> unit {}")),
+    );
+    testing::assert(direct.cmp);
+    testing::assert(!direct.collections);
+    let collections = source_standard_needs(
+        ast::lower(parser::parse("package main; use std::collections; fn main() -> unit {}")),
+    );
+    testing::assert(collections.cmp);
+    testing::assert(collections.collections)
 }
 
 #[test]
@@ -1653,6 +1670,10 @@ fn standard_interface_hashes_are_stable() -> unit {
         second.bytes.interface_unit.interface_hash,
     );
     testing::assert_eq(
+        first.cmp.interface_unit.interface_hash,
+        second.cmp.interface_unit.interface_hash,
+    );
+    testing::assert_eq(
         first.collections.interface_unit.interface_hash,
         second.collections.interface_unit.interface_hash,
     );
@@ -1717,6 +1738,10 @@ fn compiler_world_artifact_round_trips() -> unit {
             testing::assert_eq(
                 decoded.standard.ascii.interface_unit.interface_hash,
                 world.standard.ascii.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.cmp.interface_unit.interface_hash,
+                world.standard.cmp.interface_unit.interface_hash,
             );
             testing::assert_eq(
                 decoded.standard.collections.interface_unit.interface_hash,
