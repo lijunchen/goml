@@ -389,6 +389,25 @@ fn classifies_extern_attributes_by_name_instead_of_payload_text() -> unit {
 }
 
 #[test]
+fn permits_runtime_externs_in_builtin_sources() -> unit {
+    let lowered = hir::lower(
+        ast::lower(
+            parser::parse(
+                "#[runtime(\"core.string_get\")] extern fn string_get_raw(value: string, index: int) -> char; fn load(value: string, index: int) -> char { string_get_raw(value, index) }",
+            ),
+        ),
+        "builtin_prelude.gom",
+    );
+    let files: Vec[hir::File] = Vec::[];
+    match lowered.hir {
+        Some(file) => files.push(file),
+        None => testing::fail("expected builtin HIR"),
+    };
+    let checked = check_builtin_package_files(files);
+    testing::assert_eq(checked.diagnostics.len(), 0)
+}
+
+#[test]
 fn diagnoses_unknown_extern_callable_keys() -> unit {
     let runtime = check_for_link_with_dependencies_allowing_externs(
         hir::lower(

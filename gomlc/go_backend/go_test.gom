@@ -157,8 +157,6 @@ fn all_core_runtime_hooks() -> Vec[string] {
     hooks.push("core.string_get");
     hooks.push("core.string_byte_get");
     hooks.push("core.string_byte_slice");
-    hooks.push("core.string_is_char_boundary");
-    hooks.push("core.string_decode_utf8_at");
     hooks.push("core.string_to_bytes");
     hooks.push("core.string_from_utf8");
     hooks.push("core.string_concat");
@@ -208,20 +206,15 @@ fn emits_every_core_runtime_hook() -> unit {
             "import (\n" + "    _goml_fmt \"fmt\"\n" + "    _goml_math \"math\"\n"
                 + "    _goml_strconv \"strconv\"\n"
                 + "    _goml_strings \"strings\"\n"
-                + "    _goml_utf8 \"unicode/utf8\"\n"
                 + ")",
         ),
     );
     for key in hooks {
         testing::assert(string_contains(output, "func " + runtime_hook_name(key) + "("))
     };
-    testing::assert(string_contains(output, "func _goml_runtime_string_decode_utf8_at_native("));
-    testing::assert(
-        string_contains(
-            output,
-            "if !_goml_runtime_core_string_is_char_boundary(s, start) && _goml_runtime_core_string_is_char_boundary(s, end) {\n        panic(\"invalid string byte slice\")\n    }",
-        ),
-    );
+    testing::assert(!string_contains(output, "unicode/utf8"));
+    testing::assert(string_contains(output, "return rune(s[i])"));
+    testing::assert(string_contains(output, "return s[start:end]"));
     testing::assert(string_contains(output, "items: []byte(s),"));
     testing::assert(
         string_contains(
@@ -334,9 +327,9 @@ fn closes_string_runtime_dependencies() -> unit {
     let items: Vec[Item] = Vec::new();
     emit_runtime_hook_items(items, hooks, Vec::new());
     let output = encode(File { items });
-    testing::assert(string_contains(output, "func _goml_runtime_string_decode_utf8_at_native("));
-    testing::assert(string_contains(output, "func _goml_runtime_core_string_is_char_boundary("));
-    testing::assert(string_contains(output, "_goml_utf8 \"unicode/utf8\""))
+    testing::assert(string_contains(output, "func _goml_runtime_core_string_get("));
+    testing::assert(string_contains(output, "func _goml_runtime_core_string_byte_slice("));
+    testing::assert(!string_contains(output, "unicode/utf8"))
 }
 
 #[test]
@@ -1223,12 +1216,9 @@ fn keeps_mixed_match_continuations_in_branches() -> unit {
 #[test]
 fn emits_string_hooks_and_vec_new_helpers() -> unit {
     let source = "fn main() -> unit { let values: Vec[int32] = vec_new(); string_print(values.len().to_string()); string_println(\"!\"); let bytes: Vec[uint8] = Vec::new(); let (_, text) = string_from_utf8(bytes); string_print(text); let parts: Vec[string] = Vec::new(); string_println(string_concat(parts)); }";
-    let output = encode(lower_source(source));
+    let output = encode(lower_linked_source(source));
     testing::assert(
-        string_contains(
-            output,
-            "import (\n    _goml_fmt \"fmt\"\n    _goml_strings \"strings\"\n    _goml_utf8 \"unicode/utf8\"\n)",
-        ),
+        string_contains(output, "import (\n    _goml_fmt \"fmt\"\n    _goml_strings \"strings\"\n)"),
     );
     testing::assert(string_contains(output, "func _goml_runtime_core_string_from_utf8("));
     testing::assert(string_contains(output, "func _goml_runtime_core_string_concat("));
