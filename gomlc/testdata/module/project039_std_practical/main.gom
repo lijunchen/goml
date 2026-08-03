@@ -1,6 +1,8 @@
 package main;
 
+use std::ascii;
 use std::collections;
+use std::iter;
 use std::num;
 use std::testing;
 use std::text;
@@ -88,7 +90,45 @@ fn assert_text() -> unit {
     testing::assert(text::is_ascii("ascii"));
     testing::assert(text::is_ascii("é") == false);
     testing::assert_eq(text::to_ascii_lowercase("A-É-Z"), "a-É-z");
-    testing::assert_eq(text::to_ascii_uppercase("a-é-z"), "A-é-Z")
+    testing::assert_eq(text::to_ascii_uppercase("a-é-z"), "A-é-Z");
+    testing::assert(text::eq_ignore_ascii_case("Content-Length", "content-length"));
+    testing::assert(!text::eq_ignore_ascii_case("É", "é"));
+    testing::assert(!text::eq_ignore_ascii_case("short", "longer"))
+}
+
+fn assert_ascii() -> unit {
+    testing::assert(ascii::is_ascii(127));
+    testing::assert(!ascii::is_ascii(128));
+    testing::assert(ascii::is_alphabetic(b'A'));
+    testing::assert(ascii::is_alphabetic(b'z'));
+    testing::assert(ascii::is_uppercase(b'Z'));
+    testing::assert(ascii::is_lowercase(b'a'));
+    testing::assert(ascii::is_alphanumeric(b'7'));
+    testing::assert(ascii::is_digit(b'0'));
+    testing::assert(!ascii::is_digit(b'a'));
+    testing::assert(ascii::is_hexdigit(b'F'));
+    testing::assert(ascii::is_hexdigit(b'f'));
+    testing::assert(!ascii::is_hexdigit(b'g'));
+    testing::assert(ascii::is_whitespace(b'\x0B'));
+    testing::assert(ascii::is_control(0));
+    testing::assert(ascii::is_control(127));
+    testing::assert(!ascii::is_control(b' '));
+    testing::assert(ascii::is_graphic(b'!'));
+    testing::assert(!ascii::is_graphic(b' '));
+    testing::assert(ascii::is_punctuation(b'!'));
+    testing::assert(!ascii::is_punctuation(b'A'));
+    testing::assert_eq(ascii::to_lowercase(b'A'), b'a');
+    testing::assert_eq(ascii::to_uppercase(b'z'), b'Z');
+    testing::assert_eq(ascii::to_lowercase(b'\xFF'), b'\xFF');
+    testing::assert(ascii::eq_ignore_case(b'A', b'a'));
+    testing::assert(!ascii::eq_ignore_case(b'A', b'b'));
+    testing::assert_eq(ascii::escape_default(b'A'), "A");
+    testing::assert_eq(ascii::escape_default(b'\t'), "\\t");
+    testing::assert_eq(ascii::escape_default(39), "\\'");
+    testing::assert_eq(ascii::escape_default(34), "\\\"");
+    testing::assert_eq(ascii::escape_default(92), "\\\\");
+    testing::assert_eq(ascii::escape_default(0), "\\x00");
+    testing::assert_eq(ascii::escape_default(255), "\\xff")
 }
 
 fn assert_num() -> unit {
@@ -110,66 +150,133 @@ fn assert_option_result() -> unit {
     testing::assert_eq(some.unwrap_or(0), 3);
     testing::assert_eq(none.unwrap_or_else(|| 7), 7);
     testing::assert_eq(some.map(|value: int| value + 1).unwrap_or(0), 4);
-    testing::assert_eq(
-        some.and_then(|value: int| Option::Some(value * 2)).unwrap_or(0),
-        6,
-    );
+    testing::assert_eq(some.and_then(|value: int| Option::Some(value * 2)).unwrap_or(0), 6);
     let converted: Result[int, string] = none.ok_or("missing");
     testing::assert(converted.is_err());
     let ok: Result[int, string] = Result::Ok(5);
     testing::assert(ok.is_ok());
     testing::assert_eq(ok.unwrap_or(0), 5);
-    testing::assert_eq(
-        ok.map(|value: int| value + 2).unwrap_or(0),
-        7,
-    );
+    testing::assert_eq(ok.map(|value: int| value + 2).unwrap_or(0), 7);
     let failed: Result[int, string] = Result::Err("bad");
     testing::assert_eq(
         failed.map_err(|error: string| error + "!").unwrap_or_else(
-            |error: string| if error == "bad!" { 9 } else { 0 },
+            |error: string| if error == "bad!" {
+                9
+            } else {
+                0
+            },
         ),
         9,
     );
-    testing::assert_eq(
-        ok.and_then(
-            |value: int| Result::Ok(value * 3),
-        ).unwrap_or(0),
-        15,
-    )
+    testing::assert_eq(ok.and_then(|value: int| Result::Ok(value * 3)).unwrap_or(0), 15)
 }
 
 fn assert_iterators() -> unit {
     let values = Vec::[10, 20, 30, 40];
-    let enumerated = iterator_enumerate(values.iter());
-    match enumerated.next() {
+    let empty_values: FnIterator[int] = iter::empty();
+    testing::assert(Iterator::next(empty_values).is_none());
+    let once_value = iter::once(7);
+    testing::assert_eq(Iterator::next(once_value).unwrap_or(0), 7);
+    testing::assert(Iterator::next(once_value).is_none());
+    let generated_index = Ref::new(0);
+    let generated = iter::from_fn(
+        || {
+            let index = generated_index.get();
+            if index < 2 {
+                generated_index.set(index + 1);
+                Option::Some(index + 5)
+            } else {
+                Option::None
+            }
+        },
+    );
+    testing::assert_eq(iter::collect(generated).get(1), 6);
+    let mapped = iter::map(values.iter(), |value: int| value + 1);
+    let filtered = iter::filter(mapped, |value: int| value > 20);
+    let limited = iter::take(filtered, 2);
+    let collected: Vec[int] = iter::collect(limited);
+    testing::assert_eq(collected.len(), 2);
+    testing::assert_eq(collected.get(0), 21);
+    testing::assert_eq(collected.get(1), 31);
+    let filtered_mapped = iter::filter_map(
+        values.iter(),
+        |value: int| if value >= 30 {
+            Option::Some(value / 10)
+        } else {
+            Option::None
+        },
+    );
+    testing::assert_eq(iter::collect(filtered_mapped).get(0), 3);
+    let taken: Vec[int] = iter::collect(iter::take_while(values.iter(), |value: int| value < 30));
+    testing::assert_eq(taken.len(), 2);
+    let skipped: Vec[int] = iter::collect(iter::skip_while(values.iter(), |value: int| value < 30));
+    testing::assert_eq(skipped.get(0), 30);
+    testing::assert_eq(Iterator::next(iter::skip(values.iter(), 2)).unwrap_or(0), 30);
+    let enumerated = iter::enumerate(values.iter());
+    match Iterator::next(enumerated) {
         Option::Some((index, value)) => {
             testing::assert_eq(index, 0);
             testing::assert_eq(value, 10)
         },
         Option::None => testing::fail("enumerate failed"),
     };
-    let zipped = iterator_zip(Vec::[1, 2].iter(), Vec::[3, 4].iter());
-    match zipped.next() {
+    let zipped = iter::zip(Vec::[1, 2].iter(), Vec::[3, 4].iter());
+    match Iterator::next(zipped) {
         Option::Some((left, right)) => {
             testing::assert_eq(left, 1);
             testing::assert_eq(right, 3)
         },
         Option::None => testing::fail("zip failed"),
     };
-    testing::assert_eq(iterator_skip(values.iter(), 2).next().unwrap_or(0), 30);
-    let chained: Vec[int] = iterator_collect(iterator_chain(
-        Vec::[1, 2].iter(),
-        Vec::[3, 4].iter(),
-    ));
+    let chained: Vec[int] = iter::collect(iter::chain(Vec::[1, 2].iter(), Vec::[3, 4].iter()));
     testing::assert_eq(chained.len(), 4);
     testing::assert_eq(chained.get(3), 4);
+    testing::assert_eq(iter::find(values.iter(), |value: int| value > 20).unwrap_or(0), 30);
     testing::assert_eq(
-        iterator_find(values.iter(), |value: int| value > 20).unwrap_or(0),
-        30,
+        iter::find_map(
+            values.iter(),
+            |value: int| if value == 20 {
+                Option::Some("found")
+            } else {
+                Option::None
+            },
+        ).unwrap_or(""),
+        "found",
     );
-    testing::assert(iterator_any(values.iter(), |value: int| value == 20));
-    testing::assert(iterator_all(values.iter(), |value: int| value >= 10));
-    testing::assert_eq(iterator_count(values.iter()), 4)
+    testing::assert(iter::any(values.iter(), |value: int| value == 20));
+    testing::assert(iter::all(values.iter(), |value: int| value >= 10));
+    testing::assert_eq(iter::count(values.iter()), 4);
+    testing::assert_eq(iter::fold(values.iter(), 0, |sum: int, value: int| sum + value), 100);
+    testing::assert_eq(iter::position(values.iter(), |value: int| value == 30).unwrap_or(-1), 2);
+    testing::assert_eq(iter::nth(values.iter(), 2).unwrap_or(0), 30);
+    testing::assert(iter::nth(values.iter(), -1).is_none());
+    testing::assert_eq(iter::last(values.iter()).unwrap_or(0), 40);
+    testing::assert_eq(
+        iter::reduce(values.iter(), |left: int, right: int| left + right).unwrap_or(0),
+        100,
+    );
+    let inspected_sum = Ref::new(0);
+    let inspected = iter::inspect(
+        values.iter(),
+        |value: int| inspected_sum.set(inspected_sum.get() + value),
+    );
+    testing::assert_eq(iter::count(inspected), 4);
+    testing::assert_eq(inspected_sum.get(), 100);
+    let each_sum = Ref::new(0);
+    iter::for_each(values.iter(), |value: int| each_sum.set(each_sum.get() + value));
+    testing::assert_eq(each_sum.get(), 100);
+    let while_mapped: Vec[int] = iter::collect(
+        iter::map_while(
+            values.iter(),
+            |value: int| if value < 30 {
+                Option::Some(value / 10)
+            } else {
+                Option::None
+            },
+        ),
+    );
+    testing::assert_eq(while_mapped.len(), 2);
+    testing::assert_eq(while_mapped.get(1), 2)
 }
 
 fn assert_collections() -> unit {
@@ -177,18 +284,12 @@ fn assert_collections() -> unit {
     collections::stable_sort_by(values, compare_int);
     testing::assert_eq(values.get(0), 1);
     testing::assert_eq(values.get(4), 4);
-    match collections::binary_search_by(
-        values,
-        |value: int| compare_int(value, 3),
-    ) {
+    match collections::binary_search_by(values, |value: int| compare_int(value, 3)) {
         Option::Some(index) => testing::assert_eq(values.get(index), 3),
         Option::None => testing::fail("binary search failed"),
     };
     testing::assert(collections::contains(values, 4));
-    testing::assert_eq(
-        collections::position_by(values, |value: int| value == 2).unwrap_or(-1),
-        1,
-    );
+    testing::assert_eq(collections::position_by(values, |value: int| value == 2).unwrap_or(-1), 1);
     testing::assert_eq(collections::min_by(values, compare_int).unwrap_or(0), 1);
     testing::assert_eq(collections::max_by(values, compare_int).unwrap_or(0), 4);
     collections::dedup(values);
@@ -200,13 +301,9 @@ fn assert_collections() -> unit {
 fn assert_time() -> unit {
     let one_millisecond = time::Duration::from_milliseconds(1);
     testing::assert_eq(one_millisecond.as_microseconds(), 1000);
+    testing::assert_eq(one_millisecond.add(one_millisecond).as_milliseconds(), 2);
     testing::assert_eq(
-        one_millisecond.add(one_millisecond).as_milliseconds(),
-        2,
-    );
-    testing::assert_eq(
-        one_millisecond.subtract(time::Duration::from_seconds(1))
-            .as_nanoseconds(),
+        one_millisecond.subtract(time::Duration::from_seconds(1)).as_nanoseconds(),
         0,
     );
     let started = time::Instant::now();
@@ -217,6 +314,7 @@ fn assert_time() -> unit {
 
 fn main() -> unit {
     assert_text();
+    assert_ascii();
     assert_num();
     assert_option_result();
     assert_iterators();

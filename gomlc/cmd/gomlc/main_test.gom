@@ -140,10 +140,12 @@ fn tracks_host_api_package_link_needs() -> unit {
     testing::assert(needs.process);
     testing::assert(needs.testing);
     testing::assert(!needs.root);
+    testing::assert(!needs.ascii);
     testing::assert(!needs.collections);
     testing::assert(!needs.env);
     testing::assert(!needs.fs);
     testing::assert(!needs.io);
+    testing::assert(!needs.iter);
     testing::assert(!needs.json);
     testing::assert(!needs.text)
 }
@@ -152,6 +154,7 @@ fn tracks_host_api_package_link_needs() -> unit {
 fn tracks_json_package_link_needs() -> unit {
     let source = "package main; use std::json; fn main() -> unit { let _ = json::parse(\"null\"); () }";
     let needs = source_standard_needs(ast::lower(parser::parse(source)));
+    testing::assert(needs.ascii);
     testing::assert(needs.bytes);
     testing::assert(needs.json);
     testing::assert(needs.text);
@@ -164,16 +167,34 @@ fn tracks_standard_root_package_needs() -> unit {
         ast::lower(parser::parse("package main; use std; fn main() -> unit {}")),
     );
     testing::assert(needs.root);
+    testing::assert(needs.ascii);
     testing::assert(needs.bytes);
     testing::assert(needs.collections);
     testing::assert(needs.env);
     testing::assert(needs.fs);
     testing::assert(needs.io);
+    testing::assert(needs.iter);
     testing::assert(needs.json);
+    testing::assert(needs.num);
     testing::assert(needs.path);
     testing::assert(needs.process);
     testing::assert(!needs.testing);
-    testing::assert(needs.text)
+    testing::assert(needs.text);
+    testing::assert(needs.time)
+}
+
+#[test]
+fn tracks_ascii_and_iter_package_needs() -> unit {
+    let needs = source_standard_needs(
+        ast::lower(
+            parser::parse("package main; use std::ascii; use std::iter; fn main() -> unit {}"),
+        ),
+    );
+    testing::assert(needs.ascii);
+    testing::assert(needs.iter);
+    testing::assert(!needs.root);
+    testing::assert(!needs.bytes);
+    testing::assert(!needs.text)
 }
 
 #[test]
@@ -1624,6 +1645,10 @@ fn standard_interface_hashes_are_stable() -> unit {
         second.root.interface_unit.interface_hash,
     );
     testing::assert_eq(
+        first.ascii.interface_unit.interface_hash,
+        second.ascii.interface_unit.interface_hash,
+    );
+    testing::assert_eq(
         first.bytes.interface_unit.interface_hash,
         second.bytes.interface_unit.interface_hash,
     );
@@ -1642,6 +1667,10 @@ fn standard_interface_hashes_are_stable() -> unit {
     testing::assert_eq(
         first.io.interface_unit.interface_hash,
         second.io.interface_unit.interface_hash,
+    );
+    testing::assert_eq(
+        first.iter.interface_unit.interface_hash,
+        second.iter.interface_unit.interface_hash,
     );
     testing::assert_eq(
         first.path.interface_unit.interface_hash,
@@ -1686,12 +1715,20 @@ fn compiler_world_artifact_round_trips() -> unit {
                 world.builtin_interface.interface_hash,
             );
             testing::assert_eq(
+                decoded.standard.ascii.interface_unit.interface_hash,
+                world.standard.ascii.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
                 decoded.standard.collections.interface_unit.interface_hash,
                 world.standard.collections.interface_unit.interface_hash,
             );
             testing::assert_eq(
                 decoded.standard.collections.core_value.functions.len(),
                 world.standard.collections.core_value.functions.len(),
+            );
+            testing::assert_eq(
+                decoded.standard.iter.interface_unit.interface_hash,
+                world.standard.iter.interface_unit.interface_hash,
             );
             testing::assert_eq(decoded.counter.get(), world.counter.get())
         },
