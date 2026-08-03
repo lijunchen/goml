@@ -1,5 +1,7 @@
 package main;
 
+use std::cmp;
+use std::collections;
 use std::io;
 use std::process;
 use std::text;
@@ -430,6 +432,10 @@ struct CliSimilarity {
     denominator: int,
 }
 
+fn cli_similarity_compare(left: CliSimilarity, right: CliSimilarity) -> cmp::Ordering {
+    cmp::compare(left.numerator * right.denominator, right.numerator * left.denominator)
+}
+
 fn cli_jaro_similarity(left: string, right: string) -> Option[CliSimilarity] {
     if left == right {
         return Option::Some(CliSimilarity { value: right, numerator: 1, denominator: 1 })
@@ -518,17 +524,7 @@ fn similar_cli_subcommands(command: string) -> Vec[string] {
             None => (),
         }
     };
-    for index in 1..similar.len() {
-        let value = similar[index];
-        let mut target = index;
-        while target > 0
-            && similar[target - 1].numerator * value.denominator
-                > value.numerator * similar[target - 1].denominator {
-            similar[target] = similar[target - 1];
-            target = target - 1;
-        };
-        similar[target] = value;
-    };
+    collections::sort_by_ordering(similar, cli_similarity_compare);
     let result: Vec[string] = Vec::[];
     for value in similar {
         result.push(value.value)

@@ -1,9 +1,10 @@
 package query;
 
-use std::text;
+use std::cmp;
 use std::env;
 use std::fs;
 use std::path;
+use std::text;
 
 struct DependencyRequirement {
     name: string,
@@ -119,10 +120,14 @@ fn parse_sem_version(value: string) -> Option[SemVersion] {
     }
 }
 
+fn sem_version_compare(left: SemVersion, right: SemVersion) -> cmp::Ordering {
+    cmp::compare(left.major, right.major).then(cmp::compare(left.minor, right.minor)).then(
+        cmp::compare(left.patch, right.patch),
+    )
+}
+
 fn sem_version_less(left: SemVersion, right: SemVersion) -> bool {
-    left.major < right.major
-        || (left.major == right.major
-            && (left.minor < right.minor || (left.minor == right.minor && left.patch < right.patch)))
+    sem_version_compare(left, right).is_lt()
 }
 
 fn sem_version_at_least(left: SemVersion, right: SemVersion) -> bool {

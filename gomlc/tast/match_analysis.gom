@@ -1,5 +1,6 @@
 package tast;
 
+use std::cmp;
 use std::collections;
 use std::text;
 
@@ -161,34 +162,33 @@ fn coverage_number(value: string) -> CoverageNumber {
     }
 }
 
-fn coverage_magnitude_compare(left: string, right: string) -> int {
-    if left.byte_len() < right.byte_len() {
-        -1
-    } else if left.byte_len() > right.byte_len() {
-        1
+fn coverage_magnitude_compare(left: string, right: string) -> cmp::Ordering {
+    let length_ordering = cmp::compare(left.byte_len(), right.byte_len());
+    if length_ordering.is_ne() {
+        return length_ordering
     } else {
-        for index in 0..left.byte_len() {
-            if left.byte_get(index) < right.byte_get(index) {
-                return -1
-            } else if left.byte_get(index) > right.byte_get(index) {
-                return 1
-            } else {
-                ()
-            }
-        };
-        0
+        ()
+    };
+    for index in 0..left.byte_len() {
+        let byte_ordering = cmp::compare(left.byte_get(index), right.byte_get(index));
+        if byte_ordering.is_ne() {
+            return byte_ordering
+        } else {
+            ()
+        }
     }
+    cmp::Ordering::Equal
 }
 
-fn coverage_number_compare(left: CoverageNumber, right: CoverageNumber) -> int {
+fn coverage_number_compare(left: CoverageNumber, right: CoverageNumber) -> cmp::Ordering {
     if left.negative && !(right.negative) {
-        -1
+        cmp::Ordering::Less
     } else if !(left.negative) && right.negative {
-        1
+        cmp::Ordering::Greater
     } else {
         let result = coverage_magnitude_compare(left.magnitude, right.magnitude);
         if left.negative {
-            -result
+            result.reverse()
         } else {
             result
         }
@@ -196,11 +196,11 @@ fn coverage_number_compare(left: CoverageNumber, right: CoverageNumber) -> int {
 }
 
 fn coverage_number_equal(left: CoverageNumber, right: CoverageNumber) -> bool {
-    coverage_number_compare(left, right) == 0
+    coverage_number_compare(left, right).is_eq()
 }
 
 fn coverage_number_min(left: CoverageNumber, right: CoverageNumber) -> CoverageNumber {
-    if coverage_number_compare(left, right) <= 0 {
+    if coverage_number_compare(left, right).is_le() {
         left
     } else {
         right
@@ -208,7 +208,7 @@ fn coverage_number_min(left: CoverageNumber, right: CoverageNumber) -> CoverageN
 }
 
 fn coverage_number_max(left: CoverageNumber, right: CoverageNumber) -> CoverageNumber {
-    if coverage_number_compare(left, right) >= 0 {
+    if coverage_number_compare(left, right).is_ge() {
         left
     } else {
         right
@@ -384,7 +384,7 @@ fn coverage_scalar_intersection(left: CoverageScalar, right: CoverageScalar) -> 
     } else {
         let lo = coverage_number_max(left.lo, right.lo);
         let hi = coverage_number_min(left.hi, right.hi);
-        if coverage_number_compare(lo, hi) <= 0 {
+        if coverage_number_compare(lo, hi).is_le() {
             Option::Some(CoverageScalar { kind: left.kind, lo, hi })
         } else {
             Option::None
@@ -1038,7 +1038,7 @@ fn coverage_scalar_boundaries(matrix: Vec[Vec[CoveragePat]], interval: CoverageS
             ()
         }
     };
-    collections::sort_by(boundaries, coverage_number_compare);
+    collections::sort_by_ordering(boundaries, coverage_number_compare);
     let result: Vec[CoverageNumber] = Vec::[];
     for value in boundaries {
         if result.is_empty() || !coverage_number_equal(result[result.len() - 1], value) {
@@ -1091,8 +1091,8 @@ fn coverage_scalar_candidate_intervals(head: CoveragePat, domains: Vec[CoverageS
 }
 
 fn coverage_scalar_contains(container: CoverageScalar, value: CoverageScalar) -> bool {
-    container.kind == value.kind && coverage_number_compare(container.lo, value.lo) <= 0
-        && coverage_number_compare(container.hi, value.hi) >= 0
+    container.kind == value.kind && coverage_number_compare(container.lo, value.lo).is_le()
+        && coverage_number_compare(container.hi, value.hi).is_ge()
 }
 
 fn coverage_scalar_specialize(matrix: Vec[Vec[CoveragePat]], atom: CoverageScalar) -> Vec[
@@ -1136,7 +1136,7 @@ fn coverage_useful_scalar(
                 lo: boundaries[index],
                 hi: coverage_number_decrement(boundaries[index + 1]),
             };
-            if coverage_number_compare(atom.lo, atom.hi) <= 0
+            if coverage_number_compare(atom.lo, atom.hi).is_le()
                 && coverage_useful(ctx, coverage_scalar_specialize(matrix, atom), tail) {
                 return true
             } else {
@@ -1255,7 +1255,7 @@ fn coverage_find_scalar_witness(
                 lo: boundaries[index],
                 hi: coverage_number_decrement(boundaries[index + 1]),
             };
-            if coverage_number_compare(atom.lo, atom.hi) <= 0 {
+            if coverage_number_compare(atom.lo, atom.hi).is_le() {
                 match coverage_find_witness(ctx, coverage_scalar_specialize(matrix, atom), tail) {
                     Some(tail_witnesses) => return Option::Some(
                         coverage_prepend_witness(

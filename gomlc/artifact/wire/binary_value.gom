@@ -1,6 +1,7 @@
 package wire;
 
 use std::bytes;
+use std::cmp;
 
 pub struct ArtifactBinaryStringTable {
     values: Vec[string],
@@ -89,7 +90,7 @@ pub fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
         let value = artifact_binary_read_string(reader)?;
         if indexes.contains(value) {
             return Result::Err("duplicate binary artifact string")
-        } else if index > 0 && !artifact_string_less(values[index - 1], value) {
+        } else if index > 0 && cmp::compare(values[index - 1], value).is_ge() {
             return Result::Err("binary artifact string table is not sorted")
         } else {
             indexes[value] = index;

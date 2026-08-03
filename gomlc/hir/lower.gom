@@ -663,15 +663,7 @@ fn sort_pattern_names(values: Vec[string]) -> Vec[string] {
     for value in values {
         sorted.push(value)
     };
-    for index in 1..sorted.len() {
-        let value = sorted[index];
-        let mut target = index;
-        while target > 0 && value < sorted[target - 1] {
-            sorted[target] = sorted[target - 1];
-            target = target - 1;
-        };
-        sorted[target] = value;
-    };
+    collections::sort(sorted);
     sorted
 }
 

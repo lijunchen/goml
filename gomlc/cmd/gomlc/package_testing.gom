@@ -3,6 +3,8 @@ package main;
 use gomlc::artifact;
 use gomlc::ast;
 use gomlc::tast;
+use std::cmp;
+use std::collections;
 use std::text;
 
 struct TestCandidate {
@@ -223,36 +225,16 @@ fn reject_item_test_attributes(
     }
 }
 
-fn test_string_less(left: string, right: string) -> bool {
-    let common = if left.byte_len() < right.byte_len() {
-        left.byte_len()
-    } else {
-        right.byte_len()
-    };
-    for index in 0..common {
-        if left.byte_get(index) < right.byte_get(index) {
-            return true
-        } else if left.byte_get(index) > right.byte_get(index) {
-            return false
-        } else {
-            ()
-        }
-    };
-    left.byte_len() < right.byte_len()
-}
-
 fn sort_test_descriptors(values: Vec[artifact::ArtifactTestDescriptor]) -> Vec[
     artifact::ArtifactTestDescriptor,
 ] {
-    for index in 1..values.len() {
-        let current = values[index];
-        let mut destination = index;
-        while destination > 0 && test_string_less(current.id, values[destination - 1].id) {
-            values[destination] = values[destination - 1];
-            destination = destination - 1;
-        };
-        values[destination] = current;
-    };
+    collections::sort_by_ordering(
+        values,
+        |left: artifact::ArtifactTestDescriptor, right: artifact::ArtifactTestDescriptor| cmp::compare(
+            left.id,
+            right.id,
+        ),
+    );
     values
 }
 

@@ -5,6 +5,8 @@ use gomlc::artifact;
 use gomlc::artifact::tast_codec as tast_codec;
 use gomlc::hash;
 use gomlc::tast;
+use std::cmp;
+use std::collections;
 
 pub fn empty_exports() -> artifact::ArtifactPackageExports {
     artifact::ArtifactPackageExports {
@@ -335,15 +337,10 @@ pub fn write_exports(
 }
 
 pub fn artifact_json_string_map(writer: wire::ArtifactJsonWriter, values: Vec[(string, string)]) -> unit {
-    for index in 1..values.len() {
-        let current = values[index];
-        let mut destination = index;
-        while destination > 0 && wire::artifact_string_less(current.0, values[destination - 1].0) {
-            values[destination] = values[destination - 1];
-            destination = destination - 1;
-        };
-        values[destination] = current;
-    };
+    collections::sort_by_ordering(
+        values,
+        |left: (string, string), right: (string, string)| cmp::compare(left.0, right.0),
+    );
     wire::artifact_json_begin_object(writer);
     for value in values {
         wire::artifact_json_name(writer, value.0);

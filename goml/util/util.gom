@@ -3,18 +3,8 @@ package util;
 use std::collections;
 use std::text;
 
-fn compare_strings(left: string, right: string) -> int {
-    if left < right {
-        -1
-    } else if left > right {
-        1
-    } else {
-        0
-    }
-}
-
 pub fn sorted(values: Vec[string]) -> Vec[string] {
-    collections::sort_by(values, compare_strings);
+    collections::sort(values);
     values
 }
 

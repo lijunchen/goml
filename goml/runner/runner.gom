@@ -2,6 +2,7 @@ package runner;
 
 use gomlang::bootstrap_goml::util;
 use std::bytes;
+use std::cmp;
 use std::collections;
 use std::fs;
 use std::io;
@@ -114,18 +115,12 @@ fn selected(test: Test, options: Options) -> bool {
     filter_matches && (!options.ignored || test.ignored)
 }
 
-fn compare_tests(left: Test, right: Test) -> int {
-    if left.display_name < right.display_name {
-        -1
-    } else if left.display_name > right.display_name {
-        1
-    } else {
-        0
-    }
+fn compare_tests(left: Test, right: Test) -> cmp::Ordering {
+    cmp::compare(left.display_name, right.display_name)
 }
 
 fn sorted_tests(values: Vec[Test]) -> Vec[Test] {
-    collections::sort_by(values, compare_tests);
+    collections::sort_by_ordering(values, compare_tests);
     values
 }
 
@@ -258,18 +253,12 @@ fn worker(
     }
 }
 
-fn compare_executions(left: Execution, right: Execution) -> int {
-    if left.index < right.index {
-        -1
-    } else if left.index > right.index {
-        1
-    } else {
-        0
-    }
+fn compare_executions(left: Execution, right: Execution) -> cmp::Ordering {
+    cmp::compare(left.index, right.index)
 }
 
 fn ordered_executions(values: Vec[Execution]) -> Vec[Execution] {
-    collections::sort_by(values, compare_executions);
+    collections::sort_by_ordering(values, compare_executions);
     values
 }
 
