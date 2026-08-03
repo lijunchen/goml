@@ -2255,57 +2255,79 @@ fn std::text::is_ascii_whitespace_byte(value/19: uint8) -> bool {
   }
 }
 
-fn std::text::find_from(value/20: string, expected/21: string, start/22: int) -> Option[int] {
+fn std::text::starts_with_at(value/20: string, start/21: int, prefix/22: string) -> bool {
   let value_len/23 = inherent#string#string#byte_len(value/20) in
-  let expected_len/24 = inherent#string#string#byte_len(expected/21) in
-  if if (start/22 < 0) {
+  let prefix_len/24 = inherent#string#string#byte_len(prefix/22) in
+  if if if (start/21 < 0) {
       true
   } else {
-      (start/22 > value_len/23)
+      (start/21 > value_len/23)
+  } {
+      true
+  } else {
+      (prefix_len/24 > (value_len/23 - start/21))
+  } {
+      {
+        false
+      }
+  } else {
+      {
+        let end/25 = (start/21 + prefix_len/24) in
+        if if inherent#string#string#is_char_boundary(value/20, start/21) {
+            inherent#string#string#is_char_boundary(value/20, end/25)
+        } else {
+            false
+        } {
+            trait_call[Eq::eq](
+              inherent#string#string#byte_slice(value/20, start/21, end/25),
+              prefix/22
+            )
+        } else {
+            false
+        }
+      }
+  }
+}
+
+fn std::text::find_from(value/26: string, expected/27: string, start/28: int) -> Option[int] {
+  let value_len/29 = inherent#string#string#byte_len(value/26) in
+  let expected_len/30 = inherent#string#string#byte_len(expected/27) in
+  if if (start/28 < 0) {
+      true
+  } else {
+      (start/28 > value_len/29)
   } {
       {
         Option::None
       }
   } else {
-      if trait_call[Eq::eq](expected_len/24, 0) {
+      if trait_call[Eq::eq](expected_len/30, 0) {
           {
-            Option::Some(start/22)
+            Option::Some(start/28)
           }
       } else {
-          if (expected_len/24 > (value_len/23 - start/22)) {
+          if (expected_len/30 > (value_len/29 - start/28)) {
               {
                 Option::None
               }
           } else {
               {
-                let limit/25 = (value_len/23 - expected_len/24) in
-                let index/26 = start/22 in
+                let limit/31 = (value_len/29 - expected_len/30) in
+                let index/32 = start/28 in
                 let _wild16 =
-                  while (index/26 <= limit/25) {
+                  while (index/32 <= limit/31) {
                       {
-                        let end/27 = (index/26 + expected_len/24) in
-                        if if if inherent#string#string#is_char_boundary(value/20, index/26) {
-                            inherent#string#string#is_char_boundary(value/20, end/27)
-                        } else {
-                            false
-                        } {
-                            trait_call[Eq::eq](
-                              inherent#string#string#byte_slice(value/20, index/26, end/27),
-                              expected/21
-                            )
-                        } else {
-                            false
-                        } {
+                        if std::text::starts_with_at(value/26, index/32, expected/27) {
                             {
-                              return Option::Some(index/26)
+                              return Option::Some(index/32)
                             }
                         } else {
                             {
                               let _wild15 =
                                 {
-                                  let compound_old13 = index/26 in
+                                  let compound_old13 = index/32 in
                                   let compound_value14 = 1 in
-                                  index/26 = (compound_old13 + compound_value14)
+                                  index/32 = (compound_old13 + compound_value14)
                                 } in
                             }
                         }
@@ -2318,101 +2340,135 @@ fn std::text::find_from(value/20: string, expected/21: string, start/22: int) ->
   }
 }
 
-fn std::text::find(value/28: string, expected/29: string) -> Option[int] {
-  std::text::find_from(value/28, expected/29, 0)
+fn std::text::find(value/33: string, expected/34: string) -> Option[int] {
+  std::text::find_from(value/33, expected/34, 0)
 }
 
-fn std::text::trim_start(value/30: string) -> string {
-  let start/31 = 0 in
-  let _wild20 =
-    while if (start/31 < inherent#string#string#byte_len(value/30)) {
-        std::text::is_ascii_whitespace_byte(inherent#string#string#byte_get(value/30, start/31))
-    } else {
-        false
-    } {
-        {
-          let _wild19 =
-            {
-              let compound_old17 = start/31 in
-              let compound_value18 = 1 in
-              start/31 = (compound_old17 + compound_value18)
-            } in
-        }
-    } in
-  inherent#string#string#byte_slice(value/30, start/31, inherent#string#string#byte_len(value/30))
+fn std::text::rfind(value/35: string, expected/36: string) -> Option[int] {
+  let value_len/37 = inherent#string#string#byte_len(value/35) in
+  let expected_len/38 = inherent#string#string#byte_len(expected/36) in
+  if (expected_len/38 > value_len/37) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        let start/39 = (value_len/37 - expected_len/38) in
+        let _wild20 =
+          while (start/39 >= 0) {
+              {
+                if std::text::starts_with_at(value/35, start/39, expected/36) {
+                    {
+                      return Option::Some(start/39)
+                    }
+                } else {
+                    {
+                      let _wild19 =
+                        {
+                          let compound_old17 = start/39 in
+                          let compound_value18 = 1 in
+                          start/39 = (compound_old17 - compound_value18)
+                        } in
+                    }
+                }
+              }
+          } in
+        Option::None
+      }
+  }
 }
 
-fn std::text::trim_end(value/32: string) -> string {
-  let end/33 = inherent#string#string#byte_len(value/32) in
+fn std::text::trim_start(value/40: string) -> string {
+  let start/41 = 0 in
   let _wild24 =
-    while if (end/33 > 0) {
-        std::text::is_ascii_whitespace_byte(inherent#string#string#byte_get(value/32, (end/33 - 1)))
+    while if (start/41 < inherent#string#string#byte_len(value/40)) {
+        std::text::is_ascii_whitespace_byte(inherent#string#string#byte_get(value/40, start/41))
     } else {
         false
     } {
         {
           let _wild23 =
             {
-              let compound_old21 = end/33 in
+              let compound_old21 = start/41 in
               let compound_value22 = 1 in
-              end/33 = (compound_old21 - compound_value22)
+              start/41 = (compound_old21 + compound_value22)
             } in
         }
     } in
-  inherent#string#string#byte_slice(value/32, 0, end/33)
+  inherent#string#string#byte_slice(value/40, start/41, inherent#string#string#byte_len(value/40))
 }
 
-fn std::text::trim(value/34: string) -> string {
-  std::text::trim_end(std::text::trim_start(value/34))
-}
-
-fn std::text::split(value/35: string, separator/36: string) -> Vec[string] {
-  let result/37 =
-    {
-      let vec_literal/1695 = inherent#Vec#Vec[string]#new() in
-      vec_literal/1695
-    } in
-  let separator_len/38 = inherent#string#string#byte_len(separator/36) in
-  let value_len/39 = inherent#string#string#byte_len(value/35) in
-  let _wild26 =
-    if trait_call[Eq::eq](separator_len/38, 0) {
+fn std::text::trim_end(value/42: string) -> string {
+  let end/43 = inherent#string#string#byte_len(value/42) in
+  let _wild28 =
+    while if (end/43 > 0) {
+        std::text::is_ascii_whitespace_byte(inherent#string#string#byte_get(value/42, (end/43 - 1)))
+    } else {
+        false
+    } {
         {
-          let _wild25 = inherent#Vec#Vec[string]#push(result/37, value/35) in
-          return result/37
+          let _wild27 =
+            {
+              let compound_old25 = end/43 in
+              let compound_value26 = 1 in
+              end/43 = (compound_old25 - compound_value26)
+            } in
+        }
+    } in
+  inherent#string#string#byte_slice(value/42, 0, end/43)
+}
+
+fn std::text::trim(value/44: string) -> string {
+  std::text::trim_end(std::text::trim_start(value/44))
+}
+
+fn std::text::split(value/45: string, separator/46: string) -> Vec[string] {
+  let result/47 =
+    {
+      let vec_literal/2486 = inherent#Vec#Vec[string]#new() in
+      vec_literal/2486
+    } in
+  let separator_len/48 = inherent#string#string#byte_len(separator/46) in
+  let value_len/49 = inherent#string#string#byte_len(value/45) in
+  let _wild30 =
+    if trait_call[Eq::eq](separator_len/48, 0) {
+        {
+          let _wild29 = inherent#Vec#Vec[string]#push(result/47, value/45) in
+          return result/47
         }
     } else {
         {
           ()
         }
     } in
-  let start/40 = 0 in
-  let _wild32 =
+  let start/50 = 0 in
+  let _wild36 =
     loop {
       {
-        let mtmp27 = std::text::find_from(value/35, separator/36, start/40) in
-        match mtmp27 {
+        let mtmp31 = std::text::find_from(value/45, separator/46, start/50) in
+        match mtmp31 {
           Option::None => {
             {
-              let _wild29 =
+              let _wild33 =
                 inherent#Vec#Vec[string]#push(
-                  result/37,
-                  inherent#string#string#byte_slice(value/35, start/40, value_len/39)
+                  result/47,
+                  inherent#string#string#byte_slice(value/45, start/50, value_len/49)
                 ) in
               break
             }
           },
-          Option::Some(x28) => {
+          Option::Some(x32) => {
             {
-              let x28 = Option::Some._0(mtmp27) in
+              let x32 = Option::Some._0(mtmp31) in
               {
-                let index/41 = x28 in
+                let index/51 = x32 in
                 {
-                  let _wild30 =
+                  let _wild34 =
                     inherent#Vec#Vec[string]#push(
-                      result/37,
-                      inherent#string#string#byte_slice(value/35, start/40, index/41)
+                      result/47,
+                      inherent#string#string#byte_slice(value/45, start/50, index/51)
                     ) in
-                  let _wild31 = start/40 = (index/41 + separator_len/38) in
+                  let _wild35 = start/50 = (index/51 + separator_len/48) in
                 }
               }
             }
@@ -2420,36 +2476,36 @@ fn std::text::split(value/35: string, separator/36: string) -> Vec[string] {
         }
       }
     } in
-  result/37
+  result/47
 }
 
-fn std::text::split_once(value/42: string, separator/43: string) -> Option[(string, string)] {
-  let separator_len/44 = inherent#string#string#byte_len(separator/43) in
-  let value_len/45 = inherent#string#string#byte_len(value/42) in
-  if trait_call[Eq::eq](separator_len/44, 0) {
+fn std::text::split_once(value/52: string, separator/53: string) -> Option[(string, string)] {
+  let separator_len/54 = inherent#string#string#byte_len(separator/53) in
+  let value_len/55 = inherent#string#string#byte_len(value/52) in
+  if trait_call[Eq::eq](separator_len/54, 0) {
       {
         Option::None
       }
   } else {
       {
         {
-          let mtmp33 = std::text::find(value/42, separator/43) in
-          match mtmp33 {
+          let mtmp37 = std::text::find(value/52, separator/53) in
+          match mtmp37 {
             Option::None => {
               Option::None
             },
-            Option::Some(x34) => {
+            Option::Some(x38) => {
               {
-                let x34 = Option::Some._0(mtmp33) in
+                let x38 = Option::Some._0(mtmp37) in
                 {
-                  let index/46 = x34 in
+                  let index/56 = x38 in
                   Option::Some(
                     (
-                      inherent#string#string#byte_slice(value/42, 0, index/46),
+                      inherent#string#string#byte_slice(value/52, 0, index/56),
                       inherent#string#string#byte_slice(
-                        value/42,
-                        (index/46 + separator_len/44),
-                        value_len/45
+                        value/52,
+                        (index/56 + separator_len/54),
+                        value_len/55
                       )
                     )
                   )
@@ -2462,19 +2518,19 @@ fn std::text::split_once(value/42: string, separator/43: string) -> Option[(stri
   }
 }
 
-fn std::text::lines(value/47: string) -> Vec[string] {
-  let result/48 = std::text::split(value/47, "\n") in
-  let _wild36 =
-    if if (!inherent#Vec#Vec[string]#is_empty(result/48)) {
+fn std::text::lines(value/57: string) -> Vec[string] {
+  let result/58 = std::text::split(value/57, "\n") in
+  let _wild40 =
+    if if (!inherent#Vec#Vec[string]#is_empty(result/58)) {
         trait_call[Eq::eq](
-          @intrinsic(vec.get)(result/48, (inherent#Vec#Vec[string]#len(result/48) - 1)),
+          @intrinsic(vec.get)(result/58, (inherent#Vec#Vec[string]#len(result/58) - 1)),
           ""
         )
     } else {
         false
     } {
         {
-          let mtmp35 = inherent#Vec#Vec[string]#pop(result/48) in
+          let mtmp39 = inherent#Vec#Vec[string]#pop(result/58) in
           {
             ()
           }
@@ -2484,23 +2540,23 @@ fn std::text::lines(value/47: string) -> Vec[string] {
           ()
         }
     } in
-  let _wild46 =
+  let _wild50 =
     {
-      let for_index37 = 0 in
-      let for_limit38 = inherent#Vec#Vec[string]#len(result/48) in
-      while (for_index37 < for_limit38) {
+      let for_index41 = 0 in
+      let for_limit42 = inherent#Vec#Vec[string]#len(result/58) in
+      while (for_index41 < for_limit42) {
           {
-            let for_item39 = for_index37 in
-            let _wild40 = for_index37 = (for_index37 + 1) in
+            let for_item43 = for_index41 in
+            let _wild44 = for_index41 = (for_index41 + 1) in
             {
-              let index/49 = for_item39 in
+              let index/59 = for_item43 in
               {
-                let line/50 = @intrinsic(vec.get)(result/48, index/49) in
-                if if (inherent#string#string#byte_len(line/50) > 0) {
+                let line/60 = @intrinsic(vec.get)(result/58, index/59) in
+                if if (inherent#string#string#byte_len(line/60) > 0) {
                     trait_call[Eq::eq](
                       inherent#string#string#byte_get(
-                        line/50,
-                        (inherent#string#string#byte_len(line/50) - 1)
+                        line/60,
+                        (inherent#string#string#byte_len(line/60) - 1)
                       ),
                       13
                     )
@@ -2508,18 +2564,18 @@ fn std::text::lines(value/47: string) -> Vec[string] {
                     false
                 } {
                     {
-                      let _wild45 =
+                      let _wild49 =
                         {
-                          let place_root41 = result/48 in
-                          let index42 = index/49 in
-                          let place43 = @intrinsic(vec.get)(place_root41, index42) in
-                          let value44 =
+                          let place_root45 = result/58 in
+                          let index46 = index/59 in
+                          let place47 = @intrinsic(vec.get)(place_root45, index46) in
+                          let value48 =
                             inherent#string#string#byte_slice(
-                              line/50,
+                              line/60,
                               0,
-                              (inherent#string#string#byte_len(line/50) - 1)
+                              (inherent#string#string#byte_len(line/60) - 1)
                             ) in
-                          @intrinsic(vec.set)(place_root41, index42, value44)
+                          @intrinsic(vec.set)(place_root45, index46, value48)
                         } in
                     }
                 } else {
@@ -2532,58 +2588,58 @@ fn std::text::lines(value/47: string) -> Vec[string] {
           }
       }
     } in
-  result/48
+  result/58
 }
 
-fn std::text::replace(value/51: string, expected/52: string, replacement/53: string) -> string {
-  if trait_call[Eq::eq](inherent#string#string#byte_len(expected/52), 0) {
+fn std::text::replace(value/61: string, expected/62: string, replacement/63: string) -> string {
+  if trait_call[Eq::eq](inherent#string#string#byte_len(expected/62), 0) {
       {
-        value/51
+        value/61
       }
   } else {
       {
-        let builder/54 =
+        let builder/64 =
           inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
-            inherent#string#string#byte_len(value/51)
+            inherent#string#string#byte_len(value/61)
           ) in
-        let start/55 = 0 in
-        let _wild53 =
+        let start/65 = 0 in
+        let _wild57 =
           loop {
             {
-              let mtmp47 = std::text::find_from(value/51, expected/52, start/55) in
-              match mtmp47 {
+              let mtmp51 = std::text::find_from(value/61, expected/62, start/65) in
+              match mtmp51 {
                 Option::None => {
                   {
-                    let _wild49 =
+                    let _wild53 =
                       inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                        builder/54,
+                        builder/64,
                         inherent#string#string#byte_slice(
-                          value/51,
-                          start/55,
-                          inherent#string#string#byte_len(value/51)
+                          value/61,
+                          start/65,
+                          inherent#string#string#byte_len(value/61)
                         )
                       ) in
                     break
                   }
                 },
-                Option::Some(x48) => {
+                Option::Some(x52) => {
                   {
-                    let x48 = Option::Some._0(mtmp47) in
+                    let x52 = Option::Some._0(mtmp51) in
                     {
-                      let index/56 = x48 in
+                      let index/66 = x52 in
                       {
-                        let _wild50 =
+                        let _wild54 =
                           inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                            builder/54,
-                            inherent#string#string#byte_slice(value/51, start/55, index/56)
+                            builder/64,
+                            inherent#string#string#byte_slice(value/61, start/65, index/66)
                           ) in
-                        let _wild51 =
+                        let _wild55 =
                           inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                            builder/54,
-                            replacement/53
+                            builder/64,
+                            replacement/63
                           ) in
-                        let _wild52 =
-                          start/55 = (index/56 + inherent#string#string#byte_len(expected/52)) in
+                        let _wild56 =
+                          start/65 = (index/66 + inherent#string#string#byte_len(expected/62)) in
                       }
                     }
                   }
@@ -2591,45 +2647,45 @@ fn std::text::replace(value/51: string, expected/52: string, replacement/53: str
               }
             }
           } in
-        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/54)
+        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/64)
       }
   }
 }
 
-fn std::text::join(values/57: Vec[string], separator/58: string) -> string {
-  let capacity/59 =
-    (inherent#string#string#byte_len(separator/58) * inherent#Vec#Vec[string]#len(values/57)) in
-  let _wild62 =
+fn std::text::join(values/67: Vec[string], separator/68: string) -> string {
+  let capacity/69 =
+    (inherent#string#string#byte_len(separator/68) * inherent#Vec#Vec[string]#len(values/67)) in
+  let _wild66 =
     {
-      let for_source54 = values/57 in
-      let for_limit55 = @intrinsic(vec.len)(for_source54) in
-      let for_index56 = 0 in
-      while (for_index56 < for_limit55) {
+      let for_source58 = values/67 in
+      let for_limit59 = @intrinsic(vec.len)(for_source58) in
+      let for_index60 = 0 in
+      while (for_index60 < for_limit59) {
           {
-            let for_item57 = @intrinsic(vec.get)(for_source54, for_index56) in
-            let _wild58 = for_index56 = (for_index56 + 1) in
+            let for_item61 = @intrinsic(vec.get)(for_source58, for_index60) in
+            let _wild62 = for_index60 = (for_index60 + 1) in
             {
-              let value/60 = for_item57 in
+              let value/70 = for_item61 in
               {
-                let _wild61 =
+                let _wild65 =
                   {
-                    let compound_old59 = capacity/59 in
-                    let compound_value60 = inherent#string#string#byte_len(value/60) in
-                    capacity/59 = (compound_old59 + compound_value60)
+                    let compound_old63 = capacity/69 in
+                    let compound_value64 = inherent#string#string#byte_len(value/70) in
+                    capacity/69 = (compound_old63 + compound_value64)
                   } in
               }
             }
           }
       }
     } in
-  let _wild66 =
-    if (!inherent#Vec#Vec[string]#is_empty(values/57)) {
+  let _wild70 =
+    if (!inherent#Vec#Vec[string]#is_empty(values/67)) {
         {
-          let _wild65 =
+          let _wild69 =
             {
-              let compound_old63 = capacity/59 in
-              let compound_value64 = inherent#string#string#byte_len(separator/58) in
-              capacity/59 = (compound_old63 - compound_value64)
+              let compound_old67 = capacity/69 in
+              let compound_value68 = inherent#string#string#byte_len(separator/68) in
+              capacity/69 = (compound_old67 - compound_value68)
             } in
         }
     } else {
@@ -2637,25 +2693,25 @@ fn std::text::join(values/57: Vec[string], separator/58: string) -> string {
           ()
         }
     } in
-  let builder/61 =
-    inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(capacity/59) in
-  let _wild72 =
+  let builder/71 =
+    inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(capacity/69) in
+  let _wild76 =
     {
-      let for_index67 = 0 in
-      let for_limit68 = inherent#Vec#Vec[string]#len(values/57) in
-      while (for_index67 < for_limit68) {
+      let for_index71 = 0 in
+      let for_limit72 = inherent#Vec#Vec[string]#len(values/67) in
+      while (for_index71 < for_limit72) {
           {
-            let for_item69 = for_index67 in
-            let _wild70 = for_index67 = (for_index67 + 1) in
+            let for_item73 = for_index71 in
+            let _wild74 = for_index71 = (for_index71 + 1) in
             {
-              let index/62 = for_item69 in
+              let index/72 = for_item73 in
               {
-                let _wild71 =
-                  if (index/62 > 0) {
+                let _wild75 =
+                  if (index/72 > 0) {
                       {
                         inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                          builder/61,
-                          separator/58
+                          builder/71,
+                          separator/68
                         )
                       }
                   } else {
@@ -2664,67 +2720,67 @@ fn std::text::join(values/57: Vec[string], separator/58: string) -> string {
                       }
                   } in
                 inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                  builder/61,
-                  @intrinsic(vec.get)(values/57, index/62)
+                  builder/71,
+                  @intrinsic(vec.get)(values/67, index/72)
                 )
               }
             }
           }
       }
     } in
-  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/61)
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/71)
 }
 
-fn std::text::repeat(value/63: string, count/64: int) -> string {
-  if if (count/64 <= 0) {
+fn std::text::repeat(value/73: string, count/74: int) -> string {
+  if if (count/74 <= 0) {
       true
   } else {
-      trait_call[Eq::eq](inherent#string#string#byte_len(value/63), 0)
+      trait_call[Eq::eq](inherent#string#string#byte_len(value/73), 0)
   } {
       {
         ""
       }
   } else {
       {
-        let builder/65 =
+        let builder/75 =
           inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
-            (inherent#string#string#byte_len(value/63) * count/64)
+            (inherent#string#string#byte_len(value/73) * count/74)
           ) in
-        let _wild77 =
+        let _wild81 =
           {
-            let for_index73 = 0 in
-            let for_limit74 = count/64 in
-            while (for_index73 < for_limit74) {
+            let for_index77 = 0 in
+            let for_limit78 = count/74 in
+            while (for_index77 < for_limit78) {
                 {
-                  let for_item75 = for_index73 in
-                  let _wild76 = for_index73 = (for_index73 + 1) in
+                  let for_item79 = for_index77 in
+                  let _wild80 = for_index77 = (for_index77 + 1) in
                   {
                     inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                      builder/65,
-                      value/63
+                      builder/75,
+                      value/73
                     )
                   }
                 }
             }
           } in
-        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/65)
+        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/75)
       }
   }
 }
 
-fn std::text::is_ascii(value/66: string) -> bool {
-  let _wild82 =
+fn std::text::is_ascii(value/76: string) -> bool {
+  let _wild86 =
     {
-      let for_index78 = 0 in
-      let for_limit79 = inherent#string#string#byte_len(value/66) in
-      while (for_index78 < for_limit79) {
+      let for_index82 = 0 in
+      let for_limit83 = inherent#string#string#byte_len(value/76) in
+      while (for_index82 < for_limit83) {
           {
-            let for_item80 = for_index78 in
-            let _wild81 = for_index78 = (for_index78 + 1) in
+            let for_item84 = for_index82 in
+            let _wild85 = for_index82 = (for_index82 + 1) in
             {
-              let index/67 = for_item80 in
+              let index/77 = for_item84 in
               {
-                if (inherent#string#string#byte_get(value/66, index/67) > 127) {
+                if (inherent#string#string#byte_get(value/76, index/77) > 127) {
                     {
                       return false
                     }
@@ -2741,33 +2797,33 @@ fn std::text::is_ascii(value/66: string) -> bool {
   true
 }
 
-fn std::text::to_ascii_lowercase(value/68: string) -> string {
-  let values/69 = inherent#string#string#to_bytes(value/68) in
-  let _wild92 =
+fn std::text::to_ascii_lowercase(value/78: string) -> string {
+  let values/79 = inherent#string#string#to_bytes(value/78) in
+  let _wild96 =
     {
-      let for_index83 = 0 in
-      let for_limit84 = inherent#Vec#Vec[uint8]#len(values/69) in
-      while (for_index83 < for_limit84) {
+      let for_index87 = 0 in
+      let for_limit88 = inherent#Vec#Vec[uint8]#len(values/79) in
+      while (for_index87 < for_limit88) {
           {
-            let for_item85 = for_index83 in
-            let _wild86 = for_index83 = (for_index83 + 1) in
+            let for_item89 = for_index87 in
+            let _wild90 = for_index87 = (for_index87 + 1) in
             {
-              let index/70 = for_item85 in
+              let index/80 = for_item89 in
               {
-                let current/71 = @intrinsic(vec.get)(values/69, index/70) in
-                if if (current/71 >= 65) {
-                    (current/71 <= 90)
+                let current/81 = @intrinsic(vec.get)(values/79, index/80) in
+                if if (current/81 >= 65) {
+                    (current/81 <= 90)
                 } else {
                     false
                 } {
                     {
-                      let _wild91 =
+                      let _wild95 =
                         {
-                          let place_root87 = values/69 in
-                          let index88 = index/70 in
-                          let place89 = @intrinsic(vec.get)(place_root87, index88) in
-                          let value90 = (current/71 + (97 - 65)) in
-                          @intrinsic(vec.set)(place_root87, index88, value90)
+                          let place_root91 = values/79 in
+                          let index92 = index/80 in
+                          let place93 = @intrinsic(vec.get)(place_root91, index92) in
+                          let value94 = (current/81 + (97 - 65)) in
+                          @intrinsic(vec.set)(place_root91, index92, value94)
                         } in
                     }
                 } else {
@@ -2780,46 +2836,46 @@ fn std::text::to_ascii_lowercase(value/68: string) -> string {
           }
       }
     } in
-  let mtmp93 = string_from_utf8(values/69) in
+  let mtmp97 = string_from_utf8(values/79) in
   {
-    let x94 = mtmp93.0 in
-    let x95 = mtmp93.1 in
+    let x98 = mtmp97.0 in
+    let x99 = mtmp97.1 in
     {
-      let result/72 = x95 in
+      let result/82 = x99 in
       {
-        result/72
+        result/82
       }
     }
   }
 }
 
-fn std::text::to_ascii_uppercase(value/73: string) -> string {
-  let values/74 = inherent#string#string#to_bytes(value/73) in
-  let _wild105 =
+fn std::text::to_ascii_uppercase(value/83: string) -> string {
+  let values/84 = inherent#string#string#to_bytes(value/83) in
+  let _wild109 =
     {
-      let for_index96 = 0 in
-      let for_limit97 = inherent#Vec#Vec[uint8]#len(values/74) in
-      while (for_index96 < for_limit97) {
+      let for_index100 = 0 in
+      let for_limit101 = inherent#Vec#Vec[uint8]#len(values/84) in
+      while (for_index100 < for_limit101) {
           {
-            let for_item98 = for_index96 in
-            let _wild99 = for_index96 = (for_index96 + 1) in
+            let for_item102 = for_index100 in
+            let _wild103 = for_index100 = (for_index100 + 1) in
             {
-              let index/75 = for_item98 in
+              let index/85 = for_item102 in
               {
-                let current/76 = @intrinsic(vec.get)(values/74, index/75) in
-                if if (current/76 >= 97) {
-                    (current/76 <= 122)
+                let current/86 = @intrinsic(vec.get)(values/84, index/85) in
+                if if (current/86 >= 97) {
+                    (current/86 <= 122)
                 } else {
                     false
                 } {
                     {
-                      let _wild104 =
+                      let _wild108 =
                         {
-                          let place_root100 = values/74 in
-                          let index101 = index/75 in
-                          let place102 = @intrinsic(vec.get)(place_root100, index101) in
-                          let value103 = (current/76 - (97 - 65)) in
-                          @intrinsic(vec.set)(place_root100, index101, value103)
+                          let place_root104 = values/84 in
+                          let index105 = index/85 in
+                          let place106 = @intrinsic(vec.get)(place_root104, index105) in
+                          let value107 = (current/86 - (97 - 65)) in
+                          @intrinsic(vec.set)(place_root104, index105, value107)
                         } in
                     }
                 } else {
@@ -2832,14 +2888,14 @@ fn std::text::to_ascii_uppercase(value/73: string) -> string {
           }
       }
     } in
-  let mtmp106 = string_from_utf8(values/74) in
+  let mtmp110 = string_from_utf8(values/84) in
   {
-    let x107 = mtmp106.0 in
-    let x108 = mtmp106.1 in
+    let x111 = mtmp110.0 in
+    let x112 = mtmp110.1 in
     {
-      let result/77 = x108 in
+      let result/87 = x112 in
       {
-        result/77
+        result/87
       }
     }
   }
