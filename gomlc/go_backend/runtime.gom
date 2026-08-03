@@ -221,31 +221,9 @@ fn string_from_utf8_hook_item() -> Item {
     tuple_items.push(tast::Type::Bool);
     tuple_items.push(tast::Type::String);
     let tuple_ty = lower_type(tast::Type::Tuple { items: tuple_items });
-    let invalid_fields: Vec[(string, Expr)] = Vec::[];
-    invalid_fields.push(("_0", Expr::Bool { value: false }));
-    invalid_fields.push(("_1", Expr::String { value: "" }));
-    let invalid_stmts: Vec[Stmt] = Vec::[];
-    invalid_stmts.push(
-        Stmt::Return {
-            expr: Option::Some(Expr::StructLiteral { ty: tuple_ty, fields: invalid_fields }),
-        },
-    );
-    let valid_args: Vec[Expr] = Vec::[];
-    valid_args.push(Expr::Field { expr: Expr::Var { name: "bytes" }, field_name: "items" });
-    let stmts: Vec[Stmt] = Vec::[];
-    stmts.push(
-        Stmt::If {
-            cond: Expr::Unary {
-                op: UnaryOp::Not,
-                expr: Expr::Call { func: Expr::Var { name: "_goml_utf8.Valid" }, args: valid_args },
-            },
-            then_: Block { stmts: invalid_stmts },
-            else_: Option::None,
-        },
-    );
-    let result_fields: Vec[(string, Expr)] = Vec::[];
-    result_fields.push(("_0", Expr::Bool { value: true }));
-    result_fields.push(
+    let fields: Vec[(string, Expr)] = Vec::[];
+    fields.push(("_0", Expr::Bool { value: true }));
+    fields.push(
         (
             "_1",
             Expr::Convert {
@@ -254,11 +232,8 @@ fn string_from_utf8_hook_item() -> Item {
             },
         ),
     );
-    stmts.push(
-        Stmt::Return {
-            expr: Option::Some(Expr::StructLiteral { ty: tuple_ty, fields: result_fields }),
-        },
-    );
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::StructLiteral { ty: tuple_ty, fields }) });
     Item::Function(
         Function {
             name: runtime_hook_name("core.string_from_utf8"),
@@ -353,13 +328,6 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "math")
                 } else if hook == "core.string_concat" {
                     require_runtime_import(required_imports, "strings")
-                } else if hook == "core.string_from_utf8" {
-                    require_runtime_import(required_imports, "utf8")
-                } else if hook == "core.string_get" || hook == "core.string_is_char_boundary"
-                    || hook == "core.string_decode_utf8_at"
-                    || hook == "core.char_to_string"
-                    || hook == "core.string_byte_slice" {
-                    require_runtime_import(required_imports, "utf8")
                 } else if hook == "std.io.print" || hook == "std.io.println" {
                     require_runtime_import(required_imports, "fmt")
                 } else if hook == "std.io.eprint" {
@@ -496,11 +464,6 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
         } else {
             ()
         };
-        if vecs::contains(required_imports, "utf8") {
-            imports.push(("_goml_utf8", "unicode/utf8"))
-        } else {
-            ()
-        };
         items.push(Item::ImportGroup(imports))
     } else {
         ()
@@ -512,16 +475,8 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
     for spec in resources::standard_runtime_abi_specs() {
         ordered.push(spec.key)
     };
-    ordered.insert(3, "internal.string_decode_utf8_at_native");
     for key in ordered {
-        let needed = if key == "internal.string_decode_utf8_at_native" {
-            vecs::contains(hooks, "core.string_get")
-                || vecs::contains(hooks, "core.string_decode_utf8_at")
-        } else if key == "core.string_is_char_boundary" {
-            vecs::contains(hooks, key) || vecs::contains(hooks, "core.string_byte_slice")
-        } else {
-            vecs::contains(hooks, key)
-        };
+        let needed = vecs::contains(hooks, key);
         if needed {
             if key == "std.time.monotonic_nanoseconds" {
                 items.push(std_time_monotonic_origin_item())
@@ -531,9 +486,7 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
             match integer_to_string_hook_type(key) {
                 Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
                 None => {
-                    if key == "internal.string_decode_utf8_at_native" {
-                        items.push(string_decode_utf8_at_native_item())
-                    } else if key == "core.unit_to_string" {
+                    if key == "core.unit_to_string" {
                         items.push(unit_to_string_hook_item())
                     } else if key == "core.bool_to_string" {
                         items.push(bool_to_string_hook_item())
