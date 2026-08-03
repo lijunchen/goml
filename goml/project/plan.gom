@@ -725,10 +725,6 @@ fn progress_label(value: Command) -> string {
     }
 }
 
-fn display_progress(completed: int, total: int, label: string) -> unit {
-    io::eprintln(f"{util::progress_bar(completed, total)} {completed}/{total} {label}")
-}
-
 fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, string] {
     let output = match value {
         PrepareWorld { output } | Compile { output, .. } | Link { output, .. } | TestLink {
@@ -1008,7 +1004,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                 if running < worker_count && !build_node_ready(node, completed_nodes) {
                     blocked.push(index)
                 } else if running < worker_count {
-                    display_progress(completed, total, progress_label(node.command));
+                    util::display_progress(completed, total, progress_label(node.command), false);
                     match prepare_cached_command(context, node.command, identity) {
                         Ok(Fresh) => {
                             completed_nodes.push(node.index);
@@ -1093,7 +1089,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
     if dry_run {
         ()
     } else {
-        display_progress(completed, total, "finished")
+        util::display_progress(completed, total, "finished", true)
     };
     Result::Ok(())
 }

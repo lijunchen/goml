@@ -1,6 +1,7 @@
 package util;
 
 use std::collections;
+use std::io;
 use std::text;
 
 pub fn sorted(values: Vec[string]) -> Vec[string] {
@@ -41,6 +42,15 @@ pub fn progress_bar(completed: int, total: int) -> string {
     };
     builder.write_char(']');
     builder.finish()
+}
+
+pub fn display_progress(completed: int, total: int, label: string, finished: bool) -> unit {
+    let update = f"\r\u001b[2K{progress_bar(completed, total)} {completed}/{total} {label}";
+    if finished {
+        io::eprintln(update)
+    } else {
+        io::eprint(update)
+    }
 }
 
 pub fn parse_positive_int(value: string) -> Result[int, string] {
