@@ -238,22 +238,11 @@ fn artifact_dependency_environments(
     let methods: Vec[tast::MethodInfo] = Vec::[];
     for method in value.methods {
         match method.trait_ref {
-            Some(_) => if artifact_builtin_extension_iterator(method.for_type) {
-                methods.push(method)
-            } else {
-                ()
-            },
+            Some(_) => (),
             None => methods.push(method),
         }
     };
     let impls: Vec[tast::ImplInfo] = Vec::[];
-    for implementation in value.impls {
-        if artifact_builtin_extension_iterator(implementation.for_type) {
-            impls.push(implementation)
-        } else {
-            ()
-        }
-    };
     result.push(
         tast::dependency_environment(
             value.enums,
@@ -275,18 +264,6 @@ fn artifact_dependency_environments(
         result.push(artifact_dependency_environment_from_exports(interface.exports)?)
     };
     Result::Ok(result)
-}
-
-fn artifact_builtin_extension_iterator(value: tast::Type) -> bool {
-    match value {
-        App { ty: base, args: _ } => match base {
-            Con { name } => name == "EnumerateIterator" || name == "ZipIterator"
-                || name == "SkipIterator"
-                || name == "ChainIterator",
-            _ => false,
-        },
-        _ => false,
-    }
 }
 
 fn artifact_dependency_core_types(units: Vec[artifact::ArtifactInterfaceUnit]) -> Vec[core::File] {

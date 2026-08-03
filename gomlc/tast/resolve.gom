@@ -1329,51 +1329,9 @@ fn iterator_trait_ref() -> TraitRef {
     TraitRef { name: "Iterator", args: Vec::[] }
 }
 
-fn iterator_item_type(value: Type) -> Type {
-    Type::Projection { for_ty: value, name: "Item", trait_ref: Option::Some(iterator_trait_ref()) }
-}
-
-fn builtin_iterator_bound_satisfied(ctx: Checker, bound_ty: Type, goals: Vec[string]) -> bool {
+fn builtin_iterator_bound_satisfied(ctx: Checker, bound_ty: Type) -> bool {
     match prune(normalize_type(ctx, bound_ty)) {
-        App { ty: Con { name }, args } => if name == "FnIterator" && args.len() == 1 {
-            true
-        } else if name == "MapIterator" && args.len() == 3 {
-            let iterator = args[2];
-            trait_bound_satisfied_at(ctx, iterator, iterator_trait_ref(), goals)
-                && unify(
-                    normalize_type(ctx, iterator_item_type(iterator)),
-                    normalize_type(ctx, args[0]),
-                )
-        } else if name == "FilterIterator" && args.len() == 2 {
-            let iterator = args[1];
-            trait_bound_satisfied_at(ctx, iterator, iterator_trait_ref(), goals)
-                && unify(
-                    normalize_type(ctx, iterator_item_type(iterator)),
-                    normalize_type(ctx, args[0]),
-                )
-        } else if name == "TakeIterator" && args.len() == 1 {
-            trait_bound_satisfied_at(ctx, args[0], iterator_trait_ref(), goals)
-        } else if (name == "EnumerateIterator" || name == "SkipIterator") && args.len() == 1 {
-            trait_bound_satisfied_at(ctx, args[0], iterator_trait_ref(), goals)
-        } else if name == "ZipIterator" && args.len() == 2 {
-            trait_bound_satisfied_at(ctx, args[0], iterator_trait_ref(), goals)
-                && trait_bound_satisfied_at(ctx, args[1], iterator_trait_ref(), goals)
-        } else if name == "ChainIterator" && args.len() == 3 {
-            let first = args[1];
-            let second = args[2];
-            trait_bound_satisfied_at(ctx, first, iterator_trait_ref(), goals)
-                && trait_bound_satisfied_at(ctx, second, iterator_trait_ref(), goals)
-                && unify(
-                    normalize_type(ctx, iterator_item_type(first)),
-                    normalize_type(ctx, args[0]),
-                )
-                && unify(
-                    normalize_type(ctx, iterator_item_type(second)),
-                    normalize_type(ctx, args[0]),
-                )
-        } else {
-            false
-        },
+        App { ty: Con { name }, args } => name == "FnIterator" && args.len() == 1,
         _ => false,
     }
 }
@@ -1453,7 +1411,7 @@ fn builtin_trait_bound_satisfied(
                         }
                 }
             } else if trait_name == "Iterator" {
-                builtin_iterator_bound_satisfied(ctx, bound_ty, goals)
+                builtin_iterator_bound_satisfied(ctx, bound_ty)
             } else if trait_name == "IntoIterator" {
                 match bound_ty {
                     VecType { elem: _ } | Slice { elem: _ } => true,
@@ -2881,16 +2839,10 @@ fn resolve_signature_predicates(ctx: Checker, predicates: Vec[TypePredicate], re
 
 fn builtin_nominal_arity(name: string) -> Option[int] {
     if name == "Option" || name == "Vec" || name == "Slice" || name == "Ref" || name == "Channel"
-        || name == "FnIterator"
-        || name == "TakeIterator"
-        || name == "EnumerateIterator"
-        || name == "SkipIterator" {
+        || name == "FnIterator" {
         Option::Some(1)
-    } else if name == "Result" || name == "HashMap" || name == "FilterIterator"
-        || name == "ZipIterator" {
+    } else if name == "Result" || name == "HashMap" {
         Option::Some(2)
-    } else if name == "MapIterator" || name == "ChainIterator" {
-        Option::Some(3)
     } else {
         Option::None
     }

@@ -1,5 +1,6 @@
 package lexer;
 
+use std::ascii;
 use std::text;
 
 #[derive(Eq, ToString)]
@@ -132,32 +133,12 @@ fn byte_at(source: string, index: int) -> uint8 {
     source.byte_get(index)
 }
 
-fn is_ascii_lower(value: uint8) -> bool {
-    value >= b'a' && value <= b'z'
-}
-
-fn is_ascii_upper(value: uint8) -> bool {
-    value >= b'A' && value <= b'Z'
-}
-
-fn is_ascii_letter(value: uint8) -> bool {
-    is_ascii_lower(value) || is_ascii_upper(value)
-}
-
-fn is_ascii_digit(value: uint8) -> bool {
-    value >= b'0' && value <= b'9'
-}
-
 fn is_ident_continue(value: uint8) -> bool {
-    is_ascii_letter(value) || is_ascii_digit(value) || value == b'_'
+    ascii::is_alphanumeric(value) || value == b'_'
 }
 
 fn is_whitespace(value: uint8) -> bool {
     value == b' ' || value == b'\t' || value == b'\r' || value == b'\n'
-}
-
-fn is_hex_digit(value: uint8) -> bool {
-    is_ascii_digit(value) || (value >= b'A' && value <= b'F') || (value >= b'a' && value <= b'f')
 }
 
 fn utf8_width(value: uint8) -> int {
@@ -236,7 +217,7 @@ fn scan_ident_end(source: string, start: int) -> int {
 fn scan_digits_end(source: string, start: int) -> int {
     let mut index = start;
     while index < source.byte_len()
-        && (is_ascii_digit(byte_at(source, index)) || byte_at(source, index) == b'_') {
+        && (ascii::is_digit(byte_at(source, index)) || byte_at(source, index) == b'_') {
         index = index + 1;
     };
     index
@@ -250,8 +231,8 @@ fn valid_digits(source: string, start: int, end: int) -> bool {
     };
     for index in start..end {
         if byte_at(source, index) == b'_'
-            && (index == start || index + 1 >= end || !is_ascii_digit(byte_at(source, index - 1))
-                || !is_ascii_digit(byte_at(source, index + 1))) {
+            && (index == start || index + 1 >= end || !ascii::is_digit(byte_at(source, index - 1))
+                || !ascii::is_digit(byte_at(source, index + 1))) {
             return false
         } else {
             ()
@@ -266,7 +247,7 @@ fn radix_digit(value: uint8, base: int) -> bool {
     } else if base == 8 {
         value >= b'0' && value <= b'7'
     } else {
-        is_hex_digit(value)
+        ascii::is_hexdigit(value)
     }
 }
 
@@ -319,7 +300,7 @@ fn scan_number(source: string, start: int) -> (TokenKind, int) {
     let mut number_end = integer_end;
     let mut valid = valid_digits(source, start, integer_end);
     if integer_end + 1 < source.byte_len() && byte_at(source, integer_end) == b'.'
-        && is_ascii_digit(byte_at(source, integer_end + 1)) {
+        && ascii::is_digit(byte_at(source, integer_end + 1)) {
         let fraction_end = scan_digits_end(source, integer_end + 1);
         number_end = fraction_end;
         valid = valid && valid_digits(source, integer_end + 1, fraction_end);
@@ -335,7 +316,7 @@ fn scan_number(source: string, start: int) -> (TokenKind, int) {
         } else {
             ()
         };
-        if exponent_start < source.byte_len() && is_ascii_digit(byte_at(source, exponent_start)) {
+        if exponent_start < source.byte_len() && ascii::is_digit(byte_at(source, exponent_start)) {
             let exponent_end = scan_digits_end(source, exponent_start);
             number_end = exponent_end;
             valid = valid && valid_digits(source, exponent_start, exponent_end);
@@ -388,9 +369,10 @@ fn scan_escape_end(source: string, slash: int, quote: uint8) -> Option[int] {
             || escaped == b'/' {
             Option::Some(slash + 2)
         } else if escaped == b'u' && slash + 5 < source.byte_len() {
-            if is_hex_digit(byte_at(source, slash + 2)) && is_hex_digit(byte_at(source, slash + 3))
-                && is_hex_digit(byte_at(source, slash + 4))
-                && is_hex_digit(byte_at(source, slash + 5)) {
+            if ascii::is_hexdigit(byte_at(source, slash + 2))
+                && ascii::is_hexdigit(byte_at(source, slash + 3))
+                && ascii::is_hexdigit(byte_at(source, slash + 4))
+                && ascii::is_hexdigit(byte_at(source, slash + 5)) {
                 Option::Some(slash + 6)
             } else {
                 Option::None
@@ -637,7 +619,8 @@ fn scan_byte_escape_end(source: string, slash: int, quote: uint8) -> Option[int]
             || (quote == b'"' && escaped == b'/') {
             Option::Some(slash + 2)
         } else if escaped == b'x' && slash + 3 < source.byte_len() {
-            if is_hex_digit(byte_at(source, slash + 2)) && is_hex_digit(byte_at(source, slash + 3)) {
+            if ascii::is_hexdigit(byte_at(source, slash + 2))
+                && ascii::is_hexdigit(byte_at(source, slash + 3)) {
                 Option::Some(slash + 4)
             } else {
                 Option::None
@@ -1076,7 +1059,7 @@ pub fn lex(source: string) -> Vec[Token] {
                     push_token(tokens, source, TokenKind::Error, start, start + 1)
                 },
             }
-        } else if is_ascii_letter(value) || value == b'_' {
+        } else if ascii::is_alphabetic(value) || value == b'_' {
             let end = if value == b'_'
                 && (start + 1 >= source.byte_len() || !is_ident_continue(byte_at(source, start + 1))) {
                 start + 1
@@ -1086,7 +1069,7 @@ pub fn lex(source: string) -> Vec[Token] {
             let text_value = source.byte_slice(start, end);
             index = end;
             push_token(tokens, source, keyword_kind(text_value), start, end)
-        } else if is_ascii_digit(value) {
+        } else if ascii::is_digit(value) {
             let (kind, end) = scan_number(source, start);
             index = end;
             push_token(tokens, source, kind, start, end)

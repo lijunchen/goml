@@ -14,18 +14,3 @@ trait IntoIterator {
 struct FnIterator[T] {
     next_fn: () -> Option[T],
 }
-
-struct MapIterator[A, B, I] {
-    iterator: I,
-    map_fn: (A) -> B,
-}
-
-struct FilterIterator[T, I] {
-    iterator: I,
-    predicate: (T) -> bool,
-}
-
-struct TakeIterator[I] {
-    iterator: I,
-    remaining: Ref[int],
-}

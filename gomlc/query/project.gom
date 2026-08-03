@@ -1,5 +1,6 @@
 package query;
 
+use std::ascii;
 use std::fs;
 use std::path;
 use std::text;
@@ -28,17 +29,13 @@ struct ModuleInfo {
     path: string,
 }
 
-fn ascii_whitespace(value: uint8) -> bool {
-    value == 9 || value == 10 || value == 13 || value == 32
-}
-
 fn trim_ascii(value: string) -> string {
     let mut start = 0;
     let mut end = value.byte_len();
-    while start < end && ascii_whitespace(value.byte_get(start)) {
+    while start < end && ascii::is_whitespace(value.byte_get(start)) {
         start = start + 1;
     };
-    while end > start && ascii_whitespace(value.byte_get(end - 1)) {
+    while end > start && ascii::is_whitespace(value.byte_get(end - 1)) {
         end = end - 1;
     };
     value.byte_slice(start, end)

@@ -1222,11 +1222,7 @@ fn builtin_scalar_type(value: tast::Type) -> bool {
 
 fn builtin_iterator_type(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
-        App { ty: Con { name }, args } => {
-            (name == "FnIterator" && args.len() == 1) || (name == "MapIterator" && args.len() == 3)
-                || (name == "FilterIterator" && args.len() == 2)
-                || (name == "TakeIterator" && args.len() == 1)
-        },
+        App { ty: Con { name }, args } => name == "FnIterator" && args.len() == 1,
         _ => false,
     }
 }

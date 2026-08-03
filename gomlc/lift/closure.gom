@@ -2,6 +2,7 @@ package lift;
 
 use gomlc::core;
 use gomlc::tast;
+use std::ascii;
 use std::collections;
 use std::text;
 
@@ -223,10 +224,6 @@ fn initial_used_types(value: core::File) -> Vec[string] {
     result
 }
 
-fn ascii_alphanumeric(value: uint8) -> bool {
-    (value >= 48 && value <= 57) || (value >= 65 && value <= 90) || (value >= 97 && value <= 122)
-}
-
 fn primary_name(value: string) -> string {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
@@ -245,7 +242,7 @@ fn sanitize_name(value: string) -> Option[string] {
     let mut wrote = false;
     for index in 0..value.byte_len() {
         let byte = value.byte_get(index);
-        if ascii_alphanumeric(byte) {
+        if ascii::is_alphanumeric(byte) {
             if pending_separator && wrote {
                 builder.write_char('_')
             } else {

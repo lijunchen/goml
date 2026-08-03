@@ -1,14 +1,17 @@
 package go_backend;
 
 use gomlc::hash;
+use std::ascii;
 use std::text;
 
 fn is_ascii_letter(value: char) -> bool {
-    (value >= 'a' && value <= 'z') || (value >= 'A' && value <= 'Z')
+    let code = value as uint32;
+    code <= 127 && ascii::is_alphabetic(code as byte)
 }
 
 fn is_ascii_digit(value: char) -> bool {
-    value >= '0' && value <= '9'
+    let code = value as uint32;
+    code <= 127 && ascii::is_digit(code as byte)
 }
 
 fn is_valid_ident(value: string) -> bool {

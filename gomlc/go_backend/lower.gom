@@ -2876,11 +2876,6 @@ fn collect_type_definition_fields(
         }
     };
     for instance in instances {
-        if instance.base_name == "TakeIterator" && instance.args.len() == 1 {
-            collect_type(result, tast::Type::RefType { elem: tast::Type::Int })
-        } else {
-            ()
-        };
         match find_struct(structs, instance.base_name) {
             Some(definition) => {
                 for field in definition.fields {

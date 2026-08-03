@@ -1,5 +1,6 @@
 package lsp;
 
+use std::ascii;
 use std::json;
 
 pub struct RpcMessage {
@@ -73,20 +74,12 @@ pub fn framed_json(value: json::Value) -> string {
     "Content-Length: " + body.byte_len().to_string() + "\r\n\r\n" + body
 }
 
-fn ascii_lower(value: uint8) -> uint8 {
-    if value >= 65 && value <= 90 {
-        value + 32
-    } else {
-        value
-    }
-}
-
 fn ascii_prefix_equal_case_insensitive(value: string, expected: string) -> bool {
     if value.byte_len() < expected.byte_len() {
         false
     } else {
         for index in 0..expected.byte_len() {
-            if ascii_lower(value.byte_get(index)) != ascii_lower(expected.byte_get(index)) {
+            if !ascii::eq_ignore_case(value.byte_get(index), expected.byte_get(index)) {
                 return false
             } else {
                 ()

@@ -14,6 +14,7 @@ use gomlc::mono;
 use gomlc::parser;
 use gomlc::resources;
 use gomlc::tast;
+use std::ascii;
 use std::bytes;
 use std::env;
 use std::fs;
@@ -1565,18 +1566,13 @@ fn fail_string(message: string) -> string {
     ""
 }
 
-fn ascii_whitespace_at(value: string, index: int) -> bool {
-    let character = value.byte_slice(index, index + 1);
-    character == " " || character == "\n" || character == "\r" || character == "\t"
-}
-
 fn trim_ascii(value: string) -> string {
     let mut start = 0;
     let mut end = value.byte_len();
-    while start < end && ascii_whitespace_at(value, start) {
+    while start < end && ascii::is_whitespace(value.byte_get(start)) {
         start = start + 1;
     };
-    while end > start && ascii_whitespace_at(value, end - 1) {
+    while end > start && ascii::is_whitespace(value.byte_get(end - 1)) {
         end = end - 1;
     };
     value.byte_slice(start, end)

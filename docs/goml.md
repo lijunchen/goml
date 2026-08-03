@@ -543,11 +543,13 @@ fn render[T: ToString + Eq](value: T) -> string {
 Constraints can also be placed in a `where` clause:
 
 ```goml
+use std::iter;
+
 fn collect_items[T, I: Iterator](iterator: I) -> Vec[T]
 where
     I::Item = T,
 {
-    iterator_collect(iterator)
+    iter::collect(iterator)
 }
 ```
 
@@ -1821,8 +1823,6 @@ let total = iter::fold(values, 0, |sum: int, value: int| sum + value);
 - producers: `empty`, `once`, and `from_fn`
 - adapters: `map`, `filter`, `filter_map`, `take`, `take_while`, `skip`, `skip_while`, `enumerate`, `zip`, `chain`, `inspect`, and `map_while`
 - consumers: `fold`, `collect`, `find`, `find_map`, `any`, `all`, `count`, `position`, `nth`, `last`, `for_each`, and `reduce`
-
-The older built-in `iterator_*` functions remain available during the standard-library migration.
 
 Iterators are single pass.`Vec[T]` and `Slice[T]` can be directly used in `for`, and the value implementing `Iterator` is also directly iterable through the identity `IntoIterator`.
 

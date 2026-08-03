@@ -895,48 +895,6 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
     match prune(base) {
         App { ty: Con { name: owner }, args } => if owner == "FnIterator" && args.len() == 1 {
             Option::Some(args[0])
-        } else if owner == "MapIterator" && args.len() == 3 {
-            Option::Some(args[1])
-        } else if owner == "FilterIterator" && args.len() == 2 {
-            Option::Some(args[0])
-        } else if owner == "TakeIterator" && args.len() == 1 {
-            Option::Some(
-                Type::Projection {
-                    for_ty: args[0],
-                    name: "Item",
-                    trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
-                },
-            )
-        } else if (owner == "EnumerateIterator" || owner == "SkipIterator") && args.len() == 1 {
-            let item = Type::Projection {
-                for_ty: args[0],
-                name: "Item",
-                trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
-            };
-            if owner == "EnumerateIterator" {
-                Option::Some(Type::Tuple { items: Vec::[Type::Int, item] })
-            } else {
-                Option::Some(item)
-            }
-        } else if owner == "ZipIterator" && args.len() == 2 {
-            Option::Some(
-                Type::Tuple {
-                    items: Vec::[
-                        Type::Projection {
-                            for_ty: args[0],
-                            name: "Item",
-                            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
-                        },
-                        Type::Projection {
-                            for_ty: args[1],
-                            name: "Item",
-                            trait_ref: Option::Some(TraitRef { name: "Iterator", args: Vec::[] }),
-                        },
-                    ],
-                },
-            )
-        } else if owner == "ChainIterator" && args.len() == 3 {
-            Option::Some(args[0])
         } else {
             Option::None
         },
