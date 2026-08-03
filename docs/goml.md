@@ -1860,7 +1860,7 @@ Current public entrances include:
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
-- `text::StringBuilder`, `find`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `to_ascii_lowercase`, and `to_ascii_uppercase`
+- `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `to_ascii_lowercase`, and `to_ascii_uppercase`
 - `time::Duration`, `Instant`, `SystemTime`, and `sleep`
 
 ### `collections::IndexMap[K, V]`
@@ -1891,7 +1891,7 @@ The implementation uses a sparse open-addressed index table and an insertion-ord
 
 File system operations use `Result[..., string]` to report errors, and can be combined with `?`.
 
-Text search indices are UTF-8 byte offsets, matching the indices accepted by the built-in string APIs. Trimming recognizes ASCII whitespace. Splitting on an empty separator returns the original string as one item, while `split_once` with an empty separator returns `Option::None`.
+Text search indices are UTF-8 byte offsets, matching the indices accepted by the built-in string APIs. `starts_with_at` returns false for out-of-range and non-character-boundary offsets. `rfind` returns the last matching byte offset. Trimming recognizes ASCII whitespace. Splitting on an empty separator returns the original string as one item, while `split_once` with an empty separator returns `Option::None`.
 
 Numeric parsing returns `Result[_, string]`. Integer radix parsing accepts the host parser's supported radices and reports invalid radices, malformed input, and overflow as `Result::Err`.
 

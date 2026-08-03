@@ -1,7 +1,7 @@
 package go_backend;
 
 use gomlc::strings;
-use gomlc::vecs;
+use std::collections;
 use gomlc::core;
 use gomlc::tast;
 
@@ -185,7 +185,7 @@ fn instantiate_type(
 fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
     match tast::resolve_type(value) {
         Con { name } => {
-            if !vecs::contains(result, name) {
+            if !collections::contains(result, name) {
                 result.push(name)
             } else {
                 ()
@@ -261,7 +261,7 @@ fn variant_instance_count(
     for definition in enums {
         if enum_has_variant(definition, variant_name) {
             if definition.generics.is_empty() {
-                if vecs::contains(owners, definition.name) {
+                if collections::contains(owners, definition.name) {
                     ()
                 } else {
                     owners.push(definition.name)
@@ -269,7 +269,7 @@ fn variant_instance_count(
             } else {
                 for instance in instances {
                     if instance.base_name == definition.name {
-                        if vecs::contains(owners, instance.name) {
+                        if collections::contains(owners, instance.name) {
                             ()
                         } else {
                             owners.push(instance.name)
@@ -417,7 +417,7 @@ fn emit_enum_instance(
     function_names: FunctionNames,
     instance: core::TypeInstance,
 ) -> unit {
-    if vecs::contains(emitted, instance.name) {
+    if collections::contains(emitted, instance.name) {
         ()
     } else {
         match find_enum(enums, instance.base_name) {
@@ -546,7 +546,7 @@ pub fn emit_user_type_items(
     let emitted: Vec[string] = Vec::[];
     for definition in structs {
         if definition.generics.is_empty() && !is_closure_struct_name(definition.name)
-            && !vecs::contains(emitted, definition.name) {
+            && !collections::contains(emitted, definition.name) {
             let fields: Vec[(string, Type)] = Vec::[];
             for field in definition.fields {
                 fields.push(
@@ -567,7 +567,7 @@ pub fn emit_user_type_items(
     for instance in instances {
         match find_struct(structs, instance.base_name) {
             Some(definition) => {
-                if !vecs::contains(emitted, instance.name) {
+                if !collections::contains(emitted, instance.name) {
                     let fields: Vec[(string, Type)] = Vec::[];
                     for field in definition.fields {
                         fields.push(
@@ -594,7 +594,7 @@ pub fn emit_user_type_items(
             },
             None => match builtin_struct_instance(instance, instances) {
                 Some(definition) => {
-                    if !vecs::contains(emitted, instance.name) {
+                    if !collections::contains(emitted, instance.name) {
                         items.push(Item::Struct(definition));
                         emitted.push(instance.name)
                     } else {
@@ -607,7 +607,7 @@ pub fn emit_user_type_items(
     };
     for definition in structs {
         if definition.generics.is_empty() && is_closure_struct_name(definition.name)
-            && !vecs::contains(emitted, definition.name) {
+            && !collections::contains(emitted, definition.name) {
             let fields: Vec[(string, Type)] = Vec::[];
             for field in definition.fields {
                 fields.push(

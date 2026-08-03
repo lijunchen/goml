@@ -2,8 +2,7 @@ package tast;
 
 use gomlc::ast;
 use gomlc::hir;
-use gomlc::strings;
-use gomlc::vecs;
+use std::collections;
 use std::text;
 
 fn function_context(
@@ -125,7 +124,7 @@ fn deferred_method_name(value: Callable) -> Option[string] {
     match value {
         Function(name) => {
             let prefix = "__goml_deferred_method:";
-            if name.byte_len() > prefix.byte_len() && strings::starts_with(name, prefix) {
+            if name.byte_len() > prefix.byte_len() && name.starts_with(prefix) {
                 Option::Some(name.byte_slice(prefix.byte_len(), name.byte_len()))
             } else {
                 Option::None
@@ -577,7 +576,7 @@ fn check_constant(base: Checker, value: hir::Constant) -> Constant {
 fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> unit {
     match value {
         Ref { name, ty: _ } => {
-            if !vecs::contains(result, name) {
+            if !collections::contains(result, name) {
                 result.push(name)
             } else {
                 ()
@@ -607,7 +606,7 @@ fn checked_constant_by_name(values: Vec[Constant], name: string) -> Option[Const
 }
 
 fn constant_reaches(values: Vec[Constant], current: string, target: string, visited: Vec[string]) -> bool {
-    if vecs::contains(visited, current) {
+    if collections::contains(visited, current) {
         false
     } else {
         visited.push(current);
@@ -641,7 +640,7 @@ fn validate_constant_cycles(ctx: Checker, values: Vec[Constant]) -> unit {
 
 fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
     match prune(value) {
-        Param { name } => if vecs::contains(result, name) {
+        Param { name } => if collections::contains(result, name) {
             ()
         } else {
             result.push(name)
@@ -742,7 +741,7 @@ fn validate_impl_type_params(
         None => (),
     };
     for generic in generics {
-        if vecs::contains(constrained, generic) {
+        if collections::contains(constrained, generic) {
             ()
         } else {
             push_diagnostic_at(
@@ -762,7 +761,7 @@ fn validate_impl_type_params(
 fn mark_impl_invalid_at(ctx: Checker, span: ast::Span) -> unit {
     for value in ctx.impls {
         if value.span.start == span.start && value.span.end == span.end {
-            if vecs::contains(ctx.invalid_impl_origins, value.origin) {
+            if collections::contains(ctx.invalid_impl_origins, value.origin) {
                 ()
             } else {
                 ctx.invalid_impl_origins.push(value.origin)
@@ -1135,7 +1134,7 @@ fn validate_trait_associated_types(
                 ctx,
                 "Associated type " + associated.0 + " is not declared in trait " + reference.name,
             )
-        } else if vecs::contains(seen, associated.0) {
+        } else if collections::contains(seen, associated.0) {
             push_diagnostic(
                 ctx,
                 "Associated type " + associated.0 + " is bound multiple times in impl of trait "
@@ -1146,7 +1145,7 @@ fn validate_trait_associated_types(
         }
     };
     for expected in info.associated_types {
-        if !vecs::contains(seen, expected.name) {
+        if !collections::contains(seen, expected.name) {
             push_diagnostic(
                 ctx,
                 "Trait " + reference.name + " implementation for " + type_text(for_type)
@@ -1195,7 +1194,7 @@ fn associated_type_reaches(
             } else {
                 ()
             };
-            if !vecs::contains(active, name) {
+            if !collections::contains(active, name) {
                 match impl_associated_type(values, name) {
                     Some(next) => {
                         active.push(name);
@@ -1561,7 +1560,7 @@ fn validate_trait_impl(
             let seen: Vec[string] = Vec::[];
             for method in methods {
                 match find_trait_method(info, method.name) {
-                    Some(expected) => if vecs::contains(seen, method.name) {
+                    Some(expected) => if collections::contains(seen, method.name) {
                         push_diagnostic(
                             ctx,
                             "Method " + method.name
@@ -1587,7 +1586,7 @@ fn validate_trait_impl(
                 }
             };
             for expected in info.methods {
-                if !vecs::contains(seen, expected.name) && expected.default_name.is_none() {
+                if !collections::contains(seen, expected.name) && expected.default_name.is_none() {
                     push_diagnostic(
                         ctx,
                         "Trait " + reference.name + " implementation for " + type_text(for_type)
@@ -1672,7 +1671,7 @@ fn default_trait_method(
 fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) -> unit {
     let seen: Vec[string] = Vec::[];
     for method in methods {
-        if vecs::contains(seen, method.name) {
+        if collections::contains(seen, method.name) {
             push_diagnostic(
                 ctx,
                 "Method " + method.name + " implemented multiple times in impl for "
@@ -1715,7 +1714,7 @@ fn by_value_type_has_cycle(ctx: Checker, value: Type, active: Vec[string]) -> bo
         Array { len: _, elem } => by_value_type_has_cycle(ctx, elem, active),
         value => match struct_application_parts(value) {
             Some(parts) => match find_struct_by_name(ctx, parts.0) {
-                Some(info) => if vecs::contains(active, info.name) {
+                Some(info) => if collections::contains(active, info.name) {
                     true
                 } else {
                     let next = copied_names(active);
@@ -1769,7 +1768,7 @@ fn supertrait_path(
 ) -> bool {
     if names_match(current, target) {
         true
-    } else if vecs::contains(active, current) {
+    } else if collections::contains(active, current) {
         false
     } else {
         active.push(current);
@@ -1792,7 +1791,7 @@ fn supertrait_path(
 }
 
 fn cycle_text(values: Vec[string]) -> string {
-    strings::join(values, " -> ")
+    text::join(values, " -> ")
 }
 
 fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
@@ -1973,7 +1972,7 @@ fn push_declaration_diagnostic(ctx: Checker, message: string) -> unit {
 fn validate_type_parameter_names(ctx: Checker, values: Vec[string]) -> unit {
     let names: Vec[string] = Vec::[];
     for name in values {
-        if vecs::contains(names, name) {
+        if collections::contains(names, name) {
             push_declaration_diagnostic(
                 ctx,
                 "type parameter " + name + " is defined multiple times",
@@ -1988,7 +1987,7 @@ fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit
     let names: Vec[string] = Vec::[];
     for param in value.params {
         let name = param.0.hint;
-        if vecs::contains(names, name) {
+        if collections::contains(names, name) {
             push_declaration_diagnostic(ctx, "parameter " + name + " is defined multiple times")
         } else {
             names.push(name)
@@ -1999,7 +1998,7 @@ fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit
 fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
     let names: Vec[string] = Vec::[];
     for variant in value.variants {
-        if vecs::contains(names, variant.name) {
+        if collections::contains(names, variant.name) {
             push_declaration_diagnostic(
                 ctx,
                 "variant " + variant.name + " is defined multiple times in enum " + value.name,
@@ -2011,7 +2010,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
             Struct(fields) => {
                 let field_names: Vec[string] = Vec::[];
                 for field in fields {
-                    if vecs::contains(field_names, field.0) {
+                    if collections::contains(field_names, field.0) {
                         push_declaration_diagnostic(
                             ctx,
                             "field " + field.0 + " is defined multiple times in variant "
@@ -2032,7 +2031,7 @@ fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
 fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
     let names: Vec[string] = Vec::[];
     for field in value.fields {
-        if vecs::contains(names, field.0) {
+        if collections::contains(names, field.0) {
             push_declaration_diagnostic(
                 ctx,
                 "field " + field.0 + " is defined multiple times in struct " + value.name,
@@ -2046,7 +2045,7 @@ fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
 fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
     let methods: Vec[string] = Vec::[];
     for method in value.method_sigs {
-        if vecs::contains(methods, method.name) {
+        if collections::contains(methods, method.name) {
             push_declaration_diagnostic(
                 ctx,
                 "method " + method.name + " is defined multiple times in trait " + value.name,
@@ -2057,7 +2056,7 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
     };
     let associated_types: Vec[string] = Vec::[];
     for associated in value.associated_types {
-        if vecs::contains(associated_types, associated.name) {
+        if collections::contains(associated_types, associated.name) {
             push_declaration_diagnostic(
                 ctx,
                 "associated type " + associated.name + " is defined multiple times in trait "
@@ -2236,7 +2235,7 @@ fn validate_cross_file_declaration_names(
                 _ => Option::None,
             };
             match nominal {
-                Some(value) => if !vecs::contains(local_nominal_names, value.0) {
+                Some(value) => if !collections::contains(local_nominal_names, value.0) {
                     local_nominal_names.push(value.0);
                     local_nominal_kinds.push(value.1)
                 } else {
@@ -2251,7 +2250,7 @@ fn validate_cross_file_declaration_names(
                 _ => Option::None,
             };
             match function_name {
-                Some(value) => if !vecs::contains(local_function_names, value.0) {
+                Some(value) => if !collections::contains(local_function_names, value.0) {
                     local_function_names.push(value.0);
                     local_function_kinds.push(value.1)
                 } else {
@@ -2792,7 +2791,7 @@ fn check_file_with_package(
     };
     for imported in value.imports {
         match find_trait(ctx, imported) {
-            Some(_) => if !vecs::contains(ctx.in_scope_traits, imported) {
+            Some(_) => if !collections::contains(ctx.in_scope_traits, imported) {
                 ctx.in_scope_traits.push(imported)
             } else {
                 ()
@@ -2838,7 +2837,7 @@ fn check_file_with_package(
     for trait_name in value.use_traits {
         match find_trait(ctx, trait_name) {
             Some(_) => (),
-            None => if vecs::contains(value.imports, trait_name) {
+            None => if collections::contains(value.imports, trait_name) {
                 ()
             } else {
                 push_global_diagnostic(ctx, "Could not infer type");

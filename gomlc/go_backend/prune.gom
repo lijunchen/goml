@@ -1,7 +1,5 @@
 package go_backend;
 
-use gomlc::strings;
-
 struct NameSet {
     values: Vec[string],
     present: HashMap[string, unit],
@@ -194,7 +192,7 @@ fn name_uses_import(name: string, alias: string) -> bool {
     } else if name.byte_len() <= alias.byte_len() {
         false
     } else {
-        strings::starts_with(name, alias) && name.byte_get(alias.byte_len()) == b'.'
+        name.starts_with(alias) && name.byte_get(alias.byte_len()) == b'.'
     }
 }
 

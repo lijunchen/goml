@@ -1,6 +1,5 @@
 package main;
 
-use gomlc::strings;
 use std::io;
 use std::process;
 use std::text;
@@ -110,7 +109,7 @@ fn cli_error_with_usage(message: string, usage: string) -> string {
 }
 
 fn cli_argument_name(argument: string) -> string {
-    if !strings::starts_with(argument, "--") {
+    if !argument.starts_with("--") {
         return argument
     } else {
         ()
@@ -127,7 +126,7 @@ fn cli_argument_name(argument: string) -> string {
 }
 
 fn cli_help_argument(argument: string) -> bool {
-    argument == "--help" || strings::starts_with(argument, "-h")
+    argument == "--help" || argument.starts_with("-h")
 }
 
 fn cli_minimum(left: int, middle: int, right: int) -> int {
@@ -355,8 +354,7 @@ fn value_required_error(argument: string, possible_values: Option[string]) -> st
 
 fn unexpected_argument_error_with_usage(argument: string, value_tip: bool, usage: string) -> string {
     let name = cli_argument_name(argument);
-    let displayed = if name.byte_len() > 2 && strings::starts_with(name, "-")
-        && !strings::starts_with(name, "--") {
+    let displayed = if name.byte_len() > 2 && name.starts_with("-") && !name.starts_with("--") {
         name.byte_slice(0, 2)
     } else {
         name

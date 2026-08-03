@@ -12,9 +12,8 @@ use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
 use gomlc::resources;
-use gomlc::strings;
 use gomlc::tast;
-use gomlc::vecs;
+use std::collections;
 use std::fs;
 use std::text;
 
@@ -73,19 +72,19 @@ fn no_standard_needs() -> StandardNeeds {
 fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeeds {
     let closure = resources::standard_package_closure(package_names);
     StandardNeeds {
-        root: vecs::contains(closure, "std"),
-        bytes: vecs::contains(closure, "std::bytes"),
-        collections: vecs::contains(closure, "std::collections"),
-        env: vecs::contains(closure, "std::env"),
-        fs: vecs::contains(closure, "std::fs"),
-        io: vecs::contains(closure, "std::io"),
-        json: vecs::contains(closure, "std::json"),
-        num: vecs::contains(closure, "std::num"),
-        path: vecs::contains(closure, "std::path"),
-        process: vecs::contains(closure, "std::process"),
-        testing: vecs::contains(closure, "std::testing"),
-        text: vecs::contains(closure, "std::text"),
-        time: vecs::contains(closure, "std::time"),
+        root: collections::contains(closure, "std"),
+        bytes: collections::contains(closure, "std::bytes"),
+        collections: collections::contains(closure, "std::collections"),
+        env: collections::contains(closure, "std::env"),
+        fs: collections::contains(closure, "std::fs"),
+        io: collections::contains(closure, "std::io"),
+        json: collections::contains(closure, "std::json"),
+        num: collections::contains(closure, "std::num"),
+        path: collections::contains(closure, "std::path"),
+        process: collections::contains(closure, "std::process"),
+        testing: collections::contains(closure, "std::testing"),
+        text: collections::contains(closure, "std::text"),
+        time: collections::contains(closure, "std::time"),
     }
 }
 
@@ -242,11 +241,11 @@ fn public_item_names(values: Vec[ast::LowerResult], package_name: string) -> Vec
 
 fn local_item_is_public(package_name: string, public_names: Vec[string], name: string) -> bool {
     let prefix = package_name + "::";
-    if !strings::starts_with(name, prefix) {
+    if !name.starts_with(prefix) {
         true
     } else {
         let relative = name.byte_slice(prefix.byte_len(), name.byte_len());
-        strings::contains(relative, "::") || vecs::contains(public_names, name)
+        relative.contains("::") || collections::contains(public_names, name)
     }
 }
 
@@ -256,7 +255,8 @@ fn add_private_local_name(
     public_names: Vec[string],
     name: string,
 ) -> unit {
-    if !local_item_is_public(package_name, public_names, name) && !vecs::contains(result, name) {
+    if !local_item_is_public(package_name, public_names, name)
+        && !collections::contains(result, name) {
         result.push(name)
     } else {
         ()
@@ -468,9 +468,9 @@ fn validate_public_fields_and_inherent_methods(
 ) -> Result[unit, string] {
     for item in value.items {
         match item {
-            StructDef(value) => if vecs::contains(public_names, value.name) {
+            StructDef(value) => if collections::contains(public_names, value.name) {
                 for field in value.fields {
-                    if vecs::contains(value.public_fields, field.0) {
+                    if collections::contains(value.public_fields, field.0) {
                         let private_names: Vec[string] = Vec::[];
                         collect_private_type_names(
                             private_names,
@@ -816,7 +816,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
     let artifact = match compile_artifact_package(world, command, build, emit_tests) {
         Ok(value) => value,
         Err(error) => {
-            if strings::starts_with(error, "error[") {
+            if error.starts_with("error[") {
                 fail(error)
             } else {
                 fail("error[compile]: " + error)

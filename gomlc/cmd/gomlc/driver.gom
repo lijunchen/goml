@@ -13,7 +13,6 @@ use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
 use gomlc::resources;
-use gomlc::strings;
 use gomlc::tast;
 use std::bytes;
 use std::env;
@@ -162,7 +161,7 @@ fn import_path_text(value: ast::Path) -> string {
 }
 
 fn std_import(value: string) -> bool {
-    value == "std" || strings::starts_with(value, "std::")
+    value == "std" || value.starts_with("std::")
 }
 
 fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
@@ -1063,7 +1062,7 @@ fn compact_hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source: string) ->
 }
 
 fn diagnostic_message_starts_with(value: string, prefix: string) -> bool {
-    strings::starts_with(value, prefix)
+    value.starts_with(prefix)
 }
 
 fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
@@ -1081,7 +1080,7 @@ fn compact_diagnostic_phase(value: tast::Diagnostic) -> int {
     } else if diagnostic_message_starts_with(value.message, "No instance found for trait ") {
         2
     } else if diagnostic_message_starts_with(value.message, "Struct ")
-        && strings::contains(value.message, " type arguments, but got ") {
+        && value.message.contains(" type arguments, but got ") {
         1
     } else {
         0

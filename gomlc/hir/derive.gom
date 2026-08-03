@@ -2,8 +2,7 @@ package hir;
 
 use gomlc::ast;
 use gomlc::cst;
-use gomlc::strings;
-use gomlc::vecs;
+use std::collections;
 
 fn dummy_span() -> ast::Span {
     ast::span(0, 0)
@@ -122,7 +121,7 @@ fn type_key(value: ast::TypeExpr) -> string {
 fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
     match value {
         Con { path } => if path.segments.len() == 1 {
-            vecs::contains(generics, path.segments[0].ident)
+            collections::contains(generics, path.segments[0].ident)
         } else {
             false
         },
@@ -172,7 +171,7 @@ fn derive_predicates(field_types: Vec[ast::TypeExpr], generics: Vec[string], tra
     let seen: Vec[string] = Vec::[];
     for ty in field_types {
         let key = type_key(ty);
-        if type_mentions_generics(ty, generics) && !vecs::contains(seen, key) {
+        if type_mentions_generics(ty, generics) && !collections::contains(seen, key) {
             seen.push(key);
             result.push(ast::Predicate::Trait { ty, trait_ref: trait_ref(trait_name) })
         } else {

@@ -3,7 +3,7 @@ package mono;
 use gomlc::core;
 use gomlc::strings;
 use gomlc::tast;
-use gomlc::vecs;
+use std::collections;
 use std::text;
 
 struct TypeInstance {
@@ -216,7 +216,7 @@ fn expand_specialized_optional_trait_ref(
 
 fn expand_specialized_type_aliases_from(ctx: TypeCtx, value: tast::Type, path: Vec[string]) -> tast::Type {
     match tast::resolve_type(value) {
-        Con { name } => if vecs::contains(path, name) {
+        Con { name } => if collections::contains(path, name) {
             tast::Type::Con { name }
         } else {
             match find_type_instance_by_name(ctx, name) {

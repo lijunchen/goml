@@ -5,9 +5,8 @@ use gomlc::ast;
 use gomlc::core;
 use gomlc::numeric;
 use gomlc::resources;
-use gomlc::strings;
 use gomlc::tast;
-use gomlc::vecs;
+use std::collections;
 
 pub struct FunctionNames {
     pub by_source: HashMap[string, string],
@@ -351,7 +350,7 @@ fn compile_runtime_imm(env: LowerEnv, value: anf::Imm, name: string) -> Compiled
 }
 
 fn is_closure_struct_name(value: string) -> bool {
-    strings::starts_with(value, "closure_env_")
+    value.starts_with("closure_env_")
 }
 
 fn closure_info_from_function(value: anf::Function) -> Option[ClosureInfo] {
@@ -1226,7 +1225,7 @@ fn find_block_join(value: anf::Block, name: string) -> Option[anf::JoinBind] {
 fn block_target_with_visited(value: anf::Block, visited: Vec[string]) -> Option[string] {
     match term_target(value.term) {
         Some(target) => {
-            if vecs::contains(visited, target) {
+            if collections::contains(visited, target) {
                 Option::None
             } else {
                 match find_block_join(value, target) {
@@ -1313,7 +1312,7 @@ fn compile_branch_to_join(env: LowerEnv, value: anf::Block, target: string, join
     };
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.is_empty() && vecs::contains(loop_names, target)
+            args.is_empty() && collections::contains(loop_names, target)
         },
         _ => false,
     };
@@ -1565,7 +1564,7 @@ fn fresh_loop_label_with_suffix(emitted: Vec[string], base: string, suffix: int)
     } else {
         base + "__" + suffix.to_string()
     };
-    if vecs::contains(emitted, candidate) {
+    if collections::contains(emitted, candidate) {
         fresh_loop_label_with_suffix(emitted, base, suffix + 1)
     } else {
         emitted.push(candidate);
@@ -1616,7 +1615,7 @@ fn term_reaches_target(
         Jump { target: name, args, ret_ty: _ } => {
             if name == target && args.is_empty() {
                 true
-            } else if vecs::contains(visited, name) {
+            } else if collections::contains(visited, name) {
                 false
             } else {
                 match find_join(joins, name) {
@@ -1696,7 +1695,7 @@ fn term_tail_target_through_joins(value: anf::Term, joins: Vec[anf::JoinBind], v
 ] {
     match value {
         Jump { target, args: _, ret_ty: _ } => {
-            if vecs::contains(visited, target) {
+            if collections::contains(visited, target) {
                 Option::None
             } else {
                 match find_join(joins, target) {
@@ -1747,7 +1746,7 @@ fn term_all_paths_reach_or_terminate(
         Jump { target: name, args: _, ret_ty: _ } => {
             if name == target {
                 true
-            } else if vecs::contains(visited, name) {
+            } else if collections::contains(visited, name) {
                 false
             } else {
                 match find_join(joins, name) {
@@ -1930,7 +1929,7 @@ fn compile_loop_branch_to_join(
     };
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.is_empty() && vecs::contains(loop_names, target)
+            args.is_empty() && collections::contains(loop_names, target)
         },
         _ => false,
     };
@@ -2324,7 +2323,7 @@ fn compile_loop_block(
     };
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.is_empty() && vecs::contains(loop_names, target)
+            args.is_empty() && collections::contains(loop_names, target)
         },
         _ => false,
     };
@@ -2527,7 +2526,7 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
     };
     let suppress = match value.term {
         Jump { target, args, ret_ty: _ } => {
-            args.is_empty() && vecs::contains(loop_names, target)
+            args.is_empty() && collections::contains(loop_names, target)
         },
         _ => false,
     };
@@ -2616,14 +2615,14 @@ fn collect_runtime_imm(
 ) -> unit {
     match value {
         Callable { callable: Runtime(key), ty: _ } => {
-            if !vecs::contains(result, key) {
+            if !collections::contains(result, key) {
                 result.push(key)
             } else {
                 ()
             }
         },
         Callable { callable: Intrinsic(key), ty: function_ty } => {
-            if !vecs::contains(intrinsics, key) {
+            if !collections::contains(intrinsics, key) {
                 intrinsics.push(key)
             } else {
                 ()

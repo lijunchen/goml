@@ -4,7 +4,6 @@ use gomlc::ast;
 use gomlc::cst;
 use gomlc::lexer;
 use gomlc::parser;
-use gomlc::strings;
 
 pub enum SymbolKind {
     Function,
@@ -259,7 +258,7 @@ pub fn build_symbol_index_from_sources(sources: Vec[SourceFile]) -> SymbolIndex 
 }
 
 fn symbol_name_ends_with(value: string, expected: string) -> bool {
-    strings::ends_with(value, "::" + expected)
+    value.ends_with("::" + expected)
 }
 
 pub fn find_symbol(index: SymbolIndex, qualified_name: string) -> Option[Symbol] {

@@ -1,7 +1,6 @@
 package main;
 
 use gomlc::artifact::wire as wire;
-use gomlc::strings;
 use std::fs;
 use std::path;
 
@@ -72,12 +71,12 @@ fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
 }
 
 fn cli_option(value: string) -> bool {
-    strings::starts_with(value, "-")
+    value.starts_with("-")
 }
 
 fn inline_cli_value(argument: string, name: string) -> Option[string] {
     let prefix = name + "=";
-    if strings::starts_with(argument, prefix) {
+    if argument.starts_with(prefix) {
         Option::Some(argument.byte_slice(prefix.byte_len(), argument.byte_len()))
     } else {
         Option::None

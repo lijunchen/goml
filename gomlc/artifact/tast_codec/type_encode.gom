@@ -2,7 +2,7 @@ package tast_codec;
 
 use gomlc::artifact::wire as wire;
 use gomlc::tast;
-use gomlc::vecs;
+use std::collections;
 
 pub struct ArtifactTypeContext {
     pub enum_names: Vec[string],
@@ -104,7 +104,7 @@ pub fn artifact_json_type(
             wire::artifact_json_end_object(writer);
             wire::artifact_json_end_object(writer)
         },
-        Con { name } => if vecs::contains(context.enum_names, name) {
+        Con { name } => if collections::contains(context.enum_names, name) {
             artifact_json_named_type(writer, "TEnum", "name", name)
         } else {
             artifact_json_named_type(writer, "TStruct", "name", name)

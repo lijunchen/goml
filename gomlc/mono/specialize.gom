@@ -1,9 +1,8 @@
 package mono;
 
 use gomlc::core;
-use gomlc::strings;
+use std::text;
 use gomlc::tast;
-use gomlc::vecs;
 use std::collections;
 
 type FunctionIndex = HashMap[string, Vec[core::Function]];
@@ -114,7 +113,7 @@ fn projection_binding_name(base: tast::Type, name: string, reference: Option[tas
 
 fn has_projection_binding(values: Vec[TypeBinding]) -> bool {
     for value in values {
-        if strings::starts_with(value.name, "projection#") {
+        if value.name.starts_with("projection#") {
             return true
         } else {
             ()
@@ -333,7 +332,7 @@ fn inherent_function_method(value: core::Function) -> Option[string] {
 
 fn canonical_inherent_owner_type(value: tast::Type) -> tast::Type {
     match tast::resolve_type(value) {
-        Con { name } => if strings::starts_with(name, "builtin::") {
+        Con { name } => if name.starts_with("builtin::") {
             tast::Type::Con { name: name.byte_slice(9, name.byte_len()) }
         } else {
             tast::Type::Con { name }
@@ -514,7 +513,7 @@ fn instance_base_name(ctx: SpecializeCtx, original_name: string, bindings: Vec[T
                     let builder = std::text::StringBuilder::new();
                     builder.write_string(original_name);
                     for binding in sorted_bindings(bindings) {
-                        if strings::starts_with(binding.name, "projection#") {
+                        if binding.name.starts_with("projection#") {
                             ()
                         } else {
                             builder.write_string("__");
@@ -681,7 +680,7 @@ fn mono_type_contains_recursive_growth(value: tast::Type, previous: tast::Type) 
 }
 
 fn projection_binding(value: TypeBinding) -> bool {
-    strings::starts_with(value.name, "projection#")
+    value.name.starts_with("projection#")
 }
 
 fn specialization_growth_message(
@@ -845,7 +844,7 @@ fn matching_trait_selections(
                                 ),
                             };
                             let key = trait_selection_key(selection);
-                            if vecs::contains(keys, key) {
+                            if collections::contains(keys, key) {
                                 ()
                             } else {
                                 keys.push(key);
@@ -932,7 +931,7 @@ fn matching_projection_types(
                             if associated.0 == name {
                                 let value = substitute_type(associated.1, bindings);
                                 let key = compact_type(value);
-                                if vecs::contains(keys, key) {
+                                if collections::contains(keys, key) {
                                     ()
                                 } else {
                                     keys.push(key);
@@ -964,7 +963,7 @@ fn normalize_projection(
 ) -> tast::Type {
     let projection = tast::Type::Projection { for_ty: base, name, trait_ref: reference };
     let key = projection_binding_name(base, name, reference);
-    if vecs::contains(active, key) {
+    if collections::contains(active, key) {
         projection
     } else {
         let normalized = match tast::builtin_projection(base, name, reference) {

@@ -1,6 +1,5 @@
 package anf;
 
-use gomlc::strings;
 use gomlc::tast;
 
 struct JoinSignature {
@@ -41,7 +40,7 @@ fn verify_type(actual: tast::Type, expected: tast::Type, message: string) -> Res
         Never | Error => true,
         Con { name } => match expected_resolved {
             Error => true,
-            Func { params: _, ret_ty: _ } => strings::starts_with(name, "closure_env_"),
+            Func { params: _, ret_ty: _ } => name.starts_with("closure_env_"),
             _ => tast::types_equal(actual, expected),
         },
         _ => match expected_resolved {

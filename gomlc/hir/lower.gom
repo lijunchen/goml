@@ -2,7 +2,7 @@ package hir;
 
 use gomlc::ast;
 use gomlc::cst;
-use gomlc::vecs;
+use std::collections;
 use std::text;
 
 struct EnumInfo {
@@ -312,7 +312,8 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
 
 fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = expand_segments(ctx, path);
-    if ctx.qualify_imports && !values.is_empty() && vecs::contains(ctx.nominal_types, values[0]) {
+    if ctx.qualify_imports && !values.is_empty()
+        && collections::contains(ctx.nominal_types, values[0]) {
         let result: Vec[string] = Vec::[];
         result.push(full_name(ctx.package_name, values[0]));
         for index in 1..values.len() {
@@ -555,7 +556,8 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
         },
         Con { path } => {
             let parts = qualified_segments(ctx, path);
-            if parts.len() == 2 && (parts[0] == "Self" || vecs::contains(type_params, parts[0])) {
+            if parts.len() == 2
+                && (parts[0] == "Self" || collections::contains(type_params, parts[0])) {
                 TypeExpr::Projection {
                     base: TypeExpr::Con { name: parts[0] },
                     associated: parts[1],
@@ -597,7 +599,7 @@ fn lower_plain_trait_ref(ctx: LowerCtx, value: ast::TraitRef, type_params: Vec[s
 
 fn lower_impl_trait_ref(ctx: LowerCtx, value: ast::TraitRef, type_params: Vec[string]) -> TraitRef {
     let parts = expand_segments(ctx, value.path);
-    let name = if parts.len() == 1 && vecs::contains(ctx.traits, parts[0]) {
+    let name = if parts.len() == 1 && collections::contains(ctx.traits, parts[0]) {
         full_name(ctx.package_name, parts[0])
     } else {
         join_segments(parts)

@@ -8,9 +8,8 @@ use gomlc::core;
 use gomlc::cst;
 use gomlc::hir;
 use gomlc::parser;
-use gomlc::strings;
 use gomlc::tast;
-use gomlc::vecs;
+use std::collections;
 use std::fs;
 
 struct ArtifactDependencyRequest {
@@ -56,7 +55,7 @@ fn artifact_read_interface_units(paths: Vec[string]) -> Result[
                 "failed to parse interface " + path_value + ": " + error,
             ),
         };
-        if vecs::contains(names, interface.package_name) {
+        if collections::contains(names, interface.package_name) {
             return Result::Err(
                 "multiple interface files provided for package " + interface.package_name,
             )
@@ -145,7 +144,7 @@ fn artifact_resolve_interface_units(
             }
         } else if request.package_name == current_package {
             return Result::Err("package " + current_package + " cannot use itself")
-        } else if vecs::contains(resolved_names, request.package_name) {
+        } else if collections::contains(resolved_names, request.package_name) {
             let actual = match artifact_standard_package(world.standard, request.package_name) {
                 Some(value) => value.interface_unit.interface_hash,
                 None => match artifact_find_interface_unit(resolved, request.package_name) {
@@ -507,12 +506,11 @@ fn artifact_apply_declared_package_aliases(
 }
 
 fn standard_internal_import_allowed(package_name: string) -> bool {
-    package_name == "std" || strings::starts_with(package_name, "std::")
+    package_name == "std" || package_name.starts_with("std::")
 }
 
 fn disallowed_standard_internal_import(package_name: string, import_name: string) -> bool {
-    strings::starts_with(import_name, "std::internal::")
-        && !standard_internal_import_allowed(package_name)
+    import_name.starts_with("std::internal::") && !standard_internal_import_allowed(package_name)
 }
 
 fn standard_internal_import_diagnostics(
@@ -780,7 +778,7 @@ fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::Artifact
             Ok(value) => value,
             Err(error) => return Result::Err("failed to parse core " + path_value + ": " + error),
         };
-        if vecs::contains(names, core_unit.package_name) {
+        if collections::contains(names, core_unit.package_name) {
             return Result::Err("duplicate core provided for package " + core_unit.package_name)
         } else {
             names.push(core_unit.package_name);
@@ -805,8 +803,7 @@ fn artifact_find_core_unit(values: Vec[artifact::ArtifactCoreUnit], package_name
 }
 
 fn artifact_link_dependency_name(package_name: string) -> bool {
-    package_name != "builtin" && package_name != "std"
-        && !strings::starts_with(package_name, "std::")
+    package_name != "builtin" && package_name != "std" && !package_name.starts_with("std::")
 }
 
 fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::ArtifactCoreUnit]) -> Result[
@@ -820,7 +817,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
     let names: Vec[string] = Vec::[];
     while !pending.is_empty() {
         let package_name = pending.remove(pending.len() - 1);
-        if vecs::contains(names, package_name) {
+        if collections::contains(names, package_name) {
             ()
         } else {
             let Some(core_unit) = artifact_find_core_unit(values, package_name) else {
@@ -838,7 +835,7 @@ fn artifact_reachable_core_units(roots: Vec[string], values: Vec[artifact::Artif
     };
     let result: Vec[artifact::ArtifactCoreUnit] = Vec::[];
     for value in values {
-        if vecs::contains(names, value.package_name) {
+        if collections::contains(names, value.package_name) {
             result.push(value)
         } else {
             ()

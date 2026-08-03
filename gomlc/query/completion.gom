@@ -101,7 +101,7 @@ fn use_completion_context(source: string, offset: int) -> Option[UseCompletionCo
 }
 
 fn label_matches(label: string, prefix: string) -> bool {
-    strings::starts_with(label, prefix)
+    label.starts_with(prefix)
 }
 
 fn contains_completion(values: Vec[CompletionItem], expected: string) -> bool {
@@ -333,8 +333,7 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
 
 fn immediate_package_member(qualified_name: string, package_name: string) -> bool {
     let prefix = package_name + "::";
-    if qualified_name.byte_len() <= prefix.byte_len()
-        || !strings::starts_with(qualified_name, prefix) {
+    if qualified_name.byte_len() <= prefix.byte_len() || !qualified_name.starts_with(prefix) {
         false
     } else {
         let remainder = qualified_name.byte_slice(prefix.byte_len(), qualified_name.byte_len());
@@ -397,7 +396,7 @@ fn namespace_next_segment(value: string, namespace: string) -> Option[string] {
         Option::Some(first_namespace_segment(value))
     } else {
         let prefix = namespace + "::";
-        if value.byte_len() <= prefix.byte_len() || !strings::starts_with(value, prefix) {
+        if value.byte_len() <= prefix.byte_len() || !value.starts_with(prefix) {
             Option::None
         } else {
             Option::Some(
@@ -501,7 +500,7 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
                 None => (),
             };
             if context.namespace == project.module_path
-                || strings::starts_with(context.namespace, project.module_path + "::") {
+                || context.namespace.starts_with(project.module_path + "::") {
                 complete_local_package_children(result, project, context.namespace, context.prefix)
             } else {
                 ()

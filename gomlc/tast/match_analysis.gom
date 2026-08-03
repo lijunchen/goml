@@ -1,7 +1,6 @@
 package tast;
 
 use gomlc::strings;
-use gomlc::vecs;
 use std::collections;
 use std::text;
 
@@ -729,7 +728,7 @@ fn coverage_type_inhabited_at(ctx: Checker, ty: Type, visiting: Vec[string], dep
         true
     } else {
         let key = coverage_type_key(ty);
-        if vecs::contains(visiting, key) {
+        if collections::contains(visiting, key) {
             false
         } else {
             let next = coverage_copy_strings(visiting);
@@ -783,7 +782,7 @@ fn coverage_present(matrix: Vec[Vec[CoveragePat]]) -> Vec[string] {
     for row in matrix {
         if !row.is_empty() {
             match row[0].constructor {
-                Some(value) => if !vecs::contains(result, value.key) {
+                Some(value) => if !collections::contains(result, value.key) {
                     result.push(value.key)
                 } else {
                     ()
@@ -1054,7 +1053,7 @@ fn coverage_scalar_boundaries(matrix: Vec[Vec[CoveragePat]], interval: CoverageS
 
 fn coverage_domain_complete(domain: Vec[CoverageConstructor], present: Vec[string]) -> bool {
     for constructor in domain {
-        if !vecs::contains(present, constructor.key) {
+        if !collections::contains(present, constructor.key) {
             return false
         } else {
             ()
@@ -1368,7 +1367,7 @@ fn coverage_find_witness(ctx: Checker, matrix: Vec[Vec[CoveragePat]], candidate:
                                         let missing: Vec[CoverageConstructor] = Vec::[];
                                         for constructor in domain {
                                             if missing.is_empty()
-                                                && !(vecs::contains(present, constructor.key)) {
+                                                && !(collections::contains(present, constructor.key)) {
                                                 missing.push(constructor)
                                             } else {
                                                 ()
@@ -1461,7 +1460,7 @@ fn coverage_witness_list_text(ctx: Checker, values: Vec[CoverageWitness]) -> str
     for value in values {
         rendered.push(coverage_witness_text(ctx, value))
     };
-    strings::join(rendered, ", ")
+    text::join(rendered, ", ")
 }
 
 fn coverage_enum_witness_text(
@@ -1518,9 +1517,9 @@ fn coverage_witness_text(ctx: Checker, value: CoverageWitness) -> string {
                 "false"
             } else if constructor.key == "bool:true" {
                 "true"
-            } else if strings::starts_with(constructor.key, "tuple:") {
+            } else if constructor.key.starts_with("tuple:") {
                 "(" + coverage_witness_list_text(ctx, value.fields) + ")"
-            } else if strings::starts_with(constructor.key, "enum:") {
+            } else if constructor.key.starts_with("enum:") {
                 coverage_enum_witness_text(ctx, constructor, value.fields, value.ty)
             } else {
                 "_"

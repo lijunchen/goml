@@ -1,7 +1,5 @@
 package tast;
 
-use gomlc::refs;
-
 struct TypeSubst {
     name: string,
     ty: Type,
@@ -86,7 +84,7 @@ fn prune(value: Type) -> Type {
 
 fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
     match prune(value) {
-        Var(other) => refs::same(variable, other),
+        Var(other) => ptr_eq(variable, other),
         Tuple { items: values } => {
             for item in values {
                 if occurs(variable, item) {
@@ -196,7 +194,7 @@ fn unify(left: Type, right: Type) -> bool {
     match (left, right) {
         (Error, _) | (_, Error) => true,
         (Never, _) | (_, Never) => true,
-        (Var(first), Var(second)) => if refs::same(first, second) {
+        (Var(first), Var(second)) => if ptr_eq(first, second) {
             true
         } else {
             match (first.get(), second.get()) {
@@ -298,7 +296,7 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
     match (left, right) {
         (Error, _) | (_, Error) => Option::None,
         (Never, _) | (_, Never) => Option::None,
-        (Var(first), Var(second)) => if refs::same(first, second) {
+        (Var(first), Var(second)) => if ptr_eq(first, second) {
             Option::None
         } else {
             match (first.get(), second.get()) {
@@ -493,7 +491,7 @@ fn trait_refs_equal(left: Option[TraitRef], right: Option[TraitRef]) -> bool {
 
 pub fn types_equal(left: Type, right: Type) -> bool {
     match (prune(left), prune(right)) {
-        (Var(first), Var(second)) => refs::same(first, second),
+        (Var(first), Var(second)) => ptr_eq(first, second),
         (Unit, Unit) | (Never, Never) | (Bool, Bool) | (Int, Int) | (Int8, Int8) | (Int16, Int16) | (
             Int32,
             Int32,

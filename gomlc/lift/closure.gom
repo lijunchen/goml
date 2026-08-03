@@ -2,7 +2,7 @@ package lift;
 
 use gomlc::core;
 use gomlc::tast;
-use gomlc::vecs;
+use std::collections;
 use std::text;
 
 struct ScopeEntry {
@@ -71,7 +71,7 @@ fn closure_for_type(state: State, ty: tast::Type) -> Option[ClosureInfo] {
 }
 
 fn record_used_type(values: Vec[string], name: string) -> unit {
-    if vecs::contains(values, name) {
+    if collections::contains(values, name) {
         ()
     } else {
         values.push(name)
@@ -280,7 +280,7 @@ fn fresh_struct_name(state: State, hint: Option[string]) -> string {
             Some(name) => "closure_env_" + name + "_" + index.to_string(),
             None => "closure_env_" + index.to_string(),
         };
-        if vecs::contains(state.used_types, candidate) {
+        if collections::contains(state.used_types, candidate) {
             ()
         } else {
             state.used_types.push(candidate);
@@ -768,7 +768,7 @@ fn collect_captured(
     scope: Vec[ScopeEntry],
 ) -> unit {
     match value {
-        Var { name, ty: _ } => if vecs::contains(bound, name) {
+        Var { name, ty: _ } => if collections::contains(bound, name) {
             ()
         } else {
             match find_scope(scope, name) {

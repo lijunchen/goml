@@ -2,9 +2,8 @@ package lsp;
 
 use gomlc::ast;
 use gomlc::query;
-use gomlc::strings;
 use gomlc::tast;
-use gomlc::vecs;
+use std::collections;
 use gomlc::version;
 use std::fs;
 use std::json;
@@ -165,7 +164,7 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
                 Warning => "+ ",
             }
                 + diagnostic_text(diagnostic);
-            if vecs::contains(diagnostic_lines, line) {
+            if collections::contains(diagnostic_lines, line) {
                 ()
             } else {
                 diagnostic_lines.push(line)
@@ -644,7 +643,7 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
                     Err(error) => output.push(
                         rpc_error(
                             id,
-                            if strings::starts_with(error, "method not found:") {
+                            if error.starts_with("method not found:") {
                                 -32601
                             } else {
                                 -32602

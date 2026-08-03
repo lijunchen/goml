@@ -5,7 +5,6 @@ use gomlc::cst;
 use gomlc::hir;
 use gomlc::lexer;
 use gomlc::parser;
-use gomlc::strings;
 use gomlc::tast;
 use std::text;
 
@@ -115,7 +114,7 @@ fn longest_package_prefix(value: Analysis, path_value: string) -> Option[string]
     let mut length = 0;
     for source in value.sources {
         let package_name = source.package_name;
-        if (path_value == package_name || strings::starts_with(path_value, package_name + "::"))
+        if (path_value == package_name || path_value.starts_with(package_name + "::"))
             && package_name.byte_len() > length {
             result = Option::Some(package_name);
             length = package_name.byte_len();
@@ -169,7 +168,7 @@ fn symbol_definitions(
             } else {
                 push_definition(exact_external, definition)
             }
-        } else if visible && strings::ends_with(symbol.qualified_name, "::" + qualified_name) {
+        } else if visible && symbol.qualified_name.ends_with("::" + qualified_name) {
             if current {
                 push_definition(relative_current, definition)
             } else {
@@ -259,7 +258,7 @@ fn path_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
 
 fn symbol_owner_matches(symbol: Symbol, owner: string) -> bool {
     let symbol_owner_name = symbol_owner(symbol.qualified_name);
-    symbol_owner_name == owner || strings::ends_with(symbol_owner_name, "::" + owner)
+    symbol_owner_name == owner || symbol_owner_name.ends_with("::" + owner)
         || short_type_name(symbol_owner_name) == short_type_name(owner)
 }
 
@@ -283,7 +282,7 @@ fn member_definitions(value: Analysis, offset: int) -> Vec[DefinitionResult] {
                                 span: symbol.span,
                             };
                             let owner_name = symbol_owner(symbol.qualified_name);
-                            if owner_name == owner || strings::ends_with(owner_name, "::" + owner) {
+                            if owner_name == owner || owner_name.ends_with("::" + owner) {
                                 push_definition(exact, definition)
                             } else if symbol_owner_matches(symbol, owner) {
                                 push_definition(fallback, definition)
@@ -357,7 +356,7 @@ fn struct_field_definitions(value: Analysis, offset: int) -> Vec[DefinitionResul
                             span: symbol.span,
                         };
                         let owner_name = symbol_owner(symbol.qualified_name);
-                        if owner_name == owner || strings::ends_with(owner_name, "::" + owner) {
+                        if owner_name == owner || owner_name.ends_with("::" + owner) {
                             push_definition(exact, definition)
                         } else if symbol_owner_matches(symbol, owner) {
                             push_definition(fallback, definition)

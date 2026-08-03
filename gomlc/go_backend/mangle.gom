@@ -1,7 +1,6 @@
 package go_backend;
 
 use gomlc::hash;
-use gomlc::strings;
 use std::text;
 
 fn is_ascii_letter(value: char) -> bool {
@@ -82,35 +81,34 @@ fn is_predeclared(value: string) -> bool {
 }
 
 fn is_generated_value(value: string) -> bool {
-    strings::starts_with(value, "_goml_") || strings::starts_with(value, "dyn__")
-        || (strings::starts_with(value, "ref_") && strings::ends_with(value, "_x"))
-        || (strings::starts_with(value, "hashmap_")
-            && (strings::ends_with(value, "_x") || strings::ends_with(value, "_x_entry")))
-        || strings::starts_with(value, "array_get__")
-        || strings::starts_with(value, "array_set__")
-        || strings::starts_with(value, "vec_new__")
-        || strings::starts_with(value, "vec_with_capacity__")
-        || strings::starts_with(value, "vec_push__")
-        || strings::starts_with(value, "vec_get__")
-        || strings::starts_with(value, "vec_set__")
-        || strings::starts_with(value, "vec_len__")
-        || strings::starts_with(value, "vec_capacity__")
-        || strings::starts_with(value, "vec_reserve__")
-        || strings::starts_with(value, "vec_truncate__")
-        || strings::starts_with(value, "ref__")
-        || strings::starts_with(value, "ref_get__")
-        || strings::starts_with(value, "ref_set__")
-        || strings::starts_with(value, "ptr_eq__")
-        || strings::starts_with(value, "ptr_hash__")
-        || strings::starts_with(value, "hashmap_new__")
-        || strings::starts_with(value, "hashmap_len__")
-        || strings::starts_with(value, "hashmap_contains__")
-        || strings::starts_with(value, "hashmap_lookup__")
-        || strings::starts_with(value, "hashmap_get__")
-        || strings::starts_with(value, "hashmap_set__")
-        || strings::starts_with(value, "hashmap_remove__")
-        || strings::starts_with(value, "hashmap_entries__")
-        || strings::starts_with(value, "missing__")
+    value.starts_with("_goml_") || value.starts_with("dyn__")
+        || (value.starts_with("ref_") && value.ends_with("_x"))
+        || (value.starts_with("hashmap_") && (value.ends_with("_x") || value.ends_with("_x_entry")))
+        || value.starts_with("array_get__")
+        || value.starts_with("array_set__")
+        || value.starts_with("vec_new__")
+        || value.starts_with("vec_with_capacity__")
+        || value.starts_with("vec_push__")
+        || value.starts_with("vec_get__")
+        || value.starts_with("vec_set__")
+        || value.starts_with("vec_len__")
+        || value.starts_with("vec_capacity__")
+        || value.starts_with("vec_reserve__")
+        || value.starts_with("vec_truncate__")
+        || value.starts_with("ref__")
+        || value.starts_with("ref_get__")
+        || value.starts_with("ref_set__")
+        || value.starts_with("ptr_eq__")
+        || value.starts_with("ptr_hash__")
+        || value.starts_with("hashmap_new__")
+        || value.starts_with("hashmap_len__")
+        || value.starts_with("hashmap_contains__")
+        || value.starts_with("hashmap_lookup__")
+        || value.starts_with("hashmap_get__")
+        || value.starts_with("hashmap_set__")
+        || value.starts_with("hashmap_remove__")
+        || value.starts_with("hashmap_entries__")
+        || value.starts_with("missing__")
 }
 
 fn write_hex_byte(builder: text::StringBuilder, value: uint8) -> unit {
@@ -279,7 +277,7 @@ pub fn go_generated_ident(value: string) -> string {
 }
 
 pub fn go_dyn_struct_name(trait_name: string) -> string {
-    if strings::ends_with(trait_name, "_vtable") {
+    if trait_name.ends_with("_vtable") {
         go_generated_ident("_goml_dyn_object_" + trait_name)
     } else {
         go_generated_ident("dyn__" + trait_name)
@@ -287,7 +285,7 @@ pub fn go_dyn_struct_name(trait_name: string) -> string {
 }
 
 pub fn is_generated_tuple_type_name(value: string) -> bool {
-    if !strings::starts_with(value, "Tuple") {
+    if !value.starts_with("Tuple") {
         false
     } else {
         let mut index = 5;
@@ -299,12 +297,11 @@ pub fn is_generated_tuple_type_name(value: string) -> bool {
 }
 
 fn generated_type_name(value: string) -> bool {
-    strings::starts_with(value, "Tuple") || strings::starts_with(value, "Array")
-        || strings::starts_with(value, "Slice_")
-        || strings::starts_with(value, "Vec_")
-        || strings::starts_with(value, "Ptr_")
-        || strings::starts_with(value, "HashMap_")
-        || strings::starts_with(value, "TFunc")
+    value.starts_with("Tuple") || value.starts_with("Array") || value.starts_with("Slice_")
+        || value.starts_with("Vec_")
+        || value.starts_with("Ptr_")
+        || value.starts_with("HashMap_")
+        || value.starts_with("TFunc")
 }
 
 pub fn go_user_type_name(value: string) -> string {

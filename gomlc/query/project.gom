@@ -1,6 +1,5 @@
 package query;
 
-use gomlc::strings;
 use std::fs;
 use std::path;
 use std::text;
@@ -54,9 +53,9 @@ fn manifest_module_path(source: string) -> Option[string] {
             end = end + 1;
         };
         let line = trim_ascii(source.byte_slice(cursor, end));
-        if strings::starts_with(line, "[") {
+        if line.starts_with("[") {
             in_module = line == "[module]";
-        } else if in_module && strings::starts_with(line, "path") {
+        } else if in_module && line.starts_with("path") {
             let mut equals = 0;
             while equals < line.byte_len() && line.byte_get(equals) != b'=' {
                 equals = equals + 1;
@@ -132,12 +131,12 @@ fn package_name(module_root: string, module_path: string, package_dir: string) -
     if root == directory {
         Result::Ok(module_path)
     } else {
-        let prefix = if strings::ends_with(root, "/") {
+        let prefix = if root.ends_with("/") {
             root
         } else {
             root + "/"
         };
-        if !strings::starts_with(directory, prefix) {
+        if !directory.starts_with(prefix) {
             Result::Err("package directory " + directory + " is outside module root " + root)
         } else {
             let relative = directory.byte_slice(prefix.byte_len(), directory.byte_len());
@@ -193,8 +192,7 @@ fn contains_source_file(values: Vec[SourceFile], expected: string) -> bool {
 
 fn include_source_file(value: string, include_tests: bool) -> bool {
     match path::extension(value) {
-        Some(extension) => extension == "gom"
-            && (include_tests || !strings::ends_with(value, "_test.gom")),
+        Some(extension) => extension == "gom" && (include_tests || !value.ends_with("_test.gom")),
         None => false,
     }
 }
@@ -222,7 +220,7 @@ fn collect_package_files(
     overrides: Vec[SourceOverride],
 ) -> Result[Vec[SourceFile], string] {
     let files: Vec[SourceFile] = Vec::[];
-    let include_tests = strings::ends_with(source_path, "_test.gom");
+    let include_tests = source_path.ends_with("_test.gom");
     match fs::read_dir(package_dir) {
         Ok(names) => for name in names {
             let file_path = path::join(package_dir, name);
@@ -263,7 +261,7 @@ fn local_package_directory(module_root: string, module_path: string, package_nam
         Option::Some(module_root)
     } else {
         let prefix = module_path + "::";
-        if !strings::starts_with(package_name, prefix) {
+        if !package_name.starts_with(prefix) {
             Option::None
         } else {
             let suffix = package_name.byte_slice(prefix.byte_len(), package_name.byte_len());

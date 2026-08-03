@@ -3,9 +3,7 @@ package tast;
 use gomlc::ast;
 use gomlc::hir;
 use gomlc::numeric;
-use gomlc::refs;
-use gomlc::strings;
-use gomlc::vecs;
+use std::collections;
 use std::text;
 
 struct FloatDecimal {
@@ -138,7 +136,7 @@ fn repeated_zeros(count: int) -> string {
 }
 
 fn trim_fractional_zeros(value: string) -> string {
-    if !strings::contains(value, ".") {
+    if !value.contains(".") {
         value
     } else {
         let mut end = value.byte_len();
@@ -434,7 +432,7 @@ fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
 
 fn float_literal_integer(value: string) -> Option[string] {
     let normalized = normalized_float64_literal(value);
-    if strings::contains(normalized, ".") {
+    if normalized.contains(".") {
         Option::None
     } else {
         Option::Some(normalized)
@@ -484,7 +482,7 @@ fn defer_numeric_literal(ctx: Checker, raw: string, ty: Type, float: bool) -> un
 
 fn same_type_variable(left: Type, right: Type) -> bool {
     match (left, right) {
-        (Var(left), Var(right)) => refs::same(left, right),
+        (Var(left), Var(right)) => ptr_eq(left, right),
         _ => false,
     }
 }
@@ -694,7 +692,7 @@ fn contains_unbound_type_variable(value: Type) -> bool {
 
 fn unresolved_inference_var(ctx: Checker, variable: Ref[TypeVar]) -> bool {
     for candidate in ctx.unresolved_inference_vars {
-        if refs::same(candidate, variable) || occurs(variable, Type::Var(candidate)) {
+        if ptr_eq(candidate, variable) || occurs(variable, Type::Var(candidate)) {
             return true
         } else {
             ()
@@ -1118,7 +1116,10 @@ fn check_static_member(
                     _ => Expr::Callable { callable: value.callable, ty: value.ty },
                 },
                 None => {
-                    let infer_result = if vecs::contains(ctx.invalid_impl_arity_owners, owner) {
+                    let infer_result = if collections::contains(
+                        ctx.invalid_impl_arity_owners,
+                        owner,
+                    ) {
                         false
                     } else {
                         match find_enum_by_name(ctx, owner) {
@@ -3073,7 +3074,7 @@ fn hir_or_pattern_binding_mismatch(value: hir::Pat) -> bool {
 
 fn pattern_has_or_binding_diagnostic(ctx: Checker, span: ast::Span) -> bool {
     for diagnostic in ctx.diagnostics {
-        if strings::starts_with(diagnostic.message, "Or-pattern alternatives")
+        if diagnostic.message.starts_with("Or-pattern alternatives")
             && match diagnostic.span {
                 Some(value) => value.start == span.start && value.end == span.end,
                 None => false,
@@ -3247,7 +3248,7 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
                     "s "
                 },
         );
-        builder.write_string(strings::join(witnesses, ", "));
+        builder.write_string(text::join(witnesses, ", "));
         push_diagnostic(ctx, builder.finish())
     };
     Expr::Match { expr: scrutinee, arms: typed_arms, ty: result_ty }
@@ -3256,9 +3257,8 @@ fn check_match_expr(ctx: Checker, source: hir::Expr, arms: Vec[hir::Arm], expect
 fn diagnostics_invalidate_coverage(ctx: Checker, start: int) -> bool {
     for index in start..ctx.diagnostics.len() {
         let message = ctx.diagnostics[index].message;
-        if strings::starts_with(message, "Or-pattern alternatives")
-            || (strings::starts_with(message, "Constructor ")
-                && strings::contains(message, " expects ")) {
+        if message.starts_with("Or-pattern alternatives")
+            || (message.starts_with("Constructor ") && message.contains(" expects ")) {
             return true
         } else {
             ()

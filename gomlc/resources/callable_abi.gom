@@ -1,7 +1,5 @@
 package resources;
 
-use gomlc::strings;
-
 pub struct CallableAbiSpec {
     pub key: string,
     pub source_name: string,
@@ -230,7 +228,7 @@ pub fn intrinsic_abi_by_id(id: string) -> Option[CallableAbiSpec] {
 }
 
 pub fn runtime_abi_by_key(key: string) -> Option[CallableAbiSpec] {
-    if strings::starts_with(key, "core.") {
+    if key.starts_with("core.") {
         let id = key.byte_slice(5, key.byte_len());
         for allowed in core_runtime_keys() {
             if allowed == id {

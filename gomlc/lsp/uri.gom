@@ -1,6 +1,5 @@
 package lsp;
 
-use gomlc::strings;
 use std::bytes;
 use std::path;
 use std::text;
@@ -51,7 +50,7 @@ fn uri_hex_value(value: uint8) -> Option[uint8] {
 
 pub fn uri_to_path(value: string) -> Result[string, string] {
     let prefix = "file://";
-    if !strings::starts_with(value, prefix) {
+    if !value.starts_with(prefix) {
         Result::Err("unsupported URI: " + value)
     } else {
         let decoded_bytes: Vec[uint8] = Vec::[];

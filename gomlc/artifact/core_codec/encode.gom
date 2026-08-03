@@ -10,8 +10,7 @@ use gomlc::tast;
 use std::text;
 
 fn artifact_float_number(value: string) -> string {
-    if strings::contains(value, ".") || strings::contains(value, "e")
-        || strings::contains(value, "E") {
+    if value.contains(".") || value.contains("e") || value.contains("E") {
         value
     } else {
         value + ".0"

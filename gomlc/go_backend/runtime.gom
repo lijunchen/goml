@@ -3,9 +3,7 @@ package go_backend;
 use gomlc::anf;
 use gomlc::core;
 use gomlc::resources;
-use gomlc::strings;
 use gomlc::tast;
-use gomlc::vecs;
 use std::collections;
 use std::text;
 
@@ -305,7 +303,7 @@ fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
 }
 
 fn require_runtime_import(imports: Vec[string], name: string) -> unit {
-    if !vecs::contains(imports, name) {
+    if !collections::contains(imports, name) {
         imports.push(name)
     } else {
         ()
@@ -337,8 +335,8 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "io");
                     require_runtime_import(required_imports, "os")
                 } else if hook == "std.io.write_stdout" || hook == "std.io.write_stderr"
-                    || strings::starts_with(hook, "std.env.")
-                    || (strings::starts_with(hook, "std.fs.") && hook != "std.fs.canonicalize"
+                    || hook.starts_with("std.env.")
+                    || (hook.starts_with("std.fs.") && hook != "std.fs.canonicalize"
                         && hook != "std.fs.sha256_file") {
                     require_runtime_import(required_imports, "os")
                 } else if hook == "std.fs.canonicalize" {
@@ -347,7 +345,7 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "fmt");
                     require_runtime_import(required_imports, "os");
                     require_runtime_import(required_imports, "sha256")
-                } else if strings::starts_with(hook, "std.path.") {
+                } else if hook.starts_with("std.path.") {
                     require_runtime_import(required_imports, "filepath");
                     if hook == "std.path.extension" || hook == "std.path.file_stem"
                         || hook == "std.path.with_extension" {
@@ -358,9 +356,9 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                 } else if hook == "std.testing.fail" {
                     require_runtime_import(required_imports, "fmt");
                     require_runtime_import(required_imports, "os")
-                } else if strings::starts_with(hook, "std.num.") {
+                } else if hook.starts_with("std.num.") {
                     require_runtime_import(required_imports, "strconv")
-                } else if strings::starts_with(hook, "std.time.") {
+                } else if hook.starts_with("std.time.") {
                     require_runtime_import(required_imports, "time")
                 } else if hook == "std.process.exit" {
                     require_runtime_import(required_imports, "os")
@@ -394,72 +392,73 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
     };
     if !required_imports.is_empty() {
         let imports: Vec[(string, string)] = Vec::[];
-        if vecs::contains(required_imports, "bytes") {
+        if collections::contains(required_imports, "bytes") {
             imports.push(("_goml_bytes", "bytes"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "context") {
+        if collections::contains(required_imports, "context") {
             imports.push(("_goml_context", "context"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "fmt") {
+        if collections::contains(required_imports, "fmt") {
             imports.push(("_goml_fmt", "fmt"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "io") {
+        if collections::contains(required_imports, "io") {
             imports.push(("_goml_io", "io"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "math") {
+        if collections::contains(required_imports, "math") {
             imports.push(("_goml_math", "math"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "os") {
+        if collections::contains(required_imports, "os") {
             imports.push(("_goml_os", "os"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "exec") {
+        if collections::contains(required_imports, "exec") {
             imports.push(("_goml_exec", "os/exec"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "filepath") {
+        if collections::contains(required_imports, "filepath") {
             imports.push(("_goml_filepath", "path/filepath"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "reflect") {
+        if collections::contains(required_imports, "reflect") {
             imports.push(("_goml_reflect", "reflect"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "sha256") {
+        if collections::contains(required_imports, "sha256") {
             imports.push(("_goml_sha256", "crypto/sha256"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "slices") {
+        if collections::contains(required_imports, "slices") {
             imports.push(("_goml_slices", "slices"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "strconv") {
+        if collections::contains(required_imports, "strconv") {
             imports.push(("_goml_strconv", "strconv"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "strings") {
+        if collections::contains(required_imports, "strings") {
             imports.push(("_goml_strings", "strings"))
         } else {
             ()
         };
-        if vecs::contains(required_imports, "time") || vecs::contains(required_imports, "context") {
+        if collections::contains(required_imports, "time")
+            || collections::contains(required_imports, "context") {
             imports.push(("_goml_time", "time"))
         } else {
             ()
@@ -476,7 +475,7 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
         ordered.push(spec.key)
     };
     for key in ordered {
-        let needed = vecs::contains(hooks, key);
+        let needed = collections::contains(hooks, key);
         if needed {
             if key == "std.time.monotonic_nanoseconds" {
                 items.push(std_time_monotonic_origin_item())
@@ -1156,7 +1155,7 @@ fn hashmap_trait_impl_name(trait_name: string, key: tast::Type, method: string) 
 
 fn hashmap_hash_expr(key: tast::Type, value: Expr) -> Expr {
     match tast::resolve_type(key) {
-        Dyn { trait_name: name } => if name == "Hash" || strings::ends_with(name, "::Hash") {
+        Dyn { trait_name: name } => if name == "Hash" || name.ends_with("::Hash") {
             Expr::Call {
                 func: Expr::Field {
                     expr: Expr::Field { expr: value, field_name: "vtable" },
@@ -2613,7 +2612,7 @@ pub fn emit_builtin_runtime_items(
         match tast::resolve_type(ty) {
             HashMap { key, value } => {
                 let option = synthetic_option_base(value);
-                let include_option = !vecs::contains(options, option)
+                let include_option = !collections::contains(options, option)
                     && !option_available(instances, value);
                 for item in hashmap_items(
                     key,
@@ -2659,7 +2658,7 @@ pub fn emit_dyn_runtime_items(
     for ty in types {
         match tast::resolve_type(ty) {
             Dyn { trait_name: name } => {
-                if !vecs::contains(dyn_traits, name) {
+                if !collections::contains(dyn_traits, name) {
                     for item in dyn_type_items(name, dyn_methods(functions, name)) {
                         items.push(item)
                     };

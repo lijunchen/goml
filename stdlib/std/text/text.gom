@@ -5,6 +5,18 @@ fn is_ascii_whitespace_byte(value: byte) -> bool {
         || value == b' '
 }
 
+pub fn starts_with_at(value: string, start: int, prefix: string) -> bool {
+    let value_len = value.byte_len();
+    let prefix_len = prefix.byte_len();
+    if start < 0 || start > value_len || prefix_len > value_len - start {
+        false
+    } else {
+        let end = start + prefix_len;
+        value.is_char_boundary(start) && value.is_char_boundary(end)
+            && value.byte_slice(start, end) == prefix
+    }
+}
+
 fn find_from(value: string, expected: string, start: int) -> Option[int] {
     let value_len = value.byte_len();
     let expected_len = expected.byte_len();
@@ -18,9 +30,7 @@ fn find_from(value: string, expected: string, start: int) -> Option[int] {
         let limit = value_len - expected_len;
         let mut index = start;
         while index <= limit {
-            let end = index + expected_len;
-            if value.is_char_boundary(index) && value.is_char_boundary(end)
-                && value.byte_slice(index, end) == expected {
+            if starts_with_at(value, index, expected) {
                 return Option::Some(index)
             } else {
                 index += 1;
@@ -32,6 +42,24 @@ fn find_from(value: string, expected: string, start: int) -> Option[int] {
 
 pub fn find(value: string, expected: string) -> Option[int] {
     find_from(value, expected, 0)
+}
+
+pub fn rfind(value: string, expected: string) -> Option[int] {
+    let value_len = value.byte_len();
+    let expected_len = expected.byte_len();
+    if expected_len > value_len {
+        Option::None
+    } else {
+        let mut start = value_len - expected_len;
+        while start >= 0 {
+            if starts_with_at(value, start, expected) {
+                return Option::Some(start)
+            } else {
+                start -= 1;
+            }
+        };
+        Option::None
+    }
 }
 
 pub fn trim_start(value: string) -> string {
