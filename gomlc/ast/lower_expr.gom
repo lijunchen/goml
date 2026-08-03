@@ -3,6 +3,7 @@ package ast;
 use gomlc::cst;
 use gomlc::lexer;
 use gomlc::numeric;
+use std::num;
 use std::text;
 
 fn lower_block(ctx: LowerCtx, node: LocatedNode) -> Option[Block] {
@@ -779,9 +780,9 @@ fn lower_number_expr(
                 let value_span = node_span(node);
                 if is_float {
                     let text = normalized_number_text(token.token.text);
-                    let parsed = match numeric::parse_float64(text) {
-                        Some(value) => value,
-                        None => 0.0,
+                    let parsed = match num::parse_float64(text) {
+                        Ok(value) => value,
+                        Err(_) => 0.0,
                     };
                     Option::Some(Expr::Float { value: parsed, span: value_span })
                 } else {

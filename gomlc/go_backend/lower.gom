@@ -7,6 +7,7 @@ use gomlc::numeric;
 use gomlc::resources;
 use gomlc::tast;
 use std::collections;
+use std::num;
 
 pub struct FunctionNames {
     pub by_source: HashMap[string, string],
@@ -252,9 +253,9 @@ fn go_float_literal(value: string, ty: tast::Type) -> string {
             Some(parsed) => parsed.to_string(),
             None => value,
         },
-        Float64 => match numeric::parse_float64(value) {
-            Some(parsed) => parsed.to_string(),
-            None => value,
+        Float64 => match num::parse_float64(value) {
+            Ok(parsed) => parsed.to_string(),
+            Err(_) => value,
         },
         _ => value,
     }
