@@ -21,6 +21,7 @@ struct StandardNeeds {
     root: bool,
     ascii: bool,
     bytes: bool,
+    cmp: bool,
     collections: bool,
     env: bool,
     fs: bool,
@@ -58,6 +59,7 @@ fn no_standard_needs() -> StandardNeeds {
         root: false,
         ascii: false,
         bytes: false,
+        cmp: false,
         collections: false,
         env: false,
         fs: false,
@@ -79,6 +81,7 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         root: collections::contains(closure, "std"),
         ascii: collections::contains(closure, "std::ascii"),
         bytes: collections::contains(closure, "std::bytes"),
+        cmp: collections::contains(closure, "std::cmp"),
         collections: collections::contains(closure, "std::collections"),
         env: collections::contains(closure, "std::env"),
         fs: collections::contains(closure, "std::fs"),
@@ -111,6 +114,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         root: left.root || right.root,
         ascii: left.ascii || right.ascii,
         bytes: left.bytes || right.bytes,
+        cmp: left.cmp || right.cmp,
         collections: left.collections || right.collections,
         env: left.env || right.env,
         fs: left.fs || right.fs,
@@ -560,6 +564,11 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     } else {
         ()
     };
+    if needs.cmp {
+        result.push(standard.cmp)
+    } else {
+        ()
+    };
     if needs.collections {
         result.push(standard.collections)
     } else {
@@ -746,6 +755,11 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     };
     if needs.bytes {
         result.push(standard.bytes.core_value)
+    } else {
+        ()
+    };
+    if needs.cmp {
+        result.push(standard.cmp.core_value)
     } else {
         ()
     };

@@ -1,0 +1,356 @@
+package cmp;
+
+pub enum Ordering {
+    Less,
+    Equal,
+    Greater,
+}
+
+impl Ordering {
+    pub fn from_int(value: int) -> Ordering {
+        if value < 0 {
+            Ordering::Less
+        } else if value > 0 {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+
+    pub fn to_int(self: Ordering) -> int {
+        match self {
+            Ordering::Less => -1,
+            Ordering::Equal => 0,
+            Ordering::Greater => 1,
+        }
+    }
+
+    pub fn is_lt(self: Ordering) -> bool {
+        self == Ordering::Less
+    }
+
+    pub fn is_eq(self: Ordering) -> bool {
+        self == Ordering::Equal
+    }
+
+    pub fn is_gt(self: Ordering) -> bool {
+        self == Ordering::Greater
+    }
+
+    pub fn is_le(self: Ordering) -> bool {
+        self != Ordering::Greater
+    }
+
+    pub fn is_ge(self: Ordering) -> bool {
+        self != Ordering::Less
+    }
+
+    pub fn is_ne(self: Ordering) -> bool {
+        self != Ordering::Equal
+    }
+
+    pub fn reverse(self: Ordering) -> Ordering {
+        match self {
+            Ordering::Less => Ordering::Greater,
+            Ordering::Equal => Ordering::Equal,
+            Ordering::Greater => Ordering::Less,
+        }
+    }
+
+    pub fn then(self: Ordering, other: Ordering) -> Ordering {
+        if self == Ordering::Equal {
+            other
+        } else {
+            self
+        }
+    }
+
+    pub fn then_with(self: Ordering, compare: () -> Ordering) -> Ordering {
+        if self == Ordering::Equal {
+            compare()
+        } else {
+            self
+        }
+    }
+}
+
+impl Eq for Ordering {
+    fn eq(self: Ordering, other: Ordering) -> bool {
+        match self {
+            Ordering::Less => match other {
+                Ordering::Less => true,
+                _ => false,
+            },
+            Ordering::Equal => match other {
+                Ordering::Equal => true,
+                _ => false,
+            },
+            Ordering::Greater => match other {
+                Ordering::Greater => true,
+                _ => false,
+            },
+        }
+    }
+}
+
+pub trait Ord: Eq {
+    fn cmp(self: Self, other: Self) -> Ordering;
+}
+
+impl Ord for Ordering {
+    fn cmp(self: Ordering, other: Ordering) -> Ordering {
+        if self == other {
+            Ordering::Equal
+        } else {
+            match self {
+                Ordering::Less => Ordering::Less,
+                Ordering::Equal => if other == Ordering::Greater {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
+                },
+                Ordering::Greater => Ordering::Greater,
+            }
+        }
+    }
+}
+
+impl Ord for unit {
+    fn cmp(self: unit, other: unit) -> Ordering {
+        Ordering::Equal
+    }
+}
+
+impl Ord for bool {
+    fn cmp(self: bool, other: bool) -> Ordering {
+        if self == other {
+            Ordering::Equal
+        } else if self {
+            Ordering::Greater
+        } else {
+            Ordering::Less
+        }
+    }
+}
+
+impl Ord for string {
+    fn cmp(self: string, other: string) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for char {
+    fn cmp(self: char, other: char) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for int {
+    fn cmp(self: int, other: int) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for int8 {
+    fn cmp(self: int8, other: int8) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for int16 {
+    fn cmp(self: int16, other: int16) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for int32 {
+    fn cmp(self: int32, other: int32) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for int64 {
+    fn cmp(self: int64, other: int64) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for uint {
+    fn cmp(self: uint, other: uint) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for uint8 {
+    fn cmp(self: uint8, other: uint8) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for uint16 {
+    fn cmp(self: uint16, other: uint16) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for uint32 {
+    fn cmp(self: uint32, other: uint32) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Ord for uint64 {
+    fn cmp(self: uint64, other: uint64) -> Ordering {
+        if self < other {
+            Ordering::Less
+        } else if self > other {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+pub struct Reverse[T] {
+    pub value: T,
+}
+
+impl[T] Reverse[T] {
+    pub fn new(value: T) -> Reverse[T] {
+        Reverse { value }
+    }
+
+    pub fn into_inner(self: Reverse[T]) -> T {
+        self.value
+    }
+}
+
+impl[T: Eq] Eq for Reverse[T] {
+    fn eq(self: Reverse[T], other: Reverse[T]) -> bool {
+        self.value == other.value
+    }
+}
+
+impl[T: Ord] Ord for Reverse[T] {
+    fn cmp(self: Reverse[T], other: Reverse[T]) -> Ordering {
+        Ord::cmp(other.value, self.value)
+    }
+}
+
+pub fn compare[T: Ord](left: T, right: T) -> Ordering {
+    Ord::cmp(left, right)
+}
+
+pub fn min[T: Ord](left: T, right: T) -> T {
+    min_by(left, right, |first: T, second: T| compare(first, second))
+}
+
+pub fn max[T: Ord](left: T, right: T) -> T {
+    max_by(left, right, |first: T, second: T| compare(first, second))
+}
+
+pub fn min_by[T](left: T, right: T, compare_fn: (T, T) -> Ordering) -> T {
+    if compare_fn(left, right).is_gt() {
+        right
+    } else {
+        left
+    }
+}
+
+pub fn max_by[T](left: T, right: T, compare_fn: (T, T) -> Ordering) -> T {
+    if compare_fn(left, right).is_gt() {
+        left
+    } else {
+        right
+    }
+}
+
+pub fn min_by_key[T, K: Ord](left: T, right: T, key: (T) -> K) -> T {
+    let left_key = key(left);
+    let right_key = key(right);
+    min_by(left, right, |_: T, _: T| compare(left_key, right_key))
+}
+
+pub fn max_by_key[T, K: Ord](left: T, right: T, key: (T) -> K) -> T {
+    let left_key = key(left);
+    let right_key = key(right);
+    max_by(left, right, |_: T, _: T| compare(left_key, right_key))
+}
+
+pub fn clamp[T: Ord](value: T, minimum: T, maximum: T) -> Result[T, string] {
+    if compare(minimum, maximum).is_gt() {
+        Result::Err("minimum exceeds maximum")
+    } else if compare(value, minimum).is_lt() {
+        Result::Ok(minimum)
+    } else if compare(value, maximum).is_gt() {
+        Result::Ok(maximum)
+    } else {
+        Result::Ok(value)
+    }
+}

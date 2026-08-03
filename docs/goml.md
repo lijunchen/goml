@@ -1833,6 +1833,7 @@ The standard library is not equal to prelude and needs to be imported by package
 ```goml
 use std::ascii;
 use std::bytes;
+use std::cmp;
 use std::collections;
 use std::env;
 use std::fs;
@@ -1851,8 +1852,9 @@ Current public entrances include:
 
 - `ascii::is_ascii`, character-class predicates, ASCII case conversion and comparison, and `escape_default`
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
+- `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`
-- `collections::sort_by`, `stable_sort_by`, `binary_search_by`, `position_by`, `contains`, `min_by`, `max_by`, `dedup_by`, and `dedup`
+- `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, comparator-based variants, `position_by`, `contains`, `dedup_by`, and `dedup`
 - `env::args`, `current_dir`, `current_exe`, and `var`
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
@@ -1866,6 +1868,8 @@ Current public entrances include:
 - `time::Duration`, `Instant`, `SystemTime`, and `sleep`
 
 `std::ascii` operates on `byte`. Classification and case conversion use only the 7-bit ASCII range, and bytes above `0x7f` remain unchanged. `escape_default` emits short escapes for tabs, carriage returns, newlines, quotes, and backslashes, preserves printable ASCII, and uses lowercase `\\xNN` escapes for other bytes.
+
+`std::cmp` provides total ordering for `unit`, `bool`, `string`, `char`, and all signed and unsigned integer types. Floating-point values intentionally do not implement `cmp::Ord` because NaN does not form a total order. `cmp::compare` returns `Ordering::Less`, `Equal`, or `Greater`; `Ordering` supports predicates, reversal, lexicographic chaining, and conversion to the negative/zero/positive integer convention. `cmp::Reverse[T]` reverses an existing total ordering. `cmp::clamp` returns an error when the minimum exceeds the maximum.
 
 ### `collections::IndexMap[K, V]`
 
@@ -1899,7 +1903,7 @@ Text search indices are UTF-8 byte offsets, matching the indices accepted by the
 
 Numeric parsing returns `Result[_, string]`. Integer radix parsing accepts the host parser's supported radices and reports invalid radices, malformed input, and overflow as `Result::Err`.
 
-Sorting mutates a `Vec[T]` in place. Both `sort_by` and `stable_sort_by` are stable; comparison functions return a negative value, zero, or a positive value. `binary_search_by` expects the vector to already be ordered and returns the first matching index.
+Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `sort_by_ordering` and `stable_sort_by_ordering` use `cmp::Ordering`. The older `sort_by` and `stable_sort_by` variants accept negative/zero/positive integer comparators. All current sorting variants are stable. `binary_search` and its comparator-based variants expect the vector to already be ordered and return the first matching index.
 
 `Duration` stores a non-negative number of nanoseconds and offers constructors and whole-unit accessors for nanoseconds, microseconds, milliseconds, and seconds. Subtraction saturates at zero. `Instant` is monotonic and is suitable for elapsed-time measurement. `SystemTime` exposes Unix nanosecond, millisecond, and second timestamps. `time::sleep` blocks the current goroutine for a `Duration`.
 

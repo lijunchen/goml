@@ -46,6 +46,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             Vec::[
                 "std::ascii",
                 "std::bytes",
+                "std::cmp",
                 "std::collections",
                 "std::env",
                 "std::fs",
@@ -61,6 +62,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             Vec::[
                 "std::ascii",
                 "std::bytes",
+                "std::cmp",
                 "std::collections",
                 "std::env",
                 "std::fs",
@@ -90,6 +92,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             Vec::[],
             Vec::[],
         ),
+        standard_package("std::cmp", "cmp", "std", Vec::["std/cmp/cmp.gom"], Vec::[], Vec::[]),
         standard_package(
             "std::collections",
             "collections",
@@ -105,8 +108,8 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "std/collections/interner.gom",
                 "std/collections/stack.gom",
             ],
-            Vec::[],
-            Vec::[],
+            Vec::["std::cmp"],
+            Vec::["std::cmp"],
         ),
         standard_package(
             "std::env",

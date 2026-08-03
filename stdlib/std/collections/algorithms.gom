@@ -1,5 +1,7 @@
 package collections;
 
+use std::cmp;
+
 fn smaller(left: int, right: int) -> int {
     if left < right {
         left
@@ -65,6 +67,22 @@ pub fn sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
     stable_sort_by(values, compare)
 }
 
+pub fn stable_sort_by_ordering[T](values: Vec[T], compare: (T, T) -> cmp::Ordering) -> unit {
+    stable_sort_by(values, |left: T, right: T| compare(left, right).to_int())
+}
+
+pub fn sort_by_ordering[T](values: Vec[T], compare: (T, T) -> cmp::Ordering) -> unit {
+    stable_sort_by_ordering(values, compare)
+}
+
+pub fn stable_sort[T: cmp::Ord](values: Vec[T]) -> unit {
+    stable_sort_by_ordering(values, |left: T, right: T| cmp::compare(left, right))
+}
+
+pub fn sort[T: cmp::Ord](values: Vec[T]) -> unit {
+    stable_sort(values)
+}
+
 pub fn binary_search_by[T](values: Vec[T], compare: (T) -> int) -> Option[int] {
     let mut low = 0;
     let mut high = values.len();
@@ -81,6 +99,14 @@ pub fn binary_search_by[T](values: Vec[T], compare: (T) -> int) -> Option[int] {
     } else {
         Option::None
     }
+}
+
+pub fn binary_search_by_ordering[T](values: Vec[T], compare: (T) -> cmp::Ordering) -> Option[int] {
+    binary_search_by(values, |value: T| compare(value).to_int())
+}
+
+pub fn binary_search[T: cmp::Ord](values: Vec[T], expected: T) -> Option[int] {
+    binary_search_by_ordering(values, |value: T| cmp::compare(value, expected))
 }
 
 pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
@@ -130,6 +156,22 @@ pub fn max_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
         };
         Option::Some(best)
     }
+}
+
+pub fn min_by_ordering[T](values: Vec[T], compare: (T, T) -> cmp::Ordering) -> Option[T] {
+    min_by(values, |left: T, right: T| compare(left, right).to_int())
+}
+
+pub fn max_by_ordering[T](values: Vec[T], compare: (T, T) -> cmp::Ordering) -> Option[T] {
+    max_by(values, |left: T, right: T| compare(left, right).to_int())
+}
+
+pub fn min[T: cmp::Ord](values: Vec[T]) -> Option[T] {
+    min_by_ordering(values, |left: T, right: T| cmp::compare(left, right))
+}
+
+pub fn max[T: cmp::Ord](values: Vec[T]) -> Option[T] {
+    max_by_ordering(values, |left: T, right: T| cmp::compare(left, right))
 }
 
 pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
