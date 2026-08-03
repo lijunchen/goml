@@ -1,6 +1,6 @@
 fn std::env::args() -> Vec[string] {
-  let t179 = @runtime(std.env.args)() in
-  t179
+  let t138 = @runtime(std.env.args)() in
+  t138
 }
 
 fn std::env::current_dir() -> Result__string__string {
@@ -12,11 +12,11 @@ fn std::env::current_dir() -> Result__string__string {
   let value/1 = x2 in
   let ok/0 = x1 in
   if x1 {
-    let t184 = Result__string__string::Ok(x2) in
-    t184
+    let t143 = Result__string__string::Ok(x2) in
+    t143
   } else {
-    let t185 = Result__string__string::Err(x3) in
-    t185
+    let t144 = Result__string__string::Err(x3) in
+    t144
   }
 }
 
@@ -29,11 +29,11 @@ fn std::env::current_exe() -> Result__string__string {
   let value/4 = x6 in
   let ok/3 = x5 in
   if x5 {
-    let t190 = Result__string__string::Ok(x6) in
-    t190
+    let t149 = Result__string__string::Ok(x6) in
+    t149
   } else {
-    let t191 = Result__string__string::Err(x7) in
-    t191
+    let t150 = Result__string__string::Err(x7) in
+    t150
   }
 }
 
@@ -44,75 +44,75 @@ fn std::env::var(name/6: string) -> Option__string {
   let value/8 = x10 in
   let found/7 = x9 in
   if x9 {
-    let t196 = Option__string::Some(x10) in
-    t196
+    let t155 = Option__string::Some(x10) in
+    t155
   } else {
     Tag_0
   }
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  join inline_cont520(vec_literal/130: Vec[uint8]) -> std::bytes::Bytes {
-    let t199 = std::bytes::Bytes { values: vec_literal/130 } in
-    t199
+  join inline_cont479(vec_literal/130: Vec[uint8]) -> std::bytes::Bytes {
+    let t158 = std::bytes::Bytes { values: vec_literal/130 } in
+    t158
   } in
-  let inline521 = @intrinsic(vec.new)() in
-  jump inline_cont520(inline521)
+  let inline480 = @intrinsic(vec.new)() in
+  jump inline_cont479(inline480)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
   capacity/0: int
 ) -> std::bytes::Bytes {
-  join inline_cont522(t202: Vec[uint8]) -> std::bytes::Bytes {
-    let t203 = std::bytes::Bytes { values: t202 } in
-    t203
+  join inline_cont481(t161: Vec[uint8]) -> std::bytes::Bytes {
+    let t162 = std::bytes::Bytes { values: t161 } in
+    t162
   } in
-  let inline523 = @intrinsic(vec.with_capacity)(capacity/0) in
-  jump inline_cont522(inline523)
+  let inline482 = @intrinsic(vec.with_capacity)(capacity/0) in
+  jump inline_cont481(inline482)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
   values/1: Vec[uint8]
 ) -> std::bytes::Bytes {
-  let t206 = std::bytes::Bytes { values: values/1 } in
-  t206
+  let t165 = std::bytes::Bytes { values: values/1 } in
+  t165
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
-  join inline_cont524(t209: Vec[uint8]) -> std::bytes::Bytes {
-    let t210 = std::bytes::Bytes { values: t209 } in
-    t210
+  join inline_cont483(t168: Vec[uint8]) -> std::bytes::Bytes {
+    let t169 = std::bytes::Bytes { values: t168 } in
+    t169
   } in
-  let inline525 = @runtime(core.string_to_bytes)(value/2) in
-  jump inline_cont524(inline525)
+  let inline484 = @runtime(core.string_to_bytes)(value/2) in
+  jump inline_cont483(inline484)
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
-  let t213 = std::bytes::Bytes.values(self/3) in
-  let inline527 = @intrinsic(vec.len)(t213) in
-  inline527
+  let t172 = std::bytes::Bytes.values(self/3) in
+  let inline486 = @intrinsic(vec.len)(t172) in
+  inline486
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
-  let t217 = std::bytes::Bytes.values(self/4) in
-  let inline529 = @intrinsic(vec.capacity)(t217) in
-  inline529
+  let t176 = std::bytes::Bytes.values(self/4) in
+  let inline488 = @intrinsic(vec.capacity)(t176) in
+  inline488
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
-  let t221 = std::bytes::Bytes.values(self/5) in
-  let inline531 = @intrinsic(vec.len)(t221) in
-  let inline532 = trait_impl#Eq#int#eq(inline531, 0) in
-  inline532
+  let t180 = std::bytes::Bytes.values(self/5) in
+  let inline490 = @intrinsic(vec.len)(t180) in
+  let inline491 = trait_impl#Eq#int#eq(inline490, 0) in
+  inline491
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
   self/6: std::bytes::Bytes,
   index/7: int
 ) -> uint8 {
-  let t225 = std::bytes::Bytes.values(self/6) in
-  let t226 = @intrinsic(vec.get)(t225, index/7) in
-  t226
+  let t184 = std::bytes::Bytes.values(self/6) in
+  let t185 = @intrinsic(vec.get)(t184, index/7) in
+  t185
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
@@ -125,8 +125,8 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
   let index2 = index/9 in
   let place3 = @intrinsic(vec.get)(place1, index/9) in
   let value4 = value/10 in
-  let t228 = @intrinsic(vec.set)(place1, index/9, value/10) in
-  let _wild5 = t228 in
+  let t187 = @intrinsic(vec.set)(place1, index/9, value/10) in
+  let _wild5 = t187 in
   ()
 }
 
@@ -134,24 +134,24 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
   self/11: std::bytes::Bytes,
   value/12: uint8
 ) -> unit {
-  let t230 = std::bytes::Bytes.values(self/11) in
-  let inline534 = @intrinsic(vec.push)(t230, value/12) in
+  let t189 = std::bytes::Bytes.values(self/11) in
+  let inline493 = @intrinsic(vec.push)(t189, value/12) in
   ()
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
-  let t234 = std::bytes::Bytes.values(self/13) in
-  let inline536 = inherent#Vec#Vec[T]#len__T_uint8(t234) in
-  let inline537 = trait_impl#Eq#int#eq(inline536, 0) in
-  if inline537 {
+  let t193 = std::bytes::Bytes.values(self/13) in
+  let inline495 = inherent#Vec#Vec[T]#len__T_uint8(t193) in
+  let inline496 = trait_impl#Eq#int#eq(inline495, 0) in
+  if inline496 {
     Tag_0
   } else {
-    let inline538 = (inline536 - 1) in
-    let inline539 = @intrinsic(vec.get)(t234, inline538) in
-    let inline540 = (inline536 - 1) in
-    let inline541 = inherent#Vec#Vec[T]#truncate__T_uint8(t234, inline540) in
-    let inline542 = Option__uint8::Some(inline539) in
-    inline542
+    let inline497 = (inline495 - 1) in
+    let inline498 = @intrinsic(vec.get)(t193, inline497) in
+    let inline499 = (inline495 - 1) in
+    let inline500 = inherent#Vec#Vec[T]#truncate__T_uint8(t193, inline499) in
+    let inline501 = Option__uint8::Some(inline498) in
+    inline501
   }
 }
 
@@ -159,8 +159,8 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
   self/14: std::bytes::Bytes,
   additional/15: int
 ) -> unit {
-  let t237 = std::bytes::Bytes.values(self/14) in
-  let inline544 = @intrinsic(vec.reserve)(t237, additional/15) in
+  let t196 = std::bytes::Bytes.values(self/14) in
+  let inline503 = @intrinsic(vec.reserve)(t196, additional/15) in
   ()
 }
 
@@ -168,14 +168,14 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
   self/16: std::bytes::Bytes,
   len/17: int
 ) -> unit {
-  let t240 = std::bytes::Bytes.values(self/16) in
-  let inline546 = @intrinsic(vec.truncate)(t240, len/17) in
+  let t199 = std::bytes::Bytes.values(self/16) in
+  let inline505 = @intrinsic(vec.truncate)(t199, len/17) in
   ()
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
-  let t243 = std::bytes::Bytes.values(self/18) in
-  let inline548 = inherent#Vec#Vec[T]#truncate__T_uint8(t243, 0) in
+  let t202 = std::bytes::Bytes.values(self/18) in
+  let inline507 = inherent#Vec#Vec[T]#truncate__T_uint8(t202, 0) in
   ()
 }
 
@@ -184,31 +184,31 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
   start/20: int,
   end/21: int
 ) -> Slice[uint8] {
-  let t247 = std::bytes::Bytes.values(self/19) in
-  let inline550 = @intrinsic(slice.new)(t247, start/20, end/21) in
-  inline550
+  let t206 = std::bytes::Bytes.values(self/19) in
+  let inline509 = @intrinsic(slice.new)(t206, start/20, end/21) in
+  inline509
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
-  let t251 = std::bytes::Bytes.values(self/22) in
-  t251
+  let t210 = std::bytes::Bytes.values(self/22) in
+  t210
 }
 
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
   self/23: std::bytes::Bytes
 ) -> Result__string__string {
-  let t254 = std::bytes::Bytes.values(self/23) in
-  let mtmp6 = string_from_utf8(t254) in
+  let t213 = std::bytes::Bytes.values(self/23) in
+  let mtmp6 = string_from_utf8(t213) in
   let x7 = mtmp6.0 in
   let x8 = mtmp6.1 in
   let value/25 = x8 in
   let valid/24 = x7 in
   if x7 {
-    let t257 = Result__string__string::Ok(x8) in
-    t257
+    let t216 = Result__string__string::Ok(x8) in
+    t216
   } else {
-    let t258 = Result__string__string::Err("invalid UTF-8") in
-    t258
+    let t217 = Result__string__string::Err("invalid UTF-8") in
+    t217
   }
 }
 
@@ -221,61 +221,61 @@ fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
   let data/5 = x2 in
   let ok/4 = x1 in
   if x1 {
-    join inline_cont551(t263: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
-      let t264 = Result__std::bytes::Bytes__string::Ok(t263) in
-      t264
+    join inline_cont510(t222: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+      let t223 = Result__std::bytes::Bytes__string::Ok(t222) in
+      t223
     } in
-    let inline552 = std::bytes::Bytes { values: x2 } in
-    jump inline_cont551(inline552)
+    let inline511 = std::bytes::Bytes { values: x2 } in
+    jump inline_cont510(inline511)
   } else {
-    let t265 = Result__std::bytes::Bytes__string::Err(x3) in
-    t265
+    let t224 = Result__std::bytes::Bytes__string::Err(x3) in
+    t224
   }
 }
 
 fn std::io::write_stdout(data/7: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont553(t268: Vec[uint8]) -> Result__unit__string {
-    let mtmp4 = @runtime(std.io.write_stdout)(t268) in
+  join inline_cont512(t227: Vec[uint8]) -> Result__unit__string {
+    let mtmp4 = @runtime(std.io.write_stdout)(t227) in
     let x5 = mtmp4.0 in
     let x6 = mtmp4.1 in
     let err/9 = x6 in
     let ok/8 = x5 in
     if x5 {
-      let t271 = Result__unit__string::Ok(()) in
-      t271
+      let t230 = Result__unit__string::Ok(()) in
+      t230
     } else {
-      let t272 = Result__unit__string::Err(x6) in
-      t272
+      let t231 = Result__unit__string::Err(x6) in
+      t231
     }
   } in
-  let inline554 = std::bytes::Bytes.values(data/7) in
-  jump inline_cont553(inline554)
+  let inline513 = std::bytes::Bytes.values(data/7) in
+  jump inline_cont512(inline513)
 }
 
 fn std::io::write_stderr(data/10: std::bytes::Bytes) -> Result__unit__string {
-  join inline_cont555(t275: Vec[uint8]) -> Result__unit__string {
-    let mtmp7 = @runtime(std.io.write_stderr)(t275) in
+  join inline_cont514(t234: Vec[uint8]) -> Result__unit__string {
+    let mtmp7 = @runtime(std.io.write_stderr)(t234) in
     let x8 = mtmp7.0 in
     let x9 = mtmp7.1 in
     let err/12 = x9 in
     let ok/11 = x8 in
     if x8 {
-      let t278 = Result__unit__string::Ok(()) in
-      t278
+      let t237 = Result__unit__string::Ok(()) in
+      t237
     } else {
-      let t279 = Result__unit__string::Err(x9) in
-      t279
+      let t238 = Result__unit__string::Err(x9) in
+      t238
     }
   } in
-  let inline556 = std::bytes::Bytes.values(data/10) in
-  jump inline_cont555(inline556)
+  let inline515 = std::bytes::Bytes.values(data/10) in
+  jump inline_cont514(inline515)
 }
 
 fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__string {
-  let t284 = (length/13 < 0) in
-  if t284 {
-    let t285 = Result__std::bytes::Bytes__string::Err("read length must be non-negative") in
-    t285
+  let t243 = (length/13 < 0) in
+  if t243 {
+    let t244 = Result__std::bytes::Bytes__string::Err("read length must be non-negative") in
+    t244
   } else {
     let mtmp10 = @runtime(std.io.read_stdin_exact)(length/13) in
     let x11 = mtmp10.0 in
@@ -285,121 +285,121 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
     let data/15 = x12 in
     let ok/14 = x11 in
     if x11 {
-      join inline_cont557(t288: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
-        let t289 = Result__std::bytes::Bytes__string::Ok(t288) in
-        t289
+      join inline_cont516(t247: std::bytes::Bytes) -> Result__std::bytes::Bytes__string {
+        let t248 = Result__std::bytes::Bytes__string::Ok(t247) in
+        t248
       } in
-      let inline558 = std::bytes::Bytes { values: x12 } in
-      jump inline_cont557(inline558)
+      let inline517 = std::bytes::Bytes { values: x12 } in
+      jump inline_cont516(inline517)
     } else {
-      let t290 = Result__std::bytes::Bytes__string::Err(x13) in
-      t290
+      let t249 = Result__std::bytes::Bytes__string::Err(x13) in
+      t249
     }
   }
 }
 
 fn main() -> unit {
-  join inline_cont566(t292: Vec[string]) -> unit {
-    join inline_cont564(t293: int) -> unit {
-      let t294 = (t293 > 0) in
-      join inline_cont562(t295: string) -> unit {
-        let inline560 = trait_impl#ToString#string#to_string(t295) in
-        let inline561 = @runtime(std.io.println)(inline560) in
+  join inline_cont525(t251: Vec[string]) -> unit {
+    join inline_cont523(t252: int) -> unit {
+      let t253 = (t252 > 0) in
+      join inline_cont521(t254: string) -> unit {
+        let inline519 = trait_impl#ToString#string#to_string(t254) in
+        let inline520 = @runtime(std.io.println)(inline519) in
         ()
       } in
-      let inline563 = @runtime(core.bool_to_string)(t294) in
-      jump inline_cont562(inline563)
+      let inline522 = @runtime(core.bool_to_string)(t253) in
+      jump inline_cont521(inline522)
     } in
-    let inline565 = @intrinsic(vec.len)(t292) in
-    jump inline_cont564(inline565)
+    let inline524 = @intrinsic(vec.len)(t251) in
+    jump inline_cont523(inline524)
   } in
-  let inline567 = @runtime(std.env.args)() in
-  jump inline_cont566(inline567)
+  let inline526 = @runtime(std.env.args)() in
+  jump inline_cont525(inline526)
 }
 
 fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
-  let t299 = @intrinsic(vec.new)() in
-  t299
+  let t258 = @intrinsic(vec.new)() in
+  t258
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/154: int) -> Vec[uint8] {
-  let t302 = @intrinsic(vec.with_capacity)(capacity/154) in
-  t302
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/133: int) -> Vec[uint8] {
+  let t261 = @intrinsic(vec.with_capacity)(capacity/133) in
+  t261
 }
 
 fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
-  let t305 = @runtime(core.string_to_bytes)(self/53) in
-  t305
+  let t264 = @runtime(core.string_to_bytes)(self/53) in
+  t264
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/166: Vec[uint8]) -> int {
-  let t308 = @intrinsic(vec.len)(self/166) in
-  t308
+fn inherent#Vec#Vec[T]#len__T_uint8(self/145: Vec[uint8]) -> int {
+  let t267 = @intrinsic(vec.len)(self/145) in
+  t267
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/167: Vec[uint8]) -> int {
-  let t311 = @intrinsic(vec.capacity)(self/167) in
-  t311
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/146: Vec[uint8]) -> int {
+  let t270 = @intrinsic(vec.capacity)(self/146) in
+  t270
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/168: Vec[uint8]) -> bool {
-  let t314 = @intrinsic(vec.len)(self/168) in
-  let inline569 = 0 in
-  let inline570 = @intrinsic(eq.primitive)(t314, inline569) in
-  inline570
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/147: Vec[uint8]) -> bool {
+  let t273 = @intrinsic(vec.len)(self/147) in
+  let inline528 = 0 in
+  let inline529 = @intrinsic(eq.primitive)(t273, inline528) in
+  inline529
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/155: Vec[uint8], elem/156: uint8) -> unit {
-  let t317 = @intrinsic(vec.push)(self/155, elem/156) in
+fn inherent#Vec#Vec[T]#push__T_uint8(self/134: Vec[uint8], elem/135: uint8) -> unit {
+  let t276 = @intrinsic(vec.push)(self/134, elem/135) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/176: Vec[uint8]) -> Option__uint8 {
-  join inline_cont576(len/177: int) -> Option__uint8 {
-    join inline_cont573(t322: bool) -> Option__uint8 {
-      if t322 {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/155: Vec[uint8]) -> Option__uint8 {
+  join inline_cont535(len/156: int) -> Option__uint8 {
+    join inline_cont532(t281: bool) -> Option__uint8 {
+      if t281 {
         Tag_0
       } else {
-        let t323 = (len/177 - 1) in
-        let value/178 = @intrinsic(vec.get)(self/176, t323) in
-        let t324 = (len/177 - 1) in
-        join inline_cont571(_wild65: unit) -> Option__uint8 {
-          let t325 = Option__uint8::Some(value/178) in
-          t325
+        let t282 = (len/156 - 1) in
+        let value/157 = @intrinsic(vec.get)(self/155, t282) in
+        let t283 = (len/156 - 1) in
+        join inline_cont530(_wild49: unit) -> Option__uint8 {
+          let t284 = Option__uint8::Some(value/157) in
+          t284
         } in
-        let inline572 = @intrinsic(vec.truncate)(self/176, t324) in
-        jump inline_cont571(())
+        let inline531 = @intrinsic(vec.truncate)(self/155, t283) in
+        jump inline_cont530(())
       }
     } in
-    let inline574 = 0 in
-    let inline575 = @intrinsic(eq.primitive)(len/177, inline574) in
-    jump inline_cont573(inline575)
+    let inline533 = 0 in
+    let inline534 = @intrinsic(eq.primitive)(len/156, inline533) in
+    jump inline_cont532(inline534)
   } in
-  let inline577 = @intrinsic(vec.len)(self/176) in
-  jump inline_cont576(inline577)
+  let inline536 = @intrinsic(vec.len)(self/155) in
+  jump inline_cont535(inline536)
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/169: Vec[uint8], additional/170: int) -> unit {
-  let t327 = @intrinsic(vec.reserve)(self/169, additional/170) in
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/148: Vec[uint8], additional/149: int) -> unit {
+  let t286 = @intrinsic(vec.reserve)(self/148, additional/149) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/171: Vec[uint8], len/172: int) -> unit {
-  let t329 = @intrinsic(vec.truncate)(self/171, len/172) in
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/150: Vec[uint8], len/151: int) -> unit {
+  let t288 = @intrinsic(vec.truncate)(self/150, len/151) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/173: Vec[uint8]) -> unit {
-  let inline579 = 0 in
-  let inline580 = @intrinsic(vec.truncate)(self/173, inline579) in
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/152: Vec[uint8]) -> unit {
+  let inline538 = 0 in
+  let inline539 = @intrinsic(vec.truncate)(self/152, inline538) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/204: Vec[uint8], start/205: int, end/206: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/183: Vec[uint8], start/184: int, end/185: int) -> Slice[
   uint8
 ] {
-  let t334 = @intrinsic(slice.new)(self/204, start/205, end/206) in
-  t334
+  let t293 = @intrinsic(slice.new)(self/183, start/184, end/185) in
+  t293
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -408,16 +408,16 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   let x12 = mtmp10.1 in
   let value/25 = x12 in
   let index/26 = 0 in
-  join exit337() -> (bool, string) {
+  join exit296() -> (bool, string) {
     let _wild20 = () in
-    let t338 = (true, x12) in
-    t338
+    let t297 = (true, x12) in
+    t297
   } in
   joinrec {
-    join loop339() -> (bool, string) {
-      join inline_cont581(t340: int) -> (bool, string) {
-        let t341 = (index/26 < t340) in
-        if t341 {
+    join loop298() -> (bool, string) {
+      join inline_cont540(t299: int) -> (bool, string) {
+        let t300 = (index/26 < t299) in
+        if t300 {
           let mtmp13 = string_decode_utf8_at(x12, index/26) in
           let x14 = mtmp13.0 in
           let x15 = mtmp13.1 in
@@ -427,326 +427,326 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
           if x14 {
             let compound_old17 = index/26 in
             let compound_value18 = x16 in
-            let t343 = (compound_old17 + x16) in
-            let t344 = index/26 = t343 in
-            let _wild19 = t344 in
-            jump loop339()
+            let t302 = (compound_old17 + x16) in
+            let t303 = index/26 = t302 in
+            let _wild19 = t303 in
+            jump loop298()
           } else {
-            let t345 = (false, "") in
-            t345
+            let t304 = (false, "") in
+            t304
           }
         } else {
-          jump exit337()
+          jump exit296()
         }
       } in
-      let inline582 = @runtime(core.string_len)(x12) in
-      jump inline_cont581(inline582)
+      let inline541 = @runtime(core.string_len)(x12) in
+      jump inline_cont540(inline541)
     } in
   } in
-  jump loop339()
+  jump loop298()
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {
-  join inline_cont583(t347: string) -> unit {
-    let t348 = @runtime(std.io.println)(t347) in
+  join inline_cont542(t306: string) -> unit {
+    let t307 = @runtime(std.io.println)(t306) in
     ()
   } in
-  jump inline_cont583(value/1)
+  jump inline_cont542(value/1)
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/166: Vec[string]) -> int {
-  let t351 = @intrinsic(vec.len)(self/166) in
-  t351
+fn inherent#Vec#Vec[T]#len__T_string(self/145: Vec[string]) -> int {
+  let t310 = @intrinsic(vec.len)(self/145) in
+  t310
 }
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  let t354 = @runtime(core.bool_to_string)(self/66) in
-  t354
+  let t313 = @runtime(core.bool_to_string)(self/66) in
+  t313
 }
 
 fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
-  let t357 = @intrinsic(eq.primitive)(self/88, other/89) in
-  t357
+  let t316 = @intrinsic(eq.primitive)(self/88, other/89) in
+  t316
 }
 
 fn inherent#string#string#byte_len(self/38: string) -> int {
-  let t360 = @runtime(core.string_len)(self/38) in
-  t360
+  let t319 = @runtime(core.string_len)(self/38) in
+  t319
 }
 
 fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   let length/7 = inherent#string#string#byte_len(value/5) in
-  let t479 = (index/6 < 0) in
-  join k476(jp477: bool) -> (bool, char, int) {
-    join k363() -> (bool, char, int) {
+  let t438 = (index/6 < 0) in
+  join k435(jp436: bool) -> (bool, char, int) {
+    join k322() -> (bool, char, int) {
       let _wild2 = () in
-      let t364 = inherent#string#string#byte_get(value/5, index/6) in
-      let first/8 = (t364 as uint32) in
-      let t367 = (first/8 < 128) in
-      if t367 {
-        let inline587 = 1 in
-        let inline588 = char_from_uint32(first/8) in
-        match inline588 {
+      let t323 = inherent#string#string#byte_get(value/5, index/6) in
+      let first/8 = (t323 as uint32) in
+      let t326 = (first/8 < 128) in
+      if t326 {
+        let inline546 = 1 in
+        let inline547 = char_from_uint32(first/8) in
+        match inline547 {
           Tag_0 => {
-            let inline589 = utf8_invalid_decode() in
-            inline589
+            let inline548 = utf8_invalid_decode() in
+            inline548
           },
           Tag_1 => {
-            let inline590 = Option__char::Some._0(inline588) in
-            let inline591 = inline590 in
-            let inline592 = (true, inline590, inline587) in
-            inline592
+            let inline549 = Option__char::Some._0(inline547) in
+            let inline550 = inline549 in
+            let inline551 = (true, inline549, inline546) in
+            inline551
           },
         }
       } else {
-        let t371 = (first/8 < 194) in
-        if t371 {
-          let inline594 = (false, '\0', 0) in
-          inline594
+        let t330 = (first/8 < 194) in
+        if t330 {
+          let inline553 = (false, '\0', 0) in
+          inline553
         } else {
-          let t375 = (first/8 < 224) in
-          if t375 {
-            let t388 = (length/7 - index/6) in
-            let t389 = (t388 < 2) in
-            join k376() -> (bool, char, int) {
+          let t334 = (first/8 < 224) in
+          if t334 {
+            let t347 = (length/7 - index/6) in
+            let t348 = (t347 < 2) in
+            join k335() -> (bool, char, int) {
               let _wild3 = () in
-              let t377 = (index/6 + 1) in
-              join inline_cont609(t378: uint8) -> (bool, char, int) {
-                let second/9 = (t378 as uint32) in
-                join inline_cont606(t381: bool) -> (bool, char, int) {
-                  if t381 {
-                    let inline598 = (false, '\0', 0) in
-                    inline598
+              let t336 = (index/6 + 1) in
+              join inline_cont568(t337: uint8) -> (bool, char, int) {
+                let second/9 = (t337 as uint32) in
+                join inline_cont565(t340: bool) -> (bool, char, int) {
+                  if t340 {
+                    let inline557 = (false, '\0', 0) in
+                    inline557
                   } else {
-                    let t383 = (first/8 & 31) in
-                    let t384 = (t383 << 6) in
-                    let t385 = (second/9 & 63) in
-                    let t386 = (t384 | t385) in
-                    let inline600 = 2 in
-                    let inline601 = char_from_uint32(t386) in
-                    match inline601 {
+                    let t342 = (first/8 & 31) in
+                    let t343 = (t342 << 6) in
+                    let t344 = (second/9 & 63) in
+                    let t345 = (t343 | t344) in
+                    let inline559 = 2 in
+                    let inline560 = char_from_uint32(t345) in
+                    match inline560 {
                       Tag_0 => {
-                        let inline602 = utf8_invalid_decode() in
-                        inline602
+                        let inline561 = utf8_invalid_decode() in
+                        inline561
                       },
                       Tag_1 => {
-                        let inline603 = Option__char::Some._0(inline601) in
-                        let inline604 = inline603 in
-                        let inline605 = (true, inline603, inline600) in
-                        inline605
+                        let inline562 = Option__char::Some._0(inline560) in
+                        let inline563 = inline562 in
+                        let inline564 = (true, inline562, inline559) in
+                        inline564
                       },
                     }
                   }
                 } in
-                let inline607 = (second/9 < 128) in
-                if inline607 {
-                  jump inline_cont606(true)
+                let inline566 = (second/9 < 128) in
+                if inline566 {
+                  jump inline_cont565(true)
                 } else {
-                  let inline608 = (second/9 > 191) in
-                  jump inline_cont606(inline608)
+                  let inline567 = (second/9 > 191) in
+                  jump inline_cont565(inline567)
                 }
               } in
-              let inline610 = @runtime(core.string_byte_get)(value/5, t377) in
-              jump inline_cont609(inline610)
+              let inline569 = @runtime(core.string_byte_get)(value/5, t336) in
+              jump inline_cont568(inline569)
             } in
-            if t389 {
-              let inline596 = (false, '\0', 0) in
-              inline596
+            if t348 {
+              let inline555 = (false, '\0', 0) in
+              inline555
             } else {
-              jump k376()
+              jump k335()
             }
           } else {
-            let t393 = (first/8 < 240) in
-            if t393 {
-              let t426 = (length/7 - index/6) in
-              let t427 = (t426 < 3) in
-              join k394() -> (bool, char, int) {
+            let t352 = (first/8 < 240) in
+            if t352 {
+              let t385 = (length/7 - index/6) in
+              let t386 = (t385 < 3) in
+              join k353() -> (bool, char, int) {
                 let _wild4 = () in
-                let t395 = (index/6 + 1) in
-                join inline_cont626(t396: uint8) -> (bool, char, int) {
-                  let second/10 = (t396 as uint32) in
-                  let t397 = (index/6 + 2) in
-                  join inline_cont624(t398: uint8) -> (bool, char, int) {
-                    let third/11 = (t398 as uint32) in
-                    let t424 = utf8_invalid_continuation(second/10) in
-                    join k418(jp419: bool) -> (bool, char, int) {
-                      join k412(jp413: bool) -> (bool, char, int) {
-                        join k401(jp402: bool) -> (bool, char, int) {
-                          if jp402 {
-                            let inline623 = (false, '\0', 0) in
-                            inline623
+                let t354 = (index/6 + 1) in
+                join inline_cont585(t355: uint8) -> (bool, char, int) {
+                  let second/10 = (t355 as uint32) in
+                  let t356 = (index/6 + 2) in
+                  join inline_cont583(t357: uint8) -> (bool, char, int) {
+                    let third/11 = (t357 as uint32) in
+                    let t383 = utf8_invalid_continuation(second/10) in
+                    join k377(jp378: bool) -> (bool, char, int) {
+                      join k371(jp372: bool) -> (bool, char, int) {
+                        join k360(jp361: bool) -> (bool, char, int) {
+                          if jp361 {
+                            let inline582 = (false, '\0', 0) in
+                            inline582
                           } else {
-                            let t404 = (first/8 & 15) in
-                            let t405 = (t404 << 12) in
-                            let t406 = (second/10 & 63) in
-                            let t407 = (t406 << 6) in
-                            let t408 = (t405 | t407) in
-                            let t409 = (third/11 & 63) in
-                            let t410 = (t408 | t409) in
-                            let t411 = utf8_valid_decode(t410, 3) in
-                            t411
+                            let t363 = (first/8 & 15) in
+                            let t364 = (t363 << 12) in
+                            let t365 = (second/10 & 63) in
+                            let t366 = (t365 << 6) in
+                            let t367 = (t364 | t366) in
+                            let t368 = (third/11 & 63) in
+                            let t369 = (t367 | t368) in
+                            let t370 = utf8_valid_decode(t369, 3) in
+                            t370
                           }
                         } in
-                        if jp413 {
-                          jump k401(true)
+                        if jp372 {
+                          jump k360(true)
                         } else {
-                          join inline_cont619(t416: bool) -> (bool, char, int) {
-                            if t416 {
-                              let t417 = (second/10 >= 160) in
-                              jump k401(t417)
+                          join inline_cont578(t375: bool) -> (bool, char, int) {
+                            if t375 {
+                              let t376 = (second/10 >= 160) in
+                              jump k360(t376)
                             } else {
-                              jump k401(false)
+                              jump k360(false)
                             }
                           } in
-                          let inline620 = 237 in
-                          let inline621 = @intrinsic(eq.primitive)(first/8, inline620) in
-                          jump inline_cont619(inline621)
+                          let inline579 = 237 in
+                          let inline580 = @intrinsic(eq.primitive)(first/8, inline579) in
+                          jump inline_cont578(inline580)
                         }
                       } in
-                      if jp419 {
-                        jump k412(true)
+                      if jp378 {
+                        jump k371(true)
                       } else {
-                        join inline_cont616(t422: bool) -> (bool, char, int) {
-                          if t422 {
-                            let t423 = (second/10 < 160) in
-                            jump k412(t423)
+                        join inline_cont575(t381: bool) -> (bool, char, int) {
+                          if t381 {
+                            let t382 = (second/10 < 160) in
+                            jump k371(t382)
                           } else {
-                            jump k412(false)
+                            jump k371(false)
                           }
                         } in
-                        let inline617 = 224 in
-                        let inline618 = @intrinsic(eq.primitive)(first/8, inline617) in
-                        jump inline_cont616(inline618)
+                        let inline576 = 224 in
+                        let inline577 = @intrinsic(eq.primitive)(first/8, inline576) in
+                        jump inline_cont575(inline577)
                       }
                     } in
-                    if t424 {
-                      jump k418(true)
+                    if t383 {
+                      jump k377(true)
                     } else {
-                      let inline614 = (third/11 < 128) in
-                      if inline614 {
-                        jump k418(true)
+                      let inline573 = (third/11 < 128) in
+                      if inline573 {
+                        jump k377(true)
                       } else {
-                        let inline615 = (third/11 > 191) in
-                        jump k418(inline615)
+                        let inline574 = (third/11 > 191) in
+                        jump k377(inline574)
                       }
                     }
                   } in
-                  let inline625 = @runtime(core.string_byte_get)(value/5, t397) in
-                  jump inline_cont624(inline625)
+                  let inline584 = @runtime(core.string_byte_get)(value/5, t356) in
+                  jump inline_cont583(inline584)
                 } in
-                let inline627 = @runtime(core.string_byte_get)(value/5, t395) in
-                jump inline_cont626(inline627)
+                let inline586 = @runtime(core.string_byte_get)(value/5, t354) in
+                jump inline_cont585(inline586)
               } in
-              if t427 {
-                let inline612 = (false, '\0', 0) in
-                inline612
+              if t386 {
+                let inline571 = (false, '\0', 0) in
+                inline571
               } else {
-                jump k394()
+                jump k353()
               }
             } else {
-              let t431 = (first/8 < 245) in
-              if t431 {
-                let t472 = (length/7 - index/6) in
-                let t473 = (t472 < 4) in
-                join k432() -> (bool, char, int) {
+              let t390 = (first/8 < 245) in
+              if t390 {
+                let t431 = (length/7 - index/6) in
+                let t432 = (t431 < 4) in
+                join k391() -> (bool, char, int) {
                   let _wild5 = () in
-                  let t433 = (index/6 + 1) in
-                  let t434 = inherent#string#string#byte_get(value/5, t433) in
-                  let second/12 = (t434 as uint32) in
-                  let t435 = (index/6 + 2) in
-                  let t436 = inherent#string#string#byte_get(value/5, t435) in
-                  let third/13 = (t436 as uint32) in
-                  let t437 = (index/6 + 3) in
-                  let t438 = inherent#string#string#byte_get(value/5, t437) in
-                  let fourth/14 = (t438 as uint32) in
-                  let t470 = utf8_invalid_continuation(second/12) in
-                  join k467(jp468: bool) -> (bool, char, int) {
-                    join k461(jp462: bool) -> (bool, char, int) {
-                      join k455(jp456: bool) -> (bool, char, int) {
-                        join k441(jp442: bool) -> (bool, char, int) {
-                          if jp442 {
-                            let t443 = utf8_invalid_decode() in
-                            t443
+                  let t392 = (index/6 + 1) in
+                  let t393 = inherent#string#string#byte_get(value/5, t392) in
+                  let second/12 = (t393 as uint32) in
+                  let t394 = (index/6 + 2) in
+                  let t395 = inherent#string#string#byte_get(value/5, t394) in
+                  let third/13 = (t395 as uint32) in
+                  let t396 = (index/6 + 3) in
+                  let t397 = inherent#string#string#byte_get(value/5, t396) in
+                  let fourth/14 = (t397 as uint32) in
+                  let t429 = utf8_invalid_continuation(second/12) in
+                  join k426(jp427: bool) -> (bool, char, int) {
+                    join k420(jp421: bool) -> (bool, char, int) {
+                      join k414(jp415: bool) -> (bool, char, int) {
+                        join k400(jp401: bool) -> (bool, char, int) {
+                          if jp401 {
+                            let t402 = utf8_invalid_decode() in
+                            t402
                           } else {
-                            let t444 = (first/8 & 7) in
-                            let t445 = (t444 << 18) in
-                            let t446 = (second/12 & 63) in
-                            let t447 = (t446 << 12) in
-                            let t448 = (t445 | t447) in
-                            let t449 = (third/13 & 63) in
-                            let t450 = (t449 << 6) in
-                            let t451 = (t448 | t450) in
-                            let t452 = (fourth/14 & 63) in
-                            let t453 = (t451 | t452) in
-                            let t454 = utf8_valid_decode(t453, 4) in
-                            t454
+                            let t403 = (first/8 & 7) in
+                            let t404 = (t403 << 18) in
+                            let t405 = (second/12 & 63) in
+                            let t406 = (t405 << 12) in
+                            let t407 = (t404 | t406) in
+                            let t408 = (third/13 & 63) in
+                            let t409 = (t408 << 6) in
+                            let t410 = (t407 | t409) in
+                            let t411 = (fourth/14 & 63) in
+                            let t412 = (t410 | t411) in
+                            let t413 = utf8_valid_decode(t412, 4) in
+                            t413
                           }
                         } in
-                        if jp456 {
-                          jump k441(true)
+                        if jp415 {
+                          jump k400(true)
                         } else {
-                          let t459 = trait_impl#Eq#uint32#eq(first/8, 244) in
-                          if t459 {
-                            let t460 = (second/12 > 143) in
-                            jump k441(t460)
+                          let t418 = trait_impl#Eq#uint32#eq(first/8, 244) in
+                          if t418 {
+                            let t419 = (second/12 > 143) in
+                            jump k400(t419)
                           } else {
-                            jump k441(false)
+                            jump k400(false)
                           }
                         }
                       } in
-                      if jp462 {
-                        jump k455(true)
+                      if jp421 {
+                        jump k414(true)
                       } else {
-                        let t465 = trait_impl#Eq#uint32#eq(first/8, 240) in
-                        if t465 {
-                          let t466 = (second/12 < 144) in
-                          jump k455(t466)
+                        let t424 = trait_impl#Eq#uint32#eq(first/8, 240) in
+                        if t424 {
+                          let t425 = (second/12 < 144) in
+                          jump k414(t425)
                         } else {
-                          jump k455(false)
+                          jump k414(false)
                         }
                       }
                     } in
-                    if jp468 {
-                      jump k461(true)
+                    if jp427 {
+                      jump k420(true)
                     } else {
-                      let t469 = utf8_invalid_continuation(fourth/14) in
-                      jump k461(t469)
+                      let t428 = utf8_invalid_continuation(fourth/14) in
+                      jump k420(t428)
                     }
                   } in
-                  if t470 {
-                    jump k467(true)
+                  if t429 {
+                    jump k426(true)
                   } else {
-                    let t471 = utf8_invalid_continuation(third/13) in
-                    jump k467(t471)
+                    let t430 = utf8_invalid_continuation(third/13) in
+                    jump k426(t430)
                   }
                 } in
-                if t473 {
-                  let t474 = utf8_invalid_decode() in
-                  t474
+                if t432 {
+                  let t433 = utf8_invalid_decode() in
+                  t433
                 } else {
-                  jump k432()
+                  jump k391()
                 }
               } else {
-                let t475 = utf8_invalid_decode() in
-                t475
+                let t434 = utf8_invalid_decode() in
+                t434
               }
             }
           }
         }
       }
     } in
-    if jp477 {
-      let inline585 = (false, '\0', 0) in
-      inline585
+    if jp436 {
+      let inline544 = (false, '\0', 0) in
+      inline544
     } else {
-      jump k363()
+      jump k322()
     }
   } in
-  if t479 {
-    jump k476(true)
+  if t438 {
+    jump k435(true)
   } else {
-    let t480 = (index/6 >= length/7) in
-    jump k476(t480)
+    let t439 = (index/6 >= length/7) in
+    jump k435(t439)
   }
 }
 
@@ -755,97 +755,97 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn utf8_invalid_decode() -> (bool, char, int) {
-  let t485 = (false, '\0', 0) in
-  t485
+  let t444 = (false, '\0', 0) in
+  t444
 }
 
 fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
-  let t488 = @runtime(core.string_byte_get)(self/41, index/42) in
-  t488
+  let t447 = @runtime(core.string_byte_get)(self/41, index/42) in
+  t447
 }
 
 fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
-  join commute_arm644() -> (bool, char, int) {
-    let inline629 = (false, '\0', 0) in
-    inline629
+  join commute_arm603() -> (bool, char, int) {
+    let inline588 = (false, '\0', 0) in
+    inline588
   } in
-  join commute_arm646(commute_field645: char) -> (bool, char, int) {
-    let x1 = commute_field645 in
-    let t494 = (true, commute_field645, width/1) in
-    t494
+  join commute_arm605(commute_field604: char) -> (bool, char, int) {
+    let x1 = commute_field604 in
+    let t453 = (true, commute_field604, width/1) in
+    t453
   } in
-  let inline631 = utf8_valid_scalar(value/0) in
-  if inline631 {
-    let inline632 = @runtime(core.char_from_uint32)(value/0) in
-    let inline633 = inline632.0 in
-    let inline634 = inline632.1 in
-    let inline635 = inline634 in
-    let inline636 = Option__char::Some(inline634) in
-    jump commute_arm646(inline634)
+  let inline590 = utf8_valid_scalar(value/0) in
+  if inline590 {
+    let inline591 = @runtime(core.char_from_uint32)(value/0) in
+    let inline592 = inline591.0 in
+    let inline593 = inline591.1 in
+    let inline594 = inline593 in
+    let inline595 = Option__char::Some(inline593) in
+    jump commute_arm605(inline593)
   } else {
-    jump commute_arm644()
+    jump commute_arm603()
   }
 }
 
 fn utf8_invalid_continuation(value/3: uint32) -> bool {
-  let t499 = (value/3 < 128) in
-  if t499 {
+  let t458 = (value/3 < 128) in
+  if t458 {
     true
   } else {
-    let t500 = (value/3 > 191) in
-    t500
+    let t459 = (value/3 > 191) in
+    t459
   }
 }
 
 fn trait_impl#Eq#uint32#eq(self/102: uint32, other/103: uint32) -> bool {
-  let t503 = @intrinsic(eq.primitive)(self/102, other/103) in
-  t503
+  let t462 = @intrinsic(eq.primitive)(self/102, other/103) in
+  t462
 }
 
 fn char_from_uint32(value/32: uint32) -> Option__char {
-  join inline_cont637(t508: bool) -> Option__char {
-    if t508 {
+  join inline_cont596(t467: bool) -> Option__char {
+    if t467 {
       let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
       let x23 = mtmp22.0 in
       let x24 = mtmp22.1 in
       let character/33 = x24 in
-      let t509 = Option__char::Some(x24) in
-      t509
+      let t468 = Option__char::Some(x24) in
+      t468
     } else {
       Tag_0
     }
   } in
-  let inline638 = (value/32 <= 1114111) in
-  if inline638 {
-    let inline639 = (value/32 >= 55296) in
-    join inline_join640(inline641: bool) -> Option__char {
-      let inline642 = (!inline641) in
-      jump inline_cont637(inline642)
+  let inline597 = (value/32 <= 1114111) in
+  if inline597 {
+    let inline598 = (value/32 >= 55296) in
+    join inline_join599(inline600: bool) -> Option__char {
+      let inline601 = (!inline600) in
+      jump inline_cont596(inline601)
     } in
-    if inline639 {
-      let inline643 = (value/32 <= 57343) in
-      jump inline_join640(inline643)
+    if inline598 {
+      let inline602 = (value/32 <= 57343) in
+      jump inline_join599(inline602)
     } else {
-      jump inline_join640(false)
+      jump inline_join599(false)
     }
   } else {
-    jump inline_cont637(false)
+    jump inline_cont596(false)
   }
 }
 
 fn utf8_valid_scalar(value/4: uint32) -> bool {
-  let t514 = (value/4 <= 1114111) in
-  if t514 {
-    let t518 = (value/4 >= 55296) in
-    join k515(jp516: bool) -> bool {
-      let t517 = (!jp516) in
-      t517
+  let t473 = (value/4 <= 1114111) in
+  if t473 {
+    let t477 = (value/4 >= 55296) in
+    join k474(jp475: bool) -> bool {
+      let t476 = (!jp475) in
+      t476
     } in
-    if t518 {
-      let t519 = (value/4 <= 57343) in
-      jump k515(t519)
+    if t477 {
+      let t478 = (value/4 <= 57343) in
+      jump k474(t478)
     } else {
-      jump k515(false)
+      jump k474(false)
     }
   } else {
     false

@@ -1,43 +1,43 @@
 fn trait_impl#Ready#Worker#state(self/0: Worker) -> string {
-  let t180 = Worker.name(self/0) in
-  let t181 = (t180 + ":ready") in
-  t181
+  let t139 = Worker.name(self/0) in
+  let t140 = (t139 + ":ready") in
+  t140
 }
 
 fn trait_impl#Service#[Worker]@Station#get(self/1: Station) -> Worker {
-  let t184 = Station.worker(self/1) in
-  t184
+  let t143 = Station.worker(self/1) in
+  t143
 }
 
 fn main() -> unit {
-  let t186 = Worker { name: "build" } in
-  let t187 = Station { worker: t186 } in
-  join inline_cont201(t188: string) -> unit {
-    let inline199 = trait_impl#ToString#string#to_string(t188) in
-    let inline200 = @runtime(core.string_println)(inline199) in
+  let t145 = Worker { name: "build" } in
+  let t146 = Station { worker: t145 } in
+  join inline_cont160(t147: string) -> unit {
+    let inline158 = trait_impl#ToString#string#to_string(t147) in
+    let inline159 = @runtime(core.string_println)(inline158) in
     ()
   } in
-  let inline202 = trait_impl#Service#[Worker]@Station#get(t187) in
-  let inline203 = trait_impl#Ready#Worker#state(inline202) in
-  jump inline_cont201(inline203)
+  let inline161 = trait_impl#Service#[Worker]@Station#get(t146) in
+  let inline162 = trait_impl#Ready#Worker#state(inline161) in
+  jump inline_cont160(inline162)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont204(t190: string) -> unit {
-    let t191 = @runtime(core.string_println)(t190) in
+  join inline_cont163(t149: string) -> unit {
+    let t150 = @runtime(core.string_println)(t149) in
     ()
   } in
-  jump inline_cont204(value/31)
+  jump inline_cont163(value/31)
 }
 
 fn describe__S_Station__T_Worker(service/2: Station) -> string {
-  join inline_cont208(t194: Worker) -> string {
-    let inline206 = Worker.name(t194) in
-    let inline207 = (inline206 + ":ready") in
-    inline207
+  join inline_cont167(t153: Worker) -> string {
+    let inline165 = Worker.name(t153) in
+    let inline166 = (inline165 + ":ready") in
+    inline166
   } in
-  let inline209 = Station.worker(service/2) in
-  jump inline_cont208(inline209)
+  let inline168 = Station.worker(service/2) in
+  jump inline_cont167(inline168)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

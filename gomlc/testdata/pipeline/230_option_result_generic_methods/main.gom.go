@@ -113,251 +113,251 @@ func main0() struct{} {
     var some__0 Option__int = Option__int_Some{
         _0: 3,
     }
-    var t193 closure_env_main_0 = closure_env_main_0{}
+    var t152 closure_env_main_0 = closure_env_main_0{}
     var mapped__2 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(some__0, func(p0 int) string {
-        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t193, p0)
+        return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t152, p0)
     })
-    var t194 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(mapped__2, "missing")
-    println__T_string(t194)
-    var t195 closure_env_main_1 = closure_env_main_1{}
+    var t153 string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(mapped__2, "missing")
+    println__T_string(t153)
+    var t154 closure_env_main_1 = closure_env_main_1{}
     var static_mapped__4 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(some__0, func(p0 int) string {
-        return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t195, p0)
+        return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t154, p0)
     })
-    var t196 string
-    var inline352 string = "missing"
+    var t155 string
+    var inline311 string = "missing"
     switch static_mapped__4.(type) {
     case Option__string_None:
-        t196 = inline352
+        t155 = inline311
     case Option__string_Some:
-        var inline353 string = static_mapped__4.(Option__string_Some)._0
-        t196 = inline353
+        var inline312 string = static_mapped__4.(Option__string_Some)._0
+        t155 = inline312
     default:
         panic("non-exhaustive match")
     }
-    var inline349 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-    _goml_runtime_core_string_println(inline349)
-    var t197 closure_env_main_2 = closure_env_main_2{}
+    var inline308 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t155)
+    _goml_runtime_core_string_println(inline308)
+    var t156 closure_env_main_2 = closure_env_main_2{}
     var chained__6 Option__string = _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__int____U__string(some__0, func(p0 int) Option__string {
-        return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t197, p0)
+        return _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(t156, p0)
     })
-    var t198 string
-    var inline345 string = "missing"
+    var t157 string
+    var inline304 string = "missing"
     switch chained__6.(type) {
     case Option__string_None:
-        t198 = inline345
+        t157 = inline304
     case Option__string_Some:
-        var inline346 string = chained__6.(Option__string_Some)._0
-        t198 = inline346
+        var inline305 string = chained__6.(Option__string_Some)._0
+        t157 = inline305
     default:
         panic("non-exhaustive match")
     }
-    var inline342 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline342)
+    var inline301 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t157)
+    _goml_runtime_core_string_println(inline301)
     var none__7 Option__int = Option__int_None{}
     var converted__8 Result__int__string
-    var inline336 string = "none"
+    var inline295 string = "none"
     switch none__7.(type) {
     case Option__int_None:
-        var inline337 Result__int__string = Result__int__string_Err{
-            _0: inline336,
+        var inline296 Result__int__string = Result__int__string_Err{
+            _0: inline295,
         }
-        converted__8 = inline337
+        converted__8 = inline296
     case Option__int_Some:
-        var inline338 int = none__7.(Option__int_Some)._0
-        var inline340 Result__int__string = Result__int__string_Ok{
-            _0: inline338,
+        var inline297 int = none__7.(Option__int_Some)._0
+        var inline299 Result__int__string = Result__int__string_Ok{
+            _0: inline297,
         }
-        converted__8 = inline340
+        converted__8 = inline299
     default:
         panic("non-exhaustive match")
     }
-    var t199 closure_env_main_3 = closure_env_main_3{}
-    var t200 int = _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T__int(converted__8, func(p0 string) int {
-        return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t199, p0)
+    var t158 closure_env_main_3 = closure_env_main_3{}
+    var t159 int = _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T__int(converted__8, func(p0 string) int {
+        return _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(t158, p0)
     })
-    var inline333 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t200)
-    _goml_runtime_core_string_println(inline333)
+    var inline292 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t159)
+    _goml_runtime_core_string_println(inline292)
     var ok__10 Result__int__string = Result__int__string_Ok{
         _0: 5,
     }
-    var t201 closure_env_main_4 = closure_env_main_4{}
-    var t202 Result__int__string = _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U__int(ok__10, func(p0 int) int {
-        return _goml_m_inherent_i_closure__env__main__4_i_closure__env__main__4_i_apply(t201, p0)
+    var t160 closure_env_main_4 = closure_env_main_4{}
+    var t161 Result__int__string = _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U__int(ok__10, func(p0 int) int {
+        return _goml_m_inherent_i_closure__env__main__4_i_closure__env__main__4_i_apply(t160, p0)
     })
-    var t203 int
-    var inline328 int = 0
-    switch t202.(type) {
+    var t162 int
+    var inline287 int = 0
+    switch t161.(type) {
     case Result__int__string_Ok:
-        var inline329 int = t202.(Result__int__string_Ok)._0
-        t203 = inline329
+        var inline288 int = t161.(Result__int__string_Ok)._0
+        t162 = inline288
     case Result__int__string_Err:
-        t203 = inline328
+        t162 = inline287
     default:
         panic("non-exhaustive match")
     }
-    var inline325 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t203)
-    _goml_runtime_core_string_println(inline325)
+    var inline284 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t162)
+    _goml_runtime_core_string_println(inline284)
     var error__12 Result__int__string = Result__int__string_Err{
         _0: "bad",
     }
-    var t204 closure_env_main_5 = closure_env_main_5{}
+    var t163 closure_env_main_5 = closure_env_main_5{}
     var mapped_error__14 Result__int__int = _goml_m_inherent_i_Result_i_Re_h03ce7a8acc541bce463170495d022e64___int____T__int(error__12, func(p0 string) int {
-        return _goml_m_inherent_i_closure__env__main__5_i_closure__env__main__5_i_apply(t204, p0)
+        return _goml_m_inherent_i_closure__env__main__5_i_closure__env__main__5_i_apply(t163, p0)
     })
-    var t205 closure_env_main_6 = closure_env_main_6{}
-    var t206 int = _goml_m_inherent_i_Result_i_Re_h2418c806a6b88d5083ec4bf87e533749___int____T__int(mapped_error__14, func(p0 int) int {
-        return _goml_m_inherent_i_closure__env__main__6_i_closure__env__main__6_i_apply(t205, p0)
+    var t164 closure_env_main_6 = closure_env_main_6{}
+    var t165 int = _goml_m_inherent_i_Result_i_Re_h2418c806a6b88d5083ec4bf87e533749___int____T__int(mapped_error__14, func(p0 int) int {
+        return _goml_m_inherent_i_closure__env__main__6_i_closure__env__main__6_i_apply(t164, p0)
     })
-    var inline322 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t206)
-    _goml_runtime_core_string_println(inline322)
-    var t207 closure_env_main_7 = closure_env_main_7{}
+    var inline281 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t165)
+    _goml_runtime_core_string_println(inline281)
+    var t166 closure_env_main_7 = closure_env_main_7{}
     var next__17 Result__string__string = _goml_m_inherent_i_Result_i_Re_he0ddc48027611d42dc9ea3b49867094c_nt____U__string(ok__10, func(p0 int) Result__string__string {
-        return _goml_m_inherent_i_closure__env__main__7_i_closure__env__main__7_i_apply(t207, p0)
+        return _goml_m_inherent_i_closure__env__main__7_i_closure__env__main__7_i_apply(t166, p0)
     })
-    var t208 string
-    var inline317 string = "missing"
+    var t167 string
+    var inline276 string = "missing"
     switch next__17.(type) {
     case Result__string__string_Ok:
-        var inline318 string = next__17.(Result__string__string_Ok)._0
-        t208 = inline318
+        var inline277 string = next__17.(Result__string__string_Ok)._0
+        t167 = inline277
     case Result__string__string_Err:
-        t208 = inline317
+        t167 = inline276
     default:
         panic("non-exhaustive match")
     }
-    var inline314 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
-    _goml_runtime_core_string_println(inline314)
+    var inline273 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t167)
+    _goml_runtime_core_string_println(inline273)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(self__314 Option__int, map_fn__315 func(int) string) Option__string {
-    switch self__314.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(self__267 Option__int, map_fn__268 func(int) string) Option__string {
+    switch self__267.(type) {
     case Option__int_None:
         return Option__string_None{}
     case Option__int_Some:
-        var x168 int = self__314.(Option__int_Some)._0
-        var t216 string = map_fn__315(x168)
-        var t217 Option__string = Option__string_Some{
-            _0: t216,
+        var x127 int = self__267.(Option__int_Some)._0
+        var t175 string = map_fn__268(x127)
+        var t176 Option__string = Option__string_Some{
+            _0: t175,
         }
-        return t217
+        return t176
     default:
         panic("non-exhaustive match")
     }
 }
 
 func println__T_string(value__31 string) struct{} {
-    var t219 string
-    t219 = value__31
-    _goml_runtime_core_string_println(t219)
+    var t178 string
+    t178 = value__31
+    _goml_runtime_core_string_println(t178)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__294 Option__string, fallback__295 string) string {
-    switch self__294.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__247 Option__string, fallback__248 string) string {
+    switch self__247.(type) {
     case Option__string_None:
-        return fallback__295
+        return fallback__248
     case Option__string_Some:
-        var x157 string = self__294.(Option__string_Some)._0
-        return x157
+        var x116 string = self__247.(Option__string_Some)._0
+        return x116
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__int____U__string(self__317 Option__int, next__318 func(int) Option__string) Option__string {
-    switch self__317.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__int____U__string(self__270 Option__int, next__271 func(int) Option__string) Option__string {
+    switch self__270.(type) {
     case Option__int_None:
         return Option__string_None{}
     case Option__int_Some:
-        var x169 int = self__317.(Option__int_Some)._0
-        var t229 Option__string = next__318(x169)
-        return t229
+        var x128 int = self__270.(Option__int_Some)._0
+        var t188 Option__string = next__271(x128)
+        return t188
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T__int(self__305 Result__int__string, fallback__306 func(string) int) int {
-    switch self__305.(type) {
+func _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T__int(self__258 Result__int__string, fallback__259 func(string) int) int {
+    switch self__258.(type) {
     case Result__int__string_Ok:
-        var x163 int = self__305.(Result__int__string_Ok)._0
-        return x163
+        var x122 int = self__258.(Result__int__string_Ok)._0
+        return x122
     case Result__int__string_Err:
-        var x164 string = self__305.(Result__int__string_Err)._0
-        var t246 int = fallback__306(x164)
-        return t246
+        var x123 string = self__258.(Result__int__string_Err)._0
+        var t205 int = fallback__259(x123)
+        return t205
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U__int(self__323 Result__int__string, map_fn__324 func(int) int) Result__int__string {
-    switch self__323.(type) {
+func _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U__int(self__276 Result__int__string, map_fn__277 func(int) int) Result__int__string {
+    switch self__276.(type) {
     case Result__int__string_Ok:
-        var x171 int = self__323.(Result__int__string_Ok)._0
-        var t251 int = map_fn__324(x171)
-        var t252 Result__int__string = Result__int__string_Ok{
-            _0: t251,
+        var x130 int = self__276.(Result__int__string_Ok)._0
+        var t210 int = map_fn__277(x130)
+        var t211 Result__int__string = Result__int__string_Ok{
+            _0: t210,
         }
-        return t252
+        return t211
     case Result__int__string_Err:
-        var x172 string = self__323.(Result__int__string_Err)._0
-        var t253 Result__int__string = Result__int__string_Err{
-            _0: x172,
+        var x131 string = self__276.(Result__int__string_Err)._0
+        var t212 Result__int__string = Result__int__string_Err{
+            _0: x131,
         }
-        return t253
+        return t212
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_h03ce7a8acc541bce463170495d022e64___int____T__int(self__327 Result__int__string, map_fn__328 func(string) int) Result__int__int {
-    switch self__327.(type) {
+func _goml_m_inherent_i_Result_i_Re_h03ce7a8acc541bce463170495d022e64___int____T__int(self__280 Result__int__string, map_fn__281 func(string) int) Result__int__int {
+    switch self__280.(type) {
     case Result__int__string_Ok:
-        var x173 int = self__327.(Result__int__string_Ok)._0
-        var t262 Result__int__int = Result__int__int_Ok{
-            _0: x173,
+        var x132 int = self__280.(Result__int__string_Ok)._0
+        var t221 Result__int__int = Result__int__int_Ok{
+            _0: x132,
         }
-        return t262
+        return t221
     case Result__int__string_Err:
-        var x174 string = self__327.(Result__int__string_Err)._0
-        var t263 int = map_fn__328(x174)
-        var t264 Result__int__int = Result__int__int_Err{
-            _0: t263,
+        var x133 string = self__280.(Result__int__string_Err)._0
+        var t222 int = map_fn__281(x133)
+        var t223 Result__int__int = Result__int__int_Err{
+            _0: t222,
         }
-        return t264
+        return t223
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_h2418c806a6b88d5083ec4bf87e533749___int____T__int(self__305 Result__int__int, fallback__306 func(int) int) int {
-    switch self__305.(type) {
+func _goml_m_inherent_i_Result_i_Re_h2418c806a6b88d5083ec4bf87e533749___int____T__int(self__258 Result__int__int, fallback__259 func(int) int) int {
+    switch self__258.(type) {
     case Result__int__int_Ok:
-        var x163 int = self__305.(Result__int__int_Ok)._0
-        return x163
+        var x122 int = self__258.(Result__int__int_Ok)._0
+        return x122
     case Result__int__int_Err:
-        var x164 int = self__305.(Result__int__int_Err)._0
-        var t269 int = fallback__306(x164)
-        return t269
+        var x123 int = self__258.(Result__int__int_Err)._0
+        var t228 int = fallback__259(x123)
+        return t228
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_he0ddc48027611d42dc9ea3b49867094c_nt____U__string(self__331 Result__int__string, next__332 func(int) Result__string__string) Result__string__string {
-    switch self__331.(type) {
+func _goml_m_inherent_i_Result_i_Re_he0ddc48027611d42dc9ea3b49867094c_nt____U__string(self__284 Result__int__string, next__285 func(int) Result__string__string) Result__string__string {
+    switch self__284.(type) {
     case Result__int__string_Ok:
-        var x175 int = self__331.(Result__int__string_Ok)._0
-        var t274 Result__string__string = next__332(x175)
-        return t274
+        var x134 int = self__284.(Result__int__string_Ok)._0
+        var t233 Result__string__string = next__285(x134)
+        return t233
     case Result__int__string_Err:
-        var x176 string = self__331.(Result__int__string_Err)._0
-        var t275 Result__string__string = Result__string__string_Err{
-            _0: x176,
+        var x135 string = self__284.(Result__int__string_Err)._0
+        var t234 Result__string__string = Result__string__string_Err{
+            _0: x135,
         }
-        return t275
+        return t234
     default:
         panic("non-exhaustive match")
     }
@@ -368,62 +368,62 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t284 string = _goml_runtime_core_int_to_string(self__69)
-    return t284
+    var t243 string = _goml_runtime_core_int_to_string(self__69)
+    return t243
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env184 closure_env_main_0, value__1 int) string {
-    var inline359 string = _goml_runtime_core_int_to_string(value__1)
-    return inline359
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env143 closure_env_main_0, value__1 int) string {
+    var inline318 string = _goml_runtime_core_int_to_string(value__1)
+    return inline318
 }
 
-func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env185 closure_env_main_1, value__3 int) string {
-    var t290 string
-    var inline361 string = _goml_runtime_core_int_to_string(value__3)
-    t290 = inline361
-    var t291 string = "static:" + t290
-    return t291
+func _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(env144 closure_env_main_1, value__3 int) string {
+    var t249 string
+    var inline320 string = _goml_runtime_core_int_to_string(value__3)
+    t249 = inline320
+    var t250 string = "static:" + t249
+    return t250
 }
 
-func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env186 closure_env_main_2, value__5 int) Option__string {
-    var t294 string
-    var inline363 string = _goml_runtime_core_int_to_string(value__5)
-    t294 = inline363
-    var t295 string = "value:" + t294
-    var t296 Option__string = Option__string_Some{
-        _0: t295,
+func _goml_m_inherent_i_closure__env__main__2_i_closure__env__main__2_i_apply(env145 closure_env_main_2, value__5 int) Option__string {
+    var t253 string
+    var inline322 string = _goml_runtime_core_int_to_string(value__5)
+    t253 = inline322
+    var t254 string = "value:" + t253
+    var t255 Option__string = Option__string_Some{
+        _0: t254,
     }
-    return t296
+    return t255
 }
 
-func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(env187 closure_env_main_3, error__9 string) int {
-    var inline365 int = _goml_runtime_core_string_len(error__9)
-    return inline365
+func _goml_m_inherent_i_closure__env__main__3_i_closure__env__main__3_i_apply(env146 closure_env_main_3, error__9 string) int {
+    var inline324 int = _goml_runtime_core_string_len(error__9)
+    return inline324
 }
 
-func _goml_m_inherent_i_closure__env__main__4_i_closure__env__main__4_i_apply(env188 closure_env_main_4, value__11 int) int {
-    var t302 int = value__11 + 2
-    return t302
+func _goml_m_inherent_i_closure__env__main__4_i_closure__env__main__4_i_apply(env147 closure_env_main_4, value__11 int) int {
+    var t261 int = value__11 + 2
+    return t261
 }
 
-func _goml_m_inherent_i_closure__env__main__5_i_closure__env__main__5_i_apply(env189 closure_env_main_5, value__13 string) int {
-    var inline367 int = _goml_runtime_core_string_len(value__13)
-    return inline367
+func _goml_m_inherent_i_closure__env__main__5_i_closure__env__main__5_i_apply(env148 closure_env_main_5, value__13 string) int {
+    var inline326 int = _goml_runtime_core_string_len(value__13)
+    return inline326
 }
 
-func _goml_m_inherent_i_closure__env__main__6_i_closure__env__main__6_i_apply(env190 closure_env_main_6, value__15 int) int {
+func _goml_m_inherent_i_closure__env__main__6_i_closure__env__main__6_i_apply(env149 closure_env_main_6, value__15 int) int {
     return value__15
 }
 
-func _goml_m_inherent_i_closure__env__main__7_i_closure__env__main__7_i_apply(env191 closure_env_main_7, value__16 int) Result__string__string {
-    var t310 string
-    var inline369 string = _goml_runtime_core_int_to_string(value__16)
-    t310 = inline369
-    var t311 string = "next:" + t310
-    var t312 Result__string__string = Result__string__string_Ok{
-        _0: t311,
+func _goml_m_inherent_i_closure__env__main__7_i_closure__env__main__7_i_apply(env150 closure_env_main_7, value__16 int) Result__string__string {
+    var t269 string
+    var inline328 string = _goml_runtime_core_int_to_string(value__16)
+    t269 = inline328
+    var t270 string = "next:" + t269
+    var t271 Result__string__string = Result__string__string_Ok{
+        _0: t270,
     }
-    return t312
+    return t271
 }
 
 func main() {

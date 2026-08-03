@@ -5,33 +5,33 @@ fn trait_impl#Eq#AlwaysDifferent#eq(self/0: AlwaysDifferent, other/1: AlwaysDiff
 fn main() -> unit {
   let first/2 = AlwaysDifferent { value: 7 } in
   let second/3 = AlwaysDifferent { value: 7 } in
-  let _wild177 = println__T_bool(trait_impl#Eq#AlwaysDifferent#eq(first/2, second/3)) in
-  let _wild178 = println__T_bool((!trait_impl#Eq#AlwaysDifferent#eq(first/2, second/3))) in
+  let _wild136 = println__T_bool(trait_impl#Eq#AlwaysDifferent#eq(first/2, second/3)) in
+  let _wild137 = println__T_bool((!trait_impl#Eq#AlwaysDifferent#eq(first/2, second/3))) in
   let left_tuple/4 = (AlwaysDifferent { value: 1 }, 2) in
   let right_tuple/5 = (AlwaysDifferent { value: 1 }, 2) in
-  let _wild181 =
+  let _wild140 =
     println__T_bool(
-      let _eq_lhs179 = left_tuple/4 in
-      let _eq_rhs180 = right_tuple/5 in
-      if trait_impl#Eq#AlwaysDifferent#eq(_eq_lhs179.0, _eq_rhs180.0) {
-          trait_impl#Eq#int#eq(_eq_lhs179.1, _eq_rhs180.1)
+      let _eq_lhs138 = left_tuple/4 in
+      let _eq_rhs139 = right_tuple/5 in
+      if trait_impl#Eq#AlwaysDifferent#eq(_eq_lhs138.0, _eq_rhs139.0) {
+          trait_impl#Eq#int#eq(_eq_lhs138.1, _eq_rhs139.1)
       } else {
           false
       }
     ) in
   let left_array/6 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
   let right_array/7 = [AlwaysDifferent { value: 1 }, AlwaysDifferent { value: 2 }] in
-  let _wild184 =
+  let _wild143 =
     println__T_bool(
-      let _eq_lhs182 = left_array/6 in
-      let _eq_rhs183 = right_array/7 in
+      let _eq_lhs141 = left_array/6 in
+      let _eq_rhs142 = right_array/7 in
       if trait_impl#Eq#AlwaysDifferent#eq(
-        @intrinsic(array.get)(_eq_lhs182, 0),
-        @intrinsic(array.get)(_eq_rhs183, 0)
+        @intrinsic(array.get)(_eq_lhs141, 0),
+        @intrinsic(array.get)(_eq_rhs142, 0)
       ) {
           trait_impl#Eq#AlwaysDifferent#eq(
-            @intrinsic(array.get)(_eq_lhs182, 1),
-            @intrinsic(array.get)(_eq_rhs183, 1)
+            @intrinsic(array.get)(_eq_lhs141, 1),
+            @intrinsic(array.get)(_eq_rhs142, 1)
           )
       } else {
           false

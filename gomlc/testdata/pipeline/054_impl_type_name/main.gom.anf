@@ -1,22 +1,22 @@
 fn trait_impl#TypeName#Point#type_name(self/0: Point) -> string {
-  let mtmp177 = self/0 in
-  let x178 = Point.x(self/0) in
-  let x179 = Point.y(self/0) in
-  let y/2 = x179 in
-  let x/1 = x178 in
-  join inline_cont218(t186: string) -> string {
-    let prefix/3 = ("Point(" + t186) in
-    let t187 = (prefix/3 + ", ") in
-    join inline_cont216(t188: string) -> string {
-      let t189 = (t187 + t188) in
-      let t190 = (t189 + ")") in
-      t190
+  let mtmp136 = self/0 in
+  let x137 = Point.x(self/0) in
+  let x138 = Point.y(self/0) in
+  let y/2 = x138 in
+  let x/1 = x137 in
+  join inline_cont177(t145: string) -> string {
+    let prefix/3 = ("Point(" + t145) in
+    let t146 = (prefix/3 + ", ") in
+    join inline_cont175(t147: string) -> string {
+      let t148 = (t146 + t147) in
+      let t149 = (t148 + ")") in
+      t149
     } in
-    let inline217 = @runtime(core.int32_to_string)(x179) in
-    jump inline_cont216(inline217)
+    let inline176 = @runtime(core.int32_to_string)(x138) in
+    jump inline_cont175(inline176)
   } in
-  let inline219 = @runtime(core.int32_to_string)(x178) in
-  jump inline_cont218(inline219)
+  let inline178 = @runtime(core.int32_to_string)(x137) in
+  jump inline_cont177(inline178)
 }
 
 fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
@@ -25,41 +25,41 @@ fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
       "Unit"
     },
     Tag_1 => {
-      let x180 = Shape::Location._0(self/4) in
-      let point/5 = x180 in
-      join inline_cont220(t195: string) -> string {
-        let t196 = ("Shape::" + t195) in
-        t196
+      let x139 = Shape::Location._0(self/4) in
+      let point/5 = x139 in
+      join inline_cont179(t154: string) -> string {
+        let t155 = ("Shape::" + t154) in
+        t155
       } in
-      let inline221 = x180 in
-      let inline222 = Point.x(x180) in
-      let inline223 = Point.y(x180) in
-      let inline224 = inline223 in
-      let inline225 = inline222 in
-      let inline226 = inherent#int32#int32#to_string(inline222) in
-      let inline227 = ("Point(" + inline226) in
-      let inline228 = (inline227 + ", ") in
-      let inline229 = inherent#int32#int32#to_string(inline223) in
-      let inline230 = (inline228 + inline229) in
-      let inline231 = (inline230 + ")") in
-      jump inline_cont220(inline231)
+      let inline180 = x139 in
+      let inline181 = Point.x(x139) in
+      let inline182 = Point.y(x139) in
+      let inline183 = inline182 in
+      let inline184 = inline181 in
+      let inline185 = inherent#int32#int32#to_string(inline181) in
+      let inline186 = ("Point(" + inline185) in
+      let inline187 = (inline186 + ", ") in
+      let inline188 = inherent#int32#int32#to_string(inline182) in
+      let inline189 = (inline187 + inline188) in
+      let inline190 = (inline189 + ")") in
+      jump inline_cont179(inline190)
     },
   }
 }
 
 fn show_point(point/6: Point) -> string {
-  let inline233 = point/6 in
-  let inline234 = Point.x(point/6) in
-  let inline235 = Point.y(point/6) in
-  let inline236 = inline235 in
-  let inline237 = inline234 in
-  let inline238 = inherent#int32#int32#to_string(inline234) in
-  let inline239 = ("Point(" + inline238) in
-  let inline240 = (inline239 + ", ") in
-  let inline241 = inherent#int32#int32#to_string(inline235) in
-  let inline242 = (inline240 + inline241) in
-  let inline243 = (inline242 + ")") in
-  inline243
+  let inline192 = point/6 in
+  let inline193 = Point.x(point/6) in
+  let inline194 = Point.y(point/6) in
+  let inline195 = inline194 in
+  let inline196 = inline193 in
+  let inline197 = inherent#int32#int32#to_string(inline193) in
+  let inline198 = ("Point(" + inline197) in
+  let inline199 = (inline198 + ", ") in
+  let inline200 = inherent#int32#int32#to_string(inline194) in
+  let inline201 = (inline199 + inline200) in
+  let inline202 = (inline201 + ")") in
+  inline202
 }
 
 fn show_shape(shape/7: Shape) -> string {
@@ -68,58 +68,58 @@ fn show_shape(shape/7: Shape) -> string {
       "Unit"
     },
     Tag_1 => {
-      let inline245 = Shape::Location._0(shape/7) in
-      let inline246 = inline245 in
-      let inline247 = trait_impl#TypeName#Point#type_name(inline245) in
-      let inline248 = ("Shape::" + inline247) in
-      inline248
+      let inline204 = Shape::Location._0(shape/7) in
+      let inline205 = inline204 in
+      let inline206 = trait_impl#TypeName#Point#type_name(inline204) in
+      let inline207 = ("Shape::" + inline206) in
+      inline207
     },
   }
 }
 
 fn main() -> unit {
   let point/8 = Point { x: 7, y: 9 } in
-  join inline_cont262(t204: string) -> unit {
-    join inline_cont259(mtmp181: unit) -> unit {
+  join inline_cont221(t163: string) -> unit {
+    join inline_cont218(mtmp140: unit) -> unit {
       let unit_shape/9 = Tag_0 in
-      join inline_cont257(t205: string) -> unit {
-        join inline_cont254(mtmp182: unit) -> unit {
-          let t206 = Point { x: 1, y: 2 } in
-          let location_shape/10 = Shape::Location(t206) in
-          join inline_cont252(t207: string) -> unit {
-            let inline250 = trait_impl#ToString#string#to_string(t207) in
-            let inline251 = @runtime(core.string_println)(inline250) in
+      join inline_cont216(t164: string) -> unit {
+        join inline_cont213(mtmp141: unit) -> unit {
+          let t165 = Point { x: 1, y: 2 } in
+          let location_shape/10 = Shape::Location(t165) in
+          join inline_cont211(t166: string) -> unit {
+            let inline209 = trait_impl#ToString#string#to_string(t166) in
+            let inline210 = @runtime(core.string_println)(inline209) in
             ()
           } in
-          let inline253 = trait_impl#TypeName#Shape#type_name(location_shape/10) in
-          jump inline_cont252(inline253)
+          let inline212 = trait_impl#TypeName#Shape#type_name(location_shape/10) in
+          jump inline_cont211(inline212)
         } in
-        let inline255 = trait_impl#ToString#string#to_string(t205) in
-        let inline256 = @runtime(core.string_println)(inline255) in
-        jump inline_cont254(())
+        let inline214 = trait_impl#ToString#string#to_string(t164) in
+        let inline215 = @runtime(core.string_println)(inline214) in
+        jump inline_cont213(())
       } in
-      let inline258 = trait_impl#TypeName#Shape#type_name(unit_shape/9) in
-      jump inline_cont257(inline258)
+      let inline217 = trait_impl#TypeName#Shape#type_name(unit_shape/9) in
+      jump inline_cont216(inline217)
     } in
-    let inline260 = trait_impl#ToString#string#to_string(t204) in
-    let inline261 = @runtime(core.string_println)(inline260) in
-    jump inline_cont259(())
+    let inline219 = trait_impl#ToString#string#to_string(t163) in
+    let inline220 = @runtime(core.string_println)(inline219) in
+    jump inline_cont218(())
   } in
-  let inline263 = trait_impl#TypeName#Point#type_name(point/8) in
-  jump inline_cont262(inline263)
+  let inline222 = trait_impl#TypeName#Point#type_name(point/8) in
+  jump inline_cont221(inline222)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t210 = @runtime(core.int32_to_string)(self/35) in
-  t210
+  let t169 = @runtime(core.int32_to_string)(self/35) in
+  t169
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont264(t212: string) -> unit {
-    let t213 = @runtime(core.string_println)(t212) in
+  join inline_cont223(t171: string) -> unit {
+    let t172 = @runtime(core.string_println)(t171) in
     ()
   } in
-  jump inline_cont264(value/31)
+  jump inline_cont223(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

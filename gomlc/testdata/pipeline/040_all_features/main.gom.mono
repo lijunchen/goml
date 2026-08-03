@@ -1,15 +1,15 @@
 fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
-  let mtmp177 = self/0 in
+  let mtmp136 = self/0 in
   {
-    let x178 = Tracker.label(mtmp177) in
-    let x179 = Tracker.count(mtmp177) in
-    let x180 = Tracker.toggled(mtmp177) in
+    let x137 = Tracker.label(mtmp136) in
+    let x138 = Tracker.count(mtmp136) in
+    let x139 = Tracker.toggled(mtmp136) in
     {
-      let toggled/3 = x180 in
+      let toggled/3 = x139 in
       {
-        let count/2 = x179 in
+        let count/2 = x138 in
         {
-          let label/1 = x178 in
+          let label/1 = x137 in
           {
             let current/4 = inherent#Ref#Ref[T]#get__T_int32(count/2) in
             let flag/5 = inherent#Ref#Ref[T]#get__T_bool(toggled/3) in
@@ -27,23 +27,23 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
 
 fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string {
   match self/10 {
-    Record__int32::Value(x181) => {
+    Record__int32::Value(x140) => {
       {
-        let x181 = Record__int32::Value._0(self/10) in
+        let x140 = Record__int32::Value._0(self/10) in
         {
-          let value/11 = x181 in
+          let value/11 = x140 in
           (("Value(" + inherent#int32#int32#to_string(value/11)) + ")")
         }
       }
     },
-    Record__int32::Pair(x182, x183) => {
+    Record__int32::Pair(x141, x142) => {
       {
-        let x182 = Record__int32::Pair._0(self/10) in
-        let x183 = Record__int32::Pair._1(self/10) in
+        let x141 = Record__int32::Pair._0(self/10) in
+        let x142 = Record__int32::Pair._1(self/10) in
         {
-          let after/13 = x183 in
+          let after/13 = x142 in
           {
-            let before/12 = x182 in
+            let before/12 = x141 in
             {
               let prefix/14 = ("Pair(" + inherent#int32#int32#to_string(before/12)) in
               (((prefix/14 + ", ") + inherent#int32#int32#to_string(after/13)) + ")")
@@ -60,23 +60,23 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
 
 fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> string {
   match self/15 {
-    Record__string::Value(x184) => {
+    Record__string::Value(x143) => {
       {
-        let x184 = Record__string::Value._0(self/15) in
+        let x143 = Record__string::Value._0(self/15) in
         {
-          let text/16 = x184 in
+          let text/16 = x143 in
           (("Value(" + text/16) + ")")
         }
       }
     },
-    Record__string::Pair(x185, x186) => {
+    Record__string::Pair(x144, x145) => {
       {
-        let x185 = Record__string::Pair._0(self/15) in
-        let x186 = Record__string::Pair._1(self/15) in
+        let x144 = Record__string::Pair._0(self/15) in
+        let x145 = Record__string::Pair._1(self/15) in
         {
-          let after/18 = x186 in
+          let after/18 = x145 in
           {
-            let before/17 = x185 in
+            let before/17 = x144 in
             {
               let prefix/19 = ("Pair(" + before/17) in
               (((prefix/19 + ", ") + after/18) + ")")
@@ -104,14 +104,14 @@ fn triple(value/28: int32) -> int32 {
 }
 
 fn pair_join(parts/29: (string, string)) -> string {
-  let mtmp188 = parts/29 in
+  let mtmp147 = parts/29 in
   {
-    let x189 = mtmp188.0 in
-    let x190 = mtmp188.1 in
+    let x148 = mtmp147.0 in
+    let x149 = mtmp147.1 in
     {
-      let right/31 = x190 in
+      let right/31 = x149 in
       {
-        let left/30 = x189 in
+        let left/30 = x148 in
         {
           ((left/30 + " -> ") + right/31)
         }
@@ -126,34 +126,34 @@ fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int
   let first_result/36 = first/34(value/32) in
   let second_result/37 = second/35(first_result/36) in
   let results/38 = [first_result/36, value/32] in
-  let _wild195 =
+  let _wild154 =
     {
-      let place_root191 = results/38 in
-      let index192 = 1 in
-      let place193 = @intrinsic(array.get)(place_root191, index192) in
-      let value194 = second_result/37 in
-      results/38 = @intrinsic(array.set)(place_root191, index192, value194)
+      let place_root150 = results/38 in
+      let index151 = 1 in
+      let place152 = @intrinsic(array.get)(place_root150, index151) in
+      let value153 = second_result/37 in
+      results/38 = @intrinsic(array.set)(place_root150, index151, value153)
     } in
   results/38
 }
 
 fn gather(record/39: Record__int32) -> Maybe__int32 {
   match record/39 {
-    Record__int32::Value(x196) => {
+    Record__int32::Value(x155) => {
       {
-        let x196 = Record__int32::Value._0(record/39) in
+        let x155 = Record__int32::Value._0(record/39) in
         {
-          let value/40 = x196 in
+          let value/40 = x155 in
           Maybe__int32::Some(value/40)
         }
       }
     },
-    Record__int32::Pair(x197, x198) => {
+    Record__int32::Pair(x156, x157) => {
       {
-        let x197 = Record__int32::Pair._0(record/39) in
-        let x198 = Record__int32::Pair._1(record/39) in
+        let x156 = Record__int32::Pair._0(record/39) in
+        let x157 = Record__int32::Pair._1(record/39) in
         {
-          let after/41 = x198 in
+          let after/41 = x157 in
           Maybe__int32::Some(after/41)
         }
       }
@@ -180,7 +180,7 @@ fn build_counter(label/42: string, start/43: int32) -> (
   let bump/50 =
     |delta/48| {
       let before/49 = inherent#Ref#Ref[T]#get__T_int32(count/44) in
-      let mtmp199 = inherent#Ref#Ref[T]#set__T_int32(count/44, (before/49 + delta/48)) in
+      let mtmp158 = inherent#Ref#Ref[T]#set__T_int32(count/44, (before/49 + delta/48)) in
       {
         Record__int32::Pair(before/49, inherent#Ref#Ref[T]#get__T_int32(count/44))
       }
@@ -188,7 +188,7 @@ fn build_counter(label/42: string, start/43: int32) -> (
   let flip/53 =
     || {
       let before/51 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
-      let mtmp200 = inherent#Ref#Ref[T]#set__T_bool(toggled/45, (!before/51)) in
+      let mtmp159 = inherent#Ref#Ref[T]#set__T_bool(toggled/45, (!before/51)) in
       {
         let after/52 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
         Record__string::Pair(
@@ -201,20 +201,20 @@ fn build_counter(label/42: string, start/43: int32) -> (
 }
 
 fn main() -> unit {
-  let mtmp201 = build_counter("goml", 2) in
+  let mtmp160 = build_counter("goml", 2) in
   {
-    let x202 = mtmp201.0 in
-    let x203 = mtmp201.1 in
-    let x204 = mtmp201.2 in
-    let x205 = mtmp201.3 in
+    let x161 = mtmp160.0 in
+    let x162 = mtmp160.1 in
+    let x163 = mtmp160.2 in
+    let x164 = mtmp160.3 in
     {
-      let flip/57 = x205 in
+      let flip/57 = x164 in
       {
-        let bump/56 = x204 in
+        let bump/56 = x163 in
         {
-          let snapshot/55 = x203 in
+          let snapshot/55 = x162 in
           {
-            let tracker/54 = x202 in
+            let tracker/54 = x161 in
             {
               let tracker_info/58 = trait_impl#Describe#Tracker#describe(tracker/54) in
               let first_record/59 = snapshot/55() in
@@ -240,11 +240,11 @@ fn main() -> unit {
                 trait_impl#Describe#Record__string#describe(flipped_record/61) in
               let summary/75 =
                 match stringified/65 {
-                  Maybe__string::Some(x206) => {
+                  Maybe__string::Some(x165) => {
                     {
-                      let x206 = Maybe__string::Some._0(stringified/65) in
+                      let x165 = Maybe__string::Some._0(stringified/65) in
                       {
-                        let text/74 = x206 in
+                        let text/74 = x165 in
                         ("Snapshot: " + text/74)
                       }
                     }
@@ -261,19 +261,19 @@ fn main() -> unit {
                   )
                 ) in
               let bool_text/77 = trait_impl#ToString#bool#to_string(order_check/70) in
-              let mtmp207 = println__T_string(tracker_info/58) in
+              let mtmp166 = println__T_string(tracker_info/58) in
               {
-                let mtmp208 = println__T_string(first_text/71) in
+                let mtmp167 = println__T_string(first_text/71) in
                 {
-                  let mtmp209 = println__T_string(bumped_text/72) in
+                  let mtmp168 = println__T_string(bumped_text/72) in
                   {
-                    let mtmp210 = println__T_string(flipped_text/73) in
+                    let mtmp169 = println__T_string(flipped_text/73) in
                     {
-                      let mtmp211 = println__T_string(summary/75) in
+                      let mtmp170 = println__T_string(summary/75) in
                       {
-                        let mtmp212 = println__T_string(pair_text/76) in
+                        let mtmp171 = println__T_string(pair_text/76) in
                         {
-                          let mtmp213 = println__T_string(bool_text/77) in
+                          let mtmp172 = println__T_string(bool_text/77) in
                           {
                             ()
                           }
@@ -291,12 +291,12 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/237: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/237)
+fn inherent#Ref#Ref[T]#get__T_int32(self/216: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/216)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/237: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/237)
+fn inherent#Ref#Ref[T]#get__T_bool(self/216: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/216)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
@@ -307,20 +307,20 @@ fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
   @runtime(core.bool_to_string)(self/66)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/236: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/236)
+fn inherent#Ref#Ref[T]#new__T_int32(value/215: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/215)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/236: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/236)
+fn inherent#Ref#Ref[T]#new__T_bool(value/215: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/215)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/238: Ref[int32], value/239: int32) -> unit {
-  @intrinsic(ref.set)(self/238, value/239)
+fn inherent#Ref#Ref[T]#set__T_int32(self/217: Ref[int32], value/218: int32) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/238: Ref[bool], value/239: bool) -> unit {
-  @intrinsic(ref.set)(self/238, value/239)
+fn inherent#Ref#Ref[T]#set__T_bool(self/217: Ref[bool], value/218: bool) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
 }
 
 fn choose__T_Maybe[int32](
@@ -341,11 +341,11 @@ fn choose__T_Maybe[int32](
 
 fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string) -> Maybe__string {
   match value/23 {
-    Maybe__int32::Some(x187) => {
+    Maybe__int32::Some(x146) => {
       {
-        let x187 = Maybe__int32::Some._0(value/23) in
+        let x146 = Maybe__int32::Some._0(value/23) in
         {
-          let inner/25 = x187 in
+          let inner/25 = x146 in
           Maybe__string::Some(f/24(inner/25))
         }
       }

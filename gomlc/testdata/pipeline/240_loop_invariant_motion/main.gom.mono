@@ -1,14 +1,14 @@
 fn optimized(base/0: int, count/1: int) -> int {
   let index/2 = 0 in
   let result/3 = 0 in
-  let _wild179 =
+  let _wild138 =
     while (index/2 < count/1) {
         {
           let square/4 = (base/0 * base/0) in
           let scaled/5 = (square/4 * 17) in
           let offset/6 = (scaled/5 + base/0) in
-          let _wild177 = result/3 = (result/3 + offset/6) in
-          let _wild178 = index/2 = (index/2 + 1) in
+          let _wild136 = result/3 = (result/3 + offset/6) in
+          let _wild137 = index/2 = (index/2 + 1) in
         }
     } in
   result/3
@@ -17,12 +17,12 @@ fn optimized(base/0: int, count/1: int) -> int {
 fn guarded(divisor/7: int, count/8: int) -> int {
   let index/9 = 0 in
   let result/10 = 0 in
-  let _wild182 =
+  let _wild141 =
     while (index/9 < count/8) {
         {
           let quotient/11 = (100 / divisor/7) in
-          let _wild180 = result/10 = (result/10 + quotient/11) in
-          let _wild181 = index/9 = (index/9 + 1) in
+          let _wild139 = result/10 = (result/10 + quotient/11) in
+          let _wild140 = index/9 = (index/9 + 1) in
         }
     } in
   result/10
@@ -32,22 +32,22 @@ fn changing(count/12: int) -> int {
   let index/13 = 0 in
   let value/14 = 1 in
   let result/15 = 0 in
-  let _wild186 =
+  let _wild145 =
     while (index/13 < count/12) {
         {
           let derived/16 = (value/14 + 1) in
-          let _wild183 = result/15 = (result/15 + derived/16) in
-          let _wild184 = value/14 = (value/14 + 1) in
-          let _wild185 = index/13 = (index/13 + 1) in
+          let _wild142 = result/15 = (result/15 + derived/16) in
+          let _wild143 = value/14 = (value/14 + 1) in
+          let _wild144 = index/13 = (index/13 + 1) in
         }
     } in
   result/15
 }
 
 fn main() -> unit {
-  let _wild187 = println__T_int(optimized(3, 4)) in
-  let _wild188 = println__T_int(guarded(0, 0)) in
-  let _wild189 = println__T_int(changing(3)) in
+  let _wild146 = println__T_int(optimized(3, 4)) in
+  let _wild147 = println__T_int(guarded(0, 0)) in
+  let _wild148 = println__T_int(changing(3)) in
 }
 
 fn println__T_int(value/31: int) -> unit {

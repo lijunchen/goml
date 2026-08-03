@@ -1,40 +1,40 @@
 fn trait_impl#Label#string#label(self/0: string) -> string {
-  let t180 = ("label:" + self/0) in
-  t180
+  let t139 = ("label:" + self/0) in
+  t139
 }
 
 fn trait_impl#Source#TextSource#get(self/1: TextSource) -> string {
-  let t183 = TextSource.value(self/1) in
-  t183
+  let t142 = TextSource.value(self/1) in
+  t142
 }
 
 fn main() -> unit {
-  let t185 = TextSource { value: "goml" } in
-  join inline_cont199(t186: string) -> unit {
-    let inline197 = trait_impl#ToString#string#to_string(t186) in
-    let inline198 = @runtime(core.string_println)(inline197) in
+  let t144 = TextSource { value: "goml" } in
+  join inline_cont158(t145: string) -> unit {
+    let inline156 = trait_impl#ToString#string#to_string(t145) in
+    let inline157 = @runtime(core.string_println)(inline156) in
     ()
   } in
-  let inline200 = trait_impl#Source#TextSource#get(t185) in
-  let inline201 = trait_impl#Label#string#label(inline200) in
-  jump inline_cont199(inline201)
+  let inline159 = trait_impl#Source#TextSource#get(t144) in
+  let inline160 = trait_impl#Label#string#label(inline159) in
+  jump inline_cont158(inline160)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont202(t188: string) -> unit {
-    let t189 = @runtime(core.string_println)(t188) in
+  join inline_cont161(t147: string) -> unit {
+    let t148 = @runtime(core.string_println)(t147) in
     ()
   } in
-  jump inline_cont202(value/31)
+  jump inline_cont161(value/31)
 }
 
 fn render__S_TextSource(source/2: TextSource) -> string {
-  join inline_cont205(t192: string) -> string {
-    let inline204 = ("label:" + t192) in
-    inline204
+  join inline_cont164(t151: string) -> string {
+    let inline163 = ("label:" + t151) in
+    inline163
   } in
-  let inline206 = TextSource.value(source/2) in
-  jump inline_cont205(inline206)
+  let inline165 = TextSource.value(source/2) in
+  jump inline_cont164(inline165)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

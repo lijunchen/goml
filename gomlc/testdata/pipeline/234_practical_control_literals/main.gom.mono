@@ -1,11 +1,11 @@
 fn unwrap_or_negative(value/0: Option__int) -> int {
-  let mtmp177 = value/0 in
-  match mtmp177 {
-    Option__int::Some(x178) => {
+  let mtmp136 = value/0 in
+  match mtmp136 {
+    Option__int::Some(x137) => {
       {
-        let x178 = Option__int::Some._0(mtmp177) in
+        let x137 = Option__int::Some._0(mtmp136) in
         {
-          let result/1 = x178 in
+          let result/1 = x137 in
           {
             result/1
           }
@@ -14,7 +14,7 @@ fn unwrap_or_negative(value/0: Option__int) -> int {
     },
     _ =>
       {
-        let _wild179 = return -1 in
+        let _wild138 = return -1 in
       },
   }
 }
@@ -23,36 +23,36 @@ fn count_to(limit/2: int) -> int {
   let counter/3 = inherent#Ref#Ref[T]#new__T_int(0) in
   loop {
     let current/4 = inherent#Ref#Ref[T]#get__T_int(counter/3) in
-    let _wild181 =
+    let _wild140 =
       if (current/4 >= limit/2) {
           {
-            let _wild180 = break current/4 in
+            let _wild139 = break current/4 in
           }
       } else {
           ()
       } in
-    let _wild182 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
+    let _wild141 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
   }
 }
 
 fn loop_option(value/5: Option__int) -> int {
   loop {
-    let mtmp183 = value/5 in
-    match mtmp183 {
-      Option__int::Some(x184) => {
+    let mtmp142 = value/5 in
+    match mtmp142 {
+      Option__int::Some(x143) => {
         {
-          let x184 = Option__int::Some._0(mtmp183) in
+          let x143 = Option__int::Some._0(mtmp142) in
           {
-            let item/6 = x184 in
+            let item/6 = x143 in
             {
-              let _wild185 = break item/6 in
+              let _wild144 = break item/6 in
             }
           }
         }
       },
       _ =>
         {
-          let _wild186 = break -2 in
+          let _wild145 = break -2 in
         },
     }
   }
@@ -60,11 +60,11 @@ fn loop_option(value/5: Option__int) -> int {
 
 fn nested_loop_value() -> int {
   loop {
-    let _wild188 =
+    let _wild147 =
       loop {
-        let _wild187 = break in
+        let _wild146 = break in
       } in
-    let _wild189 = break 7 in
+    let _wild148 = break 7 in
   }
 }
 
@@ -84,30 +84,30 @@ fn matches_raw_path(value/7: string) -> bool {
 }
 
 fn main() -> unit {
-  let _wild190 = println__T_string("C:\\tmp\\\"quoted\\\"") in
-  let _wild191 = println__T_string(("" + "}")) in
-  let _wild192 =
+  let _wild149 = println__T_string("C:\\tmp\\\"quoted\\\"") in
+  let _wild150 = println__T_string(("" + "}")) in
+  let _wild151 =
     println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::Some(11)))) in
-  let _wild193 =
+  let _wild152 =
     println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
-  let _wild194 = println__T_string(inherent#int#int#to_string(count_to(4))) in
-  let _wild195 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
-  let _wild196 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
-  let _wild197 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
-  let _wild198 =
+  let _wild153 = println__T_string(inherent#int#int#to_string(count_to(4))) in
+  let _wild154 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
+  let _wild155 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
+  let _wild156 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
+  let _wild157 =
     println__T_string(trait_impl#ToString#bool#to_string(matches_raw_path("C:\\tmp"))) in
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/236: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/236)
+fn inherent#Ref#Ref[T]#new__T_int(value/215: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/215)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/237: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/237)
+fn inherent#Ref#Ref[T]#get__T_int(self/216: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/216)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/238: Ref[int], value/239: int) -> unit {
-  @intrinsic(ref.set)(self/238, value/239)
+fn inherent#Ref#Ref[T]#set__T_int(self/217: Ref[int], value/218: int) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
 }
 
 fn println__T_string(value/31: string) -> unit {

@@ -16,31 +16,31 @@ fn close_handle(handle/1: Handle, ok/2: bool) -> Result__unit__string {
 
 fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result__string__string {
   let handle/5 =
-    let mtmp177 = open_handle(open_ok/3) in
-    match mtmp177 {
-      Result__Handle__string::Ok(x178) => {
-        let x178 = Result__Handle__string::Ok._0(mtmp177) in
-        let try_value/24 = x178 in
+    let mtmp136 = open_handle(open_ok/3) in
+    match mtmp136 {
+      Result__Handle__string::Ok(x137) => {
+        let x137 = Result__Handle__string::Ok._0(mtmp136) in
+        let try_value/24 = x137 in
         try_value/24
       },
-      Result__Handle__string::Err(x179) => {
-        let x179 = Result__Handle__string::Err._0(mtmp177) in
-        let try_residual/24 = x179 in
+      Result__Handle__string::Err(x138) => {
+        let x138 = Result__Handle__string::Err._0(mtmp136) in
+        let try_residual/24 = x138 in
         return Result__string__string::Err(try_residual/24)
       },
     } in
   let name/6 = Handle.name(handle/5) in
-  let _wild183 =
-    let mtmp180 = close_handle(handle/5, close_ok/4) in
-    match mtmp180 {
-      Result__unit__string::Ok(x181) => {
-        let x181 = Result__unit__string::Ok._0(mtmp180) in
-        let try_value/31 = x181 in
+  let _wild142 =
+    let mtmp139 = close_handle(handle/5, close_ok/4) in
+    match mtmp139 {
+      Result__unit__string::Ok(x140) => {
+        let x140 = Result__unit__string::Ok._0(mtmp139) in
+        let try_value/31 = x140 in
         try_value/31
       },
-      Result__unit__string::Err(x182) => {
-        let x182 = Result__unit__string::Err._0(mtmp180) in
-        let try_residual/31 = x182 in
+      Result__unit__string::Err(x141) => {
+        let x141 = Result__unit__string::Err._0(mtmp139) in
+        let try_residual/31 = x141 in
         return Result__string__string::Err(try_residual/31)
       },
     } in
@@ -49,23 +49,23 @@ fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result__string__string {
 
 fn show(res/7: Result__string__string) -> string {
   match res/7 {
-    Result__string__string::Ok(x184) => {
-      let x184 = Result__string__string::Ok._0(res/7) in
-      let value/8 = x184 in
+    Result__string__string::Ok(x143) => {
+      let x143 = Result__string__string::Ok._0(res/7) in
+      let value/8 = x143 in
       ("ok " + value/8)
     },
-    Result__string__string::Err(x185) => {
-      let x185 = Result__string__string::Err._0(res/7) in
-      let err/9 = x185 in
+    Result__string__string::Err(x144) => {
+      let x144 = Result__string__string::Err._0(res/7) in
+      let err/9 = x144 in
       ("err " + err/9)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild186 = println__T_string(show(use_handle(true, true))) in
-  let _wild187 = println__T_string(show(use_handle(false, true))) in
-  let _wild188 = println__T_string(show(use_handle(true, false))) in
+  let _wild145 = println__T_string(show(use_handle(true, true))) in
+  let _wild146 = println__T_string(show(use_handle(false, true))) in
+  let _wild147 = println__T_string(show(use_handle(true, false))) in
   ()
 }
 

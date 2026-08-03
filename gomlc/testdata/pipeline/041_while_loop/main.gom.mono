@@ -1,17 +1,17 @@
 fn sum_to(limit/0: int32) -> int32 {
   let acc/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let mtmp179 =
+  let mtmp138 =
     while (inherent#Ref#Ref[T]#get__T_int32(i/2) < limit/0) {
         {
           let current/3 = inherent#Ref#Ref[T]#get__T_int32(i/2) in
-          let mtmp177 =
+          let mtmp136 =
             inherent#Ref#Ref[T]#set__T_int32(
               acc/1,
               (inherent#Ref#Ref[T]#get__T_int32(acc/1) + current/3)
             ) in
           {
-            let mtmp178 = inherent#Ref#Ref[T]#set__T_int32(i/2, (current/3 + 1)) in
+            let mtmp137 = inherent#Ref#Ref[T]#set__T_int32(i/2, (current/3 + 1)) in
             {
               ()
             }
@@ -27,14 +27,14 @@ fn sum_even(limit/4: int32) -> int32 {
   let acc/5 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/6 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let is_even/7 = inherent#Ref#Ref[T]#new__T_bool(true) in
-  let mtmp182 =
+  let mtmp141 =
     while (inherent#Ref#Ref[T]#get__T_int32(i/6) < limit/4) {
         {
           let current/8 = inherent#Ref#Ref[T]#get__T_int32(i/6) in
-          let mtmp180 = inherent#Ref#Ref[T]#set__T_int32(i/6, (current/8 + 1)) in
+          let mtmp139 = inherent#Ref#Ref[T]#set__T_int32(i/6, (current/8 + 1)) in
           {
             let add_now/9 = inherent#Ref#Ref[T]#get__T_bool(is_even/7) in
-            let mtmp181 = inherent#Ref#Ref[T]#set__T_bool(is_even/7, (!add_now/9)) in
+            let mtmp140 = inherent#Ref#Ref[T]#set__T_bool(is_even/7, (!add_now/9)) in
             {
               if add_now/9 {
                   {
@@ -60,13 +60,13 @@ fn sum_even(limit/4: int32) -> int32 {
 fn main() -> unit {
   let first/10 = sum_to(5) in
   let evens/11 = sum_even(6) in
-  let mtmp183 = print__T_string("sum_to(5)=") in
+  let mtmp142 = print__T_string("sum_to(5)=") in
   {
-    let mtmp184 = println__T_int32(first/10) in
+    let mtmp143 = println__T_int32(first/10) in
     {
-      let mtmp185 = print__T_string("sum_even(6)=") in
+      let mtmp144 = print__T_string("sum_even(6)=") in
       {
-        let mtmp186 = println__T_int32(evens/11) in
+        let mtmp145 = println__T_int32(evens/11) in
         {
           ()
         }
@@ -75,28 +75,28 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/236: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/236)
+fn inherent#Ref#Ref[T]#new__T_int32(value/215: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/215)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/237: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/237)
+fn inherent#Ref#Ref[T]#get__T_int32(self/216: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/216)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/238: Ref[int32], value/239: int32) -> unit {
-  @intrinsic(ref.set)(self/238, value/239)
+fn inherent#Ref#Ref[T]#set__T_int32(self/217: Ref[int32], value/218: int32) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/236: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/236)
+fn inherent#Ref#Ref[T]#new__T_bool(value/215: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/215)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/237: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/237)
+fn inherent#Ref#Ref[T]#get__T_bool(self/216: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/216)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/238: Ref[bool], value/239: bool) -> unit {
-  @intrinsic(ref.set)(self/238, value/239)
+fn inherent#Ref#Ref[T]#set__T_bool(self/217: Ref[bool], value/218: bool) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
 }
 
 fn print__T_string(value/30: string) -> unit {

@@ -329,14 +329,14 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
 
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
-    Result__string__string::Ok(x177) => {
-      let x177 = Result__string__string::Ok._0(res/0) in
-      let value/1 = x177 in
+    Result__string__string::Ok(x136) => {
+      let x136 = Result__string__string::Ok._0(res/0) in
+      let value/1 = x136 in
       value/1
     },
-    Result__string__string::Err(x178) => {
-      let x178 = Result__string__string::Err._0(res/0) in
-      let err/2 = x178 in
+    Result__string__string::Err(x137) => {
+      let x137 = Result__string__string::Err._0(res/0) in
+      let err/2 = x137 in
       ("err " + err/2)
     },
   }
@@ -344,27 +344,27 @@ fn show_read(res/0: Result__string__string) -> string {
 
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
   match res/3 {
-    Result__Vec[string]__string::Ok(x179) => {
-      let x179 = Result__Vec[string]__string::Ok._0(res/3) in
-      let names/4 = x179 in
+    Result__Vec[string]__string::Ok(x138) => {
+      let x138 = Result__Vec[string]__string::Ok._0(res/3) in
+      let names/4 = x138 in
       trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(names/4) > 0))
     },
-    Result__Vec[string]__string::Err(x180) => {
-      let x180 = Result__Vec[string]__string::Err._0(res/3) in
-      let err/5 = x180 in
+    Result__Vec[string]__string::Err(x139) => {
+      let x139 = Result__Vec[string]__string::Err._0(res/3) in
+      let err/5 = x139 in
       ("err " + err/5)
     },
   }
 }
 
 fn main() -> unit {
-  let mtmp181 = std::fs::write_file("goml-std-test.txt", "std-ok") in
-  let _wild182 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
-  let _wild183 =
+  let mtmp140 = std::fs::write_file("goml-std-test.txt", "std-ok") in
+  let _wild141 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
+  let _wild142 =
     std::io::println__T_string(
       trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))
     ) in
-  let _wild184 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
+  let _wild143 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
   ()
 }
 
@@ -372,57 +372,57 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/154: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/154)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/133: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/133)
 }
 
 fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
   @runtime(core.string_to_bytes)(self/53)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/166: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/166)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/145: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/145)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/167: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/167)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/146: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/146)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/168: Vec[uint8]) -> bool {
-  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/168), 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/147: Vec[uint8]) -> bool {
+  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/147), 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/155: Vec[uint8], elem/156: uint8) -> unit {
-  @intrinsic(vec.push)(self/155, elem/156)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/134: Vec[uint8], elem/135: uint8) -> unit {
+  @intrinsic(vec.push)(self/134, elem/135)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/176: Vec[uint8]) -> Option__uint8 {
-  let len/177 = inherent#Vec#Vec[T]#len__T_uint8(self/176) in
-  if trait_impl#Eq#int#eq(len/177, 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/155: Vec[uint8]) -> Option__uint8 {
+  let len/156 = inherent#Vec#Vec[T]#len__T_uint8(self/155) in
+  if trait_impl#Eq#int#eq(len/156, 0) {
       Option__uint8::None
   } else {
-      let value/178 = @intrinsic(vec.get)(self/176, (len/177 - 1)) in
-      let _wild65 = inherent#Vec#Vec[T]#truncate__T_uint8(self/176, (len/177 - 1)) in
-      Option__uint8::Some(value/178)
+      let value/157 = @intrinsic(vec.get)(self/155, (len/156 - 1)) in
+      let _wild49 = inherent#Vec#Vec[T]#truncate__T_uint8(self/155, (len/156 - 1)) in
+      Option__uint8::Some(value/157)
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/169: Vec[uint8], additional/170: int) -> unit {
-  @intrinsic(vec.reserve)(self/169, additional/170)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/148: Vec[uint8], additional/149: int) -> unit {
+  @intrinsic(vec.reserve)(self/148, additional/149)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/171: Vec[uint8], len/172: int) -> unit {
-  @intrinsic(vec.truncate)(self/171, len/172)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/150: Vec[uint8], len/151: int) -> unit {
+  @intrinsic(vec.truncate)(self/150, len/151)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/173: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/173, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/152: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/152, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/204: Vec[uint8], start/205: int, end/206: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/183: Vec[uint8], start/184: int, end/185: int) -> Slice[
   uint8
 ] {
-  @intrinsic(slice.new)(self/204, start/205, end/206)
+  @intrinsic(slice.new)(self/183, start/184, end/185)
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -452,8 +452,8 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   (true, value/25)
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/166: Vec[string]) -> int {
-  @intrinsic(vec.len)(self/166)
+fn inherent#Vec#Vec[T]#len__T_string(self/145: Vec[string]) -> int {
+  @intrinsic(vec.len)(self/145)
 }
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {

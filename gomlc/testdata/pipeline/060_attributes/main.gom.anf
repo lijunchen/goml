@@ -1,24 +1,24 @@
 fn trait_impl#ToString#Point#to_string(self/0: Point) -> string {
-  let mtmp177 = self/0 in
-  let x178 = Point.x(self/0) in
-  let x179 = Point.y(self/0) in
-  let y/2 = x179 in
-  let x/1 = x178 in
-  let t189 = ("Point { " + "x: ") in
-  join inline_cont222(t190: string) -> string {
-    let t191 = (t189 + t190) in
-    let t192 = (t191 + ", ") in
-    let t193 = (t192 + "y: ") in
-    join inline_cont220(t194: string) -> string {
-      let t195 = (t193 + t194) in
-      let t196 = (t195 + " }") in
-      t196
+  let mtmp136 = self/0 in
+  let x137 = Point.x(self/0) in
+  let x138 = Point.y(self/0) in
+  let y/2 = x138 in
+  let x/1 = x137 in
+  let t148 = ("Point { " + "x: ") in
+  join inline_cont181(t149: string) -> string {
+    let t150 = (t148 + t149) in
+    let t151 = (t150 + ", ") in
+    let t152 = (t151 + "y: ") in
+    join inline_cont179(t153: string) -> string {
+      let t154 = (t152 + t153) in
+      let t155 = (t154 + " }") in
+      t155
     } in
-    let inline221 = @runtime(core.int32_to_string)(x179) in
-    jump inline_cont220(inline221)
+    let inline180 = @runtime(core.int32_to_string)(x138) in
+    jump inline_cont179(inline180)
   } in
-  let inline223 = @runtime(core.int32_to_string)(x178) in
-  jump inline_cont222(inline223)
+  let inline182 = @runtime(core.int32_to_string)(x137) in
+  jump inline_cont181(inline182)
 }
 
 fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
@@ -27,88 +27,88 @@ fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
       "Message::Quit"
     },
     Tag_1 => {
-      let x180 = Message::Move._0(self/3) in
-      let x181 = Message::Move._1(self/3) in
-      let __field1/5 = x181 in
-      let __field0/4 = x180 in
-      join inline_cont226(t201: string) -> string {
-        let t202 = ("Message::Move(" + t201) in
-        let t203 = (t202 + ", ") in
-        join inline_cont224(t204: string) -> string {
-          let t205 = (t203 + t204) in
-          let t206 = (t205 + ")") in
-          t206
+      let x139 = Message::Move._0(self/3) in
+      let x140 = Message::Move._1(self/3) in
+      let __field1/5 = x140 in
+      let __field0/4 = x139 in
+      join inline_cont185(t160: string) -> string {
+        let t161 = ("Message::Move(" + t160) in
+        let t162 = (t161 + ", ") in
+        join inline_cont183(t163: string) -> string {
+          let t164 = (t162 + t163) in
+          let t165 = (t164 + ")") in
+          t165
         } in
-        let inline225 = @runtime(core.int32_to_string)(x181) in
-        jump inline_cont224(inline225)
+        let inline184 = @runtime(core.int32_to_string)(x140) in
+        jump inline_cont183(inline184)
       } in
-      let inline227 = @runtime(core.int32_to_string)(x180) in
-      jump inline_cont226(inline227)
+      let inline186 = @runtime(core.int32_to_string)(x139) in
+      jump inline_cont185(inline186)
     },
     Tag_2 => {
-      let x182 = Message::Write._0(self/3) in
-      let __field0/6 = x182 in
-      let t207 = ("Message::Write(" + x182) in
-      let t208 = (t207 + ")") in
-      t208
+      let x141 = Message::Write._0(self/3) in
+      let __field0/6 = x141 in
+      let t166 = ("Message::Write(" + x141) in
+      let t167 = (t166 + ")") in
+      t167
     },
   }
 }
 
 fn main() -> unit {
   let point/7 = Point { x: 4, y: 7 } in
-  join inline_cont240(summary/8: string) -> unit {
-    let t210 = Message::Move(1, 2) in
-    let mv/9 = trait_impl#ToString#Message#to_string(t210) in
-    let t211 = Message::Write("done") in
-    let text/10 = trait_impl#ToString#Message#to_string(t211) in
+  join inline_cont199(summary/8: string) -> unit {
+    let t169 = Message::Move(1, 2) in
+    let mv/9 = trait_impl#ToString#Message#to_string(t169) in
+    let t170 = Message::Write("done") in
+    let text/10 = trait_impl#ToString#Message#to_string(t170) in
     let exit/11 = trait_impl#ToString#Message#to_string(Tag_0) in
-    join inline_cont237(_wild183: unit) -> unit {
-      join inline_cont234(_wild184: unit) -> unit {
-        join inline_cont231(_wild185: unit) -> unit {
-          let inline229 = trait_impl#ToString#string#to_string(exit/11) in
-          let inline230 = @runtime(core.string_println)(inline229) in
+    join inline_cont196(_wild142: unit) -> unit {
+      join inline_cont193(_wild143: unit) -> unit {
+        join inline_cont190(_wild144: unit) -> unit {
+          let inline188 = trait_impl#ToString#string#to_string(exit/11) in
+          let inline189 = @runtime(core.string_println)(inline188) in
           ()
         } in
-        let inline232 = trait_impl#ToString#string#to_string(text/10) in
-        let inline233 = @runtime(core.string_println)(inline232) in
-        jump inline_cont231(())
+        let inline191 = trait_impl#ToString#string#to_string(text/10) in
+        let inline192 = @runtime(core.string_println)(inline191) in
+        jump inline_cont190(())
       } in
-      let inline235 = trait_impl#ToString#string#to_string(mv/9) in
-      let inline236 = @runtime(core.string_println)(inline235) in
-      jump inline_cont234(())
+      let inline194 = trait_impl#ToString#string#to_string(mv/9) in
+      let inline195 = @runtime(core.string_println)(inline194) in
+      jump inline_cont193(())
     } in
-    let inline238 = trait_impl#ToString#string#to_string(summary/8) in
-    let inline239 = @runtime(core.string_println)(inline238) in
-    jump inline_cont237(())
+    let inline197 = trait_impl#ToString#string#to_string(summary/8) in
+    let inline198 = @runtime(core.string_println)(inline197) in
+    jump inline_cont196(())
   } in
-  let inline241 = point/7 in
-  let inline242 = 4 in
-  let inline243 = 7 in
-  let inline244 = inline243 in
-  let inline245 = inline242 in
-  let inline246 = ("Point { " + "x: ") in
-  let inline247 = inherent#int32#int32#to_string(inline242) in
-  let inline248 = (inline246 + inline247) in
-  let inline249 = (inline248 + ", ") in
-  let inline250 = (inline249 + "y: ") in
-  let inline251 = inherent#int32#int32#to_string(inline243) in
-  let inline252 = (inline250 + inline251) in
-  let inline253 = (inline252 + " }") in
-  jump inline_cont240(inline253)
+  let inline200 = point/7 in
+  let inline201 = 4 in
+  let inline202 = 7 in
+  let inline203 = inline202 in
+  let inline204 = inline201 in
+  let inline205 = ("Point { " + "x: ") in
+  let inline206 = inherent#int32#int32#to_string(inline201) in
+  let inline207 = (inline205 + inline206) in
+  let inline208 = (inline207 + ", ") in
+  let inline209 = (inline208 + "y: ") in
+  let inline210 = inherent#int32#int32#to_string(inline202) in
+  let inline211 = (inline209 + inline210) in
+  let inline212 = (inline211 + " }") in
+  jump inline_cont199(inline212)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t214 = @runtime(core.int32_to_string)(self/35) in
-  t214
+  let t173 = @runtime(core.int32_to_string)(self/35) in
+  t173
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont254(t216: string) -> unit {
-    let t217 = @runtime(core.string_println)(t216) in
+  join inline_cont213(t175: string) -> unit {
+    let t176 = @runtime(core.string_println)(t175) in
     ()
   } in
-  jump inline_cont254(value/31)
+  jump inline_cont213(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

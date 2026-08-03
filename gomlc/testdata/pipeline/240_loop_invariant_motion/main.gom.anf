@@ -1,112 +1,112 @@
 fn optimized(base/0: int, count/1: int) -> int {
   let index/2 = 0 in
   let result/3 = 0 in
-  join exit192() -> int {
-    let _wild179 = () in
+  join exit151() -> int {
+    let _wild138 = () in
     result/3
   } in
   let square/4 = (base/0 * base/0) in
   let scaled/5 = (square/4 * 17) in
   let offset/6 = (scaled/5 + base/0) in
   joinrec {
-    join loop193() -> int {
-      let t194 = (index/2 < count/1) in
-      if t194 {
-        let t195 = (result/3 + offset/6) in
-        let _wild177 = result/3 = t195 in
-        let t196 = (index/2 + 1) in
-        let _wild178 = index/2 = t196 in
-        jump loop193()
+    join loop152() -> int {
+      let t153 = (index/2 < count/1) in
+      if t153 {
+        let t154 = (result/3 + offset/6) in
+        let _wild136 = result/3 = t154 in
+        let t155 = (index/2 + 1) in
+        let _wild137 = index/2 = t155 in
+        jump loop152()
       } else {
-        jump exit192()
+        jump exit151()
       }
     } in
   } in
-  jump loop193()
+  jump loop152()
 }
 
 fn guarded(divisor/7: int, count/8: int) -> int {
   let index/9 = 0 in
   let result/10 = 0 in
-  join exit199() -> int {
-    let _wild182 = () in
+  join exit158() -> int {
+    let _wild141 = () in
     result/10
   } in
   joinrec {
-    join loop200() -> int {
-      let t201 = (index/9 < count/8) in
-      if t201 {
+    join loop159() -> int {
+      let t160 = (index/9 < count/8) in
+      if t160 {
         let quotient/11 = (100 / divisor/7) in
-        let t202 = (result/10 + quotient/11) in
-        let _wild180 = result/10 = t202 in
-        let t203 = (index/9 + 1) in
-        let _wild181 = index/9 = t203 in
-        jump loop200()
+        let t161 = (result/10 + quotient/11) in
+        let _wild139 = result/10 = t161 in
+        let t162 = (index/9 + 1) in
+        let _wild140 = index/9 = t162 in
+        jump loop159()
       } else {
-        jump exit199()
+        jump exit158()
       }
     } in
   } in
-  jump loop200()
+  jump loop159()
 }
 
 fn changing(count/12: int) -> int {
   let index/13 = 0 in
   let value/14 = 1 in
   let result/15 = 0 in
-  join exit206() -> int {
-    let _wild186 = () in
+  join exit165() -> int {
+    let _wild145 = () in
     result/15
   } in
   joinrec {
-    join loop207() -> int {
-      let t208 = (index/13 < count/12) in
-      if t208 {
+    join loop166() -> int {
+      let t167 = (index/13 < count/12) in
+      if t167 {
         let derived/16 = (value/14 + 1) in
-        let t209 = (result/15 + derived/16) in
-        let _wild183 = result/15 = t209 in
-        let t210 = (value/14 + 1) in
-        let _wild184 = value/14 = t210 in
-        let t211 = (index/13 + 1) in
-        let _wild185 = index/13 = t211 in
-        jump loop207()
+        let t168 = (result/15 + derived/16) in
+        let _wild142 = result/15 = t168 in
+        let t169 = (value/14 + 1) in
+        let _wild143 = value/14 = t169 in
+        let t170 = (index/13 + 1) in
+        let _wild144 = index/13 = t170 in
+        jump loop166()
       } else {
-        jump exit206()
+        jump exit165()
       }
     } in
   } in
-  jump loop207()
+  jump loop166()
 }
 
 fn main() -> unit {
-  let t213 = optimized(3, 4) in
-  join inline_cont228(_wild187: unit) -> unit {
-    let t214 = guarded(0, 0) in
-    join inline_cont225(_wild188: unit) -> unit {
-      let t215 = changing(3) in
-      let inline223 = trait_impl#ToString#int#to_string(t215) in
-      let inline224 = @runtime(core.string_println)(inline223) in
+  let t172 = optimized(3, 4) in
+  join inline_cont187(_wild146: unit) -> unit {
+    let t173 = guarded(0, 0) in
+    join inline_cont184(_wild147: unit) -> unit {
+      let t174 = changing(3) in
+      let inline182 = trait_impl#ToString#int#to_string(t174) in
+      let inline183 = @runtime(core.string_println)(inline182) in
       ()
     } in
-    let inline226 = trait_impl#ToString#int#to_string(t214) in
-    let inline227 = @runtime(core.string_println)(inline226) in
-    jump inline_cont225(())
+    let inline185 = trait_impl#ToString#int#to_string(t173) in
+    let inline186 = @runtime(core.string_println)(inline185) in
+    jump inline_cont184(())
   } in
-  let inline229 = trait_impl#ToString#int#to_string(t213) in
-  let inline230 = @runtime(core.string_println)(inline229) in
-  jump inline_cont228(())
+  let inline188 = trait_impl#ToString#int#to_string(t172) in
+  let inline189 = @runtime(core.string_println)(inline188) in
+  jump inline_cont187(())
 }
 
 fn println__T_int(value/31: int) -> unit {
-  join inline_cont231(t217: string) -> unit {
-    let t218 = @runtime(core.string_println)(t217) in
+  join inline_cont190(t176: string) -> unit {
+    let t177 = @runtime(core.string_println)(t176) in
     ()
   } in
-  let inline232 = @runtime(core.int_to_string)(value/31) in
-  jump inline_cont231(inline232)
+  let inline191 = @runtime(core.int_to_string)(value/31) in
+  jump inline_cont190(inline191)
 }
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t221 = @runtime(core.int_to_string)(self/69) in
-  t221
+  let t180 = @runtime(core.int_to_string)(self/69) in
+  t180
 }

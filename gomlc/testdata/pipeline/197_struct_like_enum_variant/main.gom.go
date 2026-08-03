@@ -73,18 +73,18 @@ func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__3 Key, other__4 Key) bool {
             return false
         }
     case Point:
-        var x182 int32 = other__4.(Point)._0
-        var x183 int32 = other__4.(Point)._1
+        var x141 int32 = other__4.(Point)._0
+        var x142 int32 = other__4.(Point)._1
         switch self__3.(type) {
         case Point:
-            var x186 int32 = self__3.(Point)._0
-            var x187 int32 = self__3.(Point)._1
-            var jp225 bool
-            var inline284 bool = x186 == x182
-            jp225 = inline284
-            if jp225 {
-                var inline286 bool = x187 == x183
-                return inline286
+            var x145 int32 = self__3.(Point)._0
+            var x146 int32 = self__3.(Point)._1
+            var jp184 bool
+            var inline243 bool = x145 == x141
+            jp184 = inline243
+            if jp184 {
+                var inline245 bool = x146 == x142
+                return inline245
             } else {
                 return false
             }
@@ -98,53 +98,53 @@ func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__3 Key, other__4 Key) bool {
 
 func main0() struct{} {
     var x__22 int32 = 3
-    var t246 int32
-    var inline326 int32 = 4
-    var inline330 int32 = x__22 + inline326
-    t246 = inline330
-    var inline321 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t246)
-    _goml_runtime_core_string_println(inline321)
-    var t247 string
-    var inline318 string = "north"
-    t247 = inline318
-    var inline311 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t247)
-    _goml_runtime_core_string_println(inline311)
-    var t249 string
-    var inline298 int32 = 1
-    var inline299 int32 = 2
-    var inline302 string = "Key::Point { " + "x: "
-    var inline303 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline298)
-    var inline304 string = inline302 + inline303
-    var inline305 string = inline304 + ", "
-    var inline306 string = inline305 + "y: "
-    var inline307 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline299)
-    var inline308 string = inline306 + inline307
-    var inline309 string = inline308 + " }"
-    t249 = inline309
-    var inline295 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t249)
-    _goml_runtime_core_string_println(inline295)
-    var t250 Key = Point{
+    var t205 int32
+    var inline285 int32 = 4
+    var inline289 int32 = x__22 + inline285
+    t205 = inline289
+    var inline280 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t205)
+    _goml_runtime_core_string_println(inline280)
+    var t206 string
+    var inline277 string = "north"
+    t206 = inline277
+    var inline270 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
+    _goml_runtime_core_string_println(inline270)
+    var t208 string
+    var inline257 int32 = 1
+    var inline258 int32 = 2
+    var inline261 string = "Key::Point { " + "x: "
+    var inline262 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline257)
+    var inline263 string = inline261 + inline262
+    var inline264 string = inline263 + ", "
+    var inline265 string = inline264 + "y: "
+    var inline266 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline258)
+    var inline267 string = inline265 + inline266
+    var inline268 string = inline267 + " }"
+    t208 = inline268
+    var inline254 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
+    _goml_runtime_core_string_println(inline254)
+    var t209 Key = Point{
         _0: 1,
         _1: 2,
     }
-    var t251 Key = Point{
+    var t210 Key = Point{
         _0: 1,
         _1: 2,
     }
-    var t252 bool = _goml_m_trait__impl_i_Eq_i_Key_i_eq(t250, t251)
-    var inline292 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t252)
-    _goml_runtime_core_string_println(inline292)
+    var t211 bool = _goml_m_trait__impl_i_Eq_i_Key_i_eq(t209, t210)
+    var inline251 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t211)
+    _goml_runtime_core_string_println(inline251)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t255 string = _goml_runtime_core_int32_to_string(self__35)
-    return t255
+    var t214 string = _goml_runtime_core_int32_to_string(self__35)
+    return t214
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t273 string = _goml_runtime_core_int32_to_string(self__72)
-    return t273
+    var t232 string = _goml_runtime_core_int32_to_string(self__72)
+    return t232
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
@@ -152,8 +152,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t278 string = _goml_runtime_core_bool_to_string(self__66)
-    return t278
+    var t237 string = _goml_runtime_core_bool_to_string(self__66)
+    return t237
 }
 
 func main() {

@@ -1,19 +1,19 @@
 fn main() -> unit {
   let some/0 = Option__int::Some(3) in
   let mapped/2 = inherent#Option#Option[T]#map__T_int__U_string(some/0, closure_env_main_0 {}) in
-  let _wild177 =
+  let _wild136 =
     println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(mapped/2, "missing")) in
   let static_mapped/4 =
     inherent#Option#Option[T]#map__T_int__U_string(some/0, closure_env_main_1 {}) in
-  let _wild178 =
+  let _wild137 =
     println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(static_mapped/4, "missing")) in
   let chained/6 =
     inherent#Option#Option[T]#and_then__T_int__U_string(some/0, closure_env_main_2 {}) in
-  let _wild179 =
+  let _wild138 =
     println__T_string(inherent#Option#Option[T]#unwrap_or__T_string(chained/6, "missing")) in
   let none/7 = Option__int::None in
   let converted/8 = inherent#Option#Option[T]#ok_or__E_string__T_int(none/7, "none") in
-  let _wild180 =
+  let _wild139 =
     println__T_int(
       inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(
         converted/8,
@@ -21,7 +21,7 @@ fn main() -> unit {
       )
     ) in
   let ok/10 = Result__int__string::Ok(5) in
-  let _wild181 =
+  let _wild140 =
     println__T_int(
       inherent#Result#Result[T,E]#unwrap_or__E_string__T_int(
         inherent#Result#Result[T,E]#map__E_string__T_int__U_int(ok/10, closure_env_main_4 {}),
@@ -31,7 +31,7 @@ fn main() -> unit {
   let error/12 = Result__int__string::Err("bad") in
   let mapped_error/14 =
     inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(error/12, closure_env_main_5 {}) in
-  let _wild182 =
+  let _wild141 =
     println__T_int(
       inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(
         mapped_error/14,
@@ -40,7 +40,7 @@ fn main() -> unit {
     ) in
   let next/17 =
     inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(ok/10, closure_env_main_7 {}) in
-  let _wild183 =
+  let _wild142 =
     println__T_string(
       inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(next/17, "missing")
     ) in
@@ -52,17 +52,17 @@ fn inherent#int#int#to_string(self/34: int) -> string {
 }
 
 fn inherent#Option#Option[T]#map__T_int__U_string(
-  self/314: Option__int,
-  map_fn/315: (int) -> string
+  self/267: Option__int,
+  map_fn/268: (int) -> string
 ) -> Option__string {
-  match self/314 {
+  match self/267 {
     Option__int::None => {
       Option__string::None
     },
-    Option__int::Some(x168) => {
-      let x168 = Option__int::Some._0(self/314) in
-      let value/316 = x168 in
-      Option__string::Some(map_fn/315(value/316))
+    Option__int::Some(x127) => {
+      let x127 = Option__int::Some._0(self/267) in
+      let value/269 = x127 in
+      Option__string::Some(map_fn/268(value/269))
     },
   }
 }
@@ -72,49 +72,49 @@ fn println__T_string(value/31: string) -> unit {
 }
 
 fn inherent#Option#Option[T]#unwrap_or__T_string(
-  self/294: Option__string,
-  fallback/295: string
+  self/247: Option__string,
+  fallback/248: string
 ) -> string {
-  match self/294 {
+  match self/247 {
     Option__string::None => {
-      fallback/295
+      fallback/248
     },
-    Option__string::Some(x157) => {
-      let x157 = Option__string::Some._0(self/294) in
-      let value/296 = x157 in
-      value/296
+    Option__string::Some(x116) => {
+      let x116 = Option__string::Some._0(self/247) in
+      let value/249 = x116 in
+      value/249
     },
   }
 }
 
 fn inherent#Option#Option[T]#and_then__T_int__U_string(
-  self/317: Option__int,
-  next/318: (int) -> Option__string
+  self/270: Option__int,
+  next/271: (int) -> Option__string
 ) -> Option__string {
-  match self/317 {
+  match self/270 {
     Option__int::None => {
       Option__string::None
     },
-    Option__int::Some(x169) => {
-      let x169 = Option__int::Some._0(self/317) in
-      let value/319 = x169 in
-      next/318(value/319)
+    Option__int::Some(x128) => {
+      let x128 = Option__int::Some._0(self/270) in
+      let value/272 = x128 in
+      next/271(value/272)
     },
   }
 }
 
 fn inherent#Option#Option[T]#ok_or__E_string__T_int(
-  self/320: Option__int,
-  error/321: string
+  self/273: Option__int,
+  error/274: string
 ) -> Result__int__string {
-  match self/320 {
+  match self/273 {
     Option__int::None => {
-      Result__int__string::Err(error/321)
+      Result__int__string::Err(error/274)
     },
-    Option__int::Some(x170) => {
-      let x170 = Option__int::Some._0(self/320) in
-      let value/322 = x170 in
-      Result__int__string::Ok(value/322)
+    Option__int::Some(x129) => {
+      let x129 = Option__int::Some._0(self/273) in
+      let value/275 = x129 in
+      Result__int__string::Ok(value/275)
     },
   }
 }
@@ -128,125 +128,125 @@ fn inherent#string#string#len(self/37: string) -> int {
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or_else__E_string__T_int(
-  self/305: Result__int__string,
-  fallback/306: (string) -> int
+  self/258: Result__int__string,
+  fallback/259: (string) -> int
 ) -> int {
-  match self/305 {
-    Result__int__string::Ok(x163) => {
-      let x163 = Result__int__string::Ok._0(self/305) in
-      let value/307 = x163 in
-      value/307
+  match self/258 {
+    Result__int__string::Ok(x122) => {
+      let x122 = Result__int__string::Ok._0(self/258) in
+      let value/260 = x122 in
+      value/260
     },
-    Result__int__string::Err(x164) => {
-      let x164 = Result__int__string::Err._0(self/305) in
-      let error/308 = x164 in
-      fallback/306(error/308)
+    Result__int__string::Err(x123) => {
+      let x123 = Result__int__string::Err._0(self/258) in
+      let error/261 = x123 in
+      fallback/259(error/261)
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#map__E_string__T_int__U_int(
-  self/323: Result__int__string,
-  map_fn/324: (int) -> int
+  self/276: Result__int__string,
+  map_fn/277: (int) -> int
 ) -> Result__int__string {
-  match self/323 {
-    Result__int__string::Ok(x171) => {
-      let x171 = Result__int__string::Ok._0(self/323) in
-      let value/325 = x171 in
-      Result__int__string::Ok(map_fn/324(value/325))
+  match self/276 {
+    Result__int__string::Ok(x130) => {
+      let x130 = Result__int__string::Ok._0(self/276) in
+      let value/278 = x130 in
+      Result__int__string::Ok(map_fn/277(value/278))
     },
-    Result__int__string::Err(x172) => {
-      let x172 = Result__int__string::Err._0(self/323) in
-      let error/326 = x172 in
-      Result__int__string::Err(error/326)
+    Result__int__string::Err(x131) => {
+      let x131 = Result__int__string::Err._0(self/276) in
+      let error/279 = x131 in
+      Result__int__string::Err(error/279)
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_int(
-  self/302: Result__int__string,
-  fallback/303: int
+  self/255: Result__int__string,
+  fallback/256: int
 ) -> int {
-  match self/302 {
-    Result__int__string::Ok(x161) => {
-      let x161 = Result__int__string::Ok._0(self/302) in
-      let value/304 = x161 in
-      value/304
+  match self/255 {
+    Result__int__string::Ok(x120) => {
+      let x120 = Result__int__string::Ok._0(self/255) in
+      let value/257 = x120 in
+      value/257
     },
-    Result__int__string::Err(x162) => {
-      let x162 = Result__int__string::Err._0(self/302) in
-      fallback/303
+    Result__int__string::Err(x121) => {
+      let x121 = Result__int__string::Err._0(self/255) in
+      fallback/256
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#map_err__E_string__F_int__T_int(
-  self/327: Result__int__string,
-  map_fn/328: (string) -> int
+  self/280: Result__int__string,
+  map_fn/281: (string) -> int
 ) -> Result__int__int {
-  match self/327 {
-    Result__int__string::Ok(x173) => {
-      let x173 = Result__int__string::Ok._0(self/327) in
-      let value/329 = x173 in
-      Result__int__int::Ok(value/329)
+  match self/280 {
+    Result__int__string::Ok(x132) => {
+      let x132 = Result__int__string::Ok._0(self/280) in
+      let value/282 = x132 in
+      Result__int__int::Ok(value/282)
     },
-    Result__int__string::Err(x174) => {
-      let x174 = Result__int__string::Err._0(self/327) in
-      let error/330 = x174 in
-      Result__int__int::Err(map_fn/328(error/330))
+    Result__int__string::Err(x133) => {
+      let x133 = Result__int__string::Err._0(self/280) in
+      let error/283 = x133 in
+      Result__int__int::Err(map_fn/281(error/283))
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or_else__E_int__T_int(
-  self/305: Result__int__int,
-  fallback/306: (int) -> int
+  self/258: Result__int__int,
+  fallback/259: (int) -> int
 ) -> int {
-  match self/305 {
-    Result__int__int::Ok(x163) => {
-      let x163 = Result__int__int::Ok._0(self/305) in
-      let value/307 = x163 in
-      value/307
+  match self/258 {
+    Result__int__int::Ok(x122) => {
+      let x122 = Result__int__int::Ok._0(self/258) in
+      let value/260 = x122 in
+      value/260
     },
-    Result__int__int::Err(x164) => {
-      let x164 = Result__int__int::Err._0(self/305) in
-      let error/308 = x164 in
-      fallback/306(error/308)
+    Result__int__int::Err(x123) => {
+      let x123 = Result__int__int::Err._0(self/258) in
+      let error/261 = x123 in
+      fallback/259(error/261)
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#and_then__E_string__T_int__U_string(
-  self/331: Result__int__string,
-  next/332: (int) -> Result__string__string
+  self/284: Result__int__string,
+  next/285: (int) -> Result__string__string
 ) -> Result__string__string {
-  match self/331 {
-    Result__int__string::Ok(x175) => {
-      let x175 = Result__int__string::Ok._0(self/331) in
-      let value/333 = x175 in
-      next/332(value/333)
+  match self/284 {
+    Result__int__string::Ok(x134) => {
+      let x134 = Result__int__string::Ok._0(self/284) in
+      let value/286 = x134 in
+      next/285(value/286)
     },
-    Result__int__string::Err(x176) => {
-      let x176 = Result__int__string::Err._0(self/331) in
-      let error/334 = x176 in
-      Result__string__string::Err(error/334)
+    Result__int__string::Err(x135) => {
+      let x135 = Result__int__string::Err._0(self/284) in
+      let error/287 = x135 in
+      Result__string__string::Err(error/287)
     },
   }
 }
 
 fn inherent#Result#Result[T,E]#unwrap_or__E_string__T_string(
-  self/302: Result__string__string,
-  fallback/303: string
+  self/255: Result__string__string,
+  fallback/256: string
 ) -> string {
-  match self/302 {
-    Result__string__string::Ok(x161) => {
-      let x161 = Result__string__string::Ok._0(self/302) in
-      let value/304 = x161 in
-      value/304
+  match self/255 {
+    Result__string__string::Ok(x120) => {
+      let x120 = Result__string__string::Ok._0(self/255) in
+      let value/257 = x120 in
+      value/257
     },
-    Result__string__string::Err(x162) => {
-      let x162 = Result__string__string::Err._0(self/302) in
-      fallback/303
+    Result__string__string::Err(x121) => {
+      let x121 = Result__string__string::Err._0(self/255) in
+      fallback/256
     },
   }
 }
@@ -260,56 +260,56 @@ fn trait_impl#ToString#int#to_string(self/69: int) -> string {
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env184: closure_env_main_0,
+  env143: closure_env_main_0,
   value/1: int
 ) -> string {
   inherent#int#int#to_string(value/1)
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
-  env185: closure_env_main_1,
+  env144: closure_env_main_1,
   value/3: int
 ) -> string {
   ("static:" + inherent#int#int#to_string(value/3))
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
-  env186: closure_env_main_2,
+  env145: closure_env_main_2,
   value/5: int
 ) -> Option__string {
   Option__string::Some(("value:" + inherent#int#int#to_string(value/5)))
 }
 
 fn inherent#closure_env_main_3#closure_env_main_3#apply(
-  env187: closure_env_main_3,
+  env146: closure_env_main_3,
   error/9: string
 ) -> int {
   inherent#string#string#len(error/9)
 }
 
 fn inherent#closure_env_main_4#closure_env_main_4#apply(
-  env188: closure_env_main_4,
+  env147: closure_env_main_4,
   value/11: int
 ) -> int {
   (value/11 + 2)
 }
 
 fn inherent#closure_env_main_5#closure_env_main_5#apply(
-  env189: closure_env_main_5,
+  env148: closure_env_main_5,
   value/13: string
 ) -> int {
   inherent#string#string#len(value/13)
 }
 
 fn inherent#closure_env_main_6#closure_env_main_6#apply(
-  env190: closure_env_main_6,
+  env149: closure_env_main_6,
   value/15: int
 ) -> int {
   value/15
 }
 
 fn inherent#closure_env_main_7#closure_env_main_7#apply(
-  env191: closure_env_main_7,
+  env150: closure_env_main_7,
   value/16: int
 ) -> Result__string__string {
   Result__string__string::Ok(("next:" + inherent#int#int#to_string(value/16)))

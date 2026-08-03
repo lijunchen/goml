@@ -31,18 +31,18 @@ type Pair__uint8__float32 struct {
 }
 
 func main0() struct{} {
-    var t180 uint8 = 10
-    var t181 string
-    var inline204 string = _goml_runtime_core_uint8_to_string(t180)
-    t181 = inline204
-    var inline201 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t181)
-    _goml_runtime_core_string_println(inline201)
-    var t182 float32 = 3.140000104904175
-    var t183 string
-    var inline199 string = _goml_runtime_core_float32_to_string(t182)
-    t183 = inline199
-    var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t183)
-    _goml_runtime_core_string_println(inline196)
+    var t139 uint8 = 10
+    var t140 string
+    var inline163 string = _goml_runtime_core_uint8_to_string(t139)
+    t140 = inline163
+    var inline160 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t140)
+    _goml_runtime_core_string_println(inline160)
+    var t141 float32 = 3.140000104904175
+    var t142 string
+    var inline158 string = _goml_runtime_core_float32_to_string(t141)
+    t142 = inline158
+    var inline155 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t142)
+    _goml_runtime_core_string_println(inline155)
     return struct{}{}
 }
 

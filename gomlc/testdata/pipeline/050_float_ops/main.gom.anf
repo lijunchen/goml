@@ -1,38 +1,38 @@
 fn show32(label/0: string, value/1: float32) -> unit {
-  join inline_cont224(t188: string) -> unit {
-    let message/2 = (label/0 + t188) in
-    let inline222 = trait_impl#ToString#string#to_string(message/2) in
-    let inline223 = @runtime(core.string_println)(inline222) in
+  join inline_cont183(t147: string) -> unit {
+    let message/2 = (label/0 + t147) in
+    let inline181 = trait_impl#ToString#string#to_string(message/2) in
+    let inline182 = @runtime(core.string_println)(inline181) in
     ()
   } in
-  let inline225 = @runtime(core.float32_to_string)(value/1) in
-  jump inline_cont224(inline225)
+  let inline184 = @runtime(core.float32_to_string)(value/1) in
+  jump inline_cont183(inline184)
 }
 
 fn show64(label/3: string, value/4: float64) -> unit {
-  join inline_cont229(t190: string) -> unit {
-    let message/5 = (label/3 + t190) in
-    let inline227 = trait_impl#ToString#string#to_string(message/5) in
-    let inline228 = @runtime(core.string_println)(inline227) in
+  join inline_cont188(t149: string) -> unit {
+    let message/5 = (label/3 + t149) in
+    let inline186 = trait_impl#ToString#string#to_string(message/5) in
+    let inline187 = @runtime(core.string_println)(inline186) in
     ()
   } in
-  let inline230 = @runtime(core.float64_to_string)(value/4) in
-  jump inline_cont229(inline230)
+  let inline189 = @runtime(core.float64_to_string)(value/4) in
+  jump inline_cont188(inline189)
 }
 
 fn lerp32(a/6: float32, b/7: float32, weight/8: float32) -> float32 {
   let delta/9 = (b/7 - a/6) in
-  let t193 = (delta/9 * weight/8) in
-  let t194 = (a/6 + t193) in
-  t194
+  let t152 = (delta/9 * weight/8) in
+  let t153 = (a/6 + t152) in
+  t153
 }
 
 fn midpoint_energy(x/10: float64, y/11: float64) -> float64 {
-  let t197 = (x/10 * x/10) in
-  let t198 = (y/11 * y/11) in
-  let sum/12 = (t197 + t198) in
-  let t199 = (sum/12 / 2) in
-  t199
+  let t156 = (x/10 * x/10) in
+  let t157 = (y/11 * y/11) in
+  let sum/12 = (t156 + t157) in
+  let t158 = (sum/12 / 2) in
+  t158
 }
 
 fn main() -> unit {
@@ -40,114 +40,114 @@ fn main() -> unit {
   let end32/14 = 5.75 in
   let half/15 = 0.5 in
   let scale/16 = 2 in
-  join inline_cont276(mid32/17: float32) -> unit {
+  join inline_cont235(mid32/17: float32) -> unit {
     let neg_end32/18 = (-end32/14) in
     let ratio32/19 = (end32/14 / scale/16) in
     let less32/20 = (start32/13 < end32/14) in
     let dx/21 = 6.5 in
     let dy/22 = 3.5 in
     let quarter/23 = 0.25 in
-    join inline_cont271(energy/24: float64) -> unit {
+    join inline_cont230(energy/24: float64) -> unit {
       let neg_dx/25 = (-dx/21) in
-      let t201 = (energy/24 + dy/22) in
-      let t202 = (dx/21 * quarter/23) in
-      let adjusted/26 = (t201 - t202) in
+      let t160 = (energy/24 + dy/22) in
+      let t161 = (dx/21 * quarter/23) in
+      let adjusted/26 = (t160 - t161) in
       let threshold/27 = 4 in
       let less64/28 = (adjusted/26 < threshold/27) in
-      join inline_cont266(_wild179: unit) -> unit {
-        join inline_cont261(_wild180: unit) -> unit {
-          join inline_cont256(_wild181: unit) -> unit {
-            join inline_cont254(t203: string) -> unit {
-              let t204 = ("less32=" + t203) in
-              join inline_cont251(mtmp182: unit) -> unit {
-                join inline_cont246(_wild183: unit) -> unit {
-                  join inline_cont241(_wild184: unit) -> unit {
-                    join inline_cont236(_wild185: unit) -> unit {
-                      join inline_cont234(t205: string) -> unit {
-                        let t206 = ("less64=" + t205) in
-                        let inline232 = trait_impl#ToString#string#to_string(t206) in
-                        let inline233 = @runtime(core.string_println)(inline232) in
+      join inline_cont225(_wild138: unit) -> unit {
+        join inline_cont220(_wild139: unit) -> unit {
+          join inline_cont215(_wild140: unit) -> unit {
+            join inline_cont213(t162: string) -> unit {
+              let t163 = ("less32=" + t162) in
+              join inline_cont210(mtmp141: unit) -> unit {
+                join inline_cont205(_wild142: unit) -> unit {
+                  join inline_cont200(_wild143: unit) -> unit {
+                    join inline_cont195(_wild144: unit) -> unit {
+                      join inline_cont193(t164: string) -> unit {
+                        let t165 = ("less64=" + t164) in
+                        let inline191 = trait_impl#ToString#string#to_string(t165) in
+                        let inline192 = @runtime(core.string_println)(inline191) in
                         ()
                       } in
-                      let inline235 = @runtime(core.bool_to_string)(less64/28) in
-                      jump inline_cont234(inline235)
+                      let inline194 = @runtime(core.bool_to_string)(less64/28) in
+                      jump inline_cont193(inline194)
                     } in
-                    let inline237 = "adjusted=" in
-                    let inline238 = trait_impl#ToString#float64#to_string(adjusted/26) in
-                    let inline239 = (inline237 + inline238) in
-                    let inline240 = println__T_string(inline239) in
-                    jump inline_cont236(())
+                    let inline196 = "adjusted=" in
+                    let inline197 = trait_impl#ToString#float64#to_string(adjusted/26) in
+                    let inline198 = (inline196 + inline197) in
+                    let inline199 = println__T_string(inline198) in
+                    jump inline_cont195(())
                   } in
-                  let inline242 = "neg_dx=" in
-                  let inline243 = trait_impl#ToString#float64#to_string(neg_dx/25) in
-                  let inline244 = (inline242 + inline243) in
-                  let inline245 = println__T_string(inline244) in
-                  jump inline_cont241(())
+                  let inline201 = "neg_dx=" in
+                  let inline202 = trait_impl#ToString#float64#to_string(neg_dx/25) in
+                  let inline203 = (inline201 + inline202) in
+                  let inline204 = println__T_string(inline203) in
+                  jump inline_cont200(())
                 } in
-                let inline247 = "energy=" in
-                let inline248 = trait_impl#ToString#float64#to_string(energy/24) in
-                let inline249 = (inline247 + inline248) in
-                let inline250 = println__T_string(inline249) in
-                jump inline_cont246(())
+                let inline206 = "energy=" in
+                let inline207 = trait_impl#ToString#float64#to_string(energy/24) in
+                let inline208 = (inline206 + inline207) in
+                let inline209 = println__T_string(inline208) in
+                jump inline_cont205(())
               } in
-              let inline252 = trait_impl#ToString#string#to_string(t204) in
-              let inline253 = @runtime(core.string_println)(inline252) in
-              jump inline_cont251(())
+              let inline211 = trait_impl#ToString#string#to_string(t163) in
+              let inline212 = @runtime(core.string_println)(inline211) in
+              jump inline_cont210(())
             } in
-            let inline255 = @runtime(core.bool_to_string)(less32/20) in
-            jump inline_cont254(inline255)
+            let inline214 = @runtime(core.bool_to_string)(less32/20) in
+            jump inline_cont213(inline214)
           } in
-          let inline257 = "ratio32=" in
-          let inline258 = trait_impl#ToString#float32#to_string(ratio32/19) in
-          let inline259 = (inline257 + inline258) in
-          let inline260 = println__T_string(inline259) in
-          jump inline_cont256(())
+          let inline216 = "ratio32=" in
+          let inline217 = trait_impl#ToString#float32#to_string(ratio32/19) in
+          let inline218 = (inline216 + inline217) in
+          let inline219 = println__T_string(inline218) in
+          jump inline_cont215(())
         } in
-        let inline262 = "neg_end32=" in
-        let inline263 = trait_impl#ToString#float32#to_string(neg_end32/18) in
-        let inline264 = (inline262 + inline263) in
-        let inline265 = println__T_string(inline264) in
-        jump inline_cont261(())
+        let inline221 = "neg_end32=" in
+        let inline222 = trait_impl#ToString#float32#to_string(neg_end32/18) in
+        let inline223 = (inline221 + inline222) in
+        let inline224 = println__T_string(inline223) in
+        jump inline_cont220(())
       } in
-      let inline267 = "mid32=" in
-      let inline268 = trait_impl#ToString#float32#to_string(mid32/17) in
-      let inline269 = (inline267 + inline268) in
-      let inline270 = println__T_string(inline269) in
-      jump inline_cont266(())
+      let inline226 = "mid32=" in
+      let inline227 = trait_impl#ToString#float32#to_string(mid32/17) in
+      let inline228 = (inline226 + inline227) in
+      let inline229 = println__T_string(inline228) in
+      jump inline_cont225(())
     } in
-    let inline272 = (dx/21 * dx/21) in
-    let inline273 = (dy/22 * dy/22) in
-    let inline274 = (inline272 + inline273) in
-    let inline275 = (inline274 / 2) in
-    jump inline_cont271(inline275)
+    let inline231 = (dx/21 * dx/21) in
+    let inline232 = (dy/22 * dy/22) in
+    let inline233 = (inline231 + inline232) in
+    let inline234 = (inline233 / 2) in
+    jump inline_cont230(inline234)
   } in
-  let inline277 = (end32/14 - start32/13) in
-  let inline278 = (inline277 * half/15) in
-  let inline279 = (start32/13 + inline278) in
-  jump inline_cont276(inline279)
+  let inline236 = (end32/14 - start32/13) in
+  let inline237 = (inline236 * half/15) in
+  let inline238 = (start32/13 + inline237) in
+  jump inline_cont235(inline238)
 }
 
 fn trait_impl#ToString#float32#to_string(self/78: float32) -> string {
-  let t209 = @runtime(core.float32_to_string)(self/78) in
-  t209
+  let t168 = @runtime(core.float32_to_string)(self/78) in
+  t168
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont280(t211: string) -> unit {
-    let t212 = @runtime(core.string_println)(t211) in
+  join inline_cont239(t170: string) -> unit {
+    let t171 = @runtime(core.string_println)(t170) in
     ()
   } in
-  jump inline_cont280(value/31)
+  jump inline_cont239(value/31)
 }
 
 fn trait_impl#ToString#float64#to_string(self/79: float64) -> string {
-  let t215 = @runtime(core.float64_to_string)(self/79) in
-  t215
+  let t174 = @runtime(core.float64_to_string)(self/79) in
+  t174
 }
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  let t218 = @runtime(core.bool_to_string)(self/66) in
-  t218
+  let t177 = @runtime(core.bool_to_string)(self/66) in
+  t177
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

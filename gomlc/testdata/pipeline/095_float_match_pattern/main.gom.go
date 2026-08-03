@@ -10,86 +10,86 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var t187 string
-    var inline221 float64 = 0
-    switch inline221 {
+    var t146 string
+    var inline180 float64 = 0
+    switch inline180 {
     case 0:
-        t187 = "zero"
+        t146 = "zero"
     case 1:
-        t187 = "one"
+        t146 = "one"
     case -1:
-        t187 = "minus one"
+        t146 = "minus one"
     case 3.14:
-        t187 = "pi"
+        t146 = "pi"
     default:
-        t187 = "other"
+        t146 = "other"
     }
-    var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t187)
-    _goml_runtime_core_string_println(inline218)
-    var t188 string
-    var inline216 float64 = 1
-    switch inline216 {
+    var inline177 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t146)
+    _goml_runtime_core_string_println(inline177)
+    var t147 string
+    var inline175 float64 = 1
+    switch inline175 {
     case 0:
-        t188 = "zero"
+        t147 = "zero"
     case 1:
-        t188 = "one"
+        t147 = "one"
     case -1:
-        t188 = "minus one"
+        t147 = "minus one"
     case 3.14:
-        t188 = "pi"
+        t147 = "pi"
     default:
-        t188 = "other"
+        t147 = "other"
     }
-    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t188)
-    _goml_runtime_core_string_println(inline213)
-    var t189 float64 = -1
-    var t190 string
-    switch t189 {
+    var inline172 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t147)
+    _goml_runtime_core_string_println(inline172)
+    var t148 float64 = -1
+    var t149 string
+    switch t148 {
     case 0:
-        t190 = "zero"
+        t149 = "zero"
     case 1:
-        t190 = "one"
+        t149 = "one"
     case -1:
-        t190 = "minus one"
+        t149 = "minus one"
     case 3.14:
-        t190 = "pi"
+        t149 = "pi"
     default:
-        t190 = "other"
+        t149 = "other"
     }
-    var inline209 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
-    _goml_runtime_core_string_println(inline209)
-    var t191 string
-    var inline207 float64 = 3.14
-    switch inline207 {
+    var inline168 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t149)
+    _goml_runtime_core_string_println(inline168)
+    var t150 string
+    var inline166 float64 = 3.14
+    switch inline166 {
     case 0:
-        t191 = "zero"
+        t150 = "zero"
     case 1:
-        t191 = "one"
+        t150 = "one"
     case -1:
-        t191 = "minus one"
+        t150 = "minus one"
     case 3.14:
-        t191 = "pi"
+        t150 = "pi"
     default:
-        t191 = "other"
+        t150 = "other"
     }
-    var inline204 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
-    _goml_runtime_core_string_println(inline204)
-    var t192 string
-    var inline202 float64 = 42
-    switch inline202 {
+    var inline163 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t150)
+    _goml_runtime_core_string_println(inline163)
+    var t151 string
+    var inline161 float64 = 42
+    switch inline161 {
     case 0:
-        t192 = "zero"
+        t151 = "zero"
     case 1:
-        t192 = "one"
+        t151 = "one"
     case -1:
-        t192 = "minus one"
+        t151 = "minus one"
     case 3.14:
-        t192 = "pi"
+        t151 = "pi"
     default:
-        t192 = "other"
+        t151 = "other"
     }
-    var inline199 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t192)
-    _goml_runtime_core_string_println(inline199)
+    var inline158 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t151)
+    _goml_runtime_core_string_println(inline158)
     return struct{}{}
 }
 

@@ -1,50 +1,50 @@
 fn trait_impl#Mark#int32#mark(self/0: int32) -> string {
-  join inline_cont200(t180: string) -> string {
-    let t181 = ("marked:" + t180) in
-    t181
+  join inline_cont159(t139: string) -> string {
+    let t140 = ("marked:" + t139) in
+    t140
   } in
-  let inline201 = @runtime(core.int32_to_string)(self/0) in
-  jump inline_cont200(inline201)
+  let inline160 = @runtime(core.int32_to_string)(self/0) in
+  jump inline_cont159(inline160)
 }
 
 fn trait_impl#Container#[int32]@NumberBox#value(self/1: NumberBox) -> int32 {
-  let t184 = NumberBox.value(self/1) in
-  t184
+  let t143 = NumberBox.value(self/1) in
+  t143
 }
 
 fn main() -> unit {
-  let t186 = NumberBox { value: 7 } in
-  join inline_cont205(t187: string) -> unit {
-    let inline203 = trait_impl#ToString#string#to_string(t187) in
-    let inline204 = @runtime(core.string_println)(inline203) in
+  let t145 = NumberBox { value: 7 } in
+  join inline_cont164(t146: string) -> unit {
+    let inline162 = trait_impl#ToString#string#to_string(t146) in
+    let inline163 = @runtime(core.string_println)(inline162) in
     ()
   } in
-  let inline206 = trait_impl#Container#[int32]@NumberBox#value(t186) in
-  let inline207 = trait_impl#Mark#int32#mark(inline206) in
-  jump inline_cont205(inline207)
+  let inline165 = trait_impl#Container#[int32]@NumberBox#value(t145) in
+  let inline166 = trait_impl#Mark#int32#mark(inline165) in
+  jump inline_cont164(inline166)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t190 = @runtime(core.int32_to_string)(self/35) in
-  t190
+  let t149 = @runtime(core.int32_to_string)(self/35) in
+  t149
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont208(t192: string) -> unit {
-    let t193 = @runtime(core.string_println)(t192) in
+  join inline_cont167(t151: string) -> unit {
+    let t152 = @runtime(core.string_println)(t151) in
     ()
   } in
-  jump inline_cont208(value/31)
+  jump inline_cont167(value/31)
 }
 
 fn describe__C_NumberBox__T_int32(container/2: NumberBox) -> string {
-  join inline_cont212(t196: int32) -> string {
-    let inline210 = inherent#int32#int32#to_string(t196) in
-    let inline211 = ("marked:" + inline210) in
-    inline211
+  join inline_cont171(t155: int32) -> string {
+    let inline169 = inherent#int32#int32#to_string(t155) in
+    let inline170 = ("marked:" + inline169) in
+    inline170
   } in
-  let inline213 = NumberBox.value(container/2) in
-  jump inline_cont212(inline213)
+  let inline172 = NumberBox.value(container/2) in
+  jump inline_cont171(inline172)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

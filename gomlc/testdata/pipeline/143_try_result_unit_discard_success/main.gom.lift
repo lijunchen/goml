@@ -7,17 +7,17 @@ fn step(ok/0: bool) -> Result__unit__string {
 }
 
 fn run(ok/1: bool) -> Result__unit__string {
-  let mtmp180 =
-    let mtmp177 = step(ok/1) in
-    match mtmp177 {
-      Result__unit__string::Ok(x178) => {
-        let x178 = Result__unit__string::Ok._0(mtmp177) in
-        let try_value/12 = x178 in
+  let mtmp139 =
+    let mtmp136 = step(ok/1) in
+    match mtmp136 {
+      Result__unit__string::Ok(x137) => {
+        let x137 = Result__unit__string::Ok._0(mtmp136) in
+        let try_value/12 = x137 in
         try_value/12
       },
-      Result__unit__string::Err(x179) => {
-        let x179 = Result__unit__string::Err._0(mtmp177) in
-        let try_residual/12 = x179 in
+      Result__unit__string::Err(x138) => {
+        let x138 = Result__unit__string::Err._0(mtmp136) in
+        let try_residual/12 = x138 in
         return Result__unit__string::Err(try_residual/12)
       },
     } in
@@ -26,25 +26,25 @@ fn run(ok/1: bool) -> Result__unit__string {
 
 fn show(res/2: Result__unit__string) -> string {
   match res/2 {
-    Result__unit__string::Ok(x181) => {
-      let x181 = Result__unit__string::Ok._0(res/2) in
-      match x181 {
+    Result__unit__string::Ok(x140) => {
+      let x140 = Result__unit__string::Ok._0(res/2) in
+      match x140 {
         () => {
           "ok unit"
         },
       }
     },
-    Result__unit__string::Err(x182) => {
-      let x182 = Result__unit__string::Err._0(res/2) in
-      let err/3 = x182 in
+    Result__unit__string::Err(x141) => {
+      let x141 = Result__unit__string::Err._0(res/2) in
+      let err/3 = x141 in
       ("err " + err/3)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild183 = println__T_string(show(run(true))) in
-  let _wild184 = println__T_string(show(run(false))) in
+  let _wild142 = println__T_string(show(run(true))) in
+  let _wild143 = println__T_string(show(run(false))) in
   ()
 }
 

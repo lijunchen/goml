@@ -56,33 +56,27 @@ fn main() -> unit {
     (println : (string) -> unit)((Marker[int32]::marker : (Any) -> string)(Any {}));
     (println : (string) -> unit)((Marker[string]::marker : (Any) -> string)(Any {}));
     (println : (string) -> unit)((Marker[Vec[int32]]::marker : (Any) -> string)(Any {}));
-    let mapped/10: MapIterator[int32, int32, Counter] =
-      (iterator_map : (Counter, (int32) -> int32) -> MapIterator[int32, int32, Counter])(
+    let mapped/10: FnIterator[int32] =
+      (std::iter::map : (Counter, (int32) -> int32) -> FnIterator[int32])(
         (Counter::new : (int32, int32) -> Counter)(0, 8),
         |value/9: int32| => (value/9 : int32) * 2
       );
-    let filtered/12: FilterIterator[int32, MapIterator[int32, int32, Counter]] =
-      (iterator_filter : (MapIterator[int32, int32, Counter], (int32) -> bool) -> FilterIterator[
-        int32,
-        MapIterator[int32, int32, Counter]
-      ])(
-        (mapped/10 : MapIterator[int32, int32, Counter]),
+    let filtered/12: FnIterator[int32] =
+      (std::iter::filter : (FnIterator[int32], (int32) -> bool) -> FnIterator[int32])(
+        (mapped/10 : FnIterator[int32]),
         |value/11: int32| => (value/11 : int32) > 4
       );
-    let limited/13: TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]] =
-      (iterator_take : (
-        FilterIterator[int32, MapIterator[int32, int32, Counter]],
-        int
-      ) -> TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]])(
-        (filtered/12 : FilterIterator[int32, MapIterator[int32, int32, Counter]]),
+    let limited/13: FnIterator[int32] =
+      (std::iter::take : (FnIterator[int32], int) -> FnIterator[int32])(
+        (filtered/12 : FnIterator[int32]),
         3
       );
     for value/14: int32 in
-      (limited/13 : TakeIterator[FilterIterator[int32, MapIterator[int32, int32, Counter]]]) {
+      (limited/13 : FnIterator[int32]) {
         (println : (int32) -> unit)((value/14 : int32));
     };
     let sum/17: int =
-      (iterator_fold : (FnIterator[int], int, (int, int) -> int) -> int)(
+      (std::iter::fold : (FnIterator[int], int, (int, int) -> int) -> int)(
         (range : (int, int) -> FnIterator[int])(1, 5),
         0,
         |total/15: int, value/16: int| =>
@@ -92,12 +86,8 @@ fn main() -> unit {
       );
     (println : (int) -> unit)((sum/17 : int));
     let texts/19: Vec[string] =
-      (iterator_collect : (MapIterator[int, string, FnIterator[int]]) -> Vec[string])(
-        (iterator_map : (FnIterator[int], (int) -> string) -> MapIterator[
-          int,
-          string,
-          FnIterator[int]
-        ])(
+      (std::iter::collect : (FnIterator[string]) -> Vec[string])(
+        (std::iter::map : (FnIterator[int], (int) -> string) -> FnIterator[string])(
           (range : (int, int) -> FnIterator[int])(1, 4),
           |value/18: int| => "v" + (int::to_string : (int) -> string)((value/18 : int))
         )

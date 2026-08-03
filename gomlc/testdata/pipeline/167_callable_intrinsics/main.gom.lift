@@ -1,24 +1,24 @@
 fn main() -> unit {
   let to_text/0 = @runtime(core.int32_to_string) in
-  let _wild177 = println__T_string(to_text/0(7)) in
+  let _wild136 = println__T_string(to_text/0(7)) in
   let get/1 = @intrinsic(vec.get) in
   let push/2 = @intrinsic(vec.push) in
   let values/3 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild178 = push/2(values/3, 11) in
-  let _wild179 = push/2(values/3, 22) in
-  let _wild180 = println__T_int32(get/1(values/3, 1)) in
+  let _wild137 = push/2(values/3, 11) in
+  let _wild138 = push/2(values/3, 22) in
+  let _wild139 = println__T_int32(get/1(values/3, 1)) in
   let make_slice/4 = @intrinsic(slice.new) in
   let slice_get_value/5 = @intrinsic(slice.get) in
   let view/6 = make_slice/4(values/3, 0, 2) in
-  let _wild181 = println__T_int32(slice_get_value/5(view/6, 0)) in
+  let _wild140 = println__T_int32(slice_get_value/5(view/6, 0)) in
   let alias/7 = values/3 in
-  let _wild182 = inherent#Vec#Vec[T]#push__T_int32(alias/7, 33) in
-  let _wild183 = println__T_int(inherent#Vec#Vec[T]#len__T_int32(values/3)) in
-  let _wild184 = inherent#Vec#Vec[T]#set__T_int32(values/3, 0, 44) in
-  let _wild185 = println__T_int32(inherent#Vec#Vec[T]#get__T_int32(alias/7, 0)) in
+  let _wild141 = inherent#Vec#Vec[T]#push__T_int32(alias/7, 33) in
+  let _wild142 = println__T_int(inherent#Vec#Vec[T]#len__T_int32(values/3)) in
+  let _wild143 = inherent#Vec#Vec[T]#set__T_int32(values/3, 0, 44) in
+  let _wild144 = println__T_int32(inherent#Vec#Vec[T]#get__T_int32(alias/7, 0)) in
   let copied/8 = inherent#Vec#Vec[T]#pushed__T_int32(values/3, 55) in
-  let _wild186 = println__T_int(inherent#Vec#Vec[T]#len__T_int32(values/3)) in
-  let _wild187 = println__T_int(inherent#Vec#Vec[T]#len__T_int32(copied/8)) in
+  let _wild145 = println__T_int(inherent#Vec#Vec[T]#len__T_int32(values/3)) in
+  let _wild146 = println__T_int(inherent#Vec#Vec[T]#len__T_int32(copied/8)) in
   ()
 }
 
@@ -34,42 +34,42 @@ fn println__T_int32(value/31: int32) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/31))
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/155: Vec[int32], elem/156: int32) -> unit {
-  @intrinsic(vec.push)(self/155, elem/156)
+fn inherent#Vec#Vec[T]#push__T_int32(self/134: Vec[int32], elem/135: int32) -> unit {
+  @intrinsic(vec.push)(self/134, elem/135)
 }
 
 fn println__T_int(value/31: int) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/166: Vec[int32]) -> int {
-  @intrinsic(vec.len)(self/166)
+fn inherent#Vec#Vec[T]#len__T_int32(self/145: Vec[int32]) -> int {
+  @intrinsic(vec.len)(self/145)
 }
 
-fn inherent#Vec#Vec[T]#set__T_int32(self/163: Vec[int32], index/164: int, elem/165: int32) -> unit {
-  @intrinsic(vec.set)(self/163, index/164, elem/165)
+fn inherent#Vec#Vec[T]#set__T_int32(self/142: Vec[int32], index/143: int, elem/144: int32) -> unit {
+  @intrinsic(vec.set)(self/142, index/143, elem/144)
 }
 
-fn inherent#Vec#Vec[T]#get__T_int32(self/161: Vec[int32], index/162: int) -> int32 {
-  @intrinsic(vec.get)(self/161, index/162)
+fn inherent#Vec#Vec[T]#get__T_int32(self/140: Vec[int32], index/141: int) -> int32 {
+  @intrinsic(vec.get)(self/140, index/141)
 }
 
-fn inherent#Vec#Vec[T]#pushed__T_int32(self/157: Vec[int32], elem/158: int32) -> Vec[int32] {
-  let result/159 =
-    inherent#Vec#Vec[T]#with_capacity__T_int32((inherent#Vec#Vec[T]#len__T_int32(self/157) + 1)) in
-  let index/160 = 0 in
-  let _wild63 =
-    while (index/160 < inherent#Vec#Vec[T]#len__T_int32(self/157)) {
-        let _wild59 =
-          inherent#Vec#Vec[T]#push__T_int32(result/159, @intrinsic(vec.get)(self/157, index/160)) in
-        let _wild62 =
-          let compound_old60 = index/160 in
-          let compound_value61 = 1 in
-          index/160 = (compound_old60 + compound_value61) in
+fn inherent#Vec#Vec[T]#pushed__T_int32(self/136: Vec[int32], elem/137: int32) -> Vec[int32] {
+  let result/138 =
+    inherent#Vec#Vec[T]#with_capacity__T_int32((inherent#Vec#Vec[T]#len__T_int32(self/136) + 1)) in
+  let index/139 = 0 in
+  let _wild47 =
+    while (index/139 < inherent#Vec#Vec[T]#len__T_int32(self/136)) {
+        let _wild43 =
+          inherent#Vec#Vec[T]#push__T_int32(result/138, @intrinsic(vec.get)(self/136, index/139)) in
+        let _wild46 =
+          let compound_old44 = index/139 in
+          let compound_value45 = 1 in
+          index/139 = (compound_old44 + compound_value45) in
         ()
     } in
-  let _wild64 = inherent#Vec#Vec[T]#push__T_int32(result/159, elem/158) in
-  result/159
+  let _wild48 = inherent#Vec#Vec[T]#push__T_int32(result/138, elem/137) in
+  result/138
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -84,6 +84,6 @@ fn trait_impl#ToString#int#to_string(self/69: int) -> string {
   @runtime(core.int_to_string)(self/69)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_int32(capacity/154: int) -> Vec[int32] {
-  @intrinsic(vec.with_capacity)(capacity/154)
+fn inherent#Vec#Vec[T]#with_capacity__T_int32(capacity/133: int) -> Vec[int32] {
+  @intrinsic(vec.with_capacity)(capacity/133)
 }

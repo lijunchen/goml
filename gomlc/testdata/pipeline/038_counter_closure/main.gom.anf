@@ -1,106 +1,106 @@
 fn make_counter() -> (() -> int32, () -> unit) {
-  join inline_cont226(cell/0: Ref[int32]) -> (() -> int32, () -> unit) {
+  join inline_cont185(cell/0: Ref[int32]) -> (() -> int32, () -> unit) {
     let next/2 = closure_env_next_0 { cell_0: cell/0 } in
     let reset/3 = closure_env_reset_1 { cell_0: cell/0 } in
-    let t194 = (next/2, reset/3) in
-    t194
+    let t153 = (next/2, reset/3) in
+    t153
   } in
-  let inline227 = 0 in
-  let inline228 = @intrinsic(ref.new)(inline227) in
-  jump inline_cont226(inline228)
+  let inline186 = 0 in
+  let inline187 = @intrinsic(ref.new)(inline186) in
+  jump inline_cont185(inline187)
 }
 
 fn main() -> unit {
-  join inline_cont254(counter/4: (() -> int32, () -> unit)) -> unit {
-    let mtmp179 = counter/4 in
-    let x180 = counter/4.0 in
-    let x181 = counter/4.1 in
-    let reset/6 = x181 in
-    let next/5 = x180 in
-    let first/7 = x180() in
-    let second/8 = x180() in
-    let mtmp182 = x181() in
-    let third/9 = x180() in
-    join inline_cont249(new_counter/10: (() -> int32, () -> unit)) -> unit {
-      let mtmp183 = new_counter/10 in
-      let x184 = new_counter/10.0 in
-      let x185 = new_counter/10.1 in
-      let new_next/11 = x184 in
-      let fourth/12 = x184() in
-      join inline_cont247(t196: string) -> unit {
-        join inline_cont244(mtmp186: unit) -> unit {
-          join inline_cont242(t197: string) -> unit {
-            join inline_cont239(mtmp187: unit) -> unit {
-              join inline_cont237(t198: string) -> unit {
-                join inline_cont234(mtmp188: unit) -> unit {
-                  join inline_cont232(t199: string) -> unit {
-                    let inline230 = trait_impl#ToString#string#to_string(t199) in
-                    let inline231 = @runtime(core.string_println)(inline230) in
+  join inline_cont213(counter/4: (() -> int32, () -> unit)) -> unit {
+    let mtmp138 = counter/4 in
+    let x139 = counter/4.0 in
+    let x140 = counter/4.1 in
+    let reset/6 = x140 in
+    let next/5 = x139 in
+    let first/7 = x139() in
+    let second/8 = x139() in
+    let mtmp141 = x140() in
+    let third/9 = x139() in
+    join inline_cont208(new_counter/10: (() -> int32, () -> unit)) -> unit {
+      let mtmp142 = new_counter/10 in
+      let x143 = new_counter/10.0 in
+      let x144 = new_counter/10.1 in
+      let new_next/11 = x143 in
+      let fourth/12 = x143() in
+      join inline_cont206(t155: string) -> unit {
+        join inline_cont203(mtmp145: unit) -> unit {
+          join inline_cont201(t156: string) -> unit {
+            join inline_cont198(mtmp146: unit) -> unit {
+              join inline_cont196(t157: string) -> unit {
+                join inline_cont193(mtmp147: unit) -> unit {
+                  join inline_cont191(t158: string) -> unit {
+                    let inline189 = trait_impl#ToString#string#to_string(t158) in
+                    let inline190 = @runtime(core.string_println)(inline189) in
                     ()
                   } in
-                  let inline233 = @runtime(core.int32_to_string)(fourth/12) in
-                  jump inline_cont232(inline233)
+                  let inline192 = @runtime(core.int32_to_string)(fourth/12) in
+                  jump inline_cont191(inline192)
                 } in
-                let inline235 = trait_impl#ToString#string#to_string(t198) in
-                let inline236 = @runtime(core.string_println)(inline235) in
-                jump inline_cont234(())
+                let inline194 = trait_impl#ToString#string#to_string(t157) in
+                let inline195 = @runtime(core.string_println)(inline194) in
+                jump inline_cont193(())
               } in
-              let inline238 = @runtime(core.int32_to_string)(third/9) in
-              jump inline_cont237(inline238)
+              let inline197 = @runtime(core.int32_to_string)(third/9) in
+              jump inline_cont196(inline197)
             } in
-            let inline240 = trait_impl#ToString#string#to_string(t197) in
-            let inline241 = @runtime(core.string_println)(inline240) in
-            jump inline_cont239(())
+            let inline199 = trait_impl#ToString#string#to_string(t156) in
+            let inline200 = @runtime(core.string_println)(inline199) in
+            jump inline_cont198(())
           } in
-          let inline243 = @runtime(core.int32_to_string)(second/8) in
-          jump inline_cont242(inline243)
+          let inline202 = @runtime(core.int32_to_string)(second/8) in
+          jump inline_cont201(inline202)
         } in
-        let inline245 = trait_impl#ToString#string#to_string(t196) in
-        let inline246 = @runtime(core.string_println)(inline245) in
-        jump inline_cont244(())
+        let inline204 = trait_impl#ToString#string#to_string(t155) in
+        let inline205 = @runtime(core.string_println)(inline204) in
+        jump inline_cont203(())
       } in
-      let inline248 = @runtime(core.int32_to_string)(first/7) in
-      jump inline_cont247(inline248)
+      let inline207 = @runtime(core.int32_to_string)(first/7) in
+      jump inline_cont206(inline207)
     } in
-    let inline250 = inherent#Ref#Ref[T]#new__T_int32(0) in
-    let inline251 = closure_env_next_0 { cell_0: inline250 } in
-    let inline252 = closure_env_reset_1 { cell_0: inline250 } in
-    let inline253 = (inline251, inline252) in
-    jump inline_cont249(inline253)
+    let inline209 = inherent#Ref#Ref[T]#new__T_int32(0) in
+    let inline210 = closure_env_next_0 { cell_0: inline209 } in
+    let inline211 = closure_env_reset_1 { cell_0: inline209 } in
+    let inline212 = (inline210, inline211) in
+    jump inline_cont208(inline212)
   } in
-  let inline255 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let inline256 = closure_env_next_0 { cell_0: inline255 } in
-  let inline257 = closure_env_reset_1 { cell_0: inline255 } in
-  let inline258 = (inline256, inline257) in
-  jump inline_cont254(inline258)
+  let inline214 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let inline215 = closure_env_next_0 { cell_0: inline214 } in
+  let inline216 = closure_env_reset_1 { cell_0: inline214 } in
+  let inline217 = (inline215, inline216) in
+  jump inline_cont213(inline217)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/236: int32) -> Ref[int32] {
-  let t202 = @intrinsic(ref.new)(value/236) in
-  t202
+fn inherent#Ref#Ref[T]#new__T_int32(value/215: int32) -> Ref[int32] {
+  let t161 = @intrinsic(ref.new)(value/215) in
+  t161
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/237: Ref[int32]) -> int32 {
-  let t205 = @intrinsic(ref.get)(self/237) in
-  t205
+fn inherent#Ref#Ref[T]#get__T_int32(self/216: Ref[int32]) -> int32 {
+  let t164 = @intrinsic(ref.get)(self/216) in
+  t164
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/238: Ref[int32], value/239: int32) -> unit {
-  let t207 = @intrinsic(ref.set)(self/238, value/239) in
+fn inherent#Ref#Ref[T]#set__T_int32(self/217: Ref[int32], value/218: int32) -> unit {
+  let t166 = @intrinsic(ref.set)(self/217, value/218) in
   ()
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont259(t209: string) -> unit {
-    let t210 = @runtime(core.string_println)(t209) in
+  join inline_cont218(t168: string) -> unit {
+    let t169 = @runtime(core.string_println)(t168) in
     ()
   } in
-  jump inline_cont259(value/31)
+  jump inline_cont218(value/31)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t213 = @runtime(core.int32_to_string)(self/35) in
-  t213
+  let t172 = @runtime(core.int32_to_string)(self/35) in
+  t172
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -108,29 +108,29 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
-  let t218 = @intrinsic(eq.primitive)(self/94, other/95) in
-  t218
+  let t177 = @intrinsic(eq.primitive)(self/94, other/95) in
+  t177
 }
 
 fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
-  let t221 = @runtime(core.int32_hash)(self/117) in
-  t221
+  let t180 = @runtime(core.int32_hash)(self/117) in
+  t180
 }
 
-fn inherent#closure_env_next_0#closure_env_next_0#apply(env190: closure_env_next_0) -> int32 {
-  let cell/0 = closure_env_next_0.cell_0(env190) in
-  join inline_cont262(t224: int32) -> int32 {
-    let next/1 = (t224 + 1) in
-    let inline261 = @intrinsic(ref.set)(cell/0, next/1) in
+fn inherent#closure_env_next_0#closure_env_next_0#apply(env149: closure_env_next_0) -> int32 {
+  let cell/0 = closure_env_next_0.cell_0(env149) in
+  join inline_cont221(t183: int32) -> int32 {
+    let next/1 = (t183 + 1) in
+    let inline220 = @intrinsic(ref.set)(cell/0, next/1) in
     next/1
   } in
-  let inline263 = @intrinsic(ref.get)(cell/0) in
-  jump inline_cont262(inline263)
+  let inline222 = @intrinsic(ref.get)(cell/0) in
+  jump inline_cont221(inline222)
 }
 
-fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env191: closure_env_reset_1) -> unit {
-  let cell/0 = closure_env_reset_1.cell_0(env191) in
-  let inline265 = 0 in
-  let inline266 = @intrinsic(ref.set)(cell/0, inline265) in
+fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env150: closure_env_reset_1) -> unit {
+  let cell/0 = closure_env_reset_1.cell_0(env150) in
+  let inline224 = 0 in
+  let inline225 = @intrinsic(ref.set)(cell/0, inline224) in
   ()
 }

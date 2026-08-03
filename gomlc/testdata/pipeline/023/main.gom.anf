@@ -1,9 +1,9 @@
 fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
-  let x177 = pair/0.0 in
-  let x178 = pair/0.1 in
-  match x178 {
+  let x136 = pair/0.0 in
+  let x137 = pair/0.1 in
+  match x137 {
     "zero" => {
-      match x177 {
+      match x136 {
         0 => {
           1
         },
@@ -13,7 +13,7 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
       }
     },
     "one" => {
-      match x177 {
+      match x136 {
         0 => {
           2
         },
@@ -26,7 +26,7 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
       }
     },
     _ => {
-      match x177 {
+      match x136 {
         0 => {
           2
         },
@@ -41,8 +41,8 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
 fn match_mixed_enum(value/1: Mixed) -> int32 {
   match value/1 {
     Tag_0 => {
-      let x179 = Mixed::OnlyInt._0(value/1) in
-      match x179 {
+      let x138 = Mixed::OnlyInt._0(value/1) in
+      match x138 {
         0 => {
           6
         },
@@ -52,8 +52,8 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
       }
     },
     Tag_1 => {
-      let x180 = Mixed::OnlyStr._0(value/1) in
-      match x180 {
+      let x139 = Mixed::OnlyStr._0(value/1) in
+      match x139 {
         "zero" => {
           8
         },
@@ -63,11 +63,11 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
       }
     },
     Tag_2 => {
-      let x181 = Mixed::Both._0(value/1) in
-      let x182 = Mixed::Both._1(value/1) in
-      match x182 {
+      let x140 = Mixed::Both._0(value/1) in
+      let x141 = Mixed::Both._1(value/1) in
+      match x141 {
         "zero" => {
-          match x181 {
+          match x140 {
             0 => {
               10
             },
@@ -77,7 +77,7 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
           }
         },
         _ => {
-          match x181 {
+          match x140 {
             0 => {
               11
             },
@@ -92,136 +92,136 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
 }
 
 fn main() -> unit {
-  let t220 = (0, "zero") in
-  let t221 = match_mixed_pair(t220) in
-  let t222 = inherent#int32#int32#to_string(t221) in
-  let mtmp183 = println__T_string(t222) in
-  let t223 = (0, "other") in
-  let t224 = match_mixed_pair(t223) in
-  let t225 = inherent#int32#int32#to_string(t224) in
-  let mtmp184 = println__T_string(t225) in
-  let t226 = (1, "one") in
-  let t227 = match_mixed_pair(t226) in
-  let t228 = inherent#int32#int32#to_string(t227) in
-  let mtmp185 = println__T_string(t228) in
-  let t229 = (2, "zero") in
-  let t230 = match_mixed_pair(t229) in
-  let t231 = inherent#int32#int32#to_string(t230) in
-  join inline_cont313(mtmp186: unit) -> unit {
-    let t232 = (2, "two") in
-    let t233 = match_mixed_pair(t232) in
-    join inline_cont311(t234: string) -> unit {
-      join inline_cont308(mtmp187: unit) -> unit {
-        let t235 = Mixed::OnlyInt(0) in
-        let t236 = match_mixed_enum(t235) in
-        join inline_cont306(t237: string) -> unit {
-          join inline_cont303(mtmp188: unit) -> unit {
-            let t238 = Mixed::OnlyInt(5) in
-            let t239 = match_mixed_enum(t238) in
-            join inline_cont301(t240: string) -> unit {
-              join inline_cont298(mtmp189: unit) -> unit {
-                let t241 = Mixed::OnlyStr("zero") in
-                let t242 = match_mixed_enum(t241) in
-                join inline_cont296(t243: string) -> unit {
-                  join inline_cont293(mtmp190: unit) -> unit {
-                    let t244 = Mixed::OnlyStr("hello") in
-                    let t245 = match_mixed_enum(t244) in
-                    join inline_cont291(t246: string) -> unit {
-                      join inline_cont288(mtmp191: unit) -> unit {
-                        let t247 = Mixed::Both(0, "zero") in
-                        let t248 = match_mixed_enum(t247) in
-                        join inline_cont286(t249: string) -> unit {
-                          join inline_cont283(mtmp192: unit) -> unit {
-                            let t250 = Mixed::Both(0, "hello") in
-                            let t251 = match_mixed_enum(t250) in
-                            join inline_cont281(t252: string) -> unit {
-                              join inline_cont278(mtmp193: unit) -> unit {
-                                let t253 = Mixed::Both(2, "zero") in
-                                let t254 = match_mixed_enum(t253) in
-                                join inline_cont276(t255: string) -> unit {
-                                  join inline_cont273(mtmp194: unit) -> unit {
-                                    let t256 = Mixed::Both(3, "three") in
-                                    let t257 = match_mixed_enum(t256) in
-                                    join inline_cont271(t258: string) -> unit {
-                                      let inline269 = trait_impl#ToString#string#to_string(t258) in
-                                      let inline270 = @runtime(core.string_println)(inline269) in
+  let t179 = (0, "zero") in
+  let t180 = match_mixed_pair(t179) in
+  let t181 = inherent#int32#int32#to_string(t180) in
+  let mtmp142 = println__T_string(t181) in
+  let t182 = (0, "other") in
+  let t183 = match_mixed_pair(t182) in
+  let t184 = inherent#int32#int32#to_string(t183) in
+  let mtmp143 = println__T_string(t184) in
+  let t185 = (1, "one") in
+  let t186 = match_mixed_pair(t185) in
+  let t187 = inherent#int32#int32#to_string(t186) in
+  let mtmp144 = println__T_string(t187) in
+  let t188 = (2, "zero") in
+  let t189 = match_mixed_pair(t188) in
+  let t190 = inherent#int32#int32#to_string(t189) in
+  join inline_cont272(mtmp145: unit) -> unit {
+    let t191 = (2, "two") in
+    let t192 = match_mixed_pair(t191) in
+    join inline_cont270(t193: string) -> unit {
+      join inline_cont267(mtmp146: unit) -> unit {
+        let t194 = Mixed::OnlyInt(0) in
+        let t195 = match_mixed_enum(t194) in
+        join inline_cont265(t196: string) -> unit {
+          join inline_cont262(mtmp147: unit) -> unit {
+            let t197 = Mixed::OnlyInt(5) in
+            let t198 = match_mixed_enum(t197) in
+            join inline_cont260(t199: string) -> unit {
+              join inline_cont257(mtmp148: unit) -> unit {
+                let t200 = Mixed::OnlyStr("zero") in
+                let t201 = match_mixed_enum(t200) in
+                join inline_cont255(t202: string) -> unit {
+                  join inline_cont252(mtmp149: unit) -> unit {
+                    let t203 = Mixed::OnlyStr("hello") in
+                    let t204 = match_mixed_enum(t203) in
+                    join inline_cont250(t205: string) -> unit {
+                      join inline_cont247(mtmp150: unit) -> unit {
+                        let t206 = Mixed::Both(0, "zero") in
+                        let t207 = match_mixed_enum(t206) in
+                        join inline_cont245(t208: string) -> unit {
+                          join inline_cont242(mtmp151: unit) -> unit {
+                            let t209 = Mixed::Both(0, "hello") in
+                            let t210 = match_mixed_enum(t209) in
+                            join inline_cont240(t211: string) -> unit {
+                              join inline_cont237(mtmp152: unit) -> unit {
+                                let t212 = Mixed::Both(2, "zero") in
+                                let t213 = match_mixed_enum(t212) in
+                                join inline_cont235(t214: string) -> unit {
+                                  join inline_cont232(mtmp153: unit) -> unit {
+                                    let t215 = Mixed::Both(3, "three") in
+                                    let t216 = match_mixed_enum(t215) in
+                                    join inline_cont230(t217: string) -> unit {
+                                      let inline228 = trait_impl#ToString#string#to_string(t217) in
+                                      let inline229 = @runtime(core.string_println)(inline228) in
                                       ()
                                     } in
-                                    let inline272 = @runtime(core.int32_to_string)(t257) in
-                                    jump inline_cont271(inline272)
+                                    let inline231 = @runtime(core.int32_to_string)(t216) in
+                                    jump inline_cont230(inline231)
                                   } in
-                                  let inline274 = trait_impl#ToString#string#to_string(t255) in
-                                  let inline275 = @runtime(core.string_println)(inline274) in
-                                  jump inline_cont273(())
+                                  let inline233 = trait_impl#ToString#string#to_string(t214) in
+                                  let inline234 = @runtime(core.string_println)(inline233) in
+                                  jump inline_cont232(())
                                 } in
-                                let inline277 = @runtime(core.int32_to_string)(t254) in
-                                jump inline_cont276(inline277)
+                                let inline236 = @runtime(core.int32_to_string)(t213) in
+                                jump inline_cont235(inline236)
                               } in
-                              let inline279 = trait_impl#ToString#string#to_string(t252) in
-                              let inline280 = @runtime(core.string_println)(inline279) in
-                              jump inline_cont278(())
+                              let inline238 = trait_impl#ToString#string#to_string(t211) in
+                              let inline239 = @runtime(core.string_println)(inline238) in
+                              jump inline_cont237(())
                             } in
-                            let inline282 = @runtime(core.int32_to_string)(t251) in
-                            jump inline_cont281(inline282)
+                            let inline241 = @runtime(core.int32_to_string)(t210) in
+                            jump inline_cont240(inline241)
                           } in
-                          let inline284 = trait_impl#ToString#string#to_string(t249) in
-                          let inline285 = @runtime(core.string_println)(inline284) in
-                          jump inline_cont283(())
+                          let inline243 = trait_impl#ToString#string#to_string(t208) in
+                          let inline244 = @runtime(core.string_println)(inline243) in
+                          jump inline_cont242(())
                         } in
-                        let inline287 = @runtime(core.int32_to_string)(t248) in
-                        jump inline_cont286(inline287)
+                        let inline246 = @runtime(core.int32_to_string)(t207) in
+                        jump inline_cont245(inline246)
                       } in
-                      let inline289 = trait_impl#ToString#string#to_string(t246) in
-                      let inline290 = @runtime(core.string_println)(inline289) in
-                      jump inline_cont288(())
+                      let inline248 = trait_impl#ToString#string#to_string(t205) in
+                      let inline249 = @runtime(core.string_println)(inline248) in
+                      jump inline_cont247(())
                     } in
-                    let inline292 = @runtime(core.int32_to_string)(t245) in
-                    jump inline_cont291(inline292)
+                    let inline251 = @runtime(core.int32_to_string)(t204) in
+                    jump inline_cont250(inline251)
                   } in
-                  let inline294 = trait_impl#ToString#string#to_string(t243) in
-                  let inline295 = @runtime(core.string_println)(inline294) in
-                  jump inline_cont293(())
+                  let inline253 = trait_impl#ToString#string#to_string(t202) in
+                  let inline254 = @runtime(core.string_println)(inline253) in
+                  jump inline_cont252(())
                 } in
-                let inline297 = @runtime(core.int32_to_string)(t242) in
-                jump inline_cont296(inline297)
+                let inline256 = @runtime(core.int32_to_string)(t201) in
+                jump inline_cont255(inline256)
               } in
-              let inline299 = trait_impl#ToString#string#to_string(t240) in
-              let inline300 = @runtime(core.string_println)(inline299) in
-              jump inline_cont298(())
+              let inline258 = trait_impl#ToString#string#to_string(t199) in
+              let inline259 = @runtime(core.string_println)(inline258) in
+              jump inline_cont257(())
             } in
-            let inline302 = @runtime(core.int32_to_string)(t239) in
-            jump inline_cont301(inline302)
+            let inline261 = @runtime(core.int32_to_string)(t198) in
+            jump inline_cont260(inline261)
           } in
-          let inline304 = trait_impl#ToString#string#to_string(t237) in
-          let inline305 = @runtime(core.string_println)(inline304) in
-          jump inline_cont303(())
+          let inline263 = trait_impl#ToString#string#to_string(t196) in
+          let inline264 = @runtime(core.string_println)(inline263) in
+          jump inline_cont262(())
         } in
-        let inline307 = @runtime(core.int32_to_string)(t236) in
-        jump inline_cont306(inline307)
+        let inline266 = @runtime(core.int32_to_string)(t195) in
+        jump inline_cont265(inline266)
       } in
-      let inline309 = trait_impl#ToString#string#to_string(t234) in
-      let inline310 = @runtime(core.string_println)(inline309) in
-      jump inline_cont308(())
+      let inline268 = trait_impl#ToString#string#to_string(t193) in
+      let inline269 = @runtime(core.string_println)(inline268) in
+      jump inline_cont267(())
     } in
-    let inline312 = @runtime(core.int32_to_string)(t233) in
-    jump inline_cont311(inline312)
+    let inline271 = @runtime(core.int32_to_string)(t192) in
+    jump inline_cont270(inline271)
   } in
-  let inline314 = trait_impl#ToString#string#to_string(t231) in
-  let inline315 = @runtime(core.string_println)(inline314) in
-  jump inline_cont313(())
+  let inline273 = trait_impl#ToString#string#to_string(t190) in
+  let inline274 = @runtime(core.string_println)(inline273) in
+  jump inline_cont272(())
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont316(t261: string) -> unit {
-    let t262 = @runtime(core.string_println)(t261) in
+  join inline_cont275(t220: string) -> unit {
+    let t221 = @runtime(core.string_println)(t220) in
     ()
   } in
-  jump inline_cont316(value/31)
+  jump inline_cont275(value/31)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t265 = @runtime(core.int32_to_string)(self/35) in
-  t265
+  let t224 = @runtime(core.int32_to_string)(self/35) in
+  t224
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

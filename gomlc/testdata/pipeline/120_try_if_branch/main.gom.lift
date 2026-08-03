@@ -9,16 +9,16 @@ fn parse(flag/0: bool) -> Result__int32__string {
 fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
   let value/3 =
     if flag/1 {
-        let mtmp177 = parse(fallback/2) in
-        match mtmp177 {
-          Result__int32__string::Ok(x178) => {
-            let x178 = Result__int32__string::Ok._0(mtmp177) in
-            let try_value/13 = x178 in
+        let mtmp136 = parse(fallback/2) in
+        match mtmp136 {
+          Result__int32__string::Ok(x137) => {
+            let x137 = Result__int32__string::Ok._0(mtmp136) in
+            let try_value/13 = x137 in
             try_value/13
           },
-          Result__int32__string::Err(x179) => {
-            let x179 = Result__int32__string::Err._0(mtmp177) in
-            let try_residual/13 = x179 in
+          Result__int32__string::Err(x138) => {
+            let x138 = Result__int32__string::Err._0(mtmp136) in
+            let try_residual/13 = x138 in
             return Result__int32__string::Err(try_residual/13)
           },
         }
@@ -30,23 +30,23 @@ fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
 
 fn show(res/4: Result__int32__string) -> string {
   match res/4 {
-    Result__int32__string::Ok(x180) => {
-      let x180 = Result__int32__string::Ok._0(res/4) in
-      let value/5 = x180 in
+    Result__int32__string::Ok(x139) => {
+      let x139 = Result__int32__string::Ok._0(res/4) in
+      let value/5 = x139 in
       ("ok=" + inherent#int32#int32#to_string(value/5))
     },
-    Result__int32__string::Err(x181) => {
-      let x181 = Result__int32__string::Err._0(res/4) in
-      let err/6 = x181 in
+    Result__int32__string::Err(x140) => {
+      let x140 = Result__int32__string::Err._0(res/4) in
+      let err/6 = x140 in
       ("err=" + err/6)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild182 = println__T_string(show(bump(true, true))) in
-  let _wild183 = println__T_string(show(bump(true, false))) in
-  let _wild184 = println__T_string(show(bump(false, false))) in
+  let _wild141 = println__T_string(show(bump(true, true))) in
+  let _wild142 = println__T_string(show(bump(true, false))) in
+  let _wild143 = println__T_string(show(bump(false, false))) in
   ()
 }
 

@@ -41,53 +41,53 @@ func dyn__Describe__vtable__DefaultValue() *dyn__Describe_vtable {
 }
 
 func _goml_m_trait__impl_i_Describe_i_DefaultValue_i_name(self__3 DefaultValue) string {
-    var t183 string = self__3.name
-    return t183
+    var t142 string = self__3.name
+    return t142
 }
 
 func _goml_m_trait__impl_i_Describe_i_DefaultValue_i_describe(default_arg0 DefaultValue) string {
-    var inline216 string = _goml_m_trait__impl_i_Describe_i_DefaultValue_i_name(default_arg0)
-    var inline217 string = "default:" + inline216
-    return inline217
+    var inline175 string = _goml_m_trait__impl_i_Describe_i_DefaultValue_i_name(default_arg0)
+    var inline176 string = "default:" + inline175
+    return inline176
 }
 
 func main0() struct{} {
     var default_value__7 DefaultValue = DefaultValue{
         name: "value",
     }
-    var t195 string
-    var inline237 string = _goml_m_trait__default_i_Describe_i_describe____Self__DefaultValue(default_value__7)
-    t195 = inline237
-    var inline234 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-    _goml_runtime_core_string_println(inline234)
-    var t196 string
-    var inline231 string = "generic"
-    var inline232 string = _goml_m_trait__default_i_Keep_i_keep____Self__DefaultValue____T__string(default_value__7, inline231)
-    t196 = inline232
-    var inline228 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
-    _goml_runtime_core_string_println(inline228)
-    var t198 string
-    t198 = "override"
-    var inline224 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline224)
-    var t199 dyn__Describe = dyn__Describe{
+    var t154 string
+    var inline196 string = _goml_m_trait__default_i_Describe_i_describe____Self__DefaultValue(default_value__7)
+    t154 = inline196
+    var inline193 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t154)
+    _goml_runtime_core_string_println(inline193)
+    var t155 string
+    var inline190 string = "generic"
+    var inline191 string = _goml_m_trait__default_i_Keep_i_keep____Self__DefaultValue____T__string(default_value__7, inline190)
+    t155 = inline191
+    var inline187 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t155)
+    _goml_runtime_core_string_println(inline187)
+    var t157 string
+    t157 = "override"
+    var inline183 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t157)
+    _goml_runtime_core_string_println(inline183)
+    var t158 dyn__Describe = dyn__Describe{
         data: default_value__7,
         vtable: dyn__Describe__vtable__DefaultValue(),
     }
-    var t200 string
-    var inline222 string = t199.vtable.describe(t199.data)
-    t200 = inline222
-    var inline219 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-    _goml_runtime_core_string_println(inline219)
+    var t159 string
+    var inline181 string = t158.vtable.describe(t158.data)
+    t159 = inline181
+    var inline178 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t159)
+    _goml_runtime_core_string_println(inline178)
     return struct{}{}
 }
 
 func _goml_m_trait__default_i_Describe_i_describe____Self__DefaultValue(self__0 DefaultValue) string {
-    var t203 string
-    var inline239 string = self__0.name
-    t203 = inline239
-    var t204 string = "default:" + t203
-    return t204
+    var t162 string
+    var inline198 string = self__0.name
+    t162 = inline198
+    var t163 string = "default:" + t162
+    return t163
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

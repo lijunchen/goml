@@ -38,109 +38,109 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 func continue_branch() struct{} {
     var count__2 *ref_int_x
-    var inline250 int = 0
-    var inline251 *ref_int_x = ref__Ref_3int(inline250)
-    count__2 = inline251
-    Loop_loop190:
+    var inline209 int = 0
+    var inline210 *ref_int_x = ref__Ref_3int(inline209)
+    count__2 = inline210
+    Loop_loop149:
     for {
-        var t191 int
-        var inline248 int = ref_get__Ref_3int(count__2)
-        t191 = inline248
-        var t192 bool = t191 < 2
-        if t192 {
-            var t193 int
-            var inline246 int = ref_get__Ref_3int(count__2)
-            t193 = inline246
-            var t194 int = t193 + 1
-            ref_set__Ref_3int(count__2, t194)
-            var t198 int
-            var inline242 int = ref_get__Ref_3int(count__2)
-            t198 = inline242
-            var t199 bool
-            var inline239 int = 1
-            var inline240 bool = t198 == inline239
-            t199 = inline240
-            var jp196 int
-            if t199 {
+        var t150 int
+        var inline207 int = ref_get__Ref_3int(count__2)
+        t150 = inline207
+        var t151 bool = t150 < 2
+        if t151 {
+            var t152 int
+            var inline205 int = ref_get__Ref_3int(count__2)
+            t152 = inline205
+            var t153 int = t152 + 1
+            ref_set__Ref_3int(count__2, t153)
+            var t157 int
+            var inline201 int = ref_get__Ref_3int(count__2)
+            t157 = inline201
+            var t158 bool
+            var inline198 int = 1
+            var inline199 bool = t157 == inline198
+            t158 = inline199
+            var jp155 int
+            if t158 {
                 continue
             } else {
-                jp196 = 7
-                var inline236 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp196)
-                _goml_runtime_core_string_println(inline236)
+                jp155 = 7
+                var inline195 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp155)
+                _goml_runtime_core_string_println(inline195)
                 continue
             }
         } else {
-            break Loop_loop190
+            break Loop_loop149
         }
     }
     return struct{}{}
 }
 
 func break_branch(stop__4 bool) struct{} {
-    var jp204 int
+    var jp163 int
     if stop__4 {
         return struct{}{}
     } else {
-        jp204 = 9
-        var inline253 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp204)
-        _goml_runtime_core_string_println(inline253)
+        jp163 = 9
+        var inline212 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(jp163)
+        _goml_runtime_core_string_println(inline212)
         return struct{}{}
     }
 }
 
 func main0() struct{} {
-    var t206 int32
-    var inline268 bool = false
-    var inline270 int32
-    if inline268 {
-        t206 = 10
-        var inline265 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t206)
-        _goml_runtime_core_string_println(inline265)
-        var t207 int32
-        var inline259 bool = true
-        var inline261 int32
-        if inline259 {
-            t207 = 10
-            var inline256 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t207)
-            _goml_runtime_core_string_println(inline256)
+    var t165 int32
+    var inline227 bool = false
+    var inline229 int32
+    if inline227 {
+        t165 = 10
+        var inline224 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t165)
+        _goml_runtime_core_string_println(inline224)
+        var t166 int32
+        var inline218 bool = true
+        var inline220 int32
+        if inline218 {
+            t166 = 10
+            var inline215 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t166)
+            _goml_runtime_core_string_println(inline215)
             continue_branch()
             break_branch(false)
             break_branch(true)
             return struct{}{}
         } else {
-            inline261 = 20
-            var inline263 int32 = inline261 + 1
-            t207 = inline263
-            var inline256 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t207)
-            _goml_runtime_core_string_println(inline256)
+            inline220 = 20
+            var inline222 int32 = inline220 + 1
+            t166 = inline222
+            var inline215 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t166)
+            _goml_runtime_core_string_println(inline215)
             continue_branch()
             break_branch(false)
             break_branch(true)
             return struct{}{}
         }
     } else {
-        inline270 = 20
-        var inline272 int32 = inline270 + 1
-        t206 = inline272
-        var inline265 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t206)
-        _goml_runtime_core_string_println(inline265)
-        var t207 int32
-        var inline259 bool = true
-        var inline261 int32
-        if inline259 {
-            t207 = 10
-            var inline256 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t207)
-            _goml_runtime_core_string_println(inline256)
+        inline229 = 20
+        var inline231 int32 = inline229 + 1
+        t165 = inline231
+        var inline224 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t165)
+        _goml_runtime_core_string_println(inline224)
+        var t166 int32
+        var inline218 bool = true
+        var inline220 int32
+        if inline218 {
+            t166 = 10
+            var inline215 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t166)
+            _goml_runtime_core_string_println(inline215)
             continue_branch()
             break_branch(false)
             break_branch(true)
             return struct{}{}
         } else {
-            inline261 = 20
-            var inline263 int32 = inline261 + 1
-            t207 = inline263
-            var inline256 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t207)
-            _goml_runtime_core_string_println(inline256)
+            inline220 = 20
+            var inline222 int32 = inline220 + 1
+            t166 = inline222
+            var inline215 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t166)
+            _goml_runtime_core_string_println(inline215)
             continue_branch()
             break_branch(false)
             break_branch(true)
@@ -150,13 +150,13 @@ func main0() struct{} {
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t228 string = _goml_runtime_core_int_to_string(self__69)
-    return t228
+    var t187 string = _goml_runtime_core_int_to_string(self__69)
+    return t187
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t231 string = _goml_runtime_core_int32_to_string(self__72)
-    return t231
+    var t190 string = _goml_runtime_core_int32_to_string(self__72)
+    return t190
 }
 
 func main() {

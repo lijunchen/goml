@@ -66,39 +66,39 @@ type Only struct {
 func (_ Only) isSingle() {}
 
 func main0() struct{} {
-    var t258 int32
-    var inline287 int32 = 12
-    t258 = inline287
-    var inline283 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t258)
-    _goml_runtime_core_string_println(inline283)
-    var t259 int32
-    var inline281 bool = true
-    switch inline281 {
+    var t217 int32
+    var inline246 int32 = 12
+    t217 = inline246
+    var inline242 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t217)
+    _goml_runtime_core_string_println(inline242)
+    var t218 int32
+    var inline240 bool = true
+    switch inline240 {
     case true:
-        t259 = 1
+        t218 = 1
     case false:
-        t259 = 2
+        t218 = 2
     default:
         panic("non-exhaustive match")
     }
-    var inline278 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t259)
-    _goml_runtime_core_string_println(inline278)
-    var t260 string
-    var inline276 float64 = 0
-    switch inline276 {
+    var inline237 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(t218)
+    _goml_runtime_core_string_println(inline237)
+    var t219 string
+    var inline235 float64 = 0
+    switch inline235 {
     case -0:
-        t260 = "zero"
+        t219 = "zero"
     default:
-        t260 = "other"
+        t219 = "other"
     }
-    var inline273 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t260)
-    _goml_runtime_core_string_println(inline273)
+    var inline232 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t219)
+    _goml_runtime_core_string_println(inline232)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t269 string = _goml_runtime_core_int32_to_string(self__72)
-    return t269
+    var t228 string = _goml_runtime_core_int32_to_string(self__72)
+    return t228
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

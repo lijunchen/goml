@@ -4,29 +4,29 @@ fn child(signal/0: Ref[int32]) -> unit {
 
 fn main() -> unit {
   let signal/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let _wild177 =
+  let _wild136 =
     go || {
       child(signal/1)
     } in
-  let _wild178 =
+  let _wild137 =
     while (inherent#Ref#Ref[T]#get__T_int32(signal/1) < 1) {
         {
           ()
         }
     } in
-  let _wild179 = println__T_string("main") in
+  let _wild138 = println__T_string("main") in
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/238: Ref[int32], value/239: int32) -> unit {
-  @intrinsic(ref.set)(self/238, value/239)
+fn inherent#Ref#Ref[T]#set__T_int32(self/217: Ref[int32], value/218: int32) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/236: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/236)
+fn inherent#Ref#Ref[T]#new__T_int32(value/215: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/215)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/237: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/237)
+fn inherent#Ref#Ref[T]#get__T_int32(self/216: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/216)
 }
 
 fn println__T_string(value/31: string) -> unit {

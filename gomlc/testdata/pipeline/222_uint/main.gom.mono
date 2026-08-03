@@ -18,25 +18,25 @@ fn main() -> unit {
   let left/3 = 19 in
   let right/4 = (2 as uint) in
   let result/5 = combine(left/3, right/4) in
-  let _wild177 = println__T_uint(result/5) in
-  let _wild178 = println__T_string(trait_impl#ToString#uint#to_string(result/5)) in
-  let _wild179 = println__T_string(classify(result/5)) in
-  let _wild180 = println__T_bool((result/5 > left/3)) in
-  let _wild181 = println__T_uint64(((result/5 & 15) as uint64)) in
+  let _wild136 = println__T_uint(result/5) in
+  let _wild137 = println__T_string(trait_impl#ToString#uint#to_string(result/5)) in
+  let _wild138 = println__T_string(classify(result/5)) in
+  let _wild139 = println__T_bool((result/5 > left/3)) in
+  let _wild140 = println__T_uint64(((result/5 & 15) as uint64)) in
   let values/6 = inherent#HashMap#HashMap[K,V]#new__K_uint__V_string() in
-  let _wild182 =
+  let _wild141 =
     inherent#HashMap#HashMap[K,V]#set__K_uint__V_string(values/6, result/5, "stored") in
   {
-    let mtmp183 = inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(values/6, 42) in
-    match mtmp183 {
+    let mtmp142 = inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(values/6, 42) in
+    match mtmp142 {
       Option__string::None => {
         println__T_string("missing")
       },
-      Option__string::Some(x184) => {
+      Option__string::Some(x143) => {
         {
-          let x184 = Option__string::Some._0(mtmp183) in
+          let x143 = Option__string::Some._0(mtmp142) in
           {
-            let value/7 = x184 in
+            let value/7 = x143 in
             println__T_string(value/7)
           }
         }
@@ -53,8 +53,8 @@ fn println__T_string(value/31: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
 }
 
-fn trait_impl#ToString#uint#to_string(self/253: uint) -> string {
-  @runtime(core.uint_to_string)(self/253)
+fn trait_impl#ToString#uint#to_string(self/232: uint) -> string {
+  @runtime(core.uint_to_string)(self/232)
 }
 
 fn println__T_bool(value/31: bool) -> unit {
@@ -70,18 +70,18 @@ fn inherent#HashMap#HashMap[K,V]#new__K_uint__V_string() -> HashMap[uint, string
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_uint__V_string(
-  self/227: HashMap[uint, string],
-  key/228: uint,
-  value/229: string
+  self/206: HashMap[uint, string],
+  key/207: uint,
+  value/208: string
 ) -> unit {
-  @intrinsic(hashmap.set)(self/227, key/228, value/229)
+  @intrinsic(hashmap.set)(self/206, key/207, value/208)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_uint__V_string(
-  self/225: HashMap[uint, string],
-  key/226: uint
+  self/204: HashMap[uint, string],
+  key/205: uint
 ) -> Option__string {
-  @intrinsic(hashmap.get)(self/225, key/226)
+  @intrinsic(hashmap.get)(self/204, key/205)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -96,10 +96,10 @@ fn trait_impl#ToString#uint64#to_string(self/77: uint64) -> string {
   @runtime(core.uint64_to_string)(self/77)
 }
 
-fn trait_impl#Eq#uint#eq(self/254: uint, other/255: uint) -> bool {
-  @intrinsic(eq.primitive)(self/254, other/255)
+fn trait_impl#Eq#uint#eq(self/233: uint, other/234: uint) -> bool {
+  @intrinsic(eq.primitive)(self/233, other/234)
 }
 
-fn trait_impl#Hash#uint#hash(self/256: uint) -> uint64 {
-  @runtime(core.uint_hash)(self/256)
+fn trait_impl#Hash#uint#hash(self/235: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/235)
 }

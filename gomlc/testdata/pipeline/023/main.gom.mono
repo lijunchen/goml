@@ -1,10 +1,10 @@
 fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
   {
-    let x177 = pair/0.0 in
-    let x178 = pair/0.1 in
-    match x178 {
+    let x136 = pair/0.0 in
+    let x137 = pair/0.1 in
+    match x137 {
       "zero" => {
-        match x177 {
+        match x136 {
           0 => {
             1
           },
@@ -12,7 +12,7 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
         }
       },
       "one" => {
-        match x177 {
+        match x136 {
           0 => {
             2
           },
@@ -23,7 +23,7 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
         }
       },
       _ =>
-        match x177 {
+        match x136 {
           0 => {
             2
           },
@@ -35,10 +35,10 @@ fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
 
 fn match_mixed_enum(value/1: Mixed) -> int32 {
   match value/1 {
-    Mixed::OnlyInt(x179) => {
+    Mixed::OnlyInt(x138) => {
       {
-        let x179 = Mixed::OnlyInt._0(value/1) in
-        match x179 {
+        let x138 = Mixed::OnlyInt._0(value/1) in
+        match x138 {
           0 => {
             6
           },
@@ -46,10 +46,10 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
         }
       }
     },
-    Mixed::OnlyStr(x180) => {
+    Mixed::OnlyStr(x139) => {
       {
-        let x180 = Mixed::OnlyStr._0(value/1) in
-        match x180 {
+        let x139 = Mixed::OnlyStr._0(value/1) in
+        match x139 {
           "zero" => {
             8
           },
@@ -57,13 +57,13 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
         }
       }
     },
-    Mixed::Both(x181, x182) => {
+    Mixed::Both(x140, x141) => {
       {
-        let x181 = Mixed::Both._0(value/1) in
-        let x182 = Mixed::Both._1(value/1) in
-        match x182 {
+        let x140 = Mixed::Both._0(value/1) in
+        let x141 = Mixed::Both._1(value/1) in
+        match x141 {
           "zero" => {
-            match x181 {
+            match x140 {
               0 => {
                 10
               },
@@ -71,7 +71,7 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
             }
           },
           _ =>
-            match x181 {
+            match x140 {
               0 => {
                 11
               },
@@ -84,51 +84,51 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
 }
 
 fn main() -> unit {
-  let mtmp183 = println__T_string(inherent#int32#int32#to_string(match_mixed_pair((0, "zero")))) in
+  let mtmp142 = println__T_string(inherent#int32#int32#to_string(match_mixed_pair((0, "zero")))) in
   {
-    let mtmp184 =
+    let mtmp143 =
       println__T_string(inherent#int32#int32#to_string(match_mixed_pair((0, "other")))) in
     {
-      let mtmp185 =
+      let mtmp144 =
         println__T_string(inherent#int32#int32#to_string(match_mixed_pair((1, "one")))) in
       {
-        let mtmp186 =
+        let mtmp145 =
           println__T_string(inherent#int32#int32#to_string(match_mixed_pair((2, "zero")))) in
         {
-          let mtmp187 =
+          let mtmp146 =
             println__T_string(inherent#int32#int32#to_string(match_mixed_pair((2, "two")))) in
           {
-            let mtmp188 =
+            let mtmp147 =
               println__T_string(
                 inherent#int32#int32#to_string(match_mixed_enum(Mixed::OnlyInt(0)))
               ) in
             {
-              let mtmp189 =
+              let mtmp148 =
                 println__T_string(
                   inherent#int32#int32#to_string(match_mixed_enum(Mixed::OnlyInt(5)))
                 ) in
               {
-                let mtmp190 =
+                let mtmp149 =
                   println__T_string(
                     inherent#int32#int32#to_string(match_mixed_enum(Mixed::OnlyStr("zero")))
                   ) in
                 {
-                  let mtmp191 =
+                  let mtmp150 =
                     println__T_string(
                       inherent#int32#int32#to_string(match_mixed_enum(Mixed::OnlyStr("hello")))
                     ) in
                   {
-                    let mtmp192 =
+                    let mtmp151 =
                       println__T_string(
                         inherent#int32#int32#to_string(match_mixed_enum(Mixed::Both(0, "zero")))
                       ) in
                     {
-                      let mtmp193 =
+                      let mtmp152 =
                         println__T_string(
                           inherent#int32#int32#to_string(match_mixed_enum(Mixed::Both(0, "hello")))
                         ) in
                       {
-                        let mtmp194 =
+                        let mtmp153 =
                           println__T_string(
                             inherent#int32#int32#to_string(match_mixed_enum(Mixed::Both(2, "zero")))
                           ) in

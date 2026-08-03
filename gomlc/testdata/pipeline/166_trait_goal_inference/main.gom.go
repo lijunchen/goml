@@ -28,20 +28,20 @@ func vec_len__Vec_5int32(vec *_goml_vec_int32) int {
 }
 
 func _goml_m_trait__impl_i_Measure_i_Vec_l_int32_r__i_measure(self__0 *_goml_vec_int32) int {
-    var inline199 int = vec_len__Vec_5int32(self__0)
-    return inline199
+    var inline158 int = vec_len__Vec_5int32(self__0)
+    return inline158
 }
 
 func main0() struct{} {
     var values__2 *_goml_vec_int32 = vec_new__Vec_5int32()
-    var t181 int
-    var inline206 int = _goml_m_trait__impl_i_Measure_i_Vec_l_int32_r__i_measure(values__2)
-    t181 = inline206
-    var t182 string
-    var inline204 string = _goml_runtime_core_int_to_string(t181)
-    t182 = inline204
-    var inline201 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
-    _goml_runtime_core_string_println(inline201)
+    var t140 int
+    var inline165 int = _goml_m_trait__impl_i_Measure_i_Vec_l_int32_r__i_measure(values__2)
+    t140 = inline165
+    var t141 string
+    var inline163 string = _goml_runtime_core_int_to_string(t140)
+    t141 = inline163
+    var inline160 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t141)
+    _goml_runtime_core_string_println(inline160)
     return struct{}{}
 }
 

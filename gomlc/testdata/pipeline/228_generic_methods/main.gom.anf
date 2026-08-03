@@ -1,75 +1,75 @@
 fn main() -> unit {
   let first/4 = Box__int { value: 42 } in
-  let t186 = closure_env_main_0 {} in
-  let text/6 = inherent#Box#Box[T]#map__T_int__U_string(first/4, t186) in
-  let t187 = Box__string.value(text/6) in
-  join inline_cont236(_wild178: unit) -> unit {
+  let t145 = closure_env_main_0 {} in
+  let text/6 = inherent#Box#Box[T]#map__T_int__U_string(first/4, t145) in
+  let t146 = Box__string.value(text/6) in
+  join inline_cont195(_wild137: unit) -> unit {
     let second/7 = Box__int { value: 7 } in
-    let t188 = closure_env_main_1 {} in
-    let explicit/9 = inherent#Box#Box[T]#map__T_int__U_string(second/7, t188) in
-    let t189 = Box__string.value(explicit/9) in
-    join inline_cont233(_wild179: unit) -> unit {
+    let t147 = closure_env_main_1 {} in
+    let explicit/9 = inherent#Box#Box[T]#map__T_int__U_string(second/7, t147) in
+    let t148 = Box__string.value(explicit/9) in
+    join inline_cont192(_wild138: unit) -> unit {
       let third/10 = Box__int { value: 9 } in
-      let t190 = closure_env_main_2 {} in
-      let static_call/12 = inherent#Box#Box[T]#map__T_int__U_string(third/10, t190) in
-      let t191 = Box__string.value(static_call/12) in
-      join inline_cont230(_wild180: unit) -> unit {
-        let t192 = Box__string { value: "value" } in
-        join inline_cont225(rendered/13: string) -> unit {
-          let inline223 = trait_impl#ToString#string#to_string(rendered/13) in
-          let inline224 = @runtime(core.string_println)(inline223) in
+      let t149 = closure_env_main_2 {} in
+      let static_call/12 = inherent#Box#Box[T]#map__T_int__U_string(third/10, t149) in
+      let t150 = Box__string.value(static_call/12) in
+      join inline_cont189(_wild139: unit) -> unit {
+        let t151 = Box__string { value: "value" } in
+        join inline_cont184(rendered/13: string) -> unit {
+          let inline182 = trait_impl#ToString#string#to_string(rendered/13) in
+          let inline183 = @runtime(core.string_println)(inline182) in
           ()
         } in
-        let inline226 = 5 in
-        let inline227 = t192 in
-        let inline228 = trait_impl#ToString#int#to_string(inline226) in
-        let inline229 = ("value:" + inline228) in
-        jump inline_cont225(inline229)
+        let inline185 = 5 in
+        let inline186 = t151 in
+        let inline187 = trait_impl#ToString#int#to_string(inline185) in
+        let inline188 = ("value:" + inline187) in
+        jump inline_cont184(inline188)
       } in
-      let inline231 = trait_impl#ToString#string#to_string(t191) in
-      let inline232 = @runtime(core.string_println)(inline231) in
-      jump inline_cont230(())
+      let inline190 = trait_impl#ToString#string#to_string(t150) in
+      let inline191 = @runtime(core.string_println)(inline190) in
+      jump inline_cont189(())
     } in
-    let inline234 = trait_impl#ToString#string#to_string(t189) in
-    let inline235 = @runtime(core.string_println)(inline234) in
-    jump inline_cont233(())
+    let inline193 = trait_impl#ToString#string#to_string(t148) in
+    let inline194 = @runtime(core.string_println)(inline193) in
+    jump inline_cont192(())
   } in
-  let inline237 = trait_impl#ToString#string#to_string(t187) in
-  let inline238 = @runtime(core.string_println)(inline237) in
-  jump inline_cont236(())
+  let inline196 = trait_impl#ToString#string#to_string(t146) in
+  let inline197 = @runtime(core.string_println)(inline196) in
+  jump inline_cont195(())
 }
 
 fn inherent#int#int#to_string(self/34: int) -> string {
-  let t195 = @runtime(core.int_to_string)(self/34) in
-  t195
+  let t154 = @runtime(core.int_to_string)(self/34) in
+  t154
 }
 
 fn inherent#Box#Box[T]#map__T_int__U_string(
   self/0: Box__int,
   map_fn/1: (int) -> string
 ) -> Box__string {
-  let t198 = Box__int.value(self/0) in
-  let t199 = map_fn/1(t198) in
-  let t200 = Box__string { value: t199 } in
-  t200
+  let t157 = Box__int.value(self/0) in
+  let t158 = map_fn/1(t157) in
+  let t159 = Box__string { value: t158 } in
+  t159
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont239(t202: string) -> unit {
-    let t203 = @runtime(core.string_println)(t202) in
+  join inline_cont198(t161: string) -> unit {
+    let t162 = @runtime(core.string_println)(t161) in
     ()
   } in
-  jump inline_cont239(value/31)
+  jump inline_cont198(value/31)
 }
 
 fn inherent#Box#Box[T]#render__T_string__U_int(self/2: Box__string, value/3: int) -> string {
-  let mtmp177 = self/2 in
-  join inline_cont240(t206: string) -> string {
-    let t207 = ("value:" + t206) in
-    t207
+  let mtmp136 = self/2 in
+  join inline_cont199(t165: string) -> string {
+    let t166 = ("value:" + t165) in
+    t166
   } in
-  let inline241 = @runtime(core.int_to_string)(value/3) in
-  jump inline_cont240(inline241)
+  let inline200 = @runtime(core.int_to_string)(value/3) in
+  jump inline_cont199(inline200)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -77,30 +77,30 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t212 = @runtime(core.int_to_string)(self/69) in
-  t212
+  let t171 = @runtime(core.int_to_string)(self/69) in
+  t171
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env182: closure_env_main_0,
+  env141: closure_env_main_0,
   value/5: int
 ) -> string {
-  let inline243 = @runtime(core.int_to_string)(value/5) in
-  inline243
+  let inline202 = @runtime(core.int_to_string)(value/5) in
+  inline202
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
-  env183: closure_env_main_1,
+  env142: closure_env_main_1,
   value/8: int
 ) -> string {
-  let inline245 = @runtime(core.int_to_string)(value/8) in
-  inline245
+  let inline204 = @runtime(core.int_to_string)(value/8) in
+  inline204
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
-  env184: closure_env_main_2,
+  env143: closure_env_main_2,
   value/11: int
 ) -> string {
-  let inline247 = @runtime(core.int_to_string)(value/11) in
-  inline247
+  let inline206 = @runtime(core.int_to_string)(value/11) in
+  inline206
 }

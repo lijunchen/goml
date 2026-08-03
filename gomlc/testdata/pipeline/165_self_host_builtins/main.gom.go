@@ -236,30 +236,30 @@ type Option__char_Some struct {
 func (_ Option__char_Some) isOption__char() {}
 
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(value__2 string) _goml_m_std_p_bytes_p_Bytes {
-    var t198 *_goml_vec_uint8
-    var inline627 *_goml_vec_uint8 = _goml_runtime_core_string_to_bytes(value__2)
-    t198 = inline627
-    var t199 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
-        values: t198,
+    var t157 *_goml_vec_uint8
+    var inline586 *_goml_vec_uint8 = _goml_runtime_core_string_to_bytes(value__2)
+    t157 = inline586
+    var t158 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
+        values: t157,
     }
-    return t199
+    return t158
 }
 
 func _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(self__23 _goml_m_std_p_bytes_p_Bytes) Result__string__string {
-    var t243 *_goml_vec_uint8 = self__23.values
-    var mtmp6 Tuple2_4bool_6string = string_from_utf8(t243)
+    var t202 *_goml_vec_uint8 = self__23.values
+    var mtmp6 Tuple2_4bool_6string = string_from_utf8(t202)
     var x7 bool = mtmp6._0
     var x8 string = mtmp6._1
     if x7 {
-        var t246 Result__string__string = Result__string__string_Ok{
+        var t205 Result__string__string = Result__string__string_Ok{
             _0: x8,
         }
-        return t246
+        return t205
     } else {
-        var t247 Result__string__string = Result__string__string_Err{
+        var t206 Result__string__string = Result__string__string_Err{
             _0: "invalid UTF-8",
         }
-        return t247
+        return t206
     }
 }
 
@@ -269,40 +269,40 @@ func _goml_m_std_p_fs_p_read__bytes(path__5 string) _goml_m_Result____std_p_byte
     var x5 *_goml_vec_uint8 = mtmp3._1
     var x6 string = mtmp3._2
     if x4 {
-        var t262 _goml_m_std_p_bytes_p_Bytes
-        var inline686 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
+        var t221 _goml_m_std_p_bytes_p_Bytes
+        var inline645 _goml_m_std_p_bytes_p_Bytes = _goml_m_std_p_bytes_p_Bytes{
             values: x5,
         }
-        t262 = inline686
-        var t263 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Ok{
-            _0: t262,
+        t221 = inline645
+        var t222 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Ok{
+            _0: t221,
         }
-        return t263
+        return t222
     } else {
-        var t264 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Err{
+        var t223 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_Result____std_p_bytes_p_Bytes____string_Err{
             _0: x6,
         }
-        return t264
+        return t223
     }
 }
 
 func _goml_m_std_p_fs_p_write__bytes(path__9 string, data__10 _goml_m_std_p_bytes_p_Bytes) Result__unit__string {
-    var t267 *_goml_vec_uint8
-    var inline688 *_goml_vec_uint8 = data__10.values
-    t267 = inline688
-    var mtmp7 Tuple2_4bool_6string = _goml_runtime_std_fs_write_bytes(path__9, t267)
+    var t226 *_goml_vec_uint8
+    var inline647 *_goml_vec_uint8 = data__10.values
+    t226 = inline647
+    var mtmp7 Tuple2_4bool_6string = _goml_runtime_std_fs_write_bytes(path__9, t226)
     var x8 bool = mtmp7._0
     var x9 string = mtmp7._1
     if x8 {
-        var t270 Result__unit__string = Result__unit__string_Ok{
+        var t229 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        return t270
+        return t229
     } else {
-        var t271 Result__unit__string = Result__unit__string_Err{
+        var t230 Result__unit__string = Result__unit__string_Err{
             _0: x9,
         }
-        return t271
+        return t230
     }
 }
 
@@ -311,90 +311,90 @@ func _goml_m_std_p_fs_p_create__dir__all(path__13 string) Result__unit__string {
     var x11 bool = mtmp10._0
     var x12 string = mtmp10._1
     if x11 {
-        var t276 Result__unit__string = Result__unit__string_Ok{
+        var t235 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        return t276
+        return t235
     } else {
-        var t277 Result__unit__string = Result__unit__string_Err{
+        var t236 Result__unit__string = Result__unit__string_Err{
             _0: x12,
         }
-        return t277
+        return t236
     }
 }
 
 func main0() struct{} {
-    var t360 string = string_byte_slice("a你好z", 1, 7)
-    _goml_m_std_p_io_p_println____T__string(t360)
+    var t319 string = string_byte_slice("a你好z", 1, 7)
+    _goml_m_std_p_io_p_println____T__string(t319)
     _goml_m_std_p_io_p_eprint____T__string("")
-    var inline737 string = ""
-    var inline738 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline737)
-    var inline739 string = inline738 + "\n"
-    _goml_runtime_std_io_eprint(inline739)
-    var t361 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
-    var t362 string
-    switch t361.(type) {
+    var inline696 string = ""
+    var inline697 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline696)
+    var inline698 string = inline697 + "\n"
+    _goml_runtime_std_io_eprint(inline698)
+    var t320 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
+    var t321 string
+    switch t320.(type) {
     case Result__unit__string_Ok:
-        t362 = "ok"
+        t321 = "ok"
     case Result__unit__string_Err:
-        var inline733 string = t361.(Result__unit__string_Err)._0
-        var inline735 string = "err " + inline733
-        t362 = inline735
+        var inline692 string = t320.(Result__unit__string_Err)._0
+        var inline694 string = "err " + inline692
+        t321 = inline694
     default:
         panic("non-exhaustive match")
     }
-    var inline729 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t362)
-    _goml_runtime_std_io_println(inline729)
-    var t363 Result__unit__string
-    var inline724 string = "goml-self-host/nested/output.txt"
-    var inline725 string = "boot"
-    var inline726 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(inline725)
-    var inline727 Result__unit__string = _goml_m_std_p_fs_p_write__bytes(inline724, inline726)
-    t363 = inline727
-    var t364 string
-    switch t363.(type) {
+    var inline688 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t321)
+    _goml_runtime_std_io_println(inline688)
+    var t322 Result__unit__string
+    var inline683 string = "goml-self-host/nested/output.txt"
+    var inline684 string = "boot"
+    var inline685 _goml_m_std_p_bytes_p_Bytes = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_from__string(inline684)
+    var inline686 Result__unit__string = _goml_m_std_p_fs_p_write__bytes(inline683, inline685)
+    t322 = inline686
+    var t323 string
+    switch t322.(type) {
     case Result__unit__string_Ok:
-        t364 = "ok"
+        t323 = "ok"
     case Result__unit__string_Err:
-        var inline720 string = t363.(Result__unit__string_Err)._0
-        var inline722 string = "err " + inline720
-        t364 = inline722
+        var inline679 string = t322.(Result__unit__string_Err)._0
+        var inline681 string = "err " + inline679
+        t323 = inline681
     default:
         panic("non-exhaustive match")
     }
-    var inline716 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t364)
-    _goml_runtime_std_io_println(inline716)
-    var t365 Result__string__string
-    var inline707 string = "goml-self-host/nested/output.txt"
-    var inline708 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_std_p_fs_p_read__bytes(inline707)
-    switch inline708.(type) {
+    var inline675 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t323)
+    _goml_runtime_std_io_println(inline675)
+    var t324 Result__string__string
+    var inline666 string = "goml-self-host/nested/output.txt"
+    var inline667 _goml_m_Result____std_p_bytes_p_Bytes____string = _goml_m_std_p_fs_p_read__bytes(inline666)
+    switch inline667.(type) {
     case _goml_m_Result____std_p_bytes_p_Bytes____string_Ok:
-        var inline709 _goml_m_std_p_bytes_p_Bytes = inline708.(_goml_m_Result____std_p_bytes_p_Bytes____string_Ok)._0
-        var inline711 Result__string__string = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(inline709)
-        t365 = inline711
+        var inline668 _goml_m_std_p_bytes_p_Bytes = inline667.(_goml_m_Result____std_p_bytes_p_Bytes____string_Ok)._0
+        var inline670 Result__string__string = _goml_m_inherent_i_std_p_bytes_p_Bytes_i_std_p_bytes_p_Bytes_i_to__string(inline668)
+        t324 = inline670
     case _goml_m_Result____std_p_bytes_p_Bytes____string_Err:
-        var inline712 string = inline708.(_goml_m_Result____std_p_bytes_p_Bytes____string_Err)._0
-        var inline714 Result__string__string = Result__string__string_Err{
-            _0: inline712,
+        var inline671 string = inline667.(_goml_m_Result____std_p_bytes_p_Bytes____string_Err)._0
+        var inline673 Result__string__string = Result__string__string_Err{
+            _0: inline671,
         }
-        t365 = inline714
+        t324 = inline673
     default:
         panic("non-exhaustive match")
     }
-    var t366 string
-    switch t365.(type) {
+    var t325 string
+    switch t324.(type) {
     case Result__string__string_Ok:
-        var inline701 string = t365.(Result__string__string_Ok)._0
-        t366 = inline701
+        var inline660 string = t324.(Result__string__string_Ok)._0
+        t325 = inline660
     case Result__string__string_Err:
-        var inline703 string = t365.(Result__string__string_Err)._0
-        var inline705 string = "err " + inline703
-        t366 = inline705
+        var inline662 string = t324.(Result__string__string_Err)._0
+        var inline664 string = "err " + inline662
+        t325 = inline664
     default:
         panic("non-exhaustive match")
     }
-    var inline698 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t366)
-    _goml_runtime_std_io_println(inline698)
+    var inline657 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t325)
+    _goml_runtime_std_io_println(inline657)
     return struct{}{}
 }
 
@@ -402,359 +402,359 @@ func string_from_utf8(bytes__24 *_goml_vec_uint8) Tuple2_4bool_6string {
     var mtmp10 Tuple2_4bool_6string = _goml_runtime_core_string_from_utf8(bytes__24)
     var x12 string = mtmp10._1
     var index__26 int = 0
-    Loop_loop410:
+    Loop_loop369:
     for {
-        var t411 int
-        var inline755 int = _goml_runtime_core_string_len(x12)
-        t411 = inline755
-        var t412 bool = index__26 < t411
-        if t412 {
+        var t370 int
+        var inline714 int = _goml_runtime_core_string_len(x12)
+        t370 = inline714
+        var t371 bool = index__26 < t370
+        if t371 {
             var mtmp13 Tuple3_4bool_4char_3int = string_decode_utf8_at(x12, index__26)
             var x14 bool = mtmp13._0
             var x16 int = mtmp13._2
             if x14 {
                 var compound_old17 int = index__26
-                var t414 int = compound_old17 + x16
-                index__26 = t414
+                var t373 int = compound_old17 + x16
+                index__26 = t373
                 continue
             } else {
-                var t416 Tuple2_4bool_6string = Tuple2_4bool_6string{
+                var t375 Tuple2_4bool_6string = Tuple2_4bool_6string{
                     _0: false,
                     _1: "",
                 }
-                return t416
+                return t375
             }
         } else {
-            break Loop_loop410
+            break Loop_loop369
         }
     }
-    var t409 Tuple2_4bool_6string = Tuple2_4bool_6string{
+    var t368 Tuple2_4bool_6string = Tuple2_4bool_6string{
         _0: true,
         _1: x12,
     }
-    return t409
+    return t368
 }
 
 func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
-    var t418 string
-    t418 = value__1
-    _goml_runtime_std_io_println(t418)
+    var t377 string
+    t377 = value__1
+    _goml_runtime_std_io_println(t377)
     return struct{}{}
 }
 
 func string_byte_slice(value__21 string, start__22 int, end__23 int) string {
-    var t428 bool = string_is_char_boundary(value__21, start__22)
-    var jp425 bool
-    if t428 {
-        var t429 bool = string_is_char_boundary(value__21, end__23)
-        jp425 = t429
+    var t387 bool = string_is_char_boundary(value__21, start__22)
+    var jp384 bool
+    if t387 {
+        var t388 bool = string_is_char_boundary(value__21, end__23)
+        jp384 = t388
     } else {
-        jp425 = false
+        jp384 = false
     }
-    if jp425 {
-        var t426 string = _goml_runtime_core_string_byte_slice(value__21, start__22, end__23)
-        return t426
+    if jp384 {
+        var t385 string = _goml_runtime_core_string_byte_slice(value__21, start__22, end__23)
+        return t385
     } else {
-        var t427 string = _goml_runtime_core_string_byte_slice(value__21, -1, -1)
-        return t427
+        var t386 string = _goml_runtime_core_string_byte_slice(value__21, -1, -1)
+        return t386
     }
 }
 
 func _goml_m_std_p_io_p_eprint____T__string(value__2 string) struct{} {
-    var t431 string
-    t431 = value__2
-    _goml_runtime_std_io_eprint(t431)
+    var t390 string
+    t390 = value__2
+    _goml_runtime_std_io_eprint(t390)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__len(self__38 string) int {
-    var t442 int = _goml_runtime_core_string_len(self__38)
-    return t442
+    var t401 int = _goml_runtime_core_string_len(self__38)
+    return t401
 }
 
 func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3int {
     var length__7 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__5)
-    var t561 bool = index__6 < 0
-    var jp559 bool
-    if t561 {
-        jp559 = true
+    var t520 bool = index__6 < 0
+    var jp518 bool
+    if t520 {
+        jp518 = true
     } else {
-        var t562 bool = index__6 >= length__7
-        jp559 = t562
+        var t521 bool = index__6 >= length__7
+        jp518 = t521
     }
-    if jp559 {
-        var inline760 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+    if jp518 {
+        var inline719 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
             _0: false,
             _1: 0,
             _2: 0,
         }
-        return inline760
+        return inline719
     } else {
-        var t446 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, index__6)
-        var first__8 uint32 = uint32(uint8(t446))
-        var t449 bool = first__8 < 128
-        if t449 {
-            var inline762 int = 1
-            var inline763 Option__char = char_from_uint32(first__8)
-            switch inline763.(type) {
+        var t405 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, index__6)
+        var first__8 uint32 = uint32(uint8(t405))
+        var t408 bool = first__8 < 128
+        if t408 {
+            var inline721 int = 1
+            var inline722 Option__char = char_from_uint32(first__8)
+            switch inline722.(type) {
             case Option__char_None:
-                var inline764 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                return inline764
+                var inline723 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                return inline723
             case Option__char_Some:
-                var inline765 rune = inline763.(Option__char_Some)._0
-                var inline767 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                var inline724 rune = inline722.(Option__char_Some)._0
+                var inline726 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
-                    _1: inline765,
-                    _2: inline762,
+                    _1: inline724,
+                    _2: inline721,
                 }
-                return inline767
+                return inline726
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            var t453 bool = first__8 < 194
-            if t453 {
-                var inline769 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+            var t412 bool = first__8 < 194
+            if t412 {
+                var inline728 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: false,
                     _1: 0,
                     _2: 0,
                 }
-                return inline769
+                return inline728
             } else {
-                var t457 bool = first__8 < 224
-                if t457 {
-                    var t470 int = length__7 - index__6
-                    var t471 bool = t470 < 2
-                    if t471 {
-                        var inline771 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                var t416 bool = first__8 < 224
+                if t416 {
+                    var t429 int = length__7 - index__6
+                    var t430 bool = t429 < 2
+                    if t430 {
+                        var inline730 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                             _0: false,
                             _1: 0,
                             _2: 0,
                         }
-                        return inline771
+                        return inline730
                     } else {
-                        var t459 int = index__6 + 1
-                        var t460 uint8
-                        var inline785 uint8 = _goml_runtime_core_string_byte_get(value__5, t459)
-                        t460 = inline785
-                        var second__9 uint32 = uint32(uint8(t460))
-                        var t463 bool
-                        var inline782 bool = second__9 < 128
-                        if inline782 {
-                            t463 = true
+                        var t418 int = index__6 + 1
+                        var t419 uint8
+                        var inline744 uint8 = _goml_runtime_core_string_byte_get(value__5, t418)
+                        t419 = inline744
+                        var second__9 uint32 = uint32(uint8(t419))
+                        var t422 bool
+                        var inline741 bool = second__9 < 128
+                        if inline741 {
+                            t422 = true
                         } else {
-                            var inline783 bool = second__9 > 191
-                            t463 = inline783
+                            var inline742 bool = second__9 > 191
+                            t422 = inline742
                         }
-                        if t463 {
-                            var inline773 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                        if t422 {
+                            var inline732 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                 _0: false,
                                 _1: 0,
                                 _2: 0,
                             }
-                            return inline773
+                            return inline732
                         } else {
-                            var t465_rhs uint32 = 31
-                            var t465 uint32 = first__8 & t465_rhs
-                            var t466_rhs int = 6
-                            var t466 uint32 = t465 << t466_rhs
-                            var t467_rhs uint32 = 63
-                            var t467 uint32 = second__9 & t467_rhs
-                            var t468 uint32 = t466 | t467
-                            var inline775 int = 2
-                            var inline776 Option__char = char_from_uint32(t468)
-                            switch inline776.(type) {
+                            var t424_rhs uint32 = 31
+                            var t424 uint32 = first__8 & t424_rhs
+                            var t425_rhs int = 6
+                            var t425 uint32 = t424 << t425_rhs
+                            var t426_rhs uint32 = 63
+                            var t426 uint32 = second__9 & t426_rhs
+                            var t427 uint32 = t425 | t426
+                            var inline734 int = 2
+                            var inline735 Option__char = char_from_uint32(t427)
+                            switch inline735.(type) {
                             case Option__char_None:
-                                var inline777 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                                return inline777
+                                var inline736 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                                return inline736
                             case Option__char_Some:
-                                var inline778 rune = inline776.(Option__char_Some)._0
-                                var inline780 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                                var inline737 rune = inline735.(Option__char_Some)._0
+                                var inline739 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
-                                    _1: inline778,
-                                    _2: inline775,
+                                    _1: inline737,
+                                    _2: inline734,
                                 }
-                                return inline780
+                                return inline739
                             default:
                                 panic("non-exhaustive match")
                             }
                         }
                     }
                 } else {
-                    var t475 bool = first__8 < 240
-                    if t475 {
-                        var t508 int = length__7 - index__6
-                        var t509 bool = t508 < 3
-                        if t509 {
-                            var inline787 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                    var t434 bool = first__8 < 240
+                    if t434 {
+                        var t467 int = length__7 - index__6
+                        var t468 bool = t467 < 3
+                        if t468 {
+                            var inline746 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                 _0: false,
                                 _1: 0,
                                 _2: 0,
                             }
-                            return inline787
+                            return inline746
                         } else {
-                            var t477 int = index__6 + 1
-                            var t478 uint8
-                            var inline802 uint8 = _goml_runtime_core_string_byte_get(value__5, t477)
-                            t478 = inline802
-                            var second__10 uint32 = uint32(uint8(t478))
-                            var t479 int = index__6 + 2
-                            var t480 uint8
-                            var inline800 uint8 = _goml_runtime_core_string_byte_get(value__5, t479)
-                            t480 = inline800
-                            var third__11 uint32 = uint32(uint8(t480))
-                            var t506 bool = utf8_invalid_continuation(second__10)
-                            var jp501 bool
-                            if t506 {
-                                jp501 = true
+                            var t436 int = index__6 + 1
+                            var t437 uint8
+                            var inline761 uint8 = _goml_runtime_core_string_byte_get(value__5, t436)
+                            t437 = inline761
+                            var second__10 uint32 = uint32(uint8(t437))
+                            var t438 int = index__6 + 2
+                            var t439 uint8
+                            var inline759 uint8 = _goml_runtime_core_string_byte_get(value__5, t438)
+                            t439 = inline759
+                            var third__11 uint32 = uint32(uint8(t439))
+                            var t465 bool = utf8_invalid_continuation(second__10)
+                            var jp460 bool
+                            if t465 {
+                                jp460 = true
                             } else {
-                                var inline789 bool = third__11 < 128
-                                if inline789 {
-                                    jp501 = true
+                                var inline748 bool = third__11 < 128
+                                if inline748 {
+                                    jp460 = true
                                 } else {
-                                    var inline790 bool = third__11 > 191
-                                    jp501 = inline790
+                                    var inline749 bool = third__11 > 191
+                                    jp460 = inline749
                                 }
                             }
-                            var jp495 bool
-                            if jp501 {
-                                jp495 = true
+                            var jp454 bool
+                            if jp460 {
+                                jp454 = true
                             } else {
-                                var t504 bool
-                                var inline792 uint32 = 224
-                                var inline793 bool = first__8 == inline792
-                                t504 = inline793
-                                if t504 {
-                                    var t505 bool = second__10 < 160
-                                    jp495 = t505
+                                var t463 bool
+                                var inline751 uint32 = 224
+                                var inline752 bool = first__8 == inline751
+                                t463 = inline752
+                                if t463 {
+                                    var t464 bool = second__10 < 160
+                                    jp454 = t464
                                 } else {
-                                    jp495 = false
+                                    jp454 = false
                                 }
                             }
-                            var jp484 bool
-                            if jp495 {
-                                jp484 = true
+                            var jp443 bool
+                            if jp454 {
+                                jp443 = true
                             } else {
-                                var t498 bool
-                                var inline795 uint32 = 237
-                                var inline796 bool = first__8 == inline795
-                                t498 = inline796
-                                if t498 {
-                                    var t499 bool = second__10 >= 160
-                                    jp484 = t499
+                                var t457 bool
+                                var inline754 uint32 = 237
+                                var inline755 bool = first__8 == inline754
+                                t457 = inline755
+                                if t457 {
+                                    var t458 bool = second__10 >= 160
+                                    jp443 = t458
                                 } else {
-                                    jp484 = false
+                                    jp443 = false
                                 }
                             }
-                            if jp484 {
-                                var inline798 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                            if jp443 {
+                                var inline757 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: false,
                                     _1: 0,
                                     _2: 0,
                                 }
-                                return inline798
+                                return inline757
                             } else {
-                                var t486_rhs uint32 = 15
-                                var t486 uint32 = first__8 & t486_rhs
-                                var t487_rhs int = 12
-                                var t487 uint32 = t486 << t487_rhs
-                                var t488_rhs uint32 = 63
-                                var t488 uint32 = second__10 & t488_rhs
-                                var t489_rhs int = 6
-                                var t489 uint32 = t488 << t489_rhs
-                                var t490 uint32 = t487 | t489
-                                var t491_rhs uint32 = 63
-                                var t491 uint32 = third__11 & t491_rhs
-                                var t492 uint32 = t490 | t491
-                                var t493 Tuple3_4bool_4char_3int = utf8_valid_decode(t492, 3)
-                                return t493
+                                var t445_rhs uint32 = 15
+                                var t445 uint32 = first__8 & t445_rhs
+                                var t446_rhs int = 12
+                                var t446 uint32 = t445 << t446_rhs
+                                var t447_rhs uint32 = 63
+                                var t447 uint32 = second__10 & t447_rhs
+                                var t448_rhs int = 6
+                                var t448 uint32 = t447 << t448_rhs
+                                var t449 uint32 = t446 | t448
+                                var t450_rhs uint32 = 63
+                                var t450 uint32 = third__11 & t450_rhs
+                                var t451 uint32 = t449 | t450
+                                var t452 Tuple3_4bool_4char_3int = utf8_valid_decode(t451, 3)
+                                return t452
                             }
                         }
                     } else {
-                        var t513 bool = first__8 < 245
-                        if t513 {
-                            var t554 int = length__7 - index__6
-                            var t555 bool = t554 < 4
-                            if t555 {
-                                var t556 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                                return t556
+                        var t472 bool = first__8 < 245
+                        if t472 {
+                            var t513 int = length__7 - index__6
+                            var t514 bool = t513 < 4
+                            if t514 {
+                                var t515 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                                return t515
                             } else {
-                                var t515 int = index__6 + 1
-                                var t516 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t515)
-                                var second__12 uint32 = uint32(uint8(t516))
-                                var t517 int = index__6 + 2
-                                var t518 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t517)
-                                var third__13 uint32 = uint32(uint8(t518))
-                                var t519 int = index__6 + 3
-                                var t520 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t519)
-                                var fourth__14 uint32 = uint32(uint8(t520))
-                                var t552 bool = utf8_invalid_continuation(second__12)
-                                var jp550 bool
-                                if t552 {
-                                    jp550 = true
+                                var t474 int = index__6 + 1
+                                var t475 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t474)
+                                var second__12 uint32 = uint32(uint8(t475))
+                                var t476 int = index__6 + 2
+                                var t477 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t476)
+                                var third__13 uint32 = uint32(uint8(t477))
+                                var t478 int = index__6 + 3
+                                var t479 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t478)
+                                var fourth__14 uint32 = uint32(uint8(t479))
+                                var t511 bool = utf8_invalid_continuation(second__12)
+                                var jp509 bool
+                                if t511 {
+                                    jp509 = true
                                 } else {
-                                    var t553 bool = utf8_invalid_continuation(third__13)
-                                    jp550 = t553
+                                    var t512 bool = utf8_invalid_continuation(third__13)
+                                    jp509 = t512
                                 }
-                                var jp544 bool
-                                if jp550 {
-                                    jp544 = true
+                                var jp503 bool
+                                if jp509 {
+                                    jp503 = true
                                 } else {
-                                    var t551 bool = utf8_invalid_continuation(fourth__14)
-                                    jp544 = t551
+                                    var t510 bool = utf8_invalid_continuation(fourth__14)
+                                    jp503 = t510
                                 }
-                                var jp538 bool
-                                if jp544 {
-                                    jp538 = true
+                                var jp497 bool
+                                if jp503 {
+                                    jp497 = true
                                 } else {
-                                    var t547 bool = _goml_m_trait__impl_i_Eq_i_uint32_i_eq(first__8, 240)
-                                    if t547 {
-                                        var t548 bool = second__12 < 144
-                                        jp538 = t548
+                                    var t506 bool = _goml_m_trait__impl_i_Eq_i_uint32_i_eq(first__8, 240)
+                                    if t506 {
+                                        var t507 bool = second__12 < 144
+                                        jp497 = t507
                                     } else {
-                                        jp538 = false
+                                        jp497 = false
                                     }
                                 }
-                                var jp524 bool
-                                if jp538 {
-                                    jp524 = true
+                                var jp483 bool
+                                if jp497 {
+                                    jp483 = true
                                 } else {
-                                    var t541 bool = _goml_m_trait__impl_i_Eq_i_uint32_i_eq(first__8, 244)
-                                    if t541 {
-                                        var t542 bool = second__12 > 143
-                                        jp524 = t542
+                                    var t500 bool = _goml_m_trait__impl_i_Eq_i_uint32_i_eq(first__8, 244)
+                                    if t500 {
+                                        var t501 bool = second__12 > 143
+                                        jp483 = t501
                                     } else {
-                                        jp524 = false
+                                        jp483 = false
                                     }
                                 }
-                                if jp524 {
-                                    var t525 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                                    return t525
+                                if jp483 {
+                                    var t484 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                                    return t484
                                 } else {
-                                    var t526_rhs uint32 = 7
-                                    var t526 uint32 = first__8 & t526_rhs
-                                    var t527_rhs int = 18
-                                    var t527 uint32 = t526 << t527_rhs
-                                    var t528_rhs uint32 = 63
-                                    var t528 uint32 = second__12 & t528_rhs
-                                    var t529_rhs int = 12
-                                    var t529 uint32 = t528 << t529_rhs
-                                    var t530 uint32 = t527 | t529
-                                    var t531_rhs uint32 = 63
-                                    var t531 uint32 = third__13 & t531_rhs
-                                    var t532_rhs int = 6
-                                    var t532 uint32 = t531 << t532_rhs
-                                    var t533 uint32 = t530 | t532
-                                    var t534_rhs uint32 = 63
-                                    var t534 uint32 = fourth__14 & t534_rhs
-                                    var t535 uint32 = t533 | t534
-                                    var t536 Tuple3_4bool_4char_3int = utf8_valid_decode(t535, 4)
-                                    return t536
+                                    var t485_rhs uint32 = 7
+                                    var t485 uint32 = first__8 & t485_rhs
+                                    var t486_rhs int = 18
+                                    var t486 uint32 = t485 << t486_rhs
+                                    var t487_rhs uint32 = 63
+                                    var t487 uint32 = second__12 & t487_rhs
+                                    var t488_rhs int = 12
+                                    var t488 uint32 = t487 << t488_rhs
+                                    var t489 uint32 = t486 | t488
+                                    var t490_rhs uint32 = 63
+                                    var t490 uint32 = third__13 & t490_rhs
+                                    var t491_rhs int = 6
+                                    var t491 uint32 = t490 << t491_rhs
+                                    var t492 uint32 = t489 | t491
+                                    var t493_rhs uint32 = 63
+                                    var t493 uint32 = fourth__14 & t493_rhs
+                                    var t494 uint32 = t492 | t493
+                                    var t495 Tuple3_4bool_4char_3int = utf8_valid_decode(t494, 4)
+                                    return t495
                                 }
                             }
                         } else {
-                            var t557 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                            return t557
+                            var t516 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                            return t516
                         }
                     }
                 }
@@ -768,138 +768,138 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func string_is_char_boundary(value__15 string, index__16 int) bool {
-    var t579 bool = index__16 < 0
-    var jp570 bool
-    if t579 {
-        jp570 = true
+    var t538 bool = index__16 < 0
+    var jp529 bool
+    if t538 {
+        jp529 = true
     } else {
-        var t580 int
-        var inline804 int = _goml_runtime_core_string_len(value__15)
-        t580 = inline804
-        var t581 bool = index__16 > t580
-        jp570 = t581
+        var t539 int
+        var inline763 int = _goml_runtime_core_string_len(value__15)
+        t539 = inline763
+        var t540 bool = index__16 > t539
+        jp529 = t540
     }
-    if jp570 {
+    if jp529 {
         return false
     } else {
-        var t573 int
-        var inline813 int = _goml_runtime_core_string_len(value__15)
-        t573 = inline813
-        var t574 bool
-        var inline811 bool = index__16 == t573
-        t574 = inline811
-        if t574 {
+        var t532 int
+        var inline772 int = _goml_runtime_core_string_len(value__15)
+        t532 = inline772
+        var t533 bool
+        var inline770 bool = index__16 == t532
+        t533 = inline770
+        if t533 {
             return true
         } else {
-            var t575 uint8
-            var inline809 uint8 = _goml_runtime_core_string_byte_get(value__15, index__16)
-            t575 = inline809
-            var t576_rhs uint8 = 192
-            var t576 uint8 = t575 & t576_rhs
-            var t577 bool
-            var inline806 uint8 = 128
-            var inline807 bool = t576 == inline806
-            t577 = inline807
-            var t578 bool = !t577
-            return t578
+            var t534 uint8
+            var inline768 uint8 = _goml_runtime_core_string_byte_get(value__15, index__16)
+            t534 = inline768
+            var t535_rhs uint8 = 192
+            var t535 uint8 = t534 & t535_rhs
+            var t536 bool
+            var inline765 uint8 = 128
+            var inline766 bool = t535 == inline765
+            t536 = inline766
+            var t537 bool = !t536
+            return t537
         }
     }
 }
 
 func utf8_invalid_decode() Tuple3_4bool_4char_3int {
-    var t584 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+    var t543 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
         _0: false,
         _1: 0,
         _2: 0,
     }
-    return t584
+    return t543
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__get(self__41 string, index__42 int) uint8 {
-    var t587 uint8 = _goml_runtime_core_string_byte_get(self__41, index__42)
-    return t587
+    var t546 uint8 = _goml_runtime_core_string_byte_get(self__41, index__42)
+    return t546
 }
 
 func utf8_valid_decode(value__0 uint32, width__1 int) Tuple3_4bool_4char_3int {
-    var commute_field835 rune
-    var inline817 bool = utf8_valid_scalar(value__0)
-    if inline817 {
-        var inline818 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
-        var inline820 rune = inline818._1
-        commute_field835 = inline820
-        var t593 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+    var commute_field794 rune
+    var inline776 bool = utf8_valid_scalar(value__0)
+    if inline776 {
+        var inline777 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
+        var inline779 rune = inline777._1
+        commute_field794 = inline779
+        var t552 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
             _0: true,
-            _1: commute_field835,
+            _1: commute_field794,
             _2: width__1,
         }
-        return t593
+        return t552
     } else {
-        var inline815 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+        var inline774 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
             _0: false,
             _1: 0,
             _2: 0,
         }
-        return inline815
+        return inline774
     }
 }
 
 func utf8_invalid_continuation(value__3 uint32) bool {
-    var t598 bool = value__3 < 128
-    if t598 {
+    var t557 bool = value__3 < 128
+    if t557 {
         return true
     } else {
-        var t599 bool = value__3 > 191
-        return t599
+        var t558 bool = value__3 > 191
+        return t558
     }
 }
 
 func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__102 uint32, other__103 uint32) bool {
-    var t602 bool = self__102 == other__103
-    return t602
+    var t561 bool = self__102 == other__103
+    return t561
 }
 
 func char_from_uint32(value__32 uint32) Option__char {
-    var t610 bool
-    var inline824 bool = value__32 <= 1114111
-    if inline824 {
-        var inline825 bool = value__32 >= 55296
-        var inline827 bool
-        if inline825 {
-            var inline829 bool = value__32 <= 57343
-            inline827 = inline829
+    var t569 bool
+    var inline783 bool = value__32 <= 1114111
+    if inline783 {
+        var inline784 bool = value__32 >= 55296
+        var inline786 bool
+        if inline784 {
+            var inline788 bool = value__32 <= 57343
+            inline786 = inline788
         } else {
-            inline827 = false
+            inline786 = false
         }
-        var inline828 bool = !inline827
-        t610 = inline828
+        var inline787 bool = !inline786
+        t569 = inline787
     } else {
-        t610 = false
+        t569 = false
     }
-    if t610 {
+    if t569 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__32)
         var x24 rune = mtmp22._1
-        var t611 Option__char = Option__char_Some{
+        var t570 Option__char = Option__char_Some{
             _0: x24,
         }
-        return t611
+        return t570
     } else {
         return Option__char_None{}
     }
 }
 
 func utf8_valid_scalar(value__4 uint32) bool {
-    var t616 bool = value__4 <= 1114111
-    if t616 {
-        var t620 bool = value__4 >= 55296
-        var jp618 bool
-        if t620 {
-            var t621 bool = value__4 <= 57343
-            jp618 = t621
+    var t575 bool = value__4 <= 1114111
+    if t575 {
+        var t579 bool = value__4 >= 55296
+        var jp577 bool
+        if t579 {
+            var t580 bool = value__4 <= 57343
+            jp577 = t580
         } else {
-            jp618 = false
+            jp577 = false
         }
-        var t619 bool = !jp618
-        return t619
+        var t578 bool = !jp577
+        return t578
     } else {
         return false
     }

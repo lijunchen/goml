@@ -140,71 +140,71 @@ func (_ Some) isOption__int32() {}
 
 func fetch(flag__0 bool) Option__int32 {
     var m__1 *hashmap_string_int32_x
-    var inline232 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
-    m__1 = inline232
+    var inline191 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
+    m__1 = inline191
     if flag__0 {
-        var inline225 string = "a"
-        var inline226 int32 = 7
-        hashmap_set__HashMap_6string_5int32(m__1, inline225, inline226)
+        var inline184 string = "a"
+        var inline185 int32 = 7
+        hashmap_set__HashMap_6string_5int32(m__1, inline184, inline185)
     } else {}
-    var mtmp179 Option__int32
-    var inline229 string = "a"
-    var inline230 Option__int32 = hashmap_get__HashMap_6string_5int32(m__1, inline229)
-    mtmp179 = inline230
-    var jp188 int32
-    switch mtmp179.(type) {
+    var mtmp138 Option__int32
+    var inline188 string = "a"
+    var inline189 Option__int32 = hashmap_get__HashMap_6string_5int32(m__1, inline188)
+    mtmp138 = inline189
+    var jp147 int32
+    switch mtmp138.(type) {
     case None:
         return None{}
     case Some:
-        var x180 int32 = mtmp179.(Some)._0
-        jp188 = x180
-        var t189 int32 = jp188 + 1
-        var t190 Option__int32 = Some{
-            _0: t189,
+        var x139 int32 = mtmp138.(Some)._0
+        jp147 = x139
+        var t148 int32 = jp147 + 1
+        var t149 Option__int32 = Some{
+            _0: t148,
         }
-        return t190
+        return t149
     default:
         panic("non-exhaustive match")
     }
 }
 
 func main0() struct{} {
-    var t198 Option__int32 = fetch(true)
-    var t199 string
-    switch t198.(type) {
+    var t157 Option__int32 = fetch(true)
+    var t158 string
+    switch t157.(type) {
     case None:
-        t199 = "none"
+        t158 = "none"
     case Some:
-        var inline247 int32 = t198.(Some)._0
-        var inline249 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline247)
-        var inline250 string = "some=" + inline249
-        t199 = inline250
+        var inline206 int32 = t157.(Some)._0
+        var inline208 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline206)
+        var inline209 string = "some=" + inline208
+        t158 = inline209
     default:
         panic("non-exhaustive match")
     }
-    var inline244 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t199)
-    _goml_runtime_core_string_println(inline244)
-    var t200 Option__int32 = fetch(false)
-    var t201 string
-    switch t200.(type) {
+    var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t158)
+    _goml_runtime_core_string_println(inline203)
+    var t159 Option__int32 = fetch(false)
+    var t160 string
+    switch t159.(type) {
     case None:
-        t201 = "none"
+        t160 = "none"
     case Some:
-        var inline239 int32 = t200.(Some)._0
-        var inline241 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline239)
-        var inline242 string = "some=" + inline241
-        t201 = inline242
+        var inline198 int32 = t159.(Some)._0
+        var inline200 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline198)
+        var inline201 string = "some=" + inline200
+        t160 = inline201
     default:
         panic("non-exhaustive match")
     }
-    var inline236 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
-    _goml_runtime_core_string_println(inline236)
+    var inline195 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t160)
+    _goml_runtime_core_string_println(inline195)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t212 string = _goml_runtime_core_int32_to_string(self__35)
-    return t212
+    var t171 string = _goml_runtime_core_int32_to_string(self__35)
+    return t171
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
@@ -212,13 +212,13 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__84 string, other__85 string) bool {
-    var t220 bool = self__84 == other__85
-    return t220
+    var t179 bool = self__84 == other__85
+    return t179
 }
 
 func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__112 string) uint64 {
-    var t223 uint64 = _goml_runtime_core_string_hash(self__112)
-    return t223
+    var t182 uint64 = _goml_runtime_core_string_hash(self__112)
+    return t182
 }
 
 func main() {

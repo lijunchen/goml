@@ -20,66 +20,66 @@ type closure_env_global_invoker_1 struct {}
 type closure_env_composer_closure_2 struct {}
 
 func double(x__0 int32) int32 {
-    var t186 int32 = x__0 * 2
-    return t186
+    var t145 int32 = x__0 * 2
+    return t145
 }
 
 func increment(x__1 int32) int32 {
-    var t189 int32 = x__1 + 1
-    return t189
+    var t148 int32 = x__1 + 1
+    return t148
 }
 
 func apply_once(f__2 func(int32) int32, value__3 int32) int32 {
-    var t192 int32 = f__2(value__3)
-    return t192
+    var t151 int32 = f__2(value__3)
+    return t151
 }
 
 func compose(f__4 func(int32) int32, g__5 func(int32) int32, value__6 int32) int32 {
-    var t195 int32 = g__5(value__6)
-    var t196 int32 = f__4(t195)
-    return t196
+    var t154 int32 = g__5(value__6)
+    var t155 int32 = f__4(t154)
+    return t155
 }
 
 func main0() struct{} {
     var first__8 int32
-    var inline251 int32 = 4
-    var inline252 int32 = double(inline251)
-    first__8 = inline252
+    var inline210 int32 = 4
+    var inline211 int32 = double(inline210)
+    first__8 = inline211
     var composed__9 int32
-    var inline248 int32 = increment(first__8)
-    var inline249 int32 = double(inline248)
-    composed__9 = inline249
+    var inline207 int32 = increment(first__8)
+    var inline208 int32 = double(inline207)
+    composed__9 = inline208
     var closure_result__12 int32
-    var inline246 int32 = apply_once(increment, composed__9)
-    closure_result__12 = inline246
+    var inline205 int32 = apply_once(increment, composed__9)
+    closure_result__12 = inline205
     var invoked_with_global__16 int32
-    var inline243 int32 = 3
-    var inline244 int32 = apply_once(double, inline243)
-    invoked_with_global__16 = inline244
+    var inline202 int32 = 3
+    var inline203 int32 = apply_once(double, inline202)
+    invoked_with_global__16 = inline203
     var composed_by_closure__19 int32
-    var inline240 int32 = 5
-    var inline241 int32 = compose(double, increment, inline240)
-    composed_by_closure__19 = inline241
-    var t198 string
-    var inline238 string = _goml_runtime_core_int32_to_string(composed__9)
-    t198 = inline238
-    var inline235 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline235)
-    var t199 string
-    var inline233 string = _goml_runtime_core_int32_to_string(closure_result__12)
-    t199 = inline233
-    var inline230 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t199)
-    _goml_runtime_core_string_println(inline230)
-    var t200 string
-    var inline228 string = _goml_runtime_core_int32_to_string(invoked_with_global__16)
-    t200 = inline228
-    var inline225 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-    _goml_runtime_core_string_println(inline225)
-    var t201 string
-    var inline223 string = _goml_runtime_core_int32_to_string(composed_by_closure__19)
-    t201 = inline223
-    var inline220 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t201)
-    _goml_runtime_core_string_println(inline220)
+    var inline199 int32 = 5
+    var inline200 int32 = compose(double, increment, inline199)
+    composed_by_closure__19 = inline200
+    var t157 string
+    var inline197 string = _goml_runtime_core_int32_to_string(composed__9)
+    t157 = inline197
+    var inline194 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t157)
+    _goml_runtime_core_string_println(inline194)
+    var t158 string
+    var inline192 string = _goml_runtime_core_int32_to_string(closure_result__12)
+    t158 = inline192
+    var inline189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t158)
+    _goml_runtime_core_string_println(inline189)
+    var t159 string
+    var inline187 string = _goml_runtime_core_int32_to_string(invoked_with_global__16)
+    t159 = inline187
+    var inline184 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t159)
+    _goml_runtime_core_string_println(inline184)
+    var t160 string
+    var inline182 string = _goml_runtime_core_int32_to_string(composed_by_closure__19)
+    t160 = inline182
+    var inline179 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t160)
+    _goml_runtime_core_string_println(inline179)
     return struct{}{}
 }
 

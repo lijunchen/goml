@@ -52,28 +52,28 @@ func (_ Some) isOption__int() {}
 
 func find(wanted__0 int) Option__int {
     var current__1 *ref_int_x
-    var inline231 int = 0
-    var inline232 *ref_int_x = ref__Ref_3int(inline231)
-    current__1 = inline232
+    var inline190 int = 0
+    var inline191 *ref_int_x = ref__Ref_3int(inline190)
+    current__1 = inline191
     for {
         var value__2 int
-        var inline229 int = ref_get__Ref_3int(current__1)
-        value__2 = inline229
-        var t192 bool = value__2 >= 5
-        if t192 {
+        var inline188 int = ref_get__Ref_3int(current__1)
+        value__2 = inline188
+        var t151 bool = value__2 >= 5
+        if t151 {
             return None{}
         } else {
-            var t194 bool
-            var inline227 bool = value__2 == wanted__0
-            t194 = inline227
-            if t194 {
-                var t195 Option__int = Some{
+            var t153 bool
+            var inline186 bool = value__2 == wanted__0
+            t153 = inline186
+            if t153 {
+                var t154 Option__int = Some{
                     _0: value__2,
                 }
-                return t195
+                return t154
             } else {
-                var t196 int = value__2 + 1
-                ref_set__Ref_3int(current__1, t196)
+                var t155 int = value__2 + 1
+                ref_set__Ref_3int(current__1, t155)
                 continue
             }
         }
@@ -81,38 +81,38 @@ func find(wanted__0 int) Option__int {
 }
 
 func main0() struct{} {
-    var t202 bool
-    var inline255 int = 3
-    var inline256 Option__int = find(inline255)
-    switch inline256.(type) {
+    var t161 bool
+    var inline214 int = 3
+    var inline215 Option__int = find(inline214)
+    switch inline215.(type) {
     case None:
-        t202 = false
+        t161 = false
     case Some:
-        t202 = true
+        t161 = true
     default:
         panic("non-exhaustive match")
     }
-    var inline252 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t202)
-    _goml_runtime_core_string_println(inline252)
-    var t203 bool
-    var inline248 int = 8
-    var inline249 Option__int = find(inline248)
-    switch inline249.(type) {
+    var inline211 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t161)
+    _goml_runtime_core_string_println(inline211)
+    var t162 bool
+    var inline207 int = 8
+    var inline208 Option__int = find(inline207)
+    switch inline208.(type) {
     case None:
-        t203 = false
+        t162 = false
     case Some:
-        t203 = true
+        t162 = true
     default:
         panic("non-exhaustive match")
     }
-    var inline245 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t203)
-    _goml_runtime_core_string_println(inline245)
+    var inline204 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t162)
+    _goml_runtime_core_string_println(inline204)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t220 string = _goml_runtime_core_bool_to_string(self__66)
-    return t220
+    var t179 string = _goml_runtime_core_bool_to_string(self__66)
+    return t179
 }
 
 func main() {

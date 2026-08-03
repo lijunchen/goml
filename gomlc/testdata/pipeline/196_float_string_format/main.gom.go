@@ -22,51 +22,51 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var t184 string
-    var inline240 float64 = 18318654708.7
-    var inline241 string = _goml_runtime_core_float64_to_string(inline240)
-    t184 = inline241
-    var inline237 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t184)
-    _goml_runtime_core_string_println(inline237)
-    var t185 string
-    var inline234 float64 = 0.0000001
-    var inline235 string = _goml_runtime_core_float64_to_string(inline234)
-    t185 = inline235
-    var inline231 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t185)
-    _goml_runtime_core_string_println(inline231)
+    var t143 string
+    var inline199 float64 = 18318654708.7
+    var inline200 string = _goml_runtime_core_float64_to_string(inline199)
+    t143 = inline200
+    var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t143)
+    _goml_runtime_core_string_println(inline196)
+    var t144 string
+    var inline193 float64 = 0.0000001
+    var inline194 string = _goml_runtime_core_float64_to_string(inline193)
+    t144 = inline194
+    var inline190 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t144)
+    _goml_runtime_core_string_println(inline190)
     var zero__0 float64 = 0
     var negative_one__1 float64 = -1
-    var t186 float64 = negative_one__1 * zero__0
-    var t187 string
-    var inline229 string = _goml_runtime_core_float64_to_string(t186)
-    t187 = inline229
-    var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t187)
-    _goml_runtime_core_string_println(inline226)
-    var t188 float64 = 1 / zero__0
-    var t189 string
-    var inline224 string = _goml_runtime_core_float64_to_string(t188)
-    t189 = inline224
-    var inline221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
-    _goml_runtime_core_string_println(inline221)
-    var t190 float64 = -1
-    var t191 float64 = t190 / zero__0
-    var t192 string
-    var inline219 string = _goml_runtime_core_float64_to_string(t191)
-    t192 = inline219
-    var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t192)
-    _goml_runtime_core_string_println(inline216)
-    var t193 float64 = zero__0 / zero__0
-    var t194 string
-    var inline214 string = _goml_runtime_core_float64_to_string(t193)
-    t194 = inline214
-    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t194)
-    _goml_runtime_core_string_println(inline211)
+    var t145 float64 = negative_one__1 * zero__0
+    var t146 string
+    var inline188 string = _goml_runtime_core_float64_to_string(t145)
+    t146 = inline188
+    var inline185 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t146)
+    _goml_runtime_core_string_println(inline185)
+    var t147 float64 = 1 / zero__0
+    var t148 string
+    var inline183 string = _goml_runtime_core_float64_to_string(t147)
+    t148 = inline183
+    var inline180 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t148)
+    _goml_runtime_core_string_println(inline180)
+    var t149 float64 = -1
+    var t150 float64 = t149 / zero__0
+    var t151 string
+    var inline178 string = _goml_runtime_core_float64_to_string(t150)
+    t151 = inline178
+    var inline175 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t151)
+    _goml_runtime_core_string_println(inline175)
+    var t152 float64 = zero__0 / zero__0
+    var t153 string
+    var inline173 string = _goml_runtime_core_float64_to_string(t152)
+    t153 = inline173
+    var inline170 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t153)
+    _goml_runtime_core_string_println(inline170)
     var wide__2 float64 = 12345678
-    var t195 string
-    var inline209 string = _goml_runtime_core_float64_to_string(wide__2)
-    t195 = inline209
-    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t195)
-    _goml_runtime_core_string_println(inline206)
+    var t154 string
+    var inline168 string = _goml_runtime_core_float64_to_string(wide__2)
+    t154 = inline168
+    var inline165 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t154)
+    _goml_runtime_core_string_println(inline165)
     return struct{}{}
 }
 

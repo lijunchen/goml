@@ -66,15 +66,15 @@ file main.gom
       println(Marker[int32]::marker(Any {}));
       println(Marker[string]::marker(Any {}));
       println(Marker[Vec[int32]]::marker(Any {}));
-      let local/1/10 = iterator_map(Counter::new(0, 8), |local/1/9: int32| value/9 * 2);
-      let local/1/12 = iterator_filter(mapped/10, |local/1/11: int32| value/11 > 4);
-      let local/1/13 = iterator_take(filtered/12, 3);
+      let local/1/10 = iter::map(Counter::new(0, 8), |local/1/9: int32| value/9 * 2);
+      let local/1/12 = iter::filter(mapped/10, |local/1/11: int32| value/11 > 4);
+      let local/1/13 = iter::take(filtered/12, 3);
       for local/1/14 in
         limited/13 {
           println(value/14);
       };
       let local/1/17 =
-        iterator_fold(
+        iter::fold(
           range(1, 5),
           0,
           |local/1/15: int, local/1/16: int| {
@@ -83,7 +83,7 @@ file main.gom
         );
       println(sum/17);
       let local/1/19: Vec[string] =
-        iterator_collect(iterator_map(range(1, 4), |local/1/18: int| "v" + value/18.to_string()));
+        iter::collect(iter::map(range(1, 4), |local/1/18: int| "v" + value/18.to_string()));
       for local/1/20 in
         texts/19 {
           println(text/20);

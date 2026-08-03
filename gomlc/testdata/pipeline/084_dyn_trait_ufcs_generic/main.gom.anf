@@ -1,45 +1,45 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  let t180 = Point.value(self/0) in
-  let inline200 = @runtime(core.int32_to_string)(t180) in
-  inline200
+  let t139 = Point.value(self/0) in
+  let inline159 = @runtime(core.int32_to_string)(t139) in
+  inline159
 }
 
 fn render(x/2: dyn Display) -> string {
-  let t184 = dyn_call[Display::show](x/2) in
-  t184
+  let t143 = dyn_call[Display::show](x/2) in
+  t143
 }
 
 fn main() -> unit {
-  let t186 = Point { value: 7 } in
-  join inline_cont206(d/3: dyn Display) -> unit {
-    join inline_cont204(t187: string) -> unit {
-      let inline202 = trait_impl#ToString#string#to_string(t187) in
-      let inline203 = @runtime(core.string_println)(inline202) in
+  let t145 = Point { value: 7 } in
+  join inline_cont165(d/3: dyn Display) -> unit {
+    join inline_cont163(t146: string) -> unit {
+      let inline161 = trait_impl#ToString#string#to_string(t146) in
+      let inline162 = @runtime(core.string_println)(inline161) in
       ()
     } in
-    let inline205 = dyn_call[Display::show](d/3) in
-    jump inline_cont204(inline205)
+    let inline164 = dyn_call[Display::show](d/3) in
+    jump inline_cont163(inline164)
   } in
-  let inline207 = to_dyn[Display]{Point}(t186) in
-  jump inline_cont206(inline207)
+  let inline166 = to_dyn[Display]{Point}(t145) in
+  jump inline_cont165(inline166)
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t190 = @runtime(core.int32_to_string)(self/35) in
-  t190
+  let t149 = @runtime(core.int32_to_string)(self/35) in
+  t149
 }
 
 fn to_dyn__T_Point(x/1: Point) -> dyn Display {
-  let t193 = to_dyn[Display]{Point}(x/1) in
-  t193
+  let t152 = to_dyn[Display]{Point}(x/1) in
+  t152
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont208(t195: string) -> unit {
-    let t196 = @runtime(core.string_println)(t195) in
+  join inline_cont167(t154: string) -> unit {
+    let t155 = @runtime(core.string_println)(t154) in
     ()
   } in
-  jump inline_cont208(value/31)
+  jump inline_cont167(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

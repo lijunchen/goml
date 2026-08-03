@@ -58,100 +58,100 @@ func ref_set__Ref_4bool(reference *ref_bool_x, value bool) struct{} {
 
 func sum_to(limit__0 int32) int32 {
     var acc__1 *ref_int32_x
-    var inline267 int32 = 0
-    var inline268 *ref_int32_x = ref__Ref_5int32(inline267)
-    acc__1 = inline268
+    var inline226 int32 = 0
+    var inline227 *ref_int32_x = ref__Ref_5int32(inline226)
+    acc__1 = inline227
     var i__2 *ref_int32_x
-    var inline264 int32 = 0
-    var inline265 *ref_int32_x = ref__Ref_5int32(inline264)
-    i__2 = inline265
-    Loop_loop191:
+    var inline223 int32 = 0
+    var inline224 *ref_int32_x = ref__Ref_5int32(inline223)
+    i__2 = inline224
+    Loop_loop150:
     for {
-        var t192 int32
-        var inline260 int32 = ref_get__Ref_5int32(i__2)
-        t192 = inline260
-        var t193 bool = t192 < limit__0
-        if t193 {
+        var t151 int32
+        var inline219 int32 = ref_get__Ref_5int32(i__2)
+        t151 = inline219
+        var t152 bool = t151 < limit__0
+        if t152 {
             var current__3 int32
-            var inline258 int32 = ref_get__Ref_5int32(i__2)
-            current__3 = inline258
-            var t194 int32
-            var inline256 int32 = ref_get__Ref_5int32(acc__1)
-            t194 = inline256
-            var t195 int32 = t194 + current__3
-            ref_set__Ref_5int32(acc__1, t195)
-            var t196 int32 = current__3 + 1
-            ref_set__Ref_5int32(i__2, t196)
+            var inline217 int32 = ref_get__Ref_5int32(i__2)
+            current__3 = inline217
+            var t153 int32
+            var inline215 int32 = ref_get__Ref_5int32(acc__1)
+            t153 = inline215
+            var t154 int32 = t153 + current__3
+            ref_set__Ref_5int32(acc__1, t154)
+            var t155 int32 = current__3 + 1
+            ref_set__Ref_5int32(i__2, t155)
             continue
         } else {
-            break Loop_loop191
+            break Loop_loop150
         }
     }
-    var inline262 int32 = ref_get__Ref_5int32(acc__1)
-    return inline262
+    var inline221 int32 = ref_get__Ref_5int32(acc__1)
+    return inline221
 }
 
 func sum_even(limit__4 int32) int32 {
     var acc__5 *ref_int32_x
-    var inline292 int32 = 0
-    var inline293 *ref_int32_x = ref__Ref_5int32(inline292)
-    acc__5 = inline293
+    var inline251 int32 = 0
+    var inline252 *ref_int32_x = ref__Ref_5int32(inline251)
+    acc__5 = inline252
     var i__6 *ref_int32_x
-    var inline289 int32 = 0
-    var inline290 *ref_int32_x = ref__Ref_5int32(inline289)
-    i__6 = inline290
+    var inline248 int32 = 0
+    var inline249 *ref_int32_x = ref__Ref_5int32(inline248)
+    i__6 = inline249
     var is_even__7 *ref_bool_x
-    var inline286 bool = true
-    var inline287 *ref_bool_x = ref__Ref_4bool(inline286)
-    is_even__7 = inline287
-    Loop_loop201:
+    var inline245 bool = true
+    var inline246 *ref_bool_x = ref__Ref_4bool(inline245)
+    is_even__7 = inline246
+    Loop_loop160:
     for {
-        var t202 int32
-        var inline282 int32 = ref_get__Ref_5int32(i__6)
-        t202 = inline282
-        var t203 bool = t202 < limit__4
-        if t203 {
+        var t161 int32
+        var inline241 int32 = ref_get__Ref_5int32(i__6)
+        t161 = inline241
+        var t162 bool = t161 < limit__4
+        if t162 {
             var current__8 int32
-            var inline280 int32 = ref_get__Ref_5int32(i__6)
-            current__8 = inline280
-            var t204 int32 = current__8 + 1
-            ref_set__Ref_5int32(i__6, t204)
+            var inline239 int32 = ref_get__Ref_5int32(i__6)
+            current__8 = inline239
+            var t163 int32 = current__8 + 1
+            ref_set__Ref_5int32(i__6, t163)
             var add_now__9 bool
-            var inline276 bool = ref_get__Ref_4bool(is_even__7)
-            add_now__9 = inline276
-            var t205 bool = !add_now__9
-            ref_set__Ref_4bool(is_even__7, t205)
+            var inline235 bool = ref_get__Ref_4bool(is_even__7)
+            add_now__9 = inline235
+            var t164 bool = !add_now__9
+            ref_set__Ref_4bool(is_even__7, t164)
             if add_now__9 {
-                var t207 int32
-                var inline272 int32 = ref_get__Ref_5int32(acc__5)
-                t207 = inline272
-                var t208 int32 = t207 + current__8
-                ref_set__Ref_5int32(acc__5, t208)
+                var t166 int32
+                var inline231 int32 = ref_get__Ref_5int32(acc__5)
+                t166 = inline231
+                var t167 int32 = t166 + current__8
+                ref_set__Ref_5int32(acc__5, t167)
                 continue
             } else {
                 continue
             }
         } else {
-            break Loop_loop201
+            break Loop_loop160
         }
     }
-    var inline284 int32 = ref_get__Ref_5int32(acc__5)
-    return inline284
+    var inline243 int32 = ref_get__Ref_5int32(acc__5)
+    return inline243
 }
 
 func main0() struct{} {
     var first__10 int32 = sum_to(5)
     var evens__11 int32 = sum_even(6)
-    var inline305 string = "sum_to(5)="
-    var inline306 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline305)
-    _goml_runtime_core_string_print(inline306)
-    var inline302 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(first__10)
-    _goml_runtime_core_string_println(inline302)
-    var inline298 string = "sum_even(6)="
-    var inline299 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline298)
-    _goml_runtime_core_string_print(inline299)
-    var inline295 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(evens__11)
-    _goml_runtime_core_string_println(inline295)
+    var inline264 string = "sum_to(5)="
+    var inline265 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline264)
+    _goml_runtime_core_string_print(inline265)
+    var inline261 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(first__10)
+    _goml_runtime_core_string_println(inline261)
+    var inline257 string = "sum_even(6)="
+    var inline258 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline257)
+    _goml_runtime_core_string_print(inline258)
+    var inline254 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(evens__11)
+    _goml_runtime_core_string_println(inline254)
     return struct{}{}
 }
 
@@ -160,8 +160,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t237 string = _goml_runtime_core_int32_to_string(self__72)
-    return t237
+    var t196 string = _goml_runtime_core_int32_to_string(self__72)
+    return t196
 }
 
 func main() {

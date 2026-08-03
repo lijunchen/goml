@@ -22,24 +22,24 @@ type Box__int32 struct {
 }
 
 func _goml_m_trait__impl_i_Mark_i_int32_i_mark(self__0 int32) string {
-    var inline204 string = _goml_runtime_core_int32_to_string(self__0)
-    return inline204
+    var inline163 string = _goml_runtime_core_int32_to_string(self__0)
+    return inline163
 }
 
 func main0() struct{} {
-    var t188 string
-    var inline216 string = "text"
-    var inline217 string = "string:" + inline216
-    t188 = inline217
-    var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t188)
-    _goml_runtime_core_string_println(inline213)
-    var t189 string
-    var inline209 int32 = 7
-    var inline210 string = _goml_m_trait__impl_i_Mark_i_int32_i_mark(inline209)
-    var inline211 string = "blanket:" + inline210
-    t189 = inline211
-    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
-    _goml_runtime_core_string_println(inline206)
+    var t147 string
+    var inline175 string = "text"
+    var inline176 string = "string:" + inline175
+    t147 = inline176
+    var inline172 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t147)
+    _goml_runtime_core_string_println(inline172)
+    var t148 string
+    var inline168 int32 = 7
+    var inline169 string = _goml_m_trait__impl_i_Mark_i_int32_i_mark(inline168)
+    var inline170 string = "blanket:" + inline169
+    t148 = inline170
+    var inline165 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t148)
+    _goml_runtime_core_string_println(inline165)
     return struct{}{}
 }
 

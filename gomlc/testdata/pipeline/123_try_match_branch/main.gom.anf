@@ -1,84 +1,84 @@
 fn read_left(ok/0: bool) -> Result__int32__string {
   if ok/0 {
-    let t197 = Result__int32__string::Ok(10) in
-    t197
+    let t156 = Result__int32__string::Ok(10) in
+    t156
   } else {
-    let t198 = Result__int32__string::Err("left failed") in
-    t198
+    let t157 = Result__int32__string::Err("left failed") in
+    t157
   }
 }
 
 fn read_right(ok/1: bool) -> Result__int32__string {
   if ok/1 {
-    let t203 = Result__int32__string::Ok(20) in
-    t203
+    let t162 = Result__int32__string::Ok(20) in
+    t162
   } else {
-    let t204 = Result__int32__string::Err("right failed") in
-    t204
+    let t163 = Result__int32__string::Err("right failed") in
+    t163
   }
 }
 
 fn choose(choice/2: Choice) -> Result__int32__string {
-  join k207(jp208: int32) -> Result__int32__string {
-    let value/6 = jp208 in
-    let t209 = Result__int32__string::Ok(jp208) in
-    t209
+  join k166(jp167: int32) -> Result__int32__string {
+    let value/6 = jp167 in
+    let t168 = Result__int32__string::Ok(jp167) in
+    t168
   } in
   match choice/2 {
     Tag_0 => {
-      let x177 = Choice::Left._0(choice/2) in
-      let ok/3 = x177 in
-      join commute_arm297(commute_field296: int32) -> Result__int32__string {
-        let x181 = commute_field296 in
-        jump k207(commute_field296)
+      let x136 = Choice::Left._0(choice/2) in
+      let ok/3 = x136 in
+      join commute_arm256(commute_field255: int32) -> Result__int32__string {
+        let x140 = commute_field255 in
+        jump k166(commute_field255)
       } in
-      join commute_arm299(commute_field298: string) -> Result__int32__string {
-        let x182 = commute_field298 in
-        let t212 = Result__int32__string::Err(commute_field298) in
-        t212
+      join commute_arm258(commute_field257: string) -> Result__int32__string {
+        let x141 = commute_field257 in
+        let t171 = Result__int32__string::Err(commute_field257) in
+        t171
       } in
-      if x177 {
-        let inline249 = Result__int32__string::Ok(10) in
-        jump commute_arm297(10)
+      if x136 {
+        let inline208 = Result__int32__string::Ok(10) in
+        jump commute_arm256(10)
       } else {
-        let inline250 = Result__int32__string::Err("left failed") in
-        jump commute_arm299("left failed")
+        let inline209 = Result__int32__string::Err("left failed") in
+        jump commute_arm258("left failed")
       }
     },
     Tag_1 => {
-      let x178 = Choice::Right._0(choice/2) in
-      let ok/4 = x178 in
-      join inline_cont251(mtmp183: Result__int32__string) -> Result__int32__string {
-        join k213(jp214: int32) -> Result__int32__string {
-          let t215 = (jp214 + 1) in
-          jump k207(t215)
+      let x137 = Choice::Right._0(choice/2) in
+      let ok/4 = x137 in
+      join inline_cont210(mtmp142: Result__int32__string) -> Result__int32__string {
+        join k172(jp173: int32) -> Result__int32__string {
+          let t174 = (jp173 + 1) in
+          jump k166(t174)
         } in
-        match mtmp183 {
+        match mtmp142 {
           Tag_0 => {
-            let x184 = Result__int32__string::Ok._0(mtmp183) in
-            let try_value/25 = x184 in
-            jump k213(x184)
+            let x143 = Result__int32__string::Ok._0(mtmp142) in
+            let try_value/25 = x143 in
+            jump k172(x143)
           },
           Tag_1 => {
-            let x185 = Result__int32__string::Err._0(mtmp183) in
-            let try_residual/25 = x185 in
-            let t216 = Result__int32__string::Err(x185) in
-            t216
+            let x144 = Result__int32__string::Err._0(mtmp142) in
+            let try_residual/25 = x144 in
+            let t175 = Result__int32__string::Err(x144) in
+            t175
           },
         }
       } in
-      if x178 {
-        let inline252 = Result__int32__string::Ok(20) in
-        jump inline_cont251(inline252)
+      if x137 {
+        let inline211 = Result__int32__string::Ok(20) in
+        jump inline_cont210(inline211)
       } else {
-        let inline253 = Result__int32__string::Err("right failed") in
-        jump inline_cont251(inline253)
+        let inline212 = Result__int32__string::Err("right failed") in
+        jump inline_cont210(inline212)
       }
     },
     Tag_2 => {
-      let x179 = Choice::Keep._0(choice/2) in
-      let value/5 = x179 in
-      jump k207(x179)
+      let x138 = Choice::Keep._0(choice/2) in
+      let value/5 = x138 in
+      jump k166(x138)
     },
   }
 }
@@ -86,124 +86,124 @@ fn choose(choice/2: Choice) -> Result__int32__string {
 fn show(res/7: Result__int32__string) -> string {
   match res/7 {
     Tag_0 => {
-      let x186 = Result__int32__string::Ok._0(res/7) in
-      let value/8 = x186 in
-      join inline_cont254(t221: string) -> string {
-        let t222 = ("ok " + t221) in
-        t222
+      let x145 = Result__int32__string::Ok._0(res/7) in
+      let value/8 = x145 in
+      join inline_cont213(t180: string) -> string {
+        let t181 = ("ok " + t180) in
+        t181
       } in
-      let inline255 = @runtime(core.int32_to_string)(x186) in
-      jump inline_cont254(inline255)
+      let inline214 = @runtime(core.int32_to_string)(x145) in
+      jump inline_cont213(inline214)
     },
     Tag_1 => {
-      let x187 = Result__int32__string::Err._0(res/7) in
-      let err/9 = x187 in
-      let t223 = ("err " + x187) in
-      t223
+      let x146 = Result__int32__string::Err._0(res/7) in
+      let err/9 = x146 in
+      let t182 = ("err " + x146) in
+      t182
     },
   }
 }
 
 fn main() -> unit {
-  let t225 = Choice::Left(true) in
-  let t226 = choose(t225) in
-  let t227 = show(t226) in
-  join inline_cont292(_wild188: unit) -> unit {
-    let t228 = Choice::Right(true) in
-    let t229 = choose(t228) in
-    let t230 = show(t229) in
-    join inline_cont289(_wild189: unit) -> unit {
-      let t231 = Choice::Keep(5) in
-      let t232 = choose(t231) in
-      join inline_cont281(t233: string) -> unit {
-        join inline_cont278(_wild190: unit) -> unit {
-          let t234 = Choice::Left(false) in
-          let t235 = choose(t234) in
-          join inline_cont270(t236: string) -> unit {
-            join inline_cont267(_wild191: unit) -> unit {
-              let t237 = Choice::Right(false) in
-              let t238 = choose(t237) in
-              join inline_cont259(t239: string) -> unit {
-                let inline257 = trait_impl#ToString#string#to_string(t239) in
-                let inline258 = @runtime(core.string_println)(inline257) in
+  let t184 = Choice::Left(true) in
+  let t185 = choose(t184) in
+  let t186 = show(t185) in
+  join inline_cont251(_wild147: unit) -> unit {
+    let t187 = Choice::Right(true) in
+    let t188 = choose(t187) in
+    let t189 = show(t188) in
+    join inline_cont248(_wild148: unit) -> unit {
+      let t190 = Choice::Keep(5) in
+      let t191 = choose(t190) in
+      join inline_cont240(t192: string) -> unit {
+        join inline_cont237(_wild149: unit) -> unit {
+          let t193 = Choice::Left(false) in
+          let t194 = choose(t193) in
+          join inline_cont229(t195: string) -> unit {
+            join inline_cont226(_wild150: unit) -> unit {
+              let t196 = Choice::Right(false) in
+              let t197 = choose(t196) in
+              join inline_cont218(t198: string) -> unit {
+                let inline216 = trait_impl#ToString#string#to_string(t198) in
+                let inline217 = @runtime(core.string_println)(inline216) in
                 ()
               } in
-              match t238 {
+              match t197 {
                 Tag_0 => {
-                  let inline260 = Result__int32__string::Ok._0(t238) in
-                  let inline261 = inline260 in
-                  let inline262 = inherent#int32#int32#to_string(inline260) in
-                  let inline263 = ("ok " + inline262) in
-                  jump inline_cont259(inline263)
+                  let inline219 = Result__int32__string::Ok._0(t197) in
+                  let inline220 = inline219 in
+                  let inline221 = inherent#int32#int32#to_string(inline219) in
+                  let inline222 = ("ok " + inline221) in
+                  jump inline_cont218(inline222)
                 },
                 Tag_1 => {
-                  let inline264 = Result__int32__string::Err._0(t238) in
-                  let inline265 = inline264 in
-                  let inline266 = ("err " + inline264) in
-                  jump inline_cont259(inline266)
+                  let inline223 = Result__int32__string::Err._0(t197) in
+                  let inline224 = inline223 in
+                  let inline225 = ("err " + inline223) in
+                  jump inline_cont218(inline225)
                 },
               }
             } in
-            let inline268 = trait_impl#ToString#string#to_string(t236) in
-            let inline269 = @runtime(core.string_println)(inline268) in
-            jump inline_cont267(())
+            let inline227 = trait_impl#ToString#string#to_string(t195) in
+            let inline228 = @runtime(core.string_println)(inline227) in
+            jump inline_cont226(())
           } in
-          match t235 {
+          match t194 {
             Tag_0 => {
-              let inline271 = Result__int32__string::Ok._0(t235) in
-              let inline272 = inline271 in
-              let inline273 = inherent#int32#int32#to_string(inline271) in
-              let inline274 = ("ok " + inline273) in
-              jump inline_cont270(inline274)
+              let inline230 = Result__int32__string::Ok._0(t194) in
+              let inline231 = inline230 in
+              let inline232 = inherent#int32#int32#to_string(inline230) in
+              let inline233 = ("ok " + inline232) in
+              jump inline_cont229(inline233)
             },
             Tag_1 => {
-              let inline275 = Result__int32__string::Err._0(t235) in
-              let inline276 = inline275 in
-              let inline277 = ("err " + inline275) in
-              jump inline_cont270(inline277)
+              let inline234 = Result__int32__string::Err._0(t194) in
+              let inline235 = inline234 in
+              let inline236 = ("err " + inline234) in
+              jump inline_cont229(inline236)
             },
           }
         } in
-        let inline279 = trait_impl#ToString#string#to_string(t233) in
-        let inline280 = @runtime(core.string_println)(inline279) in
-        jump inline_cont278(())
+        let inline238 = trait_impl#ToString#string#to_string(t192) in
+        let inline239 = @runtime(core.string_println)(inline238) in
+        jump inline_cont237(())
       } in
-      match t232 {
+      match t191 {
         Tag_0 => {
-          let inline282 = Result__int32__string::Ok._0(t232) in
-          let inline283 = inline282 in
-          let inline284 = inherent#int32#int32#to_string(inline282) in
-          let inline285 = ("ok " + inline284) in
-          jump inline_cont281(inline285)
+          let inline241 = Result__int32__string::Ok._0(t191) in
+          let inline242 = inline241 in
+          let inline243 = inherent#int32#int32#to_string(inline241) in
+          let inline244 = ("ok " + inline243) in
+          jump inline_cont240(inline244)
         },
         Tag_1 => {
-          let inline286 = Result__int32__string::Err._0(t232) in
-          let inline287 = inline286 in
-          let inline288 = ("err " + inline286) in
-          jump inline_cont281(inline288)
+          let inline245 = Result__int32__string::Err._0(t191) in
+          let inline246 = inline245 in
+          let inline247 = ("err " + inline245) in
+          jump inline_cont240(inline247)
         },
       }
     } in
-    let inline290 = trait_impl#ToString#string#to_string(t230) in
-    let inline291 = @runtime(core.string_println)(inline290) in
-    jump inline_cont289(())
+    let inline249 = trait_impl#ToString#string#to_string(t189) in
+    let inline250 = @runtime(core.string_println)(inline249) in
+    jump inline_cont248(())
   } in
-  let inline293 = trait_impl#ToString#string#to_string(t227) in
-  let inline294 = @runtime(core.string_println)(inline293) in
-  jump inline_cont292(())
+  let inline252 = trait_impl#ToString#string#to_string(t186) in
+  let inline253 = @runtime(core.string_println)(inline252) in
+  jump inline_cont251(())
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t242 = @runtime(core.int32_to_string)(self/35) in
-  t242
+  let t201 = @runtime(core.int32_to_string)(self/35) in
+  t201
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont295(t244: string) -> unit {
-    let t245 = @runtime(core.string_println)(t244) in
+  join inline_cont254(t203: string) -> unit {
+    let t204 = @runtime(core.string_println)(t203) in
     ()
   } in
-  jump inline_cont295(value/31)
+  jump inline_cont254(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

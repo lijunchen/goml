@@ -24,32 +24,32 @@ const (
 )
 
 func main0() struct{} {
-    var t188 Light__int32
-    t188 = Light__int32_Green
-    var t189 string
-    switch t188 {
+    var t147 Light__int32
+    t147 = Light__int32_Green
+    var t148 string
+    switch t147 {
     case Light__int32_Red:
-        t189 = "ri"
+        t148 = "ri"
     case Light__int32_Green:
-        t189 = "gi"
+        t148 = "gi"
     default:
         panic("non-exhaustive match")
     }
-    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
-    _goml_runtime_core_string_println(inline211)
-    var t190 Light__string
-    t190 = Light__string_Red
-    var t191 string
-    switch t190 {
+    var inline170 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t148)
+    _goml_runtime_core_string_println(inline170)
+    var t149 Light__string
+    t149 = Light__string_Red
+    var t150 string
+    switch t149 {
     case Light__string_Red:
-        t191 = "rs"
+        t150 = "rs"
     case Light__string_Green:
-        t191 = "gs"
+        t150 = "gs"
     default:
         panic("non-exhaustive match")
     }
-    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
-    _goml_runtime_core_string_println(inline206)
+    var inline165 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t150)
+    _goml_runtime_core_string_println(inline165)
     return struct{}{}
 }
 

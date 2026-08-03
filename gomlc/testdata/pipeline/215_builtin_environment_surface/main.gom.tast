@@ -43,7 +43,7 @@ fn main() -> unit {
       (@intrinsic(channel.recv) : (Channel[int32]) -> (int32, bool))((channel/9 : Channel[int32]));
     (@intrinsic(channel.close) : (Channel[int32]) -> unit)((channel/9 : Channel[int32]));
     let total/13: int =
-      (iterator_fold : (FnIterator[int], int, (int, int) -> int) -> int)(
+      (std::iter::fold : (FnIterator[int], int, (int, int) -> int) -> int)(
         (range : (int, int) -> FnIterator[int])(0, 3),
         0,
         |sum/11: int, item/12: int| =>

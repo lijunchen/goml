@@ -1,4 +1,6 @@
 package main;
+use std::iter;
+
 fn main() -> unit {
     let native: int = 7;
     let small: int8 = 8;
@@ -21,7 +23,7 @@ fn main() -> unit {
     let received = channel_recv(channel);
     channel_close(channel);
     let total =
-      iterator_fold(
+      iter::fold(
         range(0, 3),
         0,
         |sum: int, item: int| {

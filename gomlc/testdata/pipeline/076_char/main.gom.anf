@@ -1,50 +1,50 @@
 fn main() -> unit {
   let c/0 = 'A' in
-  join inline_cont214(t180: string) -> unit {
-    join inline_cont211(_wild177: unit) -> unit {
+  join inline_cont173(t139: string) -> unit {
+    join inline_cont170(_wild136: unit) -> unit {
       let d/1 = 'b' in
-      join k181(jp182: string) -> unit {
-        let out/2 = jp182 in
-        let inline209 = trait_impl#ToString#string#to_string(jp182) in
-        let inline210 = @runtime(core.string_println)(inline209) in
+      join k140(jp141: string) -> unit {
+        let out/2 = jp141 in
+        let inline168 = trait_impl#ToString#string#to_string(jp141) in
+        let inline169 = @runtime(core.string_println)(inline168) in
         ()
       } in
       match d/1 {
         'a' => {
-          jump k181("A")
+          jump k140("A")
         },
         'b' => {
-          jump k181("B")
+          jump k140("B")
         },
         _ => {
-          jump k181("?")
+          jump k140("?")
         },
       }
     } in
-    let inline212 = trait_impl#ToString#string#to_string(t180) in
-    let inline213 = @runtime(core.string_println)(inline212) in
-    jump inline_cont211(())
+    let inline171 = trait_impl#ToString#string#to_string(t139) in
+    let inline172 = @runtime(core.string_println)(inline171) in
+    jump inline_cont170(())
   } in
-  let inline215 = char_to_string(c/0) in
-  jump inline_cont214(inline215)
+  let inline174 = char_to_string(c/0) in
+  jump inline_cont173(inline174)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont216(t184: string) -> unit {
-    let t185 = @runtime(core.string_println)(t184) in
+  join inline_cont175(t143: string) -> unit {
+    let t144 = @runtime(core.string_println)(t143) in
     ()
   } in
-  jump inline_cont216(value/31)
+  jump inline_cont175(value/31)
 }
 
 fn inherent#char#char#to_string(self/36: char) -> string {
-  let inline218 = (self/36 as uint32) in
-  let inline219 = utf8_valid_scalar(inline218) in
-  if inline219 {
-    let inline220 = @runtime(core.char_to_string)(self/36) in
-    inline220
+  let inline177 = (self/36 as uint32) in
+  let inline178 = utf8_valid_scalar(inline177) in
+  if inline178 {
+    let inline179 = @runtime(core.char_to_string)(self/36) in
+    inline179
   } else {
-    let inline221 = @runtime(core.string_get)("", -1) in
+    let inline180 = @runtime(core.string_get)("", -1) in
     ""
   }
 }
@@ -54,47 +54,47 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn char_to_string(value/29: char) -> string {
-  let t195 = (value/29 as uint32) in
-  join inline_cont222(t196: bool) -> string {
-    if t196 {
-      let t197 = @runtime(core.char_to_string)(value/29) in
-      t197
+  let t154 = (value/29 as uint32) in
+  join inline_cont181(t155: bool) -> string {
+    if t155 {
+      let t156 = @runtime(core.char_to_string)(value/29) in
+      t156
     } else {
       let mtmp21 = @runtime(core.string_get)("", -1) in
       ""
     }
   } in
-  let inline223 = (t195 <= 1114111) in
-  if inline223 {
-    let inline224 = (t195 >= 55296) in
-    join inline_join225(inline226: bool) -> string {
-      let inline227 = (!inline226) in
-      jump inline_cont222(inline227)
+  let inline182 = (t154 <= 1114111) in
+  if inline182 {
+    let inline183 = (t154 >= 55296) in
+    join inline_join184(inline185: bool) -> string {
+      let inline186 = (!inline185) in
+      jump inline_cont181(inline186)
     } in
-    if inline224 {
-      let inline228 = (t195 <= 57343) in
-      jump inline_join225(inline228)
+    if inline183 {
+      let inline187 = (t154 <= 57343) in
+      jump inline_join184(inline187)
     } else {
-      jump inline_join225(false)
+      jump inline_join184(false)
     }
   } else {
-    jump inline_cont222(false)
+    jump inline_cont181(false)
   }
 }
 
 fn utf8_valid_scalar(value/4: uint32) -> bool {
-  let t202 = (value/4 <= 1114111) in
-  if t202 {
-    let t206 = (value/4 >= 55296) in
-    join k203(jp204: bool) -> bool {
-      let t205 = (!jp204) in
-      t205
+  let t161 = (value/4 <= 1114111) in
+  if t161 {
+    let t165 = (value/4 >= 55296) in
+    join k162(jp163: bool) -> bool {
+      let t164 = (!jp163) in
+      t164
     } in
-    if t206 {
-      let t207 = (value/4 <= 57343) in
-      jump k203(t207)
+    if t165 {
+      let t166 = (value/4 <= 57343) in
+      jump k162(t166)
     } else {
-      jump k203(false)
+      jump k162(false)
     }
   } else {
     false
