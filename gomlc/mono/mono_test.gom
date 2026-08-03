@@ -4,7 +4,7 @@ use gomlc::ast;
 use gomlc::core;
 use gomlc::hir;
 use gomlc::parser;
-use gomlc::strings;
+use std::text;
 use gomlc::tast;
 use std::testing;
 
@@ -47,11 +47,11 @@ fn lower_checked_source(source: string) -> LowerResult {
 }
 
 fn string_contains(value: string, expected: string) -> bool {
-    strings::contains(value, expected)
+    value.contains(expected)
 }
 
 fn string_index(value: string, expected: string) -> int {
-    match strings::find(value, expected) {
+    match text::find(value, expected) {
         Some(index) => index,
         None => -1,
     }

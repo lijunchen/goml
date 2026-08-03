@@ -77,6 +77,11 @@ fn assert_text() -> unit {
     testing::assert_eq(lines.get(0), "first");
     testing::assert_eq(lines.get(1), "second");
     testing::assert_eq(text::find("éclair", "c").unwrap_or(-1), 2);
+    testing::assert(text::starts_with_at("éclair", 2, "c"));
+    testing::assert(!text::starts_with_at("éclair", 1, "c"));
+    testing::assert_eq(text::rfind("a::语言::z", "::").unwrap_or(-1), 9);
+    testing::assert_eq(text::rfind("语言", "").unwrap_or(-1), 6);
+    testing::assert(text::rfind("语言", "rust").is_none());
     testing::assert_eq(text::replace("a-b-a", "a", "xy"), "xy-b-xy");
     testing::assert_eq(text::join(Vec::["a", "b", "c"], ","), "a,b,c");
     testing::assert_eq(text::repeat("ab", 3), "ababab");

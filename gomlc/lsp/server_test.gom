@@ -1,6 +1,5 @@
 package lsp;
 
-use gomlc::strings;
 use gomlc::version;
 use std::json;
 use std::testing;
@@ -277,7 +276,7 @@ fn includes_diagnostics_in_hover() -> unit {
             Some(result) => match json::field(result, "contents") {
                 Some(contents) => match json::field(contents, "value") {
                     Some(value) => match json::as_string(value) {
-                        Some(value) => testing::assert(strings::contains(value, "**Diagnostics**")),
+                        Some(value) => testing::assert(value.contains("**Diagnostics**")),
                         None => testing::fail("expected hover text"),
                     },
                     None => testing::fail("expected hover value"),

@@ -6,7 +6,7 @@ use gomlc::hir;
 use gomlc::lift;
 use gomlc::mono;
 use gomlc::parser;
-use gomlc::strings;
+use std::text;
 use gomlc::tast;
 use std::testing;
 
@@ -45,7 +45,7 @@ fn verifier_file(body: Block, ret_ty: tast::Type) -> File {
 fn verifier_error_contains(result: Result[unit, string], expected: string) -> unit {
     match result {
         Ok(_) => testing::fail("expected ANF verification failure"),
-        Err(message) => testing::assert(strings::contains(message, expected)),
+        Err(message) => testing::assert(message.contains(expected)),
     }
 }
 
@@ -367,16 +367,16 @@ fn inlines_small_static_calls() -> unit {
         Err(message) => testing::fail(message),
     };
     let output = encode(file);
-    testing::assert(!strings::contains(output, "let value/1 = id("));
-    testing::assert(strings::contains(output, "jump inline_cont"))
+    testing::assert(!output.contains("let value/1 = id("));
+    testing::assert(output.contains("jump inline_cont"))
 }
 
 #[test]
 fn respects_static_inline_limits() -> unit {
     let source = "fn recurse(value: int32) -> int32 { if value == 0 { 0 } else { recurse(value - 1) } } fn large(value: int32) -> int32 { let a0 = value + 1; let a1 = a0 + 1; let a2 = a1 + 1; let a3 = a2 + 1; let a4 = a3 + 1; let a5 = a4 + 1; let a6 = a5 + 1; let a7 = a6 + 1; let a8 = a7 + 1; let a9 = a8 + 1; let a10 = a9 + 1; let a11 = a10 + 1; let a12 = a11 + 1; let a13 = a12 + 1; let a14 = a13 + 1; let a15 = a14 + 1; a15 } fn main() -> unit { println(recurse(3)); println(large(0)); }";
     let output = encode(lower_source(source));
-    testing::assert(strings::contains(output, "recurse(3)"));
-    testing::assert(strings::contains(output, "large(0)"))
+    testing::assert(output.contains("recurse(3)"));
+    testing::assert(output.contains("large(0)"))
 }
 
 #[test]
@@ -430,8 +430,8 @@ fn commutes_known_constructor_continuations() -> unit {
         Err(message) => testing::fail(message),
     };
     let output = encode(lowered);
-    testing::assert(strings::contains(output, "join commute_arm"));
-    testing::assert(!strings::contains(output, "match mtmp"))
+    testing::assert(output.contains("join commute_arm"));
+    testing::assert(!output.contains("match mtmp"))
 }
 
 #[test]
@@ -443,8 +443,8 @@ fn preserves_continuations_with_unknown_entries() -> unit {
         Err(message) => testing::fail(message),
     };
     let output = encode(lowered);
-    testing::assert(strings::contains(output, "join k"));
-    testing::assert(!strings::contains(output, "join commute_arm"))
+    testing::assert(output.contains("join k"));
+    testing::assert(!output.contains("join commute_arm"))
 }
 
 #[test]
@@ -503,12 +503,12 @@ fn invalidates_commuting_constructors_after_assignment() -> unit {
 
 fn encoded_function(output: string, name: string) -> string {
     let marker = "fn " + name + "(";
-    let start = match strings::find(output, marker) {
+    let start = match text::find(output, marker) {
         Some(value) => value,
         None => return "",
     };
     let suffix = output.byte_slice(start, output.byte_len());
-    let end = match strings::find(suffix, "\n}\n\n") {
+    let end = match text::find(suffix, "\n}\n\n") {
         Some(value) => value + 2,
         None => suffix.byte_len(),
     };
@@ -524,10 +524,10 @@ fn fuses_recursive_join_consumers() -> unit {
         Err(message) => testing::fail(message),
     };
     let any = encoded_function(encode(lowered), "any");
-    testing::assert(strings::contains(any, "joinrec"));
-    testing::assert(!strings::contains(any, "find("));
-    testing::assert(!strings::contains(any, "match "));
-    testing::assert(!strings::contains(any, "commute_field"))
+    testing::assert(any.contains("joinrec"));
+    testing::assert(!any.contains("find("));
+    testing::assert(!any.contains("match "));
+    testing::assert(!any.contains("commute_field"))
 }
 
 #[test]
@@ -576,7 +576,7 @@ fn rejects_recursive_inlining_into_jumping_consumers() -> unit {
 }
 
 fn required_position(value: string, expected: string) -> int {
-    match strings::find(value, expected) {
+    match text::find(value, expected) {
         Some(position) => position,
         None => {
             testing::fail("missing " + expected);

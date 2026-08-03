@@ -2,7 +2,6 @@ package query;
 
 use gomlc::cst;
 use gomlc::lexer;
-use gomlc::strings;
 use std::fs;
 use std::testing;
 use std::text;
@@ -157,7 +156,7 @@ fn resolves_definitions_in_local_dependencies() -> unit {
                 let analysis = analyze(main_path, source);
                 match goto_definition(analysis, offset) {
                     Some(definition) => {
-                        testing::assert(strings::ends_with(definition.source_path, "/lib/lib.gom"));
+                        testing::assert(definition.source_path.ends_with("/lib/lib.gom"));
                         match fs::read_file(definition.source_path) {
                             Ok(target_source) => testing::assert_eq(
                                 target_source.byte_slice(definition.span.start, definition.span.end),
@@ -258,7 +257,7 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
         Some(offset) => {
             match goto_definition(analysis, offset) {
                 Some(definition) => {
-                    if strings::ends_with(definition.source_path, "/events/events.gom") {
+                    if definition.source_path.ends_with("/events/events.gom") {
                         ()
                     } else {
                         testing::fail(
@@ -280,7 +279,7 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
                 },
             };
             match hover(analysis, offset) {
-                Some(result) => if strings::contains(result.contents, "Event") {
+                Some(result) => if result.contents.contains("Event") {
                     ()
                 } else {
                     testing::fail("unexpected contextual variant hover " + result.contents)

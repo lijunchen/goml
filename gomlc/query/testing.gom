@@ -2,7 +2,6 @@ package query;
 
 use gomlc::ast;
 use gomlc::parser;
-use gomlc::strings;
 use std::path;
 
 pub enum TestItemKind {
@@ -38,7 +37,7 @@ fn test_path_kind(source_path: string) -> Option[TestItemKind] {
             None => break,
         }
     };
-    if strings::ends_with(source_path, "_test.gom") {
+    if source_path.ends_with("_test.gom") {
         Option::Some(TestItemKind::Internal)
     } else {
         Option::None
@@ -46,7 +45,7 @@ fn test_path_kind(source_path: string) -> Option[TestItemKind] {
 }
 
 fn is_test_attribute(value: ast::Attribute) -> bool {
-    strings::contains(value.text, "test")
+    value.text.contains("test")
 }
 
 fn has_test_attribute(values: Vec[ast::Attribute]) -> bool {

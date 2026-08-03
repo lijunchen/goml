@@ -3,40 +3,16 @@ package strings;
 use std::testing;
 
 #[test]
-fn searches_ascii_and_unicode_strings_without_boundary_panics() -> unit {
-    testing::assert(starts_with("语言 goml", "语言"));
-    testing::assert(!starts_with("语言 goml", "x"));
-    testing::assert(starts_with("语言", ""));
-    testing::assert(!starts_with("语言", "语言 goml"));
+fn matches_at_byte_offsets_without_boundary_panics() -> unit {
     testing::assert(starts_with_at("éx", 2, "x"));
     testing::assert(!starts_with_at("éx", 1, "x"));
-    testing::assert(ends_with("语言 goml", "goml"));
-    testing::assert(!ends_with("语言", "x"));
-    testing::assert(ends_with("语言", ""));
-    testing::assert(!ends_with("语言", "goml 语言"));
-    testing::assert(contains("编译器 gomlc", "译器"));
-    testing::assert(contains("编译器", ""));
-    testing::assert(!contains("编译器", "rust"))
+    testing::assert(starts_with_at("语言 goml", 7, "goml"));
+    testing::assert(!starts_with_at("语言 goml", -1, "语言"));
+    testing::assert(!starts_with_at("语言", 0, "语言 goml"))
 }
 
 #[test]
-fn finds_byte_offsets_without_crossing_utf8_boundaries() -> unit {
-    match find("a语言z", "语言") {
-        Some(index) => testing::assert_eq(index, 1),
-        None => testing::fail("expected unicode match"),
-    };
-    match find("a语言z", "z") {
-        Some(index) => testing::assert_eq(index, 7),
-        None => testing::fail("expected suffix match"),
-    };
-    match find("a语言z", "") {
-        Some(index) => testing::assert_eq(index, 0),
-        None => testing::fail("expected empty match"),
-    };
-    match find("a语言z", "rust") {
-        Some(_) => testing::fail("expected no match"),
-        None => (),
-    };
+fn finds_reverse_byte_offsets_without_crossing_utf8_boundaries() -> unit {
     match rfind("a::语言::z", "::") {
         Some(index) => testing::assert_eq(index, 9),
         None => testing::fail("expected last separator"),
@@ -48,18 +24,5 @@ fn finds_byte_offsets_without_crossing_utf8_boundaries() -> unit {
     match rfind("语言", "rust") {
         Some(_) => testing::fail("expected no reverse match"),
         None => (),
-    };
-    let parts = split("trait_impl#语言#T#show", "#");
-    testing::assert_eq(parts.len(), 4);
-    testing::assert_eq(parts.get(0), "trait_impl");
-    testing::assert_eq(parts.get(1), "语言");
-    testing::assert_eq(parts.get(3), "show");
-    let unsplit = split("语言", "");
-    testing::assert_eq(unsplit.len(), 1);
-    testing::assert_eq(unsplit.get(0), "语言");
-    let trailing = split("a::", "::");
-    testing::assert_eq(trailing.len(), 2);
-    testing::assert_eq(trailing.get(1), "");
-    testing::assert_eq(join(Vec::new(), ", "), "");
-    testing::assert_eq(join(Vec::["alpha", "语言", "omega"], " -> "), "alpha -> 语言 -> omega")
+    }
 }
