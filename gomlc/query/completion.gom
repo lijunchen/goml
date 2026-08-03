@@ -4,7 +4,6 @@ use gomlc::ast;
 use gomlc::cst;
 use gomlc::lexer;
 use gomlc::parser;
-use gomlc::strings;
 use gomlc::tast;
 use std::fs;
 use std::path;
@@ -196,7 +195,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
 
 fn namespace_path(source: string, offset: int) -> Option[string] {
     let start = prefix_start(source, offset);
-    if start >= 2 && strings::starts_with_at(source, start - 2, "::") {
+    if start >= 2 && text::starts_with_at(source, start - 2, "::") {
         let owner_end = start - 2;
         let mut owner_start = owner_end;
         while owner_start > 0 {

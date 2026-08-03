@@ -1,6 +1,5 @@
 package lexer;
 
-use gomlc::strings;
 use std::text;
 
 #[derive(Eq, ToString)]
@@ -349,28 +348,28 @@ fn scan_number(source: string, start: int) -> (TokenKind, int) {
     if !valid {
         (TokenKind::Error, number_end)
     } else if number_end != integer_end {
-        if strings::starts_with_at(source, number_end, "f32") {
+        if text::starts_with_at(source, number_end, "f32") {
             (TokenKind::Error, number_end + 3)
-        } else if strings::starts_with_at(source, number_end, "f64") {
+        } else if text::starts_with_at(source, number_end, "f64") {
             (TokenKind::Error, number_end + 3)
         } else {
             (TokenKind::Float, number_end)
         }
-    } else if strings::starts_with_at(source, integer_end, "i16") {
+    } else if text::starts_with_at(source, integer_end, "i16") {
         (TokenKind::Error, integer_end + 3)
-    } else if strings::starts_with_at(source, integer_end, "i32") {
+    } else if text::starts_with_at(source, integer_end, "i32") {
         (TokenKind::Error, integer_end + 3)
-    } else if strings::starts_with_at(source, integer_end, "i64") {
+    } else if text::starts_with_at(source, integer_end, "i64") {
         (TokenKind::Error, integer_end + 3)
-    } else if strings::starts_with_at(source, integer_end, "u16") {
+    } else if text::starts_with_at(source, integer_end, "u16") {
         (TokenKind::Error, integer_end + 3)
-    } else if strings::starts_with_at(source, integer_end, "u32") {
+    } else if text::starts_with_at(source, integer_end, "u32") {
         (TokenKind::Error, integer_end + 3)
-    } else if strings::starts_with_at(source, integer_end, "u64") {
+    } else if text::starts_with_at(source, integer_end, "u64") {
         (TokenKind::Error, integer_end + 3)
-    } else if strings::starts_with_at(source, integer_end, "i8") {
+    } else if text::starts_with_at(source, integer_end, "i8") {
         (TokenKind::Error, integer_end + 2)
-    } else if strings::starts_with_at(source, integer_end, "u8") {
+    } else if text::starts_with_at(source, integer_end, "u8") {
         (TokenKind::Error, integer_end + 2)
     } else {
         (TokenKind::IntLit, integer_end)
@@ -475,7 +474,7 @@ fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
     while index < source.byte_len() {
         let position = index;
         let value = byte_at(source, position);
-        if strings::starts_with_at(source, position, "//") {
+        if text::starts_with_at(source, position, "//") {
             index = position + 2;
             while index < source.byte_len() && byte_at(source, index) != b'\n' {
                 index = index + 1;
@@ -768,51 +767,51 @@ fn scan_multiline_string_end(source: string, start: int) -> Option[int] {
 }
 
 fn scan_symbol(source: string, start: int) -> Option[(TokenKind, int)] {
-    if strings::starts_with_at(source, start, "<<=") {
+    if text::starts_with_at(source, start, "<<=") {
         Option::Some((TokenKind::LessLessEq, start + 3))
-    } else if strings::starts_with_at(source, start, ">>=") {
+    } else if text::starts_with_at(source, start, ">>=") {
         Option::Some((TokenKind::GreaterGreaterEq, start + 3))
-    } else if strings::starts_with_at(source, start, "..=") {
+    } else if text::starts_with_at(source, start, "..=") {
         Option::Some((TokenKind::DotDotEq, start + 3))
-    } else if strings::starts_with_at(source, start, "+=") {
+    } else if text::starts_with_at(source, start, "+=") {
         Option::Some((TokenKind::PlusEq, start + 2))
-    } else if strings::starts_with_at(source, start, "-=") {
+    } else if text::starts_with_at(source, start, "-=") {
         Option::Some((TokenKind::MinusEq, start + 2))
-    } else if strings::starts_with_at(source, start, "*=") {
+    } else if text::starts_with_at(source, start, "*=") {
         Option::Some((TokenKind::StarEq, start + 2))
-    } else if strings::starts_with_at(source, start, "/=") {
+    } else if text::starts_with_at(source, start, "/=") {
         Option::Some((TokenKind::SlashEq, start + 2))
-    } else if strings::starts_with_at(source, start, "%=") {
+    } else if text::starts_with_at(source, start, "%=") {
         Option::Some((TokenKind::PercentEq, start + 2))
-    } else if strings::starts_with_at(source, start, "&=") {
+    } else if text::starts_with_at(source, start, "&=") {
         Option::Some((TokenKind::AmpEq, start + 2))
-    } else if strings::starts_with_at(source, start, "|=") {
+    } else if text::starts_with_at(source, start, "|=") {
         Option::Some((TokenKind::PipeEq, start + 2))
-    } else if strings::starts_with_at(source, start, "^=") {
+    } else if text::starts_with_at(source, start, "^=") {
         Option::Some((TokenKind::CaretEq, start + 2))
-    } else if strings::starts_with_at(source, start, "::") {
+    } else if text::starts_with_at(source, start, "::") {
         Option::Some((TokenKind::ColonColon, start + 2))
-    } else if strings::starts_with_at(source, start, "->") {
+    } else if text::starts_with_at(source, start, "->") {
         Option::Some((TokenKind::Arrow, start + 2))
-    } else if strings::starts_with_at(source, start, "=>") {
+    } else if text::starts_with_at(source, start, "=>") {
         Option::Some((TokenKind::FatArrow, start + 2))
-    } else if strings::starts_with_at(source, start, "..") {
+    } else if text::starts_with_at(source, start, "..") {
         Option::Some((TokenKind::DotDot, start + 2))
-    } else if strings::starts_with_at(source, start, "&&") {
+    } else if text::starts_with_at(source, start, "&&") {
         Option::Some((TokenKind::AndAnd, start + 2))
-    } else if strings::starts_with_at(source, start, "||") {
+    } else if text::starts_with_at(source, start, "||") {
         Option::Some((TokenKind::OrOr, start + 2))
-    } else if strings::starts_with_at(source, start, "<<") {
+    } else if text::starts_with_at(source, start, "<<") {
         Option::Some((TokenKind::LessLess, start + 2))
-    } else if strings::starts_with_at(source, start, ">>") {
+    } else if text::starts_with_at(source, start, ">>") {
         Option::Some((TokenKind::GreaterGreater, start + 2))
-    } else if strings::starts_with_at(source, start, ">=") {
+    } else if text::starts_with_at(source, start, ">=") {
         Option::Some((TokenKind::GreaterEq, start + 2))
-    } else if strings::starts_with_at(source, start, "<=") {
+    } else if text::starts_with_at(source, start, "<=") {
         Option::Some((TokenKind::LessEq, start + 2))
-    } else if strings::starts_with_at(source, start, "==") {
+    } else if text::starts_with_at(source, start, "==") {
         Option::Some((TokenKind::EqEq, start + 2))
-    } else if strings::starts_with_at(source, start, "!=") {
+    } else if text::starts_with_at(source, start, "!=") {
         Option::Some((TokenKind::NotEq, start + 2))
     } else {
         let kind = match byte_at(source, start) {
@@ -972,13 +971,13 @@ pub fn lex(source: string) -> Vec[Token] {
                 index = index + 1;
             };
             push_token(tokens, source, TokenKind::Whitespace, start, index)
-        } else if strings::starts_with_at(source, start, "//") {
+        } else if text::starts_with_at(source, start, "//") {
             index = start + 2;
             while index < source.byte_len() && byte_at(source, index) != b'\n' {
                 index = index + 1;
             };
             push_token(tokens, source, TokenKind::Comment, start, index)
-        } else if strings::starts_with_at(source, start, "\\\\") {
+        } else if text::starts_with_at(source, start, "\\\\") {
             match scan_multiline_string_end(source, start) {
                 Some(end) => {
                     index = end;

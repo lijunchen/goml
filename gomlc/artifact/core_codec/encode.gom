@@ -5,7 +5,6 @@ use gomlc::artifact::tast_codec as tast_codec;
 use gomlc::artifact::interface_codec as interface_codec;
 use gomlc::ast;
 use gomlc::core;
-use gomlc::strings;
 use gomlc::tast;
 use std::text;
 
@@ -128,7 +127,7 @@ pub fn artifact_constructor_separator(value: string) -> int {
     let mut result = -1;
     if value.byte_len() > 1 {
         for index in 0..value.byte_len() - 1 {
-            if strings::starts_with_at(value, index, "::") {
+            if text::starts_with_at(value, index, "::") {
                 result = index;
             } else {
                 ()

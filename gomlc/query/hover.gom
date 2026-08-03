@@ -1,7 +1,6 @@
 package query;
 
 use gomlc::ast;
-use gomlc::strings;
 use gomlc::tast;
 use std::text;
 
@@ -60,7 +59,7 @@ fn hover_span(value: Analysis, span: ast::Span, offset: int) -> ast::Span {
 }
 
 fn symbol_owner(value: string) -> string {
-    match strings::rfind(value, "::") {
+    match text::rfind(value, "::") {
         Some(end) => value.byte_slice(0, end),
         None => "",
     }

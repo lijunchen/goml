@@ -1,6 +1,6 @@
 package go_backend;
 
-use gomlc::strings;
+use std::text;
 use std::collections;
 use gomlc::core;
 use gomlc::tast;
@@ -719,7 +719,7 @@ fn last_separator(value: string) -> int {
     let mut result = -1;
     if value.byte_len() > 1 {
         for index in 0..value.byte_len() - 1 {
-            if strings::starts_with_at(value, index, "::") {
+            if text::starts_with_at(value, index, "::") {
                 result = index;
             } else {
                 ()

@@ -2,7 +2,6 @@ package tast;
 
 use gomlc::ast;
 use gomlc::hir;
-use gomlc::strings;
 use std::collections;
 use std::text;
 
@@ -40,7 +39,7 @@ struct MethodCandidate {
 }
 
 fn short_name(value: string) -> string {
-    match strings::rfind(value, "::") {
+    match text::rfind(value, "::") {
         Some(index) => value.byte_slice(index + 2, value.byte_len()),
         None => value,
     }
@@ -273,7 +272,7 @@ fn resolve_named_constructor(ctx: Checker, enum_name: string, variant_name: stri
 }
 
 fn split_constructor_name(value: string) -> Option[(string, string)] {
-    match strings::rfind(value, "::") {
+    match text::rfind(value, "::") {
         Some(index) => if index > 0 && index + 2 < value.byte_len() {
             Option::Some(
                 (value.byte_slice(0, index), value.byte_slice(index + 2, value.byte_len())),

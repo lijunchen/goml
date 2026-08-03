@@ -2,7 +2,7 @@ package anf;
 
 use gomlc::core;
 use gomlc::pretty;
-use gomlc::strings;
+use std::text;
 use gomlc::tast;
 
 fn docs_with_separator(separator: pretty::Doc, values: Vec[pretty::Doc]) -> pretty::Doc {
@@ -14,7 +14,7 @@ fn arguments(values: Vec[pretty::Doc]) -> pretty::Doc {
 }
 
 fn dyn_method_name(value: string) -> string {
-    match strings::rfind(value, "#") {
+    match text::rfind(value, "#") {
         Some(index) => value.byte_slice(index + 1, value.byte_len()),
         None => value,
     }
