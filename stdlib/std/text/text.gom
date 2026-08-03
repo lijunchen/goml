@@ -1,9 +1,6 @@
 package text;
 
-fn is_ascii_whitespace_byte(value: byte) -> bool {
-    value == b'\t' || value == b'\n' || value == b'\x0B' || value == b'\f' || value == b'\r'
-        || value == b' '
-}
+use std::ascii;
 
 pub fn starts_with_at(value: string, start: int, prefix: string) -> bool {
     let value_len = value.byte_len();
@@ -64,7 +61,7 @@ pub fn rfind(value: string, expected: string) -> Option[int] {
 
 pub fn trim_start(value: string) -> string {
     let mut start = 0;
-    while start < value.byte_len() && is_ascii_whitespace_byte(value.byte_get(start)) {
+    while start < value.byte_len() && ascii::is_whitespace(value.byte_get(start)) {
         start += 1;
     };
     value.byte_slice(start, value.byte_len())
@@ -72,7 +69,7 @@ pub fn trim_start(value: string) -> string {
 
 pub fn trim_end(value: string) -> string {
     let mut end = value.byte_len();
-    while end > 0 && is_ascii_whitespace_byte(value.byte_get(end - 1)) {
+    while end > 0 && ascii::is_whitespace(value.byte_get(end - 1)) {
         end -= 1;
     };
     value.byte_slice(0, end)
@@ -209,15 +206,25 @@ pub fn is_ascii(value: string) -> bool {
     true
 }
 
+pub fn eq_ignore_ascii_case(left: string, right: string) -> bool {
+    if left.byte_len() != right.byte_len() {
+        false
+    } else {
+        for index in 0..left.byte_len() {
+            if !ascii::eq_ignore_case(left.byte_get(index), right.byte_get(index)) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
 pub fn to_ascii_lowercase(value: string) -> string {
     let values = value.to_bytes();
     for index in 0..values.len() {
-        let current = values[index];
-        if current >= b'A' && current <= b'Z' {
-            values[index] = current + (b'a' - b'A');
-        } else {
-            ()
-        }
+        values[index] = ascii::to_lowercase(values[index]);
     };
     let (_, result) = string_from_utf8(values);
     result
@@ -226,12 +233,7 @@ pub fn to_ascii_lowercase(value: string) -> string {
 pub fn to_ascii_uppercase(value: string) -> string {
     let values = value.to_bytes();
     for index in 0..values.len() {
-        let current = values[index];
-        if current >= b'a' && current <= b'z' {
-            values[index] = current - (b'a' - b'A');
-        } else {
-            ()
-        }
+        values[index] = ascii::to_uppercase(values[index]);
     };
     let (_, result) = string_from_utf8(values);
     result

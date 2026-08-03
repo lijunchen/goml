@@ -19,11 +19,13 @@ use std::text;
 
 struct StandardNeeds {
     root: bool,
+    ascii: bool,
     bytes: bool,
     collections: bool,
     env: bool,
     fs: bool,
     io: bool,
+    iter: bool,
     json: bool,
     num: bool,
     path: bool,
@@ -54,11 +56,13 @@ struct PackageWorld {
 fn no_standard_needs() -> StandardNeeds {
     StandardNeeds {
         root: false,
+        ascii: false,
         bytes: false,
         collections: false,
         env: false,
         fs: false,
         io: false,
+        iter: false,
         json: false,
         num: false,
         path: false,
@@ -73,11 +77,13 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
     let closure = resources::standard_package_closure(package_names);
     StandardNeeds {
         root: collections::contains(closure, "std"),
+        ascii: collections::contains(closure, "std::ascii"),
         bytes: collections::contains(closure, "std::bytes"),
         collections: collections::contains(closure, "std::collections"),
         env: collections::contains(closure, "std::env"),
         fs: collections::contains(closure, "std::fs"),
         io: collections::contains(closure, "std::io"),
+        iter: collections::contains(closure, "std::iter"),
         json: collections::contains(closure, "std::json"),
         num: collections::contains(closure, "std::num"),
         path: collections::contains(closure, "std::path"),
@@ -103,11 +109,13 @@ fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
 fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNeeds {
     StandardNeeds {
         root: left.root || right.root,
+        ascii: left.ascii || right.ascii,
         bytes: left.bytes || right.bytes,
         collections: left.collections || right.collections,
         env: left.env || right.env,
         fs: left.fs || right.fs,
         io: left.io || right.io,
+        iter: left.iter || right.iter,
         json: left.json || right.json,
         num: left.num || right.num,
         path: left.path || right.path,
@@ -542,6 +550,11 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     ArtifactStandardPackage,
 ] {
     let result: Vec[ArtifactStandardPackage] = Vec::[];
+    if needs.ascii {
+        result.push(standard.ascii)
+    } else {
+        ()
+    };
     if needs.bytes {
         result.push(standard.bytes)
     } else {
@@ -564,6 +577,11 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     };
     if needs.io {
         result.push(standard.io)
+    } else {
+        ()
+    };
+    if needs.iter {
+        result.push(standard.iter)
     } else {
         ()
     };
@@ -721,6 +739,11 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     core::File,
 ] {
     let result: Vec[core::File] = Vec::[];
+    if needs.ascii {
+        result.push(standard.ascii.core_value)
+    } else {
+        ()
+    };
     if needs.bytes {
         result.push(standard.bytes.core_value)
     } else {
@@ -743,6 +766,11 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     };
     if needs.io {
         result.push(standard.io.core_value)
+    } else {
+        ()
+    };
+    if needs.iter {
+        result.push(standard.iter.core_value)
     } else {
         ()
     };

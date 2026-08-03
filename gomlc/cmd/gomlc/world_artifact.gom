@@ -96,6 +96,8 @@ fn world_add_standard_sections(
         (32 as uint16, value.text),
         (34 as uint16, value.num),
         (36 as uint16, value.time),
+        (38 as uint16, value.ascii),
+        (40 as uint16, value.iter),
     ];
     for package_value in packages {
         world_add_package_sections(sections, package_value.0, package_value.1)?
@@ -208,6 +210,8 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let text_value = world_decode_package(container, 32, "std::text")?;
     let num = world_decode_package(container, 34, "std::num")?;
     let time_value = world_decode_package(container, 36, "std::time")?;
+    let ascii = world_decode_package(container, 38, "std::ascii")?;
+    let iter = world_decode_package(container, 40, "std::iter")?;
     let world = PackageWorld {
         counter,
         builtins: builtin_core.core_ir,
@@ -215,11 +219,13 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
         standard: ArtifactStandardLibrary {
             root,
             host,
+            ascii,
             bytes,
             collections,
             env,
             fs: fs_value,
             io: io_value,
+            iter,
             json,
             num,
             path: path_value,

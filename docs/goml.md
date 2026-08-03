@@ -1807,24 +1807,22 @@ trait IntoIterator {
 }
 ```
 
-Commonly used APIs:
+The protocol entry points are `FnIterator::from_fn(next_fn)`, `iterator.next()` or `Iterator::next(iterator)`. `range(start, end)` and `start..end` produce incrementing half-open `FnIterator[int]` values; `start >= end` is empty.
 
-- `FnIterator::from_fn(next_fn)`
-- `iterator.next()` or `Iterator::next(iterator)`
-- `range(start, end)` or `start..end`, produces an incrementing half-open `FnIterator[int]`; `start >= end` is empty
-- `iterator_map(iterator, fn)`
-- `iterator_filter(iterator, predicate)`
-- `iterator_take(iterator, count)`
-- `iterator_enumerate(iterator)`, yielding `(int, Item)`
-- `iterator_zip(left, right)`, ending when either input ends
-- `iterator_skip(iterator, count)`
-- `iterator_chain(first, second)`
-- `iterator_fold(iterator, initial, combine)`
-- `iterator_collect(iterator) -> Vec[T]`
-- `iterator_find(iterator, predicate) -> Option[T]`
-- `iterator_any(iterator, predicate) -> bool`
-- `iterator_all(iterator, predicate) -> bool`
-- `iterator_count(iterator) -> int`
+New code should import `std::iter` for iterator construction, adapters, and consumers:
+
+```goml
+use std::iter;
+
+let values = iter::map(Vec::[1, 2, 3].iter(), |value: int| value * 2);
+let total = iter::fold(values, 0, |sum: int, value: int| sum + value);
+```
+
+- producers: `empty`, `once`, and `from_fn`
+- adapters: `map`, `filter`, `filter_map`, `take`, `take_while`, `skip`, `skip_while`, `enumerate`, `zip`, `chain`, `inspect`, and `map_while`
+- consumers: `fold`, `collect`, `find`, `find_map`, `any`, `all`, `count`, `position`, `nth`, `last`, `for_each`, and `reduce`
+
+The older built-in `iterator_*` functions remain available during the standard-library migration.
 
 Iterators are single pass.`Vec[T]` and `Slice[T]` can be directly used in `for`, and the value implementing `Iterator` is also directly iterable through the identity `IntoIterator`.
 
@@ -1833,11 +1831,13 @@ Iterators are single pass.`Vec[T]` and `Slice[T]` can be directly used in `for`,
 The standard library is not equal to prelude and needs to be imported by package:
 
 ```goml
+use std::ascii;
 use std::bytes;
 use std::collections;
 use std::env;
 use std::fs;
 use std::io;
+use std::iter;
 use std::json;
 use std::num;
 use std::path;
@@ -1849,19 +1849,23 @@ use std::time;
 
 Current public entrances include:
 
+- `ascii::is_ascii`, character-class predicates, ASCII case conversion and comparison, and `escape_default`
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`
 - `collections::sort_by`, `stable_sort_by`, `binary_search_by`, `position_by`, `contains`, `min_by`, `max_by`, `dedup_by`, and `dedup`
 - `env::args`, `current_dir`, `current_exe`, and `var`
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
+- `iter::empty`, `once`, `from_fn`, iterator adapters, and single-pass consumers
 - `json::Value`, `parse`, `encode`, `field`, and typed `as_*` accessors
 - `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
-- `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `to_ascii_lowercase`, and `to_ascii_uppercase`
+- `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `eq_ignore_ascii_case`, `to_ascii_lowercase`, and `to_ascii_uppercase`
 - `time::Duration`, `Instant`, `SystemTime`, and `sleep`
+
+`std::ascii` operates on `byte`. Classification and case conversion use only the 7-bit ASCII range, and bytes above `0x7f` remain unchanged. `escape_default` emits short escapes for tabs, carriage returns, newlines, quotes, and backslashes, preserves printable ASCII, and uses lowercase `\\xNN` escapes for other bytes.
 
 ### `collections::IndexMap[K, V]`
 

@@ -1,0 +1,403 @@
+package iter;
+
+pub fn empty[T]() -> FnIterator[T] {
+    FnIterator::from_fn(|| Option::None)
+}
+
+pub fn once[T](value: T) -> FnIterator[T] {
+    let remaining = Ref::new(Option::Some(value));
+    FnIterator::from_fn(
+        || {
+            let current = remaining.get();
+            remaining.set(Option::None);
+            current
+        },
+    )
+}
+
+pub fn from_fn[T](next_fn: () -> Option[T]) -> FnIterator[T] {
+    FnIterator::from_fn(next_fn)
+}
+
+pub fn map[A, B, I: Iterator](iterator: I, map_fn: (A) -> B) -> FnIterator[B] where I::Item = A {
+    FnIterator::from_fn(
+        || {
+            match iterator.next() {
+                Some(value) => Option::Some(map_fn(value)),
+                None => Option::None,
+            }
+        },
+    )
+}
+
+pub fn filter[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> FnIterator[T]
+where
+    I::Item = T,
+{
+    FnIterator::from_fn(
+        || {
+            loop {
+                match iterator.next() {
+                    Some(value) => if predicate(value) {
+                        return Option::Some(value)
+                    } else {
+                        ()
+                    },
+                    None => return Option::None,
+                }
+            };
+            Option::None
+        },
+    )
+}
+
+pub fn filter_map[A, B, I: Iterator](iterator: I, map_fn: (A) -> Option[B]) -> FnIterator[B]
+where
+    I::Item = A,
+{
+    FnIterator::from_fn(
+        || {
+            loop {
+                match iterator.next() {
+                    Some(value) => match map_fn(value) {
+                        Some(mapped) => return Option::Some(mapped),
+                        None => (),
+                    },
+                    None => return Option::None,
+                }
+            };
+            Option::None
+        },
+    )
+}
+
+pub fn take[I: Iterator](iterator: I, count: int) -> FnIterator[I::Item] {
+    let remaining = Ref::new(
+        if count > 0 {
+            count
+        } else {
+            0
+        },
+    );
+    FnIterator::from_fn(
+        || {
+            if remaining.get() == 0 {
+                Option::None
+            } else {
+                remaining.set(remaining.get() - 1);
+                iterator.next()
+            }
+        },
+    )
+}
+
+pub fn take_while[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> FnIterator[T]
+where
+    I::Item = T,
+{
+    let done = Ref::new(false);
+    FnIterator::from_fn(
+        || {
+            if done.get() {
+                Option::None
+            } else {
+                match iterator.next() {
+                    Some(value) => if predicate(value) {
+                        Option::Some(value)
+                    } else {
+                        done.set(true);
+                        Option::None
+                    },
+                    None => {
+                        done.set(true);
+                        Option::None
+                    },
+                }
+            }
+        },
+    )
+}
+
+pub fn skip[I: Iterator](iterator: I, count: int) -> FnIterator[I::Item] {
+    let remaining = Ref::new(
+        if count > 0 {
+            count
+        } else {
+            0
+        },
+    );
+    FnIterator::from_fn(
+        || {
+            while remaining.get() > 0 {
+                match iterator.next() {
+                    Some(_) => remaining.set(remaining.get() - 1),
+                    None => {
+                        remaining.set(0);
+                        return Option::None
+                    },
+                }
+            };
+            iterator.next()
+        },
+    )
+}
+
+pub fn skip_while[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> FnIterator[T]
+where
+    I::Item = T,
+{
+    let skipping = Ref::new(true);
+    FnIterator::from_fn(
+        || {
+            loop {
+                match iterator.next() {
+                    Some(value) => if skipping.get() && predicate(value) {
+                        ()
+                    } else {
+                        skipping.set(false);
+                        return Option::Some(value)
+                    },
+                    None => return Option::None,
+                }
+            };
+            Option::None
+        },
+    )
+}
+
+pub fn enumerate[I: Iterator](iterator: I) -> FnIterator[(int, I::Item)] {
+    let index = Ref::new(0);
+    FnIterator::from_fn(
+        || {
+            match iterator.next() {
+                Some(value) => {
+                    let current = index.get();
+                    index.set(current + 1);
+                    Option::Some((current, value))
+                },
+                None => Option::None,
+            }
+        },
+    )
+}
+
+pub fn zip[A: Iterator, B: Iterator](left: A, right: B) -> FnIterator[(A::Item, B::Item)] {
+    FnIterator::from_fn(
+        || {
+            match left.next() {
+                Some(left_value) => match right.next() {
+                    Some(right_value) => Option::Some((left_value, right_value)),
+                    None => Option::None,
+                },
+                None => Option::None,
+            }
+        },
+    )
+}
+
+pub fn chain[T, A: Iterator, B: Iterator](first: A, second: B) -> FnIterator[T]
+where
+    A::Item = T,
+    B::Item = T,
+{
+    let first_done = Ref::new(false);
+    FnIterator::from_fn(
+        || {
+            if !first_done.get() {
+                match first.next() {
+                    Some(value) => return Option::Some(value),
+                    None => first_done.set(true),
+                }
+            } else {
+                ()
+            };
+            second.next()
+        },
+    )
+}
+
+pub fn inspect[T, I: Iterator](iterator: I, action: (T) -> unit) -> FnIterator[T] where I::Item = T {
+    FnIterator::from_fn(
+        || {
+            match iterator.next() {
+                Some(value) => {
+                    action(value);
+                    Option::Some(value)
+                },
+                None => Option::None,
+            }
+        },
+    )
+}
+
+pub fn map_while[A, B, I: Iterator](iterator: I, map_fn: (A) -> Option[B]) -> FnIterator[B]
+where
+    I::Item = A,
+{
+    let done = Ref::new(false);
+    FnIterator::from_fn(
+        || {
+            if done.get() {
+                Option::None
+            } else {
+                match iterator.next() {
+                    Some(value) => match map_fn(value) {
+                        Some(mapped) => Option::Some(mapped),
+                        None => {
+                            done.set(true);
+                            Option::None
+                        },
+                    },
+                    None => {
+                        done.set(true);
+                        Option::None
+                    },
+                }
+            }
+        },
+    )
+}
+
+pub fn fold[T, A, I: Iterator](iterator: I, initial: A, combine: (A, T) -> A) -> A
+where
+    I::Item = T,
+{
+    let mut accumulator = initial;
+    loop {
+        match iterator.next() {
+            Some(value) => {
+                accumulator = combine(accumulator, value);
+            },
+            None => break,
+        }
+    };
+    accumulator
+}
+
+pub fn collect[T, I: Iterator](iterator: I) -> Vec[T] where I::Item = T {
+    let values = Vec::new();
+    loop {
+        match iterator.next() {
+            Some(value) => values.push(value),
+            None => break,
+        }
+    };
+    values
+}
+
+pub fn find[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[T] where I::Item = T {
+    loop {
+        match iterator.next() {
+            Some(value) => if predicate(value) {
+                return Option::Some(value)
+            } else {
+                ()
+            },
+            None => return Option::None,
+        }
+    };
+    Option::None
+}
+
+pub fn find_map[A, B, I: Iterator](iterator: I, map_fn: (A) -> Option[B]) -> Option[B]
+where
+    I::Item = A,
+{
+    loop {
+        match iterator.next() {
+            Some(value) => match map_fn(value) {
+                Some(mapped) => return Option::Some(mapped),
+                None => (),
+            },
+            None => return Option::None,
+        }
+    };
+    Option::None
+}
+
+pub fn any[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I::Item = T {
+    find(iterator, predicate).is_some()
+}
+
+pub fn all[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> bool where I::Item = T {
+    !any(iterator, |value: T| !predicate(value))
+}
+
+pub fn count[I: Iterator](iterator: I) -> int {
+    let mut result = 0;
+    loop {
+        match iterator.next() {
+            Some(_) => {
+                result += 1;
+            },
+            None => break,
+        }
+    };
+    result
+}
+
+pub fn position[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[int]
+where
+    I::Item = T,
+{
+    let mut index = 0;
+    loop {
+        match iterator.next() {
+            Some(value) => if predicate(value) {
+                return Option::Some(index)
+            } else {
+                index += 1;
+            },
+            None => return Option::None,
+        }
+    };
+    Option::None
+}
+
+pub fn nth[I: Iterator](iterator: I, index: int) -> Option[I::Item] {
+    if index < 0 {
+        Option::None
+    } else {
+        let mut current = 0;
+        loop {
+            match iterator.next() {
+                Some(value) => if current == index {
+                    return Option::Some(value)
+                } else {
+                    current += 1;
+                },
+                None => return Option::None,
+            }
+        };
+        Option::None
+    }
+}
+
+pub fn last[I: Iterator](iterator: I) -> Option[I::Item] {
+    let mut result = Option::None;
+    loop {
+        match iterator.next() {
+            Some(value) => {
+                result = Option::Some(value);
+            },
+            None => break,
+        }
+    };
+    result
+}
+
+pub fn for_each[T, I: Iterator](iterator: I, action: (T) -> unit) -> unit where I::Item = T {
+    loop {
+        match iterator.next() {
+            Some(value) => action(value),
+            None => break,
+        }
+    }
+}
+
+pub fn reduce[T, I: Iterator](iterator: I, combine: (T, T) -> T) -> Option[T] where I::Item = T {
+    match iterator.next() {
+        Some(first) => Option::Some(fold(iterator, first, combine)),
+        None => Option::None,
+    }
+}
