@@ -110,46 +110,66 @@ fn direct_tokens(value: LocatedNode) -> Vec[LocatedToken] {
 
 fn children_of_kind(value: LocatedNode, kind: cst::NodeKind) -> Vec[LocatedNode] {
     let result: Vec[LocatedNode] = Vec::[];
-    for child in direct_nodes(value) {
-        if cst::node_kind_equal(node_kind(child), kind) {
-            result.push(child)
-        } else {
-            ()
-        }
+    let mut cursor = value.start;
+    for element in cst::node_children(value.node) {
+        match element {
+            Node(child) => if cst::node_kind_equal(cst::node_kind(child), kind) {
+                result.push(LocatedNode { node: child, start: cursor })
+            } else {
+                ()
+            },
+            Token(_) => (),
+        };
+        cursor = cursor + cst::element_byte_len(element);
     };
     result
 }
 
 fn first_child(value: LocatedNode, kind: cst::NodeKind) -> Option[LocatedNode] {
-    for child in direct_nodes(value) {
-        if cst::node_kind_equal(node_kind(child), kind) {
-            return Option::Some(child)
-        } else {
-            ()
-        }
+    let mut cursor = value.start;
+    for element in cst::node_children(value.node) {
+        match element {
+            Node(child) => if cst::node_kind_equal(cst::node_kind(child), kind) {
+                return Option::Some(LocatedNode { node: child, start: cursor })
+            } else {
+                ()
+            },
+            Token(_) => (),
+        };
+        cursor = cursor + cst::element_byte_len(element);
     };
     Option::None
 }
 
 fn tokens_of_kind(value: LocatedNode, kind: lexer::TokenKind) -> Vec[LocatedToken] {
     let result: Vec[LocatedToken] = Vec::[];
-    for token in direct_tokens(value) {
-        if lexer::token_kind_equal(token.token.kind, kind) {
-            result.push(token)
-        } else {
-            ()
-        }
+    let mut cursor = value.start;
+    for element in cst::node_children(value.node) {
+        match element {
+            Node(_) => (),
+            Token(token) => if lexer::token_kind_equal(token.kind, kind) {
+                result.push(LocatedToken { token, start: cursor })
+            } else {
+                ()
+            },
+        };
+        cursor = cursor + cst::element_byte_len(element);
     };
     result
 }
 
 fn first_token(value: LocatedNode, kind: lexer::TokenKind) -> Option[LocatedToken] {
-    for token in direct_tokens(value) {
-        if lexer::token_kind_equal(token.token.kind, kind) {
-            return Option::Some(token)
-        } else {
-            ()
-        }
+    let mut cursor = value.start;
+    for element in cst::node_children(value.node) {
+        match element {
+            Node(_) => (),
+            Token(token) => if lexer::token_kind_equal(token.kind, kind) {
+                return Option::Some(LocatedToken { token, start: cursor })
+            } else {
+                ()
+            },
+        };
+        cursor = cursor + cst::element_byte_len(element);
     };
     Option::None
 }
@@ -216,12 +236,17 @@ fn is_type_kind(kind: cst::NodeKind) -> bool {
 
 fn filtered_children(value: LocatedNode, selector: (cst::NodeKind) -> bool) -> Vec[LocatedNode] {
     let result: Vec[LocatedNode] = Vec::[];
-    for child in direct_nodes(value) {
-        if selector(node_kind(child)) {
-            result.push(child)
-        } else {
-            ()
-        }
+    let mut cursor = value.start;
+    for element in cst::node_children(value.node) {
+        match element {
+            Node(child) => if selector(cst::node_kind(child)) {
+                result.push(LocatedNode { node: child, start: cursor })
+            } else {
+                ()
+            },
+            Token(_) => (),
+        };
+        cursor = cursor + cst::element_byte_len(element);
     };
     result
 }

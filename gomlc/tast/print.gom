@@ -178,12 +178,110 @@ pub fn type_doc(value: Type) -> pretty::Doc {
     }
 }
 
+fn write_type_values(builder: text::StringBuilder, values: Vec[Type], left: string, right: string) -> unit {
+    builder.write_string(left);
+    let mut first = true;
+    for value in values {
+        if first {
+            first = false;
+            ()
+        } else {
+            builder.write_string(", ")
+        };
+        write_type_value(builder, value)
+    };
+    builder.write_string(right)
+}
+
+fn write_type_value(builder: text::StringBuilder, value: Type) -> unit {
+    match prune(value) {
+        Unit => builder.write_string("unit"),
+        Never => builder.write_string("never"),
+        Bool => builder.write_string("bool"),
+        Int => builder.write_string("int"),
+        Int8 => builder.write_string("int8"),
+        Int16 => builder.write_string("int16"),
+        Int32 => builder.write_string("int32"),
+        Int64 => builder.write_string("int64"),
+        Uint => builder.write_string("uint"),
+        Uint8 => builder.write_string("uint8"),
+        Uint16 => builder.write_string("uint16"),
+        Uint32 => builder.write_string("uint32"),
+        Uint64 => builder.write_string("uint64"),
+        Float32 => builder.write_string("float32"),
+        Float64 => builder.write_string("float64"),
+        String => builder.write_string("string"),
+        Char => builder.write_string("char"),
+        Tuple { items: values } => write_type_values(builder, values, "(", ")"),
+        Con { name } => builder.write_string(name),
+        Dyn { trait_name: name } => {
+            builder.write_string("dyn ");
+            builder.write_string(name)
+        },
+        Projection { for_ty: base, name, trait_ref: _ } => {
+            write_type_value(builder, base);
+            builder.write_string("::");
+            builder.write_string(name)
+        },
+        App { ty: base, args } => {
+            write_type_value(builder, base);
+            if args.is_empty() {
+                ()
+            } else {
+                write_type_values(builder, args, "[", "]")
+            }
+        },
+        Array { len: length, elem } => {
+            builder.write_char('[');
+            write_type_value(builder, elem);
+            builder.write_string("; ");
+            builder.write_string(length.to_string());
+            builder.write_char(']')
+        },
+        Slice { elem } => {
+            builder.write_string("Slice");
+            write_type_values(builder, Vec::[elem], "[", "]")
+        },
+        VecType { elem } => {
+            builder.write_string("Vec");
+            write_type_values(builder, Vec::[elem], "[", "]")
+        },
+        RefType { elem } => {
+            builder.write_string("Ref");
+            write_type_values(builder, Vec::[elem], "[", "]")
+        },
+        HashMap { key, value } => {
+            builder.write_string("HashMap");
+            write_type_values(builder, Vec::[key, value], "[", "]")
+        },
+        Channel { elem } => {
+            builder.write_string("Channel");
+            write_type_values(builder, Vec::[elem], "[", "]")
+        },
+        Param { name } => builder.write_string(name),
+        Func { params, ret_ty } => {
+            write_type_values(builder, params, "(", ")");
+            builder.write_string(" -> ");
+            write_type_value(builder, ret_ty)
+        },
+        Var(variable) => match variable.get() {
+            Unbound { id: _, kind: Integer } => builder.write_string("int"),
+            Unbound { id: _, kind: Float } => builder.write_string("float64"),
+            Unbound { id: _, kind: Any } => builder.write_string("<error>"),
+            Link(inner) => write_type_value(builder, inner),
+        },
+        Error => builder.write_string("<error>"),
+    }
+}
+
 pub fn write_type(builder: text::StringBuilder, value: Type) -> unit {
-    builder.write_string(pretty::compact(type_doc(value)))
+    write_type_value(builder, value)
 }
 
 fn type_text(value: Type) -> string {
-    pretty::compact(type_doc(value))
+    let builder = text::StringBuilder::new();
+    write_type(builder, value);
+    builder.finish()
 }
 
 fn diagnostic_type(value: Type) -> Type {

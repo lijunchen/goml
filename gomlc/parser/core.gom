@@ -136,11 +136,12 @@ fn current_range(parser: Parser) -> (int, int) {
 }
 
 fn new_parser(tokens: Vec[lexer::Token]) -> Parser {
+    let event_capacity = tokens.len() * 2;
     Parser {
         tokens,
         cursor: Ref::new(0),
         fuel: Ref::new(256),
-        events: Vec::[],
+        events: Vec::with_capacity(event_capacity),
         diagnostics: Vec::[],
         stuck_reported: Ref::new(false),
         depth_limit_hit: Ref::new(false),
