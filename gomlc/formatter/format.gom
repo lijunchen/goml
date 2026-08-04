@@ -23,7 +23,7 @@ fn canonical_file_ending(value: string) -> string {
         } else {
             break
         }
-    };
+    }
     if end.get() == 0 {
         ""
     } else {
@@ -33,12 +33,10 @@ fn canonical_file_ending(value: string) -> string {
 
 fn format_next_non_trivia(tokens: Vec[lexer::Token], start: int) -> Option[lexer::TokenKind] {
     for index in start..tokens.len() {
-        if lexer::token_is_trivia(tokens[index].kind) {
-            ()
-        } else {
+        if lexer::token_is_trivia(tokens[index].kind) {} else {
             return Option::Some(tokens[index].kind)
         }
-    };
+    }
     Option::None
 }
 
@@ -65,9 +63,7 @@ fn collect_statement_omissions(
             Some(Node(child)) => collect_format_omissions(child, result),
             Some(Token(token)) => if drop_semicolon && token_is(token, lexer::TokenKind::Semi) {
                 push_format_omission(result, token.start, token.end)
-            } else {
-                ()
-            },
+            } else {},
             None => (),
         }
     }
@@ -96,9 +92,7 @@ fn collect_block_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> un
             },
             Some(Token(token)) => if token_is(token, lexer::TokenKind::Semi) {
                 push_format_omission(result, token.start, token.end)
-            } else {
-                ()
-            },
+            } else {},
             None => (),
         }
     }
@@ -122,10 +116,8 @@ fn token_is_omitted(token: lexer::Token, omissions: Vec[FormatOmission]) -> bool
     for omission in omissions {
         if token.start >= omission.start && token.end <= omission.end {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -146,9 +138,7 @@ fn format_token_signature(source: string, root: LocatedNode) -> string {
                 None => false,
             };
         if lexer::token_kind_equal(token.kind, lexer::TokenKind::Whitespace) || optional_comma
-            || token_is_omitted(token, omissions) {
-            ()
-        } else {
+            || token_is_omitted(token, omissions) {} else {
             output.write_string(lexer::token_kind_name(token.kind));
             output.write_string(":");
             output.write_string(lexer::encode_text_hex(token.text));
@@ -159,10 +149,8 @@ fn format_token_signature(source: string, root: LocatedNode) -> string {
         } else if lexer::token_kind_equal(token.kind, lexer::TokenKind::LBrace)
             || lexer::token_kind_equal(token.kind, lexer::TokenKind::Semi) {
             in_where.set(false)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     output.finish()
 }
 

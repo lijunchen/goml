@@ -19,10 +19,8 @@ fn token_kind_signature(source: string, expected: lexer::TokenKind) -> string {
         if lexer::token_kind_equal(token.kind, expected) {
             output.write_string(lexer::encode_text_hex(token.text));
             output.write_string("\n")
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     output.finish()
 }
 
@@ -41,10 +39,8 @@ fn literal_signature(source: string) -> string {
             output.write_string(":");
             output.write_string(lexer::encode_text_hex(token.text));
             output.write_string("\n")
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     output.finish()
 }
 
@@ -55,13 +51,9 @@ fn has_trailing_space(source: string) -> bool {
             let previous = source.byte_get(index - 1);
             if previous == 32 || previous == 9 {
                 return true
-            } else {
-                ()
-            }
-        } else {
-            ()
-        }
-    };
+            } else {}
+        } else {}
+    }
     false
 }
 
@@ -69,10 +61,8 @@ fn has_carriage_return(source: string) -> bool {
     for index in range(0, source.byte_len()) {
         if source.byte_get(index) == 13 {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -162,9 +152,7 @@ fn formatter_goldens_match() -> unit {
                 testing::assert_eq(formatted, read_fixture(golden_path))
             };
             assert_format_invariants(source, formatted)
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 

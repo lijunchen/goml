@@ -48,7 +48,7 @@ fn child_cursor(value: LocatedNode) -> ChildCursor {
             ),
         };
         offset.set(offset.get() + length)
-    };
+    }
     ChildCursor { elements, index: Ref::new(0) }
 }
 
@@ -171,14 +171,12 @@ fn first_significant_token(value: LocatedNode) -> Option[LocatedToken] {
                 Some(token) => return Option::Some(token),
                 None => (),
             },
-            Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {
-                ()
-            } else {
+            Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {} else {
                 return Option::Some(token)
             },
             None => (),
         }
-    };
+    }
     Option::None
 }
 
@@ -191,14 +189,12 @@ fn last_significant_token(value: LocatedNode) -> Option[LocatedToken] {
                 Some(token) => result.set(Option::Some(token)),
                 None => (),
             },
-            Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {
-                ()
-            } else {
+            Some(Token(token)) => if lexer::token_is_trivia(token.token.kind) {} else {
                 result.set(Option::Some(token))
             },
             None => (),
         }
-    };
+    }
     result.get()
 }
 
@@ -208,17 +204,13 @@ fn node_has_comment(value: LocatedNode) -> bool {
         match cursor.next() {
             Some(Node(node)) => if node_has_comment(node) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
             Some(Token(token)) => if token_is(token, lexer::TokenKind::Comment) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
             None => (),
         }
-    };
+    }
     false
 }
 
@@ -257,6 +249,6 @@ fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
             Some(Node(node)) => result.push(node),
             _ => (),
         }
-    };
+    }
     result
 }

@@ -36,7 +36,7 @@ fn codepoint_width(value: string) -> int {
     let width: Ref[int] = Ref::new(0);
     for _ in value.chars() {
         width.set(width.get() + 1)
-    };
+    }
     width.get()
 }
 
@@ -69,7 +69,7 @@ fn concat(values: Vec[Doc]) -> Doc {
             },
             _ => flattened.push(value),
         }
-    };
+    }
     if flattened.is_empty() {
         Doc::Nil
     } else if flattened.len() == 1 {
@@ -123,11 +123,9 @@ fn join(separator: Doc, values: Vec[Doc]) -> Doc {
     for index in 0..values.len() {
         if index > 0 {
             result.push(separator)
-        } else {
-            ()
-        };
+        } else {};
         result.push(values[index])
-    };
+    }
     concat(result)
 }
 

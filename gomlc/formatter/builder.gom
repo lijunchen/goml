@@ -147,18 +147,14 @@ impl Parts {
     fn add_pending_newlines(self: Parts, count: int) -> unit {
         if count > self.pending_newlines.get() {
             self.pending_newlines.set(count)
-        } else {
-            ()
-        }
+        } else {}
     }
 
     fn push_line(self: Parts) -> unit {
         self.values.push(Doc::HardLine);
         if self.first.get().is_none() && self.values.len() == 1 {
             self.starts_with_line.set(true)
-        } else {
-            ()
-        };
+        } else {};
         self.last.set(Option::None);
         self.trailing_lines.set(self.trailing_lines.get() + 1);
         self.pending_newlines.set(0)
@@ -180,22 +176,16 @@ impl Parts {
                         && !value.starts_with_line
                         && needs_space(previous, current) {
                         self.values.push(text(" "))
-                    } else {
-                        ()
-                    },
+                    } else {},
                     _ => (),
                 };
                 if self.values.is_empty() && value.starts_with_line {
                     self.starts_with_line.set(true)
-                } else {
-                    ()
-                };
+                } else {};
                 self.values.push(value.doc);
                 if self.first.get().is_none() {
                     self.first.set(value.first)
-                } else {
-                    ()
-                };
+                } else {};
                 self.last.set(value.last);
                 self.trailing_lines.set(value.trailing_lines);
                 self.pending_newlines.set(0)
@@ -220,9 +210,7 @@ impl Parts {
                 self.ensure_lines(2)
             } else if !self.values.is_empty() {
                 self.ensure_lines(1)
-            } else {
-                ()
-            };
+            } else {};
             self.values.push(verbatim(value.token.text));
             self.trailing_lines.set(0);
             self.push_line()
@@ -255,16 +243,13 @@ fn format_generic_with_options(
                 output.add_pending_newlines(whitespace_newlines(token.token.text))
             } else if token_is(token, lexer::TokenKind::Comment) {
                 output.push_comment(token)
-            } else if skip_direct_comma && token_is(token, lexer::TokenKind::Comma) {
-                ()
-            } else if skip_direct_semicolon && token_is(token, lexer::TokenKind::Semi) {
-                ()
-            } else {
+            } else if skip_direct_comma && token_is(token, lexer::TokenKind::Comma) {} else if skip_direct_semicolon
+                && token_is(token, lexer::TokenKind::Semi) {} else {
                 output.push_token(token)
             },
             None => (),
         }
-    };
+    }
     output.finish()
 }
 

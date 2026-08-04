@@ -9,9 +9,7 @@ use std::text;
 fn assert_no_diagnostics(value: Analysis) -> unit {
     if value.checked.diagnostics.len() > 0 {
         testing::fail(value.checked.diagnostics.get(0).message)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn last_substring(value: string, expected: string) -> Option[int] {
@@ -20,11 +18,9 @@ fn last_substring(value: string, expected: string) -> Option[int] {
     while index.get() + expected.byte_len() <= value.byte_len() {
         if value.byte_slice(index.get(), index.get() + expected.byte_len()) == expected {
             result.set(Option::Some(index.get()))
-        } else {
-            ()
-        };
+        } else {};
         index.set(index.get() + 1)
-    };
+    }
     result.get()
 }
 
@@ -33,10 +29,8 @@ fn has_completion(values: Vec[CompletionItem], expected: string) -> bool {
     for value in values {
         if value.label == expected {
             found.set(true)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     found.get()
 }
 
@@ -46,12 +40,10 @@ fn completion_labels(values: Vec[CompletionItem]) -> string {
     for value in values {
         if count.get() > 0 {
             builder.write_string(", ")
-        } else {
-            ()
-        };
+        } else {};
         builder.write_string(value.label);
         count.set(count.get() + 1)
-    };
+    }
     builder.finish()
 }
 
@@ -257,9 +249,7 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
         Some(offset) => {
             match goto_definition(analysis, offset) {
                 Some(definition) => {
-                    if definition.source_path.ends_with("/events/events.gom") {
-                        ()
-                    } else {
+                    if definition.source_path.ends_with("/events/events.gom") {} else {
                         testing::fail(
                             "unexpected contextual variant source " + definition.source_path,
                         )
@@ -279,9 +269,7 @@ fn resolves_contextual_pattern_variant_definitions() -> unit {
                 },
             };
             match hover(analysis, offset) {
-                Some(result) => if result.contents.contains("Event") {
-                    ()
-                } else {
+                Some(result) => if result.contents.contains("Event") {} else {
                     testing::fail("unexpected contextual variant hover " + result.contents)
                 },
                 None => testing::fail("expected contextual variant hover"),
@@ -337,10 +325,8 @@ fn resolves_builtin_method_definitions() -> unit {
             for symbol in build_symbol_index(analysis).symbols {
                 if symbol.qualified_name == "builtin::Vec::new" {
                     expected.set(Option::Some(symbol.span))
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             match expected.get() {
                 Some(span) => {
                     testing::assert_eq(definitions.get(0).span.start, span.start);
@@ -361,10 +347,8 @@ fn resolves_builtin_method_definitions() -> unit {
             for symbol in build_symbol_index(analysis).symbols {
                 if symbol.qualified_name == "builtin::Ref::get" {
                     expected.set(Option::Some(symbol.span))
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             match expected.get() {
                 Some(span) => {
                     testing::assert_eq(definitions.get(0).span.start, span.start);
@@ -484,10 +468,8 @@ fn returns_inlay_hints_for_closure_parameters() -> unit {
     for hint in hints {
         if source.byte_slice(hint.span.start, hint.span.end) == "value" && hint.label == ": int" {
             found.set(true)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     testing::assert(found.get())
 }
 
@@ -560,9 +542,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         Some(offset) => if has_completion(
             completions(analyze("main.gom", static_source), offset + "with_".byte_len()),
             "with_capacity",
-        ) {
-            ()
-        } else {
+        ) {} else {
             testing::fail("expected Vec with_capacity completion")
         },
         None => testing::fail("expected Vec static member"),
@@ -572,9 +552,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         Some(offset) => if has_completion(
             completions(analyze("main.gom", int_source), offset + 3),
             "to_string",
-        ) {
-            ()
-        } else {
+        ) {} else {
             testing::fail("expected int to_string completion")
         },
         None => testing::fail("expected int member"),
@@ -584,9 +562,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         Some(offset) => if has_completion(
             completions(analyze("main.gom", string_source), offset + "value.con".byte_len()),
             "contains",
-        ) {
-            ()
-        } else {
+        ) {} else {
             testing::fail("expected string contains completion")
         },
         None => testing::fail("expected string member"),
@@ -596,9 +572,7 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
         Some(offset) => if has_completion(
             completions(analyze("main.gom", vec_source), offset + "values.p".byte_len()),
             "push",
-        ) {
-            ()
-        } else {
+        ) {} else {
             testing::fail("expected Vec push completion")
         },
         None => testing::fail("expected Vec member"),
@@ -615,15 +589,11 @@ fn completes_builtin_and_dyn_trait_members() -> unit {
             for symbol in build_symbol_index(analysis).symbols {
                 if symbol.name == "show" {
                     method_found.set(true)
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             testing::assert(method_found.get());
             let items = completions(analysis, offset + "value.sh".byte_len());
-            if has_completion(items, "show") {
-                ()
-            } else {
+            if has_completion(items, "show") {} else {
                 testing::fail("expected dyn show completion, got " + completion_labels(items))
             }
         },
@@ -776,17 +746,13 @@ fn indexes_completes_and_hovers_type_aliases_and_constants() -> unit {
         match symbol.kind {
             TypeAlias => if symbol.name == "Count" {
                 alias_found.set(true)
-            } else {
-                ()
-            },
+            } else {},
             Constant => if symbol.name == "answer" {
                 constant_found.set(true)
-            } else {
-                ()
-            },
+            } else {},
             _ => (),
         }
-    };
+    }
     testing::assert(alias_found.get());
     testing::assert(constant_found.get());
     match last_substring(source, "ans") {
@@ -838,7 +804,7 @@ fn resolves_external_registry_packages_with_mvs() -> unit {
             Ok(()) => (),
             Err(error) => testing::fail(error),
         }
-    };
+    }
     write_query_fixture(
         registry + "/index.toml",
         "[modules.\"alice::http\"]\nlatest = \"1.0.0\"\nversions = [\"1.0.0\"]\n\n[modules.\"alice::shared\"]\nlatest = \"2.0.0\"\nversions = [\"1.0.0\", \"2.0.0\"]\n",
@@ -875,10 +841,8 @@ fn resolves_external_registry_packages_with_mvs() -> unit {
             for module in modules {
                 if module.name == "alice::shared" {
                     selected.set(module.version)
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             testing::assert_eq(selected.get(), "2.0.0")
         },
         Err(error) => testing::fail(error),

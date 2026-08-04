@@ -8,27 +8,21 @@ fn direct_operator(node: LocatedNode) -> Option[LocatedToken] {
         match cursor.next() {
             Some(Token(token)) => if !lexer::token_is_trivia(token.token.kind) {
                 return Option::Some(token)
-            } else {
-                ()
-            },
+            } else {},
             _ => (),
         }
-    };
+    }
     Option::None
 }
 
 fn format_binary(value: Builder, node: LocatedNode) -> BuiltDoc {
     if node_has_comment(node) {
         return format_generic(value, node)
-    } else {
-        ()
-    };
+    } else {};
     let children = direct_nodes(node);
     if children.len() != 2 {
         return format_generic(value, node)
-    } else {
-        ()
-    };
+    } else {};
     let Some(operator) = direct_operator(node) else {
         return format_generic(value, node)
     };
@@ -50,15 +44,11 @@ fn format_binary(value: Builder, node: LocatedNode) -> BuiltDoc {
 fn format_prefix(value: Builder, node: LocatedNode) -> BuiltDoc {
     if node_has_comment(node) {
         return format_generic(value, node)
-    } else {
-        ()
-    };
+    } else {};
     let children = direct_nodes(node);
     if children.len() != 1 {
         return format_generic(value, node)
-    } else {
-        ()
-    };
+    } else {};
     let Some(operator) = direct_operator(node) else {
         return format_generic(value, node)
     };

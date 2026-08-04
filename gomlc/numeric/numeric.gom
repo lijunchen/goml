@@ -61,9 +61,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
                 || !integer_digit_in_base(value.byte_get(index - 1), base)
                 || !integer_digit_in_base(value.byte_get(index + 1), base) {
                 return Option::None
-            } else {
-                ()
-            }
+            } else {}
         } else {
             match integer_digit(source) {
                 Some(part) => if part < base {
@@ -73,7 +71,7 @@ pub fn normalize_integer(value: string) -> Option[string] {
                         let current = digits[position] * base + carry;
                         digits[position] = current % 10;
                         carry = current / 10;
-                    };
+                    }
                     while carry > 0 {
                         digits.push(carry % 10);
                         carry = carry / 10;
@@ -84,14 +82,14 @@ pub fn normalize_integer(value: string) -> Option[string] {
                 None => return Option::None,
             }
         }
-    };
+    }
     if !found {
         Option::None
     } else {
         let builder = text::StringBuilder::with_capacity(digits.len());
         for offset in 0..digits.len() {
             builder.write_string(decimal_digit(digits[digits.len() - offset - 1]))
-        };
+        }
         Option::Some(builder.finish())
     }
 }

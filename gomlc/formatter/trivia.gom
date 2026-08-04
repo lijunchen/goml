@@ -7,10 +7,8 @@ fn whitespace_newlines(value: string) -> int {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'\n' {
             count.set(count.get() + 1)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     count.get()
 }
 
@@ -19,10 +17,8 @@ fn trivia_newlines(values: Vec[LocatedToken]) -> int {
     for value in values {
         if token_is(value, lexer::TokenKind::Whitespace) {
             count.set(count.get() + whitespace_newlines(value.token.text))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     count.get()
 }
 
@@ -30,9 +26,7 @@ fn trivia_has_comment(values: Vec[LocatedToken]) -> bool {
     for value in values {
         if token_is(value, lexer::TokenKind::Comment) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }

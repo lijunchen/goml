@@ -5,6 +5,6 @@ use gomlc::resources;
 fn append_builtin_navigation_sources(values: Vec[SourceFile]) -> Result[unit, string] {
     for value in resources::builtin_sources()? {
         values.push(SourceFile { path: value.path, source: value.source, package_name: "builtin" })
-    };
+    }
     Result::Ok(())
 }

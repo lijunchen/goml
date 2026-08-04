@@ -50,7 +50,7 @@ fn document_index(value: Server, uri: string) -> Option[int] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -97,7 +97,7 @@ fn source_overrides(value: Server) -> Vec[query::SourceOverride] {
     let result: Vec[query::SourceOverride] = Vec::[];
     for document in value.documents {
         result.push(query::SourceOverride { path: document.path, source: document.text })
-    };
+    }
     result
 }
 
@@ -110,7 +110,7 @@ pub fn document_analysis(value: Server, document: Document) -> query::Analysis {
         } else {
             index = index - 1;
         }
-    };
+    }
     let analysis = query::analyze_with_overrides(
         document.path,
         document.text,

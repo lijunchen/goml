@@ -54,7 +54,7 @@ fn index_node(
                 cursor = token_end;
             },
         }
-    };
+    }
     end
 }
 
@@ -78,7 +78,7 @@ pub fn token_at(index: SyntaxIndex, offset: int) -> Option[SyntaxToken] {
         } else {
             cursor = cursor - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -90,10 +90,8 @@ pub fn node_at(index: SyntaxIndex, offset: int) -> Option[SyntaxNode] {
         if contains_offset(node.start, node.end, offset)
             && (best < 0 || node_width <= index.nodes[best].end - index.nodes[best].start) {
             best = candidate;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if best >= 0 {
         Option::Some(index.nodes[best])
     } else {
@@ -109,10 +107,8 @@ pub fn node_at_kind(index: SyntaxIndex, offset: int, kind: cst::NodeKind) -> Opt
         if cst::node_kind_equal(node.kind, kind) && node.start <= offset && offset < node.end
             && (best < 0 || node_width < index.nodes[best].end - index.nodes[best].start) {
             best = candidate;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if best >= 0 {
         Option::Some(index.nodes[best])
     } else {

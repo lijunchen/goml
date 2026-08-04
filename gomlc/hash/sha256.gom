@@ -109,7 +109,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
     let mut padded_len = value.len() + 9;
     while padded_len % 64 != 0 {
         padded_len += 1;
-    };
+    }
     let bit_len = (value.len() as uint64) * 8;
     let mut h0 = 1779033703;
     let mut h1 = 3144134277;
@@ -122,18 +122,18 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
     let words: Vec[uint32] = Vec::with_capacity(64);
     for _ in 0..64 {
         words.push(0)
-    };
+    }
     for chunk in 0..padded_len / 64 {
         for index in 0..16 {
             words[index] = message_word(value, chunk * 64 + index * 4, padded_len, bit_len);
-        };
+        }
         for index in 16..64 {
             let first = words[index - 15];
             let second = words[index - 2];
             let sigma0 = rotate_right(first, 7) ^ rotate_right(first, 18) ^ (first >> 3);
             let sigma1 = rotate_right(second, 17) ^ rotate_right(second, 19) ^ (second >> 10);
             words[index] = words[index - 16] + sigma0 + words[index - 7] + sigma1;
-        };
+        }
         let mut a = h0;
         let mut b = h1;
         let mut c = h2;
@@ -157,7 +157,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
             c = b;
             b = a;
             a = temp1 + temp2;
-        };
+        }
         h0 += a;
         h1 += b;
         h2 += c;
@@ -166,7 +166,7 @@ pub fn sha256_bytes_hex(value: bytes::Bytes) -> string {
         h5 += f;
         h6 += g;
         h7 += h;
-    };
+    }
     let builder = text::StringBuilder::with_capacity(64);
     write_hex_word(builder, h0);
     write_hex_word(builder, h1);

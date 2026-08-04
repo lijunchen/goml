@@ -33,12 +33,10 @@ fn hover_function_text(generics: Vec[string], params: Vec[tast::Type], ret_ty: t
             for generic in generics {
                 if index > 0 {
                     builder.write_string(", ")
-                } else {
-                    ()
-                };
+                } else {};
                 builder.write_string(short_type_name(generic));
                 index = index + 1;
-            };
+            }
             builder.write_string("] ");
             builder.write_string(signature);
             Option::Some(builder.finish())
@@ -100,9 +98,9 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                     } else {
                         function_index = function_index - 1;
                     }
-                };
+                }
                 environment_index = environment_index - 1;
-            };
+            }
             Option::None
         },
         Method => {
@@ -121,9 +119,9 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                     } else {
                         method_index = method_index - 1;
                     }
-                };
+                }
                 environment_index = environment_index - 1;
-            };
+            }
             Option::None
         },
         Field => {
@@ -144,14 +142,12 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                             } else {
                                 field_index = field_index - 1;
                             }
-                        };
-                    } else {
-                        ()
-                    }
+                        }
+                    } else {}
                     definition_index = definition_index - 1;
-                };
+                }
                 environment_index = environment_index - 1;
-            };
+            }
             Option::None
         },
         Variant => Option::Some(short_type_name(symbol_owner(symbol.qualified_name))),
@@ -168,9 +164,9 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                     } else {
                         constant_index = constant_index - 1;
                     }
-                };
+                }
                 environment_index = environment_index - 1;
-            };
+            }
             Option::None
         },
         TypeAlias => {
@@ -186,9 +182,9 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                     } else {
                         alias_index = alias_index - 1;
                     }
-                };
+                }
                 environment_index = environment_index - 1;
-            };
+            }
             Option::None
         },
         Struct | Enum | Trait => {
@@ -208,7 +204,7 @@ fn symbol_at_offset(value: Analysis, offset: int) -> Option[Symbol] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -228,10 +224,8 @@ pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
                 },
                 None => (),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for fact in value.checked.typeck_results.exprs {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact_contains(fact.span, offset)
@@ -245,10 +239,8 @@ pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
                 },
                 None => (),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for fact in value.checked.typeck_results.pats {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact_contains(fact.span, offset)
@@ -262,10 +254,8 @@ pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
                 },
                 None => (),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     match result {
         Some(result) => Option::Some(result),
         None => match symbol_at_offset(value, offset) {

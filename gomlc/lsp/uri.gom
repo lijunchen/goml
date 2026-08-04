@@ -32,7 +32,7 @@ pub fn path_to_uri(value: string) -> string {
             builder.write_char(uri_hex(byte / 16));
             builder.write_char(uri_hex(byte % 16))
         }
-    };
+    }
     builder.finish()
 }
 
@@ -76,7 +76,7 @@ pub fn uri_to_path(value: string) -> Result[string, string] {
                 decoded_bytes.push(byte);
                 index = index + 1;
             }
-        };
+        }
         match bytes::Bytes::from_vec(decoded_bytes).to_string() {
             Ok(decoded) => Result::Ok(path::clean(decoded)),
             Err(_) => Result::Err("URI path is not valid UTF-8"),

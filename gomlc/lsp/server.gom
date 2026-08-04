@@ -116,7 +116,7 @@ fn source_for_path(analysis: query::Analysis, source_path: string) -> Option[str
         } else {
             index = index - 1;
         }
-    };
+    }
     match fs::read_file(source_path) {
         Ok(source) => Option::Some(source),
         Err(_) => Option::None,
@@ -164,20 +164,14 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
                 Warning => "+ ",
             }
                 + diagnostic_text(diagnostic);
-            if collections::contains(diagnostic_lines, line) {
-                ()
-            } else {
+            if collections::contains(diagnostic_lines, line) {} else {
                 diagnostic_lines.push(line)
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if !diagnostic_lines.is_empty() {
         sections.push("**Diagnostics**\n```diff\n" + join_strings(diagnostic_lines, "\n") + "\n```")
-    } else {
-        ()
-    };
+    } else {};
     if sections.is_empty() {
         Result::Ok(json::Value::Null)
     } else {
@@ -217,7 +211,7 @@ fn completion_response(server: Server, params: json::Value) -> Result[json::Valu
         push_json_field(fields, "detail", json::Value::String(item.detail));
         push_json_field(fields, "kind", json::Value::Number(completion_kind(item.kind).to_string()));
         result.push(json::Value::Object(fields))
-    };
+    }
     Result::Ok(json::Value::Array(result))
 }
 
@@ -233,7 +227,7 @@ fn signature_response(server: Server, params: json::Value) -> Result[json::Value
                 let fields: Vec[(string, json::Value)] = Vec::[];
                 push_json_field(fields, "label", json::Value::String(parameter));
                 parameters.push(json::Value::Object(fields))
-            };
+            }
             let item: Vec[(string, json::Value)] = Vec::[];
             push_json_field(item, "label", json::Value::String(signature.label));
             push_json_field(item, "parameters", json::Value::Array(parameters));
@@ -267,7 +261,7 @@ fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, st
                 && (document.text.byte_get(position - 1) == b' '
                     || document.text.byte_get(position - 1) == b'\t') {
                 position = position - 1;
-            };
+            }
             let fields: Vec[(string, json::Value)] = Vec::[];
             push_json_field(
                 fields,
@@ -278,10 +272,8 @@ fn inlay_response(server: Server, params: json::Value) -> Result[json::Value, st
             push_json_field(fields, "kind", json::Value::Number("1"));
             push_json_field(fields, "paddingRight", json::Value::Bool(true));
             result.push(json::Value::Object(fields))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Result::Ok(json::Value::Array(result))
 }
 
@@ -309,7 +301,7 @@ fn definition_response(server: Server, params: json::Value) -> Result[json::Valu
             },
             None => (),
         }
-    };
+    }
     if locations.is_empty() {
         Result::Ok(json::Value::Null)
     } else if locations.len() == 1 {
@@ -346,7 +338,7 @@ fn code_lens_response(server: Server, params: json::Value) -> Result[json::Value
         );
         push_json_field(lens, "command", json::Value::Object(command));
         result.push(json::Value::Object(lens))
-    };
+    }
     Result::Ok(json::Value::Array(result))
 }
 
@@ -412,7 +404,7 @@ fn code_action_response(params: json::Value) -> Result[json::Value, string] {
             },
             None => (),
         }
-    };
+    }
     if actions.is_empty() {
         Result::Ok(json::Value::Null)
     } else {
@@ -467,12 +459,10 @@ fn diagnostic_json(document: Document, analysis: query::Analysis, value: tast::D
             },
             None => (),
         }
-    };
+    }
     if !related.is_empty() {
         push_json_field(fields, "relatedInformation", json::Value::Array(related))
-    } else {
-        ()
-    };
+    } else {};
     json::Value::Object(fields)
 }
 
@@ -482,10 +472,8 @@ fn publish_diagnostics(server: Server, document: Document) -> json::Value {
     for diagnostic in analysis.checked.diagnostics {
         if diagnostic.source_path == "" || diagnostic.source_path == document.path {
             diagnostics.push(diagnostic_json(document, analysis, diagnostic))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let params: Vec[(string, json::Value)] = Vec::[];
     push_json_field(params, "uri", json::Value::String(document.uri));
     push_json_field(params, "version", json::Value::Number(document.version.to_string()));
@@ -497,7 +485,7 @@ fn publish_all_diagnostics(server: Server) -> Vec[json::Value] {
     let result: Vec[json::Value] = Vec::[];
     for document in server.documents {
         result.push(publish_diagnostics(server, document))
-    };
+    }
     result
 }
 
@@ -531,9 +519,7 @@ fn did_change(server: Server, params: json::Value) -> Result[json::Value, string
     };
     if changes.is_empty() {
         return Result::Err("contentChanges must not be empty")
-    } else {
-        ()
-    };
+    } else {};
     let text = required_string_field(changes[changes.len() - 1], "text")?;
     change_document(server, uri, text, version);
     match server_document(server, uri) {
@@ -603,9 +589,8 @@ pub fn handle_json(server: Server, value: json::Value) -> Vec[json::Value] {
             }
         } else if message.method == "exit" {
             server.running.set(false)
-        } else if message.method == "initialized" {
-            ()
-        } else if message.method == "textDocument/didOpen" {
+        } else if message.method == "initialized" {} else if message.method
+            == "textDocument/didOpen" {
             match did_open(server, message.params) {
                 Ok(_) => for notification in publish_all_diagnostics(server) {
                     output.push(notification)
@@ -677,7 +662,7 @@ pub fn run_server() -> Result[unit, string] {
             },
             Err(error) => return Result::Err(error),
         }
-    };
+    }
     if server.shutdown.get() {
         Result::Ok(())
     } else {

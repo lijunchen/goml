@@ -40,10 +40,8 @@ fn first_identifier(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken
         if token_is_inside_node(token, node)
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Ident) {
             return Option::Some(token)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -80,10 +78,8 @@ fn first_type_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[Syntax
                 || token.text.byte_get(0) == b'_')
             && token.text != "dyn" {
             return Option::Some(token)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -101,7 +97,7 @@ fn owner_name_token(syntax: SyntaxIndex, node: SyntaxNode) -> Option[SyntaxToken
             } else {
                 index = index - 1;
             }
-        };
+        }
         first_identifier(syntax, node)
     } else {
         first_identifier(syntax, node)
@@ -155,7 +151,7 @@ fn parent_with_kind(
             },
             None => (),
         }
-    };
+    }
     Option::None
 }
 
@@ -188,10 +184,8 @@ fn node_has_token(syntax: SyntaxIndex, node: SyntaxNode, kind: lexer::TokenKind)
     for token in syntax.tokens {
         if token_is_inside_node(token, node) && lexer::token_kind_equal(token.kind, kind) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -253,7 +247,7 @@ pub fn build_symbol_index_from_sources(sources: Vec[SourceFile]) -> SymbolIndex 
     let symbols: Vec[Symbol] = Vec::[];
     for source in sources {
         index_source(source, symbols)
-    };
+    }
     SymbolIndex { symbols }
 }
 
@@ -266,19 +260,15 @@ pub fn find_symbol(index: SymbolIndex, qualified_name: string) -> Option[Symbol]
         let symbol = index.symbols[index.symbols.len() - 1 - offset];
         if symbol.qualified_name == qualified_name {
             return Option::Some(symbol)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let suffixes: Vec[Symbol] = Vec::[];
     for symbol in index.symbols {
         if symbol_name_ends_with(qualified_name, symbol.qualified_name)
             || symbol_name_ends_with(symbol.qualified_name, qualified_name) {
             suffixes.push(symbol)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if suffixes.len() == 1 {
         Option::Some(suffixes[0])
     } else {

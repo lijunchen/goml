@@ -37,10 +37,8 @@ fn quoted_values(value: string) -> Vec[string] {
                     start = Option::Some(index + 1);
                 },
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -52,7 +50,7 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
         let mut end = cursor;
         while end < source.byte_len() && source.byte_get(end) != b'\n' {
             end = end + 1;
-        };
+        }
         let line = trim_ascii(source.byte_slice(cursor, end));
         if line.starts_with("[") {
             in_dependencies = line == "[dependencies]";
@@ -60,18 +58,14 @@ fn manifest_dependencies(source: string) -> Vec[DependencyRequirement] {
             let values = quoted_values(line);
             if values.len() >= 2 {
                 result.push(DependencyRequirement { name: values[0], version: values[1] })
-            } else {
-                ()
-            }
-        } else {
-            ()
-        };
+            } else {}
+        } else {};
         if end == source.byte_len() {
             cursor = source.byte_len() + 1;
         } else {
             cursor = end + 1;
         }
-    };
+    }
     result
 }
 
@@ -88,7 +82,7 @@ fn decimal_number(value: string) -> Option[int] {
             } else {
                 result = result * 10 + (byte - b'0') as int;
             }
-        };
+        }
         Option::Some(result)
     }
 }
@@ -100,10 +94,8 @@ fn parse_sem_version(value: string) -> Option[SemVersion] {
         if index == value.byte_len() || value.byte_get(index) == b'.' {
             parts.push(value.byte_slice(start, index));
             start = index + 1;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if parts.len() != 3 {
         Option::None
     } else {
@@ -178,7 +170,7 @@ fn registry_versions(root: string, module_name: string) -> Result[Vec[string], s
         let mut end = cursor;
         while end < source.byte_len() && source.byte_get(end) != b'\n' {
             end = end + 1;
-        };
+        }
         let line = trim_ascii(source.byte_slice(cursor, end));
         if line.starts_with("[") {
             let names = quoted_values(line);
@@ -187,15 +179,13 @@ fn registry_versions(root: string, module_name: string) -> Result[Vec[string], s
             for version in quoted_values(line) {
                 result.push(version)
             }
-        } else {
-            ()
-        };
+        } else {};
         if end == source.byte_len() {
             cursor = source.byte_len() + 1;
         } else {
             cursor = end + 1;
         }
-    };
+    }
     if result.is_empty() {
         Result::Err("module " + module_name + " not found in registry index")
     } else {
@@ -222,12 +212,10 @@ fn select_registry_version(root: string, requirement: DependencyRequirement) -> 
                 } {
                 selected = Option::Some(version);
                 selected_version = Option::Some(parsed);
-            } else {
-                ()
-            },
+            } else {},
             None => return Result::Err("invalid registry semver `" + version + "`"),
         }
-    };
+    }
     match selected {
         Some(version) => Result::Ok(version),
         None => Result::Err(
@@ -266,7 +254,7 @@ fn selected_module_index(values: Vec[ResolvedModule], name: string) -> Option[in
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -300,9 +288,7 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
                     return Result::Err(
                         "registry module " + requirement.name + " declares module path " + name,
                     )
-                } else {
-                    ()
-                },
+                } else {},
                 None => return Result::Err(
                     "registry module " + requirement.name + " has no module path",
                 ),
@@ -317,10 +303,8 @@ fn resolve_external_modules_at(module_root: string, registry: string) -> Result[
             for dependency in manifest_dependencies(module_manifest) {
                 queue.push(dependency)
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Result::Ok(selected)
 }
 
@@ -349,10 +333,8 @@ fn external_package_directory(module: ResolvedModule, package_name: string) -> O
             if separator {
                 directory = path::join(directory, suffix.byte_slice(start, index));
                 start = index + 2;
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         Option::Some(directory)
     } else {
         Option::None
@@ -373,7 +355,7 @@ fn external_package_sources(
             },
             None => (),
         }
-    };
+    }
     Result::Err("package " + package_name + " is not provided by a resolved dependency")
 }
 
@@ -392,6 +374,6 @@ fn external_package_sources_at(
             },
             None => (),
         }
-    };
+    }
     Result::Err("package " + package_name + " is not provided by a resolved dependency")
 }

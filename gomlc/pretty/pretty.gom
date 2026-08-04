@@ -46,7 +46,7 @@ pub fn text_width(value: string) -> int {
     let width = Ref::new(0);
     for _ in value.chars() {
         width.set(width.get() + 1)
-    };
+    }
     width.get()
 }
 
@@ -66,10 +66,8 @@ pub fn text(value: string) -> Doc {
             pieces.push(raw_text(value.byte_slice(start.get(), index)));
             pieces.push(line());
             start.set(index + 1)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     pieces.push(raw_text(value.byte_slice(start.get(), value.byte_len())));
     concat(pieces)
 }
@@ -106,37 +104,33 @@ pub fn concat(values: Vec[Doc]) -> Doc {
     while index > 0 {
         index = index - 1;
         result = append(values.get(index), result);
-    };
+    }
     result
 }
 
 pub fn join(separator: Doc, values: Vec[Doc]) -> Doc {
     if values.len() == 0 {
         return nil()
-    } else {
-        ()
-    };
+    } else {};
     let mut index = values.len() - 1;
     let mut result = values.get(index);
     while index > 0 {
         index = index - 1;
         result = append(values.get(index), append(separator, result));
-    };
+    }
     result
 }
 
 pub fn folddoc(combine: (Doc, Doc) -> Doc, values: Vec[Doc]) -> Doc {
     if values.len() == 0 {
         return nil()
-    } else {
-        ()
-    };
+    } else {};
     let mut index = values.len() - 1;
     let mut result = values.get(index);
     while index > 0 {
         index = index - 1;
         result = combine(values.get(index), result);
-    };
+    }
     result
 }
 
@@ -241,7 +235,7 @@ fn copy_docs(values: Vec[Doc]) -> Vec[Doc] {
     let result = Vec::with_capacity(values.len());
     for value in values {
         result.push(value)
-    };
+    }
     result
 }
 
@@ -270,19 +264,15 @@ pub fn fillwords(value: string) -> Doc {
                 words.push(text(current.finish()));
                 current.clear();
                 inside.set(false)
-            } else {
-                ()
-            }
+            } else {}
         } else {
             current.write_char(character);
             inside.set(true)
         }
-    };
+    }
     if inside.get() {
         words.push(text(current.finish()))
-    } else {
-        ()
-    };
+    } else {};
     fill(words)
 }
 
@@ -369,9 +359,7 @@ fn fits(initial: int, initial_tasks: Tasks) -> bool {
                 },
             };
             continue
-        } else {
-            ()
-        };
+        } else {};
         match tasks {
             Done => return true,
             More(task, rest) => match task {
@@ -445,7 +433,7 @@ fn fits(initial: int, initial_tasks: Tasks) -> bool {
                 },
             },
         }
-    };
+    }
     false
 }
 
@@ -546,7 +534,7 @@ pub fn pretty(width: int, value: Doc) -> string {
                 },
             },
         }
-    };
+    }
     output.finish()
 }
 

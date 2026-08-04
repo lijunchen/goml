@@ -46,7 +46,7 @@ fn prefix_start(source: string, offset: int) -> int {
     };
     while start > 0 && identifier_byte(source.byte_get(start - 1)) {
         start = start - 1;
-    };
+    }
     start
 }
 
@@ -71,11 +71,11 @@ fn use_completion_context(source: string, offset: int) -> Option[UseCompletionCo
     let mut line_start = limit;
     while line_start > 0 && source.byte_get(line_start - 1) != b'\n' {
         line_start = line_start - 1;
-    };
+    }
     let mut content_start = line_start;
     while content_start < limit && completion_whitespace(source.byte_get(content_start)) {
         content_start = content_start + 1;
-    };
+    }
     if content_start + 4 > limit || source.byte_slice(content_start, content_start + 4) != "use " {
         Option::None
     } else {
@@ -86,13 +86,11 @@ fn use_completion_context(source: string, offset: int) -> Option[UseCompletionCo
         while namespace_end > path_start
             && completion_whitespace(source.byte_get(namespace_end - 1)) {
             namespace_end = namespace_end - 1;
-        };
+        }
         if namespace_end >= path_start + 2
             && source.byte_slice(namespace_end - 2, namespace_end) == "::" {
             namespace_end = namespace_end - 2;
-        } else {
-            ()
-        };
+        } else {};
         Option::Some(
             UseCompletionContext { namespace: source.byte_slice(path_start, namespace_end), prefix },
         )
@@ -107,19 +105,15 @@ fn contains_completion(values: Vec[CompletionItem], expected: string) -> bool {
     for value in values {
         if value.label == expected {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
 fn push_completion(values: Vec[CompletionItem], value: CompletionItem, prefix: string) -> unit {
     if label_matches(value.label, prefix) && !contains_completion(values, value.label) {
         values.push(value)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn symbol_completion_kind(value: SymbolKind) -> CompletionKind {
@@ -142,12 +136,10 @@ fn path_text(value: ast::Path) -> string {
     for segment in value.segments {
         if index > 0 {
             builder.write_string("::")
-        } else {
-            ()
-        };
+        } else {};
         builder.write_string(segment.ident);
         index = index + 1;
-    };
+    }
     builder.finish()
 }
 
@@ -173,10 +165,8 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
                     };
                     if candidate == alias {
                         return Option::Some(path_text(use_decl.path) + "::" + item.name)
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 let candidate = match use_decl.alias {
                     Some(name) => name,
                     None => last_path_segment(use_decl.path),
@@ -186,7 +176,7 @@ fn namespace_target(value: Analysis, alias: string) -> Option[string] {
                 } else {
                     index = index - 1;
                 }
-            };
+            }
             Option::None
         },
         None => Option::None,
@@ -205,7 +195,7 @@ fn namespace_path(source: string, offset: int) -> Option[string] {
             } else {
                 break
             }
-        };
+        }
         if owner_start < owner_end {
             Option::Some(source.byte_slice(owner_start, owner_end))
         } else {
@@ -224,7 +214,7 @@ fn first_namespace_segment(value: string) -> string {
         } else {
             index = index + 1;
         }
-    };
+    }
     value
 }
 
@@ -242,10 +232,8 @@ fn namespace_is_package(value: Analysis, namespace: string) -> bool {
     for source in value.sources {
         if source.package_name == namespace {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -280,10 +268,8 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
                     },
                     prefix,
                 )
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         for environment in value.environments {
             for definition in environment.enums {
                 if definition.name == canonical || definition.name == current_name
@@ -299,10 +285,8 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
                             prefix,
                         )
                     }
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             for method in environment.methods {
                 let receiver = tast::diagnostic_type_text(tast::resolve_type(method.for_type));
                 if receiver == canonical || receiver == current_name
@@ -321,11 +305,9 @@ fn complete_static_namespace(value: Analysis, namespace: string, prefix: string)
                         },
                         prefix,
                     )
-                } else {
-                    ()
-                }
+                } else {}
             }
-        };
+        }
         result
     }
 }
@@ -340,11 +322,9 @@ fn immediate_package_member(qualified_name: string, package_name: string) -> boo
         while index + 1 < remainder.byte_len() {
             if remainder.byte_get(index) == b':' && remainder.byte_get(index + 1) == b':' {
                 return false
-            } else {
-                ()
-            };
+            } else {};
             index = index + 1;
-        };
+        }
         true
     }
 }
@@ -353,10 +333,8 @@ fn analysis_has_package(value: Analysis, package_name: string) -> bool {
     for source in value.sources {
         if source.package_name == package_name {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -374,10 +352,8 @@ fn complete_namespace(value: Analysis, package_name: string, prefix: string) -> 
                 },
                 prefix,
             )
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -416,10 +392,8 @@ fn package_directory_has_source(directory: string) -> bool {
                         None => false,
                     } {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Err(_) => false,
@@ -438,9 +412,7 @@ fn complete_local_package_children(
                 let candidate = path::join(directory, name);
                 if fs::is_dir(candidate) && package_directory_has_source(candidate) {
                     push_package_completion(result, name, namespace + "::" + name, prefix)
-                } else {
-                    ()
-                }
+                } else {}
             },
             Err(_) => (),
         },
@@ -463,10 +435,8 @@ fn complete_source_package(source: SourceFile, prefix: string) -> Vec[Completion
                 },
                 prefix,
             )
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -501,9 +471,7 @@ fn complete_import_namespace(value: Analysis, context: UseCompletionContext) -> 
             if context.namespace == project.module_path
                 || context.namespace.starts_with(project.module_path + "::") {
                 complete_local_package_children(result, project, context.namespace, context.prefix)
-            } else {
-                ()
-            };
+            } else {};
             match fs::read_file(path::join(project.module_root, "goml.toml")) {
                 Ok(manifest) => for dependency in manifest_dependencies(manifest) {
                     match namespace_next_segment(dependency.name, context.namespace) {
@@ -531,11 +499,9 @@ fn short_type_name(value: string) -> string {
         if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
             start = index + 2;
             index = index + 1;
-        } else {
-            ()
-        };
+        } else {};
         index = index + 1;
-    };
+    }
     value.byte_slice(start, value.byte_len())
 }
 
@@ -544,10 +510,8 @@ fn significant_token_before(value: Analysis, offset: int) -> Option[SyntaxToken]
         let token = value.syntax.tokens[value.syntax.tokens.len() - 1 - distance];
         if token.end <= offset && !lexer::token_is_trivia(token.kind) {
             return Option::Some(token)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -561,10 +525,8 @@ fn reference_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[ta
                 Error => (),
                 _ => return Option::Some(fact.ty),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -576,15 +538,11 @@ fn local_receiver_fallback(value: Analysis, token: SyntaxToken) -> Option[tast::
             match fact.span {
                 Some(span) => if span.start < token.start {
                     return Option::Some(fact.ty)
-                } else {
-                    ()
-                },
+                } else {},
                 None => (),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -600,10 +558,8 @@ fn receiver_type(value: Analysis, dot: int) -> Option[tast::Type] {
                     && fact_width <= width {
                     result = Option::Some(fact.ty);
                     width = fact_width;
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             match result {
                 Some(ty) => match tast::resolve_type(ty) {
                     Error => {
@@ -667,7 +623,7 @@ fn parameter_explicit_type(parameters: Vec[(string, ast::TypeExpr)], name: strin
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -678,38 +634,30 @@ fn source_explicit_receiver_type(source: string, name: string, limit: int) -> Op
             let mut cursor = index + name.byte_len();
             while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
                 cursor = cursor + 1;
-            };
+            }
             if cursor < limit && source.byte_get(cursor) == b':' {
                 cursor = cursor + 1;
                 while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
                     cursor = cursor + 1;
-                };
+                }
                 if cursor + 3 <= limit && source.byte_slice(cursor, cursor + 3) == "dyn" {
                     cursor = cursor + 3;
                     while cursor < limit && completion_whitespace(source.byte_get(cursor)) {
                         cursor = cursor + 1;
                     }
-                } else {
-                    ()
-                };
+                } else {};
                 let type_start = cursor;
                 while cursor < limit
                     && (identifier_byte(source.byte_get(cursor)) || source.byte_get(cursor) == b':') {
                     cursor = cursor + 1;
-                };
+                }
                 if cursor > type_start {
                     return Option::Some(source.byte_slice(type_start, cursor))
-                } else {
-                    ()
-                }
-            } else {
-                ()
-            }
-        } else {
-            ()
-        };
+                } else {}
+            } else {}
+        } else {};
         index = index - 1;
-    };
+    }
     Option::None
 }
 
@@ -728,7 +676,6 @@ fn file_parameter_explicit_type(file: ast::File, name: string) -> Option[string]
                         Some(value) => return Option::Some(value),
                         None => {
                             method_index -= 1;
-                            ()
                         },
                     }
                 }
@@ -736,7 +683,7 @@ fn file_parameter_explicit_type(file: ast::File, name: string) -> Option[string]
             _ => (),
         };
         item_index = item_index - 1;
-    };
+    }
     Option::None
 }
 
@@ -780,10 +727,8 @@ fn complete_named_methods(
                 },
                 prefix,
             )
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for environment in value.environments {
         for definition in environment.traits {
             if definition.name == receiver_name
@@ -801,9 +746,7 @@ fn complete_named_methods(
                         prefix,
                     )
                 }
-            } else {
-                ()
-            }
+            } else {}
         }
     }
 }
@@ -833,10 +776,8 @@ fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[Completion
                                 prefix,
                             )
                         }
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 for method in environment.methods {
                     let method_receiver = type_owner_name(method.for_type);
                     if method_receiver == receiver_name
@@ -855,10 +796,8 @@ fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[Completion
                             },
                             prefix,
                         )
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 match tast::resolve_type(receiver) {
                     Dyn { trait_name, .. } => for definition in environment.traits {
                         if definition.name == trait_name
@@ -879,13 +818,11 @@ fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[Completion
                                     prefix,
                                 )
                             }
-                        } else {
-                            ()
-                        }
+                        } else {}
                     },
                     _ => (),
                 }
-            };
+            }
             match explicit_receiver_type(value, dot) {
                 Some(receiver_name) => complete_named_methods(result, value, receiver_name, prefix),
                 None => (),
@@ -914,10 +851,8 @@ fn containing_completion_scope(syntax: SyntaxIndex, span: ast::Span) -> Option[S
         if completion_scope_kind(node.kind) && node.start <= span.start && node.end >= span.end
             && (best < 0 || node_width < syntax.nodes[best].end - syntax.nodes[best].start) {
             best = candidate;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if best >= 0 {
         Option::Some(syntax.nodes[best])
     } else {
@@ -943,17 +878,13 @@ fn local_completion_index(values: Vec[CompletionItem], label: string) -> Option[
         let index = values.len() - 1 - offset;
         if values[index].label == label {
             return Option::Some(index)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
 fn push_local_completion(values: Vec[CompletionItem], value: CompletionItem, prefix: string) -> unit {
-    if !label_matches(value.label, prefix) {
-        ()
-    } else {
+    if !label_matches(value.label, prefix) {} else {
         match local_completion_index(values, value.label) {
             Some(index) => values.set(index, value),
             None => values.push(value),
@@ -976,15 +907,11 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
                         },
                         prefix,
                     )
-                } else {
-                    ()
-                },
+                } else {},
                 None => (),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for symbol in build_symbol_index(value).symbols {
         if immediate_package_member(symbol.qualified_name, value.package_name)
             && (symbol.package_name == value.package_name || symbol.public) {
@@ -997,10 +924,8 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
                 },
                 prefix,
             )
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let lowered = ast::lower(parser::parse(value.source));
     match lowered.ast {
         Some(file) => for import in file.uses {
@@ -1019,9 +944,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
                     },
                     prefix,
                 )
-            } else {
-                ()
-            }
+            } else {}
         },
         None => (),
     };
@@ -1073,7 +996,7 @@ fn complete_scope(value: Analysis, offset: int, prefix: string) -> Vec[Completio
             CompletionItem { label: keyword, detail: "", kind: CompletionKind::Keyword },
             prefix,
         )
-    };
+    }
     result
 }
 
@@ -1085,7 +1008,7 @@ fn previous_completion_byte(source: string, end: int) -> Option[int] {
     let mut index = end;
     while index > 0 && completion_whitespace(source.byte_get(index - 1)) {
         index = index - 1;
-    };
+    }
     if index == 0 {
         Option::None
     } else {
@@ -1099,7 +1022,7 @@ fn completion_word_before(source: string, end: int) -> string {
             let mut start = last;
             while start > 0 && identifier_byte(source.byte_get(start - 1)) {
                 start = start - 1;
-            };
+            }
             source.byte_slice(start, last + 1)
         },
         None => "",
@@ -1120,10 +1043,8 @@ fn call_open_before(source: string, offset: int) -> Option[int] {
             } else {
                 depth = depth - 1;
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 

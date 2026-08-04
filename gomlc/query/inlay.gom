@@ -21,10 +21,8 @@ fn smallest_node_containing_span(syntax: SyntaxIndex, span: ast::Span, kind: cst
         if cst::node_kind_equal(node.kind, kind) && node.start <= span.start && node.end >= span.end
             && (best < 0 || node_width < syntax.nodes[best].end - syntax.nodes[best].start) {
             best = candidate;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if best >= 0 {
         Option::Some(syntax.nodes[best])
     } else {
@@ -45,10 +43,8 @@ fn let_has_annotation(syntax: SyntaxIndex, statement: SyntaxNode) -> bool {
         if token.parent == statement.id
             && lexer::token_kind_equal(token.kind, lexer::TokenKind::Colon) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -58,9 +54,7 @@ pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
         if fact.source_path == value.source_path {
             match local_definition_span(value, fact.local) {
                 Some(definition) => match containing_let(value.syntax, definition.span) {
-                    Some(statement) => if let_has_annotation(value.syntax, statement) {
-                        ()
-                    } else {
+                    Some(statement) => if let_has_annotation(value.syntax, statement) {} else {
                         match tast::resolve_type(fact.ty) {
                             Error => (),
                             ty => hints.push(
@@ -73,9 +67,7 @@ pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
                         }
                     },
                     None => match containing_closure_parameter(value.syntax, definition.span) {
-                        Some(parameter) => if let_has_annotation(value.syntax, parameter) {
-                            ()
-                        } else {
+                        Some(parameter) => if let_has_annotation(value.syntax, parameter) {} else {
                             match tast::resolve_type(fact.ty) {
                                 Error => (),
                                 ty => hints.push(
@@ -92,9 +84,7 @@ pub fn inlay_hints(value: Analysis) -> Vec[InlayHint] {
                 },
                 None => (),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     hints
 }

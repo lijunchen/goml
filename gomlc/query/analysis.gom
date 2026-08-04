@@ -58,7 +58,7 @@ fn lower_package(value: Project) -> LoweredPackage {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     for file in value.files {
         inputs.push((ast::lower(parser::parse(file.source)), file.path))
-    };
+    }
     let lowered = hir::lower_package_files(inputs, value.package_name);
     let files: Vec[hir::File] = Vec::[];
     let diagnostics: Vec[tast::Diagnostic] = Vec::[];
@@ -67,12 +67,12 @@ fn lower_package(value: Project) -> LoweredPackage {
             diagnostics.push(
                 query_diagnostic(value.source_path, "lower", diagnostic.message, diagnostic.span),
             )
-        };
+        }
         match value.hir {
             Some(file) => files.push(file),
             None => (),
         }
-    };
+    }
     LoweredPackage { name: value.package_name, files, diagnostics }
 }
 
@@ -110,15 +110,13 @@ fn collect_dependency(
     all_sources: Vec[SourceFile],
     source_path: string,
 ) -> unit {
-    if collections::contains(visited, package_name) {
-        ()
-    } else {
+    if collections::contains(visited, package_name) {} else {
         visited.push(package_name);
         match dependency_sources(module_root, module_path, package_name, overrides) {
             Ok(sources) => {
                 for source in sources {
                     all_sources.push(source)
-                };
+                }
                 let project = Project {
                     module_root,
                     module_path,
@@ -129,7 +127,7 @@ fn collect_dependency(
                 let lowered = lower_package(project);
                 for diagnostic in lowered.diagnostics {
                     diagnostics.push(diagnostic)
-                };
+                }
                 for file in lowered.files {
                     for import in file.import_aliases {
                         collect_dependency(
@@ -144,7 +142,7 @@ fn collect_dependency(
                             source_path,
                         )
                     }
-                };
+                }
                 for file in lowered.files {
                     dependencies.push(file)
                 }
@@ -177,14 +175,14 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
                 value.files[0].path,
             )
         }
-    };
+    }
     let environment_files: Vec[hir::File] = Vec::[];
     for file in entry.files {
         environment_files.push(file)
-    };
+    }
     for file in dependencies {
         environment_files.push(file)
-    };
+    }
     let environments = tast::dependency_environments(environment_files);
     let dependency_environments = tast::dependency_environments(dependencies);
     let checked = if !entry.files.is_empty() {
@@ -198,7 +196,7 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
     };
     for diagnostic in diagnostics {
         checked.diagnostics.push(diagnostic)
-    };
+    }
     match append_builtin_navigation_sources(all_sources) {
         Ok(_) => (),
         Err(error) => checked.diagnostics.push(

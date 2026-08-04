@@ -56,7 +56,7 @@ pub fn offset_to_position(source: string, offset: int) -> Position {
                 index = limit;
             }
         }
-    };
+    }
     Position { line, character }
 }
 
@@ -67,9 +67,7 @@ pub fn position_to_offset(source: string, position: Position) -> int {
     while index < source.byte_len() {
         if line == position.line && character >= position.character {
             return index
-        } else {
-            ()
-        };
+        } else {};
         let byte = source.byte_get(index);
         if byte == b'\n' {
             if line == position.line {
@@ -89,7 +87,7 @@ pub fn position_to_offset(source: string, position: Position) -> int {
                 index = index + width;
             }
         }
-    };
+    }
     source.byte_len()
 }
 
