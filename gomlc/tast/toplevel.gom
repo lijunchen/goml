@@ -11,6 +11,7 @@ fn function_context(
     self_ty: Option[Type],
     type_params: Vec[string],
     predicates: Vec[TypePredicate],
+    allow_unstructured_go: bool,
 ) -> Checker {
     let predicates = expand_implied_predicates(base, predicates);
     let param_aliases = predicate_type_aliases(predicates);
@@ -64,6 +65,7 @@ fn function_context(
         loop_results: Vec::[],
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
+        allow_unstructured_go,
     }
 }
 
@@ -117,7 +119,28 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         loop_results: Vec::[],
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
+        allow_unstructured_go: base.allow_unstructured_go,
     }
+}
+
+fn attribute_allows(attrs: Vec[ast::Attribute], lint: string) -> bool {
+    for attribute in attrs {
+        if attribute.name == "allow" {
+            for argument in attribute.args {
+                match argument {
+                    ast::AttributeArg::Ident(value) => if value == lint {
+                        return true
+                    } else {
+                        ()
+                    },
+                    ast::AttributeArg::String(_) => (),
+                }
+            }
+        } else {
+            ()
+        }
+    };
+    false
 }
 
 fn deferred_method_name(value: Callable) -> Option[string] {
@@ -462,7 +485,14 @@ fn check_function(
     base.current_span.set(value.ret_ty_span);
     let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
     base.current_span.set(previous_span);
-    let ctx = function_context(base, ret_ty, self_ty, type_params, predicates);
+    let ctx = function_context(
+        base,
+        ret_ty,
+        self_ty,
+        type_params,
+        predicates,
+        attribute_allows(value.attrs, "unstructured_go"),
+    );
     let params: Vec[(string, Type)] = Vec::[];
     for param in value.params {
         let index = params.len();
@@ -558,7 +588,7 @@ fn check_constant(base: Checker, value: hir::Constant) -> Constant {
         ()
     };
     base.current_span.set(Option::Some(value.value.span));
-    let ctx = function_context(base, ty, Option::None, Vec::[], Vec::[]);
+    let ctx = function_context(base, ty, Option::None, Vec::[], Vec::[], false);
     let checked = check_expr(ctx, value.value, Option::Some(ty));
     resolve_field_constraints(ctx);
     resolve_coercion_constraints(ctx);
@@ -1453,6 +1483,7 @@ fn validate_trait_impl_definition_requirements(
                 Option::Some(for_type),
                 Vec::[],
                 predicates,
+                false,
             );
             validate_associated_type_cycles(validation_ctx, reference, associated_types);
             let substitutions = trait_substitutions(

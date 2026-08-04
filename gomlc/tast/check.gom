@@ -4315,6 +4315,15 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             },
             Go { expr: value } => {
                 let span = value.span;
+                if ctx.allow_unstructured_go {
+                    ()
+                } else {
+                    push_warning_at(
+                        ctx,
+                        "unstructured_go: `go` starts detached work; use `std::task` or add `#[allow(unstructured_go)]`",
+                        Option::Some(value_span),
+                    )
+                };
                 let value = check_expr(ctx, value, Option::None);
                 let actual = resolve_type(expr_type(value));
                 let valid = match actual {

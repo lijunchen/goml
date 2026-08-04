@@ -1032,6 +1032,8 @@ Don't write `go work();`; that will get `unit` first, and the value type require
 
 `go` is a detached, unstructured escape hatch. Its lifetime is not tied to the caller, it does not return a task handle, and its failures are not propagated. Use `std::task` when the caller must wait for child work or coordinate cancellation.
 
+The `unstructured_go` lint warns on each `go` expression. A function or method that intentionally owns detached background work can use `#[allow(unstructured_go)]`.
+
 ## model
 
 Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
