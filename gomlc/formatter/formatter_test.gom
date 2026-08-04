@@ -342,6 +342,19 @@ fn formats_block_and_byte_string_expressions_losslessly() -> unit {
 }
 
 #[test]
+fn formats_lexical_task_scope_contextual_forms_losslessly() -> unit {
+    let source = "use std::task;fn main()->unit{let task=scope{spawn|cancel|cancel.is_cancelled()};let scope=1;let spawn=|value:int|value;println(spawn(scope));let _=task;}\n";
+    let formatted = match format_source(source) {
+        Ok(value) => value,
+        Err(_) => {
+            testing::fail("format failed");
+            ""
+        },
+    };
+    assert_format_invariants(source, formatted)
+}
+
+#[test]
 fn rejects_invalid_source() -> unit {
     match format_source("fn main( {") {
         Ok(_) => testing::fail("invalid source formatted"),

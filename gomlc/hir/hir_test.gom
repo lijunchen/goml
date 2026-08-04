@@ -81,6 +81,43 @@ fn reports_pattern_binding_errors_during_resolution() -> unit {
 }
 
 #[test]
+fn rejects_spawn_without_a_non_escaping_lexical_scope() -> unit {
+    let outside = lower(
+        ast::lower(parser::parse("fn main() -> unit { let _ = spawn || (); }")),
+        "main.gom",
+    );
+    testing::assert_eq(outside.diagnostics.len(), 1);
+    testing::assert_eq(
+        outside.diagnostics.get(0).message,
+        "spawn requires an enclosing lexical scope",
+    );
+    let escaping = lower(
+        ast::lower(
+            parser::parse("fn make() -> () -> unit { scope { || { let _ = spawn || (); } } }"),
+        ),
+        "main.gom",
+    );
+    testing::assert_eq(escaping.diagnostics.len(), 1);
+    testing::assert_eq(
+        escaping.diagnostics.get(0).message,
+        "spawn cannot capture an enclosing lexical scope across a closure boundary; create a nested scope inside the closure",
+    )
+}
+
+#[test]
+fn lowers_nested_lexical_task_scopes_before_typed_hir() -> unit {
+    let result = lower(
+        ast::lower(
+            parser::parse(
+                "use std::task; fn main() -> unit { scope { scope { let _ = spawn |_cancel| (); } } }",
+            ),
+        ),
+        "main.gom",
+    );
+    testing::assert_eq(result.diagnostics.len(), 0)
+}
+
+#[test]
 fn indents_multiline_calls_canonically() -> unit {
     let source = "struct Box { value: int32 } fn make(value: Box) -> Box { value } fn main() -> unit { let values = Vec::new().pushed(make(Box { value: 1 })).pushed(make(Box { value: 2 })); }";
     testing::assert_eq(
