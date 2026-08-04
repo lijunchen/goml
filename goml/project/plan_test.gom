@@ -4,6 +4,7 @@ use gomlang::bootstrap_goml::test_support;
 use std::fs;
 use std::path;
 use std::process;
+use std::task;
 use std::testing;
 
 #[test]
@@ -197,4 +198,49 @@ fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> unit {
         },
     };
     testing::assert(process::ExitStatus::success(check))
+}
+
+#[test]
+fn worker_cleans_uncommitted_cache_after_scope_cancellation() -> unit {
+    let root = test_support::workspace("uncommitted_plan_cache");
+    let compiler = path::join(root, "compiler");
+    test_support::write_file(compiler, "#!/bin/sh\ntouch out/owned.interface\n");
+    match process::Command::new("chmod").args(Vec::["+x", compiler]).status() {
+        Ok(status) => testing::assert(process::ExitStatus::success(status)),
+        Err(message) => testing::fail(message),
+    };
+    let context = cancellation_test_context(root, compiler);
+    let command = cancellation_test_command("owned");
+    let Some(spec) = cache_spec(command) else {
+        testing::fail("compile command omitted cache specification");
+        return
+    };
+    let output = path::join(root, "out/owned.interface");
+    let fingerprint = cache_path(root, spec);
+    test_support::write_file(output, "partial");
+    test_support::write_file(fingerprint, "partial");
+    let work: Channel[BuildWork] = Channel::new(1);
+    let results: Channel[BuildWorkResult] = Channel::new(1);
+    let stopped: Result[unit, string] = task::try_scope(
+        |scope: task::Scope| {
+            let _ = scope.spawn_try(
+                |cancel: task::CancelToken| execute_plan_worker(cancel, context, work, results),
+            );
+            work.send(
+                BuildWork {
+                    index: 0,
+                    command,
+                    cache: Option::Some(PreparedCache { spec, fingerprint: "unused" }),
+                },
+            );
+            match results.recv() {
+                Some(value) => testing::assert(value.result.is_ok()),
+                None => testing::fail("worker omitted build result"),
+            };
+            Result::Err("stop")
+        },
+    );
+    testing::assert(stopped.is_err());
+    testing::assert(!fs::exists(output));
+    testing::assert(!fs::exists(fingerprint))
 }
