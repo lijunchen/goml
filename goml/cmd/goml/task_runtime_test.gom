@@ -1,6 +1,7 @@
 package main;
 
 use gomlang::bootstrap_goml::test_support;
+use std::fs;
 use std::path;
 use std::process;
 use std::testing;
@@ -64,4 +65,36 @@ fn task_scope_handles_spawn_finish_races() -> unit {
     let output = test_support::project_command("run", "", Vec::[], root);
     test_support::assert_success(output);
     testing::assert_eq(test_support::stdout(output), "ok\n")
+}
+
+#[test]
+fn child_panic_cancels_waits_and_reraises_in_scope_owner() -> unit {
+    let root = test_support::workspace("task_child_panic");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"task_child_panic\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nuse std::fs;\nuse std::task;\n\nfn main() -> unit {\n    task::scope(\n        |scope: task::Scope| {\n            let started: Channel[unit] = Channel::new(1);\n            let _ = scope.spawn(\n                |token: task::CancelToken| {\n                    started.send(());\n                    while !token.is_cancelled() {};\n                    let _ = fs::write_file(\"cleaned\", \"yes\");\n                },\n            );\n            let _ = started.recv();\n            let _ = scope.spawn(\n                |_: task::CancelToken| {\n                    let values = [1];\n                    let _ = values[2];\n                },\n            );\n        },\n    );\n}\n",
+    );
+    let output = test_support::project_command("run", "", Vec::[], root);
+    test_support::assert_failure(output);
+    testing::assert(fs::is_file(path::join(root, "cleaned")))
+}
+
+#[test]
+fn scope_body_panic_cancels_waits_and_removes_scope() -> unit {
+    let root = test_support::workspace("task_body_panic");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"task_body_panic\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nuse std::fs;\nuse std::task;\n\nfn main() -> unit {\n    task::scope(\n        |scope: task::Scope| {\n            let started: Channel[unit] = Channel::new(1);\n            let _ = scope.spawn(\n                |token: task::CancelToken| {\n                    started.send(());\n                    while !token.is_cancelled() {};\n                    let _ = fs::write_file(\"cleaned\", \"yes\");\n                },\n            );\n            let _ = started.recv();\n            let values = [1];\n            let _ = values[2];\n        },\n    );\n}\n",
+    );
+    let output = test_support::project_command("run", "", Vec::[], root);
+    test_support::assert_failure(output);
+    testing::assert(fs::is_file(path::join(root, "cleaned")))
 }
