@@ -32,7 +32,7 @@ fn artifact_decode_core_exprs(
     let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(artifact_decode_core_expr(context, value)?)
-    };
+    }
     Result::Ok(result)
 }
 
@@ -66,7 +66,7 @@ fn artifact_decode_closure_params(context: ArtifactCoreDecodeContext, value: wir
         let name = wire::artifact_json_field_string(object, "name")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         result.push(tast::ClosureParam { name, ty })
-    };
+    }
     Result::Ok(result)
 }
 
@@ -81,7 +81,7 @@ fn artifact_decode_core_arms(context: ArtifactCoreDecodeContext, value: wire::Ar
         let lhs = artifact_decode_core_expr_field(context, object, "lhs")?;
         let body = artifact_decode_core_expr_field(context, object, "body")?;
         result.push(core::Arm { lhs, body })
-    };
+    }
     Result::Ok(result)
 }
 
@@ -92,9 +92,7 @@ fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::Ar
     let variant = wire::artifact_json_object(value, "Core expression")?;
     if variant.len() != 1 {
         return Result::Err(wire::artifact_decode_error("Core expression variant"))
-    } else {
-        ()
-    };
+    } else {};
     let kind = variant[0].0;
     let object = wire::artifact_json_object(variant[0].1, "Core expression payload")?;
     if kind == "EVar" {
@@ -329,7 +327,7 @@ fn artifact_decode_core_block(context: ArtifactCoreDecodeContext, value: wire::A
         let value = artifact_decode_core_expr_field(context, statement, "value")?;
         let ty = artifact_decode_core_type_field(context, statement, "ty")?;
         stmts.push(core::LetStmt { name, value, ty })
-    };
+    }
     let value = wire::artifact_json_required_field(object, "tail")?;
     let tail = artifact_decode_optional_core_expr(context, value)?;
     Result::Ok(core::Block { stmts, tail })
@@ -373,13 +371,11 @@ fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::
         let pair = wire::artifact_json_array(value, "Core function parameter")?;
         if pair.len() != 2 {
             return Result::Err(wire::artifact_decode_error("Core function parameter"))
-        } else {
-            ()
-        };
+        } else {};
         let name = wire::artifact_json_string_value(pair[0], "Core parameter name")?;
         let ty = tast_codec::artifact_decode_type(context.types, pair[1])?;
         result.push((name, ty))
-    };
+    }
     Result::Ok(result)
 }
 
@@ -462,9 +458,7 @@ fn artifact_decode_const_expr(context: ArtifactCoreDecodeContext, value: wire::A
     let variant = wire::artifact_json_object(value, "constant expression")?;
     if variant.len() != 1 {
         return Result::Err(wire::artifact_decode_error("constant expression variant"))
-    } else {
-        ()
-    };
+    } else {};
     let kind = variant[0].0;
     let object = wire::artifact_json_object(variant[0].1, "constant expression payload")?;
     let ty = artifact_decode_core_type_field(context, object, "ty")?;
@@ -516,12 +510,12 @@ fn artifact_decode_core_file(context: ArtifactCoreDecodeContext, value: wire::Ar
     let functions: Vec[core::Function] = Vec::[];
     for value in values {
         functions.push(artifact_decode_core_function(context, value)?)
-    };
+    }
     let constant_values = wire::artifact_json_field_array(object, "constants")?;
     let constants: Vec[tast::Constant] = Vec::[];
     for value in constant_values {
         constants.push(artifact_decode_constant(context, value)?)
-    };
+    }
     Result::Ok(
         core::File {
             functions,

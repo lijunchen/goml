@@ -34,10 +34,8 @@ fn artifact_core_function_matches_scheme(value: core::Function, scheme: artifact
             for index in 0..value.params.len() {
                 if !artifact_core_types_equal(value.params[index].1, function_type.params[index]) {
                     return false
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             true
         },
         Err(_) => false,
@@ -59,10 +57,10 @@ fn artifact_core_predicates(inherited: Vec[tast::TypePredicate], own: Vec[tast::
     let mut result: Vec[tast::TypePredicate] = Vec::[];
     for predicate in inherited {
         result.push(predicate)
-    };
+    }
     for predicate in own {
         result.push(predicate)
-    };
+    }
     result
 }
 
@@ -74,10 +72,8 @@ fn artifact_prepare_core_function_metadata(
     for function in exports.functions {
         if function.name == value.name && artifact_core_function_matches_scheme(value, function) {
             predicates = function.constraints;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let trait_impl = match value.trait_impl {
         Some(metadata) => {
             let mut associated_types = metadata.associated_types;
@@ -99,16 +95,12 @@ fn artifact_prepare_core_function_metadata(
                                     implementation.definition.constraints,
                                     method.constraints,
                                 );
-                            } else {
-                                ()
-                            }
+                            } else {}
                         },
                         None => (),
                     }
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             Option::Some(
                 core::TraitImpl {
                     trait_ref: metadata.trait_ref,
@@ -131,13 +123,9 @@ fn artifact_prepare_core_function_metadata(
                                     implementation.definition.constraints,
                                     method.constraints,
                                 );
-                            } else {
-                                ()
-                            }
+                            } else {}
                         }
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
                 None => (),
             };
@@ -164,13 +152,9 @@ fn artifact_fill_constructor_fields(value: tast::Constructor, definitions: Vec[t
                 for field in definition.fields {
                     value.fields.push(field.0)
                 }
-            } else {
-                ()
-            }
+            } else {}
         }
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn artifact_prepare_core_exprs(values: Vec[core::Expr], definitions: Vec[tast::StructDef]) -> unit {
@@ -189,7 +173,7 @@ fn artifact_prepare_optional_core_expr(value: Option[core::Expr], definitions: V
 fn artifact_prepare_core_block(value: core::Block, definitions: Vec[tast::StructDef]) -> unit {
     for statement in value.stmts {
         artifact_prepare_core_expr(statement.value, definitions)
-    };
+    }
     artifact_prepare_optional_core_expr(value.tail, definitions)
 }
 
@@ -209,7 +193,7 @@ fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[tast::StructDe
             for arm in arms {
                 artifact_prepare_core_expr(arm.lhs, definitions);
                 artifact_prepare_core_expr(arm.body, definitions)
-            };
+            }
             artifact_prepare_optional_core_expr(default, definitions)
         },
         If { cond, then_branch, else_branch, ty: _ } => {
@@ -273,7 +257,7 @@ fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact::A
     let mut result: Vec[tast::StructDef] = Vec::[];
     for definition in world.builtins.structs {
         result.push(definition)
-    };
+    }
     for standard in selected_link_standard_core(
         world.standard,
         artifact_core_standard_needs(values),
@@ -281,12 +265,12 @@ fn artifact_link_struct_definitions(world: PackageWorld, values: Vec[artifact::A
         for definition in standard.structs {
             result.push(definition)
         }
-    };
+    }
     for value in values {
         for definition in value.exports.structs {
             result.push(definition)
         }
-    };
+    }
     result
 }
 
@@ -308,7 +292,7 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef
     let result: Vec[tast::StructDef] = Vec::[];
     for definition in world.builtins.structs {
         result.push(definition)
-    };
+    }
     let packages: Vec[ArtifactStandardPackage] = Vec::[
         world.standard.root,
         world.standard.host,
@@ -334,7 +318,7 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef
         for definition in package_value.environment_exports.structs {
             result.push(definition)
         }
-    };
+    }
     result
 }
 

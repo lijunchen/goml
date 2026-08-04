@@ -42,7 +42,7 @@ fn artifact_json_tests(
     wire::artifact_json_begin_array(writer);
     for value in values {
         artifact_json_test_descriptor(writer, value)
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -54,9 +54,7 @@ fn artifact_json_core_unit(writer: wire::ArtifactJsonWriter, value: artifact::Ar
         wire::artifact_json_number(writer, "18");
         wire::artifact_json_name(writer, "compiler_abi");
         wire::artifact_json_number(writer, "3")
-    } else {
-        ()
-    };
+    } else {};
     wire::artifact_json_name(writer, "package");
     wire::artifact_json_string(writer, value.package_name);
     wire::artifact_json_name(writer, "declared_name");

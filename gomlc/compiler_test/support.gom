@@ -53,9 +53,7 @@ pub fn collect_main_sources(directory: string, result: Vec[string]) -> unit {
             collect_main_sources(entry, result)
         } else if name == "main.gom" && fs::is_file(entry + ".out") {
             result.push(entry)
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -72,18 +70,12 @@ pub fn collect_diagnostic_sources(directory: string) -> Vec[string] {
                 Some(extension) => if extension == "gom" {
                     if fs::is_file(entry + ".diag") {
                         result.push(entry)
-                    } else {
-                        ()
-                    }
-                } else {
-                    ()
-                },
+                    } else {}
+                } else {},
                 None => (),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -147,9 +139,7 @@ fn execute_go(source: string, expected: string, suite: string, shard: int, index
     } else {
         false
     };
-    if source_current {
-        ()
-    } else {
+    if source_current {} else {
         match fs::write_file(main_file, source) {
             Ok(()) => (),
             Err(message) => {
@@ -181,15 +171,11 @@ fn execute_go(source: string, expected: string, suite: string, shard: int, index
         Some(value) => return value,
         None => (),
     };
-    if source_current && fs::is_file(executable) {
-        ()
-    } else {
+    if source_current && fs::is_file(executable) {} else {
         match process::Command::new("go").arg("build").arg("-o").arg("main").arg("main.go").current_dir(
             directory,
         ).env("GOWORK", "off").env("GO111MODULE", "off").output() {
-            Ok(output) => if process::ExitStatus::success(process::Output::status(output)) {
-                ()
-            } else {
+            Ok(output) => if process::ExitStatus::success(process::Output::status(output)) {} else {
                 testing::fail(
                     "go build failed\nstdout:\n" + bytes_text(process::Output::stdout(output))
                         + "\nstderr:\n"
@@ -232,13 +218,9 @@ fn assert_text(actual: string, expected_path: string, source: string) -> unit {
             Err(message) => testing::fail("failed to write " + expected_path + ": " + message),
         };
         return ()
-    } else {
-        ()
-    };
+    } else {};
     let expected = read_file(expected_path);
-    if actual == expected {
-        ()
-    } else {
+    if actual == expected {} else {
         testing::fail(
             "output mismatch for " + source + "\nactual:\n" + actual + "\nexpected:\n" + expected,
         )
@@ -267,9 +249,7 @@ pub fn assert_e2e_suite(kind: string, shard: int, shard_count: int) -> unit {
                 Diagnostics(value) => value,
             };
             assert_text(actual, source_path + ".out", source_path)
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -319,9 +299,7 @@ fn bootstrap_gomlc_binary() -> string {
 }
 
 fn assert_command_success(output: process::Output, label: string) -> unit {
-    if process::ExitStatus::success(process::Output::status(output)) {
-        ()
-    } else {
+    if process::ExitStatus::success(process::Output::status(output)) {} else {
         testing::fail(
             label + " failed\nstdout:\n" + bytes_text(process::Output::stdout(output))
                 + "\nstderr:\n"
@@ -355,10 +333,8 @@ fn module_projects() -> Vec[string] {
             && (fs::is_file(path::join(project, "main.gom.out"))
                 || (update_expected() && fs::is_file(path::join(project, "goml.toml")))) {
             result.push(project)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -394,9 +370,7 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
                 path::join(source_project, "main.gom.out"),
                 source_project,
             )
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -410,10 +384,8 @@ fn module_diagnostic_projects() -> Vec[string] {
                 || fs::is_file(path::join(project, "main.gom.ok"))
                 || fs::is_file(path::join(project, "main.gom.build"))) {
             result.push(project)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -450,9 +422,7 @@ pub fn assert_module_diagnostics() -> unit {
         } else {
             testing::assert(!process::ExitStatus::success(process::Output::status(checked)));
             let expected = read_file(path::join(source_project, "main.gom.expect"));
-            if expected == "" {
-                ()
-            } else {
+            if expected == "" {} else {
                 let output = bytes_text(process::Output::stdout(checked))
                     + bytes_text(process::Output::stderr(checked));
                 testing::assert(output.contains(expected))
@@ -509,9 +479,7 @@ fn collect_crasher_sources(directory: string, extension: string, result: Vec[str
             collect_crasher_sources(entry, extension, result)
         } else if name == "main.gom" && fs::is_file(entry + extension) {
             result.push(entry)
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -537,9 +505,7 @@ pub fn assert_crasher_diagnostic_shard(shard: int, shard_count: int) -> unit {
                 source_path + ".diag",
                 source_path,
             )
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -572,9 +538,7 @@ pub fn assert_crasher_runtime_shard(shard: int, shard_count: int) -> unit {
                 source_path + ".out",
                 source_path,
             )
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 

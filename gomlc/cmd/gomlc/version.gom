@@ -90,9 +90,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
         } else {
             if positional {
                 return Result::Err(unexpected_argument_error("version", argument, false))
-            } else {
-                ()
-            };
+            } else {};
             match similar_cli_argument("version", argument) {
                 Some(similar) => return Result::Err(
                     unexpected_similar_argument_error(
@@ -104,7 +102,7 @@ fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
                 None => return Result::Err(unexpected_argument_error("version", argument, false)),
             }
         }
-    };
+    }
     match format {
         Some(value) => parse_version_format(value),
         None => Result::Ok(VersionFormat::Text),
@@ -115,7 +113,7 @@ fn trim_version_value(value: string) -> string {
     let mut end = value.byte_len();
     while end > 0 && (value.byte_get(end - 1) == b'\n' || value.byte_get(end - 1) == b'\r') {
         end -= 1;
-    };
+    }
     value.byte_slice(0, end)
 }
 

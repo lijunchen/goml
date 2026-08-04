@@ -233,10 +233,8 @@ fn abi_by_key(values: Vec[CallableAbiSpec], key: string) -> Option[CallableAbiSp
     for value in values {
         if value.key == key {
             return Option::Some(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -248,12 +246,10 @@ fn abi_by_id(values: Vec[CallableAbiSpec], id: string) -> Option[CallableAbiSpec
             for legacy_id in value.legacy_ids {
                 if legacy_id == id {
                     return Option::Some(value)
-                } else {
-                    ()
-                }
+                } else {}
             }
         }
-    };
+    }
     Option::None
 }
 
@@ -284,10 +280,8 @@ pub fn runtime_abi_by_key(key: string) -> Option[CallableAbiSpec] {
                     id
                 };
                 return Option::Some(callable_abi(key, source_name, id, Vec::[]))
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         Option::None
     } else {
         abi_by_key(standard_runtime_abi_specs(), key)
@@ -298,9 +292,7 @@ pub fn runtime_abi_by_id(id: string) -> Option[CallableAbiSpec] {
     for allowed in core_runtime_keys() {
         if allowed == id {
             return runtime_abi_by_key("core." + id)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     abi_by_id(standard_runtime_abi_specs(), id)
 }

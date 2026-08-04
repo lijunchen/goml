@@ -48,10 +48,8 @@ pub fn artifact_binary_bytes_equal(left: bytes::Bytes, right: bytes::Bytes) -> b
         for index in 0..left.len() {
             if left.get(index) != right.get(index) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -74,7 +72,7 @@ fn artifact_binary_sha256(value: bytes::Bytes) -> bytes::Bytes {
             (artifact_binary_hex_value(text.byte_get(index * 2)) << 4)
                 | artifact_binary_hex_value(text.byte_get(index * 2 + 1)),
         )
-    };
+    }
     result
 }
 
@@ -93,13 +91,11 @@ fn artifact_binary_sections_valid(values: Vec[ArtifactBinarySection]) -> bool {
         match previous {
             Some(id) => if id == value.id {
                 return false
-            } else {
-                ()
-            },
+            } else {},
             None => (),
         };
         previous = Option::Some(value.id);
-    };
+    }
     true
 }
 
@@ -109,23 +105,19 @@ pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinar
 ] {
     if kind != 1 && kind != 2 && kind != 3 {
         return Result::Err("invalid binary artifact kind")
-    } else {
-        ()
-    };
+    } else {};
     let sections = artifact_binary_sort_sections(sections);
     if !artifact_binary_sections_valid(sections) {
         return Result::Err("duplicate binary artifact section")
     } else if sections.len() > 1024 {
         return Result::Err("too many binary artifact sections")
-    } else {
-        ()
-    };
+    } else {};
     let payload = bytes::Bytes::new();
     for section in sections {
         for index in 0..section.data.len() {
             payload.push(section.data.get(index))
         }
-    };
+    }
     let writer = new_artifact_binary_writer();
     artifact_binary_write_raw_bytes(writer, artifact_binary_magic());
     artifact_binary_write_u16(writer, 1);
@@ -149,7 +141,7 @@ pub fn encode_artifact_binary_container(kind: uint8, sections: Vec[ArtifactBinar
         artifact_binary_write_u64(writer, section.data.len() as uint64);
         artifact_binary_write_raw_bytes(writer, artifact_binary_sha256(section.data));
         offset = offset + section.data.len();
-    };
+    }
     artifact_binary_write_raw_bytes(writer, payload);
     Result::Ok(artifact_binary_writer_finish(writer))
 }
@@ -173,45 +165,33 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
     let magic = artifact_binary_read_raw_bytes(reader, 8)?;
     if !artifact_binary_bytes_equal(magic, artifact_binary_magic()) {
         return Result::Err("invalid binary artifact magic")
-    } else {
-        ()
-    };
+    } else {};
     let major = artifact_binary_read_u16(reader)?;
     let minor = artifact_binary_read_u16(reader)?;
     if major != 1 {
         return Result::Err("unsupported binary artifact major version")
     } else if minor > 0 {
         return Result::Err("unsupported binary artifact minor version")
-    } else {
-        ()
-    };
+    } else {};
     let kind = artifact_binary_read_u8(reader)?;
     if kind != 1 && kind != 2 && kind != 3 {
         return Result::Err("invalid binary artifact kind")
-    } else {
-        ()
-    };
+    } else {};
     let flags = artifact_binary_read_u8(reader)?;
     if flags != 0 {
         return Result::Err("unsupported binary artifact flags")
-    } else {
-        ()
-    };
+    } else {};
     let compiler_abi = artifact_binary_read_u32(reader)?;
     if compiler_abi != 3 {
         return Result::Err("unsupported binary artifact compiler ABI")
-    } else {
-        ()
-    };
+    } else {};
     let section_count = artifact_binary_read_u16(reader)? as int;
     let reserved = artifact_binary_read_u16(reader)?;
     if section_count > 1024 {
         return Result::Err("too many binary artifact sections")
     } else if reserved != 0 {
         return Result::Err("invalid binary artifact reserved field")
-    } else {
-        ()
-    };
+    } else {};
     let directory_offset = artifact_binary_checked_int(
         reader,
         artifact_binary_read_u64(reader)?,
@@ -225,16 +205,12 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
     let payload_hash = artifact_binary_read_raw_bytes(reader, 32)?;
     if directory_offset != artifact_binary_header_size() {
         return Result::Err("invalid binary artifact directory offset")
-    } else {
-        ()
-    };
+    } else {};
     let payload_offset = artifact_binary_header_size()
         + section_count * artifact_binary_directory_entry_size();
     if payload_offset > data.len() || payload_length != data.len() - payload_offset {
         return Result::Err("invalid binary artifact payload length")
-    } else {
-        ()
-    };
+    } else {};
     let section_ids = Vec::with_capacity(section_count);
     let section_versions = Vec::with_capacity(section_count);
     let section_flags = Vec::with_capacity(section_count);
@@ -245,17 +221,13 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
         let id = artifact_binary_read_u16(reader)?;
         if !section_ids.is_empty() && id <= section_ids[section_ids.len() - 1] {
             return Result::Err("binary artifact section directory is not sorted")
-        } else {
-            ()
-        };
+        } else {};
         let version = artifact_binary_read_u16(reader)?;
         let flags = artifact_binary_read_u16(reader)?;
         let reserved = artifact_binary_read_u16(reader)?;
         if reserved != 0 {
             return Result::Err("invalid binary artifact section reserved field")
-        } else {
-            ()
-        };
+        } else {};
         let offset = artifact_binary_checked_int(
             reader,
             artifact_binary_read_u64(reader)?,
@@ -273,16 +245,14 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
         section_offsets.push(offset);
         section_lengths.push(length);
         section_hashes.push(hash)
-    };
+    }
     let payload = bytes::Bytes::with_capacity(payload_length);
     for index in 0..payload_length {
         payload.push(data.get(payload_offset + index))
-    };
+    }
     if !artifact_binary_bytes_equal(payload_hash, artifact_binary_sha256(payload)) {
         return Result::Err("binary artifact payload checksum mismatch")
-    } else {
-        ()
-    };
+    } else {};
     let result: Vec[ArtifactBinarySection] = Vec::[];
     let mut previous_end = payload_offset;
     for index in 0..section_count {
@@ -290,18 +260,14 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
         let length = section_lengths[index];
         if offset != previous_end || length > data.len() - offset {
             return Result::Err("invalid binary artifact section range")
-        } else {
-            ()
-        };
+        } else {};
         let section_data = bytes::Bytes::with_capacity(length);
         for item in 0..length {
             section_data.push(data.get(offset + item))
-        };
+        }
         if !artifact_binary_bytes_equal(section_hashes[index], artifact_binary_sha256(section_data)) {
             return Result::Err("binary artifact section checksum mismatch")
-        } else {
-            ()
-        };
+        } else {};
         result.push(
             ArtifactBinarySection {
                 id: section_ids[index],
@@ -311,7 +277,7 @@ pub fn decode_artifact_binary_container(data: bytes::Bytes) -> Result[
             },
         );
         previous_end = offset + length;
-    };
+    }
     if previous_end != data.len() {
         Result::Err("invalid binary artifact section coverage")
     } else if !artifact_binary_sections_valid(result) {
@@ -328,9 +294,7 @@ pub fn artifact_binary_find_section(value: ArtifactBinaryContainer, id: uint16) 
         let section = value.sections[value.sections.len() - 1 - offset];
         if section.id == id {
             return Option::Some(section)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }

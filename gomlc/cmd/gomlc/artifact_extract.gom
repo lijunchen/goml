@@ -12,7 +12,7 @@ fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type)
     let types: Vec[tast::Type] = Vec::[];
     for param in params {
         types.push(param.1)
-    };
+    }
     tast::Type::Func { params: types, ret_ty }
 }
 
@@ -48,7 +48,7 @@ fn artifact_trait_definition_ref(value: tast::TraitRef, owner: string, trait_nam
     let args: Vec[tast::Type] = Vec::[];
     for arg in value.args {
         args.push(artifact_trait_definition_type(arg, owner, trait_names))
-    };
+    }
     tast::TraitRef { name: artifact_local_trait_name(owner, value.name, trait_names), args }
 }
 
@@ -63,7 +63,7 @@ fn artifact_trait_definition_type(value: tast::Type, owner: string, trait_names:
             let result: Vec[tast::Type] = Vec::[];
             for value in values {
                 result.push(artifact_trait_definition_type(value, owner, trait_names))
-            };
+            }
             tast::Type::Tuple { items: result }
         },
         Projection { for_ty, name, trait_ref } => tast::Type::Projection {
@@ -80,7 +80,7 @@ fn artifact_trait_definition_type(value: tast::Type, owner: string, trait_names:
             let result: Vec[tast::Type] = Vec::[];
             for arg in args {
                 result.push(artifact_trait_definition_type(arg, owner, trait_names))
-            };
+            }
             tast::Type::App {
                 ty: artifact_trait_definition_type(base, owner, trait_names),
                 args: result,
@@ -110,7 +110,7 @@ fn artifact_trait_definition_type(value: tast::Type, owner: string, trait_names:
             let result: Vec[tast::Type] = Vec::[];
             for param in params {
                 result.push(artifact_trait_definition_type(param, owner, trait_names))
-            };
+            }
             tast::Type::Func {
                 params: result,
                 ret_ty: artifact_trait_definition_type(ret_ty, owner, trait_names),
@@ -143,9 +143,9 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
         let bounds: Vec[tast::TraitRef] = Vec::[];
         for bound in associated.bounds {
             bounds.push(artifact_trait_definition_ref(bound, value.name, trait_names))
-        };
+        }
         associated_types.push(artifact::ArtifactAssociatedTypeDef { name: associated.name, bounds })
-    };
+    }
     let methods: Vec[artifact::ArtifactFnScheme] = Vec::[];
     for method in value.methods {
         let constraints: Vec[tast::TypePredicate] = Vec::[];
@@ -153,7 +153,7 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
             constraints.push(
                 artifact_trait_definition_predicate(predicate, value.name, trait_names),
             )
-        };
+        }
         methods.push(
             artifact::ArtifactFnScheme {
                 name: method.name,
@@ -172,15 +172,15 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
                 ),
             },
         )
-    };
+    }
     let predicates: Vec[tast::TypePredicate] = Vec::[];
     for predicate in value.predicates {
         predicates.push(artifact_trait_definition_predicate(predicate, value.name, trait_names))
-    };
+    }
     let supertraits: Vec[tast::TraitRef] = Vec::[];
     for supertrait in value.supertraits {
         supertraits.push(artifact_trait_definition_ref(supertrait, value.name, trait_names))
-    };
+    }
     artifact::ArtifactTraitDef {
         name: value.name,
         params: value.generics,
@@ -195,7 +195,7 @@ fn artifact_method_constraints(value: tast::Function, start: int) -> Vec[tast::T
     let result: Vec[tast::TypePredicate] = Vec::[];
     for index in start..value.predicates.len() {
         result.push(value.predicates[index])
-    };
+    }
     result
 }
 
@@ -203,7 +203,7 @@ fn artifact_method_scheme(value: tast::Function, owner_generic_count: int, const
     let type_params: Vec[string] = Vec::[];
     for index in owner_generic_count..value.generics.len() {
         type_params.push(value.generics[index])
-    };
+    }
     artifact::ArtifactFnScheme {
         name: value.name,
         type_params,
@@ -230,10 +230,8 @@ fn artifact_impl_methods(
     for method in value.methods {
         if !public_only || artifact_method_is_public(method) {
             result.push(artifact_method_scheme(method, owner_generic_count, constraint_start))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -311,10 +309,8 @@ fn artifact_struct_def(value: tast::StructDef, public_only: bool) -> tast::Struc
             if collections::contains(value.public_fields, field.0) {
                 fields.push(field);
                 public_fields.push(field.0)
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         tast::StructDef {
             name: value.name,
             generics: value.generics,
@@ -337,10 +333,8 @@ fn artifact_type_has_public_names(
             for value in values {
                 if !artifact_type_has_public_names(value, package_name, public_names) {
                     return false
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             true
         },
         Projection { for_ty, name: _, trait_ref } => {
@@ -364,10 +358,8 @@ fn artifact_type_has_public_names(
                 for arg in args {
                     if !artifact_type_has_public_names(arg, package_name, public_names) {
                         return false
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 true
             }
         },
@@ -384,10 +376,8 @@ fn artifact_type_has_public_names(
             for param in params {
                 if !artifact_type_has_public_names(param, package_name, public_names) {
                     return false
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             artifact_type_has_public_names(ret_ty, package_name, public_names)
         },
         Var(_) | Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char | Param {
@@ -407,10 +397,8 @@ fn artifact_trait_ref_has_public_names(
         for arg in value.args {
             if !artifact_type_has_public_names(arg, package_name, public_names) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -432,9 +420,7 @@ fn artifact_trait_impl_is_public(
 }
 
 fn artifact_add_type_name(values: Vec[string], name: string) -> unit {
-    if collections::contains(values, name) {
-        ()
-    } else {
+    if collections::contains(values, name) {} else {
         values.push(name)
     }
 }
@@ -452,84 +438,68 @@ fn artifact_package_exports(
     let result = interface_codec::empty_exports();
     for reexport in public_reexports {
         result.reexports.push((package_item_name(package_name, reexport.0), reexport.1))
-    };
+    }
     for name in enum_type_names {
         artifact_add_type_name(result.enum_type_names, name)
-    };
+    }
     for name in struct_type_names {
         artifact_add_type_name(result.struct_type_names, name)
-    };
+    }
     for definition in file.enums {
         artifact_add_type_name(result.enum_type_names, definition.name);
         if !public_only || collections::contains(public_names, definition.name) {
             result.enums.push(definition)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for definition in file.structs {
         artifact_add_type_name(result.struct_type_names, definition.name);
         if !public_only || collections::contains(public_names, definition.name) {
             result.structs.push(artifact_struct_def(definition, public_only))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for alias in signatures.type_aliases {
         if !public_only || collections::contains(public_names, alias.name) {
             result.type_aliases.push(alias)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let trait_names: Vec[string] = Vec::[];
     for definition in signatures.traits {
         trait_names.push(definition.name)
-    };
+    }
     for definition in signatures.traits {
         if !public_only || collections::contains(public_names, definition.name) {
             result.traits.push(artifact_trait_def(definition, trait_names))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for function in signatures.functions {
         if !public_only || collections::contains(public_names, function.name) {
             result.functions.push(artifact_fn_scheme(function))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for value in signatures.constants {
         if !public_only || collections::contains(public_names, value.name) {
             result.constants.push(
                 tast::ConstantScheme { def_id: Option::None, name: value.name, ty: value.ty },
             )
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for item in file.items {
         match item {
             ImplBlock(value) => match value.trait_ref {
                 Some(_) => if !public_only
                     || artifact_trait_impl_is_public(value, package_name, public_names) {
                     result.trait_impls.push(artifact_trait_impl(value))
-                } else {
-                    ()
-                },
+                } else {},
                 None => {
                     let implementation = artifact_inherent_impl(value, public_only);
                     if !public_only || !implementation.definition.methods.is_empty() {
                         result.inherent_impls.push(implementation)
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
             },
             Function(_) => (),
         }
-    };
+    }
     result
 }
 
@@ -554,16 +524,16 @@ fn artifact_package_interface(
     let function_names: Vec[string] = Vec::[];
     for function in exports.functions {
         function_names.push(function.name)
-    };
+    }
     let function_names = wire::sort_artifact_names(function_names);
     let value_exports: Vec[(string, int)] = Vec::[];
     for index in 0..function_names.len() {
         value_exports.push((function_names[index], index))
-    };
+    }
     let enum_names: Vec[string] = Vec::[];
     for definition in exports.enums {
         enum_names.push(artifact_relative_export_name(package_name, definition.name))
-    };
+    }
     let enum_names = wire::sort_artifact_names(enum_names);
     let enum_variants: Vec[(string, Vec[string])] = Vec::[];
     for name in enum_names {
@@ -573,12 +543,10 @@ fn artifact_package_interface(
                 for variant in definition.variants {
                     variants.push(variant.name)
                 }
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         enum_variants.push((name, wire::sort_artifact_names(variants)))
-    };
+    }
     artifact::ArtifactPackageInterface {
         package_name,
         name: declared_name,

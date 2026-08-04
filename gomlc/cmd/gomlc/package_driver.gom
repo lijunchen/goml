@@ -108,10 +108,8 @@ fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
     for spec in resources::standard_package_specs() {
         if imports_package(value, spec.name) {
             package_names.push(spec.name)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     standard_needs_from_package_names(package_names)
 }
 
@@ -171,14 +169,14 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
     for value in values {
         for item in value.items {
             items.push(item)
-        };
+        }
         for reexport in value.public_reexports {
             public_reexports.push(reexport)
-        };
+        }
         for span in value.invalid_self_type_spans {
             invalid_self_type_spans.push(span)
         }
-    };
+    }
     hir::File {
         package_name,
         path,
@@ -210,7 +208,7 @@ fn artifact_short_name(value: string) -> string {
         } else {
             index = index + 1;
         }
-    };
+    }
     result
 }
 
@@ -260,7 +258,7 @@ fn public_item_names(values: Vec[ast::LowerResult], package_name: string) -> Vec
             },
             None => (),
         }
-    };
+    }
     result
 }
 
@@ -283,9 +281,7 @@ fn add_private_local_name(
     if !local_item_is_public(package_name, public_names, name)
         && !collections::contains(result, name) {
         result.push(name)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn collect_private_type_names(
@@ -300,7 +296,7 @@ fn collect_private_type_names(
             add_private_local_name(result, package_name, public_names, bound.trait_name);
             for arg in bound.args {
                 collect_private_type_names(result, package_name, public_names, arg)
-            };
+            }
             for binding in bound.associated_types {
                 collect_private_type_names(result, package_name, public_names, binding.1)
             }
@@ -329,7 +325,7 @@ fn collect_private_type_names(
         Func { params, ret_ty } => {
             for param in params {
                 collect_private_type_names(result, package_name, public_names, param)
-            };
+            }
             collect_private_type_names(result, package_name, public_names, ret_ty)
         },
         Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char => (),
@@ -410,23 +406,23 @@ fn trait_impl_exposed_private_names(
     collect_private_bounds_names(result, package_name, public_names, value.generic_bounds);
     for predicate in value.predicates {
         collect_private_predicate_names(result, package_name, public_names, predicate)
-    };
+    }
     for associated in value.associated_types {
         collect_private_type_names(result, package_name, public_names, associated.1)
-    };
+    }
     for method in value.methods {
         collect_private_bounds_names(result, package_name, public_names, method.generic_bounds);
         for predicate in method.predicates {
             collect_private_predicate_names(result, package_name, public_names, predicate)
-        };
+        }
         for param in method.params {
             collect_private_type_names(result, package_name, public_names, param.1)
-        };
+        }
         match method.ret_ty {
             Some(ret_ty) => collect_private_type_names(result, package_name, public_names, ret_ty),
             None => (),
         }
-    };
+    }
     result
 }
 
@@ -435,11 +431,9 @@ fn join_artifact_names(values: Vec[string]) -> string {
     for index in 0..values.len() {
         if index > 0 {
             builder.write_string(", ")
-        } else {
-            ()
-        };
+        } else {};
         builder.write_string(values[index])
-    };
+    }
     builder.finish()
 }
 
@@ -460,17 +454,13 @@ fn validate_public_trait_impls(value: hir::File, package_name: string, public_na
                                 + " exposes private type "
                                 + join_artifact_names(private_names),
                         )
-                    } else {
-                        ()
-                    }
-                } else {
-                    ()
-                },
+                    } else {}
+                } else {},
                 None => (),
             },
             _ => (),
         }
-    };
+    }
     Result::Ok(())
 }
 
@@ -483,10 +473,10 @@ fn function_exposed_private_names(
     collect_private_bounds_names(result, package_name, public_names, value.generic_bounds);
     for predicate in value.predicates {
         collect_private_predicate_names(result, package_name, public_names, predicate)
-    };
+    }
     for param in value.params {
         collect_private_type_names(result, package_name, public_names, param.1)
-    };
+    }
     match value.ret_ty {
         Some(ret_ty) => collect_private_type_names(result, package_name, public_names, ret_ty),
         None => (),
@@ -517,16 +507,10 @@ fn validate_public_fields_and_inherent_methods(
                                     + " exposes private type "
                                     + join_artifact_names(wire::sort_artifact_names(private_names)),
                             )
-                        } else {
-                            ()
-                        }
-                    } else {
-                        ()
-                    }
+                        } else {}
+                    } else {}
                 }
-            } else {
-                ()
-            },
+            } else {},
             ImplBlock(value) => match value.trait_ref {
                 Some(_) => (),
                 None => {
@@ -553,21 +537,17 @@ fn validate_public_fields_and_inherent_methods(
                                                 + " exposes private type "
                                                 + join_artifact_names(private_names),
                                         )
-                                    } else {
-                                        ()
-                                    }
+                                    } else {}
                                 },
                                 Private => (),
                             }
                         }
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
             },
             _ => (),
         }
-    };
+    }
     Result::Ok(())
 }
 
@@ -577,94 +557,58 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     let result: Vec[ArtifactStandardPackage] = Vec::[];
     if needs.ascii {
         result.push(standard.ascii)
-    } else {
-        ()
-    };
+    } else {};
     if needs.bytes {
         result.push(standard.bytes)
-    } else {
-        ()
-    };
+    } else {};
     if needs.cmp {
         result.push(standard.cmp)
-    } else {
-        ()
-    };
+    } else {};
     if needs.collections {
         result.push(standard.collections)
-    } else {
-        ()
-    };
+    } else {};
     if needs.env {
         result.push(standard.env)
-    } else {
-        ()
-    };
+    } else {};
     if needs.fs {
         result.push(standard.fs)
-    } else {
-        ()
-    };
+    } else {};
     if needs.io {
         result.push(standard.io)
-    } else {
-        ()
-    };
+    } else {};
     if needs.internal_task {
         result.push(standard.internal_task)
-    } else {
-        ()
-    };
+    } else {};
     if needs.iter {
         result.push(standard.iter)
-    } else {
-        ()
-    };
+    } else {};
     if needs.num {
         result.push(standard.num)
-    } else {
-        ()
-    };
+    } else {};
     if needs.path {
         result.push(standard.path)
-    } else {
-        ()
-    };
+    } else {};
     if needs.process {
         result.push(standard.process)
-    } else {
-        ()
-    };
+    } else {};
     if needs.task {
         result.push(standard.task)
-    } else {
-        ()
-    };
+    } else {};
     if needs.testing {
         result.push(standard.testing)
-    } else {
-        ()
-    };
+    } else {};
     if needs.text {
         result.push(standard.text)
-    } else {
-        ()
-    };
+    } else {};
     if needs.json {
         result.push(standard.json)
-    } else {
-        ()
-    };
+    } else {};
     if needs.time {
         result.push(standard.time)
-    } else {
-        ()
-    };
+    } else {};
     if needs.root {
         result.push(standard.root)
-    } else {
-        ()
-    };
+    } else {};
     result
 }
 
@@ -677,9 +621,7 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
                 read_source(value.source_path),
             ),
         )
-    } else {
-        ()
-    };
+    } else {};
     match value.hir {
         Some(file) => file,
         None => {
@@ -704,10 +646,8 @@ fn core_function_ret_type(functions: Vec[core::Function], name: string) -> Optio
         let function = functions[functions.len() - 1 - offset];
         if function.name == name {
             return Option::Some(function.ret_ty)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -720,7 +660,7 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
     let functions: Vec[core::Function] = Vec::[];
     for function in value.functions {
         functions.push(function)
-    };
+    }
     match core_function_ret_type(functions, expected) {
         Some(ret_ty) => if expected != "main" {
             functions.push(
@@ -748,9 +688,7 @@ fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
                     },
                 },
             )
-        } else {
-            ()
-        },
+        } else {},
         None => fail("error[compile]: entry package has no main function"),
     };
     core::File {
@@ -782,94 +720,58 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     let result: Vec[core::File] = Vec::[];
     if needs.ascii {
         result.push(standard.ascii.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.bytes {
         result.push(standard.bytes.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.cmp {
         result.push(standard.cmp.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.collections {
         result.push(standard.collections.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.env {
         result.push(standard.env.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.fs {
         result.push(standard.fs.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.io {
         result.push(standard.io.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.internal_task {
         result.push(standard.internal_task.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.iter {
         result.push(standard.iter.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.num {
         result.push(standard.num.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.path {
         result.push(standard.path.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.process {
         result.push(standard.process.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.task {
         result.push(standard.task.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.testing {
         result.push(standard.testing.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.text {
         result.push(standard.text.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.json {
         result.push(standard.json.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.time {
         result.push(standard.time.core_value)
-    } else {
-        ()
-    };
+    } else {};
     if needs.root {
         result.push(standard.root.core_value)
-    } else {
-        ()
-    };
+    } else {};
     result
 }
 
@@ -952,9 +854,7 @@ fn run_package_command(args: Vec[string], build: bool, emit_tests: bool) -> unit
             },
             Err(error) => fail(error),
         }
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn run_link_command(args: Vec[string]) -> unit {
@@ -1001,9 +901,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     };
     artifact_prepare_core_units(world, core_units);
     match artifact_find_core_unit(core_units, command.entry) {
-        Some(value) => if value.declared_name == "" || value.declared_name == "main" {
-            ()
-        } else {
+        Some(value) => if value.declared_name == "" || value.declared_name == "main" {} else {
             fail(
                 "error[compile]: entry package " + command.entry + " declares package "
                     + value.declared_name
@@ -1028,12 +926,10 @@ fn run_link_command(args: Vec[string]) -> unit {
         } else {
             dependencies.push(compilation.core_value)
         }
-    };
+    }
     if entries.is_empty() {
         fail("error[compile]: missing entry package " + command.entry)
-    } else {
-        ()
-    };
+    } else {};
     let entry = entries[entries.len() - 1];
     let linked_dependencies = selected_link_standard_core(world.standard, needs);
     append_core_files(linked_dependencies, dependencies);
@@ -1119,7 +1015,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     };
     for compilation in compilations {
         package_cores.push(compilation.core_value)
-    };
+    }
     let tests: Vec[artifact::ArtifactTestDescriptor] = Vec::[];
     for package_name in command.packages {
         match artifact_find_core_unit(core_units, package_name) {
@@ -1128,7 +1024,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
             },
             None => fail("error[compile]: missing test package " + package_name),
         }
-    };
+    }
     let linked_dependencies = selected_link_standard_core(world.standard, needs);
     append_core_files(linked_dependencies, package_cores);
     let linked = core::link_with_dependencies(

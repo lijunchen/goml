@@ -225,10 +225,8 @@ pub fn standard_package_spec(package_name: string) -> Option[StandardPackageSpec
     for spec in standard_package_specs() {
         if spec.name == package_name {
             return Option::Some(spec)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -237,15 +235,11 @@ pub fn standard_package_children(package_name: string) -> Vec[string] {
     for spec in standard_package_specs() {
         if package_name == "std" && spec.name == "std::io" {
             result.push("internal")
-        } else {
-            ()
-        };
+        } else {};
         if spec.parent == package_name {
             result.push(spec.declared_name)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -253,15 +247,13 @@ fn add_standard_package_closure(result: Vec[string], package_name: string) -> un
     for value in result {
         if value == package_name {
             return
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     match standard_package_spec(package_name) {
         Some(spec) => {
             for dependency in spec.dependencies {
                 add_standard_package_closure(result, dependency)
-            };
+            }
             result.push(package_name)
         },
         None => (),
@@ -272,7 +264,7 @@ pub fn standard_package_closure(package_names: Vec[string]) -> Vec[string] {
     let result: Vec[string] = Vec::[];
     for package_name in package_names {
         add_standard_package_closure(result, package_name)
-    };
+    }
     result
 }
 
@@ -280,15 +272,13 @@ fn add_standard_link_closure(result: Vec[string], package_name: string) -> unit 
     for value in result {
         if value == package_name {
             return
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     match standard_package_spec(package_name) {
         Some(spec) => {
             for dependency in spec.link_dependencies {
                 add_standard_link_closure(result, dependency)
-            };
+            }
             result.push(package_name)
         },
         None => (),
@@ -299,7 +289,7 @@ pub fn standard_package_link_closure(package_names: Vec[string]) -> Vec[string] 
     let result: Vec[string] = Vec::[];
     for package_name in package_names {
         add_standard_link_closure(result, package_name)
-    };
+    }
     result
 }
 
@@ -330,7 +320,7 @@ fn read_sources(relative_paths: Vec[string]) -> Result[Vec[Source], string] {
                 "could not read compiler resource " + source_path + ": " + error,
             ),
         }
-    };
+    }
     Result::Ok(result)
 }
 

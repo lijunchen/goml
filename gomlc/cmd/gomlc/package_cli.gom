@@ -66,7 +66,7 @@ fn extract_world_args(args: Vec[string]) -> Result[ExtractedWorldArgs, string] {
             result.push(argument);
             index = index + 1;
         }
-    };
+    }
     Result::Ok(ExtractedWorldArgs { args: result, world: world })
 }
 
@@ -108,10 +108,8 @@ fn sorted_unique_package_inputs(values: Vec[string]) -> Vec[string] {
     for value in sorted {
         if result.is_empty() || result[result.len() - 1] != value {
             result.push(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -181,12 +179,10 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
             while index < args.len() && !cli_option(args[index]) {
                 inputs.push(args[index]);
                 index = index + 1;
-            };
+            }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
-            } else {
-                ()
-            }
+            } else {}
         } else if option_string_present(inline_cli_value(argument, "--input")) {
             let value = match inline_cli_value(argument, "--input") {
                 Some(value) => value,
@@ -265,23 +261,17 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
             };
             return Result::Err(unexpected_argument_error_with_usage(argument, false, usage))
         }
-    };
+    }
     let missing: Vec[string] = Vec::[];
     if !option_string_present(package_name) {
         missing.push("--package <PACKAGE>")
-    } else {
-        ()
-    };
+    } else {};
     if inputs.is_empty() {
         missing.push("--input <INPUT>...")
-    } else {
-        ()
-    };
+    } else {};
     if !option_string_present(output) {
         missing.push("--output <OUTPUT>")
-    } else {
-        ()
-    };
+    } else {};
     if !missing.is_empty() {
         Result::Err(
             missing_required_arguments_error_with_usage(
@@ -354,12 +344,10 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
             while index < args.len() && !cli_option(args[index]) {
                 inputs.push(args[index]);
                 index = index + 1;
-            };
+            }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
-            } else {
-                ()
-            }
+            } else {}
         } else if option_string_present(inline_cli_value(argument, "--input")) {
             let value = match inline_cli_value(argument, "--input") {
                 Some(value) => value,
@@ -417,23 +405,17 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
                 None => return Result::Err(unexpected_argument_error(command, argument, false)),
             }
         }
-    };
+    }
     let missing: Vec[string] = Vec::[];
     if inputs.is_empty() {
         missing.push("--input <INPUT>...")
-    } else {
-        ()
-    };
+    } else {};
     if !option_string_present(entry) {
         missing.push("--entry <ENTRY>")
-    } else {
-        ()
-    };
+    } else {};
     if !option_string_present(output) {
         missing.push("--output <OUTPUT>")
-    } else {
-        ()
-    };
+    } else {};
     if !missing.is_empty() {
         Result::Err(missing_required_arguments_error(command, missing))
     } else {
@@ -501,12 +483,10 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
             while index < args.len() && !cli_option(args[index]) {
                 inputs.push(args[index]);
                 index = index + 1;
-            };
+            }
             if inputs.len() == previous_len {
                 return Result::Err(value_required_error("--input <INPUT>...", Option::None))
-            } else {
-                ()
-            }
+            } else {}
         } else if option_string_present(inline_cli_value(argument, "--input")) {
             let value = match inline_cli_value(argument, "--input") {
                 Some(value) => value,
@@ -579,28 +559,20 @@ fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs
                 None => return Result::Err(unexpected_argument_error(command, argument, false)),
             }
         }
-    };
+    }
     let missing: Vec[string] = Vec::[];
     if inputs.is_empty() {
         missing.push("--input <INPUT>...")
-    } else {
-        ()
-    };
+    } else {};
     if packages.is_empty() {
         missing.push("--package <PACKAGE>")
-    } else {
-        ()
-    };
+    } else {};
     if !option_string_present(output) {
         missing.push("--output <OUTPUT>")
-    } else {
-        ()
-    };
+    } else {};
     if !option_string_present(manifest) {
         missing.push("--manifest <MANIFEST>")
-    } else {
-        ()
-    };
+    } else {};
     if !missing.is_empty() {
         Result::Err(missing_required_arguments_error(command, missing))
     } else {

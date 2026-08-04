@@ -50,7 +50,7 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
         } else {
             paths.push(argument)
         }
-    };
+    }
     if write && check {
         Result::Err("-w and --check cannot be used together")
     } else if paths.len() > 1 && !write && !list && !check {
@@ -58,17 +58,13 @@ fn parse_options(args: Vec[string]) -> Result[Options, string] {
     } else {
         if paths.is_empty() {
             paths.push("-")
-        } else {
-            ()
-        };
+        } else {};
         let mut stdin_count = 0;
         for path in paths {
             if path == "-" {
                 stdin_count += 1;
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         if write && stdin_count > 0 {
             Result::Err("-w cannot be used with stdin")
         } else if stdin_count > 0 && paths.len() > 1 {
@@ -103,7 +99,7 @@ fn diagnostic_error(path: string, error: formatter::FormatError) -> string {
             "\n"
         };
         output = f"{output}{prefix}{path}:{diagnostic.start}: {diagnostic.message}";
-    };
+    }
     output
 }
 
@@ -119,7 +115,7 @@ fn format_files(paths: Vec[string]) -> Result[Vec[FormattedFile], string] {
             Err(error) => return Result::Err(diagnostic_error(path, error)),
         };
         result.push(FormattedFile { path, source, formatted })
-    };
+    }
     Result::Ok(result)
 }
 
@@ -130,10 +126,8 @@ fn write_files(values: Vec[FormattedFile]) -> Result[unit, string] {
                 Ok(_) => (),
                 Err(error) => return Result::Err(f"{value.path}: {error}"),
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Result::Ok(())
 }
 
@@ -151,13 +145,9 @@ fn run(options: Options) -> int {
             changed = true;
             if options.list {
                 io::println(file.path)
-            } else {
-                ()
-            }
-        } else {
-            ()
-        }
-    };
+            } else {}
+        } else {}
+    }
     if options.write {
         match write_files(files) {
             Ok(_) => (),
@@ -168,9 +158,7 @@ fn run(options: Options) -> int {
         }
     } else if !options.list && !options.check {
         io::print(files[0].formatted)
-    } else {
-        ()
-    };
+    } else {};
     if options.check && changed {
         1
     } else {
@@ -183,9 +171,7 @@ fn main() -> unit {
     match parse_options(args) {
         Ok(options) => {
             let code = run(options);
-            if code == 0 {
-                ()
-            } else {
+            if code == 0 {} else {
                 process::exit(code)
             }
         },

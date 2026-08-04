@@ -73,7 +73,7 @@ fn inline_dump_argument(value: string) -> Option[(string, string)] {
             Some(argument) => return Option::Some((name, argument)),
             None => (),
         }
-    };
+    }
     Option::None
 }
 
@@ -87,7 +87,7 @@ fn selected_run_usage(used_dumps: Vec[string]) -> string {
     for argument in used_dumps {
         builder.write_char(' ');
         builder.write_string(argument)
-    };
+    }
     builder.write_string(" <FILE>");
     builder.finish()
 }
@@ -139,9 +139,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                     } else {
                         if !seen.contains(similar) {
                             used_dumps.push(similar)
-                        } else {
-                            ()
-                        };
+                        } else {};
                         selected_run_usage(used_dumps)
                     };
                     return Result::Err(unexpected_similar_argument_error(argument, similar, usage))
@@ -165,7 +163,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 },
             }
         }
-    };
+    }
     match file {
         Some(value) => Result::Ok(
             RunArgs {

@@ -14,13 +14,11 @@ fn direct_hir_dependencies(values: Vec[hir::File]) -> Vec[string] {
     let result: Vec[string] = Vec::[];
     for value in values {
         for dependency in value.import_aliases {
-            if collections::contains(result, dependency.package_name) {
-                ()
-            } else {
+            if collections::contains(result, dependency.package_name) {} else {
                 result.push(dependency.package_name)
             }
         }
-    };
+    }
     result
 }
 
@@ -28,10 +26,8 @@ fn package_node_name_present(values: Vec[PackageOrderNode], name: string) -> boo
     for value in values {
         if value.name == name {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -39,10 +35,8 @@ fn package_node_is_ready(value: PackageOrderNode, remaining: Vec[PackageOrderNod
     for dependency in value.dependencies {
         if package_node_name_present(remaining, dependency) {
             return false
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     true
 }
 
@@ -56,7 +50,7 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
             names.push(value.name);
             remaining.push(value)
         }
-    };
+    }
     let result: Vec[int] = Vec::[];
     while !remaining.is_empty() {
         let mut candidate = -1;
@@ -65,16 +59,14 @@ fn order_package_nodes(values: Vec[PackageOrderNode]) -> Result[Vec[int], string
             if package_node_is_ready(value, remaining)
                 && (candidate < 0 || cmp::compare(value.name, remaining[candidate].name).is_lt()) {
                 candidate = index;
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         if candidate < 0 {
             return Result::Err("package dependency cycle detected in core inputs")
         } else {
             result.push(remaining.remove(candidate).position)
         }
-    };
+    }
     Result::Ok(result)
 }
 
@@ -92,13 +84,13 @@ fn order_artifact_compilations(values: Vec[ArtifactCompilation]) -> Result[
                 position: index,
             },
         )
-    };
+    }
     match order_package_nodes(nodes) {
         Ok(order) => {
             let result: Vec[ArtifactCompilation] = Vec::[];
             for index in order {
                 result.push(values[index])
-            };
+            }
             Result::Ok(result)
         },
         Err(error) => Result::Err(error),

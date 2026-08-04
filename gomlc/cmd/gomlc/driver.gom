@@ -169,12 +169,10 @@ fn import_path_text(value: ast::Path) -> string {
     for segment in value.segments {
         if index > 0 {
             builder.write_string("::")
-        } else {
-            ()
-        };
+        } else {};
         builder.write_string(segment.ident);
         index = index + 1;
-    };
+    }
     builder.finish()
 }
 
@@ -189,10 +187,8 @@ fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
                 let package_path = import_path_text(use_decl.path);
                 if !std_import(package_path) {
                     return Option::Some(package_path)
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             Option::None
         },
         None => Option::None,
@@ -205,10 +201,8 @@ fn imports_package(value: ast::LowerResult, expected: string) -> bool {
             for use_decl in file.uses {
                 if import_path_text(use_decl.path) == expected {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         None => false,
@@ -221,10 +215,8 @@ fn has_standard_import(value: ast::LowerResult) -> bool {
             for use_decl in file.uses {
                 if std_import(import_path_text(use_decl.path)) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         None => false,
@@ -235,12 +227,12 @@ fn dependency_enums(builtins: core::File, dependencies: Vec[core::File]) -> Vec[
     let result: Vec[tast::EnumDef] = Vec::[];
     for value in builtins.enums {
         result.push(value)
-    };
+    }
     for dependency in dependencies {
         for value in dependency.enums {
             result.push(value)
         }
-    };
+    }
     result
 }
 
@@ -248,12 +240,12 @@ fn dependency_structs(builtins: core::File, dependencies: Vec[core::File]) -> Ve
     let result: Vec[tast::StructDef] = Vec::[];
     for value in builtins.structs {
         result.push(value)
-    };
+    }
     for dependency in dependencies {
         for value in dependency.structs {
             result.push(value)
         }
-    };
+    }
     result
 }
 
@@ -272,20 +264,18 @@ fn compile_standard_package(
         let ast_value = ast::lower(parser::parse(source.source));
         ast_values.push(ast_value);
         inputs.push((ast_value, source.path))
-    };
+    }
     let public_names = public_item_names(ast_values, package_name);
     let hir_files: Vec[hir::File] = Vec::[];
     for lowered in hir::lower_package_files(inputs, package_name) {
         if !lowered.diagnostics.is_empty() {
             fail("error[compile]: failed to lower standard source " + lowered.source_path)
-        } else {
-            ()
-        };
+        } else {};
         match lowered.hir {
             Some(file) => hir_files.push(file),
             None => fail("error[compile]: missing standard source " + lowered.source_path),
         }
-    };
+    }
     let hir_file = merge_hir_files(hir_files, package_name);
     let tast_value = tast::check_package_files_for_link_with_dependencies_allowing_externs(
         hir_files,
@@ -293,9 +283,7 @@ fn compile_standard_package(
     );
     if !tast_value.diagnostics.is_empty() {
         fail(render_typer_diagnostics(tast_value.diagnostics, hir_file.source_path, ""))
-    } else {
-        ()
-    };
+    } else {};
     let signatures = tast::package_signatures(hir_file);
     let tast_file = match tast_value.tast {
         Some(value) => value,
@@ -307,11 +295,11 @@ fn compile_standard_package(
     let enum_names: Vec[string] = Vec::[];
     for definition in dependency_enums(builtins, core_dependencies) {
         enum_names.push(definition.name)
-    };
+    }
     let struct_names: Vec[string] = Vec::[];
     for definition in dependency_structs(builtins, core_dependencies) {
         struct_names.push(definition.name)
-    };
+    }
     let public_exports = artifact_package_exports(
         tast_file,
         signatures,
@@ -373,14 +361,14 @@ fn builtin_hir_files() -> Vec[hir::File] {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     for source in sources {
         inputs.push((ast::lower(parser::parse(source.source)), source.path))
-    };
+    }
     let files: Vec[hir::File] = Vec::[];
     for lowered in hir::lower_package_files(inputs, "builtin") {
         match lowered.hir {
             Some(file) => files.push(file),
             None => fail("error[compile]: failed to lower builtin source " + lowered.source_path),
         }
-    };
+    }
     files
 }
 
@@ -389,18 +377,16 @@ fn builtin_artifact_interface_unit() -> artifact::ArtifactInterfaceUnit {
     let signatures = tast::package_signatures(merge_hir_files(builtin_files, "builtin"));
     let traits: Vec[tast::TraitInfo] = Vec::[];
     for value in signatures.traits {
-        if value.name == "Iterator" || value.name == "IntoIterator" {
-            ()
-        } else {
+        if value.name == "Iterator" || value.name == "IntoIterator" {} else {
             traits.push(value)
         }
-    };
+    }
     for name in Vec::["Iterator", "IntoIterator", "Eq", "Hash", "ToString"] {
         match tast::builtin_trait_info(name) {
             Some(value) => traits.push(value),
             None => fail("error[compile]: missing builtin trait " + name),
         }
-    };
+    }
     let signatures = tast::PackageSignatures {
         traits,
         functions: signatures.functions,
@@ -483,10 +469,10 @@ fn builtin_artifact_interface_unit() -> artifact::ArtifactInterfaceUnit {
             Some(value) => functions.push(value),
             None => fail("error[compile]: missing builtin function " + name),
         }
-    };
+    }
     for value in signatures.functions {
         functions.push(value)
-    };
+    }
     let signatures = tast::PackageSignatures {
         traits: signatures.traits,
         functions,
@@ -538,7 +524,7 @@ fn standard_artifact_deps(builtin_hash: string, dependencies: Vec[PackageCompila
         result.push(
             (dependency.interface_unit.package_name, dependency.interface_unit.interface_hash),
         )
-    };
+    }
     result
 }
 
@@ -546,10 +532,8 @@ fn required_standard_compilation(values: Vec[PackageCompilation], package_name: 
     for value in values {
         if value.interface_unit.package_name == package_name {
             return value
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     fail("error[compile]: standard package dependency was not compiled: " + package_name);
     values[0]
 }
@@ -558,7 +542,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
     let package_names: Vec[string] = Vec::[];
     for spec in resources::standard_package_specs() {
         package_names.push(spec.name)
-    };
+    }
     let compiled: Vec[PackageCompilation] = Vec::[];
     for package_name in resources::standard_package_closure(package_names) {
         let spec = match resources::standard_package_spec(package_name) {
@@ -575,12 +559,12 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
             let dependency = required_standard_compilation(compiled, dependency_name);
             dependencies.push(dependency);
             hir_dependencies.push(dependency.hir_file)
-        };
+        }
         for dependency_name in spec.link_dependencies {
             core_dependencies.push(
                 required_standard_compilation(compiled, dependency_name).core_value,
             )
-        };
+        }
         compiled.push(
             compile_standard_package(
                 required_standard_sources(spec.name),
@@ -592,7 +576,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
                 standard_artifact_deps(builtin_hash, dependencies),
             ),
         )
-    };
+    }
     StandardLibrary {
         root: required_standard_compilation(compiled, "std"),
         host: required_standard_compilation(compiled, "std::internal::host"),
@@ -649,10 +633,8 @@ fn direct_imported_standard_package_names(ast_value: ast::LowerResult) -> Vec[st
     for spec in resources::standard_package_specs() {
         if imports_package(ast_value, spec.name) {
             result.push(spec.name)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -662,7 +644,7 @@ fn selected_standard_hir(ast_value: ast::LowerResult, standard: StandardLibrary)
         direct_imported_standard_package_names(ast_value),
     ) {
         result.push(standard_library_package(standard, package_name).hir_file)
-    };
+    }
     result
 }
 
@@ -672,7 +654,7 @@ fn selected_standard_core(ast_value: ast::LowerResult, standard: StandardLibrary
         direct_imported_standard_package_names(ast_value),
     ) {
         result.push(standard_library_package(standard, package_name).core_value)
-    };
+    }
     result
 }
 
@@ -691,7 +673,7 @@ fn hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source_path: string) -> Ve
                 sort_order: 0,
             },
         )
-    };
+    }
     result
 }
 
@@ -751,7 +733,7 @@ fn sorted_typer_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnost
     let result: Vec[tast::Diagnostic] = Vec::[];
     for value in values {
         result.push(value)
-    };
+    }
     collections::sort_by_ordering(result, diagnostic_compare);
     result
 }
@@ -786,10 +768,8 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
             line_start = index + 1;
         } else if byte < 128 || byte >= 192 {
             column = column + 1;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let mut line_end = line_start;
     while line_end < source.byte_len() {
         let byte = source.byte_get(line_end);
@@ -798,7 +778,7 @@ fn source_position(source: string, offset: int) -> DiagnosticPosition {
         } else {
             line_end = line_end + 1;
         }
-    };
+    }
     DiagnosticPosition { line, column, line_start, line_end }
 }
 
@@ -806,7 +786,7 @@ fn repeat_char(value: char, count: int) -> string {
     let builder = text::StringBuilder::new();
     for _ in 0..count {
         builder.write_char(value)
-    };
+    }
     builder.finish()
 }
 
@@ -818,7 +798,7 @@ fn diagnostic_visual_width(value: string) -> int {
         } else {
             width = width + 1;
         }
-    };
+    }
     width
 }
 
@@ -834,7 +814,7 @@ fn expand_diagnostic_tabs(value: string) -> string {
             builder.write_char(character);
             width = width + 1;
         }
-    };
+    }
     builder.finish()
 }
 
@@ -875,9 +855,7 @@ fn render_diagnostic_label(
             builder.write_string((end.line + 1).to_string());
             builder.write_char(':');
             builder.write_string((end.column + 1).to_string())
-        } else {
-            ()
-        };
+        } else {};
         match message {
             Some(value) => {
                 builder.write_string(": ");
@@ -952,9 +930,7 @@ fn render_typer_diagnostic(value: tast::Diagnostic, fallback_path: string, fallb
         None => if value.source_path != "" && !inference {
             builder.write_string("\nat: ");
             builder.write_string(value.source_path)
-        } else {
-            ()
-        },
+        } else {},
     };
     for label in value.secondary_labels {
         render_diagnostic_label(
@@ -966,7 +942,7 @@ fn render_typer_diagnostic(value: tast::Diagnostic, fallback_path: string, fallb
             fallback_path,
             fallback_source,
         )
-    };
+    }
     builder.finish()
 }
 
@@ -980,12 +956,10 @@ fn render_typer_diagnostics(
     for value in sorted_typer_diagnostics(values) {
         if index > 0 {
             builder.write_string("\n\n")
-        } else {
-            ()
-        };
+        } else {};
         builder.write_string(render_typer_diagnostic(value, fallback_path, fallback_source));
         index = index + 1;
-    };
+    }
     builder.finish()
 }
 
@@ -996,9 +970,7 @@ fn fail_on_typer_diagnostics(
 ) -> unit {
     if typer_diagnostics_have_errors(diagnostics) {
         fail(render_typer_diagnostics(diagnostics, fallback_path, fallback_source))
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn ast_diagnostics(diagnostics: Vec[cst::Diagnostic], stage: string, source_path: string) -> Vec[
@@ -1018,7 +990,7 @@ fn ast_diagnostics(diagnostics: Vec[cst::Diagnostic], stage: string, source_path
                 sort_order: 0,
             },
         )
-    };
+    }
     result
 }
 
@@ -1036,9 +1008,7 @@ fn fail_on_ast_diagnostics(
                 source,
             ),
         )
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn compact_diagnostic_line(
@@ -1074,7 +1044,7 @@ fn compact_ast_diagnostics(diagnostics: Vec[cst::Diagnostic], source: string, wi
             },
             source,
         )
-    };
+    }
     builder.finish()
 }
 
@@ -1082,7 +1052,7 @@ fn compact_messages(diagnostics: Vec[string]) -> string {
     let builder = text::StringBuilder::new();
     for diagnostic in diagnostics {
         compact_diagnostic_line(builder, diagnostic, Option::None, "")
-    };
+    }
     builder.finish()
 }
 
@@ -1090,7 +1060,7 @@ fn compact_hir_diagnostics(diagnostics: Vec[hir::Diagnostic], source: string) ->
     let builder = text::StringBuilder::new();
     for diagnostic in diagnostics {
         compact_diagnostic_line(builder, diagnostic.message, diagnostic.span, source)
-    };
+    }
     builder.finish()
 }
 
@@ -1176,7 +1146,7 @@ fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagno
             Error => result.push(value),
             Warning => (),
         }
-    };
+    }
     collections::sort_by_ordering(result, compact_diagnostic_compare);
     result
 }
@@ -1187,7 +1157,7 @@ fn typer_diagnostics_have_errors(diagnostics: Vec[tast::Diagnostic]) -> bool {
             Error => return true,
             Warning => (),
         }
-    };
+    }
     false
 }
 
@@ -1204,7 +1174,7 @@ fn compact_typer_diagnostics(
             diagnostic.span,
             diagnostic_source(diagnostic.source_path, source_path, source),
         )
-    };
+    }
     builder.finish()
 }
 
@@ -1212,15 +1182,11 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     let parsed = parser::parse(source);
     if !parsed.diagnostics.is_empty() {
         return compact_ast_diagnostics(parsed.diagnostics, source, true)
-    } else {
-        ()
-    };
+    } else {};
     let ast_value = ast::lower(parsed);
     if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
-    } else {
-        ()
-    };
+    } else {};
     match single_file_project_import(ast_value) {
         Some(package_path) => return "single-file compilation cannot use project package "
             + package_path
@@ -1230,15 +1196,11 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     let ast_value = hir::expand_derives(ast_value);
     if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
-    } else {
-        ()
-    };
+    } else {};
     let hir_value = hir::lower_expanded(ast_value, source_path);
     if !hir_value.diagnostics.is_empty() {
         return compact_hir_diagnostics(hir_value.diagnostics, source)
-    } else {
-        ()
-    };
+    } else {};
     let counter = Ref::new(0);
     let builtins = lower_builtin_core(counter);
     let standard = if has_standard_import(ast_value) {
@@ -1257,14 +1219,10 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
     let tast_value = tast::check_for_link_with_dependencies(hir_value, hir_dependencies);
     if typer_diagnostics_have_errors(tast_value.diagnostics) {
         return compact_typer_diagnostics(tast_value.diagnostics, source_path, source)
-    } else {
-        ()
-    };
+    } else {};
     if !has_single_file_entrypoint(tast_value) {
         return "main function is required\n"
-    } else {
-        ()
-    };
+    } else {};
     let core_value = core::link_with_dependencies(
         builtins,
         core_dependencies,
@@ -1310,12 +1268,10 @@ fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
                 match item {
                     Function(function) => if function.name == "main" {
                         return true
-                    } else {
-                        ()
-                    },
+                    } else {},
                     _ => (),
                 }
-            };
+            }
             false
         },
         None => false,
@@ -1323,9 +1279,7 @@ fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
 }
 
 fn fail_on_missing_single_file_entrypoint(value: tast::CheckResult) -> unit {
-    if has_single_file_entrypoint(value) {
-        ()
-    } else {
+    if has_single_file_entrypoint(value) {} else {
         fail("error[typer]: main function is required")
     }
 }
@@ -1395,17 +1349,13 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(parsed.diagnostics, source, true),
         )
-    } else {
-        ()
-    };
+    } else {};
     let ast_value = ast::lower(parsed);
     if !ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(ast_value.diagnostics, source, false),
         )
-    } else {
-        ()
-    };
+    } else {};
     match single_file_project_import(ast_value) {
         Some(package_path) => return SourceCompilation::Diagnostics(
             "single-file compilation cannot use project package " + package_path + "\n",
@@ -1417,17 +1367,13 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(ast_value.diagnostics, source, false),
         )
-    } else {
-        ()
-    };
+    } else {};
     let hir_value = hir::lower_expanded(ast_value, source_path);
     if !hir_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_hir_diagnostics(hir_value.diagnostics, source),
         )
-    } else {
-        ()
-    };
+    } else {};
     let counter = Ref::new(0);
     let builtins = lower_builtin_core(counter);
     let standard = if has_standard_import(ast_value) {
@@ -1450,9 +1396,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         )
     } else if !has_single_file_entrypoint(tast_value) {
         return SourceCompilation::Diagnostics("main function is required\n")
-    } else {
-        ()
-    };
+    } else {};
     let core_value = core::link_with_dependencies(
         builtins,
         core_dependencies,
@@ -1519,9 +1463,7 @@ fn pipeline_stage_output(stage: string, source_path: string, source: string) -> 
 fn print_dump(printed: Ref[bool], label: string, content: string) -> unit {
     if printed.get() {
         io::println("")
-    } else {
-        ()
-    };
+    } else {};
     io::println("== " + label + " ==");
     io::println(content);
     printed.set(true)
@@ -1531,44 +1473,28 @@ fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> un
     let printed = Ref::new(false);
     if args.dump_ast {
         print_dump(printed, "AST", ast::pretty(compilation.ast_value))
-    } else {
-        ()
-    };
+    } else {};
     if args.dump_hir {
         print_dump(printed, "HIR", hir::encode(compilation.hir_value))
-    } else {
-        ()
-    };
+    } else {};
     if args.dump_tast {
         print_dump(printed, "Typed AST", tast::encode(compilation.tast_value))
-    } else {
-        ()
-    };
+    } else {};
     if args.dump_core {
         print_dump(printed, "Core", core::encode(compilation.core_value))
-    } else {
-        ()
-    };
+    } else {};
     if args.dump_mono {
         print_dump(printed, "Mono", mono::encode(compilation.mono_value))
-    } else {
-        ()
-    };
+    } else {};
     if args.dump_lift {
         print_dump(printed, "Lifted", lift::encode(compilation.lift_value))
-    } else {
-        ()
-    };
+    } else {};
     if args.dump_anf {
         print_dump(printed, "ANF", anf::encode(compilation.anf_value))
-    } else {
-        ()
-    };
+    } else {};
     if args.dump_go {
         print_dump(printed, "Go", go_source)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn write_stdout(data: bytes::Bytes) -> unit {
@@ -1595,10 +1521,10 @@ fn trim_ascii(value: string) -> string {
     let mut end = value.byte_len();
     while start < end && ascii::is_whitespace(value.byte_get(start)) {
         start = start + 1;
-    };
+    }
     while end > start && ascii::is_whitespace(value.byte_get(end - 1)) {
         end = end - 1;
-    };
+    }
     value.byte_slice(start, end)
 }
 
@@ -1652,7 +1578,6 @@ fn try_execute_with_yaegi(directory: string, go_file: string) -> bool {
 
 fn cleanup_temp_file(go_file: string) -> unit {
     let _ = process::Command::new("rm").arg("-f").arg(go_file).output();
-    ()
 }
 
 fn execute_with_go_run(directory: string, go_file: string) -> unit {
@@ -1679,9 +1604,7 @@ fn execute_go_source(source_path: string, source: string) -> unit {
         Some(value) => value,
         None => temp_root(),
     };
-    if try_execute_with_yaegi(directory, go_file) {
-        ()
-    } else {
+    if try_execute_with_yaegi(directory, go_file) {} else {
         execute_with_go_run(directory, go_file)
     };
     cleanup_temp_file(go_file)

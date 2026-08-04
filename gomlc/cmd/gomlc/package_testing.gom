@@ -32,10 +32,8 @@ fn named_test_attributes(values: Vec[ast::Attribute], expected: string) -> Vec[a
     for value in values {
         if value.name == expected {
             result.push(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -101,9 +99,7 @@ fn collect_function_test(
                 ),
             )
         }
-    } else {
-        ()
-    };
+    } else {};
     if ignore_attrs.len() > 1 {
         for index in 1..ignore_attrs.len() {
             let attribute = ignore_attrs[index];
@@ -116,9 +112,7 @@ fn collect_function_test(
                 ),
             )
         }
-    } else {
-        ()
-    };
+    } else {};
     if test_attrs.is_empty() {
         for attribute in ignore_attrs {
             diagnostics.push(
@@ -129,11 +123,9 @@ fn collect_function_test(
                     attribute.span,
                 ),
             )
-        };
+        }
         return
-    } else {
-        ()
-    };
+    } else {};
     let test_attr = test_attrs[0];
     if test_attr.has_argument_list {
         diagnostics.push(
@@ -145,9 +137,7 @@ fn collect_function_test(
             ),
         );
         return
-    } else {
-        ()
-    };
+    } else {};
     let ignore_reason = if !ignore_attrs.is_empty() {
         let ignore_attr = ignore_attrs[0];
         if !ignore_attr.has_argument_list {
@@ -219,9 +209,7 @@ fn reject_item_test_attributes(
                     value.span,
                 ),
             )
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -312,7 +300,7 @@ fn collect_package_test_candidates(files: Vec[ast::LowerResult], source_paths: V
             },
             None => (),
         }
-    };
+    }
     TestCandidateCollection { candidates, diagnostics }
 }
 
@@ -322,10 +310,8 @@ fn find_test_scheme(exports: artifact::ArtifactPackageExports, symbol: string) -
     for function in exports.functions {
         if function.name == symbol {
             return Option::Some(function)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -333,10 +319,8 @@ fn find_valid_test_candidate(values: Vec[TestCandidate], name: string) -> Option
     for value in values {
         if value.name == name {
             return Option::Some(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -375,9 +359,7 @@ fn validate_package_tests(
                     span,
                 ),
             )
-        } else {
-            ()
-        };
+        } else {};
         if !scheme.type_params.is_empty() {
             diagnostics.push(
                 package_test_diagnostic(
@@ -387,9 +369,7 @@ fn validate_package_tests(
                     span,
                 ),
             )
-        } else {
-            ()
-        };
+        } else {};
         match tast::resolve_type(scheme.ty) {
             Func { params, ret_ty } => {
                 if !params.is_empty() {
@@ -401,9 +381,7 @@ fn validate_package_tests(
                             span,
                         ),
                     )
-                } else {
-                    ()
-                };
+                } else {};
                 match tast::resolve_type(ret_ty) {
                     Unit => (),
                     actual => {
@@ -453,10 +431,8 @@ fn validate_package_tests(
                     valid_candidates.push(candidate)
                 },
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     TestValidation { tests: sort_test_descriptors(tests), diagnostics }
 }
 
@@ -509,7 +485,7 @@ fn write_test_json_string(builder: text::StringBuilder, value: string) -> unit {
             builder.write_string(value.byte_slice(index, index + width));
             index = index + width;
         }
-    };
+    }
     builder.write_char('"')
 }
 
@@ -520,9 +496,7 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
         let value = values[index];
         if index > 0 {
             builder.write_char(',')
-        } else {
-            ()
-        };
+        } else {};
         builder.write_string("\n  {\n    \"id\": ");
         write_test_json_string(builder, value.id);
         builder.write_string(",\n    \"package\": ");
@@ -551,12 +525,10 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
             None => builder.write_string("null"),
         };
         builder.write_string("\n  }")
-    };
+    }
     if !values.is_empty() {
         builder.write_char('\n')
-    } else {
-        ()
-    };
+    } else {};
     builder.write_char(']');
     builder.finish()
 }
@@ -565,6 +537,6 @@ fn test_link_cases(values: Vec[artifact::ArtifactTestDescriptor]) -> Vec[(string
     let result: Vec[(string, string)] = Vec::[];
     for value in values {
         result.push((value.id, value.symbol))
-    };
+    }
     result
 }

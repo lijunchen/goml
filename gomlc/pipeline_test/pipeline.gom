@@ -63,10 +63,8 @@ fn pipeline_case_insert_index(values: Vec[string], name: string) -> int {
     for index in 0..values.len() {
         if name < values[index] {
             return index
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     values.len()
 }
 
@@ -100,9 +98,7 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
     } else {
         false
     };
-    if source_current {
-        ()
-    } else {
+    if source_current {} else {
         match fs::write_file(main_file, go_source) {
             Ok(()) => (),
             Err(message) => {
@@ -136,16 +132,12 @@ fn execute_go_and_read_stdout(go_source: string, expected: string, name: string)
         Some(value) => return value,
         None => (),
     };
-    if source_current && fs::is_file(executable) {
-        ()
-    } else {
+    if source_current && fs::is_file(executable) {} else {
         match process::Command::new("go").arg("build").arg("-o").arg("main").arg("main.go").current_dir(
             work_dir,
         ).env("GOWORK", "off").env("GO111MODULE", "off").output() {
             Ok(output) => {
-                if process::ExitStatus::success(process::Output::status(output)) {
-                    ()
-                } else {
+                if process::ExitStatus::success(process::Output::status(output)) {} else {
                     match process::Output::stderr(output).to_string() {
                         Ok(value) => {
                             testing::fail("go build failed: " + value);
@@ -207,9 +199,7 @@ pub fn all_pipeline_cases() -> Vec[string] {
                 } else {
                     result.insert(index, name)
                 }
-            } else {
-                ()
-            }
+            } else {}
         },
         Err(message) => {
             testing::fail("failed to read pipeline fixtures: " + message)
@@ -255,9 +245,7 @@ fn test_one_case_with_go(name: string, can_run_go: bool) -> unit {
                 name,
             ),
         )
-    } else {
-        ()
-    }
+    } else {}
 }
 
 pub fn test_one_case(name: string) -> unit {
@@ -270,9 +258,7 @@ pub fn test_pipeline_shard(shard: int, shard_count: int) -> unit {
         let current = index.get();
         if current % shard_count == shard {
             test_one_case_with_go(name, true)
-        } else {
-            ()
-        };
+        } else {};
         index.set(current + 1)
     }
 }

@@ -53,10 +53,8 @@ pub fn artifact_json_required_field(values: Vec[(string, ArtifactValue)], name: 
     for value in values {
         if value.0 == name {
             matches.push(value.1)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if matches.len() != 1 {
         Result::Err(artifact_decode_error("field " + name))
     } else {
@@ -72,10 +70,8 @@ pub fn artifact_json_optional_field(values: Vec[(string, ArtifactValue)], name: 
     for value in values {
         if value.0 == name {
             matches.push(value.1)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if matches.len() > 1 {
         Result::Err(artifact_decode_error("field " + name))
     } else if matches.len() == 1 {
@@ -129,10 +125,8 @@ pub fn artifact_parse_nonnegative_int(value: string) -> Result[int, string] {
             };
             if result > 2147483647 {
                 return Result::Err(artifact_decode_error("32-bit integer"))
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         Result::Ok(result as int)
     }
 }
@@ -145,6 +139,6 @@ pub fn artifact_decode_string_array(value: ArtifactValue, expected: string) -> R
     let result: Vec[string] = Vec::[];
     for value in values {
         result.push(artifact_json_string_value(value, expected)?)
-    };
+    }
     Result::Ok(result)
 }

@@ -130,13 +130,9 @@ pub fn new_artifact_binary_value_stream(table: ArtifactBinaryStringTable) -> Art
 }
 
 fn artifact_binary_stream_before_value(value: ArtifactJsonWriter) -> unit {
-    if value.binary_scopes.is_empty() {
-        ()
-    } else {
+    if value.binary_scopes.is_empty() {} else {
         let scope = value.binary_scopes[value.binary_scopes.len() - 1];
-        if scope.object {
-            ()
-        } else {
+        if scope.object {} else {
             scope.count.set(scope.count.get() + 1)
         }
     }
@@ -220,18 +216,14 @@ fn artifact_json_indent(value: ArtifactJsonWriter) -> unit {
         for _ in 0..value.depth.get() {
             value.builder.write_string("  ")
         }
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn artifact_json_line(value: ArtifactJsonWriter) -> unit {
     if value.pretty {
         value.builder.write_char('\n');
         artifact_json_indent(value)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn artifact_json_before_value(value: ArtifactJsonWriter) -> unit {
@@ -245,9 +237,7 @@ fn artifact_json_before_value(value: ArtifactJsonWriter) -> unit {
             value.builder.write_char(',')
         };
         artifact_json_line(value)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn artifact_json_write_hex(value: ArtifactJsonWriter, byte: uint8) -> unit {
@@ -266,9 +256,7 @@ fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> 
             || byte < b' ' {
             if start < index {
                 value.builder.write_string(input.byte_slice(start, index))
-            } else {
-                ()
-            };
+            } else {};
             if byte == b'"' {
                 value.builder.write_string("\\\"")
             } else if byte == b'\\' {
@@ -288,15 +276,11 @@ fn artifact_json_write_string_body(value: ArtifactJsonWriter, input: string) -> 
                 artifact_json_write_hex(value, byte)
             };
             start = index + 1;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if start < input.byte_len() {
         value.builder.write_string(input.byte_slice(start, input.byte_len()))
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn artifact_json_write_quoted(value: ArtifactJsonWriter, input: string) -> unit {
@@ -306,9 +290,7 @@ fn artifact_json_write_quoted(value: ArtifactJsonWriter, input: string) -> unit 
 }
 
 pub fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
-    if value.binary_mode == 2 {
-        ()
-    } else if value.binary_mode == 3 {
+    if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_begin_container(value, 6, true)
     } else if value.capture {
         value.captured_containers.push(
@@ -324,9 +306,7 @@ pub fn artifact_json_begin_object(value: ArtifactJsonWriter) -> unit {
 }
 
 pub fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
-    if value.binary_mode == 2 {
-        ()
-    } else if value.binary_mode == 3 {
+    if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_end_container(value)
     } else if value.capture {
         match value.captured_containers.remove(value.captured_containers.len() - 1) {
@@ -341,17 +321,13 @@ pub fn artifact_json_end_object(value: ArtifactJsonWriter) -> unit {
         let _ = value.object_scopes.remove(value.object_scopes.len() - 1);
         if !first {
             artifact_json_line(value)
-        } else {
-            ()
-        };
+        } else {};
         value.builder.write_char('}')
     }
 }
 
 pub fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
-    if value.binary_mode == 2 {
-        ()
-    } else if value.binary_mode == 3 {
+    if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_begin_container(value, 5, false)
     } else if value.capture {
         value.captured_containers.push(ArtifactCapturedContainer::Array(Vec::[]))
@@ -365,9 +341,7 @@ pub fn artifact_json_begin_array(value: ArtifactJsonWriter) -> unit {
 }
 
 pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
-    if value.binary_mode == 2 {
-        ()
-    } else if value.binary_mode == 3 {
+    if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_end_container(value)
     } else if value.capture {
         match value.captured_containers.remove(value.captured_containers.len() - 1) {
@@ -382,9 +356,7 @@ pub fn artifact_json_end_array(value: ArtifactJsonWriter) -> unit {
         let _ = value.object_scopes.remove(value.object_scopes.len() - 1);
         if !first {
             artifact_json_line(value)
-        } else {
-            ()
-        };
+        } else {};
         value.builder.write_char(']')
     }
 }
@@ -443,9 +415,7 @@ pub fn artifact_json_string(value: ArtifactJsonWriter, input: string) -> unit {
 }
 
 pub fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> unit {
-    if value.binary_mode == 2 {
-        ()
-    } else if value.binary_mode == 3 {
+    if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_before_value(value);
         artifact_binary_write_u8(value.binary_writer, 3);
         artifact_binary_write_string(value.binary_writer, input)
@@ -458,9 +428,7 @@ pub fn artifact_json_number(value: ArtifactJsonWriter, input: string) -> unit {
 }
 
 pub fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> unit {
-    if value.binary_mode == 2 {
-        ()
-    } else if value.binary_mode == 3 {
+    if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_before_value(value);
         artifact_binary_write_u8(
             value.binary_writer,
@@ -485,9 +453,7 @@ pub fn artifact_json_bool(value: ArtifactJsonWriter, input: bool) -> unit {
 }
 
 pub fn artifact_json_null(value: ArtifactJsonWriter) -> unit {
-    if value.binary_mode == 2 {
-        ()
-    } else if value.binary_mode == 3 {
+    if value.binary_mode == 2 {} else if value.binary_mode == 3 {
         artifact_binary_stream_before_value(value);
         artifact_binary_write_u8(value.binary_writer, 0)
     } else if value.capture {

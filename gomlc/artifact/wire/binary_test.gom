@@ -71,17 +71,17 @@ fn binary_artifact_round_trips_varints() -> unit {
     let writer = new_artifact_binary_writer();
     for value in unsigned {
         artifact_binary_write_uleb128(writer, value)
-    };
+    }
     for value in signed {
         artifact_binary_write_zigzag(writer, value)
-    };
+    }
     let reader = new_artifact_binary_reader(artifact_binary_writer_finish(writer));
     for value in unsigned {
         artifact_binary_expect_ok(artifact_binary_read_uleb128(reader), value)
-    };
+    }
     for value in signed {
         artifact_binary_expect_ok(artifact_binary_read_zigzag(reader), value)
-    };
+    }
     testing::assert_eq(artifact_binary_reader_remaining(reader), 0)
 }
 
@@ -104,7 +104,7 @@ fn binary_artifact_rejects_invalid_input() -> unit {
     let overflow_values = Vec::new();
     for _ in range(0, 10) {
         overflow_values.push(255)
-    };
+    }
     let overflow = new_artifact_binary_reader(artifact_binary_test_bytes(overflow_values));
     artifact_binary_expect_err(artifact_binary_read_uleb128(overflow));
     let invalid_bool = new_artifact_binary_reader(artifact_binary_test_bytes(Vec::[2]));

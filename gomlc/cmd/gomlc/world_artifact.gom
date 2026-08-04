@@ -104,7 +104,7 @@ fn world_add_standard_sections(
     ];
     for package_value in packages {
         world_add_package_sections(sections, package_value.0, package_value.1)?
-    };
+    }
     Result::Ok(())
 }
 
@@ -184,9 +184,7 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let container = wire::decode_artifact_binary_container(data)?;
     if container.kind != 3 {
         return Result::Err("binary artifact is not a compiler world")
-    } else {
-        ()
-    };
+    } else {};
     let counter_section = world_required_section(container, 1)?;
     let counter = Ref::new(world_decode_counter(counter_section.data)?);
     let builtin_interface_section = world_required_section(container, 2)?;
@@ -196,9 +194,7 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     if builtin_interface.package_name != "builtin" || builtin_core.package_name != "builtin"
         || builtin_core.interface_hash != builtin_interface.interface_hash {
         return Result::Err("world artifact builtin identity does not match")
-    } else {
-        ()
-    };
+    } else {};
     let root = world_decode_package(container, 10, "std")?;
     let host = world_decode_package(container, 12, "std::internal::host")?;
     let bytes = world_decode_package(container, 14, "std::bytes")?;
@@ -295,7 +291,7 @@ fn parse_prepare_world_args(args: Vec[string]) -> Result[string, string] {
         } else {
             return Result::Err(unexpected_argument_error("prepare-world", argument, false))
         }
-    };
+    }
     match output {
         Some(value) => Result::Ok(value),
         None => {

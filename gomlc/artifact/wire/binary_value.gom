@@ -13,9 +13,7 @@ fn empty_artifact_binary_string_table() -> ArtifactBinaryStringTable {
 }
 
 fn artifact_binary_collect_string(seen: HashMap[string, unit], values: Vec[string], value: string) -> unit {
-    if seen.contains(value) {
-        ()
-    } else {
+    if seen.contains(value) {} else {
         seen[value] = ();
         values.push(value)
     }
@@ -53,7 +51,7 @@ fn artifact_binary_string_table_from_values(values: Vec[string]) -> ArtifactBina
     let indexes: HashMap[string, int] = HashMap::{};
     for index in 0..values.len() {
         indexes[values[index]] = index;
-    };
+    }
     ArtifactBinaryStringTable { values, indexes }
 }
 
@@ -69,7 +67,7 @@ pub fn encode_artifact_binary_string_table(table: ArtifactBinaryStringTable) -> 
     artifact_binary_write_uleb128(writer, table.values.len() as uint64);
     for value in table.values {
         artifact_binary_write_string(writer, value)
-    };
+    }
     artifact_binary_writer_finish(writer)
 }
 
@@ -81,9 +79,7 @@ pub fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
     let count = artifact_binary_read_length(reader)?;
     if count > 10000000 {
         return Result::Err("binary artifact string table exceeds limit")
-    } else {
-        ()
-    };
+    } else {};
     let values = Vec::with_capacity(count);
     let indexes: HashMap[string, int] = HashMap::{};
     for index in 0..count {
@@ -96,7 +92,7 @@ pub fn decode_artifact_binary_string_table(data: bytes::Bytes) -> Result[
             indexes[value] = index;
             values.push(value)
         }
-    };
+    }
     if artifact_binary_reader_remaining(reader) != 0 {
         Result::Err("trailing bytes in binary artifact string table")
     } else {
@@ -134,10 +130,8 @@ fn artifact_binary_object_has_field(fields: Vec[(string, ArtifactValue)], name: 
     for field in fields {
         if field.0 == name {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -149,9 +143,7 @@ fn artifact_binary_encode_value_at(
 ) -> Result[unit, string] {
     if depth > 4096 {
         return Result::Err("binary artifact value nesting exceeds limit")
-    } else {
-        ()
-    };
+    } else {};
     match value {
         Null => {
             artifact_binary_write_u8(writer, 0);
@@ -179,7 +171,7 @@ fn artifact_binary_encode_value_at(
             artifact_binary_write_u32(writer, items.len() as uint32);
             for item in items {
                 artifact_binary_encode_value_at(writer, table, item, depth + 1)?
-            };
+            }
             Result::Ok(())
         },
         Object(fields) => {
@@ -188,7 +180,7 @@ fn artifact_binary_encode_value_at(
             for field in fields {
                 artifact_binary_encode_string_id(writer, table, field.0)?;
                 artifact_binary_encode_value_at(writer, table, field.1, depth + 1)?
-            };
+            }
             Result::Ok(())
         },
     }
@@ -212,9 +204,7 @@ fn artifact_binary_decode_value_at(
 ) -> Result[ArtifactValue, string] {
     if depth > 4096 {
         return Result::Err("binary artifact value nesting exceeds limit")
-    } else {
-        ()
-    };
+    } else {};
     let tag = artifact_binary_read_u8(reader)?;
     match tag {
         0 => Result::Ok(ArtifactValue::Null),
@@ -232,22 +222,18 @@ fn artifact_binary_decode_value_at(
             let count = artifact_binary_read_u32(reader)? as int;
             if count > 10000000 {
                 return Result::Err("binary artifact array exceeds limit")
-            } else {
-                ()
-            };
+            } else {};
             let values = Vec::with_capacity(count);
             for _ in 0..count {
                 values.push(artifact_binary_decode_value_at(reader, table, depth + 1)?)
-            };
+            }
             Result::Ok(ArtifactValue::Array(values))
         },
         6 => {
             let count = artifact_binary_read_u32(reader)? as int;
             if count > 10000000 {
                 return Result::Err("binary artifact object exceeds limit")
-            } else {
-                ()
-            };
+            } else {};
             let fields = Vec::with_capacity(count);
             let names: Option[HashMap[string, unit]] = if count > 32 {
                 Option::Some(HashMap::{})
@@ -270,7 +256,7 @@ fn artifact_binary_decode_value_at(
                 };
                 let value = artifact_binary_decode_value_at(reader, table, depth + 1)?;
                 fields.push((name, value))
-            };
+            }
             Result::Ok(ArtifactValue::Object(fields))
         },
         _ => Result::Err(artifact_binary_reader_error(reader, "invalid value tag")),

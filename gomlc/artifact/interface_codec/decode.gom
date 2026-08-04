@@ -13,7 +13,7 @@ fn artifact_decode_predicates(
     let result: Vec[tast::TypePredicate] = Vec::[];
     for value in values {
         result.push(tast_codec::artifact_decode_predicate(context, value)?)
-    };
+    }
     Result::Ok(result)
 }
 
@@ -25,7 +25,7 @@ fn artifact_decode_trait_refs(
     let result: Vec[tast::TraitRef] = Vec::[];
     for value in values {
         result.push(tast_codec::artifact_decode_trait_ref(context, value)?)
-    };
+    }
     Result::Ok(result)
 }
 
@@ -62,7 +62,7 @@ fn artifact_decode_fn_map(context: tast_codec::ArtifactDecodeContext, value: wir
     let result: Vec[artifact::ArtifactFnScheme] = Vec::[];
     for item in object {
         result.push(artifact_decode_fn_scheme(context, item.0, item.1)?)
-    };
+    }
     Result::Ok(result)
 }
 
@@ -77,12 +77,10 @@ fn artifact_decode_type_pairs(
         let pair = wire::artifact_json_array(value, expected)?;
         if pair.len() != 2 {
             return Result::Err(wire::artifact_decode_error(expected))
-        } else {
-            ()
-        };
+        } else {};
         let name = wire::artifact_json_string_value(pair[0], expected)?;
         result.push((name, tast_codec::artifact_decode_type(context, pair[1])?))
-    };
+    }
     Result::Ok(result)
 }
 
@@ -155,7 +153,7 @@ fn artifact_decode_enum_def(context: tast_codec::ArtifactDecodeContext, value: w
         let fields_value = wire::artifact_json_required_field(variant, "fields")?;
         let fields = artifact_decode_enum_variant_fields(context, fields_value)?;
         variants.push(tast::EnumVariantDef { name: variant_name, fields })
-    };
+    }
     Result::Ok(tast::EnumDef { name, generics, variants, option_variants })
 }
 
@@ -178,7 +176,7 @@ fn artifact_decode_struct_def(
     let public_fields: Vec[string] = Vec::[];
     for field in fields {
         public_fields.push(field.0)
-    };
+    }
     let has_hidden_fields = wire::artifact_json_bool_value(
         wire::artifact_json_required_field(object, "has_hidden_fields")?,
         "struct hidden fields flag",
@@ -216,7 +214,7 @@ fn artifact_decode_associated_type_defs(
             wire::artifact_json_required_field(definition, "bounds")?,
         )?;
         result.push(artifact::ArtifactAssociatedTypeDef { name: item.0, bounds })
-    };
+    }
     Result::Ok(result)
 }
 
@@ -266,7 +264,7 @@ fn artifact_decode_associated_types(
     let result: Vec[(string, tast::Type)] = Vec::[];
     for item in object {
         result.push((item.0, tast_codec::artifact_decode_type(context, item.1)?))
-    };
+    }
     Result::Ok(result)
 }
 
@@ -308,9 +306,7 @@ fn artifact_decode_trait_impls(
         let pair = wire::artifact_json_array(value, "trait implementation")?;
         if pair.len() != 2 {
             return Result::Err(wire::artifact_decode_error("trait implementation pair"))
-        } else {
-            ()
-        };
+        } else {};
         let key = wire::artifact_json_object(pair[0], "trait implementation key")?;
         let trait_ref = tast_codec::artifact_decode_trait_ref(
             context,
@@ -322,7 +318,7 @@ fn artifact_decode_trait_impls(
         )?;
         let definition = artifact_decode_impl_def(context, pair[1])?;
         result.push(artifact::ArtifactTraitImpl { trait_ref, for_ty, definition })
-    };
+    }
     Result::Ok(result)
 }
 
@@ -358,13 +354,11 @@ fn artifact_decode_inherent_impls(
         let pair = wire::artifact_json_array(value, "inherent implementation")?;
         if pair.len() != 2 {
             return Result::Err(wire::artifact_decode_error("inherent implementation pair"))
-        } else {
-            ()
-        };
+        } else {};
         let key = artifact_decode_inherent_impl_key(context, pair[0])?;
         let definition = artifact_decode_impl_def(context, pair[1])?;
         result.push(artifact::ArtifactInherentImpl { key, definition })
-    };
+    }
     Result::Ok(result)
 }
 
@@ -378,16 +372,16 @@ pub fn decode_exports(value: wire::ArtifactValue) -> Result[
     let reexports: Vec[(string, string)] = Vec::[];
     for item in reexport_map {
         reexports.push((item.0, wire::artifact_json_string_value(item.1, "re-export target")?))
-    };
+    }
     let type_env = wire::artifact_json_field_object(object, "type_env")?;
     let enum_map = wire::artifact_json_field_object(type_env, "enums")?;
     let struct_map = wire::artifact_json_field_object(type_env, "structs")?;
     for item in enum_map {
         tast_codec::artifact_add_type_name(context.enum_names, item.0)
-    };
+    }
     for item in struct_map {
         tast_codec::artifact_add_type_name(context.struct_names, item.0)
-    };
+    }
     let enums: Vec[tast::EnumDef] = Vec::[];
     for item in enum_map {
         let value = artifact_decode_enum_def(context, item.1)?;
@@ -396,7 +390,7 @@ pub fn decode_exports(value: wire::ArtifactValue) -> Result[
         } else {
             return Result::Err(wire::artifact_decode_error("matching enum name"))
         }
-    };
+    }
     let structs: Vec[tast::StructDef] = Vec::[];
     for item in struct_map {
         let value = artifact_decode_struct_def(context, item.1)?;
@@ -405,18 +399,18 @@ pub fn decode_exports(value: wire::ArtifactValue) -> Result[
         } else {
             return Result::Err(wire::artifact_decode_error("matching struct name"))
         }
-    };
+    }
     let alias_map = wire::artifact_json_field_object(type_env, "aliases")?;
     let type_aliases: Vec[tast::TypeAliasInfo] = Vec::[];
     for item in alias_map {
         type_aliases.push(artifact_decode_type_alias(context, item.0, item.1)?)
-    };
+    }
     let trait_env = wire::artifact_json_field_object(object, "trait_env")?;
     let trait_map = wire::artifact_json_field_object(trait_env, "trait_defs")?;
     let traits: Vec[artifact::ArtifactTraitDef] = Vec::[];
     for item in trait_map {
         traits.push(artifact_decode_trait_def(context, item.0, item.1)?)
-    };
+    }
     let trait_impls = artifact_decode_trait_impls(
         context,
         wire::artifact_json_required_field(trait_env, "trait_impls")?,
@@ -439,7 +433,7 @@ pub fn decode_exports(value: wire::ArtifactValue) -> Result[
             wire::artifact_json_required_field(definition, "ty")?,
         )?;
         constants.push(tast::ConstantScheme { def_id: Option::None, name: item.0, ty })
-    };
+    }
     Result::Ok(
         artifact::ArtifactPackageExports {
             reexports,
@@ -469,14 +463,14 @@ fn artifact_decode_package_interface(value: wire::ArtifactValue) -> Result[
     for item in value_map {
         let number = wire::artifact_json_number_value(item.1, "value export index")?;
         value_exports.push((item.0, wire::artifact_parse_nonnegative_int(number)?))
-    };
+    }
     let enum_map = wire::artifact_json_field_object(object, "enum_variants")?;
     let enum_variants: Vec[(string, Vec[string])] = Vec::[];
     for item in enum_map {
         enum_variants.push(
             (item.0, wire::artifact_decode_string_array(item.1, "enum variant names")?),
         )
-    };
+    }
     Result::Ok(
         artifact::ArtifactPackageInterface { package_name, name, value_exports, enum_variants },
     )
@@ -490,7 +484,7 @@ pub fn artifact_decode_string_map(value: wire::ArtifactValue, expected: string) 
     let result: Vec[(string, string)] = Vec::[];
     for item in object {
         result.push((item.0, wire::artifact_json_string_value(item.1, expected)?))
-    };
+    }
     Result::Ok(result)
 }
 

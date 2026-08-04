@@ -54,7 +54,7 @@ fn artifact_binary_write_uleb128(writer: ArtifactBinaryWriter, value: uint64) ->
     while remaining >= 128 {
         writer.data.push(((remaining & 127) as uint8) | 128);
         remaining = remaining >> 7;
-    };
+    }
     writer.data.push(remaining as uint8)
 }
 
@@ -114,7 +114,7 @@ fn artifact_binary_patch_u64(writer: ArtifactBinaryWriter, offset: int, value: u
     } else {
         for index in 0..8 {
             writer.data.set(offset + index, ((value >> (index * 8)) & 255) as uint8)
-        };
+        }
         Result::Ok(())
     }
 }
@@ -180,7 +180,7 @@ pub fn artifact_binary_read_u64(reader: ArtifactBinaryReader) -> Result[uint64, 
         let mut value = 0 as uint64;
         for index in 0..8 {
             value = value | ((reader.data.get(offset + index) as uint64) << (index * 8));
-        };
+        }
         Result::Ok(value)
     }
 }
@@ -192,16 +192,14 @@ fn artifact_binary_read_uleb128(reader: ArtifactBinaryReader) -> Result[uint64, 
         let byte = artifact_binary_read_u8(reader)?;
         if index == 9 && byte > 1 {
             return Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))
-        } else {
-            ()
-        };
+        } else {};
         value = value | (((byte & 127) as uint64) << (index * 7));
         if byte & 128 == 0 {
             return Result::Ok(value)
         } else {
             index = index + 1;
         }
-    };
+    }
     Result::Err(artifact_binary_reader_error(reader, "unsigned varint overflow"))
 }
 
@@ -241,7 +239,7 @@ fn artifact_binary_read_bytes(reader: ArtifactBinaryReader) -> Result[bytes::Byt
         let result = bytes::Bytes::with_capacity(length);
         for index in 0..length {
             result.push(reader.data.get(offset + index))
-        };
+        }
         reader.offset.set(offset + length);
         Result::Ok(result)
     }
@@ -258,7 +256,7 @@ fn artifact_binary_read_raw_bytes(reader: ArtifactBinaryReader, length: int) -> 
         let result = bytes::Bytes::with_capacity(length);
         for index in 0..length {
             result.push(reader.data.get(offset + index))
-        };
+        }
         reader.offset.set(offset + length);
         Result::Ok(result)
     }

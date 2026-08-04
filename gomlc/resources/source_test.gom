@@ -109,11 +109,11 @@ fn callable_abi_catalog_round_trips_keys_and_ids() -> unit {
             spec.artifact_id,
         );
         testing::assert_eq(required_abi(intrinsic_abi_by_id(spec.artifact_id)).key, spec.key)
-    };
+    }
     for spec in standard_runtime_abi_specs() {
         testing::assert_eq(required_abi(runtime_abi_by_key(spec.key)).artifact_id, spec.artifact_id);
         testing::assert_eq(required_abi(runtime_abi_by_id(spec.artifact_id)).key, spec.key)
-    };
+    }
     for id in core_runtime_keys() {
         testing::assert_eq(required_abi(runtime_abi_by_id(id)).key, "core." + id)
     }

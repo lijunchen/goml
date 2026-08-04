@@ -129,13 +129,9 @@ pub fn artifact_constructor_separator(value: string) -> int {
         for index in 0..value.byte_len() - 1 {
             if text::starts_with_at(value, index, "::") {
                 result = index;
-            } else {
-                ()
-            }
+            } else {}
         }
-    } else {
-        ()
-    };
+    } else {};
     result
 }
 
@@ -151,9 +147,7 @@ fn artifact_json_constructor(writer: wire::ArtifactJsonWriter, value: tast::Cons
         let separator = artifact_constructor_separator(value.name);
         if separator < 0 {
             fail("error[compile]: invalid enum constructor in compiler artifact")
-        } else {
-            ()
-        };
+        } else {};
         wire::artifact_json_name(writer, "Enum");
         wire::artifact_json_begin_object(writer);
         wire::artifact_json_name(writer, "type_name");
@@ -218,7 +212,7 @@ fn artifact_json_core_expr_array(
     wire::artifact_json_begin_array(writer);
     for value in values {
         artifact_json_core_expr(writer, context, value)
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -246,7 +240,7 @@ fn artifact_json_closure_params(
         wire::artifact_json_name(writer, "ty");
         tast_codec::artifact_json_type(writer, context, value.ty);
         wire::artifact_json_end_object(writer)
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -263,7 +257,7 @@ fn artifact_json_core_arms(
         wire::artifact_json_name(writer, "body");
         artifact_json_core_expr(writer, context, value.body);
         wire::artifact_json_end_object(writer)
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -620,7 +614,7 @@ fn artifact_json_core_block(
         wire::artifact_json_name(writer, "ty");
         tast_codec::artifact_json_type(writer, context, statement.ty);
         wire::artifact_json_end_object(writer)
-    };
+    }
     wire::artifact_json_end_array(writer);
     wire::artifact_json_name(writer, "tail");
     artifact_json_optional_core_expr(writer, context, value.tail);
@@ -660,7 +654,7 @@ fn artifact_json_core_params(
         wire::artifact_json_string(writer, value.0);
         tast_codec::artifact_json_type(writer, context, value.1);
         wire::artifact_json_end_array(writer)
-    };
+    }
     wire::artifact_json_end_array(writer)
 }
 
@@ -811,13 +805,13 @@ pub fn write_core_file(
     wire::artifact_json_begin_array(writer);
     for function in value.functions {
         artifact_json_core_function(writer, context, function)
-    };
+    }
     wire::artifact_json_end_array(writer);
     wire::artifact_json_name(writer, "constants");
     wire::artifact_json_begin_array(writer);
     for value in value.constants {
         artifact_json_constant(writer, context, value)
-    };
+    }
     wire::artifact_json_end_array(writer);
     wire::artifact_json_end_object(writer)
 }
