@@ -49,7 +49,7 @@ fn type_is_concrete(value: tast::Type) -> bool {
         Var(_) => false,
         Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char | Con {
             name: _,
-        } | Dyn { trait_name: _ } | Error => true,
+        } | Dyn { trait_name: _, .. } | Error => true,
         Tuple { items } => types_are_concrete(items),
         Projection { for_ty: base, name: _, trait_ref: reference } => {
             type_is_concrete(base) && optional_trait_ref_is_concrete(reference)
@@ -432,7 +432,32 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
         Char => tast::Type::Char,
         Tuple { items } => tast::Type::Tuple { items: collapse_types(ctx, items) },
         Con { name } => tast::Type::Con { name },
-        Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            let collapsed_associated: Vec[(string, tast::Type)] = Vec::[];
+            for binding in associated_types {
+                collapsed_associated.push((binding.0, collapse_type(ctx, binding.1)))
+            };
+            let collapsed_additional: Vec[tast::DynTraitBound] = Vec::[];
+            for bound in additional_bounds {
+                let bound_associated: Vec[(string, tast::Type)] = Vec::[];
+                for binding in bound.associated_types {
+                    bound_associated.push((binding.0, collapse_type(ctx, binding.1)))
+                };
+                collapsed_additional.push(
+                    tast::DynTraitBound {
+                        trait_name: bound.trait_name,
+                        args: collapse_types(ctx, bound.args),
+                        associated_types: bound_associated,
+                    },
+                )
+            };
+            tast::Type::Dyn {
+                trait_name,
+                args: collapse_types(ctx, args),
+                associated_types: collapsed_associated,
+                additional_bounds: collapsed_additional,
+            }
+        },
         Projection { for_ty: base, name, trait_ref: reference } => tast::Type::Projection {
             for_ty: collapse_type(ctx, base),
             name,
@@ -610,7 +635,7 @@ fn lower_trait_call(
     let args = lower_exprs(ctx, args);
     let receiver_ty = core::expr_type(receiver);
     match tast::resolve_type(receiver_ty) {
-        Dyn { trait_name: name } => {
+        Dyn { trait_name: name, .. } => {
             if reference.args.is_empty() && reference.name == name {
                 core::Expr::DynCall { trait_name: name, method_name, receiver, args, ty }
             } else {
@@ -705,11 +730,12 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
             body: lower_expr(ctx, body),
             ty: collapse_type(ctx, ty),
         },
-        Break { value, ty } => core::Expr::Break {
+        Break { target, value, ty } => core::Expr::Break {
+            target,
             value: lower_optional_expr(ctx, value),
             ty: collapse_type(ctx, ty),
         },
-        Continue { ty } => core::Expr::Continue { ty: collapse_type(ctx, ty) },
+        Continue { target, ty } => core::Expr::Continue { target, ty: collapse_type(ctx, ty) },
         Return { expr, ty } => {
             core::Expr::Return { expr: lower_optional_expr(ctx, expr), ty: collapse_type(ctx, ty) }
         },
@@ -910,8 +936,8 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
             collect_expr_type_names(ctx, body)
         },
         Loop { body, ty: _ } => collect_expr_type_names(ctx, body),
-        Break { value, ty: _ } => collect_optional_expr_type_names(ctx, value),
-        Continue { ty: _ } => (),
+        Break { value, ty: _, .. } => collect_optional_expr_type_names(ctx, value),
+        Continue { ty: _, .. } => (),
         Return { expr, ty: _ } => collect_optional_expr_type_names(ctx, expr),
         Go { expr, ty: _ } | Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } | Proj {
             tuple: expr,

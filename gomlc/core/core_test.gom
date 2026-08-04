@@ -175,7 +175,7 @@ fn lowers_linked_builtin_option_payload_patterns() -> unit {
                     Some(Block { block: binding, ty: _ }) => {
                         testing::assert_eq(binding.stmts.get(0).name, "value/1");
                         match binding.tail {
-                            Some(Var { name, ty: _ }) => {
+                            Some(Var { name, is_mut: _, ty: _ }) => {
                                 testing::assert_eq(name, "value/1")
                             },
                             _ => testing::fail("expected bound payload result"),

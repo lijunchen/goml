@@ -93,7 +93,13 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
         let value_span = node_span(node);
         let result = match node_kind(node) {
             PATTERN_VARIABLE => match first_token(node, lexer::TokenKind::Ident) {
-                Some(token) => Option::Some(Pat::Var { name: token.token.text, span: value_span }),
+                Some(token) => Option::Some(
+                    Pat::Var {
+                        name: token.token.text,
+                        is_mut: has_token(node, lexer::TokenKind::MutKeyword),
+                        span: value_span,
+                    },
+                ),
                 None => {
                     push_error(ctx, value_span, "Variable pattern is missing a name");
                     Option::None
@@ -264,6 +270,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                                             name_token.token.text,
                                             Pat::Var {
                                                 name: name_token.token.text,
+                                                is_mut: false,
                                                 span: node_span(field),
                                             },
                                         ),

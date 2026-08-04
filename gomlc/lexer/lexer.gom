@@ -113,6 +113,7 @@ pub enum TokenKind {
     FStringExprEnd,
     FStringEnd,
     CharLit,
+    Label,
     ByteCharLit,
     ByteStr,
     RawByteStr,
@@ -606,6 +607,20 @@ fn scan_char_end(source: string, start: int) -> Option[int] {
     }
 }
 
+fn scan_label_end(source: string, start: int) -> Option[int] {
+    let first = start + 1;
+    if first >= source.byte_len()
+        || !(ascii::is_alphabetic(byte_at(source, first)) || byte_at(source, first) == b'_') {
+        Option::None
+    } else {
+        let mut end = first + 1;
+        while end < source.byte_len() && is_ident_continue(byte_at(source, end)) {
+            end = end + 1;
+        };
+        Option::Some(end)
+    }
+}
+
 fn scan_byte_escape_end(source: string, slash: int, quote: uint8) -> Option[int] {
     if slash + 1 >= source.byte_len() {
         Option::None
@@ -1054,9 +1069,15 @@ pub fn lex(source: string) -> Vec[Token] {
                     index = end;
                     push_token(tokens, source, TokenKind::CharLit, start, end)
                 },
-                None => {
-                    index = start + 1;
-                    push_token(tokens, source, TokenKind::Error, start, start + 1)
+                None => match scan_label_end(source, start) {
+                    Some(end) => {
+                        index = end;
+                        push_token(tokens, source, TokenKind::Label, start, end)
+                    },
+                    None => {
+                        index = start + 1;
+                        push_token(tokens, source, TokenKind::Error, start, start + 1)
+                    },
                 },
             }
         } else if ascii::is_alphabetic(value) || value == b'_' {
@@ -1205,6 +1226,7 @@ pub fn token_kind_display(kind: TokenKind) -> string {
         FStringExprEnd => "}",
         FStringEnd => "\"",
         CharLit => "char_lit",
+        Label => "label",
         ByteCharLit => "byte_char_lit",
         ByteStr => "byte_str",
         RawByteStr => "raw_byte_str",

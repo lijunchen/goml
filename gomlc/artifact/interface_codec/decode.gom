@@ -374,6 +374,11 @@ pub fn decode_exports(value: wire::ArtifactValue) -> Result[
 ] {
     let context = tast_codec::new_artifact_decode_context();
     let object = wire::artifact_json_object(value, "package exports")?;
+    let reexport_map = wire::artifact_json_field_object(object, "reexports")?;
+    let reexports: Vec[(string, string)] = Vec::[];
+    for item in reexport_map {
+        reexports.push((item.0, wire::artifact_json_string_value(item.1, "re-export target")?))
+    };
     let type_env = wire::artifact_json_field_object(object, "type_env")?;
     let enum_map = wire::artifact_json_field_object(type_env, "enums")?;
     let struct_map = wire::artifact_json_field_object(type_env, "structs")?;
@@ -437,6 +442,7 @@ pub fn decode_exports(value: wire::ArtifactValue) -> Result[
     };
     Result::Ok(
         artifact::ArtifactPackageExports {
+            reexports,
             enum_type_names: context.enum_names,
             struct_type_names: context.struct_names,
             type_aliases,

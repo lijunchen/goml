@@ -31,7 +31,8 @@ fn parse_file(parser: Parser) -> unit {
     } else {
         ()
     };
-    while parser.at(lexer::TokenKind::UseKeyword) {
+    while parser.at(lexer::TokenKind::UseKeyword)
+        || (parser.at(lexer::TokenKind::PubKeyword) && parser.nth(1) == lexer::TokenKind::UseKeyword) {
         use_decl(parser)
     };
     while !parser.eof() {
@@ -85,6 +86,15 @@ fn package_decl(parser: Parser) -> unit {
 
 fn use_decl(parser: Parser) -> unit {
     let marker = parser.open();
+    use_decl_with_marker(parser, marker)
+}
+
+fn use_decl_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
+    if parser.at(lexer::TokenKind::PubKeyword) {
+        parser.expect(lexer::TokenKind::PubKeyword)
+    } else {
+        ()
+    };
     parser.expect(lexer::TokenKind::UseKeyword);
     if parser.at(lexer::TokenKind::Ident) {
         use_path(parser)
@@ -96,7 +106,7 @@ fn use_decl(parser: Parser) -> unit {
     if parser.at(lexer::TokenKind::LBrace) {
         use_item_list(parser)
     } else if parser.eat(lexer::TokenKind::AsKeyword) {
-        parser.expect_lower_ident("use alias")
+        parser.expect(lexer::TokenKind::Ident)
     } else {
         ()
     };
@@ -190,7 +200,9 @@ fn public_item(parser: Parser) -> unit {
 
 fn public_item_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     parser.expect(lexer::TokenKind::PubKeyword);
-    if parser.at(lexer::TokenKind::ExternKeyword) {
+    if parser.at(lexer::TokenKind::UseKeyword) {
+        use_decl_after_pub(parser, marker)
+    } else if parser.at(lexer::TokenKind::ExternKeyword) {
         extern_decl_with_marker(parser, marker)
     } else if parser.at(lexer::TokenKind::FnKeyword) {
         func_with_marker(parser, marker)
@@ -214,6 +226,27 @@ fn public_item_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
         let _ = parser.close(marker, cst::NodeKind::ErrorTree);
         ()
     }
+}
+
+fn use_decl_after_pub(parser: Parser, marker: MarkerOpened) -> unit {
+    parser.expect(lexer::TokenKind::UseKeyword);
+    if parser.at(lexer::TokenKind::Ident) {
+        use_path(parser)
+    } else if !parser.eof() {
+        parser.advance_with_error("expected a path after `use`")
+    } else {
+        ()
+    };
+    if parser.at(lexer::TokenKind::LBrace) {
+        use_item_list(parser)
+    } else if parser.eat(lexer::TokenKind::AsKeyword) {
+        parser.expect(lexer::TokenKind::Ident)
+    } else {
+        ()
+    };
+    parser.expect(lexer::TokenKind::Semi);
+    let _ = parser.close(marker, cst::NodeKind::USE);
+    ()
 }
 
 fn type_alias(parser: Parser) -> unit {
@@ -998,10 +1031,9 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
         },
         DynKeyword => {
             parser.expect(lexer::TokenKind::DynKeyword);
-            if parser.at(lexer::TokenKind::Ident) {
-                parse_path_always(parser)
-            } else {
-                parser.advance_with_error("expected a trait name after dyn")
+            dyn_bound(parser);
+            while parser.eat(lexer::TokenKind::Plus) {
+                dyn_bound(parser)
             };
             parser.close(marker, cst::NodeKind::TYPE_DYN)
         },
@@ -1011,6 +1043,55 @@ fn type_atom(parser: Parser) -> Option[MarkerClosed] {
         },
     };
     Option::Some(result)
+}
+
+fn dyn_bound(parser: Parser) -> unit {
+    let marker = parser.open();
+    if parser.at(lexer::TokenKind::Ident) {
+        parse_path_always(parser)
+    } else {
+        parser.advance_with_error("expected a trait name in dyn type")
+    };
+    if parser.at(lexer::TokenKind::LBracket) {
+        dyn_arg_list(parser)
+    } else {
+        ()
+    };
+    let _ = parser.close(marker, cst::NodeKind::DYN_BOUND);
+    ()
+}
+
+fn dyn_arg_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LBracket);
+    while !parser.at(lexer::TokenKind::RBracket) && !parser.eof() {
+        if parser.at(lexer::TokenKind::Ident) && parser.nth(1) == lexer::TokenKind::Eq {
+            let binding = parser.open();
+            parser.advance();
+            parser.advance();
+            if is_type_first(parser.peek()) {
+                type_expr(parser)
+            } else {
+                parser.advance_with_error("expected a type in dyn associated type binding")
+            };
+            let _ = parser.close(binding, cst::NodeKind::DYN_ASSOC_BINDING);
+            ()
+        } else if is_type_first(parser.peek()) {
+            type_expr(parser)
+        } else {
+            parser.advance_with_error("expected a type argument or associated type binding")
+        };
+        if parser.eat(lexer::TokenKind::Comma) {
+            ()
+        } else if !parser.at(lexer::TokenKind::RBracket) {
+            parser.error("expected `,` between dyn arguments")
+        } else {
+            ()
+        };
+    };
+    parser.expect(lexer::TokenKind::RBracket);
+    let _ = parser.close(marker, cst::NodeKind::DYN_ARG_LIST);
+    ()
 }
 
 fn type_param_list(parser: Parser) -> unit {

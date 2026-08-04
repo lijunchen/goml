@@ -20,6 +20,7 @@ struct AliasEntry {
 struct ResolvedUses {
     aliases: Vec[AliasEntry],
     traits: Vec[string],
+    public_reexports: Vec[(string, string)],
     diagnostics: Vec[string],
 }
 
@@ -176,19 +177,8 @@ fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec
 fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
     let aliases: Vec[AliasEntry] = Vec::[];
     let traits: Vec[string] = Vec::[];
+    let public_reexports: Vec[(string, string)] = Vec::[];
     let diagnostics: Vec[string] = Vec::[];
-    for use_decl in file.uses {
-        if use_decl.items.is_empty() {
-            match use_decl.alias {
-                Some(alias) => aliases.push(
-                    AliasEntry { alias, target: path_segments(use_decl.path), item: false },
-                ),
-                None => (),
-            }
-        } else {
-            ()
-        }
-    };
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
         if !use_decl.items.is_empty() {
@@ -209,20 +199,66 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
                         item: true,
                     },
                 );
+                match use_decl.visibility {
+                    ast::Visibility::Public => public_reexports.push(
+                        (
+                            match item.alias {
+                                Some(alias) => alias,
+                                None => item.name,
+                            },
+                            join_segments(item_target),
+                        ),
+                    ),
+                    ast::Visibility::Private => (),
+                };
                 traits.push(join_segments(item_target))
             }
         } else {
             match expand_use_alias(aliases, target) {
-                Some(expanded) => match use_decl.alias {
-                    Some(_) => (),
-                    None => traits.push(join_segments(expanded)),
+                Some(expanded) => {
+                    let exported_name = match use_decl.alias {
+                        Some(alias) => alias,
+                        None => match last_string(expanded) {
+                            Some(name) => name,
+                            None => "",
+                        },
+                    };
+                    match use_decl.alias {
+                        Some(alias) => aliases.push(
+                            AliasEntry { alias, target: expanded, item: true },
+                        ),
+                        None => (),
+                    };
+                    traits.push(join_segments(expanded));
+                    match use_decl.visibility {
+                        ast::Visibility::Public => if exported_name != "" {
+                            public_reexports.push((exported_name, join_segments(expanded)))
+                        } else {
+                            ()
+                        },
+                        ast::Visibility::Private => (),
+                    }
                 },
                 None => match use_decl.alias {
-                    Some(_) => (),
+                    Some(alias) => {
+                        aliases.push(AliasEntry { alias, target, item: false });
+                        match use_decl.visibility {
+                            ast::Visibility::Public => {
+                                public_reexports.push((alias, join_segments(target)))
+                            },
+                            ast::Visibility::Private => (),
+                        }
+                    },
                     None => match last_string(target) {
-                        Some(default_alias) => aliases.push(
-                            AliasEntry { alias: default_alias, target, item: false },
-                        ),
+                        Some(default_alias) => {
+                            aliases.push(AliasEntry { alias: default_alias, target, item: false });
+                            match use_decl.visibility {
+                                ast::Visibility::Public => public_reexports.push(
+                                    (default_alias, join_segments(target)),
+                                ),
+                                ast::Visibility::Private => (),
+                            }
+                        },
                         None => (),
                     },
                 },
@@ -248,7 +284,16 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
             }
         }
     };
-    ResolvedUses { aliases, traits, diagnostics }
+    for index in 0..public_reexports.len() {
+        for previous_index in 0..index {
+            if public_reexports[previous_index].0 == public_reexports[index].0 {
+                diagnostics.push("Duplicate public re-export " + public_reexports[index].0)
+            } else {
+                ()
+            }
+        }
+    };
+    ResolvedUses { aliases, traits, public_reexports, diagnostics }
 }
 
 fn aliases_from_file(file: ast::File) -> Vec[AliasEntry] {
@@ -257,6 +302,10 @@ fn aliases_from_file(file: ast::File) -> Vec[AliasEntry] {
 
 fn trait_uses_from_file(file: ast::File) -> Vec[string] {
     resolved_uses_from_file(file).traits
+}
+
+fn public_reexports_from_file(file: ast::File) -> Vec[(string, string)] {
+    resolved_uses_from_file(file).public_reexports
 }
 
 fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
@@ -371,8 +420,8 @@ fn ast_type_head_span(value: ast::TypeExpr) -> Option[ast::Span] {
         } else {
             Option::None
         },
-        Dyn { trait_path } => if !trait_path.segments.is_empty() {
-            Option::Some(trait_path.segments[0].span)
+        Dyn { bounds } => if !bounds.is_empty() && !bounds[0].trait_path.segments.is_empty() {
+            Option::Some(bounds[0].trait_path.segments[0].span)
         } else {
             Option::None
         },
@@ -573,7 +622,27 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
                 TypeExpr::Con { name: join_segments(parts) }
             }
         },
-        Dyn { trait_path: path } => TypeExpr::Dyn { trait_name: path_text(ctx, path) },
+        Dyn { bounds } => {
+            let result: Vec[DynTraitBound] = Vec::[];
+            for bound in bounds {
+                let args: Vec[TypeExpr] = Vec::[];
+                for arg in bound.args {
+                    args.push(lower_type(ctx, arg, type_params))
+                };
+                let associated_types: Vec[(string, TypeExpr)] = Vec::[];
+                for binding in bound.associated_types {
+                    associated_types.push((binding.0, lower_type(ctx, binding.1, type_params)))
+                };
+                result.push(
+                    DynTraitBound {
+                        trait_name: path_text(ctx, bound.trait_path),
+                        args,
+                        associated_types,
+                    },
+                )
+            };
+            TypeExpr::Dyn { bounds: result }
+        },
         App { ty: base, args } => {
             let result: Vec[TypeExpr] = Vec::[];
             for arg in args {
@@ -764,14 +833,14 @@ fn lower_pattern_inner(
     let previous_span = ctx.current_pattern_span.get();
     ctx.current_pattern_span.set(Option::Some(span));
     let kind = match value {
-        Var { name, span } => match constructor_ref(ctx, single_path(name)) {
+        Var { name, is_mut, span } => match constructor_ref(ctx, single_path(name)) {
             Some(Resolved { enum_def, variant_index }) => PatKind::Constr {
                 head: PatternHead::Resolved { enum_def, variant_index, span },
                 args: Vec::[],
             },
-            None => PatKind::Var { name: bind_pattern_name(ctx, env, state, name) },
+            None => PatKind::Var { name: bind_pattern_name(ctx, env, state, name), is_mut },
             Some(Unresolved(_)) => {
-                PatKind::Var { name: bind_pattern_name(ctx, env, state, name) }
+                PatKind::Var { name: bind_pattern_name(ctx, env, state, name), is_mut }
             },
         },
         Unit { span: _ } => PatKind::Unit,
@@ -1171,30 +1240,34 @@ fn lower_expr_value(
             then_branch: lower_expr(ctx, then_branch, copy_bindings(env), type_params),
             else_branch: lower_expr(ctx, else_branch, copy_bindings(env), type_params),
         },
-        While { cond, body, span: _ } => ExprKind::While {
+        While { label, cond, body, span: _ } => ExprKind::While {
+            label,
             cond: lower_expr(ctx, cond, env, type_params),
             body: lower_expr(ctx, body, copy_bindings(env), type_params),
         },
-        Loop { body, span: _ } => ExprKind::Loop {
+        Loop { label, body, span: _ } => ExprKind::Loop {
+            label,
             body: lower_expr(ctx, body, copy_bindings(env), type_params),
         },
-        For { pat, iterator, body, span: _ } => {
+        For { label, pat, iterator, body, span: _ } => {
             let body_env = copy_bindings(env);
             let lowered_iterator = lower_expr(ctx, iterator, env, type_params);
             let lowered_pat = lower_pattern(ctx, pat, body_env);
             ExprKind::For {
+                label,
                 pat: lowered_pat,
                 iterator: lowered_iterator,
                 body: lower_expr(ctx, body, body_env, type_params),
             }
         },
-        Break { value, span: _ } => ExprKind::Break {
+        Break { label, value, span: _ } => ExprKind::Break {
+            label,
             value: match value {
                 Some(expr) => Option::Some(lower_expr(ctx, expr, env, type_params)),
                 None => Option::None,
             },
         },
-        Continue { span: _ } => ExprKind::Continue,
+        Continue { label, span: _ } => ExprKind::Continue { label },
         Return { expr, span: _ } => ExprKind::Return {
             expr: match expr {
                 Some(value) => Option::Some(lower_expr(ctx, value, env, type_params)),
@@ -1756,6 +1829,11 @@ fn lower_file_with_context(
         import_aliases: import_aliases_from_file(file),
         use_traits: if qualify_imports {
             trait_uses_from_file(file)
+        } else {
+            Vec::[]
+        },
+        public_reexports: if qualify_imports {
+            public_reexports_from_file(file)
         } else {
             Vec::[]
         },

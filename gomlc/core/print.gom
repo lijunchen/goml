@@ -253,11 +253,14 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
         Loop { body, ty: _ } => {
             pretty::append(pretty::text("loop "), expr_doc(body, style))
         },
-        Break { value, ty: _ } => match value {
-            Some(value) => pretty::append(pretty::text("break "), expr_doc(value, style)),
-            None => pretty::text("break"),
+        Break { target, value, ty: _ } => match value {
+            Some(value) => pretty::append(
+                pretty::text("break@" + target.to_string() + " "),
+                expr_doc(value, style),
+            ),
+            None => pretty::text("break@" + target.to_string()),
         },
-        Continue { ty: _ } => pretty::text("continue"),
+        Continue { target, ty: _ } => pretty::text("continue@" + target.to_string()),
         Return { expr: value, ty: _ } => match value {
             Some(value) => pretty::append(pretty::text("return "), expr_doc(value, style)),
             None => pretty::text("return"),

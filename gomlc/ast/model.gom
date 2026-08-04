@@ -40,7 +40,7 @@ pub enum TypeExpr {
         path: Path,
     },
     Dyn {
-        trait_path: Path,
+        bounds: Vec[DynTraitBound],
     },
     App {
         ty: TypeExpr,
@@ -54,6 +54,12 @@ pub enum TypeExpr {
         params: Vec[TypeExpr],
         ret_ty: TypeExpr,
     },
+}
+
+pub struct DynTraitBound {
+    pub trait_path: Path,
+    pub args: Vec[TypeExpr],
+    pub associated_types: Vec[(string, TypeExpr)],
 }
 
 pub struct ClosureParam {
@@ -84,6 +90,7 @@ pub struct File {
 }
 
 pub struct UseDecl {
+    pub visibility: Visibility,
     pub path: Path,
     pub alias: Option[string],
     pub items: Vec[UseItem],
@@ -397,25 +404,30 @@ pub enum Expr {
         span: Span,
     },
     While {
+        label: Option[string],
         cond: Expr,
         body: Expr,
         span: Span,
     },
     Loop {
+        label: Option[string],
         body: Expr,
         span: Span,
     },
     For {
+        label: Option[string],
         pat: Pat,
         iterator: Expr,
         body: Expr,
         span: Span,
     },
     Break {
+        label: Option[string],
         value: Option[Expr],
         span: Span,
     },
     Continue {
+        label: Option[string],
         span: Span,
     },
     Return {
@@ -501,6 +513,7 @@ pub struct ArrayPatRest {
 pub enum Pat {
     Var {
         name: string,
+        is_mut: bool,
         span: Span,
     },
     Unit {
@@ -597,7 +610,7 @@ pub fn expr_span(value: Expr) -> Span {
         } | Closure { span, .. } | Match { span, .. } | If { span, .. } | While { span, .. } | Loop {
             span,
             ..,
-        } | For { span, .. } | Break { span, .. } | Continue { span } | Return { span, .. } | Go {
+        } | For { span, .. } | Break { span, .. } | Continue { span, .. } | Return { span, .. } | Go {
             span,
             ..,
         } | Scope { span, .. } | Spawn { span, .. } | Call { span, .. } | Unary { span, .. } | Cast {

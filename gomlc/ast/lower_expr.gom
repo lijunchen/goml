@@ -744,7 +744,18 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
                 } else {
                     Option::None
                 };
-                Option::Some(Expr::Break { value, span: value_span })
+                Option::Some(
+                    Expr::Break {
+                        label: match first_token(node, lexer::TokenKind::Label) {
+                            Some(token) => Option::Some(
+                                token.token.text.byte_slice(1, token.token.text.byte_len()),
+                            ),
+                            None => Option::None,
+                        },
+                        value,
+                        span: value_span,
+                    },
+                )
             },
             EXPR_CONTINUE => if reject_trailing(
                 ctx,
@@ -754,7 +765,17 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             ) {
                 Option::None
             } else {
-                Option::Some(Expr::Continue { span: value_span })
+                Option::Some(
+                    Expr::Continue {
+                        label: match first_token(node, lexer::TokenKind::Label) {
+                            Some(token) => Option::Some(
+                                token.token.text.byte_slice(1, token.token.text.byte_len()),
+                            ),
+                            None => Option::None,
+                        },
+                        span: value_span,
+                    },
+                )
             },
             EXPR_RETURN => lower_return_expr(ctx, node, trailing_args),
             EXPR_GO => lower_go_expr(ctx, node, trailing_args),

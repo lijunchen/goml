@@ -188,6 +188,76 @@ fn unify_trait_refs(left: Option[TraitRef], right: Option[TraitRef]) -> bool {
     }
 }
 
+fn associated_type_bindings_unify(first: Vec[(string, Type)], second: Vec[(string, Type)]) -> bool {
+    if first.len() != second.len() {
+        false
+    } else {
+        for index in 0..first.len() {
+            if first[index].0 != second[index].0 || !unify(first[index].1, second[index].1) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
+fn dyn_bound_lists_unify(first: Vec[DynTraitBound], second: Vec[DynTraitBound]) -> bool {
+    if first.len() != second.len() {
+        false
+    } else {
+        for index in 0..first.len() {
+            if first[index].trait_name != second[index].trait_name
+                || !unify_types(first[index].args, second[index].args)
+                || !associated_type_bindings_unify(
+                    first[index].associated_types,
+                    second[index].associated_types,
+                ) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
+fn associated_type_bindings_equal(first: Vec[(string, Type)], second: Vec[(string, Type)]) -> bool {
+    if first.len() != second.len() {
+        false
+    } else {
+        for index in 0..first.len() {
+            if first[index].0 != second[index].0 || !types_equal(first[index].1, second[index].1) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
+fn dyn_bound_lists_equal(first: Vec[DynTraitBound], second: Vec[DynTraitBound]) -> bool {
+    if first.len() != second.len() {
+        false
+    } else {
+        for index in 0..first.len() {
+            if first[index].trait_name != second[index].trait_name
+                || !type_lists_equal(first[index].args, second[index].args)
+                || !associated_type_bindings_equal(
+                    first[index].associated_types,
+                    second[index].associated_types,
+                ) {
+                return false
+            } else {
+                ()
+            }
+        };
+        true
+    }
+}
+
 fn unify(left: Type, right: Type) -> bool {
     let left = prune(left);
     let right = prune(right);
@@ -223,7 +293,24 @@ fn unify(left: Type, right: Type) -> bool {
         ) | (Float64, Float64) | (String, String) | (Char, Char) => true,
         (Tuple { items: first }, Tuple { items: second }) => unify_types(first, second),
         (Con { name: first }, Con { name: second }) => first == second,
-        (Dyn { trait_name: first }, Dyn { trait_name: second }) => first == second,
+        (
+            Dyn {
+                trait_name: first_name,
+                args: first_args,
+                associated_types: first_associated,
+                additional_bounds: first_additional,
+            },
+            Dyn {
+                trait_name: second_name,
+                args: second_args,
+                associated_types: second_associated,
+                additional_bounds: second_additional,
+            },
+        ) => {
+            first_name == second_name && unify_types(first_args, second_args)
+                && associated_type_bindings_unify(first_associated, second_associated)
+                && dyn_bound_lists_unify(first_additional, second_additional)
+        },
         (
             Projection { for_ty: first_base, name: first_name, trait_ref: first_trait },
             Projection { for_ty: second_base, name: second_name, trait_ref: second_trait },
@@ -354,15 +441,10 @@ fn first_unification_error(left: Type, right: Type) -> Option[string] {
         } else {
             Option::Some(type_mismatch_text(Type::Con { name: first }, Type::Con { name: second }))
         },
-        (Dyn { trait_name: first }, Dyn { trait_name: second }) => if first == second {
+        (Dyn { .. }, Dyn { .. }) => if types_equal(left, right) {
             Option::None
         } else {
-            Option::Some(
-                type_mismatch_text(
-                    Type::Dyn { trait_name: first },
-                    Type::Dyn { trait_name: second },
-                ),
-            )
+            Option::Some(type_mismatch_text(left, right))
         },
         (
             Projection { for_ty: first_base, name: first_name, trait_ref: first_trait },
@@ -504,9 +586,27 @@ pub fn types_equal(left: Type, right: Type) -> bool {
         ) => true,
         (Tuple { items: first }, Tuple { items: second }) => type_lists_equal(first, second),
         (Con { name: first }, Con { name: second }) | (
-            Dyn { trait_name: first },
-            Dyn { trait_name: second },
-        ) | (Param { name: first }, Param { name: second }) => first == second,
+            Param { name: first },
+            Param { name: second },
+        ) => first == second,
+        (
+            Dyn {
+                trait_name: first_name,
+                args: first_args,
+                associated_types: first_associated,
+                additional_bounds: first_additional,
+            },
+            Dyn {
+                trait_name: second_name,
+                args: second_args,
+                associated_types: second_associated,
+                additional_bounds: second_additional,
+            },
+        ) => {
+            first_name == second_name && type_lists_equal(first_args, second_args)
+                && associated_type_bindings_equal(first_associated, second_associated)
+                && dyn_bound_lists_equal(first_additional, second_additional)
+        },
         (
             Projection { for_ty: first_base, name: first_name, trait_ref: first_trait },
             Projection { for_ty: second_base, name: second_name, trait_ref: second_trait },
@@ -1004,10 +1104,51 @@ fn normalize_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
     result
 }
 
+fn dyn_associated_type(value: Type, name: string) -> Option[Type] {
+    match prune(value) {
+        Dyn { associated_types, .. } => {
+            for binding in associated_types {
+                if binding.0 == name {
+                    return Option::Some(binding.1)
+                } else {
+                    ()
+                }
+            };
+            Option::None
+        },
+        _ => Option::None,
+    }
+}
+
 fn normalize_type(ctx: Checker, value: Type) -> Type {
     match prune(value) {
         Con { name } => Type::Con { name: canonical_imported_name(ctx, name) },
-        Dyn { trait_name: name } => Type::Dyn { trait_name: canonical_imported_name(ctx, name) },
+        Dyn { trait_name: name, args, associated_types, additional_bounds } => {
+            let normalized_associated: Vec[(string, Type)] = Vec::[];
+            for binding in associated_types {
+                normalized_associated.push((binding.0, normalize_type(ctx, binding.1)))
+            };
+            let normalized_additional: Vec[DynTraitBound] = Vec::[];
+            for bound in additional_bounds {
+                let bound_associated: Vec[(string, Type)] = Vec::[];
+                for binding in bound.associated_types {
+                    bound_associated.push((binding.0, normalize_type(ctx, binding.1)))
+                };
+                normalized_additional.push(
+                    DynTraitBound {
+                        trait_name: canonical_imported_name(ctx, bound.trait_name),
+                        args: normalize_types(ctx, bound.args),
+                        associated_types: bound_associated,
+                    },
+                )
+            };
+            Type::Dyn {
+                trait_name: canonical_imported_name(ctx, name),
+                args: normalize_types(ctx, args),
+                associated_types: normalized_associated,
+                additional_bounds: normalized_additional,
+            }
+        },
         Tuple { items: values } => Type::Tuple { items: normalize_types(ctx, values) },
         Projection { for_ty: base, name, trait_ref: qualifier } => {
             let base = normalize_type(ctx, base);
@@ -1016,13 +1157,16 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
                 None => Option::None,
             };
             let projection = Type::Projection { for_ty: base, name, trait_ref: qualifier };
-            let candidate = match projection_equality(ctx, base, name, qualifier) {
+            let candidate = match dyn_associated_type(base, name) {
                 Some(value) => Option::Some(value),
-                None => match builtin_projection(base, name, qualifier) {
+                None => match projection_equality(ctx, base, name, qualifier) {
                     Some(value) => Option::Some(value),
-                    None => match base {
-                        Param { name: _ } | Var(_) => Option::None,
-                        _ => impl_projection(ctx, base, name, qualifier),
+                    None => match builtin_projection(base, name, qualifier) {
+                        Some(value) => Option::Some(value),
+                        None => match base {
+                            Param { name: _ } | Var(_) => Option::None,
+                            _ => impl_projection(ctx, base, name, qualifier),
+                        },
                     },
                 },
             };

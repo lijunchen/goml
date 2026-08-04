@@ -437,18 +437,22 @@ fn artifact_json_core_expr(
             tast_codec::artifact_json_type(writer, context, ty);
             wire::artifact_json_end_object(writer)
         },
-        Break { value, ty } => {
+        Break { target, value, ty } => {
             wire::artifact_json_name(writer, "EBreak");
             wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "target");
+            wire::artifact_json_number(writer, target.to_string());
             wire::artifact_json_name(writer, "value");
             artifact_json_optional_core_expr(writer, context, value);
             wire::artifact_json_name(writer, "ty");
             tast_codec::artifact_json_type(writer, context, ty);
             wire::artifact_json_end_object(writer)
         },
-        Continue { ty } => {
+        Continue { target, ty } => {
             wire::artifact_json_name(writer, "EContinue");
             wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "target");
+            wire::artifact_json_number(writer, target.to_string());
             wire::artifact_json_name(writer, "ty");
             tast_codec::artifact_json_type(writer, context, ty);
             wire::artifact_json_end_object(writer)

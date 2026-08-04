@@ -708,8 +708,8 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
             call_type_lists_compatible(left, right)
         },
         (Con { name: left }, Con { name: right }) | (
-            Dyn { trait_name: left },
-            Dyn { trait_name: right },
+            Dyn { trait_name: left, .. },
+            Dyn { trait_name: right, .. },
         ) => {
             names_match(left, right)
         },
@@ -1348,7 +1348,7 @@ fn builtin_trait_bound_satisfied(
         let trait_name = short_name(reference.name);
         let bound_ty = prune(normalize_type(ctx, bound_ty));
         match bound_ty {
-            Dyn { trait_name: name } => {
+            Dyn { trait_name: name, .. } => {
                 for application in trait_ref_closure(ctx, TraitRef { name, args: Vec::[] }) {
                     if names_match(application.name, trait_name) {
                         return true
@@ -2351,7 +2351,9 @@ fn resolve_method(
 ) -> Option[ResolvedCallable] {
     let receiver = normalize_type(ctx, receiver);
     match receiver {
-        Dyn { trait_name: owner } => resolve_dyn_method(ctx, owner, receiver, name, method_explicit),
+        Dyn { trait_name: owner, .. } => {
+            resolve_dyn_method(ctx, owner, receiver, name, method_explicit)
+        },
         _ => match resolve_predicate_method(ctx, receiver, name, method_explicit) {
             Some(value) => Option::Some(value),
             None => match resolve_builtin_container_method(ctx, receiver, name, method_explicit) {
@@ -3019,14 +3021,57 @@ fn parameter_types_contain_from(values: Vec[Type], start: int, expected: string)
     false
 }
 
-fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
-    if !info.associated_types.is_empty() {
-        push_diagnostic_at(
-            ctx,
-            f"Trait {info.name} cannot be used as dyn because it declares associated types",
-            Option::None,
-        )
-    } else {
+fn validate_dyn_trait(ctx: Checker, info: TraitInfo, associated_types: Vec[(string, Type)]) -> unit {
+    for associated in info.associated_types {
+        let mut found = false;
+        for binding in associated_types {
+            if binding.0 == associated.name {
+                if found {
+                    push_diagnostic_at(
+                        ctx,
+                        f"Duplicate dyn associated type binding {binding.0}",
+                        Option::None,
+                    )
+                } else {
+                    validate_signature_type(ctx, binding.1)
+                };
+                found = true;
+                ()
+            } else {
+                ()
+            }
+        };
+        if !found {
+            push_diagnostic_at(
+                ctx,
+                f"dyn {short_name(info.name)} must bind associated type {associated.name}",
+                Option::None,
+            )
+        } else {
+            ()
+        }
+    };
+    for binding in associated_types {
+        let mut found = false;
+        for associated in info.associated_types {
+            if binding.0 == associated.name {
+                found = true;
+                ()
+            } else {
+                ()
+            }
+        };
+        if !found {
+            push_diagnostic_at(
+                ctx,
+                f"Trait {short_name(info.name)} has no associated type {binding.0}",
+                Option::None,
+            )
+        } else {
+            ()
+        }
+    };
+    {
         for method in info.methods {
             if !method.generics.is_empty() {
                 push_diagnostic_at(
@@ -3089,17 +3134,30 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
                 }
             },
         },
-        Dyn { trait_name: name } => match find_trait(ctx, name) {
-            Some(info) => if !info.generics.is_empty() {
-                push_diagnostic_at(
-                    ctx,
-                    f"Generic trait {short_name(name)} cannot be used as dyn",
-                    Option::None,
-                )
+        Dyn { trait_name: name, args, associated_types, additional_bounds } => {
+            if !additional_bounds.is_empty() {
+                push_diagnostic_at(ctx, "Multiple dyn bounds are not supported", Option::None)
             } else {
-                validate_dyn_trait(ctx, info)
-            },
-            None => push_diagnostic(ctx, f"Unknown trait {name}"),
+                ()
+            };
+            match find_trait(ctx, name) {
+                Some(info) => if !info.generics.is_empty() || !args.is_empty() {
+                    push_diagnostic_at(
+                        ctx,
+                        f"Generic trait {short_name(name)} cannot be used as dyn",
+                        Option::None,
+                    )
+                } else {
+                    validate_dyn_trait(ctx, info, associated_types)
+                },
+                None => push_diagnostic(ctx, f"Unknown trait {name}"),
+            };
+            for bound in additional_bounds {
+                match find_trait(ctx, bound.trait_name) {
+                    Some(_) => (),
+                    None => push_diagnostic(ctx, f"Unknown trait {bound.trait_name}"),
+                }
+            }
         },
         Projection { for_ty: base, name: _, trait_ref: qualifier } => {
             validate_signature_type(ctx, base);

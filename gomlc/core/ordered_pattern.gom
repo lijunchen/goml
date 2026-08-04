@@ -268,7 +268,7 @@ fn lower_ordered_pattern(
 ) -> Expr {
     match pattern {
         Wild { ty: _ } => success,
-        Var { name, ty: _ } => bind_ordered_value(name, value, success, result_ty),
+        Var { name, is_mut: _, ty: _ } => bind_ordered_value(name, value, success, result_ty),
         Alias { name, pat: inner, ty } => {
             let matched = lower_ordered_pattern(
                 ctx,

@@ -633,8 +633,10 @@ fn member_dot(source: string, offset: int) -> Option[int] {
 fn explicit_type_name(value: ast::TypeExpr) -> Option[string] {
     match value {
         Con { path } => Option::Some(path_text(path)),
-        Dyn { trait_path } => {
-            Option::Some(path_text(trait_path))
+        Dyn { bounds } => if bounds.is_empty() {
+            Option::None
+        } else {
+            Option::Some(path_text(bounds[0].trait_path))
         },
         App { ty, args: _ } => explicit_type_name(ty),
         Bool => Option::Some("bool"),
@@ -813,7 +815,7 @@ fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[Completion
             let receiver_name = type_owner_name(receiver);
             let receiver_short = short_type_name(receiver_name);
             let receiver_symbol_name = match tast::resolve_type(receiver) {
-                Dyn { trait_name } => trait_name,
+                Dyn { trait_name, .. } => trait_name,
                 _ => receiver_name,
             };
             complete_named_methods(result, value, receiver_symbol_name, prefix);
@@ -858,7 +860,7 @@ fn complete_members(value: Analysis, dot: int, prefix: string) -> Vec[Completion
                     }
                 };
                 match tast::resolve_type(receiver) {
-                    Dyn { trait_name } => for definition in environment.traits {
+                    Dyn { trait_name, .. } => for definition in environment.traits {
                         if definition.name == trait_name
                             || short_type_name(definition.name) == short_type_name(trait_name) {
                             for method in definition.methods {

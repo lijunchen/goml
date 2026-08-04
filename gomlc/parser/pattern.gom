@@ -5,7 +5,7 @@ use gomlc::lexer;
 
 fn is_pattern_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        TrueKeyword | FalseKeyword | Ident | LParen | LBracket | WildcardKeyword | Minus | IntLit | Float | Str | RawStr | CharLit | ByteCharLit => true,
+        TrueKeyword | FalseKeyword | Ident | MutKeyword | LParen | LBracket | WildcardKeyword | Minus | IntLit | Float | Str | RawStr | CharLit | ByteCharLit => true,
         _ => false,
     }
 }
@@ -157,6 +157,7 @@ fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
             LParen => tuple_pattern(parser),
             LBracket => array_pattern(parser),
             Ident => ident_pattern(parser),
+            MutKeyword => mutable_pattern(parser),
             _ => {
                 let marker = parser.open();
                 parser.close(marker, cst::NodeKind::ErrorTree)
@@ -164,6 +165,13 @@ fn simple_pattern(parser: Parser) -> Option[MarkerClosed] {
         };
         Option::Some(result)
     }
+}
+
+fn mutable_pattern(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::MutKeyword);
+    parser.expect_lower_ident("mutable pattern binding");
+    parser.close(marker, cst::NodeKind::PATTERN_VARIABLE)
 }
 
 fn tuple_pattern(parser: Parser) -> MarkerClosed {

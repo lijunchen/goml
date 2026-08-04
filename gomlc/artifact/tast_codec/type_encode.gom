@@ -33,6 +33,35 @@ pub fn artifact_json_type_array(
     wire::artifact_json_end_array(writer)
 }
 
+fn artifact_json_dyn_bound(
+    writer: wire::ArtifactJsonWriter,
+    context: ArtifactTypeContext,
+    value: tast::DynTraitBound,
+    additional_bounds: Vec[tast::DynTraitBound],
+) -> unit {
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, "trait_name");
+    wire::artifact_json_string(writer, value.trait_name);
+    wire::artifact_json_name(writer, "args");
+    artifact_json_type_array(writer, context, value.args);
+    wire::artifact_json_name(writer, "associated_types");
+    wire::artifact_json_begin_array(writer);
+    for binding in value.associated_types {
+        wire::artifact_json_begin_array(writer);
+        wire::artifact_json_string(writer, binding.0);
+        artifact_json_type(writer, context, binding.1);
+        wire::artifact_json_end_array(writer)
+    };
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_name(writer, "additional_bounds");
+    wire::artifact_json_begin_array(writer);
+    for bound in additional_bounds {
+        artifact_json_dyn_bound(writer, context, bound, Vec::[])
+    };
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_end_object(writer)
+}
+
 fn artifact_json_named_type(
     writer: wire::ArtifactJsonWriter,
     kind: string,
@@ -109,7 +138,17 @@ pub fn artifact_json_type(
         } else {
             artifact_json_named_type(writer, "TStruct", "name", name)
         },
-        Dyn { trait_name: name } => artifact_json_named_type(writer, "TDyn", "trait_name", name),
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            wire::artifact_json_begin_object(writer);
+            wire::artifact_json_name(writer, "TDyn");
+            artifact_json_dyn_bound(
+                writer,
+                context,
+                tast::DynTraitBound { trait_name, args, associated_types },
+                additional_bounds,
+            );
+            wire::artifact_json_end_object(writer)
+        },
         Projection { for_ty, name, trait_ref } => {
             wire::artifact_json_begin_object(writer);
             wire::artifact_json_name(writer, "TProjection");

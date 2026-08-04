@@ -54,7 +54,7 @@ pub fn encode_type(value: tast::Type) -> string {
         Tuple { items: values } => "Tuple" + values.len().to_string() + "_"
             + join_type_parts(values),
         Con { name } => name,
-        Dyn { trait_name: name } => "Dyn_" + name,
+        Dyn { trait_name: name, .. } => "Dyn_" + name,
         Projection { for_ty: base, name, trait_ref: _ } => {
             let encoded = encode_type(base);
             "Projection_" + encoded.byte_len().to_string() + encoded + "_" + name
@@ -141,7 +141,7 @@ pub fn type_name(value: tast::Type) -> string {
             go_generated_ident(builder.finish())
         },
         Con { name } => go_user_type_name(name),
-        Dyn { trait_name: name } => go_dyn_struct_name(name),
+        Dyn { trait_name: name, .. } => go_dyn_struct_name(name),
         Projection { for_ty: base, name, trait_ref: _ } => {
             go_generated_ident("Projection_" + type_name_part(base) + "_" + name)
         },
@@ -202,7 +202,7 @@ pub fn lower_type(value: tast::Type) -> Type {
         Char => Type::Char,
         Tuple { items: _ } => Type::Named { name: type_name(value) },
         Con { name } => Type::Named { name: go_user_type_name(name) },
-        Dyn { trait_name: name } => Type::Named { name: go_dyn_struct_name(name) },
+        Dyn { trait_name: name, .. } => Type::Named { name: go_dyn_struct_name(name) },
         Projection { for_ty: _, name: _, trait_ref: _ } => Type::Named { name: type_name(value) },
         App { ty: _, args: _ } => Type::Named { name: type_name(value) },
         Array { len: length, elem } => Type::Array { len: length, elem: lower_type(elem) },

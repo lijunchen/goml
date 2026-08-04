@@ -76,7 +76,7 @@ pub enum TypeExpr {
         associated: string,
     },
     Dyn {
-        trait_name: string,
+        bounds: Vec[DynTraitBound],
     },
     App {
         ty: TypeExpr,
@@ -90,6 +90,12 @@ pub enum TypeExpr {
         params: Vec[TypeExpr],
         ret_ty: TypeExpr,
     },
+}
+
+pub struct DynTraitBound {
+    pub trait_name: string,
+    pub args: Vec[TypeExpr],
+    pub associated_types: Vec[(string, TypeExpr)],
 }
 
 pub struct TraitRef {
@@ -249,6 +255,7 @@ pub struct File {
     pub imports: Vec[string],
     pub import_aliases: Vec[ImportAlias],
     pub use_traits: Vec[string],
+    pub public_reexports: Vec[(string, string)],
     pub items: Vec[Item],
     pub invalid_self_type_spans: Vec[ast::Span],
 }
@@ -364,21 +371,27 @@ pub enum ExprKind {
         else_branch: Expr,
     },
     While {
+        label: Option[string],
         cond: Expr,
         body: Expr,
     },
     Loop {
+        label: Option[string],
         body: Expr,
     },
     For {
+        label: Option[string],
         pat: Pat,
         iterator: Expr,
         body: Expr,
     },
     Break {
+        label: Option[string],
         value: Option[Expr],
     },
-    Continue,
+    Continue {
+        label: Option[string],
+    },
     Return {
         expr: Option[Expr],
     },
@@ -447,6 +460,7 @@ pub struct Pat {
 pub enum PatKind {
     Var {
         name: LocalId,
+        is_mut: bool,
     },
     Unit,
     Bool {

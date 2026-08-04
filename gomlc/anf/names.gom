@@ -149,9 +149,10 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        Break { value, ty: _ } => observe_optional_expr(maximum, value),
+        Break { value, ty: _, .. } => observe_optional_expr(maximum, value),
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
+            ..,
         } => (),
     }
 }

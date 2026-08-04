@@ -19,7 +19,7 @@ struct ReturnCtx {
 
 struct State {
     counter: Ref[int],
-    loop_ctx: Ref[Option[LoopCtx]],
+    loop_ctxs: Vec[LoopCtx],
     return_ctx: Ref[Option[ReturnCtx]],
 }
 
@@ -107,6 +107,7 @@ fn expr_is_control(value: core::Expr) -> bool {
             ty: _,
         } | While { cond: _, body: _, ty: _ } | Loop { body: _, ty: _ } | Break { ty: _, .. } | Continue {
             ty: _,
+            ..,
         } | Return { expr: _, ty: _ } => true,
         _ => false,
     }
@@ -128,7 +129,7 @@ fn match_has_catch_all(arms: Vec[core::Arm], default: Option[core::Expr]) -> boo
 
 fn expr_always_exits(value: core::Expr) -> bool {
     match value {
-        Break { ty: _, .. } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
+        Break { ty: _, .. } | Continue { ty: _, .. } | Return { expr: _, ty: _ } => true,
         Constr { constructor: _, args, ty: _ } => exprs_always_exit(args),
         Tuple { items, ty: _ } | Array { items, ty: _ } => {
             exprs_always_exit(items)

@@ -78,6 +78,20 @@ fn pretty_expr_docs(values: Vec[Expr]) -> Vec[doc::Doc] {
     result
 }
 
+fn pretty_loop_keyword(keyword: string, label: Option[string]) -> string {
+    match label {
+        Some(value) => "'" + value + ": " + keyword,
+        None => keyword,
+    }
+}
+
+fn pretty_control_keyword(keyword: string, label: Option[string]) -> string {
+    match label {
+        Some(value) => keyword + " '" + value,
+        None => keyword,
+    }
+}
+
 fn pretty_pat_docs(values: Vec[Pat]) -> Vec[doc::Doc] {
     let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
     for value in values {
@@ -388,19 +402,22 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
                 pretty_braced_docs(Vec::[pretty_expr_doc(else_branch)], 4),
             ],
         ),
-        While { cond, body, span: _ } => doc::concat(
+        While { label, cond, body, span: _ } => doc::concat(
             Vec::[
-                doc::text("while "),
+                doc::text(pretty_loop_keyword("while", label) + " "),
                 pretty_expr_doc(cond),
                 doc::text(" "),
                 pretty_braced_docs(Vec::[pretty_expr_doc(body)], 4),
             ],
         ),
-        Loop { body, span: _ } => doc::append(doc::text("loop "), pretty_expr_doc(body)),
-        For { pat, iterator, body, span: _ } => doc::group(
+        Loop { label, body, span: _ } => doc::append(
+            doc::text(pretty_loop_keyword("loop", label) + " "),
+            pretty_expr_doc(body),
+        ),
+        For { label, pat, iterator, body, span: _ } => doc::group(
             doc::concat(
                 Vec::[
-                    doc::text("for "),
+                    doc::text(pretty_loop_keyword("for", label) + " "),
                     pretty_pat_doc(pat),
                     doc::text(" in"),
                     doc::nest(2, doc::append(doc::line(), pretty_expr_doc(iterator))),
@@ -409,11 +426,14 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
                 ],
             ),
         ),
-        Break { value, span: _ } => match value {
-            Some(expr) => doc::append(doc::text("break "), pretty_expr_doc(expr)),
-            None => doc::text("break"),
+        Break { label, value, span: _ } => match value {
+            Some(expr) => doc::append(
+                doc::text(pretty_control_keyword("break", label) + " "),
+                pretty_expr_doc(expr),
+            ),
+            None => doc::text(pretty_control_keyword("break", label)),
         },
-        Continue { span: _ } => doc::text("continue"),
+        Continue { label, span: _ } => doc::text(pretty_control_keyword("continue", label)),
         Return { expr, span: _ } => match expr {
             Some(value) => doc::append(doc::text("return "), pretty_expr_doc(value)),
             None => doc::text("return"),
@@ -493,7 +513,15 @@ fn pretty_pat_is_or(value: Pat) -> bool {
 
 fn pretty_pat_doc(value: Pat) -> doc::Doc {
     match value {
-        Var { name, span: _ } => doc::text(name),
+        Var { name, is_mut, span: _ } => {
+            doc::text(
+                if is_mut {
+                    "mut " + name
+                } else {
+                    name
+                },
+            )
+        },
         Unit { span: _ } => doc::text("()"),
         Bool { value, span: _ } => doc::text(
             if value {

@@ -332,7 +332,7 @@ fn artifact_type_has_public_names(
 ) -> bool {
     match tast::resolve_type(value) {
         Con { name } => local_item_is_public(package_name, public_names, name),
-        Dyn { trait_name: name } => local_item_is_public(package_name, public_names, name),
+        Dyn { trait_name: name, .. } => local_item_is_public(package_name, public_names, name),
         Tuple { items: values } => {
             for value in values {
                 if !artifact_type_has_public_names(value, package_name, public_names) {
@@ -444,11 +444,15 @@ fn artifact_package_exports(
     signatures: tast::PackageSignatures,
     package_name: string,
     public_names: Vec[string],
+    public_reexports: Vec[(string, string)],
     public_only: bool,
     enum_type_names: Vec[string],
     struct_type_names: Vec[string],
 ) -> artifact::ArtifactPackageExports {
     let result = interface_codec::empty_exports();
+    for reexport in public_reexports {
+        result.reexports.push((package_item_name(package_name, reexport.0), reexport.1))
+    };
     for name in enum_type_names {
         artifact_add_type_name(result.enum_type_names, name)
     };

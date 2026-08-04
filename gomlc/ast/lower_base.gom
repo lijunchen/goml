@@ -218,12 +218,54 @@ fn lower_ty(ctx: LowerCtx, node: LocatedNode) -> Option[TypeExpr] {
                 },
                 None => Option::None,
             },
-            TYPE_DYN => match first_child(node, cst::NodeKind::PATH) {
-                Some(path_node) => match lower_path(ctx, path_node) {
-                    Some(path) => Option::Some(TypeExpr::Dyn { trait_path: path }),
-                    None => Option::None,
-                },
-                None => Option::None,
+            TYPE_DYN => {
+                let bounds: Vec[DynTraitBound] = Vec::[];
+                for bound in children_of_kind(node, cst::NodeKind::DYN_BOUND) {
+                    match first_child(bound, cst::NodeKind::PATH) {
+                        Some(path_node) => match lower_path(ctx, path_node) {
+                            Some(trait_path) => {
+                                let args: Vec[TypeExpr] = Vec::[];
+                                let associated_types: Vec[(string, TypeExpr)] = Vec::[];
+                                match first_child(bound, cst::NodeKind::DYN_ARG_LIST) {
+                                    Some(list) => {
+                                        for ty_node in type_children(list) {
+                                            match lower_ty(ctx, ty_node) {
+                                                Some(ty) => args.push(ty),
+                                                None => (),
+                                            }
+                                        };
+                                        for binding in children_of_kind(
+                                            list,
+                                            cst::NodeKind::DYN_ASSOC_BINDING,
+                                        ) {
+                                            match first_token(binding, lexer::TokenKind::Ident) {
+                                                Some(name) => {
+                                                    let types = type_children(binding);
+                                                    if !types.is_empty() {
+                                                        match lower_ty(ctx, types[0]) {
+                                                            Some(ty) => associated_types.push(
+                                                                (name.token.text, ty),
+                                                            ),
+                                                            None => (),
+                                                        }
+                                                    } else {
+                                                        ()
+                                                    }
+                                                },
+                                                None => (),
+                                            }
+                                        }
+                                    },
+                                    None => (),
+                                };
+                                bounds.push(DynTraitBound { trait_path, args, associated_types })
+                            },
+                            None => (),
+                        },
+                        None => (),
+                    }
+                };
+                Option::Some(TypeExpr::Dyn { bounds })
             },
             TYPE_ARRAY => {
                 let types = type_children(node);
@@ -418,7 +460,7 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
                     },
                     None => (),
                 };
-                Option::Some(UseDecl { path, alias, items })
+                Option::Some(UseDecl { visibility: lower_visibility(node), path, alias, items })
             },
             None => Option::None,
         },

@@ -166,10 +166,14 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
         "<unknown>"
     };
     let items: Vec[hir::Item] = Vec::[];
+    let public_reexports: Vec[(string, string)] = Vec::[];
     let invalid_self_type_spans: Vec[ast::Span] = Vec::[];
     for value in values {
         for item in value.items {
             items.push(item)
+        };
+        for reexport in value.public_reexports {
+            public_reexports.push(reexport)
         };
         for span in value.invalid_self_type_spans {
             invalid_self_type_spans.push(span)
@@ -182,6 +186,7 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
         imports: Vec::[],
         import_aliases: Vec::[],
         use_traits: Vec::[],
+        public_reexports,
         items,
         invalid_self_type_spans,
     }
@@ -291,7 +296,15 @@ fn collect_private_type_names(
 ) -> unit {
     match value {
         Con { name } => add_private_local_name(result, package_name, public_names, name),
-        Dyn { trait_name: name } => add_private_local_name(result, package_name, public_names, name),
+        Dyn { bounds } => for bound in bounds {
+            add_private_local_name(result, package_name, public_names, bound.trait_name);
+            for arg in bound.args {
+                collect_private_type_names(result, package_name, public_names, arg)
+            };
+            for binding in bound.associated_types {
+                collect_private_type_names(result, package_name, public_names, binding.1)
+            }
+        },
         Tuple { items: values } => for value in values {
             collect_private_type_names(result, package_name, public_names, value)
         },
@@ -678,6 +691,7 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
                 imports: Vec::[],
                 import_aliases: Vec::[],
                 use_traits: Vec::[],
+                public_reexports: Vec::[],
                 items: Vec::[],
                 invalid_self_type_spans: Vec::[],
             }

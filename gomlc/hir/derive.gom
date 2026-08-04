@@ -99,7 +99,52 @@ fn type_key(value: ast::TypeExpr) -> string {
             result + ")"
         },
         Con { path } => path_key(path),
-        Dyn { trait_path } => "dyn " + path_key(trait_path),
+        Dyn { bounds } => {
+            let mut result = "dyn ";
+            let mut bound_index = 0;
+            for bound in bounds {
+                if bound_index > 0 {
+                    result = result + " + ";
+                    ()
+                } else {
+                    ()
+                };
+                result = result + path_key(bound.trait_path);
+                if !bound.args.is_empty() || !bound.associated_types.is_empty() {
+                    result = result + "[";
+                    let mut arg_index = 0;
+                    for arg in bound.args {
+                        if arg_index > 0 {
+                            result = result + ",";
+                            ()
+                        } else {
+                            ()
+                        };
+                        result = result + type_key(arg);
+                        arg_index = arg_index + 1;
+                        ()
+                    };
+                    for binding in bound.associated_types {
+                        if arg_index > 0 {
+                            result = result + ",";
+                            ()
+                        } else {
+                            ()
+                        };
+                        result = result + binding.0 + "=" + type_key(binding.1);
+                        arg_index = arg_index + 1;
+                        ()
+                    };
+                    result = result + "]";
+                    ()
+                } else {
+                    ()
+                };
+                bound_index = bound_index + 1;
+                ()
+            };
+            result
+        },
         App { ty, args } => {
             let mut result = type_key(ty) + "[";
             for arg in args {
@@ -418,7 +463,9 @@ fn struct_to_string_body(value: ast::StructDef) -> ast::Expr {
             } else {
                 ()
             };
-            fields.push((field.0, ast::Pat::Var { name: field.0, span: dummy_span() }));
+            fields.push(
+                (field.0, ast::Pat::Var { name: field.0, is_mut: false, span: dummy_span() }),
+            );
             index = index + 1;
         };
         parts.push(string_expr(" }"));
@@ -520,7 +567,7 @@ fn variant_bindings(prefix: string, variant: int, count: int) -> Vec[string] {
 fn constr_pat(path: ast::Path, bindings: Vec[string]) -> ast::Pat {
     let args: Vec[ast::Pat] = Vec::[];
     for binding in bindings {
-        args.push(ast::Pat::Var { name: binding, span: dummy_span() })
+        args.push(ast::Pat::Var { name: binding, is_mut: false, span: dummy_span() })
     };
     ast::Pat::Constr { constructor: path, args, span: dummy_span() }
 }
@@ -545,7 +592,10 @@ fn enum_variant_pat(path: ast::Path, fields: ast::EnumVariantFields, bindings: V
             let patterns: Vec[(string, ast::Pat)] = Vec::[];
             for index in 0..fields.len() {
                 patterns.push(
-                    (fields[index].0, ast::Pat::Var { name: bindings[index], span: dummy_span() }),
+                    (
+                        fields[index].0,
+                        ast::Pat::Var { name: bindings[index], is_mut: false, span: dummy_span() },
+                    ),
                 )
             };
             ast::Pat::Struct { name: path, fields: patterns, has_rest: false, span: dummy_span() }
@@ -623,7 +673,7 @@ fn hash_step(value: ast::Expr) -> ast::Expr {
 }
 
 fn h_binding(annotation: Option[ast::TypeExpr], value: ast::Expr) -> ast::Stmt {
-    let_stmt(ast::Pat::Var { name: "h", span: dummy_span() }, annotation, value)
+    let_stmt(ast::Pat::Var { name: "h", is_mut: false, span: dummy_span() }, annotation, value)
 }
 
 fn struct_hash_body(value: ast::StructDef) -> ast::Expr {

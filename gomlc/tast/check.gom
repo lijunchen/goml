@@ -564,7 +564,7 @@ fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
 
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     match value {
-        Break { ty: _, .. } | Continue { ty: _ } | Return { expr: _, ty: _ } => value,
+        Break { ty: _, .. } | Continue { ty: _, .. } | Return { expr: _, ty: _ } => value,
         _ => match expected {
             Some(expected_ty) => match prune(expected_ty) {
                 Var(variable) => match variable.get() {
@@ -579,9 +579,9 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                     },
                     Link(_) => coerce_direct(ctx, value, expected_ty),
                 },
-                Dyn { trait_name } => match prune(expr_type(value)) {
-                    Dyn { trait_name: actual } => {
-                        if actual != trait_name {
+                Dyn { trait_name, associated_types, .. } => match prune(expr_type(value)) {
+                    Dyn { trait_name: actual, .. } => {
+                        if !types_equal(expr_type(value), expected_ty) {
                             push_diagnostic(ctx, "dyn trait mismatch")
                         } else {
                             ()
@@ -609,6 +609,22 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                                 )
                             },
                             None => expect_type(ctx, actual, expected_ty),
+                        };
+                        for binding in associated_types {
+                            require_predicate(
+                                ctx,
+                                TypePredicate::Equality {
+                                    lhs: Type::Projection {
+                                        for_ty: actual,
+                                        name: binding.0,
+                                        trait_ref: Option::Some(
+                                            TraitRef { name: trait_name, args: Vec::[] },
+                                        ),
+                                    },
+                                    rhs: binding.1,
+                                },
+                                "Associated type " + binding.0 + " does not match dyn binding",
+                            )
                         };
                         Expr::ToDyn { trait_name, for_ty: actual, expr: value, ty: expected_ty }
                     },
@@ -884,7 +900,7 @@ fn constrain_callable_return(ctx: Checker, callable_ty: Type, expected: Option[T
 fn propagated_expected(expected: Option[Type]) -> Option[Type] {
     match expected {
         Some(ty) => match prune(ty) {
-            Dyn { trait_name: _ } => Option::None,
+            Dyn { trait_name: _, .. } => Option::None,
             _ => Option::Some(ty),
         },
         None => Option::None,
@@ -1361,7 +1377,7 @@ fn check_struct_update_expr(
                 stmts.push(
                     Stmt::Let {
                         is_mut: false,
-                        pat: Pat::Var { name: local_name, ty: field_ty },
+                        pat: Pat::Var { name: local_name, is_mut: false, ty: field_ty },
                         value,
                     },
                 );
@@ -1381,7 +1397,7 @@ fn check_struct_update_expr(
                 stmts.push(
                     Stmt::Let {
                         is_mut: false,
-                        pat: Pat::Var { name: base_name, ty: info.ty },
+                        pat: Pat::Var { name: base_name, is_mut: false, ty: info.ty },
                         value: checked_base,
                     },
                 );
@@ -1674,7 +1690,7 @@ fn check_vec_literal_expr(
     stmts.push(
         Stmt::Let {
             is_mut: false,
-            pat: Pat::Var { name: local_name, ty: vec_ty },
+            pat: Pat::Var { name: local_name, is_mut: false, ty: vec_ty },
             value: collection_literal_call(vec_ty, "new", Vec::[], vec_ty, Vec::[]),
         },
     );
@@ -1742,7 +1758,7 @@ fn check_hashmap_literal_expr(
     stmts.push(
         Stmt::Let {
             is_mut: false,
-            pat: Pat::Var { name: local_name, ty: map_ty },
+            pat: Pat::Var { name: local_name, is_mut: false, ty: map_ty },
             value: collection_literal_call(map_ty, "new", Vec::[], map_ty, Vec::[]),
         },
     );
@@ -2000,7 +2016,7 @@ fn dyn_trait_method(function: Expr, values: Vec[Expr]) -> Option[(string, string
         Callable { callable: TraitMethod { trait_ref: reference, method_name: name }, ty: _ } => {
             if !values.is_empty() {
                 match prune(expr_type(values[0])) {
-                    Dyn { trait_name: owner } => if names_match(owner, reference.name) {
+                    Dyn { trait_name: owner, .. } => if names_match(owner, reference.name) {
                         Option::Some((reference.name, name))
                     } else {
                         Option::None
@@ -2188,9 +2204,14 @@ fn apply_typed_call(
             Callable { callable: TraitMethod { trait_ref: reference, method_name: name }, ty } => {
                 if reference.args.is_empty() {
                     match prune(expr_type(values[0])) {
-                        Dyn { trait_name: owner } => if trait_bound_satisfied_at(
+                        Dyn { trait_name: owner, .. } => if trait_bound_satisfied_at(
                             ctx,
-                            Type::Dyn { trait_name: owner },
+                            Type::Dyn {
+                                trait_name: owner,
+                                args: Vec::[],
+                                associated_types: Vec::[],
+                                additional_bounds: Vec::[],
+                            },
                             reference,
                             Vec::[],
                         ) {
@@ -2964,7 +2985,7 @@ fn check_unary_expr(ctx: Checker, op: ast::UnaryOp, source: hir::Expr, expected:
 fn hir_pattern_locals(value: hir::Pat) -> Vec[hir::LocalId] {
     let result: Vec[hir::LocalId] = Vec::[];
     match value.kind {
-        Var { name } => result.push(name),
+        Var { name, is_mut: _ } => result.push(name),
         Constr { head: _, args } | Tuple { items: args } | Or { pats: args } => for arg in args {
             for local in hir_pattern_locals(arg) {
                 if !contains_local(result, local) {
@@ -3090,7 +3111,7 @@ fn pattern_has_or_binding_diagnostic(ctx: Checker, span: ast::Span) -> bool {
 
 fn tast_pattern_binding_count(value: Pat) -> int {
     match value {
-        Var { name: _, ty: _ } => 1,
+        Var { name: _, is_mut: _, ty: _ } => 1,
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Or {
             pats: args,
             ty: _,
@@ -3413,7 +3434,7 @@ fn check_option_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     let inner_ty = expr_type(inner);
     let value_name = "try_value/" + index.to_string();
     let success_args: Vec[Pat] = Vec::[];
-    success_args.push(Pat::Var { name: value_name, ty: ok_ty });
+    success_args.push(Pat::Var { name: value_name, is_mut: false, ty: ok_ty });
     let success = Arm {
         pat: Pat::Constr {
             constructor: try_constructor(ctx, name, "Some"),
@@ -3471,7 +3492,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     let value_name = "try_value/" + index.to_string();
     let residual_name = "try_residual/" + index.to_string();
     let success_args: Vec[Pat] = Vec::[];
-    success_args.push(Pat::Var { name: value_name, ty: ok_ty });
+    success_args.push(Pat::Var { name: value_name, is_mut: false, ty: ok_ty });
     let success = Arm {
         pat: Pat::Constr {
             constructor: try_constructor(ctx, name, "Ok"),
@@ -3482,7 +3503,7 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
         body: Expr::Var { name: value_name, ty: ok_ty },
     };
     let residual_args: Vec[Pat] = Vec::[];
-    residual_args.push(Pat::Var { name: residual_name, ty: error_ty });
+    residual_args.push(Pat::Var { name: residual_name, is_mut: false, ty: error_ty });
     let return_args: Vec[Expr] = Vec::[];
     return_args.push(Expr::Var { name: residual_name, ty: error_ty });
     let failure = Arm {
@@ -3679,8 +3700,8 @@ fn with_expr_type(value: Expr, ty: Type) -> Expr {
                 ty,
             }
         },
-        Break { value, ty: _ } => Expr::Break { value, ty },
-        Continue { ty: _ } => Expr::Continue { ty },
+        Break { target, value, ty: _ } => Expr::Break { target, value, ty },
+        Continue { target, ty: _ } => Expr::Continue { target, ty },
         Return { expr: value, ty: _ } => Expr::Return { expr: value, ty },
         Go { expr: value, ty: _ } => Expr::Go { expr: value, ty },
         Call { func: function, args, ty: _ } => Expr::Call { func: function, args, ty },
@@ -4068,7 +4089,13 @@ fn into_iterator_item_type(ctx: Checker, iterator_ty: Type) -> Type {
     }
 }
 
-fn check_for_expr(ctx: Checker, pat: hir::Pat, iterator_source: hir::Expr, body_source: hir::Expr) -> Expr {
+fn check_for_expr(
+    ctx: Checker,
+    label: Option[string],
+    pat: hir::Pat,
+    iterator_source: hir::Expr,
+    body_source: hir::Expr,
+) -> Expr {
     let pat_span = pat.span;
     let iterator_span = iterator_source.span;
     let body_span = body_source.span;
@@ -4096,7 +4123,7 @@ fn check_for_expr(ctx: Checker, pat: hir::Pat, iterator_source: hir::Expr, body_
         )
     };
     ctx.loop_depth.set(ctx.loop_depth.get() + 1);
-    ctx.loop_results.push(LoopResult { result_ty: Option::None, has_break: Ref::new(false) });
+    push_loop_result(ctx, LoopResult { label, result_ty: Option::None, has_break: Ref::new(false) });
     let body = check_expr(ctx, body_source, Option::None);
     expect_type_at(ctx, Type::Unit, expr_type(body), Option::Some(body_span));
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
@@ -4125,7 +4152,12 @@ fn check_for_expr(ctx: Checker, pat: hir::Pat, iterator_source: hir::Expr, body_
     }
 }
 
-fn check_while_expr(ctx: Checker, cond_source: hir::Expr, body_source: hir::Expr) -> Expr {
+fn check_while_expr(
+    ctx: Checker,
+    label: Option[string],
+    cond_source: hir::Expr,
+    body_source: hir::Expr,
+) -> Expr {
     let cond_always_exits = hir_expr_always_exits_loop_control(cond_source);
     let previous_condition_depth = ctx.condition_depth.get();
     let previous_condition_loop_depth = ctx.condition_loop_depth.get();
@@ -4148,21 +4180,30 @@ fn check_while_expr(ctx: Checker, cond_source: hir::Expr, body_source: hir::Expr
     ctx.condition_depth.set(previous_condition_depth);
     ctx.condition_loop_depth.set(previous_condition_loop_depth);
     ctx.loop_depth.set(ctx.loop_depth.get() + 1);
-    ctx.loop_results.push(LoopResult { result_ty: Option::None, has_break: Ref::new(false) });
+    push_loop_result(ctx, LoopResult { label, result_ty: Option::None, has_break: Ref::new(false) });
     let body = check_expr(ctx, body_source, Option::Some(Type::Unit));
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
     let _ = ctx.loop_results.pop();
     Expr::While { cond, body, ty: Type::Unit }
 }
 
-fn check_loop_expr(ctx: Checker, body_source: hir::Expr, expected: Option[Type]) -> Expr {
+fn check_loop_expr(
+    ctx: Checker,
+    label: Option[string],
+    body_source: hir::Expr,
+    expected: Option[Type],
+) -> Expr {
     let result_ty = match propagated_expected(expected) {
         Some(ty) => ty,
         None => fresh_type(ctx.counter, VarKind::Any),
     };
-    let loop_result = LoopResult { result_ty: Option::Some(result_ty), has_break: Ref::new(false) };
+    let loop_result = LoopResult {
+        label,
+        result_ty: Option::Some(result_ty),
+        has_break: Ref::new(false),
+    };
     ctx.loop_depth.set(ctx.loop_depth.get() + 1);
-    ctx.loop_results.push(loop_result);
+    push_loop_result(ctx, loop_result);
     let body = check_expr(ctx, body_source, Option::Some(Type::Unit));
     let _ = ctx.loop_results.pop();
     ctx.loop_depth.set(ctx.loop_depth.get() - 1);
@@ -4176,16 +4217,68 @@ fn check_loop_expr(ctx: Checker, body_source: hir::Expr, expected: Option[Type])
     }
 }
 
-fn check_break_expr(ctx: Checker, source: Option[hir::Expr]) -> Expr {
+fn loop_target(ctx: Checker, label: Option[string]) -> Option[int] {
+    match label {
+        None => if ctx.loop_results.is_empty() {
+            Option::None
+        } else {
+            Option::Some(0)
+        },
+        Some(expected) => {
+            let mut target = 0;
+            let mut index = ctx.loop_results.len();
+            while index > 0 {
+                index = index - 1;
+                match ctx.loop_results[index].label {
+                    Some(value) => {
+                        if value == expected {
+                            return Option::Some(target)
+                        } else {
+                            ()
+                        }
+                    },
+                    None => (),
+                };
+                target = target + 1;
+            };
+            push_diagnostic(ctx, "Unknown loop label '" + expected + "'");
+            Option::None
+        },
+    }
+}
+
+fn push_loop_result(ctx: Checker, value: LoopResult) -> unit {
+    match value.label {
+        Some(label) => for active in ctx.loop_results {
+            match active.label {
+                Some(existing) => if existing == label {
+                    push_diagnostic(ctx, "Loop label '" + label + "' is already active")
+                } else {
+                    ()
+                },
+                None => (),
+            }
+        },
+        None => (),
+    };
+    ctx.loop_results.push(value)
+}
+
+fn check_break_expr(ctx: Checker, label: Option[string], source: Option[hir::Expr]) -> Expr {
     check_loop_control(ctx, true);
-    if ctx.loop_results.is_empty() {
+    let target = loop_target(ctx, label);
+    if target.is_none() {
         let value = match source {
             Some(expr) => Option::Some(check_expr(ctx, expr, Option::None)),
             None => Option::None,
         };
-        Expr::Break { value, ty: Type::Never }
+        Expr::Break { target: 0, value, ty: Type::Never }
     } else {
-        let current = ctx.loop_results[ctx.loop_results.len() - 1];
+        let target = match target {
+            Some(value) => value,
+            None => 0,
+        };
+        let current = ctx.loop_results[ctx.loop_results.len() - 1 - target];
         current.has_break.set(true);
         let value = match current.result_ty {
             Some(result_ty) => match source {
@@ -4203,7 +4296,7 @@ fn check_break_expr(ctx: Checker, source: Option[hir::Expr]) -> Expr {
                 None => Option::None,
             },
         };
-        Expr::Break { value, ty: Type::Never }
+        Expr::Break { target, value, ty: Type::Never }
     }
 }
 
@@ -4295,13 +4388,19 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             If { cond, then_branch, else_branch } => {
                 check_if_expr(ctx, cond, then_branch, else_branch, Option::None)
             },
-            While { cond, body } => check_while_expr(ctx, cond, body),
-            Loop { body } => check_loop_expr(ctx, body, Option::None),
-            For { pat, iterator, body } => check_for_expr(ctx, pat, iterator, body),
-            Break { value } => check_break_expr(ctx, value),
-            Continue => {
+            While { label, cond, body } => check_while_expr(ctx, label, cond, body),
+            Loop { label, body } => check_loop_expr(ctx, label, body, Option::None),
+            For { label, pat, iterator, body } => check_for_expr(ctx, label, pat, iterator, body),
+            Break { label, value } => check_break_expr(ctx, label, value),
+            Continue { label } => {
                 check_loop_control(ctx, false);
-                Expr::Continue { ty: Type::Never }
+                Expr::Continue {
+                    target: match loop_target(ctx, label) {
+                        Some(value) => value,
+                        None => 0,
+                    },
+                    ty: Type::Never,
+                }
             },
             Return { expr: value } => {
                 let typed = match value {
@@ -4450,7 +4549,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             let deferred = match expected {
                 Some(ty) => match prune(ty) {
                     Var(_) => true,
-                    Dyn { trait_name: name } => find_trait(ctx, name).is_none(),
+                    Dyn { trait_name: name, .. } => find_trait(ctx, name).is_none(),
                     other => !(is_numeric_type(other)),
                 },
                 None => true,
@@ -4487,7 +4586,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             let deferred = match expected {
                 Some(ty) => match prune(ty) {
                     Var(_) => true,
-                    Dyn { trait_name: name } => find_trait(ctx, name).is_none(),
+                    Dyn { trait_name: name, .. } => find_trait(ctx, name).is_none(),
                     other => !(is_numeric_type(other)),
                 },
                 None => true,
@@ -4592,7 +4691,7 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         If { cond, then_branch, else_branch } => {
             check_if_expr(ctx, cond, then_branch, else_branch, expected)
         },
-        Loop { body } => check_loop_expr(ctx, body, expected),
+        Loop { label, body } => check_loop_expr(ctx, label, body, expected),
         Block { block } => {
             let typed = check_block(ctx, block, expected);
             let result = Expr::Block { block: typed.0, ty: typed.1 };
@@ -4774,7 +4873,7 @@ fn check_constructor_pattern(
 
 fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
     match value.kind {
-        Var { name: local } => if contains_local(ctx.unresolved_locals, local) {
+        Var { name: local, is_mut: _ } => if contains_local(ctx.unresolved_locals, local) {
             ()
         } else {
             ctx.unresolved_locals.push(local);
@@ -5006,8 +5105,8 @@ fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
 
 fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     match prune(expected) {
-        Dyn { trait_name: name } => match value.kind {
-            Var { name: _ } | Wild => (),
+        Dyn { trait_name: name, .. } => match value.kind {
+            Var { name: _, is_mut: _ } | Wild => (),
             _ => {
                 push_diagnostic(
                     ctx,
@@ -5024,9 +5123,14 @@ fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
             Pat::Prim { value: normalize_pattern_primitive(result.0, expected), ty: expected }
         },
         None => match value.kind {
-            Var { name: local } => {
+            Var { name: local, is_mut } => {
+                if is_mut {
+                    mark_mutable_local(ctx, local)
+                } else {
+                    ()
+                };
                 insert_local(ctx, local, expected);
-                Pat::Var { name: local_name(local), ty: expected }
+                Pat::Var { name: local_name(local), is_mut, ty: expected }
             },
             Constr { head, args } => {
                 check_constructor_pattern(ctx, head, args, expected)
@@ -5143,7 +5247,7 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
             let previous_span = ctx.current_span.get();
             ctx.current_span.set(
                 match annotation {
-                    Some(Dyn { trait_name: _ }) => Option::Some(source.span),
+                    Some(Dyn { bounds: _ }) => Option::Some(source.span),
                     _ => previous_span,
                 },
             );
@@ -5185,7 +5289,7 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
                 },
             };
             let simple_pattern = match pat.kind {
-                Var { name: _ } | Wild => true,
+                Var { name: _, is_mut: _ } | Wild => true,
                 _ => false,
             };
             let pattern = check_pattern(ctx, pat, pattern_ty);
@@ -5330,7 +5434,10 @@ fn hir_block_contains_defer_control(value: hir::Block) -> bool {
 
 fn hir_expr_contains_defer_control(value: hir::Expr) -> bool {
     match value.kind {
-        Break { value: _ } | Continue | Return { expr: _ } | Try { depth: _, expr: _ } => true,
+        Break { value: _, .. } | Continue { label: _ } | Return { expr: _ } | Try {
+            depth: _,
+            expr: _,
+        } => true,
         Closure { params: _, body: _ } => false,
         Constr { constructor: _, args } => hir_expr_list_contains_defer_control(args),
         StructLiteral { name: _, fields, base } => {
@@ -5414,11 +5521,11 @@ fn hir_expr_contains_defer_control(value: hir::Expr) -> bool {
             };
             false
         },
-        While { cond, body } => {
+        While { cond, body, .. } => {
             hir_expr_contains_defer_control(cond) || hir_expr_contains_defer_control(body)
         },
-        Loop { body } => hir_expr_contains_defer_control(body),
-        For { pat: _, iterator, body } => {
+        Loop { body, .. } => hir_expr_contains_defer_control(body),
+        For { pat: _, iterator, body, .. } => {
             hir_expr_contains_defer_control(iterator) || hir_expr_contains_defer_control(body)
         },
         _ => false,
@@ -5427,7 +5534,7 @@ fn hir_expr_contains_defer_control(value: hir::Expr) -> bool {
 
 fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
     match value.kind {
-        Var { name: local } => mark_mutable_local(ctx, local),
+        Var { name: local, is_mut: _ } => mark_mutable_local(ctx, local),
         Constr { head: _, args: values } | Tuple { items: values } | Or { pats: values } => {
             for value in values {
                 mark_mutable_pattern(ctx, value)
@@ -5488,7 +5595,7 @@ fn hir_fields_any_exit_loop_control(values: Vec[(string, hir::Expr)]) -> bool {
 fn hir_match_has_catch_all(arms: Vec[hir::Arm]) -> bool {
     for arm in arms {
         match arm.pat.kind {
-            Var { name: _ } | Wild => return true,
+            Var { name: _, is_mut: _ } | Wild => return true,
             _ => (),
         }
     };
@@ -5508,7 +5615,7 @@ fn hir_match_bodies_all_exit_loop_control(arms: Vec[hir::Arm]) -> bool {
 
 fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
     match value.kind {
-        Break { value: _ } | Continue | Return { expr: _ } => true,
+        Break { value: _, .. } | Continue { label: _ } | Return { expr: _ } => true,
         ConstructorValue { constructor: _ } => false,
         Constr { constructor: _, args } => hir_exprs_any_exit_loop_control(args),
         StructLiteral { name: _, fields, base } => {
@@ -5575,8 +5682,8 @@ fn hir_expr_always_exits_loop_control(value: hir::Expr) -> bool {
         Match { expr: _, arms } => {
             hir_match_has_catch_all(arms) && hir_match_bodies_all_exit_loop_control(arms)
         },
-        While { cond, body: _ } => hir_expr_always_exits_loop_control(cond),
-        For { pat: _, iterator, body: _ } => {
+        While { cond, body: _, .. } => hir_expr_always_exits_loop_control(cond),
+        For { pat: _, iterator, body: _, .. } => {
             hir_expr_always_exits_loop_control(iterator)
         },
         _ => false,

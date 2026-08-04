@@ -25,6 +25,63 @@ pub fn artifact_decode_type_array(
     Result::Ok(result)
 }
 
+fn artifact_decode_dyn_bound(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+    tast::DynTraitBound,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "dyn bound")?;
+    let trait_name = wire::artifact_json_field_string(object, "trait_name")?;
+    let args = artifact_decode_type_array(
+        context,
+        wire::artifact_json_required_field(object, "args")?,
+        "dyn arguments",
+    )?;
+    let values = wire::artifact_json_array(
+        wire::artifact_json_required_field(object, "associated_types")?,
+        "dyn associated type bindings",
+    )?;
+    let associated_types: Vec[(string, tast::Type)] = Vec::[];
+    for value in values {
+        let pair = wire::artifact_json_array(value, "dyn associated type binding")?;
+        if pair.len() != 2 {
+            return Result::Err(wire::artifact_decode_error("dyn associated type binding"))
+        } else {
+            ()
+        };
+        associated_types.push(
+            (
+                wire::artifact_json_string_value(pair[0], "associated type name")?,
+                artifact_decode_type(context, pair[1])?,
+            ),
+        )
+    };
+    Result::Ok(tast::DynTraitBound { trait_name, args, associated_types })
+}
+
+fn artifact_decode_dyn_type(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
+    tast::Type,
+    string,
+] {
+    let primary = artifact_decode_dyn_bound(context, value)?;
+    let object = wire::artifact_json_object(value, "dynamic type")?;
+    let values = wire::artifact_json_array(
+        wire::artifact_json_required_field(object, "additional_bounds")?,
+        "additional dyn bounds",
+    )?;
+    let additional_bounds: Vec[tast::DynTraitBound] = Vec::[];
+    for value in values {
+        additional_bounds.push(artifact_decode_dyn_bound(context, value)?)
+    };
+    Result::Ok(
+        tast::Type::Dyn {
+            trait_name: primary.trait_name,
+            args: primary.args,
+            associated_types: primary.associated_types,
+            additional_bounds,
+        },
+    )
+}
+
 pub fn artifact_decode_trait_ref(context: ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
     tast::TraitRef,
     string,
@@ -118,11 +175,7 @@ pub fn artifact_decode_type(context: ArtifactDecodeContext, value: wire::Artifac
             } else if kind == "TStruct" {
                 artifact_decode_named_type(context, payload, "name", false)
             } else if kind == "TDyn" {
-                let object = wire::artifact_json_object(payload, "dynamic type")?;
-                match wire::artifact_json_field_string(object, "trait_name") {
-                    Ok(value) => Result::Ok(tast::Type::Dyn { trait_name: value }),
-                    Err(error) => Result::Err(error),
-                }
+                artifact_decode_dyn_type(context, payload)
             } else if kind == "TParam" {
                 let object = wire::artifact_json_object(payload, "type parameter")?;
                 match wire::artifact_json_field_string(object, "name") {

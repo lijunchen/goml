@@ -98,9 +98,23 @@ fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
             encode_open(builder, "Type.Con");
             encode_path(builder, path)
         },
-        Dyn { trait_path: path } => {
+        Dyn { bounds } => {
             encode_open(builder, "Type.Dyn");
-            encode_path(builder, path)
+            encode_list(builder, bounds.len());
+            for bound in bounds {
+                encode_open(builder, "DynBound");
+                encode_path(builder, bound.trait_path);
+                encode_list(builder, bound.args.len());
+                for arg in bound.args {
+                    encode_type(builder, arg)
+                };
+                encode_list(builder, bound.associated_types.len());
+                for binding in bound.associated_types {
+                    encode_string_value(builder, binding.0);
+                    encode_type(builder, binding.1)
+                };
+                encode_close(builder)
+            }
         },
         App { ty, args } => {
             encode_open(builder, "Type.App");
@@ -221,6 +235,16 @@ fn encode_optional_type(builder: text::StringBuilder, value: Option[TypeExpr]) -
         Some(ty) => {
             encode_some(builder);
             encode_type(builder, ty)
+        },
+        None => encode_none(builder),
+    }
+}
+
+fn encode_optional_string(builder: text::StringBuilder, value: Option[string]) -> unit {
+    match value {
+        Some(text) => {
+            encode_some(builder);
+            encode_string_value(builder, text)
         },
         None => encode_none(builder),
     }
@@ -485,6 +509,7 @@ fn encode_file(builder: text::StringBuilder, value: File) -> unit {
     encode_list(builder, value.uses.len());
     for use_decl in value.uses {
         encode_open(builder, "Use");
+        encode_visibility(builder, use_decl.visibility);
         encode_path(builder, use_decl.path);
         match use_decl.alias {
             Some(alias) => {

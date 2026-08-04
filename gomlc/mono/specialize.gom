@@ -140,7 +140,9 @@ fn unify_type(template: tast::Type, actual: tast::Type, bindings: Vec[TypeBindin
             unify_types(templates, actuals, bindings)
         },
         (Con { name: template }, Con { name: actual }) => template == actual,
-        (Dyn { trait_name: template }, Dyn { trait_name: actual }) => template == actual,
+        (Dyn { trait_name: template, .. }, Dyn { trait_name: actual, .. }) => {
+            template == actual
+        },
         (
             Projection { for_ty: template_base, name: template_name, trait_ref: template_ref },
             Projection { for_ty: actual_base, name: actual_name, trait_ref: actual_ref },
@@ -249,7 +251,32 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
             tast::Type::Tuple { items: substitute_types(items, bindings) }
         },
         Con { name } => tast::Type::Con { name },
-        Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            let substituted_associated: Vec[(string, tast::Type)] = Vec::[];
+            for binding in associated_types {
+                substituted_associated.push((binding.0, substitute_type(binding.1, bindings)))
+            };
+            let substituted_additional: Vec[tast::DynTraitBound] = Vec::[];
+            for bound in additional_bounds {
+                let bound_associated: Vec[(string, tast::Type)] = Vec::[];
+                for binding in bound.associated_types {
+                    bound_associated.push((binding.0, substitute_type(binding.1, bindings)))
+                };
+                substituted_additional.push(
+                    tast::DynTraitBound {
+                        trait_name: bound.trait_name,
+                        args: substitute_types(bound.args, bindings),
+                        associated_types: bound_associated,
+                    },
+                )
+            };
+            tast::Type::Dyn {
+                trait_name,
+                args: substitute_types(args, bindings),
+                associated_types: substituted_associated,
+                additional_bounds: substituted_additional,
+            }
+        },
         Projection { for_ty: base, name, trait_ref: reference } => {
             let base = substitute_type(base, bindings);
             let reference = substitute_optional_trait_ref(reference, bindings);
@@ -1012,7 +1039,32 @@ fn normalize_type(ctx: SpecializeCtx, value: tast::Type, active: Vec[string]) ->
             tast::Type::Tuple { items: normalize_types(ctx, items, active) }
         },
         Con { name } => tast::Type::Con { name },
-        Dyn { trait_name: name } => tast::Type::Dyn { trait_name: name },
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            let normalized_associated: Vec[(string, tast::Type)] = Vec::[];
+            for binding in associated_types {
+                normalized_associated.push((binding.0, normalize_type(ctx, binding.1, active)))
+            };
+            let normalized_additional: Vec[tast::DynTraitBound] = Vec::[];
+            for bound in additional_bounds {
+                let bound_associated: Vec[(string, tast::Type)] = Vec::[];
+                for binding in bound.associated_types {
+                    bound_associated.push((binding.0, normalize_type(ctx, binding.1, active)))
+                };
+                normalized_additional.push(
+                    tast::DynTraitBound {
+                        trait_name: bound.trait_name,
+                        args: normalize_types(ctx, bound.args, active),
+                        associated_types: bound_associated,
+                    },
+                )
+            };
+            tast::Type::Dyn {
+                trait_name,
+                args: normalize_types(ctx, args, active),
+                associated_types: normalized_associated,
+                additional_bounds: normalized_additional,
+            }
+        },
         Projection { for_ty: base, name, trait_ref: reference } => {
             let base = normalize_type(ctx, base, active);
             let reference = normalize_optional_trait_ref(ctx, reference, active);
@@ -1080,7 +1132,7 @@ fn type_contains_associated_projection(value: tast::Type) -> bool {
         },
         Var(_) | Unit | Never | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | Float32 | Float64 | String | Char | Con {
             name: _,
-        } | Dyn { trait_name: _ } | Param { name: _ } | Error => false,
+        } | Dyn { trait_name: _, .. } | Param { name: _ } | Error => false,
     }
 }
 
@@ -1225,7 +1277,7 @@ fn builtin_iterator_type(value: tast::Type) -> bool {
 fn builtin_trait_satisfied(for_ty: tast::Type, reference: tast::TraitRef) -> bool {
     reference.args.is_empty()
         && match tast::resolve_type(for_ty) {
-            Dyn { trait_name: name } => reference.name == name,
+            Dyn { trait_name: name, .. } => reference.name == name,
             other => if reference.name == "ToString" || reference.name == "Eq"
                 || reference.name == "Hash" {
                 builtin_scalar_type(other)
@@ -1598,12 +1650,13 @@ fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::
             body: specialize_expr(ctx, bindings, body),
             ty: specialize_type(ctx, ty, bindings),
         },
-        Break { value, ty } => core::Expr::Break {
+        Break { target, value, ty } => core::Expr::Break {
+            target,
             value: specialize_optional_expr(ctx, bindings, value),
             ty: specialize_type(ctx, ty, bindings),
         },
-        Continue { ty } => {
-            core::Expr::Continue { ty: specialize_type(ctx, ty, bindings) }
+        Continue { target, ty } => {
+            core::Expr::Continue { target, ty: specialize_type(ctx, ty, bindings) }
         },
         Return { expr, ty } => core::Expr::Return {
             expr: specialize_optional_expr(ctx, bindings, expr),
@@ -1844,12 +1897,13 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             ensure_runtime_trait_impls_for_expr(ctx, receiver);
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
-        Break { value, ty: _ } => match value {
+        Break { value, ty: _, .. } => match value {
             Some(expr) => ensure_runtime_trait_impls_for_expr(ctx, expr),
             None => (),
         },
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
+            ..,
         } => (),
     }
 }

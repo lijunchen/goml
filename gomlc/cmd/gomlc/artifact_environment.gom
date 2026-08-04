@@ -334,6 +334,7 @@ fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackage
     };
     Result::Ok(
         tast::dependency_environment(
+            value.reexports,
             enums,
             structs,
             value.type_aliases,

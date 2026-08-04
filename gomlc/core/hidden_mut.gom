@@ -33,25 +33,11 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
         match stmt {
             Defer { expr } => collect_mutable_expr(expr, result),
             Let { is_mut, pat: pattern, value: expr } => {
-                if is_mut {
-                    match pattern {
-                        Var { name, ty } => push_mutable(result, name, ty),
-                        _ => (),
-                    }
-                } else {
-                    ()
-                };
+                collect_mutable_pattern(pattern, is_mut, result);
                 collect_mutable_expr(expr, result)
             },
             LetElse { is_mut, pat: pattern, value: expr, else_branch } => {
-                if is_mut {
-                    match pattern {
-                        Var { name, ty } => push_mutable(result, name, ty),
-                        _ => (),
-                    }
-                } else {
-                    ()
-                };
+                collect_mutable_pattern(pattern, is_mut, result);
                 collect_mutable_expr(expr, result);
                 collect_mutable_expr(else_branch, result)
             },
@@ -72,8 +58,9 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
     match value {
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
+            ..,
         } => (),
-        Break { value, ty: _ } => match value {
+        Break { value, ty: _, .. } => match value {
             Some(expr) => collect_mutable_expr(expr, result),
             None => (),
         },
@@ -86,6 +73,7 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
         Match { expr: source, arms, ty: _ } => {
             collect_mutable_expr(source, result);
             for arm in arms {
+                collect_mutable_pattern(arm.pat, false, result);
                 match arm.guard {
                     Some(guard) => collect_mutable_expr(guard, result),
                     None => (),
@@ -104,7 +92,7 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
         },
         Loop { body, ty: _ } => collect_mutable_expr(body, result),
         For {
-            pat: _,
+            pat,
             iterator,
             into_iter_trait_ref: _,
             iterator_trait_ref: _,
@@ -112,6 +100,7 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
             body,
             ty: _,
         } => {
+            collect_mutable_pattern(pat, false, result);
             collect_mutable_expr(iterator, result);
             collect_mutable_expr(body, result)
         },
@@ -138,9 +127,53 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
     }
 }
 
+fn collect_mutable_pattern(value: tast::Pat, inherited: bool, result: Vec[(string, tast::Type)]) -> unit {
+    match value {
+        Var { name, is_mut, ty } => if inherited || is_mut {
+            push_mutable(result, name, ty)
+        } else {
+            ()
+        },
+        Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Or {
+            pats: args,
+            ty: _,
+        } => for arg in args {
+            collect_mutable_pattern(arg, inherited, result)
+        },
+        Array { prefix, rest, suffix, ty: _ } => {
+            for item in prefix {
+                collect_mutable_pattern(item, inherited, result)
+            };
+            match rest {
+                Some(value) => match value.binding {
+                    Some(name) => if inherited {
+                        push_mutable(result, name, value.ty)
+                    } else {
+                        ()
+                    },
+                    None => (),
+                },
+                None => (),
+            };
+            for item in suffix {
+                collect_mutable_pattern(item, inherited, result)
+            }
+        },
+        Alias { name, pat, ty } => {
+            if inherited {
+                push_mutable(result, name, ty)
+            } else {
+                ()
+            };
+            collect_mutable_pattern(pat, inherited, result)
+        },
+        Prim { value: _, ty: _ } | Range { start: _, end: _, inclusive: _, ty: _ } | Wild { ty: _ } => (),
+    }
+}
+
 fn collect_pattern_names(value: tast::Pat, result: Vec[string]) -> unit {
     match value {
-        Var { name, ty: _ } => push_name(result, name),
+        Var { name, is_mut: _, ty: _ } => push_name(result, name),
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Or {
             pats: args,
             ty: _,
@@ -210,8 +243,8 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
             params: _,
             body: _,
             ty: _,
-        } | Continue { ty: _ } => (),
-        Break { value, ty: _ } => match value {
+        } | Continue { ty: _, .. } => (),
+        Break { value, ty: _, .. } => match value {
             Some(expr) => collect_bound_expr(expr, result),
             None => (),
         },
@@ -312,8 +345,8 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
             params: _,
             body: _,
             ty: _,
-        } | Continue { ty: _ } => (),
-        Break { value, ty: _ } => match value {
+        } | Continue { ty: _, .. } => (),
+        Break { value, ty: _, .. } => match value {
             Some(expr) => collect_reference_expr(expr, result),
             None => (),
         },
@@ -427,8 +460,9 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
     match value {
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
+            ..,
         } => (),
-        Break { value, ty: _ } => match value {
+        Break { value, ty: _, .. } => match value {
             Some(expr) => collect_capture_expr(expr, result),
             None => (),
         },
@@ -655,14 +689,15 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             }
         },
         Loop { body, ty } => Expr::Loop { body: lower_hidden_expr(body, cells), ty },
-        Break { value, ty } => Expr::Break {
+        Break { target, value, ty } => Expr::Break {
+            target,
             value: match value {
                 Some(expr) => Option::Some(lower_hidden_expr(expr, cells)),
                 None => Option::None,
             },
             ty,
         },
-        Continue { ty } => Expr::Continue { ty },
+        Continue { target, ty } => Expr::Continue { target, ty },
         Return { expr, ty } => Expr::Return {
             expr: match expr {
                 Some(value) => Option::Some(lower_hidden_expr(value, cells)),

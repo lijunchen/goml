@@ -490,7 +490,7 @@ fn coverage_sequence_patterns(
 
 fn coverage_patterns(value: Pat) -> Vec[CoveragePat] {
     match value {
-        Var { name: _, ty } | Wild { ty } => coverage_one(coverage_wild(ty)),
+        Var { name: _, is_mut: _, ty } | Wild { ty } => coverage_one(coverage_wild(ty)),
         Prim { value, ty } => coverage_one(
             CoveragePat {
                 constructor: Option::Some(

@@ -116,10 +116,12 @@ pub enum Expr {
         ty: tast::Type,
     },
     Break {
+        target: int,
         value: Option[Expr],
         ty: tast::Type,
     },
     Continue {
+        target: int,
         ty: tast::Type,
     },
     Return {
@@ -203,7 +205,7 @@ pub fn expr_type(value: Expr) -> tast::Type {
         } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Match { ty, .. } | If {
             ty,
             ..,
-        } | While { ty, .. } | Loop { ty, .. } | Break { ty, .. } | Continue { ty } | Return {
+        } | While { ty, .. } | Loop { ty, .. } | Break { ty, .. } | Continue { ty, .. } | Return {
             ty,
             ..,
         } | Go { ty, .. } | ConstrGet { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Binary {

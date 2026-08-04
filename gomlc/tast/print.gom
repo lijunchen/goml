@@ -128,7 +128,34 @@ pub fn type_doc(value: Type) -> pretty::Doc {
         Char => pretty::text("char"),
         Tuple { items: values } => pretty::delimited("(", ",", ")", type_docs(values)),
         Con { name } => pretty::text(name),
-        Dyn { trait_name: name } => pretty::text("dyn " + name),
+        Dyn { trait_name, args, associated_types, additional_bounds } => {
+            let bounds: Vec[DynTraitBound] = Vec::[
+                DynTraitBound { trait_name, args, associated_types },
+            ];
+            for bound in additional_bounds {
+                bounds.push(bound)
+            };
+            let values: Vec[pretty::Doc] = Vec::[];
+            for bound in bounds {
+                let arguments = type_docs(bound.args);
+                for binding in bound.associated_types {
+                    arguments.push(
+                        pretty::concat(Vec::[pretty::text(binding.0 + " = "), type_doc(binding.1)]),
+                    )
+                };
+                values.push(
+                    pretty::append(
+                        pretty::text(bound.trait_name),
+                        if arguments.is_empty() {
+                            pretty::nil()
+                        } else {
+                            pretty::delimited("[", ",", "]", arguments)
+                        },
+                    ),
+                )
+            };
+            pretty::append(pretty::text("dyn "), pretty::join(pretty::text(" + "), values))
+        },
         Projection { for_ty: base, name, trait_ref: _ } => {
             pretty::append(type_doc(base), pretty::text("::" + name))
         },
@@ -214,9 +241,30 @@ fn write_type_value(builder: text::StringBuilder, value: Type) -> unit {
         Char => builder.write_string("char"),
         Tuple { items: values } => write_type_values(builder, values, "(", ")"),
         Con { name } => builder.write_string(name),
-        Dyn { trait_name: name } => {
+        Dyn { trait_name: name, args, associated_types, additional_bounds } => {
             builder.write_string("dyn ");
-            builder.write_string(name)
+            builder.write_string(name);
+            let arguments = args;
+            for binding in associated_types {
+                if arguments.is_empty() {
+                    builder.write_string("[")
+                } else {
+                    builder.write_string(", ")
+                };
+                builder.write_string(binding.0 + " = ");
+                write_type_value(builder, binding.1)
+            };
+            if !arguments.is_empty() {
+                write_type_values(builder, arguments, "[", "]")
+            } else if !associated_types.is_empty() {
+                builder.write_string("]")
+            } else {
+                ()
+            };
+            for bound in additional_bounds {
+                builder.write_string(" + ");
+                builder.write_string(bound.trait_name)
+            }
         },
         Projection { for_ty: base, name, trait_ref: _ } => {
             write_type_value(builder, base);
@@ -710,11 +758,14 @@ fn expr_doc(value: Expr) -> pretty::Doc {
                 ],
             ),
         ),
-        Break { value, ty: _ } => match value {
-            Some(value) => pretty::append(pretty::text("break "), expr_doc(value)),
-            None => pretty::text("break"),
+        Break { target, value, ty: _ } => match value {
+            Some(value) => pretty::append(
+                pretty::text("break@" + target.to_string() + " "),
+                expr_doc(value),
+            ),
+            None => pretty::text("break@" + target.to_string()),
         },
-        Continue { ty: _ } => pretty::text("continue"),
+        Continue { target, ty: _ } => pretty::text("continue@" + target.to_string()),
         Return { expr: value, ty: _ } => match value {
             Some(value) => pretty::append(pretty::text("return "), expr_doc(value)),
             None => pretty::text("return"),
@@ -799,7 +850,19 @@ fn constructor_pat_doc(constructor: Constructor, args: Vec[Pat]) -> pretty::Doc 
 
 fn pat_doc(value: Pat) -> pretty::Doc {
     match value {
-        Var { name, ty } => pretty::concat(Vec::[pretty::text(name + ": "), type_doc(ty)]),
+        Var { name, is_mut, ty } => pretty::concat(
+            Vec::[
+                pretty::text(
+                    if is_mut {
+                        "mut " + name
+                    } else {
+                        name
+                    },
+                ),
+                pretty::text(": "),
+                type_doc(ty),
+            ],
+        ),
         Prim { value, ty: _ } => primitive_doc(value),
         Constr { constructor, args, ty: _ } => constructor_pat_doc(constructor, args),
         Tuple { items: values, ty: _ } => {

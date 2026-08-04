@@ -354,9 +354,40 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
     };
     let uses: Vec[PackageInfoUse] = Vec::[];
     package_info_skip_trivia(scanner);
-    while package_info_consume_keyword(scanner, "use") {
-        uses.push(package_info_parse_use(scanner, source_path)?);
-        package_info_skip_trivia(scanner)
+    let mut parsing_uses = true;
+    while parsing_uses {
+        let start = scanner.index.get();
+        let is_use = package_info_consume_keyword(scanner, "use");
+        let is_public_use = if !is_use && package_info_consume_keyword(scanner, "pub") {
+            if package_info_consume_keyword(scanner, "use") {
+                true
+            } else {
+                scanner.index.set(start);
+                false
+            }
+        } else {
+            false
+        };
+        if is_use || is_public_use {
+            let value = package_info_parse_use(scanner, source_path)?;
+            let mut path = value.path;
+            for previous in uses {
+                match previous.alias {
+                    Some(alias) => if path == alias || path.starts_with(alias + "::") {
+                        path = previous.path;
+                        break
+                    } else {
+                        ()
+                    },
+                    None => (),
+                }
+            };
+            uses.push(PackageInfoUse { alias: value.alias, path });
+            package_info_skip_trivia(scanner)
+        } else {
+            parsing_uses = false;
+            ()
+        };
     };
     Result::Ok(
         PackageInfoFile {

@@ -248,6 +248,7 @@ fn artifact_dependency_environments(
     let impls: Vec[tast::ImplInfo] = Vec::[];
     result.push(
         tast::dependency_environment(
+            Vec::[],
             value.enums,
             value.structs,
             value.type_aliases,
@@ -657,6 +658,7 @@ fn compile_artifact_package(
         signatures,
         command.package_name,
         public_names,
+        hir_file.public_reexports,
         true,
         enum_names,
         struct_names,
@@ -666,6 +668,7 @@ fn compile_artifact_package(
         signatures,
         command.package_name,
         public_names,
+        hir_file.public_reexports,
         false,
         enum_names,
         struct_names,

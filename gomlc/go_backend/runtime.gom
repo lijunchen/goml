@@ -1214,7 +1214,7 @@ fn hashmap_trait_impl_name(trait_name: string, key: tast::Type, method: string) 
 
 fn hashmap_hash_expr(key: tast::Type, value: Expr) -> Expr {
     match tast::resolve_type(key) {
-        Dyn { trait_name: name } => if name == "Hash" || name.ends_with("::Hash") {
+        Dyn { trait_name: name, .. } => if name == "Hash" || name.ends_with("::Hash") {
             Expr::Call {
                 func: Expr::Field {
                     expr: Expr::Field { expr: value, field_name: "vtable" },
@@ -2689,7 +2689,7 @@ pub fn emit_dyn_runtime_items(
     let dyn_traits: Vec[string] = Vec::[];
     for ty in types {
         match tast::resolve_type(ty) {
-            Dyn { trait_name: name } => {
+            Dyn { trait_name: name, .. } => {
                 if !collections::contains(dyn_traits, name) {
                     for item in dyn_type_items(name, dyn_methods(functions, name)) {
                         items.push(item)

@@ -5,7 +5,7 @@ use gomlc::lexer;
 
 fn is_expr_first(kind: lexer::TokenKind) -> bool {
     match kind {
-        IntLit | Float | Str | RawStr | MultilineStr | FStringStart | CharLit | ByteCharLit | ByteStr | RawByteStr | Ident | TrueKeyword | FalseKeyword | Minus | Bang | Tilde | LParen | LBrace | LBracket | IfKeyword | MatchKeyword | WhileKeyword | LoopKeyword | ForKeyword | BreakKeyword | ContinueKeyword | ReturnKeyword | Pipe | OrOr | GoKeyword => true,
+        IntLit | Float | Str | RawStr | MultilineStr | FStringStart | CharLit | ByteCharLit | ByteStr | RawByteStr | Ident | Label | TrueKeyword | FalseKeyword | Minus | Bang | Tilde | LParen | LBrace | LBracket | IfKeyword | MatchKeyword | WhileKeyword | LoopKeyword | ForKeyword | BreakKeyword | ContinueKeyword | ReturnKeyword | Pipe | OrOr | GoKeyword => true,
         _ => false,
     }
 }
@@ -304,6 +304,10 @@ fn match_expression(parser: Parser) -> MarkerClosed {
 
 fn while_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
+    while_expression_with_marker(parser, marker)
+}
+
+fn while_expression_with_marker(parser: Parser, marker: MarkerOpened) -> MarkerClosed {
     parser.expect(lexer::TokenKind::WhileKeyword);
     let condition = parser.open();
     let previous = parser.set_struct_literals_allowed(false);
@@ -342,6 +346,10 @@ fn while_expression(parser: Parser) -> MarkerClosed {
 
 fn for_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
+    for_expression_with_marker(parser, marker)
+}
+
+fn for_expression_with_marker(parser: Parser, marker: MarkerOpened) -> MarkerClosed {
     parser.expect(lexer::TokenKind::ForKeyword);
     let _ = pattern(parser);
     if !parser.eat(lexer::TokenKind::InKeyword) {
@@ -371,6 +379,10 @@ fn for_expression(parser: Parser) -> MarkerClosed {
 
 fn loop_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
+    loop_expression_with_marker(parser, marker)
+}
+
+fn loop_expression_with_marker(parser: Parser, marker: MarkerOpened) -> MarkerClosed {
     parser.expect(lexer::TokenKind::LoopKeyword);
     if parser.at(lexer::TokenKind::LBrace) {
         block(parser)
@@ -405,6 +417,11 @@ fn return_expression(parser: Parser) -> MarkerClosed {
 fn break_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::BreakKeyword);
+    if parser.at(lexer::TokenKind::Label) {
+        parser.advance()
+    } else {
+        ()
+    };
     if !return_stops_expression(parser, parser.peek())
         && !expect_expr_with_message(parser, "expected an expression after `break`") {
         while !parser.eof() && !return_stops_expression(parser, parser.peek()) {
@@ -414,6 +431,37 @@ fn break_expression(parser: Parser) -> MarkerClosed {
         ()
     };
     parser.close(marker, cst::NodeKind::EXPR_BREAK)
+}
+
+fn continue_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::ContinueKeyword);
+    if parser.at(lexer::TokenKind::Label) {
+        parser.advance()
+    } else {
+        ()
+    };
+    parser.close(marker, cst::NodeKind::EXPR_CONTINUE)
+}
+
+fn labeled_loop_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Label);
+    parser.expect(lexer::TokenKind::Colon);
+    match parser.peek() {
+        WhileKeyword => while_expression_with_marker(parser, marker),
+        ForKeyword => for_expression_with_marker(parser, marker),
+        LoopKeyword => loop_expression_with_marker(parser, marker),
+        _ => {
+            parser.error("loop label must precede `while`, `for`, or `loop`");
+            if !parser.eof() {
+                parser.advance()
+            } else {
+                ()
+            };
+            parser.close(marker, cst::NodeKind::ErrorTree)
+        },
+    }
 }
 
 fn go_expression(parser: Parser) -> MarkerClosed {
@@ -491,8 +539,9 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         WhileKeyword => while_expression(parser),
         LoopKeyword => loop_expression(parser),
         ForKeyword => for_expression(parser),
+        Label => labeled_loop_expression(parser),
         BreakKeyword => break_expression(parser),
-        ContinueKeyword => simple_expression(parser, cst::NodeKind::EXPR_CONTINUE),
+        ContinueKeyword => continue_expression(parser),
         ReturnKeyword => return_expression(parser),
         GoKeyword => go_expression(parser),
         Pipe | OrOr => closure_expr(parser),

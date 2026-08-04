@@ -40,7 +40,31 @@ fn pretty_type_doc(value: TypeExpr) -> doc::Doc {
         Char => doc::text("char"),
         Tuple { items: values } => doc::delimited("(", ",", ")", pretty_type_docs(values)),
         Con { path } => pretty_path_doc(path),
-        Dyn { trait_path: path } => doc::append(doc::text("dyn "), pretty_path_doc(path)),
+        Dyn { bounds } => {
+            let values: Vec[doc::Doc] = Vec::[];
+            for bound in bounds {
+                let args: Vec[doc::Doc] = Vec::[];
+                for arg in bound.args {
+                    args.push(pretty_type_doc(arg))
+                };
+                for binding in bound.associated_types {
+                    args.push(
+                        doc::concat(Vec::[doc::text(binding.0 + " = "), pretty_type_doc(binding.1)]),
+                    )
+                };
+                values.push(
+                    doc::append(
+                        pretty_path_doc(bound.trait_path),
+                        if args.is_empty() {
+                            doc::nil()
+                        } else {
+                            doc::delimited("[", ",", "]", args)
+                        },
+                    ),
+                )
+            };
+            doc::append(doc::text("dyn "), doc::join(doc::text(" + "), values))
+        },
         App { ty: base, args } => {
             if args.is_empty() {
                 pretty_type_doc(base)
@@ -573,6 +597,7 @@ fn pretty_use_item_doc(value: UseItem) -> doc::Doc {
 }
 
 fn pretty_use_doc(value: UseDecl) -> doc::Doc {
+    let visibility = pretty_visibility_doc(value.visibility);
     let items = if value.items.is_empty() {
         doc::nil()
     } else {
@@ -586,7 +611,16 @@ fn pretty_use_doc(value: UseDecl) -> doc::Doc {
         Some(alias) => doc::text(" as " + alias),
         None => doc::nil(),
     };
-    doc::concat(Vec::[doc::text("use "), pretty_path_doc(value.path), items, alias, doc::text(";")])
+    doc::concat(
+        Vec::[
+            visibility,
+            doc::text("use "),
+            pretty_path_doc(value.path),
+            items,
+            alias,
+            doc::text(";"),
+        ],
+    )
 }
 
 fn pretty_file(value: File) -> string {

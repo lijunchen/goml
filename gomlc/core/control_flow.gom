@@ -53,7 +53,7 @@ fn tast_match_arms_exit(arms: Vec[tast::Arm]) -> bool {
 
 fn tast_expr_exits(value: tast::Expr) -> bool {
     match value {
-        Break { ty: _, .. } | Continue { ty: _ } | Return { expr: _, ty: _ } => true,
+        Break { ty: _, .. } | Continue { ty: _, .. } | Return { expr: _, ty: _ } => true,
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Array {
             items: args,
             ty: _,

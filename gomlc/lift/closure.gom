@@ -193,12 +193,13 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             collect_used_expr(values, receiver);
             collect_used_exprs(values, args)
         },
-        Break { value, ty: _ } => match value {
+        Break { value, ty: _, .. } => match value {
             Some(expr) => collect_used_expr(values, expr),
             None => (),
         },
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
+            ..,
         } => (),
     }
 }
@@ -440,8 +441,8 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
-        Break { value, ty: _ } => observe_optional_expr(maximum, value),
-        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _ } => (),
+        Break { value, ty: _, .. } => observe_optional_expr(maximum, value),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _, .. } => (),
     }
 }
 
@@ -633,11 +634,12 @@ fn transform_expr(state: State, scope: Vec[ScopeEntry], value: core::Expr, conte
         Loop { body, ty } => {
             core::Expr::Loop { body: transform_expr(state, scope, body, context), ty }
         },
-        Break { value, ty } => core::Expr::Break {
+        Break { target, value, ty } => core::Expr::Break {
+            target,
             value: transform_optional_expr(state, scope, value, context),
             ty,
         },
-        Continue { ty } => core::Expr::Continue { ty },
+        Continue { target, ty } => core::Expr::Continue { target, ty },
         Return { expr, ty } => core::Expr::Return {
             expr: transform_optional_expr(state, scope, expr, context),
             ty,
@@ -836,11 +838,11 @@ fn collect_captured(
             collect_captured(receiver, bound, captured, scope);
             collect_captured_exprs(args, bound, captured, scope)
         },
-        Break { value, ty: _ } => match value {
+        Break { value, ty: _, .. } => match value {
             Some(expr) => collect_captured(expr, bound, captured, scope),
             None => (),
         },
-        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _ } => (),
+        Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue { ty: _, .. } => (),
     }
 }
 

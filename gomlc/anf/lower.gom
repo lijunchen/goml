@@ -62,11 +62,7 @@ pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
     let structs = value.structs;
     let type_instances = value.type_instances;
     let constants = value.constants;
-    let state = State {
-        counter,
-        loop_ctx: Ref::new(Option::None),
-        return_ctx: Ref::new(Option::None),
-    };
+    let state = State { counter, loop_ctxs: Vec::[], return_ctx: Ref::new(Option::None) };
     let functions: Vec[Function] = Vec::[];
     for function in value.functions {
         functions.push(lower_function(state, function))

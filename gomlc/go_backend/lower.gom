@@ -2661,7 +2661,7 @@ fn collect_type(result: CollectedTypes, value: tast::Type) -> unit {
             }
         },
         Con { name: _ } => add_collected_type(result, value),
-        Dyn { trait_name: _ } => add_collected_type(result, value),
+        Dyn { trait_name: _, .. } => add_collected_type(result, value),
         Projection { for_ty: base, name: _, trait_ref: _ } => collect_type(result, base),
         App { ty: base, args } => {
             collect_type(result, base);

@@ -256,12 +256,13 @@ fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[tast::StructDe
             artifact_prepare_core_expr(receiver, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
-        Break { value, ty: _ } => match value {
+        Break { value, ty: _, .. } => match value {
             Some(expr) => artifact_prepare_core_expr(expr, definitions),
             None => (),
         },
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } | Continue {
             ty: _,
+            ..,
         } => (),
     }
 }

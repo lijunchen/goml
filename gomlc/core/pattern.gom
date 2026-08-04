@@ -41,7 +41,7 @@ struct PrimitivePatternCase {
 fn flat_pattern_items(items: Vec[tast::Pat]) -> bool {
     for item in items {
         match item {
-            Var { name: _, ty: _ } | Wild { ty: _ } => (),
+            Var { name: _, is_mut: _, ty: _ } | Wild { ty: _ } => (),
             _ => return false,
         }
     };
@@ -73,7 +73,7 @@ fn plan_flat_pattern(ctx: Lowerer, source: string, pattern: tast::Pat) -> Option
                         },
                     );
                     match items[index] {
-                        Var { name, ty } => bindings.push(
+                        Var { name, is_mut: _, ty } => bindings.push(
                             PatternBinding { name, source: projection_name, ty },
                         ),
                         Wild { ty: _ } => (),
@@ -111,7 +111,7 @@ fn plan_flat_pattern(ctx: Lowerer, source: string, pattern: tast::Pat) -> Option
                     },
                 );
                 match item {
-                    Var { name, ty } => bindings.push(
+                    Var { name, is_mut: _, ty } => bindings.push(
                         PatternBinding { name, source: projection_name, ty },
                     ),
                     Wild { ty: _ } => (),
@@ -155,7 +155,7 @@ fn normalize_pattern_rows(rows: Vec[PatternRow]) -> Vec[PatternRow] {
         };
         for column in row.columns {
             match column.pattern {
-                Var { name, ty } => bindings.push(
+                Var { name, is_mut: _, ty } => bindings.push(
                     PatternBinding { name, source: column.source, ty },
                 ),
                 Wild { ty: _ } => (),
