@@ -13,7 +13,7 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 5. Generic calls usually rely on type inference; when explicit type arguments are required, write `id::[int32](1)`, not `id[int32](1)` or Rust's `id::<int32>(1)`.
 6. `if` is an expression; when `else` is omitted, the then branch must return `unit`.`match` must be exhaustive.
 7. The last semicolon-free expression of a block is the block value; adding a semicolon discards the value.
-8. `let` and assignment statements must end with a semicolon.Local binding must be declared with `let mut` before reassignment; the semicolon can be omitted for `if`, `match`, `while`, `loop` and `for` as statements.
+8. `let` and assignment statements must end with a semicolon. Mutable bindings may be introduced with `let mut pattern` or precisely inside a pattern with `mut name`; the semicolon can be omitted for `if`, `match`, `while`, `loop` and `for` as statements.
 9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
 11. Before using trait method syntax across packages, import the package and trait with `use alias::Trait;` or a braced import; when in doubt, use UFCS: `Trait::method(value)`.
@@ -54,7 +54,7 @@ Ordinary identifiers only use ASCII and are of the form:
 
 The single `_` is a wildcard character, not an ordinary variable name.The current syntax enforces the first letter case of name categories:
 
-- Package names, package aliases in `use ... as`, functions, methods, parameters, local bindings and fields must start with a lowercase letter or `_`; aliases inside braced imports may follow the naming convention of the imported item;
+- Package names, package aliases in `use package as alias`, functions, methods, parameters, local bindings and fields must start with a lowercase letter or `_`; imported item aliases may follow the naming convention of the imported item;
 - Structures, enumerations, traits, enumeration variants, generic parameters, and associated types must start with a capital letter;
 - Paths retain the appropriate case for the referenced name.
 
@@ -296,6 +296,16 @@ use api::Render;
 
 Importing `Render` in a braced list also adds it to the method scope. Afterwards, the specific value can be written as `value.render()`.Even if the trait is not added to the method scope, you can still write a qualified call to `api::Render::render(value)`.
 
+`pub use` re-exports a named package or public item from the current package without changing its identity:
+
+```goml
+pub use alice::http::client;
+pub use client::{Client, Request, Response};
+pub use client::Request as HttpRequest;
+```
+
+Downstream code can use `facade::HttpRequest`, import it directly, or bring a re-exported trait into method scope. The compiler resolves every such path back to the original declaration, so constructors, trait implementations, methods, constants, and functions behave exactly as they do at the original path. Re-exported package namespaces also remain usable, for example `facade::client::Request`. Re-export names in one package must be unique. Glob re-exports remain unsupported.
+
 The following path models are not supported:
 
 ```text
@@ -349,7 +359,7 @@ All files in the same package can use private top-level items.The trait impl met
 | function | `(int32, string) -> bool` | parameter type list to return type |
 | Generic application | `Option[int32]`、`pkg::Box[string]` | Use square brackets |
 | channel | `Channel[int]` | Go channel backend |
-| trait object | `dyn Render` | A single, non-generic, unassociated type dyn-safe trait |
+| trait object | `dyn Render`、`dyn Iterator[Item = int]` | A single, non-generic dyn-safe trait; associated types must be bound |
 | Associative type projection | `I::Item`、`Self::Output` | There must be corresponding trait constraints |
 
 Example of function type:
@@ -388,7 +398,7 @@ Aliases do not create nominally distinct types and recursive alias cycles are re
 
 GoML has no Rust references and lifetimes, raw pointers, nullable types, slice literals, or union types.Use `Ref[T]` to express shared variable units, use `Option[T]` to express optional values, and use `Slice[T]` to express read-only continuous views.
 
-`A + B` is only allowed to appear in trait bound or supertrait lists, and cannot be written as ordinary parameters/return types, nor can it be written as `dyn A + B`.
+`A + B` is only usable as a trait bound or supertrait list. The parser reserves `dyn A + B`, but the type checker deliberately rejects multiple dyn bounds in the current object model.
 
 `Self` is only used in the trait signature and the type position of impl; ordinary top-level functions cannot use `Self` as an implicit type parameter.
 
@@ -664,6 +674,25 @@ The initializer is evaluated once. The pattern must be refutable, bindings becom
 let mut count = 0;
 count = count + 1;
 ```
+
+Destructuring patterns can mark only selected bindings mutable:
+
+```goml
+let (mut index, value) = pair;
+
+match state {
+    Some(mut count) => {
+        count += 1;
+    },
+    None => (),
+};
+
+for mut item in values {
+    item += 1;
+}
+```
+
+`mut` inside a pattern is allowed only on a binding and does not introduce borrowing or reference semantics. The existing `let mut pattern = value;` form remains supported and recursively makes every binding in that pattern mutable. Per-binding `mut` composes with tuple, struct, enum, array, `match`, and `for` patterns.
 
 Ordinary local bindings without `mut` cannot be reassigned.Assignment targets include mutable locals, tuple projections, structure fields, and supported index locations. Compound assignment supports `+=`, `-=`, `*=`, `/=`, `%=`, `&=`, `|=`, `^=`, `<<=`, and `>>=`:
 
@@ -946,7 +975,7 @@ let result = loop {
 };
 ```
 
-All `break` values targeting the same `loop` must have compatible types. `break;` supplies `unit`, so it cannot be mixed with non-`unit` break values. A `loop` with no `break` targeting it has type `never` and does not continue to the following expression. Nested loops always associate `break` and `continue` with the nearest loop.
+All `break` values targeting the same `loop` must have compatible types. `break;` supplies `unit`, so it cannot be mixed with non-`unit` break values. A `loop` with no `break` targeting it has type `never` and does not continue to the following expression. Unlabeled `break` and `continue` target the nearest loop.
 
 ### `for`
 
@@ -985,6 +1014,26 @@ while true {
 ```
 
 `break` and `continue` can only appear in loops. `continue` never has a value. `break value` is allowed only for `loop`; `while` and `for` accept `break;` only. Both are divergent control expressions and can appear in `if`, `match`, or other value positions.
+
+Rust-style labels select an enclosing `while`, `loop`, or `for` without conflicting with `break value`:
+
+```goml
+'outer: for row in rows {
+    for item in row {
+        if found(item) {
+            break 'outer;
+        } else {
+            continue;
+        }
+    }
+}
+
+let answer = 'result: loop {
+    break 'result 42;
+};
+```
+
+`continue 'label;` resumes the selected enclosing loop. `break 'label value;` may carry a value only when the selected target is a `loop`. Labels must refer to an active enclosing loop and cannot be duplicated while an outer label of the same name is active. Crossing one or more blocks still runs their `defer` cleanups from inner to outer before control reaches the target.
 
 `return` can be taken with or without a value and checks the return type of the current function or closure:
 
@@ -1186,7 +1235,7 @@ Exhaustive analysis ignores enumeration variants with no value for the payload t
 
 Branches with normal guards do not provide exhaustive coverage because guard may be false; subsequent unguarded branches are usually required.String and floating-point literals cannot enumerate the entire type, and `_` is also usually required when matching these types.In floating point mode, `-0.0` and `0.0` are regarded as the same value.
 
-There are currently no `ref` or `mut` subpatterns, and pattern matching on `dyn Trait` is not supported.
+There are no `ref` or `ref mut` patterns. `mut name` is supported for individual bindings, while pattern matching on `dyn Trait` is not supported.
 
 ## Closures and function values
 
@@ -1447,18 +1496,33 @@ value.show()
 Display::show(value)
 ```
 
+Associated types are fixed in square brackets and are available to dyn-dispatched method signatures:
+
+```goml
+trait Source {
+    type Item;
+
+    fn get(self: Self) -> Self::Item;
+}
+
+fn read(source: dyn Source[Item = int]) -> int {
+    source.get()
+}
+```
+
+Every associated type declared by the trait must be bound exactly once. The bracket grammar reserves positional trait arguments followed by associated bindings, such as `dyn Consumer[string, Error = IoError]`; positional arguments after the first `Name = Type` binding are rejected. Generic trait objects are still rejected, so the positional form is reserved for forward compatibility rather than enabled today.
+
 Current dyn-safe conditions:
 
 - Traits cannot have type parameters;
-- Traits cannot declare associated types;
 - Each method must have a first receiver parameter of exactly type `Self`;
-- `Self` cannot appear in other parameters and return types;
+- Direct `Self` cannot appear in other parameters or return types, while a bound projection such as `Self::Item` is allowed;
 - Methods cannot declare type parameters.
 
 Current limitations:
 
 - Generic trait object is not supported;
-- `dyn A + B` is not supported;
+- Multiple bounds such as `dyn Read + Close` are parsed for forward compatibility but rejected by the type checker;
 - Explicit `as dyn Trait` is not supported;
 - Pattern matching on `dyn Trait` is not supported.
 
@@ -1994,8 +2058,8 @@ Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `s
 | `null`、`nil` | `Option::None` |
 | `throw`, exception | `Result` and `?` |
 | `float_value as int32` | Floating point to integer conversion is not supported; use dedicated parsing or conversion APIs |
-| `dyn A + B` | Single `dyn A`, or redesign the combined trait |
-| `dyn TraitWithAssociatedType` | dyn traits cannot have type parameters or associated types |
+| `dyn A + B` | Use one dyn-safe trait; multiple bounds are reserved syntax but not yet supported |
+| `dyn TraitWithAssociatedType` | Bind every associated type, for example `dyn Iterator[Item = int]` |
 | `use pkg::*` | List the required public items explicitly with `use pkg::{A, B};` |
 | `mod`、`crate::`、`super::` | Directory packages and canonical `use` paths |
 | `fn helper` inside function | Top-level function or local closure |
@@ -2008,7 +2072,7 @@ The following EBNF only describes the canonical form that should be generated; `
 ```text
 file          = package_decl? use_decl* item*
 package_decl  = "package" lower_ident ";"
-use_decl      = "use" path ("as" lower_ident | "::" "{" use_items "}")? ";"
+use_decl      = "pub"? "use" path ("as" ident | "::" "{" use_items "}")? ";"
 use_items     = use_item ("," use_item)* ","?
 use_item      = ident ("as" ident)?
 path          = ident ("::" ident)*
@@ -2059,13 +2123,17 @@ where_predicate = type ":" trait_set | type "=" type
 
 type          = primitive_type
               | path type_args?
-              | "dyn" path
+              | "dyn" dyn_bound ("+" dyn_bound)*
               | "[" type ";" integer_literal "]"
               | "(" type_list ")"
               | "()" "->" type
               | type "->" type
 type_args     = "[" type_list "]"
 type_list     = type ("," type)* ","?
+dyn_bound     = path dyn_args?
+dyn_args      = "[" (type ",")* dyn_assoc ("," dyn_assoc)* ","? "]"
+              | "[" type_list "]"
+dyn_assoc     = upper_ident "=" type
 
 block         = "{" statement* expression? "}"
 statement     = "let" "mut"? pattern (":" type)? "=" expression ("else" block)? ";"
@@ -2084,7 +2152,10 @@ expression    = literal | raw_string | byte_string | raw_byte_string
               | try_expression
               | if_expression | match_expression | while_expression | loop_expression | for_expression
               | scope_expression | spawn_expression
-              | "return" expression? | "break" expression? | "continue" | "go" expression
+              | "return" expression?
+              | "break" loop_label? expression?
+              | "continue" loop_label?
+              | "go" expression
 
 interpolated_string = "f\"" (string_text | "{{" | "}}" | "{" expression "}")* "\""
 byte_string   = "b\"" byte_string_content* "\""
@@ -2106,10 +2177,12 @@ if_expression = "if" expression block ("else" (block | if_expression))?
 match_expression = "match" expression
                    "{" (match_arm ",")* match_arm? "}"
 match_arm     = pattern ("if" expression)? "=>" (expression | block)
-while_expression = "while" expression block
-              | "while" "let" pattern "=" expression block
-loop_expression = "loop" block
-for_expression = "for" pattern "in" expression block
+while_expression = loop_label_decl? "while" expression block
+              | loop_label_decl? "while" "let" pattern "=" expression block
+loop_expression = loop_label_decl? "loop" block
+for_expression = loop_label_decl? "for" pattern "in" expression block
+loop_label_decl = loop_label ":"
+loop_label    = "'" lower_ident
 scope_expression = "scope" block
 spawn_expression = "spawn" closure
 closure       = "||" (expression | block)
@@ -2122,7 +2195,7 @@ or_pattern    = alias_pattern ("|" alias_pattern)*
 alias_pattern = ident "@" alias_pattern | range_pattern
 range_pattern = primary_pattern ((".." | "..=") range_endpoint)?
 range_endpoint = "-"? integer_literal | char_literal
-primary_pattern = ident | "_" | literal | "-" numeric_literal | "()"
+primary_pattern = ident | "mut" lower_ident | "_" | literal | "-" numeric_literal | "()"
               | "(" pattern ")"
               | "(" pattern "," (pattern ("," pattern)* ","?)? ")"
               | path
