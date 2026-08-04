@@ -51,7 +51,7 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     test_support::assert_success(output);
     testing::assert_eq(
         test_support::read_file(path::join(root, "main.gom")),
-        "package main;\n\nfn main() -> unit {\n    ()\n}\n",
+        "package main;\n\nfn main() -> unit {}\n",
     );
     testing::assert_eq(
         test_support::read_file(source),
@@ -59,11 +59,11 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     );
     testing::assert_eq(
         test_support::read_file(test_source),
-        "package main;\n\nfn helper() -> unit {\n    ()\n}\n",
+        "package main;\n\nfn helper() -> unit {}\n",
     );
     testing::assert_eq(
         test_support::read_file(external_test_source),
-        "package tests;\n\nfn external_helper() -> unit {\n    ()\n}\n",
+        "package tests;\n\nfn external_helper() -> unit {}\n",
     );
     for file in ignored {
         testing::assert_eq(test_support::read_file(file), "invalid {")
