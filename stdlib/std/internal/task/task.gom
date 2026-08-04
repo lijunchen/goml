@@ -12,7 +12,10 @@ pub struct CancelToken {
 extern fn scope_new(parent: int64) -> int64;
 
 #[runtime("std.task.scope_spawn")]
-extern fn scope_spawn(scope: int64, body: () -> unit) -> unit;
+extern fn scope_spawn(scope: int64, body: () -> unit) -> bool;
+
+#[runtime("std.task.scope_try_spawn")]
+extern fn scope_try_spawn(scope: int64, body: () -> unit) -> bool;
 
 #[runtime("std.task.scope_cancel")]
 extern fn scope_cancel(scope: int64) -> unit;
@@ -35,7 +38,11 @@ pub fn child_scope(parent: CancelToken) -> ScopeHandle {
 }
 
 pub fn spawn(scope: ScopeHandle, body: () -> unit) -> unit {
-    scope_spawn(scope.id, body)
+    let _ = scope_spawn(scope.id, body);
+}
+
+pub fn try_spawn(scope: ScopeHandle, body: () -> unit) -> bool {
+    scope_try_spawn(scope.id, body)
 }
 
 pub fn cancel(scope: ScopeHandle) -> unit {

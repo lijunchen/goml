@@ -73,6 +73,23 @@ impl Scope {
         Task { result, ready }
     }
 
+    pub fn try_spawn[T](self: Scope, body: (CancelToken) -> T) -> Option[Task[T]] {
+        let result: Ref[Option[T]] = Ref::new(Option::None);
+        let ready: Channel[unit] = Channel::new(0);
+        let token = CancelToken { value: internal_task::token(self.handle) };
+        if internal_task::try_spawn(
+            self.handle,
+            || {
+                result.set(Option::Some(body(token)));
+                ready.close()
+            },
+        ) {
+            Option::Some(Task { result, ready })
+        } else {
+            Option::None
+        }
+    }
+
     pub fn spawn_try[T, E](self: Scope, body: (CancelToken) -> Result[T, E]) -> Task[Result[T, E]] {
         self.spawn(
             |token| {

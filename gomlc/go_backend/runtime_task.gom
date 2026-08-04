@@ -344,7 +344,7 @@ fn task_scope_new_item() -> Item {
     std_function_item("std.task.scope_new", Vec::[("parent", Type::Int64)], Type::Int64, stmts)
 }
 
-fn task_scope_spawn_item() -> Item {
+fn task_scope_spawn_item(key: string, panic_when_closed: bool) -> Item {
     let stmts: Vec[Stmt] = Vec::[];
     stmts.push(
         Stmt::Var {
@@ -353,17 +353,26 @@ fn task_scope_spawn_item() -> Item {
             value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("scope_id")])),
         },
     );
+    let missing = if panic_when_closed {
+        Vec::[Stmt::Panic { message: "task scope is closed" }]
+    } else {
+        Vec::[task_return(Expr::Bool { value: false })]
+    };
     stmts.push(
         Stmt::If {
             cond: Expr::Binary { op: BinaryOp::Eq, lhs: task_var("scope"), rhs: Expr::Nil },
-            then_: Block { stmts: Vec::[Stmt::Panic { message: "task scope is closed" }] },
+            then_: Block { stmts: missing },
             else_: Option::None,
         },
     );
     stmts.push(task_expr(task_method("scope", "mu.Lock", Vec::[])));
     let closed: Vec[Stmt] = Vec::[];
     closed.push(task_expr(task_method("scope", "mu.Unlock", Vec::[])));
-    closed.push(Stmt::Panic { message: "task scope is closed" });
+    if panic_when_closed {
+        closed.push(Stmt::Panic { message: "task scope is closed" })
+    } else {
+        closed.push(task_return(Expr::Bool { value: false }))
+    };
     stmts.push(
         Stmt::If {
             cond: Expr::Binary {
@@ -380,14 +389,14 @@ fn task_scope_spawn_item() -> Item {
     stmts.push(
         Stmt::Go { call: task_call(task_run_name(), Vec::[task_var("scope"), task_var("body")]) },
     );
-    stmts.push(task_return(Expr::Unit));
+    stmts.push(task_return(Expr::Bool { value: true }));
     std_function_item(
-        "std.task.scope_spawn",
+        key,
         Vec::[
             ("scope_id", Type::Int64),
             ("body", Type::Func { params: Vec::[], ret_ty: Type::Unit }),
         ],
-        Type::Unit,
+        Type::Bool,
         stmts,
     )
 }
@@ -564,7 +573,9 @@ fn task_runtime_hook_item(key: string) -> Option[Item] {
     if key == "std.task.scope_new" {
         Option::Some(task_scope_new_item())
     } else if key == "std.task.scope_spawn" {
-        Option::Some(task_scope_spawn_item())
+        Option::Some(task_scope_spawn_item("std.task.scope_spawn", true))
+    } else if key == "std.task.scope_try_spawn" {
+        Option::Some(task_scope_spawn_item("std.task.scope_try_spawn", false))
     } else if key == "std.task.scope_cancel" {
         Option::Some(task_scope_cancel_item())
     } else if key == "std.task.scope_finish" {
