@@ -1907,9 +1907,9 @@ Cancellation is cooperative. `Scope::cancel` changes the state observed by `Canc
 - `Command::output_with(token) -> Result[WaitResult[Output], string]`
 - `Command::status_with(token) -> Result[WaitResult[ExitStatus], string]`
 
-`WaitResult::Cancelled` means cancellation woke the operation. Process cancellation uses the host command context, so the scope waits for the process operation to return before it exits. Task scopes never close user channels automatically.
+`WaitResult::Cancelled` means cancellation woke the operation. Process cancellation uses the host command context, so the scope waits for the process operation to return before it exits. Task scopes never close user channels automatically. `active_scope_count()` exposes the number of live runtime scopes for tests and leak diagnostics.
 
-GoML has no lifetime or linear type system, so a `Scope` value can currently escape its body. Calling `spawn` after the scope begins closing is a runtime error. Panic remains a fatal runtime exception and is not converted into `Result`; panic cleanup and recovery are not part of this API version.
+GoML has no lifetime or linear type system, so a `Scope` value can currently escape its body. Calling `spawn` after the scope begins closing is a runtime error. Panic remains a fatal runtime exception and is not converted into `Result`. A panic in the scope body or a child task cancels sibling tasks, waits for them, removes the runtime scope, and is then re-raised in the scope owner.
 
 `join_all` returns values in input order. `join_all_results` waits for every task and returns errors in input order, independent of goroutine scheduling.
 

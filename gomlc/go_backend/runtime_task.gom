@@ -24,6 +24,10 @@ fn task_run_name() -> string {
     go_generated_ident("_goml_task_run")
 }
 
+fn task_record_panic_name() -> string {
+    go_generated_ident("_goml_task_record_panic")
+}
+
 fn task_context_name() -> string {
     go_generated_ident("_goml_task_context")
 }
@@ -83,6 +87,8 @@ fn task_runtime_support_items() -> Vec[Item] {
                     ("state", Type::Int),
                     ("ctx", Type::Named { name: "_goml_context.Context" }),
                     ("cancel", Type::Named { name: "_goml_context.CancelFunc" }),
+                    ("panicked", Type::Bool),
+                    ("panic_value", Type::Any),
                 ],
             },
         ),
@@ -190,9 +196,79 @@ fn task_runtime_support_items() -> Vec[Item] {
             },
         ),
     );
+    let record: Vec[Stmt] = Vec::[];
+    record.push(task_expr(task_method("scope", "mu.Lock", Vec::[])));
+    record.push(
+        Stmt::If {
+            cond: Expr::Unary { op: UnaryOp::Not, expr: task_field("scope", "panicked") },
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::FieldAssign {
+                        target: task_var("scope"),
+                        field_name: "panicked",
+                        value: Expr::Bool { value: true },
+                    },
+                    Stmt::FieldAssign {
+                        target: task_var("scope"),
+                        field_name: "panic_value",
+                        value: task_var("value"),
+                    },
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    record.push(task_expr(task_method("scope", "mu.Unlock", Vec::[])));
+    record.push(task_expr(task_call("scope.cancel", Vec::[])));
+    items.push(
+        Item::Function(
+            Function {
+                name: task_record_panic_name(),
+                params: Vec::[("scope", task_state_pointer_type()), ("value", Type::Any)],
+                ret_ty: Option::None,
+                body: Block { stmts: record },
+            },
+        ),
+    );
+    let cleanup: Vec[Stmt] = Vec::[];
+    cleanup.push(
+        Stmt::Var {
+            name: "recovered",
+            ty: Type::Any,
+            value: Option::Some(task_call("recover", Vec::[])),
+        },
+    );
+    cleanup.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::NotEq, lhs: task_var("recovered"), rhs: Expr::Nil },
+            then_: Block {
+                stmts: Vec::[
+                    task_expr(
+                        task_call(
+                            task_record_panic_name(),
+                            Vec::[task_var("scope"), task_var("recovered")],
+                        ),
+                    ),
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    cleanup.push(task_expr(task_method("scope", "wg.Done", Vec::[])));
     let run: Vec[Stmt] = Vec::[];
+    run.push(
+        Stmt::Defer {
+            call: Expr::Call {
+                func: Expr::FuncLit {
+                    params: Vec::[],
+                    ret_ty: Type::Void,
+                    body: Block { stmts: cleanup },
+                },
+                args: Vec::[],
+            },
+        },
+    );
     run.push(task_expr(task_call("body", Vec::[])));
-    run.push(task_expr(task_method("scope", "wg.Done", Vec::[])));
     items.push(
         Item::Function(
             Function {
@@ -207,6 +283,77 @@ fn task_runtime_support_items() -> Vec[Item] {
         ),
     );
     items
+}
+
+fn task_scope_run_item() -> Item {
+    let recover_body: Vec[Stmt] = Vec::[];
+    recover_body.push(
+        Stmt::Var {
+            name: "recovered",
+            ty: Type::Any,
+            value: Option::Some(task_call("recover", Vec::[])),
+        },
+    );
+    recover_body.push(
+        Stmt::If {
+            cond: Expr::Binary { op: BinaryOp::NotEq, lhs: task_var("recovered"), rhs: Expr::Nil },
+            then_: Block {
+                stmts: Vec::[
+                    task_expr(
+                        task_call(
+                            task_record_panic_name(),
+                            Vec::[task_var("scope"), task_var("recovered")],
+                        ),
+                    ),
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    let invoke: Vec[Stmt] = Vec::[];
+    invoke.push(
+        Stmt::Defer {
+            call: Expr::Call {
+                func: Expr::FuncLit {
+                    params: Vec::[],
+                    ret_ty: Type::Void,
+                    body: Block { stmts: recover_body },
+                },
+                args: Vec::[],
+            },
+        },
+    );
+    invoke.push(task_expr(task_call("body", Vec::[])));
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(
+        Stmt::Var {
+            name: "scope",
+            ty: task_state_pointer_type(),
+            value: Option::Some(task_call(task_lookup_name(), Vec::[task_var("scope_id")])),
+        },
+    );
+    stmts.push(
+        task_expr(
+            Expr::Call {
+                func: Expr::FuncLit {
+                    params: Vec::[],
+                    ret_ty: Type::Void,
+                    body: Block { stmts: invoke },
+                },
+                args: Vec::[],
+            },
+        ),
+    );
+    stmts.push(task_return(Expr::Unit));
+    std_function_item(
+        "std.task.scope_run",
+        Vec::[
+            ("scope_id", Type::Int64),
+            ("body", Type::Func { params: Vec::[], ret_ty: Type::Unit }),
+        ],
+        Type::Unit,
+        stmts,
+    )
 }
 
 fn task_scope_new_item() -> Item {
@@ -462,6 +609,20 @@ fn task_scope_finish_item() -> Item {
     stmts.push(task_expr(task_call("scope.cancel", Vec::[])));
     stmts.push(task_expr(task_method("scope", "mu.Lock", Vec::[])));
     stmts.push(
+        Stmt::Var {
+            name: "panicked",
+            ty: Type::Bool,
+            value: Option::Some(task_field("scope", "panicked")),
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "panic_value",
+            ty: Type::Any,
+            value: Option::Some(task_field("scope", "panic_value")),
+        },
+    );
+    stmts.push(
         Stmt::FieldAssign {
             target: task_var("scope"),
             field_name: "state",
@@ -474,8 +635,32 @@ fn task_scope_finish_item() -> Item {
         task_expr(task_call("delete", Vec::[task_var(task_registry_name()), task_var("scope_id")])),
     );
     stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
+    stmts.push(
+        Stmt::If {
+            cond: task_var("panicked"),
+            then_: Block {
+                stmts: Vec::[task_expr(task_call("panic", Vec::[task_var("panic_value")]))],
+            },
+            else_: Option::None,
+        },
+    );
     stmts.push(task_return(Expr::Unit));
     std_function_item("std.task.scope_finish", Vec::[("scope_id", Type::Int64)], Type::Unit, stmts)
+}
+
+fn task_active_scope_count_item() -> Item {
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Lock", Vec::[])));
+    stmts.push(
+        Stmt::Var {
+            name: "count",
+            ty: Type::Int,
+            value: Option::Some(task_call("len", Vec::[task_var(task_registry_name())])),
+        },
+    );
+    stmts.push(task_expr(task_method(task_registry_mutex_name(), "Unlock", Vec::[])));
+    stmts.push(task_return(task_var("count")));
+    std_function_item("std.task.active_scope_count", Vec::[], Type::Int, stmts)
 }
 
 fn task_scope_cancelled_item() -> Item {
@@ -572,6 +757,8 @@ fn task_scope_sleep_item() -> Item {
 fn task_runtime_hook_item(key: string) -> Option[Item] {
     if key == "std.task.scope_new" {
         Option::Some(task_scope_new_item())
+    } else if key == "std.task.scope_run" {
+        Option::Some(task_scope_run_item())
     } else if key == "std.task.scope_spawn" {
         Option::Some(task_scope_spawn_item("std.task.scope_spawn", true))
     } else if key == "std.task.scope_try_spawn" {
@@ -582,6 +769,8 @@ fn task_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(task_scope_finish_item())
     } else if key == "std.task.scope_cancelled" {
         Option::Some(task_scope_cancelled_item())
+    } else if key == "std.task.active_scope_count" {
+        Option::Some(task_active_scope_count_item())
     } else if key == "std.task.sleep" {
         Option::Some(task_scope_sleep_item())
     } else {

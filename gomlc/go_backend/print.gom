@@ -273,16 +273,21 @@ fn expr_doc(value: Expr) -> pretty::Doc {
         ArrayLiteral { ty, items: values } => {
             pretty::append(type_doc(ty), fixed_delimited_doc("{", "}", expr_docs(values)))
         },
-        FuncLit { params, ret_ty, body } => pretty::concat(
-            Vec::[
-                pretty::text("func"),
-                named_params_doc(params),
-                pretty::text(" "),
-                type_doc(ret_ty),
-                pretty::text(" "),
-                block_doc(body),
-            ],
-        ),
+        FuncLit { params, ret_ty, body } => {
+            let result = match ret_ty {
+                Void => pretty::nil(),
+                _ => pretty::append(pretty::text(" "), type_doc(ret_ty)),
+            };
+            pretty::concat(
+                Vec::[
+                    pretty::text("func"),
+                    named_params_doc(params),
+                    result,
+                    pretty::text(" "),
+                    block_doc(body),
+                ],
+            )
+        },
     }
 }
 
@@ -412,6 +417,7 @@ fn stmt_doc(value: Stmt) -> pretty::Doc {
     match value {
         Expr { expr } => expr_doc(expr),
         Go { call: expr } => pretty::append(pretty::text("go "), expr_doc(expr)),
+        Defer { call: expr } => pretty::append(pretty::text("defer "), expr_doc(expr)),
         Var { name, ty, value: initial } => {
             let initial_doc = match initial {
                 Some(expr) => pretty::concat(Vec::[pretty::text(" = "), expr_doc(expr)]),

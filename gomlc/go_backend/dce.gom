@@ -107,7 +107,7 @@ fn add_expr_uses(values: DceNames, value: Expr) -> unit {
 
 fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
     match value {
-        Expr { expr } | Go { call: expr } => add_expr_uses(values, expr),
+        Expr { expr } | Go { call: expr } | Defer { call: expr } => add_expr_uses(values, expr),
         Var { name: _, ty: _, value: initial } => match initial {
             Some(expr) => add_expr_uses(values, expr),
             None => (),
@@ -212,7 +212,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
     let declared = new_dce_names();
     for stmt in value.stmts {
         match stmt {
-            Expr { expr } | Go { call: expr } => add_expr_uses(used, expr),
+            Expr { expr } | Go { call: expr } | Defer { call: expr } => add_expr_uses(used, expr),
             Var { name, ty: _, value: initial } => {
                 add_name(declared, name);
                 match initial {
@@ -472,6 +472,10 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
             Go { call: expr } => {
                 add_expr_uses(live, expr);
                 output.push(Stmt::Go { call: expr })
+            },
+            Defer { call: expr } => {
+                add_expr_uses(live, expr);
+                output.push(Stmt::Defer { call: expr })
             },
             Var { name, ty, value: initial } => {
                 if contains_name(live, name) {

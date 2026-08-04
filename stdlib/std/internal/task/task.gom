@@ -14,6 +14,9 @@ extern fn scope_new(parent: int64) -> int64;
 #[runtime("std.task.scope_spawn")]
 extern fn scope_spawn(scope: int64, body: () -> unit) -> bool;
 
+#[runtime("std.task.scope_run")]
+extern fn scope_run(scope: int64, body: () -> unit) -> unit;
+
 #[runtime("std.task.scope_try_spawn")]
 extern fn scope_try_spawn(scope: int64, body: () -> unit) -> bool;
 
@@ -29,6 +32,9 @@ extern fn scope_cancelled(scope: int64) -> bool;
 #[runtime("std.task.sleep")]
 extern fn scope_sleep(scope: int64, nanoseconds: int64) -> bool;
 
+#[runtime("std.task.active_scope_count")]
+extern fn scope_count() -> int;
+
 pub fn root_scope() -> ScopeHandle {
     ScopeHandle { id: scope_new(0) }
 }
@@ -43,6 +49,11 @@ pub fn spawn(scope: ScopeHandle, body: () -> unit) -> unit {
 
 pub fn try_spawn(scope: ScopeHandle, body: () -> unit) -> bool {
     scope_try_spawn(scope.id, body)
+}
+
+pub fn run(scope: ScopeHandle, body: () -> unit) -> unit {
+    scope_run(scope.id, body);
+    scope_finish(scope.id)
 }
 
 pub fn cancel(scope: ScopeHandle) -> unit {
@@ -71,6 +82,10 @@ pub fn sleep_with(cancel: CancelToken, nanoseconds: int64) -> bool {
 
 pub fn id(cancel: CancelToken) -> int64 {
     cancel.id
+}
+
+pub fn active_scope_count() -> int {
+    scope_count()
 }
 
 impl CancelToken {

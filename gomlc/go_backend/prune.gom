@@ -113,7 +113,7 @@ fn collect_expr_names(result: NameSet, value: Expr) -> unit {
 
 fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
     match value {
-        Expr { expr } | Go { call: expr } => collect_expr_names(result, expr),
+        Expr { expr } | Go { call: expr } | Defer { call: expr } => collect_expr_names(result, expr),
         Var { name: _, ty, value: initial } => {
             collect_type_names(result, ty);
             match initial {
