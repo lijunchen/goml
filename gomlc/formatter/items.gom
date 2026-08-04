@@ -94,23 +94,127 @@ fn format_semicolon_item(value: Builder, node: LocatedNode) -> BuiltDoc {
     output.finish()
 }
 
+fn direct_node_of_kind(value: LocatedNode, kind: cst::NodeKind) -> Option[LocatedNode] {
+    for child in direct_nodes(value) {
+        if node_is(child, kind) {
+            return Option::Some(child)
+        } else {
+            ()
+        }
+    };
+    Option::None
+}
+
+fn omittable_unit_expression(value: LocatedNode) -> bool {
+    node_is(value, cst::NodeKind::EXPR_UNIT) && !node_has_comment(value)
+}
+
+fn omittable_unit_statement(value: LocatedNode) -> bool {
+    if !node_is(value, cst::NodeKind::STMT_EXPR) || node_has_comment(value) {
+        false
+    } else {
+        match direct_node_of_kind(value, cst::NodeKind::EXPR_UNIT) {
+            Some(_) => true,
+            None => false,
+        }
+    }
+}
+
+fn omittable_block_node(value: LocatedNode) -> bool {
+    omittable_unit_expression(value) || omittable_unit_statement(value)
+}
+
+fn meaningful_block_nodes(value: LocatedNode) -> Vec[LocatedNode] {
+    let result: Vec[LocatedNode] = Vec::[];
+    for child in direct_nodes(value) {
+        if !omittable_block_node(child) {
+            result.push(child)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn expression_statement_kind(value: LocatedNode) -> Option[cst::NodeKind] {
+    let children = direct_nodes(value);
+    if children.is_empty() {
+        Option::None
+    } else {
+        Option::Some(cst::node_kind(children[0].node))
+    }
+}
+
+fn token_continues_expression(kind: lexer::TokenKind) -> bool {
+    match kind {
+        LParen | LBracket | Question | DotDot | DotDotEq | AsKeyword | OrOr | AndAnd | EqEq | NotEq | Less | Greater | LessEq | GreaterEq | Pipe | Caret | Amp | LessLess | GreaterGreater | Plus | Minus | Star | Slash | Percent | Dot => true,
+        _ => false,
+    }
+}
+
+fn node_continues_expression(value: LocatedNode) -> bool {
+    match first_significant_token(value) {
+        Some(token) => token_continues_expression(token.token.kind),
+        None => false,
+    }
+}
+
+fn expression_statement_drops_semicolon(node: LocatedNode, following: Option[LocatedNode]) -> bool {
+    let following_continues = match following {
+        Some(value) => node_continues_expression(value),
+        None => false,
+    };
+    match expression_statement_kind(node) {
+        Some(EXPR_WHILE) | Some(EXPR_FOR) => !following_continues,
+        Some(EXPR_LOOP) => match following {
+            Some(_) => !following_continues,
+            None => false,
+        },
+        _ => false,
+    }
+}
+
+fn format_expr_statement(value: Builder, node: LocatedNode, following: Option[LocatedNode]) -> BuiltDoc {
+    format_generic_with_options(
+        value,
+        node,
+        false,
+        expression_statement_drops_semicolon(node, following),
+    )
+}
+
 fn format_block(value: Builder, node: LocatedNode) -> BuiltDoc {
     let content = parts();
     let meaningful: Ref[bool] = Ref::new(false);
+    let block_nodes = meaningful_block_nodes(node);
+    let node_index: Ref[int] = Ref::new(0);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
-            Some(Node(child)) => {
+            Some(Node(child)) => if omittable_block_node(child) {
+                ()
+            } else {
+                let following = if node_index.get() + 1 < block_nodes.len() {
+                    Option::Some(block_nodes[node_index.get() + 1])
+                } else {
+                    Option::None
+                };
+                node_index.set(node_index.get() + 1);
                 if meaningful.get() {
                     content.ensure_lines(1)
                 } else {
                     ()
                 };
-                content.push_syntax(format_node(value, child));
+                if node_is(child, cst::NodeKind::STMT_EXPR) {
+                    content.push_syntax(format_expr_statement(value, child, following))
+                } else {
+                    content.push_syntax(format_node(value, child))
+                };
                 meaningful.set(true)
             },
             Some(Token(token)) => if token_is(token, lexer::TokenKind::LBrace)
-                || token_is(token, lexer::TokenKind::RBrace) {
+                || token_is(token, lexer::TokenKind::RBrace)
+                || token_is(token, lexer::TokenKind::Semi) {
                 ()
             } else if token_is(token, lexer::TokenKind::Whitespace) {
                 content.add_pending_newlines(whitespace_newlines(token.token.text))
@@ -217,11 +321,93 @@ fn vertical_body_uses_comma(kind: cst::NodeKind) -> bool {
     }
 }
 
+fn format_inline_variant_field_list(value: Builder, node: LocatedNode) -> BuiltDoc {
+    let fields = direct_nodes(node);
+    if fields.is_empty() || node_has_comment(node) {
+        return format_generic(value, node)
+    } else {
+        ()
+    };
+    let docs: Vec[Doc] = Vec::[];
+    for field in fields {
+        docs.push(format_node(value, field).doc)
+    };
+    let Some(close) = last_significant_token(node) else {
+        return format_generic(value, node)
+    };
+    let group_id = value.docs.new_group_id();
+    let body = join(concat2(text(","), Doc::SoftLine), docs);
+    let content = concat(
+        Vec::[
+            Doc::SoftLine,
+            indent(concat2(body, if_break(group_id, text(","), nil()))),
+            Doc::SoftLine,
+            token_doc(close),
+        ],
+    );
+    let first = match first_significant_token(node) {
+        Some(token) => Option::Some(token.token.kind),
+        None => Option::None,
+    };
+    built(value.docs.group_with_id(group_id, content).doc, first, Option::Some(close.token.kind))
+}
+
+fn format_variant(value: Builder, node: LocatedNode, force_vertical_fields: bool) -> BuiltDoc {
+    let output = parts();
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => if node_is(child, cst::NodeKind::STRUCT_FIELD_LIST)
+                && !force_vertical_fields {
+                output.push_syntax(format_inline_variant_field_list(value, child))
+            } else {
+                output.push_syntax(format_node(value, child))
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::Whitespace) {
+                output.add_pending_newlines(whitespace_newlines(token.token.text))
+            } else if token_is(token, lexer::TokenKind::Comment) {
+                output.push_comment(token)
+            } else {
+                output.push_token(token)
+            },
+            None => (),
+        }
+    };
+    output.finish()
+}
+
+fn variant_requires_vertical_fields(value: Builder, node: LocatedNode) -> bool {
+    let Some(fields) = direct_node_of_kind(node, cst::NodeKind::STRUCT_FIELD_LIST) else {
+        return false
+    };
+    let field_count = direct_nodes(fields).len();
+    if field_count == 0 {
+        false
+    } else if field_count != 1 || node_has_comment(fields) {
+        true
+    } else {
+        flat_width(format_variant(value, node, false).doc, HashMap::{}, 95) > 95
+    }
+}
+
+fn enum_variants_require_vertical_fields(value: Builder, node: LocatedNode) -> bool {
+    for child in direct_nodes(node) {
+        if node_is(child, cst::NodeKind::VARIANT) && variant_requires_vertical_fields(value, child) {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
 fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
     let content = parts();
     let item_count: Ref[int] = Ref::new(0);
     let kind = cst::node_kind(node.node);
     let owns_open = cst::node_kind_equal(kind, cst::NodeKind::MATCH_ARM_LIST);
+    let vertical_variant_fields = cst::node_kind_equal(kind, cst::NodeKind::VARIANT_LIST)
+        && enum_variants_require_vertical_fields(value, node);
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
         match cursor.next() {
@@ -231,7 +417,12 @@ fn format_vertical_body(value: Builder, node: LocatedNode) -> BuiltDoc {
                 } else {
                     ()
                 };
-                content.push_syntax(format_node(value, child));
+                if cst::node_kind_equal(kind, cst::NodeKind::VARIANT_LIST)
+                    && node_is(child, cst::NodeKind::VARIANT) {
+                    content.push_syntax(format_variant(value, child, vertical_variant_fields))
+                } else {
+                    content.push_syntax(format_node(value, child))
+                };
                 if vertical_body_uses_comma(kind) && content.trailing_lines.get() == 0 {
                     content.push_syntax(
                         built(

@@ -240,7 +240,12 @@ impl Parts {
     }
 }
 
-fn format_generic_with_options(value: Builder, node: LocatedNode, skip_direct_comma: bool) -> BuiltDoc {
+fn format_generic_with_options(
+    value: Builder,
+    node: LocatedNode,
+    skip_direct_comma: bool,
+    skip_direct_semicolon: bool,
+) -> BuiltDoc {
     let output = parts();
     let cursor = child_cursor(node);
     while cursor.remaining() > 0 {
@@ -252,6 +257,8 @@ fn format_generic_with_options(value: Builder, node: LocatedNode, skip_direct_co
                 output.push_comment(token)
             } else if skip_direct_comma && token_is(token, lexer::TokenKind::Comma) {
                 ()
+            } else if skip_direct_semicolon && token_is(token, lexer::TokenKind::Semi) {
+                ()
             } else {
                 output.push_token(token)
             },
@@ -262,13 +269,13 @@ fn format_generic_with_options(value: Builder, node: LocatedNode, skip_direct_co
 }
 
 fn format_generic(value: Builder, node: LocatedNode) -> BuiltDoc {
-    format_generic_with_options(value, node, false)
+    format_generic_with_options(value, node, false, false)
 }
 
 fn format_item_content(value: Builder, node: LocatedNode) -> BuiltDoc {
     if node_is(node, cst::NodeKind::ARG) || node_is(node, cst::NodeKind::PARAM)
         || node_is(node, cst::NodeKind::CLOSURE_PARAM) {
-        format_generic_with_options(value, node, true)
+        format_generic_with_options(value, node, true, false)
     } else {
         format_node(value, node)
     }
@@ -295,6 +302,8 @@ fn format_node(value: Builder, node: LocatedNode) -> BuiltDoc {
         BLOCK => format_block(value, node),
         IMPL => format_impl(value, node),
         TRAIT_METHOD_SIG | EXTERN => format_semicolon_item(value, node),
+        STMT_EXPR => format_expr_statement(value, node, Option::None),
+        VARIANT => format_variant(value, node, false),
         EXPR_BINARY => format_binary(value, node),
         EXPR_PREFIX => format_prefix(value, node),
         EXPR_MULTILINE_STR => format_multiline_string(node),

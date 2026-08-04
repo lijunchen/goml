@@ -9,6 +9,11 @@ pub struct FormatError {
     pub diagnostics: Vec[cst::Diagnostic],
 }
 
+struct FormatOmission {
+    start: int,
+    end: int,
+}
+
 fn canonical_file_ending(value: string) -> string {
     let end: Ref[int] = Ref::new(value.byte_len());
     while end.get() > 0 {
@@ -44,10 +49,92 @@ fn format_closing_delimiter(kind: lexer::TokenKind) -> bool {
     }
 }
 
-fn format_token_signature(source: string) -> string {
+fn push_format_omission(values: Vec[FormatOmission], start: int, end: int) -> unit {
+    values.push(FormatOmission { start, end })
+}
+
+fn collect_statement_omissions(
+    node: LocatedNode,
+    following: Option[LocatedNode],
+    result: Vec[FormatOmission],
+) -> unit {
+    let drop_semicolon = expression_statement_drops_semicolon(node, following);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => collect_format_omissions(child, result),
+            Some(Token(token)) => if drop_semicolon && token_is(token, lexer::TokenKind::Semi) {
+                push_format_omission(result, token.start, token.end)
+            } else {
+                ()
+            },
+            None => (),
+        }
+    }
+}
+
+fn collect_block_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> unit {
+    let block_nodes = meaningful_block_nodes(node);
+    let node_index: Ref[int] = Ref::new(0);
+    let cursor = child_cursor(node);
+    while cursor.remaining() > 0 {
+        match cursor.next() {
+            Some(Node(child)) => if omittable_block_node(child) {
+                push_format_omission(result, child.start, child.end)
+            } else {
+                let following = if node_index.get() + 1 < block_nodes.len() {
+                    Option::Some(block_nodes[node_index.get() + 1])
+                } else {
+                    Option::None
+                };
+                node_index.set(node_index.get() + 1);
+                if node_is(child, cst::NodeKind::STMT_EXPR) {
+                    collect_statement_omissions(child, following, result)
+                } else {
+                    collect_format_omissions(child, result)
+                }
+            },
+            Some(Token(token)) => if token_is(token, lexer::TokenKind::Semi) {
+                push_format_omission(result, token.start, token.end)
+            } else {
+                ()
+            },
+            None => (),
+        }
+    }
+}
+
+fn collect_format_omissions(node: LocatedNode, result: Vec[FormatOmission]) -> unit {
+    if node_is(node, cst::NodeKind::BLOCK) {
+        collect_block_omissions(node, result)
+    } else {
+        let cursor = child_cursor(node);
+        while cursor.remaining() > 0 {
+            match cursor.next() {
+                Some(Node(child)) => collect_format_omissions(child, result),
+                _ => (),
+            }
+        }
+    }
+}
+
+fn token_is_omitted(token: lexer::Token, omissions: Vec[FormatOmission]) -> bool {
+    for omission in omissions {
+        if token.start >= omission.start && token.end <= omission.end {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn format_token_signature(source: string, root: LocatedNode) -> string {
     let tokens = lexer::lex(source);
     let output = text::StringBuilder::new();
     let in_where: Ref[bool] = Ref::new(false);
+    let omissions: Vec[FormatOmission] = Vec::[];
+    collect_format_omissions(root, omissions);
     for index in 0..tokens.len() {
         let token = tokens[index];
         let optional_comma = lexer::token_kind_equal(token.kind, lexer::TokenKind::Comma)
@@ -58,7 +145,8 @@ fn format_token_signature(source: string) -> string {
                             || lexer::token_kind_equal(kind, lexer::TokenKind::Semi)),
                 None => false,
             };
-        if lexer::token_kind_equal(token.kind, lexer::TokenKind::Whitespace) || optional_comma {
+        if lexer::token_kind_equal(token.kind, lexer::TokenKind::Whitespace) || optional_comma
+            || token_is_omitted(token, omissions) {
             ()
         } else {
             output.write_string(lexer::token_kind_name(token.kind));
@@ -88,7 +176,8 @@ fn format_source_with_width(source: string, line_width: int) -> Result[string, F
         let reparsed = parser::parse(formatted);
         if !reparsed.diagnostics.is_empty() {
             Result::Err(FormatError { diagnostics: reparsed.diagnostics })
-        } else if format_token_signature(source) != format_token_signature(formatted) {
+        } else if format_token_signature(source, root)
+            != format_token_signature(formatted, located_node(reparsed.root, 0)) {
             Result::Err(
                 FormatError {
                     diagnostics: Vec::[
