@@ -132,16 +132,12 @@ fn attribute_allows(attrs: Vec[ast::Attribute], lint: string) -> bool {
                 match argument {
                     ast::AttributeArg::Ident(value) => if value == lint {
                         return true
-                    } else {
-                        ()
-                    },
+                    } else {},
                     ast::AttributeArg::String(_) => (),
                 }
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -163,7 +159,7 @@ fn resolve_deferred_exprs(ctx: Checker, values: Vec[Expr]) -> Vec[Expr] {
     let result: Vec[Expr] = Vec::[];
     for value in values {
         result.push(resolve_deferred_expr(ctx, value))
-    };
+    }
     result
 }
 
@@ -192,7 +188,7 @@ fn resolve_deferred_block(ctx: Checker, value: Block) -> Block {
                 Expr { expr } => Stmt::Expr { expr: resolve_deferred_expr(ctx, expr) },
             },
         )
-    };
+    }
     Block {
         stmts,
         tail: match value.tail {
@@ -219,7 +215,7 @@ fn resolve_deferred_expr(ctx: Checker, value: Expr) -> Expr {
                             let arg_types: Vec[Type] = Vec::[];
                             for index in 1..args.len() {
                                 arg_types.push(expr_type(args[index]))
-                            };
+                            }
                             match resolve_method(
                                 ctx,
                                 expr_type(args[0]),
@@ -258,37 +254,29 @@ fn pattern_has_unresolved_inference(ctx: Checker, value: hir::Pat) -> bool {
             for arg in args {
                 if pattern_has_unresolved_inference(ctx, arg) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Struct { head: _, fields, has_rest: _ } => {
             for field in fields {
                 if pattern_has_unresolved_inference(ctx, field.1) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Array { prefix, rest: _, suffix } => {
             for arg in prefix {
                 if pattern_has_unresolved_inference(ctx, arg) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             for arg in suffix {
                 if pattern_has_unresolved_inference(ctx, arg) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Alias { name, pat } => {
@@ -320,9 +308,7 @@ fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
                 if annotation.is_none() && pattern_has_unresolved_inference(ctx, pat) {
                     push_inference_diagnostic_at(ctx, pat.span, 1);
                     mark_unresolved_pattern_locals(ctx, pat)
-                } else {
-                    ()
-                };
+                } else {};
                 report_unresolved_expr(ctx, value);
                 match else_branch {
                     Some(value) => report_unresolved_expr(ctx, value),
@@ -335,7 +321,7 @@ fn report_unresolved_block(ctx: Checker, value: hir::Block) -> unit {
             },
             Expr { expr } => report_unresolved_expr(ctx, expr),
         }
-    };
+    }
     match value.tail {
         Some(expr) => report_unresolved_expr(ctx, expr),
         None => (),
@@ -347,9 +333,7 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
         NameRef { name_ref: Local(local) } => match find_local(ctx, local) {
             Some(ty) => if contains_unresolved_inference(ctx, ty) {
                 push_inference_diagnostic_at(ctx, value.span, 2)
-            } else {
-                ()
-            },
+            } else {},
             None => (),
         },
         ConstructorValue { constructor: _ } => (),
@@ -371,7 +355,7 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
         StructLiteral { name: _, fields, base } => {
             for field in fields {
                 report_unresolved_expr(ctx, field.1)
-            };
+            }
             match base {
                 Some(value) => report_unresolved_expr(ctx, value),
                 None => (),
@@ -383,9 +367,7 @@ fn report_unresolved_expr(ctx: Checker, value: hir::Expr) -> unit {
                 match find_local(ctx, param.name) {
                     Some(ty) => if contains_unresolved_inference(ctx, ty) {
                         push_inference_diagnostic_at(ctx, param.span, 3)
-                    } else {
-                        ()
-                    },
+                    } else {},
                     None => (),
                 }
             }
@@ -453,21 +435,15 @@ fn check_function(
         None => if value.name == "main" {
             if !value.params.is_empty() {
                 push_diagnostic_at(base, "main function must not have parameters", Option::None)
-            } else {
-                ()
-            };
+            } else {};
             if !value.generics.is_empty() {
                 push_diagnostic_at(
                     base,
                     "main function must not have type parameters",
                     Option::None,
                 )
-            } else {
-                ()
-            }
-        } else {
-            ()
-        },
+            } else {}
+        } else {},
         Some(_) => (),
     };
     let type_params = append_names(inherited_generics, value.generics);
@@ -515,16 +491,14 @@ fn check_function(
         ctx.current_span.set(previous_span);
         insert_local(ctx, param.0, ty);
         params.push((local_name(param.0), ty))
-    };
+    }
     let checked_body = check_block(ctx, value.body, Option::Some(ret_ty));
     resolve_field_constraints(ctx);
     resolve_coercion_constraints(ctx);
     resolve_numeric_literal_constraints(ctx);
     if resolve_required_predicates(ctx) {
         report_unresolved_block(ctx, value.body)
-    } else {
-        ()
-    };
+    } else {};
     let body = resolve_deferred_block(ctx, checked_body.0);
     Function {
         visibility: value.visibility,
@@ -586,9 +560,7 @@ fn check_constant(base: Checker, value: hir::Constant) -> Constant {
     );
     if !constant_type_supported(ty) {
         push_diagnostic(base, "constant type must be bool, numeric, string, char, or byte")
-    } else {
-        ()
-    };
+    } else {};
     base.current_span.set(Option::Some(value.value.span));
     let ctx = function_context(base, ty, Option::None, Vec::[], Vec::[], false);
     let checked = check_expr(ctx, value.value, Option::Some(ty));
@@ -610,9 +582,7 @@ fn constant_expr_references(value: ConstExpr, result: Vec[string]) -> unit {
         Ref { name, ty: _ } => {
             if !collections::contains(result, name) {
                 result.push(name)
-            } else {
-                ()
-            }
+            } else {}
         },
         Unary { op: _, expr, ty: _ } | Cast { expr, ty: _ } => constant_expr_references(
             expr,
@@ -630,10 +600,8 @@ fn checked_constant_by_name(values: Vec[Constant], name: string) -> Option[Const
     for value in values {
         if value.name == name {
             return Option::Some(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -649,10 +617,8 @@ fn constant_reaches(values: Vec[Constant], current: string, target: string, visi
                 for reference in references {
                     if reference == target || constant_reaches(values, reference, target, visited) {
                         return true
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 false
             },
             None => false,
@@ -664,17 +630,13 @@ fn validate_constant_cycles(ctx: Checker, values: Vec[Constant]) -> unit {
     for value in values {
         if constant_reaches(values, value.name, value.name, Vec::[]) {
             push_global_diagnostic(ctx, "Cyclic constant " + short_name(value.name))
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
 fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
     match prune(value) {
-        Param { name } => if collections::contains(result, name) {
-            ()
-        } else {
+        Param { name } => if collections::contains(result, name) {} else {
             result.push(name)
         },
         Tuple { items } => for item in items {
@@ -697,7 +659,7 @@ fn collect_injective_type_params(value: Type, result: Vec[string]) -> unit {
         Func { params, ret_ty } => {
             for param in params {
                 collect_injective_type_params(param, result)
-            };
+            }
             collect_injective_type_params(ret_ty, result)
         },
         _ => (),
@@ -711,25 +673,19 @@ fn type_contains_projection(value: Type) -> bool {
             for item in items {
                 if type_contains_projection(item) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         App { ty, args } => {
             if type_contains_projection(ty) {
                 return true
-            } else {
-                ()
-            };
+            } else {};
             for arg in args {
                 if type_contains_projection(arg) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
@@ -741,16 +697,12 @@ fn type_contains_projection(value: Type) -> bool {
         Func { params, ret_ty } => {
             if type_contains_projection(ret_ty) {
                 return true
-            } else {
-                ()
-            };
+            } else {};
             for param in params {
                 if type_contains_projection(param) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         _ => false,
@@ -773,9 +725,7 @@ fn validate_impl_type_params(
         None => (),
     };
     for generic in generics {
-        if collections::contains(constrained, generic) {
-            ()
-        } else {
+        if collections::contains(constrained, generic) {} else {
             push_diagnostic_at(
                 ctx,
                 "Implementation type parameter " + generic + " is not constrained by type "
@@ -793,14 +743,10 @@ fn validate_impl_type_params(
 fn mark_impl_invalid_at(ctx: Checker, span: ast::Span) -> unit {
     for value in ctx.impls {
         if value.span.start == span.start && value.span.end == span.end {
-            if collections::contains(ctx.invalid_impl_origins, value.origin) {
-                ()
-            } else {
+            if collections::contains(ctx.invalid_impl_origins, value.origin) {} else {
                 ctx.invalid_impl_origins.push(value.origin)
             }
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -823,10 +769,8 @@ fn hir_type_uses_self_projection(value: hir::TypeExpr) -> bool {
             for item in items {
                 if hir_type_uses_self_projection(item) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         App { ty, args } => {
@@ -836,10 +780,8 @@ fn hir_type_uses_self_projection(value: hir::TypeExpr) -> bool {
                 for arg in args {
                     if hir_type_uses_self_projection(arg) {
                         return true
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 false
             }
         },
@@ -847,10 +789,8 @@ fn hir_type_uses_self_projection(value: hir::TypeExpr) -> bool {
             for param in params {
                 if hir_type_uses_self_projection(param) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             hir_type_uses_self_projection(ret_ty)
         },
         _ => false,
@@ -879,9 +819,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
             associated_types: Vec::[],
             methods: Vec::[],
         }
-    } else {
-        ()
-    };
+    } else {};
     let predicates = resolve_signature_predicates(
         base,
         predicates_from_hir(
@@ -911,9 +849,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     validate_impl_type_params(base, value.generics, trait_ref, for_type, value.for_type_span);
     if base.diagnostics.len() > validation_start {
         invalid = true;
-    } else {
-        ()
-    };
+    } else {};
     match trait_ref {
         Some(reference) => if trait_reference_has_wrong_arity(base, reference) {
             mark_impl_invalid_at(base, value.for_type_span);
@@ -925,9 +861,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 associated_types: Vec::[],
                 methods: Vec::[],
             }
-        } else {
-            ()
-        },
+        } else {},
         None => (),
     };
     let associated_types: Vec[(string, Type)] = Vec::[];
@@ -954,7 +888,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 ),
             ),
         )
-    };
+    }
     match trait_ref {
         Some(reference) => {
             let validation_span = base.current_span.get();
@@ -969,9 +903,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
             );
             if base.diagnostics.len() > validation_start {
                 invalid = true;
-            } else {
-                ()
-            };
+            } else {};
             base.current_span.set(validation_span)
         },
         None => (),
@@ -981,7 +913,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         methods.push(
             check_function(base, method, value.generics, predicates, Option::Some(for_type)),
         )
-    };
+    }
     match trait_ref {
         Some(reference) => {
             let validation_start = base.diagnostics.len();
@@ -996,17 +928,13 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
             );
             if base.diagnostics.len() > validation_start {
                 invalid = true;
-            } else {
-                ()
-            }
+            } else {}
         },
         None => validate_inherent_impl(base, for_type, methods),
     };
     if invalid {
         mark_impl_invalid_at(base, value.for_type_span)
-    } else {
-        ()
-    };
+    } else {};
     ImplBlock {
         generics: value.generics,
         predicates,
@@ -1025,10 +953,8 @@ fn contains_type_predicate(values: Vec[TypePredicate], expected: TypePredicate) 
     for value in values {
         if predicate_equal(value, expected) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -1039,10 +965,8 @@ fn type_predicate_sets_equal(left: Vec[TypePredicate], right: Vec[TypePredicate]
         for value in left {
             if !contains_type_predicate(right, value) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -1059,7 +983,7 @@ fn validate_method_signature(
     let actual_method_generics: Vec[string] = Vec::[];
     for index in owner_generic_count..actual.generics.len() {
         actual_method_generics.push(actual.generics[index])
-    };
+    }
     if expected.generics.len() != actual_method_generics.len() {
         push_diagnostic(
             ctx,
@@ -1068,9 +992,7 @@ fn validate_method_signature(
                 + " method type parameters but impl has "
                 + actual_method_generics.len().to_string(),
         )
-    } else {
-        ()
-    };
+    } else {};
     let generic_count = if expected.generics.len() < actual_method_generics.len() {
         expected.generics.len()
     } else {
@@ -1083,11 +1005,11 @@ fn validate_method_signature(
                 ty: Type::Param { name: actual_method_generics[index] },
             },
         )
-    };
+    }
     let expected_params: Vec[Type] = Vec::[];
     for param in expected.params {
         expected_params.push(normalize_type(ctx, substitute_type(param, substitutions)))
-    };
+    }
     let expected_ret = normalize_type(ctx, substitute_type(expected.ret_ty, substitutions));
     if expected_params.len() != actual.params.len() {
         push_diagnostic(
@@ -1097,9 +1019,7 @@ fn validate_method_signature(
                 + " parameters but impl has "
                 + actual.params.len().to_string(),
         )
-    } else {
-        ()
-    };
+    } else {};
     let common = if expected_params.len() < actual.params.len() {
         expected_params.len()
     } else {
@@ -1117,10 +1037,8 @@ fn validate_method_signature(
                     + " but found "
                     + type_text(actual_ty),
             )
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let actual_ret = normalize_type(ctx, actual.ret_ty);
     if !type_matches(ctx, expected_ret, actual_ret) {
         push_diagnostic(
@@ -1130,26 +1048,22 @@ fn validate_method_signature(
                 + " but found "
                 + type_text(actual_ret),
         )
-    } else {
-        ()
-    };
+    } else {};
     let expected_predicates: Vec[TypePredicate] = Vec::[];
     for predicate in expected.predicates {
         expected_predicates.push(substitute_predicate(predicate, substitutions))
-    };
+    }
     let actual_predicates: Vec[TypePredicate] = Vec::[];
     for index in owner_predicate_count..actual.predicates.len() {
         actual_predicates.push(actual.predicates[index])
-    };
+    }
     if !type_predicate_sets_equal(expected_predicates, actual_predicates) {
         push_diagnostic(
             ctx,
             "Trait " + trait_name + "::" + actual.name
                 + " method bounds do not match the trait declaration",
         )
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn validate_trait_associated_types(
@@ -1175,7 +1089,7 @@ fn validate_trait_associated_types(
         } else {
             seen.push(associated.0)
         }
-    };
+    }
     for expected in info.associated_types {
         if !collections::contains(seen, expected.name) {
             push_diagnostic(
@@ -1184,9 +1098,7 @@ fn validate_trait_associated_types(
                     + " is missing associated type "
                     + expected.name,
             )
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -1194,10 +1106,8 @@ fn contains_associated_type(values: Vec[AssociatedTypeInfo], name: string) -> bo
     for value in values {
         if value.name == name {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -1206,10 +1116,8 @@ fn impl_associated_type(values: Vec[(string, Type)], name: string) -> Option[Typ
         let value = values[values.len() - 1 - offset];
         if value.0 == name {
             return Option::Some(value.1)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -1223,9 +1131,7 @@ fn associated_type_reaches(
         Projection { for_ty, name, trait_ref } => {
             if name == target {
                 return true
-            } else {
-                ()
-            };
+            } else {};
             if !collections::contains(active, name) {
                 match impl_associated_type(values, name) {
                     Some(next) => {
@@ -1234,27 +1140,19 @@ fn associated_type_reaches(
                         active.truncate(active.len() - 1);
                         if reaches {
                             return true
-                        } else {
-                            ()
-                        }
+                        } else {}
                     },
                     None => (),
                 }
-            } else {
-                ()
-            };
+            } else {};
             if associated_type_reaches(values, for_ty, target, active) {
                 return true
-            } else {
-                ()
-            };
+            } else {};
             match trait_ref {
                 Some(reference) => for arg in reference.args {
                     if associated_type_reaches(values, arg, target, active) {
                         return true
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
                 None => (),
             };
@@ -1264,25 +1162,19 @@ fn associated_type_reaches(
             for item in items {
                 if associated_type_reaches(values, item, target, active) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         App { ty, args } => {
             if associated_type_reaches(values, ty, target, active) {
                 return true
-            } else {
-                ()
-            };
+            } else {};
             for arg in args {
                 if associated_type_reaches(values, arg, target, active) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
@@ -1297,16 +1189,12 @@ fn associated_type_reaches(
         Func { params, ret_ty } => {
             if associated_type_reaches(values, ret_ty, target, active) {
                 return true
-            } else {
-                ()
-            };
+            } else {};
             for param in params {
                 if associated_type_reaches(values, param, target, active) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         _ => false,
@@ -1326,9 +1214,7 @@ fn validate_associated_type_cycles(
                     + short_name(reference.name),
                 Option::None,
             )
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -1347,7 +1233,7 @@ fn resolve_impl_alias_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
     let result: Vec[Type] = Vec::[];
     for value in values {
         result.push(resolve_impl_alias_type(ctx, value))
-    };
+    }
     result
 }
 
@@ -1417,9 +1303,7 @@ fn validate_associated_type_bounds(
             Some(actual) => for bound in definition.bounds {
                 let bound = substitute_trait_ref(bound, substitutions);
                 let actual = normalize_type(ctx, actual);
-                if trait_bound_satisfied_at(ctx, actual, bound, Vec::[]) {
-                    ()
-                } else {
+                if trait_bound_satisfied_at(ctx, actual, bound, Vec::[]) {} else {
                     push_diagnostic(
                         ctx,
                         "Associated type " + definition.name + " = " + type_text(actual)
@@ -1444,9 +1328,7 @@ fn validate_trait_impl_requirements(
 ) -> unit {
     for supertrait in info.supertraits {
         let supertrait = substitute_trait_ref(supertrait, substitutions);
-        if trait_bound_satisfied_at(ctx, for_type, supertrait, Vec::[]) {
-            ()
-        } else {
+        if trait_bound_satisfied_at(ctx, for_type, supertrait, Vec::[]) {} else {
             push_diagnostic(
                 ctx,
                 "Trait " + short_name(reference.name) + " implementation for " + type_text(for_type)
@@ -1454,12 +1336,10 @@ fn validate_trait_impl_requirements(
                     + trait_ref_text(supertrait),
             )
         }
-    };
+    }
     for predicate in substitute_predicates(info.predicates, substitutions) {
         let predicate = resolve_impl_alias_predicate(ctx, predicate);
-        if predicates_satisfied_at(ctx, Vec::[predicate], Vec::[]) {
-            ()
-        } else {
+        if predicates_satisfied_at(ctx, Vec::[predicate], Vec::[]) {} else {
             push_diagnostic(
                 ctx,
                 "Trait " + short_name(reference.name) + " implementation for " + type_text(for_type)
@@ -1515,7 +1395,7 @@ fn validate_trait_impl_definition_requirements(
                         ty: associated.1,
                     },
                 )
-            };
+            }
             validate_trait_impl_requirements(
                 validation_ctx,
                 info,
@@ -1570,7 +1450,7 @@ fn validate_trait_impl(
                         ty: associated.1,
                     },
                 )
-            };
+            }
             for expected in info.methods {
                 if !contains_function_named(methods, expected.name) {
                     match expected.default_name {
@@ -1586,10 +1466,8 @@ fn validate_trait_impl(
                         ),
                         None => (),
                     }
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             let seen: Vec[string] = Vec::[];
             for method in methods {
                 match find_trait_method(info, method.name) {
@@ -1617,7 +1495,7 @@ fn validate_trait_impl(
                         "Method " + method.name + " is not declared in trait " + reference.name,
                     ),
                 }
-            };
+            }
             for expected in info.methods {
                 if !collections::contains(seen, expected.name) && expected.default_name.is_none() {
                     push_diagnostic(
@@ -1626,10 +1504,8 @@ fn validate_trait_impl(
                             + " is missing method "
                             + expected.name,
                     )
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             ctx.projection_aliases.truncate(projection_alias_count)
         },
         None => (),
@@ -1640,10 +1516,8 @@ fn contains_function_named(values: Vec[Function], name: string) -> bool {
     for value in values {
         if value.name == name {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -1658,7 +1532,7 @@ fn default_trait_method(
     let generics = append_names(owner_generics, expected.generics);
     for generic in expected.generics {
         substitutions.push(TypeSubst { name: generic, ty: Type::Param { name: generic } })
-    };
+    }
     let params: Vec[(string, Type)] = Vec::[];
     let args: Vec[Expr] = Vec::[];
     let param_types: Vec[Type] = Vec::[];
@@ -1671,7 +1545,7 @@ fn default_trait_method(
         params.push((name, ty));
         args.push(Expr::Var { name, ty });
         param_types.push(ty)
-    };
+    }
     let ret_ty = resolve_impl_alias_type(ctx, substitute_type(expected.ret_ty, substitutions));
     let predicates = append_predicates(
         owner_predicates,
@@ -1720,7 +1594,7 @@ fn copied_names(values: Vec[string]) -> Vec[string] {
     let result: Vec[string] = Vec::[];
     for value in values {
         result.push(value)
-    };
+    }
     result
 }
 
@@ -1738,10 +1612,8 @@ fn by_value_type_has_cycle(ctx: Checker, value: Type, active: Vec[string]) -> bo
             for value in values {
                 if by_value_type_has_cycle(ctx, value, active) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Array { len: _, elem } => by_value_type_has_cycle(ctx, elem, active),
@@ -1759,10 +1631,8 @@ fn by_value_type_has_cycle(ctx: Checker, value: Type, active: Vec[string]) -> bo
                             next,
                         ) {
                             return true
-                        } else {
-                            ()
-                        }
-                    };
+                        } else {}
+                    }
                     false
                 },
                 None => false,
@@ -1785,9 +1655,7 @@ fn validate_struct_sizes(ctx: Checker, struct_count: int) -> unit {
                         + "] for indirection",
                 );
                 break
-            } else {
-                ()
-            }
+            } else {}
         }
     }
 }
@@ -1839,9 +1707,7 @@ fn validate_supertrait_cycles(ctx: Checker, trait_count: int) -> unit {
                     Option::None,
                 );
                 return
-            } else {
-                ()
-            }
+            } else {}
         }
     }
 }
@@ -1853,12 +1719,12 @@ fn validate_local_definitions(ctx: Checker, enum_count: int, struct_count: int, 
                 validate_signature_type(ctx, field)
             }
         }
-    };
+    }
     for index in 0..struct_count {
         for field in ctx.structs[index].fields {
             validate_signature_type(ctx, field.1)
         }
-    };
+    }
     validate_struct_sizes(ctx, struct_count);
     validate_supertrait_cycles(ctx, trait_count);
     for index in 0..trait_count {
@@ -1874,15 +1740,15 @@ fn validate_local_definitions(ctx: Checker, enum_count: int, struct_count: int, 
                     validate_signature_type(ctx, right)
                 },
             }
-        };
+        }
         for reference in info.supertraits {
             validate_trait_reference(ctx, reference)
-        };
+        }
         for associated in info.associated_types {
             for reference in associated.bounds {
                 validate_trait_reference(ctx, reference)
             }
-        };
+        }
         for method in info.methods {
             for predicate in method.predicates {
                 match predicate {
@@ -1895,10 +1761,10 @@ fn validate_local_definitions(ctx: Checker, enum_count: int, struct_count: int, 
                         validate_signature_type(ctx, rhs)
                     },
                 }
-            };
+            }
             for param in method.params {
                 validate_signature_type(ctx, param)
-            };
+            }
             validate_signature_type(ctx, method.ret_ty)
         }
     }
@@ -1943,9 +1809,7 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
 fn enum_option_variants(name: string, variants: Vec[EnumVariantDef]) -> Option[(string, string)] {
     if name != "Option" {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     let some_name = Ref::new(Option::None);
     let none_name = Ref::new(Option::None);
     let payload_name = Ref::new(Option::None);
@@ -1959,21 +1823,15 @@ fn enum_option_variants(name: string, variants: Vec[EnumVariantDef]) -> Option[(
             payload_name.set(Option::Some(variant.name));
             if variant.name == "Some" {
                 some_name.set(Option::Some(variant.name))
-            } else {
-                ()
-            }
+            } else {}
         } else if fields.is_empty() {
             empty_count.set(empty_count.get() + 1);
             empty_name.set(Option::Some(variant.name));
             if variant.name == "None" {
                 none_name.set(Option::Some(variant.name))
-            } else {
-                ()
-            }
-        } else {
-            ()
-        }
-    };
+            } else {}
+        } else {}
+    }
     match (some_name.get(), none_name.get()) {
         (Some(some), Some(none)) => Option::Some((some, none)),
         _ => if payload_count.get() == 1 && empty_count.get() == 1 {
@@ -1991,9 +1849,7 @@ fn declaration_name_index(values: Vec[string], expected: string) -> int {
     for index in 0..values.len() {
         if values[index] == expected {
             return index
-        } else {
-            ()
-        }
+        } else {}
     };
     -1
 }
@@ -2086,7 +1942,7 @@ fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
         } else {
             methods.push(method.name)
         }
-    };
+    }
     let associated_types: Vec[string] = Vec::[];
     for associated in value.associated_types {
         if collections::contains(associated_types, associated.name) {
@@ -2195,7 +2051,7 @@ fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
             },
             None => (),
         }
-    };
+    }
     for item in value.items {
         match item {
             EnumDef(definition) => {
@@ -2250,7 +2106,7 @@ fn validate_cross_file_declaration_names(
     files.push(value);
     for file in package_files {
         files.push(file)
-    };
+    }
     let nominal_names: Vec[string] = Vec::[];
     let nominal_kinds: Vec[int] = Vec::[];
     let function_names: Vec[string] = Vec::[];
@@ -2271,9 +2127,7 @@ fn validate_cross_file_declaration_names(
                 Some(value) => if !collections::contains(local_nominal_names, value.0) {
                     local_nominal_names.push(value.0);
                     local_nominal_kinds.push(value.1)
-                } else {
-                    ()
-                },
+                } else {},
                 None => (),
             };
             let function_name = match item {
@@ -2286,12 +2140,10 @@ fn validate_cross_file_declaration_names(
                 Some(value) => if !collections::contains(local_function_names, value.0) {
                     local_function_names.push(value.0);
                     local_function_kinds.push(value.1)
-                } else {
-                    ()
-                },
+                } else {},
                 None => (),
             }
-        };
+        }
         for index in 0..local_nominal_names.len() {
             let name = local_nominal_names[index];
             let kind = local_nominal_kinds[index];
@@ -2318,7 +2170,7 @@ fn validate_cross_file_declaration_names(
                     mixed_nominal_declaration_message(name, nominal_kinds[previous], kind),
                 )
             }
-        };
+        }
         for index in 0..local_function_names.len() {
             let name = local_function_names[index];
             let kind = local_function_kinds[index];
@@ -2349,16 +2201,12 @@ fn validate_extern_declarations(ctx: Checker) -> unit {
                     Option::None,
                 ),
             )
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
 fn validate_lang_item_attributes(ctx: Checker, attrs: Vec[ast::Attribute], allow_lang_items: bool) -> unit {
-    if allow_lang_items {
-        ()
-    } else {
+    if allow_lang_items {} else {
         for attribute in attrs {
             match extern_attribute_payload(attribute, "lang") {
                 Some(name) => ctx.diagnostics.push(
@@ -2415,26 +2263,20 @@ fn move_diagnostics_before(values: Vec[Diagnostic], message: string, anchor: str
         for value in values {
             if value.message == message {
                 moved.push(value)
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         let result: Vec[Diagnostic] = Vec::[];
         for index in 0..values.len() {
             let value = values[index];
-            if value.message == message {
-                ()
-            } else {
+            if value.message == message {} else {
                 if index == anchor_index {
                     for diagnostic in moved {
                         result.push(diagnostic)
                     }
-                } else {
-                    ()
-                };
+                } else {};
                 result.push(value)
             }
-        };
+        }
         result
     }
 }
@@ -2443,9 +2285,7 @@ fn diagnostic_message_index(values: Vec[Diagnostic], message: string) -> int {
     for index in 0..values.len() {
         if values[index].message == message {
             return index
-        } else {
-            ()
-        }
+        } else {}
     };
     -1
 }
@@ -2454,10 +2294,8 @@ fn diagnostics_have_message(values: Vec[Diagnostic], message: string) -> bool {
     for value in values {
         if value.message == message {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -2471,10 +2309,8 @@ fn order_extern_diagnostics(ctx: Checker) -> Vec[Diagnostic] {
                 "Internal error: Function " + name + " not found in environment",
                 "extern " + name + " is not permitted in this source",
             );
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -2498,9 +2334,7 @@ fn attach_diagnostic_span(ctx: Checker, message: string, span: Option[ast::Span]
                         },
                     );
                     return
-                } else {
-                    ()
-                }
+                } else {}
             }
         },
         None => (),
@@ -2517,9 +2351,7 @@ fn attach_type_diagnostic_span(ctx: Checker, value: hir::TypeExpr, span: Option[
                         + " type arguments, but got 0",
                     span,
                 )
-            } else {
-                ()
-            },
+            } else {},
             None => attach_diagnostic_span(ctx, "Unknown type constructor " + name, span),
         },
         App { ty, args } => {
@@ -2541,9 +2373,7 @@ fn attach_type_diagnostic_span(ctx: Checker, value: hir::TypeExpr, span: Option[
                                 + args.len().to_string(),
                             span,
                         )
-                    } else {
-                        ()
-                    },
+                    } else {},
                     None => attach_type_diagnostic_span(ctx, ty, span),
                 },
                 _ => attach_type_diagnostic_span(ctx, ty, span),
@@ -2593,7 +2423,7 @@ fn attach_block_diagnostic_spans(ctx: Checker, value: hir::Block) -> unit {
             },
             Expr { expr } => attach_expr_diagnostic_spans(ctx, expr),
         }
-    };
+    }
     match value.tail {
         Some(expr) => attach_expr_diagnostic_spans(ctx, expr),
         None => (),
@@ -2620,7 +2450,7 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
                         Option::None
                     },
                 )
-            };
+            }
             for index in 0..member_type_args.len() {
                 attach_type_diagnostic_span(
                     ctx,
@@ -2654,7 +2484,7 @@ fn attach_expr_diagnostic_spans(ctx: Checker, value: hir::Expr) -> unit {
         StructLiteral { name: _, fields, base } => {
             for field in fields {
                 attach_expr_diagnostic_spans(ctx, field.1)
-            };
+            }
             match base {
                 Some(value) => attach_expr_diagnostic_spans(ctx, value),
                 None => (),
@@ -2760,15 +2590,13 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                         },
                     )
                 }
-            } else {
-                ()
-            },
+            } else {},
             TraitDef(value) => {
                 for bound in value.generic_bounds {
                     for reference in bound.1 {
                         attach_trait_ref_diagnostic_spans(ctx, reference)
                     }
-                };
+                }
                 for method in value.method_sigs {
                     attach_type_diagnostic_span(ctx, method.ret_ty, method.ret_ty_span)
                 }
@@ -2778,7 +2606,7 @@ fn attach_file_diagnostic_spans(ctx: Checker, value: hir::File) -> unit {
                     for reference in bound.1 {
                         attach_trait_ref_diagnostic_spans(ctx, reference)
                     }
-                };
+                }
                 attach_block_diagnostic_spans(ctx, value.body)
             },
             ImplBlock(value) => for method in value.methods {
@@ -2801,49 +2629,43 @@ fn check_file_with_package(
     let ctx = collect_environment(value, allow_externs);
     for diagnostic in diagnostics {
         ctx.diagnostics.push(diagnostic)
-    };
+    }
     for span in value.invalid_self_type_spans {
         push_diagnostic_at(ctx, "Self type is only valid in impl methods", Option::Some(span))
-    };
+    }
     validate_extern_declarations(ctx);
     validate_lang_item_declarations(ctx, value, allow_externs);
     validate_file_declaration_names(ctx, value);
     if validate_function_names {
         validate_cross_file_declaration_names(ctx, value, package_files)
-    } else {
-        ()
-    };
+    } else {};
     let local_enum_count = ctx.enums.len();
     let local_struct_count = ctx.structs.len();
     let local_trait_count = ctx.traits.len();
     for package_file in package_files {
         append_package_environment(ctx, package_file, allow_externs)
-    };
+    }
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
-    };
+    }
     for index in 0..ctx.in_scope_traits.len() {
         ctx.in_scope_traits.set(index, canonical_imported_name(ctx, ctx.in_scope_traits[index]))
-    };
+    }
     for imported in value.imports {
         let canonical = canonical_imported_name(ctx, imported);
         match find_trait(ctx, canonical) {
             Some(_) => if !collections::contains(ctx.in_scope_traits, canonical) {
                 ctx.in_scope_traits.push(canonical)
-            } else {
-                ()
-            },
+            } else {},
             None => if find_enum_by_name(ctx, canonical).is_some()
                 || find_struct_by_name(ctx, canonical).is_some()
                 || find_type_alias(ctx, canonical).is_some()
                 || find_constant_by_name(ctx, canonical).is_some()
-                || find_function_by_name(ctx, canonical).is_some() {
-                ()
-            } else {
+                || find_function_by_name(ctx, canonical).is_some() {} else {
                 push_diagnostic_at(ctx, "Imported item " + imported + " not found", Option::None)
             },
         }
-    };
+    }
     for index in 0..ctx.constants.len() {
         let constant = ctx.constants[index];
         ctx.constants.set(
@@ -2854,7 +2676,7 @@ fn check_file_with_package(
                 ty: resolve_signature_type(ctx, constant.ty, Vec::[], false),
             },
         )
-    };
+    }
     for item in value.items {
         match item {
             TypeAlias(alias) => {
@@ -2870,7 +2692,7 @@ fn check_file_with_package(
             },
             _ => (),
         }
-    };
+    }
     for trait_name in value.use_traits {
         let canonical = canonical_imported_name(ctx, trait_name);
         match find_trait(ctx, canonical) {
@@ -2880,20 +2702,15 @@ fn check_file_with_package(
                 for name in value.imports {
                     if canonical_imported_name(ctx, name) == canonical {
                         imported = true;
-                        ()
-                    } else {
-                        ()
-                    }
-                };
-                if imported {
-                    ()
-                } else {
+                    } else {}
+                }
+                if imported {} else {
                     push_global_diagnostic(ctx, "Could not infer type");
                     push_diagnostic_at(ctx, "Unknown trait " + canonical, Option::None)
                 }
             },
         }
-    };
+    }
     append_default_trait_method_schemes(ctx);
     validate_local_definitions(ctx, local_enum_count, local_struct_count, local_trait_count);
     expand_in_scope_supertraits(ctx);
@@ -2905,7 +2722,7 @@ fn check_file_with_package(
             Constant(value) => constants.push(check_constant(ctx, value)),
             _ => (),
         }
-    };
+    }
     validate_constant_cycles(ctx, constants);
     let items: Vec[Item] = Vec::[];
     for item in value.items {
@@ -2916,7 +2733,7 @@ fn check_file_with_package(
             ),
             _ => (),
         }
-    };
+    }
     attach_file_diagnostic_spans(ctx, value);
     let enums = if include_builtin_types {
         builtin_enum_definitions()
@@ -2928,12 +2745,12 @@ fn check_file_with_package(
         let variants: Vec[EnumVariantDef] = Vec::[];
         for variant in value.variants {
             variants.push(EnumVariantDef { name: variant.name, fields: variant.fields })
-        };
+        }
         let option_variants = enum_option_variants(value.name, variants);
         enums.push(
             EnumDef { name: value.name, generics: value.generics, variants, option_variants },
         )
-    };
+    }
     let structs: Vec[StructDef] = Vec::[];
     for index in 0..local_struct_count {
         let value = ctx.structs[index];
@@ -2946,7 +2763,7 @@ fn check_file_with_package(
                 has_hidden_fields: false,
             },
         )
-    };
+    }
     CheckResult {
         tast: Option::Some(File { items, enums, structs, constants }),
         diagnostics: order_extern_diagnostics(ctx),
@@ -2965,12 +2782,10 @@ fn contains_impl_method_scheme(
                 && trait_ref_equal(reference, implementation.trait_ref)
                 && types_equal(value.for_type, implementation.for_type) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
             None => (),
         }
-    };
+    }
     false
 }
 
@@ -2989,11 +2804,11 @@ fn default_trait_method_scheme(
     let method_substitutions = substitutions;
     for generic in method.generics {
         method_substitutions.push(TypeSubst { name: generic, ty: Type::Param { name: generic } })
-    };
+    }
     let params: Vec[Type] = Vec::[];
     for param in method.params {
         params.push(substitute_type(param, method_substitutions))
-    };
+    }
     let callable = Callable::TraitMethod {
         trait_ref: implementation.trait_ref,
         method_name: method.name,
@@ -3026,9 +2841,7 @@ fn append_default_trait_method_schemes(ctx: Checker) -> unit {
                 if method.default_name.is_some()
                     && !contains_impl_method_scheme(ctx.methods, implementation, method.name) {
                     ctx.methods.push(default_trait_method_scheme(ctx, implementation, info, method))
-                } else {
-                    ()
-                }
+                } else {}
             },
             None => (),
         }
@@ -3177,10 +2990,8 @@ fn check_package_files_for_link_with_environments_options(
         for other in 0..values.len() {
             if other != index {
                 package_files.push(values[other])
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         let checked = check_file_with_package(
             values[index],
             package_files,
@@ -3192,19 +3003,19 @@ fn check_package_files_for_link_with_environments_options(
         );
         for diagnostic in checked.diagnostics {
             diagnostics.push(diagnostic)
-        };
+        }
         append_typeck_results(typeck_results, checked.typeck_results);
         match checked.tast {
             Some(file) => {
                 for item in file.items {
                     items.push(item)
-                };
+                }
                 for definition in file.enums {
                     enums.push(definition)
-                };
+                }
                 for definition in file.structs {
                     structs.push(definition)
-                };
+                }
                 for value in file.constants {
                     constants.push(value)
                 }
@@ -3213,7 +3024,7 @@ fn check_package_files_for_link_with_environments_options(
                 valid = false;
             },
         }
-    };
+    }
     let diagnostic_source = if !values.is_empty() {
         values[0].source_path
     } else {
@@ -3224,10 +3035,8 @@ fn check_package_files_for_link_with_environments_options(
         if constant_reaches(constants, value.name, value.name, Vec::[])
             && !diagnostics_have_message(diagnostics, message) {
             diagnostics.push(new_diagnostic("typer", message, diagnostic_source, Option::None))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     CheckResult {
         tast: if valid {
             Option::Some(File { items, enums, structs, constants })

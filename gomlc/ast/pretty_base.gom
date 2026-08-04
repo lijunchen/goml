@@ -8,7 +8,7 @@ fn pretty_path_doc(value: Path) -> doc::Doc {
     let values: Vec[doc::Doc] = Vec::with_capacity(value.segments.len());
     for segment in value.segments {
         values.push(doc::text(segment.ident))
-    };
+    }
     doc::join(doc::text("::"), values)
 }
 
@@ -16,7 +16,7 @@ fn pretty_type_docs(values: Vec[TypeExpr]) -> Vec[doc::Doc] {
     let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(pretty_type_doc(value))
-    };
+    }
     result
 }
 
@@ -46,12 +46,12 @@ fn pretty_type_doc(value: TypeExpr) -> doc::Doc {
                 let args: Vec[doc::Doc] = Vec::[];
                 for arg in bound.args {
                     args.push(pretty_type_doc(arg))
-                };
+                }
                 for binding in bound.associated_types {
                     args.push(
                         doc::concat(Vec::[doc::text(binding.0 + " = "), pretty_type_doc(binding.1)]),
                     )
-                };
+                }
                 values.push(
                     doc::append(
                         pretty_path_doc(bound.trait_path),
@@ -62,7 +62,7 @@ fn pretty_type_doc(value: TypeExpr) -> doc::Doc {
                         },
                     ),
                 )
-            };
+            }
             doc::append(doc::text("dyn "), doc::join(doc::text(" + "), values))
         },
         App { ty: base, args } => {
@@ -103,7 +103,7 @@ fn pretty_trait_ref_docs(values: Vec[TraitRef]) -> Vec[doc::Doc] {
     let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(pretty_trait_ref_doc(value))
-    };
+    }
     result
 }
 
@@ -116,7 +116,7 @@ fn pretty_find_bounds(values: Vec[(string, Vec[TraitRef])], name: string) -> Opt
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -127,7 +127,7 @@ fn pretty_generics_doc(values: Vec[string]) -> doc::Doc {
         let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
         for value in values {
             result.push(doc::text(value))
-        };
+        }
         doc::delimited("[", ",", "]", result)
     }
 }
@@ -150,7 +150,7 @@ fn pretty_bounded_generics_doc(generics: Vec[string], bounds: Vec[(string, Vec[T
                 None => doc::nil(),
             };
             values.push(doc::append(doc::text(generic), suffix))
-        };
+        }
         doc::delimited("[", ",", "]", values)
     }
 }
@@ -173,7 +173,7 @@ fn pretty_predicates_doc(values: Vec[Predicate]) -> doc::Doc {
         let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
         for value in values {
             result.push(pretty_predicate_doc(value))
-        };
+        }
         doc::group(
             doc::concat(
                 Vec::[
@@ -195,7 +195,7 @@ fn pretty_attributes_doc(values: Vec[Attribute]) -> doc::Doc {
     let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(doc::text(value.text))
-    };
+    }
     doc::concat(result)
 }
 
@@ -243,9 +243,7 @@ fn pretty_write_control_escape(builder: text::StringBuilder, value: uint8) -> un
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(pretty_hex_digit(value / 16))
-    } else {
-        ()
-    };
+    } else {};
     builder.write_char(pretty_hex_digit(value % 16));
     builder.write_char('}')
 }
@@ -274,7 +272,7 @@ fn pretty_write_quoted_string(builder: text::StringBuilder, value: string) -> un
             builder.write_string(value.byte_slice(index, index + width))
         };
         index = index + pretty_utf8_width(byte);
-    };
+    }
     builder.write_char('"')
 }
 
@@ -326,7 +324,7 @@ fn pretty_enum_variant_doc(value: EnumVariant) -> doc::Doc {
             let values: Vec[doc::Doc] = Vec::with_capacity(fields.len());
             for field in fields {
                 values.push(doc::concat(Vec::[doc::text(field.0 + ": "), pretty_type_doc(field.1)]))
-            };
+            }
             pretty_record_doc(doc::text(value.name), values)
         },
     }
@@ -336,7 +334,7 @@ fn pretty_enum_doc(value: EnumDef) -> doc::Doc {
     let variants: Vec[doc::Doc] = Vec::with_capacity(value.variants.len());
     for variant in value.variants {
         variants.push(pretty_enum_variant_doc(variant))
-    };
+    }
     let body = if variants.is_empty() {
         doc::text("{}")
     } else {
@@ -384,7 +382,7 @@ fn pretty_struct_doc(value: StructDef) -> doc::Doc {
                 ],
             ),
         )
-    };
+    }
     doc::concat(
         Vec::[
             pretty_attributes_doc(value.attrs),
@@ -401,7 +399,7 @@ fn pretty_named_params_doc(values: Vec[(string, TypeExpr)]) -> doc::Doc {
     let result: Vec[doc::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(doc::concat(Vec::[doc::text(value.0 + ": "), pretty_type_doc(value.1)]))
-    };
+    }
     doc::delimited("(", ",", ")", result)
 }
 
@@ -446,10 +444,10 @@ fn pretty_trait_doc(value: TraitDef) -> doc::Doc {
         members.push(
             doc::concat(Vec::[doc::text("type " + associated.name), bounds, doc::text(";")]),
         )
-    };
+    }
     for method in value.method_sigs {
         members.push(pretty_trait_method_doc(method))
-    };
+    }
     doc::block(
         doc::concat(
             Vec::[
@@ -522,10 +520,10 @@ fn pretty_impl_doc(value: ImplBlock) -> doc::Doc {
                 ],
             ),
         )
-    };
+    }
     for method in value.methods {
         members.push(pretty_function_doc(method))
-    };
+    }
     doc::block(
         doc::concat(
             Vec::[
@@ -604,7 +602,7 @@ fn pretty_use_doc(value: UseDecl) -> doc::Doc {
         let values: Vec[doc::Doc] = Vec::with_capacity(value.items.len());
         for item in value.items {
             values.push(pretty_use_item_doc(item))
-        };
+        }
         doc::delimited("::{", ",", "}", values)
     };
     let alias = match value.alias {
@@ -627,11 +625,11 @@ fn pretty_file(value: File) -> string {
     let uses: Vec[doc::Doc] = Vec::with_capacity(value.uses.len());
     for value in value.uses {
         uses.push(pretty_use_doc(value))
-    };
+    }
     let items: Vec[doc::Doc] = Vec::with_capacity(value.items.len());
     for value in value.items {
         items.push(pretty_item_doc(value))
-    };
+    }
     let values: Vec[doc::Doc] = Vec::new();
     values.push(doc::text("package " + value.package_name + ";"));
     values.push(doc::hardline());
@@ -639,16 +637,12 @@ fn pretty_file(value: File) -> string {
         values.push(doc::stack(uses));
         values.push(doc::hardline());
         values.push(doc::hardline())
-    } else {
-        ()
-    };
+    } else {};
     if !items.is_empty() {
         values.push(doc::join(doc::concat(Vec::[doc::hardline(), doc::hardline()]), items));
         values.push(doc::hardline());
         values.push(doc::hardline())
-    } else {
-        ()
-    };
+    } else {};
     doc::pretty(100, doc::concat(values))
 }
 
@@ -659,7 +653,7 @@ pub fn pretty(value: LowerResult) -> string {
             let values: Vec[doc::Doc] = Vec::with_capacity(value.diagnostics.len());
             for diagnostic in value.diagnostics {
                 values.push(doc::append(doc::text(diagnostic.message), doc::hardline()))
-            };
+            }
             doc::layout(doc::concat(values))
         },
     }

@@ -13,7 +13,7 @@ fn lower_block(ctx: LowerCtx, node: LocatedNode) -> Option[Block] {
             Some(value) => stmts.push(value),
             None => (),
         }
-    };
+    }
     let tails = expr_children(node);
     let tail = if !tails.is_empty() {
         lower_expr(ctx, tails[0])
@@ -90,7 +90,7 @@ fn lower_stmt(ctx: LowerCtx, node: LocatedNode) -> Option[Stmt] {
                                     },
                                     None => (),
                                 }
-                            };
+                            }
                             Option::Some(Stmt::Assign { target, op, value, span: node_span(node) })
                         },
                         None => Option::None,
@@ -161,9 +161,7 @@ fn decimal_hex_value(value: uint8) -> uint32 {
 fn unicode_escape_character(value: string, start: int) -> Option[char] {
     if start + 4 > value.byte_len() {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     let mut code = 0;
     for cursor in start..start + 4 {
         match hex_value(value.byte_get(cursor)) {
@@ -172,7 +170,7 @@ fn unicode_escape_character(value: string, start: int) -> Option[char] {
             },
             None => return Option::None,
         }
-    };
+    }
     char_from_uint32(code)
 }
 
@@ -223,7 +221,7 @@ fn unescape_string(value: string) -> string {
             };
             index = index + 2;
         }
-    };
+    }
     builder.finish()
 }
 
@@ -249,7 +247,7 @@ fn collapse_interpolated_braces(value: string) -> string {
             builder.write_string(value.byte_slice(index, index + width));
             index = index + width;
         }
-    };
+    }
     builder.finish()
 }
 
@@ -270,9 +268,7 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
                                 collapse_interpolated_braces(unescape_string(token.text)),
                             ),
                         )
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
                 Node(child) => {
                     let located = LocatedNode { node: child, start: cursor };
@@ -295,13 +291,11 @@ fn lower_interpolated_string(ctx: LowerCtx, node: LocatedNode, trailing_args: Ve
                                 "Interpolated string part missing expression",
                             )
                         }
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
             };
             cursor = cursor + cst::element_byte_len(element);
-        };
+        }
         Option::Some(Expr::InterpolatedString { parts, span: node_span(node) })
     }
 }
@@ -316,21 +310,19 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
                 let mut line_end = line_start;
                 while line_end < value.byte_len() && value.byte_get(line_end) != b'\n' {
                     line_end = line_end + 1;
-                };
+                }
                 let mut marker = line_start;
                 while marker < line_end
                     && (value.byte_get(marker) == b' ' || value.byte_get(marker) == b'\t') {
                     marker = marker + 1;
-                };
+                }
                 if marker + 2 > line_end || value.byte_slice(marker, marker + 2) != "\\\\" {
                     push_error(ctx, token_span(token), "Invalid multiline string content");
                     return Option::None
                 } else {
                     if line_start > 0 {
                         builder.write_string("\n")
-                    } else {
-                        ()
-                    };
+                    } else {};
                     builder.write_string(value.byte_slice(marker + 2, line_end));
                     if line_end >= value.byte_len() {
                         line_start = value.byte_len() + 1;
@@ -338,7 +330,7 @@ fn lower_multiline_string(ctx: LowerCtx, node: LocatedNode) -> Option[string] {
                         line_start = line_end + 1;
                     }
                 }
-            };
+            }
             Option::Some(builder.finish())
         },
         None => {
@@ -374,7 +366,7 @@ fn append_path_segments(base: Path, suffix: Path) -> Path {
     let segments = base.segments;
     for segment in suffix.segments {
         segments.push(segment)
-    };
+    }
     Path { segments }
 }
 
@@ -598,7 +590,7 @@ fn lower_vec_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr])
                 Some(item) => items.push(item),
                 None => (),
             }
-        };
+        }
         Option::Some(Expr::VecLiteral { items, span: node_span(node) })
     }
 }
@@ -621,7 +613,7 @@ fn lower_hashmap_literal(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Ex
             } else {
                 push_error(ctx, node_span(entry), "HashMap literal entry requires a key and value")
             }
-        };
+        }
         Option::Some(Expr::HashMapLiteral { entries, span: node_span(node) })
     }
 }
@@ -828,12 +820,10 @@ fn lower_number_expr(
 fn normalized_number_text(value: string) -> string {
     let builder = text::StringBuilder::with_capacity(value.byte_len());
     for character in value.chars() {
-        if character == '_' {
-            ()
-        } else {
+        if character == '_' {} else {
             builder.write_char(character)
         }
-    };
+    }
     builder.finish()
 }
 
@@ -877,9 +867,7 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
     if value.byte_len() < 3 || value.byte_get(0) != b'b' || value.byte_get(1) != b'"'
         || value.byte_get(value.byte_len() - 1) != b'"' {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     let result: Vec[string] = Vec::[];
     let mut index = 2;
     while index + 1 < value.byte_len() {
@@ -917,27 +905,23 @@ fn byte_string_values(value: string) -> Option[Vec[string]] {
             result.push((byte as int).to_string());
             index = index + 1;
         }
-    };
+    }
     Option::Some(result)
 }
 
 fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
     if value.byte_len() < 4 || value.byte_get(0) != b'b' || value.byte_get(1) != b'r' {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     let mut hash_count = 0;
     while 2 + hash_count < value.byte_len() && value.byte_get(2 + hash_count) == b'#' {
         hash_count = hash_count + 1;
-    };
+    }
     let start = hash_count + 3;
     let end = value.byte_len() - hash_count - 1;
     if start > end || value.byte_get(start - 1) != b'"' || value.byte_get(end) != b'"' {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     let result: Vec[string] = Vec::[];
     for index in start..end {
         let byte = value.byte_get(index);
@@ -946,7 +930,7 @@ fn raw_byte_string_values(value: string) -> Option[Vec[string]] {
         } else {
             result.push((byte as int).to_string())
         }
-    };
+    }
     Option::Some(result)
 }
 
@@ -1053,7 +1037,7 @@ fn lower_raw_string_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Ex
                 let mut hash_count = 0;
                 while 1 + hash_count < source.byte_len() && source.byte_get(1 + hash_count) == b'#' {
                     hash_count = hash_count + 1;
-                };
+                }
                 let start = hash_count + 2;
                 let end = source.byte_len() - hash_count - 1;
                 Option::Some(
@@ -1115,7 +1099,7 @@ fn lower_expr_sequence(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr
                 Some(value) => items.push(value),
                 None => (),
             }
-        };
+        }
         if tuple {
             Option::Some(Expr::Tuple { items, span: node_span(node) })
         } else {

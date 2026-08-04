@@ -14,10 +14,8 @@ fn binary_operator_token(node: LocatedNode) -> Option[LocatedToken] {
     for token in direct_tokens(node) {
         if is_binary_operator(token.token.kind) {
             return Option::Some(token)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -89,7 +87,7 @@ fn parse_decimal_int32(value: string) -> Option[int] {
             }
         };
         index = index + 1;
-    };
+    }
     if valid {
         Option::Some(result)
     } else {
@@ -126,7 +124,7 @@ fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr]
                         },
                         _ => (),
                     }
-                };
+                }
                 Option::Some(result)
             },
             ConstructorValue { constructor: path, span: expr_span } => {
@@ -137,7 +135,7 @@ fn apply_trailing_args(ctx: LowerCtx, expression: Expr, trailing_args: Vec[Expr]
             Constr { constructor: path, args, span: expr_span } => {
                 for arg in trailing_args {
                     args.push(arg)
-                };
+                }
                 Option::Some(Expr::Constr { constructor: path, args, span: expr_span })
             },
             Field { expr: base, field_name: field, method_type_args, span: expr_span } => Option::Some(
@@ -276,7 +274,7 @@ fn lower_call_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -
         } else {
             for arg in trailing_args {
                 args.push(arg)
-            };
+            }
             lower_expr_with_args(ctx, callee, args)
         }
     }

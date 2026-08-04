@@ -89,10 +89,8 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
             for item in values {
                 if occurs(variable, item) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Projection { for_ty: base, name: _, trait_ref: qualifier } => {
@@ -103,9 +101,7 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                     Some(reference) => for arg in reference.args {
                         if occurs(variable, arg) {
                             return true
-                        } else {
-                            ()
-                        }
+                        } else {}
                     },
                     None => (),
                 };
@@ -119,10 +115,8 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                 for arg in args {
                     if occurs(variable, arg) {
                         return true
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 false
             }
         },
@@ -137,10 +131,8 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
                 for param in params {
                     if occurs(variable, param) {
                         return true
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 false
             }
         },
@@ -171,10 +163,8 @@ fn unify_types(left: Vec[Type], right: Vec[Type]) -> bool {
         for index in 0..left.len() {
             if !unify(left[index], right[index]) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -195,10 +185,8 @@ fn associated_type_bindings_unify(first: Vec[(string, Type)], second: Vec[(strin
         for index in 0..first.len() {
             if first[index].0 != second[index].0 || !unify(first[index].1, second[index].1) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -215,10 +203,8 @@ fn dyn_bound_lists_unify(first: Vec[DynTraitBound], second: Vec[DynTraitBound]) 
                     second[index].associated_types,
                 ) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -230,10 +216,8 @@ fn associated_type_bindings_equal(first: Vec[(string, Type)], second: Vec[(strin
         for index in 0..first.len() {
             if first[index].0 != second[index].0 || !types_equal(first[index].1, second[index].1) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -250,10 +234,8 @@ fn dyn_bound_lists_equal(first: Vec[DynTraitBound], second: Vec[DynTraitBound]) 
                     second[index].associated_types,
                 ) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -360,7 +342,7 @@ fn first_type_list_error(left: Vec[Type], right: Vec[Type]) -> Option[string] {
             Some(message) => return Option::Some(message),
             None => (),
         }
-    };
+    }
     Option::None
 }
 
@@ -554,10 +536,8 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
         for index in 0..left.len() {
             if !types_equal(left[index], right[index]) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -667,10 +647,8 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
             for value in values {
                 if contains_parameter(value, name, substitutions) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Projection { for_ty: base, name: _, trait_ref: qualifier } => {
@@ -681,9 +659,7 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
                     Some(reference) => for arg in reference.args {
                         if contains_parameter(arg, name, substitutions) {
                             return true
-                        } else {
-                            ()
-                        }
+                        } else {}
                     },
                     None => (),
                 };
@@ -697,10 +673,8 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
                 for arg in args {
                     if contains_parameter(arg, name, substitutions) {
                         return true
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 false
             }
         },
@@ -718,10 +692,8 @@ fn contains_parameter(value: Type, name: string, substitutions: Vec[TypeSubst]) 
                 for param in params {
                     if contains_parameter(param, name, substitutions) {
                         return true
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 false
             }
         },
@@ -754,10 +726,8 @@ fn unify_parameter_alias_lists(left: Vec[Type], right: Vec[Type], substitutions:
         for index in 0..left.len() {
             if !unify_parameter_aliases(left[index], right[index], substitutions) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -840,7 +810,7 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
             },
             Trait { for_ty: _, trait_ref: _ } => (),
         }
-    };
+    }
     substitutions
 }
 
@@ -849,10 +819,8 @@ fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int
     for index in 0..values.len() {
         if result < 0 && types_equal(values[index].projection, projection) {
             result = index;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -882,10 +850,8 @@ fn type_list_contains(values: Vec[Type], expected: Type) -> bool {
     for value in values {
         if types_equal(value, expected) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -920,31 +886,25 @@ fn predicate_projection_aliases(predicates: Vec[TypePredicate]) -> Vec[Projectio
                 (projection @ Projection { for_ty: _, name: _, trait_ref: _ }, other) => {
                     if projection_alias_index(aliases, projection) < 0 {
                         aliases.push(ProjectionAlias { projection, ty: other })
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
                 (other, projection @ Projection { for_ty: _, name: _, trait_ref: _ }) => {
                     if projection_alias_index(aliases, projection) < 0 {
                         aliases.push(ProjectionAlias { projection, ty: other })
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
                 _ => (),
             },
             Trait { for_ty: _, trait_ref: _ } => (),
         }
-    };
-    while advance_projection_aliases(aliases, equalities) {};
+    }
+    while advance_projection_aliases(aliases, equalities) {}
     for equality in equalities {
         if projection_alias_index(aliases, equality.0) < 0
             && projection_alias_index(aliases, equality.1) < 0 {
             aliases.push(ProjectionAlias { projection: equality.0, ty: equality.1 })
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     aliases
 }
 
@@ -960,10 +920,8 @@ fn advance_projection_aliases(aliases: Vec[ProjectionAlias], equalities: Vec[(Ty
         } else if !types_equal(right_alias, right) && types_equal(left_alias, left)
             && set_projection_alias(aliases, left, right_alias) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -984,10 +942,8 @@ fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
         let associated = value.associated_types[value.associated_types.len() - 1 - offset];
         if associated.0 == name {
             return Option::Some(associated.1)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -1076,19 +1032,13 @@ fn impl_projection(ctx: Checker, base: Type, name: string, qualifier: Option[Tra
                         let candidate = substitute_type(associated, substitutions);
                         if !type_list_contains(candidates, candidate) {
                             candidates.push(candidate)
-                        } else {
-                            ()
-                        }
-                    } else {
-                        ()
-                    }
-                } else {
-                    ()
-                }
+                        } else {}
+                    } else {}
+                } else {}
             },
             None => (),
         }
-    };
+    }
     if candidates.len() == 1 {
         Option::Some(candidates[0])
     } else {
@@ -1100,7 +1050,7 @@ fn normalize_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
     let result: Vec[Type] = Vec::[];
     for value in values {
         result.push(normalize_type(ctx, value))
-    };
+    }
     result
 }
 
@@ -1110,10 +1060,8 @@ fn dyn_associated_type(value: Type, name: string) -> Option[Type] {
             for binding in associated_types {
                 if binding.0 == name {
                     return Option::Some(binding.1)
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             Option::None
         },
         _ => Option::None,
@@ -1127,13 +1075,13 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
             let normalized_associated: Vec[(string, Type)] = Vec::[];
             for binding in associated_types {
                 normalized_associated.push((binding.0, normalize_type(ctx, binding.1)))
-            };
+            }
             let normalized_additional: Vec[DynTraitBound] = Vec::[];
             for bound in additional_bounds {
                 let bound_associated: Vec[(string, Type)] = Vec::[];
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, normalize_type(ctx, binding.1)))
-                };
+                }
                 normalized_additional.push(
                     DynTraitBound {
                         trait_name: canonical_imported_name(ctx, bound.trait_name),
@@ -1141,7 +1089,7 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
                         associated_types: bound_associated,
                     },
                 )
-            };
+            }
             Type::Dyn {
                 trait_name: canonical_imported_name(ctx, name),
                 args: normalize_types(ctx, args),
@@ -1230,10 +1178,8 @@ fn find_substitution(values: Vec[TypeSubst], name: string) -> Option[Type] {
         let value = values[values.len() - 1 - offset];
         if value.name == name {
             return Option::Some(value.ty)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -1247,7 +1193,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             let result: Vec[Type] = Vec::[];
             for item in values {
                 result.push(substitute_type(item, substitutions))
-            };
+            }
             Type::Tuple { items: result }
         },
         Projection { for_ty: base, name, trait_ref: qualifier } => {
@@ -1267,7 +1213,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             let result: Vec[Type] = Vec::[];
             for arg in args {
                 result.push(substitute_type(arg, substitutions))
-            };
+            }
             Type::App { ty: substitute_type(base, substitutions), args: result }
         },
         Array { len: length, elem } => {
@@ -1285,7 +1231,7 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             let result: Vec[Type] = Vec::[];
             for param in params {
                 result.push(substitute_type(param, substitutions))
-            };
+            }
             Type::Func { params: result, ret_ty: substitute_type(ret_ty, substitutions) }
         },
         other => other,
@@ -1297,10 +1243,8 @@ pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Ty
     for index in 0..names.len() {
         if index < args.len() {
             substitutions.push(TypeSubst { name: names[index], ty: args[index] })
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     substitute_type(value, substitutions)
 }
 
@@ -1319,7 +1263,7 @@ fn instantiate_substitutions(counter: Ref[int], params: Vec[string], explicit: V
                 },
             },
         )
-    };
+    }
     result
 }
 
@@ -1335,7 +1279,7 @@ pub fn resolve_type(value: Type) -> Type {
             let result: Vec[Type] = Vec::[];
             for item in values {
                 result.push(resolve_type(item))
-            };
+            }
             Type::Tuple { items: result }
         },
         Projection { for_ty: base, name, trait_ref: qualifier } => {
@@ -1344,7 +1288,7 @@ pub fn resolve_type(value: Type) -> Type {
                     let args: Vec[Type] = Vec::[];
                     for arg in reference.args {
                         args.push(resolve_type(arg))
-                    };
+                    }
                     Option::Some(TraitRef { name: reference.name, args })
                 },
                 None => Option::None,
@@ -1355,7 +1299,7 @@ pub fn resolve_type(value: Type) -> Type {
             let result: Vec[Type] = Vec::[];
             for arg in args {
                 result.push(resolve_type(arg))
-            };
+            }
             Type::App { ty: resolve_type(base), args: result }
         },
         Array { len: length, elem } => Type::Array { len: length, elem: resolve_type(elem) },
@@ -1371,7 +1315,7 @@ pub fn resolve_type(value: Type) -> Type {
             let result: Vec[Type] = Vec::[];
             for param in params {
                 result.push(resolve_type(param))
-            };
+            }
             Type::Func { params: result, ret_ty: resolve_type(ret_ty) }
         },
         other => other,
@@ -1396,7 +1340,7 @@ fn default_numeric_type(value: Type) -> Type {
             let result: Vec[Type] = Vec::[];
             for item in items {
                 result.push(default_numeric_type(item))
-            };
+            }
             Type::Tuple { items: result }
         },
         Projection { for_ty, name, trait_ref } => {
@@ -1405,7 +1349,7 @@ fn default_numeric_type(value: Type) -> Type {
                     let args: Vec[Type] = Vec::[];
                     for arg in reference.args {
                         args.push(default_numeric_type(arg))
-                    };
+                    }
                     Option::Some(TraitRef { name: reference.name, args })
                 },
                 None => Option::None,
@@ -1416,7 +1360,7 @@ fn default_numeric_type(value: Type) -> Type {
             let result: Vec[Type] = Vec::[];
             for arg in args {
                 result.push(default_numeric_type(arg))
-            };
+            }
             Type::App { ty: default_numeric_type(ty), args: result }
         },
         Array { len, elem } => Type::Array { len, elem: default_numeric_type(elem) },
@@ -1432,7 +1376,7 @@ fn default_numeric_type(value: Type) -> Type {
             let result: Vec[Type] = Vec::[];
             for param in params {
                 result.push(default_numeric_type(param))
-            };
+            }
             Type::Func { params: result, ret_ty: default_numeric_type(ret_ty) }
         },
         other => other,
@@ -1493,9 +1437,7 @@ fn parse_array_length(value: string) -> int {
         let byte = value.byte_get(index);
         if byte >= b'0' && byte <= b'9' {
             result = result * 10 + (byte - 48) as int;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }

@@ -9,13 +9,11 @@ fn self_type_occurrences(value: LocatedNode) -> int {
         if lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Ident)
             && token.token.text == "Self" {
             result = result + 1;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for child in direct_nodes(value) {
         result = result + self_type_occurrences(child);
-    };
+    }
     result
 }
 
@@ -27,9 +25,9 @@ fn record_disallowed_self_type(ctx: LowerCtx, value: LocatedNode) -> unit {
 
 fn record_disallowed_self_types(ctx: LowerCtx, value: LocatedNode) -> unit {
     for child in direct_nodes(value) {
-        if cst::node_kind_equal(node_kind(child), cst::NodeKind::BLOCK) {
-            ()
-        } else if is_type_kind(node_kind(child)) {
+        if cst::node_kind_equal(node_kind(child), cst::NodeKind::BLOCK) {} else if is_type_kind(
+            node_kind(child),
+        ) {
             record_disallowed_self_type(ctx, child)
         } else {
             record_disallowed_self_types(ctx, child)
@@ -172,9 +170,7 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                     "Enum variant " + variant_name.token.text
                                         + " must start with an uppercase letter",
                                 )
-                            } else {
-                                ()
-                            };
+                            } else {};
                             let field_type_spans: Vec[Span] = Vec::[];
                             let fields = match first_child(variant, cst::NodeKind::TYPE_LIST) {
                                 Some(type_list) => {
@@ -185,7 +181,7 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                             Some(value) => lowered.push(value),
                                             None => (),
                                         }
-                                    };
+                                    }
                                     EnumVariantFields::Tuple(lowered)
                                 },
                                 None => match first_child(variant, cst::NodeKind::STRUCT_FIELD_LIST) {
@@ -232,7 +228,7 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                                     "Struct-like enum variant field is malformed",
                                                 ),
                                             }
-                                        };
+                                        }
                                         EnumVariantFields::Struct(named)
                                     },
                                     None => EnumVariantFields::Unit,
@@ -297,9 +293,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                                 },
                                 None => (),
                             }
-                        } else {
-                            ()
-                        },
+                        } else {},
                         None => (),
                     }
                 },
@@ -348,12 +342,8 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                         node_span(node),
                         "Trait method receiver must be written as `self: Self`",
                     )
-                } else {
-                    ()
-                }
-            } else {
-                ()
-            };
+                } else {}
+            } else {};
             for index in 0..params.len() {
                 let param = params[index];
                 if param.0 == "self" && (index != 0 || !ast_type_is_self(param.1)) {
@@ -362,10 +352,8 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                         node_span(node),
                         "Trait method receiver must be the first parameter with type Self",
                     )
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             let returns = type_children(node);
             let ret_ty = if returns.is_empty() {
                 Option::Some(TypeExpr::Unit)
@@ -439,7 +427,7 @@ fn lower_trait(ctx: LowerCtx, node: LocatedNode) -> Option[TraitDef] {
                             },
                             None => (),
                         }
-                    };
+                    }
                     for method in children_of_kind(list, cst::NodeKind::TRAIT_METHOD_SIG) {
                         match lower_trait_method(ctx, method) {
                             Some(value) => method_sigs.push(value),
@@ -545,9 +533,7 @@ fn lower_param_type_spans(node: LocatedNode) -> Vec[Span] {
             let types = type_children(param);
             if !types.is_empty() {
                 result.push(type_head_span(types[0]))
-            } else {
-                ()
-            }
+            } else {}
         },
         None => (),
     };
@@ -646,12 +632,10 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                                 Some(ty) => associated_types.push((name_token.token.text, ty)),
                                 None => (),
                             }
-                        } else {
-                            ()
-                        },
+                        } else {},
                         None => (),
                     }
-                };
+                }
                 let methods: Vec[Function] = Vec::[];
                 for method in children_of_kind(node, cst::NodeKind::FN) {
                     match lower_function(ctx, method, Option::Some(for_type)) {
@@ -672,7 +656,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                         },
                         None => (),
                     }
-                };
+                }
                 Option::Some(
                     ImplBlock {
                         attrs: lower_attributes(node),
@@ -724,9 +708,7 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
                 token_span(strings[0]),
                 "Extern function declarations should not specify a language string",
             )
-        } else {
-            ()
-        };
+        } else {};
         match first_token(node, lexer::TokenKind::Ident) {
             Some(name_token) => {
                 let (generics, generic_bounds) = lower_generics(ctx, node);

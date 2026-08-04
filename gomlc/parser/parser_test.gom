@@ -26,7 +26,7 @@ fn count_nodes(node: cst::CstNode, kind: cst::NodeKind) -> int {
             Node(inner) => count.set(count.get() + count_nodes(inner, kind)),
             Token(_) => (),
         }
-    };
+    }
     count.get()
 }
 
@@ -40,13 +40,11 @@ fn has_prefix_with_direct_child(node: cst::CstNode, kind: cst::NodeKind) -> bool
                     found.set(true)
                 } else if has_prefix_with_direct_child(inner, kind) {
                     found.set(true)
-                } else {
-                    ()
-                }
+                } else {}
             },
             Token(_) => (),
         }
-    };
+    }
     found.get()
 }
 

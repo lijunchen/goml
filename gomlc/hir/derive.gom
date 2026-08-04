@@ -56,7 +56,7 @@ fn type_for_generics(name: string, generics: Vec[string]) -> ast::TypeExpr {
         let args: Vec[ast::TypeExpr] = Vec::[];
         for generic in generics {
             args.push(type_for_name(generic))
-        };
+        }
         ast::TypeExpr::App { ty: type_for_name(name), args }
     }
 }
@@ -69,7 +69,7 @@ fn path_key(value: ast::Path) -> string {
         } else {
             result = result + "::" + segment.ident;
         }
-    };
+    }
     result
 }
 
@@ -95,7 +95,7 @@ fn type_key(value: ast::TypeExpr) -> string {
             let mut result = "(";
             for item in items {
                 result = result + type_key(item) + ",";
-            };
+            }
             result + ")"
         },
         Con { path } => path_key(path),
@@ -105,10 +105,7 @@ fn type_key(value: ast::TypeExpr) -> string {
             for bound in bounds {
                 if bound_index > 0 {
                     result = result + " + ";
-                    ()
-                } else {
-                    ()
-                };
+                } else {};
                 result = result + path_key(bound.trait_path);
                 if !bound.args.is_empty() || !bound.associated_types.is_empty() {
                     result = result + "[";
@@ -116,40 +113,28 @@ fn type_key(value: ast::TypeExpr) -> string {
                     for arg in bound.args {
                         if arg_index > 0 {
                             result = result + ",";
-                            ()
-                        } else {
-                            ()
-                        };
+                        } else {};
                         result = result + type_key(arg);
                         arg_index = arg_index + 1;
-                        ()
-                    };
+                    }
                     for binding in bound.associated_types {
                         if arg_index > 0 {
                             result = result + ",";
-                            ()
-                        } else {
-                            ()
-                        };
+                        } else {};
                         result = result + binding.0 + "=" + type_key(binding.1);
                         arg_index = arg_index + 1;
-                        ()
-                    };
+                    }
                     result = result + "]";
-                    ()
-                } else {
-                    ()
-                };
+                } else {};
                 bound_index = bound_index + 1;
-                ()
-            };
+            }
             result
         },
         App { ty, args } => {
             let mut result = type_key(ty) + "[";
             for arg in args {
                 result = result + type_key(arg) + ",";
-            };
+            }
             result + "]"
         },
         Array { len, elem } => "[" + type_key(elem) + ";" + len + "]",
@@ -157,7 +142,7 @@ fn type_key(value: ast::TypeExpr) -> string {
             let mut result = "fn(";
             for param in params {
                 result = result + type_key(param) + ",";
-            };
+            }
             result + ")->" + type_key(ret_ty)
         },
     }
@@ -174,10 +159,8 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
             for item in items {
                 if type_mentions_generics(item, generics) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         App { ty, args } => {
@@ -187,10 +170,8 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
                 for arg in args {
                     if type_mentions_generics(arg, generics) {
                         return true
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 false
             }
         },
@@ -199,10 +180,8 @@ fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
             for param in params {
                 if type_mentions_generics(param, generics) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             type_mentions_generics(ret_ty, generics)
         },
         _ => false,
@@ -219,10 +198,8 @@ fn derive_predicates(field_types: Vec[ast::TypeExpr], generics: Vec[string], tra
         if type_mentions_generics(ty, generics) && !collections::contains(seen, key) {
             seen.push(key);
             result.push(ast::Predicate::Trait { ty, trait_ref: trait_ref(trait_name) })
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -233,16 +210,12 @@ fn derives(attrs: Vec[ast::Attribute], name: string) -> bool {
                 match arg {
                     ast::AttributeArg::Ident(target) => if target == name {
                         return true
-                    } else {
-                        ()
-                    },
+                    } else {},
                     ast::AttributeArg::String(_) => (),
                 }
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -271,9 +244,7 @@ fn validate_derive_attributes(attrs: Vec[ast::Attribute], diagnostics: Vec[cst::
                     ast::AttributeArg::String(_) => (),
                 }
             }
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -352,7 +323,7 @@ fn concat_parts(parts: Vec[ast::Expr]) -> ast::Expr {
                 rhs: parts[index],
                 span: dummy_span(),
             };
-        };
+        }
         result
     }
 }
@@ -391,7 +362,7 @@ fn make_method(
     let param_type_spans: Vec[ast::Span] = Vec::[];
     for _ in params {
         param_type_spans.push(dummy_span())
-    };
+    }
     ast::Function {
         attrs: empty_attributes(),
         visibility: ast::Visibility::Private,
@@ -433,7 +404,7 @@ fn struct_field_types(value: ast::StructDef) -> Vec[ast::TypeExpr] {
     let result: Vec[ast::TypeExpr] = Vec::[];
     for field in value.fields {
         result.push(field.1)
-    };
+    }
     result
 }
 
@@ -443,7 +414,7 @@ fn enum_payload_types(value: ast::EnumDef) -> Vec[ast::TypeExpr] {
         for ty in enum_field_types(variant.fields) {
             result.push(ty)
         }
-    };
+    }
     result
 }
 
@@ -460,14 +431,12 @@ fn struct_to_string_body(value: ast::StructDef) -> ast::Expr {
             parts.push(call_to_string(var_expr(field.0), field.1));
             if index + 1 != value.fields.len() {
                 parts.push(string_expr(", "))
-            } else {
-                ()
-            };
+            } else {};
             fields.push(
                 (field.0, ast::Pat::Var { name: field.0, is_mut: false, span: dummy_span() }),
             );
             index = index + 1;
-        };
+        }
         parts.push(string_expr(" }"));
         let stmts: Vec[ast::Stmt] = Vec::[];
         stmts.push(
@@ -493,7 +462,7 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
         let bindings: Vec[string] = Vec::[];
         for index in 0..fields.len() {
             bindings.push("__field" + index.to_string())
-        };
+        }
         let parts: Vec[ast::Expr] = Vec::[];
         match variant.fields {
             Unit => {
@@ -504,11 +473,9 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
                 for index in 0..fields.len() {
                     if index > 0 {
                         parts.push(string_expr(", "))
-                    } else {
-                        ()
-                    };
+                    } else {};
                     parts.push(call_to_string(var_expr(bindings[index]), fields[index]))
-                };
+                }
                 parts.push(string_expr(")"))
             },
             Struct(named) => {
@@ -516,12 +483,10 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
                 for index in 0..named.len() {
                     if index > 0 {
                         parts.push(string_expr(", "))
-                    } else {
-                        ()
-                    };
+                    } else {};
                     parts.push(string_expr(named[index].0 + ": "));
                     parts.push(call_to_string(var_expr(bindings[index]), named[index].1))
-                };
+                }
                 parts.push(string_expr(" }"))
             },
         };
@@ -536,7 +501,7 @@ fn enum_to_string_body(value: ast::EnumDef) -> ast::Expr {
                 body: concat_parts(parts),
             },
         )
-    };
+    }
     ast::Expr::Match { expr: var_expr("self"), arms, span: dummy_span() }
 }
 
@@ -552,7 +517,7 @@ fn struct_eq_body(value: ast::StructDef) -> ast::Expr {
             rhs: trait_call("Eq", "eq", args),
             span: dummy_span(),
         };
-    };
+    }
     result
 }
 
@@ -560,7 +525,7 @@ fn variant_bindings(prefix: string, variant: int, count: int) -> Vec[string] {
     let result: Vec[string] = Vec::[];
     for index in 0..count {
         result.push(prefix + variant.to_string() + "_" + index.to_string())
-    };
+    }
     result
 }
 
@@ -568,7 +533,7 @@ fn constr_pat(path: ast::Path, bindings: Vec[string]) -> ast::Pat {
     let args: Vec[ast::Pat] = Vec::[];
     for binding in bindings {
         args.push(ast::Pat::Var { name: binding, is_mut: false, span: dummy_span() })
-    };
+    }
     ast::Pat::Constr { constructor: path, args, span: dummy_span() }
 }
 
@@ -580,7 +545,7 @@ fn enum_field_types(fields: ast::EnumVariantFields) -> Vec[ast::TypeExpr] {
             let types: Vec[ast::TypeExpr] = Vec::[];
             for field in fields {
                 types.push(field.1)
-            };
+            }
             types
         },
     }
@@ -597,7 +562,7 @@ fn enum_variant_pat(path: ast::Path, fields: ast::EnumVariantFields, bindings: V
                         ast::Pat::Var { name: bindings[index], is_mut: false, span: dummy_span() },
                     ),
                 )
-            };
+            }
             ast::Pat::Struct { name: path, fields: patterns, has_rest: false, span: dummy_span() }
         },
         _ => constr_pat(path, bindings),
@@ -632,7 +597,7 @@ fn enum_eq_body(value: ast::EnumDef) -> ast::Expr {
                 rhs: trait_call("Eq", "eq", args),
                 span: dummy_span(),
             };
-        };
+        }
         arms.push(
             ast::Arm {
                 pat: ast::Pat::Tuple { items: tuple_pats, span: dummy_span() },
@@ -641,7 +606,7 @@ fn enum_eq_body(value: ast::EnumDef) -> ast::Expr {
             },
         );
         variant_index = variant_index + 1;
-    };
+    }
     arms.push(
         ast::Arm {
             pat: ast::Pat::Wild { span: dummy_span() },
@@ -681,7 +646,7 @@ fn struct_hash_body(value: ast::StructDef) -> ast::Expr {
     stmts.push(h_binding(Option::Some(ast::TypeExpr::Uint64), uint64_expr("14695981039346656037")));
     for field in value.fields {
         stmts.push(h_binding(Option::None, hash_step(field_expr(var_expr("self"), field.0))))
-    };
+    }
     block_expr(stmts, var_expr("h"))
 }
 
@@ -692,7 +657,7 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
         let bindings: Vec[string] = Vec::[];
         for field_index in 0..enum_field_types(variant.fields).len() {
             bindings.push("__field" + variant_index.to_string() + "_" + field_index.to_string())
-        };
+        }
         let stmts: Vec[ast::Stmt] = Vec::[];
         stmts.push(
             h_binding(
@@ -707,7 +672,7 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
         );
         for binding in bindings {
             stmts.push(h_binding(Option::None, hash_step(var_expr(binding))))
-        };
+        }
         arms.push(
             ast::Arm {
                 pat: enum_variant_pat(
@@ -720,7 +685,7 @@ fn enum_hash_body(value: ast::EnumDef) -> ast::Expr {
             },
         );
         variant_index = variant_index + 1;
-    };
+    }
     ast::Expr::Match { expr: var_expr("self"), arms, span: dummy_span() }
 }
 
@@ -837,19 +802,13 @@ fn derived_struct_impls(value: ast::StructDef) -> Vec[ast::ImplBlock] {
     let result: Vec[ast::ImplBlock] = Vec::[];
     if derives(value.attrs, "ToString") {
         result.push(derive_struct_to_string(value))
-    } else {
-        ()
-    };
+    } else {};
     if derives(value.attrs, "Eq") {
         result.push(derive_struct_eq(value))
-    } else {
-        ()
-    };
+    } else {};
     if derives(value.attrs, "Hash") {
         result.push(derive_struct_hash(value))
-    } else {
-        ()
-    };
+    } else {};
     result
 }
 
@@ -857,19 +816,13 @@ fn derived_enum_impls(value: ast::EnumDef) -> Vec[ast::ImplBlock] {
     let result: Vec[ast::ImplBlock] = Vec::[];
     if derives(value.attrs, "ToString") {
         result.push(derive_enum_to_string(value))
-    } else {
-        ()
-    };
+    } else {};
     if derives(value.attrs, "Eq") {
         result.push(derive_enum_eq(value))
-    } else {
-        ()
-    };
+    } else {};
     if derives(value.attrs, "Hash") {
         result.push(derive_enum_hash(value))
-    } else {
-        ()
-    };
+    } else {};
     result
 }
 
@@ -881,7 +834,7 @@ fn trait_default_ref(value: ast::TraitDef) -> ast::TraitRef {
     let args: Vec[ast::TypeExpr] = Vec::[];
     for generic in value.generics {
         args.push(type_for_name(generic))
-    };
+    }
     ast::TraitRef { path: one_segment_path(value.name), args }
 }
 
@@ -894,28 +847,28 @@ fn trait_default_function(
     generics.push("Self");
     for generic in method.generics {
         generics.push(generic)
-    };
+    }
     let generic_bounds: Vec[(string, Vec[ast::TraitRef])] = Vec::[];
     for bound in trait_def.generic_bounds {
         generic_bounds.push(bound)
-    };
+    }
     let self_bounds: Vec[ast::TraitRef] = Vec::[];
     self_bounds.push(trait_default_ref(trait_def));
     generic_bounds.push(("Self", self_bounds));
     for bound in method.generic_bounds {
         generic_bounds.push(bound)
-    };
+    }
     let predicates: Vec[ast::Predicate] = Vec::[];
     for predicate in trait_def.predicates {
         predicates.push(predicate)
-    };
+    }
     for predicate in method.predicates {
         predicates.push(predicate)
-    };
+    }
     let param_type_spans: Vec[ast::Span] = Vec::[];
     for _ in method.params {
         param_type_spans.push(dummy_span())
-    };
+    }
     ast::Function {
         attrs: empty_attributes(),
         visibility: ast::Visibility::Private,
@@ -938,7 +891,7 @@ fn trait_default_functions(value: ast::TraitDef) -> Vec[ast::Function] {
             Some(body) => result.push(trait_default_function(value, method, body)),
             None => (),
         }
-    };
+    }
     result
 }
 
@@ -964,7 +917,7 @@ fn expand_file_derives(value: ast::File) -> ast::File {
             },
             _ => (),
         }
-    };
+    }
     ast::File {
         package_name: value.package_name,
         package_explicit: value.package_explicit,

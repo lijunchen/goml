@@ -91,7 +91,7 @@ fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) 
                                 Some(value) => arms.push(value),
                                 None => (),
                             }
-                        };
+                        }
                         Option::Some(Expr::Match { expr: scrutinee, arms, span: node_span(node) })
                     },
                     None => {

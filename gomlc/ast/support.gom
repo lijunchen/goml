@@ -35,18 +35,14 @@ fn trimmed_node_end(value: LocatedNode) -> int {
                 let child_end = trimmed_node_end(LocatedNode { node: child, start: cursor });
                 if child_end > end {
                     end = child_end;
-                } else {
-                    ()
-                }
+                } else {}
             },
-            Token(token) => if lexer::token_is_trivia(token.kind) {
-                ()
-            } else {
+            Token(token) => if lexer::token_is_trivia(token.kind) {} else {
                 end = cursor + token.text.byte_len();
             },
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     end
 }
 
@@ -64,14 +60,12 @@ fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
                     None => (),
                 }
             },
-            Token(token) => if lexer::token_is_trivia(token.kind) {
-                ()
-            } else {
+            Token(token) => if lexer::token_is_trivia(token.kind) {} else {
                 return Option::Some(span(cursor, cursor + token.text.byte_len()))
             },
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     Option::None
 }
 
@@ -91,7 +85,7 @@ fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
             Token(_) => (),
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     result
 }
 
@@ -104,7 +98,7 @@ fn direct_tokens(value: LocatedNode) -> Vec[LocatedToken] {
             Token(token) => result.push(LocatedToken { token, start: cursor }),
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     result
 }
 
@@ -115,13 +109,11 @@ fn children_of_kind(value: LocatedNode, kind: cst::NodeKind) -> Vec[LocatedNode]
         match element {
             Node(child) => if cst::node_kind_equal(cst::node_kind(child), kind) {
                 result.push(LocatedNode { node: child, start: cursor })
-            } else {
-                ()
-            },
+            } else {},
             Token(_) => (),
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     result
 }
 
@@ -131,13 +123,11 @@ fn first_child(value: LocatedNode, kind: cst::NodeKind) -> Option[LocatedNode] {
         match element {
             Node(child) => if cst::node_kind_equal(cst::node_kind(child), kind) {
                 return Option::Some(LocatedNode { node: child, start: cursor })
-            } else {
-                ()
-            },
+            } else {},
             Token(_) => (),
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     Option::None
 }
 
@@ -149,12 +139,10 @@ fn tokens_of_kind(value: LocatedNode, kind: lexer::TokenKind) -> Vec[LocatedToke
             Node(_) => (),
             Token(token) => if lexer::token_kind_equal(token.kind, kind) {
                 result.push(LocatedToken { token, start: cursor })
-            } else {
-                ()
-            },
+            } else {},
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     result
 }
 
@@ -165,12 +153,10 @@ fn first_token(value: LocatedNode, kind: lexer::TokenKind) -> Option[LocatedToke
             Node(_) => (),
             Token(token) => if lexer::token_kind_equal(token.kind, kind) {
                 return Option::Some(LocatedToken { token, start: cursor })
-            } else {
-                ()
-            },
+            } else {},
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     Option::None
 }
 
@@ -241,13 +227,11 @@ fn filtered_children(value: LocatedNode, selector: (cst::NodeKind) -> bool) -> V
         match element {
             Node(child) => if selector(cst::node_kind(child)) {
                 result.push(LocatedNode { node: child, start: cursor })
-            } else {
-                ()
-            },
+            } else {},
             Token(_) => (),
         };
         cursor = cursor + cst::element_byte_len(element);
-    };
+    }
     result
 }
 

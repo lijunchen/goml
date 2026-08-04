@@ -211,7 +211,7 @@ fn scan_ident_end(source: string, start: int) -> int {
     let mut index = start;
     while index < source.byte_len() && is_ident_continue(byte_at(source, index)) {
         index = index + 1;
-    };
+    }
     index
 }
 
@@ -220,25 +220,21 @@ fn scan_digits_end(source: string, start: int) -> int {
     while index < source.byte_len()
         && (ascii::is_digit(byte_at(source, index)) || byte_at(source, index) == b'_') {
         index = index + 1;
-    };
+    }
     index
 }
 
 fn valid_digits(source: string, start: int, end: int) -> bool {
     if start >= end {
         return false
-    } else {
-        ()
-    };
+    } else {};
     for index in start..end {
         if byte_at(source, index) == b'_'
             && (index == start || index + 1 >= end || !ascii::is_digit(byte_at(source, index - 1))
                 || !ascii::is_digit(byte_at(source, index + 1))) {
             return false
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     true
 }
 
@@ -256,7 +252,7 @@ fn scan_prefixed_integer(source: string, start: int, base: int) -> (TokenKind, i
     let mut index = start + 2;
     while index < source.byte_len() && (is_ident_continue(byte_at(source, index))) {
         index = index + 1;
-    };
+    }
     let end = index;
     let mut valid = end > start + 2;
     for position in start + 2..end {
@@ -266,15 +262,11 @@ fn scan_prefixed_integer(source: string, start: int, base: int) -> (TokenKind, i
                 || !radix_digit(byte_at(source, position - 1), base)
                 || !radix_digit(byte_at(source, position + 1), base) {
                 valid = false;
-            } else {
-                ()
-            }
+            } else {}
         } else if !radix_digit(value, base) {
             valid = false;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if valid {
         (TokenKind::IntLit, end)
     } else {
@@ -291,12 +283,8 @@ fn scan_number(source: string, start: int) -> (TokenKind, int) {
             return scan_prefixed_integer(source, start, 8)
         } else if prefix == b'X' || prefix == b'x' {
             return scan_prefixed_integer(source, start, 16)
-        } else {
-            ()
-        }
-    } else {
-        ()
-    };
+        } else {}
+    } else {};
     let integer_end = scan_digits_end(source, start);
     let mut number_end = integer_end;
     let mut valid = valid_digits(source, start, integer_end);
@@ -305,28 +293,20 @@ fn scan_number(source: string, start: int) -> (TokenKind, int) {
         let fraction_end = scan_digits_end(source, integer_end + 1);
         number_end = fraction_end;
         valid = valid && valid_digits(source, integer_end + 1, fraction_end);
-    } else {
-        ()
-    };
+    } else {};
     if number_end < source.byte_len()
         && (byte_at(source, number_end) == b'e' || byte_at(source, number_end) == b'E') {
         let mut exponent_start = number_end + 1;
         if exponent_start < source.byte_len()
             && (byte_at(source, exponent_start) == b'+' || byte_at(source, exponent_start) == b'-') {
             exponent_start = exponent_start + 1;
-        } else {
-            ()
-        };
+        } else {};
         if exponent_start < source.byte_len() && ascii::is_digit(byte_at(source, exponent_start)) {
             let exponent_end = scan_digits_end(source, exponent_start);
             number_end = exponent_end;
             valid = valid && valid_digits(source, exponent_start, exponent_end);
-        } else {
-            ()
-        }
-    } else {
-        ()
-    };
+        } else {}
+    } else {};
     if !valid {
         (TokenKind::Error, number_end)
     } else if number_end != integer_end {
@@ -413,7 +393,7 @@ fn raw_string_hash_count(source: string, start: int) -> Option[int] {
         let mut index = start + 1;
         while index < source.byte_len() && byte_at(source, index) == b'#' {
             index = index + 1;
-        };
+        }
         if index < source.byte_len() && byte_at(source, index) == b'"' {
             Option::Some(index - start - 1)
         } else {
@@ -437,17 +417,13 @@ fn scan_raw_string_end(source: string, start: int, hash_count: int) -> Option[in
             while hash_index < hash_count && index + 1 + hash_index < source.byte_len()
                 && byte_at(source, index + 1 + hash_index) == b'#' {
                 hash_index = hash_index + 1;
-            };
+            }
             if hash_index == hash_count {
                 return Option::Some(index + hash_count + 1)
-            } else {
-                ()
-            }
-        } else {
-            ()
-        };
+            } else {}
+        } else {};
         index = index + 1;
-    };
+    }
     Option::None
 }
 
@@ -537,7 +513,7 @@ fn scan_interpolation_expr_end(source: string, start: int) -> Option[int] {
         } else {
             index = position + utf8_width(value);
         }
-    };
+    }
     Option::None
 }
 
@@ -577,7 +553,7 @@ fn scan_fstring_end(source: string, start: int) -> Option[int] {
         } else {
             index = position + utf8_width(value);
         }
-    };
+    }
     Option::None
 }
 
@@ -616,7 +592,7 @@ fn scan_label_end(source: string, start: int) -> Option[int] {
         let mut end = first + 1;
         while end < source.byte_len() && is_ident_continue(byte_at(source, end)) {
             end = end + 1;
-        };
+        }
         if end < source.byte_len() && byte_at(source, end) == b'\'' {
             Option::None
         } else {
@@ -694,7 +670,7 @@ fn scan_byte_string_end(source: string, start: int) -> Option[int] {
         } else {
             index = index + 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -704,10 +680,8 @@ fn raw_byte_string_is_ascii(source: string, raw_start: int, end: int, hash_count
     for index in content_start..content_end {
         if byte_at(source, index) > 127 {
             return false
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     true
 }
 
@@ -719,7 +693,7 @@ fn scan_invalid_prefixed_literal_end(source: string, start: int, quote: uint8) -
         } else {
             index = index + 1;
         }
-    };
+    }
     index
 }
 
@@ -727,7 +701,7 @@ fn scan_multiline_string_end(source: string, start: int) -> Option[int] {
     let mut cursor = start + 2;
     while cursor < source.byte_len() && byte_at(source, cursor) != b'\n' {
         cursor = cursor + 1;
-    };
+    }
     if cursor >= source.byte_len() {
         Option::None
     } else {
@@ -739,7 +713,7 @@ fn scan_multiline_string_end(source: string, start: int) -> Option[int] {
             while index < source.byte_len()
                 && (byte_at(source, index) == b' ' || byte_at(source, index) == b'\t') {
                 index = index + 1;
-            };
+            }
             if index + 1 >= source.byte_len() || byte_at(source, index) != b'\\'
                 || byte_at(source, index + 1) != b'\\' {
                 if lines >= 2 {
@@ -751,7 +725,7 @@ fn scan_multiline_string_end(source: string, start: int) -> Option[int] {
                 index = index + 2;
                 while index < source.byte_len() && byte_at(source, index) != b'\n' {
                     index = index + 1;
-                };
+                }
                 lines = lines + 1;
                 if index >= source.byte_len() {
                     return Option::Some(index)
@@ -759,7 +733,7 @@ fn scan_multiline_string_end(source: string, start: int) -> Option[int] {
                     cursor = index + 1;
                 }
             }
-        };
+        }
         if lines < 2 {
             Option::None
         } else {
@@ -879,17 +853,13 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
         if value == b'"' {
             if text_start < position {
                 push_token(tokens, source, TokenKind::FStringText, text_start, position)
-            } else {
-                ()
-            };
+            } else {};
             push_token(tokens, source, TokenKind::FStringEnd, position, position + 1);
             return position + 1
         } else if value < 32 {
             if text_start < position {
                 push_token(tokens, source, TokenKind::FStringText, text_start, position)
-            } else {
-                ()
-            };
+            } else {};
             push_token(tokens, source, TokenKind::Error, position, position + 1);
             return position + 1
         } else if value == b'\\' {
@@ -900,9 +870,7 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
                 None => {
                     if text_start < position {
                         push_token(tokens, source, TokenKind::FStringText, text_start, position)
-                    } else {
-                        ()
-                    };
+                    } else {};
                     push_token(tokens, source, TokenKind::Error, position, position + 1);
                     return position + 1
                 },
@@ -913,9 +881,7 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
             } else {
                 if text_start < position {
                     push_token(tokens, source, TokenKind::FStringText, text_start, position)
-                } else {
-                    ()
-                };
+                } else {};
                 push_token(tokens, source, TokenKind::FStringExprStart, position, position + 1);
                 match scan_interpolation_expr_end(source, position + 1) {
                     Some(end) => {
@@ -942,9 +908,7 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
             } else {
                 if text_start < position {
                     push_token(tokens, source, TokenKind::FStringText, text_start, position)
-                } else {
-                    ()
-                };
+                } else {};
                 push_token(tokens, source, TokenKind::Error, position, position + 1);
                 index = position + 1;
                 text_start = position + 1;
@@ -952,7 +916,7 @@ fn lex_fstring(tokens: Vec[Token], source: string, start: int) -> int {
         } else {
             index = position + utf8_width(value);
         }
-    };
+    }
     if text_start < source.byte_len() {
         push_token(tokens, source, TokenKind::Error, text_start, source.byte_len())
     } else {
@@ -971,13 +935,13 @@ pub fn lex(source: string) -> Vec[Token] {
             index = start + 1;
             while index < source.byte_len() && is_whitespace(byte_at(source, index)) {
                 index = index + 1;
-            };
+            }
             push_token(tokens, source, TokenKind::Whitespace, start, index)
         } else if text::starts_with_at(source, start, "//") {
             index = start + 2;
             while index < source.byte_len() && byte_at(source, index) != b'\n' {
                 index = index + 1;
-            };
+            }
             push_token(tokens, source, TokenKind::Comment, start, index)
         } else if text::starts_with_at(source, start, "\\\\") {
             match scan_multiline_string_end(source, start) {
@@ -1111,7 +1075,7 @@ pub fn lex(source: string) -> Vec[Token] {
                 },
             }
         }
-    };
+    }
     tokens
 }
 
@@ -1278,7 +1242,7 @@ pub fn encode_text_hex(value: string) -> string {
         builder.write_string(hex_digit(byte >> 4));
         builder.write_string(hex_digit(byte & 15));
         index = index + 1;
-    };
+    }
     builder.finish()
 }
 
@@ -1293,6 +1257,6 @@ pub fn encode_tokens(tokens: Vec[Token]) -> string {
         builder.write_string("\t");
         builder.write_string(encode_text_hex(token.text));
         builder.write_string("\n")
-    };
+    }
     builder.finish()
 }

@@ -49,14 +49,10 @@ fn lexes_compound_assignment_tokens() -> unit {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string(" ")
-            } else {
-                ()
-            };
+            } else {};
             builder.write_string(token_kind_name(token.kind))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     testing::assert_eq(
         builder.finish(),
         "PlusEq MinusEq StarEq SlashEq PercentEq AmpEq PipeEq CaretEq LessLessEq GreaterGreaterEq",
@@ -71,16 +67,12 @@ fn lexes_interpolated_string_segments() -> unit {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string("|")
-            } else {
-                ()
-            };
+            } else {};
             builder.write_string(token_kind_name(token.kind));
             builder.write_string(":");
             builder.write_string(token.text)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     testing::assert_eq(
         builder.finish(),
         "FStringStart:f\"|FStringText:hi {{x}} |FStringExprStart:{|Ident:value|Plus:+|IntLit:1|FStringExprEnd:}|FStringText:!|FStringEnd:\"",
@@ -99,14 +91,10 @@ fn lexes_keywords_and_identifiers() -> unit {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string(" ")
-            } else {
-                ()
-            };
+            } else {};
             builder.write_string(token_kind_name(token.kind))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     testing::assert_eq(builder.finish(), expected)
 }
 
@@ -120,16 +108,12 @@ fn lexes_radix_and_byte_literals() -> unit {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string(" ")
-            } else {
-                ()
-            };
+            } else {};
             builder.write_string(token_kind_name(token.kind));
             builder.write_string(":");
             builder.write_string(token.text)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     testing::assert_eq(
         builder.finish(),
         "IntLit:0b1010 IntLit:0B1_001 IntLit:0o755 IntLit:0O7_0 IntLit:0xff IntLit:0XCA_FE ByteCharLit:b'A' ByteCharLit:b'\\n' ByteCharLit:b'\\xFF' ByteStr:b\"text\" Error:0b102 Error:0x_1 Error:0o7_ Error:b'é'",
@@ -146,16 +130,12 @@ fn lexes_numeric_literals() -> unit {
         if token_kind_equal(token.kind, TokenKind::Whitespace) == false {
             if builder.is_empty() == false {
                 builder.write_string(" ")
-            } else {
-                ()
-            };
+            } else {};
             builder.write_string(token_kind_name(token.kind));
             builder.write_string(":");
             builder.write_string(token.text)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     testing::assert_eq(
         builder.finish(),
         "IntLit:0 IntLit:12 Error:1i8 Error:2i16 Error:3i32 Error:4i64 Error:5u8 Error:6u16 Error:7u32 Error:8u64 Float:1.25 Error:2.5f32 Error:3.75f64 IntLit:1 Dot:. IntLit:1 Ident:f32 Float:1.2 Ident:f33 Error:9i32 Ident:x",
@@ -256,10 +236,8 @@ fn skips_raw_byte_string_braces_in_interpolation() -> unit {
             errors.set(errors.get() + 1)
         } else if token_kind_equal(token.kind, TokenKind::RawByteStr) {
             raw_bytes.set(raw_bytes.get() + 1)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     testing::assert_eq(errors.get(), 0);
     testing::assert_eq(raw_bytes.get(), 1)
 }

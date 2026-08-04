@@ -65,7 +65,7 @@ fn encode_path(builder: text::StringBuilder, value: Path) -> unit {
         encode_string_value(builder, segment.ident);
         encode_span(builder, segment.span);
         encode_close(builder)
-    };
+    }
     encode_close(builder)
 }
 
@@ -107,12 +107,12 @@ fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
                 encode_list(builder, bound.args.len());
                 for arg in bound.args {
                     encode_type(builder, arg)
-                };
+                }
                 encode_list(builder, bound.associated_types.len());
                 for binding in bound.associated_types {
                     encode_string_value(builder, binding.0);
                     encode_type(builder, binding.1)
-                };
+                }
                 encode_close(builder)
             }
         },
@@ -134,7 +134,7 @@ fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
             encode_list(builder, params.len());
             for param in params {
                 encode_type(builder, param)
-            };
+            }
             encode_type(builder, ret_ty)
         },
     };
@@ -171,7 +171,7 @@ fn encode_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
     encode_list(builder, value.args.len());
     for arg in value.args {
         encode_type(builder, arg)
-    };
+    }
     encode_close(builder)
 }
 
@@ -297,7 +297,7 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
                 encode_list(builder, types.len());
                 for ty in types {
                     encode_type(builder, ty)
-                };
+                }
                 encode_close(builder)
             },
             Struct(fields) => {
@@ -308,12 +308,12 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
                     encode_string_value(builder, field.0);
                     encode_type(builder, field.1);
                     encode_close(builder)
-                };
+                }
                 encode_close(builder)
             },
         };
         encode_close(builder)
-    };
+    }
     encode_close(builder)
 }
 
@@ -330,11 +330,11 @@ fn encode_struct(builder: text::StringBuilder, value: StructDef) -> unit {
         encode_string_value(builder, name);
         encode_type(builder, ty);
         encode_close(builder)
-    };
+    }
     encode_list(builder, value.public_fields.len());
     for field in value.public_fields {
         encode_string_value(builder, field)
-    };
+    }
     encode_close(builder)
 }
 
@@ -353,7 +353,7 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
         encode_string_value(builder, associated.name);
         encode_trait_refs(builder, associated.bounds);
         encode_close(builder)
-    };
+    }
     encode_list(builder, value.method_sigs.len());
     for method in value.method_sigs {
         encode_open(builder, "TraitMethod");
@@ -365,7 +365,7 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
         for param in method.params {
             encode_string_value(builder, param.0);
             encode_type(builder, param.1)
-        };
+        }
         encode_type(builder, method.ret_ty);
         match method.body {
             Some(body) => {
@@ -375,7 +375,7 @@ fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
             None => encode_none(builder),
         };
         encode_close(builder)
-    };
+    }
     encode_close(builder)
 }
 
@@ -392,7 +392,7 @@ fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> unit {
         encode_string_value(builder, name);
         encode_type(builder, ty);
         encode_close(builder)
-    };
+    }
     match value.trait_ref {
         Some(trait_ref) => {
             encode_some(builder);
@@ -404,7 +404,7 @@ fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> unit {
     encode_list(builder, value.methods.len());
     for method in value.methods {
         encode_function(builder, method)
-    };
+    }
     encode_close(builder)
 }
 
@@ -447,7 +447,7 @@ fn encode_block(builder: text::StringBuilder, value: Block) -> unit {
     encode_list(builder, value.stmts.len());
     for stmt in value.stmts {
         encode_stmt(builder, stmt)
-    };
+    }
     match value.tail {
         Some(expr) => {
             encode_some(builder);
@@ -531,13 +531,13 @@ fn encode_file(builder: text::StringBuilder, value: File) -> unit {
             };
             encode_span(builder, item.span);
             encode_close(builder)
-        };
+        }
         encode_close(builder)
-    };
+    }
     encode_list(builder, value.items.len());
     for item in value.items {
         encode_item(builder, item)
-    };
+    }
     encode_close(builder)
 }
 
@@ -556,6 +556,6 @@ pub fn encode(value: LowerResult) -> string {
         encode_span(builder, span(diagnostic.start, diagnostic.end));
         encode_string_value(builder, diagnostic.message);
         encode_close(builder)
-    };
+    }
     builder.finish()
 }

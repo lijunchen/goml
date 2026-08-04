@@ -70,7 +70,7 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_list(builder, owner_type_args.len());
             for ty in owner_type_args {
                 encode_type(builder, ty)
-            };
+            }
             encode_list(builder, member_type_args.len());
             for ty in member_type_args {
                 encode_type(builder, ty)
@@ -149,7 +149,7 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
                 encode_string_value(builder, name);
                 encode_expr(builder, expr);
                 encode_close(builder)
-            };
+            }
             match base {
                 Some(value) => {
                     encode_some(builder);
@@ -194,7 +194,7 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
                 encode_string_value(builder, param.name);
                 encode_optional_type(builder, param.ty);
                 encode_close(builder)
-            };
+            }
             encode_expr(builder, body)
         },
         Match { expr, arms, span: value_span } => {
@@ -395,7 +395,7 @@ fn encode_pat(builder: text::StringBuilder, value: Pat) -> unit {
                 encode_string_value(builder, name);
                 encode_pat(builder, pat);
                 encode_close(builder)
-            };
+            }
             encode_bool_value(builder, has_rest)
         },
         Tuple { items: pats, span: value_span } => {

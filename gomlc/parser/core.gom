@@ -70,9 +70,7 @@ fn input_eof(parser: Parser) -> bool {
 fn input_skip(parser: Parser) -> unit {
     if !input_eof(parser) {
         parser.cursor.set(parser.cursor.get() + 1)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn input_peek(parser: Parser) -> lexer::TokenKind {
@@ -85,15 +83,13 @@ fn input_nth(parser: Parser, offset: int) -> lexer::TokenKind {
     let mut remaining = offset;
     while index < parser.tokens.len() {
         let kind = parser.tokens[index].kind;
-        if lexer::token_is_trivia(kind) {
-            ()
-        } else if remaining == 0 {
+        if lexer::token_is_trivia(kind) {} else if remaining == 0 {
             return kind
         } else {
             remaining = remaining - 1;
         };
         index = index + 1;
-    };
+    }
     lexer::TokenKind::Eof
 }
 
@@ -102,15 +98,13 @@ fn input_nth_text(parser: Parser, offset: int) -> string {
     let mut remaining = offset;
     while index < parser.tokens.len() {
         let token = parser.tokens[index];
-        if lexer::token_is_trivia(token.kind) {
-            ()
-        } else if remaining == 0 {
+        if lexer::token_is_trivia(token.kind) {} else if remaining == 0 {
             return token.text
         } else {
             remaining = remaining - 1;
         };
         index = index + 1;
-    };
+    }
     ""
 }
 
@@ -160,9 +154,7 @@ impl Parser {
                 cst::diagnostic("parser did not consume input while parsing", start, end),
             );
             self.stuck_reported.set(true)
-        } else {
-            ()
-        }
+        } else {}
     }
 
     pub fn peek(self: Parser) -> lexer::TokenKind {
@@ -212,7 +204,7 @@ impl Parser {
             } else {
                 break
             }
-        };
+        }
         if index >= self.tokens.len()
             || !token_is(self.tokens[index].kind, lexer::TokenKind::LBracket) {
             false
@@ -229,17 +221,13 @@ impl Parser {
                         while index < self.tokens.len()
                             && lexer::token_is_trivia(self.tokens[index].kind) {
                             index = index + 1;
-                        };
+                        }
                         return index < self.tokens.len()
                             && token_is(self.tokens[index].kind, lexer::TokenKind::ColonColon)
-                    } else {
-                        ()
-                    }
-                } else {
-                    ()
-                };
+                    } else {}
+                } else {};
                 index = index + 1;
-            };
+            }
             false
         }
     }
@@ -316,11 +304,7 @@ impl Parser {
     }
 
     pub fn expect(self: Parser, kind: lexer::TokenKind) -> unit {
-        if self.depth_limit_hit.get() {
-            ()
-        } else if self.eat(kind) {
-            ()
-        } else {
+        if self.depth_limit_hit.get() {} else if self.eat(kind) {} else {
             let actual = self.peek();
             let message = "expect \"" + lexer::token_kind_display(kind) + "\", actual \""
                 + lexer::token_kind_display(actual)
@@ -345,14 +329,11 @@ impl Parser {
     }
 
     pub fn advance_with_error(self: Parser, message: string) -> unit {
-        if self.depth_limit_hit.get() {
-            ()
-        } else {
+        if self.depth_limit_hit.get() {} else {
             let marker = self.open();
             self.events.push(Event::Error(message));
             self.advance();
             let _ = self.close(marker, cst::NodeKind::ErrorTree);
-            ()
         }
     }
 
@@ -397,9 +378,7 @@ impl Parser {
             if !self.depth_limit_hit.get() {
                 self.error(message);
                 self.depth_limit_hit.set(true)
-            } else {
-                ()
-            };
+            } else {};
             false
         } else {
             depth.set(depth.get() + 1);
@@ -466,7 +445,7 @@ fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
             let mut byte_len = 0;
             for child in value.children {
                 byte_len = byte_len + element_byte_len(child);
-            };
+            }
             let complete = cst::node(value.kind, value.children, byte_len);
             if !stack.is_empty() {
                 stack[stack.len() - 1].children.push(cst::CstElement::Node(complete))
@@ -481,9 +460,7 @@ fn finish_node(stack: Vec[cst::CstNode], roots: Vec[cst::CstNode]) -> unit {
 fn push_token(stack: Vec[cst::CstNode], token: lexer::Token) -> unit {
     if !stack.is_empty() {
         stack[stack.len() - 1].children.push(cst::CstElement::Token(token))
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn event_open(event: Event) -> Option[(cst::NodeKind, Option[int])] {
@@ -523,15 +500,13 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                         },
                         None => break,
                     }
-                };
+                }
                 let mut kind_index = kinds.len() - 1;
                 while kind_index >= 0 {
                     let current = kinds[kind_index];
                     if !cst::node_kind_equal(current, cst::NodeKind::TombStone) {
                         stack.push(cst::node(current, Vec::[], 0))
-                    } else {
-                        ()
-                    };
+                    } else {};
                     kind_index = kind_index - 1;
                 }
             },
@@ -540,9 +515,7 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
                 if cursor < parser.tokens.len() {
                     push_token(stack, parser.tokens[cursor]);
                     cursor = cursor + 1;
-                } else {
-                    ()
-                }
+                } else {}
             },
             Error(message) => {
                 let range = if cursor < parser.tokens.len() {
@@ -561,9 +534,9 @@ fn build_tree(parser: Parser) -> cst::ParseResult {
         while cursor < parser.tokens.len() && lexer::token_is_trivia(parser.tokens[cursor].kind) {
             push_token(stack, parser.tokens[cursor]);
             cursor = cursor + 1;
-        };
+        }
         index = index + 1;
-    };
+    }
     let root = if !roots.is_empty() {
         roots[0]
     } else {

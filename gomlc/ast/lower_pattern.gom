@@ -17,10 +17,8 @@ fn strip_suffix(value: string, suffix: string) -> string {
     for index in 0..value.byte_len() {
         if value.byte_get(index) != b'_' {
             builder.write_string(value.byte_slice(index, index + 1))
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let normalized = builder.finish();
     if normalized.ends_with(suffix) {
         normalized.byte_slice(0, normalized.byte_len() - suffix.byte_len())
@@ -43,7 +41,7 @@ fn raw_string_pattern_value(node: LocatedNode) -> Option[string] {
             let mut hash_count = 0;
             while 1 + hash_count < source.byte_len() && source.byte_get(1 + hash_count) == b'#' {
                 hash_count = hash_count + 1;
-            };
+            }
             Option::Some(source.byte_slice(hash_count + 2, source.byte_len() - hash_count - 1))
         },
         None => Option::None,
@@ -167,7 +165,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                         Some(value) => pats.push(value),
                         None => (),
                     }
-                };
+                }
                 if !has_token(node, lexer::TokenKind::Comma) && pats.len() == 1 {
                     Option::Some(pats[0])
                 } else {
@@ -199,7 +197,7 @@ fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                             valid = false;
                         },
                     }
-                };
+                }
                 if valid {
                     Option::Some(Pat::Or { pats, span: value_span })
                 } else {
@@ -286,7 +284,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                                 valid = false;
                             },
                         }
-                    };
+                    }
                     if valid {
                         Option::Some(
                             Pat::Struct {
@@ -307,7 +305,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                             Some(value) => pats.push(value),
                             None => (),
                         }
-                    };
+                    }
                     Option::Some(
                         Pat::Constr { constructor: path, args: pats, span: node_span(node) },
                     )
@@ -345,7 +343,7 @@ fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 },
             }
         }
-    };
+    }
     if valid {
         Option::Some(Pat::Array { prefix, rest, suffix, span: node_span(node) })
     } else {

@@ -260,9 +260,7 @@ fn debug_write_control_escape(builder: text::StringBuilder, value: uint8) -> uni
     builder.write_string("\\u{");
     if value >= 16 {
         builder.write_char(debug_hex_digit(value / 16))
-    } else {
-        ()
-    };
+    } else {};
     builder.write_char(debug_hex_digit(value % 16));
     builder.write_char('}')
 }
@@ -291,7 +289,7 @@ fn debug_write_quoted_string(builder: text::StringBuilder, value: string) -> uni
             builder.write_string(value.byte_slice(index, index + width))
         };
         index = index + debug_utf8_width(byte);
-    };
+    }
     builder.write_char('"')
 }
 
@@ -302,7 +300,7 @@ fn debug_token_text(value: string) -> string {
         let mut boundary = 21;
         while !value.is_char_boundary(boundary) {
             boundary = boundary + 1;
-        };
+        }
         value.byte_slice(0, boundary) + " ..."
     }
 }
@@ -336,7 +334,7 @@ fn debug_write_node(value: CstNode, start: int, depth: int, builder: text::Strin
                 cursor = token_end;
             },
         }
-    };
+    }
     end
 }
 
@@ -375,7 +373,7 @@ fn encode_node(value: CstNode, start: int, builder: text::StringBuilder) -> int 
                 cursor = cursor + token.text.byte_len();
             },
         }
-    };
+    }
     builder.write_string("E\n");
     end
 }
@@ -391,6 +389,6 @@ pub fn encode(result: ParseResult) -> string {
         builder.write_string("\t");
         builder.write_string(lexer::encode_text_hex(item.message));
         builder.write_string("\n")
-    };
+    }
     builder.finish()
 }
