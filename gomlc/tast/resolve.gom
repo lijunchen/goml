@@ -124,6 +124,7 @@ fn find_enum_by_def(ctx: Checker, id: hir::DefId) -> Option[EnumInfo] {
 }
 
 fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
+    let name = canonical_imported_name(ctx, name);
     match ctx.enum_names[name] {
         Some(index) => Option::Some(ctx.enums[index]),
         None => match ctx.enum_short_names[short_name(name)] {
@@ -149,6 +150,7 @@ fn find_enum_by_exact_name(ctx: Checker, name: string) -> Option[EnumInfo] {
 }
 
 fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
+    let name = canonical_imported_name(ctx, name);
     match ctx.struct_names[name] {
         Some(index) => Option::Some(ctx.structs[index]),
         None => match ctx.struct_short_names[short_name(name)] {
@@ -2423,6 +2425,7 @@ fn require_hashmap_type(ctx: Checker, value: Type) -> unit {
 }
 
 fn find_trait(ctx: Checker, name: string) -> Option[TraitInfo] {
+    let name = canonical_imported_name(ctx, name);
     for offset in 0..ctx.traits.len() {
         let value = ctx.traits[ctx.traits.len() - 1 - offset];
         if names_match(value.name, name) {
@@ -3010,9 +3013,97 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
     }
 }
 
-fn parameter_types_contain_from(values: Vec[Type], start: int, expected: string) -> bool {
+fn dyn_has_associated_type(values: Vec[(string, Type)], expected: string) -> bool {
+    for value in values {
+        if value.0 == expected {
+            return true
+        } else {
+            ()
+        }
+    };
+    false
+}
+
+fn type_contains_unbound_dyn_self(value: Type, associated_types: Vec[(string, Type)]) -> bool {
+    match prune(value) {
+        Param { name } => name == "Self",
+        Tuple { items: values } => {
+            for value in values {
+                if type_contains_unbound_dyn_self(value, associated_types) {
+                    return true
+                } else {
+                    ()
+                }
+            };
+            false
+        },
+        Projection { for_ty: base, name, trait_ref: qualifier } => {
+            let base_contains = match prune(base) {
+                Param { name: "Self" } => !dyn_has_associated_type(associated_types, name),
+                other => type_contains_unbound_dyn_self(other, associated_types),
+            };
+            if base_contains {
+                true
+            } else {
+                match qualifier {
+                    Some(reference) => for arg in reference.args {
+                        if type_contains_unbound_dyn_self(arg, associated_types) {
+                            return true
+                        } else {
+                            ()
+                        }
+                    },
+                    None => (),
+                };
+                false
+            }
+        },
+        App { ty: base, args } => {
+            if type_contains_unbound_dyn_self(base, associated_types) {
+                true
+            } else {
+                for arg in args {
+                    if type_contains_unbound_dyn_self(arg, associated_types) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
+        },
+        Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
+            elem,
+        } => type_contains_unbound_dyn_self(elem, associated_types),
+        HashMap { key, value } => {
+            type_contains_unbound_dyn_self(key, associated_types)
+                || type_contains_unbound_dyn_self(value, associated_types)
+        },
+        Func { params, ret_ty } => {
+            if type_contains_unbound_dyn_self(ret_ty, associated_types) {
+                true
+            } else {
+                for param in params {
+                    if type_contains_unbound_dyn_self(param, associated_types) {
+                        return true
+                    } else {
+                        ()
+                    }
+                };
+                false
+            }
+        },
+        _ => false,
+    }
+}
+
+fn dyn_parameter_types_contain_from(
+    values: Vec[Type],
+    start: int,
+    associated_types: Vec[(string, Type)],
+) -> bool {
     for index in start..values.len() {
-        if type_contains_parameter(values[index], expected) {
+        if type_contains_unbound_dyn_self(values[index], associated_types) {
             return true
         } else {
             ()
@@ -3098,7 +3189,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo, associated_types: Vec[(stri
                 } else {
                     ()
                 };
-                if parameter_types_contain_from(method.params, 1, "Self") {
+                if dyn_parameter_types_contain_from(method.params, 1, associated_types) {
                     push_diagnostic_at(
                         ctx,
                         f"Trait {info.name}::{method.name} is not dyn-safe: Self is not allowed in non-receiver parameters",
@@ -3108,7 +3199,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo, associated_types: Vec[(stri
                     ()
                 }
             };
-            if type_contains_parameter(method.ret_ty, "Self") {
+            if type_contains_unbound_dyn_self(method.ret_ty, associated_types) {
                 push_diagnostic_at(
                     ctx,
                     f"Trait {info.name}::{method.name} is not dyn-safe: Self is not allowed in return type",

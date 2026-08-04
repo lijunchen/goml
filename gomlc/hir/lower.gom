@@ -269,7 +269,8 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
         let current = aliases[index];
         for previous_index in 0..index {
             let previous = aliases[previous_index];
-            if join_segments(previous.target) == join_segments(current.target) {
+            if join_segments(previous.target) == join_segments(current.target)
+                && previous.alias == current.alias {
                 diagnostics.push(
                     if current.item {
                         "Duplicate imported item " + join_segments(current.target)
@@ -310,16 +311,20 @@ fn public_reexports_from_file(file: ast::File) -> Vec[(string, string)] {
 
 fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
     let result: Vec[ImportAlias] = Vec::[];
+    let aliases = aliases_from_file(file);
     for use_decl in file.uses {
         if !use_decl.items.is_empty() {
-            result.push(
-                ImportAlias { alias: "", package_name: join_segments(path_segments(use_decl.path)) },
-            )
+            let target = path_segments(use_decl.path);
+            let target = match expand_use_alias(aliases, target) {
+                Some(expanded) => expanded,
+                None => target,
+            };
+            result.push(ImportAlias { alias: "", package_name: join_segments(target) })
         } else {
             ()
         }
     };
-    for entry in aliases_from_file(file) {
+    for entry in aliases {
         if entry.item {
             ()
         } else {

@@ -2872,13 +2872,25 @@ fn check_file_with_package(
         }
     };
     for trait_name in value.use_traits {
-        match find_trait(ctx, trait_name) {
+        let canonical = canonical_imported_name(ctx, trait_name);
+        match find_trait(ctx, canonical) {
             Some(_) => (),
-            None => if collections::contains(value.imports, trait_name) {
-                ()
-            } else {
-                push_global_diagnostic(ctx, "Could not infer type");
-                push_diagnostic_at(ctx, "Unknown trait " + trait_name, Option::None)
+            None => {
+                let mut imported = false;
+                for name in value.imports {
+                    if canonical_imported_name(ctx, name) == canonical {
+                        imported = true;
+                        ()
+                    } else {
+                        ()
+                    }
+                };
+                if imported {
+                    ()
+                } else {
+                    push_global_diagnostic(ctx, "Could not infer type");
+                    push_diagnostic_at(ctx, "Unknown trait " + canonical, Option::None)
+                }
             },
         }
     };
