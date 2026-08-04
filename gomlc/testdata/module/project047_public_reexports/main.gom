@@ -1,0 +1,18 @@
+package main;
+
+use public_reexports::facade;
+use public_reexports::model;
+use facade::{Person, Status, create_user, fallback_name};
+use facade::Named;
+
+fn main() -> unit {
+    let person: Person = create_user(fallback_name);
+    let original: model::User = person;
+    println(original.name());
+    let nested: facade::model::User = facade::create_user("nested");
+    println(nested.name());
+    match Status::Ready {
+        Ready => println("ready"),
+        Waiting => println("waiting"),
+    }
+}

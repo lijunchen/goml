@@ -1,0 +1,9 @@
+trait Consumer[T] {
+    type Error;
+
+    fn consume(self: Self, value: T) -> Result[unit, Self::Error];
+}
+
+fn consume(value: dyn Consumer[Error = string, int]) -> unit {}
+
+fn main() -> unit {}

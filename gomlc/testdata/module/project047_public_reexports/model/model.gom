@@ -1,0 +1,26 @@
+package model;
+
+pub trait Named {
+    fn name(self: Self) -> string;
+}
+
+pub struct User {
+    pub name: string,
+}
+
+impl Named for User {
+    fn name(self: User) -> string {
+        self.name
+    }
+}
+
+pub enum Status {
+    Ready,
+    Waiting,
+}
+
+pub const default_name: string = "guest";
+
+pub fn make_user(name: string) -> User {
+    User { name }
+}

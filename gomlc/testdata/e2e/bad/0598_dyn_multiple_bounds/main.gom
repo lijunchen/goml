@@ -1,0 +1,13 @@
+trait Read {
+    fn read(self: Self) -> int;
+}
+
+trait Close {
+    fn close(self: Self) -> unit;
+}
+
+fn consume(value: dyn Read + Close) -> int {
+    value.read()
+}
+
+fn main() -> unit {}
