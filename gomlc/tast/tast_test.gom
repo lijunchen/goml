@@ -2500,6 +2500,21 @@ fn rejects_dyn_patterns_and_marks_recovery_arms_unreachable() -> unit {
 }
 
 #[test]
+fn warns_for_unstructured_go_and_honors_allow_attribute() -> unit {
+    let diagnostics = checked_diagnostics("fn main() -> unit { go || {}; }");
+    testing::assert_eq(diagnostics.len(), 1);
+    testing::assert(
+        diagnostics.get(0).message.starts_with("unstructured_go: `go` starts detached work"),
+    );
+    match diagnostics.get(0).severity {
+        Warning => (),
+        Error => testing::fail("expected unstructured go warning"),
+    };
+    let allowed = checked_diagnostics("#[allow(unstructured_go)] fn main() -> unit { go || {}; }");
+    testing::assert_eq(allowed.len(), 0)
+}
+
+#[test]
 fn rejects_recursive_struct_layouts() -> unit {
     let direct = checked_diagnostics("struct Tree { left: Tree } fn main() -> unit {}");
     testing::assert(
