@@ -8,6 +8,7 @@ use std::fs;
 use std::io;
 use std::json;
 use std::process;
+use std::task;
 use std::text;
 
 pub struct Options {
@@ -240,15 +241,23 @@ fn run_one(module_dir: string, index: int, test: Test, options: Options) -> Exec
 }
 
 fn worker(
+    cancel: task::CancelToken,
     module_dir: string,
     options: Options,
     work: Channel[(int, Test)],
     results: Channel[Execution],
 ) -> unit {
     loop {
-        match work.recv() {
-            Some(item) => results.send(run_one(module_dir, item.0, item.1, options)),
-            None => break,
+        match task::recv_with(cancel, work) {
+            task::WaitResult::Completed(Some(item)) => match task::send_with(
+                cancel,
+                results,
+                run_one(module_dir, item.0, item.1, options),
+            ) {
+                task::WaitResult::Completed(()) => (),
+                task::WaitResult::Cancelled => break,
+            },
+            task::WaitResult::Completed(None) | task::WaitResult::Cancelled => break,
         }
     }
 }
@@ -373,44 +382,51 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
     } else {
         ()
     };
-    let work = Channel::new(selected_tests.len());
-    let results = Channel::new(selected_tests.len());
-    for index in 0..selected_tests.len() {
-        work.send((index, selected_tests[index]))
-    };
-    work.close();
-    let worker_count = if options.jobs < selected_tests.len() {
-        options.jobs
-    } else {
-        selected_tests.len()
-    };
-    for _ in 0..worker_count {
-        go || worker(module_dir, options, work, results)
-    };
-    let executions: Vec[Execution] = Vec::[];
-    let total = selected_tests.len();
-    let mut completed = 0;
-    util::display_progress(completed, total, "running tests", false);
-    for _ in 0..total {
-        match results.recv() {
-            Some(value) => {
-                executions.push(value);
-                completed += 1;
-                util::display_progress(
-                    completed,
-                    total,
-                    if completed == total {
-                        "finished"
-                    } else {
-                        "running tests"
+    let executions = task::try_scope(
+        |scope: task::Scope| {
+            let work = Channel::new(selected_tests.len());
+            let results = Channel::new(selected_tests.len());
+            for index in 0..selected_tests.len() {
+                work.send((index, selected_tests[index]))
+            };
+            work.close();
+            let worker_count = if options.jobs < selected_tests.len() {
+                options.jobs
+            } else {
+                selected_tests.len()
+            };
+            for _ in 0..worker_count {
+                let _ = scope.spawn(
+                    |cancel: task::CancelToken| worker(cancel, module_dir, options, work, results),
+                );
+            };
+            let executions: Vec[Execution] = Vec::[];
+            let total = selected_tests.len();
+            let mut completed = 0;
+            util::display_progress(completed, total, "running tests", false);
+            for _ in 0..total {
+                match results.recv() {
+                    Some(value) => {
+                        executions.push(value);
+                        completed += 1;
+                        util::display_progress(
+                            completed,
+                            total,
+                            if completed == total {
+                                "finished"
+                            } else {
+                                "running tests"
+                            },
+                            completed == total,
+                        )
                     },
-                    completed == total,
-                )
-            },
-            None => return Result::Err("test result channel closed early"),
-        }
-    };
-    results.close();
+                    None => return Result::Err("test result channel closed early"),
+                }
+            };
+            results.close();
+            Result::Ok(executions)
+        },
+    )?;
     let failures = if options.json {
         report_json(ordered_executions(executions))
     } else {

@@ -6,6 +6,7 @@ use std::fs;
 use std::io;
 use std::path;
 use std::process;
+use std::task;
 use std::text;
 
 struct BuildNode {
@@ -743,7 +744,10 @@ fn ensure_output_parent(value: Command, module_dir: string) -> Result[unit, stri
     }
 }
 
-fn execute_command(context: Context, value: Command) -> Result[unit, string] {
+fn execute_command(cancel: task::CancelToken, context: Context, value: Command) -> Result[
+    unit,
+    string,
+] {
     ensure_output_parent(value, context.graph.module_dir)?;
     let command = command_args(value);
     let program = if command.0 == "gomlc" {
@@ -760,12 +764,13 @@ fn execute_command(context: Context, value: Command) -> Result[unit, string] {
     } else {
         ()
     };
-    match process.status() {
-        Ok(status) => if process::ExitStatus::success(status) {
+    match process.status_with(cancel) {
+        Ok(task::WaitResult::Completed(status)) => if process::ExitStatus::success(status) {
             Result::Ok(())
         } else {
             Result::Err(f"{display_command(value)} failed")
         },
+        Ok(task::WaitResult::Cancelled) => Result::Err("build cancelled"),
         Err(message) => Result::Err(message),
     }
 }
@@ -804,11 +809,13 @@ fn prepare_cached_command(
     }
 }
 
-fn execute_prepared_command(context: Context, command: Command, cache: Option[PreparedCache]) -> Result[
-    unit,
-    string,
-] {
-    match execute_command(context, command) {
+fn execute_prepared_command(
+    cancel: task::CancelToken,
+    context: Context,
+    command: Command,
+    cache: Option[PreparedCache],
+) -> Result[unit, string] {
+    match execute_command(cancel, context, command) {
         Ok(()) => Result::Ok(()),
         Err(message) => {
             match cache {
@@ -947,22 +954,150 @@ struct BuildWorkResult {
 }
 
 fn execute_plan_worker(
+    cancel: task::CancelToken,
     context: Context,
     work: Channel[BuildWork],
     results: Channel[BuildWorkResult],
-) -> unit {
+) -> Result[unit, string] {
+    loop {
+        match task::recv_with(cancel, work) {
+            task::WaitResult::Completed(Some(value)) => {
+                let result = execute_prepared_command(cancel, context, value.command, value.cache);
+                results.send(BuildWorkResult { index: value.index, cache: value.cache, result });
+                match result {
+                    Ok(()) => (),
+                    Err(message) => return Result::Err(message),
+                }
+            },
+            task::WaitResult::Completed(None) | task::WaitResult::Cancelled => break,
+        }
+    };
+    Result::Ok(())
+}
+
+fn discard_queued_plan_work(digests: DigestCache, context: Context, work: Channel[BuildWork]) -> unit {
     loop {
         match work.recv() {
-            Some(value) => results.send(
-                BuildWorkResult {
-                    index: value.index,
-                    cache: value.cache,
-                    result: execute_prepared_command(context, value.command, value.cache),
-                },
-            ),
+            Some(value) => discard_prepared_command(digests, context, value.cache),
             None => break,
         }
     }
+}
+
+fn discard_unfinished_plan_results(
+    digests: DigestCache,
+    context: Context,
+    results: Channel[BuildWorkResult],
+) -> unit {
+    loop {
+        match results.recv() {
+            Some(value) => match value.result {
+                Ok(()) => discard_prepared_command(digests, context, value.cache),
+                Err(_) => (),
+            },
+            None => break,
+        }
+    }
+}
+
+fn execute_plan_concurrently(
+    scope: task::Scope,
+    digests: DigestCache,
+    context: Context,
+    graph: BuildGraph,
+    identity: string,
+    total: int,
+    jobs: int,
+    work: Channel[BuildWork],
+    results: Channel[BuildWorkResult],
+    completed: Ref[int],
+) -> Result[unit, string] {
+    let initial: Vec[int] = Vec::[];
+    for node in graph.nodes {
+        initial.push(node.index)
+    };
+    let mut pending = initial;
+    let completed_nodes: Vec[int] = Vec::[];
+    let mut running = 0;
+    let worker_count = if jobs < total {
+        jobs
+    } else {
+        total
+    };
+    for _ in 0..worker_count {
+        let _ = scope.spawn_try(
+            |cancel: task::CancelToken| execute_plan_worker(cancel, context, work, results),
+        );
+    };
+    while !pending.is_empty() || running > 0 {
+        let blocked: Vec[int] = Vec::[];
+        for index in pending {
+            let Some(node) = build_node(graph.nodes, index) else {
+                scope.cancel();
+                return Result::Err(f"build graph omitted node {index}")
+            };
+            if running < worker_count && !build_node_ready(node, completed_nodes) {
+                blocked.push(index)
+            } else if running < worker_count {
+                util::display_progress(completed.get(), total, progress_label(node.command), false);
+                match prepare_cached_command(digests, context, node.command, identity) {
+                    Ok(Fresh) => {
+                        completed_nodes.push(node.index);
+                        completed.set(completed.get() + 1);
+                    },
+                    Ok(Execute(cache)) => {
+                        work.send(BuildWork { index: node.index, command: node.command, cache });
+                        running += 1;
+                    },
+                    Err(message) => {
+                        scope.cancel();
+                        return Result::Err(message)
+                    },
+                }
+            } else {
+                blocked.push(index)
+            }
+        };
+        pending = blocked;
+        if running == 0 && !pending.is_empty() {
+            scope.cancel();
+            return Result::Err("build plan contains a dependency cycle")
+        } else {
+            ()
+        };
+        if running > 0 {
+            match results.recv() {
+                Some(value) => match value.result {
+                    Ok(()) => match finish_prepared_command(digests, context, identity, value.cache) {
+                        Ok(()) => {
+                            completed_nodes.push(value.index);
+                            completed.set(completed.get() + 1);
+                        },
+                        Err(message) => {
+                            discard_prepared_command(digests, context, value.cache);
+                            completed.set(completed.get() + 1);
+                            scope.cancel();
+                            return Result::Err(message)
+                        },
+                    },
+                    Err(message) => {
+                        completed.set(completed.get() + 1);
+                        scope.cancel();
+                        return Result::Err(message)
+                    },
+                },
+                None => {
+                    scope.cancel();
+                    return Result::Err("build result channel closed early")
+                },
+            };
+            running -= 1;
+        } else {
+            ()
+        }
+    };
+    work.close();
+    Result::Ok(())
 }
 
 pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> Result[unit, string] {
@@ -972,7 +1107,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         ()
     };
     let total = plan.commands.len();
-    let mut completed = 0;
+    let completed = Ref::new(0);
     let identity = if dry_run {
         ""
     } else {
@@ -985,125 +1120,37 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
     } else {
         let graph = build_graph(plan.commands)?;
         let digests = digest_cache();
-        let initial: Vec[int] = Vec::[];
-        for node in graph.nodes {
-            initial.push(node.index)
-        };
-        let mut pending = initial;
-        let completed_nodes: Vec[int] = Vec::[];
-        let mut running = 0;
-        let worker_count = if jobs < total {
-            jobs
-        } else {
-            total
-        };
         let work: Channel[BuildWork] = Channel::new(total);
         let results: Channel[BuildWorkResult] = Channel::new(total);
-        for _ in 0..worker_count {
-            go || execute_plan_worker(context, work, results)
-        };
-        while !pending.is_empty() || running > 0 {
-            let blocked: Vec[int] = Vec::[];
-            for index in pending {
-                let Some(node) = build_node(graph.nodes, index) else {
-                    return Result::Err(f"build graph omitted node {index}")
-                };
-                if running < worker_count && !build_node_ready(node, completed_nodes) {
-                    blocked.push(index)
-                } else if running < worker_count {
-                    util::display_progress(completed, total, progress_label(node.command), false);
-                    match prepare_cached_command(digests, context, node.command, identity) {
-                        Ok(Fresh) => {
-                            completed_nodes.push(node.index);
-                            completed += 1;
-                        },
-                        Ok(Execute(cache)) => {
-                            work.send(BuildWork { index: node.index, command: node.command, cache });
-                            running += 1;
-                        },
-                        Err(message) => {
-                            work.close();
-                            for _ in 0..running {
-                                match results.recv() {
-                                    Some(value) => {
-                                        discard_prepared_command(digests, context, value.cache)
-                                    },
-                                    None => (),
-                                }
-                            };
-                            results.close();
-                            return Result::Err(message)
-                        },
-                    }
-                } else {
-                    blocked.push(index)
-                }
-            };
-            pending = blocked;
-            if running == 0 && !pending.is_empty() {
+        let execution = task::try_scope(
+            |scope: task::Scope| execute_plan_concurrently(
+                scope,
+                digests,
+                context,
+                graph,
+                identity,
+                total,
+                jobs,
+                work,
+                results,
+                completed,
+            ),
+        );
+        match execution {
+            Ok(()) => results.close(),
+            Err(message) => {
                 work.close();
                 results.close();
-                return Result::Err("build plan contains a dependency cycle")
-            } else {
-                ()
-            };
-            if running > 0 {
-                match results.recv() {
-                    Some(value) => match value.result {
-                        Ok(()) => match finish_prepared_command(
-                            digests,
-                            context,
-                            identity,
-                            value.cache,
-                        ) {
-                            Ok(()) => {
-                                completed_nodes.push(value.index);
-                                completed += 1;
-                            },
-                            Err(message) => {
-                                completed += 1;
-                                running -= 1;
-                                work.close();
-                                for _ in 0..running {
-                                    match results.recv() {
-                                        Some(other) => {
-                                            discard_prepared_command(digests, context, other.cache)
-                                        },
-                                        None => (),
-                                    }
-                                };
-                                results.close();
-                                return Result::Err(message)
-                            },
-                        },
-                        Err(message) => {
-                            completed += 1;
-                            running -= 1;
-                            work.close();
-                            for _ in 0..running {
-                                match results.recv() {
-                                    Some(_) => (),
-                                    None => (),
-                                }
-                            };
-                            results.close();
-                            return Result::Err(message)
-                        },
-                    },
-                    None => return Result::Err("build result channel closed early"),
-                };
-                running -= 1;
-            } else {
-                ()
-            }
-        };
-        work.close();
-        results.close()
+                discard_queued_plan_work(digests, context, work);
+                discard_unfinished_plan_results(digests, context, results);
+                return Result::Err(message)
+            },
+        }
     };
     if dry_run {
         ()
     } else {
-        util::display_progress(completed, total, "finished", true)
+        util::display_progress(completed.get(), total, "finished", true)
     };
     Result::Ok(())
 }
