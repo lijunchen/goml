@@ -220,6 +220,36 @@ fn write_type_values(builder: text::StringBuilder, values: Vec[Type], left: stri
     builder.write_string(right)
 }
 
+fn write_dyn_bound_value(builder: text::StringBuilder, value: DynTraitBound) -> unit {
+    builder.write_string(value.trait_name);
+    if value.args.is_empty() && value.associated_types.is_empty() {
+        ()
+    } else {
+        builder.write_char('[');
+        let mut index = 0;
+        for argument in value.args {
+            if index > 0 {
+                builder.write_string(", ")
+            } else {
+                ()
+            };
+            write_type_value(builder, argument);
+            index = index + 1;
+        };
+        for binding in value.associated_types {
+            if index > 0 {
+                builder.write_string(", ")
+            } else {
+                ()
+            };
+            builder.write_string(binding.0 + " = ");
+            write_type_value(builder, binding.1);
+            index = index + 1;
+        };
+        builder.write_char(']')
+    }
+}
+
 fn write_type_value(builder: text::StringBuilder, value: Type) -> unit {
     match prune(value) {
         Unit => builder.write_string("unit"),
@@ -243,27 +273,13 @@ fn write_type_value(builder: text::StringBuilder, value: Type) -> unit {
         Con { name } => builder.write_string(name),
         Dyn { trait_name: name, args, associated_types, additional_bounds } => {
             builder.write_string("dyn ");
-            builder.write_string(name);
-            let arguments = args;
-            for binding in associated_types {
-                if arguments.is_empty() {
-                    builder.write_string("[")
-                } else {
-                    builder.write_string(", ")
-                };
-                builder.write_string(binding.0 + " = ");
-                write_type_value(builder, binding.1)
-            };
-            if !arguments.is_empty() {
-                write_type_values(builder, arguments, "[", "]")
-            } else if !associated_types.is_empty() {
-                builder.write_string("]")
-            } else {
-                ()
-            };
+            write_dyn_bound_value(
+                builder,
+                DynTraitBound { trait_name: name, args, associated_types },
+            );
             for bound in additional_bounds {
                 builder.write_string(" + ");
-                builder.write_string(bound.trait_name)
+                write_dyn_bound_value(builder, bound)
             }
         },
         Projection { for_ty: base, name, trait_ref: _ } => {

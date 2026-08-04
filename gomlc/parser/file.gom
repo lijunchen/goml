@@ -1064,8 +1064,10 @@ fn dyn_bound(parser: Parser) -> unit {
 fn dyn_arg_list(parser: Parser) -> unit {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::LBracket);
+    let mut saw_associated_binding = false;
     while !parser.at(lexer::TokenKind::RBracket) && !parser.eof() {
         if parser.at(lexer::TokenKind::Ident) && parser.nth(1) == lexer::TokenKind::Eq {
+            saw_associated_binding = true;
             let binding = parser.open();
             parser.advance();
             parser.advance();
@@ -1077,6 +1079,11 @@ fn dyn_arg_list(parser: Parser) -> unit {
             let _ = parser.close(binding, cst::NodeKind::DYN_ASSOC_BINDING);
             ()
         } else if is_type_first(parser.peek()) {
+            if saw_associated_binding {
+                parser.error("dyn type arguments must precede associated type bindings")
+            } else {
+                ()
+            };
             type_expr(parser)
         } else {
             parser.advance_with_error("expected a type argument or associated type binding")

@@ -3013,17 +3013,6 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
     }
 }
 
-fn dyn_has_associated_type(values: Vec[(string, Type)], expected: string) -> bool {
-    for value in values {
-        if value.0 == expected {
-            return true
-        } else {
-            ()
-        }
-    };
-    false
-}
-
 fn type_contains_unbound_dyn_self(value: Type, associated_types: Vec[(string, Type)]) -> bool {
     match prune(value) {
         Param { name } => name == "Self",
@@ -3037,9 +3026,9 @@ fn type_contains_unbound_dyn_self(value: Type, associated_types: Vec[(string, Ty
             };
             false
         },
-        Projection { for_ty: base, name, trait_ref: qualifier } => {
+        Projection { for_ty: base, name: _, trait_ref: qualifier } => {
             let base_contains = match prune(base) {
-                Param { name: "Self" } => !dyn_has_associated_type(associated_types, name),
+                Param { name: "Self" } => false,
                 other => type_contains_unbound_dyn_self(other, associated_types),
             };
             if base_contains {
