@@ -1905,7 +1905,7 @@ func _goml_m_std_p_json_p_parse__json__array(value__33 _goml_m_std_p_json_p_Json
     var t1134 int = t1133 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(t1131, t1134)
     _goml_m_std_p_json_p_skip__json__whitespace(value__33)
-    var vec_literal__8961 *_goml_vec__goml_m_std_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__std_p_json_p_Value()
+    var vec_literal__8702 *_goml_vec__goml_m_std_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__std_p_json_p_Value()
     var t1189 *ref_int_x = value__33.index
     var t1190 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(t1189)
     var t1191 string = value__33.input
@@ -1936,7 +1936,7 @@ func _goml_m_std_p_json_p_parse__json__array(value__33 _goml_m_std_p_json_p_Json
         var t1186 int = t1185 + 1
         ref_set__Ref_3int(t1183, t1186)
         var t1187 _goml_m_std_p_json_p_Value = Array{
-            _0: vec_literal__8961,
+            _0: vec_literal__8702,
         }
         var t1188 _goml_m_Result____std_p_json_p_Value____string = _goml_m_Result____std_p_json_p_Value____string_Ok{
             _0: t1187,
@@ -1957,7 +1957,7 @@ func _goml_m_std_p_json_p_parse__json__array(value__33 _goml_m_std_p_json_p_Json
                 case _goml_m_Result____std_p_json_p_Value____string_Ok:
                     var x51 _goml_m_std_p_json_p_Value = mtmp50.(_goml_m_Result____std_p_json_p_Value____string_Ok)._0
                     jp1146 = x51
-                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__std_p_json_p_Value(vec_literal__8961, jp1146)
+                    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__std_p_json_p_Value(vec_literal__8702, jp1146)
                     _goml_m_std_p_json_p_skip__json__whitespace(value__33)
                     var t1148 *ref_int_x = value__33.index
                     var t1149 int
@@ -2004,7 +2004,7 @@ func _goml_m_std_p_json_p_parse__json__array(value__33 _goml_m_std_p_json_p_Json
                             var t1164 int = t1163 + 1
                             ref_set__Ref_3int(t1161, t1164)
                             var t1165 _goml_m_std_p_json_p_Value = Array{
-                                _0: vec_literal__8961,
+                                _0: vec_literal__8702,
                             }
                             var t1166 _goml_m_Result____std_p_json_p_Value____string = _goml_m_Result____std_p_json_p_Value____string_Ok{
                                 _0: t1165,
@@ -2078,7 +2078,7 @@ func _goml_m_std_p_json_p_parse__json__object(value__36 _goml_m_std_p_json_p_Jso
     var t1204 int = t1203 + 1
     _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(t1201, t1204)
     _goml_m_std_p_json_p_skip__json__whitespace(value__36)
-    var vec_literal__10180 *_goml_vec__goml_m_Tuple2__6string__16std_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_h57e42dbef834e6b8ee6cf77cf9eb9d23_json_p_Value_q_()
+    var vec_literal__9904 *_goml_vec__goml_m_Tuple2__6string__16std_p_json_p_Value = _goml_m_inherent_i_Vec_i_Vec_l_h57e42dbef834e6b8ee6cf77cf9eb9d23_json_p_Value_q_()
     var t1284 *ref_int_x = value__36.index
     var t1285 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(t1284)
     var t1286 string = value__36.input
@@ -2109,7 +2109,7 @@ func _goml_m_std_p_json_p_parse__json__object(value__36 _goml_m_std_p_json_p_Jso
         var t1281 int = t1280 + 1
         ref_set__Ref_3int(t1278, t1281)
         var t1282 _goml_m_std_p_json_p_Value = Object{
-            _0: vec_literal__10180,
+            _0: vec_literal__9904,
         }
         var t1283 _goml_m_Result____std_p_json_p_Value____string = _goml_m_Result____std_p_json_p_Value____string_Ok{
             _0: t1282,
@@ -2188,7 +2188,7 @@ func _goml_m_std_p_json_p_parse__json__object(value__36 _goml_m_std_p_json_p_Jso
                                 _0: jp1216,
                                 _1: jp1219,
                             }
-                            _goml_m_inherent_i_Vec_i_Vec_l_h153048c8bd06f0dfabad32cddaecb150_json_p_Value_q_(vec_literal__10180, t1220)
+                            _goml_m_inherent_i_Vec_i_Vec_l_h153048c8bd06f0dfabad32cddaecb150_json_p_Value_q_(vec_literal__9904, t1220)
                             _goml_m_std_p_json_p_skip__json__whitespace(value__36)
                             var t1222 *ref_int_x = value__36.index
                             var t1223 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(t1222)
@@ -2224,7 +2224,7 @@ func _goml_m_std_p_json_p_parse__json__object(value__36 _goml_m_std_p_json_p_Jso
                                     var t1238 int = t1237 + 1
                                     ref_set__Ref_3int(t1235, t1238)
                                     var t1239 _goml_m_std_p_json_p_Value = Object{
-                                        _0: vec_literal__10180,
+                                        _0: vec_literal__9904,
                                     }
                                     var t1240 _goml_m_Result____std_p_json_p_Value____string = _goml_m_Result____std_p_json_p_Value____string_Ok{
                                         _0: t1239,
