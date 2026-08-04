@@ -35,6 +35,29 @@ fn choose(value: bool) -> string {
 
 Empty blocks are written as `{}`. `else` remains on the line of the preceding closing brace.
 
+An exact `()` at the end of a block and a standalone `();` are omitted when they contain no comments. Empty statements written as extra semicolons are also removed. These normalizations preserve the block's `unit` result and do not remove comments.
+
+Semicolons after `while` and `for` expressions are removed. A semicolon after `loop` is removed when another block expression follows, but retained on a final `loop` because it may discard a value. Semicolons after `if` and `match` are retained. A control-flow semicolon is also retained when the next token could continue the preceding expression, such as `(`, `[`, `.`, `?`, `as`, a range operator, or a binary operator.
+
+Struct-like enum variants with one field stay on one line when every such variant fits. If any struct-like variant has multiple fields, contains a comment, or exceeds the line width, all non-empty struct-like variants in that enum use the same expanded layout:
+
+```goml
+enum Message[T] {
+    Empty,
+    Value { value: T },
+}
+
+enum Pair[T] {
+    Left {
+        value: T,
+    },
+    Both {
+        left: T,
+        right: T,
+    },
+}
+```
+
 ## Spaces
 
 - A comma or colon is followed by one space when content follows on the same line.
@@ -63,7 +86,7 @@ call(
 )
 ```
 
-Broken lists receive a trailing comma where the grammar permits it. This conditional trailing comma is the only non-trivia token that formatting may add or remove. Nested groups make their own width decisions.
+Broken lists receive a trailing comma where the grammar permits it. In addition to the block normalizations described above, conditional trailing commas are the only non-trivia tokens that formatting may add or remove. Nested groups make their own width decisions.
 
 Long binary chains break before operators:
 
