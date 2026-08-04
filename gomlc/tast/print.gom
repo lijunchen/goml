@@ -776,12 +776,30 @@ fn expr_doc(value: Expr) -> pretty::Doc {
         ),
         Break { target, value, ty: _ } => match value {
             Some(value) => pretty::append(
-                pretty::text("break@" + target.to_string() + " "),
+                pretty::text(
+                    if target == 0 {
+                        "break "
+                    } else {
+                        "break@" + target.to_string() + " "
+                    },
+                ),
                 expr_doc(value),
             ),
-            None => pretty::text("break@" + target.to_string()),
+            None => pretty::text(
+                if target == 0 {
+                    "break"
+                } else {
+                    "break@" + target.to_string()
+                },
+            ),
         },
-        Continue { target, ty: _ } => pretty::text("continue@" + target.to_string()),
+        Continue { target, ty: _ } => pretty::text(
+            if target == 0 {
+                "continue"
+            } else {
+                "continue@" + target.to_string()
+            },
+        ),
         Return { expr: value, ty: _ } => match value {
             Some(value) => pretty::append(pretty::text("return "), expr_doc(value)),
             None => pretty::text("return"),
