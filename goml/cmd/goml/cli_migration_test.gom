@@ -694,6 +694,55 @@ fn project_test_supports_nocapture_and_timeouts() -> unit {
 }
 
 #[test]
+fn project_test_preserves_selection_order_when_workers_finish_out_of_order() -> unit {
+    let root = test_support::workspace("test_output_order");
+    test_support::write_file(path::join(root, "goml.toml"), "[module]\npath = \"demo\"\n");
+    test_support::write_file(
+        path::join(root, "checks/checks.gom"),
+        "package checks;\npub fn value() -> int32 { 1 }\n",
+    );
+    test_support::write_file(
+        path::join(root, "checks/checks_test.gom"),
+        "package checks;\n\nuse std::time;\n\n#[test]\nfn a_slow() -> unit { time::sleep(time::Duration::from_milliseconds(100)) }\n\n#[test]\nfn b_fast() -> unit {}\n",
+    );
+    let text_output = test_support::project_command("test", "", Vec::["--jobs", "2"], root);
+    test_support::assert_success(text_output);
+    let text_stdout = test_support::stdout(text_output);
+    let Some(text_slow) = text::find(text_stdout, "demo::checks::a_slow ... ok") else {
+        testing::fail("text output omitted slow test");
+        return
+    };
+    let Some(text_fast) = text::find(text_stdout, "demo::checks::b_fast ... ok") else {
+        testing::fail("text output omitted fast test");
+        return
+    };
+    testing::assert(text_slow < text_fast);
+    let json_output = test_support::project_command(
+        "test",
+        "",
+        Vec::["--jobs", "2", "--format", "json"],
+        root,
+    );
+    test_support::assert_success(json_output);
+    let json_stdout = test_support::stdout(json_output);
+    let Some(json_slow) = text::find(
+        json_stdout,
+        "{\"event\":\"ok\",\"name\":\"demo::checks::a_slow\"}",
+    ) else {
+        testing::fail("json output omitted slow test");
+        return
+    };
+    let Some(json_fast) = text::find(
+        json_stdout,
+        "{\"event\":\"ok\",\"name\":\"demo::checks::b_fast\"}",
+    ) else {
+        testing::fail("json output omitted fast test");
+        return
+    };
+    testing::assert(json_slow < json_fast)
+}
+
+#[test]
 fn project_test_runs_and_aggregates_tests_from_all_packages() -> unit {
     let root = test_support::workspace("all_package_tests");
     test_support::write_file(path::join(root, "goml.toml"), "[module]\npath = \"demo\"\n");
