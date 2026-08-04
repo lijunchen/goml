@@ -104,7 +104,7 @@ fn load_tests(group: Group) -> Result[Vec[Test], string] {
                 executable: group.executable,
             },
         )
-    };
+    }
     Result::Ok(result)
 }
 
@@ -141,7 +141,7 @@ fn escape_json(value: string) -> string {
         } else {
             builder.write_char(character)
         }
-    };
+    }
     builder.finish()
 }
 
@@ -304,18 +304,14 @@ fn report_text(values: Vec[Execution]) -> int {
                 if value.stdout != "" {
                     io::println("---- stdout ----");
                     io::print(value.stdout)
-                } else {
-                    ()
-                };
+                } else {};
                 if value.stderr != "" {
                     io::println("---- stderr ----");
                     io::print(value.stderr)
-                } else {
-                    ()
-                }
+                } else {}
             },
         }
-    };
+    }
     let result = if failed == 0 {
         "ok"
     } else {
@@ -344,7 +340,7 @@ fn report_json(values: Vec[Execution]) -> int {
             "{\"event\":\"" + event + "\",\"name\":\"" + escape_json(value.test.display_name)
                 + "\"}",
         )
-    };
+    }
     failed
 }
 
@@ -355,40 +351,32 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
         for value in values {
             loaded.push(value)
         }
-    };
+    }
     let selected_tests: Vec[Test] = Vec::[];
     for test in sorted_tests(loaded) {
         if selected(test, options) {
             selected_tests.push(test)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if options.list {
         print_list(selected_tests, options);
         return Result::Ok(())
     } else if !options.json {
         io::println(f"running {selected_tests.len()} tests\n")
-    } else {
-        ()
-    };
+    } else {};
     if selected_tests.is_empty() {
         if !options.json {
             io::println("test result: ok. 0 passed; 0 failed; 0 ignored")
-        } else {
-            ()
-        };
+        } else {};
         return Result::Ok(())
-    } else {
-        ()
-    };
+    } else {};
     let executions = task::try_scope(
         |scope: task::Scope| {
             let work = Channel::new(selected_tests.len());
             let results = Channel::new(selected_tests.len());
             for index in 0..selected_tests.len() {
                 work.send((index, selected_tests[index]))
-            };
+            }
             work.close();
             let worker_count = if options.jobs < selected_tests.len() {
                 options.jobs
@@ -399,7 +387,7 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
                 let _ = scope.spawn(
                     |cancel: task::CancelToken| worker(cancel, module_dir, options, work, results),
                 );
-            };
+            }
             let executions: Vec[Execution] = Vec::[];
             let total = selected_tests.len();
             let mut completed = 0;
@@ -422,7 +410,7 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
                     },
                     None => return Result::Err("test result channel closed early"),
                 }
-            };
+            }
             results.close();
             Result::Ok(executions)
         },

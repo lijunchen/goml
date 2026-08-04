@@ -23,25 +23,19 @@ pub fn home_directory() -> Result[string, string] {
     match env::var("GOML_HOME") {
         Some(value) => if value != "" {
             return Result::Ok(value)
-        } else {
-            ()
-        },
+        } else {},
         None => (),
     };
     match env::var("HOME") {
         Some(value) => if value != "" {
             return Result::Ok(path::join(value, ".goml"))
-        } else {
-            ()
-        },
+        } else {},
         None => (),
     };
     match env::var("USERPROFILE") {
         Some(value) => if value != "" {
             return Result::Ok(path::join(value, ".goml"))
-        } else {
-            ()
-        },
+        } else {},
         None => (),
     };
     Result::Err("failed to determine home directory")
@@ -71,32 +65,26 @@ pub fn ensure_home_layout() -> Result[unit, string] {
         path::join(home, "cache"),
     ] {
         create_directory(directory)?
-    };
+    }
     Result::Ok(())
 }
 
 fn valid_identifier(value: string) -> bool {
     if value.byte_len() == 0 {
         return false
-    } else {
-        ()
-    };
+    } else {};
     let first = value.byte_get(0);
     if !((first >= b'A' && first <= b'Z') || (first >= b'a' && first <= b'z') || first == b'_') {
         return false
-    } else {
-        ()
-    };
+    } else {};
     for index in 1..value.byte_len() {
         let byte = value.byte_get(index);
         if (byte >= b'0' && byte <= b'9') || (byte >= b'A' && byte <= b'Z')
             || (byte >= b'a' && byte <= b'z')
-            || byte == b'_' {
-            ()
-        } else {
+            || byte == b'_' {} else {
             return false
         }
-    };
+    }
     true
 }
 
@@ -190,7 +178,7 @@ pub fn parse_new(args: Vec[string]) -> Result[unit, string] {
                 },
             }
         }
-    };
+    }
     match name {
         Some(value) => new_project(value, base),
         None => Result::Err("project name is required"),

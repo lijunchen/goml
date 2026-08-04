@@ -21,8 +21,7 @@ fn run_git(arguments: Vec[string]) -> Result[unit, string] {
     let command = process::Command::new("git");
     for argument in arguments {
         let _ = command.arg(argument);
-        ()
-    };
+    }
     let output = command.output()?;
     if process::ExitStatus::success(process::Output::status(output)) {
         Result::Ok(())
@@ -48,9 +47,7 @@ fn config_registry_source() -> Result[string, string] {
     if !fs::is_file(config) {
         ensure_home_layout()?;
         fs::write_file(config, "[registry]\ndefault = \"\"\n")?
-    } else {
-        ()
-    };
+    } else {};
     let source = fs::read_file(config)?;
     let mut section = "";
     for original in text::lines(source) {
@@ -62,10 +59,8 @@ fn config_registry_source() -> Result[string, string] {
             for index in 0..line.byte_len() {
                 if equals < 0 && line.byte_get(index) == b'=' {
                     equals = index;
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             if equals >= 0 {
                 let value = text::trim(line.byte_slice(equals + 1, line.byte_len()));
                 if value.byte_len() >= 2 && value.byte_get(0) == b'"'
@@ -73,19 +68,11 @@ fn config_registry_source() -> Result[string, string] {
                     let value = value.byte_slice(1, value.byte_len() - 1);
                     if value != "" {
                         return Result::Ok(value)
-                    } else {
-                        ()
-                    }
-                } else {
-                    ()
-                }
-            } else {
-                ()
-            }
-        } else {
-            ()
-        }
-    };
+                    } else {}
+                } else {}
+            } else {}
+        } else {}
+    }
     Result::Err(
         "registry.default is not configured in " + config + "; set it or use --local-registry",
     )
@@ -123,12 +110,11 @@ fn registry_argument(args: Vec[string]) -> Result[Option[string], string] {
                 Some(_) => return Result::Err("--local-registry cannot be repeated"),
                 None => {
                     value = Option::Some(registry);
-                    ()
                 },
             },
             None => return Result::Err("unexpected argument " + args[index]),
         }
-    };
+    }
     Result::Ok(value)
 }
 
@@ -145,9 +131,7 @@ pub fn update_registry(args: Vec[string]) -> Result[unit, string] {
             return Result::Err(
                 "cached registry path " + cache + " exists but is not a git repository",
             )
-        } else {
-            ()
-        };
+        } else {};
         run_git(Vec::["-C", cache, "remote", "set-url", "origin", source])?;
         run_git(Vec::["-C", cache, "pull", "--ff-only"])?
     } else {
@@ -168,9 +152,7 @@ fn module_root() -> Result[string, string] {
                 Ok(_) => return Result::Ok(directory),
                 Err(_) => (),
             }
-        } else {
-            ()
-        };
+        } else {};
         match path::parent(directory) {
             Some(parent) => if parent == directory {
                 return Result::Err(
@@ -190,9 +172,7 @@ fn dependency_line_name(line: string) -> Option[string] {
     let line = text::trim(line);
     if line.byte_len() < 3 || line.byte_get(0) != b'"' {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     for index in 1..line.byte_len() {
         if line.byte_get(index) == b'"' {
             let rest = text::trim(line.byte_slice(index + 1, line.byte_len()));
@@ -201,10 +181,8 @@ fn dependency_line_name(line: string) -> Option[string] {
             } else {
                 return Option::None
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -232,15 +210,11 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
                 if in_dependencies && !inserted {
                     result.push(entry);
                     inserted = true;
-                } else {
-                    ()
-                };
+                } else {};
                 in_dependencies = section == "dependencies";
                 if in_dependencies {
                     dependency_section_exists = true;
-                } else {
-                    ()
-                };
+                } else {};
                 result.push(line)
             },
             None => {
@@ -256,20 +230,16 @@ fn upsert_dependency(manifest_path: string, name: string, version: string) -> Re
                 }
             },
         }
-    };
+    }
     if !dependency_section_exists {
         if !result.is_empty() && result[result.len() - 1] != "" {
             result.push("")
-        } else {
-            ()
-        };
+        } else {};
         result.push("[dependencies]");
         result.push(entry)
     } else if !inserted {
         result.push(entry)
-    } else {
-        ()
-    };
+    } else {};
     fs::write_file(manifest_path, text::join(result, "\n") + "\n")
 }
 
@@ -285,9 +255,7 @@ fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, s
             for value in buffer {
                 result.push(value)
             }
-        } else {
-            ()
-        };
+        } else {};
         buffer.clear();
         kept.set(0)
     };
@@ -296,9 +264,7 @@ fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, s
             Some(section) => {
                 if in_dependencies {
                     flush(result, buffer, kept)
-                } else {
-                    ()
-                };
+                } else {};
                 if section == "dependencies" {
                     in_dependencies = true;
                 } else {
@@ -308,9 +274,7 @@ fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, s
             },
             None => if in_dependencies {
                 match dependency_line_name(line) {
-                    Some(value) => if value == name {
-                        ()
-                    } else {
+                    Some(value) => if value == name {} else {
                         kept.set(kept.get() + 1);
                         buffer.push(line)
                     },
@@ -320,16 +284,13 @@ fn remove_dependency_line(manifest_path: string, name: string) -> Result[unit, s
                 result.push(line)
             },
         }
-    };
+    }
     if in_dependencies {
         flush(result, buffer, kept)
-    } else {
-        ()
-    };
+    } else {};
     while result.len() > 1 && result[result.len() - 1] == "" && result[result.len() - 2] == "" {
         let _ = result.remove(result.len() - 1);
-        ()
-    };
+    }
     fs::write_file(manifest_path, text::join(result, "\n") + "\n")
 }
 
@@ -342,9 +303,7 @@ fn command_registry_root(local: Option[string]) -> Result[string, string] {
         return Result::Err(
             "registry cache not found at " + root + "; run `goml update` or use --local-registry",
         )
-    } else {
-        ()
-    };
+    } else {};
     match registry::validate(root) {
         Ok(()) => Result::Ok(root),
         Err(message) => Result::Err(message),
@@ -363,7 +322,6 @@ fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string])
                 Some(_) => return Result::Err("--local-registry cannot be repeated"),
                 None => {
                     local = Option::Some(value);
-                    ()
                 },
             },
             None => {
@@ -381,7 +339,7 @@ fn dependency_command_args(args: Vec[string]) -> Result[(string, Option[string])
                 }
             },
         }
-    };
+    }
     match dependency {
         Some(value) => Result::Ok((value, local)),
         None => Result::Err("dependency is required"),
@@ -395,9 +353,7 @@ pub fn add_dependency(args: Vec[string]) -> Result[unit, string] {
     let parts = text::split(spec, "@");
     if parts.len() > 2 {
         return Result::Err("invalid dependency " + spec)
-    } else {
-        ()
-    };
+    } else {};
     let name = parts[0];
     registry::validate_coordinate(name)?;
     let root = command_registry_root(local)?;

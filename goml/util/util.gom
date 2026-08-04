@@ -15,10 +15,8 @@ pub fn sorted_unique(values: Vec[string]) -> Vec[string] {
     for value in sorted_values {
         if result.is_empty() || result[result.len() - 1] != value {
             result.push(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -39,7 +37,7 @@ pub fn progress_bar(completed: int, total: int) -> string {
                 '-'
             },
         )
-    };
+    }
     builder.write_char(']');
     builder.finish()
 }
@@ -57,9 +55,7 @@ pub fn parse_positive_int(value: string) -> Result[int, string] {
     let length = value.byte_len();
     if length == 0 {
         return Result::Err("expected a positive integer")
-    } else {
-        ()
-    };
+    } else {};
     let mut result = 0;
     for index in 0..length {
         let byte = value.byte_get(index);
@@ -68,7 +64,7 @@ pub fn parse_positive_int(value: string) -> Result[int, string] {
         } else {
             result = result * 10 + (byte - b'0') as int;
         }
-    };
+    }
     if result > 0 {
         Result::Ok(result)
     } else {
@@ -88,12 +84,10 @@ fn shell_plain(value: string) -> bool {
                 || byte == b'.'
                 || byte == b'/'
                 || byte == b':'
-                || byte == b'_' {
-                ()
-            } else {
+                || byte == b'_' {} else {
                 return false
             }
-        };
+        }
         true
     }
 }
@@ -101,9 +95,7 @@ fn shell_plain(value: string) -> bool {
 pub fn shell_escape(value: string) -> string {
     if shell_plain(value) {
         return value
-    } else {
-        ()
-    };
+    } else {};
     let builder = text::StringBuilder::with_capacity(value.byte_len() + 2);
     builder.write_char('\'');
     for character in value.chars() {
@@ -112,7 +104,7 @@ pub fn shell_escape(value: string) -> string {
         } else {
             builder.write_char(character)
         }
-    };
+    }
     builder.write_char('\'');
     builder.finish()
 }

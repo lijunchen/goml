@@ -35,7 +35,7 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     ];
     for file in ignored {
         test_support::write_file(file, "invalid {")
-    };
+    }
     let nested_module = path::join(root, "nested");
     test_support::write_file(
         path::join(nested_module, "goml.toml"),
@@ -67,7 +67,7 @@ fn fmt_formats_module_from_nested_directory() -> unit {
     );
     for file in ignored {
         testing::assert_eq(test_support::read_file(file), "invalid {")
-    };
+    }
     testing::assert_eq(
         test_support::read_file(path::join(nested_module, "invalid.gom")),
         "invalid {",

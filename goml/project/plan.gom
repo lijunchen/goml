@@ -26,7 +26,7 @@ fn package_artifact_base(root: string, graph: Graph, package_name: string) -> st
     let mut result = path::join(root, package_value.artifact_prefix);
     for segment in text::split(package_name, "::") {
         result = path::join(result, segment);
-    };
+    }
     path::join(result, last_segment(package_name))
 }
 
@@ -56,7 +56,7 @@ fn executable_path_for(context: Context, entry_package: string) -> string {
     let entry_segments = text::split(entry_package, "::");
     for index in module_segments.len()..entry_segments.len() {
         result = path::join(result, entry_segments[index]);
-    };
+    }
     path::join(result, last_segment(entry_package))
 }
 
@@ -70,14 +70,12 @@ fn collect_dependencies(
         return Result::Err(f"missing package {package_name}")
     };
     for dependency in package_value.imports {
-        if seen.contains(dependency) {
-            ()
-        } else {
+        if seen.contains(dependency) {} else {
             seen[dependency] = true;
             result.push(dependency);
             collect_dependencies(graph, dependency, seen, result)?
         }
-    };
+    }
     Result::Ok(())
 }
 
@@ -87,16 +85,14 @@ fn mark_reachable(graph: Graph, package_name: string, seen: HashMap[string, bool
 ] {
     if seen.contains(package_name) {
         return Result::Ok(())
-    } else {
-        ()
-    };
+    } else {};
     let Some(package_value) = package_by_name(graph, package_name) else {
         return Result::Err(f"missing package {package_name}")
     };
     seen[package_name] = true;
     for dependency in package_value.imports {
         mark_reachable(graph, dependency, seen)?
-    };
+    }
     Result::Ok(())
 }
 
@@ -104,15 +100,13 @@ fn reachable_packages(graph: Graph, entries: Vec[string]) -> Result[Vec[string],
     let seen: HashMap[string, bool] = HashMap::{};
     for entry in entries {
         mark_reachable(graph, entry, seen)?
-    };
+    }
     let result: Vec[string] = Vec::[];
     for package_name in graph.order {
         if seen.contains(package_name) {
             result.push(package_name)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Result::Ok(result)
 }
 
@@ -125,7 +119,7 @@ fn dependency_interfaces(graph: Graph, package_name: string, output_root: string
     let result: Vec[string] = Vec::[];
     for name in util::sorted_unique(names) {
         result.push(extension(package_artifact_base(output_root, graph, name), "interface"))
-    };
+    }
     Result::Ok(result)
 }
 
@@ -153,7 +147,7 @@ fn compile_commands(
             compiler_world_path(context),
         )?;
         result.push(compiled)
-    };
+    }
     Result::Ok(result)
 }
 
@@ -176,7 +170,7 @@ fn commands_with_world(context: Context, commands: Vec[Command]) -> Vec[Command]
             let result = Vec::[Command::PrepareWorld { output }];
             for command in commands {
                 result.push(command)
-            };
+            }
             result
         },
         None => commands,
@@ -198,12 +192,12 @@ fn compile_package_command(
     let inputs: Vec[string] = Vec::[];
     for file in package_value.files {
         inputs.push(module_relative(module_dir, file))
-    };
+    }
     let interfaces = dependency_interfaces(graph, package_name, interface_root)?;
     let relative_interfaces: Vec[string] = Vec::[];
     for value in interfaces {
         relative_interfaces.push(module_relative(module_dir, value))
-    };
+    }
     Result::Ok(
         Command::Compile {
             subcommand: command,
@@ -249,9 +243,7 @@ fn compile_test_package_command(
                         ),
                     ),
                 )
-            } else {
-                ()
-            };
+            } else {};
             Result::Ok(
                 Command::Compile {
                     subcommand,
@@ -276,7 +268,7 @@ fn core_outputs(context: Context, output_root: string, packages: Vec[string]) ->
                 extension(package_artifact_base(output_root, context.graph, package_name), "core"),
             ),
         )
-    };
+    }
     result
 }
 
@@ -302,7 +294,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
             for value in values {
                 commands.push(value)
             }
-        };
+        }
         let external = external_test_graphs(context)?;
         for test in external {
             let target = Context {
@@ -322,9 +314,7 @@ pub fn check_plan(context: Context, include_tests: bool) -> Result[Plan, string]
                 commands.push(value)
             }
         }
-    } else {
-        ()
-    };
+    } else {};
     Result::Ok(
         Plan {
             commands: commands_with_world(context, commands),
@@ -343,10 +333,8 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
         };
         if package_value.declared_name == "main" {
             entries.push(package_name)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let packages = if entries.is_empty() {
         context.graph.order
     } else {
@@ -371,7 +359,7 @@ pub fn build_plan(context: Context) -> Result[Plan, string] {
                 output: module_relative(context.graph.module_dir, executable),
             },
         )
-    };
+    }
     Result::Ok(
         Plan {
             commands: commands_with_world(context, commands),
@@ -420,9 +408,7 @@ fn append_test_package(
     commands: Vec[Command],
 ) -> Result[unit, string] {
     for package_name in graph.order {
-        if package_name == graph.entry_package || compiled_dependencies.contains(package_name) {
-            ()
-        } else {
+        if package_name == graph.entry_package || compiled_dependencies.contains(package_name) {} else {
             let compiled = compile_package_command(
                 graph,
                 context.graph.module_dir,
@@ -435,7 +421,7 @@ fn append_test_package(
             commands.push(compiled);
             compiled_dependencies[package_name] = true;
         }
-    };
+    }
     let compiled = compile_test_package_command(
         graph,
         context.graph.module_dir,
@@ -462,7 +448,7 @@ fn append_test_group(
     let test_packages: HashMap[string, bool] = HashMap::{};
     for graph in graphs {
         test_packages[graph.entry_package] = true;
-    };
+    }
     let input_cores: Vec[string] = Vec::[];
     let added: HashMap[string, bool] = HashMap::{};
     for package_name in context.graph.order {
@@ -478,12 +464,10 @@ fn append_test_group(
             ),
         );
         added[package_name] = true;
-    };
+    }
     for graph in graphs {
         for package_name in graph.order {
-            if added.contains(package_name) {
-                ()
-            } else {
+            if added.contains(package_name) {} else {
                 let root = if test_packages.contains(package_name) {
                     output_root
                 } else {
@@ -498,7 +482,7 @@ fn append_test_group(
                 added[package_name] = true;
             }
         }
-    };
+    }
     let main_go = path::join(output_root, "goml_generated.go");
     let manifest = path::join(output_root, "tests.json");
     commands.push(
@@ -526,7 +510,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
     let compiled_dependencies: HashMap[string, bool] = HashMap::{};
     for package_name in context.graph.order {
         compiled_dependencies[package_name] = true;
-    };
+    }
     let groups: Vec[TestGroup] = Vec::[];
     let internal: Vec[Graph] = if kind == "internal" || kind == "all" {
         internal_test_graphs(context)?
@@ -552,7 +536,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             },
             Err(message) => return Result::Err(message),
         }
-    };
+    }
     if !internal_graphs.is_empty() {
         append_test_group(
             context,
@@ -564,9 +548,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             commands,
             groups,
         )
-    } else {
-        ()
-    };
+    } else {};
     let external: Vec[ExternalTest] = if kind == "external" || kind == "all" {
         external_test_graphs(context)?
     } else {
@@ -592,7 +574,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             },
             Err(message) => return Result::Err(message),
         }
-    };
+    }
     if !external_graphs.is_empty() {
         append_test_group(
             context,
@@ -604,9 +586,7 @@ pub fn test_plan(context: Context, kind: string) -> Result[Plan, string] {
             commands,
             groups,
         )
-    } else {
-        ()
-    };
+    } else {};
     Result::Ok(
         Plan {
             commands: commands_with_world(context, commands),
@@ -622,7 +602,7 @@ fn display_args(program: string, args: Vec[string]) -> string {
     for argument in args {
         builder.write_char(' ');
         builder.write_string(util::shell_escape(argument))
-    };
+    }
     builder.finish()
 }
 
@@ -637,11 +617,11 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             for input in input_files {
                 args.push("--input");
                 args.push(input)
-            };
+            }
             for interface in interface_files {
                 args.push("--interface-path");
                 args.push(interface)
-            };
+            }
             args.push("--output");
             args.push(output);
             match world {
@@ -659,7 +639,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             args.push("--input");
             for input in input_cores {
                 args.push(input)
-            };
+            }
             args.push("--output");
             args.push(output);
             args.push("--entry");
@@ -679,7 +659,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             args.push("--input");
             for input in input_cores {
                 args.push(input)
-            };
+            }
             args.push("--output");
             args.push(output);
             args.push("--manifest");
@@ -687,7 +667,7 @@ fn command_args(value: Command) -> (string, Vec[string]) {
             for package_name in packages {
                 args.push("--package");
                 args.push(package_name)
-            };
+            }
             match world {
                 Some(value) => {
                     args.push("--world");
@@ -761,9 +741,7 @@ fn execute_command(cancel: task::CancelToken, context: Context, value: Command) 
     if command.0 == "go" {
         let _ = process.env("GOWORK", "off");
         let _ = process.env("GO111MODULE", "off");
-    } else {
-        ()
-    };
+    } else {};
     match process.status_with(cancel) {
         Ok(task::WaitResult::Completed(status)) => if process::ExitStatus::success(status) {
             Result::Ok(())
@@ -862,7 +840,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
             },
             None => (),
         }
-    };
+    }
     let result: Vec[BuildNode] = Vec::[];
     for index in 0..commands.len() {
         let command = commands[index];
@@ -878,9 +856,7 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                                 previous = candidate;
                             } else if candidate > index && following < 0 {
                                 following = candidate;
-                            } else {
-                                ()
-                            }
+                            } else {}
                         },
                         None => (),
                     };
@@ -891,33 +867,27 @@ fn build_graph(commands: Vec[Command]) -> Result[BuildGraph, string] {
                     };
                     if producer >= 0 && !collections::contains(dependencies, producer) {
                         dependencies.push(producer)
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 for output in spec.outputs {
                     let mut previous = -1;
                     match producers[output] {
                         Some(values) => for candidate in values {
                             if candidate < index && candidate > previous {
                                 previous = candidate;
-                            } else {
-                                ()
-                            }
+                            } else {}
                         },
                         None => (),
                     };
                     if previous >= 0 && !collections::contains(dependencies, previous) {
                         dependencies.push(previous)
-                    } else {
-                        ()
-                    }
+                    } else {}
                 }
             },
             None => (),
         };
         result.push(BuildNode { index, command, dependencies })
-    };
+    }
     Result::Ok(BuildGraph { nodes: result })
 }
 
@@ -933,10 +903,8 @@ fn build_node_ready(node: BuildNode, completed: Vec[int]) -> bool {
     for dependency in node.dependencies {
         if !collections::contains(completed, dependency) {
             return false
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     true
 }
 
@@ -989,7 +957,7 @@ fn execute_plan_worker(
             },
             task::WaitResult::Completed(None) | task::WaitResult::Cancelled => break,
         }
-    };
+    }
     Result::Ok(())
 }
 
@@ -1008,7 +976,7 @@ fn execute_plan_concurrently(
     let initial: Vec[int] = Vec::[];
     for node in graph.nodes {
         initial.push(node.index)
-    };
+    }
     let mut pending = initial;
     let completed_nodes: Vec[int] = Vec::[];
     let mut running = 0;
@@ -1021,7 +989,7 @@ fn execute_plan_concurrently(
         let _ = scope.spawn_try(
             |cancel: task::CancelToken| execute_plan_worker(cancel, context, work, results),
         );
-    };
+    }
     while !pending.is_empty() || running > 0 {
         let blocked: Vec[int] = Vec::[];
         for index in pending {
@@ -1061,14 +1029,12 @@ fn execute_plan_concurrently(
             } else {
                 blocked.push(index)
             }
-        };
+        }
         pending = blocked;
         if running == 0 && !pending.is_empty() {
             scope.cancel();
             return Result::Err("build plan contains a dependency cycle")
-        } else {
-            ()
-        };
+        } else {};
         if running > 0 {
             match results.recv() {
                 Some(value) => match value.result {
@@ -1103,10 +1069,8 @@ fn execute_plan_concurrently(
                 },
             };
             running -= 1;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     work.close();
     Result::Ok(())
 }
@@ -1114,9 +1078,7 @@ fn execute_plan_concurrently(
 pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> Result[unit, string] {
     if !dry_run && jobs < 1 {
         return Result::Err("build jobs must be greater than zero")
-    } else {
-        ()
-    };
+    } else {};
     let total = plan.commands.len();
     let completed = Ref::new(0);
     let identity = if dry_run {
@@ -1156,9 +1118,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
             },
         }
     };
-    if dry_run {
-        ()
-    } else {
+    if dry_run {} else {
         util::display_progress(completed.get(), total, "finished", true)
     };
     Result::Ok(())

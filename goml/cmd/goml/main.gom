@@ -125,7 +125,7 @@ fn parse_clean(args: Vec[string]) -> Result[Option[string], string] {
                 return Result::Err(f"unexpected argument {argument}")
             },
         }
-    };
+    }
     Result::Ok(target_dir)
 }
 
@@ -163,7 +163,7 @@ fn parse_fmt(args: Vec[string]) -> Result[FmtArgs, string] {
                 },
             }
         }
-    };
+    }
     Result::Ok(FmtArgs { check, formatter })
 }
 
@@ -191,15 +191,11 @@ fn parse_duration(value: string) -> Result[int, string] {
 fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
     if args.len() < 2 {
         return Result::Err(top_help())
-    } else {
-        ()
-    };
+    } else {};
     let command = args[1];
     if command != "check" && command != "build" && command != "run" && command != "test" {
         return Result::Err(f"unknown command {command}")
-    } else {
-        ()
-    };
+    } else {};
     let targets: Vec[string] = Vec::[];
     let mut target_dir: Option[string] = Option::None;
     let mut compiler: Option[string] = Option::None;
@@ -351,7 +347,7 @@ fn parse_cli(args: Vec[string]) -> Result[CliArgs, string] {
                 }
             }
         }
-    };
+    }
     let test_json = !test_formats.is_empty() && test_formats[test_formats.len() - 1] == "json";
     if flags.contains("--ignored") && flags.contains("--include-ignored") {
         Result::Err("--ignored cannot be combined with --include-ignored")
@@ -424,7 +420,7 @@ fn run_command(args: CliArgs) -> Result[unit, string] {
                     manifest_path: group.manifest,
                 },
             )
-        };
+        }
         runner::run(
             context.graph.module_dir,
             groups,
@@ -494,9 +490,7 @@ fn main() -> unit {
     } else if args[1] == "fmt" {
         match parse_fmt(args) {
             Ok(options) => match commands::format_module(options.check, options.formatter) {
-                Ok(code) => if code == 0 {
-                    ()
-                } else {
+                Ok(code) => if code == 0 {} else {
                     process::exit(code)
                 },
                 Err(message) => fail(message),

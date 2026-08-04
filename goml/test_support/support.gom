@@ -59,9 +59,7 @@ pub fn workspace(name: string) -> string {
             Ok(()) => (),
             Err(message) => testing::fail(message),
         }
-    } else {
-        ()
-    };
+    } else {};
     match fs::create_dir_all(result) {
         Ok(()) => result,
         Err(message) => {
@@ -118,9 +116,7 @@ pub fn stderr(output: process::Output) -> string {
 }
 
 pub fn assert_success(output: process::Output) -> unit {
-    if process::ExitStatus::success(process::Output::status(output)) {
-        ()
-    } else {
+    if process::ExitStatus::success(process::Output::status(output)) {} else {
         testing::fail("command failed\nstdout:\n" + stdout(output) + "\nstderr:\n" + stderr(output))
     }
 }
@@ -130,9 +126,7 @@ pub fn assert_failure(output: process::Output) -> unit {
 }
 
 pub fn assert_contains(value: string, expected: string) -> unit {
-    if value.contains(expected) {
-        ()
-    } else {
+    if value.contains(expected) {} else {
         testing::fail("expected text to contain:\n" + expected + "\nactual:\n" + value)
     }
 }
@@ -140,9 +134,7 @@ pub fn assert_contains(value: string, expected: string) -> unit {
 pub fn assert_not_contains(value: string, unexpected: string) -> unit {
     if value.contains(unexpected) {
         testing::fail("expected text not to contain:\n" + unexpected + "\nactual:\n" + value)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 pub fn run(args: Vec[string], directory: string) -> process::Output {
@@ -163,14 +155,12 @@ pub fn project_command(command: string, target: string, extra: Vec[string], dire
     let args = Vec::[command];
     if command == "run" && target != "" {
         args.push(target)
-    } else {
-        ()
-    };
+    } else {};
     args.push("--compiler");
     args.push(gomlc_binary());
     for value in extra {
         args.push(value)
-    };
+    }
     let candidate = if path::is_absolute(target) {
         target
     } else {

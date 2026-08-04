@@ -32,9 +32,7 @@ fn default_formatter_candidate() -> string {
                 let sibling = path::join(parent, "gomlfmt");
                 if fs::is_file(sibling) {
                     return sibling
-                } else {
-                    ()
-                }
+                } else {}
             },
             None => (),
         },
@@ -73,9 +71,7 @@ fn collect_owned_graph_files(graph: project::Graph, module_path: string, result:
             for file in package_value.files {
                 result.push(file)
             }
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -85,7 +81,7 @@ fn module_format_files(context: project::Context) -> Result[Vec[string], string]
     let internal = project::internal_test_graphs(context)?;
     for graph in internal {
         collect_owned_graph_files(graph, context.graph.module_path, files)
-    };
+    }
     let external = project::external_test_graphs(context)?;
     for test in external {
         collect_owned_graph_files(test.graph, context.graph.module_path, files)
@@ -107,9 +103,7 @@ pub fn format_module(check: bool, formatter_override: Option[string]) -> Result[
     let files = module_format_files(context)?;
     if files.is_empty() {
         return Result::Ok(0)
-    } else {
-        ()
-    };
+    } else {};
     let formatter = resolve_program(formatter_candidate(formatter_override))?;
     let command = process::Command::new(formatter).arg(
         if check {
@@ -120,7 +114,7 @@ pub fn format_module(check: bool, formatter_override: Option[string]) -> Result[
     ).current_dir(module_root);
     for file in files {
         let _ = command.arg(relative_path(module_root, file));
-    };
+    }
     match command.status() {
         Ok(status) => match process::ExitStatus::code(status) {
             Some(code) => Result::Ok(code),
