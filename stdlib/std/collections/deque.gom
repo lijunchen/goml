@@ -17,7 +17,7 @@ impl[T] Deque[T] {
         while index < capacity {
             slots.push(Option::None);
             index += 1;
-        };
+        }
         Deque { slots: Ref::new(slots), head: Ref::new(0), len: Ref::new(0) }
     }
 
@@ -34,9 +34,7 @@ impl[T] Deque[T] {
     }
 
     pub fn ensure_space(self: Deque[T]) -> unit {
-        if self.len.get() < self.capacity() {
-            ()
-        } else {
+        if self.len.get() < self.capacity() {} else {
             let old = self.slots.get();
             let old_capacity = old.len();
             let new_capacity = if old_capacity == 0 {
@@ -49,13 +47,13 @@ impl[T] Deque[T] {
             while index < new_capacity {
                 next.push(Option::None);
                 index += 1;
-            };
+            }
             index = 0;
             while index < self.len.get() {
                 let old_index = (self.head.get() + index) % old_capacity;
                 next[index] = old[old_index];
                 index += 1;
-            };
+            }
             self.slots.set(next);
             self.head.set(0)
         }
@@ -103,9 +101,7 @@ impl[T] Deque[T] {
             self.len.set(self.len.get() - 1);
             if self.len.get() == 0 {
                 self.head.set(0)
-            } else {
-                ()
-            };
+            } else {};
             value
         }
     }

@@ -7,17 +7,13 @@ pub fn fail(message: string) -> unit {
 }
 
 pub fn assert(condition: bool) -> unit {
-    if condition {
-        ()
-    } else {
+    if condition {} else {
         fail("assertion failed")
     }
 }
 
 pub fn assert_eq[T: Eq + ToString](actual: T, expected: T) -> unit {
-    if Eq::eq(actual, expected) {
-        ()
-    } else {
+    if Eq::eq(actual, expected) {} else {
         fail(
             "assertion failed: values are not equal\n  actual: " + ToString::to_string(actual)
                 + "\nexpected: "
@@ -29,7 +25,5 @@ pub fn assert_eq[T: Eq + ToString](actual: T, expected: T) -> unit {
 pub fn assert_ne[T: Eq + ToString](actual: T, expected: T) -> unit {
     if Eq::eq(actual, expected) {
         fail("assertion failed: values are equal\nvalue: " + ToString::to_string(actual))
-    } else {
-        ()
-    }
+    } else {}
 }

@@ -40,12 +40,10 @@ where
                 match iterator.next() {
                     Some(value) => if predicate(value) {
                         return Option::Some(value)
-                    } else {
-                        ()
-                    },
+                    } else {},
                     None => return Option::None,
                 }
-            };
+            }
             Option::None
         },
     )
@@ -65,7 +63,7 @@ where
                     },
                     None => return Option::None,
                 }
-            };
+            }
             Option::None
         },
     )
@@ -136,7 +134,7 @@ pub fn skip[I: Iterator](iterator: I, count: int) -> FnIterator[I::Item] {
                         return Option::None
                     },
                 }
-            };
+            }
             iterator.next()
         },
     )
@@ -151,15 +149,13 @@ where
         || {
             loop {
                 match iterator.next() {
-                    Some(value) => if skipping.get() && predicate(value) {
-                        ()
-                    } else {
+                    Some(value) => if skipping.get() && predicate(value) {} else {
                         skipping.set(false);
                         return Option::Some(value)
                     },
                     None => return Option::None,
                 }
-            };
+            }
             Option::None
         },
     )
@@ -208,9 +204,7 @@ where
                     Some(value) => return Option::Some(value),
                     None => first_done.set(true),
                 }
-            } else {
-                ()
-            };
+            } else {};
             second.next()
         },
     )
@@ -270,7 +264,7 @@ where
             },
             None => break,
         }
-    };
+    }
     accumulator
 }
 
@@ -281,7 +275,7 @@ pub fn collect[T, I: Iterator](iterator: I) -> Vec[T] where I::Item = T {
             Some(value) => values.push(value),
             None => break,
         }
-    };
+    }
     values
 }
 
@@ -290,12 +284,10 @@ pub fn find[T, I: Iterator](iterator: I, predicate: (T) -> bool) -> Option[T] wh
         match iterator.next() {
             Some(value) => if predicate(value) {
                 return Option::Some(value)
-            } else {
-                ()
-            },
+            } else {},
             None => return Option::None,
         }
-    };
+    }
     Option::None
 }
 
@@ -311,7 +303,7 @@ where
             },
             None => return Option::None,
         }
-    };
+    }
     Option::None
 }
 
@@ -332,7 +324,7 @@ pub fn count[I: Iterator](iterator: I) -> int {
             },
             None => break,
         }
-    };
+    }
     result
 }
 
@@ -350,7 +342,7 @@ where
             },
             None => return Option::None,
         }
-    };
+    }
     Option::None
 }
 
@@ -368,7 +360,7 @@ pub fn nth[I: Iterator](iterator: I, index: int) -> Option[I::Item] {
                 },
                 None => return Option::None,
             }
-        };
+        }
         Option::None
     }
 }
@@ -382,7 +374,7 @@ pub fn last[I: Iterator](iterator: I) -> Option[I::Item] {
             },
             None => break,
         }
-    };
+    }
     result
 }
 

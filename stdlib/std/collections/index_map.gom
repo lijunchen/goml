@@ -27,7 +27,7 @@ fn index_map_capacity_for_entries(entries: int) -> int {
     let mut capacity = 8;
     while requested * 3 >= capacity * 2 {
         capacity *= 2;
-    };
+    }
     capacity
 }
 
@@ -37,7 +37,7 @@ fn index_map_empty_indices(capacity: int) -> Vec[int] {
     while index < capacity {
         indices.push(-1);
         index += 1;
-    };
+    }
     indices
 }
 
@@ -89,24 +89,20 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             } else if dense_index == -2 {
                 if first_deleted < 0 {
                     first_deleted = position;
-                } else {
-                    ()
-                }
+                } else {}
             } else {
                 match self.entries.get()[dense_index] {
                     Some(entry) => {
                         if entry.hash == hash && Eq::eq(entry.key, key) {
                             return IndexMapProbe::Found(position, dense_index)
-                        } else {
-                            ()
-                        }
+                        } else {}
                     },
                     None => (),
                 }
             };
             position = ((position as uint64 * 5 + perturb + 1) & mask as uint64) as int;
             perturb >>= 5;
-        };
+        }
         IndexMapProbe::Vacant(0)
     }
 
@@ -140,7 +136,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                 None => (),
             };
             old_index += 1;
-        };
+        }
         self.entries.set(next_entries);
         self.indices.set(index_map_empty_indices(index_map_capacity_for_entries(desired_entries)));
         self.deleted.set(0);
@@ -155,9 +151,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
         let occupied = self.len.get() + self.deleted.get();
         if (occupied + 1) * 3 >= self.indices.get().len() * 2 {
             self.rebuild(self.len.get() + 1)
-        } else {
-            ()
-        }
+        } else {}
     }
 
     fn compact_after_remove(self: IndexMap[K, V]) -> unit {
@@ -165,9 +159,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             self.clear()
         } else if self.deleted.get() >= 8 && self.deleted.get() > self.len.get() {
             self.rebuild(self.len.get())
-        } else {
-            ()
-        }
+        } else {}
     }
 
     pub fn contains(self: IndexMap[K, V], key: K) -> bool {
@@ -238,9 +230,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     }
 
     pub fn reserve(self: IndexMap[K, V], additional: int) -> unit {
-        if additional <= 0 {
-            ()
-        } else {
+        if additional <= 0 {} else {
             let desired_entries = self.len.get() + additional;
             let desired_capacity = index_map_capacity_for_entries(desired_entries);
             if desired_capacity > self.indices.get().len() || self.deleted.get() > 0 {
@@ -268,7 +258,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                 None => (),
             };
             index += 1;
-        };
+        }
         result
     }
 
@@ -281,7 +271,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                 None => (),
             };
             index += 1;
-        };
+        }
         result
     }
 
@@ -294,7 +284,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                 None => (),
             };
             index += 1;
-        };
+        }
         result
     }
 
@@ -312,7 +302,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                         },
                         None => (),
                     }
-                };
+                }
                 Option::None
             },
         )

@@ -14,13 +14,11 @@ pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
     let length = values.len();
     if length < 2 {
         return
-    } else {
-        ()
-    };
+    } else {};
     let buffer: Vec[T] = Vec::with_capacity(length);
     for index in 0..length {
         buffer.push(values[index])
-    };
+    }
     let mut width = 1;
     while width < length {
         let mut left = 0;
@@ -39,22 +37,22 @@ pub fn stable_sort_by[T](values: Vec[T], compare: (T, T) -> int) -> unit {
                     second += 1;
                 };
                 output += 1;
-            };
+            }
             while first < middle {
                 buffer[output] = values[first];
                 first += 1;
                 output += 1;
-            };
+            }
             while second < right {
                 buffer[output] = values[second];
                 second += 1;
                 output += 1;
-            };
+            }
             left = right;
-        };
+        }
         for index in 0..length {
             values[index] = buffer[index];
-        };
+        }
         width = if width > length / 2 {
             length
         } else {
@@ -93,7 +91,7 @@ pub fn binary_search_by[T](values: Vec[T], compare: (T) -> int) -> Option[int] {
         } else {
             high = middle;
         }
-    };
+    }
     if low < values.len() && compare(values[low]) == 0 {
         Option::Some(low)
     } else {
@@ -113,10 +111,8 @@ pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
     for index in 0..values.len() {
         if predicate(values[index]) {
             return Option::Some(index)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -133,10 +129,8 @@ pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
             let value = values[index];
             if compare(value, best) < 0 {
                 best = value;
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         Option::Some(best)
     }
 }
@@ -150,10 +144,8 @@ pub fn max_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
             let value = values[index];
             if compare(value, best) > 0 {
                 best = value;
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         Option::Some(best)
     }
 }
@@ -177,19 +169,15 @@ pub fn max[T: cmp::Ord](values: Vec[T]) -> Option[T] {
 pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
     if values.len() < 2 {
         return
-    } else {
-        ()
-    };
+    } else {};
     let mut output = 1;
     for index in 1..values.len() {
         let value = values[index];
         if !equal(values[output - 1], value) {
             values[output] = value;
             output += 1;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     values.truncate(output)
 }
 

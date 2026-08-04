@@ -48,7 +48,7 @@ impl ConcurrencyLimit {
         let slots: Channel[unit] = Channel::new(count);
         for _ in 0..count {
             slots.send(())
-        };
+        }
         ConcurrencyLimit { slots }
     }
 
@@ -89,9 +89,7 @@ pub fn try_scope[T, E](body: (Scope) -> Result[T, E]) -> Result[T, E] {
             let value = body(Scope { handle });
             if value.is_err() {
                 internal_task::cancel(handle)
-            } else {
-                ()
-            };
+            } else {};
             result.set(Option::Some(value))
         },
     );
@@ -107,9 +105,7 @@ pub fn try_scope_with[T, E](parent: CancelToken, body: (Scope) -> Result[T, E]) 
             let value = body(Scope { handle });
             if value.is_err() {
                 internal_task::cancel(handle)
-            } else {
-                ()
-            };
+            } else {};
             result.set(Option::Some(value))
         },
     );
@@ -158,9 +154,7 @@ impl Scope {
                 let value = body(token);
                 if value.is_err() {
                     self.cancel()
-                } else {
-                    ()
-                };
+                } else {};
                 value
             },
         )
@@ -232,7 +226,7 @@ pub fn join_all[T](tasks: Vec[Task[T]]) -> Vec[T] {
     let values: Vec[T] = Vec::with_capacity(tasks.len());
     for task in tasks {
         values.push(task.join())
-    };
+    }
     values
 }
 
@@ -244,7 +238,7 @@ pub fn join_all_results[T, E](tasks: Vec[Task[Result[T, E]]]) -> Result[Vec[T], 
             Ok(value) => values.push(value),
             Err(error) => errors.push(error),
         }
-    };
+    }
     if errors.is_empty() {
         Result::Ok(values)
     } else {
@@ -263,7 +257,7 @@ pub fn join_all_indexed_results[T, E](tasks: Vec[Task[Result[T, E]]]) -> Result[
             Ok(value) => values.push(value),
             Err(error) => errors.push(IndexedError { index, error }),
         }
-    };
+    }
     if errors.is_empty() {
         Result::Ok(values)
     } else {
@@ -292,9 +286,7 @@ pub fn for_each_concurrent[T, E](
 ) -> Result[unit, Vec[IndexedError[E]]] {
     if values.is_empty() {
         return Result::Ok(())
-    } else {
-        ()
-    };
+    } else {};
     let total = values.len();
     let worker_count = if limit <= 0 {
         1
@@ -307,7 +299,7 @@ pub fn for_each_concurrent[T, E](
     let results: Channel[(int, Result[unit, E])] = Channel::new(total);
     for index in 0..total {
         work.send((index, values[index]))
-    };
+    }
     work.close();
     scope(
         |scope: Scope| {
@@ -315,11 +307,11 @@ pub fn for_each_concurrent[T, E](
                 let _ = scope.spawn(
                     |cancel: CancelToken| concurrent_worker(cancel, work, results, body),
                 );
-            };
+            }
             let ordered: Vec[Option[E]] = Vec::with_capacity(total);
             for _ in 0..total {
                 ordered.push(Option::None)
-            };
+            }
             for _ in 0..total {
                 match results.recv() {
                     Some(item) => match item.1 {
@@ -330,7 +322,7 @@ pub fn for_each_concurrent[T, E](
                     },
                     None => (),
                 }
-            };
+            }
             results.close();
             let errors: Vec[IndexedError[E]] = Vec::[];
             for index in 0..total {
@@ -338,7 +330,7 @@ pub fn for_each_concurrent[T, E](
                     Some(error) => errors.push(IndexedError { index, error }),
                     None => (),
                 }
-            };
+            }
             if errors.is_empty() {
                 Result::Ok(())
             } else {
@@ -351,9 +343,7 @@ pub fn for_each_concurrent[T, E](
 pub fn race[T](bodies: Vec[(CancelToken) -> T]) -> Option[T] {
     if bodies.is_empty() {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     scope(
         |scope: Scope| {
             let results: Channel[T] = Channel::new(bodies.len());
@@ -363,7 +353,7 @@ pub fn race[T](bodies: Vec[(CancelToken) -> T]) -> Option[T] {
                         results.send(body(cancel))
                     },
                 );
-            };
+            }
             let value = results.recv();
             scope.cancel();
             value

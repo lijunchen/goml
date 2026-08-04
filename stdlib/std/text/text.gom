@@ -32,7 +32,7 @@ fn find_from(value: string, expected: string, start: int) -> Option[int] {
             } else {
                 index += 1;
             }
-        };
+        }
         Option::None
     }
 }
@@ -54,7 +54,7 @@ pub fn rfind(value: string, expected: string) -> Option[int] {
             } else {
                 start -= 1;
             }
-        };
+        }
         Option::None
     }
 }
@@ -63,7 +63,7 @@ pub fn trim_start(value: string) -> string {
     let mut start = 0;
     while start < value.byte_len() && ascii::is_whitespace(value.byte_get(start)) {
         start += 1;
-    };
+    }
     value.byte_slice(start, value.byte_len())
 }
 
@@ -71,7 +71,7 @@ pub fn trim_end(value: string) -> string {
     let mut end = value.byte_len();
     while end > 0 && ascii::is_whitespace(value.byte_get(end - 1)) {
         end -= 1;
-    };
+    }
     value.byte_slice(0, end)
 }
 
@@ -86,9 +86,7 @@ pub fn split(value: string, separator: string) -> Vec[string] {
     if separator_len == 0 {
         result.push(value);
         return result
-    } else {
-        ()
-    };
+    } else {};
     let mut start = 0;
     loop {
         match find_from(value, separator, start) {
@@ -101,7 +99,7 @@ pub fn split(value: string, separator: string) -> Vec[string] {
                 break
             },
         }
-    };
+    }
     result
 }
 
@@ -124,17 +122,13 @@ pub fn lines(value: string) -> Vec[string] {
     let result = split(value, "\n");
     if !result.is_empty() && result[result.len() - 1] == "" {
         let _ = result.pop();
-    } else {
-        ()
-    };
+    } else {};
     for index in 0..result.len() {
         let line = result[index];
         if line.byte_len() > 0 && line.byte_get(line.byte_len() - 1) == b'\r' {
             result[index] = line.byte_slice(0, line.byte_len() - 1);
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -156,7 +150,7 @@ pub fn replace(value: string, expected: string, replacement: string) -> string {
                     break
                 },
             }
-        };
+        }
         builder.finish()
     }
 }
@@ -165,21 +159,17 @@ pub fn join(values: Vec[string], separator: string) -> string {
     let mut capacity = separator.byte_len() * values.len();
     for value in values {
         capacity += value.byte_len();
-    };
+    }
     if !values.is_empty() {
         capacity -= separator.byte_len();
-    } else {
-        ()
-    };
+    } else {};
     let builder = StringBuilder::with_capacity(capacity);
     for index in 0..values.len() {
         if index > 0 {
             builder.write_string(separator)
-        } else {
-            ()
-        };
+        } else {};
         builder.write_string(values[index])
-    };
+    }
     builder.finish()
 }
 
@@ -190,7 +180,7 @@ pub fn repeat(value: string, count: int) -> string {
         let builder = StringBuilder::with_capacity(value.byte_len() * count);
         for _ in 0..count {
             builder.write_string(value)
-        };
+        }
         builder.finish()
     }
 }
@@ -199,10 +189,8 @@ pub fn is_ascii(value: string) -> bool {
     for index in 0..value.byte_len() {
         if value.byte_get(index) > 127 {
             return false
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     true
 }
 
@@ -213,10 +201,8 @@ pub fn eq_ignore_ascii_case(left: string, right: string) -> bool {
         for index in 0..left.byte_len() {
             if !ascii::eq_ignore_case(left.byte_get(index), right.byte_get(index)) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -225,7 +211,7 @@ pub fn to_ascii_lowercase(value: string) -> string {
     let values = value.to_bytes();
     for index in 0..values.len() {
         values[index] = ascii::to_lowercase(values[index]);
-    };
+    }
     let (_, result) = string_from_utf8(values);
     result
 }
@@ -234,7 +220,7 @@ pub fn to_ascii_uppercase(value: string) -> string {
     let values = value.to_bytes();
     for index in 0..values.len() {
         values[index] = ascii::to_uppercase(values[index]);
-    };
+    }
     let (_, result) = string_from_utf8(values);
     result
 }
