@@ -633,11 +633,22 @@ fn rejects_non_function_go_operands() -> unit {
             "main.gom",
         ),
     );
-    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(result.diagnostics.len(), 2);
+    testing::assert(
+        result.diagnostics.get(0).message.starts_with("unstructured_go: `go` starts detached work"),
+    );
+    match result.diagnostics.get(0).severity {
+        Warning => (),
+        Error => testing::fail("expected unstructured go warning"),
+    };
     testing::assert_eq(
-        result.diagnostics.get(0).message,
+        result.diagnostics.get(1).message,
         "`go` expects a value of type () -> unit, found never",
-    )
+    );
+    match result.diagnostics.get(1).severity {
+        Error => (),
+        Warning => testing::fail("expected go operand error"),
+    }
 }
 
 #[test]
