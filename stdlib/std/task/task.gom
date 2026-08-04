@@ -15,9 +15,46 @@ pub struct Task[T] {
     ready: Channel[unit],
 }
 
+pub struct IndexedError[E] {
+    pub index: int,
+    pub error: E,
+}
+
+pub struct ConcurrencyLimit {
+    slots: Channel[unit],
+}
+
 pub enum WaitResult[T] {
     Completed(T),
     Cancelled,
+}
+
+impl ConcurrencyLimit {
+    pub fn new(limit: int) -> ConcurrencyLimit {
+        let count = if limit > 0 {
+            limit
+        } else {
+            1
+        };
+        let slots: Channel[unit] = Channel::new(count);
+        for _ in 0..count {
+            slots.send(())
+        };
+        ConcurrencyLimit { slots }
+    }
+
+    pub fn run[T](self: ConcurrencyLimit, cancel: CancelToken, body: (CancelToken) -> T) -> WaitResult[
+        T,
+    ] {
+        match recv_with(cancel, self.slots) {
+            WaitResult::Completed(Some(())) => {
+                let value = body(cancel);
+                self.slots.send(());
+                WaitResult::Completed(value)
+            },
+            WaitResult::Completed(None) | WaitResult::Cancelled => WaitResult::Cancelled,
+        }
+    }
 }
 
 pub fn scope[T](body: (Scope) -> T) -> T {
@@ -188,4 +225,123 @@ pub fn join_all_results[T, E](tasks: Vec[Task[Result[T, E]]]) -> Result[Vec[T], 
     } else {
         Result::Err(errors)
     }
+}
+
+pub fn join_all_indexed_results[T, E](tasks: Vec[Task[Result[T, E]]]) -> Result[
+    Vec[T],
+    Vec[IndexedError[E]],
+] {
+    let values: Vec[T] = Vec::with_capacity(tasks.len());
+    let errors: Vec[IndexedError[E]] = Vec::[];
+    for index in 0..tasks.len() {
+        match tasks[index].join() {
+            Ok(value) => values.push(value),
+            Err(error) => errors.push(IndexedError { index, error }),
+        }
+    };
+    if errors.is_empty() {
+        Result::Ok(values)
+    } else {
+        Result::Err(errors)
+    }
+}
+
+fn concurrent_worker[T, E](
+    cancel: CancelToken,
+    work: Channel[(int, T)],
+    results: Channel[(int, Result[unit, E])],
+    body: (CancelToken, T) -> Result[unit, E],
+) -> unit {
+    loop {
+        match recv_with(cancel, work) {
+            WaitResult::Completed(Some(item)) => results.send((item.0, body(cancel, item.1))),
+            WaitResult::Completed(None) | WaitResult::Cancelled => break,
+        }
+    }
+}
+
+pub fn for_each_concurrent[T, E](
+    limit: int,
+    values: Vec[T],
+    body: (CancelToken, T) -> Result[unit, E],
+) -> Result[unit, Vec[IndexedError[E]]] {
+    if values.is_empty() {
+        return Result::Ok(())
+    } else {
+        ()
+    };
+    let total = values.len();
+    let worker_count = if limit <= 0 {
+        1
+    } else if limit < total {
+        limit
+    } else {
+        total
+    };
+    let work: Channel[(int, T)] = Channel::new(total);
+    let results: Channel[(int, Result[unit, E])] = Channel::new(total);
+    for index in 0..total {
+        work.send((index, values[index]))
+    };
+    work.close();
+    scope(
+        |scope: Scope| {
+            for _ in 0..worker_count {
+                let _ = scope.spawn(
+                    |cancel: CancelToken| concurrent_worker(cancel, work, results, body),
+                );
+            };
+            let ordered: Vec[Option[E]] = Vec::with_capacity(total);
+            for _ in 0..total {
+                ordered.push(Option::None)
+            };
+            for _ in 0..total {
+                match results.recv() {
+                    Some(item) => match item.1 {
+                        Ok(()) => (),
+                        Err(error) => {
+                            ordered[item.0] = Option::Some(error);
+                        },
+                    },
+                    None => (),
+                }
+            };
+            results.close();
+            let errors: Vec[IndexedError[E]] = Vec::[];
+            for index in 0..total {
+                match ordered[index] {
+                    Some(error) => errors.push(IndexedError { index, error }),
+                    None => (),
+                }
+            };
+            if errors.is_empty() {
+                Result::Ok(())
+            } else {
+                Result::Err(errors)
+            }
+        },
+    )
+}
+
+pub fn race[T](bodies: Vec[(CancelToken) -> T]) -> Option[T] {
+    if bodies.is_empty() {
+        return Option::None
+    } else {
+        ()
+    };
+    scope(
+        |scope: Scope| {
+            let results: Channel[T] = Channel::new(bodies.len());
+            for body in bodies {
+                let _ = scope.spawn(
+                    |cancel: CancelToken| {
+                        results.send(body(cancel))
+                    },
+                );
+            };
+            let value = results.recv();
+            scope.cancel();
+            value
+        },
+    )
 }

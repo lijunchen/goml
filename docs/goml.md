@@ -1911,6 +1911,10 @@ GoML has no lifetime or linear type system, so a `Scope` value can currently esc
 
 `join_all` returns values in input order. `join_all_results` waits for every task and returns errors in input order, independent of goroutine scheduling.
 
+`join_all_indexed_results` preserves each error's input index. `for_each_concurrent(limit, values, body)` runs at most `limit` calls at once, uses one worker when the limit is non-positive, waits for every value, and returns indexed errors in input order. `ConcurrencyLimit::run` can apply the same cooperative limit to custom task layouts.
+
+`race(bodies)` returns the first completed value, cancels the remaining bodies, and still waits for every losing body to exit. It returns `None` for an empty input. A body that does not cooperate with cancellation can therefore delay the return from `race`.
+
 ### `collections::IndexMap[K, V]`
 
 `IndexMap` is an insertion-ordered hash map. Its key type must implement `Eq` and `Hash`:
