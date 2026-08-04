@@ -1,0 +1,100 @@
+package main;
+trait Source {
+  type Item;
+  fn get(self: Self) -> Self::Item;
+}
+
+struct NumberSource {
+    value: int,
+}
+
+impl Source for NumberSource {
+  type Item = int;
+  fn get(self: NumberSource) -> int {
+      self.value
+  }
+}
+
+fn read(source: dyn Source[Item = int]) -> int {
+    source.get()
+}
+
+fn labeled_cleanup() -> unit {
+    'outer: loop {
+        defer println("outer cleanup");
+        loop {
+            defer println("inner cleanup");
+            break 'outer;
+        }
+    }
+}
+
+fn main() -> unit {
+    println(read(NumberSource { value: 11 }));
+    let (mut index, value) = (1, 2);
+    index += value;
+    println(index);
+    let (mut captured, _) = (3, 0);
+    let increment =
+      || {
+          captured += 1;
+      };
+    increment();
+    println(captured);
+    match Option::Some(4) {
+        Some(mut count) =>
+          {
+              count += 1;
+              println(count)
+          },
+        None => (),
+    };
+    let values = Vec::new();
+    values.push(6);
+    for mut item in
+      values {
+        item += 1;
+        println(item)
+    };
+    let mut legacy = (8, 9);
+    legacy.0 += 1;
+    legacy.1 += 1;
+    println(legacy.0 + legacy.1);
+    let mut steps = 0;
+    'outer: while steps < 3 {
+        {
+            steps += 1;
+            loop {
+                continue 'outer;
+            }
+        }
+    };
+    println(steps);
+    let seen = Ref::new(0);
+    'rows: for row in
+      range(0, 3) {
+        for column in
+          range(0, 3) {
+            seen.set(seen.get() + 1);
+            if row == 1 && column == 1 {
+                {
+                    break 'rows;
+                }
+            } else {
+                {
+                    ()
+                }
+            }
+        }
+    };
+    println(seen.get());
+    let answer =
+      'result: loop {
+          loop {
+              break 'result 42;
+          }
+      };
+    println(answer);
+    labeled_cleanup()
+}
+

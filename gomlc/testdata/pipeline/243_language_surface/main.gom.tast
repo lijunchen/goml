@@ -1,0 +1,96 @@
+impl Source for NumberSource {
+  fn get(self/0: NumberSource) -> int {
+      (self/0 : NumberSource).value
+  }
+}
+
+fn read(source/1: dyn Source[Item = int]) -> int {
+    (dyn Source::get : (dyn Source[Item = int]) -> int)((source/1 : dyn Source[Item = int]))
+}
+
+fn labeled_cleanup() -> unit {
+    loop {
+        defer (println : (string) -> unit)("outer cleanup");
+        loop {
+            defer (println : (string) -> unit)("inner cleanup");
+            break@1;
+        }
+    }
+}
+
+fn main() -> unit {
+    (println : (int) -> unit)(
+      (read : (dyn Source[Item = int]) -> int)(
+        to_dyn[Source]{NumberSource}(NumberSource { value: 11 })
+      )
+    );
+    let (mut index/2: int, value/3: int) = (1, 2);
+    (index/2 : int) += (value/3 : int);
+    (println : (int) -> unit)((index/2 : int));
+    let (mut captured/4: int, _ : int) = (3, 0);
+    let increment/5: () -> unit =
+      || =>
+        {
+            (captured/4 : int) += 1;
+        };
+    (increment/5 : () -> unit)();
+    (println : (int) -> unit)((captured/4 : int));
+    match Option::Some(4) {
+        Option::Some(mut count/6: int) =>
+          {
+              (count/6 : int) += 1;
+              (println : (int) -> unit)((count/6 : int))
+          },
+        Option::None => (),
+    };
+    let values/7: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+    (Vec[int]::push : (Vec[int], int) -> unit)((values/7 : Vec[int]), 6);
+    for mut item/8: int in
+      (values/7 : Vec[int]) {
+        (item/8 : int) += 1;
+        (println : (int) -> unit)((item/8 : int))
+    };
+    let mut legacy/9: (int, int) = (8, 9);
+    (legacy/9 : (int, int)).0 += 1;
+    (legacy/9 : (int, int)).1 += 1;
+    (println : (int) -> unit)((legacy/9 : (int, int)).0 + (legacy/9 : (int, int)).1);
+    let mut steps/10: int = 0;
+    while (steps/10 : int) < 3 {
+        {
+            (steps/10 : int) += 1;
+            loop {
+                continue@1;
+            }
+        }
+    };
+    (println : (int) -> unit)((steps/10 : int));
+    let seen/11: Ref[int] = (Ref[int]::new : (int) -> Ref[int])(0);
+    for row/12: int in
+      (range : (int, int) -> FnIterator[int])(0, 3) {
+        for column/13: int in
+          (range : (int, int) -> FnIterator[int])(0, 3) {
+            (Ref[int]::set : (Ref[int], int) -> unit)(
+              (seen/11 : Ref[int]),
+              (Ref[int]::get : (Ref[int]) -> int)((seen/11 : Ref[int])) + 1
+            );
+            if (row/12 : int) == 1 && (column/13 : int) == 1 {
+                {
+                    break@1;
+                }
+            } else {
+                {
+                    ()
+                }
+            }
+        }
+    };
+    (println : (int) -> unit)((Ref[int]::get : (Ref[int]) -> int)((seen/11 : Ref[int])));
+    let answer/14: int =
+      loop {
+          loop {
+              break@1 42;
+          }
+      };
+    (println : (int) -> unit)((answer/14 : int));
+    (labeled_cleanup : () -> unit)()
+}
