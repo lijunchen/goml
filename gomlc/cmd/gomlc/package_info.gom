@@ -371,11 +371,26 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
         };
         if is_use || is_public_use {
             let value = package_info_parse_use(scanner, source_path)?;
-            let mut path = value.path;
-            for previous in uses {
-                match previous.alias {
-                    Some(alias) => if path == alias || path.starts_with(alias + "::") {
-                        path = previous.path;
+            uses.push(value);
+            package_info_skip_trivia(scanner)
+        } else {
+            parsing_uses = false;
+            ()
+        };
+    };
+    let resolved_uses: Vec[PackageInfoUse] = Vec::[];
+    for index in 0..uses.len() {
+        let current = uses[index];
+        let mut path = current.path;
+        let mut remaining = uses.len() + 1;
+        while remaining > 0 {
+            let mut changed = false;
+            for candidate in uses {
+                match candidate.alias {
+                    Some(alias) => if (path == alias || path.starts_with(alias + "::"))
+                        && path != candidate.path {
+                        path = candidate.path;
+                        changed = true;
                         break
                     } else {
                         ()
@@ -383,18 +398,19 @@ fn parse_package_info_file(source_path: string, source: string) -> Result[Packag
                     None => (),
                 }
             };
-            uses.push(PackageInfoUse { alias: value.alias, path });
-            package_info_skip_trivia(scanner)
-        } else {
-            parsing_uses = false;
-            ()
+            if changed {
+                remaining = remaining - 1;
+            } else {
+                remaining = 0;
+            }
         };
+        resolved_uses.push(PackageInfoUse { alias: current.alias, path })
     };
     Result::Ok(
         PackageInfoFile {
             package_name: declared_package.0,
             package_explicit: declared_package.1,
-            uses,
+            uses: resolved_uses,
         },
     )
 }

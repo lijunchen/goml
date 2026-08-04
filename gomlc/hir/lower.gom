@@ -174,15 +174,45 @@ fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec
     Option::None
 }
 
+fn prospective_use_aliases(file: ast::File) -> Vec[AliasEntry] {
+    let result: Vec[AliasEntry] = Vec::[];
+    for use_decl in file.uses {
+        if use_decl.items.is_empty() {
+            let target = path_segments(use_decl.path);
+            let alias = match use_decl.alias {
+                Some(value) => Option::Some(value),
+                None => last_string(target),
+            };
+            match alias {
+                Some(value) => result.push(AliasEntry { alias: value, target, item: false }),
+                None => (),
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn expand_any_use_alias(aliases: Vec[AliasEntry], prospective: Vec[AliasEntry], target: Vec[string]) -> Option[
+    Vec[string],
+] {
+    match expand_use_alias(aliases, target) {
+        Some(value) => Option::Some(value),
+        None => expand_use_alias(prospective, target),
+    }
+}
+
 fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
     let aliases: Vec[AliasEntry] = Vec::[];
+    let prospective = prospective_use_aliases(file);
     let traits: Vec[string] = Vec::[];
     let public_reexports: Vec[(string, string)] = Vec::[];
     let diagnostics: Vec[string] = Vec::[];
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
         if !use_decl.items.is_empty() {
-            let base = match expand_use_alias(aliases, target) {
+            let base = match expand_any_use_alias(aliases, prospective, target) {
                 Some(expanded) => expanded,
                 None => target,
             };
@@ -214,7 +244,7 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
                 traits.push(join_segments(item_target))
             }
         } else {
-            match expand_use_alias(aliases, target) {
+            match expand_any_use_alias(aliases, prospective, target) {
                 Some(expanded) => {
                     let exported_name = match use_decl.alias {
                         Some(alias) => alias,
@@ -270,7 +300,7 @@ fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
         for previous_index in 0..index {
             let previous = aliases[previous_index];
             if join_segments(previous.target) == join_segments(current.target)
-                && previous.alias == current.alias {
+                && (!previous.item || !current.item || previous.alias == current.alias) {
                 diagnostics.push(
                     if current.item {
                         "Duplicate imported item " + join_segments(current.target)
