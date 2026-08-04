@@ -1,5 +1,9 @@
 package project;
 
+use gomlang::bootstrap_goml::test_support;
+use std::fs;
+use std::path;
+use std::process;
 use std::testing;
 
 #[test]
@@ -119,4 +123,78 @@ fn build_graph_exposes_dependency_cycles() -> unit {
     let completed = Vec::new();
     testing::assert(!build_node_ready(graph.nodes.get(0), completed));
     testing::assert(!build_node_ready(graph.nodes.get(1), completed))
+}
+
+fn cancellation_test_context(root: string, compiler: string) -> Context {
+    Context {
+        graph: Graph {
+            module_dir: root,
+            module_path: "cancellation_test",
+            entry_package: "",
+            packages: Vec::[],
+            sources: Vec::[],
+            order: Vec::[],
+        },
+        compiler,
+        compiler_world_artifact: false,
+        artifact_root: path::join(root, "out"),
+    }
+}
+
+fn cancellation_test_command(name: string) -> Command {
+    Command::Compile {
+        subcommand: "check",
+        package_name: name,
+        input_files: Vec::[name + ".input"],
+        interface_files: Vec::[],
+        output: path::join("out", name),
+        world: Option::None,
+    }
+}
+
+#[test]
+fn execute_plan_cancels_siblings_and_cleans_cache_outputs() -> unit {
+    let root = test_support::workspace("plan_cancellation");
+    let compiler = path::join(root, "compiler");
+    test_support::write_file(
+        compiler,
+        "#!/bin/sh\ncase \" $* \" in\n    *\" --package slow \"*)\n        touch out/slow.interface\n        sleep 30 &\n        child=$!\n        echo \"$child\" > slow.pid\n        wait \"$child\"\n        ;;\n    *\" --package fail \"*)\n        while [ ! -f slow.pid ]; do sleep 0.01; done\n        touch out/fail.interface\n        exit 1\n        ;;\nesac\n",
+    );
+    test_support::write_file(path::join(root, "slow.input"), "slow");
+    test_support::write_file(path::join(root, "fail.input"), "fail");
+    match process::Command::new("chmod").args(Vec::["+x", compiler]).status() {
+        Ok(status) => testing::assert(process::ExitStatus::success(status)),
+        Err(message) => testing::fail(message),
+    };
+    let result = execute_plan(
+        cancellation_test_context(root, compiler),
+        Plan {
+            commands: Vec::[cancellation_test_command("slow"), cancellation_test_command("fail")],
+            executable: Option::None,
+            test_groups: Vec::[],
+        },
+        false,
+        2,
+    );
+    match result {
+        Ok(()) => testing::fail("failing build command succeeded"),
+        Err(message) => testing::assert(message.contains("--package fail")),
+    };
+    testing::assert(!fs::exists(path::join(root, "out/slow.interface")));
+    testing::assert(!fs::exists(path::join(root, "out/fail.interface")));
+    testing::assert(!fs::exists(path::join(root, "out/slow.goml-check-fingerprint")));
+    testing::assert(!fs::exists(path::join(root, "out/fail.goml-check-fingerprint")));
+    let check = match process::Command::new("sh").args(
+        Vec::[
+            "-c",
+            "for attempt in 1 2 3 4 5 6 7 8 9 10; do if ! kill -0 \"$(cat slow.pid)\" 2>/dev/null; then exit 0; fi; sleep 0.1; done; exit 1",
+        ],
+    ).current_dir(root).status() {
+        Ok(status) => status,
+        Err(message) => {
+            testing::fail(message);
+            process::ExitStatus { code_value: -1 }
+        },
+    };
+    testing::assert(process::ExitStatus::success(check))
 }
