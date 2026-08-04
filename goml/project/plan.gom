@@ -841,10 +841,9 @@ fn finish_prepared_command(
     }
 }
 
-fn discard_prepared_command(digests: DigestCache, context: Context, cache: Option[PreparedCache]) -> unit {
+fn abandon_prepared_command(context: Context, cache: Option[PreparedCache]) -> unit {
     match cache {
         Some(value) => {
-            invalidate_output_digests(digests, context.graph.module_dir, value.spec.outputs);
             let _ = prepare_cache_execution(context, value.spec);
         },
         None => (),
@@ -951,6 +950,7 @@ struct BuildWorkResult {
     index: int,
     cache: Option[PreparedCache],
     result: Result[unit, string],
+    completion: Option[Channel[bool]],
 }
 
 fn execute_plan_worker(
@@ -963,9 +963,27 @@ fn execute_plan_worker(
         match task::recv_with(cancel, work) {
             task::WaitResult::Completed(Some(value)) => {
                 let result = execute_prepared_command(cancel, context, value.command, value.cache);
-                results.send(BuildWorkResult { index: value.index, cache: value.cache, result });
+                let completion: Channel[bool] = Channel::new(1);
+                results.send(
+                    BuildWorkResult {
+                        index: value.index,
+                        cache: value.cache,
+                        result,
+                        completion: if result.is_ok() {
+                            Option::Some(completion)
+                        } else {
+                            Option::None
+                        },
+                    },
+                );
                 match result {
-                    Ok(()) => (),
+                    Ok(()) => match task::recv_with(cancel, completion) {
+                        task::WaitResult::Completed(Some(true)) => (),
+                        task::WaitResult::Completed(Some(false)) | task::WaitResult::Completed(None) | task::WaitResult::Cancelled => abandon_prepared_command(
+                            context,
+                            value.cache,
+                        ),
+                    },
                     Err(message) => return Result::Err(message),
                 }
             },
@@ -973,31 +991,6 @@ fn execute_plan_worker(
         }
     };
     Result::Ok(())
-}
-
-fn discard_queued_plan_work(digests: DigestCache, context: Context, work: Channel[BuildWork]) -> unit {
-    loop {
-        match work.recv() {
-            Some(value) => discard_prepared_command(digests, context, value.cache),
-            None => break,
-        }
-    }
-}
-
-fn discard_unfinished_plan_results(
-    digests: DigestCache,
-    context: Context,
-    results: Channel[BuildWorkResult],
-) -> unit {
-    loop {
-        match results.recv() {
-            Some(value) => match value.result {
-                Ok(()) => discard_prepared_command(digests, context, value.cache),
-                Err(_) => (),
-            },
-            None => break,
-        }
-    }
 }
 
 fn execute_plan_concurrently(
@@ -1046,8 +1039,19 @@ fn execute_plan_concurrently(
                         completed.set(completed.get() + 1);
                     },
                     Ok(Execute(cache)) => {
-                        work.send(BuildWork { index: node.index, command: node.command, cache });
-                        running += 1;
+                        match task::send_with(
+                            scope.token(),
+                            work,
+                            BuildWork { index: node.index, command: node.command, cache },
+                        ) {
+                            task::WaitResult::Completed(()) => {
+                                running += 1;
+                            },
+                            task::WaitResult::Cancelled => {
+                                abandon_prepared_command(context, cache);
+                                return Result::Err("build cancelled")
+                            },
+                        }
                     },
                     Err(message) => {
                         scope.cancel();
@@ -1070,11 +1074,18 @@ fn execute_plan_concurrently(
                 Some(value) => match value.result {
                     Ok(()) => match finish_prepared_command(digests, context, identity, value.cache) {
                         Ok(()) => {
+                            match value.completion {
+                                Some(completion) => completion.send(true),
+                                None => (),
+                            };
                             completed_nodes.push(value.index);
                             completed.set(completed.get() + 1);
                         },
                         Err(message) => {
-                            discard_prepared_command(digests, context, value.cache);
+                            match value.completion {
+                                Some(completion) => completion.send(false),
+                                None => (),
+                            };
                             completed.set(completed.get() + 1);
                             scope.cancel();
                             return Result::Err(message)
@@ -1120,7 +1131,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
     } else {
         let graph = build_graph(plan.commands)?;
         let digests = digest_cache();
-        let work: Channel[BuildWork] = Channel::new(total);
+        let work: Channel[BuildWork] = Channel::new(0);
         let results: Channel[BuildWorkResult] = Channel::new(total);
         let execution = task::try_scope(
             |scope: task::Scope| execute_plan_concurrently(
@@ -1141,8 +1152,6 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
             Err(message) => {
                 work.close();
                 results.close();
-                discard_queued_plan_work(digests, context, work);
-                discard_unfinished_plan_results(digests, context, results);
                 return Result::Err(message)
             },
         }
