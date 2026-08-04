@@ -1,0 +1,418 @@
+fn std::internal::task::root_scope() -> std::internal::task::ScopeHandle {
+  std::internal::task::ScopeHandle { id: @runtime(std.task.scope_new)(0) }
+}
+
+fn std::internal::task::child_scope(
+  parent/0: std::internal::task::CancelToken
+) -> std::internal::task::ScopeHandle {
+  std::internal::task::ScopeHandle {
+    id: @runtime(std.task.scope_new)(std::internal::task::CancelToken.id(parent/0))
+  }
+}
+
+fn std::internal::task::spawn(
+  scope/1: std::internal::task::ScopeHandle,
+  body/2: () -> unit
+) -> unit {
+  let mtmp0 =
+    @runtime(std.task.scope_spawn)(std::internal::task::ScopeHandle.id(scope/1), body/2) in
+  {
+    ()
+  }
+}
+
+fn std::internal::task::try_spawn(
+  scope/3: std::internal::task::ScopeHandle,
+  body/4: () -> unit
+) -> bool {
+  @runtime(std.task.scope_try_spawn)(std::internal::task::ScopeHandle.id(scope/3), body/4)
+}
+
+fn std::internal::task::run(scope/5: std::internal::task::ScopeHandle, body/6: () -> unit) -> unit {
+  let _wild1 = @runtime(std.task.scope_run)(std::internal::task::ScopeHandle.id(scope/5), body/6) in
+  @runtime(std.task.scope_finish)(std::internal::task::ScopeHandle.id(scope/5))
+}
+
+fn std::internal::task::cancel(scope/7: std::internal::task::ScopeHandle) -> unit {
+  @runtime(std.task.scope_cancel)(std::internal::task::ScopeHandle.id(scope/7))
+}
+
+fn std::internal::task::finish(scope/8: std::internal::task::ScopeHandle) -> unit {
+  @runtime(std.task.scope_finish)(std::internal::task::ScopeHandle.id(scope/8))
+}
+
+fn std::internal::task::token(
+  scope/9: std::internal::task::ScopeHandle
+) -> std::internal::task::CancelToken {
+  std::internal::task::CancelToken { id: std::internal::task::ScopeHandle.id(scope/9) }
+}
+
+fn std::internal::task::sleep_with(
+  cancel/15: std::internal::task::CancelToken,
+  nanoseconds/16: int64
+) -> bool {
+  @runtime(std.task.sleep)(std::internal::task::CancelToken.id(cancel/15), nanoseconds/16)
+}
+
+fn std::internal::task::id(cancel/17: std::internal::task::CancelToken) -> int64 {
+  std::internal::task::CancelToken.id(cancel/17)
+}
+
+fn std::internal::task::active_scope_count() -> int {
+  @runtime(std.task.active_scope_count)()
+}
+
+fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
+  self/18: std::internal::task::CancelToken
+) -> bool {
+  @runtime(std.task.scope_cancelled)(std::internal::task::CancelToken.id(self/18))
+}
+
+fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
+  limit/2: int
+) -> std::task::ConcurrencyLimit {
+  let count/3 =
+    if (limit/2 > 0) {
+        {
+          limit/2
+        }
+    } else {
+        {
+          1
+        }
+    } in
+  let slots/4 = inherent#Channel#Channel[T]#new__T_unit(count/3) in
+  let _wild6 =
+    {
+      let for_index2 = 0 in
+      let for_limit3 = count/3 in
+      while (for_index2 < for_limit3) {
+          {
+            let for_item4 = for_index2 in
+            let _wild5 = for_index2 = (for_index2 + 1) in
+            {
+              inherent#Channel#Channel[T]#send__T_unit(slots/4, ())
+            }
+          }
+      }
+    } in
+  std::task::ConcurrencyLimit { slots: slots/4 }
+}
+
+fn std::task::active_scope_count() -> int {
+  std::internal::task::active_scope_count()
+}
+
+fn inherent#std::task::Scope#std::task::Scope#cancel(self/39: std::task::Scope) -> unit {
+  std::internal::task::cancel(std::task::Scope.handle(self/39))
+}
+
+fn inherent#std::task::Scope#std::task::Scope#token(
+  self/40: std::task::Scope
+) -> std::task::CancelToken {
+  std::task::CancelToken { value: std::internal::task::token(std::task::Scope.handle(self/40)) }
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#is_cancelled(
+  self/41: std::task::CancelToken
+) -> bool {
+  inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
+    std::task::CancelToken.value(self/41)
+  )
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
+  self/42: std::task::CancelToken
+) -> int64 {
+  std::internal::task::id(std::task::CancelToken.value(self/42))
+}
+
+fn std::task::sleep_nanoseconds_with(
+  cancel/51: std::task::CancelToken,
+  nanoseconds/52: int64
+) -> std::task::WaitResult__unit {
+  if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/51), nanoseconds/52) {
+      {
+        std::task::WaitResult__unit::Completed(())
+      }
+  } else {
+      {
+        std::task::WaitResult__unit::Cancelled
+      }
+  }
+}
+
+fn main() -> unit {
+  let completed/0 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let total/7 =
+    std::task::scope__T_int(
+      |scope/1| {
+        let left/3 =
+          inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/2| 20) in
+        let right/5 =
+          inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, |_cancel/4| 22) in
+        let mtmp136 =
+          inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
+            scope/1,
+            |_cancel/6| inherent#Ref#Ref[T]#set__T_bool(completed/0, true)
+          ) in
+        {
+          (inherent#std::task::Task#std::task::Task[T]#join__T_int(left/3) +
+            inherent#std::task::Task#std::task::Task[T]#join__T_int(right/5))
+        }
+      }
+    ) in
+  let _wild137 = println__T_int(total/7) in
+  let _wild138 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
+  let nested/12 =
+    std::task::scope__T_int(
+      |scope/8| {
+        std::task::scope_with__T_int(
+          inherent#std::task::Scope#std::task::Scope#token(scope/8),
+          |scope/9| {
+            let value/11 =
+              inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/9, |_cancel/10| 7) in
+            inherent#std::task::Task#std::task::Task[T]#join__T_int(value/11)
+          }
+        )
+      }
+    ) in
+  let _wild139 = println__T_int(nested/12) in
+  let scope/13 = 3 in
+  let spawn/15 = |value/14| (value/14 + 1) in
+  println__T_int(spawn/15(scope/13))
+}
+
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/219: int) -> Channel[unit] {
+  @intrinsic(channel.new)(capacity/219)
+}
+
+fn inherent#Channel#Channel[T]#send__T_unit(self/220: Channel[unit], value/221: unit) -> unit {
+  @intrinsic(channel.send)(self/220, value/221)
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/215: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/215)
+}
+
+fn std::task::scope__T_int(body/9: (std::task::Scope) -> int) -> int {
+  let handle/10 = std::internal::task::root_scope() in
+  let result/11 = inherent#Ref#Ref[T]#new__T_Option[int](Option__int::None) in
+  let _wild11 =
+    std::internal::task::run(
+      handle/10,
+      || inherent#Ref#Ref[T]#set__T_Option[int](
+        result/11,
+        Option__int::Some(body/9(std::task::Scope { handle: handle/10 }))
+      )
+    ) in
+  std::task::completed_scope_value__T_int(result/11)
+}
+
+fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
+  self/25: std::task::Scope,
+  body/26: (std::task::CancelToken) -> int
+) -> std::task::Task__int {
+  let result/27 = inherent#Ref#Ref[T]#new__T_Option[int](Option__int::None) in
+  let ready/28 = inherent#Channel#Channel[T]#new__T_unit(0) in
+  let token/29 =
+    std::task::CancelToken {
+      value: std::internal::task::token(std::task::Scope.handle(self/25))
+    } in
+  let _wild18 =
+    std::internal::task::spawn(
+      std::task::Scope.handle(self/25),
+      || {
+        let _wild17 =
+          inherent#Ref#Ref[T]#set__T_Option[int](result/27, Option__int::Some(body/26(token/29))) in
+        inherent#Channel#Channel[T]#close__T_unit(ready/28)
+      }
+    ) in
+  std::task::Task__int { result: result/27, ready: ready/28 }
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/217: Ref[bool], value/218: bool) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
+}
+
+fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
+  self/25: std::task::Scope,
+  body/26: (std::task::CancelToken) -> unit
+) -> std::task::Task__unit {
+  let result/27 = inherent#Ref#Ref[T]#new__T_Option[unit](Option__unit::None) in
+  let ready/28 = inherent#Channel#Channel[T]#new__T_unit(0) in
+  let token/29 =
+    std::task::CancelToken {
+      value: std::internal::task::token(std::task::Scope.handle(self/25))
+    } in
+  let _wild18 =
+    std::internal::task::spawn(
+      std::task::Scope.handle(self/25),
+      || {
+        let _wild17 =
+          inherent#Ref#Ref[T]#set__T_Option[unit](
+            result/27,
+            Option__unit::Some(body/26(token/29))
+          ) in
+        inherent#Channel#Channel[T]#close__T_unit(ready/28)
+      }
+    ) in
+  std::task::Task__unit { result: result/27, ready: ready/28 }
+}
+
+fn inherent#std::task::Task#std::task::Task[T]#join__T_int(self/53: std::task::Task__int) -> int {
+  loop {
+    let mtmp25 = inherent#Channel#Channel[T]#recv__T_unit(std::task::Task__int.ready(self/53)) in
+    {
+      {
+        let mtmp26 = inherent#Ref#Ref[T]#get__T_Option[int](std::task::Task__int.result(self/53)) in
+        match mtmp26 {
+          Option__int::None => {
+            ()
+          },
+          Option__int::Some(x27) => {
+            {
+              let x27 = Option__int::Some._0(mtmp26) in
+              {
+                let value/54 = x27 in
+                {
+                  let _wild28 = break value/54 in
+                }
+              }
+            }
+          },
+        }
+      }
+    }
+  }
+}
+
+fn println__T_int(value/31: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
+}
+
+fn println__T_bool(value/31: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
+}
+
+fn inherent#Ref#Ref[T]#get__T_bool(self/216: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/216)
+}
+
+fn std::task::scope_with__T_int(
+  parent/12: std::task::CancelToken,
+  body/13: (std::task::Scope) -> int
+) -> int {
+  let handle/14 = std::internal::task::child_scope(std::task::CancelToken.value(parent/12)) in
+  let result/15 = inherent#Ref#Ref[T]#new__T_Option[int](Option__int::None) in
+  let _wild12 =
+    std::internal::task::run(
+      handle/14,
+      || inherent#Ref#Ref[T]#set__T_Option[int](
+        result/15,
+        Option__int::Some(body/13(std::task::Scope { handle: handle/14 }))
+      )
+    ) in
+  std::task::completed_scope_value__T_int(result/15)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/215: Option__int) -> Ref[Option__int] {
+  @intrinsic(ref.new)(value/215)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Option[int](
+  self/217: Ref[Option__int],
+  value/218: Option__int
+) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
+}
+
+fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
+  loop {
+    {
+      let mtmp0 = inherent#Ref#Ref[T]#get__T_Option[int](result/0) in
+      match mtmp0 {
+        Option__int::None => {
+          ()
+        },
+        Option__int::Some(x1) => {
+          {
+            let x1 = Option__int::Some._0(mtmp0) in
+            {
+              let value/1 = x1 in
+              break value/1
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn inherent#Channel#Channel[T]#close__T_unit(self/225: Channel[unit]) -> unit {
+  @intrinsic(channel.close)(self/225)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Option[unit](value/215: Option__unit) -> Ref[Option__unit] {
+  @intrinsic(ref.new)(value/215)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Option[unit](
+  self/217: Ref[Option__unit],
+  value/218: Option__unit
+) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
+}
+
+fn inherent#Channel#Channel[T]#recv__T_unit(self/222: Channel[unit]) -> Option__unit {
+  let mtmp107 = @intrinsic(channel.recv)(self/222) in
+  {
+    let x108 = mtmp107.0 in
+    let x109 = mtmp107.1 in
+    {
+      let ok/224 = x109 in
+      {
+        let value/223 = x108 in
+        {
+          if ok/224 {
+              {
+                Option__unit::Some(value/223)
+              }
+          } else {
+              {
+                Option__unit::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/216: Ref[Option__int]) -> Option__int {
+  @intrinsic(ref.get)(self/216)
+}
+
+fn trait_impl#ToString#int#to_string(self/69: int) -> string {
+  @runtime(core.int_to_string)(self/69)
+}
+
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  @runtime(core.bool_to_string)(self/66)
+}
+
+fn trait_impl#Eq#bool#eq(self/82: bool, other/83: bool) -> bool {
+  @intrinsic(eq.primitive)(self/82, other/83)
+}
+
+fn trait_impl#Hash#bool#hash(self/111: bool) -> uint64 {
+  if self/111 {
+      {
+        1
+      }
+  } else {
+      {
+        0
+      }
+  }
+}

@@ -1,0 +1,75 @@
+fn main() -> unit {
+    let completed/0: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+    let total/7: int =
+      (std::task::scope : (
+        (std::task::Scope) -> int
+      ) -> int)(
+        |scope/1: std::task::Scope| =>
+          {
+              let left/3: std::task::Task[int] =
+                (std::task::Scope::spawn : (
+                  std::task::Scope,
+                  (std::task::CancelToken) -> int
+                ) -> std::task::Task[int])(
+                  (scope/1 : std::task::Scope),
+                  |_cancel/2: std::task::CancelToken| => 20
+                );
+              let right/5: std::task::Task[int] =
+                (std::task::Scope::spawn : (
+                  std::task::Scope,
+                  (std::task::CancelToken) -> int
+                ) -> std::task::Task[int])(
+                  (scope/1 : std::task::Scope),
+                  |_cancel/4: std::task::CancelToken| => 22
+                );
+              let _ : std::task::Task[unit] =
+                (std::task::Scope::spawn : (
+                  std::task::Scope,
+                  (std::task::CancelToken) -> unit
+                ) -> std::task::Task[unit])(
+                  (scope/1 : std::task::Scope),
+                  |_cancel/6: std::task::CancelToken| =>
+                    (Ref[bool]::set : (Ref[bool], bool) -> unit)((completed/0 : Ref[bool]), true)
+                );
+              (std::task::Task[int]::join : (std::task::Task[int]) -> int)(
+                (left/3 : std::task::Task[int])
+              ) +
+                (std::task::Task[int]::join : (std::task::Task[int]) -> int)(
+                  (right/5 : std::task::Task[int])
+                )
+          }
+      );
+    (println : (int) -> unit)((total/7 : int));
+    (println : (bool) -> unit)((Ref[bool]::get : (Ref[bool]) -> bool)((completed/0 : Ref[bool])));
+    let nested/12: int =
+      (std::task::scope : (
+        (std::task::Scope) -> int
+      ) -> int)(
+        |scope/8: std::task::Scope| =>
+          {
+              (std::task::scope_with : (std::task::CancelToken, (std::task::Scope) -> int) -> int)(
+                (std::task::Scope::token : (std::task::Scope) -> std::task::CancelToken)(
+                  (scope/8 : std::task::Scope)
+                ),
+                |scope/9: std::task::Scope| =>
+                  {
+                      let value/11: std::task::Task[int] =
+                        (std::task::Scope::spawn : (
+                          std::task::Scope,
+                          (std::task::CancelToken) -> int
+                        ) -> std::task::Task[int])(
+                          (scope/9 : std::task::Scope),
+                          |_cancel/10: std::task::CancelToken| => 7
+                        );
+                      (std::task::Task[int]::join : (std::task::Task[int]) -> int)(
+                        (value/11 : std::task::Task[int])
+                      )
+                  }
+              )
+          }
+      );
+    (println : (int) -> unit)((nested/12 : int));
+    let scope/13: int = 3;
+    let spawn/15: (int) -> int = |value/14: int| => (value/14 : int) + 1;
+    (println : (int) -> unit)((spawn/15 : (int) -> int)((scope/13 : int)))
+}

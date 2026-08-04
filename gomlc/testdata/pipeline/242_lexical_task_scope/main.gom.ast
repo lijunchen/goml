@@ -1,0 +1,27 @@
+package main;
+use std::task;
+
+fn main() -> unit {
+    let completed = Ref::new(false);
+    let total =
+      scope {
+          let left = spawn |_cancel| 20;
+          let right = spawn |_cancel| 22;
+          let _ = spawn |_cancel| completed.set(true);
+          left.join() + right.join()
+      };
+    println(total);
+    println(completed.get());
+    let nested =
+      scope {
+          scope {
+              let value = spawn |_cancel| 7;
+              value.join()
+          }
+      };
+    println(nested);
+    let scope = 3;
+    let spawn = |value: int| value + 1;
+    println(spawn(scope))
+}
+

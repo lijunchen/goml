@@ -1,0 +1,2555 @@
+fn utf8_invalid_decode() -> (bool, char, int) {
+  (false, '\0', 0)
+}
+
+fn utf8_valid_decode(value/0: uint32, width/1: int) -> (bool, char, int) {
+  {
+    let mtmp0 = char_from_uint32(value/0) in
+    match mtmp0 {
+      Option::None => {
+        utf8_invalid_decode()
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let character/2 = x1 in
+            (true, character/2, width/1)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn utf8_invalid_continuation(value/3: uint32) -> bool {
+  if (value/3 < 128) {
+      true
+  } else {
+      (value/3 > 191)
+  }
+}
+
+fn utf8_valid_scalar(value/4: uint32) -> bool {
+  if (value/4 <= 1114111) {
+      (!if (value/4 >= 55296) {
+          (value/4 <= 57343)
+      } else {
+          false
+      })
+  } else {
+      false
+  }
+}
+
+fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
+  let length/7 = inherent#string#string#byte_len(value/5) in
+  let _wild2 =
+    if if (index/6 < 0) {
+        true
+    } else {
+        (index/6 >= length/7)
+    } {
+        {
+          return utf8_invalid_decode()
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let first/8 = (inherent#string#string#byte_get(value/5, index/6) as uint32) in
+  if (first/8 < 128) {
+      {
+        utf8_valid_decode(first/8, 1)
+      }
+  } else {
+      if (first/8 < 194) {
+          {
+            utf8_invalid_decode()
+          }
+      } else {
+          if (first/8 < 224) {
+              {
+                let _wild3 =
+                  if ((length/7 - index/6) < 2) {
+                      {
+                        return utf8_invalid_decode()
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  } in
+                let second/9 =
+                  (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                if utf8_invalid_continuation(second/9) {
+                    {
+                      utf8_invalid_decode()
+                    }
+                } else {
+                    {
+                      utf8_valid_decode((((first/8 & 31) << 6) | (second/9 & 63)), 2)
+                    }
+                }
+              }
+          } else {
+              if (first/8 < 240) {
+                  {
+                    let _wild4 =
+                      if ((length/7 - index/6) < 3) {
+                          {
+                            return utf8_invalid_decode()
+                          }
+                      } else {
+                          {
+                            ()
+                          }
+                      } in
+                    let second/10 =
+                      (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                    let third/11 =
+                      (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                    if if if if utf8_invalid_continuation(second/10) {
+                        true
+                    } else {
+                        utf8_invalid_continuation(third/11)
+                    } {
+                        true
+                    } else {
+                        if trait_call[Eq::eq](first/8, 224) {
+                            (second/10 < 160)
+                        } else {
+                            false
+                        }
+                    } {
+                        true
+                    } else {
+                        if trait_call[Eq::eq](first/8, 237) {
+                            (second/10 >= 160)
+                        } else {
+                            false
+                        }
+                    } {
+                        {
+                          utf8_invalid_decode()
+                        }
+                    } else {
+                        {
+                          utf8_valid_decode(
+                            ((((first/8 & 15) << 12) | ((second/10 & 63) << 6)) | (third/11 & 63)),
+                            3
+                          )
+                        }
+                    }
+                  }
+              } else {
+                  if (first/8 < 245) {
+                      {
+                        let _wild5 =
+                          if ((length/7 - index/6) < 4) {
+                              {
+                                return utf8_invalid_decode()
+                              }
+                          } else {
+                              {
+                                ()
+                              }
+                          } in
+                        let second/12 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 1)) as uint32) in
+                        let third/13 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 2)) as uint32) in
+                        let fourth/14 =
+                          (inherent#string#string#byte_get(value/5, (index/6 + 3)) as uint32) in
+                        if if if if if utf8_invalid_continuation(second/12) {
+                            true
+                        } else {
+                            utf8_invalid_continuation(third/13)
+                        } {
+                            true
+                        } else {
+                            utf8_invalid_continuation(fourth/14)
+                        } {
+                            true
+                        } else {
+                            if trait_call[Eq::eq](first/8, 240) {
+                                (second/12 < 144)
+                            } else {
+                                false
+                            }
+                        } {
+                            true
+                        } else {
+                            if trait_call[Eq::eq](first/8, 244) {
+                                (second/12 > 143)
+                            } else {
+                                false
+                            }
+                        } {
+                            {
+                              utf8_invalid_decode()
+                            }
+                        } else {
+                            {
+                              utf8_valid_decode(
+                                (((((first/8 & 7) << 18) | ((second/12 & 63) << 12)) |
+                                  ((third/13 & 63) << 6)) |
+                                  (fourth/14 & 63)),
+                                4
+                              )
+                            }
+                        }
+                      }
+                  } else {
+                      {
+                        utf8_invalid_decode()
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
+
+fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
+  if if (index/16 < 0) {
+      true
+  } else {
+      (index/16 > inherent#string#string#byte_len(value/15))
+  } {
+      {
+        false
+      }
+  } else {
+      if trait_call[Eq::eq](index/16, inherent#string#string#byte_len(value/15)) {
+          {
+            true
+          }
+      } else {
+          {
+            (!trait_call[Eq::eq]((inherent#string#string#byte_get(value/15, index/16) & 192), 128))
+          }
+      }
+  }
+}
+
+fn string_get(value/17: string, index/18: int) -> char {
+  let mtmp6 = string_decode_utf8_at(value/17, index/18) in
+  {
+    let x7 = mtmp6.0 in
+    let x8 = mtmp6.1 in
+    let x9 = mtmp6.2 in
+    {
+      let character/20 = x8 in
+      {
+        let valid/19 = x7 in
+        {
+          if valid/19 {
+              {
+                character/20
+              }
+          } else {
+              {
+                @runtime(core.string_get)("", -1)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
+  if if string_is_char_boundary(value/21, start/22) {
+      string_is_char_boundary(value/21, end/23)
+  } else {
+      false
+  } {
+      {
+        @runtime(core.string_byte_slice)(value/21, start/22, end/23)
+      }
+  } else {
+      {
+        @runtime(core.string_byte_slice)(value/21, -1, -1)
+      }
+  }
+}
+
+fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
+  {
+    let x11 = mtmp10.0 in
+    let x12 = mtmp10.1 in
+    {
+      let value/25 = x12 in
+      {
+        let index/26 = 0 in
+        let _wild20 =
+          while (index/26 < inherent#string#string#byte_len(value/25)) {
+              {
+                let mtmp13 = string_decode_utf8_at(value/25, index/26) in
+                {
+                  let x14 = mtmp13.0 in
+                  let x15 = mtmp13.1 in
+                  let x16 = mtmp13.2 in
+                  {
+                    let width/28 = x16 in
+                    {
+                      let valid/27 = x14 in
+                      {
+                        if valid/27 {
+                            {
+                              let _wild19 =
+                                {
+                                  let compound_old17 = index/26 in
+                                  let compound_value18 = width/28 in
+                                  index/26 = (compound_old17 + compound_value18)
+                                } in
+                            }
+                        } else {
+                            {
+                              return (false, "")
+                            }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          } in
+        (true, value/25)
+      }
+    }
+  }
+}
+
+fn char_to_string(value/29: char) -> string {
+  if utf8_valid_scalar((value/29 as uint32)) {
+      {
+        @runtime(core.char_to_string)(value/29)
+      }
+  } else {
+      {
+        let mtmp21 = @runtime(core.string_get)("", -1) in
+        {
+          ""
+        }
+      }
+  }
+}
+
+fn print(value/30: T) -> unit {
+  @runtime(core.string_print)(trait_call[ToString::to_string](value/30))
+}
+
+fn println(value/31: T) -> unit {
+  @runtime(core.string_println)(trait_call[ToString::to_string](value/31))
+}
+
+fn char_from_uint32(value/32: uint32) -> Option[char] {
+  if utf8_valid_scalar(value/32) {
+      {
+        let mtmp22 = @runtime(core.char_from_uint32)(value/32) in
+        {
+          let x23 = mtmp22.0 in
+          let x24 = mtmp22.1 in
+          {
+            let character/33 = x24 in
+            {
+              Option::Some(character/33)
+            }
+          }
+        }
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn inherent#int#int#to_string(self/34: int) -> string {
+  @runtime(core.int_to_string)(self/34)
+}
+
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
+}
+
+fn inherent#char#char#to_string(self/36: char) -> string {
+  char_to_string(self/36)
+}
+
+fn inherent#string#string#len(self/37: string) -> int {
+  @runtime(core.string_len)(self/37)
+}
+
+fn inherent#string#string#byte_len(self/38: string) -> int {
+  @runtime(core.string_len)(self/38)
+}
+
+fn inherent#string#string#get(self/39: string, index/40: int) -> char {
+  string_get(self/39, index/40)
+}
+
+fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
+  @runtime(core.string_byte_get)(self/41, index/42)
+}
+
+fn inherent#string#string#byte_slice(self/43: string, start/44: int, end/45: int) -> string {
+  string_byte_slice(self/43, start/44, end/45)
+}
+
+fn inherent#string#string#is_char_boundary(self/46: string, index/47: int) -> bool {
+  string_is_char_boundary(self/46, index/47)
+}
+
+fn inherent#string#string#decode_at(self/48: string, index/49: int) -> Option[(char, int)] {
+  let mtmp25 = string_decode_utf8_at(self/48, index/49) in
+  {
+    let x26 = mtmp25.0 in
+    let x27 = mtmp25.1 in
+    let x28 = mtmp25.2 in
+    {
+      let width/52 = x28 in
+      {
+        let value/51 = x27 in
+        {
+          let valid/50 = x26 in
+          {
+            if valid/50 {
+                {
+                  Option::Some((value/51, width/52))
+                }
+            } else {
+                {
+                  Option::None
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
+  @runtime(core.string_to_bytes)(self/53)
+}
+
+fn inherent#string#string#chars(self/54: string) -> FnIterator[char] {
+  let index/55 = @intrinsic(ref.new)(0) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      {
+        let mtmp29 = inherent#string#string#decode_at(self/54, @intrinsic(ref.get)(index/55)) in
+        match mtmp29 {
+          Option::None => {
+            Option::None
+          },
+          Option::Some(x30) => {
+            {
+              let x30 = Option::Some._0(mtmp29) in
+              {
+                let decoded/56 = x30 in
+                {
+                  let mtmp31 = decoded/56 in
+                  {
+                    let x32 = mtmp31.0 in
+                    let x33 = mtmp31.1 in
+                    {
+                      let width/58 = x33 in
+                      {
+                        let value/57 = x32 in
+                        {
+                          let _wild36 =
+                            {
+                              let compound_old34 = @intrinsic(ref.get)(index/55) in
+                              let compound_value35 = width/58 in
+                              @intrinsic(ref.set)(index/55, (compound_old34 + compound_value35))
+                            } in
+                          Option::Some(value/57)
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+        }
+      }
+    }
+  )
+}
+
+fn inherent#string#string#char_indices(self/59: string) -> FnIterator[(int, char)] {
+  let index/60 = @intrinsic(ref.new)(0) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      let current/61 = @intrinsic(ref.get)(index/60) in
+      {
+        let mtmp37 = inherent#string#string#decode_at(self/59, current/61) in
+        match mtmp37 {
+          Option::None => {
+            Option::None
+          },
+          Option::Some(x38) => {
+            {
+              let x38 = Option::Some._0(mtmp37) in
+              {
+                let decoded/62 = x38 in
+                {
+                  let mtmp39 = decoded/62 in
+                  {
+                    let x40 = mtmp39.0 in
+                    let x41 = mtmp39.1 in
+                    {
+                      let width/64 = x41 in
+                      {
+                        let value/63 = x40 in
+                        {
+                          let _wild42 = @intrinsic(ref.set)(index/60, (current/61 + width/64)) in
+                          Option::Some((current/61, value/63))
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+        }
+      }
+    }
+  )
+}
+
+fn trait_impl#ToString#unit#to_string(self/65: unit) -> string {
+  @runtime(core.unit_to_string)(self/65)
+}
+
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  @runtime(core.bool_to_string)(self/66)
+}
+
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
+}
+
+fn trait_impl#ToString#char#to_string(self/68: char) -> string {
+  char_to_string(self/68)
+}
+
+fn trait_impl#ToString#int#to_string(self/69: int) -> string {
+  @runtime(core.int_to_string)(self/69)
+}
+
+fn trait_impl#ToString#int8#to_string(self/70: int8) -> string {
+  @runtime(core.int8_to_string)(self/70)
+}
+
+fn trait_impl#ToString#int16#to_string(self/71: int16) -> string {
+  @runtime(core.int16_to_string)(self/71)
+}
+
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  @runtime(core.int32_to_string)(self/72)
+}
+
+fn trait_impl#ToString#int64#to_string(self/73: int64) -> string {
+  @runtime(core.int64_to_string)(self/73)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/74: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/74)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/75: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/75)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/76: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/76)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/77: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/77)
+}
+
+fn trait_impl#ToString#float32#to_string(self/78: float32) -> string {
+  @runtime(core.float32_to_string)(self/78)
+}
+
+fn trait_impl#ToString#float64#to_string(self/79: float64) -> string {
+  @runtime(core.float64_to_string)(self/79)
+}
+
+fn trait_impl#Eq#unit#eq(self/80: unit, other/81: unit) -> bool {
+  true
+}
+
+fn trait_impl#Eq#bool#eq(self/82: bool, other/83: bool) -> bool {
+  @intrinsic(eq.primitive)(self/82, other/83)
+}
+
+fn trait_impl#Eq#string#eq(self/84: string, other/85: string) -> bool {
+  @intrinsic(eq.primitive)(self/84, other/85)
+}
+
+fn trait_impl#Eq#char#eq(self/86: char, other/87: char) -> bool {
+  @intrinsic(eq.primitive)(self/86, other/87)
+}
+
+fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
+  @intrinsic(eq.primitive)(self/88, other/89)
+}
+
+fn trait_impl#Eq#int8#eq(self/90: int8, other/91: int8) -> bool {
+  @intrinsic(eq.primitive)(self/90, other/91)
+}
+
+fn trait_impl#Eq#int16#eq(self/92: int16, other/93: int16) -> bool {
+  @intrinsic(eq.primitive)(self/92, other/93)
+}
+
+fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
+  @intrinsic(eq.primitive)(self/94, other/95)
+}
+
+fn trait_impl#Eq#int64#eq(self/96: int64, other/97: int64) -> bool {
+  @intrinsic(eq.primitive)(self/96, other/97)
+}
+
+fn trait_impl#Eq#uint8#eq(self/98: uint8, other/99: uint8) -> bool {
+  @intrinsic(eq.primitive)(self/98, other/99)
+}
+
+fn trait_impl#Eq#uint16#eq(self/100: uint16, other/101: uint16) -> bool {
+  @intrinsic(eq.primitive)(self/100, other/101)
+}
+
+fn trait_impl#Eq#uint32#eq(self/102: uint32, other/103: uint32) -> bool {
+  @intrinsic(eq.primitive)(self/102, other/103)
+}
+
+fn trait_impl#Eq#uint64#eq(self/104: uint64, other/105: uint64) -> bool {
+  @intrinsic(eq.primitive)(self/104, other/105)
+}
+
+fn trait_impl#Eq#float32#eq(self/106: float32, other/107: float32) -> bool {
+  @intrinsic(eq.primitive)(self/106, other/107)
+}
+
+fn trait_impl#Eq#float64#eq(self/108: float64, other/109: float64) -> bool {
+  @intrinsic(eq.primitive)(self/108, other/109)
+}
+
+fn trait_impl#Hash#unit#hash(self/110: unit) -> uint64 {
+  0
+}
+
+fn trait_impl#Hash#bool#hash(self/111: bool) -> uint64 {
+  if self/111 {
+      {
+        1
+      }
+  } else {
+      {
+        0
+      }
+  }
+}
+
+fn trait_impl#Hash#string#hash(self/112: string) -> uint64 {
+  @runtime(core.string_hash)(self/112)
+}
+
+fn trait_impl#Hash#char#hash(self/113: char) -> uint64 {
+  @runtime(core.char_hash)(self/113)
+}
+
+fn trait_impl#Hash#int#hash(self/114: int) -> uint64 {
+  @runtime(core.int_hash)(self/114)
+}
+
+fn trait_impl#Hash#int8#hash(self/115: int8) -> uint64 {
+  @runtime(core.int8_hash)(self/115)
+}
+
+fn trait_impl#Hash#int16#hash(self/116: int16) -> uint64 {
+  @runtime(core.int16_hash)(self/116)
+}
+
+fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/117)
+}
+
+fn trait_impl#Hash#int64#hash(self/118: int64) -> uint64 {
+  @runtime(core.int64_hash)(self/118)
+}
+
+fn trait_impl#Hash#uint8#hash(self/119: uint8) -> uint64 {
+  @runtime(core.uint8_hash)(self/119)
+}
+
+fn trait_impl#Hash#uint16#hash(self/120: uint16) -> uint64 {
+  @runtime(core.uint16_hash)(self/120)
+}
+
+fn trait_impl#Hash#uint32#hash(self/121: uint32) -> uint64 {
+  @runtime(core.uint32_hash)(self/121)
+}
+
+fn trait_impl#Hash#uint64#hash(self/122: uint64) -> uint64 {
+  self/122
+}
+
+fn trait_impl#Hash#float32#hash(self/123: float32) -> uint64 {
+  @runtime(core.float32_hash)(self/123)
+}
+
+fn trait_impl#Hash#float64#hash(self/124: float64) -> uint64 {
+  @runtime(core.float64_hash)(self/124)
+}
+
+fn trait_impl#Eq#Ref[T]#eq[T](self/125: Ref[T], other/126: Ref[T]) -> bool {
+  @intrinsic(ref.ptr_eq)(self/125, other/126)
+}
+
+fn trait_impl#Hash#Ref[T]#hash[T](self/127: Ref[T]) -> uint64 {
+  @intrinsic(ref.ptr_hash)(self/127)
+}
+
+fn trait_impl#ToString#Ref[T]#to_string[T](self/128: Ref[T]) -> string {
+  let v/129 = inherent#Ref#Ref[T]#get(self/128) in
+  (("ref(" + trait_call[ToString::to_string](v/129)) + ")")
+}
+
+fn inherent#FnIterator#FnIterator[T]#from_fn[T](next_fn/130: () -> Option[T]) -> FnIterator[T] {
+  FnIterator { next_fn: next_fn/130 }
+}
+
+fn trait_impl#Iterator#FnIterator[T]#next[T](self/131: FnIterator[T]) -> Option[T] {
+  FnIterator.next_fn(self/131)()
+}
+
+fn trait_impl#IntoIterator#I#into_iter[I](self/132: I) -> I {
+  self/132
+}
+
+fn inherent#Vec#Vec[T]#new[T]() -> Vec[T] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#with_capacity[T](capacity/133: int) -> Vec[T] {
+  @intrinsic(vec.with_capacity)(capacity/133)
+}
+
+fn inherent#Vec#Vec[T]#push[T](self/134: Vec[T], elem/135: T) -> unit {
+  @intrinsic(vec.push)(self/134, elem/135)
+}
+
+fn inherent#Vec#Vec[T]#pushed[T](self/136: Vec[T], elem/137: T) -> Vec[T] {
+  let result/138 = inherent#Vec#Vec[T]#with_capacity((inherent#Vec#Vec[T]#len(self/136) + 1)) in
+  let index/139 = 0 in
+  let _wild47 =
+    while (index/139 < inherent#Vec#Vec[T]#len(self/136)) {
+        {
+          let _wild43 =
+            inherent#Vec#Vec[T]#push(result/138, @intrinsic(vec.get)(self/136, index/139)) in
+          let _wild46 =
+            {
+              let compound_old44 = index/139 in
+              let compound_value45 = 1 in
+              index/139 = (compound_old44 + compound_value45)
+            } in
+        }
+    } in
+  let _wild48 = inherent#Vec#Vec[T]#push(result/138, elem/137) in
+  result/138
+}
+
+fn inherent#Vec#Vec[T]#get[T](self/140: Vec[T], index/141: int) -> T {
+  @intrinsic(vec.get)(self/140, index/141)
+}
+
+fn inherent#Vec#Vec[T]#set[T](self/142: Vec[T], index/143: int, elem/144: T) -> unit {
+  @intrinsic(vec.set)(self/142, index/143, elem/144)
+}
+
+fn inherent#Vec#Vec[T]#len[T](self/145: Vec[T]) -> int {
+  @intrinsic(vec.len)(self/145)
+}
+
+fn inherent#Vec#Vec[T]#capacity[T](self/146: Vec[T]) -> int {
+  @intrinsic(vec.capacity)(self/146)
+}
+
+fn inherent#Vec#Vec[T]#is_empty[T](self/147: Vec[T]) -> bool {
+  trait_call[Eq::eq](@intrinsic(vec.len)(self/147), 0)
+}
+
+fn inherent#Vec#Vec[T]#reserve[T](self/148: Vec[T], additional/149: int) -> unit {
+  @intrinsic(vec.reserve)(self/148, additional/149)
+}
+
+fn inherent#Vec#Vec[T]#truncate[T](self/150: Vec[T], len/151: int) -> unit {
+  @intrinsic(vec.truncate)(self/150, len/151)
+}
+
+fn inherent#Vec#Vec[T]#clear[T](self/152: Vec[T]) -> unit {
+  inherent#Vec#Vec[T]#truncate(self/152, 0)
+}
+
+fn inherent#Vec#Vec[T]#last[T](self/153: Vec[T]) -> Option[T] {
+  let len/154 = inherent#Vec#Vec[T]#len(self/153) in
+  if trait_call[Eq::eq](len/154, 0) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        Option::Some(@intrinsic(vec.get)(self/153, (len/154 - 1)))
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#pop[T](self/155: Vec[T]) -> Option[T] {
+  let len/156 = inherent#Vec#Vec[T]#len(self/155) in
+  if trait_call[Eq::eq](len/156, 0) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        let value/157 = @intrinsic(vec.get)(self/155, (len/156 - 1)) in
+        let _wild49 = inherent#Vec#Vec[T]#truncate(self/155, (len/156 - 1)) in
+        Option::Some(value/157)
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#swap[T](self/158: Vec[T], left/159: int, right/160: int) -> unit {
+  let value/161 = @intrinsic(vec.get)(self/158, left/159) in
+  let _wild54 =
+    {
+      let place_root50 = self/158 in
+      let index51 = left/159 in
+      let place52 = @intrinsic(vec.get)(place_root50, index51) in
+      let value53 = @intrinsic(vec.get)(self/158, right/160) in
+      @intrinsic(vec.set)(place_root50, index51, value53)
+    } in
+  let _wild59 =
+    {
+      let place_root55 = self/158 in
+      let index56 = right/160 in
+      let place57 = @intrinsic(vec.get)(place_root55, index56) in
+      let value58 = value/161 in
+      @intrinsic(vec.set)(place_root55, index56, value58)
+    } in
+}
+
+fn inherent#Vec#Vec[T]#swap_remove[T](self/162: Vec[T], index/163: int) -> T {
+  let len/164 = inherent#Vec#Vec[T]#len(self/162) in
+  let value/165 = @intrinsic(vec.get)(self/162, index/163) in
+  let _wild65 =
+    if ((index/163 + 1) < len/164) {
+        {
+          let _wild64 =
+            {
+              let place_root60 = self/162 in
+              let index61 = index/163 in
+              let place62 = @intrinsic(vec.get)(place_root60, index61) in
+              let value63 = @intrinsic(vec.get)(self/162, (len/164 - 1)) in
+              @intrinsic(vec.set)(place_root60, index61, value63)
+            } in
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let _wild66 = inherent#Vec#Vec[T]#truncate(self/162, (len/164 - 1)) in
+  value/165
+}
+
+fn inherent#Vec#Vec[T]#insert[T](self/166: Vec[T], index/167: int, value/168: T) -> unit {
+  let len/169 = inherent#Vec#Vec[T]#len(self/166) in
+  if trait_call[Eq::eq](index/167, len/169) {
+      {
+        inherent#Vec#Vec[T]#push(self/166, value/168)
+      }
+  } else {
+      {
+        let mtmp67 = @intrinsic(vec.get)(self/166, index/167) in
+        {
+          let _wild68 =
+            inherent#Vec#Vec[T]#push(self/166, @intrinsic(vec.get)(self/166, (len/169 - 1))) in
+          let current/170 = (len/169 - 1) in
+          let _wild77 =
+            while (current/170 > index/167) {
+                {
+                  let _wild73 =
+                    {
+                      let place_root69 = self/166 in
+                      let index70 = current/170 in
+                      let place71 = @intrinsic(vec.get)(place_root69, index70) in
+                      let value72 = @intrinsic(vec.get)(self/166, (current/170 - 1)) in
+                      @intrinsic(vec.set)(place_root69, index70, value72)
+                    } in
+                  let _wild76 =
+                    {
+                      let compound_old74 = current/170 in
+                      let compound_value75 = 1 in
+                      current/170 = (compound_old74 - compound_value75)
+                    } in
+                }
+            } in
+          let _wild82 =
+            {
+              let place_root78 = self/166 in
+              let index79 = index/167 in
+              let place80 = @intrinsic(vec.get)(place_root78, index79) in
+              let value81 = value/168 in
+              @intrinsic(vec.set)(place_root78, index79, value81)
+            } in
+        }
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#remove[T](self/171: Vec[T], index/172: int) -> T {
+  let len/173 = inherent#Vec#Vec[T]#len(self/171) in
+  let value/174 = @intrinsic(vec.get)(self/171, index/172) in
+  let current/175 = index/172 in
+  let _wild91 =
+    while ((current/175 + 1) < len/173) {
+        {
+          let _wild87 =
+            {
+              let place_root83 = self/171 in
+              let index84 = current/175 in
+              let place85 = @intrinsic(vec.get)(place_root83, index84) in
+              let value86 = @intrinsic(vec.get)(self/171, (current/175 + 1)) in
+              @intrinsic(vec.set)(place_root83, index84, value86)
+            } in
+          let _wild90 =
+            {
+              let compound_old88 = current/175 in
+              let compound_value89 = 1 in
+              current/175 = (compound_old88 + compound_value89)
+            } in
+        }
+    } in
+  let _wild92 = inherent#Vec#Vec[T]#truncate(self/171, (len/173 - 1)) in
+  value/174
+}
+
+fn inherent#Vec#Vec[T]#reverse[T](self/176: Vec[T]) -> unit {
+  let left/177 = 0 in
+  let right/178 = (inherent#Vec#Vec[T]#len(self/176) - 1) in
+  while (left/177 < right/178) {
+      {
+        let _wild93 = inherent#Vec#Vec[T]#swap(self/176, left/177, right/178) in
+        let _wild96 =
+          {
+            let compound_old94 = left/177 in
+            let compound_value95 = 1 in
+            left/177 = (compound_old94 + compound_value95)
+          } in
+        let _wild99 =
+          {
+            let compound_old97 = right/178 in
+            let compound_value98 = 1 in
+            right/178 = (compound_old97 - compound_value98)
+          } in
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#extend[T](self/179: Vec[T], other/180: Vec[T]) -> unit {
+  let len/181 = inherent#Vec#Vec[T]#len(other/180) in
+  let _wild100 = inherent#Vec#Vec[T]#reserve(self/179, len/181) in
+  let index/182 = 0 in
+  while (index/182 < len/181) {
+      {
+        let _wild101 =
+          inherent#Vec#Vec[T]#push(self/179, @intrinsic(vec.get)(other/180, index/182)) in
+        let _wild104 =
+          {
+            let compound_old102 = index/182 in
+            let compound_value103 = 1 in
+            index/182 = (compound_old102 + compound_value103)
+          } in
+      }
+  }
+}
+
+fn inherent#Vec#Vec[T]#slice[T](self/183: Vec[T], start/184: int, end/185: int) -> Slice[T] {
+  @intrinsic(slice.new)(self/183, start/184, end/185)
+}
+
+fn inherent#Vec#Vec[T]#iter[T](self/186: Vec[T]) -> FnIterator[T] {
+  let index/187 = @intrinsic(ref.new)(0) in
+  let len/188 = inherent#Vec#Vec[T]#len(self/186) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      let current/189 = @intrinsic(ref.get)(index/187) in
+      if (current/189 < len/188) {
+          {
+            let value/190 = @intrinsic(vec.get)(self/186, current/189) in
+            let _wild105 = @intrinsic(ref.set)(index/187, (current/189 + 1)) in
+            Option::Some(value/190)
+          }
+      } else {
+          {
+            Option::None
+          }
+      }
+    }
+  )
+}
+
+fn trait_impl#IntoIterator#Vec[T]#into_iter[T](self/191: Vec[T]) -> FnIterator[T] {
+  inherent#Vec#Vec[T]#iter(self/191)
+}
+
+fn inherent#Slice#Slice[T]#get[T](self/192: Slice[T], index/193: int) -> T {
+  @intrinsic(slice.get)(self/192, index/193)
+}
+
+fn inherent#Slice#Slice[T]#len[T](self/194: Slice[T]) -> int {
+  @intrinsic(slice.len)(self/194)
+}
+
+fn inherent#Slice#Slice[T]#sub[T](self/195: Slice[T], start/196: int, end/197: int) -> Slice[T] {
+  @intrinsic(slice.sub)(self/195, start/196, end/197)
+}
+
+fn inherent#Slice#Slice[T]#iter[T](self/198: Slice[T]) -> FnIterator[T] {
+  let index/199 = @intrinsic(ref.new)(0) in
+  let len/200 = inherent#Slice#Slice[T]#len(self/198) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      let current/201 = @intrinsic(ref.get)(index/199) in
+      if (current/201 < len/200) {
+          {
+            let value/202 = inherent#Slice#Slice[T]#get(self/198, current/201) in
+            let _wild106 = @intrinsic(ref.set)(index/199, (current/201 + 1)) in
+            Option::Some(value/202)
+          }
+      } else {
+          {
+            Option::None
+          }
+      }
+    }
+  )
+}
+
+fn trait_impl#IntoIterator#Slice[T]#into_iter[T](self/203: Slice[T]) -> FnIterator[T] {
+  inherent#Slice#Slice[T]#iter(self/203)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new[K, V]() -> HashMap[K, V] {
+  @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get[K, V](self/204: HashMap[K, V], key/205: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/204, key/205)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set[K, V](
+  self/206: HashMap[K, V],
+  key/207: K,
+  value/208: V
+) -> unit {
+  @intrinsic(hashmap.set)(self/206, key/207, value/208)
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove[K, V](self/209: HashMap[K, V], key/210: K) -> unit {
+  @intrinsic(hashmap.remove)(self/209, key/210)
+}
+
+fn inherent#HashMap#HashMap[K,V]#len[K, V](self/211: HashMap[K, V]) -> int {
+  @intrinsic(hashmap.len)(self/211)
+}
+
+fn inherent#HashMap#HashMap[K,V]#contains[K, V](self/212: HashMap[K, V], key/213: K) -> bool {
+  @intrinsic(hashmap.contains)(self/212, key/213)
+}
+
+fn inherent#HashMap#HashMap[K,V]#entries[K, V](self/214: HashMap[K, V]) -> Vec[(K, V)] {
+  @intrinsic(hashmap.entries)(self/214)
+}
+
+fn inherent#Ref#Ref[T]#new[T](value/215: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/215)
+}
+
+fn inherent#Ref#Ref[T]#get[T](self/216: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/216)
+}
+
+fn inherent#Ref#Ref[T]#set[T](self/217: Ref[T], value/218: T) -> unit {
+  @intrinsic(ref.set)(self/217, value/218)
+}
+
+fn inherent#Channel#Channel[T]#new[T](capacity/219: int) -> Channel[T] {
+  @intrinsic(channel.new)(capacity/219)
+}
+
+fn inherent#Channel#Channel[T]#send[T](self/220: Channel[T], value/221: T) -> unit {
+  @intrinsic(channel.send)(self/220, value/221)
+}
+
+fn inherent#Channel#Channel[T]#recv[T](self/222: Channel[T]) -> Option[T] {
+  let mtmp107 = @intrinsic(channel.recv)(self/222) in
+  {
+    let x108 = mtmp107.0 in
+    let x109 = mtmp107.1 in
+    {
+      let ok/224 = x109 in
+      {
+        let value/223 = x108 in
+        {
+          if ok/224 {
+              {
+                Option::Some(value/223)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn inherent#Channel#Channel[T]#close[T](self/225: Channel[T]) -> unit {
+  @intrinsic(channel.close)(self/225)
+}
+
+fn __goml_builtin_range(start/226: int, end/227: int) -> FnIterator[int] {
+  let current/228 = @intrinsic(ref.new)(start/226) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      let value/229 = @intrinsic(ref.get)(current/228) in
+      if (value/229 < end/227) {
+          {
+            let _wild110 = @intrinsic(ref.set)(current/228, (value/229 + 1)) in
+            Option::Some(value/229)
+          }
+      } else {
+          {
+            Option::None
+          }
+      }
+    }
+  )
+}
+
+fn range(start/230: int, end/231: int) -> FnIterator[int] {
+  __goml_builtin_range(start/230, end/231)
+}
+
+fn trait_impl#ToString#uint#to_string(self/232: uint) -> string {
+  @runtime(core.uint_to_string)(self/232)
+}
+
+fn trait_impl#Eq#uint#eq(self/233: uint, other/234: uint) -> bool {
+  @intrinsic(eq.primitive)(self/233, other/234)
+}
+
+fn trait_impl#Hash#uint#hash(self/235: uint) -> uint64 {
+  @runtime(core.uint_hash)(self/235)
+}
+
+fn inherent#string#string#starts_with(self/236: string, prefix/237: string) -> bool {
+  if if (inherent#string#string#byte_len(prefix/237) <= inherent#string#string#byte_len(self/236)) {
+      inherent#string#string#is_char_boundary(self/236, inherent#string#string#byte_len(prefix/237))
+  } else {
+      false
+  } {
+      trait_call[Eq::eq](
+        inherent#string#string#byte_slice(self/236, 0, inherent#string#string#byte_len(prefix/237)),
+        prefix/237
+      )
+  } else {
+      false
+  }
+}
+
+fn inherent#string#string#ends_with(self/238: string, suffix/239: string) -> bool {
+  if (inherent#string#string#byte_len(suffix/239) > inherent#string#string#byte_len(self/238)) {
+      {
+        false
+      }
+  } else {
+      {
+        let start/240 =
+          (inherent#string#string#byte_len(self/238) -
+            inherent#string#string#byte_len(suffix/239)) in
+        if inherent#string#string#is_char_boundary(self/238, start/240) {
+            trait_call[Eq::eq](
+              inherent#string#string#byte_slice(
+                self/238,
+                start/240,
+                inherent#string#string#byte_len(self/238)
+              ),
+              suffix/239
+            )
+        } else {
+            false
+        }
+      }
+  }
+}
+
+fn inherent#string#string#contains(self/241: string, expected/242: string) -> bool {
+  if trait_call[Eq::eq](inherent#string#string#byte_len(expected/242), 0) {
+      {
+        true
+      }
+  } else {
+      if (inherent#string#string#byte_len(expected/242) >
+        inherent#string#string#byte_len(self/241)) {
+          {
+            false
+          }
+      } else {
+          {
+            let _wild114 =
+              {
+                let for_iter111 =
+                  trait_call[IntoIterator::into_iter](
+                    __goml_builtin_range(
+                      0,
+                      ((inherent#string#string#byte_len(self/241) -
+                        inherent#string#string#byte_len(expected/242)) +
+                        1)
+                    )
+                  ) in
+                while true {
+                    {
+                      let for_next112 = trait_call[Iterator::next](for_iter111) in
+                      match for_next112 {
+                        Option::None => {
+                          break
+                        },
+                        Option::Some(x113) => {
+                          {
+                            let x113 = Option::Some._0(for_next112) in
+                            {
+                              let start/243 = x113 in
+                              {
+                                let end/244 =
+                                  (start/243 + inherent#string#string#byte_len(expected/242)) in
+                                if if if inherent#string#string#is_char_boundary(
+                                  self/241,
+                                  start/243
+                                ) {
+                                    inherent#string#string#is_char_boundary(self/241, end/244)
+                                } else {
+                                    false
+                                } {
+                                    trait_call[Eq::eq](
+                                      inherent#string#string#byte_slice(
+                                        self/241,
+                                        start/243,
+                                        end/244
+                                      ),
+                                      expected/242
+                                    )
+                                } else {
+                                    false
+                                } {
+                                    {
+                                      return true
+                                    }
+                                } else {
+                                    {
+                                      ()
+                                    }
+                                }
+                              }
+                            }
+                          }
+                        },
+                      }
+                    }
+                }
+              } in
+            false
+          }
+      }
+  }
+}
+
+fn inherent#Option#Option[T]#is_some[T](self/245: Option[T]) -> bool {
+  match self/245 {
+    Option::None => {
+      false
+    },
+    Option::Some(x115) => {
+      {
+        let x115 = Option::Some._0(self/245) in
+        true
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#is_none[T](self/246: Option[T]) -> bool {
+  (!inherent#Option#Option[T]#is_some(self/246))
+}
+
+fn inherent#Option#Option[T]#unwrap_or[T](self/247: Option[T], fallback/248: T) -> T {
+  match self/247 {
+    Option::None => {
+      fallback/248
+    },
+    Option::Some(x116) => {
+      {
+        let x116 = Option::Some._0(self/247) in
+        {
+          let value/249 = x116 in
+          value/249
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#unwrap_or_else[T](self/250: Option[T], fallback/251: () -> T) -> T {
+  match self/250 {
+    Option::None => {
+      fallback/251()
+    },
+    Option::Some(x117) => {
+      {
+        let x117 = Option::Some._0(self/250) in
+        {
+          let value/252 = x117 in
+          value/252
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#is_ok[T, E](self/253: Result[T, E]) -> bool {
+  match self/253 {
+    Result::Ok(x118) => {
+      {
+        let x118 = Result::Ok._0(self/253) in
+        true
+      }
+    },
+    Result::Err(x119) => {
+      {
+        let x119 = Result::Err._0(self/253) in
+        false
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#is_err[T, E](self/254: Result[T, E]) -> bool {
+  (!inherent#Result#Result[T,E]#is_ok(self/254))
+}
+
+fn inherent#Result#Result[T,E]#unwrap_or[T, E](self/255: Result[T, E], fallback/256: T) -> T {
+  match self/255 {
+    Result::Ok(x120) => {
+      {
+        let x120 = Result::Ok._0(self/255) in
+        {
+          let value/257 = x120 in
+          value/257
+        }
+      }
+    },
+    Result::Err(x121) => {
+      {
+        let x121 = Result::Err._0(self/255) in
+        fallback/256
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#unwrap_or_else[T, E](
+  self/258: Result[T, E],
+  fallback/259: (E) -> T
+) -> T {
+  match self/258 {
+    Result::Ok(x122) => {
+      {
+        let x122 = Result::Ok._0(self/258) in
+        {
+          let value/260 = x122 in
+          value/260
+        }
+      }
+    },
+    Result::Err(x123) => {
+      {
+        let x123 = Result::Err._0(self/258) in
+        {
+          let error/261 = x123 in
+          fallback/259(error/261)
+        }
+      }
+    },
+  }
+}
+
+fn __goml_builtin_range_inclusive(start/262: int, end/263: int) -> FnIterator[int] {
+  let current/264 = @intrinsic(ref.new)(start/262) in
+  let finished/265 = @intrinsic(ref.new)(false) in
+  inherent#FnIterator#FnIterator#from_fn(
+    || => {
+      if if @intrinsic(ref.get)(finished/265) {
+          true
+      } else {
+          (@intrinsic(ref.get)(current/264) > end/263)
+      } {
+          {
+            Option::None
+          }
+      } else {
+          {
+            let value/266 = @intrinsic(ref.get)(current/264) in
+            let _wild126 =
+              if trait_call[Eq::eq](value/266, end/263) {
+                  {
+                    let _wild124 = @intrinsic(ref.set)(finished/265, true) in
+                  }
+              } else {
+                  {
+                    let _wild125 = @intrinsic(ref.set)(current/264, (value/266 + 1)) in
+                  }
+              } in
+            Option::Some(value/266)
+          }
+      }
+    }
+  )
+}
+
+fn inherent#Option#Option[T]#map[T, U](self/267: Option[T], map_fn/268: (T) -> U) -> Option[U] {
+  match self/267 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x127) => {
+      {
+        let x127 = Option::Some._0(self/267) in
+        {
+          let value/269 = x127 in
+          Option::Some(map_fn/268(value/269))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#and_then[T, U](
+  self/270: Option[T],
+  next/271: (T) -> Option[U]
+) -> Option[U] {
+  match self/270 {
+    Option::None => {
+      Option::None
+    },
+    Option::Some(x128) => {
+      {
+        let x128 = Option::Some._0(self/270) in
+        {
+          let value/272 = x128 in
+          next/271(value/272)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Option#Option[T]#ok_or[T, E](self/273: Option[T], error/274: E) -> Result[T, E] {
+  match self/273 {
+    Option::None => {
+      Result::Err(error/274)
+    },
+    Option::Some(x129) => {
+      {
+        let x129 = Option::Some._0(self/273) in
+        {
+          let value/275 = x129 in
+          Result::Ok(value/275)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map[T, E, U](self/276: Result[T, E], map_fn/277: (T) -> U) -> Result[
+  U,
+  E
+] {
+  match self/276 {
+    Result::Ok(x130) => {
+      {
+        let x130 = Result::Ok._0(self/276) in
+        {
+          let value/278 = x130 in
+          Result::Ok(map_fn/277(value/278))
+        }
+      }
+    },
+    Result::Err(x131) => {
+      {
+        let x131 = Result::Err._0(self/276) in
+        {
+          let error/279 = x131 in
+          Result::Err(error/279)
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#map_err[T, E, F](
+  self/280: Result[T, E],
+  map_fn/281: (E) -> F
+) -> Result[T, F] {
+  match self/280 {
+    Result::Ok(x132) => {
+      {
+        let x132 = Result::Ok._0(self/280) in
+        {
+          let value/282 = x132 in
+          Result::Ok(value/282)
+        }
+      }
+    },
+    Result::Err(x133) => {
+      {
+        let x133 = Result::Err._0(self/280) in
+        {
+          let error/283 = x133 in
+          Result::Err(map_fn/281(error/283))
+        }
+      }
+    },
+  }
+}
+
+fn inherent#Result#Result[T,E]#and_then[T, E, U](
+  self/284: Result[T, E],
+  next/285: (T) -> Result[U, E]
+) -> Result[U, E] {
+  match self/284 {
+    Result::Ok(x134) => {
+      {
+        let x134 = Result::Ok._0(self/284) in
+        {
+          let value/286 = x134 in
+          next/285(value/286)
+        }
+      }
+    },
+    Result::Err(x135) => {
+      {
+        let x135 = Result::Err._0(self/284) in
+        {
+          let error/287 = x135 in
+          Result::Err(error/287)
+        }
+      }
+    },
+  }
+}
+
+fn std::internal::task::root_scope() -> std::internal::task::ScopeHandle {
+  std::internal::task::ScopeHandle { id: @runtime(std.task.scope_new)(0) }
+}
+
+fn std::internal::task::child_scope(
+  parent/0: std::internal::task::CancelToken
+) -> std::internal::task::ScopeHandle {
+  std::internal::task::ScopeHandle {
+    id: @runtime(std.task.scope_new)(std::internal::task::CancelToken.id(parent/0))
+  }
+}
+
+fn std::internal::task::spawn(
+  scope/1: std::internal::task::ScopeHandle,
+  body/2: () -> unit
+) -> unit {
+  let mtmp0 =
+    @runtime(std.task.scope_spawn)(std::internal::task::ScopeHandle.id(scope/1), body/2) in
+  {
+    ()
+  }
+}
+
+fn std::internal::task::try_spawn(
+  scope/3: std::internal::task::ScopeHandle,
+  body/4: () -> unit
+) -> bool {
+  @runtime(std.task.scope_try_spawn)(std::internal::task::ScopeHandle.id(scope/3), body/4)
+}
+
+fn std::internal::task::run(scope/5: std::internal::task::ScopeHandle, body/6: () -> unit) -> unit {
+  let _wild1 = @runtime(std.task.scope_run)(std::internal::task::ScopeHandle.id(scope/5), body/6) in
+  @runtime(std.task.scope_finish)(std::internal::task::ScopeHandle.id(scope/5))
+}
+
+fn std::internal::task::cancel(scope/7: std::internal::task::ScopeHandle) -> unit {
+  @runtime(std.task.scope_cancel)(std::internal::task::ScopeHandle.id(scope/7))
+}
+
+fn std::internal::task::finish(scope/8: std::internal::task::ScopeHandle) -> unit {
+  @runtime(std.task.scope_finish)(std::internal::task::ScopeHandle.id(scope/8))
+}
+
+fn std::internal::task::token(
+  scope/9: std::internal::task::ScopeHandle
+) -> std::internal::task::CancelToken {
+  std::internal::task::CancelToken { id: std::internal::task::ScopeHandle.id(scope/9) }
+}
+
+fn std::internal::task::recv_with(
+  cancel/10: std::internal::task::CancelToken,
+  channel/11: Channel[T]
+) -> (T, bool, bool) {
+  @intrinsic(channel.recv_cancel)(channel/11, std::internal::task::CancelToken.id(cancel/10))
+}
+
+fn std::internal::task::send_with(
+  cancel/12: std::internal::task::CancelToken,
+  channel/13: Channel[T],
+  value/14: T
+) -> bool {
+  @intrinsic(channel.send_cancel)(
+    channel/13,
+    value/14,
+    std::internal::task::CancelToken.id(cancel/12)
+  )
+}
+
+fn std::internal::task::sleep_with(
+  cancel/15: std::internal::task::CancelToken,
+  nanoseconds/16: int64
+) -> bool {
+  @runtime(std.task.sleep)(std::internal::task::CancelToken.id(cancel/15), nanoseconds/16)
+}
+
+fn std::internal::task::id(cancel/17: std::internal::task::CancelToken) -> int64 {
+  std::internal::task::CancelToken.id(cancel/17)
+}
+
+fn std::internal::task::active_scope_count() -> int {
+  @runtime(std.task.active_scope_count)()
+}
+
+fn inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
+  self/18: std::internal::task::CancelToken
+) -> bool {
+  @runtime(std.task.scope_cancelled)(std::internal::task::CancelToken.id(self/18))
+}
+
+fn std::task::completed_scope_value(result/0: Ref[Option[T]]) -> T {
+  loop {
+    {
+      let mtmp0 = inherent#Ref#Ref[Option[T]]#get(result/0) in
+      match mtmp0 {
+        Option::None => {
+          ()
+        },
+        Option::Some(x1) => {
+          {
+            let x1 = Option::Some._0(mtmp0) in
+            {
+              let value/1 = x1 in
+              break value/1
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#new(
+  limit/2: int
+) -> std::task::ConcurrencyLimit {
+  let count/3 =
+    if (limit/2 > 0) {
+        {
+          limit/2
+        }
+    } else {
+        {
+          1
+        }
+    } in
+  let slots/4 = inherent#Channel#Channel[unit]#new(count/3) in
+  let _wild6 =
+    {
+      let for_index2 = 0 in
+      let for_limit3 = count/3 in
+      while (for_index2 < for_limit3) {
+          {
+            let for_item4 = for_index2 in
+            let _wild5 = for_index2 = (for_index2 + 1) in
+            {
+              inherent#Channel#Channel[unit]#send(slots/4, ())
+            }
+          }
+      }
+    } in
+  std::task::ConcurrencyLimit { slots: slots/4 }
+}
+
+fn inherent#std::task::ConcurrencyLimit#std::task::ConcurrencyLimit#run[T](
+  self/5: std::task::ConcurrencyLimit,
+  cancel/6: std::task::CancelToken,
+  body/7: (std::task::CancelToken) -> T
+) -> std::task::WaitResult[T] {
+  {
+    let mtmp7 = std::task::recv_with(cancel/6, std::task::ConcurrencyLimit.slots(self/5)) in
+    match mtmp7 {
+      std::task::WaitResult::Completed(x8) => {
+        {
+          let x8 = std::task::WaitResult::Completed._0(mtmp7) in
+          match x8 {
+            Option::None => {
+              std::task::WaitResult::Cancelled
+            },
+            Option::Some(x9) => {
+              {
+                let x9 = Option::Some._0(x8) in
+                match x9 {
+                  () => {
+                    {
+                      let value/8 = body/7(cancel/6) in
+                      let _wild10 =
+                        inherent#Channel#Channel[unit]#send(
+                          std::task::ConcurrencyLimit.slots(self/5),
+                          ()
+                        ) in
+                      std::task::WaitResult::Completed(value/8)
+                    }
+                  },
+                }
+              }
+            },
+          }
+        }
+      },
+      std::task::WaitResult::Cancelled => {
+        std::task::WaitResult::Cancelled
+      },
+    }
+  }
+}
+
+fn std::task::scope(body/9: (std::task::Scope) -> T) -> T {
+  let handle/10 = std::internal::task::root_scope() in
+  let result/11 = inherent#Ref#Ref[Option[T]]#new(Option::None) in
+  let _wild11 =
+    std::internal::task::run(
+      handle/10,
+      || => inherent#Ref#Ref[Option[T]]#set(
+        result/11,
+        Option::Some(body/9(std::task::Scope { handle: handle/10 }))
+      )
+    ) in
+  std::task::completed_scope_value(result/11)
+}
+
+fn std::task::scope_with(parent/12: std::task::CancelToken, body/13: (std::task::Scope) -> T) -> T {
+  let handle/14 = std::internal::task::child_scope(std::task::CancelToken.value(parent/12)) in
+  let result/15 = inherent#Ref#Ref[Option[T]]#new(Option::None) in
+  let _wild12 =
+    std::internal::task::run(
+      handle/14,
+      || => inherent#Ref#Ref[Option[T]]#set(
+        result/15,
+        Option::Some(body/13(std::task::Scope { handle: handle/14 }))
+      )
+    ) in
+  std::task::completed_scope_value(result/15)
+}
+
+fn std::task::try_scope(body/16: (std::task::Scope) -> Result[T, E]) -> Result[T, E] {
+  let handle/17 = std::internal::task::root_scope() in
+  let result/18 = inherent#Ref#Ref[Option[Result[T,E]]]#new(Option::None) in
+  let _wild14 =
+    std::internal::task::run(
+      handle/17,
+      || => {
+        let value/19 = body/16(std::task::Scope { handle: handle/17 }) in
+        let _wild13 =
+          if inherent#Result#Result[T,E]#is_err(value/19) {
+              {
+                std::internal::task::cancel(handle/17)
+              }
+          } else {
+              {
+                ()
+              }
+          } in
+        inherent#Ref#Ref[Option[Result[T,E]]]#set(result/18, Option::Some(value/19))
+      }
+    ) in
+  std::task::completed_scope_value(result/18)
+}
+
+fn std::task::try_scope_with(
+  parent/20: std::task::CancelToken,
+  body/21: (std::task::Scope) -> Result[T, E]
+) -> Result[T, E] {
+  let handle/22 = std::internal::task::child_scope(std::task::CancelToken.value(parent/20)) in
+  let result/23 = inherent#Ref#Ref[Option[Result[T,E]]]#new(Option::None) in
+  let _wild16 =
+    std::internal::task::run(
+      handle/22,
+      || => {
+        let value/24 = body/21(std::task::Scope { handle: handle/22 }) in
+        let _wild15 =
+          if inherent#Result#Result[T,E]#is_err(value/24) {
+              {
+                std::internal::task::cancel(handle/22)
+              }
+          } else {
+              {
+                ()
+              }
+          } in
+        inherent#Ref#Ref[Option[Result[T,E]]]#set(result/23, Option::Some(value/24))
+      }
+    ) in
+  std::task::completed_scope_value(result/23)
+}
+
+fn std::task::active_scope_count() -> int {
+  std::internal::task::active_scope_count()
+}
+
+fn inherent#std::task::Scope#std::task::Scope#spawn[T](
+  self/25: std::task::Scope,
+  body/26: (std::task::CancelToken) -> T
+) -> std::task::Task[T] {
+  let result/27 = inherent#Ref#Ref[Option[T]]#new(Option::None) in
+  let ready/28 = inherent#Channel#Channel[unit]#new(0) in
+  let token/29 =
+    std::task::CancelToken {
+      value: std::internal::task::token(std::task::Scope.handle(self/25))
+    } in
+  let _wild18 =
+    std::internal::task::spawn(
+      std::task::Scope.handle(self/25),
+      || => {
+        let _wild17 = inherent#Ref#Ref[Option[T]]#set(result/27, Option::Some(body/26(token/29))) in
+        inherent#Channel#Channel[unit]#close(ready/28)
+      }
+    ) in
+  std::task::Task { result: result/27, ready: ready/28 }
+}
+
+fn inherent#std::task::Scope#std::task::Scope#try_spawn[T](
+  self/30: std::task::Scope,
+  body/31: (std::task::CancelToken) -> T
+) -> Option[std::task::Task[T]] {
+  let result/32 = inherent#Ref#Ref[Option[T]]#new(Option::None) in
+  let ready/33 = inherent#Channel#Channel[unit]#new(0) in
+  let token/34 =
+    std::task::CancelToken {
+      value: std::internal::task::token(std::task::Scope.handle(self/30))
+    } in
+  if std::internal::task::try_spawn(
+    std::task::Scope.handle(self/30),
+    || => {
+      let _wild19 = inherent#Ref#Ref[Option[T]]#set(result/32, Option::Some(body/31(token/34))) in
+      inherent#Channel#Channel[unit]#close(ready/33)
+    }
+  ) {
+      {
+        Option::Some(std::task::Task { result: result/32, ready: ready/33 })
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn inherent#std::task::Scope#std::task::Scope#spawn_try[T, E](
+  self/35: std::task::Scope,
+  body/36: (std::task::CancelToken) -> Result[T, E]
+) -> std::task::Task[Result[T, E]] {
+  inherent#std::task::Scope#std::task::Scope#spawn(
+    self/35,
+    |token/37: std::task::CancelToken| => {
+      let value/38 = body/36(token/37) in
+      let _wild20 =
+        if inherent#Result#Result[T,E]#is_err(value/38) {
+            {
+              inherent#std::task::Scope#std::task::Scope#cancel(self/35)
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+      value/38
+    }
+  )
+}
+
+fn inherent#std::task::Scope#std::task::Scope#cancel(self/39: std::task::Scope) -> unit {
+  std::internal::task::cancel(std::task::Scope.handle(self/39))
+}
+
+fn inherent#std::task::Scope#std::task::Scope#token(
+  self/40: std::task::Scope
+) -> std::task::CancelToken {
+  std::task::CancelToken { value: std::internal::task::token(std::task::Scope.handle(self/40)) }
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#is_cancelled(
+  self/41: std::task::CancelToken
+) -> bool {
+  inherent#std::internal::task::CancelToken#std::internal::task::CancelToken#is_cancelled(
+    std::task::CancelToken.value(self/41)
+  )
+}
+
+fn inherent#std::task::CancelToken#std::task::CancelToken#runtime_id(
+  self/42: std::task::CancelToken
+) -> int64 {
+  std::internal::task::id(std::task::CancelToken.value(self/42))
+}
+
+fn std::task::recv_with(
+  cancel/43: std::task::CancelToken,
+  channel/44: Channel[T]
+) -> std::task::WaitResult[Option[T]] {
+  let mtmp21 =
+    std::internal::task::recv_with(std::task::CancelToken.value(cancel/43), channel/44) in
+  {
+    let x22 = mtmp21.0 in
+    let x23 = mtmp21.1 in
+    let x24 = mtmp21.2 in
+    {
+      let completed/47 = x24 in
+      {
+        let open/46 = x23 in
+        {
+          let value/45 = x22 in
+          {
+            if completed/47 {
+                {
+                  if open/46 {
+                      {
+                        std::task::WaitResult::Completed(Option::Some(value/45))
+                      }
+                  } else {
+                      {
+                        std::task::WaitResult::Completed(Option::None)
+                      }
+                  }
+                }
+            } else {
+                {
+                  std::task::WaitResult::Cancelled
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::task::send_with(
+  cancel/48: std::task::CancelToken,
+  channel/49: Channel[T],
+  value/50: T
+) -> std::task::WaitResult[unit] {
+  if std::internal::task::send_with(std::task::CancelToken.value(cancel/48), channel/49, value/50) {
+      {
+        std::task::WaitResult::Completed(())
+      }
+  } else {
+      {
+        std::task::WaitResult::Cancelled
+      }
+  }
+}
+
+fn std::task::sleep_nanoseconds_with(
+  cancel/51: std::task::CancelToken,
+  nanoseconds/52: int64
+) -> std::task::WaitResult[unit] {
+  if std::internal::task::sleep_with(std::task::CancelToken.value(cancel/51), nanoseconds/52) {
+      {
+        std::task::WaitResult::Completed(())
+      }
+  } else {
+      {
+        std::task::WaitResult::Cancelled
+      }
+  }
+}
+
+fn inherent#std::task::Task#std::task::Task[T]#join[T](self/53: std::task::Task[T]) -> T {
+  loop {
+    let mtmp25 = inherent#Channel#Channel[unit]#recv(std::task::Task.ready(self/53)) in
+    {
+      {
+        let mtmp26 = inherent#Ref#Ref[Option[T]]#get(std::task::Task.result(self/53)) in
+        match mtmp26 {
+          Option::None => {
+            ()
+          },
+          Option::Some(x27) => {
+            {
+              let x27 = Option::Some._0(mtmp26) in
+              {
+                let value/54 = x27 in
+                {
+                  let _wild28 = break value/54 in
+                }
+              }
+            }
+          },
+        }
+      }
+    }
+  }
+}
+
+fn std::task::join_all(tasks/55: Vec[std::task::Task[T]]) -> Vec[T] {
+  let values/56 =
+    inherent#Vec#Vec[T]#with_capacity(inherent#Vec#Vec[std::task::Task[T]]#len(tasks/55)) in
+  let _wild34 =
+    {
+      let for_source29 = tasks/55 in
+      let for_limit30 = @intrinsic(vec.len)(for_source29) in
+      let for_index31 = 0 in
+      while (for_index31 < for_limit30) {
+          {
+            let for_item32 = @intrinsic(vec.get)(for_source29, for_index31) in
+            let _wild33 = for_index31 = (for_index31 + 1) in
+            {
+              let task/57 = for_item32 in
+              {
+                inherent#Vec#Vec[T]#push(
+                  values/56,
+                  inherent#std::task::Task#std::task::Task[T]#join(task/57)
+                )
+              }
+            }
+          }
+      }
+    } in
+  values/56
+}
+
+fn std::task::join_all_results(tasks/58: Vec[std::task::Task[Result[T, E]]]) -> Result[
+  Vec[T],
+  Vec[E]
+] {
+  let values/59 =
+    inherent#Vec#Vec[T]#with_capacity(
+      inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/58)
+    ) in
+  let errors/60 =
+    {
+      let vec_literal/6569 = inherent#Vec#Vec[E]#new() in
+      vec_literal/6569
+    } in
+  let _wild43 =
+    {
+      let for_source35 = tasks/58 in
+      let for_limit36 = @intrinsic(vec.len)(for_source35) in
+      let for_index37 = 0 in
+      while (for_index37 < for_limit36) {
+          {
+            let for_item38 = @intrinsic(vec.get)(for_source35, for_index37) in
+            let _wild39 = for_index37 = (for_index37 + 1) in
+            {
+              let task/61 = for_item38 in
+              {
+                {
+                  let mtmp40 =
+                    inherent#std::task::Task#std::task::Task[Result[T,E]]#join(task/61) in
+                  match mtmp40 {
+                    Result::Ok(x41) => {
+                      {
+                        let x41 = Result::Ok._0(mtmp40) in
+                        {
+                          let value/62 = x41 in
+                          inherent#Vec#Vec[T]#push(values/59, value/62)
+                        }
+                      }
+                    },
+                    Result::Err(x42) => {
+                      {
+                        let x42 = Result::Err._0(mtmp40) in
+                        {
+                          let error/63 = x42 in
+                          inherent#Vec#Vec[E]#push(errors/60, error/63)
+                        }
+                      }
+                    },
+                  }
+                }
+              }
+            }
+          }
+      }
+    } in
+  if inherent#Vec#Vec[E]#is_empty(errors/60) {
+      {
+        Result::Ok(values/59)
+      }
+  } else {
+      {
+        Result::Err(errors/60)
+      }
+  }
+}
+
+fn std::task::join_all_indexed_results(tasks/64: Vec[std::task::Task[Result[T, E]]]) -> Result[
+  Vec[T],
+  Vec[std::task::IndexedError[E]]
+] {
+  let values/65 =
+    inherent#Vec#Vec[T]#with_capacity(
+      inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/64)
+    ) in
+  let errors/66 =
+    {
+      let vec_literal/7062 = inherent#Vec#Vec[std::task::IndexedError[E]]#new() in
+      vec_literal/7062
+    } in
+  let _wild51 =
+    {
+      let for_index44 = 0 in
+      let for_limit45 = inherent#Vec#Vec[std::task::Task[Result[T,E]]]#len(tasks/64) in
+      while (for_index44 < for_limit45) {
+          {
+            let for_item46 = for_index44 in
+            let _wild47 = for_index44 = (for_index44 + 1) in
+            {
+              let index/67 = for_item46 in
+              {
+                {
+                  let mtmp48 =
+                    inherent#std::task::Task#std::task::Task[Result[T,E]]#join(
+                      @intrinsic(vec.get)(tasks/64, index/67)
+                    ) in
+                  match mtmp48 {
+                    Result::Ok(x49) => {
+                      {
+                        let x49 = Result::Ok._0(mtmp48) in
+                        {
+                          let value/68 = x49 in
+                          inherent#Vec#Vec[T]#push(values/65, value/68)
+                        }
+                      }
+                    },
+                    Result::Err(x50) => {
+                      {
+                        let x50 = Result::Err._0(mtmp48) in
+                        {
+                          let error/69 = x50 in
+                          inherent#Vec#Vec[std::task::IndexedError[E]]#push(
+                            errors/66,
+                            std::task::IndexedError { index: index/67, error: error/69 }
+                          )
+                        }
+                      }
+                    },
+                  }
+                }
+              }
+            }
+          }
+      }
+    } in
+  if inherent#Vec#Vec[std::task::IndexedError[E]]#is_empty(errors/66) {
+      {
+        Result::Ok(values/65)
+      }
+  } else {
+      {
+        Result::Err(errors/66)
+      }
+  }
+}
+
+fn std::task::concurrent_worker(
+  cancel/70: std::task::CancelToken,
+  work/71: Channel[(int, T)],
+  results/72: Channel[(int, Result[unit, E])],
+  body/73: (std::task::CancelToken, T) -> Result[unit, E]
+) -> unit {
+  loop {
+    {
+      let mtmp52 = std::task::recv_with(cancel/70, work/71) in
+      match mtmp52 {
+        std::task::WaitResult::Completed(x53) => {
+          {
+            let x53 = std::task::WaitResult::Completed._0(mtmp52) in
+            match x53 {
+              Option::None => {
+                break
+              },
+              Option::Some(x54) => {
+                {
+                  let x54 = Option::Some._0(x53) in
+                  {
+                    let item/74 = x54 in
+                    inherent#Channel#Channel[(int,Result[unit,E])]#send(
+                      results/72,
+                      (item/74.0, body/73(cancel/70, item/74.1))
+                    )
+                  }
+                }
+              },
+            }
+          }
+        },
+        std::task::WaitResult::Cancelled => {
+          break
+        },
+      }
+    }
+  }
+}
+
+fn std::task::for_each_concurrent(
+  limit/75: int,
+  values/76: Vec[T],
+  body/77: (std::task::CancelToken, T) -> Result[unit, E]
+) -> Result[unit, Vec[std::task::IndexedError[E]]] {
+  let _wild55 =
+    if inherent#Vec#Vec[T]#is_empty(values/76) {
+        {
+          return Result::Ok(())
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let total/78 = inherent#Vec#Vec[T]#len(values/76) in
+  let worker_count/79 =
+    if (limit/75 <= 0) {
+        {
+          1
+        }
+    } else {
+        if (limit/75 < total/78) {
+            {
+              limit/75
+            }
+        } else {
+            {
+              total/78
+            }
+        }
+    } in
+  let work/80 = inherent#Channel#Channel[(int,T)]#new(total/78) in
+  let results/81 = inherent#Channel#Channel[(int,Result[unit,E])]#new(total/78) in
+  let _wild60 =
+    {
+      let for_index56 = 0 in
+      let for_limit57 = total/78 in
+      while (for_index56 < for_limit57) {
+          {
+            let for_item58 = for_index56 in
+            let _wild59 = for_index56 = (for_index56 + 1) in
+            {
+              let index/82 = for_item58 in
+              {
+                inherent#Channel#Channel[(int,T)]#send(
+                  work/80,
+                  (index/82, @intrinsic(vec.get)(values/76, index/82))
+                )
+              }
+            }
+          }
+      }
+    } in
+  let _wild61 = inherent#Channel#Channel[(int,T)]#close(work/80) in
+  std::task::scope(
+    |scope/83: std::task::Scope| => {
+      let _wild67 =
+        {
+          let for_index62 = 0 in
+          let for_limit63 = worker_count/79 in
+          while (for_index62 < for_limit63) {
+              {
+                let for_item64 = for_index62 in
+                let _wild65 = for_index62 = (for_index62 + 1) in
+                {
+                  let mtmp66 =
+                    inherent#std::task::Scope#std::task::Scope#spawn(
+                      scope/83,
+                      |cancel/84: std::task::CancelToken| => std::task::concurrent_worker(
+                        cancel/84,
+                        work/80,
+                        results/81,
+                        body/77
+                      )
+                    ) in
+                  {
+                    ()
+                  }
+                }
+              }
+          }
+        } in
+      let ordered/85 = inherent#Vec#Vec[Option[E]]#with_capacity(total/78) in
+      let _wild72 =
+        {
+          let for_index68 = 0 in
+          let for_limit69 = total/78 in
+          while (for_index68 < for_limit69) {
+              {
+                let for_item70 = for_index68 in
+                let _wild71 = for_index68 = (for_index68 + 1) in
+                {
+                  inherent#Vec#Vec[Option[E]]#push(ordered/85, Option::None)
+                }
+              }
+          }
+        } in
+      let _wild87 =
+        {
+          let for_index73 = 0 in
+          let for_limit74 = total/78 in
+          while (for_index73 < for_limit74) {
+              {
+                let for_item75 = for_index73 in
+                let _wild76 = for_index73 = (for_index73 + 1) in
+                {
+                  {
+                    let mtmp77 = inherent#Channel#Channel[(int,Result[unit,E])]#recv(results/81) in
+                    match mtmp77 {
+                      Option::None => {
+                        ()
+                      },
+                      Option::Some(x78) => {
+                        {
+                          let x78 = Option::Some._0(mtmp77) in
+                          {
+                            let item/86 = x78 in
+                            {
+                              let mtmp79 = item/86.1 in
+                              match mtmp79 {
+                                Result::Ok(x80) => {
+                                  {
+                                    let x80 = Result::Ok._0(mtmp79) in
+                                    match x80 {
+                                      () => {
+                                        ()
+                                      },
+                                    }
+                                  }
+                                },
+                                Result::Err(x81) => {
+                                  {
+                                    let x81 = Result::Err._0(mtmp79) in
+                                    {
+                                      let error/87 = x81 in
+                                      {
+                                        let _wild86 =
+                                          {
+                                            let place_root82 = ordered/85 in
+                                            let index83 = item/86.0 in
+                                            let place84 =
+                                              @intrinsic(vec.get)(place_root82, index83) in
+                                            let value85 = Option::Some(error/87) in
+                                            @intrinsic(vec.set)(place_root82, index83, value85)
+                                          } in
+                                      }
+                                    }
+                                  }
+                                },
+                              }
+                            }
+                          }
+                        }
+                      },
+                    }
+                  }
+                }
+              }
+          }
+        } in
+      let _wild88 = inherent#Channel#Channel[(int,Result[unit,E])]#close(results/81) in
+      let errors/88 =
+        {
+          let vec_literal/9280 = inherent#Vec#Vec[std::task::IndexedError[E]]#new() in
+          vec_literal/9280
+        } in
+      let _wild95 =
+        {
+          let for_index89 = 0 in
+          let for_limit90 = total/78 in
+          while (for_index89 < for_limit90) {
+              {
+                let for_item91 = for_index89 in
+                let _wild92 = for_index89 = (for_index89 + 1) in
+                {
+                  let index/89 = for_item91 in
+                  {
+                    {
+                      let mtmp93 = @intrinsic(vec.get)(ordered/85, index/89) in
+                      match mtmp93 {
+                        Option::None => {
+                          ()
+                        },
+                        Option::Some(x94) => {
+                          {
+                            let x94 = Option::Some._0(mtmp93) in
+                            {
+                              let error/90 = x94 in
+                              inherent#Vec#Vec[std::task::IndexedError[E]]#push(
+                                errors/88,
+                                std::task::IndexedError { index: index/89, error: error/90 }
+                              )
+                            }
+                          }
+                        },
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        } in
+      if inherent#Vec#Vec[std::task::IndexedError[E]]#is_empty(errors/88) {
+          {
+            Result::Ok(())
+          }
+      } else {
+          {
+            Result::Err(errors/88)
+          }
+      }
+    }
+  )
+}
+
+fn std::task::race(bodies/91: Vec[(std::task::CancelToken) -> T]) -> Option[T] {
+  let _wild96 =
+    if inherent#Vec#Vec[(std::task::CancelToken)->T]#is_empty(bodies/91) {
+        {
+          return Option::None
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  std::task::scope(
+    |scope/92: std::task::Scope| => {
+      let results/93 =
+        inherent#Channel#Channel[T]#new(
+          inherent#Vec#Vec[(std::task::CancelToken)->T]#len(bodies/91)
+        ) in
+      let _wild103 =
+        {
+          let for_source97 = bodies/91 in
+          let for_limit98 = @intrinsic(vec.len)(for_source97) in
+          let for_index99 = 0 in
+          while (for_index99 < for_limit98) {
+              {
+                let for_item100 = @intrinsic(vec.get)(for_source97, for_index99) in
+                let _wild101 = for_index99 = (for_index99 + 1) in
+                {
+                  let body/94 = for_item100 in
+                  {
+                    let mtmp102 =
+                      inherent#std::task::Scope#std::task::Scope#spawn(
+                        scope/92,
+                        |cancel/95: std::task::CancelToken| => {
+                          inherent#Channel#Channel[T]#send(results/93, body/94(cancel/95))
+                        }
+                      ) in
+                    {
+                      ()
+                    }
+                  }
+                }
+              }
+          }
+        } in
+      let value/96 = inherent#Channel#Channel[T]#recv(results/93) in
+      let _wild104 = inherent#std::task::Scope#std::task::Scope#cancel(scope/92) in
+      value/96
+    }
+  )
+}
+
+fn main() -> unit {
+  let completed/0 = inherent#Ref#Ref[bool]#new(false) in
+  let total/7 =
+    std::task::scope(
+      |scope/1: std::task::Scope| => {
+        let left/3 =
+          inherent#std::task::Scope#std::task::Scope#spawn(
+            scope/1,
+            |_cancel/2: std::task::CancelToken| => 20
+          ) in
+        let right/5 =
+          inherent#std::task::Scope#std::task::Scope#spawn(
+            scope/1,
+            |_cancel/4: std::task::CancelToken| => 22
+          ) in
+        let mtmp136 =
+          inherent#std::task::Scope#std::task::Scope#spawn(
+            scope/1,
+            |_cancel/6: std::task::CancelToken| => inherent#Ref#Ref[bool]#set(completed/0, true)
+          ) in
+        {
+          (inherent#std::task::Task#std::task::Task[int]#join(left/3) +
+            inherent#std::task::Task#std::task::Task[int]#join(right/5))
+        }
+      }
+    ) in
+  let _wild137 = println(total/7) in
+  let _wild138 = println(inherent#Ref#Ref[bool]#get(completed/0)) in
+  let nested/12 =
+    std::task::scope(
+      |scope/8: std::task::Scope| => {
+        std::task::scope_with(
+          inherent#std::task::Scope#std::task::Scope#token(scope/8),
+          |scope/9: std::task::Scope| => {
+            let value/11 =
+              inherent#std::task::Scope#std::task::Scope#spawn(
+                scope/9,
+                |_cancel/10: std::task::CancelToken| => 7
+              ) in
+            inherent#std::task::Task#std::task::Task[int]#join(value/11)
+          }
+        )
+      }
+    ) in
+  let _wild139 = println(nested/12) in
+  let scope/13 = 3 in
+  let spawn/15 = |value/14: int| => (value/14 + 1) in
+  println(spawn/15(scope/13))
+}
