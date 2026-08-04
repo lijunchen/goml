@@ -617,7 +617,11 @@ fn scan_label_end(source: string, start: int) -> Option[int] {
         while end < source.byte_len() && is_ident_continue(byte_at(source, end)) {
             end = end + 1;
         };
-        Option::Some(end)
+        if end < source.byte_len() && byte_at(source, end) == b'\'' {
+            Option::None
+        } else {
+            Option::Some(end)
+        }
     }
 }
 
