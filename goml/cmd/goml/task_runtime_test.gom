@@ -49,3 +49,19 @@ fn cancelling_command_stops_its_process_group() -> unit {
     };
     test_support::assert_success(check)
 }
+
+#[test]
+fn task_scope_handles_spawn_finish_races() -> unit {
+    let root = test_support::workspace("task_scope_races");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"task_scope_races\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nuse std::task;\n\nfn main() -> unit {\n    for _ in 0..100 {\n        let gate: Channel[unit] = Channel::new(0);\n        let outcomes: Channel[bool] = Channel::new(32);\n        task::scope(\n            |scope: task::Scope| {\n                for _ in 0..32 {\n                    let _ = scope.spawn(\n                        |_: task::CancelToken| {\n                            let _ = gate.recv();\n                            match scope.try_spawn(|_: task::CancelToken| ()) {\n                                Some(child) => {\n                                    child.join();\n                                    outcomes.send(true)\n                                },\n                                None => outcomes.send(false),\n                            }\n                        },\n                    );\n                };\n                gate.close()\n            },\n        );\n        for _ in 0..32 {\n            let _ = outcomes.recv();\n        }\n    };\n    println(\"ok\")\n}\n",
+    );
+    let output = test_support::project_command("run", "", Vec::[], root);
+    test_support::assert_success(output);
+    testing::assert_eq(test_support::stdout(output), "ok\n")
+}
