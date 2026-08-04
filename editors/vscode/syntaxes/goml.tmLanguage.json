@@ -16,6 +16,9 @@
             "include": "#strings"
         },
         {
+            "include": "#labels"
+        },
+        {
             "include": "#chars"
         },
         {
@@ -29,6 +32,9 @@
         },
         {
             "include": "#namespaces"
+        },
+        {
+            "include": "#associated-type-bindings"
         },
         {
             "include": "#types"
@@ -236,6 +242,9 @@
                     "include": "#strings"
                 },
                 {
+                    "include": "#labels"
+                },
+                {
                     "include": "#chars"
                 },
                 {
@@ -249,6 +258,9 @@
                 },
                 {
                     "include": "#namespaces"
+                },
+                {
+                    "include": "#associated-type-bindings"
                 },
                 {
                     "include": "#types"
@@ -282,6 +294,9 @@
                     "include": "#strings"
                 },
                 {
+                    "include": "#labels"
+                },
+                {
                     "include": "#chars"
                 },
                 {
@@ -295,6 +310,9 @@
                 },
                 {
                     "include": "#namespaces"
+                },
+                {
+                    "include": "#associated-type-bindings"
                 },
                 {
                     "include": "#types"
@@ -336,6 +354,38 @@
                             "match": "\\\\."
                         }
                     ]
+                }
+            ]
+        },
+        "labels": {
+            "patterns": [
+                {
+                    "match": "(')([A-Za-z_][A-Za-z0-9_]*)(\\s*)(:)",
+                    "captures": {
+                        "1": {
+                            "name": "punctuation.definition.label.goml"
+                        },
+                        "2": {
+                            "name": "entity.name.label.goml"
+                        },
+                        "4": {
+                            "name": "punctuation.separator.label.goml"
+                        }
+                    }
+                },
+                {
+                    "match": "\\b(break|continue)(\\s+)(')([A-Za-z_][A-Za-z0-9_]*)\\b",
+                    "captures": {
+                        "1": {
+                            "name": "keyword.control.goml"
+                        },
+                        "3": {
+                            "name": "punctuation.definition.label.goml"
+                        },
+                        "4": {
+                            "name": "variable.other.label.goml"
+                        }
+                    }
                 }
             ]
         },
@@ -424,6 +474,17 @@
         "declarations": {
             "patterns": [
                 {
+                    "match": "\\b(?:(pub)(\\s+))?(use)\\b",
+                    "captures": {
+                        "1": {
+                            "name": "storage.modifier.visibility.goml"
+                        },
+                        "3": {
+                            "name": "keyword.control.import.goml"
+                        }
+                    }
+                },
+                {
                     "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",
                     "captures": {
                         "1": {
@@ -450,16 +511,28 @@
         "keywords": {
             "patterns": [
                 {
+                    "name": "keyword.control.concurrency.goml",
+                    "match": "\\b(scope)(?=\\s*\\{)|\\b(spawn)(?=\\s*\\|)"
+                },
+                {
                     "name": "keyword.control.goml",
-                    "match": "\\b(if|else|match|while|loop|for|in|return|break|continue|go)\\b"
+                    "match": "\\b(if|else|match|while|loop|for|in|return|break|continue|go|defer)\\b"
                 },
                 {
                     "name": "keyword.declaration.goml",
                     "match": "\\b(fn|let|struct|enum|trait|impl|type|const|use|package|extern)\\b"
                 },
                 {
+                    "name": "storage.modifier.dyn.goml",
+                    "match": "\\bdyn\\b"
+                },
+                {
+                    "name": "storage.modifier.goml",
+                    "match": "\\b(mut|pub)\\b"
+                },
+                {
                     "name": "keyword.other.goml",
-                    "match": "\\b(dyn|as|mut|pub|where)\\b"
+                    "match": "\\b(as|where)\\b"
                 },
                 {
                     "name": "constant.language.boolean.goml",
@@ -472,6 +545,14 @@
                 {
                     "name": "variable.language.wildcard.goml",
                     "match": "(?<![A-Za-z0-9_])_(?![A-Za-z0-9_])"
+                }
+            ]
+        },
+        "associated-type-bindings": {
+            "patterns": [
+                {
+                    "name": "entity.name.type.associated.goml",
+                    "match": "\\b[A-Z][A-Za-z0-9_]*(?=\\s*=)"
                 }
             ]
         },
