@@ -153,7 +153,9 @@ fn main() -> unit {
             let _ = scope.spawn(
                 |token: task::CancelToken| {
                     process_started.send(());
-                    match process::Command::new("sh").args(Vec::["-c", "sleep 10"]).output_with(token) {
+                    match process::Command::new("sh").args(Vec::["-c", "sleep 10"]).output_with(
+                        token,
+                    ) {
                         Ok(task::WaitResult::Cancelled) => process_cancelled.set(true),
                         _ => (),
                     }
@@ -163,5 +165,67 @@ fn main() -> unit {
             Result::Err("stop")
         },
     );
-    println(process_cancelled.get())
+    println(process_cancelled.get());
+    let indexed = task::scope(
+        |scope: task::Scope| {
+            task::join_all_indexed_results(
+                Vec::[scope.spawn(first_error), scope.spawn(middle_value), scope.spawn(third_error)],
+            )
+        },
+    );
+    match indexed {
+        Ok(_) => println("unexpected"),
+        Err(errors) => {
+            println(errors[0].index);
+            println(errors[0].error);
+            println(errors[1].index);
+            println(errors[1].error)
+        },
+    };
+    let concurrent = task::for_each_concurrent(
+        2,
+        Vec::[0, 1, 2, 3],
+        |_: task::CancelToken, value: int| if value % 2 == 0 {
+            if value == 0 {
+                time::sleep(time::Duration::from_milliseconds(20))
+            } else {
+                ()
+            };
+            Result::Err(value.to_string())
+        } else {
+            Result::Ok(())
+        },
+    );
+    match concurrent {
+        Ok(()) => println("unexpected"),
+        Err(errors) => {
+            println(errors[0].index);
+            println(errors[0].error);
+            println(errors[1].index);
+            println(errors[1].error)
+        },
+    };
+    let limiter = task::ConcurrencyLimit::new(1);
+    let limited = task::scope(
+        |scope: task::Scope| {
+            scope.spawn(|token: task::CancelToken| limiter.run(token, |_: task::CancelToken| 42)).join()
+        },
+    );
+    match limited {
+        task::WaitResult::Completed(value) => println(value),
+        task::WaitResult::Cancelled => println("cancelled"),
+    };
+    let raced = task::race(
+        Vec::[
+            |token: task::CancelToken| {
+                let _ = time::sleep_with(token, time::Duration::from_seconds(10));
+                "slow"
+            },
+            |_: task::CancelToken| "winner",
+        ],
+    );
+    match raced {
+        Some(value) => println(value),
+        None => println("empty"),
+    }
 }
