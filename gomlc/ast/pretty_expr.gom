@@ -419,6 +419,8 @@ fn pretty_expr_doc(value: Expr) -> doc::Doc {
             None => doc::text("return"),
         },
         Go { expr, span: _ } => doc::append(doc::text("go "), pretty_expr_doc(expr)),
+        Scope { body, span: _ } => doc::append(doc::text("scope "), pretty_expr_doc(body)),
+        Spawn { body, span: _ } => doc::append(doc::text("spawn "), pretty_expr_doc(body)),
         Call { func, args, span: _ } => doc::append(
             pretty_expr_doc(func),
             doc::delimited("(", ",", ")", pretty_expr_docs(args)),

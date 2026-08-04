@@ -262,6 +262,16 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_span(builder, value_span);
             encode_expr(builder, expr)
         },
+        Scope { body, span: value_span } => {
+            encode_open(builder, "Expr.Scope");
+            encode_span(builder, value_span);
+            encode_expr(builder, body)
+        },
+        Spawn { body, span: value_span } => {
+            encode_open(builder, "Expr.Spawn");
+            encode_span(builder, value_span);
+            encode_expr(builder, body)
+        },
         Call { func, args, span: value_span } => {
             encode_open(builder, "Expr.Call");
             encode_span(builder, value_span);

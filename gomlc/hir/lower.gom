@@ -37,11 +37,18 @@ struct LowerCtx {
     expr_counter: Ref[int],
     diagnostics: Vec[Diagnostic],
     current_pattern_span: Ref[Option[ast::Span]],
+    lexical_scopes: Vec[LexicalScope],
+    closure_depth: Ref[int],
 }
 
 struct PatternState {
     seen: Vec[(string, LocalId)],
     preferred: Vec[(string, LocalId)],
+}
+
+struct LexicalScope {
+    local: LocalId,
+    closure_depth: int,
 }
 
 fn path_segments(path: ast::Path) -> Vec[string] {
@@ -924,6 +931,51 @@ fn lower_block(
     }
 }
 
+fn synthetic_expr(kind: ExprKind, span: ast::Span) -> Expr {
+    Expr { kind, span }
+}
+
+fn lexical_scope_ref(value: LexicalScope, span: ast::Span) -> Expr {
+    synthetic_expr(ExprKind::NameRef { name_ref: NameRef::Local(value.local) }, span)
+}
+
+fn lexical_scope_method(value: LexicalScope, method: string, span: ast::Span) -> Expr {
+    synthetic_expr(
+        ExprKind::Field {
+            expr: lexical_scope_ref(value, span),
+            field_name: method,
+            method_type_args: Vec::[],
+        },
+        span,
+    )
+}
+
+fn lexical_scope_call(value: LexicalScope, method: string, args: Vec[Expr], span: ast::Span) -> Expr {
+    synthetic_expr(ExprKind::Call { func: lexical_scope_method(value, method, span), args }, span)
+}
+
+fn task_function(name: string, span: ast::Span) -> Expr {
+    synthetic_expr(
+        ExprKind::StaticMember {
+            owner: "std::task",
+            member: name,
+            owner_type_args: Vec::[],
+            owner_type_arg_spans: Vec::[],
+            member_type_args: Vec::[],
+            member_type_arg_spans: Vec::[],
+        },
+        span,
+    )
+}
+
+fn current_lexical_scope(ctx: LowerCtx) -> Option[LexicalScope] {
+    if ctx.lexical_scopes.is_empty() {
+        Option::None
+    } else {
+        Option::Some(ctx.lexical_scopes[ctx.lexical_scopes.len() - 1])
+    }
+}
+
 fn lower_expr_value(
     ctx: LowerCtx,
     value: ast::Expr,
@@ -1087,10 +1139,11 @@ fn lower_expr_value(
                     },
                 )
             };
-            ExprKind::Closure {
-                params: lowered_params,
-                body: lower_expr(ctx, body, closure_env, type_params),
-            }
+            let previous_depth = ctx.closure_depth.get();
+            ctx.closure_depth.set(previous_depth + 1);
+            let lowered_body = lower_expr(ctx, body, closure_env, type_params);
+            ctx.closure_depth.set(previous_depth);
+            ExprKind::Closure { params: lowered_params, body: lowered_body }
         },
         Match { expr, arms, span: _ } => {
             let lowered_expr = lower_expr(ctx, expr, env, type_params);
@@ -1149,6 +1202,66 @@ fn lower_expr_value(
             },
         },
         Go { expr, span: _ } => ExprKind::Go { expr: lower_expr(ctx, expr, env, type_params) },
+        Scope { body, span } => {
+            let parent = match current_lexical_scope(ctx) {
+                Some(value) => if value.closure_depth == ctx.closure_depth.get() {
+                    Option::Some(value)
+                } else {
+                    Option::None
+                },
+                None => Option::None,
+            };
+            let local = fresh_local(ctx, "scope");
+            let lexical_scope = LexicalScope { local, closure_depth: ctx.closure_depth.get() };
+            ctx.lexical_scopes.push(lexical_scope);
+            let lowered_body = lower_expr(ctx, body, env, type_params);
+            let _ = ctx.lexical_scopes.pop();
+            let closure = synthetic_expr(
+                ExprKind::Closure {
+                    params: Vec::[ClosureParam { name: local, ty: Option::None, span }],
+                    body: lowered_body,
+                },
+                span,
+            );
+            let args: Vec[Expr] = Vec::[];
+            let function_name = match parent {
+                Some(parent_scope) => {
+                    args.push(lexical_scope_call(parent_scope, "token", Vec::[], span));
+                    "scope_with"
+                },
+                None => "scope",
+            };
+            args.push(closure);
+            ExprKind::Call { func: task_function(function_name, span), args }
+        },
+        Spawn { body, span } => {
+            let lowered_body = lower_expr(ctx, body, env, type_params);
+            match current_lexical_scope(ctx) {
+                Some(lexical_scope) => if lexical_scope.closure_depth == ctx.closure_depth.get() {
+                    ExprKind::Call {
+                        func: lexical_scope_method(lexical_scope, "spawn", span),
+                        args: Vec::[lowered_body],
+                    }
+                } else {
+                    ctx.diagnostics.push(
+                        Diagnostic {
+                            message: "spawn cannot capture an enclosing lexical scope across a closure boundary; create a nested scope inside the closure",
+                            span: Option::Some(span),
+                        },
+                    );
+                    ExprKind::Unit
+                },
+                None => {
+                    ctx.diagnostics.push(
+                        Diagnostic {
+                            message: "spawn requires an enclosing lexical scope",
+                            span: Option::Some(span),
+                        },
+                    );
+                    ExprKind::Unit
+                },
+            }
+        },
         Call { func, args, span: _ } => {
             match func {
                 Path { path, .. } => match constructor_ref(ctx, path) {
@@ -1542,6 +1655,8 @@ fn make_context(files: Vec[ast::File], canonical_package_name: string, qualify_i
         expr_counter: Ref::new(1),
         diagnostics: Vec::[],
         current_pattern_span: Ref::new(Option::None),
+        lexical_scopes: Vec::[],
+        closure_depth: Ref::new(0),
     }
 }
 
@@ -1576,6 +1691,8 @@ fn file_context(base: LowerCtx, file: ast::File, diagnostics: Vec[Diagnostic]) -
         expr_counter: base.expr_counter,
         diagnostics,
         current_pattern_span: base.current_pattern_span,
+        lexical_scopes: Vec::[],
+        closure_depth: Ref::new(0),
     }
 }
 

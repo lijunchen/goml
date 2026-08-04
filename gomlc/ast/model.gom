@@ -426,6 +426,14 @@ pub enum Expr {
         expr: Expr,
         span: Span,
     },
+    Scope {
+        body: Expr,
+        span: Span,
+    },
+    Spawn {
+        body: Expr,
+        span: Span,
+    },
     Call {
         func: Expr,
         args: Vec[Expr],
@@ -592,13 +600,13 @@ pub fn expr_span(value: Expr) -> Span {
         } | For { span, .. } | Break { span, .. } | Continue { span } | Return { span, .. } | Go {
             span,
             ..,
-        } | Call { span, .. } | Unary { span, .. } | Cast { span, .. } | Try { span, .. } | Range {
+        } | Scope { span, .. } | Spawn { span, .. } | Call { span, .. } | Unary { span, .. } | Cast {
             span,
             ..,
-        } | Binary { span, .. } | Proj { span, .. } | Field { span, .. } | Index { span, .. } | Block {
+        } | Try { span, .. } | Range { span, .. } | Binary { span, .. } | Proj { span, .. } | Field {
             span,
             ..,
-        } => span,
+        } | Index { span, .. } | Block { span, .. } => span,
     }
 }
 

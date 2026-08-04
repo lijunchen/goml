@@ -430,6 +430,29 @@ fn go_expression(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_GO)
 }
 
+fn scope_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        parser.error("`scope` requires a block body")
+    };
+    parser.close(marker, cst::NodeKind::EXPR_SCOPE)
+}
+
+fn spawn_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    if parser.at(lexer::TokenKind::Pipe) || parser.at(lexer::TokenKind::OrOr) {
+        let _ = closure_expr(parser);
+        ()
+    } else {
+        parser.error("`spawn` requires a closure")
+    };
+    parser.close(marker, cst::NodeKind::EXPR_SPAWN)
+}
+
 fn atom(parser: Parser) -> Option[MarkerClosed] {
     let result = match parser.peek() {
         IntLit => simple_expression(parser, cst::NodeKind::EXPR_INT),
@@ -443,7 +466,14 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         ByteCharLit => simple_expression(parser, cst::NodeKind::EXPR_BYTE),
         ByteStr | RawByteStr => simple_expression(parser, cst::NodeKind::EXPR_BYTE_STRING),
         TrueKeyword | FalseKeyword => simple_expression(parser, cst::NodeKind::EXPR_BOOL),
-        Ident => if looks_like_vec_literal(parser) {
+        Ident => if parser.at_contextual("scope")
+            && token_is(parser.nth(1), lexer::TokenKind::LBrace) {
+            scope_expression(parser)
+        } else if parser.at_contextual("spawn")
+            && (token_is(parser.nth(1), lexer::TokenKind::Pipe)
+                || token_is(parser.nth(1), lexer::TokenKind::OrOr)) {
+            spawn_expression(parser)
+        } else if looks_like_vec_literal(parser) {
             vec_literal(parser)
         } else if looks_like_hashmap_literal(parser) {
             hashmap_literal(parser)

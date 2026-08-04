@@ -758,6 +758,8 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             },
             EXPR_RETURN => lower_return_expr(ctx, node, trailing_args),
             EXPR_GO => lower_go_expr(ctx, node, trailing_args),
+            EXPR_SCOPE => lower_scope_expr(ctx, node, trailing_args),
+            EXPR_SPAWN => lower_spawn_expr(ctx, node, trailing_args),
             _ => Option::None,
         };
         ctx.expr_depth.set(ctx.expr_depth.get() - 1);

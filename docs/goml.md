@@ -1895,6 +1895,22 @@ fn load_pair() -> Result[(int, int), string] {
 }
 ```
 
+The contextual `scope` and `spawn` forms provide the same structured lifetime with a hidden scope capability:
+
+```goml
+use std::task;
+
+fn load_pair() -> Result[(int, int), string] {
+    scope {
+        let left = spawn |cancel| load_left(cancel);
+        let right = spawn |cancel| load_right(cancel);
+        Result::Ok((left.join()?, right.join()?))
+    }
+}
+```
+
+`scope { body }` is lowered before HIR checking to `task::scope(|hidden_scope| body)`, and each directly nested `spawn |cancel| body` is lowered to `hidden_scope.spawn(|cancel| body)`. The file must import `std::task`. Directly nested lexical scopes use `scope_with` and inherit their parent's cancellation. The hidden scope value cannot be named or returned. A lexical `spawn` cannot cross a user closure boundary, which prevents a returned closure from capturing the capability; create a nested `scope` inside that closure instead. `scope` and `spawn` remain ordinary identifiers outside these contextual forms.
+
 `scope` stops accepting new work after its body returns, waits for every direct child task, and then returns the body's value. It still waits when a `Task[T]` handle is discarded. `Task::join` may be called repeatedly or concurrently; every call observes the same stored result. `Scope::try_spawn` returns `Some(task)` when it registers the task before closing begins and `None` after the scope starts closing. Ordinary `Scope::spawn` retains the stricter runtime-error behavior for closed scopes.
 
 `try_scope` cancels its scope when the body returns `Result::Err`, waits for all direct children to exit, and then returns the original error. `Scope::spawn_try` also cancels sibling tasks as soon as its child returns `Result::Err`. A nested scope inherits cancellation when it is created with `scope_with(parent_token, body)` or `try_scope_with(parent_token, body)`.
@@ -2067,6 +2083,7 @@ expression    = literal | raw_string | byte_string | raw_byte_string
               | call | field | index | unary | binary | cast | range_expression
               | try_expression
               | if_expression | match_expression | while_expression | loop_expression | for_expression
+              | scope_expression | spawn_expression
               | "return" expression? | "break" expression? | "continue" | "go" expression
 
 interpolated_string = "f\"" (string_text | "{{" | "}}" | "{" expression "}")* "\""
@@ -2093,6 +2110,8 @@ while_expression = "while" expression block
               | "while" "let" pattern "=" expression block
 loop_expression = "loop" block
 for_expression = "for" pattern "in" expression block
+scope_expression = "scope" block
+spawn_expression = "spawn" closure
 closure       = "||" (expression | block)
               | "|" closure_params? "|" (expression | block)
 cast          = expression "as" integer_type

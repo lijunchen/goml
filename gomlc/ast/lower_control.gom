@@ -362,3 +362,42 @@ fn lower_go_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> 
         }
     }
 }
+
+fn lower_scope_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to scope expression") {
+        Option::None
+    } else {
+        match first_child(node, cst::NodeKind::BLOCK) {
+            Some(block_node) => match lower_block(ctx, block_node) {
+                Some(block) => Option::Some(
+                    Expr::Scope {
+                        body: Expr::Block { block, span: node_span(block_node) },
+                        span: node_span(node),
+                    },
+                ),
+                None => Option::None,
+            },
+            None => {
+                push_error(ctx, node_span(node), "scope expression missing body");
+                Option::None
+            },
+        }
+    }
+}
+
+fn lower_spawn_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to spawn expression") {
+        Option::None
+    } else {
+        let values = expr_children(node);
+        if values.is_empty() {
+            push_error(ctx, node_span(node), "spawn expression missing closure");
+            Option::None
+        } else {
+            match lower_expr(ctx, values[0]) {
+                Some(body) => Option::Some(Expr::Spawn { body, span: node_span(node) }),
+                None => Option::None,
+            }
+        }
+    }
+}
