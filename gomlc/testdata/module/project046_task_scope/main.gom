@@ -1,0 +1,167 @@
+package main;
+
+use std::task;
+use std::process;
+use std::time;
+
+fn first_error(_token: task::CancelToken) -> Result[int, string] {
+    Result::Err("first")
+}
+
+fn middle_value(_token: task::CancelToken) -> Result[int, string] {
+    Result::Ok(2)
+}
+
+fn third_error(_token: task::CancelToken) -> Result[int, string] {
+    Result::Err("third")
+}
+
+fn main() -> unit {
+    let completed = Ref::new(false);
+    task::scope(
+        |scope: task::Scope| {
+            let _ = scope.spawn(
+                |_: task::CancelToken| {
+                    completed.set(true)
+                },
+            );
+        },
+    );
+    println(completed.get());
+    let joined = task::scope(
+        |scope: task::Scope| {
+            let value = scope.spawn(|_: task::CancelToken| 42);
+            let left = scope.spawn(|_: task::CancelToken| value.join());
+            let right = scope.spawn(|_: task::CancelToken| value.join());
+            (left.join(), right.join(), value.join())
+        },
+    );
+    println(joined.0);
+    println(joined.1);
+    println(joined.2);
+    let cancelled = Ref::new(false);
+    let result: Result[unit, string] = task::try_scope(
+        |scope: task::Scope| {
+            let _ = scope.spawn(
+                |token: task::CancelToken| {
+                    while !token.is_cancelled() {};
+                    cancelled.set(true)
+                },
+            );
+            Result::Err("stop")
+        },
+    );
+    println(result.is_err());
+    println(cancelled.get());
+    task::scope(
+        |outer: task::Scope| {
+            outer.cancel();
+            let inherited = task::scope_with(
+                outer.token(),
+                |inner: task::Scope| {
+                    inner.spawn(|token: task::CancelToken| token.is_cancelled()).join()
+                },
+            );
+            println(inherited)
+        },
+    );
+    let spawn_try_cancelled = task::scope(
+        |scope: task::Scope| {
+            let observer = scope.spawn(
+                |token: task::CancelToken| {
+                    while !token.is_cancelled() {};
+                    true
+                },
+            );
+            let failure = scope.spawn_try(first_error);
+            println(failure.join().is_err());
+            observer.join()
+        },
+    );
+    println(spawn_try_cancelled);
+    let errors = task::scope(
+        |scope: task::Scope| {
+            let values: Vec[task::Task[Result[int, string]]] = Vec::[
+                scope.spawn(first_error),
+                scope.spawn(middle_value),
+                scope.spawn(third_error),
+            ];
+            task::join_all_results(values)
+        },
+    );
+    match errors {
+        Ok(_) => println("unexpected"),
+        Err(values) => {
+            println(values[0]);
+            println(values[1])
+        },
+    };
+    let recv_cancelled = Ref::new(false);
+    let recv_channel: Channel[int] = Channel::new(0);
+    let _: Result[unit, string] = task::try_scope(
+        |scope: task::Scope| {
+            let _ = scope.spawn(
+                |token: task::CancelToken| {
+                    match task::recv_with(token, recv_channel) {
+                        task::WaitResult::Cancelled => recv_cancelled.set(true),
+                        task::WaitResult::Completed(_) => (),
+                    }
+                },
+            );
+            Result::Err("stop")
+        },
+    );
+    println(recv_cancelled.get());
+    let send_cancelled = Ref::new(false);
+    let send_channel: Channel[int] = Channel::new(0);
+    let _: Result[unit, string] = task::try_scope(
+        |scope: task::Scope| {
+            let _ = scope.spawn(
+                |token: task::CancelToken| {
+                    match task::send_with(token, send_channel, 1) {
+                        task::WaitResult::Cancelled => send_cancelled.set(true),
+                        task::WaitResult::Completed(_) => (),
+                    }
+                },
+            );
+            Result::Err("stop")
+        },
+    );
+    println(send_cancelled.get());
+    let sleep_started: Channel[unit] = Channel::new(1);
+    let sleep_cancelled = Ref::new(false);
+    let _: Result[unit, string] = task::try_scope(
+        |scope: task::Scope| {
+            let _ = scope.spawn(
+                |token: task::CancelToken| {
+                    sleep_started.send(());
+                    match time::sleep_with(token, time::Duration::from_seconds(10)) {
+                        task::WaitResult::Cancelled => sleep_cancelled.set(true),
+                        task::WaitResult::Completed(_) => (),
+                    }
+                },
+            );
+            let _ = sleep_started.recv();
+            Result::Err("stop")
+        },
+    );
+    println(sleep_cancelled.get());
+    let process_started: Channel[unit] = Channel::new(1);
+    let process_cancelled = Ref::new(false);
+    let _: Result[unit, string] = task::try_scope(
+        |scope: task::Scope| {
+            let _ = scope.spawn(
+                |token: task::CancelToken| {
+                    process_started.send(());
+                    match process::Command::new("sh").args(Vec::["-c", "sleep 10"]).output_with(token) {
+                        Ok(task::WaitResult::Cancelled) => process_cancelled.set(true),
+                        _ => (),
+                    }
+                },
+            );
+            let _ = process_started.recv();
+            Result::Err("stop")
+        },
+    );
+    println(process_cancelled.get())
+}

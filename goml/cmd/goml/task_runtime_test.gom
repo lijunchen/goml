@@ -1,0 +1,51 @@
+package main;
+
+use gomlang::bootstrap_goml::test_support;
+use std::path;
+use std::process;
+use std::testing;
+
+#[test]
+fn spawning_after_scope_exit_fails() -> unit {
+    let root = test_support::workspace("closed_task_scope");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"closed_task_scope\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nuse std::task;\n\nfn main() -> unit {\n    let escaped = task::scope(|scope: task::Scope| scope);\n    let _ = escaped.spawn(|_: task::CancelToken| ());\n}\n",
+    );
+    let output = test_support::project_command("run", "", Vec::[], root);
+    test_support::assert_failure(output);
+    test_support::assert_contains(test_support::stderr(output), "task scope is closed")
+}
+
+#[test]
+fn cancelling_command_stops_its_process_group() -> unit {
+    let root = test_support::workspace("cancelled_process_group");
+    test_support::write_file(
+        path::join(root, "goml.toml"),
+        "[module]\npath = \"cancelled_process_group\"\n",
+    );
+    test_support::write_file(
+        path::join(root, "main.gom"),
+        "package main;\n\nuse std::fs;\nuse std::process;\nuse std::task;\n\nfn main() -> unit {\n    let result: Result[unit, string] = task::try_scope(\n        |scope: task::Scope| {\n            let _ = scope.spawn(\n                |token: task::CancelToken| {\n                    let _ = process::Command::new(\"sh\").args(Vec::[\"-c\", \"sleep 30 & echo $! > child.pid; wait\"]).output_with(token);\n                },\n            );\n            while !fs::is_file(\"child.pid\") {};\n            Result::Err(\"stop\")\n        },\n    );\n    println(result.is_err())\n}\n",
+    );
+    let output = test_support::project_command("run", "", Vec::[], root);
+    test_support::assert_success(output);
+    testing::assert_eq(test_support::stdout(output), "true\n");
+    let check = match process::Command::new("sh").args(
+        Vec::[
+            "-c",
+            "for attempt in 1 2 3 4 5 6 7 8 9 10; do if ! kill -0 \"$(cat child.pid)\" 2>/dev/null; then exit 0; fi; sleep 0.1; done; exit 1",
+        ],
+    ).current_dir(root).output() {
+        Ok(value) => value,
+        Err(message) => {
+            testing::fail(message);
+            output
+        },
+    };
+    test_support::assert_success(check)
+}
