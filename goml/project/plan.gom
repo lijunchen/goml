@@ -780,17 +780,20 @@ enum CachePreparation {
     Execute(Option[PreparedCache]),
 }
 
-fn prepare_cached_command(context: Context, command: Command, identity: string) -> Result[
-    CachePreparation,
-    string,
-] {
+fn prepare_cached_command(
+    digests: DigestCache,
+    context: Context,
+    command: Command,
+    identity: string,
+) -> Result[CachePreparation, string] {
     match cache_spec(command) {
         Some(spec) => {
-            let fingerprint = command_fingerprint(context, identity, spec)?;
-            let fresh = cache_is_fresh(context, spec, fingerprint)?;
+            let fingerprint = command_fingerprint(digests, context, identity, spec)?;
+            let fresh = cache_is_fresh(digests, context, spec, fingerprint)?;
             if fresh {
                 Result::Ok(CachePreparation::Fresh)
             } else {
+                invalidate_output_digests(digests, context.graph.module_dir, spec.outputs);
                 prepare_cache_execution(context, spec)?;
                 Result::Ok(
                     CachePreparation::Execute(Option::Some(PreparedCache { spec, fingerprint })),
@@ -819,19 +822,22 @@ fn execute_prepared_command(context: Context, command: Command, cache: Option[Pr
     }
 }
 
-fn finish_prepared_command(context: Context, identity: string, cache: Option[PreparedCache]) -> Result[
-    unit,
-    string,
-] {
+fn finish_prepared_command(
+    digests: DigestCache,
+    context: Context,
+    identity: string,
+    cache: Option[PreparedCache],
+) -> Result[unit, string] {
     match cache {
-        Some(value) => store_cache(context, value.spec, identity, value.fingerprint),
+        Some(value) => store_cache(digests, context, value.spec, identity, value.fingerprint),
         None => Result::Ok(()),
     }
 }
 
-fn discard_prepared_command(context: Context, cache: Option[PreparedCache]) -> unit {
+fn discard_prepared_command(digests: DigestCache, context: Context, cache: Option[PreparedCache]) -> unit {
     match cache {
         Some(value) => {
+            invalidate_output_digests(digests, context.graph.module_dir, value.spec.outputs);
             let _ = prepare_cache_execution(context, value.spec);
         },
         None => (),
@@ -978,6 +984,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
         }
     } else {
         let graph = build_graph(plan.commands)?;
+        let digests = digest_cache();
         let initial: Vec[int] = Vec::[];
         for node in graph.nodes {
             initial.push(node.index)
@@ -1005,7 +1012,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                     blocked.push(index)
                 } else if running < worker_count {
                     util::display_progress(completed, total, progress_label(node.command), false);
-                    match prepare_cached_command(context, node.command, identity) {
+                    match prepare_cached_command(digests, context, node.command, identity) {
                         Ok(Fresh) => {
                             completed_nodes.push(node.index);
                             completed += 1;
@@ -1018,7 +1025,9 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                             work.close();
                             for _ in 0..running {
                                 match results.recv() {
-                                    Some(value) => discard_prepared_command(context, value.cache),
+                                    Some(value) => {
+                                        discard_prepared_command(digests, context, value.cache)
+                                    },
                                     None => (),
                                 }
                             };
@@ -1041,7 +1050,12 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
             if running > 0 {
                 match results.recv() {
                     Some(value) => match value.result {
-                        Ok(()) => match finish_prepared_command(context, identity, value.cache) {
+                        Ok(()) => match finish_prepared_command(
+                            digests,
+                            context,
+                            identity,
+                            value.cache,
+                        ) {
                             Ok(()) => {
                                 completed_nodes.push(value.index);
                                 completed += 1;
@@ -1053,7 +1067,7 @@ pub fn execute_plan(context: Context, plan: Plan, dry_run: bool, jobs: int) -> R
                                 for _ in 0..running {
                                     match results.recv() {
                                         Some(other) => {
-                                            discard_prepared_command(context, other.cache)
+                                            discard_prepared_command(digests, context, other.cache)
                                         },
                                         None => (),
                                     }

@@ -344,6 +344,8 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "filepath")
                 } else if hook == "std.fs.sha256_file" {
                     require_runtime_import(required_imports, "fmt");
+                    require_runtime_import(required_imports, "hash");
+                    require_runtime_import(required_imports, "io");
                     require_runtime_import(required_imports, "os");
                     require_runtime_import(required_imports, "sha256")
                 } else if hook.starts_with("std.path.") {
@@ -405,6 +407,11 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
         };
         if collections::contains(required_imports, "fmt") {
             imports.push(("_goml_fmt", "fmt"))
+        } else {
+            ()
+        };
+        if collections::contains(required_imports, "hash") {
+            imports.push(("_goml_hash", "hash"))
         } else {
             ()
         };

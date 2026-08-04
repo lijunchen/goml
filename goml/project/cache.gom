@@ -12,6 +12,14 @@ struct CacheSpec {
     anchor: string,
 }
 
+struct DigestCache {
+    values: HashMap[string, string],
+}
+
+fn digest_cache() -> DigestCache {
+    DigestCache { values: HashMap::{} }
+}
+
 fn sha256_constants() -> Vec[uint32] {
     Vec::[
         1116352408,
@@ -211,6 +219,27 @@ fn file_digest(module_dir: string, value: string) -> Result[string, string] {
     }
 }
 
+fn cached_file_digest(cache: DigestCache, module_dir: string, value: string) -> Result[
+    string,
+    string,
+] {
+    let absolute = absolute_from_module(module_dir, value);
+    match cache.values[absolute] {
+        Some(digest) => Result::Ok(digest),
+        None => {
+            let digest = file_digest(module_dir, value)?;
+            cache.values[absolute] = digest;
+            Result::Ok(digest)
+        },
+    }
+}
+
+fn invalidate_output_digests(cache: DigestCache, module_dir: string, outputs: Vec[string]) -> unit {
+    for output in outputs {
+        let _ = cache.values.remove(absolute_from_module(module_dir, output));
+    }
+}
+
 fn compiler_digest(context: Context) -> Result[string, string] {
     if fs::is_file(context.compiler) {
         file_digest(context.graph.module_dir, context.compiler)
@@ -312,7 +341,7 @@ fn cache_path(module_dir: string, spec: CacheSpec) -> string {
     absolute_from_module(module_dir, spec.anchor) + ".goml-" + spec.kind + "-fingerprint"
 }
 
-fn command_fingerprint(context: Context, compiler: string, spec: CacheSpec) -> Result[
+fn command_fingerprint(cache: DigestCache, context: Context, compiler: string, spec: CacheSpec) -> Result[
     string,
     string,
 ] {
@@ -331,7 +360,7 @@ fn command_fingerprint(context: Context, compiler: string, spec: CacheSpec) -> R
     };
     builder.write_char('\n');
     for input in spec.inputs {
-        let digest = file_digest(context.graph.module_dir, input)?;
+        let digest = cached_file_digest(cache, context.graph.module_dir, input)?;
         builder.write_string(input.byte_len().to_string());
         builder.write_char(':');
         builder.write_string(input);
@@ -340,11 +369,14 @@ fn command_fingerprint(context: Context, compiler: string, spec: CacheSpec) -> R
     Result::Ok(sha256_text(builder.finish()))
 }
 
-fn output_digests(module_dir: string, outputs: Vec[string]) -> Result[Option[Vec[string]], string] {
+fn output_digests(cache: DigestCache, module_dir: string, outputs: Vec[string]) -> Result[
+    Option[Vec[string]],
+    string,
+] {
     let result: Vec[string] = Vec::[];
     for output in outputs {
         if fs::is_file(absolute_from_module(module_dir, output)) {
-            match file_digest(module_dir, output) {
+            match cached_file_digest(cache, module_dir, output) {
                 Ok(value) => result.push(value),
                 Err(message) => return Result::Err(message),
             }
@@ -355,7 +387,10 @@ fn output_digests(module_dir: string, outputs: Vec[string]) -> Result[Option[Vec
     Result::Ok(Option::Some(result))
 }
 
-fn cache_is_fresh(context: Context, spec: CacheSpec, fingerprint: string) -> Result[bool, string] {
+fn cache_is_fresh(cache: DigestCache, context: Context, spec: CacheSpec, fingerprint: string) -> Result[
+    bool,
+    string,
+] {
     let record_path = cache_path(context.graph.module_dir, spec);
     if !fs::is_file(record_path) {
         return Result::Ok(false)
@@ -369,7 +404,7 @@ fn cache_is_fresh(context: Context, spec: CacheSpec, fingerprint: string) -> Res
     } else {
         ()
     };
-    let actual = match output_digests(context.graph.module_dir, spec.outputs) {
+    let actual = match output_digests(cache, context.graph.module_dir, spec.outputs) {
         Ok(Some(value)) => value,
         Ok(None) => return Result::Ok(false),
         Err(message) => return Result::Err(message),
@@ -400,11 +435,14 @@ fn prepare_cache_execution(context: Context, spec: CacheSpec) -> Result[unit, st
     Result::Ok(())
 }
 
-fn store_cache(context: Context, spec: CacheSpec, compiler: string, before: string) -> Result[
-    unit,
-    string,
-] {
-    let after = match command_fingerprint(context, compiler, spec) {
+fn store_cache(
+    cache: DigestCache,
+    context: Context,
+    spec: CacheSpec,
+    compiler: string,
+    before: string,
+) -> Result[unit, string] {
+    let after = match command_fingerprint(digest_cache(), context, compiler, spec) {
         Ok(value) => value,
         Err(message) => {
             let _ = prepare_cache_execution(context, spec);
@@ -417,7 +455,7 @@ fn store_cache(context: Context, spec: CacheSpec, compiler: string, before: stri
     } else {
         ()
     };
-    let digests = match output_digests(context.graph.module_dir, spec.outputs) {
+    let digests = match output_digests(cache, context.graph.module_dir, spec.outputs) {
         Ok(Some(value)) => value,
         Ok(None) => {
             let _ = prepare_cache_execution(context, spec);
