@@ -550,6 +550,28 @@ fn project_commands_validate_incremental_fingerprints_and_outputs() -> unit {
 }
 
 #[test]
+fn sha256_file_handles_streamed_content_and_missing_files() -> unit {
+    let root = test_support::workspace("sha256_file");
+    let file = path::join(root, "large.txt");
+    let builder = text::StringBuilder::with_capacity(160000);
+    for _ in 0..10000 {
+        builder.write_string("0123456789abcdef")
+    };
+    test_support::write_file(file, builder.finish());
+    match fs::sha256_file(file) {
+        Ok(digest) => testing::assert_eq(
+            digest,
+            "48705161f98666a9d694f3b8e9d1bc5b842fa1ff0e85d710150616c433af9aae",
+        ),
+        Err(message) => testing::fail(message),
+    };
+    match fs::sha256_file(path::join(root, "missing.txt")) {
+        Ok(_) => testing::fail("missing file produced a digest"),
+        Err(_) => (),
+    }
+}
+
+#[test]
 fn project_build_graph_reuses_unaffected_local_cache_nodes() -> unit {
     let root = test_support::workspace("build_graph_local_cache");
     test_support::write_file(path::join(root, "goml.toml"), "[module]\npath = \"demo\"\n");

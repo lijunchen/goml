@@ -281,6 +281,7 @@ fn emits_every_standard_runtime_hook() -> unit {
             output,
             "import (\n" + "    _goml_bytes \"bytes\"\n" + "    _goml_context \"context\"\n"
                 + "    _goml_fmt \"fmt\"\n"
+                + "    _goml_hash \"hash\"\n"
                 + "    _goml_io \"io\"\n"
                 + "    _goml_os \"os\"\n"
                 + "    _goml_exec \"os/exec\"\n"
@@ -301,7 +302,10 @@ fn emits_every_standard_runtime_hook() -> unit {
     testing::assert(string_contains(output, "var err error = _goml_os.MkdirAll(path, 0755)"));
     testing::assert(string_contains(output, "result, err = _goml_filepath.EvalSymlinks(absolute)"));
     testing::assert(string_contains(output, "names = append(names, entry.Name())"));
-    testing::assert(string_contains(output, "var digest [32]uint8 = _goml_sha256.Sum256(data)"));
+    testing::assert(string_contains(output, "file, err = _goml_os.Open(path)"));
+    testing::assert(string_contains(output, "var digest _goml_hash.Hash = _goml_sha256.New()"));
+    testing::assert(string_contains(output, "_, err = _goml_io.Copy(digest, file)"));
+    testing::assert(string_contains(output, "_goml_fmt.Sprintf(\"%x\", digest.Sum(nil))"));
     testing::assert(string_contains(output, "_goml_fmt.Fprint(_goml_os.Stderr, value)"));
     testing::assert(string_contains(output, "data, err = _goml_io.ReadAll(_goml_os.Stdin)"));
     testing::assert(string_contains(output, "_, err = _goml_io.ReadFull(_goml_os.Stdin, data)"));

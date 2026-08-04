@@ -3,6 +3,7 @@ package tast;
 use gomlc::ast;
 use gomlc::hir;
 use gomlc::parser;
+use gomlc::pretty;
 use std::testing;
 use std::text;
 
@@ -2591,4 +2592,53 @@ fn diagnoses_constant_cycles_and_non_constant_expressions() -> unit {
             "constant values support only literals, constant references, unary operators, binary operators, and casts",
         ),
     )
+}
+
+#[test]
+fn direct_type_writer_matches_compact_document_rendering() -> unit {
+    let values = Vec::[
+        Type::Unit,
+        Type::Never,
+        Type::Bool,
+        Type::Int,
+        Type::Int8,
+        Type::Int16,
+        Type::Int32,
+        Type::Int64,
+        Type::Uint,
+        Type::Uint8,
+        Type::Uint16,
+        Type::Uint32,
+        Type::Uint64,
+        Type::Float32,
+        Type::Float64,
+        Type::String,
+        Type::Char,
+        Type::Tuple { items: Vec::[Type::Int, Type::String] },
+        Type::Con { name: "sample::Type" },
+        Type::Dyn { trait_name: "sample::Trait" },
+        Type::Projection {
+            for_ty: Type::Con { name: "sample::Type" },
+            name: "Item",
+            trait_ref: Option::Some(TraitRef { name: "sample::Trait", args: Vec::[Type::Int] }),
+        },
+        Type::App { ty: Type::Con { name: "Option" }, args: Vec::[] },
+        Type::App { ty: Type::Con { name: "Option" }, args: Vec::[Type::String] },
+        Type::Array { len: 4, elem: Type::Uint8 },
+        Type::Slice { elem: Type::Char },
+        Type::VecType { elem: Type::String },
+        Type::RefType { elem: Type::Bool },
+        Type::HashMap { key: Type::String, value: Type::Int },
+        Type::Channel { elem: Type::Uint64 },
+        Type::Param { name: "T" },
+        Type::Func { params: Vec::[Type::Int, Type::String], ret_ty: Type::Bool },
+        Type::Var(Ref::new(TypeVar::Unbound { id: 1, kind: VarKind::Any })),
+        Type::Var(Ref::new(TypeVar::Unbound { id: 2, kind: VarKind::Integer })),
+        Type::Var(Ref::new(TypeVar::Unbound { id: 3, kind: VarKind::Float })),
+        Type::Var(Ref::new(TypeVar::Link(Type::Char))),
+        Type::Error,
+    ];
+    for value in values {
+        testing::assert_eq(type_text(value), pretty::compact(type_doc(value)))
+    }
 }
