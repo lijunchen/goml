@@ -210,7 +210,7 @@ fn emits_every_core_runtime_hook() -> unit {
     );
     for key in hooks {
         testing::assert(string_contains(output, "func " + runtime_hook_name(key) + "("))
-    };
+    }
     testing::assert(!string_contains(output, "unicode/utf8"));
     testing::assert(string_contains(output, "return rune(s[i])"));
     testing::assert(string_contains(output, "return s[start:end]"));
@@ -294,7 +294,7 @@ fn emits_every_standard_runtime_hook() -> unit {
     );
     for key in hooks {
         testing::assert(string_contains(output, "func " + runtime_hook_name(key) + "("))
-    };
+    }
     testing::assert(string_contains(output, "data, err = _goml_os.ReadFile(path)"));
     testing::assert(
         string_contains(output, "var err error = _goml_os.WriteFile(path, data.items, 0644)"),

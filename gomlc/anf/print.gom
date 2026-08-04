@@ -64,7 +64,7 @@ fn imms_doc(values: Vec[Imm]) -> Vec[pretty::Doc] {
     let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(imm_doc(value))
-    };
+    }
     result
 }
 
@@ -106,7 +106,7 @@ fn constructor_doc(constructor: tast::Constructor, args: Vec[Imm]) -> pretty::Do
                         Vec::[pretty::text(constructor.fields[index] + ": "), imm_doc(args[index])],
                     ),
                 )
-            };
+            }
             record_doc(constructor.name, fields)
         } else if !args.is_empty() {
             pretty::append(pretty::text(constructor.name), arguments(imms_doc(args)))
@@ -176,7 +176,7 @@ fn value_doc(value: Value) -> pretty::Doc {
             values.push(imm_doc(receiver));
             for arg in args {
                 values.push(imm_doc(arg))
-            };
+            }
             pretty::concat(
                 Vec::[
                     pretty::text(
@@ -197,7 +197,7 @@ fn params_doc(values: Vec[(string, tast::Type)]) -> pretty::Doc {
     let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(pretty::concat(Vec::[pretty::text(value.0 + ": "), tast::type_doc(value.1)]))
-    };
+    }
     arguments(result)
 }
 
@@ -205,7 +205,7 @@ fn block_docs(value: Block) -> Vec[pretty::Doc] {
     let result: Vec[pretty::Doc] = Vec::with_capacity(value.binds.len() + 1);
     for value in value.binds {
         result.push(bind_doc(value))
-    };
+    }
     result.push(term_doc(value.term));
     result
 }
@@ -238,7 +238,7 @@ fn bind_doc(value: Bind) -> pretty::Doc {
             let joins: Vec[pretty::Doc] = Vec::with_capacity(values.len());
             for value in values {
                 joins.push(join_doc(value))
-            };
+            }
             pretty::append(pretty::block(pretty::text("joinrec"), joins), pretty::text(" in"))
         },
     }
@@ -278,7 +278,7 @@ fn term_doc(value: Term) -> pretty::Doc {
             );
             for arm in arms {
                 values.push(arm_doc(arm))
-            };
+            }
             match default {
                 Some(value) => values.push(
                     pretty::append(
@@ -312,10 +312,10 @@ fn file_doc(value: File) -> pretty::Doc {
     let values: Vec[pretty::Doc] = Vec::with_capacity(value.constants.len() + value.functions.len());
     for value in value.constants {
         values.push(tast::constant_doc(value))
-    };
+    }
     for value in value.functions {
         values.push(function_doc(value))
-    };
+    }
     pretty::join(pretty::concat(Vec::[pretty::hardline(), pretty::hardline()]), values)
 }
 

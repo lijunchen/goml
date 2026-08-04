@@ -14,7 +14,7 @@ fn find_enum(values: Vec[tast::EnumDef], name: string) -> Option[tast::EnumDef] 
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -27,7 +27,7 @@ fn find_struct(values: Vec[tast::StructDef], name: string) -> Option[tast::Struc
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -57,10 +57,8 @@ fn type_lists_match(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
         for index in 0..left.len() {
             if encode_type(left[index]) != encode_type(right[index]) {
                 return false
-            } else {
-                ()
-            }
-        };
+            } else {}
+        }
         true
     }
 }
@@ -76,7 +74,7 @@ fn find_instance(values: Vec[core::TypeInstance], base_name: string, args: Vec[t
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -88,7 +86,7 @@ fn lookup_binding(generics: Vec[string], args: Vec[tast::Type], name: string) ->
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -101,7 +99,7 @@ fn instantiate_types(
     let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(instantiate_type(value, generics, args, instances))
-    };
+    }
     result
 }
 
@@ -168,9 +166,7 @@ fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
         Con { name } => {
             if !collections::contains(result, name) {
                 result.push(name)
-            } else {
-                ()
-            }
+            } else {}
         },
         Tuple { items: values } => {
             for value in values {
@@ -194,7 +190,7 @@ fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
         Func { params, ret_ty } => {
             for value in params {
                 collect_con_names(result, value)
-            };
+            }
             collect_con_names(result, ret_ty)
         },
         _ => (),
@@ -210,7 +206,7 @@ fn instance_by_name(values: Vec[core::TypeInstance], name: string) -> Option[cor
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -226,10 +222,8 @@ fn enum_has_variant(value: tast::EnumDef, variant_name: string) -> bool {
     for variant in value.variants {
         if variant.name == variant_name {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -242,28 +236,20 @@ fn variant_instance_count(
     for definition in enums {
         if enum_has_variant(definition, variant_name) {
             if definition.generics.is_empty() {
-                if collections::contains(owners, definition.name) {
-                    ()
-                } else {
+                if collections::contains(owners, definition.name) {} else {
                     owners.push(definition.name)
                 }
             } else {
                 for instance in instances {
                     if instance.base_name == definition.name {
-                        if collections::contains(owners, instance.name) {
-                            ()
-                        } else {
+                        if collections::contains(owners, instance.name) {} else {
                             owners.push(instance.name)
                         }
-                    } else {
-                        ()
-                    }
+                    } else {}
                 }
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     owners.len()
 }
 
@@ -313,7 +299,7 @@ fn unique_variant_go_name(candidate: string, function_names: FunctionNames) -> s
             while variant_name_reserved(result, function_names) {
                 index = index + 1;
                 result = go_generated_ident(base + "__variant" + index.to_string());
-            };
+            }
             result
         }
     }
@@ -323,10 +309,8 @@ fn tag_only_variant_fields(values: Vec[Vec[tast::Type]]) -> bool {
     for fields in values {
         if !fields.is_empty() {
             return false
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     true
 }
 
@@ -384,7 +368,7 @@ fn tag_only_const_specs(
                 tag_only: true,
             },
         )
-    };
+    }
     specs
 }
 
@@ -398,9 +382,7 @@ fn emit_enum_instance(
     function_names: FunctionNames,
     instance: core::TypeInstance,
 ) -> unit {
-    if collections::contains(emitted, instance.name) {
-        ()
-    } else {
+    if collections::contains(emitted, instance.name) {} else {
         match find_enum(enums, instance.base_name) {
             Some(definition) => {
                 emitted.push(instance.name);
@@ -414,7 +396,7 @@ fn emit_enum_instance(
                             instances,
                         ),
                     )
-                };
+                }
                 if !definition.generics.is_empty() {
                     for fields in fields_by_variant {
                         for field in fields {
@@ -437,9 +419,7 @@ fn emit_enum_instance(
                             }
                         }
                     }
-                } else {
-                    ()
-                };
+                } else {};
                 let owner_go_name = go_user_type_name(instance.name);
                 if tag_only_variant_fields(fields_by_variant) {
                     items.push(Item::TypeDef(TypeDef { name: owner_go_name, ty: Type::Int32 }));
@@ -477,7 +457,7 @@ fn emit_enum_instance(
                                     lower_type(field_types[field_index]),
                                 ),
                             )
-                        };
+                        }
                         let variant_name = variant_go_name(
                             instance.name,
                             variant.name,
@@ -538,13 +518,11 @@ pub fn emit_user_type_items(
                         ),
                     ),
                 )
-            };
+            }
             items.push(Item::Struct(StructDef { name: go_user_type_name(definition.name), fields }));
             emitted.push(definition.name)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for instance in instances {
         match find_struct(structs, instance.base_name) {
             Some(definition) => {
@@ -564,28 +542,24 @@ pub fn emit_user_type_items(
                                 ),
                             ),
                         )
-                    };
+                    }
                     items.push(
                         Item::Struct(StructDef { name: go_user_type_name(instance.name), fields }),
                     );
                     emitted.push(instance.name)
-                } else {
-                    ()
-                }
+                } else {}
             },
             None => match builtin_struct_instance(instance, instances) {
                 Some(definition) => {
                     if !collections::contains(emitted, instance.name) {
                         items.push(Item::Struct(definition));
                         emitted.push(instance.name)
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
                 None => (),
             },
         }
-    };
+    }
     for definition in structs {
         if definition.generics.is_empty() && is_closure_struct_name(definition.name)
             && !collections::contains(emitted, definition.name) {
@@ -599,13 +573,11 @@ pub fn emit_user_type_items(
                         ),
                     ),
                 )
-            };
+            }
             items.push(Item::Struct(StructDef { name: go_user_type_name(definition.name), fields }));
             emitted.push(definition.name)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for definition in enums {
         if definition.generics.is_empty() {
             emit_enum_instance(
@@ -622,10 +594,8 @@ pub fn emit_user_type_items(
                     name: definition.name,
                 },
             )
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for instance in instances {
         if instance.base_name == "FnIterator" && instance.args.len() == 1 {
             let option_args: Vec[tast::Type] = Vec::[];
@@ -647,9 +617,7 @@ pub fn emit_user_type_items(
                     },
                 ),
             }
-        } else {
-            ()
-        };
+        } else {};
         emit_enum_instance(
             items,
             emitted,
@@ -702,13 +670,9 @@ fn last_separator(value: string) -> int {
         for index in 0..value.byte_len() - 1 {
             if text::starts_with_at(value, index, "::") {
                 result = index;
-            } else {
-                ()
-            }
+            } else {}
         }
-    } else {
-        ()
-    };
+    } else {};
     result
 }
 

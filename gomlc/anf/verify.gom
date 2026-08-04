@@ -16,7 +16,7 @@ fn copy_join_signatures(values: Vec[JoinSignature]) -> Vec[JoinSignature] {
     let result: Vec[JoinSignature] = Vec::with_capacity(values.len());
     for value in values {
         result.push(value)
-    };
+    }
     result
 }
 
@@ -29,7 +29,7 @@ fn find_join_signature(values: Vec[JoinSignature], name: string) -> Option[JoinS
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -84,16 +84,14 @@ fn verify_jump(
     };
     if args.len() != signature.params.len() {
         return Result::Err("jump argument count does not match join " + target)
-    } else {
-        ()
-    };
+    } else {};
     for index in 0..args.len() {
         verify_type(
             imm_type(args[index]),
             signature.params[index].1,
             "jump argument type does not match join " + target,
         )?
-    };
+    }
     verify_type(ret_ty, signature.ret_ty, "jump result type does not match join " + target)?;
     verify_type(ret_ty, expected_ty, "jump result type does not match its block")
 }
@@ -128,7 +126,7 @@ fn verify_term(state: VerifyState, value: Term, expected_ty: tast::Type, joins: 
             for arm in arms {
                 verify_match_arm_type(scrutinee, arm)?;
                 verify_block(state, arm.body, ret_ty, copy_join_signatures(joins))?
-            };
+            }
             match default {
                 Some(body) => verify_block(state, body, ret_ty, copy_join_signatures(joins)),
                 None => Result::Ok(()),
@@ -156,17 +154,15 @@ fn verify_recursive_joins(state: VerifyState, values: Vec[JoinBind], joins: Vec[
 ] {
     if values.is_empty() {
         return Result::Err("recursive join group is empty")
-    } else {
-        ()
-    };
+    } else {};
     let recursive = copy_join_signatures(joins);
     for value in values {
         verify_join_name(state, value.name)?;
         recursive.push(join_signature(value))
-    };
+    }
     for value in values {
         verify_block(state, value.body, value.ret_ty, copy_join_signatures(recursive))?
-    };
+    }
     Result::Ok(recursive)
 }
 
@@ -195,7 +191,7 @@ fn verify_block(
                 }
             },
         }
-    };
+    }
     verify_term(state, value.term, expected_ty, joins)
 }
 
@@ -210,6 +206,6 @@ fn verify_function(value: Function) -> Result[unit, string] {
 pub fn verify(value: File) -> Result[unit, string] {
     for function in value.functions {
         verify_function(function)?
-    };
+    }
     Result::Ok(())
 }

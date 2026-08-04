@@ -23,10 +23,8 @@ fn licm_assigned_contains(values: Vec[HashMap[string, unit]], name: string) -> b
     for value in values {
         if value.contains(name) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -73,7 +71,7 @@ fn licm_collect_local_names(value: Block, result: HashMap[string, unit]) -> unit
             Join(value) => licm_collect_local_names(value.body, result),
             JoinRec(_) => (),
         }
-    };
+    }
     match value.term {
         If { then_, else_, .. } => {
             licm_collect_local_names(then_, result);
@@ -82,7 +80,7 @@ fn licm_collect_local_names(value: Block, result: HashMap[string, unit]) -> unit
         Match { arms, default, .. } => {
             for arm in arms {
                 licm_collect_local_names(arm.body, result)
-            };
+            }
             match default {
                 Some(body) => licm_collect_local_names(body, result),
                 None => (),
@@ -99,12 +97,12 @@ fn licm_collect_param_names(value: Block, result: HashMap[string, unit]) -> unit
             Join(value) => {
                 for param in value.params {
                     result[param.0] = ();
-                };
+                }
                 licm_collect_param_names(value.body, result)
             },
             JoinRec(_) => (),
         }
-    };
+    }
     match value.term {
         If { then_, else_, .. } => {
             licm_collect_param_names(then_, result);
@@ -113,7 +111,7 @@ fn licm_collect_param_names(value: Block, result: HashMap[string, unit]) -> unit
         Match { arms, default, .. } => {
             for arm in arms {
                 licm_collect_param_names(arm.body, result)
-            };
+            }
             match default {
                 Some(body) => licm_collect_param_names(body, result),
                 None => (),
@@ -151,7 +149,7 @@ fn licm_extract_term(
                 let result = licm_extract_block(arm.body, local, invariant, params, assigned);
                 licm_append_hoisted(hoisted, result.hoisted);
                 lowered.push(Arm { lhs: arm.lhs, body: result.value })
-            };
+            }
             Term::Match {
                 scrutinee,
                 arms: lowered,
@@ -207,7 +205,7 @@ fn licm_extract_block(
             },
             JoinRec(values) => binds.push(Bind::JoinRec(values)),
         }
-    };
+    }
     let term = licm_extract_term(value.term, local, invariant, params, assigned, hoisted);
     LicmBlockResult { hoisted, value: Block { binds, term } }
 }
@@ -218,7 +216,7 @@ fn licm_join(value: JoinBind, assigned: Vec[HashMap[string, unit]]) -> LicmJoinR
     let params: HashMap[string, unit] = HashMap::{};
     for param in value.params {
         params[param.0] = ();
-    };
+    }
     licm_collect_param_names(value.body, params);
     let invariant: HashMap[string, unit] = HashMap::{};
     let result = licm_extract_block(value.body, local, invariant, params, assigned);
@@ -238,14 +236,14 @@ fn licm_joinrec(values: Vec[JoinBind]) -> (Vec[LetBind], Vec[JoinBind]) {
     let assigned: Vec[HashMap[string, unit]] = Vec::with_capacity(values.len());
     for value in values {
         assigned.push(assigned_names(value.body))
-    };
+    }
     let hoisted: Vec[LetBind] = Vec::[];
     let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
     for value in values {
         let result = licm_join(value, assigned);
         for binding in result.hoisted {
             hoisted.push(binding)
-        };
+        }
         lowered.push(result.value)
     };
     (hoisted, lowered)
@@ -263,7 +261,7 @@ fn licm_term(value: Term) -> Term {
             let lowered: Vec[Arm] = Vec::with_capacity(arms.len());
             for arm in arms {
                 lowered.push(Arm { lhs: arm.lhs, body: licm_block(arm.body) })
-            };
+            }
             Term::Match {
                 scrutinee,
                 arms: lowered,
@@ -308,15 +306,15 @@ fn licm_block(value: Block) -> Block {
                             body: licm_block(value.body),
                         },
                     )
-                };
+                }
                 let lowered = licm_joinrec(nested);
                 for binding in lowered.0 {
                     binds.push(Bind::Let(binding))
-                };
+                }
                 binds.push(Bind::JoinRec(lowered.1))
             },
         }
-    };
+    }
     Block { binds, term: licm_term(value.term) }
 }
 
@@ -336,7 +334,7 @@ pub fn licm(value: File) -> File {
     let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
     for function in value.functions {
         functions.push(licm_function(function))
-    };
+    }
     File {
         functions,
         enums: value.enums,

@@ -25,20 +25,18 @@ pub fn lower_builtins(counter: Ref[int]) -> Result[File, string] {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     for source in sources {
         inputs.push((ast::lower(parser::parse(source.source)), source.path))
-    };
+    }
     let hir_files: Vec[hir::File] = Vec::[];
     for lowered in hir::lower_package_files(inputs, "builtin") {
         match lowered.hir {
             Some(file) => hir_files.push(file),
             None => return Result::Err("failed to lower builtin source " + lowered.source_path),
         }
-    };
+    }
     let checked = tast::check_builtin_package_files(hir_files);
     if checked.tast.is_none() {
         return Result::Err("failed to typecheck builtin package")
-    } else {
-        ()
-    };
+    } else {};
     Result::Ok(lower_with_counter(checked, counter))
 }
 
@@ -46,63 +44,63 @@ pub fn link_with_dependencies(builtins: File, dependencies: Vec[File], user: Fil
     let functions: Vec[Function] = Vec::[];
     for function in builtins.functions {
         functions.push(non_root(function))
-    };
+    }
     for dependency in dependencies {
         for function in dependency.functions {
             functions.push(function)
         }
-    };
+    }
     for function in user.functions {
         functions.push(function)
-    };
+    }
     let enums: Vec[tast::EnumDef] = Vec::[];
     for value in builtins.enums {
         enums.push(value)
-    };
+    }
     for dependency in dependencies {
         for value in dependency.enums {
             enums.push(value)
         }
-    };
+    }
     for value in user.enums {
         enums.push(value)
-    };
+    }
     let structs: Vec[tast::StructDef] = Vec::[];
     for value in builtins.structs {
         structs.push(value)
-    };
+    }
     for dependency in dependencies {
         for value in dependency.structs {
             structs.push(value)
         }
-    };
+    }
     for value in user.structs {
         structs.push(value)
-    };
+    }
     let type_instances: Vec[TypeInstance] = Vec::[];
     for value in builtins.type_instances {
         type_instances.push(value)
-    };
+    }
     for dependency in dependencies {
         for value in dependency.type_instances {
             type_instances.push(value)
         }
-    };
+    }
     for value in user.type_instances {
         type_instances.push(value)
-    };
+    }
     let constants: Vec[tast::Constant] = Vec::[];
     for value in builtins.constants {
         constants.push(value)
-    };
+    }
     for dependency in dependencies {
         for value in dependency.constants {
             constants.push(value)
         }
-    };
+    }
     for value in user.constants {
         constants.push(value)
-    };
+    }
     File { functions, enums, structs, type_instances, constants }
 }
 

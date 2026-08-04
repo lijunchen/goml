@@ -7,10 +7,8 @@ fn tast_exprs_exit(values: Vec[tast::Expr]) -> bool {
     for value in values {
         if tast_expr_exits(value) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -30,10 +28,8 @@ fn tast_block_exits(value: tast::Block) -> bool {
     for stmt in value.stmts {
         if tast_stmt_exits(stmt) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     match value.tail {
         Some(tail) => tast_expr_exits(tail),
         None => false,
@@ -44,10 +40,8 @@ fn tast_match_arms_exit(arms: Vec[tast::Arm]) -> bool {
     for arm in arms {
         if !tast_expr_exits(arm.body) {
             return false
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     true
 }
 

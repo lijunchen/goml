@@ -28,12 +28,10 @@ pub struct LowerResult {
 
 fn types_are_concrete(values: Vec[tast::Type]) -> bool {
     for value in values {
-        if type_is_concrete(value) {
-            ()
-        } else {
+        if type_is_concrete(value) {} else {
             return false
         }
-    };
+    }
     true
 }
 
@@ -75,12 +73,10 @@ fn compact_type(value: tast::Type) -> string {
     tast::write_type(type_builder, value);
     let builder = text::StringBuilder::new();
     for character in type_builder.finish().chars() {
-        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {
-            ()
-        } else {
+        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {} else {
             builder.write_char(character)
         }
-    };
+    }
     builder.finish()
 }
 
@@ -94,7 +90,7 @@ fn type_instance_lookup_key(base_name: string, args: Vec[tast::Type]) -> string 
         builder.write_string(ty.byte_len().to_string());
         builder.write_char(':');
         builder.write_string(ty)
-    };
+    }
     builder.finish()
 }
 
@@ -113,7 +109,7 @@ fn find_type_instance_by_name(ctx: TypeCtx, name: string) -> Option[TypeInstance
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -122,9 +118,7 @@ fn type_name_is_used(ctx: TypeCtx, name: string) -> bool {
 }
 
 fn add_used_type_name(ctx: TypeCtx, name: string) -> unit {
-    if type_name_is_used(ctx, name) {
-        ()
-    } else {
+    if type_name_is_used(ctx, name) {} else {
         ctx.used_names[name] = ();
     }
 }
@@ -135,7 +129,7 @@ fn type_instance_base_name(name: string, args: Vec[tast::Type]) -> string {
     for arg in args {
         builder.write_string("__");
         builder.write_string(compact_type(arg))
-    };
+    }
     builder.finish()
 }
 
@@ -149,7 +143,7 @@ fn unique_type_name(ctx: TypeCtx, base: string) -> string {
         while type_name_is_used(ctx, candidate) {
             index = index + 1;
             candidate = base + "__mono" + index.to_string();
-        };
+        }
         ctx.used_names[candidate] = ();
         candidate
     }
@@ -191,7 +185,7 @@ fn expand_specialized_type_aliases_list(ctx: TypeCtx, values: Vec[tast::Type], p
     let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(expand_specialized_type_aliases_from(ctx, value, path))
-    };
+    }
     result
 }
 
@@ -281,7 +275,7 @@ fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[tast::EnumDef] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -294,7 +288,7 @@ fn find_generic_struct(ctx: TypeCtx, name: string) -> Option[tast::StructDef] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -314,10 +308,8 @@ fn type_instance_bindings(ctx: TypeCtx, name: string, args: Vec[tast::Type]) -> 
     for index in 0..params.len() {
         if index < args.len() {
             result.push(TypeBinding { name: params[index], ty: args[index] })
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -368,14 +360,10 @@ fn recursive_type_specialization_message(ctx: TypeCtx, name: string, args: Vec[t
                             + " to "
                             + mono_type_text(next),
                     )
-                } else {
-                    ()
-                }
+                } else {}
             }
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -383,7 +371,7 @@ fn collapse_types(ctx: TypeCtx, values: Vec[tast::Type]) -> Vec[tast::Type] {
     let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(collapse_type(ctx, value))
-    };
+    }
     result
 }
 
@@ -393,7 +381,7 @@ fn collapse_named_types(ctx: TypeCtx, values: Vec[(string, tast::Type)]) -> Vec[
     let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         result.push((value.0, collapse_type(ctx, value.1)))
-    };
+    }
     result
 }
 
@@ -436,13 +424,13 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
             let collapsed_associated: Vec[(string, tast::Type)] = Vec::[];
             for binding in associated_types {
                 collapsed_associated.push((binding.0, collapse_type(ctx, binding.1)))
-            };
+            }
             let collapsed_additional: Vec[tast::DynTraitBound] = Vec::[];
             for bound in additional_bounds {
                 let bound_associated: Vec[(string, tast::Type)] = Vec::[];
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, collapse_type(ctx, binding.1)))
-                };
+                }
                 collapsed_additional.push(
                     tast::DynTraitBound {
                         trait_name: bound.trait_name,
@@ -450,7 +438,7 @@ fn collapse_type(ctx: TypeCtx, value: tast::Type) -> tast::Type {
                         associated_types: bound_associated,
                     },
                 )
-            };
+            }
             tast::Type::Dyn {
                 trait_name,
                 args: collapse_types(ctx, args),
@@ -504,13 +492,9 @@ fn constructor_variant(name: string) -> string {
         for index in 0..name.byte_len() - 1 {
             if text::starts_with_at(name, index, "::") {
                 separator = index;
-            } else {
-                ()
-            }
+            } else {}
         }
-    } else {
-        ()
-    };
+    } else {};
     if separator < 0 {
         ""
     } else {
@@ -546,7 +530,7 @@ fn collapse_closure_params(ctx: TypeCtx, values: Vec[tast::ClosureParam]) -> Vec
     let result: Vec[tast::ClosureParam] = Vec::[];
     for value in values {
         result.push(tast::ClosureParam { name: value.name, ty: collapse_type(ctx, value.ty) })
-    };
+    }
     result
 }
 
@@ -556,7 +540,7 @@ fn collapse_function_params(ctx: TypeCtx, values: Vec[(string, tast::Type)]) -> 
     let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         result.push((value.0, collapse_type(ctx, value.1)))
-    };
+    }
     result
 }
 
@@ -569,11 +553,9 @@ fn trait_impl_name(reference: tast::TraitRef, for_type: tast::Type, method_name:
         for index in 0..reference.args.len() {
             if index > 0 {
                 builder.write_char(',')
-            } else {
-                ()
-            };
+            } else {};
             builder.write_string(compact_type(reference.args[index]))
-        };
+        }
         builder.write_string("]@");
         builder.write_string(compact_type(for_type));
         builder.finish()
@@ -585,7 +567,7 @@ fn lower_exprs(ctx: TypeCtx, values: Vec[core::Expr]) -> Vec[core::Expr] {
     let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(lower_expr(ctx, value))
-    };
+    }
     result
 }
 
@@ -602,7 +584,7 @@ fn lower_arms(ctx: TypeCtx, values: Vec[core::Arm]) -> Vec[core::Arm] {
         result.push(
             core::Arm { lhs: lower_expr(ctx, value.lhs), body: lower_expr(ctx, value.body) },
         )
-    };
+    }
     result
 }
 
@@ -616,7 +598,7 @@ fn lower_block(ctx: TypeCtx, value: core::Block) -> core::Block {
                 ty: collapse_type(ctx, stmt.ty),
             },
         )
-    };
+    }
     core::Block { stmts, tail: lower_optional_expr(ctx, value.tail) }
 }
 
@@ -662,7 +644,7 @@ fn lower_static_trait_call(
     for arg in args {
         params.push(core::expr_type(arg));
         call_args.push(arg)
-    };
+    }
     let name = match instance_name {
         Some(value) => value,
         None => trait_impl_name(reference, receiver_ty, method_name),
@@ -841,7 +823,7 @@ fn collect_type_names(ctx: TypeCtx, value: tast::Type) -> unit {
         Func { params, ret_ty } => {
             for param in params {
                 collect_type_names(ctx, param)
-            };
+            }
             collect_type_names(ctx, ret_ty)
         },
         _ => (),
@@ -854,13 +836,9 @@ fn constructor_owner(name: string) -> string {
         for index in 0..name.byte_len() - 1 {
             if text::starts_with_at(name, index, "::") {
                 separator = index;
-            } else {
-                ()
-            }
+            } else {}
         }
-    } else {
-        ()
-    };
+    } else {};
     if separator < 0 {
         name
     } else {
@@ -895,7 +873,7 @@ fn collect_block_type_names(ctx: TypeCtx, value: core::Block) -> unit {
     for stmt in value.stmts {
         collect_type_names(ctx, stmt.ty);
         collect_expr_type_names(ctx, stmt.value)
-    };
+    }
     collect_optional_expr_type_names(ctx, value.tail)
 }
 
@@ -914,7 +892,7 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
         Closure { params, body, ty: _ } => {
             for param in params {
                 collect_type_names(ctx, param.ty)
-            };
+            }
             collect_expr_type_names(ctx, body)
         },
         Block { block, ty: _ } => collect_block_type_names(ctx, block),
@@ -923,7 +901,7 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
             for arm in arms {
                 collect_expr_type_names(ctx, arm.lhs);
                 collect_expr_type_names(ctx, arm.body)
-            };
+            }
             collect_optional_expr_type_names(ctx, default)
         },
         If { cond, then_branch, else_branch, ty: _ } => {
@@ -986,7 +964,7 @@ fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
         add_used_type_name(ctx, function.name);
         for param in function.params {
             collect_type_names(ctx, param.1)
-        };
+        }
         collect_type_names(ctx, function.ret_ty);
         match function.trait_impl {
             Some(metadata) => {
@@ -999,7 +977,7 @@ fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
             None => (),
         };
         collect_block_type_names(ctx, function.body)
-    };
+    }
     ctx
 }
 
@@ -1067,7 +1045,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
     let functions: Vec[core::Function] = Vec::[];
     for function in value.functions {
         functions.push(lower_function(ctx, function))
-    };
+    }
     let type_instances: Vec[core::TypeInstance] = Vec::[];
     for instance in ctx.instances {
         type_instances.push(
@@ -1077,7 +1055,7 @@ pub fn lower_checked(value: core::File) -> LowerResult {
                 name: instance.name,
             },
         )
-    };
+    }
     LowerResult {
         file: core::File { functions, enums, structs, type_instances, constants },
         error: error.get(),

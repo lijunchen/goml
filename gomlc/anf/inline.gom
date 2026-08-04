@@ -27,7 +27,7 @@ fn find_inline_name(values: Vec[InlineName], name: string) -> Option[Imm] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -40,7 +40,7 @@ fn find_inline_join(values: Vec[InlineJoin], name: string) -> Option[string] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -59,9 +59,7 @@ fn renamed_inline_join(values: Vec[InlineJoin], name: string) -> string {
 }
 
 fn add_inline_local(values: Vec[InlineName], name: string, ty: tast::Type, counter: Ref[int]) -> unit {
-    if name == "_" {
-        ()
-    } else {
+    if name == "_" {} else {
         values.push(
             InlineName { name, value: Imm::Var { name: fresh_inline(counter, "inline"), ty } },
         )
@@ -82,7 +80,7 @@ fn collect_inline_term_names(
         Match { arms, default, .. } => {
             for arm in arms {
                 collect_inline_block_names(arm.body, names, joins, counter)
-            };
+            }
             match default {
                 Some(body) => collect_inline_block_names(body, names, joins, counter),
                 None => (),
@@ -100,7 +98,7 @@ fn collect_inline_join_names(
 ) -> unit {
     for param in value.params {
         add_inline_local(names, param.0, param.1, counter)
-    };
+    }
     collect_inline_block_names(value.body, names, joins, counter)
 }
 
@@ -130,13 +128,13 @@ fn collect_inline_block_names(
                             replacement: fresh_inline(counter, "inline_join"),
                         },
                     )
-                };
+                }
                 for value in values {
                     collect_inline_join_names(value, names, joins, counter)
                 }
             },
         }
-    };
+    }
     collect_inline_term_names(value.term, names, joins, counter)
 }
 
@@ -154,7 +152,7 @@ fn clone_inline_imms(values: Vec[Imm], names: Vec[InlineName]) -> Vec[Imm] {
     let result: Vec[Imm] = Vec::with_capacity(values.len());
     for value in values {
         result.push(clone_inline_imm(value, names))
-    };
+    }
     result
 }
 
@@ -217,7 +215,7 @@ fn clone_inline_params(values: Vec[(string, tast::Type)], names: Vec[InlineName]
     let result: Vec[(string, tast::Type)] = Vec::with_capacity(values.len());
     for value in values {
         result.push((renamed_inline_name(names, value.0), value.1))
-    };
+    }
     result
 }
 
@@ -270,7 +268,7 @@ fn clone_inline_term(
                         body: clone_inline_block(arm.body, names, joins, continuation, ret_ty),
                     },
                 )
-            };
+            }
             Term::Match {
                 scrutinee: clone_inline_imm(scrutinee, names),
                 arms: lowered,
@@ -313,11 +311,11 @@ fn clone_inline_block(
                 let lowered: Vec[JoinBind] = Vec::with_capacity(values.len());
                 for value in values {
                     lowered.push(clone_inline_join(value, names, joins, continuation, ret_ty))
-                };
+                }
                 binds.push(Bind::JoinRec(lowered))
             },
         }
-    };
+    }
     Block { binds, term: clone_inline_term(value.term, names, joins, continuation, ret_ty) }
 }
 
@@ -334,7 +332,7 @@ fn inline_block_cost(value: Block) -> int {
                 result = result + inline_block_cost(value.body);
             },
         }
-    };
+    }
     match value.term {
         If { then_, else_, .. } => {
             result + inline_block_cost(then_) + inline_block_cost(else_)
@@ -342,7 +340,7 @@ fn inline_block_cost(value: Block) -> int {
         Match { arms, default, .. } => {
             for arm in arms {
                 result = result + inline_block_cost(arm.body);
-            };
+            }
             match default {
                 Some(body) => result + inline_block_cost(body),
                 None => result,
@@ -360,10 +358,8 @@ fn inline_term_has_joinrec(value: Term) -> bool {
             for arm in arms {
                 if inline_block_has_joinrec(arm.body) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             match default {
                 Some(body) => inline_block_has_joinrec(body),
                 None => false,
@@ -379,12 +375,10 @@ fn inline_block_has_joinrec(value: Block) -> bool {
             Let(_) => (),
             Join(value) => if inline_block_has_joinrec(value.body) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
             JoinRec(_) => return true,
         }
-    };
+    }
     inline_term_has_joinrec(value.term)
 }
 
@@ -404,10 +398,8 @@ fn inline_term_assigns(value: Term, name: string) -> bool {
             for arm in arms {
                 if inline_block_assigns(arm.body, name) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             match default {
                 Some(body) => inline_block_assigns(body, name),
                 None => false,
@@ -422,40 +414,30 @@ fn inline_block_assigns(value: Block, name: string) -> bool {
         match bind {
             Let(value) => if inline_value_assigns(value.value, name) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
             Join(value) => if inline_block_assigns(value.body, name) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
             JoinRec(values) => for value in values {
                 if inline_block_assigns(value.body, name) {
                     return true
-                } else {
-                    ()
-                }
+                } else {}
             },
         }
-    };
+    }
     inline_term_assigns(value.term, name)
 }
 
 fn inline_params_safe(value: Function, args: Vec[Imm]) -> bool {
     if value.params.len() != args.len() {
         return false
-    } else {
-        ()
-    };
+    } else {};
     for index in 0..args.len() {
         if !tast::types_equal(value.params[index].1, imm_type(args[index]))
             || inline_block_assigns(value.body, value.params[index].0) {
             return false
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     true
 }
 
@@ -467,10 +449,8 @@ fn inline_term_calls(value: Term, name: string) -> bool {
             for arm in arms {
                 if inline_block_calls(arm.body, name) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             match default {
                 Some(body) => inline_block_calls(body, name),
                 None => false,
@@ -497,23 +477,17 @@ fn inline_block_calls(value: Block, name: string) -> bool {
         match bind {
             Let(value) => if inline_value_calls(value.value, name) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
             Join(value) => if inline_block_calls(value.body, name) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
             JoinRec(values) => for value in values {
                 if inline_block_calls(value.body, name) {
                     return true
-                } else {
-                    ()
-                }
+                } else {}
             },
         }
-    };
+    }
     inline_term_calls(value.term, name)
 }
 
@@ -521,10 +495,8 @@ fn find_inline_function(values: Vec[Function], name: string) -> Option[Function]
     for value in values {
         if value.name == name {
             return Option::Some(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -536,16 +508,12 @@ fn inline_term_consumes(value: Term, name: string) -> bool {
         Match { scrutinee: Var { name: present, ty: _ }, arms, default, .. } => {
             if present != name || arms.is_empty() {
                 return false
-            } else {
-                ()
-            };
+            } else {};
             for arm in arms {
                 if !inline_block_returns(arm.body) {
                     return false
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             match default {
                 Some(body) => inline_block_returns(body),
                 None => true,
@@ -564,16 +532,12 @@ fn inline_term_returns(value: Term) -> bool {
         Match { arms, default, .. } => {
             if arms.is_empty() {
                 return false
-            } else {
-                ()
-            };
+            } else {};
             for arm in arms {
                 if !inline_block_returns(arm.body) {
                     return false
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             match default {
                 Some(body) => inline_block_returns(body),
                 None => true,
@@ -603,9 +567,7 @@ fn inline_candidate(
 ) -> Option[Function] {
     if name == caller {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     let value = find_inline_function(functions, name)?;
     let cost = inline_block_cost(value.body);
     let recursive = inline_block_has_joinrec(value.body);
@@ -631,7 +593,7 @@ fn prepend_inline_bind(value: Bind, rest: Block) -> Block {
     binds.push(value);
     for bind in rest.binds {
         binds.push(bind)
-    };
+    }
     Block { binds, term: rest.term }
 }
 
@@ -664,7 +626,7 @@ fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, co
             },
             _ => names.push(InlineName { name: param.0, value: args[index] }),
         }
-    };
+    }
     let joins: Vec[InlineJoin] = Vec::[];
     collect_inline_block_names(callee.body, names, joins, counter);
     let cloned = clone_inline_block(
@@ -676,7 +638,7 @@ fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, co
     );
     for bind in cloned.binds {
         parameter_binds.push(bind)
-    };
+    }
     let body = Block { binds: parameter_binds, term: cloned.term };
     prepend_inline_bind(Bind::Join(continuation_join), body)
 }
@@ -704,7 +666,7 @@ fn inline_term(
                         body: inline_block(arm.body, functions, caller, budget, counter),
                     },
                 )
-            };
+            }
             Term::Match {
                 scrutinee,
                 arms: lowered,
@@ -797,7 +759,7 @@ fn inline_binds(
                             body: inline_block(value.body, functions, caller, budget, counter),
                         },
                     )
-                };
+                }
                 prepend_inline_bind(Bind::JoinRec(lowered), rest)
             },
         }
@@ -839,7 +801,7 @@ pub fn inline(value: File, counter: Ref[int]) -> File {
     let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
     for function in value.functions {
         functions.push(inline_function(function, value.functions, counter))
-    };
+    }
     File {
         functions,
         enums: value.enums,

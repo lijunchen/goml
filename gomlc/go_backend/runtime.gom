@@ -36,7 +36,7 @@ pub fn runtime_hook_name(key: string) -> string {
         } else {
             builder.write_char(character)
         }
-    };
+    }
     go_generated_ident(builder.finish())
 }
 
@@ -101,9 +101,7 @@ fn missing_runtime_item(ty: tast::Type) -> Item {
 pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[tast::Type]) -> unit {
     if !missing_types.is_empty() {
         items.push(missing_base_item())
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn unit_to_string_hook_item() -> Item {
@@ -306,9 +304,7 @@ fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
 fn require_runtime_import(imports: Vec[string], name: string) -> unit {
     if !collections::contains(imports, name) {
         imports.push(name)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics: Vec[string]) -> unit {
@@ -353,9 +349,7 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     if hook == "std.path.extension" || hook == "std.path.file_stem"
                         || hook == "std.path.with_extension" {
                         require_runtime_import(required_imports, "strings")
-                    } else {
-                        ()
-                    }
+                    } else {}
                 } else if hook == "std.testing.fail" {
                     require_runtime_import(required_imports, "fmt");
                     require_runtime_import(required_imports, "os")
@@ -366,9 +360,7 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "sync");
                     if hook == "std.task.sleep" {
                         require_runtime_import(required_imports, "time")
-                    } else {
-                        ()
-                    }
+                    } else {}
                 } else if hook.starts_with("std.time.") {
                     require_runtime_import(required_imports, "time")
                 } else if hook == "std.process.exit" {
@@ -391,15 +383,11 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                         require_runtime_import(required_imports, "context");
                         require_runtime_import(required_imports, "sync");
                         require_runtime_import(required_imports, "syscall")
-                    } else {
-                        ()
-                    }
-                } else {
-                    ()
-                }
+                    } else {}
+                } else {}
             },
         }
-    };
+    }
     for intrinsic in intrinsics {
         if intrinsic == "ref.ptr_hash" {
             require_runtime_import(required_imports, "reflect")
@@ -408,139 +396,93 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
         } else if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
             require_runtime_import(required_imports, "context");
             require_runtime_import(required_imports, "sync")
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if !required_imports.is_empty() {
         let imports: Vec[(string, string)] = Vec::[];
         if collections::contains(required_imports, "bytes") {
             imports.push(("_goml_bytes", "bytes"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "context") {
             imports.push(("_goml_context", "context"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "fmt") {
             imports.push(("_goml_fmt", "fmt"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "hash") {
             imports.push(("_goml_hash", "hash"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "io") {
             imports.push(("_goml_io", "io"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "math") {
             imports.push(("_goml_math", "math"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "os") {
             imports.push(("_goml_os", "os"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "exec") {
             imports.push(("_goml_exec", "os/exec"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "filepath") {
             imports.push(("_goml_filepath", "path/filepath"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "reflect") {
             imports.push(("_goml_reflect", "reflect"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "sha256") {
             imports.push(("_goml_sha256", "crypto/sha256"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "slices") {
             imports.push(("_goml_slices", "slices"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "strconv") {
             imports.push(("_goml_strconv", "strconv"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "strings") {
             imports.push(("_goml_strings", "strings"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "sync") {
             imports.push(("_goml_sync", "sync"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "syscall") {
             imports.push(("_goml_syscall", "syscall"))
-        } else {
-            ()
-        };
+        } else {};
         if collections::contains(required_imports, "time") {
             imports.push(("_goml_time", "time"))
-        } else {
-            ()
-        };
+        } else {};
         items.push(Item::ImportGroup(imports))
-    } else {
-        ()
-    };
+    } else {};
     let mut needs_task_support = false;
     for hook in hooks {
         if hook.starts_with("std.task.") || hook == "std.process.output_cancel"
             || hook == "std.process.status_cancel" {
             needs_task_support = true;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     for intrinsic in intrinsics {
         if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
             needs_task_support = true;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if needs_task_support {
         for item in task_runtime_support_items() {
             items.push(item)
         }
-    } else {
-        ()
-    };
+    } else {};
     let ordered: Vec[string] = Vec::[];
     for key in resources::core_runtime_keys() {
         ordered.push("core." + key)
-    };
+    }
     for spec in resources::standard_runtime_abi_specs() {
         ordered.push(spec.key)
-    };
+    }
     for key in ordered {
         let needed = collections::contains(hooks, key);
         if needed {
             if key == "std.time.monotonic_nanoseconds" {
                 items.push(std_time_monotonic_origin_item())
-            } else {
-                ()
-            };
+            } else {};
             match integer_to_string_hook_type(key) {
                 Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
                 None => {
@@ -571,9 +513,7 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     }
                 },
             }
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -2126,9 +2066,7 @@ fn hashmap_items(
         for item in synthetic_option_items(value) {
             result.push(item)
         }
-    } else {
-        ()
-    };
+    } else {};
     result.push(hashmap_new_item(key, value));
     result.push(hashmap_len_item(key, value));
     result.push(hashmap_lookup_item(key, value));
@@ -2164,10 +2102,8 @@ fn dyn_wrapper_name(names: DynHelperNames, trait_name: string, for_ty: tast::Typ
     for entry in names.wrappers {
         if entry.0 == trait_name && entry.1 == key && entry.2 == method {
             result = entry.3;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -2181,10 +2117,8 @@ pub fn dyn_factory_name(names: DynHelperNames, trait_name: string, for_ty: tast:
     for entry in names.factories {
         if entry.0 == trait_name && entry.1 == key {
             result = entry.2;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -2199,10 +2133,8 @@ fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
     for value in values {
         if value.name == expected {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -2211,10 +2143,8 @@ fn dyn_method_parts(value: string, fallback: string) -> (string, string) {
     for index in 0..value.byte_len() {
         if separator < 0 && value.byte_get(index) == b'#' {
             separator = index;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if separator < 0 {
         (fallback, value)
     } else {
@@ -2231,14 +2161,10 @@ fn collect_dyn_call_method(result: Vec[DynMethod], trait_name: string, value: an
                 let params: Vec[tast::Type] = Vec::[];
                 for arg in args {
                     params.push(anf::imm_type(arg))
-                };
+                }
                 result.push(DynMethod { name: parts.1, dispatch_trait: parts.0, params, ret_ty })
-            } else {
-                ()
-            }
-        } else {
-            ()
-        },
+            } else {}
+        } else {},
         _ => (),
     }
 }
@@ -2256,7 +2182,7 @@ fn collect_dyn_call_methods(result: Vec[DynMethod], trait_name: string, block: a
                 collect_dyn_call_methods(result, trait_name, value.body)
             },
         }
-    };
+    }
     match block.term {
         If { cond: _, then_, else_, ret_ty: _ } => {
             collect_dyn_call_methods(result, trait_name, then_);
@@ -2265,7 +2191,7 @@ fn collect_dyn_call_methods(result: Vec[DynMethod], trait_name: string, block: a
         Match { scrutinee: _, arms, default, ret_ty: _ } => {
             for arm in arms {
                 collect_dyn_call_methods(result, trait_name, arm.body)
-            };
+            }
             match default {
                 Some(body) => collect_dyn_call_methods(result, trait_name, body),
                 None => (),
@@ -2284,7 +2210,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                     let params: Vec[tast::Type] = Vec::[];
                     for index in 1..function.params.len() {
                         params.push(function.params[index].1)
-                    };
+                    }
                     result.push(
                         DynMethod {
                             name: method_name,
@@ -2293,16 +2219,14 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                             ret_ty: function.ret_ty,
                         },
                     )
-                } else {
-                    ()
-                }
+                } else {}
             },
             _ => (),
         }
-    };
+    }
     for function in functions {
         collect_dyn_call_methods(result, trait_name, function.body)
-    };
+    }
     if trait_name == "Hash" && !contains_method(result, "hash") {
         result.push(
             DynMethod {
@@ -2321,9 +2245,7 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                 ret_ty: tast::Type::String,
             },
         )
-    } else {
-        ()
-    };
+    } else {};
     result
 }
 
@@ -2332,10 +2254,8 @@ fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> int 
     for coercion in coercions {
         if raw_dyn_factory_name(coercion.trait_name, coercion.for_ty) == expected {
             count = count + 1;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     count
 }
 
@@ -2349,11 +2269,9 @@ fn dyn_wrapper_name_count(
         for method in dyn_methods(functions, coercion.trait_name) {
             if raw_dyn_wrapper_name(coercion.trait_name, coercion.for_ty, method.name) == expected {
                 count = count + 1;
-            } else {
-                ()
-            }
+            } else {}
         }
-    };
+    }
     count
 }
 
@@ -2371,9 +2289,7 @@ pub fn build_dyn_helper_names(coercions: Vec[DynCoercion], functions: Vec[anf::F
                     go_hashed_ident("fn", "dyn_vtable#" + coercion.trait_name + "#" + key),
                 ),
             )
-        } else {
-            ()
-        };
+        } else {};
         for method in dyn_methods(functions, coercion.trait_name) {
             let raw_wrapper = raw_dyn_wrapper_name(
                 coercion.trait_name,
@@ -2392,11 +2308,9 @@ pub fn build_dyn_helper_names(coercions: Vec[DynCoercion], functions: Vec[anf::F
                         ),
                     ),
                 )
-            } else {
-                ()
-            }
+            } else {}
         }
-    };
+    }
     DynHelperNames { factories, wrappers }
 }
 
@@ -2408,11 +2322,11 @@ fn dyn_type_items(trait_name: string, methods: Vec[DynMethod]) -> Vec[Item] {
         params.push(Type::Any);
         for param in method.params {
             params.push(lower_type(param))
-        };
+        }
         fields.push(
             (go_ident(method.name), Type::Func { params, ret_ty: lower_type(method.ret_ty) }),
         )
-    };
+    }
     result.push(Item::Struct(StructDef { name: dyn_vtable_name(trait_name), fields }));
     let object_fields: Vec[(string, Type)] = Vec::[];
     object_fields.push(("data", Type::Any));
@@ -2448,7 +2362,7 @@ fn find_dyn_impl_name(
                 index = index - 1;
             },
         }
-    };
+    }
     go_ident("trait_impl#" + trait_name + "#" + compact_type(for_ty) + "#" + method_name)
 }
 
@@ -2509,7 +2423,7 @@ fn dyn_coercion_items(
             let name = "p" + index.to_string();
             wrapper_params.push((name, lower_type(method.params[index])));
             wrapper_args.push(Expr::Var { name })
-        };
+        }
         let wrapper_stmts: Vec[Stmt] = Vec::[];
         let wrapper_call = Expr::Call {
             func: Expr::Var {
@@ -2555,7 +2469,7 @@ fn dyn_coercion_items(
                 },
             ),
         )
-    };
+    }
     let factory_stmts: Vec[Stmt] = Vec::[];
     let factory_fields: Vec[(string, Expr)] = Vec::[];
     for method in methods {
@@ -2567,7 +2481,7 @@ fn dyn_coercion_items(
                 },
             ),
         )
-    };
+    }
     factory_stmts.push(
         Stmt::Return {
             expr: Option::Some(
@@ -2616,7 +2530,7 @@ pub fn emit_builtin_runtime_items(
             },
             _ => (),
         }
-    };
+    }
     for ty in types {
         match tast::resolve_type(ty) {
             VecType { elem: _ } => {
@@ -2627,7 +2541,7 @@ pub fn emit_builtin_runtime_items(
             },
             _ => (),
         }
-    };
+    }
     for ty in types {
         match tast::resolve_type(ty) {
             RefType { elem: _ } => {
@@ -2638,7 +2552,7 @@ pub fn emit_builtin_runtime_items(
             },
             _ => (),
         }
-    };
+    }
     let options: Vec[string] = Vec::[];
     for ty in types {
         match tast::resolve_type(ty) {
@@ -2656,25 +2570,23 @@ pub fn emit_builtin_runtime_items(
                     include_option,
                 ) {
                     items.push(item)
-                };
+                }
                 if include_option {
                     options.push(option)
-                } else {
-                    ()
-                }
+                } else {}
             },
             _ => (),
         }
-    };
+    }
     for ty in missing_types {
         items.push(missing_runtime_item(ty))
-    };
+    }
     for ty in types {
         match tast::resolve_type(ty) {
             Tuple { items: _ } => items.push(Item::Struct(runtime_struct(ty))),
             _ => (),
         }
-    };
+    }
 }
 
 pub fn emit_dyn_runtime_items(
@@ -2693,15 +2605,13 @@ pub fn emit_dyn_runtime_items(
                 if !collections::contains(dyn_traits, name) {
                     for item in dyn_type_items(name, dyn_methods(functions, name)) {
                         items.push(item)
-                    };
+                    }
                     dyn_traits.push(name)
-                } else {
-                    ()
-                }
+                } else {}
             },
             _ => (),
         }
-    };
+    }
     for coercion in sorted_dyn_coercions(coercions) {
         for item in dyn_coercion_items(
             functions,

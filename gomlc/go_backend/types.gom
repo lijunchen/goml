@@ -8,12 +8,10 @@ pub fn compact_type(value: tast::Type) -> string {
     tast::write_type(type_builder, value);
     let builder = text::StringBuilder::new();
     for character in type_builder.finish().chars() {
-        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {
-            ()
-        } else {
+        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {} else {
             builder.write_char(character)
         }
-    };
+    }
     builder.finish()
 }
 
@@ -22,13 +20,11 @@ fn join_type_parts(values: Vec[tast::Type]) -> string {
     for index in 0..values.len() {
         if index > 0 {
             builder.write_char('_')
-        } else {
-            ()
-        };
+        } else {};
         let encoded = encode_type(values[index]);
         builder.write_string(encoded.byte_len().to_string());
         builder.write_string(encoded)
-    };
+    }
     builder.finish()
 }
 
@@ -137,7 +133,7 @@ pub fn type_name(value: tast::Type) -> string {
             for value in values {
                 builder.write_char('_');
                 builder.write_string(type_name_part(value))
-            };
+            }
             go_generated_ident(builder.finish())
         },
         Con { name } => go_user_type_name(name),
@@ -151,7 +147,7 @@ pub fn type_name(value: tast::Type) -> string {
             for value in args {
                 builder.write_char('_');
                 builder.write_string(type_name_part(value))
-            };
+            }
             go_generated_ident(builder.finish())
         },
         Array { len: length, elem } => {
@@ -172,7 +168,7 @@ pub fn type_name(value: tast::Type) -> string {
             for value in params {
                 builder.write_char('_');
                 builder.write_string(type_name_part(value))
-            };
+            }
             builder.write_string("_ret_");
             builder.write_string(type_name_part(ret_ty));
             go_generated_ident(builder.finish())
@@ -236,7 +232,7 @@ pub fn lower_type(value: tast::Type) -> Type {
             let lowered: Vec[Type] = Vec::[];
             for value in params {
                 lowered.push(lower_type(value))
-            };
+            }
             Type::Func { params: lowered, ret_ty: lower_type(ret_ty) }
         },
         Var(_) | Error => Type::Named { name: type_name(value) },

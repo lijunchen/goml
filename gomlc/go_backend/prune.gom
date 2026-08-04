@@ -17,9 +17,7 @@ fn add_reachable(values: NameSet, value: string) -> unit {
     if !values.present.contains(value) {
         values.present[value] = ();
         values.values.push(value)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn collect_type_names(result: NameSet, value: Type) -> unit {
@@ -37,7 +35,7 @@ fn collect_type_names(result: NameSet, value: Type) -> unit {
         Func { params, ret_ty } => {
             for param in params {
                 collect_type_names(result, param)
-            };
+            }
             collect_type_names(result, ret_ty)
         },
         Multi { items: values } => {
@@ -103,7 +101,7 @@ fn collect_expr_names(result: NameSet, value: Expr) -> unit {
         FuncLit { params, ret_ty, body } => {
             for param in params {
                 collect_type_names(result, param.1)
-            };
+            }
             collect_type_names(result, ret_ty);
             collect_block_names(result, body)
         },
@@ -159,7 +157,7 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
             for case in cases {
                 collect_expr_names(result, case.value);
                 collect_block_names(result, case.body)
-            };
+            }
             match default {
                 Some(body) => collect_block_names(result, body),
                 None => (),
@@ -170,7 +168,7 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
             for case in cases {
                 collect_type_names(result, case.ty);
                 collect_block_names(result, case.body)
-            };
+            }
             match default {
                 Some(body) => collect_block_names(result, body),
                 None => (),
@@ -212,10 +210,8 @@ fn import_is_used(names: NameSet, alias: string) -> bool {
     for name in names.values {
         if name_uses_import(name, alias) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -239,7 +235,7 @@ fn collect_item_names(result: NameSet, value: Item) -> unit {
             for method in definition.methods {
                 for param in method.params {
                     collect_type_names(result, param)
-                };
+                }
                 match method.ret_ty {
                     Some(ty) => collect_type_names(result, ty),
                     None => (),
@@ -254,7 +250,7 @@ fn collect_item_names(result: NameSet, value: Item) -> unit {
         Function(function) => {
             for param in function.params {
                 collect_type_names(result, param.1)
-            };
+            }
             match function.ret_ty {
                 Some(ty) => collect_type_names(result, ty),
                 None => (),
@@ -265,7 +261,7 @@ fn collect_item_names(result: NameSet, value: Item) -> unit {
             collect_type_names(result, method.receiver.1);
             for param in method.params {
                 collect_type_names(result, param.1)
-            };
+            }
             match method.ret_ty {
                 Some(ty) => collect_type_names(result, ty),
                 None => (),
@@ -280,7 +276,7 @@ fn prune_imports(values: Vec[Item]) -> Vec[Item] {
     let names = new_name_set();
     for value in values {
         collect_item_names(names, value)
-    };
+    }
     let result: Vec[Item] = Vec::[];
     for value in values {
         match value {
@@ -289,19 +285,15 @@ fn prune_imports(values: Vec[Item]) -> Vec[Item] {
                 for entry in imports {
                     if import_is_used(names, entry.0) {
                         retained.push(entry)
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 if !retained.is_empty() {
                     result.push(Item::ImportGroup(retained))
-                } else {
-                    ()
-                }
+                } else {}
             },
             other => result.push(other),
         }
-    };
+    }
     result
 }
 
@@ -318,19 +310,15 @@ pub fn prune_functions(value: File) -> File {
                         && !name_present(expanded, function.name) {
                         add_reachable(expanded, function.name);
                         collect_block_names(reachable, function.body);
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
                 _ => (),
             }
-        };
+        }
         if expanded.values.len() == previous_len {
             break
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     loop {
         let previous_len = expanded.values.len();
         for item in value.items {
@@ -339,18 +327,14 @@ pub fn prune_functions(value: File) -> File {
                     && !name_present(expanded, global.name) {
                     add_reachable(expanded, global.name);
                     collect_expr_names(reachable, global.value)
-                } else {
-                    ()
-                },
+                } else {},
                 _ => (),
             }
-        };
+        }
         if expanded.values.len() == previous_len {
             break
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     loop {
         let previous_len = expanded.values.len();
         for item in value.items {
@@ -359,28 +343,22 @@ pub fn prune_functions(value: File) -> File {
                     if name_present(reachable, spec.name) && !name_present(expanded, spec.name) {
                         add_reachable(expanded, spec.name);
                         collect_expr_names(reachable, spec.value)
-                    } else {
-                        ()
-                    }
+                    } else {}
                 },
                 _ => (),
             }
-        };
+        }
         if expanded.values.len() == previous_len {
             break
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let items: Vec[Item] = Vec::[];
     for item in value.items {
         match item {
             Function(function) => {
                 if name_present(reachable, function.name) {
                     items.push(Item::Function(function))
-                } else {
-                    ()
-                }
+                } else {}
             },
             ConstGroup(group) => {
                 let was_empty = group.specs.is_empty();
@@ -388,25 +366,19 @@ pub fn prune_functions(value: File) -> File {
                 for spec in group.specs {
                     if name_present(reachable, spec.name) {
                         specs.push(spec)
-                    } else {
-                        ()
-                    }
-                };
+                    } else {}
+                }
                 if was_empty || !specs.is_empty() {
                     items.push(Item::ConstGroup(ConstGroup { specs }))
-                } else {
-                    ()
-                }
+                } else {}
             },
             Global(global) => {
                 if name_present(reachable, global.name) {
                     items.push(Item::Global(global))
-                } else {
-                    ()
-                }
+                } else {}
             },
             _ => items.push(item),
         }
-    };
+    }
     File { items: prune_imports(items) }
 }

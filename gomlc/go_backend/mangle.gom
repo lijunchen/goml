@@ -21,16 +21,12 @@ fn is_valid_ident(value: string) -> bool {
     };
     if !(is_ascii_letter(first) || first == '_') {
         return false
-    } else {
-        ()
-    };
+    } else {};
     for character in characters {
         if !(is_ascii_letter(character) || is_ascii_digit(character) || character == '_') {
             return false
-        } else {
-            ()
-        };
-    };
+        } else {};
+    }
     true
 }
 
@@ -205,12 +201,10 @@ fn encode_name(value: string) -> string {
         } else {
             write_encoded_char(builder, character)
         }
-    };
+    }
     if pending_colon {
         write_encoded_char(builder, ':')
-    } else {
-        ()
-    };
+    } else {};
     builder.finish()
 }
 
@@ -271,7 +265,7 @@ pub fn go_local_ident(value: string) -> string {
         } else {
             builder.write_char(character)
         }
-    };
+    }
     go_ident(builder.finish())
 }
 
@@ -294,7 +288,7 @@ pub fn is_generated_tuple_type_name(value: string) -> bool {
         let mut index = 5;
         while index < value.len() && is_ascii_digit(value.get(index)) {
             index = index + 1;
-        };
+        }
         index > 5 && (index == value.len() || value.get(index) == '_')
     }
 }

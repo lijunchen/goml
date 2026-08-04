@@ -235,7 +235,7 @@ fn struct_place_details(ctx: Lowerer, parent_ty: tast::Type) -> Option[
                     fields.push(
                         (field.0, tast::substitute_params(field.1, definition.generics, args)),
                     )
-                };
+                }
                 Option::Some(
                     (
                         tast::Constructor {
@@ -267,10 +267,8 @@ fn place_field_get(
             for index in 0..fields.len() {
                 if fields[index].0 == field_name {
                     field_index = index;
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             Expr::ConstrGet { expr: parent, constructor, field_index, ty: item_ty }
         },
         None => missing_expr(item_ty),
@@ -289,7 +287,7 @@ fn rebuild_tuple(parent: Expr, parent_ty: tast::Type, index: int, value: Expr) -
                         Expr::Proj { tuple: parent, index: item_index, ty: types[item_index] },
                     )
                 }
-            };
+            }
             Expr::Tuple { items, ty: parent_ty }
         },
         _ => missing_expr(parent_ty),
@@ -320,7 +318,7 @@ fn rebuild_struct(
                         },
                     )
                 }
-            };
+            }
             Expr::Constr { constructor, args, ty: parent_ty }
         },
         None => missing_expr(parent_ty),
@@ -461,7 +459,7 @@ fn lower_index_assignment(
                         current_ty = item_ty;
                     },
                 }
-            };
+            }
             let value_ty = tast::expr_type(value);
             let value_name = gensym(ctx, "value");
             stmts.push(LetStmt { name: value_name, value: lower_expr(ctx, value), ty: value_ty });
@@ -477,9 +475,7 @@ fn lower_index_assignment(
             let mut final_action: Option[Expr] = Option::None;
             let mut stopped = false;
             for offset in 0..evaluated.len() {
-                if stopped {
-                    ()
-                } else {
+                if stopped {} else {
                     match evaluated[evaluated.len() - 1 - offset] {
                         Proj { parent_var: parent_name, parent_ty, index } => {
                             updated = rebuild_tuple(
@@ -538,7 +534,7 @@ fn lower_index_assignment(
                         },
                     }
                 }
-            };
+            }
             let action = match final_action {
                 Some(value) => value,
                 None => match compiled_root {

@@ -35,12 +35,10 @@ fn type_text(value: tast::Type) -> string {
 fn compact_text(value: string) -> string {
     let builder = text::StringBuilder::new();
     for character in value.chars() {
-        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {
-            ()
-        } else {
+        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {} else {
             builder.write_char(character)
         }
-    };
+    }
     builder.finish()
 }
 
@@ -98,7 +96,7 @@ fn find_enum(ctx: Lowerer, name: string) -> Option[tast::EnumDef] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -111,7 +109,7 @@ fn find_struct(ctx: Lowerer, name: string) -> Option[tast::StructDef] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -124,11 +122,9 @@ fn trait_impl_method_name(reference: tast::TraitRef, for_ty: tast::Type, name: s
         for index in 0..reference.args.len() {
             if index > 0 {
                 builder.write_char(',')
-            } else {
-                ()
-            };
+            } else {};
             builder.write_string(compact_type(reference.args[index]))
-        };
+        }
         builder.write_string("]@");
         builder.write_string(compact_type(for_ty));
         builder.finish()
@@ -140,7 +136,7 @@ fn lower_exprs(ctx: Lowerer, values: Vec[tast::Expr]) -> Vec[Expr] {
     let result: Vec[Expr] = Vec::[];
     for value in values {
         result.push(lower_expr(ctx, value))
-    };
+    }
     result
 }
 
@@ -148,7 +144,7 @@ fn arguments_after_first(values: Vec[Expr]) -> Vec[Expr] {
     let result: Vec[Expr] = Vec::[];
     for index in 1..values.len() {
         result.push(values[index])
-    };
+    }
     result
 }
 
@@ -183,7 +179,7 @@ fn eq_conjunction(values: Vec[Expr]) -> Expr {
                 ty: tast::Type::Bool,
             };
             index = index - 1;
-        };
+        }
         result
     }
 }
@@ -202,7 +198,7 @@ fn structural_eq(trait_name: string, left: Expr, right: Expr, ty: tast::Type) ->
                         item_ty,
                     ),
                 )
-            };
+            }
             eq_conjunction(values)
         },
         Array { len: length, elem: element } => {
@@ -244,7 +240,7 @@ fn structural_eq(trait_name: string, left: Expr, right: Expr, ty: tast::Type) ->
                         element,
                     ),
                 )
-            };
+            }
             eq_conjunction(values)
         },
         _ => trait_eq_call(trait_name, left, right),
@@ -387,7 +383,7 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
                     Some(expr) => result.push(expr),
                     None => return Option::None,
                 }
-            };
+            }
             Option::Some(Expr::Constr { constructor, args: result, ty })
         },
         Tuple { items, ty } => {
@@ -397,7 +393,7 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
                     Some(expr) => result.push(expr),
                     None => return Option::None,
                 }
-            };
+            }
             Option::Some(Expr::Tuple { items: result, ty })
         },
         _ => Option::None,
@@ -464,12 +460,10 @@ fn lower_generic_match(
                 Some(lhs) => result.push(Arm { lhs, body: lower_expr(ctx, arm.body) }),
                 None => if default.is_none() {
                     default = Option::Some(lower_expr(ctx, arm.body));
-                } else {
-                    ()
-                },
+                } else {},
             },
         }
-    };
+    }
     Expr::Match { expr: Expr::Var { name: source_name, ty: source_ty }, arms: result, default, ty }
 }
 
@@ -485,10 +479,8 @@ fn bool_arm(arms: Vec[tast::Arm], expected: bool) -> Option[tast::Arm] {
     for arm in arms {
         if pattern_matches_bool(arm.pat, expected) {
             return Option::Some(arm)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -506,7 +498,7 @@ fn lower_bool_match(ctx: Lowerer, source_name: string, arms: Vec[tast::Arm], ty:
             None => missing_expr(ty),
         };
         result.push(Arm { lhs: bool_expr(expected), body })
-    };
+    }
     Expr::Match {
         expr: Expr::Var { name: source_name, ty: tast::Type::Bool },
         arms: result,
@@ -559,14 +551,12 @@ fn enum_rows_for_variant(
                                     pattern: patterns[index],
                                 },
                             )
-                        };
+                        }
                         rows.push(PatternRow { columns, bindings: Vec::[], body: arm.body })
                     } else {
                         return Option::None
                     }
-                } else {
-                    ()
-                },
+                } else {},
                 Wild { ty: _ } => rows.push(
                     PatternRow { columns: Vec::[], bindings: Vec::[], body: arm.body },
                 ),
@@ -578,7 +568,7 @@ fn enum_rows_for_variant(
                 _ => return Option::None,
             },
         }
-    };
+    }
     if !rows.is_empty() {
         Option::Some(rows)
     } else {
@@ -603,7 +593,7 @@ fn enum_match_cases(
             variables.push(
                 (gensym(ctx, "x"), tast::substitute_params(field, definition.generics, type_args)),
             )
-        };
+        }
         match enum_rows_for_variant(arms, constructor_name, variables, source_name, source_ty) {
             Some(rows) => cases.push(
                 EnumCase {
@@ -619,7 +609,7 @@ fn enum_match_cases(
             ),
             None => return Option::None,
         }
-    };
+    }
     Option::Some(cases)
 }
 
@@ -649,7 +639,7 @@ fn lower_enum_cases(
                     ty: variable.1,
                 },
             )
-        };
+        }
         let body = lower_pattern_rows(ctx, case.rows, ty);
         let body = if !extractions.is_empty() {
             Expr::Block { block: Block { stmts: extractions, tail: Option::Some(body) }, ty }
@@ -659,7 +649,7 @@ fn lower_enum_cases(
         result.push(
             Arm { lhs: Expr::Constr { constructor: case.constructor, args, ty: source_ty }, body },
         )
-    };
+    }
     Expr::Match {
         expr: Expr::Var { name: source_name, ty: source_ty },
         arms: result,
@@ -774,10 +764,8 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
                 fields.push(field.0);
                 if field.0 == name {
                     field_index = index;
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             Expr::ConstrGet {
                 expr: lower_expr(ctx, value),
                 constructor: tast::Constructor {
@@ -1277,11 +1265,11 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             let saved_cleanups: Vec[tast::Expr] = Vec::[];
             for value in ctx.cleanups {
                 saved_cleanups.push(value)
-            };
+            }
             let saved_loop_depths: Vec[int] = Vec::[];
             for value in ctx.loop_cleanup_depths {
                 saved_loop_depths.push(value)
-            };
+            }
             let saved_cleanup_lowering_depth = ctx.cleanup_lowering_depth.get();
             ctx.cleanups.truncate(0);
             ctx.loop_cleanup_depths.truncate(0);
@@ -1289,10 +1277,10 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             let body = lower_expr(ctx, body);
             for value in saved_cleanups {
                 ctx.cleanups.push(value)
-            };
+            }
             for value in saved_loop_depths {
                 ctx.loop_cleanup_depths.push(value)
-            };
+            }
             ctx.cleanup_lowering_depth.set(saved_cleanup_lowering_depth);
             Expr::Closure { params, body, ty }
         },
@@ -1414,7 +1402,7 @@ fn lower_cleanup_stmts(ctx: Lowerer, start: int) -> Vec[LetStmt] {
         let value = lower_expr(ctx, ctx.cleanups[index]);
         ctx.cleanup_lowering_depth.set(ctx.cleanup_lowering_depth.get() - 1);
         result.push(LetStmt { name: gensym(ctx, "_defer"), value, ty: tast::Type::Unit })
-    };
+    }
     result
 }
 
@@ -1442,7 +1430,7 @@ fn lower_break(ctx: Lowerer, target: int, value: Option[tast::Expr], ty: tast::T
                 stmts.push(LetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
                 for stmt in lower_cleanup_stmts(ctx, start) {
                     stmts.push(stmt)
-                };
+                }
                 Expr::Block {
                     block: Block {
                         stmts,
@@ -1505,7 +1493,7 @@ fn lower_return(ctx: Lowerer, value: Option[tast::Expr], ty: tast::Type) -> Expr
                 stmts.push(LetStmt { name, value: lower_expr(ctx, source), ty: value_ty });
                 for stmt in lower_cleanup_stmts(ctx, 0) {
                     stmts.push(stmt)
-                };
+                }
                 Expr::Block {
                     block: Block {
                         stmts,
@@ -1535,7 +1523,7 @@ fn prepend_stmt(value: LetStmt, rest: Block) -> Block {
     stmts.push(value);
     for stmt in rest.stmts {
         stmts.push(stmt)
-    };
+    }
     Block { stmts, tail: rest.tail }
 }
 
@@ -1550,12 +1538,10 @@ fn remaining_tast_block(
     let remaining: Vec[tast::Stmt] = Vec::[];
     for current in index..stmts.len() {
         remaining.push(stmts[current])
-    };
+    }
     if ctx.cleanups.len() == cleanup_start {
         return tast::Expr::Block { block: tast::Block { stmts: remaining, tail }, ty }
-    } else {
-        ()
-    };
+    } else {};
     let tail = match tail {
         Some(value) => {
             let value_ty = tast::expr_type(value);
@@ -1572,7 +1558,7 @@ fn remaining_tast_block(
             while cleanup_index > cleanup_start {
                 cleanup_index = cleanup_index - 1;
                 stmts.push(tast::Stmt::Expr { expr: ctx.cleanups[cleanup_index] })
-            };
+            }
             Option::Some(
                 tast::Expr::Block {
                     block: tast::Block {
@@ -1588,7 +1574,7 @@ fn remaining_tast_block(
             while cleanup_index > cleanup_start {
                 cleanup_index = cleanup_index - 1;
                 remaining.push(tast::Stmt::Expr { expr: ctx.cleanups[cleanup_index] })
-            };
+            }
             Option::None
         },
     };
@@ -1667,7 +1653,7 @@ fn lower_block_from(
                     result.push(LetStmt { name, value: lower_expr(ctx, value), ty: value_ty });
                     for stmt in lower_cleanup_stmts(ctx, cleanup_start) {
                         result.push(stmt)
-                    };
+                    }
                     Block { stmts: result, tail: Option::Some(Expr::Var { name, ty: value_ty }) }
                 },
                 None => Block { stmts: lower_cleanup_stmts(ctx, cleanup_start), tail: Option::None },
@@ -1809,17 +1795,17 @@ fn lower_file_with_types(
     let all_enums: Vec[tast::EnumDef] = Vec::[];
     for definition in dependency_enums {
         all_enums.push(definition)
-    };
+    }
     for definition in enums {
         all_enums.push(definition)
-    };
+    }
     let all_structs: Vec[tast::StructDef] = Vec::[];
     for definition in dependency_structs {
         all_structs.push(definition)
-    };
+    }
     for definition in structs {
         all_structs.push(definition)
-    };
+    }
     let ctx = Lowerer {
         counter,
         enums: all_enums,
@@ -1873,7 +1859,7 @@ fn lower_file_with_types(
                 functions.push(lower_function(ctx, name, origin, trait_impl, method, true))
             },
         }
-    };
+    }
     File { functions, enums, structs, type_instances: Vec::[], constants: value.constants }
 }
 

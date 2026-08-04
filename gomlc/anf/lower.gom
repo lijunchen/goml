@@ -45,7 +45,7 @@ fn lower_function(state: State, value: core::Function) -> Function {
     binds.push(Bind::Join(ret_join));
     for bind in lowered.binds {
         binds.push(bind)
-    };
+    }
     Function {
         name: value.name,
         origin: value.origin,
@@ -66,7 +66,7 @@ pub fn lower_with_counter(value: core::File, counter: Ref[int]) -> File {
     let functions: Vec[Function] = Vec::[];
     for function in value.functions {
         functions.push(lower_function(state, function))
-    };
+    }
     let lowered = simplify(File { functions, enums, structs, type_instances, constants });
     let inlined = simplify(inline(lowered, counter));
     simplify(licm(simplify(commute(inlined, counter))))

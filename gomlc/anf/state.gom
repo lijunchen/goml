@@ -79,7 +79,7 @@ fn prepend_bind(value: Bind, block: Block) -> Block {
     binds.push(value);
     for bind in block.binds {
         binds.push(bind)
-    };
+    }
     Block { binds, term: block.term }
 }
 
@@ -123,7 +123,7 @@ fn match_has_catch_all(arms: Vec[core::Arm], default: Option[core::Expr]) -> boo
             Var { name: _, ty: _ } => return true,
             _ => (),
         }
-    };
+    }
     false
 }
 
@@ -142,20 +142,14 @@ fn expr_always_exits(value: core::Expr) -> bool {
         Match { expr: _, arms, default, ty: _ } => {
             if !match_has_catch_all(arms, default) {
                 return false
-            } else {
-                ()
-            };
+            } else {};
             for arm in arms {
-                if expr_always_exits(arm.body) {
-                    ()
-                } else {
+                if expr_always_exits(arm.body) {} else {
                     return false
                 }
-            };
+            }
             match default {
-                Some(value) => if expr_always_exits(value) {
-                    ()
-                } else {
+                Some(value) => if expr_always_exits(value) {} else {
                     return false
                 },
                 None => (),
@@ -202,10 +196,8 @@ fn exprs_always_exit(values: Vec[core::Expr]) -> bool {
     for value in values {
         if expr_always_exits(value) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -213,10 +205,8 @@ fn block_always_exits(value: core::Block) -> bool {
     for stmt in value.stmts {
         if expr_always_exits(stmt.value) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     match value.tail {
         Some(value) => expr_always_exits(value),
         None => false,

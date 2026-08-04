@@ -36,7 +36,7 @@ fn copy_scope(values: Vec[ScopeEntry]) -> Vec[ScopeEntry] {
     let result: Vec[ScopeEntry] = Vec::[];
     for value in values {
         result.push(value)
-    };
+    }
     result
 }
 
@@ -49,7 +49,7 @@ fn find_scope(values: Vec[ScopeEntry], name: string) -> Option[ScopeEntry] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -57,10 +57,8 @@ fn find_closure(state: State, name: string) -> Option[ClosureInfo] {
     for value in state.closures {
         if value.struct_name == name {
             return Option::Some(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     Option::None
 }
 
@@ -72,9 +70,7 @@ fn closure_for_type(state: State, ty: tast::Type) -> Option[ClosureInfo] {
 }
 
 fn record_used_type(values: Vec[string], name: string) -> unit {
-    if collections::contains(values, name) {
-        ()
-    } else {
+    if collections::contains(values, name) {} else {
         values.push(name)
     }
 }
@@ -104,7 +100,7 @@ fn collect_used_types(values: Vec[string], ty: tast::Type) -> unit {
         Func { params, ret_ty } => {
             for param in params {
                 collect_used_types(values, param)
-            };
+            }
             collect_used_types(values, ret_ty)
         },
         _ => (),
@@ -128,7 +124,7 @@ fn collect_used_block(values: Vec[string], block: core::Block) -> unit {
     for stmt in block.stmts {
         collect_used_types(values, stmt.ty);
         collect_used_expr(values, stmt.value)
-    };
+    }
     collect_used_optional_expr(values, block.tail)
 }
 
@@ -142,7 +138,7 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
         Closure { params, body, ty: _ } => {
             for param in params {
                 collect_used_types(values, param.ty)
-            };
+            }
             collect_used_expr(values, body)
         },
         Block { block, ty: _ } => collect_used_block(values, block),
@@ -151,7 +147,7 @@ fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
             for arm in arms {
                 collect_used_expr(values, arm.lhs);
                 collect_used_expr(values, arm.body)
-            };
+            }
             collect_used_optional_expr(values, default)
         },
         If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
@@ -209,7 +205,7 @@ fn initial_used_types(value: core::File) -> Vec[string] {
     for function in value.functions {
         for param in function.params {
             collect_used_types(result, param.1)
-        };
+        }
         collect_used_types(result, function.ret_ty);
         match function.trait_impl {
             Some(value) => {
@@ -221,7 +217,7 @@ fn initial_used_types(value: core::File) -> Vec[string] {
             None => (),
         };
         collect_used_block(result, function.body)
-    };
+    }
     result
 }
 
@@ -229,10 +225,8 @@ fn primary_name(value: string) -> string {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
             return value.byte_slice(0, index)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     value
 }
 
@@ -246,23 +240,17 @@ fn sanitize_name(value: string) -> Option[string] {
         if ascii::is_alphanumeric(byte) {
             if pending_separator && wrote {
                 builder.write_char('_')
-            } else {
-                ()
-            };
+            } else {};
             if !wrote && byte >= b'0' && byte <= b'9' {
                 builder.write_char('_')
-            } else {
-                ()
-            };
+            } else {};
             builder.write_string(value.byte_slice(index, index + 1));
             pending_separator = false;
             wrote = true;
         } else if wrote {
             pending_separator = true;
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if wrote {
         Option::Some(builder.finish())
     } else {
@@ -278,9 +266,7 @@ fn fresh_struct_name(state: State, hint: Option[string]) -> string {
             Some(name) => "closure_env_" + name + "_" + index.to_string(),
             None => "closure_env_" + index.to_string(),
         };
-        if collections::contains(state.used_types, candidate) {
-            ()
-        } else {
+        if collections::contains(state.used_types, candidate) {} else {
             state.used_types.push(candidate);
             return candidate
         }
@@ -297,10 +283,8 @@ fn trailing_number(value: string) -> Option[int] {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
             return Option::None
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if value.byte_len() == 0 {
         Option::None
     } else {
@@ -315,7 +299,7 @@ fn trailing_number(value: string) -> Option[int] {
             } else {
                 break
             }
-        };
+        }
         if start == value.byte_len() {
             Option::None
         } else {
@@ -350,7 +334,7 @@ fn parse_digits(value: string, start: int) -> int {
             9
         };
         result = result * 10 + digit;
-    };
+    }
     result
 }
 
@@ -358,9 +342,7 @@ fn observe_name(maximum: Ref[int], name: string) -> unit {
     match trailing_number(name) {
         Some(value) => if value > maximum.get() {
             maximum.set(value)
-        } else {
-            ()
-        },
+        } else {},
         None => (),
     }
 }
@@ -382,7 +364,7 @@ fn observe_block(maximum: Ref[int], value: core::Block) -> unit {
     for stmt in value.stmts {
         observe_name(maximum, stmt.name);
         observe_expr(maximum, stmt.value)
-    };
+    }
     observe_optional_expr(maximum, value.tail)
 }
 
@@ -396,7 +378,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
         Closure { params, body, ty: _ } => {
             for param in params {
                 observe_name(maximum, param.name)
-            };
+            }
             observe_expr(maximum, body)
         },
         Block { block, ty: _ } => observe_block(maximum, block),
@@ -405,7 +387,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             for arm in arms {
                 observe_expr(maximum, arm.lhs);
                 observe_expr(maximum, arm.body)
-            };
+            }
             observe_optional_expr(maximum, default)
         },
         If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
@@ -451,9 +433,9 @@ fn initial_name_counter(value: core::File) -> int {
     for function in value.functions {
         for param in function.params {
             observe_name(maximum, param.0)
-        };
+        }
         observe_block(maximum, function.body)
-    };
+    }
     maximum.get() + 1
 }
 
@@ -466,7 +448,7 @@ fn transform_exprs(
     let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(transform_expr(state, scope, value, context))
-    };
+    }
     result
 }
 
@@ -519,7 +501,7 @@ fn transform_block(
         };
         stmts.push(core::LetStmt { name: stmt.name, value: transformed, ty });
         scope.push(ScopeEntry { name: stmt.name, ty, closure_struct })
-    };
+    }
     core::Block { stmts, tail: transform_optional_expr(state, scope, value.tail, context) }
 }
 
@@ -539,7 +521,7 @@ fn transform_arms(
     let result: Vec[core::Arm] = Vec::[];
     for value in values {
         result.push(transform_arm(state, scope, value, context))
-    };
+    }
     result
 }
 
@@ -569,7 +551,7 @@ fn transform_call(
             call_args.push(func);
             for arg in args {
                 call_args.push(arg)
-            };
+            }
             core::Expr::Call {
                 func: core::Expr::Var { name: info.apply_name, ty: info.apply_ty },
                 args: call_args,
@@ -712,10 +694,8 @@ fn capture_exists(values: Vec[Capture], name: string) -> bool {
     for value in values {
         if value.name == name {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -753,7 +733,7 @@ fn collect_captured_block(
         collect_captured(stmt.value, bound, captured, scope);
         bound.push(stmt.name);
         added = added + 1;
-    };
+    }
     collect_captured_optional(value.tail, bound, captured, scope);
     for _ in 0..added {
         let _ = bound.pop();
@@ -767,13 +747,9 @@ fn collect_captured(
     scope: Vec[ScopeEntry],
 ) -> unit {
     match value {
-        Var { name, ty: _ } => if collections::contains(bound, name) {
-            ()
-        } else {
+        Var { name, ty: _ } => if collections::contains(bound, name) {} else {
             match find_scope(scope, name) {
-                Some(entry) => if capture_exists(captured, name) {
-                    ()
-                } else {
+                Some(entry) => if capture_exists(captured, name) {} else {
                     captured.push(Capture { name, ty: entry.ty })
                 },
                 None => (),
@@ -796,7 +772,7 @@ fn collect_captured(
             for arm in arms {
                 collect_captured(arm.lhs, bound, captured, scope);
                 collect_captured(arm.body, bound, captured, scope)
-            };
+            }
             collect_captured_optional(default, bound, captured, scope)
         },
         If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
@@ -882,10 +858,10 @@ fn prepend_captures(
                 ty: capture.ty,
             },
         )
-    };
+    }
     for stmt in body.stmts {
         stmts.push(stmt)
-    };
+    }
     core::Block { stmts, tail: body.tail }
 }
 
@@ -922,7 +898,7 @@ fn transform_closure(
                 );
                 lowered_params.push((param.name, param_ty));
                 bound.push(param.name)
-            };
+            }
             let hint = match name_hint {
                 Some(name) => match sanitize_name(name) {
                     Some(name) => Option::Some(name),
@@ -944,7 +920,7 @@ fn transform_closure(
                 fields.push(field_name);
                 struct_fields.push((field_name, capture.ty));
                 captured_args.push(core::Expr::Var { name: capture.name, ty: capture.ty })
-            };
+            }
             let constructor = tast::Constructor {
                 name: struct_name,
                 fields,
@@ -960,7 +936,7 @@ fn transform_closure(
             for param in lowered_params {
                 fn_params.push(param);
                 apply_param_types.push(param.1)
-            };
+            }
             let apply_ty = tast::Type::Func { params: apply_param_types, ret_ty: signature.1 };
             state.closures.push(ClosureInfo { struct_name, apply_name, apply_ty });
             state.generated_structs.push(
@@ -1011,7 +987,7 @@ fn transform_function(state: State, value: core::Function) -> core::Function {
                 },
             },
         )
-    };
+    }
     let context = sanitize_name(value.name);
     core::Function {
         name: value.name,
@@ -1042,13 +1018,13 @@ fn lambda_lift_with_counter(value: core::File, counter: Ref[int]) -> core::File 
     let functions: Vec[core::Function] = Vec::[];
     for function in value.functions {
         functions.push(transform_function(state, function))
-    };
+    }
     for function in state.generated {
         functions.push(function)
-    };
+    }
     for generated_struct in state.generated_structs {
         structs.push(generated_struct)
-    };
+    }
     core::File { functions, enums, structs, type_instances, constants }
 }
 

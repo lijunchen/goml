@@ -28,7 +28,7 @@ fn parse_digits(value: string, start: int) -> int {
             9
         };
         result = result * 10 + digit;
-    };
+    }
     result
 }
 
@@ -36,10 +36,8 @@ fn trailing_number(value: string) -> Option[int] {
     for index in 0..value.byte_len() {
         if value.byte_get(index) == b'/' {
             return Option::None
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     if value.byte_len() == 0 {
         Option::None
     } else {
@@ -54,7 +52,7 @@ fn trailing_number(value: string) -> Option[int] {
             } else {
                 break
             }
-        };
+        }
         if start == value.byte_len() {
             Option::None
         } else {
@@ -67,9 +65,7 @@ fn observe_name(maximum: Ref[int], name: string) -> unit {
     match trailing_number(name) {
         Some(value) => if value > maximum.get() {
             maximum.set(value)
-        } else {
-            ()
-        },
+        } else {},
         None => (),
     }
 }
@@ -91,7 +87,7 @@ fn observe_block(maximum: Ref[int], value: core::Block) -> unit {
     for stmt in value.stmts {
         observe_name(maximum, stmt.name);
         observe_expr(maximum, stmt.value)
-    };
+    }
     observe_optional_expr(maximum, value.tail)
 }
 
@@ -104,7 +100,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
         Closure { params, body, ty: _ } => {
             for param in params {
                 observe_name(maximum, param.name)
-            };
+            }
             observe_expr(maximum, body)
         },
         Block { block, ty: _ } => observe_block(maximum, block),
@@ -113,7 +109,7 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             for arm in arms {
                 observe_expr(maximum, arm.lhs);
                 observe_expr(maximum, arm.body)
-            };
+            }
             observe_optional_expr(maximum, default)
         },
         If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
@@ -162,8 +158,8 @@ fn initial_counter(value: core::File) -> int {
     for function in value.functions {
         for param in function.params {
             observe_name(maximum, param.0)
-        };
+        }
         observe_block(maximum, function.body)
-    };
+    }
     maximum.get() + 1
 }

@@ -15,20 +15,16 @@ fn pattern_requires_ordered(value: tast::Pat) -> bool {
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Constr { constructor: _, args: patterns, ty: _ } | Tuple { items: patterns, ty: _ } => {
             for pattern in patterns {
                 if pattern_requires_ordered(pattern) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         _ => false,
@@ -41,11 +37,9 @@ fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
             Some(_) => return true,
             None => if pattern_requires_ordered(arm.pat) {
                 return true
-            } else {
-                ()
-            },
+            } else {},
         }
-    };
+    }
     false
 }
 
@@ -117,7 +111,7 @@ fn ordered_rest_value(
             };
             for index in prefix_len..end {
                 items.push(place_index_read(value, container_ty, ordered_int(index), elem_ty))
-            };
+            }
             Expr::Array { items, ty: rest_ty }
         },
         VecType { elem: _ } => {
@@ -225,12 +219,12 @@ fn lower_ordered_array_pattern(
                         elem_ty,
                     );
                     next = lower_ordered_pattern(ctx, suffix[index], item, next, failure, result_ty);
-                };
+                }
                 for offset in 0..prefix.len() {
                     let index = prefix.len() - 1 - offset;
                     let item = place_index_read(value, container_ty, ordered_int(index), elem_ty);
                     next = lower_ordered_pattern(ctx, prefix[index], item, next, failure, result_ty);
-                };
+                }
                 match fixed_len {
                     Some(_) => next,
                     None => {
@@ -285,7 +279,7 @@ fn lower_ordered_pattern(
             for offset in 0..patterns.len() {
                 let index = patterns.len() - 1 - offset;
                 next = lower_ordered_pattern(ctx, patterns[index], value, success, next, result_ty);
-            };
+            }
             next
         },
         Prim { value: expected, ty } => ordered_if(
@@ -336,7 +330,7 @@ fn lower_ordered_pattern(
                         failure,
                         result_ty,
                     );
-                };
+                }
                 next
             },
             _ => failure,
@@ -359,14 +353,14 @@ fn lower_ordered_pattern(
                     failure,
                     result_ty,
                 );
-            };
+            }
             if constructor.is_struct {
                 next
             } else {
                 let lhs_args: Vec[Expr] = Vec::[];
                 for arg in args {
                     lhs_args.push(Expr::Var { name: gensym(ctx, "p"), ty: tast::pat_type(arg) })
-                };
+                }
                 let arms: Vec[Arm] = Vec::[];
                 arms.push(
                     Arm {
@@ -408,6 +402,6 @@ fn lower_ordered_match(ctx: Lowerer, source: tast::Expr, arms: Vec[tast::Arm], t
             None => body,
         };
         next = lower_ordered_pattern(ctx, arm.pat, source_var, success, next, ty);
-    };
+    }
     bind_ordered_value(source_name, source_value, next, ty)
 }

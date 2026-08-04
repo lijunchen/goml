@@ -4,9 +4,7 @@ use gomlc::tast;
 use std::collections;
 
 fn push_name(values: Vec[string], value: string) -> unit {
-    if collections::contains(values, value) {
-        ()
-    } else {
+    if collections::contains(values, value) {} else {
         values.push(value)
     }
 }
@@ -15,10 +13,8 @@ fn push_mutable(values: Vec[(string, tast::Type)], name: string, ty: tast::Type)
     for value in values {
         if value.0 == name {
             return ()
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     values.push((name, ty))
 }
 
@@ -47,7 +43,7 @@ fn collect_mutable_block(value: tast::Block, result: Vec[(string, tast::Type)]) 
             },
             Expr { expr } => collect_mutable_expr(expr, result),
         }
-    };
+    }
     match value.tail {
         Some(expr) => collect_mutable_expr(expr, result),
         None => (),
@@ -131,9 +127,7 @@ fn collect_mutable_pattern(value: tast::Pat, inherited: bool, result: Vec[(strin
     match value {
         Var { name, is_mut, ty } => if inherited || is_mut {
             push_mutable(result, name, ty)
-        } else {
-            ()
-        },
+        } else {},
         Constr { constructor: _, args, ty: _ } | Tuple { items: args, ty: _ } | Or {
             pats: args,
             ty: _,
@@ -143,14 +137,12 @@ fn collect_mutable_pattern(value: tast::Pat, inherited: bool, result: Vec[(strin
         Array { prefix, rest, suffix, ty: _ } => {
             for item in prefix {
                 collect_mutable_pattern(item, inherited, result)
-            };
+            }
             match rest {
                 Some(value) => match value.binding {
                     Some(name) => if inherited {
                         push_mutable(result, name, value.ty)
-                    } else {
-                        ()
-                    },
+                    } else {},
                     None => (),
                 },
                 None => (),
@@ -162,9 +154,7 @@ fn collect_mutable_pattern(value: tast::Pat, inherited: bool, result: Vec[(strin
         Alias { name, pat, ty } => {
             if inherited {
                 push_mutable(result, name, ty)
-            } else {
-                ()
-            };
+            } else {};
             collect_mutable_pattern(pat, inherited, result)
         },
         Prim { value: _, ty: _ } | Range { start: _, end: _, inclusive: _, ty: _ } | Wild { ty: _ } => (),
@@ -185,7 +175,7 @@ fn collect_pattern_names(value: tast::Pat, result: Vec[string]) -> unit {
         Array { prefix, rest, suffix, ty: _ } => {
             for item in prefix {
                 collect_pattern_names(item, result)
-            };
+            }
             match rest {
                 Some(value) => match value.binding {
                     Some(name) => push_name(result, name),
@@ -230,7 +220,7 @@ fn collect_bound_block(value: tast::Block, result: Vec[string]) -> unit {
             },
             Expr { expr } => collect_bound_expr(expr, result),
         }
-    };
+    }
     match value.tail {
         Some(expr) => collect_bound_expr(expr, result),
         None => (),
@@ -331,7 +321,7 @@ fn collect_reference_block(value: tast::Block, result: Vec[string]) -> unit {
             },
             Expr { expr } => collect_reference_expr(expr, result),
         }
-    };
+    }
     match value.tail {
         Some(expr) => collect_reference_expr(expr, result),
         None => (),
@@ -431,7 +421,7 @@ fn collect_capture_block(value: tast::Block, result: Vec[string]) -> unit {
             },
             Expr { expr } => collect_capture_expr(expr, result),
         }
-    };
+    }
     match value.tail {
         Some(expr) => collect_capture_expr(expr, result),
         None => (),
@@ -442,17 +432,15 @@ fn collect_closure_captures(params: Vec[tast::ClosureParam], body: tast::Expr, r
     let bound: Vec[string] = Vec::[];
     for param in params {
         push_name(bound, param.name)
-    };
+    }
     collect_bound_expr(body, bound);
     let references: Vec[string] = Vec::[];
     collect_reference_expr(body, references);
     for name in references {
-        if collections::contains(bound, name) {
-            ()
-        } else {
+        if collections::contains(bound, name) {} else {
             push_name(result, name)
         }
-    };
+    }
     collect_capture_expr(body, result)
 }
 
@@ -536,10 +524,8 @@ fn hidden_mutable_cells(value: tast::Block) -> Vec[(string, tast::Type)] {
     for value in mutables {
         if collections::contains(captures, value.0) {
             result.push(value)
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     result
 }
 
@@ -556,7 +542,7 @@ fn hidden_cell_inner(cells: Vec[(string, tast::Type)], name: string) -> Option[t
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -608,7 +594,7 @@ fn lower_hidden_exprs(values: Vec[Expr], cells: Vec[(string, tast::Type)]) -> Ve
     let result: Vec[Expr] = Vec::[];
     for value in values {
         result.push(lower_hidden_expr(value, cells))
-    };
+    }
     result
 }
 
@@ -626,7 +612,7 @@ fn lower_hidden_block(value: Block, cells: Vec[(string, tast::Type)]) -> Block {
             ),
             None => stmts.push(LetStmt { name: stmt.name, value: lowered, ty: stmt.ty }),
         }
-    };
+    }
     Block {
         stmts,
         tail: match value.tail {
@@ -645,7 +631,7 @@ fn lower_hidden_arms(values: Vec[Arm], cells: Vec[(string, tast::Type)]) -> Vec[
                 body: lower_hidden_expr(value.body, cells),
             },
         )
-    };
+    }
     result
 }
 

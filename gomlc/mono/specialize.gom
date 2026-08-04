@@ -49,7 +49,7 @@ fn find_binding(values: Vec[TypeBinding], name: string) -> Option[tast::Type] {
         } else {
             index = index - 1;
         }
-    };
+    }
     Option::None
 }
 
@@ -68,12 +68,10 @@ fn unify_types(templates: Vec[tast::Type], actuals: Vec[tast::Type], bindings: V
         false
     } else {
         for index in 0..templates.len() {
-            if unify_type(templates[index], actuals[index], bindings) {
-                ()
-            } else {
+            if unify_type(templates[index], actuals[index], bindings) {} else {
                 return false
             }
-        };
+        }
         true
     }
 }
@@ -116,10 +114,8 @@ fn has_projection_binding(values: Vec[TypeBinding]) -> bool {
     for value in values {
         if value.name.starts_with("projection#") {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -200,7 +196,7 @@ fn substitute_types(values: Vec[tast::Type], bindings: Vec[TypeBinding]) -> Vec[
     let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(substitute_type(value, bindings))
-    };
+    }
     result
 }
 
@@ -210,7 +206,7 @@ fn substitute_named_types(values: Vec[(string, tast::Type)], bindings: Vec[TypeB
     let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         result.push((value.0, substitute_type(value.1, bindings)))
-    };
+    }
     result
 }
 
@@ -255,13 +251,13 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
             let substituted_associated: Vec[(string, tast::Type)] = Vec::[];
             for binding in associated_types {
                 substituted_associated.push((binding.0, substitute_type(binding.1, bindings)))
-            };
+            }
             let substituted_additional: Vec[tast::DynTraitBound] = Vec::[];
             for bound in additional_bounds {
                 let bound_associated: Vec[(string, tast::Type)] = Vec::[];
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, substitute_type(binding.1, bindings)))
-                };
+                }
                 substituted_additional.push(
                     tast::DynTraitBound {
                         trait_name: bound.trait_name,
@@ -269,7 +265,7 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
                         associated_types: bound_associated,
                     },
                 )
-            };
+            }
             tast::Type::Dyn {
                 trait_name,
                 args: substitute_types(args, bindings),
@@ -327,7 +323,7 @@ fn function_type(value: core::Function) -> tast::Type {
     let params: Vec[tast::Type] = Vec::[];
     for param in value.params {
         params.push(param.1)
-    };
+    }
     tast::Type::Func { params, ret_ty: value.ret_ty }
 }
 
@@ -337,12 +333,10 @@ fn function_is_generic(value: core::Function) -> bool {
     } else {
         let mut generic = !type_is_concrete(value.ret_ty);
         for param in value.params {
-            if type_is_concrete(param.1) {
-                ()
-            } else {
+            if type_is_concrete(param.1) {} else {
                 generic = true;
             }
-        };
+        }
         generic
     }
 }
@@ -370,7 +364,7 @@ fn canonical_inherent_owner_type(value: tast::Type) -> tast::Type {
             let values: Vec[tast::Type] = Vec::[];
             for arg in args {
                 values.push(canonical_inherent_owner_type(arg))
-            };
+            }
             match base {
                 Con { name: "Vec" } if values.len() == 1 => {
                     tast::Type::VecType { elem: values[0] }
@@ -434,9 +428,7 @@ fn find_inherent_function(
                 let callable_matches = unify_type(function_type(function), callable_ty, Vec::[]);
                 if owner_matches || callable_matches {
                     return Option::Some(function)
-                } else {
-                    ()
-                }
+                } else {}
             },
             _ => (),
         }
@@ -476,14 +468,12 @@ fn same_bindings(left: Vec[TypeBinding], right: Vec[TypeBinding]) -> bool {
     } else {
         for value in left {
             match find_binding(right, value.name) {
-                Some(ty) => if compact_type(value.ty) == compact_type(ty) {
-                    ()
-                } else {
+                Some(ty) => if compact_type(value.ty) == compact_type(ty) {} else {
                     return false
                 },
                 None => return false,
             }
-        };
+        }
         true
     }
 }
@@ -520,7 +510,7 @@ fn instance_lookup_key(original_name: string, bindings: Vec[TypeBinding]) -> str
         builder.write_string(ty.byte_len().to_string());
         builder.write_char(':');
         builder.write_string(ty)
-    };
+    }
     builder.finish()
 }
 
@@ -535,15 +525,13 @@ fn instance_base_name(ctx: SpecializeCtx, original_name: string, bindings: Vec[T
                     let builder = std::text::StringBuilder::new();
                     builder.write_string(original_name);
                     for binding in sorted_bindings(bindings) {
-                        if binding.name.starts_with("projection#") {
-                            ()
-                        } else {
+                        if binding.name.starts_with("projection#") {} else {
                             builder.write_string("__");
                             builder.write_string(binding.name);
                             builder.write_char('_');
                             builder.write_string(compact_type(binding.ty))
                         }
-                    };
+                    }
                     builder.finish()
                 },
             },
@@ -562,7 +550,7 @@ fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
         while name_is_used(ctx, candidate) {
             index = index + 1;
             candidate = base + "__mono" + index.to_string();
-        };
+        }
         ctx.used_names[candidate] = ();
         candidate
     }
@@ -624,26 +612,20 @@ fn mono_type_contains_proper_subterm(value: tast::Type, expected: tast::Type) ->
                 if mono_types_equal(value, expected)
                     || mono_type_contains_proper_subterm(value, expected) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         App { ty: base, args } => {
             if mono_types_equal(base, expected) || mono_type_contains_proper_subterm(base, expected) {
                 return true
-            } else {
-                ()
-            };
+            } else {};
             for arg in args {
                 if mono_types_equal(arg, expected)
                     || mono_type_contains_proper_subterm(arg, expected) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Array { len: _, elem } | Slice { elem } | VecType { elem } | RefType { elem } | Channel {
@@ -660,17 +642,13 @@ fn mono_type_contains_proper_subterm(value: tast::Type, expected: tast::Type) ->
             if mono_types_equal(ret_ty, expected)
                 || mono_type_contains_proper_subterm(ret_ty, expected) {
                 return true
-            } else {
-                ()
-            };
+            } else {};
             for param in params {
                 if mono_types_equal(param, expected)
                     || mono_type_contains_proper_subterm(param, expected) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         _ => false,
@@ -726,17 +704,13 @@ fn specialization_growth_message(
                                     + " to "
                                     + mono_type_text(new_ty),
                             )
-                        } else {
-                            ()
-                        }
+                        } else {}
                     },
                     _ => (),
                 }
-            };
+            }
             for new_binding in next {
-                if projection_binding(new_binding) {
-                    ()
-                } else {
+                if projection_binding(new_binding) {} else {
                     for old_binding in previous {
                         if !projection_binding(old_binding)
                             && mono_type_contains_recursive_growth(new_binding.ty, old_binding.ty) {
@@ -749,12 +723,10 @@ fn specialization_growth_message(
                                     + " to "
                                     + mono_type_text(new_binding.ty),
                             )
-                        } else {
-                            ()
-                        }
+                        } else {}
                     }
                 }
-            };
+            }
             Option::None
         },
         None => Option::None,
@@ -801,7 +773,7 @@ fn copy_bindings(values: Vec[TypeBinding]) -> Vec[TypeBinding] {
     let result: Vec[TypeBinding] = Vec::[];
     for value in values {
         result.push(value)
-    };
+    }
     result
 }
 
@@ -811,7 +783,7 @@ fn trait_ref_key(value: tast::TraitRef) -> string {
     for arg in value.args {
         builder.write_char('#');
         builder.write_string(compact_type(arg))
-    };
+    }
     builder.finish()
 }
 
@@ -823,7 +795,7 @@ fn trait_selection_key(value: TraitSelection) -> string {
         builder.write_string(associated.0);
         builder.write_char('=');
         builder.write_string(compact_type(associated.1))
-    };
+    }
     builder.finish()
 }
 
@@ -866,27 +838,17 @@ fn matching_trait_selections(
                                 ),
                             };
                             let key = trait_selection_key(selection);
-                            if collections::contains(keys, key) {
-                                ()
-                            } else {
+                            if collections::contains(keys, key) {} else {
                                 keys.push(key);
                                 selections.push(selection)
                             }
-                        } else {
-                            ()
-                        }
-                    } else {
-                        ()
-                    }
-                } else {
-                    ()
-                }
-            } else {
-                ()
-            },
+                        } else {}
+                    } else {}
+                } else {}
+            } else {},
             None => (),
         }
-    };
+    }
     selections
 }
 
@@ -894,7 +856,7 @@ fn active_types_with(values: Vec[string], value: string) -> Vec[string] {
     let result: Vec[string] = Vec::[];
     for item in values {
         result.push(item)
-    };
+    }
     result.push(value);
     result
 }
@@ -905,7 +867,7 @@ fn normalize_types(ctx: SpecializeCtx, values: Vec[tast::Type], active: Vec[stri
     let result: Vec[tast::Type] = Vec::[];
     for value in values {
         result.push(normalize_type(ctx, value, active))
-    };
+    }
     result
 }
 
@@ -953,26 +915,18 @@ fn matching_projection_types(
                             if associated.0 == name {
                                 let value = substitute_type(associated.1, bindings);
                                 let key = compact_type(value);
-                                if collections::contains(keys, key) {
-                                    ()
-                                } else {
+                                if collections::contains(keys, key) {} else {
                                     keys.push(key);
                                     result.push(value)
                                 }
-                            } else {
-                                ()
-                            }
+                            } else {}
                         }
-                    } else {
-                        ()
-                    }
-                } else {
-                    ()
-                }
+                    } else {}
+                } else {}
             },
             None => (),
         }
-    };
+    }
     result
 }
 
@@ -1043,13 +997,13 @@ fn normalize_type(ctx: SpecializeCtx, value: tast::Type, active: Vec[string]) ->
             let normalized_associated: Vec[(string, tast::Type)] = Vec::[];
             for binding in associated_types {
                 normalized_associated.push((binding.0, normalize_type(ctx, binding.1, active)))
-            };
+            }
             let normalized_additional: Vec[tast::DynTraitBound] = Vec::[];
             for bound in additional_bounds {
                 let bound_associated: Vec[(string, tast::Type)] = Vec::[];
                 for binding in bound.associated_types {
                     bound_associated.push((binding.0, normalize_type(ctx, binding.1, active)))
-                };
+                }
                 normalized_additional.push(
                     tast::DynTraitBound {
                         trait_name: bound.trait_name,
@@ -1057,7 +1011,7 @@ fn normalize_type(ctx: SpecializeCtx, value: tast::Type, active: Vec[string]) ->
                         associated_types: bound_associated,
                     },
                 )
-            };
+            }
             tast::Type::Dyn {
                 trait_name,
                 args: normalize_types(ctx, args, active),
@@ -1106,10 +1060,8 @@ fn types_contain_associated_projection(values: Vec[tast::Type]) -> bool {
     for value in values {
         if type_contains_associated_projection(value) {
             return true
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     false
 }
 
@@ -1157,7 +1109,7 @@ fn specialize_named_types(
     let result: Vec[(string, tast::Type)] = Vec::[];
     for value in values {
         result.push((value.0, specialize_type(ctx, value.1, bindings)))
-    };
+    }
     result
 }
 
@@ -1196,33 +1148,22 @@ fn complete_function_bindings_up_to(
                                     projection_binding_name(for_ty, associated.0, Option::None),
                                     associated.1,
                                 );
-                                ()
-                            };
-                            ()
-                        } else {
-                            ()
-                        }
-                    } else {
-                        ()
-                    }
+                            }
+                        } else {}
+                    } else {}
                 },
                 Equality { lhs, rhs } => {
                     let lhs = substitute_type(lhs, bindings);
                     let rhs = substitute_type(rhs, bindings);
-                    if unify_type(lhs, rhs, bindings) {
-                        ()
-                    } else {
+                    if unify_type(lhs, rhs, bindings) {} else {
                         unify_type(rhs, lhs, bindings);
-                        ()
                     }
                 },
             }
-        };
+        }
         if bindings.len() == previous_len {
             break
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -1240,23 +1181,19 @@ fn predicates_are_satisfied_up_to(
                 let reference = substitute_trait_ref(reference, bindings);
                 if type_is_concrete(for_ty)
                     && (builtin_trait_satisfied(for_ty, reference)
-                        || matching_trait_selections(ctx, for_ty, reference, bindings).len() == 1) {
-                    ()
-                } else {
+                        || matching_trait_selections(ctx, for_ty, reference, bindings).len() == 1) {} else {
                     return false
                 }
             },
             Equality { lhs, rhs } => {
                 let lhs = substitute_type(lhs, bindings);
                 let rhs = substitute_type(rhs, bindings);
-                if compact_type(lhs) == compact_type(rhs) {
-                    ()
-                } else {
+                if compact_type(lhs) == compact_type(rhs) {} else {
                     return false
                 }
             },
         }
-    };
+    }
     true
 }
 
@@ -1305,14 +1242,12 @@ fn complete_bindings_up_to(
     for index in 0..generic_count {
         let generic = value.generics[index];
         match find_binding(bindings, generic) {
-            Some(ty) => if type_is_concrete(ty) {
-                ()
-            } else {
+            Some(ty) => if type_is_concrete(ty) {} else {
                 return false
             },
             None => return false,
         }
-    };
+    }
     predicates_are_satisfied_up_to(ctx, value, bindings, predicate_count)
 }
 
@@ -1358,7 +1293,7 @@ fn specialize_closure_params(
         result.push(
             tast::ClosureParam { name: value.name, ty: specialize_type(ctx, value.ty, bindings) },
         )
-    };
+    }
     result
 }
 
@@ -1368,7 +1303,7 @@ fn specialize_exprs(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[
     let result: Vec[core::Expr] = Vec::[];
     for value in values {
         result.push(specialize_expr(ctx, bindings, value))
-    };
+    }
     result
 }
 
@@ -1394,7 +1329,7 @@ fn specialize_arms(ctx: SpecializeCtx, bindings: Vec[TypeBinding], values: Vec[c
                 body: specialize_expr(ctx, bindings, value.body),
             },
         )
-    };
+    }
     result
 }
 
@@ -1408,7 +1343,7 @@ fn specialize_block(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core:
                 ty: specialize_type(ctx, stmt.ty, bindings),
             },
         )
-    };
+    }
     core::Block { stmts, tail: specialize_optional_expr(ctx, bindings, value.tail) }
 }
 
@@ -1417,7 +1352,7 @@ fn trait_call_types(receiver: core::Expr, args: Vec[core::Expr]) -> Vec[tast::Ty
     result.push(core::expr_type(receiver));
     for arg in args {
         result.push(core::expr_type(arg))
-    };
+    }
     result
 }
 
@@ -1433,13 +1368,11 @@ fn trait_method_bindings(
         || !unify_type(metadata.for_ty, actual_types[0], bindings)
         || !unify_types(metadata.trait_ref.args, reference.args, bindings) {
         return Option::None
-    } else {
-        ()
-    };
+    } else {};
     let param_types: Vec[tast::Type] = Vec::[];
     for param in function.params {
         param_types.push(param.1)
-    };
+    }
     if unify_types(param_types, actual_types, bindings)
         && unify_type(function.ret_ty, ret_ty, bindings) {
         Option::Some(bindings)
@@ -1468,15 +1401,11 @@ fn ensure_trait_method_instance(
                 match base_name {
                     Some(base) => if base != name {
                         instance_name = Option::Some(name);
-                    } else {
-                        ()
-                    },
+                    } else {},
                     None => (),
                 };
                 resolved = specialize_trait_ref(ctx, reference, bindings);
-            } else {
-                ()
-            },
+            } else {},
             None => (),
         }
     };
@@ -1508,10 +1437,7 @@ fn ensure_dyn_trait_impls(ctx: SpecializeCtx, trait_name: string, for_ty: tast::
                 if unify_type(metadata.for_ty, for_ty, bindings)
                     && complete_bindings(ctx, function, bindings) {
                     ensure_instance(ctx, function.name, bindings);
-                    ()
-                } else {
-                    ()
-                }
+                } else {}
             },
             None => (),
         }
@@ -1828,7 +1754,7 @@ fn ensure_runtime_trait_impls_for_block(ctx: SpecializeCtx, value: core::Block) 
     for stmt in value.stmts {
         ensure_runtime_trait_impls_for_type(ctx, stmt.ty);
         ensure_runtime_trait_impls_for_expr(ctx, stmt.value)
-    };
+    }
     ensure_runtime_trait_impls_for_optional_expr(ctx, value.tail)
 }
 
@@ -1842,7 +1768,7 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
         Closure { params, body, ty: _ } => {
             for param in params {
                 ensure_runtime_trait_impls_for_type(ctx, param.ty)
-            };
+            }
             ensure_runtime_trait_impls_for_expr(ctx, body)
         },
         Block { block, ty: _ } => ensure_runtime_trait_impls_for_block(ctx, block),
@@ -1851,7 +1777,7 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             for arm in arms {
                 ensure_runtime_trait_impls_for_expr(ctx, arm.lhs);
                 ensure_runtime_trait_impls_for_expr(ctx, arm.body)
-            };
+            }
             ensure_runtime_trait_impls_for_optional_expr(ctx, default)
         },
         If { cond, then_branch: then_, else_branch: else_, ty: _ } => {
@@ -1912,7 +1838,7 @@ fn ensure_runtime_trait_impls(ctx: SpecializeCtx, functions: Vec[core::Function]
     for function in functions {
         for param in function.params {
             ensure_runtime_trait_impls_for_type(ctx, param.1)
-        };
+        }
         ensure_runtime_trait_impls_for_type(ctx, function.ret_ty);
         ensure_runtime_trait_impls_for_block(ctx, function.body)
     }
@@ -1922,7 +1848,7 @@ fn specialize_function(ctx: SpecializeCtx, instance: Instance, value: core::Func
     let params: Vec[(string, tast::Type)] = Vec::[];
     for param in value.params {
         params.push((param.0, specialize_type(ctx, param.1, instance.bindings)))
-    };
+    }
     core::Function {
         name: instance.name,
         origin: match value.origin {
@@ -1997,7 +1923,7 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
             },
             None => (),
         }
-    };
+    }
     let ctx = SpecializeCtx {
         functions: value.functions,
         function_index,
@@ -2015,11 +1941,8 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
     for function in ctx.functions {
         if function.root && !function_is_generic(function) {
             ensure_instance(ctx, function.name, Vec::[]);
-            ()
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     let output: Vec[core::Function] = Vec::[];
     let mut index = 0;
     loop {
@@ -2036,14 +1959,12 @@ fn specialize(value: core::File, error: Ref[Option[string]]) -> core::File {
                     Option::Some("missing monomorphization function " + instance.original_name),
                 ),
             }
-        };
+        }
         let previous_len = ctx.work.len();
         ensure_runtime_trait_impls(ctx, output);
         if ctx.work.len() == previous_len {
             break
-        } else {
-            ()
-        }
-    };
+        } else {}
+    }
     core::File { functions: output, enums, structs, type_instances, constants }
 }

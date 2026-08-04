@@ -23,18 +23,14 @@ fn add_name(values: DceNames, value: string) -> unit {
     if !contains_name(values, value) {
         values.present[value] = ();
         values.values.push(value)
-    } else {
-        ()
-    }
+    } else {}
 }
 
 fn add_names(target: DceNames, values: DceNames) -> unit {
     for value in values.values {
         if contains_name(values, value) {
             add_name(target, value)
-        } else {
-            ()
-        }
+        } else {}
     }
 }
 
@@ -98,7 +94,7 @@ fn add_expr_uses(values: DceNames, value: Expr) -> unit {
             add_block_uses(uses, body);
             for param in params {
                 remove_name(uses, param.0)
-            };
+            }
             add_names(values, uses)
         },
         Nil | Unit | Bool { value: _ } | Int { value: _ } | Float { value: _ } | String { value: _ } => (),
@@ -147,7 +143,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
             add_block_uses(body_uses, body);
             for name in names {
                 remove_name(body_uses, name)
-            };
+            }
             add_names(values, body_uses)
         },
         Switch { expr, cases, default } => {
@@ -155,7 +151,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
             for case in cases {
                 add_expr_uses(values, case.value);
                 add_block_uses(values, case.body)
-            };
+            }
             match default {
                 Some(body) => add_block_uses(values, body),
                 None => (),
@@ -166,7 +162,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
             let body_uses = new_dce_names();
             for case in cases {
                 add_block_uses(body_uses, case.body)
-            };
+            }
             match default {
                 Some(body) => add_block_uses(body_uses, body),
                 None => (),
@@ -186,7 +182,7 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
                         add_block_uses(body_uses, case.body);
                         for name in names {
                             remove_name(body_uses, name)
-                        };
+                        }
                         add_names(values, body_uses)
                     },
                     Send { channel, value } => {
@@ -256,7 +252,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
                 let body_uses = free_vars_in_block(body);
                 for name in names {
                     remove_name(body_uses, name)
-                };
+                }
                 add_names(used, body_uses)
             },
             Switch { expr, cases, default } => {
@@ -264,7 +260,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
                 for case in cases {
                     add_expr_uses(used, case.value);
                     add_names(used, free_vars_in_block(case.body))
-                };
+                }
                 match default {
                     Some(body) => add_names(used, free_vars_in_block(body)),
                     None => (),
@@ -279,7 +275,7 @@ fn free_vars_in_block(value: Block) -> DceNames {
                         None => (),
                     };
                     add_names(used, case_uses)
-                };
+                }
                 match default {
                     Some(body) => {
                         let default_uses = free_vars_in_block(body);
@@ -312,10 +308,10 @@ fn free_vars_in_block(value: Block) -> DceNames {
             },
             Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
         }
-    };
+    }
     for name in declared.values {
         remove_name(used, name)
-    };
+    }
     used
 }
 
@@ -392,10 +388,8 @@ fn expr_has_side_effects(value: Expr) -> bool {
             for arg in args {
                 if expr_has_side_effects(arg) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             append_call(func) || !call_result_must_be_used(func)
         },
         Unary { op: _, expr } => expr_has_side_effects(expr),
@@ -411,10 +405,8 @@ fn expr_has_side_effects(value: Expr) -> bool {
             for arg in args {
                 if expr_has_side_effects(arg) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         Send { channel: _, value: _ } | Receive { channel: _ } => true,
@@ -422,20 +414,16 @@ fn expr_has_side_effects(value: Expr) -> bool {
             for field in fields {
                 if expr_has_side_effects(field.1) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         ArrayLiteral { ty: _, items } => {
             for item in items {
                 if expr_has_side_effects(item) {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         },
         FuncLit { params: _, ret_ty: _, body: _ } => false,
@@ -449,7 +437,7 @@ fn reversed(values: Vec[Stmt]) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::with_capacity(values.len());
     for index in 0..values.len() {
         result.push(values[values.len() - index - 1])
-    };
+    }
     result
 }
 
@@ -465,9 +453,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 if expr_has_side_effects(expr) {
                     add_expr_uses(live, expr);
                     output.push(Stmt::Expr { expr })
-                } else {
-                    ()
-                }
+                } else {}
             },
             Go { call: expr } => {
                 add_expr_uses(live, expr);
@@ -493,9 +479,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                             if expr_has_side_effects(expr) {
                                 add_expr_uses(live, expr);
                                 output.push(emit_side_effect(expr))
-                            } else {
-                                ()
-                            };
+                            } else {};
                             output.push(Stmt::Var { name, ty, value: Option::None })
                         },
                         None => output.push(Stmt::Var { name, ty, value: Option::None }),
@@ -506,9 +490,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                             if expr_has_side_effects(expr) {
                                 add_expr_uses(live, expr);
                                 output.push(emit_side_effect(expr))
-                            } else {
-                                ()
-                            }
+                            } else {}
                         },
                         None => (),
                     }
@@ -523,9 +505,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 } else if expr_has_side_effects(expr) {
                     add_expr_uses(live, expr);
                     output.push(emit_side_effect(expr))
-                } else {
-                    ()
-                }
+                } else {}
             },
             FieldAssign { target, field_name: field, value: expr } => {
                 add_expr_uses(live, target);
@@ -542,7 +522,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 for name in names {
                     remove_name(live, name);
                     add_name(needs_decl, name)
-                };
+                }
                 add_expr_uses(live, expr);
                 output.push(Stmt::MultiAssign { names, value: expr })
             },
@@ -556,7 +536,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
             ReturnMulti { exprs } => {
                 for expr in exprs {
                     add_expr_uses(live, expr)
-                };
+                }
                 output.push(Stmt::ReturnMulti { exprs })
             },
             If { cond, then_, else_ } => {
@@ -596,13 +576,13 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                 let body_uses = free_vars_in_block(body);
                 for name in names {
                     remove_name(body_uses, name)
-                };
+                }
                 add_names(loop_live, body_uses);
                 let result = dce_block_with_live(body, loop_live);
                 for name in names {
                     remove_name(result.live, name);
                     remove_name(result.needs_decl, name)
-                };
+                }
                 add_names(live, result.live);
                 add_names(needs_decl, result.needs_decl);
                 add_expr_uses(live, expr);
@@ -619,7 +599,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     add_names(live, result.live);
                     add_names(needs_decl, result.needs_decl);
                     lowered_cases.push(SwitchCase { value: case.value, body: result.block })
-                };
+                }
                 let lowered_default = match default {
                     Some(body) => {
                         let result = dce_block_with_live(body, live);
@@ -646,7 +626,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     add_names(live, result.live);
                     add_names(needs_decl, result.needs_decl);
                     lowered_cases.push(TypeSwitchCase { ty: case.ty, body: result.block })
-                };
+                }
                 let lowered_default = match default {
                     Some(body) => {
                         let result = dce_block_with_live(body, live);
@@ -683,7 +663,7 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                                 remove_name(result.live, name);
                                 remove_name(result.needs_decl, name);
                                 add_name(needs_decl, name)
-                            };
+                            }
                             add_expr_uses(live, channel)
                         },
                         Send { channel, value } => {
@@ -694,13 +674,13 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                     add_names(live, result.live);
                     add_names(needs_decl, result.needs_decl);
                     lowered_cases.push(SelectCase { operation: case.operation, body: result.block })
-                };
+                }
                 output.push(Stmt::Select { cases: lowered_cases })
             },
             Panic { message } => output.push(Stmt::Panic { message }),
             Unreachable => output.push(Stmt::Unreachable),
         }
-    };
+    }
     DceResult { block: Block { stmts: reversed(output) }, live, needs_decl }
 }
 

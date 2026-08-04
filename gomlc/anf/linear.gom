@@ -9,18 +9,16 @@ fn all_immediate(values: Vec[core::Expr]) -> bool {
             Some(_) => (),
             None => return false,
         }
-    };
+    }
     true
 }
 
 fn probe_linear_list(state: State, values: Vec[core::Expr]) -> bool {
     for value in values {
-        if probe_linear_expr(state, value) {
-            ()
-        } else {
+        if probe_linear_expr(state, value) {} else {
             return false
         }
-    };
+    }
     true
 }
 

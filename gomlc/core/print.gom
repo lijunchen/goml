@@ -42,7 +42,7 @@ fn exprs_doc(values: Vec[Expr], style: PrintStyle) -> Vec[pretty::Doc] {
     let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(expr_doc(value, style))
-    };
+    }
     result
 }
 
@@ -84,7 +84,7 @@ fn constructor_doc(constructor: tast::Constructor, args: Vec[Expr], style: Print
                         ],
                     ),
                 )
-            };
+            }
             record_doc(constructor.name, fields)
         } else if !args.is_empty() {
             pretty::append(pretty::text(constructor.name), arguments(exprs_doc(args, style)))
@@ -121,14 +121,12 @@ fn block_docs(value: Block, style: PrintStyle) -> Vec[pretty::Doc] {
                     ),
                 ),
             )
-        };
+        }
         match value.tail {
             Some(tail) => result.push(expr_doc(tail, style)),
             None => if style.flatten_blocks {
                 result.push(pretty::text("()"))
-            } else {
-                ()
-            },
+            } else {},
         }
     };
     result
@@ -181,7 +179,7 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
                         ),
                     )
                 }
-            };
+            }
             pretty::group(
                 pretty::concat(
                     Vec::[
@@ -214,7 +212,7 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
             );
             for arm in arms {
                 values.push(arm_doc(arm, style))
-            };
+            }
             match default {
                 Some(value) => values.push(
                     pretty::group(
@@ -345,7 +343,7 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
             values.push(expr_doc(receiver, style));
             for arg in args {
                 values.push(expr_doc(arg, style))
-            };
+            }
             pretty::concat(
                 Vec::[
                     pretty::text(
@@ -360,7 +358,7 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
             values.push(expr_doc(receiver, style));
             for arg in args {
                 values.push(expr_doc(arg, style))
-            };
+            }
             pretty::concat(
                 Vec::[
                     pretty::text("trait_call["),
@@ -380,7 +378,7 @@ fn params_doc(values: Vec[(string, tast::Type)]) -> pretty::Doc {
     let result: Vec[pretty::Doc] = Vec::with_capacity(values.len());
     for value in values {
         result.push(pretty::concat(Vec::[pretty::text(value.0 + ": "), tast::type_doc(value.1)]))
-    };
+    }
     arguments(result)
 }
 
@@ -391,7 +389,7 @@ fn function_doc(value: Function, style: PrintStyle) -> pretty::Doc {
         let values: Vec[pretty::Doc] = Vec::with_capacity(value.generics.len());
         for value in value.generics {
             values.push(pretty::text(value))
-        };
+        }
         pretty::delimited("[", ",", "]", values)
     };
     pretty::block(
@@ -412,11 +410,11 @@ fn encode_with_style(value: File, style: PrintStyle) -> string {
     let constants: Vec[pretty::Doc] = Vec::with_capacity(value.constants.len());
     for value in value.constants {
         constants.push(tast::constant_doc(value))
-    };
+    }
     let functions: Vec[pretty::Doc] = Vec::with_capacity(value.functions.len());
     for value in value.functions {
         functions.push(function_doc(value, style))
-    };
+    }
     let constants_doc = pretty::stack(constants);
     let functions_doc = pretty::join(
         pretty::concat(Vec::[pretty::hardline(), pretty::hardline()]),
