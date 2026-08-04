@@ -99,6 +99,8 @@ fn world_add_standard_sections(
         (38 as uint16, value.ascii),
         (40 as uint16, value.iter),
         (42 as uint16, value.cmp),
+        (44 as uint16, value.internal_task),
+        (46 as uint16, value.task),
     ];
     for package_value in packages {
         world_add_package_sections(sections, package_value.0, package_value.1)?
@@ -214,6 +216,8 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let ascii = world_decode_package(container, 38, "std::ascii")?;
     let iter = world_decode_package(container, 40, "std::iter")?;
     let cmp = world_decode_package(container, 42, "std::cmp")?;
+    let internal_task = world_decode_package(container, 44, "std::internal::task")?;
+    let task = world_decode_package(container, 46, "std::task")?;
     let world = PackageWorld {
         counter,
         builtins: builtin_core.core_ir,
@@ -228,11 +232,13 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
             env,
             fs: fs_value,
             io: io_value,
+            internal_task,
             iter,
             json,
             num,
             path: path_value,
             process,
+            task,
             testing,
             text: text_value,
             time: time_value,

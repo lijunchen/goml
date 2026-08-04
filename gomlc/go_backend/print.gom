@@ -345,6 +345,40 @@ fn type_switch_case_doc(value: TypeSwitchCase) -> pretty::Doc {
     }
 }
 
+fn select_operation_doc(value: SelectOperation) -> pretty::Doc {
+    match value {
+        Receive { names, channel } => {
+            let assignment = if names.is_empty() {
+                pretty::nil()
+            } else {
+                pretty::concat(Vec::[names_doc(names), pretty::text(" = ")])
+            };
+            pretty::concat(Vec::[assignment, pretty::text("<-"), expr_doc(channel)])
+        },
+        Send { channel, value } => pretty::concat(
+            Vec::[expr_doc(channel), pretty::text(" <- "), expr_doc(value)],
+        ),
+    }
+}
+
+fn select_case_doc(value: SelectCase) -> pretty::Doc {
+    let body = stmt_docs(value.body);
+    if body.is_empty() {
+        pretty::concat(
+            Vec::[pretty::text("case "), select_operation_doc(value.operation), pretty::text(":")],
+        )
+    } else {
+        pretty::concat(
+            Vec::[
+                pretty::text("case "),
+                select_operation_doc(value.operation),
+                pretty::text(":"),
+                pretty::nest(4, pretty::append(pretty::hardline(), pretty::stack(body))),
+            ],
+        )
+    }
+}
+
 fn default_case_doc(value: Block) -> pretty::Doc {
     let body = stmt_docs(value);
     if body.is_empty() {
@@ -501,6 +535,13 @@ fn stmt_doc(value: Stmt) -> pretty::Doc {
                     switch_body_doc(values),
                 ],
             )
+        },
+        Select { cases } => {
+            let values: Vec[pretty::Doc] = Vec::with_capacity(cases.len());
+            for value in cases {
+                values.push(select_case_doc(value))
+            };
+            pretty::append(pretty::text("select "), switch_body_doc(values))
         },
         Panic { message } => pretty::append(
             pretty::text("panic"),

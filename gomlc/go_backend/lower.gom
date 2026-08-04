@@ -548,6 +548,10 @@ fn intrinsic_source_name(key: string) -> string {
         "channel_send"
     } else if key == "channel.recv" {
         "channel_recv"
+    } else if key == "channel.send_cancel" {
+        "channel_send_cancel"
+    } else if key == "channel.recv_cancel" {
+        "channel_recv_cancel"
     } else if key == "channel.close" {
         "channel_close"
     } else if key == "compiler.missing" {
@@ -690,6 +694,94 @@ fn compile_channel_callable(key: string, function_ty: tast::Type) -> Expr {
                         expr: Option::Some(Expr::StructLiteral { ty: lower_type(ret_ty), fields }),
                     },
                 )
+            } else if key == "channel.send_cancel" {
+                stmts.push(Stmt::Var { name: "completed", ty: Type::Bool, value: Option::None });
+                stmts.push(
+                    Stmt::Select {
+                        cases: Vec::[
+                            SelectCase {
+                                operation: SelectOperation::Send {
+                                    channel: vars[0],
+                                    value: vars[1],
+                                },
+                                body: Block {
+                                    stmts: Vec::[
+                                        Stmt::Assign {
+                                            name: "completed",
+                                            value: Expr::Bool { value: true },
+                                        },
+                                    ],
+                                },
+                            },
+                            SelectCase {
+                                operation: SelectOperation::Receive {
+                                    names: Vec::[],
+                                    channel: task_context_done_expr(vars[2]),
+                                },
+                                body: Block {
+                                    stmts: Vec::[
+                                        Stmt::Assign {
+                                            name: "completed",
+                                            value: Expr::Bool { value: false },
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                );
+                stmts.push(Stmt::Return { expr: Option::Some(Expr::Var { name: "completed" }) })
+            } else if key == "channel.recv_cancel" {
+                let elem = match tast::resolve_type(param_types[0]) {
+                    Channel { elem } => elem,
+                    _ => tast::Type::Error,
+                };
+                stmts.push(Stmt::Var { name: "value", ty: lower_type(elem), value: Option::None });
+                stmts.push(Stmt::Var { name: "ok", ty: Type::Bool, value: Option::None });
+                stmts.push(Stmt::Var { name: "completed", ty: Type::Bool, value: Option::None });
+                stmts.push(
+                    Stmt::Select {
+                        cases: Vec::[
+                            SelectCase {
+                                operation: SelectOperation::Receive {
+                                    names: Vec::["value", "ok"],
+                                    channel: vars[0],
+                                },
+                                body: Block {
+                                    stmts: Vec::[
+                                        Stmt::Assign {
+                                            name: "completed",
+                                            value: Expr::Bool { value: true },
+                                        },
+                                    ],
+                                },
+                            },
+                            SelectCase {
+                                operation: SelectOperation::Receive {
+                                    names: Vec::[],
+                                    channel: task_context_done_expr(vars[1]),
+                                },
+                                body: Block {
+                                    stmts: Vec::[
+                                        Stmt::Assign {
+                                            name: "completed",
+                                            value: Expr::Bool { value: false },
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                );
+                let fields: Vec[(string, Expr)] = Vec::[];
+                fields.push(("_0", Expr::Var { name: "value" }));
+                fields.push(("_1", Expr::Var { name: "ok" }));
+                fields.push(("_2", Expr::Var { name: "completed" }));
+                stmts.push(
+                    Stmt::Return {
+                        expr: Option::Some(Expr::StructLiteral { ty: lower_type(ret_ty), fields }),
+                    },
+                )
             } else {
                 let args: Vec[Expr] = Vec::[];
                 args.push(vars[0]);
@@ -708,6 +800,8 @@ fn compile_intrinsic_callable(key: string, function_ty: tast::Type) -> Expr {
     if key == "slice.new" || key == "slice.get" || key == "slice.len" || key == "slice.sub" {
         compile_slice_callable(key, function_ty)
     } else if key == "channel.new" || key == "channel.send" || key == "channel.recv"
+        || key == "channel.send_cancel"
+        || key == "channel.recv_cancel"
         || key == "channel.close" {
         compile_channel_callable(key, function_ty)
     } else {

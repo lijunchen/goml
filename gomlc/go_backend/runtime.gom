@@ -361,6 +361,14 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "os")
                 } else if hook.starts_with("std.num.") {
                     require_runtime_import(required_imports, "strconv")
+                } else if hook.starts_with("std.task.") {
+                    require_runtime_import(required_imports, "context");
+                    require_runtime_import(required_imports, "sync");
+                    if hook == "std.task.sleep" {
+                        require_runtime_import(required_imports, "time")
+                    } else {
+                        ()
+                    }
                 } else if hook.starts_with("std.time.") {
                     require_runtime_import(required_imports, "time")
                 } else if hook == "std.process.exit" {
@@ -369,12 +377,20 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "exec")
                 } else if hook == "std.process.output" || hook == "std.process.status"
                     || hook == "std.process.output_timeout"
-                    || hook == "std.process.status_timeout" {
+                    || hook == "std.process.status_timeout"
+                    || hook == "std.process.output_cancel"
+                    || hook == "std.process.status_cancel" {
                     require_runtime_import(required_imports, "bytes");
                     require_runtime_import(required_imports, "os");
                     require_runtime_import(required_imports, "exec");
                     if hook == "std.process.output_timeout" || hook == "std.process.status_timeout" {
-                        require_runtime_import(required_imports, "context")
+                        require_runtime_import(required_imports, "context");
+                        require_runtime_import(required_imports, "time")
+                    } else if hook == "std.process.output_cancel"
+                        || hook == "std.process.status_cancel" {
+                        require_runtime_import(required_imports, "context");
+                        require_runtime_import(required_imports, "sync");
+                        require_runtime_import(required_imports, "syscall")
                     } else {
                         ()
                     }
@@ -389,6 +405,9 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
             require_runtime_import(required_imports, "reflect")
         } else if intrinsic == "vec.with_capacity" || intrinsic == "vec.reserve" {
             require_runtime_import(required_imports, "slices")
+        } else if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
+            require_runtime_import(required_imports, "context");
+            require_runtime_import(required_imports, "sync")
         } else {
             ()
         }
@@ -465,13 +484,45 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
         } else {
             ()
         };
-        if collections::contains(required_imports, "time")
-            || collections::contains(required_imports, "context") {
+        if collections::contains(required_imports, "sync") {
+            imports.push(("_goml_sync", "sync"))
+        } else {
+            ()
+        };
+        if collections::contains(required_imports, "syscall") {
+            imports.push(("_goml_syscall", "syscall"))
+        } else {
+            ()
+        };
+        if collections::contains(required_imports, "time") {
             imports.push(("_goml_time", "time"))
         } else {
             ()
         };
         items.push(Item::ImportGroup(imports))
+    } else {
+        ()
+    };
+    let mut needs_task_support = false;
+    for hook in hooks {
+        if hook.starts_with("std.task.") || hook == "std.process.output_cancel"
+            || hook == "std.process.status_cancel" {
+            needs_task_support = true;
+        } else {
+            ()
+        }
+    };
+    for intrinsic in intrinsics {
+        if intrinsic == "channel.send_cancel" || intrinsic == "channel.recv_cancel" {
+            needs_task_support = true;
+        } else {
+            ()
+        }
+    };
+    if needs_task_support {
+        for item in task_runtime_support_items() {
+            items.push(item)
+        }
     } else {
         ()
     };

@@ -2,6 +2,7 @@ package process;
 
 use std::bytes;
 use std::internal::host;
+use std::task;
 
 pub struct ExitStatus {
     pub code_value: int,
@@ -155,6 +156,37 @@ impl Command {
         }
     }
 
+    pub fn output_with(self: Command, cancel: task::CancelToken) -> Result[
+        task::WaitResult[Output],
+        string,
+    ] {
+        let (ok, code, stdout, stderr, err, cancelled) = host::process_output_cancel(
+            self.program,
+            self.arguments,
+            self.has_directory,
+            self.directory,
+            self.environment,
+            self.has_input,
+            self.input_value,
+            cancel.runtime_id(),
+        );
+        if cancelled {
+            Result::Ok(task::WaitResult::Cancelled)
+        } else if ok {
+            Result::Ok(
+                task::WaitResult::Completed(
+                    Output {
+                        status_value: ExitStatus { code_value: code },
+                        stdout_value: bytes::Bytes::from_vec(stdout),
+                        stderr_value: bytes::Bytes::from_vec(stderr),
+                    },
+                ),
+            )
+        } else {
+            Result::Err(err)
+        }
+    }
+
     pub fn status(self: Command) -> Result[ExitStatus, string] {
         let (ok, code, err) = host::process_status(
             self.program,
@@ -181,6 +213,27 @@ impl Command {
         );
         if ok {
             Result::Ok((ExitStatus { code_value: code }, timed_out))
+        } else {
+            Result::Err(err)
+        }
+    }
+
+    pub fn status_with(self: Command, cancel: task::CancelToken) -> Result[
+        task::WaitResult[ExitStatus],
+        string,
+    ] {
+        let (ok, code, err, cancelled) = host::process_status_cancel(
+            self.program,
+            self.arguments,
+            self.has_directory,
+            self.directory,
+            self.environment,
+            cancel.runtime_id(),
+        );
+        if cancelled {
+            Result::Ok(task::WaitResult::Cancelled)
+        } else if ok {
+            Result::Ok(task::WaitResult::Completed(ExitStatus { code_value: code }))
         } else {
             Result::Err(err)
         }

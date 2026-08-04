@@ -1,6 +1,7 @@
 package time;
 
 use std::internal::host;
+use std::task;
 
 pub struct Duration {
     nanoseconds: int64,
@@ -108,4 +109,8 @@ impl SystemTime {
 
 pub fn sleep(duration: Duration) -> unit {
     host::sleep_nanoseconds(duration.as_nanoseconds())
+}
+
+pub fn sleep_with(cancel: task::CancelToken, duration: Duration) -> task::WaitResult[unit] {
+    task::sleep_nanoseconds_with(cancel, duration.as_nanoseconds())
 }

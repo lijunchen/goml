@@ -176,6 +176,18 @@ fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
                 None => (),
             }
         },
+        Select { cases } => {
+            for case in cases {
+                match case.operation {
+                    Receive { names: _, channel } => collect_expr_names(result, channel),
+                    Send { channel, value } => {
+                        collect_expr_names(result, channel);
+                        collect_expr_names(result, value)
+                    },
+                };
+                collect_block_names(result, case.body)
+            }
+        },
         Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
     }
 }

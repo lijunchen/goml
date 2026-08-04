@@ -171,6 +171,22 @@ pub struct TypeSwitchCase {
     pub body: Block,
 }
 
+pub enum SelectOperation {
+    Receive {
+        names: Vec[string],
+        channel: Expr,
+    },
+    Send {
+        channel: Expr,
+        value: Expr,
+    },
+}
+
+pub struct SelectCase {
+    pub operation: SelectOperation,
+    pub body: Block,
+}
+
 pub enum Stmt {
     Expr {
         expr: Expr,
@@ -239,6 +255,9 @@ pub enum Stmt {
         expr: Expr,
         cases: Vec[TypeSwitchCase],
         default: Option[Block],
+    },
+    Select {
+        cases: Vec[SelectCase],
     },
     Panic {
         message: string,

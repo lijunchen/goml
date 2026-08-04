@@ -1496,6 +1496,12 @@ fn std_process_output_timeout_params() -> Vec[(string, Type)] {
     params
 }
 
+fn std_process_output_cancel_params() -> Vec[(string, Type)] {
+    let params = std_process_output_params();
+    params.push(("scope_id", Type::Int64));
+    params
+}
+
 fn std_process_output_type() -> Type {
     let values: Vec[tast::Type] = Vec::[];
     values.push(tast::Type::Bool);
@@ -1564,6 +1570,18 @@ fn std_process_timeout_setup() -> Vec[Stmt] {
         },
     );
     stmts
+}
+
+fn std_process_cancel_setup() -> Vec[Stmt] {
+    Vec::[
+        Stmt::Var {
+            name: "ctx",
+            ty: Type::Named { name: "_goml_context.Context" },
+            value: Option::Some(
+                std_call(task_context_name(), Vec::[Expr::Var { name: "scope_id" }]),
+            ),
+        },
+    ]
 }
 
 fn std_process_command_setup(command_function: string) -> Vec[Stmt] {
@@ -1648,6 +1666,54 @@ fn std_process_command_setup(command_function: string) -> Vec[Stmt] {
         },
     );
     stmts
+}
+
+fn std_process_cancel_group_setup() -> Vec[Stmt] {
+    let cancel_body: Vec[Stmt] = Vec::[];
+    cancel_body.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_call(
+                    "_goml_syscall.Kill",
+                    Vec::[
+                        Expr::Unary {
+                            op: UnaryOp::Neg,
+                            expr: Expr::Field {
+                                expr: Expr::Field {
+                                    expr: Expr::Var { name: "cmd" },
+                                    field_name: "Process",
+                                },
+                                field_name: "Pid",
+                            },
+                        },
+                        Expr::Var { name: "_goml_syscall.SIGKILL" },
+                    ],
+                ),
+            ),
+        },
+    );
+    Vec::[
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "cmd" },
+            field_name: "SysProcAttr",
+            value: Expr::Unary {
+                op: UnaryOp::Address,
+                expr: Expr::StructLiteral {
+                    ty: Type::Named { name: "_goml_syscall.SysProcAttr" },
+                    fields: Vec::[("Setpgid", Expr::Bool { value: true })],
+                },
+            },
+        },
+        Stmt::FieldAssign {
+            target: Expr::Var { name: "cmd" },
+            field_name: "Cancel",
+            value: Expr::FuncLit {
+                params: Vec::[],
+                ret_ty: Type::Named { name: "error" },
+                body: Block { stmts: cancel_body },
+            },
+        },
+    ]
 }
 
 fn std_process_buffer(name: string) -> Expr {
@@ -1736,20 +1802,32 @@ fn std_process_look_path_item() -> Item {
     std_function_item("std.process.look_path", params, std_bool_string_string_type(), stmts)
 }
 
-fn std_process_output_item_for(timed: bool) -> Item {
+fn std_process_output_item_for(mode: string) -> Item {
+    let timed = mode == "timeout";
+    let cancelled = mode == "cancel";
+    let contextual = timed || cancelled;
     let stmts = if timed {
         std_process_timeout_setup()
+    } else if cancelled {
+        std_process_cancel_setup()
     } else {
         Vec::[]
     };
     for stmt in std_process_command_setup(
-        if timed {
+        if contextual {
             "_goml_exec.CommandContext"
         } else {
             "_goml_exec.Command"
         },
     ) {
         stmts.push(stmt)
+    };
+    if cancelled {
+        for stmt in std_process_cancel_group_setup() {
+            stmts.push(stmt)
+        }
+    } else {
+        ()
     };
     let set_input: Vec[Stmt] = Vec::[];
     let reader_args: Vec[Expr] = Vec::[];
@@ -1803,21 +1881,41 @@ fn std_process_output_item_for(timed: bool) -> Item {
             value: Option::Some(std_method_call(Expr::Var { name: "cmd" }, "Run", Vec::[])),
         },
     );
-    if timed {
+    if contextual {
         stmts.push(
             Stmt::Var {
                 name: "timed_out",
                 ty: Type::Bool,
                 value: Option::Some(
-                    Expr::Binary {
-                        op: BinaryOp::Eq,
-                        lhs: std_method_call(Expr::Var { name: "ctx" }, "Err", Vec::[]),
-                        rhs: Expr::Var { name: "_goml_context.DeadlineExceeded" },
+                    if timed {
+                        Expr::Binary {
+                            op: BinaryOp::Eq,
+                            lhs: std_method_call(Expr::Var { name: "ctx" }, "Err", Vec::[]),
+                            rhs: Expr::Var { name: "_goml_context.DeadlineExceeded" },
+                        }
+                    } else {
+                        Expr::Binary {
+                            op: BinaryOp::And,
+                            lhs: Expr::Binary {
+                                op: BinaryOp::NotEq,
+                                lhs: Expr::Var { name: "err" },
+                                rhs: Expr::Nil,
+                            },
+                            rhs: Expr::Binary {
+                                op: BinaryOp::NotEq,
+                                lhs: std_method_call(Expr::Var { name: "ctx" }, "Err", Vec::[]),
+                                rhs: Expr::Nil,
+                            },
+                        }
                     },
                 ),
             },
         );
-        stmts.push(Stmt::Expr { expr: std_call("cancel", Vec::[]) })
+        if timed {
+            stmts.push(Stmt::Expr { expr: std_call("cancel", Vec::[]) })
+        } else {
+            ()
+        }
     } else {
         ()
     };
@@ -1829,7 +1927,12 @@ fn std_process_output_item_for(timed: bool) -> Item {
     missing_state.push(
         Stmt::Return {
             expr: Option::Some(
-                std_process_output_expr(false, Expr::Int { value: "-1" }, std_error_string(), timed),
+                std_process_output_expr(
+                    false,
+                    Expr::Int { value: "-1" },
+                    std_error_string(),
+                    contextual,
+                ),
             ),
         },
     );
@@ -1867,7 +1970,7 @@ fn std_process_output_item_for(timed: bool) -> Item {
                     true,
                     Expr::Var { name: "code" },
                     Expr::String { value: "" },
-                    timed,
+                    contextual,
                 ),
             ),
         },
@@ -1875,15 +1978,19 @@ fn std_process_output_item_for(timed: bool) -> Item {
     std_function_item(
         if timed {
             "std.process.output_timeout"
+        } else if cancelled {
+            "std.process.output_cancel"
         } else {
             "std.process.output"
         },
         if timed {
             std_process_output_timeout_params()
+        } else if cancelled {
+            std_process_output_cancel_params()
         } else {
             std_process_output_params()
         },
-        if timed {
+        if contextual {
             std_process_output_timeout_type()
         } else {
             std_process_output_type()
@@ -1893,27 +2000,43 @@ fn std_process_output_item_for(timed: bool) -> Item {
 }
 
 fn std_process_output_item() -> Item {
-    std_process_output_item_for(false)
+    std_process_output_item_for("plain")
 }
 
 fn std_process_output_timeout_item() -> Item {
-    std_process_output_item_for(true)
+    std_process_output_item_for("timeout")
 }
 
-fn std_process_status_item_for(timed: bool) -> Item {
+fn std_process_output_cancel_item() -> Item {
+    std_process_output_item_for("cancel")
+}
+
+fn std_process_status_item_for(mode: string) -> Item {
+    let timed = mode == "timeout";
+    let cancelled = mode == "cancel";
+    let contextual = timed || cancelled;
     let stmts = if timed {
         std_process_timeout_setup()
+    } else if cancelled {
+        std_process_cancel_setup()
     } else {
         Vec::[]
     };
     for stmt in std_process_command_setup(
-        if timed {
+        if contextual {
             "_goml_exec.CommandContext"
         } else {
             "_goml_exec.Command"
         },
     ) {
         stmts.push(stmt)
+    };
+    if cancelled {
+        for stmt in std_process_cancel_group_setup() {
+            stmts.push(stmt)
+        }
+    } else {
+        ()
     };
     stmts.push(
         Stmt::FieldAssign {
@@ -1943,21 +2066,41 @@ fn std_process_status_item_for(timed: bool) -> Item {
             value: Option::Some(std_method_call(Expr::Var { name: "cmd" }, "Run", Vec::[])),
         },
     );
-    if timed {
+    if contextual {
         stmts.push(
             Stmt::Var {
                 name: "timed_out",
                 ty: Type::Bool,
                 value: Option::Some(
-                    Expr::Binary {
-                        op: BinaryOp::Eq,
-                        lhs: std_method_call(Expr::Var { name: "ctx" }, "Err", Vec::[]),
-                        rhs: Expr::Var { name: "_goml_context.DeadlineExceeded" },
+                    if timed {
+                        Expr::Binary {
+                            op: BinaryOp::Eq,
+                            lhs: std_method_call(Expr::Var { name: "ctx" }, "Err", Vec::[]),
+                            rhs: Expr::Var { name: "_goml_context.DeadlineExceeded" },
+                        }
+                    } else {
+                        Expr::Binary {
+                            op: BinaryOp::And,
+                            lhs: Expr::Binary {
+                                op: BinaryOp::NotEq,
+                                lhs: Expr::Var { name: "err" },
+                                rhs: Expr::Nil,
+                            },
+                            rhs: Expr::Binary {
+                                op: BinaryOp::NotEq,
+                                lhs: std_method_call(Expr::Var { name: "ctx" }, "Err", Vec::[]),
+                                rhs: Expr::Nil,
+                            },
+                        }
                     },
                 ),
             },
         );
-        stmts.push(Stmt::Expr { expr: std_call("cancel", Vec::[]) })
+        if timed {
+            stmts.push(Stmt::Expr { expr: std_call("cancel", Vec::[]) })
+        } else {
+            ()
+        }
     } else {
         ()
     };
@@ -1969,7 +2112,12 @@ fn std_process_status_item_for(timed: bool) -> Item {
     missing_state.push(
         Stmt::Return {
             expr: Option::Some(
-                std_process_status_expr(false, Expr::Int { value: "-1" }, std_error_string(), timed),
+                std_process_status_expr(
+                    false,
+                    Expr::Int { value: "-1" },
+                    std_error_string(),
+                    contextual,
+                ),
             ),
         },
     );
@@ -2007,7 +2155,7 @@ fn std_process_status_item_for(timed: bool) -> Item {
                     true,
                     Expr::Var { name: "code" },
                     Expr::String { value: "" },
-                    timed,
+                    contextual,
                 ),
             ),
         },
@@ -2015,6 +2163,8 @@ fn std_process_status_item_for(timed: bool) -> Item {
     std_function_item(
         if timed {
             "std.process.status_timeout"
+        } else if cancelled {
+            "std.process.status_cancel"
         } else {
             "std.process.status"
         },
@@ -2022,10 +2172,14 @@ fn std_process_status_item_for(timed: bool) -> Item {
             let params = std_process_params();
             params.push(("timeout_ms", Type::Int));
             params
+        } else if cancelled {
+            let params = std_process_params();
+            params.push(("scope_id", Type::Int64));
+            params
         } else {
             std_process_params()
         },
-        if timed {
+        if contextual {
             std_process_status_timeout_type()
         } else {
             std_process_status_type()
@@ -2035,11 +2189,15 @@ fn std_process_status_item_for(timed: bool) -> Item {
 }
 
 fn std_process_status_item() -> Item {
-    std_process_status_item_for(false)
+    std_process_status_item_for("plain")
 }
 
 fn std_process_status_timeout_item() -> Item {
-    std_process_status_item_for(true)
+    std_process_status_item_for("timeout")
+}
+
+fn std_process_status_cancel_item() -> Item {
+    std_process_status_item_for("cancel")
 }
 
 fn standard_runtime_hook_item(key: string) -> Option[Item] {
@@ -2117,10 +2275,14 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_process_look_path_item())
     } else if key == "std.process.output_timeout" {
         Option::Some(std_process_output_timeout_item())
+    } else if key == "std.process.output_cancel" {
+        Option::Some(std_process_output_cancel_item())
     } else if key == "std.process.status" {
         Option::Some(std_process_status_item())
     } else if key == "std.process.status_timeout" {
         Option::Some(std_process_status_timeout_item())
+    } else if key == "std.process.status_cancel" {
+        Option::Some(std_process_status_cancel_item())
     } else if key == "std.testing.fail" {
         Option::Some(std_testing_fail_item())
     } else if key == "std.num.parse_int" {
@@ -2138,6 +2300,6 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
     } else if key == "std.time.sleep_nanoseconds" {
         Option::Some(std_time_sleep_nanoseconds_item())
     } else {
-        Option::None
+        task_runtime_hook_item(key)
     }
 }

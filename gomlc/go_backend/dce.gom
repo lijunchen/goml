@@ -177,6 +177,26 @@ fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
             };
             add_names(values, body_uses)
         },
+        Select { cases } => {
+            for case in cases {
+                match case.operation {
+                    Receive { names, channel } => {
+                        add_expr_uses(values, channel);
+                        let body_uses = new_dce_names();
+                        add_block_uses(body_uses, case.body);
+                        for name in names {
+                            remove_name(body_uses, name)
+                        };
+                        add_names(values, body_uses)
+                    },
+                    Send { channel, value } => {
+                        add_expr_uses(values, channel);
+                        add_expr_uses(values, value);
+                        add_block_uses(values, case.body)
+                    },
+                }
+            }
+        },
         Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
     }
 }
@@ -270,6 +290,24 @@ fn free_vars_in_block(value: Block) -> DceNames {
                         add_names(used, default_uses)
                     },
                     None => (),
+                }
+            },
+            Select { cases } => {
+                for case in cases {
+                    let case_uses = free_vars_in_block(case.body);
+                    match case.operation {
+                        Receive { names, channel } => {
+                            add_expr_uses(used, channel);
+                            for name in names {
+                                remove_name(case_uses, name)
+                            }
+                        },
+                        Send { channel, value } => {
+                            add_expr_uses(used, channel);
+                            add_expr_uses(used, value)
+                        },
+                    };
+                    add_names(used, case_uses)
                 }
             },
             Break | BreakLabel { label: _ } | Continue | Panic { message: _ } | Unreachable => (),
@@ -630,6 +668,30 @@ fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
                         default: lowered_default,
                     },
                 )
+            },
+            Select { cases } => {
+                let lowered_cases: Vec[SelectCase] = Vec::with_capacity(cases.len());
+                for case in cases {
+                    let result = dce_block_with_live(case.body, live);
+                    match case.operation {
+                        Receive { names, channel } => {
+                            for name in names {
+                                remove_name(result.live, name);
+                                remove_name(result.needs_decl, name);
+                                add_name(needs_decl, name)
+                            };
+                            add_expr_uses(live, channel)
+                        },
+                        Send { channel, value } => {
+                            add_expr_uses(live, channel);
+                            add_expr_uses(live, value)
+                        },
+                    };
+                    add_names(live, result.live);
+                    add_names(needs_decl, result.needs_decl);
+                    lowered_cases.push(SelectCase { operation: case.operation, body: result.block })
+                };
+                output.push(Stmt::Select { cases: lowered_cases })
             },
             Panic { message } => output.push(Stmt::Panic { message }),
             Unreachable => output.push(Stmt::Unreachable),

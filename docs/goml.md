@@ -1030,6 +1030,8 @@ go || {
 
 Don't write `go work();`; that will get `unit` first, and the value type required by `go` is `() -> unit`.Should be written `go || work();` .
 
+`go` is a detached, unstructured escape hatch. Its lifetime is not tied to the caller, it does not return a task handle, and its failures are not propagated. Use `std::task` when the caller must wait for child work or coordinate cancellation.
+
 ## model
 
 Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
@@ -1843,6 +1845,7 @@ use std::json;
 use std::num;
 use std::path;
 use std::process;
+use std::task;
 use std::testing;
 use std::text;
 use std::time;
@@ -1863,13 +1866,50 @@ Current public entrances include:
 - `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
+- `task::Scope`, `Task[T]`, `CancelToken`, `WaitResult[T]`, `scope`, and `try_scope`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
 - `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `eq_ignore_ascii_case`, `to_ascii_lowercase`, and `to_ascii_uppercase`
-- `time::Duration`, `Instant`, `SystemTime`, and `sleep`
+- `time::Duration`, `Instant`, `SystemTime`, `sleep`, and `sleep_with`
 
 `std::ascii` operates on `byte`. Classification and case conversion use only the 7-bit ASCII range, and bytes above `0x7f` remain unchanged. `escape_default` emits short escapes for tabs, carriage returns, newlines, quotes, and backslashes, preserves printable ASCII, and uses lowercase `\\xNN` escapes for other bytes.
 
 `std::cmp` provides total ordering for `unit`, `bool`, `string`, `char`, and all signed and unsigned integer types. Floating-point values intentionally do not implement `cmp::Ord` because NaN does not form a total order. `cmp::compare` returns `Ordering::Less`, `Equal`, or `Greater`; `Ordering` supports predicates, reversal, lexicographic chaining, and conversion to the negative/zero/positive integer convention. `cmp::Reverse[T]` reverses an existing total ordering. `cmp::clamp` returns an error when the minimum exceeds the maximum.
+
+### Structured concurrency
+
+`std::task` creates lexical task scopes on top of goroutines:
+
+```goml
+use std::task;
+
+fn load_pair() -> Result[(int, int), string] {
+    task::try_scope(
+        |scope: task::Scope| {
+            let left = scope.spawn_try(|cancel| load_left(cancel));
+            let right = scope.spawn_try(|cancel| load_right(cancel));
+            Result::Ok((left.join()?, right.join()?))
+        },
+    )
+}
+```
+
+`scope` stops accepting new work after its body returns, waits for every direct child task, and then returns the body's value. It still waits when a `Task[T]` handle is discarded. `Task::join` may be called repeatedly or concurrently; every call observes the same stored result.
+
+`try_scope` cancels its scope when the body returns `Result::Err`, waits for all direct children to exit, and then returns the original error. `Scope::spawn_try` also cancels sibling tasks as soon as its child returns `Result::Err`. A nested scope inherits cancellation when it is created with `scope_with(parent_token, body)` or `try_scope_with(parent_token, body)`.
+
+Cancellation is cooperative. `Scope::cancel` changes the state observed by `CancelToken::is_cancelled`; it does not forcibly terminate a goroutine. Blocking work can use:
+
+- `task::recv_with(token, channel) -> WaitResult[Option[T]]`
+- `task::send_with(token, channel, value) -> WaitResult[unit]`
+- `time::sleep_with(token, duration) -> WaitResult[unit]`
+- `Command::output_with(token) -> Result[WaitResult[Output], string]`
+- `Command::status_with(token) -> Result[WaitResult[ExitStatus], string]`
+
+`WaitResult::Cancelled` means cancellation woke the operation. Process cancellation uses the host command context, so the scope waits for the process operation to return before it exits. Task scopes never close user channels automatically.
+
+GoML has no lifetime or linear type system, so a `Scope` value can currently escape its body. Calling `spawn` after the scope begins closing is a runtime error. Panic remains a fatal runtime exception and is not converted into `Result`; panic cleanup and recovery are not part of this API version.
+
+`join_all` returns values in input order. `join_all_results` waits for every task and returns errors in input order, independent of goroutine scheduling.
 
 ### `collections::IndexMap[K, V]`
 

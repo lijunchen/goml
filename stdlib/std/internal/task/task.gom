@@ -1,0 +1,73 @@
+package task;
+
+pub struct ScopeHandle {
+    id: int64,
+}
+
+pub struct CancelToken {
+    id: int64,
+}
+
+#[runtime("std.task.scope_new")]
+extern fn scope_new(parent: int64) -> int64;
+
+#[runtime("std.task.scope_spawn")]
+extern fn scope_spawn(scope: int64, body: () -> unit) -> unit;
+
+#[runtime("std.task.scope_cancel")]
+extern fn scope_cancel(scope: int64) -> unit;
+
+#[runtime("std.task.scope_finish")]
+extern fn scope_finish(scope: int64) -> unit;
+
+#[runtime("std.task.scope_cancelled")]
+extern fn scope_cancelled(scope: int64) -> bool;
+
+#[runtime("std.task.sleep")]
+extern fn scope_sleep(scope: int64, nanoseconds: int64) -> bool;
+
+pub fn root_scope() -> ScopeHandle {
+    ScopeHandle { id: scope_new(0) }
+}
+
+pub fn child_scope(parent: CancelToken) -> ScopeHandle {
+    ScopeHandle { id: scope_new(parent.id) }
+}
+
+pub fn spawn(scope: ScopeHandle, body: () -> unit) -> unit {
+    scope_spawn(scope.id, body)
+}
+
+pub fn cancel(scope: ScopeHandle) -> unit {
+    scope_cancel(scope.id)
+}
+
+pub fn finish(scope: ScopeHandle) -> unit {
+    scope_finish(scope.id)
+}
+
+pub fn token(scope: ScopeHandle) -> CancelToken {
+    CancelToken { id: scope.id }
+}
+
+pub fn recv_with[T](cancel: CancelToken, channel: Channel[T]) -> (T, bool, bool) {
+    channel_recv_cancel(channel, cancel.id)
+}
+
+pub fn send_with[T](cancel: CancelToken, channel: Channel[T], value: T) -> bool {
+    channel_send_cancel(channel, value, cancel.id)
+}
+
+pub fn sleep_with(cancel: CancelToken, nanoseconds: int64) -> bool {
+    scope_sleep(cancel.id, nanoseconds)
+}
+
+pub fn id(cancel: CancelToken) -> int64 {
+    cancel.id
+}
+
+impl CancelToken {
+    pub fn is_cancelled(self: CancelToken) -> bool {
+        scope_cancelled(self.id)
+    }
+}

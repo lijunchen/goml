@@ -128,6 +128,18 @@ pub extern fn process_output_timeout(
     timeout_ms: int,
 ) -> (bool, int, Vec[uint8], Vec[uint8], string, bool);
 
+#[runtime("std.process.output_cancel")]
+pub extern fn process_output_cancel(
+    program: string,
+    arguments: Vec[string],
+    has_directory: bool,
+    directory: string,
+    environment: Vec[(string, string)],
+    has_input: bool,
+    input: Vec[uint8],
+    scope_id: int64,
+) -> (bool, int, Vec[uint8], Vec[uint8], string, bool);
+
 #[runtime("std.process.status")]
 pub extern fn process_status(
     program: string,
@@ -145,6 +157,16 @@ pub extern fn process_status_timeout(
     directory: string,
     environment: Vec[(string, string)],
     timeout_ms: int,
+) -> (bool, int, string, bool);
+
+#[runtime("std.process.status_cancel")]
+pub extern fn process_status_cancel(
+    program: string,
+    arguments: Vec[string],
+    has_directory: bool,
+    directory: string,
+    environment: Vec[(string, string)],
+    scope_id: int64,
 ) -> (bool, int, string, bool);
 
 #[runtime("std.testing.fail")]

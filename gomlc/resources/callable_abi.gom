@@ -54,6 +54,8 @@ pub fn intrinsic_abi_specs() -> Vec[CallableAbiSpec] {
         callable_abi("channel.new", "channel_new", "channel_new", Vec::[]),
         callable_abi("channel.send", "channel_send", "channel_send", Vec::[]),
         callable_abi("channel.recv", "channel_recv", "channel_recv", Vec::[]),
+        callable_abi("channel.send_cancel", "channel_send_cancel", "channel_send_cancel", Vec::[]),
+        callable_abi("channel.recv_cancel", "channel_recv_cancel", "channel_recv_cancel", Vec::[]),
         callable_abi("channel.close", "channel_close", "channel_close", Vec::[]),
         callable_abi("compiler.missing", "missing", "missing", Vec::[]),
     ]
@@ -113,11 +115,23 @@ pub fn standard_runtime_abi_specs() -> Vec[CallableAbiSpec] {
             "std_process_output_timeout",
             Vec::[],
         ),
+        callable_abi(
+            "std.process.output_cancel",
+            "process_output_cancel",
+            "std_process_output_cancel",
+            Vec::[],
+        ),
         callable_abi("std.process.status", "process_status", "std_process_status", Vec::[]),
         callable_abi(
             "std.process.status_timeout",
             "process_status_timeout",
             "std_process_status_timeout",
+            Vec::[],
+        ),
+        callable_abi(
+            "std.process.status_cancel",
+            "process_status_cancel",
+            "std_process_status_cancel",
             Vec::[],
         ),
         callable_abi("std.testing.fail", "test_fail", "std_testing_fail", Vec::[]),
@@ -143,6 +157,17 @@ pub fn standard_runtime_abi_specs() -> Vec[CallableAbiSpec] {
             "std_time_sleep_nanoseconds",
             Vec::[],
         ),
+        callable_abi("std.task.scope_new", "scope_new", "std_task_scope_new", Vec::[]),
+        callable_abi("std.task.scope_spawn", "scope_spawn", "std_task_scope_spawn", Vec::[]),
+        callable_abi("std.task.scope_cancel", "scope_cancel", "std_task_scope_cancel", Vec::[]),
+        callable_abi("std.task.scope_finish", "scope_finish", "std_task_scope_finish", Vec::[]),
+        callable_abi(
+            "std.task.scope_cancelled",
+            "scope_cancelled",
+            "std_task_scope_cancelled",
+            Vec::[],
+        ),
+        callable_abi("std.task.sleep", "scope_sleep", "std_task_scope_sleep", Vec::[]),
     ]
 }
 

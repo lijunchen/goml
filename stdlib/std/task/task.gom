@@ -1,0 +1,174 @@
+package task;
+
+use std::internal::task as internal_task;
+
+pub struct CancelToken {
+    value: internal_task::CancelToken,
+}
+
+pub struct Scope {
+    handle: internal_task::ScopeHandle,
+}
+
+pub struct Task[T] {
+    result: Ref[Option[T]],
+    ready: Channel[unit],
+}
+
+pub enum WaitResult[T] {
+    Completed(T),
+    Cancelled,
+}
+
+pub fn scope[T](body: (Scope) -> T) -> T {
+    let handle = internal_task::root_scope();
+    let value = body(Scope { handle });
+    internal_task::finish(handle);
+    value
+}
+
+pub fn scope_with[T](parent: CancelToken, body: (Scope) -> T) -> T {
+    let handle = internal_task::child_scope(parent.value);
+    let value = body(Scope { handle });
+    internal_task::finish(handle);
+    value
+}
+
+pub fn try_scope[T, E](body: (Scope) -> Result[T, E]) -> Result[T, E] {
+    let handle = internal_task::root_scope();
+    let value = body(Scope { handle });
+    if value.is_err() {
+        internal_task::cancel(handle)
+    } else {
+        ()
+    };
+    internal_task::finish(handle);
+    value
+}
+
+pub fn try_scope_with[T, E](parent: CancelToken, body: (Scope) -> Result[T, E]) -> Result[T, E] {
+    let handle = internal_task::child_scope(parent.value);
+    let value = body(Scope { handle });
+    if value.is_err() {
+        internal_task::cancel(handle)
+    } else {
+        ()
+    };
+    internal_task::finish(handle);
+    value
+}
+
+impl Scope {
+    pub fn spawn[T](self: Scope, body: (CancelToken) -> T) -> Task[T] {
+        let result: Ref[Option[T]] = Ref::new(Option::None);
+        let ready: Channel[unit] = Channel::new(0);
+        let token = CancelToken { value: internal_task::token(self.handle) };
+        internal_task::spawn(
+            self.handle,
+            || {
+                result.set(Option::Some(body(token)));
+                ready.close()
+            },
+        );
+        Task { result, ready }
+    }
+
+    pub fn spawn_try[T, E](self: Scope, body: (CancelToken) -> Result[T, E]) -> Task[Result[T, E]] {
+        self.spawn(
+            |token| {
+                let value = body(token);
+                if value.is_err() {
+                    self.cancel()
+                } else {
+                    ()
+                };
+                value
+            },
+        )
+    }
+
+    pub fn cancel(self: Scope) -> unit {
+        internal_task::cancel(self.handle)
+    }
+
+    pub fn token(self: Scope) -> CancelToken {
+        CancelToken { value: internal_task::token(self.handle) }
+    }
+}
+
+impl CancelToken {
+    pub fn is_cancelled(self: CancelToken) -> bool {
+        self.value.is_cancelled()
+    }
+
+    pub fn runtime_id(self: CancelToken) -> int64 {
+        internal_task::id(self.value)
+    }
+}
+
+pub fn recv_with[T](cancel: CancelToken, channel: Channel[T]) -> WaitResult[Option[T]] {
+    let (value, open, completed) = internal_task::recv_with(cancel.value, channel);
+    if completed {
+        if open {
+            WaitResult::Completed(Option::Some(value))
+        } else {
+            WaitResult::Completed(Option::None)
+        }
+    } else {
+        WaitResult::Cancelled
+    }
+}
+
+pub fn send_with[T](cancel: CancelToken, channel: Channel[T], value: T) -> WaitResult[unit] {
+    if internal_task::send_with(cancel.value, channel, value) {
+        WaitResult::Completed(())
+    } else {
+        WaitResult::Cancelled
+    }
+}
+
+pub fn sleep_nanoseconds_with(cancel: CancelToken, nanoseconds: int64) -> WaitResult[unit] {
+    if internal_task::sleep_with(cancel.value, nanoseconds) {
+        WaitResult::Completed(())
+    } else {
+        WaitResult::Cancelled
+    }
+}
+
+impl[T] Task[T] {
+    pub fn join(self: Task[T]) -> T {
+        loop {
+            let _ = self.ready.recv();
+            match self.result.get() {
+                Some(value) => {
+                    break value;
+                },
+                None => (),
+            }
+        }
+    }
+}
+
+pub fn join_all[T](tasks: Vec[Task[T]]) -> Vec[T] {
+    let values: Vec[T] = Vec::with_capacity(tasks.len());
+    for task in tasks {
+        values.push(task.join())
+    };
+    values
+}
+
+pub fn join_all_results[T, E](tasks: Vec[Task[Result[T, E]]]) -> Result[Vec[T], Vec[E]] {
+    let values: Vec[T] = Vec::with_capacity(tasks.len());
+    let errors: Vec[E] = Vec::[];
+    for task in tasks {
+        match task.join() {
+            Ok(value) => values.push(value),
+            Err(error) => errors.push(error),
+        }
+    };
+    if errors.is_empty() {
+        Result::Ok(values)
+    } else {
+        Result::Err(errors)
+    }
+}

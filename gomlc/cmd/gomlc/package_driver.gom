@@ -26,11 +26,13 @@ struct StandardNeeds {
     env: bool,
     fs: bool,
     io: bool,
+    internal_task: bool,
     iter: bool,
     json: bool,
     num: bool,
     path: bool,
     process: bool,
+    task: bool,
     testing: bool,
     text: bool,
     time: bool,
@@ -64,11 +66,13 @@ fn no_standard_needs() -> StandardNeeds {
         env: false,
         fs: false,
         io: false,
+        internal_task: false,
         iter: false,
         json: false,
         num: false,
         path: false,
         process: false,
+        task: false,
         testing: false,
         text: false,
         time: false,
@@ -86,11 +90,13 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         env: collections::contains(closure, "std::env"),
         fs: collections::contains(closure, "std::fs"),
         io: collections::contains(closure, "std::io"),
+        internal_task: collections::contains(closure, "std::internal::task"),
         iter: collections::contains(closure, "std::iter"),
         json: collections::contains(closure, "std::json"),
         num: collections::contains(closure, "std::num"),
         path: collections::contains(closure, "std::path"),
         process: collections::contains(closure, "std::process"),
+        task: collections::contains(closure, "std::task"),
         testing: collections::contains(closure, "std::testing"),
         text: collections::contains(closure, "std::text"),
         time: collections::contains(closure, "std::time"),
@@ -119,11 +125,13 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         env: left.env || right.env,
         fs: left.fs || right.fs,
         io: left.io || right.io,
+        internal_task: left.internal_task || right.internal_task,
         iter: left.iter || right.iter,
         json: left.json || right.json,
         num: left.num || right.num,
         path: left.path || right.path,
         process: left.process || right.process,
+        task: left.task || right.task,
         testing: left.testing || right.testing,
         text: left.text || right.text,
         time: left.time || right.time,
@@ -589,6 +597,11 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     } else {
         ()
     };
+    if needs.internal_task {
+        result.push(standard.internal_task)
+    } else {
+        ()
+    };
     if needs.iter {
         result.push(standard.iter)
     } else {
@@ -606,6 +619,11 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     };
     if needs.process {
         result.push(standard.process)
+    } else {
+        ()
+    };
+    if needs.task {
+        result.push(standard.task)
     } else {
         ()
     };
@@ -783,6 +801,11 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     } else {
         ()
     };
+    if needs.internal_task {
+        result.push(standard.internal_task.core_value)
+    } else {
+        ()
+    };
     if needs.iter {
         result.push(standard.iter.core_value)
     } else {
@@ -800,6 +823,11 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     };
     if needs.process {
         result.push(standard.process.core_value)
+    } else {
+        ()
+    };
+    if needs.task {
+        result.push(standard.task.core_value)
     } else {
         ()
     };
