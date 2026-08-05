@@ -7,6 +7,7 @@ use gomlc::numeric;
 use gomlc::resources;
 use gomlc::tast;
 use std::collections;
+use std::task;
 use std::num;
 
 pub struct FunctionNames {
@@ -2581,18 +2582,28 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
 
 struct CollectedTypes {
     values: Vec[tast::Type],
+    buckets: HashMap[string, Vec[tast::Type]],
 }
 
 fn new_collected_types() -> CollectedTypes {
-    CollectedTypes { values: Vec::[] }
+    CollectedTypes { values: Vec::[], buckets: HashMap::{} }
 }
 
 fn add_collected_type(result: CollectedTypes, value: tast::Type) -> unit {
-    for present in result.values {
-        if tast::types_equal(present, value) {
-            return ()
-        } else {}
-    }
+    let key = encode_type(value);
+    match result.buckets[key] {
+        Some(values) => {
+            for present in values {
+                if tast::types_equal(present, value) {
+                    return ()
+                } else {}
+            }
+            values.push(value)
+        },
+        None => {
+            result.buckets[key] = Vec::[value];
+        },
+    };
     result.values.push(value)
 }
 
@@ -3047,6 +3058,65 @@ fn compile_function(
     }
 }
 
+fn compile_functions(
+    values: Vec[anf::Function],
+    variants: VariantInfos,
+    closures: Vec[ClosureInfo],
+    structs: Vec[tast::StructDef],
+    instances: Vec[core::TypeInstance],
+    function_names: FunctionNames,
+    dyn_helper_names: DynHelperNames,
+) -> Vec[Function] {
+    let work: Vec[(int, anf::Function)] = Vec::with_capacity(values.len());
+    let compiled: Vec[Option[Function]] = Vec::with_capacity(values.len());
+    for index in 0..values.len() {
+        work.push((index, values[index]));
+        compiled.push(Option::None)
+    }
+    let completed: Result[unit, Vec[task::IndexedError[unit]]] = task::for_each_concurrent(
+        8,
+        work,
+        |_: task::CancelToken, item: (int, anf::Function)| {
+            compiled[item.0] = Option::Some(
+                compile_function(
+                    item.1,
+                    variants,
+                    closures,
+                    structs,
+                    instances,
+                    values,
+                    function_names,
+                    dyn_helper_names,
+                ),
+            );
+            Result::Ok(())
+        },
+    );
+    match completed {
+        Ok(()) => (),
+        Err(_) => (),
+    };
+    let result: Vec[Function] = Vec::with_capacity(values.len());
+    for index in 0..values.len() {
+        match compiled[index] {
+            Some(value) => result.push(value),
+            None => result.push(
+                compile_function(
+                    values[index],
+                    variants,
+                    closures,
+                    structs,
+                    instances,
+                    values,
+                    function_names,
+                    dyn_helper_names,
+                ),
+            ),
+        }
+    }
+    result
+}
+
 fn test_main_function(function_names: FunctionNames, test_cases: Vec[(string, string)]) -> Function {
     let cases: Vec[SwitchCase] = Vec::[];
     for test_case in test_cases {
@@ -3144,21 +3214,16 @@ fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(strin
         value.functions,
         dyn_helper_names,
     );
-    for function in value.functions {
-        items.push(
-            Item::Function(
-                compile_function(
-                    function,
-                    variants,
-                    closures,
-                    structs,
-                    type_instances,
-                    value.functions,
-                    function_names,
-                    dyn_helper_names,
-                ),
-            ),
-        )
+    for function in compile_functions(
+        value.functions,
+        variants,
+        closures,
+        structs,
+        type_instances,
+        function_names,
+        dyn_helper_names,
+    ) {
+        items.push(Item::Function(function))
     }
     if testing {
         items.push(Item::Function(test_main_function(function_names, test_cases)))

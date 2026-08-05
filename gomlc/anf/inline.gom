@@ -555,8 +555,16 @@ fn inline_block_consumes(value: Block, name: string) -> bool {
     inline_term_consumes(value.term, name)
 }
 
-fn inline_candidate(
-    functions: Vec[Function],
+fn inline_function_index(values: Vec[Function]) -> HashMap[string, Function] {
+    let result: HashMap[string, Function] = HashMap::{};
+    for function in values {
+        result[function.name] = function;
+    }
+    result
+}
+
+fn indexed_inline_candidate(
+    functions: HashMap[string, Function],
     caller: string,
     name: string,
     args: Vec[Imm],
@@ -568,7 +576,7 @@ fn inline_candidate(
     if name == caller {
         return Option::None
     } else {};
-    let value = find_inline_function(functions, name)?;
+    let value = functions[name]?;
     let cost = inline_block_cost(value.body);
     let recursive = inline_block_has_joinrec(value.body);
     let cost_limit = if recursive {
@@ -586,6 +594,28 @@ fn inline_candidate(
         budget.set(budget.get() - cost);
         Option::Some(value)
     }
+}
+
+fn inline_candidate(
+    functions: Vec[Function],
+    caller: string,
+    name: string,
+    args: Vec[Imm],
+    ty: tast::Type,
+    bind_ty: tast::Type,
+    recursive_consumer: bool,
+    budget: Ref[int],
+) -> Option[Function] {
+    indexed_inline_candidate(
+        inline_function_index(functions),
+        caller,
+        name,
+        args,
+        ty,
+        bind_ty,
+        recursive_consumer,
+        budget,
+    )
 }
 
 fn prepend_inline_bind(value: Bind, rest: Block) -> Block {
@@ -645,7 +675,7 @@ fn inline_call(value: LetBind, callee: Function, args: Vec[Imm], rest: Block, co
 
 fn inline_term(
     value: Term,
-    functions: Vec[Function],
+    functions: HashMap[string, Function],
     caller: string,
     budget: Ref[int],
     counter: Ref[int],
@@ -689,7 +719,7 @@ fn inline_binds(
     values: Vec[Bind],
     index: int,
     term: Term,
-    functions: Vec[Function],
+    functions: HashMap[string, Function],
     caller: string,
     budget: Ref[int],
     counter: Ref[int],
@@ -702,7 +732,7 @@ fn inline_binds(
         match bind {
             Let(value) => match value.value {
                 Call { func: Var { name, ty: _ }, args, ty } => {
-                    match inline_candidate(
+                    match indexed_inline_candidate(
                         functions,
                         caller,
                         name,
@@ -720,7 +750,7 @@ fn inline_binds(
                     func: Callable { callable: tast::Callable::Function(name), ty: _ },
                     args,
                     ty,
-                } => match inline_candidate(
+                } => match indexed_inline_candidate(
                     functions,
                     caller,
                     name,
@@ -768,7 +798,7 @@ fn inline_binds(
 
 fn inline_block(
     value: Block,
-    functions: Vec[Function],
+    functions: HashMap[string, Function],
     caller: string,
     budget: Ref[int],
     counter: Ref[int],
@@ -784,7 +814,7 @@ fn inline_block(
     )
 }
 
-fn inline_function(value: Function, functions: Vec[Function], counter: Ref[int]) -> Function {
+fn inline_function(value: Function, functions: HashMap[string, Function], counter: Ref[int]) -> Function {
     let budget = Ref::new(48);
     Function {
         name: value.name,
@@ -798,9 +828,10 @@ fn inline_function(value: Function, functions: Vec[Function], counter: Ref[int])
 }
 
 pub fn inline(value: File, counter: Ref[int]) -> File {
+    let function_index = inline_function_index(value.functions);
     let functions: Vec[Function] = Vec::with_capacity(value.functions.len());
     for function in value.functions {
-        functions.push(inline_function(function, value.functions, counter))
+        functions.push(inline_function(function, function_index, counter))
     }
     File {
         functions,

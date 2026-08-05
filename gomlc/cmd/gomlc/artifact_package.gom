@@ -11,6 +11,7 @@ use gomlc::parser;
 use gomlc::tast;
 use std::collections;
 use std::fs;
+use std::task;
 
 struct ArtifactDependencyRequest {
     package_name: string,
@@ -34,32 +35,49 @@ fn artifact_find_interface_unit(values: Vec[artifact::ArtifactInterfaceUnit], pa
     Option::None
 }
 
+fn artifact_read_interface_unit(path_value: string) -> Result[
+    artifact::ArtifactInterfaceUnit,
+    string,
+] {
+    let source = match fs::read_bytes(path_value) {
+        Ok(value) => value,
+        Err(error) => return Result::Err("failed to read interface " + path_value + ": " + error),
+    };
+    match decode_artifact_interface_bytes(source) {
+        Ok(value) => Result::Ok(value),
+        Err(error) => Result::Err("failed to parse interface " + path_value + ": " + error),
+    }
+}
+
 fn artifact_read_interface_units(paths: Vec[string]) -> Result[
     Vec[artifact::ArtifactInterfaceUnit],
     string,
 ] {
-    let result: Vec[artifact::ArtifactInterfaceUnit] = Vec::[];
+    let decoded = task::scope(
+        |scope: task::Scope| {
+            let tasks: Vec[task::Task[Result[artifact::ArtifactInterfaceUnit, string]]] = Vec::with_capacity(
+                paths.len(),
+            );
+            for path_value in paths {
+                tasks.push(
+                    scope.spawn(|_: task::CancelToken| artifact_read_interface_unit(path_value)),
+                )
+            }
+            task::join_all_results(tasks)
+        },
+    );
+    let result = match decoded {
+        Ok(values) => values,
+        Err(errors) => return Result::Err(errors[0]),
+    };
     let names: Vec[string] = Vec::[];
-    for path_value in paths {
-        let source = match fs::read_bytes(path_value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(
-                "failed to read interface " + path_value + ": " + error,
-            ),
-        };
-        let interface = match decode_artifact_interface_bytes(source) {
-            Ok(value) => value,
-            Err(error) => return Result::Err(
-                "failed to parse interface " + path_value + ": " + error,
-            ),
-        };
+    for interface in result {
         if collections::contains(names, interface.package_name) {
             return Result::Err(
                 "multiple interface files provided for package " + interface.package_name,
             )
         } else {
             names.push(interface.package_name);
-            result.push(interface)
         }
     }
     Result::Ok(result)
@@ -714,23 +732,39 @@ fn compile_artifact_package(
     )
 }
 
+fn artifact_read_core_unit(path_value: string) -> Result[artifact::ArtifactCoreUnit, string] {
+    let source = match fs::read_bytes(path_value) {
+        Ok(value) => value,
+        Err(error) => return Result::Err("failed to read core " + path_value + ": " + error),
+    };
+    match decode_artifact_core_bytes(source) {
+        Ok(value) => Result::Ok(value),
+        Err(error) => Result::Err("failed to parse core " + path_value + ": " + error),
+    }
+}
+
 fn artifact_read_core_units(paths: Vec[string]) -> Result[Vec[artifact::ArtifactCoreUnit], string] {
-    let result: Vec[artifact::ArtifactCoreUnit] = Vec::[];
+    let decoded = task::scope(
+        |scope: task::Scope| {
+            let tasks: Vec[task::Task[Result[artifact::ArtifactCoreUnit, string]]] = Vec::with_capacity(
+                paths.len(),
+            );
+            for path_value in paths {
+                tasks.push(scope.spawn(|_: task::CancelToken| artifact_read_core_unit(path_value)))
+            }
+            task::join_all_results(tasks)
+        },
+    );
+    let result = match decoded {
+        Ok(values) => values,
+        Err(errors) => return Result::Err(errors[0]),
+    };
     let names: Vec[string] = Vec::[];
-    for path_value in paths {
-        let source = match fs::read_bytes(path_value) {
-            Ok(value) => value,
-            Err(error) => return Result::Err("failed to read core " + path_value + ": " + error),
-        };
-        let core_unit = match decode_artifact_core_bytes(source) {
-            Ok(value) => value,
-            Err(error) => return Result::Err("failed to parse core " + path_value + ": " + error),
-        };
+    for core_unit in result {
         if collections::contains(names, core_unit.package_name) {
             return Result::Err("duplicate core provided for package " + core_unit.package_name)
         } else {
             names.push(core_unit.package_name);
-            result.push(core_unit)
         }
     }
     Result::Ok(result)
