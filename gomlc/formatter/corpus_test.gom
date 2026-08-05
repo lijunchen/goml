@@ -2,6 +2,7 @@ package formatter;
 
 use std::fs;
 use std::path;
+use std::task;
 use std::testing;
 
 fn corpus_skip_directory(name: string) -> bool {
@@ -39,11 +40,22 @@ fn formats_repository_corpus_without_semantic_changes() -> unit {
     collect_corpus(path::join(root, "goml"), files);
     collect_corpus(path::join(root, "stdlib"), files);
     testing::assert(files.len() >= 100);
-    for file in files {
-        let source = read_fixture(file);
-        match format_source(source) {
-            Ok(formatted) => assert_format_invariants(source, formatted),
-            Err(_) => testing::fail("corpus format failed: " + file),
-        }
+    let completed: Result[unit, Vec[task::IndexedError[string]]] = task::for_each_concurrent(
+        8,
+        files,
+        |_: task::CancelToken, file: string| {
+            let source = read_fixture(file);
+            match format_source(source) {
+                Ok(formatted) => {
+                    assert_format_invariants(source, formatted);
+                    Result::Ok(())
+                },
+                Err(_) => Result::Err("corpus format failed: " + file),
+            }
+        },
+    );
+    match completed {
+        Ok(()) => (),
+        Err(errors) => testing::fail(errors[0].error),
     }
 }
