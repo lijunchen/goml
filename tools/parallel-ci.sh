@@ -1,0 +1,23 @@
+set -euo pipefail
+
+repository_root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$repository_root"
+
+ci_pids=()
+for recipe in _bootstrap-stage3 _ci-scripts _ci-gomlc-test _ci-goml-test _ci-vscode; do
+    just "$recipe" &
+    ci_pids+=("$!")
+done
+
+ci_status=0
+set +e
+for ci_pid in "${ci_pids[@]}"; do
+    wait "$ci_pid"
+    process_status="$?"
+    if test "$process_status" != 0 && test "$ci_status" = 0; then
+        ci_status="$process_status"
+    fi
+done
+set -e
+
+exit "$ci_status"

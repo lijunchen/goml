@@ -6,15 +6,13 @@ make:
     cp gomlc/_bootstrap/stage1/bin/cmd/gomlfmt/gomlfmt stage1/bin/gomlfmt
     cp gomlc/_bootstrap/stage1/bin/cmd/gomllsp/gomllsp stage1/bin/gomllsp
     bash tools/stdlib/install.sh stage1
-    cd goml && ../stage0/bin/goml build --target-dir _bootstrap/stage1 --compiler ../stage1/bin/gomlc
-    cp goml/_bootstrap/stage1/bin/cmd/goml/goml stage1/bin/goml
     mkdir -p stage2/bin
-    cd gomlc && ../stage1/bin/goml build --target-dir _bootstrap/stage2 --compiler ../stage1/bin/gomlc
+    bash bootstrap/build-stage.sh stage2 stage0/bin/goml stage1/bin/gomlc
+    cp goml/_bootstrap/stage2/bin/cmd/goml/goml stage1/bin/goml
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlc/gomlc stage2/bin/gomlc
     cp gomlc/_bootstrap/stage2/bin/cmd/gomlfmt/gomlfmt stage2/bin/gomlfmt
     cp gomlc/_bootstrap/stage2/bin/cmd/gomllsp/gomllsp stage2/bin/gomllsp
     bash tools/stdlib/install.sh stage2
-    cd goml && ../stage1/bin/goml build --target-dir _bootstrap/stage2 --compiler ../stage1/bin/gomlc
     cp goml/_bootstrap/stage2/bin/cmd/goml/goml stage2/bin/goml
 
 test: make
@@ -31,32 +29,41 @@ clean:
     rm -rf stage0 stage1 stage2 stage3
     rm -rf editors/vscode/bin editors/vscode/lib
 
+_bootstrap-stage3:
+    rm -rf gomlc/_bootstrap/stage3 goml/_bootstrap/stage3 stage3
+    mkdir -p stage3/bin
+    bash bootstrap/build-stage.sh stage3 stage2/bin/goml stage2/bin/gomlc
+    cp gomlc/_bootstrap/stage3/bin/cmd/gomlc/gomlc stage3/bin/gomlc
+    cp gomlc/_bootstrap/stage3/bin/cmd/gomlfmt/gomlfmt stage3/bin/gomlfmt
+    cp gomlc/_bootstrap/stage3/bin/cmd/gomllsp/gomllsp stage3/bin/gomllsp
+    bash tools/stdlib/install.sh stage3
+    cp goml/_bootstrap/stage3/bin/cmd/goml/goml stage3/bin/goml
+    diff -ru --exclude='*.goml-*-fingerprint' gomlc/_bootstrap/stage2/build/pkg gomlc/_bootstrap/stage3/build/pkg
+    diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage2/build/pkg goml/_bootstrap/stage3/build/pkg
+
 bootstrap:
     rm -rf gomlc/_bootstrap/stage1 gomlc/_bootstrap/stage2 gomlc/_bootstrap/stage3
     rm -rf goml/_bootstrap/stage1 goml/_bootstrap/stage2 goml/_bootstrap/stage3
     rm -rf stage0 stage1 stage2 stage3
     just make
-    mkdir -p stage3/bin
-    cd gomlc && ../stage2/bin/goml build --target-dir _bootstrap/stage3 --compiler ../stage2/bin/gomlc
-    cp gomlc/_bootstrap/stage3/bin/cmd/gomlc/gomlc stage3/bin/gomlc
-    cp gomlc/_bootstrap/stage3/bin/cmd/gomlfmt/gomlfmt stage3/bin/gomlfmt
-    cp gomlc/_bootstrap/stage3/bin/cmd/gomllsp/gomllsp stage3/bin/gomllsp
-    bash tools/stdlib/install.sh stage3
-    cd goml && ../stage2/bin/goml build --target-dir _bootstrap/stage3 --compiler ../stage2/bin/gomlc
-    cp goml/_bootstrap/stage3/bin/cmd/goml/goml stage3/bin/goml
-    diff -ru --exclude='*.goml-*-fingerprint' gomlc/_bootstrap/stage2/build/pkg gomlc/_bootstrap/stage3/build/pkg
-    diff -ru --exclude='*.goml-*-fingerprint' goml/_bootstrap/stage2/build/pkg goml/_bootstrap/stage3/build/pkg
+    just _bootstrap-stage3
 
-ci: bootstrap
+_ci-scripts:
     bash -n tools/release/release.sh tools/release/test.sh tools/release/lsp_smoke.sh
     bash -n tools/stdlib/install.sh tools/stdlib/test.sh
     bash tools/release/test.sh
     bash tools/stdlib/test.sh stage2
     bash tools/release/release.sh check-version "$(cat VERSION)"
     bash -n bootstrap/bootstrap.sh
+
+_ci-gomlc-test:
     bash tools/stdlib/install.sh _artifact/gomlc-test/test
     cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
+
+_ci-goml-test:
     cd goml && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
+
+_ci-vscode:
     mkdir -p editors/vscode/bin
     find editors/vscode/bin -mindepth 1 -type f -delete
     find editors/vscode/bin -mindepth 1 -depth -type d -empty -delete
@@ -64,6 +71,13 @@ ci: bootstrap
     bash tools/stdlib/install.sh editors/vscode
     cd editors/vscode && npm install
     cd editors/vscode && npm run compile
+
+ci:
+    rm -rf gomlc/_bootstrap/stage1 gomlc/_bootstrap/stage2 gomlc/_bootstrap/stage3
+    rm -rf goml/_bootstrap/stage1 goml/_bootstrap/stage2 goml/_bootstrap/stage3
+    rm -rf stage0 stage1 stage2 stage3
+    just make
+    bash tools/parallel-ci.sh
 
 set-version version:
     bash tools/release/release.sh set-version "{{version}}"
