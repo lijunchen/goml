@@ -513,6 +513,18 @@ fn builtin_artifact_dependency() -> (string, string) {
     ("builtin", builtin_artifact_interface_unit().interface_hash)
 }
 
+fn expand_builtin_derives(value: ast::LowerResult) -> ast::LowerResult {
+    let interface_value = builtin_artifact_interface_unit();
+    let builtin_module = match interface_value.comptime {
+        Some(value) => Option::Some(value.module),
+        None => Option::None,
+    };
+    hir::expand_derives_with_environment(
+        value,
+        hir::DeriveEnvironment { builtin: builtin_module, dependencies: Vec::[] },
+    )
+}
+
 fn builtin_artifact_json() -> string {
     let writer = wire::new_artifact_json_writer(false);
     interface_codec::artifact_json_interface_unit(writer, builtin_artifact_interface_unit());
@@ -1197,7 +1209,7 @@ pub fn diagnostic_output(source_path: string, source: string) -> string {
             + "\n",
         None => (),
     };
-    let ast_value = hir::expand_derives(ast_value);
+    let ast_value = expand_builtin_derives(ast_value);
     if !ast_value.diagnostics.is_empty() {
         return compact_ast_diagnostics(ast_value.diagnostics, source, false)
     } else {};
@@ -1299,7 +1311,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
         ),
         None => (),
     };
-    let ast_value = hir::expand_derives(source_ast_value);
+    let ast_value = expand_builtin_derives(source_ast_value);
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
     let counter = Ref::new(0);
@@ -1367,7 +1379,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
         ),
         None => (),
     };
-    let ast_value = hir::expand_derives(source_ast_value);
+    let ast_value = expand_builtin_derives(source_ast_value);
     if !ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(ast_value.diagnostics, source, false),

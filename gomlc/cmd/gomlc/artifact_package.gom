@@ -654,11 +654,7 @@ fn compile_artifact_package(
         source_needs = merge_standard_needs(source_needs, source_standard_needs(ast_value));
         let expanded = hir::expand_derives_with_environment(
             without_disallowed_standard_internal_imports(ast_value, command.package_name),
-            hir::DeriveEnvironment {
-                builtin: builtin_derive_module,
-                dependencies: derive_modules,
-                builtin_mode: hir::BuiltinDeriveMode::CompilerFallback,
-            },
+            hir::DeriveEnvironment { builtin: builtin_derive_module, dependencies: derive_modules },
         );
         for diagnostic in ast_diagnostics(expanded.diagnostics, "derive", command.inputs[index]) {
             derive_diagnostics.push(diagnostic)

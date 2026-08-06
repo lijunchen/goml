@@ -70,11 +70,7 @@ fn lower_package(
     for file in value.files {
         let expanded = hir::expand_derives_with_environment(
             ast::lower(parser::parse(file.source)),
-            hir::DeriveEnvironment {
-                builtin: builtin_derive,
-                dependencies: derive_modules,
-                builtin_mode: hir::BuiltinDeriveMode::CompilerFallback,
-            },
+            hir::DeriveEnvironment { builtin: builtin_derive, dependencies: derive_modules },
         );
         expanded_sources.push((file.path, ast::pretty(expanded)));
         inputs.push((expanded, file.path))

@@ -312,7 +312,7 @@ fn path(value: string, value_span: ast::Span) -> ast::Path {
 
 fn definition_name(state: DeriveState, value: string) -> string {
     let package_name = state.definition_package.get();
-    if text::find(value, "::").is_some() || package_name == "" {
+    if text::find(value, "::").is_some() || package_name == "" || package_name == "builtin" {
         value
     } else {
         package_name + "::" + value
