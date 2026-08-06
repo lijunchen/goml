@@ -1,0 +1,46 @@
+package macros;
+
+pub trait Label {
+    fn label(self: Self) -> string;
+}
+
+#[comptime]
+fn label_suffix() -> string {
+    "_ok"
+}
+
+#[comptime_derive]
+fn add_generic_predicates(input: DeriveInput, output: DeriveOutput) -> unit {
+    let mut index = 0;
+    while index < derive_generic_count(input) {
+        let ty = meta_type_call_site(derive_generic_name(input, index));
+        derive_output_add_call_site_predicate(output, ty, "ToString");
+        index = index + 1;
+    }
+}
+
+#[comptime_derive]
+pub fn derive_label(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "Label");
+    add_generic_predicates(input, output);
+    let mut label = derive_item_name(input);
+    if derive_item_kind(input) < 1 {
+        if derive_field_count(input) > 0 && derive_field_attribute_count(input, 0) > 0 {
+            label = derive_field_attribute_name(input, 0, 0);
+        } else {}
+    } else if derive_variant_count(input) > 0 {
+        if derive_variant_attribute_count(input, 0) > 0 {
+            label = derive_variant_attribute_name(input, 0, 0);
+        } else {};
+        if derive_variant_field_count(input, 0) > 0
+            && derive_variant_field_attribute_count(input, 0, 0) > 0 {
+            label = label + ":" + derive_variant_field_attribute_name(input, 0, 0, 0);
+        } else {}
+    } else {};
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    let body = meta_expr_string(label + label_suffix());
+    let method = meta_method("label", params, meta_type_call_site("string"), body);
+    derive_output_add_method(output, method);
+    output
+}

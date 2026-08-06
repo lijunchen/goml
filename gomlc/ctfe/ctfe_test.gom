@@ -134,7 +134,7 @@ fn factorial_module() -> ctir::CtModule {
             origin: 0,
         },
     );
-    module.entries.push(ctir::CtEntry { name: "factorial", function_id: 0 });
+    module.entries.push(ctir::CtEntry { name: "factorial", function_id: 0, public: true });
     module
 }
 
@@ -639,7 +639,7 @@ fn evaluates_return_break_and_continue() -> unit {
             origin: 0,
         },
     );
-    module.entries.push(ctir::CtEntry { name: "return_value", function_id: 0 });
+    module.entries.push(ctir::CtEntry { name: "return_value", function_id: 0, public: true });
     match verify_module(module, Vec::[]) {
         Ok(()) => (),
         Err(error) => testing::fail(error),
@@ -752,5 +752,66 @@ fn enforces_temporary_memory_and_target_limits() -> unit {
     match verify_module(invalid_local, Vec::[]) {
         Err(error) => testing::assert_eq(error, "CTIR parameter local type mismatch"),
         Ok(()) => testing::fail("expected local type rejection"),
+    }
+}
+
+#[test]
+fn rejects_invalid_derive_ctir_artifacts() -> unit {
+    let invalid_signature = ctir::empty_module("test::derive_signature");
+    invalid_signature.functions.push(
+        ctir::CtFunction {
+            id: 0,
+            name: "handler",
+            parameter_slots: Vec::[],
+            parameter_types: Vec::[],
+            local_count: 0,
+            local_types: Vec::[],
+            return_type: int_type(),
+            body: ctir::CtBlock { statements: Vec::[], tail: Option::Some(int_expr(1)), origin: 0 },
+            origin: 0,
+        },
+    );
+    invalid_signature.derive_entries.push(
+        ctir::CtEntry { name: "handler", function_id: 0, public: true },
+    );
+    match verify_module(invalid_signature, Vec::[]) {
+        Err(error) => testing::assert_eq(error, "invalid CTIR derive entry signature"),
+        Ok(()) => testing::fail("expected invalid derive signature"),
+    };
+    let invalid_intrinsic = ctir::empty_module("test::derive_intrinsic");
+    let input_ty = ctir::CtType::Meta("DeriveInput");
+    let output_ty = ctir::CtType::Meta("DeriveOutput");
+    invalid_intrinsic.functions.push(
+        ctir::CtFunction {
+            id: 0,
+            name: "handler",
+            parameter_slots: Vec::[0],
+            parameter_types: Vec::[input_ty],
+            local_count: 1,
+            local_types: Vec::[input_ty],
+            return_type: output_ty,
+            body: ctir::CtBlock {
+                statements: Vec::[],
+                tail: Option::Some(
+                    ctir::CtExpr {
+                        kind: ctir::CtExprKind::Call {
+                            target: ctir::CtCallTarget::Intrinsic("host_escape"),
+                            args: Vec::[local_expr(0, input_ty)],
+                        },
+                        ty: output_ty,
+                        origin: 0,
+                    },
+                ),
+                origin: 0,
+            },
+            origin: 0,
+        },
+    );
+    invalid_intrinsic.derive_entries.push(
+        ctir::CtEntry { name: "handler", function_id: 0, public: true },
+    );
+    match verify_module(invalid_intrinsic, Vec::[]) {
+        Err(error) => testing::assert_eq(error, "unknown CTIR derive intrinsic"),
+        Ok(()) => testing::fail("expected invalid derive intrinsic"),
     }
 }

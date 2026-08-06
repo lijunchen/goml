@@ -1,0 +1,15 @@
+package macros;
+
+pub trait Label {
+    fn label(self: Self) -> string;
+}
+
+#[comptime_derive]
+pub fn derive_bad_label(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "Label");
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    let method = meta_method("label", params, meta_type_call_site("string"), meta_expr_int(1));
+    derive_output_add_method(output, method);
+    output
+}

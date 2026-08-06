@@ -104,6 +104,16 @@ fn analyzes_local_package_dependencies() -> unit {
 }
 
 #[test]
+fn analyzes_cross_package_comptime_derives() -> unit {
+    let root = "../gomlc/testdata/module/project050_comptime_derive";
+    let main_path = root + "/main.gom";
+    match fs::read_file(main_path) {
+        Ok(source) => assert_no_diagnostics(analyze(main_path, source)),
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
 fn analyzes_toolchain_standard_library_dependencies() -> unit {
     let root = "../gomlc/testdata/module/project032_std_host_api";
     let main_path = root + "/main.gom";

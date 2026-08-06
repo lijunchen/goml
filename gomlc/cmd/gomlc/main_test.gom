@@ -349,7 +349,7 @@ fn reports_driver_protocol_version() -> unit {
     );
     testing::assert_eq(
         version_output_with(VersionFormat::Json, Option::None, Option::None),
-        "{\"artifact_format\":16,\"compiler_abi\":4,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
+        "{\"artifact_format\":17,\"compiler_abi\":5,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
             + version::current()
             + "\"}",
     );
@@ -1062,13 +1062,13 @@ fn writes_interface_unit_shape_and_hash() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "1f23f83c5cf54c0903bf548da627096eb209563bc377c14cb84ebca3cd41e710",
+        "9583edf81455565be8d141f166d690633fe51b244f3dbcc58773c6afb75d6f92",
     );
     let encoded = interface_codec::encode_json(artifact_unit, false);
     testing::assert_eq(
         encoded,
-        "{\"format_version\":20,\"compiler_abi\":4,\"package\":\"audit::value\",\"exports\":{\"reexports\":{},\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
-            + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"comptime\":false,\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\",\"id\":\"audit::value::value\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"comptime\":null,\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"1f23f83c5cf54c0903bf548da627096eb209563bc377c14cb84ebca3cd41e710\"}",
+        "{\"format_version\":21,\"compiler_abi\":5,\"package\":\"audit::value\",\"exports\":{\"reexports\":{},\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
+            + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"comptime\":false,\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\",\"id\":\"audit::value::value\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"comptime\":null,\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"9583edf81455565be8d141f166d690633fe51b244f3dbcc58773c6afb75d6f92\"}",
     );
     let binary = match interface_codec::encode_binary(artifact_unit) {
         Ok(value) => value,
@@ -1142,7 +1142,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "1f23f83c5cf54c0903bf548da627096eb209563bc377c14cb84ebca3cd41e710",
+        "9583edf81455565be8d141f166d690633fe51b244f3dbcc58773c6afb75d6f92",
     )
 }
 
@@ -1204,7 +1204,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "f81279b2ee17ec3668797fbfb64d78349c9c3840923950453f45249c327fd640",
+        "16e0b596422f4935d44214096c6c16f180e5ae07791153762416987a8cabc7ff",
     );
     let encoded = interface_codec::encode_json(artifact_unit, false);
     let binary = match interface_codec::encode_binary(artifact_unit) {
@@ -1352,7 +1352,7 @@ fn writes_core_unit_from_checked_package() -> unit {
     let encoded = core_codec::encode_json(core_unit, false);
     testing::assert_eq(
         hash::sha256_hex(encoded),
-        "0ab05783d2777297e06e5347d020f42e0d3f7ca79bf2c9bfc74819ad4787423e",
+        "b209a82cda93d5e6932cb2d00efb67787d26be30f9676a976b9779ea9084037f",
     );
     let binary = match core_codec::encode_binary(core_unit) {
         Ok(value) => value,

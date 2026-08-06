@@ -96,6 +96,30 @@ fn lowers_attribute_names_and_arguments_structurally() -> unit {
 }
 
 #[test]
+fn lowers_derive_paths_and_nested_item_attributes() -> unit {
+    let file = lowered_file(
+        "#[derive(macros::handler)] struct Box { #[field_tag] value: int } enum Choice { #[variant_tag] Data(#[payload_tag] int) }",
+    );
+    match file.items[0] {
+        StructDef(value) => {
+            match value.attrs[0].args[0] {
+                AttributeArg::Path(value) => testing::assert_eq(value, "macros::handler"),
+                _ => testing::fail("expected derive path"),
+            };
+            testing::assert_eq(value.field_attrs[0][0].name, "field_tag")
+        },
+        _ => testing::fail("expected struct"),
+    };
+    match file.items[1] {
+        EnumDef(value) => {
+            testing::assert_eq(value.variants[0].attrs[0].name, "variant_tag");
+            testing::assert_eq(value.variants[0].field_attrs[0][0].name, "payload_tag")
+        },
+        _ => testing::fail("expected enum"),
+    }
+}
+
+#[test]
 fn lowers_unicode_strings_and_constructor_patterns() -> unit {
     let source = "enum Choice { Empty, Text(string) } fn read(value: Choice) -> string { let prefix = \"λ\\u0041🙂\"; match value { Choice::Text(text) => prefix + text, Choice::Empty => prefix } }";
     let file = lowered_file(source);

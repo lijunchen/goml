@@ -58,7 +58,9 @@ fn binary_comptime_module(value: int, source_path: string) -> ctir::CtModule {
             origin: 0,
         },
     );
-    module.entries.push(ctir::CtEntry { name: "audit::comptime::value", function_id: 0 });
+    module.entries.push(
+        ctir::CtEntry { name: "audit::comptime::value", function_id: 0, public: true },
+    );
     module
 }
 
@@ -111,7 +113,9 @@ fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
     };
     let signatures = tast::package_signatures(hir_file);
     let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::[]);
-    testing::assert_eq(checked.diagnostics.len(), 0);
+    if checked.diagnostics.is_empty() {} else {
+        testing::fail(checked.diagnostics[0].message)
+    };
     let file = match checked.tast {
         Some(value) => value,
         None => {
@@ -246,6 +250,39 @@ fn interface_hash_tracks_only_public_comptime_body_closures() -> unit {
     );
     testing::assert_eq(first.interface_hash, runtime_changed.interface_hash);
     testing::assert(first.interface_hash != comptime_changed.interface_hash)
+}
+
+#[test]
+fn derive_entries_round_trip_and_affect_interface_hash() -> unit {
+    let first = source_interface(
+        "package value; #[comptime_derive] fn helper(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") } #[comptime_derive] pub fn derive_value(input: DeriveInput) -> DeriveOutput { helper(input) }",
+    );
+    let changed = source_interface(
+        "package value; #[comptime_derive] fn helper(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Changed\") } #[comptime_derive] pub fn derive_value(input: DeriveInput) -> DeriveOutput { helper(input) }",
+    );
+    testing::assert(first.interface_hash != changed.interface_hash);
+    let encoded = match interface_codec::encode_binary(first) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    let decoded = match interface_codec::decode_binary(encoded) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            first
+        },
+    };
+    match decoded.comptime {
+        Some(value) => {
+            testing::assert_eq(value.module.derive_entries.len(), 1);
+            testing::assert_eq(value.module.derive_entries[0].name, "audit::value::derive_value");
+            testing::assert_eq(value.module.functions.len(), 2)
+        },
+        None => testing::fail("expected derive comptime unit"),
+    }
 }
 
 #[test]

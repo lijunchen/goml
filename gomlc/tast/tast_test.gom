@@ -66,6 +66,40 @@ fn evaluates_explicit_comptime_functions() -> unit {
 }
 
 #[test]
+fn validates_comptime_derive_capability_boundaries() -> unit {
+    let invalid_signature = checked_diagnostics("#[comptime_derive] pub fn handler() -> int { 1 }");
+    testing::assert(
+        has_diagnostic(
+            invalid_signature,
+            "public #[comptime_derive] function must have signature (DeriveInput) -> DeriveOutput",
+        ),
+    );
+    let runtime_call = checked_diagnostics(
+        "#[comptime_derive] fn helper() -> int { 1 } fn value() -> int { helper() }",
+    );
+    testing::assert(
+        has_diagnostic(
+            runtime_call,
+            "#[comptime_derive] function is only callable from another derive handler",
+        ),
+    );
+    let intrinsic_call = checked_diagnostics("fn value() -> MetaExpr { meta_expr_unit() }");
+    testing::assert(
+        has_diagnostic(
+            intrinsic_call,
+            "derive intrinsic `meta_expr_unit` is only available in #[comptime_derive]",
+        ),
+    );
+    let leaked_type = checked_diagnostics("fn value(input: DeriveInput) -> DeriveInput { input }");
+    testing::assert(
+        has_diagnostic(
+            leaked_type,
+            "derive metadata type DeriveInput is only available in #[comptime_derive]",
+        ),
+    )
+}
+
+#[test]
 fn evaluates_comptime_shadowing_like_runtime() -> unit {
     let file = checked_file(
         "#[comptime] fn shadow(value: int) -> int { let base = value; let nested = { let base = base + 1; base * 2 }; base + nested } fn main() -> int { comptime { shadow(3) } }",
