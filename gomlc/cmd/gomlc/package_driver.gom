@@ -36,6 +36,7 @@ struct StandardNeeds {
     task: bool,
     testing: bool,
     text: bool,
+    toml: bool,
     time: bool,
 }
 
@@ -77,6 +78,7 @@ fn no_standard_needs() -> StandardNeeds {
         task: false,
         testing: false,
         text: false,
+        toml: false,
         time: false,
     }
 }
@@ -102,6 +104,7 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         task: collections::contains(closure, "std::task"),
         testing: collections::contains(closure, "std::testing"),
         text: collections::contains(closure, "std::text"),
+        toml: collections::contains(closure, "std::toml"),
         time: collections::contains(closure, "std::time"),
     }
 }
@@ -136,6 +139,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         task: left.task || right.task,
         testing: left.testing || right.testing,
         text: left.text || right.text,
+        toml: left.toml || right.toml,
         time: left.time || right.time,
     }
 }
@@ -607,6 +611,9 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     if needs.text {
         result.push(standard.text)
     } else {};
+    if needs.toml {
+        result.push(standard.toml)
+    } else {};
     if needs.json {
         result.push(standard.json)
     } else {};
@@ -772,6 +779,9 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     } else {};
     if needs.text {
         result.push(standard.text.core_value)
+    } else {};
+    if needs.toml {
+        result.push(standard.toml.core_value)
     } else {};
     if needs.json {
         result.push(standard.json.core_value)

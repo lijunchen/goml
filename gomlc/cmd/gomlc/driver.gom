@@ -76,6 +76,7 @@ struct StandardLibrary {
     task: PackageCompilation,
     testing: PackageCompilation,
     text: PackageCompilation,
+    toml: PackageCompilation,
     time: PackageCompilation,
 }
 
@@ -105,6 +106,7 @@ struct ArtifactStandardLibrary {
     task: ArtifactStandardPackage,
     testing: ArtifactStandardPackage,
     text: ArtifactStandardPackage,
+    toml: ArtifactStandardPackage,
     time: ArtifactStandardPackage,
 }
 
@@ -163,6 +165,7 @@ fn artifact_standard_library(value: StandardLibrary) -> ArtifactStandardLibrary 
         task: artifact_standard_package_from_compilation(value.task),
         testing: artifact_standard_package_from_compilation(value.testing),
         text: artifact_standard_package_from_compilation(value.text),
+        toml: artifact_standard_package_from_compilation(value.toml),
         time: artifact_standard_package_from_compilation(value.time),
     }
 }
@@ -620,6 +623,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         task: required_standard_compilation(compiled, "std::task"),
         testing: required_standard_compilation(compiled, "std::testing"),
         text: required_standard_compilation(compiled, "std::text"),
+        toml: required_standard_compilation(compiled, "std::toml"),
         time: required_standard_compilation(compiled, "std::time"),
     }
 }
@@ -645,6 +649,7 @@ fn standard_library_package(value: StandardLibrary, package_name: string) -> Pac
         "std::task" => value.task,
         "std::testing" => value.testing,
         "std::text" => value.text,
+        "std::toml" => value.toml,
         "std::time" => value.time,
         _ => {
             fail("error[compile]: unknown standard package " + package_name);

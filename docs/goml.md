@@ -2264,6 +2264,7 @@ use std::serde;
 use std::task;
 use std::testing;
 use std::text;
+use std::toml;
 use std::time;
 ```
 
@@ -2286,7 +2287,29 @@ Current public entrances include:
 - `task::Scope`, `Task[T]`, `CancelToken`, `WaitResult[T]`, `scope`, and `try_scope`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
 - `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `eq_ignore_ascii_case`, `to_ascii_lowercase`, and `to_ascii_uppercase`
+- `toml::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `to_string`, and `from_string`
 - `time::Duration`, `Instant`, `SystemTime`, `sleep`, and `sleep_with`
+
+### TOML values and typed documents
+
+`std::toml` follows the same split as JSON. `toml::Value` has string, signed 64-bit integer, 64-bit float, boolean, datetime text, array, and table variants. `parse` and `encode` operate on that schema-free representation. `to_value`, `from_value`, `to_string`, and `from_string` use the shared serde traits and enforce the destination type. Unsigned values above the TOML signed-integer range are rejected, and unit or `None` cannot be encoded because TOML has no null value.
+
+The first parser accepts basic and literal strings, Unicode escapes, booleans, decimal and base-prefixed integers, floats, datetime text, arrays, inline tables, dotted keys, and ordinary table headers. It preserves table and field order for deterministic output. Multiline strings, array-of-table headers, and dotted keys inside inline tables are not yet supported.
+
+```goml
+use std::toml;
+use toml::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct Server {
+    host: string,
+    port: uint16,
+}
+
+fn load(input: string) -> Result[Server, string] {
+    toml::from_string(input)
+}
+```
 
 `std::ascii` operates on `byte`. Classification and case conversion use only the 7-bit ASCII range, and bytes above `0x7f` remain unchanged. `escape_default` emits short escapes for tabs, carriage returns, newlines, quotes, and backslashes, preserves printable ASCII, and uses lowercase `\\xNN` escapes for other bytes.
 

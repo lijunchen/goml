@@ -1,0 +1,144 @@
+package toml;
+
+use std::num;
+use std::serde;
+pub use serde::{Deserialize, Serialize};
+
+fn serde_fields_to_toml(fields: Vec[(string, serde::Value)]) -> Result[Vec[(string, Value)], string] {
+    let result: Vec[(string, Value)] = Vec::with_capacity(fields.len());
+    for field in fields {
+        result.push((field.0, from_serde_value(field.1)?))
+    }
+    Result::Ok(result)
+}
+
+fn serde_items_to_toml(items: Vec[serde::Value]) -> Result[Vec[Value], string] {
+    let result: Vec[Value] = Vec::with_capacity(items.len());
+    for item in items {
+        result.push(from_serde_value(item)?)
+    }
+    Result::Ok(result)
+}
+
+fn serde_variant_to_toml(name: string, kind: int, fields: Vec[(string, serde::Value)]) -> Result[
+    Value,
+    string,
+] {
+    if kind == 0 {
+        Result::Ok(Value::String(name))
+    } else if kind == 1 {
+        let values: Vec[Value] = Vec::with_capacity(fields.len());
+        for field in fields {
+            values.push(from_serde_value(field.1)?)
+        }
+        Result::Ok(Value::Table(Vec::[(name, Value::Array(values))]))
+    } else {
+        Result::Ok(Value::Table(Vec::[(name, Value::Table(serde_fields_to_toml(fields)?))]))
+    }
+}
+
+fn unsigned_integer(value: uint64) -> Result[Value, string] {
+    let maximum: uint64 = 9223372036854775807;
+    if value > maximum {
+        Result::Err("unsigned integer exceeds TOML integer range")
+    } else {
+        Result::Ok(Value::Integer(value as int64))
+    }
+}
+
+fn float32_value(value: float32) -> Result[Value, string] {
+    match num::parse_float64(value.to_string()) {
+        Ok(parsed) => Result::Ok(Value::Float(parsed)),
+        Err(error) => Result::Err(error),
+    }
+}
+
+pub fn from_serde_value(value: serde::Value) -> Result[Value, string] {
+    match value {
+        serde::Value::Unit => Result::Err("TOML has no null or unit value"),
+        serde::Value::Bool(value) => Result::Ok(Value::Boolean(value)),
+        serde::Value::Int(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Int8(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Int16(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Int32(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Int64(value) => Result::Ok(Value::Integer(value)),
+        serde::Value::Uint(value) => unsigned_integer(value as uint64),
+        serde::Value::Uint8(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Uint16(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Uint32(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Uint64(value) => unsigned_integer(value),
+        serde::Value::Float32(value) => float32_value(value),
+        serde::Value::Float64(value) => Result::Ok(Value::Float(value)),
+        serde::Value::Number(value) => match parse_integer(value) {
+            Ok(parsed) => Result::Ok(Value::Integer(parsed)),
+            Err(_) => match num::parse_float64(value) {
+                Ok(parsed) => Result::Ok(Value::Float(parsed)),
+                Err(_) => Result::Err("invalid TOML number"),
+            },
+        },
+        serde::Value::String(value) => Result::Ok(Value::String(value)),
+        serde::Value::Char(value) => Result::Ok(Value::String(value.to_string())),
+        serde::Value::Sequence(items) => Result::Ok(Value::Array(serde_items_to_toml(items)?)),
+        serde::Value::Struct(fields) => Result::Ok(Value::Table(serde_fields_to_toml(fields)?)),
+        serde::Value::Variant { index: _, name, kind, fields } => {
+            serde_variant_to_toml(name, kind, fields)
+        },
+    }
+}
+
+fn toml_fields_to_serde(fields: Vec[(string, Value)]) -> Vec[(string, serde::Value)] {
+    let result: Vec[(string, serde::Value)] = Vec::with_capacity(fields.len());
+    for field in fields {
+        result.push((field.0, into_serde_value(field.1)))
+    }
+    result
+}
+
+fn toml_items_to_serde(items: Vec[Value]) -> Vec[serde::Value] {
+    let result: Vec[serde::Value] = Vec::with_capacity(items.len());
+    for item in items {
+        result.push(into_serde_value(item))
+    }
+    result
+}
+
+pub fn into_serde_value(value: Value) -> serde::Value {
+    match value {
+        Value::String(value) => serde::Value::String(value),
+        Value::Integer(value) => serde::Value::Number(value.to_string()),
+        Value::Float(value) => serde::Value::Number(value.to_string()),
+        Value::Boolean(value) => serde::Value::Bool(value),
+        Value::Datetime(value) => serde::Value::String(value),
+        Value::Array(values) => serde::Value::Sequence(toml_items_to_serde(values)),
+        Value::Table(fields) => serde::Value::Struct(toml_fields_to_serde(fields)),
+    }
+}
+
+pub fn to_value[T: Serialize](value: T) -> Result[Value, string] {
+    from_serde_value(serde::to_value(value))
+}
+
+pub fn from_value[T: Deserialize](value: Value) -> Result[T, string] {
+    serde::from_value(into_serde_value(value))
+}
+
+pub fn to_string[T: Serialize](value: T) -> Result[string, string] {
+    encode(to_value(value)?)
+}
+
+pub fn from_string[T: Deserialize](input: string) -> Result[T, string] {
+    let value = parse(input)?;
+    from_value(value)
+}
+
+impl Serialize for Value {
+    fn serialize(self: Value) -> serde::Value {
+        into_serde_value(self)
+    }
+}
+
+impl Deserialize for Value {
+    fn deserialize(value: serde::Value) -> Result[Value, string] {
+        from_serde_value(value)
+    }
+}

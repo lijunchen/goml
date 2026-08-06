@@ -1,0 +1,611 @@
+package toml;
+
+use std::num;
+use std::text;
+
+pub enum Value {
+    String(string),
+    Integer(int64),
+    Float(float64),
+    Boolean(bool),
+    Datetime(string),
+    Array(Vec[Value]),
+    Table(Vec[(string, Value)]),
+}
+
+struct FlatEntry {
+    path: Vec[string],
+    value: Value,
+}
+
+fn toml_error(line: int, message: string) -> string {
+    message + " at line " + line.to_string()
+}
+
+fn strip_comment(value: string) -> string {
+    let mut quote = 0 as byte;
+    let mut escaped = false;
+    for index in 0..value.byte_len() {
+        let current = value.byte_get(index);
+        if quote == 0 {
+            if current == b'"' || current == b'\'' {
+                quote = current;
+            } else if current == b'#' {
+                return value.byte_slice(0, index)
+            } else {}
+        } else if quote == b'"' && escaped {
+            escaped = false;
+        } else if quote == b'"' && current == b'\\' {
+            escaped = true;
+        } else if current == quote {
+            quote = 0;
+        } else {}
+    }
+    value
+}
+
+fn hex_digit(value: byte) -> Option[uint32] {
+    if value >= b'0' && value <= b'9' {
+        Option::Some((value - b'0') as uint32)
+    } else if value >= b'a' && value <= b'f' {
+        Option::Some((value - b'a' + 10) as uint32)
+    } else if value >= b'A' && value <= b'F' {
+        Option::Some((value - b'A' + 10) as uint32)
+    } else {
+        Option::None
+    }
+}
+
+fn unicode_escape(value: string, start: int, length: int) -> Result[(char, int), string] {
+    if start + length > value.byte_len() {
+        return Result::Err("incomplete unicode escape")
+    } else {};
+    let mut codepoint = 0 as uint32;
+    for index in start..start + length {
+        match hex_digit(value.byte_get(index)) {
+            Some(digit) => {
+                codepoint = codepoint * 16 + digit;
+            },
+            None => return Result::Err("invalid unicode escape"),
+        }
+    }
+    match char_from_uint32(codepoint) {
+        Some(character) => Result::Ok((character, start + length)),
+        None => Result::Err("invalid unicode scalar"),
+    }
+}
+
+fn parse_basic_string(value: string) -> Result[string, string] {
+    let builder = text::StringBuilder::with_capacity(value.byte_len());
+    let mut index = 1;
+    while index < value.byte_len() - 1 {
+        let current = value.byte_get(index);
+        if current != b'\\' {
+            builder.write_string(value.byte_slice(index, index + 1));
+            index += 1;
+        } else if index + 1 >= value.byte_len() - 1 {
+            return Result::Err("incomplete string escape")
+        } else {
+            let escape = value.byte_get(index + 1);
+            if escape == b'"' {
+                builder.write_string("\"");
+                index += 2;
+            } else if escape == b'\\' {
+                builder.write_string("\\");
+                index += 2;
+            } else if escape == b'b' {
+                builder.write_string("\b");
+                index += 2;
+            } else if escape == b't' {
+                builder.write_string("\t");
+                index += 2;
+            } else if escape == b'n' {
+                builder.write_string("\n");
+                index += 2;
+            } else if escape == b'f' {
+                builder.write_string("\f");
+                index += 2;
+            } else if escape == b'r' {
+                builder.write_string("\r");
+                index += 2;
+            } else if escape == b'u' || escape == b'U' {
+                let decoded = unicode_escape(
+                    value,
+                    index + 2,
+                    if escape == b'u' {
+                        4
+                    } else {
+                        8
+                    },
+                )?;
+                builder.write_char(decoded.0);
+                index = decoded.1;
+            } else {
+                return Result::Err("invalid string escape")
+            }
+        }
+    }
+    Result::Ok(builder.finish())
+}
+
+fn parse_quoted(value: string) -> Result[string, string] {
+    if value.byte_len() < 2 {
+        Result::Err("unterminated quoted value")
+    } else if value.byte_get(0) == b'"' && value.byte_get(value.byte_len() - 1) == b'"' {
+        parse_basic_string(value)
+    } else if value.byte_get(0) == b'\'' && value.byte_get(value.byte_len() - 1) == b'\'' {
+        Result::Ok(value.byte_slice(1, value.byte_len() - 1))
+    } else {
+        Result::Err("unterminated quoted value")
+    }
+}
+
+fn top_level_separator(value: string, expected: byte) -> Option[int] {
+    let mut quote = 0 as byte;
+    let mut escaped = false;
+    let mut square = 0;
+    let mut curly = 0;
+    for index in 0..value.byte_len() {
+        let current = value.byte_get(index);
+        if quote == 0 {
+            if current == b'"' || current == b'\'' {
+                quote = current;
+            } else if current == b'[' {
+                square += 1;
+            } else if current == b']' {
+                square -= 1;
+            } else if current == b'{' {
+                curly += 1;
+            } else if current == b'}' {
+                curly -= 1;
+            } else if current == expected && square == 0 && curly == 0 {
+                return Option::Some(index)
+            } else {}
+        } else if quote == b'"' && escaped {
+            escaped = false;
+        } else if quote == b'"' && current == b'\\' {
+            escaped = true;
+        } else if current == quote {
+            quote = 0;
+        } else {}
+    }
+    Option::None
+}
+
+fn split_top_level(value: string, separator: byte) -> Result[Vec[string], string] {
+    let result: Vec[string] = Vec::[];
+    let mut remaining = value;
+    loop {
+        match top_level_separator(remaining, separator) {
+            Some(index) => {
+                result.push(text::trim(remaining.byte_slice(0, index)));
+                remaining = remaining.byte_slice(index + 1, remaining.byte_len());
+            },
+            None => {
+                result.push(text::trim(remaining));
+                break
+            },
+        }
+    }
+    if !result.is_empty() && result[result.len() - 1] == "" {
+        let _ = result.pop();
+    } else {};
+    for item in result {
+        if item == "" {
+            return Result::Err("empty list item")
+        } else {}
+    }
+    Result::Ok(result)
+}
+
+fn parse_key(value: string) -> Result[string, string] {
+    let value = text::trim(value);
+    if value == "" {
+        Result::Err("empty key")
+    } else if value.byte_get(0) == b'"' || value.byte_get(0) == b'\'' {
+        parse_quoted(value)
+    } else {
+        for index in 0..value.byte_len() {
+            let current = value.byte_get(index);
+            let valid = current >= b'a' && current <= b'z' || current >= b'A' && current <= b'Z'
+                || current >= b'0' && current <= b'9'
+                || current == b'_'
+                || current == b'-';
+            if !valid {
+                return Result::Err("invalid bare key")
+            } else {}
+        }
+        Result::Ok(value)
+    }
+}
+
+fn parse_key_path(value: string) -> Result[Vec[string], string] {
+    let parts = split_top_level(value, b'.')?;
+    let result: Vec[string] = Vec::with_capacity(parts.len());
+    for part in parts {
+        result.push(parse_key(part)?)
+    }
+    Result::Ok(result)
+}
+
+fn parse_integer(value: string) -> Result[int64, string] {
+    let normalized = text::replace(value, "_", "");
+    let negative = normalized.byte_len() > 0 && normalized.byte_get(0) == b'-';
+    let positive = normalized.byte_len() > 0 && normalized.byte_get(0) == b'+';
+    let sign_offset = if negative || positive {
+        1
+    } else {
+        0
+    };
+    let unsigned = normalized.byte_slice(sign_offset, normalized.byte_len());
+    let parsed = if unsigned.byte_len() > 2 && unsigned.byte_slice(0, 2) == "0x" {
+        num::parse_int_radix(unsigned.byte_slice(2, unsigned.byte_len()), 16)?
+    } else if unsigned.byte_len() > 2 && unsigned.byte_slice(0, 2) == "0o" {
+        num::parse_int_radix(unsigned.byte_slice(2, unsigned.byte_len()), 8)?
+    } else if unsigned.byte_len() > 2 && unsigned.byte_slice(0, 2) == "0b" {
+        num::parse_int_radix(unsigned.byte_slice(2, unsigned.byte_len()), 2)?
+    } else {
+        num::parse_int(unsigned)?
+    };
+    Result::Ok(
+        (if negative {
+            0 - parsed
+        } else {
+            parsed
+        }) as int64,
+    )
+}
+
+fn parse_inline_table(value: string) -> Result[Value, string] {
+    let body = text::trim(value.byte_slice(1, value.byte_len() - 1));
+    let fields: Vec[(string, Value)] = Vec::[];
+    if body == "" {
+        return Result::Ok(Value::Table(fields))
+    } else {};
+    for item in split_top_level(body, b',')? {
+        let Some(index) = top_level_separator(item, b'=') else {
+            return Result::Err("inline table entry requires `=`")
+        };
+        let path = parse_key_path(item.byte_slice(0, index))?;
+        if path.len() != 1 {
+            return Result::Err("dotted inline table keys are not supported")
+        } else {};
+        for field in fields {
+            if field.0 == path[0] {
+                return Result::Err("duplicate inline table key")
+            } else {}
+        }
+        fields.push((path[0], parse_value(item.byte_slice(index + 1, item.byte_len()))?))
+    }
+    Result::Ok(Value::Table(fields))
+}
+
+fn parse_array(value: string) -> Result[Value, string] {
+    let body = text::trim(value.byte_slice(1, value.byte_len() - 1));
+    let values: Vec[Value] = Vec::[];
+    if body == "" {
+        return Result::Ok(Value::Array(values))
+    } else {};
+    for item in split_top_level(body, b',')? {
+        values.push(parse_value(item)?)
+    }
+    Result::Ok(Value::Array(values))
+}
+
+fn parse_value(source: string) -> Result[Value, string] {
+    let value = text::trim(source);
+    if value == "" {
+        Result::Err("missing value")
+    } else if value.byte_get(0) == b'"' || value.byte_get(0) == b'\'' {
+        match parse_quoted(value) {
+            Ok(result) => Result::Ok(Value::String(result)),
+            Err(error) => Result::Err(error),
+        }
+    } else if value == "true" {
+        Result::Ok(Value::Boolean(true))
+    } else if value == "false" {
+        Result::Ok(Value::Boolean(false))
+    } else if value.byte_get(0) == b'[' && value.byte_get(value.byte_len() - 1) == b']' {
+        parse_array(value)
+    } else if value.byte_get(0) == b'{' && value.byte_get(value.byte_len() - 1) == b'}' {
+        parse_inline_table(value)
+    } else {
+        match parse_integer(value) {
+            Ok(result) => Result::Ok(Value::Integer(result)),
+            Err(_) => match num::parse_float64(text::replace(value, "_", "")) {
+                Ok(result) => Result::Ok(Value::Float(result)),
+                Err(_) => if value.contains("-") || value.contains(":") {
+                    Result::Ok(Value::Datetime(value))
+                } else {
+                    Result::Err("invalid TOML value")
+                },
+            },
+        }
+    }
+}
+
+fn append_path(prefix: Vec[string], suffix: Vec[string]) -> Vec[string] {
+    let result: Vec[string] = Vec::with_capacity(prefix.len() + suffix.len());
+    for part in prefix {
+        result.push(part)
+    }
+    for part in suffix {
+        result.push(part)
+    }
+    result
+}
+
+fn same_path(left: Vec[string], right: Vec[string]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if left[index] != right[index] {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn path_prefix(value: Vec[string], prefix: Vec[string]) -> bool {
+    if value.len() < prefix.len() {
+        false
+    } else {
+        for index in 0..prefix.len() {
+            if value[index] != prefix[index] {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn string_in(values: Vec[string], expected: string) -> bool {
+    for value in values {
+        if value == expected {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn table_from_entries(entries: Vec[FlatEntry], prefix: Vec[string]) -> Result[Value, string] {
+    let fields: Vec[(string, Value)] = Vec::[];
+    let children: Vec[string] = Vec::[];
+    for entry in entries {
+        if path_prefix(entry.path, prefix) && entry.path.len() > prefix.len() {
+            let name = entry.path[prefix.len()];
+            if entry.path.len() == prefix.len() + 1 {
+                fields.push((name, entry.value))
+            } else if !string_in(children, name) {
+                children.push(name)
+            } else {}
+        } else {}
+    }
+    for child in children {
+        for field in fields {
+            if field.0 == child {
+                return Result::Err("key is both a value and a table: " + child)
+            } else {}
+        }
+        let path = append_path(prefix, Vec::[child]);
+        fields.push((child, table_from_entries(entries, path)?))
+    }
+    Result::Ok(Value::Table(fields))
+}
+
+pub fn parse(input: string) -> Result[Value, string] {
+    let entries: Vec[FlatEntry] = Vec::[];
+    let mut section: Vec[string] = Vec::[];
+    let lines = text::lines(input);
+    for index in 0..lines.len() {
+        let line_number = index + 1;
+        let line = text::trim(strip_comment(lines[index]));
+        if line == "" {} else if line.byte_get(0) == b'[' {
+            if line.byte_len() < 2 || line.byte_get(line.byte_len() - 1) != b']'
+                || line.byte_len() > 1 && line.byte_get(1) == b'[' {
+                return Result::Err(toml_error(line_number, "invalid table header"))
+            } else {};
+            match parse_key_path(line.byte_slice(1, line.byte_len() - 1)) {
+                Ok(path) => {
+                    section = path;
+                },
+                Err(error) => return Result::Err(toml_error(line_number, error)),
+            }
+        } else {
+            let Some(separator) = top_level_separator(line, b'=') else {
+                return Result::Err(toml_error(line_number, "key/value pair requires `=`"))
+            };
+            let path = match parse_key_path(line.byte_slice(0, separator)) {
+                Ok(path) => append_path(section, path),
+                Err(error) => return Result::Err(toml_error(line_number, error)),
+            };
+            for entry in entries {
+                if same_path(entry.path, path) {
+                    return Result::Err(toml_error(line_number, "duplicate key"))
+                } else {}
+            }
+            match parse_value(line.byte_slice(separator + 1, line.byte_len())) {
+                Ok(value) => entries.push(FlatEntry { path, value }),
+                Err(error) => return Result::Err(toml_error(line_number, error)),
+            }
+        }
+    }
+    table_from_entries(entries, Vec::[])
+}
+
+fn bare_key(value: string) -> bool {
+    if value == "" {
+        false
+    } else {
+        for index in 0..value.byte_len() {
+            let current = value.byte_get(index);
+            if !(current >= b'a' && current <= b'z' || current >= b'A' && current <= b'Z'
+                || current >= b'0' && current <= b'9'
+                || current == b'_'
+                || current == b'-') {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn escaped_string(value: string) -> string {
+    let builder = text::StringBuilder::with_capacity(value.byte_len() + 2);
+    builder.write_string("\"");
+    for index in 0..value.byte_len() {
+        let current = value.byte_get(index);
+        if current == b'"' {
+            builder.write_string("\\\"")
+        } else if current == b'\\' {
+            builder.write_string("\\\\")
+        } else if current == b'\b' {
+            builder.write_string("\\b")
+        } else if current == b'\t' {
+            builder.write_string("\\t")
+        } else if current == b'\n' {
+            builder.write_string("\\n")
+        } else if current == b'\f' {
+            builder.write_string("\\f")
+        } else if current == b'\r' {
+            builder.write_string("\\r")
+        } else {
+            builder.write_string(value.byte_slice(index, index + 1))
+        }
+    }
+    builder.write_string("\"");
+    builder.finish()
+}
+
+fn encoded_key(value: string) -> string {
+    if bare_key(value) {
+        value
+    } else {
+        escaped_string(value)
+    }
+}
+
+fn encoded_path(path: Vec[string]) -> string {
+    let values: Vec[string] = Vec::with_capacity(path.len());
+    for part in path {
+        values.push(encoded_key(part))
+    }
+    text::join(values, ".")
+}
+
+fn inline_value(value: Value) -> Result[string, string] {
+    match value {
+        Value::String(value) => Result::Ok(escaped_string(value)),
+        Value::Integer(value) => Result::Ok(value.to_string()),
+        Value::Float(value) => Result::Ok(value.to_string()),
+        Value::Boolean(value) => Result::Ok(
+            if value {
+                "true"
+            } else {
+                "false"
+            },
+        ),
+        Value::Datetime(value) => Result::Ok(value),
+        Value::Array(values) => {
+            let encoded: Vec[string] = Vec::with_capacity(values.len());
+            for value in values {
+                encoded.push(inline_value(value)?)
+            }
+            Result::Ok("[" + text::join(encoded, ", ") + "]")
+        },
+        Value::Table(fields) => {
+            let encoded: Vec[string] = Vec::with_capacity(fields.len());
+            for field in fields {
+                encoded.push(encoded_key(field.0) + " = " + inline_value(field.1)?)
+            }
+            Result::Ok("{ " + text::join(encoded, ", ") + " }")
+        },
+    }
+}
+
+fn write_table(builder: text::StringBuilder, path: Vec[string], fields: Vec[(string, Value)]) -> Result[
+    unit,
+    string,
+] {
+    if !path.is_empty() {
+        if !builder.is_empty() {
+            builder.write_string("\n")
+        } else {};
+        builder.write_line("[" + encoded_path(path) + "]")
+    } else {};
+    for field in fields {
+        match field.1 {
+            Value::Table(_) => (),
+            value => builder.write_line(encoded_key(field.0) + " = " + inline_value(value)?),
+        }
+    }
+    for field in fields {
+        match field.1 {
+            Value::Table(values) => write_table(builder, append_path(path, Vec::[field.0]), values)?,
+            _ => (),
+        }
+    }
+    Result::Ok(())
+}
+
+pub fn encode(value: Value) -> Result[string, string] {
+    match value {
+        Value::Table(fields) => {
+            let builder = text::StringBuilder::new();
+            write_table(builder, Vec::[], fields)?;
+            Result::Ok(builder.finish())
+        },
+        _ => Result::Err("TOML document root must be a table"),
+    }
+}
+
+pub fn field(value: Value, name: string) -> Option[Value] {
+    match value {
+        Value::Table(fields) => {
+            for field in fields {
+                if field.0 == name {
+                    return Option::Some(field.1)
+                } else {}
+            }
+            Option::None
+        },
+        _ => Option::None,
+    }
+}
+
+pub fn as_string(value: Value) -> Option[string] {
+    match value {
+        Value::String(value) | Value::Datetime(value) => Option::Some(value),
+        _ => Option::None,
+    }
+}
+
+pub fn as_integer(value: Value) -> Option[int64] {
+    match value {
+        Value::Integer(value) => Option::Some(value),
+        _ => Option::None,
+    }
+}
+
+pub fn as_boolean(value: Value) -> Option[bool] {
+    match value {
+        Value::Boolean(value) => Option::Some(value),
+        _ => Option::None,
+    }
+}
+
+pub fn as_array(value: Value) -> Option[Vec[Value]] {
+    match value {
+        Value::Array(value) => Option::Some(value),
+        _ => Option::None,
+    }
+}
+
+pub fn as_table(value: Value) -> Option[Vec[(string, Value)]] {
+    match value {
+        Value::Table(value) => Option::Some(value),
+        _ => Option::None,
+    }
+}

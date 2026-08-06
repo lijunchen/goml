@@ -59,6 +59,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "std::serde",
                 "std::task",
                 "std::text",
+                "std::toml",
                 "std::time",
             ],
             Vec::[
@@ -77,6 +78,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
                 "std::serde",
                 "std::task",
                 "std::text",
+                "std::toml",
                 "std::time",
             ],
         ),
@@ -219,6 +221,14 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             Vec::["std/text/string_builder.gom", "std/text/text.gom"],
             Vec::["std::ascii", "std::bytes"],
             Vec::["std::ascii", "std::bytes"],
+        ),
+        standard_package(
+            "std::toml",
+            "toml",
+            "std",
+            Vec::["std/toml/toml.gom", "std/toml/serde.gom"],
+            Vec::["std::num", "std::serde", "std::text"],
+            Vec::["std::num", "std::serde", "std::text"],
         ),
         standard_package(
             "std::time",
