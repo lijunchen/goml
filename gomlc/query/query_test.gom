@@ -728,6 +728,34 @@ fn returns_function_hover_on_declarations_and_calls() -> unit {
 }
 
 #[test]
+fn shows_comptime_capability_in_function_hover() -> unit {
+    let source = "#[comptime] fn value() -> int { 42 } fn main() -> int { value() }";
+    let analysis = analyze("main.gom", source);
+    assert_no_diagnostics(analysis);
+    match last_substring(source, "value") {
+        Some(offset) => match hover(analysis, offset) {
+            Some(result) => testing::assert_eq(result.contents, "comptime () -> int"),
+            None => testing::fail("expected comptime function hover"),
+        },
+        None => testing::fail("expected comptime function call"),
+    }
+}
+
+#[test]
+fn reports_comptime_evaluation_failures_during_analysis() -> unit {
+    let source = "#[comptime] fn fail() -> int { compile_error(\"query failure\") } fn main() -> int { comptime { fail() } }";
+    let analysis = analyze("main.gom", source);
+    let found = Ref::new(false);
+    for diagnostic in analysis.checked.diagnostics {
+        if diagnostic.message.contains("query failure") {
+            testing::assert_eq(diagnostic.stage, "comptime");
+            found.set(true)
+        } else {}
+    }
+    testing::assert(found.get())
+}
+
+#[test]
 fn shows_generic_method_parameters_in_hover_and_concrete_signature_help() -> unit {
     let source = "struct Box[T] { value: T } impl[T] Box[T] { fn map[U](self: Box[T], convert: (T) -> U) -> Box[U] { Box { value: convert(self.value) } } } struct Other {} impl Other { fn map[V](self: Other, value: V) -> V { let _ = self; value } } fn main() -> Box[string] { let value = Box { value: 1 }; value.map(|item: int| item.to_string()) }";
     let analysis = analyze("main.gom", source);

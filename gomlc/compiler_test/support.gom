@@ -339,7 +339,30 @@ fn module_projects() -> Vec[string] {
 }
 
 pub fn assert_module_count() -> unit {
-    testing::assert_eq(module_projects().len(), 46)
+    testing::assert_eq(module_projects().len(), 47)
+}
+
+fn directory_contains_extension(directory: string, extension: string) -> bool {
+    if !fs::is_dir(directory) {
+        false
+    } else {
+        for name in read_directory(directory) {
+            let entry = path::join(directory, name);
+            if fs::is_dir(entry) {
+                if directory_contains_extension(entry, extension) {
+                    return true
+                } else {}
+            } else {
+                match path::extension(entry) {
+                    Some(value) => if value == extension {
+                        return true
+                    } else {},
+                    None => (),
+                }
+            }
+        }
+        false
+    }
 }
 
 pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
@@ -363,6 +386,7 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
             );
             let checked = project_command("check", project, target);
             assert_command_success(checked, "module check for " + project);
+            testing::assert(!directory_contains_extension(path::join(target, "check"), "core"));
             let executed = project_command("run", project, target);
             assert_command_success(executed, "module run for " + project);
             assert_text(
@@ -391,7 +415,7 @@ fn module_diagnostic_projects() -> Vec[string] {
 
 pub fn assert_module_diagnostics() -> unit {
     let projects = module_diagnostic_projects();
-    testing::assert_eq(projects.len(), 37);
+    testing::assert_eq(projects.len(), 38);
     for source_project in projects {
         let name = match path::file_name(source_project) {
             Some(value) => value,

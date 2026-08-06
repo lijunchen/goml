@@ -217,6 +217,7 @@ fn parses_run_single_dump_flags() -> unit {
     values.push("main.gom");
     values.push("--dump-ast");
     values.push("--dump-tast");
+    values.push("--dump-ctir");
     values.push("--dump-core");
     values.push("--dump-mono");
     values.push("--dump-lift");
@@ -227,6 +228,7 @@ fn parses_run_single_dump_flags() -> unit {
     testing::assert(args.dump_ast);
     testing::assert(args.dump_hir);
     testing::assert(args.dump_tast);
+    testing::assert(args.dump_ctir);
     testing::assert(args.dump_core);
     testing::assert(args.dump_mono);
     testing::assert(args.dump_lift);
@@ -243,6 +245,7 @@ fn parses_run_single_without_dumps() -> unit {
     testing::assert(!args.dump_ast);
     testing::assert(!args.dump_hir);
     testing::assert(!args.dump_tast);
+    testing::assert(!args.dump_ctir);
     testing::assert(!args.dump_core);
     testing::assert(!args.dump_mono);
     testing::assert(!args.dump_lift);
@@ -346,7 +349,7 @@ fn reports_driver_protocol_version() -> unit {
     );
     testing::assert_eq(
         version_output_with(VersionFormat::Json, Option::None, Option::None),
-        "{\"artifact_format\":15,\"compiler_abi\":3,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
+        "{\"artifact_format\":16,\"compiler_abi\":4,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
             + version::current()
             + "\"}",
     );
@@ -470,6 +473,7 @@ fn collects_and_encodes_test_descriptors() -> unit {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "alice::sample::zebra",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -479,6 +483,7 @@ fn collects_and_encodes_test_descriptors() -> unit {
     );
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "alice::sample::alpha",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -515,6 +520,7 @@ fn collects_all_invalid_test_signature_diagnostics() -> unit {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "alice::bad::invalid",
             type_params: Vec::["T"],
             constraints: Vec::new(),
@@ -596,6 +602,7 @@ fn labels_duplicate_test_ids_across_files() -> unit {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "example::tests::duplicate",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -1034,6 +1041,7 @@ fn writes_interface_unit_shape_and_hash() -> unit {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "audit::value::value",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -1054,13 +1062,13 @@ fn writes_interface_unit_shape_and_hash() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "10e6fefebde8c3666890f2a9b653222455152e4d6ba7f0a939e60e4753944650",
+        "1f23f83c5cf54c0903bf548da627096eb209563bc377c14cb84ebca3cd41e710",
     );
     let encoded = interface_codec::encode_json(artifact_unit, false);
     testing::assert_eq(
         encoded,
-        "{\"format_version\":19,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"reexports\":{},\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
-            + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\",\"id\":\"audit::value::value\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"10e6fefebde8c3666890f2a9b653222455152e4d6ba7f0a939e60e4753944650\"}",
+        "{\"format_version\":20,\"compiler_abi\":4,\"package\":\"audit::value\",\"exports\":{\"reexports\":{},\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
+            + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"comptime\":false,\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\",\"id\":\"audit::value::value\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"comptime\":null,\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"1f23f83c5cf54c0903bf548da627096eb209563bc377c14cb84ebca3cd41e710\"}",
     );
     let binary = match interface_codec::encode_binary(artifact_unit) {
         Ok(value) => value,
@@ -1134,7 +1142,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "10e6fefebde8c3666890f2a9b653222455152e4d6ba7f0a939e60e4753944650",
+        "1f23f83c5cf54c0903bf548da627096eb209563bc377c14cb84ebca3cd41e710",
     )
 }
 
@@ -1196,7 +1204,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "42720fc3db022804683b8c907537002c362c851c756bb769a7d4fd0c5e0468e7",
+        "f81279b2ee17ec3668797fbfb64d78349c9c3840923950453f45249c327fd640",
     );
     let encoded = interface_codec::encode_json(artifact_unit, false);
     let binary = match interface_codec::encode_binary(artifact_unit) {
@@ -1344,7 +1352,7 @@ fn writes_core_unit_from_checked_package() -> unit {
     let encoded = core_codec::encode_json(core_unit, false);
     testing::assert_eq(
         hash::sha256_hex(encoded),
-        "b0400175e61b9b075b4f3b385ab32c6687239d65bd0b804448739f3f2f8be4a8",
+        "0ab05783d2777297e06e5347d020f42e0d3f7ca79bf2c9bfc74819ad4787423e",
     );
     let binary = match core_codec::encode_binary(core_unit) {
         Ok(value) => value,
@@ -1377,6 +1385,7 @@ fn validates_artifact_main_entrypoints() -> unit {
     };
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "example::app::main",
             type_params: Vec::["T"],
             constraints: Vec::new(),
@@ -1391,6 +1400,7 @@ fn validates_artifact_main_entrypoints() -> unit {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "example::app::main",
             type_params: Vec::new(),
             constraints: Vec::new(),
@@ -1413,6 +1423,7 @@ fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
     let exports = interface_codec::empty_exports();
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "example::app::main",
             type_params: Vec::["T"],
             constraints: Vec::new(),
@@ -1435,6 +1446,7 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
     };
     exports.functions.push(
         artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
             name: "audit::identity",
             type_params: Vec::["T"],
             constraints: Vec::[function_constraint],
@@ -1480,6 +1492,7 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
                 associated_types: Vec::[("Item", tast::Type::Int32)],
                 methods: Vec::[
                     artifact::ArtifactFnScheme {
+                        comptime: tast::ComptimeCapability::RuntimeOnly,
                         name: "read",
                         type_params: Vec::new(),
                         constraints: Vec::[method_constraint],

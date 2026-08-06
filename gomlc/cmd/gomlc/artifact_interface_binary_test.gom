@@ -3,6 +3,11 @@ package main;
 use gomlc::artifact::interface_codec as interface_codec;
 use gomlc::artifact::wire as wire;
 use gomlc::artifact;
+use gomlc::ast;
+use gomlc::ctir;
+use gomlc::hir;
+use gomlc::parser;
+use gomlc::tast;
 use std::bytes;
 use std::testing;
 
@@ -17,6 +22,119 @@ fn binary_interface_fixture() -> artifact::ArtifactInterfaceUnit {
             enum_variants: Vec::new(),
         },
         Vec::[("builtin", "0123456789abcdef")],
+    )
+}
+
+fn binary_comptime_module(value: int, source_path: string) -> ctir::CtModule {
+    let ty = ctir::CtType::Integer { signed: true, width: 64 };
+    let module = ctir::empty_module("audit::comptime");
+    module.origins.set(0, ctir::CtOrigin { source_path, start: 10, end: 20 });
+    module.functions.push(
+        ctir::CtFunction {
+            id: 0,
+            name: "audit::comptime::value",
+            parameter_slots: Vec::[],
+            parameter_types: Vec::[],
+            local_count: 0,
+            local_types: Vec::[],
+            return_type: ty,
+            body: ctir::CtBlock {
+                statements: Vec::[],
+                tail: Option::Some(
+                    ctir::CtExpr {
+                        kind: ctir::CtExprKind::Value(
+                            ctir::CtValue::Integer {
+                                signed: true,
+                                width: 64,
+                                bits: value as uint64,
+                            },
+                        ),
+                        ty,
+                        origin: 0,
+                    },
+                ),
+                origin: 0,
+            },
+            origin: 0,
+        },
+    );
+    module.entries.push(ctir::CtEntry { name: "audit::comptime::value", function_id: 0 });
+    module
+}
+
+fn binary_comptime_interface(value: int, source_path: string) -> artifact::ArtifactInterfaceUnit {
+    let exports = interface_codec::empty_exports();
+    exports.functions.push(
+        artifact::ArtifactFnScheme {
+            name: "audit::comptime::value",
+            comptime: tast::ComptimeCapability::Capable,
+            type_params: Vec::[],
+            constraints: Vec::[],
+            ty: tast::Type::Func { params: Vec::[], ret_ty: tast::Type::Int },
+            body: tast::Callable::Function("audit::comptime::value"),
+        },
+    );
+    interface_codec::new_unit_with_comptime(
+        "audit::comptime",
+        exports,
+        artifact::ArtifactPackageInterface {
+            package_name: "audit::comptime",
+            name: "comptime",
+            value_exports: Vec::[("audit::comptime::value", 0)],
+            enum_variants: Vec::[],
+        },
+        Option::Some(interface_codec::new_comptime_unit(binary_comptime_module(value, source_path))),
+        Vec::[],
+    )
+}
+
+fn source_interface(source: string) -> artifact::ArtifactInterfaceUnit {
+    let lowered_ast = ast::lower(parser::parse(source));
+    let public_names = public_item_names(Vec::[lowered_ast], "audit::value");
+    let lowered = hir::lower_package(lowered_ast, "value.gom", "audit::value");
+    let hir_file = match lowered.hir {
+        Some(value) => value,
+        None => {
+            testing::fail("expected source interface HIR");
+            hir::File {
+                package_name: "audit::value",
+                path: "value.gom",
+                source_path: "value.gom",
+                imports: Vec::[],
+                import_aliases: Vec::[],
+                use_traits: Vec::[],
+                public_reexports: Vec::[],
+                items: Vec::[],
+                invalid_self_type_spans: Vec::[],
+            }
+        },
+    };
+    let signatures = tast::package_signatures(hir_file);
+    let checked = tast::check_package_files_for_link_with_dependencies(Vec::[hir_file], Vec::[]);
+    testing::assert_eq(checked.diagnostics.len(), 0);
+    let file = match checked.tast {
+        Some(value) => value,
+        None => {
+            testing::fail("expected source interface TAST");
+            tast::File { items: Vec::[], enums: Vec::[], structs: Vec::[], constants: Vec::[] }
+        },
+    };
+    let exports = artifact_package_exports(
+        file,
+        signatures,
+        "audit::value",
+        public_names,
+        Vec::[],
+        true,
+        Vec::[],
+        Vec::[],
+    );
+    interface_codec::new_unit_with_comptime(
+        "audit::value",
+        exports,
+        artifact_package_interface("audit::value", "value", exports),
+        artifact_comptime_unit(checked.comptime, exports),
+        Vec::[],
     )
 }
 
@@ -78,6 +196,150 @@ fn binary_interface_artifact_is_deterministic() -> unit {
             interface_codec::encode_json(binary_interface_fixture(), false),
         ),
         Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn binary_comptime_interface_round_trips() -> unit {
+    let value = binary_comptime_interface(42, "src/value.gom");
+    let encoded = match interface_codec::encode_binary(value) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match interface_codec::decode_binary(encoded) {
+        Ok(decoded) => testing::assert_eq(
+            interface_codec::encode_json(decoded, false),
+            interface_codec::encode_json(value, false),
+        ),
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn comptime_semantic_hash_ignores_origins_and_tracks_values() -> unit {
+    let first = interface_codec::new_comptime_unit(binary_comptime_module(42, "src/first.gom"));
+    let renamed = interface_codec::new_comptime_unit(
+        binary_comptime_module(42, "other/renamed.gom"),
+    );
+    let changed = interface_codec::new_comptime_unit(binary_comptime_module(43, "src/first.gom"));
+    let target_changed_module = binary_comptime_module(42, "src/first.gom");
+    target_changed_module.target = ctir::CtTarget { int_width: 32 };
+    let target_changed = interface_codec::new_comptime_unit(target_changed_module);
+    testing::assert_eq(first.semantic_hash, renamed.semantic_hash);
+    testing::assert(first.semantic_hash != changed.semantic_hash);
+    testing::assert(first.semantic_hash != target_changed.semantic_hash)
+}
+
+#[test]
+fn interface_hash_tracks_only_public_comptime_body_closures() -> unit {
+    let first = source_interface(
+        "package value; fn runtime_helper() -> int { 1 } pub fn runtime_value() -> int { runtime_helper() } #[comptime] fn ct_helper() -> int { 2 } #[comptime] pub fn ct_value() -> int { ct_helper() }",
+    );
+    let runtime_changed = source_interface(
+        "package value; fn runtime_helper() -> int { 99 } pub fn runtime_value() -> int { runtime_helper() } #[comptime] fn ct_helper() -> int { 2 } #[comptime] pub fn ct_value() -> int { ct_helper() }",
+    );
+    let comptime_changed = source_interface(
+        "package value; fn runtime_helper() -> int { 1 } pub fn runtime_value() -> int { runtime_helper() } #[comptime] fn ct_helper() -> int { 3 } #[comptime] pub fn ct_value() -> int { ct_helper() }",
+    );
+    testing::assert_eq(first.interface_hash, runtime_changed.interface_hash);
+    testing::assert(first.interface_hash != comptime_changed.interface_hash)
+}
+
+#[test]
+fn exported_comptime_origins_are_package_relative() -> unit {
+    let exports = binary_comptime_interface(42, "src/value.gom").exports;
+    match artifact_comptime_unit(binary_comptime_module(42, "/checkout/src/value.gom"), exports) {
+        Some(value) => {
+            testing::assert_eq(value.module.origins[0].source_path, "value.gom")
+        },
+        None => testing::fail("expected exported comptime unit"),
+    }
+}
+
+#[test]
+fn comptime_interface_rejects_invalid_semantic_hash() -> unit {
+    let value = binary_comptime_interface(42, "src/value.gom");
+    let comptime = match value.comptime {
+        Some(value) => value,
+        None => {
+            testing::fail("expected comptime unit");
+            interface_codec::new_comptime_unit(binary_comptime_module(42, "src/value.gom"))
+        },
+    };
+    value.comptime = Option::Some(
+        artifact::ArtifactComptimeUnit {
+            version: comptime.version,
+            module: comptime.module,
+            semantic_hash: "invalid",
+        },
+    );
+    let encoded = match interface_codec::encode_binary(value) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match interface_codec::decode_binary(encoded) {
+        Ok(_) => testing::fail("expected invalid comptime semantic hash rejection"),
+        Err(_) => (),
+    }
+}
+
+#[test]
+fn comptime_interface_rejects_unknown_ctir_version() -> unit {
+    let value = binary_comptime_interface(42, "src/value.gom");
+    let comptime = match value.comptime {
+        Some(value) => value,
+        None => {
+            testing::fail("expected comptime unit");
+            interface_codec::new_comptime_unit(binary_comptime_module(42, "src/value.gom"))
+        },
+    };
+    value.comptime = Option::Some(
+        artifact::ArtifactComptimeUnit {
+            version: comptime.version + 1,
+            module: comptime.module,
+            semantic_hash: comptime.semantic_hash,
+        },
+    );
+    let encoded = match interface_codec::encode_binary(value) {
+        Ok(value) => value,
+        Err(error) => {
+            testing::fail(error);
+            bytes::Bytes::new()
+        },
+    };
+    match interface_codec::decode_binary(encoded) {
+        Ok(_) => testing::fail("expected unsupported comptime version rejection"),
+        Err(error) => testing::assert(error.contains("unsupported comptime artifact version")),
+    }
+}
+
+#[test]
+fn dependency_loader_rejects_invalid_comptime_local_types() -> unit {
+    let interface = binary_comptime_interface(42, "src/value.gom");
+    let comptime = match interface.comptime {
+        Some(value) => value,
+        None => {
+            testing::fail("expected comptime unit");
+            interface_codec::new_comptime_unit(binary_comptime_module(42, "src/value.gom"))
+        },
+    };
+    comptime.module.functions[0].local_count = 1;
+    interface.comptime = Option::Some(interface_codec::new_comptime_unit(comptime.module));
+    let world = package_world();
+    match artifact_dependency_environments(
+        world.builtin_interface.exports,
+        world.standard,
+        no_standard_needs(),
+        Vec::[interface],
+    ) {
+        Ok(_) => testing::fail("expected invalid imported comptime module rejection"),
+        Err(error) => testing::assert(error.contains("local type count does not match local count")),
     }
 }
 

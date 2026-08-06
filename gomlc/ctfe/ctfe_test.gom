@@ -1,0 +1,756 @@
+package ctfe;
+
+use gomlc::ctir;
+use std::testing;
+
+fn test_origin() -> ctir::CtOrigin {
+    ctir::CtOrigin { source_path: "test.gom", start: 0, end: 1 }
+}
+
+fn int_type() -> ctir::CtType {
+    ctir::CtType::Integer { signed: true, width: 64 }
+}
+
+fn int_value(value: int) -> ctir::CtValue {
+    ctir::CtValue::Integer { signed: true, width: 64, bits: value as uint64 }
+}
+
+fn int_expr(value: int) -> ctir::CtExpr {
+    ctir::CtExpr { kind: ctir::CtExprKind::Value(int_value(value)), ty: int_type(), origin: 0 }
+}
+
+fn narrow_int_type(signed: bool, width: int) -> ctir::CtType {
+    ctir::CtType::Integer { signed, width }
+}
+
+fn narrow_int_value(signed: bool, width: int, bits: uint64) -> ctir::CtValue {
+    ctir::CtValue::Integer { signed, width, bits }
+}
+
+fn narrow_int_expr(signed: bool, width: int, bits: uint64) -> ctir::CtExpr {
+    ctir::CtExpr {
+        kind: ctir::CtExprKind::Value(narrow_int_value(signed, width, bits)),
+        ty: narrow_int_type(signed, width),
+        origin: 0,
+    }
+}
+
+fn local_expr(slot: int, ty: ctir::CtType) -> ctir::CtExpr {
+    ctir::CtExpr { kind: ctir::CtExprKind::Local(slot), ty, origin: 0 }
+}
+
+fn bool_expr(value: bool) -> ctir::CtExpr {
+    ctir::CtExpr {
+        kind: ctir::CtExprKind::Value(ctir::CtValue::Bool(value)),
+        ty: ctir::CtType::Bool,
+        origin: 0,
+    }
+}
+
+fn compile_error_expr(message: string) -> ctir::CtExpr {
+    ctir::CtExpr {
+        kind: ctir::CtExprKind::CompileError(
+            ctir::CtExpr {
+                kind: ctir::CtExprKind::Value(ctir::CtValue::String(message)),
+                ty: ctir::CtType::String,
+                origin: 0,
+            },
+        ),
+        ty: ctir::CtType::Never,
+        origin: 0,
+    }
+}
+
+fn expression_module(expression: ctir::CtExpr, local_types: Vec[ctir::CtType]) -> ctir::CtModule {
+    let module = ctir::empty_module("test::expression");
+    module.sites.push(
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: local_types.len(),
+            local_types,
+            expression,
+            origin: 0,
+        },
+    );
+    module
+}
+
+fn evaluate_expression(expression: ctir::CtExpr, local_types: Vec[ctir::CtType], limits: EvalLimits) -> Result[
+    ctir::CtValue,
+    CtError,
+] {
+    let module = expression_module(expression, local_types);
+    match verify_module(module, Vec::[]) {
+        Ok(()) => evaluate_site(module, Vec::[], 0, limits),
+        Err(error) => {
+            testing::fail(error);
+            Result::Err(
+                CtError {
+                    kind: CtErrorKind::Failure,
+                    message: error,
+                    package_name: "test::expression",
+                    origin: 0,
+                    stack: Vec::[],
+                },
+            )
+        },
+    }
+}
+
+fn binary_expr(op: ctir::CtBinaryOp, left: ctir::CtExpr, right: ctir::CtExpr, ty: ctir::CtType) -> ctir::CtExpr {
+    ctir::CtExpr { kind: ctir::CtExprKind::Binary { op, left, right }, ty, origin: 0 }
+}
+
+fn factorial_module() -> ctir::CtModule {
+    let n = local_expr(0, int_type());
+    let condition = binary_expr(ctir::CtBinaryOp::LessEq, n, int_expr(1), ctir::CtType::Bool);
+    let decrement = binary_expr(ctir::CtBinaryOp::Sub, n, int_expr(1), int_type());
+    let recursive = ctir::CtExpr {
+        kind: ctir::CtExprKind::Call {
+            target: ctir::CtCallTarget::Local(0),
+            args: Vec::[decrement],
+        },
+        ty: int_type(),
+        origin: 0,
+    };
+    let result = binary_expr(ctir::CtBinaryOp::Mul, n, recursive, int_type());
+    let body_expr = ctir::CtExpr {
+        kind: ctir::CtExprKind::If { condition, then_branch: int_expr(1), else_branch: result },
+        ty: int_type(),
+        origin: 0,
+    };
+    let module = ctir::empty_module("test::factorial");
+    module.functions.push(
+        ctir::CtFunction {
+            id: 0,
+            name: "factorial",
+            parameter_slots: Vec::[0],
+            parameter_types: Vec::[int_type()],
+            local_count: 1,
+            local_types: Vec::[int_type()],
+            return_type: int_type(),
+            body: ctir::CtBlock { statements: Vec::[], tail: Option::Some(body_expr), origin: 0 },
+            origin: 0,
+        },
+    );
+    module.entries.push(ctir::CtEntry { name: "factorial", function_id: 0 });
+    module
+}
+
+fn expect_int(result: Result[ctir::CtValue, CtError]) -> int {
+    match result {
+        Ok(ctir::CtValue::Integer { signed: true, width: 64, bits }) => bits as int,
+        Ok(_) => {
+            testing::fail("expected comptime integer");
+            0
+        },
+        Err(error) => {
+            testing::fail(error.message);
+            0
+        },
+    }
+}
+
+#[test]
+fn evaluates_recursive_direct_calls() -> unit {
+    let module = factorial_module();
+    match verify_module(module, Vec::[]) {
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
+    };
+    testing::assert_eq(
+        expect_int(
+            evaluate_entry(module, Vec::[], "factorial", Vec::[int_value(10)], default_limits()),
+        ),
+        3628800,
+    )
+}
+
+fn loop_site_module() -> ctir::CtModule {
+    let increment = binary_expr(
+        ctir::CtBinaryOp::Add,
+        local_expr(0, int_type()),
+        int_expr(1),
+        int_type(),
+    );
+    let add = binary_expr(
+        ctir::CtBinaryOp::Add,
+        local_expr(1, int_type()),
+        local_expr(0, int_type()),
+        int_type(),
+    );
+    let condition = binary_expr(
+        ctir::CtBinaryOp::Less,
+        local_expr(0, int_type()),
+        int_expr(5),
+        ctir::CtType::Bool,
+    );
+    let loop_body = ctir::CtExpr {
+        kind: ctir::CtExprKind::Block(
+            ctir::CtBlock {
+                statements: Vec::[
+                    ctir::CtStmt::Assign { slot: 1, value: add },
+                    ctir::CtStmt::Assign { slot: 0, value: increment },
+                ],
+                tail: Option::None,
+                origin: 0,
+            },
+        ),
+        ty: ctir::CtType::Unit,
+        origin: 0,
+    };
+    let while_expr = ctir::CtExpr {
+        kind: ctir::CtExprKind::While { target: 0, condition, body: loop_body },
+        ty: ctir::CtType::Unit,
+        origin: 0,
+    };
+    let body = ctir::CtExpr {
+        kind: ctir::CtExprKind::Block(
+            ctir::CtBlock {
+                statements: Vec::[
+                    ctir::CtStmt::Let {
+                        pattern: ctir::CtPattern::Bind { slot: 0 },
+                        value: int_expr(0),
+                    },
+                    ctir::CtStmt::Let {
+                        pattern: ctir::CtPattern::Bind { slot: 1 },
+                        value: int_expr(0),
+                    },
+                    ctir::CtStmt::Expr(while_expr),
+                ],
+                tail: Option::Some(local_expr(1, int_type())),
+                origin: 0,
+            },
+        ),
+        ty: int_type(),
+        origin: 0,
+    };
+    let module = ctir::empty_module("test::loop");
+    module.sites.push(
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: 2,
+            local_types: Vec::[int_type(), int_type()],
+            expression: body,
+            origin: 0,
+        },
+    );
+    module
+}
+
+#[test]
+fn evaluates_local_state_and_loops() -> unit {
+    let module = loop_site_module();
+    match verify_module(module, Vec::[]) {
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
+    };
+    testing::assert_eq(expect_int(evaluate_site(module, Vec::[], 0, default_limits())), 10)
+}
+
+#[test]
+fn evaluates_structured_match_values() -> unit {
+    let option_type = ctir::CtType::Enum {
+        name: "test::OptionInt",
+        variants: Vec::[Vec::[int_type()], Vec::[]],
+    };
+    let source = ctir::CtExpr {
+        kind: ctir::CtExprKind::Enum {
+            name: "test::OptionInt",
+            variant: 0,
+            fields: Vec::[int_expr(42)],
+        },
+        ty: option_type,
+        origin: 0,
+    };
+    let expression = ctir::CtExpr {
+        kind: ctir::CtExprKind::Match {
+            value: source,
+            arms: Vec::[
+                ctir::CtArm {
+                    pattern: ctir::CtPattern::Enum {
+                        name: "test::OptionInt",
+                        variant: 0,
+                        fields: Vec::[ctir::CtPattern::Bind { slot: 0 }],
+                    },
+                    guard: Option::None,
+                    body: local_expr(0, int_type()),
+                    origin: 0,
+                },
+                ctir::CtArm {
+                    pattern: ctir::CtPattern::Wild,
+                    guard: Option::None,
+                    body: int_expr(0),
+                    origin: 0,
+                },
+            ],
+        },
+        ty: int_type(),
+        origin: 0,
+    };
+    let module = ctir::empty_module("test::match");
+    module.sites.push(
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: 1,
+            local_types: Vec::[int_type()],
+            expression,
+            origin: 0,
+        },
+    );
+    match verify_module(module, Vec::[]) {
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
+    };
+    testing::assert_eq(expect_int(evaluate_site(module, Vec::[], 0, default_limits())), 42)
+}
+
+#[test]
+fn reports_compile_errors_and_resource_limits() -> unit {
+    let message = ctir::CtExpr {
+        kind: ctir::CtExprKind::Value(ctir::CtValue::String("stop")),
+        ty: ctir::CtType::String,
+        origin: 0,
+    };
+    let expression = ctir::CtExpr {
+        kind: ctir::CtExprKind::CompileError(message),
+        ty: ctir::CtType::Never,
+        origin: 0,
+    };
+    let module = ctir::empty_module("test::failure");
+    module.sites.push(
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: 0,
+            local_types: Vec::[],
+            expression,
+            origin: 0,
+        },
+    );
+    match evaluate_site(module, Vec::[], 0, default_limits()) {
+        Err(error) => testing::assert_eq(error.message, "stop"),
+        Ok(_) => testing::fail("expected compile_error"),
+    };
+    let limits = EvalLimits {
+        fuel: 4,
+        call_depth: 256,
+        value_nodes: 100,
+        temporary_bytes: 1000,
+        final_bytes: 100,
+    };
+    match evaluate_entry(factorial_module(), Vec::[], "factorial", Vec::[int_value(10)], limits) {
+        Err(error) => testing::assert_eq(error.message, "comptime instruction limit exceeded"),
+        Ok(_) => testing::fail("expected fuel exhaustion"),
+    }
+}
+
+#[test]
+fn enforces_depth_value_and_result_limits() -> unit {
+    let depth_limits = EvalLimits {
+        fuel: 1000,
+        call_depth: 2,
+        value_nodes: 100,
+        temporary_bytes: 1000,
+        final_bytes: 100,
+    };
+    match evaluate_entry(
+        factorial_module(),
+        Vec::[],
+        "factorial",
+        Vec::[int_value(10)],
+        depth_limits,
+    ) {
+        Err(error) => testing::assert_eq(error.message, "comptime call depth limit exceeded"),
+        Ok(_) => testing::fail("expected call depth exhaustion"),
+    };
+    let value_limits = EvalLimits {
+        fuel: 100,
+        call_depth: 10,
+        value_nodes: 0,
+        temporary_bytes: 1000,
+        final_bytes: 100,
+    };
+    let module = ctir::empty_module("test::values");
+    module.sites.push(
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: 0,
+            local_types: Vec::[],
+            expression: int_expr(1),
+            origin: 0,
+        },
+    );
+    match evaluate_site(module, Vec::[], 0, value_limits) {
+        Err(error) => testing::assert_eq(error.message, "comptime temporary value limit exceeded"),
+        Ok(_) => testing::fail("expected temporary value exhaustion"),
+    };
+    let size_limits = EvalLimits {
+        fuel: 100,
+        call_depth: 10,
+        value_nodes: 100,
+        temporary_bytes: 1000,
+        final_bytes: 4,
+    };
+    match evaluate_site(module, Vec::[], 0, size_limits) {
+        Err(error) => testing::assert_eq(error.message, "comptime result size limit exceeded"),
+        Ok(_) => testing::fail("expected result size exhaustion"),
+    }
+}
+
+#[test]
+fn applies_fixed_width_integer_semantics() -> unit {
+    let int8_type = narrow_int_type(true, 8);
+    let wrapping_add = binary_expr(
+        ctir::CtBinaryOp::Add,
+        narrow_int_expr(true, 8, 127),
+        narrow_int_expr(true, 8, 1),
+        int8_type,
+    );
+    let module = ctir::empty_module("test::integers");
+    module.sites.push(
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: 0,
+            local_types: Vec::[],
+            expression: wrapping_add,
+            origin: 0,
+        },
+    );
+    match evaluate_site(module, Vec::[], 0, default_limits()) {
+        Ok(ctir::CtValue::Integer { signed, width, bits }) => {
+            testing::assert(signed);
+            testing::assert_eq(width, 8);
+            testing::assert_eq(bits, 128)
+        },
+        Ok(_) => testing::fail("expected fixed-width integer"),
+        Err(error) => testing::fail(error.message),
+    };
+    let shifted = binary_expr(
+        ctir::CtBinaryOp::Shl,
+        narrow_int_expr(false, 8, 1),
+        narrow_int_expr(false, 64, 3),
+        narrow_int_type(false, 8),
+    );
+    module.sites.set(
+        0,
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: 0,
+            local_types: Vec::[],
+            expression: shifted,
+            origin: 0,
+        },
+    );
+    match verify_module(module, Vec::[]) {
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
+    };
+    match evaluate_site(module, Vec::[], 0, default_limits()) {
+        Ok(ctir::CtValue::Integer { signed, width, bits }) => {
+            testing::assert(!signed);
+            testing::assert_eq(width, 8);
+            testing::assert_eq(bits, 8)
+        },
+        Ok(_) => testing::fail("expected shifted fixed-width integer"),
+        Err(error) => testing::fail(error.message),
+    }
+}
+
+#[test]
+fn rejects_invalid_ctir_before_execution() -> unit {
+    let module = ctir::empty_module("test::invalid");
+    module.sites.push(
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: 0,
+            local_types: Vec::[],
+            expression: local_expr(1, int_type()),
+            origin: 0,
+        },
+    );
+    match verify_module(module, Vec::[]) {
+        Err(error) => testing::assert_eq(error, "invalid CTIR local slot or type"),
+        Ok(()) => testing::fail("expected invalid local slot"),
+    };
+    match evaluate_site(module, Vec::[], 0, default_limits()) {
+        Err(error) => testing::assert_eq(
+            error.message,
+            "invalid CTIR: invalid CTIR local slot or type",
+        ),
+        Ok(_) => testing::fail("expected evaluator CTIR rejection"),
+    };
+    let caller = factorial_module();
+    caller.sites.push(
+        ctir::CtSite {
+            id: 0,
+            kind: ctir::CtSiteKind::Expression,
+            local_count: 0,
+            local_types: Vec::[],
+            expression: ctir::CtExpr {
+                kind: ctir::CtExprKind::Call {
+                    target: ctir::CtCallTarget::Local(0),
+                    args: Vec::[
+                        ctir::CtExpr {
+                            kind: ctir::CtExprKind::Value(ctir::CtValue::Bool(true)),
+                            ty: ctir::CtType::Bool,
+                            origin: 0,
+                        },
+                    ],
+                },
+                ty: int_type(),
+                origin: 0,
+            },
+            origin: 0,
+        },
+    );
+    match verify_module(caller, Vec::[]) {
+        Err(error) => testing::assert_eq(error, "CTIR call argument type mismatch"),
+        Ok(()) => testing::fail("expected invalid call argument type"),
+    }
+}
+
+#[test]
+fn evaluates_short_circuit_and_left_to_right_order() -> unit {
+    let short_circuit = binary_expr(
+        ctir::CtBinaryOp::And,
+        bool_expr(false),
+        compile_error_expr("right"),
+        ctir::CtType::Bool,
+    );
+    match evaluate_expression(short_circuit, Vec::[], default_limits()) {
+        Ok(ctir::CtValue::Bool(value)) => testing::assert(!value),
+        Ok(_) => testing::fail("expected bool result"),
+        Err(error) => testing::fail(error.message),
+    };
+    let ordered = ctir::CtExpr {
+        kind: ctir::CtExprKind::Array(
+            Vec::[compile_error_expr("left"), compile_error_expr("right")],
+        ),
+        ty: ctir::CtType::Array { len: 2, elem: int_type() },
+        origin: 0,
+    };
+    match evaluate_expression(ordered, Vec::[], default_limits()) {
+        Err(error) => testing::assert_eq(error.message, "left"),
+        Ok(_) => testing::fail("expected left-to-right failure"),
+    }
+}
+
+#[test]
+fn evaluates_return_break_and_continue() -> unit {
+    let increment = binary_expr(
+        ctir::CtBinaryOp::Add,
+        local_expr(0, int_type()),
+        int_expr(1),
+        int_type(),
+    );
+    let continue_or_break = ctir::CtExpr {
+        kind: ctir::CtExprKind::If {
+            condition: binary_expr(
+                ctir::CtBinaryOp::Less,
+                local_expr(0, int_type()),
+                int_expr(3),
+                ctir::CtType::Bool,
+            ),
+            then_branch: ctir::CtExpr {
+                kind: ctir::CtExprKind::Continue { target: 0 },
+                ty: ctir::CtType::Never,
+                origin: 0,
+            },
+            else_branch: ctir::CtExpr {
+                kind: ctir::CtExprKind::Break {
+                    target: 0,
+                    value: Option::Some(local_expr(0, int_type())),
+                },
+                ty: ctir::CtType::Never,
+                origin: 0,
+            },
+        },
+        ty: ctir::CtType::Unit,
+        origin: 0,
+    };
+    let loop_body = ctir::CtExpr {
+        kind: ctir::CtExprKind::Block(
+            ctir::CtBlock {
+                statements: Vec::[ctir::CtStmt::Assign { slot: 0, value: increment }],
+                tail: Option::Some(continue_or_break),
+                origin: 0,
+            },
+        ),
+        ty: ctir::CtType::Unit,
+        origin: 0,
+    };
+    let loop_expr = ctir::CtExpr {
+        kind: ctir::CtExprKind::Block(
+            ctir::CtBlock {
+                statements: Vec::[
+                    ctir::CtStmt::Let {
+                        pattern: ctir::CtPattern::Bind { slot: 0 },
+                        value: int_expr(0),
+                    },
+                ],
+                tail: Option::Some(
+                    ctir::CtExpr {
+                        kind: ctir::CtExprKind::Loop { target: 0, body: loop_body },
+                        ty: int_type(),
+                        origin: 0,
+                    },
+                ),
+                origin: 0,
+            },
+        ),
+        ty: int_type(),
+        origin: 0,
+    };
+    testing::assert_eq(
+        expect_int(evaluate_expression(loop_expr, Vec::[int_type()], default_limits())),
+        3,
+    );
+    let module = ctir::empty_module("test::return");
+    module.functions.push(
+        ctir::CtFunction {
+            id: 0,
+            name: "return_value",
+            parameter_slots: Vec::[],
+            parameter_types: Vec::[],
+            local_count: 0,
+            local_types: Vec::[],
+            return_type: int_type(),
+            body: ctir::CtBlock {
+                statements: Vec::[
+                    ctir::CtStmt::Expr(
+                        ctir::CtExpr {
+                            kind: ctir::CtExprKind::Return(Option::Some(int_expr(7))),
+                            ty: ctir::CtType::Never,
+                            origin: 0,
+                        },
+                    ),
+                ],
+                tail: Option::Some(int_expr(0)),
+                origin: 0,
+            },
+            origin: 0,
+        },
+    );
+    module.entries.push(ctir::CtEntry { name: "return_value", function_id: 0 });
+    match verify_module(module, Vec::[]) {
+        Ok(()) => (),
+        Err(error) => testing::fail(error),
+    };
+    testing::assert_eq(
+        expect_int(evaluate_entry(module, Vec::[], "return_value", Vec::[], default_limits())),
+        7,
+    )
+}
+
+#[test]
+fn applies_integer_casts_and_reports_numeric_failures() -> unit {
+    let widened = ctir::CtExpr {
+        kind: ctir::CtExprKind::Cast {
+            value: narrow_int_expr(true, 8, 255),
+            target: narrow_int_type(false, 64),
+        },
+        ty: narrow_int_type(false, 64),
+        origin: 0,
+    };
+    match evaluate_expression(widened, Vec::[], default_limits()) {
+        Ok(ctir::CtValue::Integer { signed, width, bits }) => {
+            testing::assert(!signed);
+            testing::assert_eq(width, 64);
+            testing::assert_eq(bits, ~(0 as uint64))
+        },
+        Ok(_) => testing::fail("expected widened integer"),
+        Err(error) => testing::fail(error.message),
+    };
+    let truncated = ctir::CtExpr {
+        kind: ctir::CtExprKind::Cast {
+            value: narrow_int_expr(false, 64, 511),
+            target: narrow_int_type(false, 8),
+        },
+        ty: narrow_int_type(false, 8),
+        origin: 0,
+    };
+    match evaluate_expression(truncated, Vec::[], default_limits()) {
+        Ok(ctir::CtValue::Integer { bits, .. }) => testing::assert_eq(bits, 255),
+        Ok(_) => testing::fail("expected truncated integer"),
+        Err(error) => testing::fail(error.message),
+    };
+    let division = binary_expr(ctir::CtBinaryOp::Div, int_expr(1), int_expr(0), int_type());
+    match evaluate_expression(division, Vec::[], default_limits()) {
+        Err(error) => {
+            testing::assert_eq(error.message, "division by zero during comptime evaluation")
+        },
+        Ok(_) => testing::fail("expected division failure"),
+    };
+    let shift = binary_expr(
+        ctir::CtBinaryOp::Shl,
+        narrow_int_expr(false, 8, 1),
+        narrow_int_expr(true, 64, ~(0 as uint64)),
+        narrow_int_type(false, 8),
+    );
+    match evaluate_expression(shift, Vec::[], default_limits()) {
+        Err(error) => {
+            testing::assert_eq(error.message, "negative shift count during comptime evaluation")
+        },
+        Ok(_) => testing::fail("expected shift failure"),
+    };
+    let indexed = ctir::CtExpr {
+        kind: ctir::CtExprKind::Index {
+            value: ctir::CtExpr {
+                kind: ctir::CtExprKind::Array(Vec::[int_expr(1)]),
+                ty: ctir::CtType::Array { len: 1, elem: int_type() },
+                origin: 0,
+            },
+            index: int_expr(1),
+        },
+        ty: int_type(),
+        origin: 0,
+    };
+    match evaluate_expression(indexed, Vec::[], default_limits()) {
+        Err(error) => {
+            testing::assert_eq(error.message, "index out of bounds during comptime evaluation")
+        },
+        Ok(_) => testing::fail("expected index failure"),
+    }
+}
+
+#[test]
+fn enforces_temporary_memory_and_target_limits() -> unit {
+    let value = ctir::CtExpr {
+        kind: ctir::CtExprKind::Value(ctir::CtValue::String("12345")),
+        ty: ctir::CtType::String,
+        origin: 0,
+    };
+    let limits = EvalLimits {
+        fuel: 100,
+        call_depth: 10,
+        value_nodes: 100,
+        temporary_bytes: 4,
+        final_bytes: 100,
+    };
+    match evaluate_expression(value, Vec::[], limits) {
+        Err(error) => {
+            testing::assert_eq(error.message, "comptime temporary memory limit exceeded")
+        },
+        Ok(_) => testing::fail("expected temporary memory failure"),
+    };
+    let module = factorial_module();
+    module.target = ctir::CtTarget { int_width: 16 };
+    match verify_module(module, Vec::[]) {
+        Err(error) => testing::assert_eq(error, "invalid CTIR target integer width"),
+        Ok(()) => testing::fail("expected invalid target rejection"),
+    };
+    let invalid_local = factorial_module();
+    invalid_local.functions[0].local_types.set(0, ctir::CtType::Bool);
+    match verify_module(invalid_local, Vec::[]) {
+        Err(error) => testing::assert_eq(error, "CTIR parameter local type mismatch"),
+        Ok(()) => testing::fail("expected local type rejection"),
+    }
+}

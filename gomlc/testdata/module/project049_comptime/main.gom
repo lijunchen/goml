@@ -1,0 +1,19 @@
+package main;
+
+use project049_comptime::calc;
+
+const answer: int = calc::calculate(10);
+
+fn main() -> unit {
+    println(answer);
+    let pair = comptime { calc::make_pair(3) };
+    println(pair.left);
+    println(pair.right);
+    let choice = comptime { calc::make_choice(9) };
+    match choice {
+        calc::Choice::Value(value) => println(value),
+        calc::Choice::Empty => println(0),
+    };
+    println(comptime { calc::published });
+    println(calc::calculate(2))
+}

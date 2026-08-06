@@ -154,6 +154,22 @@ fn parses_lexical_task_scope_contextual_forms() -> unit {
 }
 
 #[test]
+fn parses_comptime_contextually_without_reserving_the_identifier() -> unit {
+    let source = "struct Value { comptime: int } fn comptime() -> int { 1 } fn main() -> int { let value = Value { comptime: 2 }; let folded = comptime { comptime() + value.comptime }; let comptime = 0; match comptime { 0 => folded, _ => 0 } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_COMPTIME), 1)
+}
+
+#[test]
+fn parses_comptime_as_a_control_flow_operand() -> unit {
+    let source = "fn main() -> int { match comptime { 1 } { 1 => 2, _ => 3 } }";
+    let result = parse(source);
+    testing::assert_eq(result.diagnostics.len(), 0);
+    testing::assert_eq(count_nodes(result.root, cst::NodeKind::EXPR_COMPTIME), 1)
+}
+
+#[test]
 fn parses_raw_strings_let_else_and_value_loops() -> unit {
     let source = "enum Choice { Value(int), Empty } fn choose(value: Choice) -> int { let Value(item) = value else { return -1; }; loop { break item; } } fn raw() -> string { r#\"quoted \"text\"\"# }";
     let result = parse(source);

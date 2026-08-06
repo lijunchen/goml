@@ -1,0 +1,42 @@
+package calc;
+
+pub const published: int = 7;
+
+const private_bias: int = 5;
+
+#[comptime]
+fn twice(value: int) -> int {
+    value * 2
+}
+
+#[comptime]
+pub fn calculate(value: int) -> int {
+    twice(value) + private_bias + published
+}
+
+pub struct Pair {
+    pub left: int,
+    pub right: int,
+}
+
+#[comptime]
+pub fn make_pair(value: int) -> Pair {
+    Pair {
+        left: value,
+        right: value + 1,
+    }
+}
+
+pub enum Choice {
+    Value(int),
+    Empty,
+}
+
+#[comptime]
+pub fn make_choice(value: int) -> Choice {
+    if value > 0 {
+        Choice::Value(value)
+    } else {
+        Choice::Empty
+    }
+}

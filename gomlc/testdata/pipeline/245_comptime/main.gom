@@ -1,0 +1,94 @@
+struct Pair {
+    left: int,
+    right: int,
+}
+
+enum Choice {
+    Value(int),
+    Empty,
+}
+
+#[comptime]
+fn factorial(value: int) -> int {
+    if value < 2 {
+        1
+    } else {
+        value * factorial(value - 1)
+    }
+}
+
+#[comptime]
+fn accumulate(limit: int) -> int {
+    let mut index = 0;
+    let mut total = 0;
+    while index < limit {
+        total = total + index;
+        index = index + 1;
+    };
+    total
+}
+
+#[comptime]
+fn make_pair(value: int) -> Pair {
+    Pair {
+        left: value,
+        right: value + 1,
+    }
+}
+
+#[comptime]
+fn choose(value: int) -> Choice {
+    if value > 0 {
+        Choice::Value(value)
+    } else {
+        Choice::Empty
+    }
+}
+
+#[comptime]
+fn nonnegative(value: int) -> int {
+    if value < 0 {
+        compile_error("value must be non-negative")
+    } else {
+        value
+    }
+}
+
+#[comptime]
+fn shadow(value: int) -> int {
+    let base = value;
+    let nested = {
+        let base = base + 1;
+        base * 2
+    };
+    base + nested
+}
+
+#[comptime]
+fn widen_negative(value: int8) -> uint64 {
+    value as uint64
+}
+
+const answer: int = factorial(5);
+
+fn main() -> unit {
+    let values = comptime { [factorial(3), accumulate(5), nonnegative(4)] };
+    let pair = comptime { make_pair(7) };
+    let choice = comptime { choose(9) };
+    println(answer);
+    println(values[0]);
+    println(values[1]);
+    println(values[2]);
+    println(pair.left + pair.right);
+    match choice {
+        Choice::Value(value) => println(value),
+        Choice::Empty => println(0),
+    };
+    println(factorial(5) == answer);
+    let shadowed = comptime { shadow(3) };
+    println(shadowed);
+    println(shadow(3) == shadowed);
+    let widened = comptime { widen_negative(-1) };
+    println(widened == widen_negative(-1));
+    println(factorial(4))
+}

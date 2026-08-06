@@ -38,6 +38,175 @@ fn has_diagnostic(values: Vec[Diagnostic], expected: string) -> bool {
     found.get()
 }
 
+fn has_diagnostic_containing(values: Vec[Diagnostic], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value.message.contains(expected) {
+            found.set(true)
+        } else {}
+    }
+    found.get()
+}
+
+#[test]
+fn evaluates_explicit_comptime_functions() -> unit {
+    let file = checked_file(
+        "#[comptime] fn fibonacci(n: int) -> int { if n < 2 { n } else { fibonacci(n - 1) + fibonacci(n - 2) } } fn main() -> int { comptime { fibonacci(10) } }",
+    );
+    testing::assert_eq(file.items.len(), 2);
+    match file.items[1] {
+        Function(value) => match value.body.tail {
+            Some(Prim { value: Primitive::Int { value }, ty: _ }) => {
+                testing::assert_eq(value, "55")
+            },
+            _ => testing::fail("expected a reified comptime integer"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
+fn evaluates_comptime_shadowing_like_runtime() -> unit {
+    let file = checked_file(
+        "#[comptime] fn shadow(value: int) -> int { let base = value; let nested = { let base = base + 1; base * 2 }; base + nested } fn main() -> int { comptime { shadow(3) } }",
+    );
+    match file.items[1] {
+        Function(value) => match value.body.tail {
+            Some(Prim { value: Primitive::Int { value }, ty: _ }) => {
+                testing::assert_eq(value, "12")
+            },
+            _ => testing::fail("expected a shadowed comptime integer"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
+fn eliminates_comptime_before_core_lowering() -> unit {
+    let file = checked_file(
+        "#[comptime] fn double(value: int) -> int { value * 2 } fn main() -> int { comptime { double(21) } }",
+    );
+    testing::assert(!contains_comptime(file))
+}
+
+#[test]
+fn evaluates_top_level_constants_with_comptime_functions() -> unit {
+    let file = checked_file(
+        "#[comptime] fn square(value: int) -> int { value * value } const answer: int = square(12); fn main() -> int { answer }",
+    );
+    testing::assert_eq(file.constants.len(), 1);
+    match file.constants[0].value {
+        ConstExpr::Prim { value: Primitive::Int { value }, ty: _ } => {
+            testing::assert_eq(value, "144")
+        },
+        _ => testing::fail("expected a finalized comptime constant"),
+    }
+}
+
+#[test]
+fn rejects_runtime_capture_and_runtime_only_calls_in_comptime() -> unit {
+    let capture = checked_diagnostics("fn main(value: int) -> int { comptime { value + 1 } }");
+    testing::assert(
+        has_diagnostic(capture, "comptime expression cannot capture runtime local `value/0`"),
+    );
+    let runtime_call = checked_diagnostics(
+        "fn runtime_value() -> int { 1 } fn main() -> int { comptime { runtime_value() } }",
+    );
+    testing::assert(
+        has_diagnostic(
+            runtime_call,
+            "comptime function calls runtime-only function `runtime_value`",
+        ),
+    );
+    let source = "fn runtime_value() -> int { 1 } #[comptime] fn checked() -> int { runtime_value() } fn main() -> unit {}";
+    let diagnostics = checked_diagnostics(source);
+    let expected_call = match text::rfind(source, "runtime_value") {
+        Some(value) => value,
+        None => {
+            testing::fail("expected runtime-only call");
+            0
+        },
+    };
+    let expected_attribute = match text::find(source, "#[comptime]") {
+        Some(value) => value,
+        None => {
+            testing::fail("expected comptime attribute");
+            0
+        },
+    };
+    let found = Ref::new(false);
+    for diagnostic in diagnostics {
+        if diagnostic.message.contains("runtime-only function `runtime_value`") {
+            match diagnostic.span {
+                Some(span) => testing::assert_eq(span.start, expected_call),
+                None => testing::fail("expected runtime-only call span"),
+            };
+            testing::assert_eq(diagnostic.secondary_labels.len(), 1);
+            testing::assert_eq(diagnostic.secondary_labels[0].span.start, expected_attribute);
+            found.set(true)
+        } else {}
+    }
+    testing::assert(found.get())
+}
+
+#[test]
+fn reports_compile_error_from_comptime() -> unit {
+    let source = "#[comptime] fn checked(value: int) -> int { if value < 0 { compile_error(\"value must be non-negative\") } else { value } } fn main() -> int { comptime { checked(-1) } }";
+    let diagnostics = checked_diagnostics(source);
+    testing::assert(has_diagnostic_containing(diagnostics, "value must be non-negative"));
+    testing::assert(has_diagnostic_containing(diagnostics, "comptime call stack:"));
+    testing::assert(has_diagnostic_containing(diagnostics, "at checked"));
+    let expected_start = match text::find(source, "compile_error") {
+        Some(value) => value,
+        None => {
+            testing::fail("expected compile_error source");
+            0
+        },
+    };
+    let found = Ref::new(false);
+    for diagnostic in diagnostics {
+        if diagnostic.message.contains("value must be non-negative") {
+            match diagnostic.span {
+                Some(span) => {
+                    testing::assert_eq(span.start, expected_start)
+                },
+                None => testing::fail("expected precise comptime failure span"),
+            };
+            testing::assert_eq(diagnostic.secondary_labels.len(), 1);
+            found.set(true)
+        } else {}
+    }
+    testing::assert(found.get())
+}
+
+#[test]
+fn validates_comptime_attributes_and_function_capabilities() -> unit {
+    let invalid = checked_diagnostics(
+        "#[comptime(1)] #[comptime] #[comptime] fn generic[T](value: T) -> T { value } #[comptime] struct Value {} fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(invalid, "#[comptime] does not accept arguments"));
+    testing::assert(has_diagnostic(invalid, "duplicate #[comptime] attribute"));
+    testing::assert(
+        has_diagnostic(
+            invalid,
+            "#[comptime] functions cannot declare generic parameters or predicates",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(invalid, "#[comptime] is only valid on free function declarations"),
+    );
+    let closure = checked_diagnostics(
+        "#[comptime] fn invalid() -> int { let value = || 1; value() } fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic_containing(closure, "closures are not available in comptime"));
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics("fn main() -> unit { compile_error(\"runtime\"); }"),
+            "compile_error is only available in comptime",
+        ),
+    )
+}
+
 #[test]
 fn checks_let_else_and_value_break_restrictions() -> unit {
     let source = "enum Choice { Value(int), Empty } fn non_exit(value: Choice) -> int { let Value(item) = value else { 0 }; item } fn while_value() { while true { break 1; }; } fn irrefutable() { let item = 1 else { return; }; }";
@@ -2643,9 +2812,8 @@ fn qualified_struct_variants_win_over_same_named_structs() -> unit {
 
 #[test]
 fn accepts_transparent_aliases_bytes_and_forward_constants() -> unit {
-    let file = checked_file(
-        "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[int32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: int32 = base + 2; const base: int32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[int32]) -> int32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: uint8 = entry.read(); let pair: Pair[int32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw as int32; }",
-    );
+    let source = "type Pair[T] = (T, T); type Marker = byte; type Label = string; struct Entry { marker: Marker, label: Label } enum Event { Mark(Marker), Pair(Pair[int32]) } trait Read { fn read(self: Self) -> Marker; } impl Read for Entry { fn read(self: Entry) -> Marker { self.marker } } const next: int32 = base + 2; const base: int32 = 0x28; const marker: Marker = b'\\xFF'; fn sum(value: Pair[int32]) -> int32 { value.0 + value.1 } fn main() -> unit { let entry = Entry { marker, label: \"ok\" }; let raw: uint8 = entry.read(); let pair: Pair[int32] = (next, 0b10); let _ = Event::Mark(raw); let _ = Event::Pair(pair); let _ = sum(pair) + raw as int32; }";
+    let file = checked_file(source);
     testing::assert_eq(file.constants.len(), 3)
 }
 
@@ -2671,12 +2839,7 @@ fn diagnoses_constant_cycles_and_non_constant_expressions() -> unit {
     let call = checked_diagnostics(
         "fn value() -> int { 1 } const answer: int = value(); fn main() -> unit {}",
     );
-    testing::assert(
-        has_diagnostic(
-            call,
-            "constant values support only literals, constant references, unary operators, binary operators, and casts",
-        ),
-    )
+    testing::assert(has_diagnostic(call, "comptime function calls runtime-only function `value`"))
 }
 
 #[test]

@@ -291,6 +291,21 @@ fn formats_lexical_task_scope_contextual_forms_losslessly() -> unit {
 }
 
 #[test]
+fn formats_comptime_contextually_without_reserving_the_name() -> unit {
+    let source = "#[comptime]fn factorial(value:int)->int{if value<2{1}else{value*factorial(value-1)}}fn comptime()->int{1}fn main()->int{let value=comptime{factorial(4)};value+comptime()}\n";
+    let formatted = match format_source(source) {
+        Ok(value) => value,
+        Err(_) => {
+            testing::fail("format failed");
+            ""
+        },
+    };
+    assert_format_invariants(source, formatted);
+    testing::assert(formatted.contains("let value = comptime {"));
+    testing::assert(formatted.contains("value + comptime()"))
+}
+
+#[test]
 fn removes_redundant_unit_expressions_and_semicolons() -> unit {
     expect_format(
         "fn empty()->unit{;;;()}fn control(flag:bool,values:Vec[int])->unit{while flag{();};for value in values{let _=value;()};loop{break;};if flag{()}else{();};match flag{true=>(),false=>(),};()}fn retain(flag:bool)->unit{if flag{1}else{2};match flag{true=>1,false=>2,};loop{break 1};}fn boundary(values:Vec[int])->(Vec[int],Vec[int]){for value in values{let _=value;};(values,values)}",
