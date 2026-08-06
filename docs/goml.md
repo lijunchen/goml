@@ -1644,6 +1644,23 @@ A public `#[comptime_derive(Name)]` handler exports the derive name `Name`, inde
 
 Derive names have their own namespace, but ordinary `use` declarations populate it alongside the type and trait namespaces. For example, after `use std::json;`, `use json::Serialize;` makes both the `Serialize` trait and a derive export named `Serialize` available as `Serialize`, so `#[derive(Serialize)]` works without another import form. An import alias applies to both namespaces: `use json::Serialize as JsonSerialize;` permits `#[derive(JsonSerialize)]`. A package import permits the qualified spelling `#[derive(json::Serialize)]`.
 
+The standard JSON handler serializes a struct as an object with source-order fields. It uses externally tagged enums: a unit variant is a string, a tuple variant is an object whose value is an array, and a struct-like variant is an object whose value is another object. `Serialize::serialize` returns `json::Value`; `json::stringify` serializes and encodes a value in one step. Unit, booleans, strings, chars, numeric primitives, `Value`, `Vec[T]`, `Option[T]`, and two- or three-element tuples have standard implementations.
+
+```goml
+use std::json;
+use json::Serialize;
+
+#[derive(Serialize)]
+struct User {
+    name: string,
+    active: bool,
+}
+
+fn encode_user(value: User) -> string {
+    json::stringify(value)
+}
+```
+
 A qualified custom derive must have the form `package_alias::export_name`, where `package_alias` is introduced by a `use` in the same source file. A bare library derive must be explicitly imported. Unimported canonical package paths and handlers visible only through a transitive dependency are rejected. If two explicit imports or a prelude derive and an explicit import provide the same bare name, the compiler reports ambiguity and requires a qualified name or import alias.
 
 `#[comptime_derive]` and `#[comptime_derive(Name)]` are valid only on non-generic free functions. A public handler must have the exact signature `(DeriveInput) -> DeriveOutput`. Private functions with the unnamed attribute are compile-time-only helpers and are included in the interface when reachable from a public handler. A derive handler may call those helpers and ordinary `#[comptime]` functions, but it cannot be called from runtime code or ordinary value `comptime`. Derive handlers are not exported as runtime functions.
@@ -2207,7 +2224,7 @@ Current public entrances include:
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `iter::empty`, `once`, `from_fn`, iterator adapters, and single-pass consumers
-- `json::Value`, `parse`, `encode`, `field`, and typed `as_*` accessors
+- `json::Value`, `parse`, `encode`, `Serialize`, `stringify`, `field`, and typed `as_*` accessors
 - `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`

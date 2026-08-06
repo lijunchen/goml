@@ -105,13 +105,18 @@ fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule
     tast::DependencyEnvironment,
 ] {
     let environments = tast::dependency_environments(files);
+    let attached_modules: Vec[string] = Vec::[];
     for index in 0..environments.len() {
         let module = Ref::new(Option::None);
-        for value in modules {
-            if value.package_name == files[index].package_name {
-                module.set(Option::Some(value))
-            } else {}
-        }
+        let package_name = files[index].package_name;
+        if collections::contains(attached_modules, package_name) {} else {
+            for value in modules {
+                if value.package_name == package_name {
+                    module.set(Option::Some(value));
+                    attached_modules.push(package_name)
+                } else {}
+            }
+        };
         environments.set(
             index,
             tast::dependency_environment_with_comptime(environments[index], module.get()),

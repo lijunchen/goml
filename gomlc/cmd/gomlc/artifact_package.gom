@@ -629,7 +629,17 @@ fn compile_artifact_package(
     let test_candidates = collect_package_test_candidates(ast_values, command.inputs);
     fail_on_typer_diagnostics(test_candidates.diagnostics, "", "");
     let provided = artifact_read_interface_units(command.interface_paths)?;
+    let mut source_needs = no_standard_needs();
+    for ast_value in ast_values {
+        source_needs = merge_standard_needs(source_needs, source_standard_needs(ast_value));
+    }
     let derive_modules: Vec[ctir::CtModule] = Vec::[];
+    for package_value in selected_standard_packages_for_needs(world.standard, source_needs) {
+        match package_value.interface_unit.comptime {
+            Some(value) => derive_modules.push(value.module),
+            None => (),
+        }
+    }
     for interface_unit_value in provided {
         match interface_unit_value.comptime {
             Some(value) => derive_modules.push(value.module),
@@ -648,10 +658,8 @@ fn compile_artifact_package(
     artifact_verify_comptime_modules(verified_derive_modules)?;
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     let derive_diagnostics: Vec[tast::Diagnostic] = Vec::[];
-    let mut source_needs = no_standard_needs();
     for index in 0..ast_values.len() {
         let ast_value = ast_values[index];
-        source_needs = merge_standard_needs(source_needs, source_standard_needs(ast_value));
         let expanded = hir::expand_derives_with_environment(
             without_disallowed_standard_internal_imports(ast_value, command.package_name),
             hir::DeriveEnvironment { builtin: builtin_derive_module, dependencies: derive_modules },
