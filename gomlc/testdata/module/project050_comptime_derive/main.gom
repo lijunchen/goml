@@ -1,7 +1,9 @@
 package main;
 
 use std::json;
+use tests::comptime_derive::facade;
 use tests::comptime_derive::macros;
+use facade::Label as FacadeLabel;
 use json::Serialize;
 use macros::Label;
 use macros::Label as RenamedLabel;
@@ -23,6 +25,11 @@ enum State {
 
 #[derive(RenamedLabel)]
 struct Alias {
+    value: int,
+}
+
+#[derive(FacadeLabel)]
+struct Facade {
     value: int,
 }
 
@@ -49,6 +56,7 @@ fn main() -> unit {
     println(value.label());
     println(State::Ready(1).label());
     println(Alias { value: 1 }.label());
+    println(Facade { value: 1 }.label());
     println(json::stringify(Record { value: 1, label: "ok" }));
     println(json::stringify(Event::Ready));
     println(json::stringify(Event::Tuple(2, true)));
