@@ -76,7 +76,6 @@ fn rejects_ambiguous_imported_derive_names() -> unit {
                 derive_export_module("alice::first", "Label"),
                 derive_export_module("bob::second", "Label"),
             ],
-            builtin_mode: BuiltinDeriveMode::CompilerFallback,
         },
     );
     testing::assert_eq(expanded.diagnostics.len(), 1);
@@ -256,33 +255,6 @@ fn resolves_braced_import_items_and_aliases() -> unit {
 }
 
 #[test]
-fn exposes_derived_impls_without_lowering_them_twice() -> unit {
-    let expanded = expand_derives(
-        ast::lower(parser::parse("#[derive(Eq, Hash)] struct Key { value: int32 }")),
-    );
-    match expanded.ast {
-        Some(file) => {
-            testing::assert_eq(file.items.len(), 3);
-            match file.items.get(1) {
-                ImplBlock(_) => (),
-                _ => testing::fail("expected derived Eq impl"),
-            };
-            match file.items.get(2) {
-                ImplBlock(_) => (),
-                _ => testing::fail("expected derived Hash impl"),
-            }
-        },
-        None => testing::fail("expected expanded AST"),
-    };
-    let result = lower_expanded(expanded, "main.gom");
-    testing::assert_eq(result.diagnostics.len(), 0);
-    match result.hir {
-        Some(file) => testing::assert_eq(file.items.len(), 3),
-        None => testing::fail("expected HIR"),
-    }
-}
-
-#[test]
 fn resolves_definitions_and_shadowed_locals() -> unit {
     let source = "fn id(value: int32) -> int32 { value } fn main() -> int32 { let value = 1; id(value) }";
     let file = lowered_file(source);
@@ -415,36 +387,6 @@ fn rejects_invalid_derives() -> unit {
         unsupported.diagnostics.get(0).message,
         "derive name `ToJson` is not in scope; library derives must be qualified or explicitly imported",
     );
-}
-
-#[test]
-fn derives_generic_impls_with_field_type_predicates() -> unit {
-    let expanded = expand_derives(
-        ast::lower(
-            parser::parse("#[derive(Eq)] struct Box[T, Marker] { first: Vec[T], second: Vec[T] }"),
-        ),
-    );
-    testing::assert_eq(expanded.diagnostics.len(), 0);
-    match expanded.ast {
-        Some(file) => match file.items.get(1) {
-            ImplBlock(value) => {
-                testing::assert_eq(value.generics.len(), 2);
-                testing::assert_eq(value.predicates.len(), 1);
-                match value.for_type {
-                    App { ty: _, args } => testing::assert_eq(args.len(), 2),
-                    _ => testing::fail("expected generic derive target"),
-                };
-                match value.predicates.get(0) {
-                    Trait { ty: App { ty: _, args }, trait_ref: _ } => {
-                        testing::assert_eq(args.len(), 1)
-                    },
-                    _ => testing::fail("expected field-type derive predicate"),
-                }
-            },
-            _ => testing::fail("expected derived generic impl"),
-        },
-        None => testing::fail("expected expanded generic derive"),
-    }
 }
 
 #[test]

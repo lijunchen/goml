@@ -79,7 +79,6 @@ fn builtin_source_derive_expansion(source: string) -> string {
         hir::DeriveEnvironment {
             builtin: Option::Some(required_builtin_comptime_module()),
             dependencies: Vec::[],
-            builtin_mode: hir::BuiltinDeriveMode::SourceHandlers,
         },
     );
     if expanded.diagnostics.is_empty() {} else {
@@ -109,25 +108,21 @@ fn expands_builtin_derives_from_toolchain_source_handlers() -> unit {
     let expanded = builtin_source_derive_expansion(
         "#[derive(ToString, Eq, Hash)]\nstruct Pair[T] { left: T, label: string }\n\n#[derive(ToString, Eq, Hash)]\nenum State[T] { Idle, One(T), Named { value: T, label: string } }",
     );
-    testing::assert(expanded.contains("impl[T] builtin::ToString for Pair[T]"));
-    testing::assert(expanded.contains("impl[T] builtin::Eq for Pair[T]"));
-    testing::assert(expanded.contains("impl[T] builtin::Hash for Pair[T]"));
-    testing::assert(expanded.contains("impl[T] builtin::ToString for State[T]"));
-    testing::assert(expanded.contains("impl[T] builtin::Eq for State[T]"));
-    testing::assert(expanded.contains("impl[T] builtin::Hash for State[T]"));
+    testing::assert(expanded.contains("impl[T] ToString for Pair[T]"));
+    testing::assert(expanded.contains("impl[T] Eq for Pair[T]"));
+    testing::assert(expanded.contains("impl[T] Hash for Pair[T]"));
+    testing::assert(expanded.contains("impl[T] ToString for State[T]"));
+    testing::assert(expanded.contains("impl[T] Eq for State[T]"));
+    testing::assert(expanded.contains("impl[T] Hash for State[T]"));
     testing::assert(expanded.contains("14695981039346656037"));
     testing::assert(expanded.contains("1099511628211"))
 }
 
 #[test]
-fn source_handler_mode_requires_builtin_source_exports() -> unit {
+fn builtin_derives_require_builtin_source_exports() -> unit {
     let expanded = hir::expand_derives_with_environment(
         ast::lower(parser::parse("#[derive(Eq)] struct Key { value: int }")),
-        hir::DeriveEnvironment {
-            builtin: Option::None,
-            dependencies: Vec::[],
-            builtin_mode: hir::BuiltinDeriveMode::SourceHandlers,
-        },
+        hir::DeriveEnvironment { builtin: Option::None, dependencies: Vec::[] },
     );
     testing::assert_eq(expanded.diagnostics.len(), 1);
     testing::assert(expanded.diagnostics[0].message.contains("derive name `Eq` is not in scope"))
