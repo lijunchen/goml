@@ -109,10 +109,13 @@ fn artifact_decode_primitive(value: wire::ArtifactValue) -> Result[tast::Primiti
             artifact_decode_primitive_payload(payload)?,
             "character primitive",
         )?;
-        if value.len() != 1 {
-            Result::Err(wire::artifact_decode_error("single character primitive"))
-        } else {
-            Result::Ok(tast::Primitive::Char { value: value.get(0) })
+        match value.decode_at(0) {
+            Some((character, width)) => if width == value.byte_len() {
+                Result::Ok(tast::Primitive::Char { value: character })
+            } else {
+                Result::Err(wire::artifact_decode_error("single character primitive"))
+            },
+            None => Result::Err(wire::artifact_decode_error("single character primitive")),
         }
     } else {
         artifact_decode_numeric_primitive(kind, payload)
