@@ -500,10 +500,11 @@ fn builtin_artifact_interface_unit() -> artifact::ArtifactInterfaceUnit {
         Vec::[],
         Vec::[],
     );
-    interface_codec::new_unit(
+    interface_codec::new_unit_with_comptime(
         "builtin",
         exports,
         artifact_package_interface("builtin", "builtin", exports),
+        artifact_comptime_unit(checked.comptime, exports),
         Vec::[],
     )
 }

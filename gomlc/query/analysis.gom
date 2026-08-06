@@ -60,13 +60,21 @@ fn failed_check(source_path: string, stage: string, message: string) -> tast::Ch
     }
 }
 
-fn lower_package(value: Project, derive_modules: Vec[ctir::CtModule]) -> LoweredPackage {
+fn lower_package(
+    value: Project,
+    builtin_derive: Option[ctir::CtModule],
+    derive_modules: Vec[ctir::CtModule],
+) -> LoweredPackage {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     let expanded_sources: Vec[(string, string)] = Vec::[];
     for file in value.files {
-        let expanded = hir::expand_derives_with_comptime(
+        let expanded = hir::expand_derives_with_environment(
             ast::lower(parser::parse(file.source)),
-            derive_modules,
+            hir::DeriveEnvironment {
+                builtin: builtin_derive,
+                dependencies: derive_modules,
+                builtin_mode: hir::BuiltinDeriveMode::CompilerFallback,
+            },
         );
         expanded_sources.push((file.path, ast::pretty(expanded)));
         inputs.push((expanded, file.path))
@@ -165,6 +173,7 @@ fn collect_dependency(
     diagnostics: Vec[tast::Diagnostic],
     all_sources: Vec[SourceFile],
     source_path: string,
+    builtin_derive: Option[ctir::CtModule],
     derive_modules: Vec[ctir::CtModule],
 ) -> unit {
     if collections::contains(visited, package_name) {} else {
@@ -181,7 +190,7 @@ fn collect_dependency(
                     package_name,
                     files: sources,
                 };
-                let discovery = lower_package(project, derive_modules);
+                let discovery = lower_package(project, builtin_derive, derive_modules);
                 for file in discovery.files {
                     for import in file.import_aliases {
                         collect_dependency(
@@ -194,11 +203,12 @@ fn collect_dependency(
                             diagnostics,
                             all_sources,
                             source_path,
+                            builtin_derive,
                             derive_modules,
                         )
                     }
                 }
-                let lowered = lower_package(project, derive_modules);
+                let lowered = lower_package(project, builtin_derive, derive_modules);
                 for diagnostic in lowered.diagnostics {
                     diagnostics.push(diagnostic)
                 }
@@ -231,9 +241,16 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
     for file in value.files {
         all_sources.push(file)
     }
-    let discovery = lower_package(value, Vec::[]);
     let dependencies: Vec[hir::File] = Vec::[];
     let diagnostics: Vec[tast::Diagnostic] = Vec::[];
+    let builtin_derive = match builtin_comptime_module() {
+        Ok(value) => value,
+        Err(error) => {
+            diagnostics.push(query_diagnostic(value.files[0].path, "builtin", error, Option::None));
+            Option::None
+        },
+    };
+    let discovery = lower_package(value, builtin_derive, Vec::[]);
     let visited: Vec[string] = Vec::[];
     let derive_modules: Vec[ctir::CtModule] = Vec::[];
     visited.push(discovery.name);
@@ -249,11 +266,12 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
                 diagnostics,
                 all_sources,
                 value.files[0].path,
+                builtin_derive,
                 derive_modules,
             )
         }
     }
-    let entry = lower_package(value, derive_modules);
+    let entry = lower_package(value, builtin_derive, derive_modules);
     for diagnostic in entry.diagnostics {
         diagnostics.push(diagnostic)
     }

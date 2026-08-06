@@ -442,6 +442,7 @@ fn check_function(
     inherited_predicates: Vec[TypePredicate],
     self_ty: Option[Type],
 ) -> Function {
+    let derive_export_name = comptime_derive_export_name(value.attrs);
     let comptime = match self_ty {
         None => function_comptime_capability(
             value.attrs,
@@ -457,6 +458,17 @@ fn check_function(
             comptime_span.set(Option::Some(attribute.span))
         } else {}
     }
+    match derive_export_name {
+        Some(_) => match value.visibility {
+            ast::Visibility::Public => (),
+            ast::Visibility::Private => push_diagnostic_at(
+                base,
+                "a named #[comptime_derive] export must be public",
+                comptime_span.get(),
+            ),
+        },
+        None => (),
+    };
     match self_ty {
         None => if value.name == "main" {
             if !value.params.is_empty() {
@@ -569,6 +581,7 @@ fn check_function(
         visibility: value.visibility,
         name: value.name,
         comptime,
+        derive_export_name,
         source_path: base.source_path,
         start: match comptime_span.get() {
             Some(value) => value.start,
@@ -1681,6 +1694,7 @@ fn default_trait_method(
         visibility: ast::Visibility::Private,
         name: expected.name,
         comptime: ComptimeCapability::RuntimeOnly,
+        derive_export_name: Option::None,
         source_path: ctx.source_path,
         start: 0,
         end: 0,
@@ -2433,11 +2447,11 @@ fn validate_comptime_attributes(
                     "#[comptime_derive] is only valid on free function declarations",
                 )
             } else {
-                if attribute.has_argument_list {
+                if !valid_comptime_derive_attribute(attribute) {
                     comptime_attribute_diagnostic(
                         ctx,
                         attribute,
-                        "#[comptime_derive] does not accept arguments",
+                        "#[comptime_derive] accepts at most one identifier export name",
                     )
                 } else {};
                 if derive_count > 1 {

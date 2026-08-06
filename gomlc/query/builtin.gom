@@ -1,10 +1,39 @@
 package query;
 
+use gomlc::ast;
+use gomlc::ctir;
+use gomlc::hir;
+use gomlc::parser;
 use gomlc::resources;
+use gomlc::tast;
 
 fn append_builtin_navigation_sources(values: Vec[SourceFile]) -> Result[unit, string] {
     for value in resources::builtin_sources()? {
         values.push(SourceFile { path: value.path, source: value.source, package_name: "builtin" })
     }
     Result::Ok(())
+}
+
+fn builtin_comptime_module() -> Result[Option[ctir::CtModule], string] {
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    for source in resources::builtin_sources()? {
+        inputs.push((ast::lower(parser::parse(source.source)), source.path))
+    }
+    let files: Vec[hir::File] = Vec::[];
+    for lowered in hir::lower_package_files(inputs, "builtin") {
+        match lowered.hir {
+            Some(file) => files.push(file),
+            None => return Result::Err("failed to lower builtin source " + lowered.source_path),
+        }
+    }
+    let checked = tast::check_builtin_package_files(files);
+    if checked.tast.is_none() {
+        return Result::Err("failed to typecheck builtin package")
+    } else {};
+    let module = ctir::public_module(checked.comptime, Vec::[], Vec::[]);
+    if module.derive_entries.is_empty() {
+        Result::Ok(Option::None)
+    } else {
+        Result::Ok(Option::Some(module))
+    }
 }

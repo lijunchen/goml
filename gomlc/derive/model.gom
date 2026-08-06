@@ -2,6 +2,7 @@ package derive;
 
 use gomlc::ast;
 use gomlc::ctir;
+use gomlc::numeric;
 use std::num;
 use std::text;
 
@@ -49,6 +50,7 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
         spec("derive_field_attribute_text", three_types("DeriveInput", "int", "int"), "string"),
         spec("derive_variant_count", one_type("DeriveInput"), "int"),
         spec("derive_variant_name", two_types("DeriveInput", "int"), "string"),
+        spec("derive_variant_kind", two_types("DeriveInput", "int"), "int"),
         spec("derive_variant_attribute_count", two_types("DeriveInput", "int"), "int"),
         spec("derive_variant_attribute_name", three_types("DeriveInput", "int", "int"), "string"),
         spec("derive_variant_attribute_text", three_types("DeriveInput", "int", "int"), "string"),
@@ -108,10 +110,12 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
         spec("meta_type_function_parameter", two_types("MetaType", "int"), "MetaType"),
         spec("meta_type_function_return", one_type("MetaType"), "MetaType"),
         spec("meta_type_contains_generic", two_types("DeriveInput", "MetaType"), "bool"),
+        spec("meta_type_equal", two_types("MetaType", "MetaType"), "bool"),
         spec("meta_expr_var", one_type("string"), "MetaExpr"),
         spec("meta_expr_unit", no_types(), "MetaExpr"),
         spec("meta_expr_bool", one_type("bool"), "MetaExpr"),
         spec("meta_expr_int", one_type("int"), "MetaExpr"),
+        spec("meta_expr_integer", two_types("string", "MetaType"), "MetaExpr"),
         spec("meta_expr_string", one_type("string"), "MetaExpr"),
         spec("meta_expr_char", one_type("string"), "MetaExpr"),
         spec("meta_expr_field", two_types("MetaExpr", "string"), "MetaExpr"),
@@ -120,6 +124,11 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
         spec("meta_expr_binary", three_types("int", "MetaExpr", "MetaExpr"), "MetaExpr"),
         spec("meta_expr_call", three_types("DeriveInput", "string", "MetaExprList"), "MetaExpr"),
         spec("meta_expr_call_site", two_types("string", "MetaExprList"), "MetaExpr"),
+        spec(
+            "meta_expr_trait_call",
+            four_types("DeriveInput", "string", "string", "MetaExprList"),
+            "MetaExpr",
+        ),
         spec("meta_expr_tuple", one_type("MetaExprList"), "MetaExpr"),
         spec("meta_expr_array", one_type("MetaExprList"), "MetaExpr"),
         spec("meta_expr_if", three_types("MetaExpr", "MetaExpr", "MetaExpr"), "MetaExpr"),
@@ -600,6 +609,64 @@ fn meta_type_kind(value: ast::TypeExpr) -> string {
     }
 }
 
+fn meta_type_key(value: ast::TypeExpr) -> string {
+    match value {
+        ast::TypeExpr::Unit => "unit",
+        ast::TypeExpr::Bool => "bool",
+        ast::TypeExpr::Int => "int",
+        ast::TypeExpr::Int8 => "int8",
+        ast::TypeExpr::Int16 => "int16",
+        ast::TypeExpr::Int32 => "int32",
+        ast::TypeExpr::Int64 => "int64",
+        ast::TypeExpr::Uint => "uint",
+        ast::TypeExpr::Uint8 => "uint8",
+        ast::TypeExpr::Uint16 => "uint16",
+        ast::TypeExpr::Uint32 => "uint32",
+        ast::TypeExpr::Uint64 => "uint64",
+        ast::TypeExpr::Float32 => "float32",
+        ast::TypeExpr::Float64 => "float64",
+        ast::TypeExpr::String => "string",
+        ast::TypeExpr::Char => "char",
+        ast::TypeExpr::Tuple { items } => {
+            let mut result = "(";
+            for item in items {
+                result = result + meta_type_key(item) + ",";
+            }
+            result + ")"
+        },
+        ast::TypeExpr::Con { path } => path_text(path),
+        ast::TypeExpr::Dyn { bounds } => {
+            let mut result = "dyn ";
+            for bound in bounds {
+                result = result + path_text(bound.trait_path) + "[";
+                for arg in bound.args {
+                    result = result + meta_type_key(arg) + ",";
+                }
+                for binding in bound.associated_types {
+                    result = result + binding.0 + "=" + meta_type_key(binding.1) + ",";
+                }
+                result = result + "]+";
+            }
+            result
+        },
+        ast::TypeExpr::App { ty, args } => {
+            let mut result = meta_type_key(ty) + "[";
+            for arg in args {
+                result = result + meta_type_key(arg) + ",";
+            }
+            result + "]"
+        },
+        ast::TypeExpr::Array { len, elem } => "[" + meta_type_key(elem) + ";" + len + "]",
+        ast::TypeExpr::Func { params, ret_ty } => {
+            let mut result = "fn(";
+            for param in params {
+                result = result + meta_type_key(param) + ",";
+            }
+            result + ")->" + meta_type_key(ret_ty)
+        },
+    }
+}
+
 fn type_mentions_generics(value: ast::TypeExpr, generics: Vec[string]) -> bool {
     match value {
         ast::TypeExpr::Con { path } => if path.segments.len() == 1 {
@@ -791,6 +858,23 @@ fn input_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -
                 Result::Ok(ctir::CtValue::String(variant.name))
             },
             DeriveItem::Struct(_) => Result::Err("derive_variant_name expects an enum"),
+        }
+    } else if name == "derive_variant_kind" {
+        return match state.request.item {
+            DeriveItem::Enum(value) => {
+                let variant = enum_variant(value, int_argument(args, 1)?)?;
+                Result::Ok(
+                    int_value(
+                        state,
+                        match variant.fields {
+                            ast::EnumVariantFields::Unit => 0,
+                            ast::EnumVariantFields::Tuple(_) => 1,
+                            ast::EnumVariantFields::Struct(_) => 2,
+                        },
+                    ),
+                )
+            },
+            DeriveItem::Struct(_) => Result::Err("derive_variant_kind expects an enum"),
         }
     } else if name.starts_with("derive_variant_attribute_") {
         return match state.request.item {
@@ -1139,6 +1223,13 @@ fn type_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 ),
             ),
         )
+    } else if name == "meta_type_equal" {
+        Result::Ok(
+            ctir::CtValue::Bool(
+                meta_type_key(type_value(state, args, 0)?)
+                    == meta_type_key(type_value(state, args, 1)?),
+            ),
+        )
     } else {
         Result::Err("unknown derive type intrinsic `" + name + "`")
     }
@@ -1174,6 +1265,35 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 ast::Expr::Int { value: int_argument(args, 0)?.to_string(), span: value_span },
             ),
         )
+    } else if name == "meta_expr_integer" {
+        let value = match numeric::normalize_integer(string_argument(args, 0)?) {
+            Some(value) => value,
+            None => return Result::Err("meta_expr_integer expects a valid integer literal"),
+        };
+        let ty = type_value(state, args, 1)?;
+        let integer = match ty {
+            ast::TypeExpr::Int | ast::TypeExpr::Int8 | ast::TypeExpr::Int16 | ast::TypeExpr::Int32 | ast::TypeExpr::Int64 | ast::TypeExpr::Uint | ast::TypeExpr::Uint8 | ast::TypeExpr::Uint16 | ast::TypeExpr::Uint32 | ast::TypeExpr::Uint64 => true,
+            _ => false,
+        };
+        if !integer {
+            Result::Err("meta_expr_integer expects an integer type")
+        } else {
+            Result::Ok(
+                push_expr(
+                    state,
+                    ast::Expr::Binary {
+                        op: ast::BinaryOp::Add,
+                        lhs: ast::Expr::Cast {
+                            expr: ast::Expr::Int { value: "0", span: value_span },
+                            ty,
+                            span: value_span,
+                        },
+                        rhs: ast::Expr::Int { value, span: value_span },
+                        span: value_span,
+                    },
+                ),
+            )
+        }
     } else if name == "meta_expr_string" {
         Result::Ok(
             push_expr(
@@ -1227,6 +1347,29 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                     op: binary_op(int_argument(args, 0)?)?,
                     lhs: expr_value(state, args, 1)?,
                     rhs: expr_value(state, args, 2)?,
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_trait_call" {
+        let list = checked_index(
+            handle_argument(args, 3, "MetaExprList")?,
+            state.expr_lists.len(),
+            "meta expression list",
+        )?;
+        let function_name = definition_name(state, string_argument(args, 1)?) + "::"
+            + string_argument(args, 2)?;
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Call {
+                    func: ast::Expr::Path {
+                        path: path(function_name, value_span),
+                        owner_type_args: Vec::[],
+                        member_type_args: Vec::[],
+                        span: value_span,
+                    },
+                    args: state.expr_lists[list],
                     span: value_span,
                 },
             ),

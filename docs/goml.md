@@ -1609,7 +1609,7 @@ pub trait Label {
     fn label(self: Self) -> string;
 }
 
-#[comptime_derive]
+#[comptime_derive(Label)]
 pub fn derive_label(input: DeriveInput) -> DeriveOutput {
     let output = derive_output_new(input, "Label");
     let params = meta_param_list_new();
@@ -1624,18 +1624,27 @@ pub fn derive_label(input: DeriveInput) -> DeriveOutput {
 Another package applies the handler through an imported package path:
 
 ```goml
-use alice::labels;
+use alice::labels as labels;
 use labels::Label;
 
-#[derive(labels::derive_label)]
+#[derive(Label)]
 struct User {
+    name: string,
+}
+
+#[derive(labels::Label)]
+struct Group {
     name: string,
 }
 ```
 
-A custom handler path must have the form `package_alias::handler`, where `package_alias` is introduced by a `use` in the same source file. Bare handler names, unimported canonical package paths, and handlers visible only through a transitive dependency are rejected.
+A public `#[comptime_derive(Name)]` handler exports the derive name `Name`, independently of its implementation function name. Export names are unique within one package and cannot contain `::`. The named form requires `pub`; private `#[comptime_derive]` functions remain implementation helpers. The unnamed public form remains available and exports the handler function's short name.
 
-`#[comptime_derive]` is valid only on a non-generic free function. A public handler must have the exact signature `(DeriveInput) -> DeriveOutput`. Private functions with the same attribute are compile-time-only helpers and are included in the interface when reachable from a public handler. A derive handler may call those helpers and ordinary `#[comptime]` functions, but it cannot be called from runtime code or ordinary value `comptime`. Derive handlers are not exported as runtime functions.
+Derive names have their own namespace, but ordinary `use` declarations populate it alongside the type and trait namespaces. Therefore `use json::Serialize;` makes both the `Serialize` trait and a derive export named `Serialize` available as `Serialize`, so `#[derive(Serialize)]` works without another import form. An import alias applies to both namespaces: `use json::Serialize as JsonSerialize;` permits `#[derive(JsonSerialize)]`. A package import permits the qualified spelling `#[derive(json::Serialize)]`.
+
+A qualified custom derive must have the form `package_alias::export_name`, where `package_alias` is introduced by a `use` in the same source file. A bare library derive must be explicitly imported. Unimported canonical package paths and handlers visible only through a transitive dependency are rejected. If two explicit imports or a prelude derive and an explicit import provide the same bare name, the compiler reports ambiguity and requires a qualified name or import alias.
+
+`#[comptime_derive]` and `#[comptime_derive(Name)]` are valid only on non-generic free functions. A public handler must have the exact signature `(DeriveInput) -> DeriveOutput`. Private functions with the unnamed attribute are compile-time-only helpers and are included in the interface when reachable from a public handler. A derive handler may call those helpers and ordinary `#[comptime]` functions, but it cannot be called from runtime code or ordinary value `comptime`. Derive handlers are not exported as runtime functions.
 
 The first version resolves handlers from already compiled dependency interfaces. A handler cannot be defined and applied within the same package compilation. Put reusable handlers and their generated traits in a separate package. The target may be a generic struct or enum; the generated impl inherits its type parameters. `derive_output_add_predicate` and `derive_output_add_call_site_predicate` add the bounds required by generated methods.
 
@@ -1648,6 +1657,7 @@ derive_generic_count(input) -> int
 derive_generic_name(input, index) -> string
 derive_field_count/name/type(...)
 derive_variant_count/name(...)
+derive_variant_kind(input, variant) -> int
 derive_variant_field_count/name/type(...)
 derive_attribute_count/name/text(...)
 derive_field_attribute_count/name/text(...)
@@ -1661,7 +1671,7 @@ derive_target_type(input) -> MetaType
 derive_fresh_name(input, prefix) -> string
 ```
 
-`derive_item_kind` returns zero for a struct and one for an enum. The count operation for a nested attribute takes the owner indexes; its name and text operations take one additional attribute index. Field operations require a struct, while variant operations require an enum. Invalid kinds and indexes are compile-time errors at the `#[derive(...)]` site. Attributes may be attached to struct fields, enum variants, and tuple or named variant fields. `name` returns the attribute name and `text` returns its complete source spelling.
+`derive_item_kind` returns zero for a struct and one for an enum. `derive_variant_kind` returns zero for a unit variant, one for a tuple variant, and two for a struct-like variant. The count operation for a nested attribute takes the owner indexes; its name and text operations take one additional attribute index. Field operations require a struct, while variant operations require an enum. Invalid kinds and indexes are compile-time errors at the `#[derive(...)]` site. Attributes may be attached to struct fields, enum variants, and tuple or named variant fields. `name` returns the attribute name and `text` returns its complete source spelling.
 
 The structured attribute handle exposes `meta_attribute_name`, `meta_attribute_text`, `meta_attribute_has_argument_list`, `meta_attribute_argument_count`, `meta_attribute_argument_kind`, and `meta_attribute_argument_text`. Argument kind is `ident`, `path`, or `string`, and argument text is decoded rather than raw source spelling.
 
@@ -1684,15 +1694,18 @@ meta_type_array_length/array_element(type) -> int | MetaType
 meta_type_function_parameter_count/parameter(type, index...) -> int | MetaType
 meta_type_function_return(type) -> MetaType
 meta_type_contains_generic(input, type) -> bool
+meta_type_equal(left, right) -> bool
 
 meta_expr_var(name) -> MetaExpr
 meta_expr_unit/bool/int/string/char(value...) -> MetaExpr
+meta_expr_integer(text, type) -> MetaExpr
 meta_expr_field(value, name) -> MetaExpr
 meta_expr_index(value, index) -> MetaExpr
 meta_expr_unary(operator, value) -> MetaExpr
 meta_expr_binary(operator, left, right) -> MetaExpr
 meta_expr_call(input, name, arguments) -> MetaExpr
 meta_expr_call_site(name, arguments) -> MetaExpr
+meta_expr_trait_call(input, trait_name, method_name, arguments) -> MetaExpr
 meta_expr_method_call(receiver, name, arguments) -> MetaExpr
 meta_expr_constructor(name, arguments) -> MetaExpr
 meta_expr_tuple/array(elements) -> MetaExpr
@@ -1744,7 +1757,7 @@ derive_output_add_call_site_predicate(output, type, trait_name) -> unit
 derive_output_add_method(output, method) -> unit
 ```
 
-`meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
+`meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_expr_integer` accepts a normalized integer literal string plus its exact integer type, so builders can represent values outside the host `int` range. `meta_expr_trait_call` resolves the trait in the handler's defining package and builds a static trait method call. `meta_type_equal` compares structural type identity. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
 
 Unqualified names passed to `derive_output_new`, `derive_output_add_predicate`, `meta_type_named`, and `meta_expr_call` resolve in the handler's defining package. Their `_call_site` variants resolve in the target package. `derive_fresh_name` should be used for generated local bindings that must not collide with user names. Constructor patterns describe the target item and resolve at the call site.
 
@@ -1949,7 +1962,7 @@ Each test is executed in a separate runner process, and failure to exit and time
 
 LSP will construct the analysis package according to the production file, white box test file and black box test file respectively according to the path, so diagnosis, completion, hover and jump follow the corresponding visibility.`Run Test` CodeLens will appear on the `#[test]` function; the VS Code extension will save the dirty file first, and then call the module-level `goml test` with the complete test name and test type.
 
-The custom `goml/expandedDerive` request returns the formatted AST after built-in and programmable derives have run for the requested document. The VS Code command `GoML: Show Expanded Derive` opens that result beside the source file.
+The custom `goml/expandedDerive` request returns the formatted AST after built-in and programmable derives have run for the requested document. It uses the same package aliases, explicit derive imports, ambiguity checks, dependency interfaces, CTIR verifier, and resource limits as `goml check`. The VS Code command `GoML: Show Expanded Derive` opens that result beside the source file.
 
 `gomllsp` supports full-document formatting through `textDocument/formatting`. Formatting uses the latest unsaved document text and the fixed rules described in `docs/formatting.md`. Invalid documents are left unchanged.
 
@@ -2353,7 +2366,7 @@ item          = attribute* visibility? function
 visibility    = "pub"
 attribute     = "#[" attribute_body "]"
 comptime_attribute = "#[" "comptime" "]"
-comptime_derive_attribute = "#[" "comptime_derive" "]"
+comptime_derive_attribute = "#[" "comptime_derive" ("(" ident ")")? "]"
 derive_attribute = "#[" "derive" "(" path ("," path)* ")" "]"
 go_ffi_attribute = "#[" "go_ffi" "(" string_literal "," string_literal ")" "]"
 go_ffi_extern = go_ffi_attribute visibility? "extern" "fn" lower_ident

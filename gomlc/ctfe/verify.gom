@@ -515,6 +515,27 @@ fn verify_find_entry(module: ctir::CtModule, name: string) -> Option[ctir::CtFun
     Option::None
 }
 
+fn short_derive_name(value: string) -> string {
+    let mut result = value;
+    let mut index = 0;
+    while index + 1 < value.byte_len() {
+        if value.byte_get(index) == b':' && value.byte_get(index + 1) == b':' {
+            result = value.byte_slice(index + 2, value.byte_len());
+            index = index + 2;
+        } else {
+            index = index + 1;
+        };
+    }
+    result
+}
+
+fn derive_export_name(value: ctir::CtDeriveEntry) -> string {
+    match value.export_name {
+        Some(name) => name,
+        None => short_derive_name(value.name),
+    }
+}
+
 fn call_function(ctx: VerifyContext, target: ctir::CtCallTarget) -> Option[ctir::CtFunction] {
     match target {
         ctir::CtCallTarget::Local(id) => verify_find_function(ctx.module, id),
@@ -1095,7 +1116,7 @@ fn verify_unique_module_names(module: ctir::CtModule, dependencies: Vec[ctir::Ct
     let names: Vec[string] = Vec::[module.package_name];
     for dependency in dependencies {
         if collections::contains(names, dependency.package_name) {
-            return Result::Err("duplicate CTIR module package")
+            return Result::Err("duplicate CTIR module package `" + dependency.package_name + "`")
         } else if dependency.target.int_width != module.target.int_width {
             return Result::Err("CTIR target mismatch")
         } else {
@@ -1137,6 +1158,7 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
             entry_names.push(entry.name)
         }
     }
+    let derive_export_names: Vec[string] = Vec::[];
     for entry in module.derive_entries {
         if entry.name == "" || collections::contains(entry_names, entry.name)
             || verify_find_function(module, entry.function_id).is_none() {
@@ -1147,7 +1169,16 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
         let Some(function) = verify_find_function(module, entry.function_id) else {
             return Result::Err("invalid CTIR derive entry")
         };
-        if entry.public {
+        if entry.export_name.is_some() && !entry.public {
+            return Result::Err("private CTIR derive entry has an export name")
+        } else if entry.public {
+            let export_name = derive_export_name(entry);
+            if export_name == "" || export_name.contains("::")
+                || collections::contains(derive_export_names, export_name) {
+                return Result::Err("invalid or duplicate CTIR derive export name")
+            } else {
+                derive_export_names.push(export_name)
+            };
             if function.parameter_types.len() != 1
                 || !types_equal(function.parameter_types[0], ctir::CtType::Meta("DeriveInput"))
                 || !types_equal(function.return_type, ctir::CtType::Meta("DeriveOutput")) {

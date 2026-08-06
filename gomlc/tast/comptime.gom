@@ -1126,18 +1126,52 @@ fn build_comptime_module(
     let module = ctir::empty_module(package_name);
     let functions = capable_functions(file);
     for index in 0..functions.len() {
-        let entry = ctir::CtEntry {
-            name: functions[index].name,
-            function_id: index,
-            public: match functions[index].visibility {
-                ast::Visibility::Public => true,
-                ast::Visibility::Private => false,
-            },
+        let public = match functions[index].visibility {
+            ast::Visibility::Public => true,
+            ast::Visibility::Private => false,
         };
         match functions[index].comptime {
-            ComptimeCapability::Capable => module.entries.push(entry),
-            ComptimeCapability::Derive => module.derive_entries.push(entry),
+            ComptimeCapability::Capable => module.entries.push(
+                ctir::CtEntry { name: functions[index].name, function_id: index, public },
+            ),
+            ComptimeCapability::Derive => module.derive_entries.push(
+                ctir::CtDeriveEntry {
+                    name: functions[index].name,
+                    function_id: index,
+                    public,
+                    export_name: functions[index].derive_export_name,
+                },
+            ),
             ComptimeCapability::RuntimeOnly => (),
+        }
+    }
+    for index in 0..module.derive_entries.len() {
+        if !module.derive_entries[index].public {
+            continue
+        } else {};
+        let name = match module.derive_entries[index].export_name {
+            Some(value) => value,
+            None => short_comptime_name(module.derive_entries[index].name),
+        };
+        for other in 0..index {
+            if !module.derive_entries[other].public {
+                continue
+            } else {};
+            let other_name = match module.derive_entries[other].export_name {
+                Some(value) => value,
+                None => short_comptime_name(module.derive_entries[other].name),
+            };
+            if name == other_name {
+                let function = functions[module.derive_entries[index].function_id];
+                diagnostics.push(
+                    comptime_diagnostic(
+                        "duplicate comptime derive export `" + name + "`",
+                        function.source_path,
+                        function.start,
+                        function.end,
+                    ),
+                )
+            } else {}
         }
     }
     for index in 0..functions.len() {
@@ -2168,6 +2202,7 @@ pub fn finalize_comptime(
                         visibility: value.visibility,
                         name: value.name,
                         comptime: value.comptime,
+                        derive_export_name: value.derive_export_name,
                         source_path: value.source_path,
                         start: value.start,
                         end: value.end,
@@ -2194,6 +2229,7 @@ pub fn finalize_comptime(
                                 visibility: method.visibility,
                                 name: method.name,
                                 comptime: method.comptime,
+                                derive_export_name: method.derive_export_name,
                                 source_path: method.source_path,
                                 start: method.start,
                                 end: method.end,

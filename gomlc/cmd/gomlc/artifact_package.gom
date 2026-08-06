@@ -636,16 +636,29 @@ fn compile_artifact_package(
             None => (),
         }
     }
-    artifact_verify_comptime_modules(derive_modules)?;
+    let builtin_derive_module = match world.builtin_interface.comptime {
+        Some(value) => Option::Some(value.module),
+        None => Option::None,
+    };
+    let verified_derive_modules = derive_modules;
+    match builtin_derive_module {
+        Some(value) => verified_derive_modules.push(value),
+        None => (),
+    };
+    artifact_verify_comptime_modules(verified_derive_modules)?;
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     let derive_diagnostics: Vec[tast::Diagnostic] = Vec::[];
     let mut source_needs = no_standard_needs();
     for index in 0..ast_values.len() {
         let ast_value = ast_values[index];
         source_needs = merge_standard_needs(source_needs, source_standard_needs(ast_value));
-        let expanded = hir::expand_derives_with_comptime(
+        let expanded = hir::expand_derives_with_environment(
             without_disallowed_standard_internal_imports(ast_value, command.package_name),
-            derive_modules,
+            hir::DeriveEnvironment {
+                builtin: builtin_derive_module,
+                dependencies: derive_modules,
+                builtin_mode: hir::BuiltinDeriveMode::CompilerFallback,
+            },
         );
         for diagnostic in ast_diagnostics(expanded.diagnostics, "derive", command.inputs[index]) {
             derive_diagnostics.push(diagnostic)
