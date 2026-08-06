@@ -1112,7 +1112,8 @@ fn resolve_bare_derive(file: ast::File, environment: DeriveEnvironment, name: st
             None => (),
         }
     };
-    if candidates.is_empty() && supported_derive(name) {
+    if candidates.is_empty() && supported_derive(name)
+        && compiler_builtin_derive_fallback(environment.builtin_mode) {
         candidates.push(ResolvedDerive::BuiltinFallback(name))
     } else {};
     for imported in derive_imports(file, environment) {
