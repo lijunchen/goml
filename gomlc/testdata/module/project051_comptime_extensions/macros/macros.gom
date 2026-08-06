@@ -1,0 +1,202 @@
+package macros;
+
+pub struct Report {
+    pub text: string,
+    pub ok: bool,
+}
+
+pub trait Inspect {
+    fn inspect(self: Self) -> string;
+    fn accepted(self: Self) -> bool;
+    fn report(self: Self) -> Report;
+    fn initial(self: Self) -> char;
+    fn patterns(self: Self) -> int;
+    fn maybe(self: Self) -> Option[int];
+}
+
+#[comptime_derive]
+fn inspect_method(input: DeriveInput) -> MetaMethod {
+    let fields = meta_pattern_field_list_new();
+    meta_pattern_field_list_push(fields, "name", meta_pattern_bind("name"));
+    let pattern = meta_pattern_struct(derive_item_name(input), fields, true);
+    let args = meta_expr_list_new();
+    let rendered = meta_expr_method_call(meta_expr_var("name"), "to_string", args);
+    let arms = meta_arm_list_new();
+    meta_arm_list_push(arms, meta_arm(pattern, rendered));
+    let matched = meta_expr_match(meta_expr_var("self"), arms);
+    let block = meta_block_new();
+    meta_block_expr(block, meta_expr_return(matched));
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    meta_method("inspect", params, meta_type_call_site("string"), meta_block_finish_unit(block))
+}
+
+#[comptime_derive]
+fn accepted_method(input: DeriveInput) -> MetaMethod {
+    let alternatives = meta_pattern_list_new();
+    meta_pattern_list_push(
+        alternatives,
+        meta_pattern_range(meta_pattern_int(1), meta_pattern_int(3), true),
+    );
+    meta_pattern_list_push(alternatives, meta_pattern_int(5));
+    let arms = meta_arm_list_new();
+    meta_arm_list_push(
+        arms,
+        meta_arm_guarded(
+            meta_pattern_or(alternatives),
+            meta_expr_bool(true),
+            meta_expr_unary(1, meta_expr_bool(false)),
+        ),
+    );
+    meta_arm_list_push(arms, meta_arm(meta_pattern_wild(), meta_expr_bool(false)));
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    meta_method(
+        "accepted",
+        params,
+        meta_type_call_site("bool"),
+        meta_expr_match(meta_expr_int(3), arms),
+    )
+}
+
+#[comptime_derive]
+fn report_method(input: DeriveInput, text: string) -> MetaMethod {
+    let block = meta_block_new();
+    meta_block_let_mut(block, "ok", meta_expr_bool(false));
+    meta_block_assign(block, meta_expr_var("ok"), meta_expr_bool(true));
+    let fields = meta_expr_field_list_new();
+    meta_expr_field_list_push(fields, "text", meta_expr_string(text));
+    meta_expr_field_list_push(fields, "ok", meta_expr_var("ok"));
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    meta_method(
+        "report",
+        params,
+        meta_type_named(input, "Report"),
+        meta_block_finish(block, meta_expr_struct(input, "Report", fields)),
+    )
+}
+
+#[comptime_derive]
+fn initial_method(input: DeriveInput) -> MetaMethod {
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    meta_method("initial", params, meta_type_call_site("char"), meta_expr_char("m"))
+}
+
+#[comptime_derive]
+fn patterns_method(input: DeriveInput) -> MetaMethod {
+    let array_values = meta_expr_list_new();
+    meta_expr_list_push(array_values, meta_expr_int(1));
+    meta_expr_list_push(array_values, meta_expr_int(2));
+    let tuple_values = meta_expr_list_new();
+    meta_expr_list_push(tuple_values, meta_expr_bool(true));
+    meta_expr_list_push(tuple_values, meta_expr_string("x"));
+    meta_expr_list_push(tuple_values, meta_expr_char("m"));
+    meta_expr_list_push(tuple_values, meta_expr_array(array_values));
+    meta_expr_list_push(tuple_values, meta_expr_unit());
+    let array_patterns = meta_pattern_list_new();
+    meta_pattern_list_push(array_patterns, meta_pattern_int(1));
+    meta_pattern_list_push(array_patterns, meta_pattern_alias("answer", meta_pattern_int(2)));
+    let tuple_patterns = meta_pattern_list_new();
+    meta_pattern_list_push(tuple_patterns, meta_pattern_bool(true));
+    meta_pattern_list_push(tuple_patterns, meta_pattern_string("x"));
+    meta_pattern_list_push(tuple_patterns, meta_pattern_char("m"));
+    meta_pattern_list_push(tuple_patterns, meta_pattern_array(array_patterns));
+    meta_pattern_list_push(tuple_patterns, meta_pattern_unit());
+    let arms = meta_arm_list_new();
+    meta_arm_list_push(arms, meta_arm(meta_pattern_tuple(tuple_patterns), meta_expr_var("answer")));
+    meta_arm_list_push(arms, meta_arm(meta_pattern_wild(), meta_expr_int(0)));
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    meta_method(
+        "patterns",
+        params,
+        meta_type_call_site("int"),
+        meta_expr_match(meta_expr_tuple(tuple_values), arms),
+    )
+}
+
+#[comptime_derive]
+fn maybe_method(input: DeriveInput) -> MetaMethod {
+    let values = meta_expr_list_new();
+    meta_expr_list_push(values, meta_expr_int(7));
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    let type_args = meta_type_list_new();
+    meta_type_list_push(type_args, meta_type_call_site("int"));
+    meta_method(
+        "maybe",
+        params,
+        meta_type_apply(meta_type_call_site("Option"), type_args),
+        meta_expr_constructor("Option::Some", values),
+    )
+}
+
+#[comptime_derive]
+pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
+    let item_attribute = derive_attribute(input, 0);
+    if meta_attribute_name(item_attribute) != "derive" {
+        compile_error("structured item attribute metadata is missing")
+    } else {};
+    let attribute = derive_field_attribute(input, 0, 0);
+    let mut text = "";
+    for part in["<", meta_attribute_name(attribute), ">"] {
+        text = text + part;
+    }
+    for index in 0..meta_attribute_argument_count(attribute) {
+        if index == 1 {
+            continue
+        } else {};
+        text = text + meta_attribute_argument_kind(attribute, index) + ":"
+            + meta_attribute_argument_text(attribute, index)
+            + ";";
+    }
+    if !meta_attribute_has_argument_list(attribute) || meta_attribute_text(attribute).len() < 1 {
+        compile_error("structured attribute metadata is missing")
+    } else {};
+    if meta_attribute_argument_kind(attribute, 1) != "path"
+        || meta_attribute_argument_text(attribute, 1) != "owner::value" {
+        compile_error("structured path attribute argument is missing")
+    } else {};
+    if !text.starts_with("<meta") || !text.ends_with("suffix;") || !text.contains("field_name") {
+        compile_error("compile-time string search failed")
+    } else if text.get(0) != '<' || text.byte_get(0) != 60 || text.byte_slice(0, 1) != "<"
+        || !text.is_char_boundary(1) {
+        compile_error("compile-time string indexing failed")
+    } else {};
+    let field_type = derive_field_type(input, 1);
+    if meta_type_kind(field_type) != "application" || meta_type_argument_count(field_type) != 1 {
+        compile_error("applied type reflection failed")
+    } else {};
+    let argument = meta_type_argument(field_type, 0);
+    if meta_type_kind(argument) != "named" || meta_type_name(argument) != "T"
+        || !meta_type_contains_generic(input, field_type) {
+        compile_error("generic type reflection failed")
+    } else {};
+    let tuple_type = derive_field_type(input, 2);
+    if meta_type_kind(tuple_type) != "tuple" || meta_type_tuple_count(tuple_type) != 2
+        || meta_type_name(meta_type_tuple_item(tuple_type, 0)) != "T" {
+        compile_error("tuple type reflection failed")
+    } else {};
+    let array_type = derive_field_type(input, 3);
+    if meta_type_kind(array_type) != "array" || meta_type_array_length(array_type) != 3
+        || meta_type_name(meta_type_array_element(array_type)) != "uint8" {
+        compile_error("array type reflection failed")
+    } else {};
+    let function_type = derive_field_type(input, 4);
+    if meta_type_kind(function_type) != "function"
+        || meta_type_function_parameter_count(function_type) != 1
+        || meta_type_name(meta_type_function_parameter(function_type, 0)) != "T"
+        || meta_type_name(meta_type_function_return(function_type)) != "string" {
+        compile_error("function type reflection failed")
+    } else {};
+    let output = derive_output_new(input, "Inspect");
+    derive_output_add_method(output, inspect_method(input));
+    derive_output_add_method(output, accepted_method(input));
+    derive_output_add_method(output, report_method(input, text));
+    derive_output_add_method(output, initial_method(input));
+    derive_output_add_method(output, patterns_method(input));
+    derive_output_add_method(output, maybe_method(input));
+    output
+}

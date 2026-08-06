@@ -72,6 +72,30 @@ fn initializes_and_answers_hover_requests() -> unit {
 }
 
 #[test]
+fn returns_expanded_derive_source() -> unit {
+    let server = new_server();
+    let source = "#[derive(Eq)] struct Key { value: int } fn main() -> unit { () }";
+    let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/expanded.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\""
+        + source
+        + "\"}}}";
+    match handle_payload(server, open) {
+        Ok(_) => (),
+        Err(error) => testing::fail(error),
+    };
+    let request = "{\"jsonrpc\":\"2.0\",\"id\":10,\"method\":\"goml/expandedDerive\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/expanded.gom\"}}}";
+    match handle_payload(server, request) {
+        Ok(messages) => match response_result(messages.get(0)) {
+            Some(result) => match json::as_string(result) {
+                Some(value) => testing::assert(value.contains("impl Eq for Key")),
+                None => testing::fail("expected expanded derive source"),
+            },
+            None => testing::fail("expected expanded derive result"),
+        },
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
 fn applies_full_document_changes_and_stops_on_exit() -> unit {
     let server = new_server();
     let open = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\",\"params\":{\"textDocument\":{\"uri\":\"file:///tmp/gomllsp-change.gom\",\"languageId\":\"goml\",\"version\":1,\"text\":\"fn main() -> int32 { 1 }\"}}}";

@@ -114,6 +114,24 @@ fn analyzes_cross_package_comptime_derives() -> unit {
 }
 
 #[test]
+fn returns_cross_package_expanded_derive_source() -> unit {
+    let root = "../gomlc/testdata/module/project050_comptime_derive";
+    let main_path = root + "/main.gom";
+    match fs::read_file(main_path) {
+        Ok(source) => {
+            let analysis = analyze(main_path, source);
+            assert_no_diagnostics(analysis);
+            let expanded = expanded_derive(analysis);
+            testing::assert(
+                expanded.contains("impl[T] tests::comptime_derive::macros::Label for Box[T]"),
+            );
+            testing::assert(expanded.contains("fn label(self: Box[T]) -> string"))
+        },
+        Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
 fn analyzes_toolchain_standard_library_dependencies() -> unit {
     let root = "../gomlc/testdata/module/project032_std_host_api";
     let main_path = root + "/main.gom";

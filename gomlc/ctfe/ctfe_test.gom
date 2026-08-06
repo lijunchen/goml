@@ -152,6 +152,88 @@ fn expect_int(result: Result[ctir::CtValue, CtError]) -> int {
     }
 }
 
+fn expect_string_intrinsic(name: string, args: Vec[ctir::CtValue]) -> ctir::CtValue {
+    match call_value_intrinsic(ctir::CtTarget { int_width: 64 }, name, args) {
+        Some(Ok(value)) => value,
+        Some(Err(error)) => {
+            testing::fail(error);
+            ctir::CtValue::Unit
+        },
+        None => {
+            testing::fail("expected compile-time string intrinsic");
+            ctir::CtValue::Unit
+        },
+    }
+}
+
+#[test]
+fn evaluates_compile_time_string_intrinsics() -> unit {
+    match expect_string_intrinsic("comptime.string.len", Vec::[ctir::CtValue::String("éa")]) {
+        ctir::CtValue::Integer { bits, .. } => testing::assert_eq(bits, 3),
+        _ => testing::fail("expected string length"),
+    };
+    match expect_string_intrinsic(
+        "comptime.string.get",
+        Vec::[ctir::CtValue::String("éa"), int_value(2)],
+    ) {
+        ctir::CtValue::Char(value) => testing::assert_eq(value, 'a'),
+        _ => testing::fail("expected string character"),
+    };
+    match expect_string_intrinsic(
+        "comptime.string.byte_get",
+        Vec::[ctir::CtValue::String("éa"), int_value(0)],
+    ) {
+        ctir::CtValue::Integer { bits, .. } => testing::assert_eq(bits, 195),
+        _ => testing::fail("expected string byte"),
+    };
+    match expect_string_intrinsic(
+        "comptime.string.byte_slice",
+        Vec::[ctir::CtValue::String("éa"), int_value(0), int_value(2)],
+    ) {
+        ctir::CtValue::String(value) => testing::assert_eq(value, "é"),
+        _ => testing::fail("expected string slice"),
+    };
+    match expect_string_intrinsic(
+        "comptime.string.is_char_boundary",
+        Vec::[ctir::CtValue::String("éa"), int_value(1)],
+    ) {
+        ctir::CtValue::Bool(value) => testing::assert(!value),
+        _ => testing::fail("expected character boundary result"),
+    };
+    match expect_string_intrinsic(
+        "comptime.string.contains",
+        Vec::[ctir::CtValue::String("derive"), ctir::CtValue::String("riv")],
+    ) {
+        ctir::CtValue::Bool(value) => testing::assert(value),
+        _ => testing::fail("expected string search result"),
+    }
+}
+
+#[test]
+fn rejects_invalid_compile_time_string_boundaries() -> unit {
+    match call_value_intrinsic(
+        ctir::CtTarget { int_width: 64 },
+        "comptime.string.get",
+        Vec::[ctir::CtValue::String("é"), int_value(1)],
+    ) {
+        Some(Err(error)) => testing::assert(
+            error.contains("out of bounds or not a character boundary"),
+        ),
+        _ => testing::fail("expected invalid character boundary"),
+    };
+    match call_value_intrinsic(
+        ctir::CtTarget { int_width: 32 },
+        "comptime.string.byte_get",
+        Vec::[
+            ctir::CtValue::String("a"),
+            ctir::CtValue::Integer { signed: true, width: 32, bits: 4294967295 },
+        ],
+    ) {
+        Some(Err(error)) => testing::assert_eq(error, "comptime string byte index is out of bounds"),
+        _ => testing::fail("expected negative target-width string index rejection"),
+    }
+}
+
 #[test]
 fn evaluates_recursive_direct_calls() -> unit {
     let module = factorial_module();
@@ -248,6 +330,32 @@ fn evaluates_local_state_and_loops() -> unit {
         Err(error) => testing::fail(error),
     };
     testing::assert_eq(expect_int(evaluate_site(module, Vec::[], 0, default_limits())), 10)
+}
+
+#[test]
+fn inclusive_range_stops_at_maximum_integer() -> unit {
+    let maximum = narrow_int_expr(true, 64, 9223372036854775807);
+    let expression = ctir::CtExpr {
+        kind: ctir::CtExprKind::ForRange {
+            target: 0,
+            pattern: ctir::CtPattern::Wild,
+            start: maximum,
+            end: maximum,
+            inclusive: true,
+            body: ctir::CtExpr {
+                kind: ctir::CtExprKind::Value(ctir::CtValue::Unit),
+                ty: ctir::CtType::Unit,
+                origin: 0,
+            },
+        },
+        ty: ctir::CtType::Unit,
+        origin: 0,
+    };
+    match evaluate_expression(expression, Vec::[], default_limits()) {
+        Ok(ctir::CtValue::Unit) => (),
+        Ok(_) => testing::fail("expected unit range result"),
+        Err(error) => testing::fail(error.message),
+    }
 }
 
 #[test]
@@ -811,7 +919,7 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
         ctir::CtEntry { name: "handler", function_id: 0, public: true },
     );
     match verify_module(invalid_intrinsic, Vec::[]) {
-        Err(error) => testing::assert_eq(error, "unknown CTIR derive intrinsic"),
+        Err(error) => testing::assert_eq(error, "unknown CTIR intrinsic"),
         Ok(()) => testing::fail("expected invalid derive intrinsic"),
     }
 }

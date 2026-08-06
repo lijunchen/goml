@@ -216,6 +216,7 @@ fn parses_run_single_dump_flags() -> unit {
     values.push("--dump-go");
     values.push("main.gom");
     values.push("--dump-ast");
+    values.push("--dump-expanded-ast");
     values.push("--dump-tast");
     values.push("--dump-ctir");
     values.push("--dump-core");
@@ -226,6 +227,7 @@ fn parses_run_single_dump_flags() -> unit {
     let args = parse_ok(values);
     testing::assert_eq(args.file, "main.gom");
     testing::assert(args.dump_ast);
+    testing::assert(args.dump_expanded_ast);
     testing::assert(args.dump_hir);
     testing::assert(args.dump_tast);
     testing::assert(args.dump_ctir);
@@ -243,6 +245,7 @@ fn parses_run_single_without_dumps() -> unit {
     let args = parse_ok(values);
     testing::assert_eq(args.file, "main.gom");
     testing::assert(!args.dump_ast);
+    testing::assert(!args.dump_expanded_ast);
     testing::assert(!args.dump_hir);
     testing::assert(!args.dump_tast);
     testing::assert(!args.dump_ctir);
@@ -251,6 +254,18 @@ fn parses_run_single_without_dumps() -> unit {
     testing::assert(!args.dump_lift);
     testing::assert(!args.dump_anf);
     testing::assert(!args.dump_go)
+}
+
+#[test]
+fn preserves_source_and_expanded_ast_views() -> unit {
+    let compilation = compile_source(
+        "main.gom",
+        "#[derive(Eq)] struct Key { value: int } fn main() -> unit { () }",
+    );
+    let source = ast::pretty(compilation.source_ast_value);
+    let expanded = ast::pretty(compilation.ast_value);
+    testing::assert(!source.contains("impl Eq for Key"));
+    testing::assert(expanded.contains("impl Eq for Key"))
 }
 
 #[test]

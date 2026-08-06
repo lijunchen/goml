@@ -1,0 +1,64 @@
+package main;
+
+use tests::comptime_extensions::macros;
+use macros::Inspect;
+
+#[derive(macros::derive_inspect)]
+struct Entry[T] {
+    #[metadata(field_name, owner::value, "suffix")]
+    name: string,
+    value: Vec[T],
+    pair: (T, int),
+    bytes: [uint8; 3],
+    callback: (T) -> string,
+}
+
+#[comptime]
+fn compile_text() -> string {
+    let mut result = "";
+    for value in["a", "b", "c"] {
+        result = result + value;
+    }
+    for index in 0..=3 {
+        if index == 1 {
+            continue
+        } else if index == 3 {
+            break
+        } else if index == 0 {
+            result = result + "0";
+        } else {
+            result = result + "2";
+        }
+    }
+    result
+}
+
+fn render(value: int) -> string {
+    value.to_string()
+}
+
+fn main() -> unit {
+    let entry = Entry {
+        name: "hello",
+        value: Vec::[1],
+        pair: (1, 2),
+        bytes: [1, 2, 3],
+        callback: render,
+    };
+    println(entry.inspect());
+    println(entry.accepted());
+    let report = entry.report();
+    println(report.text);
+    println(report.ok);
+    println(entry.initial());
+    println(entry.patterns());
+    match entry.maybe() {
+        Some(value) => println(value),
+        None => println(0),
+    };
+    println(
+        comptime {
+            compile_text()
+        },
+    )
+}
