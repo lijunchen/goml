@@ -1,0 +1,13 @@
+package ffi;
+
+#[go_ffi("example.com/gomlffi/goshim", "Decorate")]
+pub extern fn decorate(value: string) -> (string, int32);
+
+#[go_ffi("example.com/gomlffi/goshim", "ByteLength")]
+pub extern fn byte_length(value: Slice[byte]) -> int;
+
+#[go_ffi("example.com/gomlffi/goshim", "Swap")]
+pub extern fn swap(value: [int32; 2]) -> [int32; 2];
+
+#[go_ffi("example.com/gomlffi/goshim", "Send")]
+pub extern fn send(channel: Channel[string], value: string) -> unit;

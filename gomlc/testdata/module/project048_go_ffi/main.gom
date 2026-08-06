@@ -1,0 +1,22 @@
+package main;
+
+use go_ffi_module::ffi;
+
+fn main() -> unit {
+    let (value, length) = ffi::decorate("goml");
+    println(value);
+    println(length);
+    let bytes = b"abc";
+    println(ffi::byte_length(bytes.slice(0, bytes.len())));
+    let swapped = ffi::swap([1, 2]);
+    println(array_get(swapped, 0));
+    println(array_get(swapped, 1));
+    let channel: Channel[string] = Channel::new(1);
+    ffi::send(channel, "from-go");
+    println(
+        match channel.recv() {
+            Some(value) => value,
+            None => "closed",
+        },
+    )
+}

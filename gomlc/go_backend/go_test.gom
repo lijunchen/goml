@@ -646,6 +646,20 @@ fn rejects_unknown_intrinsics_before_emission() -> unit {
 }
 
 #[test]
+fn lowers_go_ffi_calls_through_abi_wrappers() -> unit {
+    let output = encode(
+        lower_source(
+            "#[go_ffi(\"strings\", \"Cut\")] extern fn cut(value: string, separator: string) -> (string, string, bool); #[go_ffi(\"runtime\", \"Gosched\")] extern fn gosched() -> unit; fn main() -> unit { let _ = cut(\"a:b\", \":\"); gosched() }",
+        ),
+    );
+    testing::assert(string_contains(output, "\"strings\""));
+    testing::assert(string_contains(output, "\"runtime\""));
+    testing::assert(string_contains(output, ".Cut(arg0, arg1)"));
+    testing::assert(string_contains(output, "result0, result1, result2 ="));
+    testing::assert(string_contains(output, ".Gosched()\n    return struct{}{}"))
+}
+
+#[test]
 fn preserves_loop_carried_assignments() -> unit {
     let source = "fn main() -> unit { let mut i = 0; while i < 3 { println(i); i = i + 1; } }";
     testing::assert(string_contains(encode(lower_source(source)), "\n            i__0 = "))

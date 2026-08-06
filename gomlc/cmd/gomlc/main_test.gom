@@ -1009,10 +1009,15 @@ fn writes_callable_body_shapes() -> unit {
     let host = tast_codec::artifact_callable(tast::Callable::Runtime("std.path.file_name"));
     wire::artifact_json_string(writer, host.name);
     tast_codec::artifact_json_callable_body(writer, host);
+    let go_foreign = tast_codec::artifact_callable(
+        tast::Callable::GoForeign { import_path: "strings", symbol: "ToUpper" },
+    );
+    wire::artifact_json_string(writer, go_foreign.name);
+    tast_codec::artifact_json_callable_body(writer, go_foreign);
     wire::artifact_json_end_array(writer);
     testing::assert_eq(
         wire::artifact_json_finish(writer),
-        "[\"__goml_primitive_eq\",{\"kind\":\"intrinsic\",\"id\":\"primitive_eq\"},\"ref\",{\"kind\":\"intrinsic\",\"id\":\"ref_new\"},\"char_from_uint32_raw\",{\"kind\":\"runtime\",\"id\":\"char_from_uint32\"},\"std::internal::host::path_file_name\",{\"kind\":\"runtime\",\"id\":\"std_path_file_name\"}]",
+        "[\"__goml_primitive_eq\",{\"kind\":\"intrinsic\",\"id\":\"primitive_eq\"},\"ref\",{\"kind\":\"intrinsic\",\"id\":\"ref_new\"},\"char_from_uint32_raw\",{\"kind\":\"runtime\",\"id\":\"char_from_uint32\"},\"std::internal::host::path_file_name\",{\"kind\":\"runtime\",\"id\":\"std_path_file_name\"},\"ToUpper\",{\"kind\":\"go\",\"import_path\":\"strings\",\"symbol\":\"ToUpper\"}]",
     )
 }
 
@@ -1049,13 +1054,13 @@ fn writes_interface_unit_shape_and_hash() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "fd10973aff8de75eb438decb558b8330efa389e0b3622ee02070fdfe40133b78",
+        "10e6fefebde8c3666890f2a9b653222455152e4d6ba7f0a939e60e4753944650",
     );
     let encoded = interface_codec::encode_json(artifact_unit, false);
     testing::assert_eq(
         encoded,
-        "{\"format_version\":18,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"reexports\":{},\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
-            + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\",\"id\":\"audit::value::value\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"fd10973aff8de75eb438decb558b8330efa389e0b3622ee02070fdfe40133b78\"}",
+        "{\"format_version\":19,\"compiler_abi\":3,\"package\":\"audit::value\",\"exports\":{\"reexports\":{},\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
+            + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\",\"id\":\"audit::value::value\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"10e6fefebde8c3666890f2a9b653222455152e4d6ba7f0a939e60e4753944650\"}",
     );
     let binary = match interface_codec::encode_binary(artifact_unit) {
         Ok(value) => value,
@@ -1129,7 +1134,7 @@ fn extracts_interface_unit_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "fd10973aff8de75eb438decb558b8330efa389e0b3622ee02070fdfe40133b78",
+        "10e6fefebde8c3666890f2a9b653222455152e4d6ba7f0a939e60e4753944650",
     )
 }
 
@@ -1191,7 +1196,7 @@ fn extracts_trait_interface_from_checked_package() -> unit {
     );
     testing::assert_eq(
         artifact_unit.interface_hash,
-        "9c493de54d3a422fa47060472ee89fc1ec4178a517ac15f9a422ea4065ec9bfe",
+        "42720fc3db022804683b8c907537002c362c851c756bb769a7d4fd0c5e0468e7",
     );
     let encoded = interface_codec::encode_json(artifact_unit, false);
     let binary = match interface_codec::encode_binary(artifact_unit) {
@@ -1339,7 +1344,7 @@ fn writes_core_unit_from_checked_package() -> unit {
     let encoded = core_codec::encode_json(core_unit, false);
     testing::assert_eq(
         hash::sha256_hex(encoded),
-        "8c7e72d19f686c46fd66eaf079c21c69fc959e201182aba831c011ff40534170",
+        "b0400175e61b9b075b4f3b385ab32c6687239d65bd0b804448739f3f2f8be4a8",
     );
     let binary = match core_codec::encode_binary(core_unit) {
         Ok(value) => value,

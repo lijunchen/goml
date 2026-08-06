@@ -126,6 +126,22 @@ fn build_graph_exposes_dependency_cycles() -> unit {
     testing::assert(!build_node_ready(graph.nodes.get(1), completed))
 }
 
+#[test]
+fn go_module_builds_delegate_freshness_to_go() -> unit {
+    let root = test_support::workspace("go_module_cache");
+    test_support::write_file(path::join(root, "go.mod"), "module example.com/app\n\ngo 1.25\n");
+    let context = cancellation_test_context(root, "gomlc");
+    let command = Command::GoBuild { input: "out/main.go", output: "out/main" };
+    match prepare_cached_command(digest_cache(), context, command, "gomlc") {
+        Ok(CachePreparation::Execute(None)) => (),
+        Ok(CachePreparation::Execute(Some(_))) => {
+            testing::fail("Go module build used the GoML fingerprint cache")
+        },
+        Ok(CachePreparation::Fresh) => testing::fail("Go module build was skipped"),
+        Err(message) => testing::fail(message),
+    }
+}
+
 fn cancellation_test_context(root: string, compiler: string) -> Context {
     Context {
         graph: Graph {

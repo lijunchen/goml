@@ -387,6 +387,68 @@ fn classifies_extern_attributes_by_name_instead_of_payload_text() -> unit {
 }
 
 #[test]
+fn permits_typed_go_ffi_externs_in_user_sources() -> unit {
+    let source = "type Text = string; #[go_ffi(\"strings\", \"ToUpper\")] extern fn to_upper(value: Text) -> Text; fn main() -> Text { to_upper(\"goml\") }";
+    let file = checked_file(source);
+    match file.items.get(0) {
+        Function(value) => match value.body.tail {
+            Some(Call {
+                func: Callable { callable: GoForeign { import_path, symbol }, ty: _ },
+                args: _,
+                ty: String,
+            },) => {
+                testing::assert_eq(import_path, "strings");
+                testing::assert_eq(symbol, "ToUpper")
+            },
+            _ => testing::fail("expected Go FFI call"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
+fn diagnoses_invalid_go_ffi_declarations() -> unit {
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics("#[go_ffi(\"strings\")] extern fn probe() -> unit;"),
+            "go_ffi attribute expects import path and symbol string arguments",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "#[go_ffi(\"strings\", \"toUpper\")] extern fn probe(value: string) -> string;",
+            ),
+            "go_ffi symbol must be an exported ASCII Go identifier",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "#[go_ffi(\"example.com/ffi\", \"Use\")] extern fn probe(values: Vec[int32]) -> unit;",
+            ),
+            "Go FFI parameter values has unsupported type Vec[int32]",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "#[go_ffi(\"example.com/ffi\", \"Use\")] extern fn probe[T](value: T) -> unit;",
+            ),
+            "Go FFI functions cannot declare generic parameters or predicates",
+        ),
+    );
+    testing::assert(
+        has_diagnostic(
+            checked_diagnostics(
+                "#[runtime(\"std.io.println\")] #[go_ffi(\"fmt\", \"Println\")] extern fn probe(value: string) -> unit;",
+            ),
+            "Extern declarations require exactly one ABI attribute",
+        ),
+    )
+}
+
+#[test]
 fn permits_runtime_externs_in_builtin_sources() -> unit {
     let lowered = hir::lower(
         ast::lower(
