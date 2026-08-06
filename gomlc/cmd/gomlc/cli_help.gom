@@ -37,7 +37,7 @@ fn command_help(command: string) -> Option[string] {
         )
     } else if command == "run-single" {
         Option::Some(
-            "Usage: gomlc run-single [OPTIONS] <FILE>\n\nArguments:\n  <FILE>  \n\nOptions:\n      --dump-ast   \n      --dump-hir   \n      --dump-tast  \n      --dump-core  \n      --dump-mono  \n      --dump-lift  \n      --dump-anf   \n      --dump-go    \n  -h, --help       Print help",
+            "Usage: gomlc run-single [OPTIONS] <FILE>\n\nArguments:\n  <FILE>  \n\nOptions:\n      --dump-ast   \n      --dump-hir   \n      --dump-tast  \n      --dump-ctir  \n      --dump-core  \n      --dump-mono  \n      --dump-lift  \n      --dump-anf   \n      --dump-go    \n  -h, --help       Print help",
         )
     } else if command == "version" {
         Option::Some(
@@ -208,6 +208,7 @@ fn similar_cli_argument(command: string, argument: string) -> Option[string] {
         candidates.push("--dump-lift");
         candidates.push("--dump-anf");
         candidates.push("--dump-go");
+        candidates.push("--dump-ctir");
         candidates.push("--help")
     } else if command == "version" {
         candidates.push("--format");

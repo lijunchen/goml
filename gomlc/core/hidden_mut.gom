@@ -66,6 +66,7 @@ fn collect_mutable_expr(value: tast::Expr, result: Vec[(string, tast::Type)]) ->
         } => collect_mutable_exprs(args, result),
         Closure { params: _, body, ty: _ } => collect_mutable_expr(body, result),
         Block { block, ty: _ } => collect_mutable_block(block, result),
+        Comptime { body, .. } => collect_mutable_expr(body, result),
         Match { expr: source, arms, ty: _ } => {
             collect_mutable_expr(source, result);
             for arm in arms {
@@ -243,6 +244,7 @@ fn collect_bound_expr(value: tast::Expr, result: Vec[string]) -> unit {
             ty: _,
         } => collect_bound_exprs(args, result),
         Block { block, ty: _ } => collect_bound_block(block, result),
+        Comptime { body, .. } => collect_bound_expr(body, result),
         Match { expr: source, arms, ty: _ } => {
             collect_bound_expr(source, result);
             for arm in arms {
@@ -345,6 +347,7 @@ fn collect_reference_expr(value: tast::Expr, result: Vec[string]) -> unit {
             ty: _,
         } => collect_reference_exprs(args, result),
         Block { block, ty: _ } => collect_reference_block(block, result),
+        Comptime { body, .. } => collect_reference_expr(body, result),
         Match { expr: source, arms, ty: _ } => {
             collect_reference_expr(source, result);
             for arm in arms {
@@ -460,6 +463,7 @@ fn collect_capture_expr(value: tast::Expr, result: Vec[string]) -> unit {
         } => collect_capture_exprs(args, result),
         Closure { params, body, ty: _ } => collect_closure_captures(params, body, result),
         Block { block, ty: _ } => collect_capture_block(block, result),
+        Comptime { body, .. } => collect_capture_expr(body, result),
         Match { expr: source, arms, ty: _ } => {
             collect_capture_expr(source, result);
             for arm in arms {

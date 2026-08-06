@@ -426,7 +426,55 @@ pub const answer: int32 = base + 10;
 const newline: byte = b'\n';
 ```
 
-Constant expressions support scalar literals, references to other constants, unary and binary operators, and casts.They may use forward references, but cycles are rejected.The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`.Public constants are available through package-qualified paths.
+Constant expressions support scalar literals, references to other constants, unary and binary operators, and casts. They may use forward references, but cycles are rejected. The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`. Public constants are available through package-qualified paths.
+
+### Compile-time evaluation
+
+`comptime { expression }` requires the expression to be evaluated while the current package is compiled. Its static type is the type of the inner expression, and the compiler replaces it with an equivalent ordinary value before Core lowering:
+
+```goml
+#[comptime]
+fn factorial(value: int) -> int {
+    if value < 2 {
+        1
+    } else {
+        value * factorial(value - 1)
+    }
+}
+
+const six: int = factorial(3);
+
+fn table() -> [int; 4] {
+    comptime {
+        [factorial(1), factorial(2), factorial(3), factorial(4)]
+    }
+}
+```
+
+`#[comptime]` marks a non-generic free function as compile-time-capable. The function remains callable at runtime. A compile-time call may call only other `#[comptime]` free functions or the `compile_error(string) -> never` intrinsic. The compiler validates the complete body of every marked function, including branches not taken by a particular invocation. Attributes with arguments, duplicate attributes, generic functions, methods, extern functions, and other declarations are rejected.
+
+A top-level constant initializer is an implicit compile-time context, so `const six: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. Top-level constants retain their scalar-only restriction. A `comptime` expression in ordinary code may produce a reifiable tuple, fixed array, struct, or enum in addition to `unit`, `bool`, integer, `string`, and `char` values.
+
+Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, `break`, `continue`, `return`, recursion, direct calls, and supported integer casts and operators. It cannot capture a surrounding runtime parameter or local. Closures, indirect calls, generic functions, methods, trait or dynamic dispatch, `for`, floating-point computation, `Ref`, `Vec`, `HashMap`, channels, goroutines, extern calls, host I/O, environment access, time, randomness, network access, type reflection, declaration generation, compile-time parameters, value generics, and type-level computation are not supported.
+
+`compile_error` is accepted only in a `#[comptime]` function, a `comptime` block, or a top-level constant initializer. It terminates compile-time evaluation with its message. If runtime execution of a `#[comptime]` function reaches it, the program traps:
+
+```goml
+#[comptime]
+fn checked_size(value: int) -> int {
+    if value < 0 {
+        compile_error("size must be non-negative")
+    } else {
+        value
+    }
+}
+```
+
+Failures include the compile-time call stack and source locations. Evaluation uses deterministic instruction, call-depth, temporary-value-node, temporary-memory, and final-value-size limits. Exceeding a limit is a compile error; no wall-clock timeout participates in the language semantics. Successful direct calls are memoized within one evaluation. Memoization is not observable because compile-time code has no user-visible side effects.
+
+Public `#[comptime]` functions can be called from another package. The defining package's interface contains verified compile-time IR for the public entry and the private compile-time helpers and constants it reaches. Public compile-time constant values are also exported. A compile-time body or value change affects the interface hash; source formatting, local names, and source locations do not. A downstream package needs only the dependency interface for checking and evaluation. A value containing hidden fields from another package cannot currently be reified.
+
+Compile-time integer evaluation uses the same fixed-width, wrapping representation as generated runtime code. Division by zero, a negative shift count, and an out-of-bounds index fail compilation. Signed minimum divided by `-1` yields the signed minimum, and its remainder is zero. Narrowing casts retain the low bits of the destination width; widening a signed source sign-extends before conversion to the destination signedness. The CTIR target specification is part of its semantic hash. `int` and `uint` currently use the 64-bit Linux amd64 toolchain target width.
 
 ### Structure
 
@@ -2122,6 +2170,8 @@ Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `s
 | `mod`、`crate::`、`super::` | Directory packages and canonical `use` paths |
 | `fn helper` inside function | Top-level function or local closure |
 | Unannotated user `extern fn` | Use a normal GoML function or `#[go_ffi("import/path", "ExportedSymbol")] extern fn` |
+| Call an ordinary function from `comptime` | Mark a supported free function with `#[comptime]` |
+| Capture a runtime local in `comptime` | Pass a literal or compile-time value to a `#[comptime]` function |
 
 ## Informal Grammar Quick Facts
 
@@ -2136,6 +2186,7 @@ use_item      = ident ("as" ident)?
 path          = ident ("::" ident)*
 
 item          = attribute* visibility? function
+              | attribute* visibility? constant
               | attribute* visibility? struct_def
               | attribute* visibility? enum_def
               | attribute* visibility? trait_def
@@ -2143,11 +2194,13 @@ item          = attribute* visibility? function
               | go_ffi_extern
 visibility    = "pub"
 attribute     = "#[" attribute_body "]"
+comptime_attribute = "#[" "comptime" "]"
 go_ffi_attribute = "#[" "go_ffi" "(" string_literal "," string_literal ")" "]"
 go_ffi_extern = go_ffi_attribute visibility? "extern" "fn" lower_ident
                 param_list return_type? ";"
 
 function      = "fn" lower_ident generic_params? param_list return_type? where_clause? block
+constant      = "const" lower_ident ":" type "=" expression ";"
 method        = visibility? "fn" lower_ident generic_params? param_list return_type? where_clause? block
 generic_params = "[" generic_param ("," generic_param)* "]"
 generic_param = upper_ident (":" trait_set)?
@@ -2212,6 +2265,7 @@ expression    = literal | raw_string | byte_string | raw_byte_string
               | vec_literal | hashmap_literal | struct_literal | closure
               | call | field | index | unary | binary | cast | range_expression
               | try_expression
+              | comptime_expression
               | if_expression | match_expression | while_expression | loop_expression | for_expression
               | scope_expression | spawn_expression
               | "return" expression?
@@ -2247,6 +2301,7 @@ loop_label_decl = loop_label ":"
 loop_label    = "'" lower_ident
 scope_expression = "scope" block
 spawn_expression = "spawn" closure
+comptime_expression = "comptime" block
 closure       = "||" (expression | block)
               | "|" closure_params? "|" (expression | block)
 cast          = expression "as" integer_type

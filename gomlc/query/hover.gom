@@ -1,6 +1,7 @@
 package query;
 
 use gomlc::ast;
+use gomlc::hir;
 use gomlc::tast;
 use std::text;
 
@@ -20,26 +21,43 @@ fn hover_text(value: tast::Type) -> Option[string] {
     }
 }
 
-fn hover_function_text(generics: Vec[string], params: Vec[tast::Type], ret_ty: tast::Type) -> Option[
-    string,
-] {
+fn hover_function_text(
+    capability: tast::ComptimeCapability,
+    generics: Vec[string],
+    params: Vec[tast::Type],
+    ret_ty: tast::Type,
+) -> Option[string] {
     match hover_text(tast::Type::Func { params, ret_ty }) {
-        Some(signature) => if generics.is_empty() {
-            Option::Some(signature)
-        } else {
+        Some(signature) => {
             let builder = text::StringBuilder::new();
-            builder.write_char('[');
-            let mut index = 0;
-            for generic in generics {
-                if index > 0 {
-                    builder.write_string(", ")
-                } else {};
-                builder.write_string(short_type_name(generic));
-                index = index + 1;
-            }
-            builder.write_string("] ");
+            match capability {
+                tast::ComptimeCapability::Capable => builder.write_string("comptime "),
+                tast::ComptimeCapability::RuntimeOnly => (),
+            };
+            if !generics.is_empty() {
+                builder.write_char('[');
+                let mut index = 0;
+                for generic in generics {
+                    if index > 0 {
+                        builder.write_string(", ")
+                    } else {};
+                    builder.write_string(short_type_name(generic));
+                    index = index + 1;
+                }
+                builder.write_string("] ")
+            } else {};
             builder.write_string(signature);
             Option::Some(builder.finish())
+        },
+        None => Option::None,
+    }
+}
+
+fn hover_call_text(capability: tast::ComptimeCapability, ty: tast::Type) -> Option[string] {
+    match hover_text(ty) {
+        Some(signature) => match capability {
+            tast::ComptimeCapability::Capable => Option::Some("comptime " + signature),
+            tast::ComptimeCapability::RuntimeOnly => Option::Some(signature),
         },
         None => Option::None,
     }
@@ -79,30 +97,70 @@ fn method_matches_symbol(value: tast::MethodInfo, symbol: Symbol) -> bool {
             || short_type_name(actual_owner) == short_type_name(expected_owner))
 }
 
+fn function_hover_by_name(value: Analysis, name: string) -> Option[string] {
+    let mut environment_index = value.environments.len() - 1;
+    while environment_index >= 0 {
+        let environment = value.environments[environment_index];
+        let mut function_index = environment.functions.len() - 1;
+        while function_index >= 0 {
+            let function = environment.functions[function_index];
+            if function.name == name || short_type_name(function.name) == short_type_name(name) {
+                return hover_function_text(
+                    function.comptime,
+                    function.generics,
+                    function.params,
+                    function.ret_ty,
+                )
+            } else {
+                function_index = function_index - 1;
+            }
+        }
+        environment_index = environment_index - 1;
+    }
+    Option::None
+}
+
+fn function_hover_by_def(value: Analysis, expected: hir::DefId) -> Option[string] {
+    for environment in value.environments {
+        for function in environment.functions {
+            match function.def_id {
+                Some(actual) => if actual.pkg == expected.pkg && actual.index == expected.index {
+                    return hover_function_text(
+                        function.comptime,
+                        function.generics,
+                        function.params,
+                        function.ret_ty,
+                    )
+                } else {},
+                None => (),
+            }
+        }
+    }
+    Option::None
+}
+
+fn reference_hover_text(value: Analysis, target: tast::ReferenceTarget, ty: tast::Type) -> Option[
+    string,
+] {
+    match target {
+        tast::ReferenceTarget::Definition(id) => match function_hover_by_def(value, id) {
+            Some(result) => Option::Some(result),
+            None => hover_text(ty),
+        },
+        tast::ReferenceTarget::Callable(tast::Callable::Function(name)) => match function_hover_by_name(
+            value,
+            name,
+        ) {
+            Some(result) => Option::Some(result),
+            None => hover_text(ty),
+        },
+        _ => hover_text(ty),
+    }
+}
+
 fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
     match symbol.kind {
-        Function => {
-            let mut environment_index = value.environments.len() - 1;
-            while environment_index >= 0 {
-                let environment = value.environments[environment_index];
-                let mut function_index = environment.functions.len() - 1;
-                while function_index >= 0 {
-                    let function = environment.functions[function_index];
-                    if function.name == symbol.qualified_name
-                        || short_type_name(function.name) == symbol.name {
-                        return hover_function_text(
-                            function.generics,
-                            function.params,
-                            function.ret_ty,
-                        )
-                    } else {
-                        function_index = function_index - 1;
-                    }
-                }
-                environment_index = environment_index - 1;
-            }
-            Option::None
-        },
+        Function => function_hover_by_name(value, symbol.qualified_name),
         Method => {
             let mut environment_index = value.environments.len() - 1;
             while environment_index >= 0 {
@@ -112,6 +170,7 @@ fn symbol_hover_type(value: Analysis, symbol: Symbol) -> Option[string] {
                     let method = environment.methods[method_index];
                     if method_matches_symbol(method, symbol) {
                         return hover_function_text(
+                            tast::ComptimeCapability::RuntimeOnly,
                             method.method_generics,
                             method.function.params,
                             method.function.ret_ty,
@@ -209,13 +268,40 @@ fn symbol_at_offset(value: Analysis, offset: int) -> Option[Symbol] {
 }
 
 pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
+    match symbol_at_offset(value, offset) {
+        Some(symbol) => match symbol.kind {
+            Function => match symbol_hover_type(value, symbol) {
+                Some(contents) => {
+                    return Option::Some(HoverResult { contents, span: symbol.span })
+                },
+                None => (),
+            },
+            _ => (),
+        },
+        None => (),
+    };
     let mut result: Option[HoverResult] = Option::None;
     let mut width = 2147483647;
+    for fact in value.checked.typeck_results.calls {
+        let fact_width = fact.callee_span.end - fact.callee_span.start;
+        if fact.source_path == value.source_path && fact_contains(fact.callee_span, offset)
+            && fact_width <= width {
+            match hover_call_text(fact.comptime, fact.callee_ty) {
+                Some(contents) => {
+                    result = Option::Some(
+                        HoverResult { contents, span: hover_span(value, fact.callee_span, offset) },
+                    );
+                    width = fact_width;
+                },
+                None => (),
+            }
+        } else {}
+    }
     for fact in value.checked.typeck_results.references {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact_contains(fact.span, offset)
-            && fact_width <= width {
-            match hover_text(fact.ty) {
+            && fact_width < width {
+            match reference_hover_text(value, fact.target, fact.ty) {
                 Some(contents) => {
                     result = Option::Some(
                         HoverResult { contents, span: hover_span(value, fact.span, offset) },
@@ -229,7 +315,7 @@ pub fn hover(value: Analysis, offset: int) -> Option[HoverResult] {
     for fact in value.checked.typeck_results.exprs {
         let fact_width = fact.span.end - fact.span.start;
         if fact.source_path == value.source_path && fact_contains(fact.span, offset)
-            && fact_width <= width {
+            && fact_width < width {
             match hover_text(fact.ty) {
                 Some(contents) => {
                     result = Option::Some(

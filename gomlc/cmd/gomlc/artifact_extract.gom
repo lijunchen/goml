@@ -5,8 +5,10 @@ use gomlc::artifact::interface_codec as interface_codec;
 use gomlc::artifact::wire as wire;
 use gomlc::artifact;
 use gomlc::ast;
+use gomlc::ctir;
 use gomlc::tast;
 use std::collections;
+use std::path;
 
 fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type) -> tast::Type {
     let types: Vec[tast::Type] = Vec::[];
@@ -19,6 +21,7 @@ fn artifact_function_type(params: Vec[(string, tast::Type)], ret_ty: tast::Type)
 fn artifact_fn_scheme(value: tast::FunctionScheme) -> artifact::ArtifactFnScheme {
     artifact::ArtifactFnScheme {
         name: value.name,
+        comptime: value.comptime,
         type_params: value.generics,
         constraints: value.predicates,
         ty: tast::Type::Func { params: value.params, ret_ty: value.ret_ty },
@@ -157,6 +160,7 @@ fn artifact_trait_def(value: tast::TraitInfo, trait_names: Vec[string]) -> artif
         methods.push(
             artifact::ArtifactFnScheme {
                 name: method.name,
+                comptime: tast::ComptimeCapability::RuntimeOnly,
                 type_params: method.generics,
                 constraints,
                 ty: artifact_trait_definition_type(
@@ -206,6 +210,7 @@ fn artifact_method_scheme(value: tast::Function, owner_generic_count: int, const
     }
     artifact::ArtifactFnScheme {
         name: value.name,
+        comptime: value.comptime,
         type_params,
         constraints: artifact_method_constraints(value, constraint_start),
         ty: artifact_function_type(value.params, value.ret_ty),
@@ -501,6 +506,42 @@ fn artifact_package_exports(
         }
     }
     result
+}
+
+fn artifact_comptime_unit(value: ctir::CtModule, exports: artifact::ArtifactPackageExports) -> Option[
+    artifact::ArtifactComptimeUnit,
+] {
+    let entries: Vec[string] = Vec::[];
+    let constants: Vec[string] = Vec::[];
+    for function in exports.functions {
+        match function.comptime {
+            tast::ComptimeCapability::Capable => entries.push(function.name),
+            tast::ComptimeCapability::RuntimeOnly => (),
+        }
+    }
+    for constant in exports.constants {
+        constants.push(constant.name)
+    }
+    let module = ctir::public_module(value, entries, constants);
+    for index in 0..module.origins.len() {
+        let origin = module.origins[index];
+        module.origins.set(
+            index,
+            ctir::CtOrigin {
+                source_path: match path::file_name(origin.source_path) {
+                    Some(value) => value,
+                    None => origin.source_path,
+                },
+                start: origin.start,
+                end: origin.end,
+            },
+        )
+    }
+    if module.entries.is_empty() && module.constants.is_empty() {
+        Option::None
+    } else {
+        Option::Some(interface_codec::new_comptime_unit(module))
+    }
 }
 
 fn artifact_relative_export_name(package_name: string, name: string) -> string {

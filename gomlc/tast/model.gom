@@ -1,6 +1,7 @@
 package tast;
 
 use gomlc::ast;
+use gomlc::ctir;
 
 pub enum VarKind {
     Any,
@@ -152,6 +153,16 @@ pub struct Constant {
     pub value: ConstExpr,
 }
 
+pub struct PendingConstant {
+    pub name: string,
+    pub ty: Type,
+    pub value: Expr,
+    pub source_path: string,
+    pub start: int,
+    pub end: int,
+    pub comptime_origins: Vec[ast::Span],
+}
+
 pub struct Constructor {
     pub name: string,
     pub fields: Vec[string],
@@ -196,6 +207,11 @@ pub struct ClosureParam {
     pub ty: Type,
 }
 
+pub enum ComptimeCapability {
+    RuntimeOnly,
+    Capable,
+}
+
 pub enum Expr {
     Var {
         name: string,
@@ -229,6 +245,15 @@ pub enum Expr {
     },
     Block {
         block: Block,
+        ty: Type,
+    },
+    Comptime {
+        site_id: int,
+        source_path: string,
+        start: int,
+        end: int,
+        origins: Vec[ast::Span],
+        body: Expr,
         ty: Type,
     },
     Match {
@@ -410,6 +435,11 @@ pub enum Pat {
 pub struct Function {
     pub visibility: ast::Visibility,
     pub name: string,
+    pub comptime: ComptimeCapability,
+    pub source_path: string,
+    pub start: int,
+    pub end: int,
+    pub comptime_origins: Vec[ast::Span],
     pub generics: Vec[string],
     pub predicates: Vec[TypePredicate],
     pub params: Vec[(string, Type)],
@@ -488,6 +518,8 @@ pub struct Diagnostic {
 
 pub struct CheckResult {
     pub tast: Option[File],
+    pub comptime: ctir::CtModule,
+    pub pending_constants: Vec[PendingConstant],
     pub diagnostics: Vec[Diagnostic],
     pub typeck_results: TypeckResults,
 }
@@ -501,10 +533,10 @@ pub fn expr_type(value: Expr) -> Type {
         Var { ty, .. } | Callable { ty, .. } | Prim { ty, .. } | Constr { ty, .. } | Tuple {
             ty,
             ..,
-        } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Match { ty, .. } | If {
+        } | Array { ty, .. } | Closure { ty, .. } | Block { ty, .. } | Comptime { ty, .. } | Match {
             ty,
             ..,
-        } | While { ty, .. } | Loop { ty, .. } | For { ty, .. } | Break { ty, .. } | Continue {
+        } | If { ty, .. } | While { ty, .. } | Loop { ty, .. } | For { ty, .. } | Break { ty, .. } | Continue {
             ty,
             ..,
         } | Return { ty, .. } | Go { ty, .. } | Call { ty, .. } | Unary { ty, .. } | Cast { ty, .. } | Proj {

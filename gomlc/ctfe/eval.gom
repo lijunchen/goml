@@ -1,0 +1,1545 @@
+package ctfe;
+
+use gomlc::ctir;
+
+pub struct EvalLimits {
+    pub fuel: int,
+    pub call_depth: int,
+    pub value_nodes: int,
+    pub temporary_bytes: int,
+    pub final_bytes: int,
+}
+
+pub struct CtStackFrame {
+    pub package_name: string,
+    pub function_name: string,
+    pub origin: int,
+}
+
+pub enum CtErrorKind {
+    Failure,
+    MissingConstant,
+}
+
+pub struct CtError {
+    pub kind: CtErrorKind,
+    pub message: string,
+    pub package_name: string,
+    pub origin: int,
+    pub stack: Vec[CtStackFrame],
+}
+
+enum EvalFlow {
+    Value(ctir::CtValue),
+    Return(ctir::CtValue),
+    Break {
+        target: int,
+        value: ctir::CtValue,
+    },
+    Continue {
+        target: int,
+    },
+}
+
+struct EvalFrame {
+    locals: Vec[Option[ctir::CtValue]],
+}
+
+struct CtMemoEntry {
+    package_name: string,
+    function_id: int,
+    args: Vec[ctir::CtValue],
+    value: ctir::CtValue,
+}
+
+struct EvalState {
+    modules: Vec[ctir::CtModule],
+    fuel: Ref[int],
+    call_depth: Ref[int],
+    value_nodes: Ref[int],
+    temporary_bytes: Ref[int],
+    limits: EvalLimits,
+    stack: Vec[CtStackFrame],
+    memo: Vec[CtMemoEntry],
+}
+
+pub fn default_limits() -> EvalLimits {
+    EvalLimits {
+        fuel: 1000000,
+        call_depth: 256,
+        value_nodes: 1000000,
+        temporary_bytes: 67108864,
+        final_bytes: 8388608,
+    }
+}
+
+fn copy_stack(values: Vec[CtStackFrame]) -> Vec[CtStackFrame] {
+    let result: Vec[CtStackFrame] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(value)
+    }
+    result
+}
+
+fn ct_error(state: EvalState, module: ctir::CtModule, origin: int, message: string) -> CtError {
+    CtError {
+        kind: CtErrorKind::Failure,
+        message,
+        package_name: module.package_name,
+        origin,
+        stack: copy_stack(state.stack),
+    }
+}
+
+fn missing_constant_error(state: EvalState, module: ctir::CtModule, origin: int, message: string) -> CtError {
+    CtError {
+        kind: CtErrorKind::MissingConstant,
+        message,
+        package_name: module.package_name,
+        origin,
+        stack: copy_stack(state.stack),
+    }
+}
+
+fn consume_fuel(state: EvalState, module: ctir::CtModule, origin: int) -> Result[unit, CtError] {
+    if state.fuel.get() <= 0 {
+        Result::Err(ct_error(state, module, origin, "comptime instruction limit exceeded"))
+    } else {
+        state.fuel.set(state.fuel.get() - 1);
+        Result::Ok(())
+    }
+}
+
+fn value_node_count(value: ctir::CtValue) -> int {
+    match value {
+        ctir::CtValue::Tuple(values) | ctir::CtValue::Array(values) => {
+            let mut result = 1;
+            for value in values {
+                result = result + value_node_count(value);
+            }
+            result
+        },
+        ctir::CtValue::Struct { name: _, fields } | ctir::CtValue::Enum {
+            name: _,
+            variant: _,
+            fields,
+        } => {
+            let mut result = 1;
+            for value in fields {
+                result = result + value_node_count(value);
+            }
+            result
+        },
+        _ => 1,
+    }
+}
+
+fn value_byte_size(value: ctir::CtValue) -> int {
+    match value {
+        ctir::CtValue::Unit => 1,
+        ctir::CtValue::Bool(_) => 1,
+        ctir::CtValue::Integer { .. } => 8,
+        ctir::CtValue::String(value) => value.byte_len(),
+        ctir::CtValue::Char(_) => 4,
+        ctir::CtValue::Tuple(values) | ctir::CtValue::Array(values) => {
+            let mut result = 1;
+            for value in values {
+                result = result + value_byte_size(value);
+            }
+            result
+        },
+        ctir::CtValue::Struct { name, fields } | ctir::CtValue::Enum { name, variant: _, fields } => {
+            let mut result = name.byte_len() + 8;
+            for value in fields {
+                result = result + value_byte_size(value);
+            }
+            result
+        },
+    }
+}
+
+fn ensure_allocation(state: EvalState, module: ctir::CtModule, origin: int, count: int, bytes: int) -> Result[
+    unit,
+    CtError,
+] {
+    if count > state.limits.value_nodes - state.value_nodes.get() {
+        Result::Err(ct_error(state, module, origin, "comptime temporary value limit exceeded"))
+    } else if bytes > state.limits.temporary_bytes - state.temporary_bytes.get() {
+        Result::Err(ct_error(state, module, origin, "comptime temporary memory limit exceeded"))
+    } else {
+        Result::Ok(())
+    }
+}
+
+fn allocate_value(state: EvalState, module: ctir::CtModule, origin: int, value: ctir::CtValue) -> Result[
+    ctir::CtValue,
+    CtError,
+] {
+    let count = value_node_count(value);
+    let bytes = value_byte_size(value);
+    ensure_allocation(state, module, origin, count, bytes)?;
+    {
+        state.value_nodes.set(state.value_nodes.get() + count);
+        state.temporary_bytes.set(state.temporary_bytes.get() + bytes);
+        Result::Ok(value)
+    }
+}
+
+fn integer_mask(width: int) -> uint64 {
+    if width >= 64 {
+        ~(0 as uint64)
+    } else {
+        ((1 as uint64) << width) - 1
+    }
+}
+
+fn integer_bits(value: ctir::CtValue) -> Option[(bool, int, uint64)] {
+    match value {
+        ctir::CtValue::Integer { signed, width, bits } => {
+            Option::Some((signed, width, bits & integer_mask(width)))
+        },
+        _ => Option::None,
+    }
+}
+
+fn signed_integer(width: int, bits: uint64) -> int64 {
+    if width >= 64 {
+        bits as int64
+    } else {
+        let shift = 64 - width;
+        ((bits << shift) as int64) >> shift
+    }
+}
+
+fn integer_value(signed: bool, width: int, bits: uint64) -> ctir::CtValue {
+    ctir::CtValue::Integer { signed, width, bits: bits & integer_mask(width) }
+}
+
+fn integer_index(value: ctir::CtValue) -> Option[int] {
+    match integer_bits(value) {
+        Some((signed, width, bits)) => if signed {
+            let value = signed_integer(width, bits);
+            if value < 0 || value > 2147483647 {
+                Option::None
+            } else {
+                Option::Some(value as int)
+            }
+        } else if bits > 2147483647 {
+            Option::None
+        } else {
+            Option::Some(bits as int)
+        },
+        None => Option::None,
+    }
+}
+
+fn values_equal(left: ctir::CtValue, right: ctir::CtValue) -> bool {
+    match left {
+        ctir::CtValue::Unit => match right {
+            ctir::CtValue::Unit => true,
+            _ => false,
+        },
+        ctir::CtValue::Bool(left) => match right {
+            ctir::CtValue::Bool(right) => left == right,
+            _ => false,
+        },
+        ctir::CtValue::Integer { signed, width, bits } => match right {
+            ctir::CtValue::Integer { signed: right_signed, width: right_width, bits: right_bits } => signed
+                == right_signed
+                && width == right_width
+                && bits & integer_mask(width) == right_bits & integer_mask(right_width),
+            _ => false,
+        },
+        ctir::CtValue::String(left) => match right {
+            ctir::CtValue::String(right) => left == right,
+            _ => false,
+        },
+        ctir::CtValue::Char(left) => match right {
+            ctir::CtValue::Char(right) => left == right,
+            _ => false,
+        },
+        ctir::CtValue::Tuple(left) => match right {
+            ctir::CtValue::Tuple(right) => value_lists_equal(left, right),
+            _ => false,
+        },
+        ctir::CtValue::Array(left) => match right {
+            ctir::CtValue::Array(right) => value_lists_equal(left, right),
+            _ => false,
+        },
+        ctir::CtValue::Struct { name, fields } => match right {
+            ctir::CtValue::Struct { name: right_name, fields: right_fields } => {
+                name == right_name && value_lists_equal(fields, right_fields)
+            },
+            _ => false,
+        },
+        ctir::CtValue::Enum { name, variant, fields } => match right {
+            ctir::CtValue::Enum { name: right_name, variant: right_variant, fields: right_fields } => name
+                == right_name
+                && variant == right_variant
+                && value_lists_equal(fields, right_fields),
+            _ => false,
+        },
+    }
+}
+
+fn value_lists_equal(left: Vec[ctir::CtValue], right: Vec[ctir::CtValue]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if !values_equal(left[index], right[index]) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn copy_locals(values: Vec[Option[ctir::CtValue]]) -> Vec[Option[ctir::CtValue]] {
+    let result: Vec[Option[ctir::CtValue]] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(value)
+    }
+    result
+}
+
+fn restore_locals(target: Vec[Option[ctir::CtValue]], saved: Vec[Option[ctir::CtValue]]) -> unit {
+    for index in 0..saved.len() {
+        target.set(index, saved[index])
+    }
+}
+
+fn set_local(frame: EvalFrame, slot: int, value: ctir::CtValue) -> bool {
+    if slot < 0 || slot >= frame.locals.len() {
+        false
+    } else {
+        frame.locals.set(slot, Option::Some(value));
+        true
+    }
+}
+
+fn match_pattern(pattern: ctir::CtPattern, value: ctir::CtValue, frame: EvalFrame) -> bool {
+    match pattern {
+        ctir::CtPattern::Wild => true,
+        ctir::CtPattern::Bind { slot } => set_local(frame, slot, value),
+        ctir::CtPattern::Value(expected) => values_equal(expected, value),
+        ctir::CtPattern::Tuple(patterns) => match value {
+            ctir::CtValue::Tuple(values) => match_pattern_list(patterns, values, frame),
+            _ => false,
+        },
+        ctir::CtPattern::Array { prefix, rest, suffix } => match value {
+            ctir::CtValue::Array(values) => {
+                if values.len() < prefix.len() + suffix.len() {
+                    false
+                } else {
+                    for index in 0..prefix.len() {
+                        if !match_pattern(prefix[index], values[index], frame) {
+                            return false
+                        } else {}
+                    }
+                    for index in 0..suffix.len() {
+                        if !match_pattern(
+                            suffix[index],
+                            values[values.len() - suffix.len() + index],
+                            frame,
+                        ) {
+                            return false
+                        } else {}
+                    }
+                    match rest {
+                        Some(slot) => {
+                            let middle: Vec[ctir::CtValue] = Vec::with_capacity(
+                                values.len() - prefix.len() - suffix.len(),
+                            );
+                            for index in prefix.len()..values.len() - suffix.len() {
+                                middle.push(values[index])
+                            }
+                            set_local(frame, slot, ctir::CtValue::Array(middle))
+                        },
+                        None => true,
+                    }
+                }
+            },
+            _ => false,
+        },
+        ctir::CtPattern::Struct { name, fields } => match value {
+            ctir::CtValue::Struct { name: value_name, fields: values } => {
+                if name != value_name {
+                    false
+                } else {
+                    for field in fields {
+                        if field.0 < 0 || field.0 >= values.len()
+                            || !match_pattern(field.1, values[field.0], frame) {
+                            return false
+                        } else {}
+                    }
+                    true
+                }
+            },
+            _ => false,
+        },
+        ctir::CtPattern::Enum { name, variant, fields } => match value {
+            ctir::CtValue::Enum { name: value_name, variant: value_variant, fields: values } => name
+                == value_name
+                && variant == value_variant
+                && match_pattern_list(fields, values, frame),
+            _ => false,
+        },
+        ctir::CtPattern::Alias { slot, pattern } => {
+            if match_pattern(pattern, value, frame) {
+                set_local(frame, slot, value)
+            } else {
+                false
+            }
+        },
+        ctir::CtPattern::Or(patterns) => {
+            for pattern in patterns {
+                let saved = copy_locals(frame.locals);
+                if match_pattern(pattern, value, frame) {
+                    return true
+                } else {
+                    restore_locals(frame.locals, saved)
+                }
+            }
+            false
+        },
+        ctir::CtPattern::Range { start, end, inclusive } => {
+            match compare_values(value, start) {
+                Some(lower) => match compare_values(value, end) {
+                    Some(upper) => lower >= 0
+                        && if inclusive {
+                            upper <= 0
+                        } else {
+                            upper < 0
+                        },
+                    None => false,
+                },
+                None => false,
+            }
+        },
+    }
+}
+
+fn match_pattern_list(patterns: Vec[ctir::CtPattern], values: Vec[ctir::CtValue], frame: EvalFrame) -> bool {
+    if patterns.len() != values.len() {
+        false
+    } else {
+        for index in 0..patterns.len() {
+            if !match_pattern(patterns[index], values[index], frame) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn compare_values(left: ctir::CtValue, right: ctir::CtValue) -> Option[int] {
+    match integer_bits(left) {
+        Some((signed, width, bits)) => match integer_bits(right) {
+            Some((right_signed, right_width, right_bits)) => if signed != right_signed
+                || width != right_width {
+                Option::None
+            } else if signed {
+                let left = signed_integer(width, bits);
+                let right = signed_integer(width, right_bits);
+                Option::Some(
+                    if left < right {
+                        -1
+                    } else if left > right {
+                        1
+                    } else {
+                        0
+                    },
+                )
+            } else {
+                Option::Some(
+                    if bits < right_bits {
+                        -1
+                    } else if bits > right_bits {
+                        1
+                    } else {
+                        0
+                    },
+                )
+            },
+            None => Option::None,
+        },
+        None => match left {
+            ctir::CtValue::String(left) => match right {
+                ctir::CtValue::String(right) => {
+                    Option::Some(
+                        if left < right {
+                            -1
+                        } else if left > right {
+                            1
+                        } else {
+                            0
+                        },
+                    )
+                },
+                _ => Option::None,
+            },
+            ctir::CtValue::Char(left) => match right {
+                ctir::CtValue::Char(right) => {
+                    Option::Some(
+                        if left < right {
+                            -1
+                        } else if left > right {
+                            1
+                        } else {
+                            0
+                        },
+                    )
+                },
+                _ => Option::None,
+            },
+            _ => Option::None,
+        },
+    }
+}
+
+fn expect_value(state: EvalState, module: ctir::CtModule, origin: int, flow: EvalFlow) -> Result[
+    ctir::CtValue,
+    CtError,
+] {
+    match flow {
+        EvalFlow::Value(value) => Result::Ok(value),
+        _ => Result::Err(ct_error(state, module, origin, "invalid comptime control flow")),
+    }
+}
+
+fn eval_values(
+    state: EvalState,
+    module: ctir::CtModule,
+    frame: EvalFrame,
+    values: Vec[ctir::CtExpr],
+) -> Result[Vec[ctir::CtValue], CtError] {
+    let result: Vec[ctir::CtValue] = Vec::with_capacity(values.len());
+    for value in values {
+        result.push(
+            expect_value(state, module, value.origin, eval_expr(state, module, frame, value)?)?,
+        )
+    }
+    Result::Ok(result)
+}
+
+fn eval_integer_binary(
+    state: EvalState,
+    module: ctir::CtModule,
+    origin: int,
+    op: ctir::CtBinaryOp,
+    left: ctir::CtValue,
+    right: ctir::CtValue,
+) -> Result[ctir::CtValue, CtError] {
+    let Some((signed, width, left_bits)) = integer_bits(left) else {
+        return Result::Err(
+            ct_error(state, module, origin, "comptime integer operation expected an integer"),
+        )
+    };
+    let Some((right_signed, right_width, right_bits)) = integer_bits(right) else {
+        return Result::Err(
+            ct_error(state, module, origin, "comptime integer operation expected an integer"),
+        )
+    };
+    if (signed != right_signed || width != right_width)
+        && !match op {
+            ctir::CtBinaryOp::Shl | ctir::CtBinaryOp::Shr => true,
+            _ => false,
+        } {
+        return Result::Err(
+            ct_error(state, module, origin, "comptime integer operands have different types"),
+        )
+    } else {};
+    let mask = integer_mask(width);
+    let result = match op {
+        ctir::CtBinaryOp::Add => integer_value(signed, width, left_bits + right_bits),
+        ctir::CtBinaryOp::Sub => integer_value(signed, width, left_bits - right_bits),
+        ctir::CtBinaryOp::Mul => integer_value(signed, width, left_bits * right_bits),
+        ctir::CtBinaryOp::Div | ctir::CtBinaryOp::Rem => {
+            if right_bits == 0 {
+                return Result::Err(
+                    ct_error(state, module, origin, "division by zero during comptime evaluation"),
+                )
+            } else if signed {
+                let left_value = signed_integer(width, left_bits);
+                let right_value = signed_integer(width, right_bits);
+                let min_bits = (1 as uint64) << (width - 1);
+                if left_bits == min_bits && right_bits == mask {
+                    if match op {
+                        ctir::CtBinaryOp::Div => true,
+                        _ => false,
+                    } {
+                        integer_value(true, width, min_bits)
+                    } else {
+                        integer_value(true, width, 0)
+                    }
+                } else if match op {
+                    ctir::CtBinaryOp::Div => true,
+                    _ => false,
+                } {
+                    integer_value(true, width, (left_value / right_value) as uint64)
+                } else {
+                    integer_value(true, width, (left_value % right_value) as uint64)
+                }
+            } else if match op {
+                ctir::CtBinaryOp::Div => true,
+                _ => false,
+            } {
+                integer_value(false, width, left_bits / right_bits)
+            } else {
+                integer_value(false, width, left_bits % right_bits)
+            }
+        },
+        ctir::CtBinaryOp::BitAnd => integer_value(signed, width, left_bits & right_bits),
+        ctir::CtBinaryOp::BitOr => integer_value(signed, width, left_bits | right_bits),
+        ctir::CtBinaryOp::BitXor => integer_value(signed, width, left_bits ^ right_bits),
+        ctir::CtBinaryOp::Shl | ctir::CtBinaryOp::Shr => {
+            let amount = if right_signed {
+                let value = signed_integer(right_width, right_bits);
+                if value < 0 {
+                    return Result::Err(
+                        ct_error(
+                            state,
+                            module,
+                            origin,
+                            "negative shift count during comptime evaluation",
+                        ),
+                    )
+                } else {
+                    value as int
+                }
+            } else if right_bits > 2147483647 {
+                2147483647
+            } else {
+                right_bits as int
+            };
+            if match op {
+                ctir::CtBinaryOp::Shl => true,
+                _ => false,
+            } {
+                if amount >= 64 {
+                    integer_value(signed, width, 0)
+                } else {
+                    integer_value(signed, width, left_bits << amount)
+                }
+            } else if signed {
+                if amount >= width {
+                    integer_value(
+                        true,
+                        width,
+                        if signed_integer(width, left_bits) < 0 {
+                            mask
+                        } else {
+                            0
+                        },
+                    )
+                } else {
+                    integer_value(
+                        true,
+                        width,
+                        (signed_integer(width, left_bits) >> amount) as uint64,
+                    )
+                }
+            } else if amount >= 64 {
+                integer_value(false, width, 0)
+            } else {
+                integer_value(false, width, left_bits >> amount)
+            }
+        },
+        ctir::CtBinaryOp::Less | ctir::CtBinaryOp::Greater | ctir::CtBinaryOp::LessEq | ctir::CtBinaryOp::GreaterEq => {
+            let order = if signed {
+                let left = signed_integer(width, left_bits);
+                let right = signed_integer(width, right_bits);
+                if left < right {
+                    -1
+                } else if left > right {
+                    1
+                } else {
+                    0
+                }
+            } else if left_bits < right_bits {
+                -1
+            } else if left_bits > right_bits {
+                1
+            } else {
+                0
+            };
+            ctir::CtValue::Bool(
+                match op {
+                    ctir::CtBinaryOp::Less => order < 0,
+                    ctir::CtBinaryOp::Greater => order > 0,
+                    ctir::CtBinaryOp::LessEq => order <= 0,
+                    _ => order >= 0,
+                },
+            )
+        },
+        ctir::CtBinaryOp::Eq => ctir::CtValue::Bool(left_bits == right_bits),
+        ctir::CtBinaryOp::NotEq => ctir::CtValue::Bool(left_bits != right_bits),
+        _ => return Result::Err(
+            ct_error(state, module, origin, "unsupported comptime integer operation"),
+        ),
+    };
+    allocate_value(state, module, origin, result)
+}
+
+fn eval_binary_values(
+    state: EvalState,
+    module: ctir::CtModule,
+    origin: int,
+    op: ctir::CtBinaryOp,
+    left: ctir::CtValue,
+    right: ctir::CtValue,
+) -> Result[ctir::CtValue, CtError] {
+    if integer_bits(left).is_some() {
+        eval_integer_binary(state, module, origin, op, left, right)
+    } else {
+        let result = match op {
+            ctir::CtBinaryOp::Eq => ctir::CtValue::Bool(values_equal(left, right)),
+            ctir::CtBinaryOp::NotEq => ctir::CtValue::Bool(!values_equal(left, right)),
+            ctir::CtBinaryOp::Add => match left {
+                ctir::CtValue::String(left) => match right {
+                    ctir::CtValue::String(right) => {
+                        ensure_allocation(
+                            state,
+                            module,
+                            origin,
+                            1,
+                            left.byte_len() + right.byte_len(),
+                        )?;
+                        ctir::CtValue::String(left + right)
+                    },
+                    _ => return Result::Err(
+                        ct_error(state, module, origin, "unsupported comptime addition"),
+                    ),
+                },
+                _ => return Result::Err(
+                    ct_error(state, module, origin, "unsupported comptime addition"),
+                ),
+            },
+            ctir::CtBinaryOp::Less | ctir::CtBinaryOp::Greater | ctir::CtBinaryOp::LessEq | ctir::CtBinaryOp::GreaterEq => {
+                let Some(order) = compare_values(left, right) else {
+                    return Result::Err(
+                        ct_error(state, module, origin, "unsupported comptime comparison"),
+                    )
+                };
+                ctir::CtValue::Bool(
+                    match op {
+                        ctir::CtBinaryOp::Less => order < 0,
+                        ctir::CtBinaryOp::Greater => order > 0,
+                        ctir::CtBinaryOp::LessEq => order <= 0,
+                        _ => order >= 0,
+                    },
+                )
+            },
+            _ => return Result::Err(
+                ct_error(state, module, origin, "unsupported comptime binary operation"),
+            ),
+        };
+        allocate_value(state, module, origin, result)
+    }
+}
+
+fn eval_unary(
+    state: EvalState,
+    module: ctir::CtModule,
+    origin: int,
+    op: ctir::CtUnaryOp,
+    value: ctir::CtValue,
+) -> Result[ctir::CtValue, CtError] {
+    let result = match op {
+        ctir::CtUnaryOp::Not => match value {
+            ctir::CtValue::Bool(value) => ctir::CtValue::Bool(!value),
+            _ => return Result::Err(
+                ct_error(state, module, origin, "comptime logical negation expected bool"),
+            ),
+        },
+        ctir::CtUnaryOp::Neg | ctir::CtUnaryOp::BitNot => {
+            let Some((signed, width, bits)) = integer_bits(value) else {
+                return Result::Err(
+                    ct_error(
+                        state,
+                        module,
+                        origin,
+                        "comptime integer unary operation expected an integer",
+                    ),
+                )
+            };
+            if match op {
+                ctir::CtUnaryOp::Neg => true,
+                _ => false,
+            } {
+                if !signed {
+                    return Result::Err(
+                        ct_error(
+                            state,
+                            module,
+                            origin,
+                            "cannot negate an unsigned comptime integer",
+                        ),
+                    )
+                } else {
+                    integer_value(true, width, 0 - bits)
+                }
+            } else {
+                integer_value(signed, width, ~bits)
+            }
+        },
+    };
+    allocate_value(state, module, origin, result)
+}
+
+fn eval_cast(
+    state: EvalState,
+    module: ctir::CtModule,
+    origin: int,
+    value: ctir::CtValue,
+    target: ctir::CtType,
+) -> Result[ctir::CtValue, CtError] {
+    let result = match target {
+        ctir::CtType::Integer { signed, width } => match integer_bits(value) {
+            Some((source_signed, source_width, bits)) => {
+                let widened = if source_signed && width > source_width
+                    && bits & ((1 as uint64) << (source_width - 1)) != 0 {
+                    bits | ~integer_mask(source_width)
+                } else {
+                    bits
+                };
+                integer_value(signed, width, widened)
+            },
+            None => match value {
+                ctir::CtValue::Char(value) => integer_value(
+                    signed,
+                    width,
+                    value as uint32 as uint64,
+                ),
+                _ => return Result::Err(
+                    ct_error(state, module, origin, "unsupported comptime cast"),
+                ),
+            },
+        },
+        _ => return Result::Err(ct_error(state, module, origin, "unsupported comptime cast target")),
+    };
+    allocate_value(state, module, origin, result)
+}
+
+fn find_module(values: Vec[ctir::CtModule], package_name: string) -> Option[ctir::CtModule] {
+    for value in values {
+        if value.package_name == package_name {
+            return Option::Some(value)
+        } else {}
+    }
+    Option::None
+}
+
+fn find_function(value: ctir::CtModule, id: int) -> Option[ctir::CtFunction] {
+    for function in value.functions {
+        if function.id == id {
+            return Option::Some(function)
+        } else {}
+    }
+    Option::None
+}
+
+fn find_entry(value: ctir::CtModule, name: string) -> Option[ctir::CtFunction] {
+    for entry in value.entries {
+        if entry.name == name {
+            return find_function(value, entry.function_id)
+        } else {}
+    }
+    Option::None
+}
+
+fn call_target(state: EvalState, current: ctir::CtModule, target: ctir::CtCallTarget) -> Option[
+    (ctir::CtModule, ctir::CtFunction),
+] {
+    match target {
+        ctir::CtCallTarget::Local(id) => match find_function(current, id) {
+            Some(function) => Option::Some((current, function)),
+            None => Option::None,
+        },
+        ctir::CtCallTarget::External { package_name, entry_name } => match find_module(
+            state.modules,
+            package_name,
+        ) {
+            Some(module) => match find_entry(module, entry_name) {
+                Some(function) => Option::Some((module, function)),
+                None => Option::None,
+            },
+            None => Option::None,
+        },
+    }
+}
+
+fn memo_args_equal(left: Vec[ctir::CtValue], right: Vec[ctir::CtValue]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if !values_equal(left[index], right[index]) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn find_memoized(state: EvalState, package_name: string, function_id: int, args: Vec[ctir::CtValue]) -> Option[
+    ctir::CtValue,
+] {
+    for entry in state.memo {
+        if entry.package_name == package_name && entry.function_id == function_id
+            && memo_args_equal(entry.args, args) {
+            return Option::Some(entry.value)
+        } else {}
+    }
+    Option::None
+}
+
+fn eval_function(
+    state: EvalState,
+    module: ctir::CtModule,
+    function: ctir::CtFunction,
+    args: Vec[ctir::CtValue],
+    call_origin: int,
+) -> Result[ctir::CtValue, CtError] {
+    if args.len() != function.parameter_slots.len() || args.len() != function.parameter_types.len() {
+        return Result::Err(
+            ct_error(state, module, call_origin, "comptime function argument count mismatch"),
+        )
+    } else if state.call_depth.get() >= state.limits.call_depth {
+        return Result::Err(
+            ct_error(state, module, call_origin, "comptime call depth limit exceeded"),
+        )
+    } else {};
+    for index in 0..args.len() {
+        if !value_matches_type(args[index], function.parameter_types[index]) {
+            return Result::Err(
+                ct_error(state, module, call_origin, "comptime function argument type mismatch"),
+            )
+        } else {}
+    }
+    match find_memoized(state, module.package_name, function.id, args) {
+        Some(value) => return Result::Ok(value),
+        None => (),
+    };
+    state.call_depth.set(state.call_depth.get() + 1);
+    state.stack.push(
+        CtStackFrame {
+            package_name: module.package_name,
+            function_name: function.name,
+            origin: function.origin,
+        },
+    );
+    let locals: Vec[Option[ctir::CtValue]] = Vec::with_capacity(function.local_count);
+    for _ in 0..function.local_count {
+        locals.push(Option::None)
+    }
+    let frame = EvalFrame { locals };
+    for index in 0..args.len() {
+        if !set_local(frame, function.parameter_slots[index], args[index]) {
+            state.stack.truncate(state.stack.len() - 1);
+            state.call_depth.set(state.call_depth.get() - 1);
+            return Result::Err(
+                ct_error(state, module, call_origin, "comptime function parameter slot is invalid"),
+            )
+        } else {}
+    }
+    let result = eval_block(state, module, frame, function.body);
+    state.stack.truncate(state.stack.len() - 1);
+    state.call_depth.set(state.call_depth.get() - 1);
+    match result {
+        Ok(EvalFlow::Value(value)) | Ok(EvalFlow::Return(value)) => {
+            state.memo.push(
+                CtMemoEntry {
+                    package_name: module.package_name,
+                    function_id: function.id,
+                    args,
+                    value,
+                },
+            );
+            Result::Ok(value)
+        },
+        Ok(_) => Result::Err(
+            ct_error(
+                state,
+                module,
+                function.origin,
+                "comptime function escaped with loop control flow",
+            ),
+        ),
+        Err(error) => Result::Err(error),
+    }
+}
+
+fn eval_constant(
+    state: EvalState,
+    module: ctir::CtModule,
+    origin: int,
+    package_name: string,
+    name: string,
+) -> Result[ctir::CtValue, CtError] {
+    let Some(target) = find_module(state.modules, package_name) else {
+        return Result::Err(
+            missing_constant_error(
+                state,
+                module,
+                origin,
+                "missing comptime constant package " + package_name,
+            ),
+        )
+    };
+    for value in target.constants {
+        if value.name == name {
+            return allocate_value(state, module, origin, value.value)
+        } else {}
+    }
+    Result::Err(missing_constant_error(state, module, origin, "missing comptime constant " + name))
+}
+
+fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: ctir::CtExpr) -> Result[
+    EvalFlow,
+    CtError,
+] {
+    consume_fuel(state, module, value.origin)?;
+    match value.kind {
+        ctir::CtExprKind::Value(literal) => {
+            Result::Ok(EvalFlow::Value(allocate_value(state, module, value.origin, literal)?))
+        },
+        ctir::CtExprKind::Local(slot) => if slot < 0 || slot >= frame.locals.len() {
+            Result::Err(ct_error(state, module, value.origin, "invalid comptime local slot"))
+        } else {
+            match frame.locals[slot] {
+                Some(local) => {
+                    Result::Ok(EvalFlow::Value(allocate_value(state, module, value.origin, local)?))
+                },
+                None => Result::Err(
+                    ct_error(state, module, value.origin, "uninitialized comptime local"),
+                ),
+            }
+        },
+        ctir::CtExprKind::Constant { package_name, name } => {
+            Result::Ok(
+                EvalFlow::Value(eval_constant(state, module, value.origin, package_name, name)?),
+            )
+        },
+        ctir::CtExprKind::Tuple(values) => Result::Ok(
+            EvalFlow::Value(
+                allocate_value(
+                    state,
+                    module,
+                    value.origin,
+                    ctir::CtValue::Tuple(eval_values(state, module, frame, values)?),
+                )?,
+            ),
+        ),
+        ctir::CtExprKind::Array(values) => Result::Ok(
+            EvalFlow::Value(
+                allocate_value(
+                    state,
+                    module,
+                    value.origin,
+                    ctir::CtValue::Array(eval_values(state, module, frame, values)?),
+                )?,
+            ),
+        ),
+        ctir::CtExprKind::Struct { name, fields } => Result::Ok(
+            EvalFlow::Value(
+                allocate_value(
+                    state,
+                    module,
+                    value.origin,
+                    ctir::CtValue::Struct {
+                        name,
+                        fields: eval_values(state, module, frame, fields)?,
+                    },
+                )?,
+            ),
+        ),
+        ctir::CtExprKind::Enum { name, variant, fields } => Result::Ok(
+            EvalFlow::Value(
+                allocate_value(
+                    state,
+                    module,
+                    value.origin,
+                    ctir::CtValue::Enum {
+                        name,
+                        variant,
+                        fields: eval_values(state, module, frame, fields)?,
+                    },
+                )?,
+            ),
+        ),
+        ctir::CtExprKind::Field { value: source, index } => {
+            let source = expect_value(
+                state,
+                module,
+                source.origin,
+                eval_expr(state, module, frame, source)?,
+            )?;
+            let fields = match source {
+                ctir::CtValue::Struct { name: _, fields } | ctir::CtValue::Enum {
+                    name: _,
+                    variant: _,
+                    fields,
+                } | ctir::CtValue::Tuple(fields) => fields,
+                _ => return Result::Err(
+                    ct_error(
+                        state,
+                        module,
+                        value.origin,
+                        "comptime field access expected a structured value",
+                    ),
+                ),
+            };
+            if index < 0 || index >= fields.len() {
+                Result::Err(
+                    ct_error(state, module, value.origin, "comptime field index is out of bounds"),
+                )
+            } else {
+                Result::Ok(
+                    EvalFlow::Value(allocate_value(state, module, value.origin, fields[index])?),
+                )
+            }
+        },
+        ctir::CtExprKind::Index { value: source, index } => {
+            let source = expect_value(
+                state,
+                module,
+                source.origin,
+                eval_expr(state, module, frame, source)?,
+            )?;
+            let index = expect_value(
+                state,
+                module,
+                index.origin,
+                eval_expr(state, module, frame, index)?,
+            )?;
+            let Some(index) = integer_index(index) else {
+                return Result::Err(
+                    ct_error(
+                        state,
+                        module,
+                        value.origin,
+                        "comptime index must be a non-negative integer",
+                    ),
+                )
+            };
+            let values = match source {
+                ctir::CtValue::Array(values) => values,
+                _ => return Result::Err(
+                    ct_error(state, module, value.origin, "comptime indexing expected an array"),
+                ),
+            };
+            if index >= values.len() {
+                Result::Err(
+                    ct_error(
+                        state,
+                        module,
+                        value.origin,
+                        "index out of bounds during comptime evaluation",
+                    ),
+                )
+            } else {
+                Result::Ok(
+                    EvalFlow::Value(allocate_value(state, module, value.origin, values[index])?),
+                )
+            }
+        },
+        ctir::CtExprKind::Block(block) => eval_block(state, module, frame, block),
+        ctir::CtExprKind::If { condition, then_branch, else_branch } => {
+            let condition = expect_value(
+                state,
+                module,
+                condition.origin,
+                eval_expr(state, module, frame, condition)?,
+            )?;
+            match condition {
+                ctir::CtValue::Bool(true) => eval_expr(state, module, frame, then_branch),
+                ctir::CtValue::Bool(false) => eval_expr(state, module, frame, else_branch),
+                _ => Result::Err(
+                    ct_error(state, module, value.origin, "comptime if condition must be bool"),
+                ),
+            }
+        },
+        ctir::CtExprKind::Match { value: source, arms } => {
+            let source = expect_value(
+                state,
+                module,
+                source.origin,
+                eval_expr(state, module, frame, source)?,
+            )?;
+            for arm in arms {
+                let saved = copy_locals(frame.locals);
+                if match_pattern(arm.pattern, source, frame) {
+                    let guard = match arm.guard {
+                        Some(guard) => match expect_value(
+                            state,
+                            module,
+                            guard.origin,
+                            eval_expr(state, module, frame, guard)?,
+                        )? {
+                            ctir::CtValue::Bool(value) => value,
+                            _ => return Result::Err(
+                                ct_error(
+                                    state,
+                                    module,
+                                    arm.origin,
+                                    "comptime match guard must be bool",
+                                ),
+                            ),
+                        },
+                        None => true,
+                    };
+                    if guard {
+                        return eval_expr(state, module, frame, arm.body)
+                    } else {
+                        restore_locals(frame.locals, saved)
+                    }
+                } else {
+                    restore_locals(frame.locals, saved)
+                }
+            }
+            Result::Err(
+                ct_error(
+                    state,
+                    module,
+                    value.origin,
+                    "non-exhaustive match during comptime evaluation",
+                ),
+            )
+        },
+        ctir::CtExprKind::While { target, condition, body } => {
+            loop {
+                let condition_value = expect_value(
+                    state,
+                    module,
+                    condition.origin,
+                    eval_expr(state, module, frame, condition)?,
+                )?;
+                match condition_value {
+                    ctir::CtValue::Bool(false) => return Result::Ok(
+                        EvalFlow::Value(ctir::CtValue::Unit),
+                    ),
+                    ctir::CtValue::Bool(true) => (),
+                    _ => return Result::Err(
+                        ct_error(
+                            state,
+                            module,
+                            condition.origin,
+                            "comptime while condition must be bool",
+                        ),
+                    ),
+                };
+                match eval_expr(state, module, frame, body)? {
+                    EvalFlow::Value(_) => (),
+                    EvalFlow::Continue { target: branch_target } => if branch_target == target {} else {
+                        return Result::Ok(EvalFlow::Continue { target: branch_target })
+                    },
+                    EvalFlow::Break { target: branch_target, value: result } => if branch_target
+                        == target {
+                        return Result::Ok(EvalFlow::Value(result))
+                    } else {
+                        return Result::Ok(EvalFlow::Break { target: branch_target, value: result })
+                    },
+                    flow => return Result::Ok(flow),
+                }
+            }
+        },
+        ctir::CtExprKind::Loop { target, body } => loop {
+            match eval_expr(state, module, frame, body)? {
+                EvalFlow::Value(_) => (),
+                EvalFlow::Continue { target: branch_target } => if branch_target == target {} else {
+                    return Result::Ok(EvalFlow::Continue { target: branch_target })
+                },
+                EvalFlow::Break { target: branch_target, value: result } => if branch_target
+                    == target {
+                    return Result::Ok(EvalFlow::Value(result))
+                } else {
+                    return Result::Ok(EvalFlow::Break { target: branch_target, value: result })
+                },
+                flow => return Result::Ok(flow),
+            }
+        },
+        ctir::CtExprKind::Break { target, value: result } => {
+            let result = match result {
+                Some(result) => expect_value(
+                    state,
+                    module,
+                    result.origin,
+                    eval_expr(state, module, frame, result)?,
+                )?,
+                None => ctir::CtValue::Unit,
+            };
+            Result::Ok(EvalFlow::Break { target, value: result })
+        },
+        ctir::CtExprKind::Continue { target } => Result::Ok(EvalFlow::Continue { target }),
+        ctir::CtExprKind::Return(result) => {
+            let result = match result {
+                Some(result) => expect_value(
+                    state,
+                    module,
+                    result.origin,
+                    eval_expr(state, module, frame, result)?,
+                )?,
+                None => ctir::CtValue::Unit,
+            };
+            Result::Ok(EvalFlow::Return(result))
+        },
+        ctir::CtExprKind::Call { target, args } => {
+            let args = eval_values(state, module, frame, args)?;
+            let Some((target_module, function)) = call_target(state, module, target) else {
+                return Result::Err(
+                    ct_error(state, module, value.origin, "unresolved comptime function call"),
+                )
+            };
+            Result::Ok(
+                EvalFlow::Value(eval_function(state, target_module, function, args, value.origin)?),
+            )
+        },
+        ctir::CtExprKind::Unary { op, value: operand } => {
+            let operand = expect_value(
+                state,
+                module,
+                operand.origin,
+                eval_expr(state, module, frame, operand)?,
+            )?;
+            Result::Ok(EvalFlow::Value(eval_unary(state, module, value.origin, op, operand)?))
+        },
+        ctir::CtExprKind::Binary { op, left, right } => {
+            let left_value = expect_value(
+                state,
+                module,
+                left.origin,
+                eval_expr(state, module, frame, left)?,
+            )?;
+            match op {
+                ctir::CtBinaryOp::And => match left_value {
+                    ctir::CtValue::Bool(false) => return Result::Ok(
+                        EvalFlow::Value(ctir::CtValue::Bool(false)),
+                    ),
+                    ctir::CtValue::Bool(true) => (),
+                    _ => return Result::Err(
+                        ct_error(
+                            state,
+                            module,
+                            value.origin,
+                            "comptime logical operation expected bool",
+                        ),
+                    ),
+                },
+                ctir::CtBinaryOp::Or => match left_value {
+                    ctir::CtValue::Bool(true) => return Result::Ok(
+                        EvalFlow::Value(ctir::CtValue::Bool(true)),
+                    ),
+                    ctir::CtValue::Bool(false) => (),
+                    _ => return Result::Err(
+                        ct_error(
+                            state,
+                            module,
+                            value.origin,
+                            "comptime logical operation expected bool",
+                        ),
+                    ),
+                },
+                _ => (),
+            };
+            let right_value = expect_value(
+                state,
+                module,
+                right.origin,
+                eval_expr(state, module, frame, right)?,
+            )?;
+            if match op {
+                ctir::CtBinaryOp::And | ctir::CtBinaryOp::Or => true,
+                _ => false,
+            } {
+                match right_value {
+                    ctir::CtValue::Bool(value) => Result::Ok(
+                        EvalFlow::Value(ctir::CtValue::Bool(value)),
+                    ),
+                    _ => Result::Err(
+                        ct_error(
+                            state,
+                            module,
+                            value.origin,
+                            "comptime logical operation expected bool",
+                        ),
+                    ),
+                }
+            } else {
+                Result::Ok(
+                    EvalFlow::Value(
+                        eval_binary_values(state, module, value.origin, op, left_value, right_value)?,
+                    ),
+                )
+            }
+        },
+        ctir::CtExprKind::Cast { value: operand, target } => {
+            let operand = expect_value(
+                state,
+                module,
+                operand.origin,
+                eval_expr(state, module, frame, operand)?,
+            )?;
+            Result::Ok(EvalFlow::Value(eval_cast(state, module, value.origin, operand, target)?))
+        },
+        ctir::CtExprKind::CompileError(message) => {
+            let message = expect_value(
+                state,
+                module,
+                message.origin,
+                eval_expr(state, module, frame, message)?,
+            )?;
+            match message {
+                ctir::CtValue::String(message) => Result::Err(
+                    ct_error(state, module, value.origin, message),
+                ),
+                _ => Result::Err(
+                    ct_error(state, module, value.origin, "compile_error expects a string"),
+                ),
+            }
+        },
+    }
+}
+
+fn eval_block(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: ctir::CtBlock) -> Result[
+    EvalFlow,
+    CtError,
+] {
+    consume_fuel(state, module, value.origin)?;
+    for statement in value.statements {
+        match statement {
+            ctir::CtStmt::Let { pattern, value } => {
+                let result = expect_value(
+                    state,
+                    module,
+                    value.origin,
+                    eval_expr(state, module, frame, value)?,
+                )?;
+                if !match_pattern(pattern, result, frame) {
+                    return Result::Err(
+                        ct_error(state, module, value.origin, "comptime let pattern did not match"),
+                    )
+                } else {}
+            },
+            ctir::CtStmt::Assign { slot, value } => {
+                let result = expect_value(
+                    state,
+                    module,
+                    value.origin,
+                    eval_expr(state, module, frame, value)?,
+                )?;
+                if !set_local(frame, slot, result) {
+                    return Result::Err(
+                        ct_error(state, module, value.origin, "invalid comptime assignment target"),
+                    )
+                } else {}
+            },
+            ctir::CtStmt::Expr(value) => match eval_expr(state, module, frame, value)? {
+                EvalFlow::Value(_) => (),
+                flow => return Result::Ok(flow),
+            },
+        }
+    }
+    match value.tail {
+        Some(value) => eval_expr(state, module, frame, value),
+        None => Result::Ok(EvalFlow::Value(ctir::CtValue::Unit)),
+    }
+}
+
+fn new_state(modules: Vec[ctir::CtModule], limits: EvalLimits) -> EvalState {
+    EvalState {
+        modules,
+        fuel: Ref::new(limits.fuel),
+        call_depth: Ref::new(0),
+        value_nodes: Ref::new(0),
+        temporary_bytes: Ref::new(0),
+        limits,
+        stack: Vec::[],
+        memo: Vec::[],
+    }
+}
+
+fn finish_value(state: EvalState, module: ctir::CtModule, origin: int, flow: EvalFlow) -> Result[
+    ctir::CtValue,
+    CtError,
+] {
+    let value = match flow {
+        EvalFlow::Value(value) => value,
+        _ => return Result::Err(
+            ct_error(state, module, origin, "comptime site escaped with control flow"),
+        ),
+    };
+    if value_byte_size(value) > state.limits.final_bytes {
+        Result::Err(ct_error(state, module, origin, "comptime result size limit exceeded"))
+    } else {
+        Result::Ok(value)
+    }
+}
+
+fn invalid_ctir_error(module: ctir::CtModule, message: string) -> CtError {
+    CtError {
+        kind: CtErrorKind::Failure,
+        message: "invalid CTIR: " + message,
+        package_name: module.package_name,
+        origin: 0,
+        stack: Vec::[],
+    }
+}
+
+pub fn evaluate_site(
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+    site_id: int,
+    limits: EvalLimits,
+) -> Result[ctir::CtValue, CtError] {
+    match verify_module(module, dependencies) {
+        Ok(()) => (),
+        Err(message) => return Result::Err(invalid_ctir_error(module, message)),
+    };
+    let modules: Vec[ctir::CtModule] = Vec::with_capacity(dependencies.len() + 1);
+    modules.push(module);
+    for dependency in dependencies {
+        modules.push(dependency)
+    }
+    let state = new_state(modules, limits);
+    for site in module.sites {
+        if site.id == site_id {
+            let locals: Vec[Option[ctir::CtValue]] = Vec::with_capacity(site.local_count);
+            for _ in 0..site.local_count {
+                locals.push(Option::None)
+            }
+            let flow = eval_expr(state, module, EvalFrame { locals }, site.expression)?;
+            return finish_value(state, module, site.origin, flow)
+        } else {}
+    }
+    Result::Err(ct_error(state, module, 0, "unknown comptime site"))
+}
+
+pub fn evaluate_entry(
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+    entry_name: string,
+    args: Vec[ctir::CtValue],
+    limits: EvalLimits,
+) -> Result[ctir::CtValue, CtError] {
+    match verify_module(module, dependencies) {
+        Ok(()) => (),
+        Err(message) => return Result::Err(invalid_ctir_error(module, message)),
+    };
+    let modules: Vec[ctir::CtModule] = Vec::with_capacity(dependencies.len() + 1);
+    modules.push(module);
+    for dependency in dependencies {
+        modules.push(dependency)
+    }
+    let state = new_state(modules, limits);
+    let Some(function) = find_entry(module, entry_name) else {
+        return Result::Err(ct_error(state, module, 0, "unknown comptime entry " + entry_name))
+    };
+    let value = eval_function(state, module, function, args, function.origin)?;
+    if value_byte_size(value) > limits.final_bytes {
+        Result::Err(ct_error(state, module, function.origin, "comptime result size limit exceeded"))
+    } else {
+        Result::Ok(value)
+    }
+}

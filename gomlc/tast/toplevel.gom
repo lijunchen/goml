@@ -1,6 +1,7 @@
 package tast;
 
 use gomlc::ast;
+use gomlc::ctir;
 use gomlc::hir;
 use std::collections;
 use std::text;
@@ -12,6 +13,7 @@ fn function_context(
     type_params: Vec[string],
     predicates: Vec[TypePredicate],
     allow_unstructured_go: bool,
+    comptime: bool,
 ) -> Checker {
     let predicates = expand_implied_predicates(base, predicates);
     let param_aliases = predicate_type_aliases(predicates);
@@ -66,6 +68,13 @@ fn function_context(
         loop_results: Vec::[],
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
+        comptime_depth: Ref::new(
+            if comptime {
+                1
+            } else {
+                0
+            },
+        ),
         allow_unstructured_go,
     }
 }
@@ -121,6 +130,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         loop_results: Vec::[],
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
+        comptime_depth: base.comptime_depth,
         allow_unstructured_go: base.allow_unstructured_go,
     }
 }
@@ -431,6 +441,21 @@ fn check_function(
     inherited_predicates: Vec[TypePredicate],
     self_ty: Option[Type],
 ) -> Function {
+    let comptime = match self_ty {
+        None => function_comptime_capability(
+            value.attrs,
+            Callable::Function(value.name),
+            !value.generics.is_empty() || !value.generic_bounds.is_empty()
+                || !value.predicates.is_empty(),
+        ),
+        Some(_) => ComptimeCapability::RuntimeOnly,
+    };
+    let comptime_span = Ref::new(Option::None);
+    for attribute in value.attrs {
+        if attribute.name == "comptime" {
+            comptime_span.set(Option::Some(attribute.span))
+        } else {}
+    }
     match self_ty {
         None => if value.name == "main" {
             if !value.params.is_empty() {
@@ -470,7 +495,12 @@ fn check_function(
         type_params,
         predicates,
         attribute_allows(value.attrs, "unstructured_go"),
+        match comptime {
+            ComptimeCapability::Capable => true,
+            ComptimeCapability::RuntimeOnly => false,
+        },
     );
+    let comptime_origin_start = base.typeck_results.exprs.len();
     let params: Vec[(string, Type)] = Vec::[];
     for param in value.params {
         let index = params.len();
@@ -500,9 +530,24 @@ fn check_function(
         report_unresolved_block(ctx, value.body)
     } else {};
     let body = resolve_deferred_block(ctx, checked_body.0);
+    let comptime_origins: Vec[ast::Span] = Vec::[];
+    for index in comptime_origin_start..base.typeck_results.exprs.len() {
+        comptime_origins.push(base.typeck_results.exprs[index].span)
+    }
     Function {
         visibility: value.visibility,
         name: value.name,
+        comptime,
+        source_path: base.source_path,
+        start: match comptime_span.get() {
+            Some(value) => value.start,
+            None => 0,
+        },
+        end: match comptime_span.get() {
+            Some(value) => value.end,
+            None => 0,
+        },
+        comptime_origins,
         generics: type_params,
         predicates,
         params,
@@ -549,7 +594,19 @@ fn constant_type_supported(value: Type) -> bool {
     }
 }
 
-fn check_constant(base: Checker, value: hir::Constant) -> Constant {
+fn legacy_constant_expr(value: Expr) -> bool {
+    match value {
+        Prim { .. } | Var { .. } => true,
+        Unary { expr, .. } | Cast { expr, .. } => legacy_constant_expr(expr),
+        Binary { lhs, rhs, .. } => legacy_constant_expr(lhs) && legacy_constant_expr(rhs),
+        _ => false,
+    }
+}
+
+fn check_constant(base: Checker, value: hir::Constant) -> (
+    Option[Constant],
+    Option[PendingConstant],
+) {
     let previous_span = base.current_span.get();
     base.current_span.set(Option::Some(value.ty_span));
     let ty = resolve_signature_type(
@@ -562,16 +619,44 @@ fn check_constant(base: Checker, value: hir::Constant) -> Constant {
         push_diagnostic(base, "constant type must be bool, numeric, string, char, or byte")
     } else {};
     base.current_span.set(Option::Some(value.value.span));
-    let ctx = function_context(base, ty, Option::None, Vec::[], Vec::[], false);
+    let ctx = function_context(base, ty, Option::None, Vec::[], Vec::[], false, true);
+    let comptime_origin_start = base.typeck_results.exprs.len();
     let checked = check_expr(ctx, value.value, Option::Some(ty));
     resolve_field_constraints(ctx);
     resolve_coercion_constraints(ctx);
     resolve_numeric_literal_constraints(ctx);
     let checked = resolve_deferred_expr(ctx, checked);
-    let result = Constant {
-        name: value.name,
-        ty: resolve_type(ty),
-        value: lower_constant_expr(ctx, checked),
+    let comptime_origins: Vec[ast::Span] = Vec::[];
+    for index in comptime_origin_start..base.typeck_results.exprs.len() {
+        comptime_origins.push(base.typeck_results.exprs[index].span)
+    }
+    let resolved_ty = resolve_type(ty);
+    let result = if legacy_constant_expr(checked) {
+        (
+            Option::Some(
+                Constant {
+                    name: value.name,
+                    ty: resolved_ty,
+                    value: lower_constant_expr(ctx, checked),
+                },
+            ),
+            Option::None,
+        )
+    } else {
+        (
+            Option::None,
+            Option::Some(
+                PendingConstant {
+                    name: value.name,
+                    ty: resolved_ty,
+                    value: checked,
+                    source_path: base.source_path,
+                    start: value.value.span.start,
+                    end: value.value.span.end,
+                    comptime_origins,
+                },
+            ),
+        )
     };
     base.current_span.set(previous_span);
     result
@@ -1366,6 +1451,7 @@ fn validate_trait_impl_definition_requirements(
                 Vec::[],
                 predicates,
                 false,
+                false,
             );
             validate_associated_type_cycles(validation_ctx, reference, associated_types);
             let substitutions = trait_substitutions(
@@ -1555,6 +1641,11 @@ fn default_trait_method(
     Function {
         visibility: ast::Visibility::Private,
         name: expected.name,
+        comptime: ComptimeCapability::RuntimeOnly,
+        source_path: ctx.source_path,
+        start: 0,
+        end: 0,
+        comptime_origins: Vec::[],
         generics,
         predicates,
         params,
@@ -2252,6 +2343,77 @@ fn validate_lang_item_declarations(ctx: Checker, value: hir::File, allow_lang_it
     }
 }
 
+fn comptime_attribute_diagnostic(ctx: Checker, attribute: ast::Attribute, message: string) -> unit {
+    ctx.diagnostics.push(
+        new_diagnostic("typer", message, ctx.source_path, Option::Some(attribute.span)),
+    )
+}
+
+fn validate_comptime_attributes(
+    ctx: Checker,
+    attrs: Vec[ast::Attribute],
+    free_function: bool,
+    generic: bool,
+) -> unit {
+    let mut count = 0;
+    for attribute in attrs {
+        if attribute.name == "comptime" {
+            count = count + 1;
+            if !free_function {
+                comptime_attribute_diagnostic(
+                    ctx,
+                    attribute,
+                    "#[comptime] is only valid on free function declarations",
+                )
+            } else {
+                if attribute.has_argument_list {
+                    comptime_attribute_diagnostic(
+                        ctx,
+                        attribute,
+                        "#[comptime] does not accept arguments",
+                    )
+                } else {};
+                if count > 1 {
+                    comptime_attribute_diagnostic(ctx, attribute, "duplicate #[comptime] attribute")
+                } else {};
+                if generic {
+                    comptime_attribute_diagnostic(
+                        ctx,
+                        attribute,
+                        "#[comptime] functions cannot declare generic parameters or predicates",
+                    )
+                } else {}
+            }
+        } else {}
+    }
+}
+
+fn validate_comptime_declarations(ctx: Checker, value: hir::File) -> unit {
+    for item in value.items {
+        match item {
+            Function(value) => validate_comptime_attributes(
+                ctx,
+                value.attrs,
+                true,
+                !value.generics.is_empty() || !value.generic_bounds.is_empty()
+                    || !value.predicates.is_empty(),
+            ),
+            ImplBlock(value) => {
+                validate_comptime_attributes(ctx, value.attrs, false, false);
+                for method in value.methods {
+                    validate_comptime_attributes(ctx, method.attrs, false, false)
+                }
+            },
+            EnumDef(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
+            StructDef(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
+            TraitDef(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
+            ExternFunction(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
+            TypeAlias(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
+            Constant(value) => validate_comptime_attributes(ctx, value.attrs, false, false),
+        }
+    }
+}
+
 fn move_diagnostics_before(values: Vec[Diagnostic], message: string, anchor: string) -> Vec[
     Diagnostic,
 ] {
@@ -2635,6 +2797,7 @@ fn check_file_with_package(
     }
     validate_extern_declarations(ctx);
     validate_lang_item_declarations(ctx, value, allow_externs);
+    validate_comptime_declarations(ctx, value);
     validate_file_declaration_names(ctx, value);
     if validate_function_names {
         validate_cross_file_declaration_names(ctx, value, package_files)
@@ -2718,9 +2881,20 @@ fn check_file_with_package(
     validate_impl_overlaps(ctx);
     validate_builtin_impl_overlaps(ctx, value);
     let constants: Vec[Constant] = Vec::[];
+    let pending_constants: Vec[PendingConstant] = Vec::[];
     for item in value.items {
         match item {
-            Constant(value) => constants.push(check_constant(ctx, value)),
+            Constant(value) => {
+                let checked = check_constant(ctx, value);
+                match checked.0 {
+                    Some(value) => constants.push(value),
+                    None => (),
+                };
+                match checked.1 {
+                    Some(value) => pending_constants.push(value),
+                    None => (),
+                }
+            },
             _ => (),
         }
     }
@@ -2767,6 +2941,8 @@ fn check_file_with_package(
     }
     CheckResult {
         tast: Option::Some(File { items, enums, structs, constants }),
+        comptime: ctir::empty_module(ctx.package_name),
+        pending_constants,
         diagnostics: order_extern_diagnostics(ctx),
         typeck_results: ctx.typeck_results,
     }
@@ -2823,6 +2999,7 @@ fn default_trait_method_scheme(
         function: FunctionScheme {
             def_id: Option::None,
             name: method.name,
+            comptime: ComptimeCapability::RuntimeOnly,
             generics: append_names(implementation.generics, method.generics),
             predicates: append_predicates(
                 implementation.predicates,
@@ -2856,15 +3033,94 @@ fn check_file(
     include_builtin_types: bool,
     allow_externs: bool,
 ) -> CheckResult {
-    check_file_with_package(
+    let package_name = value.package_name;
+    let environments = dependency_environments(dependencies);
+    let checked = check_file_with_package(
         value,
         Vec::[],
-        dependency_environments(dependencies),
+        environments,
         diagnostics,
         include_builtin_types,
         true,
         allow_externs,
-    )
+    );
+    finalize_check_comptime(checked, package_name, Vec::[], environments)
+}
+
+fn dependency_comptime_enums(values: Vec[DependencyEnvironment]) -> Vec[EnumDef] {
+    let result: Vec[EnumDef] = Vec::[];
+    for dependency in values {
+        for value in dependency.enums {
+            let variants: Vec[EnumVariantDef] = Vec::[];
+            for variant in value.variants {
+                variants.push(EnumVariantDef { name: variant.name, fields: variant.fields })
+            }
+            result.push(
+                EnumDef {
+                    name: value.name,
+                    generics: value.generics,
+                    variants,
+                    option_variants: Option::None,
+                },
+            )
+        }
+    }
+    result
+}
+
+fn dependency_comptime_structs(values: Vec[DependencyEnvironment]) -> Vec[StructDef] {
+    let result: Vec[StructDef] = Vec::[];
+    for dependency in values {
+        for value in dependency.structs {
+            result.push(
+                StructDef {
+                    name: value.name,
+                    generics: value.generics,
+                    fields: value.fields,
+                    public_fields: value.public_fields,
+                    has_hidden_fields: value.has_hidden_fields,
+                },
+            )
+        }
+    }
+    result
+}
+
+fn finalize_check_comptime(
+    checked: CheckResult,
+    package_name: string,
+    dependencies: Vec[ctir::CtModule],
+    environments: Vec[DependencyEnvironment],
+) -> CheckResult {
+    match checked.tast {
+        Some(file) => {
+            let finalized = finalize_comptime(
+                file,
+                checked.pending_constants,
+                package_name,
+                dependencies,
+                dependency_comptime_enums(environments),
+                dependency_comptime_structs(environments),
+            );
+            for diagnostic in finalized.diagnostics {
+                checked.diagnostics.push(diagnostic)
+            }
+            CheckResult {
+                tast: Option::Some(finalized.file),
+                comptime: finalized.module,
+                pending_constants: Vec::[],
+                diagnostics: checked.diagnostics,
+                typeck_results: checked.typeck_results,
+            }
+        },
+        None => CheckResult {
+            tast: Option::None,
+            comptime: ctir::empty_module(package_name),
+            pending_constants: Vec::[],
+            diagnostics: checked.diagnostics,
+            typeck_results: checked.typeck_results,
+        },
+    }
 }
 
 pub fn check(value: hir::LowerResult) -> CheckResult {
@@ -2878,6 +3134,8 @@ pub fn check(value: hir::LowerResult) -> CheckResult {
         ),
         None => CheckResult {
             tast: Option::None,
+            comptime: ctir::empty_module("<unknown>"),
+            pending_constants: Vec::[],
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
             typeck_results: empty_typeck_results(),
         },
@@ -2895,6 +3153,8 @@ pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
         ),
         None => CheckResult {
             tast: Option::None,
+            comptime: ctir::empty_module("<unknown>"),
+            pending_constants: Vec::[],
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
             typeck_results: empty_typeck_results(),
         },
@@ -2912,6 +3172,8 @@ pub fn check_for_link_with_dependencies(value: hir::LowerResult, dependencies: V
         ),
         None => CheckResult {
             tast: Option::None,
+            comptime: ctir::empty_module("<unknown>"),
+            pending_constants: Vec::[],
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
             typeck_results: empty_typeck_results(),
         },
@@ -2932,6 +3194,8 @@ pub fn check_for_link_with_dependencies_allowing_externs(
         ),
         None => CheckResult {
             tast: Option::None,
+            comptime: ctir::empty_module("<unknown>"),
+            pending_constants: Vec::[],
             diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
             typeck_results: empty_typeck_results(),
         },
@@ -2983,8 +3247,16 @@ fn check_package_files_for_link_with_environments_options(
     let enums: Vec[EnumDef] = Vec::[];
     let structs: Vec[StructDef] = Vec::[];
     let constants: Vec[Constant] = Vec::[];
+    let pending_constants: Vec[PendingConstant] = Vec::[];
     let diagnostics: Vec[Diagnostic] = Vec::[];
     let typeck_results = empty_typeck_results();
+    let comptime_dependencies: Vec[ctir::CtModule] = Vec::[];
+    for dependency in dependencies {
+        match dependency.comptime {
+            Some(value) => comptime_dependencies.push(value),
+            None => (),
+        }
+    }
     let mut valid = true;
     for index in 0..values.len() {
         let package_files: Vec[hir::File] = Vec::[];
@@ -3004,6 +3276,9 @@ fn check_package_files_for_link_with_environments_options(
         );
         for diagnostic in checked.diagnostics {
             diagnostics.push(diagnostic)
+        }
+        for value in checked.pending_constants {
+            pending_constants.push(value)
         }
         append_typeck_results(typeck_results, checked.typeck_results);
         match checked.tast {
@@ -3038,13 +3313,25 @@ fn check_package_files_for_link_with_environments_options(
             diagnostics.push(new_diagnostic("typer", message, diagnostic_source, Option::None))
         } else {}
     }
-    CheckResult {
+    let raw = CheckResult {
         tast: if valid {
             Option::Some(File { items, enums, structs, constants })
         } else {
             Option::None
         },
+        comptime: ctir::empty_module(diagnostic_source),
+        pending_constants,
         diagnostics,
         typeck_results,
-    }
+    };
+    finalize_check_comptime(
+        raw,
+        if !values.is_empty() {
+            values[0].package_name
+        } else {
+            diagnostic_source
+        },
+        comptime_dependencies,
+        dependencies,
+    )
 }

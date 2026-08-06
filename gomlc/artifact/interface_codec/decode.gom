@@ -35,6 +35,14 @@ fn artifact_decode_fn_scheme(
     value: wire::ArtifactValue,
 ) -> Result[artifact::ArtifactFnScheme, string] {
     let object = wire::artifact_json_object(value, "function scheme")?;
+    let comptime = if wire::artifact_json_bool_value(
+        wire::artifact_json_required_field(object, "comptime")?,
+        "comptime capability",
+    )? {
+        tast::ComptimeCapability::Capable
+    } else {
+        tast::ComptimeCapability::RuntimeOnly
+    };
     let type_params = wire::artifact_decode_string_array(
         wire::artifact_json_required_field(object, "type_params")?,
         "type parameters",
@@ -51,7 +59,7 @@ fn artifact_decode_fn_scheme(
         Some(value) => tast_codec::artifact_decode_callable_body(name, value)?,
         None => tast::Callable::Function(name),
     };
-    Result::Ok(artifact::ArtifactFnScheme { name, type_params, constraints, ty, body })
+    Result::Ok(artifact::ArtifactFnScheme { name, comptime, type_params, constraints, ty, body })
 }
 
 fn artifact_decode_fn_map(context: tast_codec::ArtifactDecodeContext, value: wire::ArtifactValue) -> Result[
@@ -488,16 +496,37 @@ pub fn artifact_decode_string_map(value: wire::ArtifactValue, expected: string) 
     Result::Ok(result)
 }
 
-fn artifact_decode_interface_value(value: wire::ArtifactValue) -> Result[
+pub fn artifact_decode_interface_value(value: wire::ArtifactValue) -> Result[
     artifact::ArtifactInterfaceUnit,
     string,
 ] {
     let object = wire::artifact_json_object(value, "interface unit")?;
+    let format_version = wire::artifact_parse_nonnegative_int(
+        wire::artifact_json_number_value(
+            wire::artifact_json_required_field(object, "format_version")?,
+            "interface format version",
+        )?,
+    )?;
+    let compiler_abi = wire::artifact_parse_nonnegative_int(
+        wire::artifact_json_number_value(
+            wire::artifact_json_required_field(object, "compiler_abi")?,
+            "compiler ABI",
+        )?,
+    )?;
+    if format_version != 20 {
+        return Result::Err("unsupported interface artifact format version")
+    } else if compiler_abi != 4 {
+        return Result::Err("unsupported interface compiler ABI")
+    } else {};
     let package_name = wire::artifact_json_field_string(object, "package")?;
     let exports = decode_exports(wire::artifact_json_required_field(object, "exports")?)?;
     let package_interface = artifact_decode_package_interface(
         wire::artifact_json_required_field(object, "interface")?,
     )?;
+    let comptime = match wire::artifact_json_required_field(object, "comptime")? {
+        wire::ArtifactValue::Null => Option::None,
+        value => Option::Some(artifact_decode_comptime_unit(value)?),
+    };
     let deps = artifact_decode_string_map(
         wire::artifact_json_required_field(object, "deps")?,
         "dependency hashes",
@@ -507,6 +536,7 @@ fn artifact_decode_interface_value(value: wire::ArtifactValue) -> Result[
         package_name,
         exports,
         package_interface,
+        comptime,
         deps,
         interface_hash,
     };

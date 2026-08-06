@@ -1,0 +1,1222 @@
+package interface_codec;
+
+use gomlc::artifact::wire as wire;
+use gomlc::artifact;
+use gomlc::ctir;
+use gomlc::hash;
+use std::cmp;
+use std::collections;
+
+fn ctir_tag(writer: wire::ArtifactJsonWriter, value: string) -> unit {
+    wire::artifact_json_string(writer, value)
+}
+
+fn ctir_number(writer: wire::ArtifactJsonWriter, value: int) -> unit {
+    wire::artifact_json_number(writer, value.to_string())
+}
+
+fn ctir_type(writer: wire::ArtifactJsonWriter, value: ctir::CtType) -> unit {
+    wire::artifact_json_begin_array(writer);
+    match value {
+        ctir::CtType::Unit => ctir_tag(writer, "unit"),
+        ctir::CtType::Never => ctir_tag(writer, "never"),
+        ctir::CtType::Bool => ctir_tag(writer, "bool"),
+        ctir::CtType::Integer { signed, width } => {
+            ctir_tag(writer, "integer");
+            wire::artifact_json_bool(writer, signed);
+            ctir_number(writer, width)
+        },
+        ctir::CtType::String => ctir_tag(writer, "string"),
+        ctir::CtType::Char => ctir_tag(writer, "char"),
+        ctir::CtType::Tuple(values) => {
+            ctir_tag(writer, "tuple");
+            ctir_types(writer, values)
+        },
+        ctir::CtType::Array { len, elem } => {
+            ctir_tag(writer, "array");
+            ctir_number(writer, len);
+            ctir_type(writer, elem)
+        },
+        ctir::CtType::Struct { name, fields } => {
+            ctir_tag(writer, "struct");
+            wire::artifact_json_string(writer, name);
+            ctir_types(writer, fields)
+        },
+        ctir::CtType::Enum { name, variants } => {
+            ctir_tag(writer, "enum");
+            wire::artifact_json_string(writer, name);
+            wire::artifact_json_begin_array(writer);
+            for fields in variants {
+                ctir_types(writer, fields)
+            }
+            wire::artifact_json_end_array(writer)
+        },
+    };
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_types(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtType]) -> unit {
+    wire::artifact_json_begin_array(writer);
+    for value in values {
+        ctir_type(writer, value)
+    }
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_value(writer: wire::ArtifactJsonWriter, value: ctir::CtValue) -> unit {
+    wire::artifact_json_begin_array(writer);
+    match value {
+        ctir::CtValue::Unit => ctir_tag(writer, "unit"),
+        ctir::CtValue::Bool(value) => {
+            ctir_tag(writer, "bool");
+            wire::artifact_json_bool(writer, value)
+        },
+        ctir::CtValue::Integer { signed, width, bits } => {
+            ctir_tag(writer, "integer");
+            wire::artifact_json_bool(writer, signed);
+            ctir_number(writer, width);
+            wire::artifact_json_string(writer, bits.to_string())
+        },
+        ctir::CtValue::String(value) => {
+            ctir_tag(writer, "string");
+            wire::artifact_json_string(writer, value)
+        },
+        ctir::CtValue::Char(value) => {
+            ctir_tag(writer, "char");
+            wire::artifact_json_string(writer, value.to_string())
+        },
+        ctir::CtValue::Tuple(values) => {
+            ctir_tag(writer, "tuple");
+            ctir_values(writer, values)
+        },
+        ctir::CtValue::Array(values) => {
+            ctir_tag(writer, "array");
+            ctir_values(writer, values)
+        },
+        ctir::CtValue::Struct { name, fields } => {
+            ctir_tag(writer, "struct");
+            wire::artifact_json_string(writer, name);
+            ctir_values(writer, fields)
+        },
+        ctir::CtValue::Enum { name, variant, fields } => {
+            ctir_tag(writer, "enum");
+            wire::artifact_json_string(writer, name);
+            ctir_number(writer, variant);
+            ctir_values(writer, fields)
+        },
+    };
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_values(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtValue]) -> unit {
+    wire::artifact_json_begin_array(writer);
+    for value in values {
+        ctir_value(writer, value)
+    }
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_pattern(writer: wire::ArtifactJsonWriter, value: ctir::CtPattern) -> unit {
+    wire::artifact_json_begin_array(writer);
+    match value {
+        ctir::CtPattern::Wild => ctir_tag(writer, "wild"),
+        ctir::CtPattern::Bind { slot } => {
+            ctir_tag(writer, "bind");
+            ctir_number(writer, slot)
+        },
+        ctir::CtPattern::Value(value) => {
+            ctir_tag(writer, "value");
+            ctir_value(writer, value)
+        },
+        ctir::CtPattern::Tuple(values) => {
+            ctir_tag(writer, "tuple");
+            ctir_patterns(writer, values)
+        },
+        ctir::CtPattern::Array { prefix, rest, suffix } => {
+            ctir_tag(writer, "array");
+            ctir_patterns(writer, prefix);
+            match rest {
+                Some(value) => ctir_number(writer, value),
+                None => wire::artifact_json_null(writer),
+            };
+            ctir_patterns(writer, suffix)
+        },
+        ctir::CtPattern::Struct { name, fields } => {
+            ctir_tag(writer, "struct");
+            wire::artifact_json_string(writer, name);
+            wire::artifact_json_begin_array(writer);
+            for field in fields {
+                wire::artifact_json_begin_array(writer);
+                ctir_number(writer, field.0);
+                ctir_pattern(writer, field.1);
+                wire::artifact_json_end_array(writer)
+            }
+            wire::artifact_json_end_array(writer)
+        },
+        ctir::CtPattern::Enum { name, variant, fields } => {
+            ctir_tag(writer, "enum");
+            wire::artifact_json_string(writer, name);
+            ctir_number(writer, variant);
+            ctir_patterns(writer, fields)
+        },
+        ctir::CtPattern::Alias { slot, pattern } => {
+            ctir_tag(writer, "alias");
+            ctir_number(writer, slot);
+            ctir_pattern(writer, pattern)
+        },
+        ctir::CtPattern::Or(values) => {
+            ctir_tag(writer, "or");
+            ctir_patterns(writer, values)
+        },
+        ctir::CtPattern::Range { start, end, inclusive } => {
+            ctir_tag(writer, "range");
+            ctir_value(writer, start);
+            ctir_value(writer, end);
+            wire::artifact_json_bool(writer, inclusive)
+        },
+    };
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_patterns(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtPattern]) -> unit {
+    wire::artifact_json_begin_array(writer);
+    for value in values {
+        ctir_pattern(writer, value)
+    }
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_exprs(writer: wire::ArtifactJsonWriter, values: Vec[ctir::CtExpr], semantic: bool) -> unit {
+    wire::artifact_json_begin_array(writer);
+    for value in values {
+        ctir_expr(writer, value, semantic)
+    }
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_expr(writer: wire::ArtifactJsonWriter, value: ctir::CtExpr, semantic: bool) -> unit {
+    wire::artifact_json_begin_array(writer);
+    ctir_type(writer, value.ty);
+    ctir_number(
+        writer,
+        if semantic {
+            0
+        } else {
+            value.origin
+        },
+    );
+    match value.kind {
+        ctir::CtExprKind::Value(value) => {
+            ctir_tag(writer, "value");
+            ctir_value(writer, value)
+        },
+        ctir::CtExprKind::Local(slot) => {
+            ctir_tag(writer, "local");
+            ctir_number(writer, slot)
+        },
+        ctir::CtExprKind::Constant { package_name, name } => {
+            ctir_tag(writer, "constant");
+            wire::artifact_json_string(writer, package_name);
+            wire::artifact_json_string(writer, name)
+        },
+        ctir::CtExprKind::Tuple(values) => {
+            ctir_tag(writer, "tuple");
+            ctir_exprs(writer, values, semantic)
+        },
+        ctir::CtExprKind::Array(values) => {
+            ctir_tag(writer, "array");
+            ctir_exprs(writer, values, semantic)
+        },
+        ctir::CtExprKind::Struct { name, fields } => {
+            ctir_tag(writer, "struct");
+            wire::artifact_json_string(writer, name);
+            ctir_exprs(writer, fields, semantic)
+        },
+        ctir::CtExprKind::Enum { name, variant, fields } => {
+            ctir_tag(writer, "enum");
+            wire::artifact_json_string(writer, name);
+            ctir_number(writer, variant);
+            ctir_exprs(writer, fields, semantic)
+        },
+        ctir::CtExprKind::Field { value, index } => {
+            ctir_tag(writer, "field");
+            ctir_expr(writer, value, semantic);
+            ctir_number(writer, index)
+        },
+        ctir::CtExprKind::Index { value, index } => {
+            ctir_tag(writer, "index");
+            ctir_expr(writer, value, semantic);
+            ctir_expr(writer, index, semantic)
+        },
+        ctir::CtExprKind::Block(value) => {
+            ctir_tag(writer, "block");
+            ctir_block(writer, value, semantic)
+        },
+        ctir::CtExprKind::If { condition, then_branch, else_branch } => {
+            ctir_tag(writer, "if");
+            ctir_expr(writer, condition, semantic);
+            ctir_expr(writer, then_branch, semantic);
+            ctir_expr(writer, else_branch, semantic)
+        },
+        ctir::CtExprKind::Match { value, arms } => {
+            ctir_tag(writer, "match");
+            ctir_expr(writer, value, semantic);
+            wire::artifact_json_begin_array(writer);
+            for arm in arms {
+                wire::artifact_json_begin_array(writer);
+                ctir_pattern(writer, arm.pattern);
+                match arm.guard {
+                    Some(value) => ctir_expr(writer, value, semantic),
+                    None => wire::artifact_json_null(writer),
+                };
+                ctir_expr(writer, arm.body, semantic);
+                ctir_number(
+                    writer,
+                    if semantic {
+                        0
+                    } else {
+                        arm.origin
+                    },
+                );
+                wire::artifact_json_end_array(writer)
+            }
+            wire::artifact_json_end_array(writer)
+        },
+        ctir::CtExprKind::While { target, condition, body } => {
+            ctir_tag(writer, "while");
+            ctir_number(writer, target);
+            ctir_expr(writer, condition, semantic);
+            ctir_expr(writer, body, semantic)
+        },
+        ctir::CtExprKind::Loop { target, body } => {
+            ctir_tag(writer, "loop");
+            ctir_number(writer, target);
+            ctir_expr(writer, body, semantic)
+        },
+        ctir::CtExprKind::Break { target, value } => {
+            ctir_tag(writer, "break");
+            ctir_number(writer, target);
+            match value {
+                Some(value) => ctir_expr(writer, value, semantic),
+                None => wire::artifact_json_null(writer),
+            }
+        },
+        ctir::CtExprKind::Continue { target } => {
+            ctir_tag(writer, "continue");
+            ctir_number(writer, target)
+        },
+        ctir::CtExprKind::Return(value) => {
+            ctir_tag(writer, "return");
+            match value {
+                Some(value) => ctir_expr(writer, value, semantic),
+                None => wire::artifact_json_null(writer),
+            }
+        },
+        ctir::CtExprKind::Call { target, args } => {
+            ctir_tag(writer, "call");
+            wire::artifact_json_begin_array(writer);
+            match target {
+                ctir::CtCallTarget::Local(id) => {
+                    ctir_tag(writer, "local");
+                    ctir_number(writer, id)
+                },
+                ctir::CtCallTarget::External { package_name, entry_name } => {
+                    ctir_tag(writer, "external");
+                    wire::artifact_json_string(writer, package_name);
+                    wire::artifact_json_string(writer, entry_name)
+                },
+            };
+            wire::artifact_json_end_array(writer);
+            ctir_exprs(writer, args, semantic)
+        },
+        ctir::CtExprKind::Unary { op, value } => {
+            ctir_tag(writer, "unary");
+            ctir_tag(
+                writer,
+                match op {
+                    ctir::CtUnaryOp::Neg => "neg",
+                    ctir::CtUnaryOp::Not => "not",
+                    ctir::CtUnaryOp::BitNot => "bit_not",
+                },
+            );
+            ctir_expr(writer, value, semantic)
+        },
+        ctir::CtExprKind::Binary { op, left, right } => {
+            ctir_tag(writer, "binary");
+            ctir_tag(writer, ctir_binary_name(op));
+            ctir_expr(writer, left, semantic);
+            ctir_expr(writer, right, semantic)
+        },
+        ctir::CtExprKind::Cast { value, target } => {
+            ctir_tag(writer, "cast");
+            ctir_expr(writer, value, semantic);
+            ctir_type(writer, target)
+        },
+        ctir::CtExprKind::CompileError(value) => {
+            ctir_tag(writer, "compile_error");
+            ctir_expr(writer, value, semantic)
+        },
+    };
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_binary_name(value: ctir::CtBinaryOp) -> string {
+    match value {
+        ctir::CtBinaryOp::Add => "add",
+        ctir::CtBinaryOp::Sub => "sub",
+        ctir::CtBinaryOp::Mul => "mul",
+        ctir::CtBinaryOp::Div => "div",
+        ctir::CtBinaryOp::Rem => "rem",
+        ctir::CtBinaryOp::BitAnd => "bit_and",
+        ctir::CtBinaryOp::BitOr => "bit_or",
+        ctir::CtBinaryOp::BitXor => "bit_xor",
+        ctir::CtBinaryOp::Shl => "shl",
+        ctir::CtBinaryOp::Shr => "shr",
+        ctir::CtBinaryOp::And => "and",
+        ctir::CtBinaryOp::Or => "or",
+        ctir::CtBinaryOp::Less => "less",
+        ctir::CtBinaryOp::Greater => "greater",
+        ctir::CtBinaryOp::LessEq => "less_eq",
+        ctir::CtBinaryOp::GreaterEq => "greater_eq",
+        ctir::CtBinaryOp::Eq => "eq",
+        ctir::CtBinaryOp::NotEq => "not_eq",
+    }
+}
+
+fn ctir_stmt(writer: wire::ArtifactJsonWriter, value: ctir::CtStmt, semantic: bool) -> unit {
+    wire::artifact_json_begin_array(writer);
+    match value {
+        ctir::CtStmt::Let { pattern, value } => {
+            ctir_tag(writer, "let");
+            ctir_pattern(writer, pattern);
+            ctir_expr(writer, value, semantic)
+        },
+        ctir::CtStmt::Assign { slot, value } => {
+            ctir_tag(writer, "assign");
+            ctir_number(writer, slot);
+            ctir_expr(writer, value, semantic)
+        },
+        ctir::CtStmt::Expr(value) => {
+            ctir_tag(writer, "expr");
+            ctir_expr(writer, value, semantic)
+        },
+    };
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_block(writer: wire::ArtifactJsonWriter, value: ctir::CtBlock, semantic: bool) -> unit {
+    wire::artifact_json_begin_array(writer);
+    ctir_number(
+        writer,
+        if semantic {
+            0
+        } else {
+            value.origin
+        },
+    );
+    wire::artifact_json_begin_array(writer);
+    for statement in value.statements {
+        ctir_stmt(writer, statement, semantic)
+    }
+    wire::artifact_json_end_array(writer);
+    match value.tail {
+        Some(value) => ctir_expr(writer, value, semantic),
+        None => wire::artifact_json_null(writer),
+    };
+    wire::artifact_json_end_array(writer)
+}
+
+fn ctir_module(writer: wire::ArtifactJsonWriter, value: ctir::CtModule, semantic: bool) -> unit {
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, "package");
+    wire::artifact_json_string(writer, value.package_name);
+    wire::artifact_json_name(writer, "target_int_width");
+    ctir_number(writer, value.target.int_width);
+    wire::artifact_json_name(writer, "functions");
+    wire::artifact_json_begin_array(writer);
+    for function in value.functions {
+        wire::artifact_json_begin_array(writer);
+        ctir_number(writer, function.id);
+        wire::artifact_json_string(
+            writer,
+            if semantic {
+                ""
+            } else {
+                function.name
+            },
+        );
+        wire::artifact_json_begin_array(writer);
+        for slot in function.parameter_slots {
+            ctir_number(writer, slot)
+        }
+        wire::artifact_json_end_array(writer);
+        ctir_types(writer, function.parameter_types);
+        ctir_number(writer, function.local_count);
+        ctir_types(writer, function.local_types);
+        ctir_type(writer, function.return_type);
+        ctir_block(writer, function.body, semantic);
+        ctir_number(
+            writer,
+            if semantic {
+                0
+            } else {
+                function.origin
+            },
+        );
+        wire::artifact_json_end_array(writer)
+    }
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_name(writer, "entries");
+    let entries = value.entries;
+    collections::sort_by_ordering(
+        entries,
+        |left: ctir::CtEntry, right: ctir::CtEntry| cmp::compare(left.name, right.name),
+    );
+    wire::artifact_json_begin_array(writer);
+    for entry in entries {
+        wire::artifact_json_begin_array(writer);
+        wire::artifact_json_string(writer, entry.name);
+        ctir_number(writer, entry.function_id);
+        wire::artifact_json_end_array(writer)
+    }
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_name(writer, "constants");
+    let constants = value.constants;
+    collections::sort_by_ordering(
+        constants,
+        |left: ctir::CtConstant, right: ctir::CtConstant| cmp::compare(left.name, right.name),
+    );
+    wire::artifact_json_begin_array(writer);
+    for value in constants {
+        wire::artifact_json_begin_array(writer);
+        wire::artifact_json_string(writer, value.name);
+        ctir_value(writer, value.value);
+        wire::artifact_json_end_array(writer)
+    }
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_name(writer, "origins");
+    wire::artifact_json_begin_array(writer);
+    if semantic {
+        wire::artifact_json_begin_array(writer);
+        wire::artifact_json_string(writer, "");
+        ctir_number(writer, 0);
+        ctir_number(writer, 0);
+        wire::artifact_json_end_array(writer)
+    } else {
+        for origin in value.origins {
+            wire::artifact_json_begin_array(writer);
+            wire::artifact_json_string(writer, origin.source_path);
+            ctir_number(writer, origin.start);
+            ctir_number(writer, origin.end);
+            wire::artifact_json_end_array(writer)
+        }
+    };
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_end_object(writer)
+}
+
+fn ctir_semantic_hash(value: ctir::CtModule) -> string {
+    let writer = wire::new_artifact_json_writer(false);
+    ctir_module(writer, value, true);
+    hash::sha256_hex(wire::artifact_json_finish(writer))
+}
+
+pub fn new_comptime_unit(value: ctir::CtModule) -> artifact::ArtifactComptimeUnit {
+    artifact::ArtifactComptimeUnit {
+        version: 1,
+        module: value,
+        semantic_hash: ctir_semantic_hash(value),
+    }
+}
+
+pub fn artifact_json_comptime_unit(
+    writer: wire::ArtifactJsonWriter,
+    value: artifact::ArtifactComptimeUnit,
+    semantic: bool,
+) -> unit {
+    wire::artifact_json_begin_object(writer);
+    wire::artifact_json_name(writer, "version");
+    ctir_number(writer, value.version);
+    wire::artifact_json_name(writer, "module");
+    ctir_module(writer, value.module, semantic);
+    wire::artifact_json_name(writer, "semantic_hash");
+    wire::artifact_json_string(writer, value.semantic_hash);
+    wire::artifact_json_end_object(writer)
+}
+
+fn ctir_array(value: wire::ArtifactValue, expected: string) -> Result[
+    Vec[wire::ArtifactValue],
+    string,
+] {
+    wire::artifact_json_array(value, "CTIR " + expected)
+}
+
+fn ctir_string(value: wire::ArtifactValue, expected: string) -> Result[string, string] {
+    wire::artifact_json_string_value(value, "CTIR " + expected)
+}
+
+fn ctir_int(value: wire::ArtifactValue, expected: string) -> Result[int, string] {
+    wire::artifact_parse_nonnegative_int(
+        wire::artifact_json_number_value(value, "CTIR " + expected)?,
+    )
+}
+
+fn ctir_bool(value: wire::ArtifactValue, expected: string) -> Result[bool, string] {
+    wire::artifact_json_bool_value(value, "CTIR " + expected)
+}
+
+fn ctir_expect_length(values: Vec[wire::ArtifactValue], length: int, expected: string) -> Result[
+    unit,
+    string,
+] {
+    if values.len() == length {
+        Result::Ok(())
+    } else {
+        Result::Err(wire::artifact_decode_error("CTIR " + expected))
+    }
+}
+
+fn decode_ctir_type(value: wire::ArtifactValue) -> Result[ctir::CtType, string] {
+    let values = ctir_array(value, "type")?;
+    if values.is_empty() {
+        return Result::Err(wire::artifact_decode_error("CTIR type"))
+    } else {};
+    let tag = ctir_string(values[0], "type tag")?;
+    match tag {
+        "unit" => {
+            ctir_expect_length(values, 1, "unit type")?;
+            Result::Ok(ctir::CtType::Unit)
+        },
+        "never" => {
+            ctir_expect_length(values, 1, "never type")?;
+            Result::Ok(ctir::CtType::Never)
+        },
+        "bool" => {
+            ctir_expect_length(values, 1, "bool type")?;
+            Result::Ok(ctir::CtType::Bool)
+        },
+        "integer" => {
+            ctir_expect_length(values, 3, "integer type")?;
+            Result::Ok(
+                ctir::CtType::Integer {
+                    signed: ctir_bool(values[1], "integer signedness")?,
+                    width: ctir_int(values[2], "integer width")?,
+                },
+            )
+        },
+        "string" => {
+            ctir_expect_length(values, 1, "string type")?;
+            Result::Ok(ctir::CtType::String)
+        },
+        "char" => {
+            ctir_expect_length(values, 1, "char type")?;
+            Result::Ok(ctir::CtType::Char)
+        },
+        "tuple" => {
+            ctir_expect_length(values, 2, "tuple type")?;
+            Result::Ok(ctir::CtType::Tuple(decode_ctir_types(values[1])?))
+        },
+        "array" => {
+            ctir_expect_length(values, 3, "array type")?;
+            Result::Ok(
+                ctir::CtType::Array {
+                    len: ctir_int(values[1], "array length")?,
+                    elem: decode_ctir_type(values[2])?,
+                },
+            )
+        },
+        "struct" => {
+            ctir_expect_length(values, 3, "struct type")?;
+            Result::Ok(
+                ctir::CtType::Struct {
+                    name: ctir_string(values[1], "struct name")?,
+                    fields: decode_ctir_types(values[2])?,
+                },
+            )
+        },
+        "enum" => {
+            ctir_expect_length(values, 3, "enum type")?;
+            let variants: Vec[Vec[ctir::CtType]] = Vec::[];
+            for fields in ctir_array(values[2], "enum variants")? {
+                variants.push(decode_ctir_types(fields)?)
+            }
+            Result::Ok(ctir::CtType::Enum { name: ctir_string(values[1], "enum name")?, variants })
+        },
+        _ => Result::Err(wire::artifact_decode_error("CTIR type tag")),
+    }
+}
+
+fn decode_ctir_types(value: wire::ArtifactValue) -> Result[Vec[ctir::CtType], string] {
+    let result: Vec[ctir::CtType] = Vec::[];
+    for value in ctir_array(value, "types")? {
+        result.push(decode_ctir_type(value)?)
+    }
+    Result::Ok(result)
+}
+
+fn parse_uint64_string(value: string) -> Result[uint64, string] {
+    if value == "" {
+        return Result::Err(wire::artifact_decode_error("CTIR uint64"))
+    } else {};
+    let mut result = 0 as uint64;
+    for index in 0..value.byte_len() {
+        let digit = value.byte_get(index);
+        if digit < b'0' || digit > b'9' {
+            return Result::Err(wire::artifact_decode_error("CTIR uint64"))
+        } else {};
+        let next = result * 10 + ((digit - b'0') as uint64);
+        if next < result {
+            return Result::Err(wire::artifact_decode_error("CTIR uint64"))
+        } else {};
+        result = next;
+    }
+    Result::Ok(result)
+}
+
+fn decode_ctir_value(value: wire::ArtifactValue) -> Result[ctir::CtValue, string] {
+    let values = ctir_array(value, "value")?;
+    if values.is_empty() {
+        return Result::Err(wire::artifact_decode_error("CTIR value"))
+    } else {};
+    let tag = ctir_string(values[0], "value tag")?;
+    match tag {
+        "unit" => {
+            ctir_expect_length(values, 1, "unit value")?;
+            Result::Ok(ctir::CtValue::Unit)
+        },
+        "bool" => {
+            ctir_expect_length(values, 2, "bool value")?;
+            Result::Ok(ctir::CtValue::Bool(ctir_bool(values[1], "bool value")?))
+        },
+        "integer" => {
+            ctir_expect_length(values, 4, "integer value")?;
+            Result::Ok(
+                ctir::CtValue::Integer {
+                    signed: ctir_bool(values[1], "integer signedness")?,
+                    width: ctir_int(values[2], "integer width")?,
+                    bits: parse_uint64_string(ctir_string(values[3], "integer bits")?)?,
+                },
+            )
+        },
+        "string" => {
+            ctir_expect_length(values, 2, "string value")?;
+            Result::Ok(ctir::CtValue::String(ctir_string(values[1], "string value")?))
+        },
+        "char" => {
+            ctir_expect_length(values, 2, "char value")?;
+            let text = ctir_string(values[1], "char value")?;
+            let mut count = 0;
+            let result = Ref::new(Option::None);
+            for value in text.chars() {
+                count = count + 1;
+                result.set(Option::Some(value))
+            }
+            if count != 1 {
+                Result::Err(wire::artifact_decode_error("CTIR char value"))
+            } else {
+                Result::Ok(ctir::CtValue::Char(result.get().unwrap_or('a')))
+            }
+        },
+        "tuple" => {
+            ctir_expect_length(values, 2, "tuple value")?;
+            Result::Ok(ctir::CtValue::Tuple(decode_ctir_values(values[1])?))
+        },
+        "array" => {
+            ctir_expect_length(values, 2, "array value")?;
+            Result::Ok(ctir::CtValue::Array(decode_ctir_values(values[1])?))
+        },
+        "struct" => {
+            ctir_expect_length(values, 3, "struct value")?;
+            Result::Ok(
+                ctir::CtValue::Struct {
+                    name: ctir_string(values[1], "struct value name")?,
+                    fields: decode_ctir_values(values[2])?,
+                },
+            )
+        },
+        "enum" => {
+            ctir_expect_length(values, 4, "enum value")?;
+            Result::Ok(
+                ctir::CtValue::Enum {
+                    name: ctir_string(values[1], "enum value name")?,
+                    variant: ctir_int(values[2], "enum value variant")?,
+                    fields: decode_ctir_values(values[3])?,
+                },
+            )
+        },
+        _ => Result::Err(wire::artifact_decode_error("CTIR value tag")),
+    }
+}
+
+fn decode_ctir_values(value: wire::ArtifactValue) -> Result[Vec[ctir::CtValue], string] {
+    let result: Vec[ctir::CtValue] = Vec::[];
+    for value in ctir_array(value, "values")? {
+        result.push(decode_ctir_value(value)?)
+    }
+    Result::Ok(result)
+}
+
+fn decode_optional_int(value: wire::ArtifactValue) -> Result[Option[int], string] {
+    match value {
+        wire::ArtifactValue::Null => Result::Ok(Option::None),
+        other => Result::Ok(Option::Some(ctir_int(other, "optional integer")?)),
+    }
+}
+
+fn decode_ctir_pattern(value: wire::ArtifactValue) -> Result[ctir::CtPattern, string] {
+    let values = ctir_array(value, "pattern")?;
+    if values.is_empty() {
+        return Result::Err(wire::artifact_decode_error("CTIR pattern"))
+    } else {};
+    let tag = ctir_string(values[0], "pattern tag")?;
+    match tag {
+        "wild" => {
+            ctir_expect_length(values, 1, "wild pattern")?;
+            Result::Ok(ctir::CtPattern::Wild)
+        },
+        "bind" => {
+            ctir_expect_length(values, 2, "bind pattern")?;
+            Result::Ok(ctir::CtPattern::Bind { slot: ctir_int(values[1], "binding slot")? })
+        },
+        "value" => {
+            ctir_expect_length(values, 2, "value pattern")?;
+            Result::Ok(ctir::CtPattern::Value(decode_ctir_value(values[1])?))
+        },
+        "tuple" => {
+            ctir_expect_length(values, 2, "tuple pattern")?;
+            Result::Ok(ctir::CtPattern::Tuple(decode_ctir_patterns(values[1])?))
+        },
+        "array" => {
+            ctir_expect_length(values, 4, "array pattern")?;
+            Result::Ok(
+                ctir::CtPattern::Array {
+                    prefix: decode_ctir_patterns(values[1])?,
+                    rest: decode_optional_int(values[2])?,
+                    suffix: decode_ctir_patterns(values[3])?,
+                },
+            )
+        },
+        "struct" => {
+            ctir_expect_length(values, 3, "struct pattern")?;
+            let fields: Vec[(int, ctir::CtPattern)] = Vec::[];
+            for value in ctir_array(values[2], "struct pattern fields")? {
+                let pair = ctir_array(value, "struct pattern field")?;
+                ctir_expect_length(pair, 2, "struct pattern field")?;
+                fields.push(
+                    (ctir_int(pair[0], "struct field index")?, decode_ctir_pattern(pair[1])?),
+                )
+            }
+            Result::Ok(
+                ctir::CtPattern::Struct {
+                    name: ctir_string(values[1], "struct pattern name")?,
+                    fields,
+                },
+            )
+        },
+        "enum" => {
+            ctir_expect_length(values, 4, "enum pattern")?;
+            Result::Ok(
+                ctir::CtPattern::Enum {
+                    name: ctir_string(values[1], "enum pattern name")?,
+                    variant: ctir_int(values[2], "enum pattern variant")?,
+                    fields: decode_ctir_patterns(values[3])?,
+                },
+            )
+        },
+        "alias" => {
+            ctir_expect_length(values, 3, "alias pattern")?;
+            Result::Ok(
+                ctir::CtPattern::Alias {
+                    slot: ctir_int(values[1], "alias slot")?,
+                    pattern: decode_ctir_pattern(values[2])?,
+                },
+            )
+        },
+        "or" => {
+            ctir_expect_length(values, 2, "or pattern")?;
+            Result::Ok(ctir::CtPattern::Or(decode_ctir_patterns(values[1])?))
+        },
+        "range" => {
+            ctir_expect_length(values, 4, "range pattern")?;
+            Result::Ok(
+                ctir::CtPattern::Range {
+                    start: decode_ctir_value(values[1])?,
+                    end: decode_ctir_value(values[2])?,
+                    inclusive: ctir_bool(values[3], "range inclusivity")?,
+                },
+            )
+        },
+        _ => Result::Err(wire::artifact_decode_error("CTIR pattern tag")),
+    }
+}
+
+fn decode_ctir_patterns(value: wire::ArtifactValue) -> Result[Vec[ctir::CtPattern], string] {
+    let result: Vec[ctir::CtPattern] = Vec::[];
+    for value in ctir_array(value, "patterns")? {
+        result.push(decode_ctir_pattern(value)?)
+    }
+    Result::Ok(result)
+}
+
+fn decode_ctir_binary_op(value: string) -> Result[ctir::CtBinaryOp, string] {
+    match value {
+        "add" => Result::Ok(ctir::CtBinaryOp::Add),
+        "sub" => Result::Ok(ctir::CtBinaryOp::Sub),
+        "mul" => Result::Ok(ctir::CtBinaryOp::Mul),
+        "div" => Result::Ok(ctir::CtBinaryOp::Div),
+        "rem" => Result::Ok(ctir::CtBinaryOp::Rem),
+        "bit_and" => Result::Ok(ctir::CtBinaryOp::BitAnd),
+        "bit_or" => Result::Ok(ctir::CtBinaryOp::BitOr),
+        "bit_xor" => Result::Ok(ctir::CtBinaryOp::BitXor),
+        "shl" => Result::Ok(ctir::CtBinaryOp::Shl),
+        "shr" => Result::Ok(ctir::CtBinaryOp::Shr),
+        "and" => Result::Ok(ctir::CtBinaryOp::And),
+        "or" => Result::Ok(ctir::CtBinaryOp::Or),
+        "less" => Result::Ok(ctir::CtBinaryOp::Less),
+        "greater" => Result::Ok(ctir::CtBinaryOp::Greater),
+        "less_eq" => Result::Ok(ctir::CtBinaryOp::LessEq),
+        "greater_eq" => Result::Ok(ctir::CtBinaryOp::GreaterEq),
+        "eq" => Result::Ok(ctir::CtBinaryOp::Eq),
+        "not_eq" => Result::Ok(ctir::CtBinaryOp::NotEq),
+        _ => Result::Err(wire::artifact_decode_error("CTIR binary operator")),
+    }
+}
+
+fn decode_optional_expr(value: wire::ArtifactValue) -> Result[Option[ctir::CtExpr], string] {
+    match value {
+        wire::ArtifactValue::Null => Result::Ok(Option::None),
+        other => Result::Ok(Option::Some(decode_ctir_expr(other)?)),
+    }
+}
+
+fn decode_ctir_expr(value: wire::ArtifactValue) -> Result[ctir::CtExpr, string] {
+    let values = ctir_array(value, "expression")?;
+    if values.len() < 3 {
+        return Result::Err(wire::artifact_decode_error("CTIR expression"))
+    } else {};
+    let ty = decode_ctir_type(values[0])?;
+    let origin = ctir_int(values[1], "expression origin")?;
+    let tag = ctir_string(values[2], "expression tag")?;
+    let kind = match tag {
+        "value" => {
+            ctir_expect_length(values, 4, "value expression")?;
+            ctir::CtExprKind::Value(decode_ctir_value(values[3])?)
+        },
+        "local" => {
+            ctir_expect_length(values, 4, "local expression")?;
+            ctir::CtExprKind::Local(ctir_int(values[3], "local slot")?)
+        },
+        "constant" => {
+            ctir_expect_length(values, 5, "constant expression")?;
+            ctir::CtExprKind::Constant {
+                package_name: ctir_string(values[3], "constant package")?,
+                name: ctir_string(values[4], "constant name")?,
+            }
+        },
+        "tuple" => {
+            ctir_expect_length(values, 4, "tuple expression")?;
+            ctir::CtExprKind::Tuple(decode_ctir_exprs(values[3])?)
+        },
+        "array" => {
+            ctir_expect_length(values, 4, "array expression")?;
+            ctir::CtExprKind::Array(decode_ctir_exprs(values[3])?)
+        },
+        "struct" => {
+            ctir_expect_length(values, 5, "struct expression")?;
+            ctir::CtExprKind::Struct {
+                name: ctir_string(values[3], "struct expression name")?,
+                fields: decode_ctir_exprs(values[4])?,
+            }
+        },
+        "enum" => {
+            ctir_expect_length(values, 6, "enum expression")?;
+            ctir::CtExprKind::Enum {
+                name: ctir_string(values[3], "enum expression name")?,
+                variant: ctir_int(values[4], "enum expression variant")?,
+                fields: decode_ctir_exprs(values[5])?,
+            }
+        },
+        "field" => {
+            ctir_expect_length(values, 5, "field expression")?;
+            ctir::CtExprKind::Field {
+                value: decode_ctir_expr(values[3])?,
+                index: ctir_int(values[4], "field index")?,
+            }
+        },
+        "index" => {
+            ctir_expect_length(values, 5, "index expression")?;
+            ctir::CtExprKind::Index {
+                value: decode_ctir_expr(values[3])?,
+                index: decode_ctir_expr(values[4])?,
+            }
+        },
+        "block" => {
+            ctir_expect_length(values, 4, "block expression")?;
+            ctir::CtExprKind::Block(decode_ctir_block(values[3])?)
+        },
+        "if" => {
+            ctir_expect_length(values, 6, "if expression")?;
+            ctir::CtExprKind::If {
+                condition: decode_ctir_expr(values[3])?,
+                then_branch: decode_ctir_expr(values[4])?,
+                else_branch: decode_ctir_expr(values[5])?,
+            }
+        },
+        "match" => {
+            ctir_expect_length(values, 5, "match expression")?;
+            let arms: Vec[ctir::CtArm] = Vec::[];
+            for value in ctir_array(values[4], "match arms")? {
+                let arm = ctir_array(value, "match arm")?;
+                ctir_expect_length(arm, 4, "match arm")?;
+                arms.push(
+                    ctir::CtArm {
+                        pattern: decode_ctir_pattern(arm[0])?,
+                        guard: decode_optional_expr(arm[1])?,
+                        body: decode_ctir_expr(arm[2])?,
+                        origin: ctir_int(arm[3], "match arm origin")?,
+                    },
+                )
+            }
+            ctir::CtExprKind::Match { value: decode_ctir_expr(values[3])?, arms }
+        },
+        "while" => {
+            ctir_expect_length(values, 6, "while expression")?;
+            ctir::CtExprKind::While {
+                target: ctir_int(values[3], "while target")?,
+                condition: decode_ctir_expr(values[4])?,
+                body: decode_ctir_expr(values[5])?,
+            }
+        },
+        "loop" => {
+            ctir_expect_length(values, 5, "loop expression")?;
+            ctir::CtExprKind::Loop {
+                target: ctir_int(values[3], "loop target")?,
+                body: decode_ctir_expr(values[4])?,
+            }
+        },
+        "break" => {
+            ctir_expect_length(values, 5, "break expression")?;
+            ctir::CtExprKind::Break {
+                target: ctir_int(values[3], "break target")?,
+                value: decode_optional_expr(values[4])?,
+            }
+        },
+        "continue" => {
+            ctir_expect_length(values, 4, "continue expression")?;
+            ctir::CtExprKind::Continue { target: ctir_int(values[3], "continue target")? }
+        },
+        "return" => {
+            ctir_expect_length(values, 4, "return expression")?;
+            ctir::CtExprKind::Return(decode_optional_expr(values[3])?)
+        },
+        "call" => {
+            ctir_expect_length(values, 5, "call expression")?;
+            let target_value = ctir_array(values[3], "call target")?;
+            if target_value.is_empty() {
+                return Result::Err(wire::artifact_decode_error("CTIR call target"))
+            } else {};
+            let target = match ctir_string(target_value[0], "call target tag")? {
+                "local" => {
+                    ctir_expect_length(target_value, 2, "local call target")?;
+                    ctir::CtCallTarget::Local(ctir_int(target_value[1], "function id")?)
+                },
+                "external" => {
+                    ctir_expect_length(target_value, 3, "external call target")?;
+                    ctir::CtCallTarget::External {
+                        package_name: ctir_string(target_value[1], "external package")?,
+                        entry_name: ctir_string(target_value[2], "external entry")?,
+                    }
+                },
+                _ => return Result::Err(wire::artifact_decode_error("CTIR call target tag")),
+            };
+            ctir::CtExprKind::Call { target, args: decode_ctir_exprs(values[4])? }
+        },
+        "unary" => {
+            ctir_expect_length(values, 5, "unary expression")?;
+            let op = match ctir_string(values[3], "unary operator")? {
+                "neg" => ctir::CtUnaryOp::Neg,
+                "not" => ctir::CtUnaryOp::Not,
+                "bit_not" => ctir::CtUnaryOp::BitNot,
+                _ => return Result::Err(wire::artifact_decode_error("CTIR unary operator")),
+            };
+            ctir::CtExprKind::Unary { op, value: decode_ctir_expr(values[4])? }
+        },
+        "binary" => {
+            ctir_expect_length(values, 6, "binary expression")?;
+            ctir::CtExprKind::Binary {
+                op: decode_ctir_binary_op(ctir_string(values[3], "binary operator")?)?,
+                left: decode_ctir_expr(values[4])?,
+                right: decode_ctir_expr(values[5])?,
+            }
+        },
+        "cast" => {
+            ctir_expect_length(values, 5, "cast expression")?;
+            ctir::CtExprKind::Cast {
+                value: decode_ctir_expr(values[3])?,
+                target: decode_ctir_type(values[4])?,
+            }
+        },
+        "compile_error" => {
+            ctir_expect_length(values, 4, "compile_error expression")?;
+            ctir::CtExprKind::CompileError(decode_ctir_expr(values[3])?)
+        },
+        _ => return Result::Err(wire::artifact_decode_error("CTIR expression tag")),
+    };
+    Result::Ok(ctir::CtExpr { kind, ty, origin })
+}
+
+fn decode_ctir_exprs(value: wire::ArtifactValue) -> Result[Vec[ctir::CtExpr], string] {
+    let result: Vec[ctir::CtExpr] = Vec::[];
+    for value in ctir_array(value, "expressions")? {
+        result.push(decode_ctir_expr(value)?)
+    }
+    Result::Ok(result)
+}
+
+fn decode_ctir_stmt(value: wire::ArtifactValue) -> Result[ctir::CtStmt, string] {
+    let values = ctir_array(value, "statement")?;
+    if values.is_empty() {
+        return Result::Err(wire::artifact_decode_error("CTIR statement"))
+    } else {};
+    match ctir_string(values[0], "statement tag")? {
+        "let" => {
+            ctir_expect_length(values, 3, "let statement")?;
+            Result::Ok(
+                ctir::CtStmt::Let {
+                    pattern: decode_ctir_pattern(values[1])?,
+                    value: decode_ctir_expr(values[2])?,
+                },
+            )
+        },
+        "assign" => {
+            ctir_expect_length(values, 3, "assign statement")?;
+            Result::Ok(
+                ctir::CtStmt::Assign {
+                    slot: ctir_int(values[1], "assignment slot")?,
+                    value: decode_ctir_expr(values[2])?,
+                },
+            )
+        },
+        "expr" => {
+            ctir_expect_length(values, 2, "expression statement")?;
+            Result::Ok(ctir::CtStmt::Expr(decode_ctir_expr(values[1])?))
+        },
+        _ => Result::Err(wire::artifact_decode_error("CTIR statement tag")),
+    }
+}
+
+fn decode_ctir_block(value: wire::ArtifactValue) -> Result[ctir::CtBlock, string] {
+    let values = ctir_array(value, "block")?;
+    ctir_expect_length(values, 3, "block")?;
+    let statements: Vec[ctir::CtStmt] = Vec::[];
+    for value in ctir_array(values[1], "block statements")? {
+        statements.push(decode_ctir_stmt(value)?)
+    }
+    Result::Ok(
+        ctir::CtBlock {
+            origin: ctir_int(values[0], "block origin")?,
+            statements,
+            tail: decode_optional_expr(values[2])?,
+        },
+    )
+}
+
+fn decode_int_array(value: wire::ArtifactValue, expected: string) -> Result[Vec[int], string] {
+    let result: Vec[int] = Vec::[];
+    for value in ctir_array(value, expected)? {
+        result.push(ctir_int(value, expected)?)
+    }
+    Result::Ok(result)
+}
+
+fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, string] {
+    let object = wire::artifact_json_object(value, "CTIR module")?;
+    let package_name = wire::artifact_json_field_string(object, "package")?;
+    let target = ctir::CtTarget {
+        int_width: ctir_int(
+            wire::artifact_json_required_field(object, "target_int_width")?,
+            "target integer width",
+        )?,
+    };
+    let functions: Vec[ctir::CtFunction] = Vec::[];
+    for value in wire::artifact_json_field_array(object, "functions")? {
+        let fields = ctir_array(value, "function")?;
+        ctir_expect_length(fields, 9, "function")?;
+        functions.push(
+            ctir::CtFunction {
+                id: ctir_int(fields[0], "function id")?,
+                name: ctir_string(fields[1], "function name")?,
+                parameter_slots: decode_int_array(fields[2], "parameter slots")?,
+                parameter_types: decode_ctir_types(fields[3])?,
+                local_count: ctir_int(fields[4], "local count")?,
+                local_types: decode_ctir_types(fields[5])?,
+                return_type: decode_ctir_type(fields[6])?,
+                body: decode_ctir_block(fields[7])?,
+                origin: ctir_int(fields[8], "function origin")?,
+            },
+        )
+    }
+    let entries: Vec[ctir::CtEntry] = Vec::[];
+    for value in wire::artifact_json_field_array(object, "entries")? {
+        let fields = ctir_array(value, "entry")?;
+        ctir_expect_length(fields, 2, "entry")?;
+        entries.push(
+            ctir::CtEntry {
+                name: ctir_string(fields[0], "entry name")?,
+                function_id: ctir_int(fields[1], "entry function id")?,
+            },
+        )
+    }
+    let constants: Vec[ctir::CtConstant] = Vec::[];
+    for value in wire::artifact_json_field_array(object, "constants")? {
+        let fields = ctir_array(value, "constant")?;
+        ctir_expect_length(fields, 2, "constant")?;
+        constants.push(
+            ctir::CtConstant {
+                name: ctir_string(fields[0], "constant name")?,
+                value: decode_ctir_value(fields[1])?,
+            },
+        )
+    }
+    let origins: Vec[ctir::CtOrigin] = Vec::[];
+    for value in wire::artifact_json_field_array(object, "origins")? {
+        let fields = ctir_array(value, "origin")?;
+        ctir_expect_length(fields, 3, "origin")?;
+        origins.push(
+            ctir::CtOrigin {
+                source_path: ctir_string(fields[0], "origin path")?,
+                start: ctir_int(fields[1], "origin start")?,
+                end: ctir_int(fields[2], "origin end")?,
+            },
+        )
+    }
+    Result::Ok(
+        ctir::CtModule {
+            package_name,
+            target,
+            functions,
+            entries,
+            sites: Vec::[],
+            constants,
+            origins,
+        },
+    )
+}
+
+pub fn artifact_decode_comptime_unit(value: wire::ArtifactValue) -> Result[
+    artifact::ArtifactComptimeUnit,
+    string,
+] {
+    let object = wire::artifact_json_object(value, "comptime unit")?;
+    let version = ctir_int(wire::artifact_json_required_field(object, "version")?, "version")?;
+    if version != 1 {
+        return Result::Err("unsupported comptime artifact version")
+    } else {};
+    let module = decode_ctir_module(wire::artifact_json_required_field(object, "module")?)?;
+    let semantic_hash = wire::artifact_json_field_string(object, "semantic_hash")?;
+    if ctir_semantic_hash(module) != semantic_hash {
+        Result::Err(wire::artifact_decode_error("valid comptime semantic hash"))
+    } else {
+        Result::Ok(artifact::ArtifactComptimeUnit { version, module, semantic_hash })
+    }
+}

@@ -1272,6 +1272,9 @@ fn lower_expr_value(
             },
         },
         Go { expr, span: _ } => ExprKind::Go { expr: lower_expr(ctx, expr, env, type_params) },
+        Comptime { block, span: _ } => ExprKind::Comptime {
+            block: lower_block(ctx, block, env, type_params),
+        },
         Scope { body, span } => {
             let parent = match current_lexical_scope(ctx) {
                 Some(value) => if value.closure_depth == ctx.closure_depth.get() {

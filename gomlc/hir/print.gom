@@ -781,6 +781,7 @@ fn expr_doc(value: Expr) -> pretty::Doc {
             None => pretty::text("return"),
         },
         Go { expr } => pretty::append(pretty::text("go "), expr_doc(expr)),
+        Comptime { block } => pretty::append(pretty::text("comptime "), block_doc(block)),
         Call { func, args } => pretty::append(
             expr_doc(func),
             pretty::delimited("(", ",", ")", expr_docs(args)),

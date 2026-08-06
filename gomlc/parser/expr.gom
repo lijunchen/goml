@@ -444,6 +444,43 @@ fn scope_expression(parser: Parser) -> MarkerClosed {
     parser.close(marker, cst::NodeKind::EXPR_SCOPE)
 }
 
+fn comptime_expression(parser: Parser) -> MarkerClosed {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::Ident);
+    if parser.at(lexer::TokenKind::LBrace) {
+        block(parser)
+    } else {
+        parser.error("`comptime` requires a block body")
+    };
+    parser.close(marker, cst::NodeKind::EXPR_COMPTIME)
+}
+
+fn contextual_block_is_followed_by_block(parser: Parser) -> bool {
+    let mut depth = 0;
+    let mut index = 1;
+    while index < 4096 {
+        let token = parser.nth(index);
+        if token_is(token, lexer::TokenKind::Eof) {
+            return false;
+        } else if token_is(token, lexer::TokenKind::LBrace) {
+            depth = depth + 1;
+        } else if token_is(token, lexer::TokenKind::RBrace) {
+            depth = depth - 1;
+            if depth == 0 {
+                return token_is(parser.nth(index + 1), lexer::TokenKind::LBrace);
+            } else {}
+        } else {};
+        index = index + 1;
+    }
+    false
+}
+
+fn looks_like_comptime_expression(parser: Parser) -> bool {
+    parser.contextual_blocks_allowed.get() && parser.at_contextual("comptime")
+        && token_is(parser.nth(1), lexer::TokenKind::LBrace)
+        && (parser.struct_literals_allowed.get() || contextual_block_is_followed_by_block(parser))
+}
+
 fn spawn_expression(parser: Parser) -> MarkerClosed {
     let marker = parser.open();
     parser.expect(lexer::TokenKind::Ident);
@@ -471,6 +508,8 @@ fn atom(parser: Parser) -> Option[MarkerClosed] {
         Ident => if parser.at_contextual("scope")
             && token_is(parser.nth(1), lexer::TokenKind::LBrace) {
             scope_expression(parser)
+        } else if looks_like_comptime_expression(parser) {
+            comptime_expression(parser)
         } else if parser.at_contextual("spawn")
             && (token_is(parser.nth(1), lexer::TokenKind::Pipe)
                 || token_is(parser.nth(1), lexer::TokenKind::OrOr)) {
@@ -822,11 +861,22 @@ fn expr_bp(parser: Parser, min_bp: int) -> Option[MarkerClosed] {
                                         );
                                     } else {
                                         let marker = lhs.precede(parser);
+                                        let contextual_blocks_allowed = if token_is(
+                                            operator,
+                                            lexer::TokenKind::Dot,
+                                        ) {
+                                            parser.set_contextual_blocks_allowed(false)
+                                        } else {
+                                            parser.contextual_blocks_allowed.get()
+                                        };
                                         parser.advance();
                                         expect_expr_bp_with_message(
                                             parser,
                                             right_bp,
                                             "expected a right-hand side for binary operator",
+                                        );
+                                        parser.set_contextual_blocks_allowed(
+                                            contextual_blocks_allowed,
                                         );
                                         lhs = marker.completed(parser, cst::NodeKind::EXPR_BINARY);
                                         if is_comparison(operator) {

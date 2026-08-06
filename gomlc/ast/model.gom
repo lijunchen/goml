@@ -442,6 +442,10 @@ pub enum Expr {
         body: Expr,
         span: Span,
     },
+    Comptime {
+        block: Block,
+        span: Span,
+    },
     Spawn {
         body: Expr,
         span: Span,
@@ -613,13 +617,13 @@ pub fn expr_span(value: Expr) -> Span {
         } | For { span, .. } | Break { span, .. } | Continue { span, .. } | Return { span, .. } | Go {
             span,
             ..,
-        } | Scope { span, .. } | Spawn { span, .. } | Call { span, .. } | Unary { span, .. } | Cast {
+        } | Scope { span, .. } | Comptime { span, .. } | Spawn { span, .. } | Call { span, .. } | Unary {
             span,
             ..,
-        } | Try { span, .. } | Range { span, .. } | Binary { span, .. } | Proj { span, .. } | Field {
+        } | Cast { span, .. } | Try { span, .. } | Range { span, .. } | Binary { span, .. } | Proj {
             span,
             ..,
-        } | Index { span, .. } | Block { span, .. } => span,
+        } | Field { span, .. } | Index { span, .. } | Block { span, .. } => span,
     }
 }
 

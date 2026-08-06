@@ -272,6 +272,11 @@ fn encode_expr(builder: text::StringBuilder, value: Expr) -> unit {
             encode_span(builder, value_span);
             encode_expr(builder, body)
         },
+        Comptime { block, span: value_span } => {
+            encode_open(builder, "Expr.Comptime");
+            encode_span(builder, value_span);
+            encode_block(builder, block)
+        },
         Spawn { body, span: value_span } => {
             encode_open(builder, "Expr.Spawn");
             encode_span(builder, value_span);

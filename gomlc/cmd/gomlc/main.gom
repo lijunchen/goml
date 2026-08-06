@@ -22,6 +22,7 @@ struct RunArgs {
     dump_ast: bool,
     dump_hir: bool,
     dump_tast: bool,
+    dump_ctir: bool,
     dump_core: bool,
     dump_mono: bool,
     dump_lift: bool,
@@ -51,6 +52,7 @@ fn read_source(path: string) -> string {
 
 fn dump_argument(value: string) -> bool {
     value == "--dump-ast" || value == "--dump-hir" || value == "--dump-tast"
+        || value == "--dump-ctir"
         || value == "--dump-core"
         || value == "--dump-mono"
         || value == "--dump-lift"
@@ -63,6 +65,7 @@ fn inline_dump_argument(value: string) -> Option[(string, string)] {
     names.push("--dump-ast");
     names.push("--dump-hir");
     names.push("--dump-tast");
+    names.push("--dump-ctir");
     names.push("--dump-core");
     names.push("--dump-mono");
     names.push("--dump-lift");
@@ -113,7 +116,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
             let usage = if used_dumps.is_empty() {
                 "gomlc run-single --help <FILE>"
             } else {
-                "gomlc run-single --help <--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go|FILE>"
+                "gomlc run-single --help <--dump-ast|--dump-hir|--dump-tast|--dump-ctir|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go|FILE>"
             };
             return Result::Err(unexpected_value_error_with_usage(value, "--help", usage))
         } else if !positional && dump_argument(argument) {
@@ -171,6 +174,7 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
                 dump_ast: seen.contains("--dump-ast"),
                 dump_hir: seen.contains("--dump-hir"),
                 dump_tast: seen.contains("--dump-tast"),
+                dump_ctir: seen.contains("--dump-ctir"),
                 dump_core: seen.contains("--dump-core"),
                 dump_mono: seen.contains("--dump-mono"),
                 dump_lift: seen.contains("--dump-lift"),

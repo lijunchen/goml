@@ -1,0 +1,1046 @@
+package ctfe;
+
+use gomlc::ctir;
+use std::collections;
+
+struct VerifyContext {
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+    local_count: int,
+    local_types: Vec[ctir::CtType],
+    return_type: ctir::CtType,
+    loop_targets: Vec[(int, ctir::CtType, bool)],
+    value_nodes: Ref[int],
+    value_bytes: Ref[int],
+}
+
+fn ctir_value_node_limit() -> int {
+    1000000
+}
+
+fn ctir_value_byte_limit() -> int {
+    8388608
+}
+
+fn types_equal(left: ctir::CtType, right: ctir::CtType) -> bool {
+    match left {
+        ctir::CtType::Unit => match right {
+            ctir::CtType::Unit => true,
+            _ => false,
+        },
+        ctir::CtType::Never => match right {
+            ctir::CtType::Never => true,
+            _ => false,
+        },
+        ctir::CtType::Bool => match right {
+            ctir::CtType::Bool => true,
+            _ => false,
+        },
+        ctir::CtType::Integer { signed, width } => match right {
+            ctir::CtType::Integer { signed: right_signed, width: right_width } => {
+                signed == right_signed && width == right_width
+            },
+            _ => false,
+        },
+        ctir::CtType::String => match right {
+            ctir::CtType::String => true,
+            _ => false,
+        },
+        ctir::CtType::Char => match right {
+            ctir::CtType::Char => true,
+            _ => false,
+        },
+        ctir::CtType::Tuple(left) => match right {
+            ctir::CtType::Tuple(right) => type_lists_equal(left, right),
+            _ => false,
+        },
+        ctir::CtType::Array { len, elem } => match right {
+            ctir::CtType::Array { len: right_len, elem: right_elem } => {
+                len == right_len && types_equal(elem, right_elem)
+            },
+            _ => false,
+        },
+        ctir::CtType::Struct { name, fields } => match right {
+            ctir::CtType::Struct { name: right_name, fields: right_fields } => {
+                name == right_name && type_lists_equal(fields, right_fields)
+            },
+            _ => false,
+        },
+        ctir::CtType::Enum { name, variants } => match right {
+            ctir::CtType::Enum { name: right_name, variants: right_variants } => {
+                name == right_name && type_list_lists_equal(variants, right_variants)
+            },
+            _ => false,
+        },
+    }
+}
+
+fn expression_type_matches(expected: ctir::CtType, actual: ctir::CtType) -> bool {
+    types_equal(expected, actual) || types_equal(actual, ctir::CtType::Never)
+}
+
+fn is_integer_type(value: ctir::CtType) -> bool {
+    match value {
+        ctir::CtType::Integer { .. } => true,
+        _ => false,
+    }
+}
+
+fn is_signed_integer_type(value: ctir::CtType) -> bool {
+    match value {
+        ctir::CtType::Integer { signed, width: _ } => signed,
+        _ => false,
+    }
+}
+
+fn is_char_integer_type(value: ctir::CtType) -> bool {
+    match value {
+        ctir::CtType::Integer { signed, width } => !signed && width == 32,
+        _ => false,
+    }
+}
+
+fn is_ordered_type(value: ctir::CtType) -> bool {
+    is_integer_type(value) || types_equal(value, ctir::CtType::String)
+        || types_equal(value, ctir::CtType::Char)
+}
+
+fn type_lists_equal(left: Vec[ctir::CtType], right: Vec[ctir::CtType]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if !types_equal(left[index], right[index]) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn type_list_lists_equal(left: Vec[Vec[ctir::CtType]], right: Vec[Vec[ctir::CtType]]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        for index in 0..left.len() {
+            if !type_lists_equal(left[index], right[index]) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn verify_type(value: ctir::CtType) -> Result[unit, string] {
+    match value {
+        ctir::CtType::Integer { signed: _, width } => if width == 8 || width == 16 || width == 32
+            || width == 64 {
+            Result::Ok(())
+        } else {
+            Result::Err("invalid CTIR integer width")
+        },
+        ctir::CtType::Tuple(values) => {
+            for value in values {
+                verify_type(value)?
+            }
+            Result::Ok(())
+        },
+        ctir::CtType::Array { len, elem } => if len < 0 {
+            Result::Err("negative CTIR array length")
+        } else {
+            verify_type(elem)
+        },
+        ctir::CtType::Struct { name, fields } => if name == "" {
+            Result::Err("empty CTIR struct name")
+        } else {
+            for field in fields {
+                verify_type(field)?
+            }
+            Result::Ok(())
+        },
+        ctir::CtType::Enum { name, variants } => if name == "" {
+            Result::Err("empty CTIR enum name")
+        } else {
+            for variant in variants {
+                for field in variant {
+                    verify_type(field)?
+                }
+            }
+            Result::Ok(())
+        },
+        _ => Result::Ok(()),
+    }
+}
+
+fn value_type(value: ctir::CtValue) -> ctir::CtType {
+    match value {
+        ctir::CtValue::Unit => ctir::CtType::Unit,
+        ctir::CtValue::Bool(_) => ctir::CtType::Bool,
+        ctir::CtValue::Integer { signed, width, bits: _ } => {
+            ctir::CtType::Integer { signed, width }
+        },
+        ctir::CtValue::String(_) => ctir::CtType::String,
+        ctir::CtValue::Char(_) => ctir::CtType::Char,
+        ctir::CtValue::Tuple(values) => {
+            let types: Vec[ctir::CtType] = Vec::with_capacity(values.len());
+            for value in values {
+                types.push(value_type(value))
+            }
+            ctir::CtType::Tuple(types)
+        },
+        ctir::CtValue::Array(values) => {
+            let elem = if values.is_empty() {
+                ctir::CtType::Unit
+            } else {
+                value_type(values[0])
+            };
+            ctir::CtType::Array { len: values.len(), elem }
+        },
+        ctir::CtValue::Struct { name, fields } => {
+            let types: Vec[ctir::CtType] = Vec::with_capacity(fields.len());
+            for field in fields {
+                types.push(value_type(field))
+            }
+            ctir::CtType::Struct { name, fields: types }
+        },
+        ctir::CtValue::Enum { name, variant, fields } => {
+            let types: Vec[ctir::CtType] = Vec::with_capacity(fields.len());
+            for field in fields {
+                types.push(value_type(field))
+            }
+            let variants: Vec[Vec[ctir::CtType]] = Vec::with_capacity(variant + 1);
+            for _ in 0..variant {
+                let empty: Vec[ctir::CtType] = Vec::[];
+                variants.push(empty)
+            }
+            variants.push(types);
+            ctir::CtType::Enum { name, variants }
+        },
+    }
+}
+
+fn value_matches_type(value: ctir::CtValue, ty: ctir::CtType) -> bool {
+    match (value, ty) {
+        (ctir::CtValue::Unit, ctir::CtType::Unit) => true,
+        (ctir::CtValue::Bool(_), ctir::CtType::Bool) => true,
+        (
+            ctir::CtValue::Integer { signed, width, bits: _ },
+            ctir::CtType::Integer { signed: expected_signed, width: expected_width },
+        ) => signed == expected_signed && width == expected_width,
+        (ctir::CtValue::String(_), ctir::CtType::String) => true,
+        (ctir::CtValue::Char(_), ctir::CtType::Char) => true,
+        (ctir::CtValue::Tuple(values), ctir::CtType::Tuple(types)) => {
+            value_list_matches_types(values, types)
+        },
+        (ctir::CtValue::Array(values), ctir::CtType::Array { len, elem }) => {
+            if values.len() != len {
+                false
+            } else {
+                for value in values {
+                    if !value_matches_type(value, elem) {
+                        return false
+                    } else {}
+                }
+                true
+            }
+        },
+        (
+            ctir::CtValue::Struct { name, fields },
+            ctir::CtType::Struct { name: expected_name, fields: types },
+        ) => name == expected_name && value_list_matches_types(fields, types),
+        (
+            ctir::CtValue::Enum { name, variant, fields },
+            ctir::CtType::Enum { name: expected_name, variants },
+        ) => name == expected_name && variant >= 0 && variant < variants.len()
+            && value_list_matches_types(fields, variants[variant]),
+        _ => false,
+    }
+}
+
+fn value_list_matches_types(values: Vec[ctir::CtValue], types: Vec[ctir::CtType]) -> bool {
+    if values.len() != types.len() {
+        false
+    } else {
+        for index in 0..values.len() {
+            if !value_matches_type(values[index], types[index]) {
+                return false
+            } else {}
+        }
+        true
+    }
+}
+
+fn origin_valid(ctx: VerifyContext, origin: int) -> bool {
+    origin >= 0 && origin < ctx.module.origins.len()
+}
+
+fn verify_origin(ctx: VerifyContext, origin: int) -> Result[unit, string] {
+    if origin_valid(ctx, origin) {
+        Result::Ok(())
+    } else {
+        Result::Err("invalid CTIR origin")
+    }
+}
+
+fn slot_valid(ctx: VerifyContext, slot: int) -> bool {
+    slot >= 0 && slot < ctx.local_count
+}
+
+fn slot_type(ctx: VerifyContext, slot: int) -> Option[ctir::CtType] {
+    if slot_valid(ctx, slot) && slot < ctx.local_types.len() {
+        Option::Some(ctx.local_types[slot])
+    } else {
+        Option::None
+    }
+}
+
+fn loop_target(ctx: VerifyContext, target: int) -> Option[(ctir::CtType, bool)] {
+    let mut index = ctx.loop_targets.len();
+    while index > 0 {
+        index = index - 1;
+        if ctx.loop_targets[index].0 == target {
+            return Option::Some((ctx.loop_targets[index].1, ctx.loop_targets[index].2))
+        } else {}
+    }
+    Option::None
+}
+
+fn verify_value_limits(value: ctir::CtValue, nodes: Ref[int], bytes: Ref[int]) -> Result[
+    unit,
+    string,
+] {
+    let mut own_bytes = 1;
+    match value {
+        ctir::CtValue::Unit | ctir::CtValue::Bool(_) => (),
+        ctir::CtValue::Integer { .. } => {
+            own_bytes = 8;
+        },
+        ctir::CtValue::String(value) => {
+            own_bytes = value.byte_len();
+        },
+        ctir::CtValue::Char(_) => {
+            own_bytes = 4;
+        },
+        ctir::CtValue::Tuple(values) | ctir::CtValue::Array(values) => for value in values {
+            verify_value_limits(value, nodes, bytes)?
+        },
+        ctir::CtValue::Struct { name, fields } | ctir::CtValue::Enum { name, variant: _, fields } => {
+            own_bytes = name.byte_len() + 8;
+            for value in fields {
+                verify_value_limits(value, nodes, bytes)?
+            }
+        },
+    };
+    if nodes.get() >= ctir_value_node_limit() {
+        Result::Err("CTIR value node limit exceeded")
+    } else if own_bytes > ctir_value_byte_limit() - bytes.get() {
+        Result::Err("CTIR value size limit exceeded")
+    } else {
+        nodes.set(nodes.get() + 1);
+        bytes.set(bytes.get() + own_bytes);
+        Result::Ok(())
+    }
+}
+
+fn verify_typed_value(ctx: VerifyContext, value: ctir::CtValue, ty: ctir::CtType) -> Result[
+    unit,
+    string,
+] {
+    verify_value_limits(value, ctx.value_nodes, ctx.value_bytes)?;
+    if value_matches_type(value, ty) {
+        Result::Ok(())
+    } else {
+        Result::Err("CTIR value type mismatch")
+    }
+}
+
+fn verify_pattern(ctx: VerifyContext, value: ctir::CtPattern, ty: ctir::CtType) -> Result[
+    unit,
+    string,
+] {
+    match value {
+        ctir::CtPattern::Wild => Result::Ok(()),
+        ctir::CtPattern::Bind { slot } => if match slot_type(ctx, slot) {
+            Some(local_ty) => types_equal(local_ty, ty),
+            None => false,
+        } {
+            Result::Ok(())
+        } else {
+            Result::Err("invalid CTIR pattern local slot or type")
+        },
+        ctir::CtPattern::Value(value) => verify_typed_value(ctx, value, ty),
+        ctir::CtPattern::Tuple(patterns) => match ty {
+            ctir::CtType::Tuple(types) => verify_pattern_list(ctx, patterns, types),
+            _ => Result::Err("CTIR tuple pattern has non-tuple type"),
+        },
+        ctir::CtPattern::Array { prefix, rest, suffix } => match ty {
+            ctir::CtType::Array { len, elem } => if prefix.len() + suffix.len() > len {
+                Result::Err("CTIR array pattern is longer than its type")
+            } else {
+                for pattern in prefix {
+                    verify_pattern(ctx, pattern, elem)?
+                }
+                for pattern in suffix {
+                    verify_pattern(ctx, pattern, elem)?
+                }
+                match rest {
+                    Some(slot) => if match slot_type(ctx, slot) {
+                        Some(local_ty) => types_equal(
+                            local_ty,
+                            ctir::CtType::Array { len: len - prefix.len() - suffix.len(), elem },
+                        ),
+                        None => false,
+                    } {
+                        Result::Ok(())
+                    } else {
+                        Result::Err("invalid CTIR array rest slot or type")
+                    },
+                    None => Result::Ok(()),
+                }
+            },
+            _ => Result::Err("CTIR array pattern has non-array type"),
+        },
+        ctir::CtPattern::Struct { name, fields } => match ty {
+            ctir::CtType::Struct { name: expected, fields: types } => if name != expected {
+                Result::Err("CTIR struct pattern name mismatch")
+            } else {
+                for field in fields {
+                    if field.0 < 0 || field.0 >= types.len() {
+                        return Result::Err("invalid CTIR struct pattern field")
+                    } else {
+                        verify_pattern(ctx, field.1, types[field.0])?
+                    }
+                }
+                Result::Ok(())
+            },
+            _ => Result::Err("CTIR struct pattern has non-struct type"),
+        },
+        ctir::CtPattern::Enum { name, variant, fields } => match ty {
+            ctir::CtType::Enum { name: expected, variants } => if name != expected || variant < 0
+                || variant >= variants.len() {
+                Result::Err("invalid CTIR enum pattern")
+            } else {
+                verify_pattern_list(ctx, fields, variants[variant])
+            },
+            _ => Result::Err("CTIR enum pattern has non-enum type"),
+        },
+        ctir::CtPattern::Alias { slot, pattern } => if match slot_type(ctx, slot) {
+            Some(local_ty) => !types_equal(local_ty, ty),
+            None => true,
+        } {
+            Result::Err("invalid CTIR alias pattern slot or type")
+        } else {
+            verify_pattern(ctx, pattern, ty)
+        },
+        ctir::CtPattern::Or(patterns) => {
+            if patterns.is_empty() {
+                return Result::Err("empty CTIR or-pattern")
+            } else {};
+            for pattern in patterns {
+                verify_pattern(ctx, pattern, ty)?
+            }
+            Result::Ok(())
+        },
+        ctir::CtPattern::Range { start, end, inclusive: _ } => {
+            verify_typed_value(ctx, start, ty)?;
+            verify_typed_value(ctx, end, ty)
+        },
+    }
+}
+
+fn verify_pattern_list(ctx: VerifyContext, patterns: Vec[ctir::CtPattern], types: Vec[ctir::CtType]) -> Result[
+    unit,
+    string,
+] {
+    if patterns.len() != types.len() {
+        Result::Err("CTIR pattern arity mismatch")
+    } else {
+        for index in 0..patterns.len() {
+            verify_pattern(ctx, patterns[index], types[index])?
+        }
+        Result::Ok(())
+    }
+}
+
+fn verify_find_function(module: ctir::CtModule, id: int) -> Option[ctir::CtFunction] {
+    for function in module.functions {
+        if function.id == id {
+            return Option::Some(function)
+        } else {}
+    }
+    Option::None
+}
+
+fn verify_find_module(ctx: VerifyContext, name: string) -> Option[ctir::CtModule] {
+    if ctx.module.package_name == name {
+        Option::Some(ctx.module)
+    } else {
+        for value in ctx.dependencies {
+            if value.package_name == name {
+                return Option::Some(value)
+            } else {}
+        }
+        Option::None
+    }
+}
+
+fn verify_find_entry(module: ctir::CtModule, name: string) -> Option[ctir::CtFunction] {
+    for entry in module.entries {
+        if entry.name == name {
+            return verify_find_function(module, entry.function_id)
+        } else {}
+    }
+    Option::None
+}
+
+fn call_function(ctx: VerifyContext, target: ctir::CtCallTarget) -> Option[ctir::CtFunction] {
+    match target {
+        ctir::CtCallTarget::Local(id) => verify_find_function(ctx.module, id),
+        ctir::CtCallTarget::External { package_name, entry_name } => match verify_find_module(
+            ctx,
+            package_name,
+        ) {
+            Some(module) => verify_find_entry(module, entry_name),
+            None => Option::None,
+        },
+    }
+}
+
+fn verify_expr_list(ctx: VerifyContext, values: Vec[ctir::CtExpr], types: Vec[ctir::CtType]) -> Result[
+    unit,
+    string,
+] {
+    if values.len() != types.len() {
+        Result::Err("CTIR expression arity mismatch")
+    } else {
+        for index in 0..values.len() {
+            verify_expr(ctx, values[index])?;
+            if !expression_type_matches(types[index], values[index].ty) {
+                return Result::Err("CTIR expression type mismatch")
+            } else {}
+        }
+        Result::Ok(())
+    }
+}
+
+fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] {
+    verify_origin(ctx, value.origin)?;
+    verify_type(value.ty)?;
+    match value.kind {
+        ctir::CtExprKind::Value(literal) => verify_typed_value(ctx, literal, value.ty),
+        ctir::CtExprKind::Local(slot) => if match slot_type(ctx, slot) {
+            Some(local_ty) => types_equal(local_ty, value.ty),
+            None => false,
+        } {
+            Result::Ok(())
+        } else {
+            Result::Err("invalid CTIR local slot or type")
+        },
+        ctir::CtExprKind::Constant { package_name, name } => {
+            let Some(module) = verify_find_module(ctx, package_name) else {
+                return Result::Err("missing CTIR constant package")
+            };
+            for constant in module.constants {
+                if constant.name == name {
+                    return if value_matches_type(constant.value, value.ty) {
+                        Result::Ok(())
+                    } else {
+                        Result::Err("CTIR constant type mismatch")
+                    }
+                } else {}
+            }
+            for site in module.sites {
+                match site.kind {
+                    ctir::CtSiteKind::Constant { name: candidate } => if candidate == name {
+                        return if types_equal(site.expression.ty, value.ty) {
+                            Result::Ok(())
+                        } else {
+                            Result::Err("CTIR pending constant type mismatch")
+                        }
+                    } else {},
+                    ctir::CtSiteKind::Expression => (),
+                }
+            }
+            Result::Err("missing CTIR constant")
+        },
+        ctir::CtExprKind::Tuple(values) => match value.ty {
+            ctir::CtType::Tuple(types) => verify_expr_list(ctx, values, types),
+            _ => Result::Err("CTIR tuple expression has non-tuple type"),
+        },
+        ctir::CtExprKind::Array(values) => match value.ty {
+            ctir::CtType::Array { len, elem } => {
+                let types: Vec[ctir::CtType] = Vec::with_capacity(len);
+                for _ in 0..len {
+                    types.push(elem)
+                }
+                verify_expr_list(ctx, values, types)
+            },
+            _ => Result::Err("CTIR array expression has non-array type"),
+        },
+        ctir::CtExprKind::Struct { name, fields } => match value.ty {
+            ctir::CtType::Struct { name: expected, fields: types } => if name == expected {
+                verify_expr_list(ctx, fields, types)
+            } else {
+                Result::Err("CTIR struct expression name mismatch")
+            },
+            _ => Result::Err("CTIR struct expression has non-struct type"),
+        },
+        ctir::CtExprKind::Enum { name, variant, fields } => match value.ty {
+            ctir::CtType::Enum { name: expected, variants } => if name != expected || variant < 0
+                || variant >= variants.len() {
+                Result::Err("invalid CTIR enum expression")
+            } else {
+                verify_expr_list(ctx, fields, variants[variant])
+            },
+            _ => Result::Err("CTIR enum expression has non-enum type"),
+        },
+        ctir::CtExprKind::Field { value: source, index } => {
+            verify_expr(ctx, source)?;
+            let fields = match source.ty {
+                ctir::CtType::Tuple(fields) | ctir::CtType::Struct { name: _, fields } => fields,
+                ctir::CtType::Enum { name: _, variants } => {
+                    if variants.len() == 1 {
+                        variants[0]
+                    } else {
+                        return Result::Err("CTIR enum field access requires a known variant")
+                    }
+                },
+                _ => return Result::Err("CTIR field access has non-structured type"),
+            };
+            if index < 0 || index >= fields.len() || !types_equal(value.ty, fields[index]) {
+                Result::Err("invalid CTIR field access")
+            } else {
+                Result::Ok(())
+            }
+        },
+        ctir::CtExprKind::Index { value: source, index } => {
+            verify_expr(ctx, source)?;
+            verify_expr(ctx, index)?;
+            if !is_integer_type(index.ty) && !types_equal(index.ty, ctir::CtType::Never) {
+                return Result::Err("CTIR array index is not an integer")
+            } else {};
+            match source.ty {
+                ctir::CtType::Array { len: _, elem } => if types_equal(value.ty, elem) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("CTIR index result type mismatch")
+                },
+                _ => Result::Err("CTIR index source is not an array"),
+            }
+        },
+        ctir::CtExprKind::Block(block) => {
+            verify_block(ctx, block)?;
+            let block_ty = match block.tail {
+                Some(tail) => tail.ty,
+                None => ctir::CtType::Unit,
+            };
+            if expression_type_matches(value.ty, block_ty) {
+                Result::Ok(())
+            } else {
+                Result::Err("CTIR block result type mismatch")
+            }
+        },
+        ctir::CtExprKind::If { condition, then_branch, else_branch } => {
+            verify_expr(ctx, condition)?;
+            verify_expr(ctx, then_branch)?;
+            verify_expr(ctx, else_branch)?;
+            if !expression_type_matches(ctir::CtType::Bool, condition.ty)
+                || !expression_type_matches(value.ty, then_branch.ty)
+                || !expression_type_matches(value.ty, else_branch.ty) {
+                Result::Err("invalid CTIR if expression types")
+            } else {
+                Result::Ok(())
+            }
+        },
+        ctir::CtExprKind::Match { value: source, arms } => {
+            verify_expr(ctx, source)?;
+            for arm in arms {
+                verify_origin(ctx, arm.origin)?;
+                verify_pattern(ctx, arm.pattern, source.ty)?;
+                match arm.guard {
+                    Some(guard) => {
+                        verify_expr(ctx, guard)?;
+                        if !expression_type_matches(ctir::CtType::Bool, guard.ty) {
+                            return Result::Err("CTIR match guard is not bool")
+                        } else {}
+                    },
+                    None => (),
+                };
+                verify_expr(ctx, arm.body)?;
+                if !expression_type_matches(value.ty, arm.body.ty) {
+                    return Result::Err("CTIR match arm type mismatch")
+                } else {}
+            }
+            Result::Ok(())
+        },
+        ctir::CtExprKind::While { target, condition, body } => {
+            verify_expr(ctx, condition)?;
+            let loops = ctx.loop_targets;
+            loops.push((target, ctir::CtType::Unit, false));
+            verify_expr(
+                VerifyContext {
+                    module: ctx.module,
+                    dependencies: ctx.dependencies,
+                    local_count: ctx.local_count,
+                    local_types: ctx.local_types,
+                    return_type: ctx.return_type,
+                    loop_targets: loops,
+                    value_nodes: ctx.value_nodes,
+                    value_bytes: ctx.value_bytes,
+                },
+                body,
+            )?;
+            if expression_type_matches(ctir::CtType::Bool, condition.ty)
+                && types_equal(value.ty, ctir::CtType::Unit)
+                && expression_type_matches(ctir::CtType::Unit, body.ty) {
+                Result::Ok(())
+            } else {
+                Result::Err("CTIR while condition is not bool")
+            }
+        },
+        ctir::CtExprKind::Loop { target, body } => {
+            let loops = ctx.loop_targets;
+            loops.push((target, value.ty, true));
+            verify_expr(
+                VerifyContext {
+                    module: ctx.module,
+                    dependencies: ctx.dependencies,
+                    local_count: ctx.local_count,
+                    local_types: ctx.local_types,
+                    return_type: ctx.return_type,
+                    loop_targets: loops,
+                    value_nodes: ctx.value_nodes,
+                    value_bytes: ctx.value_bytes,
+                },
+                body,
+            )?;
+            if expression_type_matches(ctir::CtType::Unit, body.ty) {
+                Result::Ok(())
+            } else {
+                Result::Err("CTIR loop body type mismatch")
+            }
+        },
+        ctir::CtExprKind::Break { target, value: result } => {
+            if !types_equal(value.ty, ctir::CtType::Never) {
+                return Result::Err("CTIR break expression must have type Never")
+            } else {};
+            let Some((expected, accepts_value)) = loop_target(ctx, target) else {
+                return Result::Err("CTIR break target is not in scope")
+            };
+            match result {
+                Some(result) => {
+                    verify_expr(ctx, result)?;
+                    if accepts_value && expression_type_matches(expected, result.ty) {
+                        Result::Ok(())
+                    } else {
+                        Result::Err("CTIR break value type mismatch")
+                    }
+                },
+                None => if types_equal(expected, ctir::CtType::Unit) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("CTIR break is missing a value")
+                },
+            }
+        },
+        ctir::CtExprKind::Continue { target } => if !types_equal(value.ty, ctir::CtType::Never) {
+            Result::Err("CTIR continue expression must have type Never")
+        } else if loop_target(ctx, target).is_some() {
+            Result::Ok(())
+        } else {
+            Result::Err("CTIR continue target is not in scope")
+        },
+        ctir::CtExprKind::Return(result) => if !types_equal(value.ty, ctir::CtType::Never) {
+            Result::Err("CTIR return expression must have type Never")
+        } else {
+            match result {
+                Some(result) => {
+                    verify_expr(ctx, result)?;
+                    if expression_type_matches(ctx.return_type, result.ty) {
+                        Result::Ok(())
+                    } else {
+                        Result::Err("CTIR return type mismatch")
+                    }
+                },
+                None => if types_equal(ctx.return_type, ctir::CtType::Unit) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("CTIR empty return from non-unit function")
+                },
+            }
+        },
+        ctir::CtExprKind::Call { target, args } => {
+            let Some(function) = call_function(ctx, target) else {
+                return Result::Err("unresolved CTIR call target")
+            };
+            if args.len() != function.parameter_slots.len()
+                || args.len() != function.parameter_types.len()
+                || !types_equal(value.ty, function.return_type) {
+                return Result::Err("CTIR call signature mismatch")
+            } else {};
+            for index in 0..args.len() {
+                verify_expr(ctx, args[index])?;
+                if !expression_type_matches(function.parameter_types[index], args[index].ty) {
+                    return Result::Err("CTIR call argument type mismatch")
+                } else {}
+            }
+            Result::Ok(())
+        },
+        ctir::CtExprKind::Unary { op, value: operand } => {
+            verify_expr(ctx, operand)?;
+            match op {
+                ctir::CtUnaryOp::Not => if types_equal(value.ty, ctir::CtType::Bool)
+                    && expression_type_matches(ctir::CtType::Bool, operand.ty) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR logical negation types")
+                },
+                ctir::CtUnaryOp::Neg => if is_signed_integer_type(value.ty)
+                    && expression_type_matches(value.ty, operand.ty) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR integer negation types")
+                },
+                ctir::CtUnaryOp::BitNot => if is_integer_type(value.ty)
+                    && expression_type_matches(value.ty, operand.ty) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR integer complement types")
+                },
+            }
+        },
+        ctir::CtExprKind::Binary { op, left, right } => {
+            verify_expr(ctx, left)?;
+            verify_expr(ctx, right)?;
+            match op {
+                ctir::CtBinaryOp::And | ctir::CtBinaryOp::Or => if expression_type_matches(
+                    ctir::CtType::Bool,
+                    left.ty,
+                )
+                    && expression_type_matches(ctir::CtType::Bool, right.ty)
+                    && types_equal(value.ty, ctir::CtType::Bool) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR logical binary types")
+                },
+                ctir::CtBinaryOp::Shl | ctir::CtBinaryOp::Shr => if is_integer_type(value.ty)
+                    && expression_type_matches(value.ty, left.ty)
+                    && (is_integer_type(right.ty) || types_equal(right.ty, ctir::CtType::Never)) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR shift types")
+                },
+                ctir::CtBinaryOp::Add => if (is_integer_type(value.ty)
+                    || types_equal(value.ty, ctir::CtType::String))
+                    && expression_type_matches(value.ty, left.ty)
+                    && expression_type_matches(value.ty, right.ty) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR addition types")
+                },
+                ctir::CtBinaryOp::Sub | ctir::CtBinaryOp::Mul | ctir::CtBinaryOp::Div | ctir::CtBinaryOp::Rem | ctir::CtBinaryOp::BitAnd | ctir::CtBinaryOp::BitOr | ctir::CtBinaryOp::BitXor => if is_integer_type(
+                    value.ty,
+                )
+                    && expression_type_matches(value.ty, left.ty)
+                    && expression_type_matches(value.ty, right.ty) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR integer binary types")
+                },
+                ctir::CtBinaryOp::Less | ctir::CtBinaryOp::Greater | ctir::CtBinaryOp::LessEq | ctir::CtBinaryOp::GreaterEq => if (is_ordered_type(
+                    left.ty,
+                )
+                    && expression_type_matches(left.ty, right.ty)
+                    || is_ordered_type(right.ty) && expression_type_matches(right.ty, left.ty))
+                    && types_equal(value.ty, ctir::CtType::Bool) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR comparison types")
+                },
+                ctir::CtBinaryOp::Eq | ctir::CtBinaryOp::NotEq => if (types_equal(left.ty, right.ty)
+                    || types_equal(left.ty, ctir::CtType::Never)
+                    || types_equal(right.ty, ctir::CtType::Never))
+                    && types_equal(value.ty, ctir::CtType::Bool) {
+                    Result::Ok(())
+                } else {
+                    Result::Err("invalid CTIR equality types")
+                },
+            }
+        },
+        ctir::CtExprKind::Cast { value: operand, target } => {
+            verify_expr(ctx, operand)?;
+            if types_equal(value.ty, target) && is_integer_type(target)
+                && (is_integer_type(operand.ty)
+                    || types_equal(operand.ty, ctir::CtType::Char) && is_char_integer_type(target)
+                    || types_equal(operand.ty, ctir::CtType::Never)) {
+                Result::Ok(())
+            } else {
+                Result::Err("CTIR cast result type mismatch")
+            }
+        },
+        ctir::CtExprKind::CompileError(message) => {
+            verify_expr(ctx, message)?;
+            if expression_type_matches(ctir::CtType::String, message.ty)
+                && types_equal(value.ty, ctir::CtType::Never) {
+                Result::Ok(())
+            } else {
+                Result::Err("invalid CTIR compile_error expression")
+            }
+        },
+    }
+}
+
+fn verify_block(ctx: VerifyContext, value: ctir::CtBlock) -> Result[unit, string] {
+    verify_origin(ctx, value.origin)?;
+    for statement in value.statements {
+        match statement {
+            ctir::CtStmt::Let { pattern, value } => {
+                verify_expr(ctx, value)?;
+                verify_pattern(ctx, pattern, value.ty)?
+            },
+            ctir::CtStmt::Assign { slot, value } => {
+                let Some(local_ty) = slot_type(ctx, slot) else {
+                    return Result::Err("invalid CTIR assignment slot")
+                };
+                verify_expr(ctx, value)?;
+                if expression_type_matches(local_ty, value.ty) {} else {
+                    return Result::Err("CTIR assignment type mismatch")
+                }
+            },
+            ctir::CtStmt::Expr(value) => verify_expr(ctx, value)?,
+        }
+    }
+    match value.tail {
+        Some(value) => verify_expr(ctx, value),
+        None => Result::Ok(()),
+    }
+}
+
+fn verify_function(
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+    value: ctir::CtFunction,
+    value_nodes: Ref[int],
+    value_bytes: Ref[int],
+) -> Result[unit, string] {
+    if value.parameter_slots.len() != value.parameter_types.len() {
+        return Result::Err("CTIR function parameter signature mismatch")
+    } else if value.local_count < value.parameter_slots.len() {
+        return Result::Err("CTIR function has fewer locals than parameters")
+    } else if value.local_count != value.local_types.len() {
+        return Result::Err("CTIR function local type count does not match local count")
+    } else {};
+    let seen: Vec[int] = Vec::[];
+    for index in 0..value.parameter_slots.len() {
+        let slot = value.parameter_slots[index];
+        if slot < 0 || slot >= value.local_count || collections::contains(seen, slot) {
+            return Result::Err("invalid CTIR parameter slot")
+        } else if !types_equal(value.local_types[slot], value.parameter_types[index]) {
+            return Result::Err("CTIR parameter local type mismatch")
+        } else {
+            seen.push(slot)
+        }
+    }
+    for ty in value.parameter_types {
+        verify_type(ty)?
+    }
+    for ty in value.local_types {
+        verify_type(ty)?
+    }
+    verify_type(value.return_type)?;
+    let ctx = VerifyContext {
+        module,
+        dependencies,
+        local_count: value.local_count,
+        local_types: value.local_types,
+        return_type: value.return_type,
+        loop_targets: Vec::[],
+        value_nodes,
+        value_bytes,
+    };
+    verify_origin(ctx, value.origin)?;
+    verify_block(ctx, value.body)
+}
+
+fn verify_unique_module_names(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) -> Result[
+    unit,
+    string,
+] {
+    let names: Vec[string] = Vec::[module.package_name];
+    for dependency in dependencies {
+        if collections::contains(names, dependency.package_name) {
+            return Result::Err("duplicate CTIR module package")
+        } else if dependency.target.int_width != module.target.int_width {
+            return Result::Err("CTIR target mismatch")
+        } else {
+            names.push(dependency.package_name)
+        }
+    }
+    Result::Ok(())
+}
+
+pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) -> Result[
+    unit,
+    string,
+] {
+    if module.package_name == "" {
+        return Result::Err("empty CTIR package name")
+    } else if module.target.int_width != 32 && module.target.int_width != 64 {
+        return Result::Err("invalid CTIR target integer width")
+    } else if module.origins.is_empty() {
+        return Result::Err("CTIR module has no source origins")
+    } else {};
+    verify_unique_module_names(module, dependencies)?;
+    let value_nodes = Ref::new(0);
+    let value_bytes = Ref::new(0);
+    let ids: Vec[int] = Vec::[];
+    for function in module.functions {
+        if function.id < 0 || collections::contains(ids, function.id) {
+            return Result::Err("duplicate or negative CTIR function id")
+        } else {
+            ids.push(function.id)
+        }
+        verify_function(module, dependencies, function, value_nodes, value_bytes)?
+    }
+    let entry_names: Vec[string] = Vec::[];
+    for entry in module.entries {
+        if entry.name == "" || collections::contains(entry_names, entry.name)
+            || verify_find_function(module, entry.function_id).is_none() {
+            return Result::Err("invalid CTIR entry")
+        } else {
+            entry_names.push(entry.name)
+        }
+    }
+    let site_ids: Vec[int] = Vec::[];
+    for site in module.sites {
+        if site.id < 0 || collections::contains(site_ids, site.id) || site.local_count < 0
+            || site.local_count != site.local_types.len() {
+            return Result::Err("invalid CTIR site")
+        } else {
+            site_ids.push(site.id)
+        }
+        let ctx = VerifyContext {
+            module,
+            dependencies,
+            local_count: site.local_count,
+            local_types: site.local_types,
+            return_type: site.expression.ty,
+            loop_targets: Vec::[],
+            value_nodes,
+            value_bytes,
+        };
+        verify_origin(ctx, site.origin)?;
+        verify_expr(ctx, site.expression)?
+    }
+    let constant_names: Vec[string] = Vec::[];
+    for constant in module.constants {
+        if constant.name == "" || collections::contains(constant_names, constant.name) {
+            return Result::Err("duplicate or empty CTIR constant")
+        } else {
+            constant_names.push(constant.name)
+        }
+        verify_type(value_type(constant.value))?;
+        verify_value_limits(constant.value, value_nodes, value_bytes)?
+    }
+    Result::Ok(())
+}

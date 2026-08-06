@@ -1,0 +1,453 @@
+package ctir;
+
+pub struct CtTarget {
+    pub int_width: int,
+}
+
+pub enum CtType {
+    Unit,
+    Never,
+    Bool,
+    Integer {
+        signed: bool,
+        width: int,
+    },
+    String,
+    Char,
+    Tuple(Vec[CtType]),
+    Array {
+        len: int,
+        elem: CtType,
+    },
+    Struct {
+        name: string,
+        fields: Vec[CtType],
+    },
+    Enum {
+        name: string,
+        variants: Vec[Vec[CtType]],
+    },
+}
+
+pub enum CtValue {
+    Unit,
+    Bool(bool),
+    Integer {
+        signed: bool,
+        width: int,
+        bits: uint64,
+    },
+    String(string),
+    Char(char),
+    Tuple(Vec[CtValue]),
+    Array(Vec[CtValue]),
+    Struct {
+        name: string,
+        fields: Vec[CtValue],
+    },
+    Enum {
+        name: string,
+        variant: int,
+        fields: Vec[CtValue],
+    },
+}
+
+pub struct CtOrigin {
+    pub source_path: string,
+    pub start: int,
+    pub end: int,
+}
+
+pub enum CtUnaryOp {
+    Neg,
+    Not,
+    BitNot,
+}
+
+pub enum CtBinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Rem,
+    BitAnd,
+    BitOr,
+    BitXor,
+    Shl,
+    Shr,
+    And,
+    Or,
+    Less,
+    Greater,
+    LessEq,
+    GreaterEq,
+    Eq,
+    NotEq,
+}
+
+pub enum CtCallTarget {
+    Local(int),
+    External {
+        package_name: string,
+        entry_name: string,
+    },
+}
+
+pub enum CtPattern {
+    Wild,
+    Bind {
+        slot: int,
+    },
+    Value(CtValue),
+    Tuple(Vec[CtPattern]),
+    Array {
+        prefix: Vec[CtPattern],
+        rest: Option[int],
+        suffix: Vec[CtPattern],
+    },
+    Struct {
+        name: string,
+        fields: Vec[(int, CtPattern)],
+    },
+    Enum {
+        name: string,
+        variant: int,
+        fields: Vec[CtPattern],
+    },
+    Alias {
+        slot: int,
+        pattern: CtPattern,
+    },
+    Or(Vec[CtPattern]),
+    Range {
+        start: CtValue,
+        end: CtValue,
+        inclusive: bool,
+    },
+}
+
+pub struct CtExpr {
+    pub kind: CtExprKind,
+    pub ty: CtType,
+    pub origin: int,
+}
+
+pub struct CtArm {
+    pub pattern: CtPattern,
+    pub guard: Option[CtExpr],
+    pub body: CtExpr,
+    pub origin: int,
+}
+
+pub enum CtExprKind {
+    Value(CtValue),
+    Local(int),
+    Constant {
+        package_name: string,
+        name: string,
+    },
+    Tuple(Vec[CtExpr]),
+    Array(Vec[CtExpr]),
+    Struct {
+        name: string,
+        fields: Vec[CtExpr],
+    },
+    Enum {
+        name: string,
+        variant: int,
+        fields: Vec[CtExpr],
+    },
+    Field {
+        value: CtExpr,
+        index: int,
+    },
+    Index {
+        value: CtExpr,
+        index: CtExpr,
+    },
+    Block(CtBlock),
+    If {
+        condition: CtExpr,
+        then_branch: CtExpr,
+        else_branch: CtExpr,
+    },
+    Match {
+        value: CtExpr,
+        arms: Vec[CtArm],
+    },
+    While {
+        target: int,
+        condition: CtExpr,
+        body: CtExpr,
+    },
+    Loop {
+        target: int,
+        body: CtExpr,
+    },
+    Break {
+        target: int,
+        value: Option[CtExpr],
+    },
+    Continue {
+        target: int,
+    },
+    Return(Option[CtExpr]),
+    Call {
+        target: CtCallTarget,
+        args: Vec[CtExpr],
+    },
+    Unary {
+        op: CtUnaryOp,
+        value: CtExpr,
+    },
+    Binary {
+        op: CtBinaryOp,
+        left: CtExpr,
+        right: CtExpr,
+    },
+    Cast {
+        value: CtExpr,
+        target: CtType,
+    },
+    CompileError(CtExpr),
+}
+
+pub enum CtStmt {
+    Let {
+        pattern: CtPattern,
+        value: CtExpr,
+    },
+    Assign {
+        slot: int,
+        value: CtExpr,
+    },
+    Expr(CtExpr),
+}
+
+pub struct CtBlock {
+    pub statements: Vec[CtStmt],
+    pub tail: Option[CtExpr],
+    pub origin: int,
+}
+
+pub struct CtFunction {
+    pub id: int,
+    pub name: string,
+    pub parameter_slots: Vec[int],
+    pub parameter_types: Vec[CtType],
+    pub local_count: int,
+    pub local_types: Vec[CtType],
+    pub return_type: CtType,
+    pub body: CtBlock,
+    pub origin: int,
+}
+
+pub struct CtEntry {
+    pub name: string,
+    pub function_id: int,
+}
+
+pub enum CtSiteKind {
+    Expression,
+    Constant { name: string },
+}
+
+pub struct CtSite {
+    pub id: int,
+    pub kind: CtSiteKind,
+    pub local_count: int,
+    pub local_types: Vec[CtType],
+    pub expression: CtExpr,
+    pub origin: int,
+}
+
+pub struct CtConstant {
+    pub name: string,
+    pub value: CtValue,
+}
+
+pub struct CtModule {
+    pub package_name: string,
+    pub target: CtTarget,
+    pub functions: Vec[CtFunction],
+    pub entries: Vec[CtEntry],
+    pub sites: Vec[CtSite],
+    pub constants: Vec[CtConstant],
+    pub origins: Vec[CtOrigin],
+}
+
+pub fn empty_module(package_name: string) -> CtModule {
+    let origins: Vec[CtOrigin] = Vec::[];
+    origins.push(CtOrigin { source_path: "<unknown>", start: 0, end: 0 });
+    CtModule {
+        package_name,
+        target: CtTarget { int_width: 64 },
+        functions: Vec::[],
+        entries: Vec::[],
+        sites: Vec::[],
+        constants: Vec::[],
+        origins,
+    }
+}
+
+fn push_reachable_id(values: Vec[int], value: int) -> bool {
+    for existing in values {
+        if existing == value {
+            return false
+        } else {}
+    }
+    values.push(value);
+    true
+}
+
+fn push_reachable_name(values: Vec[string], value: string) -> unit {
+    for existing in values {
+        if existing == value {
+            return
+        } else {}
+    }
+    values.push(value)
+}
+
+fn collect_reachable_expr(
+    package_name: string,
+    value: CtExpr,
+    ids: Vec[int],
+    constants: Vec[string],
+) -> unit {
+    match value.kind {
+        Value(_) | Local(_) | Continue { .. } => (),
+        Constant { package_name: owner, name } => if owner == package_name {
+            push_reachable_name(constants, name)
+        } else {},
+        Tuple(values) | Array(values) | Struct { fields: values, .. } | Enum { fields: values, .. } => for value in values {
+            collect_reachable_expr(package_name, value, ids, constants)
+        },
+        Field { value, index: _ } | Unary { op: _, value } | Cast { value, target: _ } | CompileError(value,) => collect_reachable_expr(
+            package_name,
+            value,
+            ids,
+            constants,
+        ),
+        Index { value, index } | Binary { op: _, left: value, right: index } => {
+            collect_reachable_expr(package_name, value, ids, constants);
+            collect_reachable_expr(package_name, index, ids, constants)
+        },
+        Block(value) => collect_reachable_block(package_name, value, ids, constants),
+        If { condition, then_branch, else_branch } => {
+            collect_reachable_expr(package_name, condition, ids, constants);
+            collect_reachable_expr(package_name, then_branch, ids, constants);
+            collect_reachable_expr(package_name, else_branch, ids, constants)
+        },
+        Match { value, arms } => {
+            collect_reachable_expr(package_name, value, ids, constants);
+            for arm in arms {
+                match arm.guard {
+                    Some(value) => collect_reachable_expr(package_name, value, ids, constants),
+                    None => (),
+                };
+                collect_reachable_expr(package_name, arm.body, ids, constants)
+            }
+        },
+        While { target: _, condition, body } => {
+            collect_reachable_expr(package_name, condition, ids, constants);
+            collect_reachable_expr(package_name, body, ids, constants)
+        },
+        Loop { target: _, body } => collect_reachable_expr(package_name, body, ids, constants),
+        Break { target: _, value } | Return(value) => match value {
+            Some(value) => collect_reachable_expr(package_name, value, ids, constants),
+            None => (),
+        },
+        Call { target, args } => {
+            match target {
+                Local(id) => {
+                    let _ = push_reachable_id(ids, id);
+                },
+                External { .. } => (),
+            };
+            for value in args {
+                collect_reachable_expr(package_name, value, ids, constants)
+            }
+        },
+    }
+}
+
+fn collect_reachable_block(
+    package_name: string,
+    value: CtBlock,
+    ids: Vec[int],
+    constants: Vec[string],
+) -> unit {
+    for statement in value.statements {
+        match statement {
+            Let { pattern: _, value } | Assign { slot: _, value } | Expr(value) => {
+                collect_reachable_expr(package_name, value, ids, constants)
+            },
+        }
+    }
+    match value.tail {
+        Some(value) => collect_reachable_expr(package_name, value, ids, constants),
+        None => (),
+    }
+}
+
+pub fn public_module(value: CtModule, public_entries: Vec[string], public_constants: Vec[string]) -> CtModule {
+    let ids: Vec[int] = Vec::[];
+    let constants: Vec[string] = Vec::[];
+    for name in public_constants {
+        push_reachable_name(constants, name)
+    }
+    let entries: Vec[CtEntry] = Vec::[];
+    for entry in value.entries {
+        let mut public = false;
+        for name in public_entries {
+            if entry.name == name {
+                public = true;
+            } else {}
+        }
+        if public {
+            entries.push(entry);
+            let _ = push_reachable_id(ids, entry.function_id);
+        } else {}
+    }
+    let mut index = 0;
+    while index < ids.len() {
+        for function in value.functions {
+            if function.id == ids[index] {
+                collect_reachable_block(value.package_name, function.body, ids, constants)
+            } else {}
+        }
+        index = index + 1;
+    }
+    let functions: Vec[CtFunction] = Vec::[];
+    for function in value.functions {
+        let mut found = false;
+        for id in ids {
+            if function.id == id {
+                found = true;
+            } else {}
+        }
+        if found {
+            functions.push(function)
+        } else {}
+    }
+    CtModule {
+        package_name: value.package_name,
+        target: value.target,
+        functions,
+        entries,
+        sites: Vec::[],
+        constants: {
+            let result: Vec[CtConstant] = Vec::[];
+            for constant in value.constants {
+                for name in constants {
+                    if constant.name == name {
+                        result.push(constant)
+                    } else {}
+                }
+            }
+            result
+        },
+        origins: value.origins,
+    }
+}

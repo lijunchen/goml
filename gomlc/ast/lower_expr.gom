@@ -772,6 +772,25 @@ fn lower_expr_with_args(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Exp
             EXPR_RETURN => lower_return_expr(ctx, node, trailing_args),
             EXPR_GO => lower_go_expr(ctx, node, trailing_args),
             EXPR_SCOPE => lower_scope_expr(ctx, node, trailing_args),
+            EXPR_COMPTIME => if reject_trailing(
+                ctx,
+                node,
+                trailing_args,
+                "Cannot apply arguments to comptime expression",
+            ) {
+                Option::None
+            } else {
+                match first_child(node, cst::NodeKind::BLOCK) {
+                    Some(block_node) => match lower_block(ctx, block_node) {
+                        Some(block) => Option::Some(Expr::Comptime { block, span: value_span }),
+                        None => Option::None,
+                    },
+                    None => {
+                        push_error(ctx, value_span, "Comptime expression has no block");
+                        Option::None
+                    },
+                }
+            },
             EXPR_SPAWN => lower_spawn_expr(ctx, node, trailing_args),
             _ => Option::None,
         };

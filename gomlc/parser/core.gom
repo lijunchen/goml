@@ -33,6 +33,7 @@ struct Parser {
     pattern_depth: Ref[int],
     type_depth: Ref[int],
     struct_literals_allowed: Ref[bool],
+    contextual_blocks_allowed: Ref[bool],
 }
 
 fn event_tombstone() -> Event {
@@ -143,6 +144,7 @@ fn new_parser(tokens: Vec[lexer::Token]) -> Parser {
         pattern_depth: Ref::new(0),
         type_depth: Ref::new(0),
         struct_literals_allowed: Ref::new(true),
+        contextual_blocks_allowed: Ref::new(true),
     }
 }
 
@@ -389,6 +391,12 @@ impl Parser {
     pub fn set_struct_literals_allowed(self: Parser, allowed: bool) -> bool {
         let previous = self.struct_literals_allowed.get();
         self.struct_literals_allowed.set(allowed);
+        previous
+    }
+
+    pub fn set_contextual_blocks_allowed(self: Parser, allowed: bool) -> bool {
+        let previous = self.contextual_blocks_allowed.get();
+        self.contextual_blocks_allowed.set(allowed);
         previous
     }
 }

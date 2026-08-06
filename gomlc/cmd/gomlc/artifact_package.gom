@@ -5,6 +5,8 @@ use gomlc::artifact::wire as wire;
 use gomlc::artifact;
 use gomlc::ast;
 use gomlc::core;
+use gomlc::ctfe;
+use gomlc::ctir;
 use gomlc::cst;
 use gomlc::hir;
 use gomlc::parser;
@@ -244,6 +246,33 @@ fn artifact_dependency_environments(
     needs: StandardNeeds,
     units: Vec[artifact::ArtifactInterfaceUnit],
 ) -> Result[Vec[tast::DependencyEnvironment], string] {
+    let comptime_modules: Vec[ctir::CtModule] = Vec::[];
+    for package_value in selected_standard_packages_for_needs(standard, needs) {
+        match package_value.interface_unit.comptime {
+            Some(value) => comptime_modules.push(value.module),
+            None => (),
+        }
+    }
+    for interface in units {
+        match interface.comptime {
+            Some(value) => comptime_modules.push(value.module),
+            None => (),
+        }
+    }
+    for module in comptime_modules {
+        let dependencies: Vec[ctir::CtModule] = Vec::[];
+        for candidate in comptime_modules {
+            if candidate.package_name != module.package_name {
+                dependencies.push(candidate)
+            } else {}
+        }
+        match ctfe::verify_module(module, dependencies) {
+            Ok(()) => (),
+            Err(message) => return Result::Err(
+                "invalid comptime interface for " + module.package_name + ": " + message,
+            ),
+        }
+    }
     let result: Vec[tast::DependencyEnvironment] = Vec::[];
     let value = artifact_dependency_environment_from_exports(builtin)?;
     let methods: Vec[tast::MethodInfo] = Vec::[];
@@ -269,11 +298,25 @@ fn artifact_dependency_environments(
     );
     for package_value in selected_standard_packages_for_needs(standard, needs) {
         result.push(
-            artifact_dependency_environment_from_exports(package_value.environment_exports)?,
+            tast::dependency_environment_with_comptime(
+                artifact_dependency_environment_from_exports(package_value.environment_exports)?,
+                match package_value.interface_unit.comptime {
+                    Some(value) => Option::Some(value.module),
+                    None => Option::None,
+                },
+            ),
         )
     }
     for interface in units {
-        result.push(artifact_dependency_environment_from_exports(interface.exports)?)
+        result.push(
+            tast::dependency_environment_with_comptime(
+                artifact_dependency_environment_from_exports(interface.exports)?,
+                match interface.comptime {
+                    Some(value) => Option::Some(value.module),
+                    None => Option::None,
+                },
+            ),
+        )
     }
     Result::Ok(result)
 }
@@ -629,6 +672,7 @@ fn compile_artifact_package(
     }
     let hir_file = merge_hir_files(hir_files, command.package_name);
     let signatures = tast::package_signatures(hir_file);
+    let comptime_module = checked.comptime;
     let Some(tast_file) = checked.tast else {
         return Result::Err("failed to typecheck package " + command.package_name)
     };
@@ -690,10 +734,11 @@ fn compile_artifact_package(
         Err(error) => return Result::Err("error[typer]: " + error),
     };
     let deps = artifact_direct_dependency_hashes(world, dependency_names, dependency_units)?;
-    let generated_interface = interface_codec::new_unit(
+    let generated_interface = interface_codec::new_unit_with_comptime(
         command.package_name,
         public_exports,
         artifact_package_interface(command.package_name, declared_name, public_exports),
+        artifact_comptime_unit(comptime_module, public_exports),
         deps,
     );
     let interface_unit = match production_interface {

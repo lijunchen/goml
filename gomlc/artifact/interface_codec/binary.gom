@@ -86,5 +86,5 @@ pub fn decode_binary(data: bytes::Bytes) -> Result[artifact::ArtifactInterfaceUn
         },
     };
     let table = wire::decode_artifact_binary_string_table(string_section.data)?;
-    decode_artifact_interface_binary_value(table, value_section.data)
+    artifact_decode_interface_value(wire::decode_artifact_binary_value(table, value_section.data)?)
 }

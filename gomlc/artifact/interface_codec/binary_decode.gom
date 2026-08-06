@@ -602,7 +602,13 @@ fn artifact_interface_binary_fn_scheme(
     context: tast_codec::ArtifactDecodeContext,
     name: string,
 ) -> Result[artifact::ArtifactFnScheme, string] {
-    artifact_interface_binary_object(reader, 4, "function scheme")?;
+    artifact_interface_binary_object(reader, 5, "function scheme")?;
+    artifact_interface_binary_field(reader, "comptime")?;
+    let comptime = if artifact_interface_binary_bool(reader, "comptime capability")? {
+        tast::ComptimeCapability::Capable
+    } else {
+        tast::ComptimeCapability::RuntimeOnly
+    };
     artifact_interface_binary_field(reader, "type_params")?;
     let type_params = artifact_interface_binary_string_array(reader, "type parameters")?;
     artifact_interface_binary_field(reader, "constraints")?;
@@ -611,7 +617,7 @@ fn artifact_interface_binary_fn_scheme(
     let ty = artifact_interface_binary_type(reader, context)?;
     artifact_interface_binary_field(reader, "body")?;
     let body = artifact_interface_binary_callable(reader, name)?;
-    Result::Ok(artifact::ArtifactFnScheme { name, type_params, constraints, ty, body })
+    Result::Ok(artifact::ArtifactFnScheme { name, comptime, type_params, constraints, ty, body })
 }
 
 fn artifact_interface_binary_fn_map(
@@ -914,8 +920,8 @@ fn decode_artifact_interface_binary_value(
 ) -> Result[artifact::ArtifactInterfaceUnit, string] {
     let reader = new_artifact_interface_binary_reader(data, table);
     artifact_interface_binary_object(reader, 7, "interface unit")?;
-    artifact_interface_binary_version_field(reader, "format_version", "19")?;
-    artifact_interface_binary_version_field(reader, "compiler_abi", "3")?;
+    artifact_interface_binary_version_field(reader, "format_version", "20")?;
+    artifact_interface_binary_version_field(reader, "compiler_abi", "4")?;
     artifact_interface_binary_field(reader, "package")?;
     let package_name = artifact_interface_binary_string(reader, "package name")?;
     artifact_interface_binary_field(reader, "exports")?;
@@ -933,6 +939,7 @@ fn decode_artifact_interface_binary_value(
         package_name,
         exports,
         package_interface,
+        comptime: Option::None,
         deps,
         interface_hash,
     };

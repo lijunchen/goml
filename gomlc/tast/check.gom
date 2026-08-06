@@ -2367,6 +2367,18 @@ fn typed_call_target(result: Expr, fallback: string) -> ReferenceTarget {
     }
 }
 
+fn call_comptime_capability(ctx: Checker, result: Expr) -> ComptimeCapability {
+    match result {
+        Call { func: Callable { callable: Callable::Function(name), ty: _ }, args: _, ty: _ } => {
+            match find_function_by_name(ctx, name) {
+                Some(function) => function.comptime,
+                None => ComptimeCapability::RuntimeOnly,
+            }
+        },
+        _ => ComptimeCapability::RuntimeOnly,
+    }
+}
+
 fn check_call_expr(
     ctx: Checker,
     call_span: ast::Span,
@@ -2522,6 +2534,20 @@ fn check_call_expr(
         },
         _ => typed_call_target(result, "<call>"),
     };
+    match result {
+        Call {
+            func: Callable { callable: Callable::Intrinsic("compile_error"), ty: _ },
+            args: _,
+            ty: _,
+        } => if ctx.comptime_depth.get() == 0 {
+            push_diagnostic_at(
+                ctx,
+                "compile_error is only available in comptime",
+                Option::Some(call_span),
+            )
+        } else {},
+        _ => (),
+    };
     ctx.typeck_results.references.push(
         ReferenceFact {
             source_path: ctx.source_path,
@@ -2537,6 +2563,7 @@ fn check_call_expr(
             callee_span: function_span,
             argument_spans,
             target,
+            comptime: call_comptime_capability(ctx, result),
             callee_ty: call_callee_type(result),
             result_ty: expr_type(result),
         },
@@ -3494,6 +3521,9 @@ fn with_expr_type(value: Expr, ty: Type) -> Expr {
         Array { items: values, ty: _ } => Expr::Array { items: values, ty },
         Closure { params, body, ty: _ } => Expr::Closure { params, body, ty },
         Block { block, ty: _ } => Expr::Block { block, ty },
+        Comptime { site_id, source_path, start, end, origins, body, ty: _ } => {
+            Expr::Comptime { site_id, source_path, start, end, origins, body, ty }
+        },
         Match { expr: source, arms, ty: _ } => Expr::Match { expr: source, arms, ty },
         If { cond, then_branch, else_branch, ty: _ } => {
             Expr::If { cond, then_branch, else_branch, ty }
@@ -4286,6 +4316,26 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 let typed = check_block(ctx, block, Option::None);
                 Expr::Block { block: typed.0, ty: typed.1 }
             },
+            Comptime { block } => {
+                let origin_start = ctx.typeck_results.exprs.len();
+                ctx.comptime_depth.set(ctx.comptime_depth.get() + 1);
+                let typed = check_block(ctx, block, Option::None);
+                ctx.comptime_depth.set(ctx.comptime_depth.get() - 1);
+                let origins: Vec[ast::Span] = Vec::[];
+                for index in origin_start..ctx.typeck_results.exprs.len() {
+                    origins.push(ctx.typeck_results.exprs[index].span)
+                }
+                origins.push(value_span);
+                Expr::Comptime {
+                    site_id: value_span.start,
+                    source_path: ctx.source_path,
+                    start: value_span.start,
+                    end: value_span.end,
+                    origins,
+                    body: Expr::Block { block: typed.0, ty: typed.1 },
+                    ty: typed.1,
+                }
+            },
             _ => {
                 push_diagnostic(ctx, "expression is not implemented");
                 Expr::Prim { value: Primitive::Unit, ty: Type::Error }
@@ -4476,6 +4526,31 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         Block { block } => {
             let typed = check_block(ctx, block, expected);
             let result = Expr::Block { block: typed.0, ty: typed.1 };
+            if always_exits {
+                result
+            } else {
+                coerce_expr(ctx, result, expected)
+            }
+        },
+        Comptime { block } => {
+            let origin_start = ctx.typeck_results.exprs.len();
+            ctx.comptime_depth.set(ctx.comptime_depth.get() + 1);
+            let typed = check_block(ctx, block, expected);
+            ctx.comptime_depth.set(ctx.comptime_depth.get() - 1);
+            let origins: Vec[ast::Span] = Vec::[];
+            for index in origin_start..ctx.typeck_results.exprs.len() {
+                origins.push(ctx.typeck_results.exprs[index].span)
+            }
+            origins.push(value_span);
+            let result = Expr::Comptime {
+                site_id: value_span.start,
+                source_path: ctx.source_path,
+                start: value_span.start,
+                end: value_span.end,
+                origins,
+                body: Expr::Block { block: typed.0, ty: typed.1 },
+                ty: typed.1,
+            };
             if always_exits {
                 result
             } else {

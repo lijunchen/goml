@@ -1,14 +1,22 @@
 package artifact;
 
 use gomlc::core;
+use gomlc::ctir;
 use gomlc::tast;
 
 pub struct ArtifactFnScheme {
     pub name: string,
+    pub comptime: tast::ComptimeCapability,
     pub type_params: Vec[string],
     pub constraints: Vec[tast::TypePredicate],
     pub ty: tast::Type,
     pub body: tast::Callable,
+}
+
+pub struct ArtifactComptimeUnit {
+    pub version: int,
+    pub module: ctir::CtModule,
+    pub semantic_hash: string,
 }
 
 pub struct ArtifactAssociatedTypeDef {
@@ -74,6 +82,7 @@ pub struct ArtifactInterfaceUnit {
     pub package_name: string,
     pub exports: ArtifactPackageExports,
     pub package_interface: ArtifactPackageInterface,
+    pub comptime: Option[ArtifactComptimeUnit],
     pub deps: Vec[(string, string)],
     pub interface_hash: string,
 }

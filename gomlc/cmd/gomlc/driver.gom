@@ -285,6 +285,7 @@ fn compile_standard_package(
         fail(render_typer_diagnostics(tast_value.diagnostics, hir_file.source_path, ""))
     } else {};
     let signatures = tast::package_signatures(hir_file);
+    let comptime_module = tast_value.comptime;
     let tast_file = match tast_value.tast {
         Some(value) => value,
         None => {
@@ -320,10 +321,11 @@ fn compile_standard_package(
         enum_names,
         struct_names,
     );
-    let interface_unit = interface_codec::new_unit(
+    let interface_unit = interface_codec::new_unit_with_comptime(
         package_name,
         public_exports,
         artifact_package_interface(package_name, declared_name, public_exports),
+        artifact_comptime_unit(comptime_module, public_exports),
         deps,
     );
     let core_value = core::lower_with_counter_types_and_options(
@@ -1469,6 +1471,16 @@ fn print_dump(printed: Ref[bool], label: string, content: string) -> unit {
     printed.set(true)
 }
 
+fn encode_comptime_module(value: tast::CheckResult) -> string {
+    let writer = wire::new_artifact_json_writer(true);
+    interface_codec::artifact_json_comptime_unit(
+        writer,
+        interface_codec::new_comptime_unit(value.comptime),
+        false,
+    );
+    wire::artifact_json_finish(writer)
+}
+
 fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> unit {
     let printed = Ref::new(false);
     if args.dump_ast {
@@ -1479,6 +1491,9 @@ fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> un
     } else {};
     if args.dump_tast {
         print_dump(printed, "Typed AST", tast::encode(compilation.tast_value))
+    } else {};
+    if args.dump_ctir {
+        print_dump(printed, "CTIR", encode_comptime_module(compilation.tast_value))
     } else {};
     if args.dump_core {
         print_dump(printed, "Core", core::encode(compilation.core_value))

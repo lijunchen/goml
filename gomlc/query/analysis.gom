@@ -2,6 +2,7 @@ package query;
 
 use gomlc::ast;
 use gomlc::cst;
+use gomlc::ctir;
 use gomlc::hir;
 use gomlc::parser;
 use gomlc::tast;
@@ -49,6 +50,8 @@ fn failed_check(source_path: string, stage: string, message: string) -> tast::Ch
     diagnostics.push(query_diagnostic(source_path, stage, message, Option::None));
     tast::CheckResult {
         tast: Option::None,
+        comptime: ctir::empty_module(source_path),
+        pending_constants: Vec::[],
         diagnostics,
         typeck_results: tast::empty_typeck_results(),
     }
@@ -190,6 +193,8 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
     } else {
         tast::CheckResult {
             tast: Option::None,
+            comptime: ctir::empty_module(entry.name),
+            pending_constants: Vec::[],
             diagnostics: Vec::[],
             typeck_results: tast::empty_typeck_results(),
         }
