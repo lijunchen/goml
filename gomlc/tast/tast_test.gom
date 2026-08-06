@@ -2762,7 +2762,7 @@ fn resolves_supertraits_and_implied_predicates() -> unit {
 #[test]
 fn validates_trait_associated_function_self_resolution() -> unit {
     let valid = checked_diagnostics(
-        "trait Decode { fn decode(input: string) -> Self; } trait Default { fn default() -> Self; } struct Value { value: int32 } impl Decode for Value { fn decode(input: string) -> Value { Value { value: 1 } } } impl Default for Value { fn default() -> Value { Value { value: 0 } } } fn decode[T: Decode](input: string) -> T { Decode::decode(input) } fn make[T: Default]() -> T { Default::default() }",
+        "trait Decode { fn decode(input: string) -> Self; } trait TryDecode { fn try_decode(input: string) -> Result[Self, string]; } trait Default { fn default() -> Self; } struct Value { value: int32 } impl Decode for Value { fn decode(input: string) -> Value { Value { value: 1 } } } impl TryDecode for Value { fn try_decode(input: string) -> Result[Value, string] { Result::Ok(Value { value: 1 }) } } impl Default for Value { fn default() -> Value { Value { value: 0 } } } fn decode[T: Decode](input: string) -> T { Decode::decode(input) } fn try_decode[T: TryDecode](input: string) -> Result[T, string] { let value: T = TryDecode::try_decode(input)?; Result::Ok(value) } fn make[T: Default]() -> T { Default::default() }",
     );
     testing::assert_eq(valid.len(), 0);
     let ambiguous = checked_diagnostics(

@@ -83,6 +83,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
             "num",
             "path",
             "process",
+            "serde",
             "task",
             "testing",
             "text",
@@ -90,6 +91,11 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         ],
     );
     assert_strings(standard_package_children("std::internal"), Vec::["host", "task"]);
+    match standard_sources("std::serde") {
+        Ok(Some(values)) => testing::assert_eq(values.len(), 2),
+        Ok(None) => testing::fail("expected serde package"),
+        Err(error) => testing::fail(error),
+    };
     assert_strings(
         standard_package_closure(Vec::["std::json", "std::fs"]),
         Vec::[

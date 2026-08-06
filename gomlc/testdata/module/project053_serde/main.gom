@@ -1,0 +1,49 @@
+package main;
+
+use std::serde;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct Item[T] {
+    #[serde(rename = "item_name")]
+    name: string,
+    value: T,
+}
+
+#[derive(Serialize, Deserialize)]
+enum Choice {
+    None,
+    Pair(int32, string),
+    Named { enabled: bool },
+}
+
+fn decode_item(value: serde::Value) -> Result[Item[int32], string] {
+    serde::from_value(value)
+}
+
+fn decode_choice(value: serde::Value) -> Result[Choice, string] {
+    serde::from_value(value)
+}
+
+fn main() -> unit {
+    let item = Item { name: "one", value: 13 as int32 };
+    let decoded = match decode_item(serde::to_value(item)) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Item { name: "error", value: 0 }
+        },
+    };
+    println(decoded.name + decoded.value.to_string());
+    let choice = match decode_choice(serde::to_value(Choice::Pair(7, "seven"))) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Choice::None
+        },
+    };
+    match choice {
+        Pair(number, name) => println(number.to_string() + name),
+        _ => println("wrong"),
+    }
+}
