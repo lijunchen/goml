@@ -1,0 +1,69 @@
+package main;
+
+use std::toml;
+use toml::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct Database {
+    host: string,
+    port: uint16,
+}
+
+#[derive(Serialize, Deserialize)]
+enum Mode {
+    Development,
+    Production,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Config {
+    title: string,
+    enabled: bool,
+    ports: Vec[uint16],
+    database: Database,
+    mode: Mode,
+}
+
+fn decode_config(input: string) -> Result[Config, string] {
+    toml::from_string(input)
+}
+
+fn config() -> Config {
+    Config {
+        title: "GoML",
+        enabled: true,
+        ports: Vec::[8000 as uint16, 8001 as uint16],
+        database: Database { host: "localhost", port: 5432 },
+        mode: Mode::Development,
+    }
+}
+
+fn main() -> unit {
+    let encoded = match toml::to_string(config()) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            ""
+        },
+    };
+    println(encoded);
+    let decoded = match decode_config(encoded) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            config()
+        },
+    };
+    println(decoded.title + decoded.database.host + decoded.database.port.to_string());
+    let value = match toml::parse("name = 'value'\ncreated = 2026-08-07T12:30:00Z\n") {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            toml::Value::Table(Vec::[])
+        },
+    };
+    match toml::field(value, "created") {
+        Some(toml::Value::Datetime(value)) => println(value),
+        _ => println("missing datetime"),
+    }
+}

@@ -87,6 +87,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
             "task",
             "testing",
             "text",
+            "toml",
             "time",
         ],
     );
@@ -94,6 +95,11 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
     match standard_sources("std::serde") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 2),
         Ok(None) => testing::fail("expected serde package"),
+        Err(error) => testing::fail(error),
+    };
+    match standard_sources("std::toml") {
+        Ok(Some(values)) => testing::assert_eq(values.len(), 2),
+        Ok(None) => testing::fail("expected TOML package"),
         Err(error) => testing::fail(error),
     };
     assert_strings(
