@@ -1,7 +1,7 @@
 package main;
 
+use std::json;
 use tests::comptime_derive::macros;
-use tests::comptime_derive::json;
 use json::Serialize;
 use macros::Label;
 use macros::Label as RenamedLabel;
@@ -29,6 +29,19 @@ struct Alias {
 #[derive(Serialize)]
 struct Record {
     value: int,
+    label: string,
+}
+
+#[derive(Serialize)]
+enum Event {
+    Ready,
+    Tuple(int, bool),
+    Named { value: int },
+}
+
+#[derive(Serialize)]
+struct Envelope[T] {
+    value: T,
 }
 
 fn main() -> unit {
@@ -36,5 +49,9 @@ fn main() -> unit {
     println(value.label());
     println(State::Ready(1).label());
     println(Alias { value: 1 }.label());
-    println(Record { value: 1 }.serialize())
+    println(json::stringify(Record { value: 1, label: "ok" }));
+    println(json::stringify(Event::Ready));
+    println(json::stringify(Event::Tuple(2, true)));
+    println(json::stringify(Event::Named { value: 3 }));
+    println(json::stringify(Envelope { value: Vec::[1, 2] }))
 }

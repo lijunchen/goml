@@ -200,10 +200,8 @@ fn returns_cross_package_expanded_derive_source() -> unit {
                 expanded.contains("impl[T] tests::comptime_derive::macros::Label for Box[T]"),
             );
             testing::assert(expanded.contains("fn label(self: Box[T]) -> string"));
-            testing::assert(
-                expanded.contains("impl tests::comptime_derive::json::Serialize for Record"),
-            );
-            testing::assert(expanded.contains("fn serialize(self: Record) -> string"))
+            testing::assert(expanded.contains("impl std::json::Serialize for Record"));
+            testing::assert(expanded.contains("fn serialize(self: Record) -> std::json::Value"))
         },
         Err(error) => testing::fail(error),
     }

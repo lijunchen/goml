@@ -38,6 +38,11 @@ fn loads_multifile_standard_package() -> unit {
         Ok(Some(values)) => testing::assert_eq(values.len(), 9),
         Ok(None) => testing::fail("expected standard package"),
         Err(error) => testing::fail(error),
+    };
+    match standard_sources("std::json") {
+        Ok(Some(values)) => testing::assert_eq(values.len(), 2),
+        Ok(None) => testing::fail("expected standard package"),
+        Err(error) => testing::fail(error),
     }
 }
 
