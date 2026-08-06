@@ -45,5 +45,18 @@ fn main() -> unit {
     match choice {
         Pair(number, name) => println(number.to_string() + name),
         _ => println("wrong"),
+    };
+    let schema: serde::TypedSchema[Item[int32]] = Deserialize::schema();
+    match schema.value {
+        serde::Schema::Struct(fields) => println(fields[0].0 + fields[1].0),
+        _ => println("wrong schema"),
+    };
+    match serde::to_value((1 as int16, true)) {
+        serde::Value::Tuple(values) => println(values.len().to_string()),
+        _ => println("wrong tuple"),
+    };
+    match serde::to_value(Option::Some(3 as uint8)) {
+        serde::Value::Optional(values) => println(values.len().to_string()),
+        _ => println("wrong optional"),
     }
 }
