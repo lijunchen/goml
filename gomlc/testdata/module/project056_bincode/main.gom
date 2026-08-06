@@ -1,0 +1,161 @@
+package main;
+
+use std::bincode;
+use bincode::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+enum Event {
+    Idle,
+    Pair(int8, uint64),
+    Named { code: uint16 },
+}
+
+#[derive(Serialize, Deserialize)]
+struct Wire {
+    small: uint8,
+    signed: int16,
+    text: string,
+    absent: Option[uint32],
+    pair: (uint8, uint16),
+    event: Event,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Packet {
+    flag: bool,
+    letter: char,
+    ratio: float32,
+    values: Vec[uint16],
+    optional: Option[int32],
+    event: Event,
+}
+
+fn wire() -> Wire {
+    Wire {
+        small: 7,
+        signed: -2,
+        text: "A",
+        absent: Option::None,
+        pair: (1, 300),
+        event: Event::Named { code: 500 },
+    }
+}
+
+fn bytes_equal(actual: Vec[byte], expected: Vec[byte]) -> bool {
+    if actual.len() != expected.len() {
+        false
+    } else {
+        let mut index = 0;
+        while index < actual.len() {
+            if actual[index] != expected[index] {
+                return false
+            } else {};
+            index = index + 1;
+        }
+        true
+    }
+}
+
+fn print_wire_result(encoded: Vec[byte], config: bincode::Config) -> unit {
+    let decoded: Result[(Wire, int), string] = bincode::decode_from_slice(
+        encoded.slice(0, encoded.len()),
+        config,
+    );
+    match decoded {
+        Ok((value, consumed)) => match value.event {
+            Named { code } => println(
+                value.small.to_string() + value.signed.to_string() + value.text
+                    + value.pair.1.to_string()
+                    + code.to_string()
+                    + consumed.to_string(),
+            ),
+            _ => println("wrong event"),
+        },
+        Err(error) => println(error),
+    }
+}
+
+fn packet() -> Packet {
+    Packet {
+        flag: true,
+        letter: 'λ',
+        ratio: 1.5,
+        values: Vec::[1, 251, 65535],
+        optional: Option::Some(-7),
+        event: Event::Pair(-3, 4294967296),
+    }
+}
+
+fn main() -> unit {
+    let standard = match bincode::encode_to_vec(wire(), bincode::standard()) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    println(bytes_equal(standard, Vec::[7, 3, 1, 65, 0, 1, 251, 44, 1, 2, 251, 244, 1]).to_string());
+    print_wire_result(standard, bincode::standard());
+    let legacy = match bincode::encode_to_vec(wire(), bincode::legacy()) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    println(
+        bytes_equal(
+            legacy,
+            Vec::[7, 254, 255, 1, 0, 0, 0, 0, 0, 0, 0, 65, 0, 1, 44, 1, 2, 0, 0, 0, 244, 1],
+        ).to_string(),
+    );
+    print_wire_result(legacy, bincode::legacy());
+    let big = bincode::with_big_endian(bincode::legacy());
+    let big_encoded = match bincode::encode_to_vec(wire(), big) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    println(
+        bytes_equal(
+            big_encoded,
+            Vec::[7, 255, 254, 0, 0, 0, 0, 0, 0, 0, 1, 65, 0, 1, 1, 44, 0, 0, 0, 2, 1, 244],
+        ).to_string(),
+    );
+    let packet_encoded = match bincode::encode_to_vec(packet(), bincode::standard()) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    let packet_decoded: Result[(Packet, int), string] = bincode::decode_from_slice(
+        packet_encoded.slice(0, packet_encoded.len()),
+        bincode::standard(),
+    );
+    match packet_decoded {
+        Ok((value, consumed)) => match (value.optional, value.event) {
+            (Some(number), Pair(left, right)) => println(
+                value.flag.to_string() + value.letter.to_string() + value.ratio.to_string()
+                    + value.values.len().to_string()
+                    + number.to_string()
+                    + left.to_string()
+                    + right.to_string()
+                    + consumed.to_string(),
+            ),
+            _ => println("wrong packet"),
+        },
+        Err(error) => println(error),
+    };
+    let invalid: Vec[byte] = Vec::[2];
+    let invalid_bool: Result[(bool, int), string] = bincode::decode_from_slice(
+        invalid.slice(0, invalid.len()),
+        bincode::standard(),
+    );
+    match invalid_bool {
+        Ok(_) => println("wrong bool"),
+        Err(error) => println(error),
+    }
+}
