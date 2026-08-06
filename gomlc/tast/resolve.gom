@@ -1,6 +1,7 @@
 package tast;
 
 use gomlc::ast;
+use gomlc::derive;
 use gomlc::hir;
 use std::collections;
 use std::text;
@@ -2709,7 +2710,10 @@ fn resolve_signature_predicates(ctx: Checker, predicates: Vec[TypePredicate], re
 }
 
 fn builtin_nominal_arity(name: string) -> Option[int] {
-    if name == "Option" || name == "Vec" || name == "Slice" || name == "Ref" || name == "Channel"
+    if derive::is_meta_type(name) {
+        Option::Some(0)
+    } else if name == "Option" || name == "Vec" || name == "Slice" || name == "Ref"
+        || name == "Channel"
         || name == "FnIterator" {
         Option::Some(1)
     } else if name == "Result" || name == "HashMap" {
@@ -2751,6 +2755,15 @@ fn nominal_application_has_wrong_arity(ctx: Checker, value: Type) -> bool {
 }
 
 fn validate_nominal_application(ctx: Checker, name: string, args: Vec[Type]) -> unit {
+    if derive::is_meta_type(name) {
+        match ctx.comptime_capability {
+            ComptimeCapability::Derive => (),
+            _ => push_diagnostic(
+                ctx,
+                "derive metadata type " + name + " is only available in #[comptime_derive]",
+            ),
+        }
+    } else {};
     match nominal_arity(ctx, name) {
         Some(expected) => if expected != args.len() {
             let category = if expected == 0 && !args.is_empty() {

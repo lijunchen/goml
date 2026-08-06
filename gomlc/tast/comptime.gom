@@ -3,6 +3,7 @@ package tast;
 use gomlc::ast;
 use gomlc::ctfe;
 use gomlc::ctir;
+use gomlc::derive;
 use std::text;
 
 pub struct ComptimeFinalizeResult {
@@ -26,6 +27,7 @@ struct CtLowerContext {
     source_path: string,
     origin_spans: Vec[ast::Span],
     origin_cursor: Ref[int],
+    derive: bool,
 }
 
 fn comptime_diagnostic(message: string, source_path: string, start: int, end: int) -> Diagnostic {
@@ -346,7 +348,11 @@ fn lower_ct_type(ctx: CtLowerContext, value: Type) -> Result[ctir::CtType, strin
         Array { len, elem } => {
             Result::Ok(ctir::CtType::Array { len, elem: lower_ct_type(ctx, elem)? })
         },
-        Con { name } => nominal_ct_type(ctx, name, Vec::[]),
+        Con { name } => if derive::is_meta_type(name) {
+            Result::Ok(ctir::CtType::Meta(name))
+        } else {
+            nominal_ct_type(ctx, name, Vec::[])
+        },
         App { ty, args } => match resolve_type(ty) {
             Con { name } => nominal_ct_type(ctx, name, args),
             _ => Result::Err("comptime does not support this applied type"),
@@ -596,6 +602,13 @@ fn function_call_target(ctx: CtLowerContext, name: string) -> Option[ctir::CtCal
             return Option::Some(ctir::CtCallTarget::Local(entry.function_id))
         } else {}
     }
+    if ctx.derive {
+        for entry in ctx.module.derive_entries {
+            if comptime_names_match(entry.name, name) {
+                return Option::Some(ctir::CtCallTarget::Local(entry.function_id))
+            } else {}
+        }
+    } else {};
     for dependency in ctx.dependencies {
         for entry in dependency.entries {
             if comptime_names_match(entry.name, name) {
@@ -607,6 +620,18 @@ fn function_call_target(ctx: CtLowerContext, name: string) -> Option[ctir::CtCal
                 )
             } else {}
         }
+        if ctx.derive {
+            for entry in dependency.derive_entries {
+                if comptime_names_match(entry.name, name) {
+                    return Option::Some(
+                        ctir::CtCallTarget::External {
+                            package_name: dependency.package_name,
+                            entry_name: entry.name,
+                        },
+                    )
+                } else {}
+            }
+        } else {}
     }
     Option::None
 }
@@ -615,7 +640,7 @@ fn external_call_return_type(ctx: CtLowerContext, target: ctir::CtCallTarget) ->
     ctir::CtType,
 ] {
     match target {
-        ctir::CtCallTarget::Local(_) => Option::None,
+        ctir::CtCallTarget::Local(_) | ctir::CtCallTarget::Intrinsic(_) => Option::None,
         ctir::CtCallTarget::External { package_name, entry_name } => {
             for dependency in ctx.dependencies {
                 if dependency.package_name == package_name {
@@ -628,6 +653,17 @@ fn external_call_return_type(ctx: CtLowerContext, target: ctir::CtCallTarget) ->
                             }
                         } else {}
                     }
+                    if ctx.derive {
+                        for entry in dependency.derive_entries {
+                            if entry.name == entry_name {
+                                for function in dependency.functions {
+                                    if function.id == entry.function_id {
+                                        return Option::Some(function.return_type)
+                                    } else {}
+                                }
+                            } else {}
+                        }
+                    } else {}
                 } else {}
             }
             Option::None
@@ -835,6 +871,11 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
                         return Result::Err("compile_error expects one argument")
                     } else {};
                     ctir::CtExprKind::CompileError(lower_ct_expr(ctx, args[0])?)
+                } else if ctx.derive && derive::is_intrinsic(name) {
+                    ctir::CtExprKind::Call {
+                        target: ctir::CtCallTarget::Intrinsic(name),
+                        args: lower_ct_exprs(ctx, args)?,
+                    }
                 } else {
                     return Result::Err("comptime intrinsic `" + name + "` is not supported")
                 },
@@ -963,7 +1004,7 @@ fn capable_functions(file: File) -> Vec[Function] {
     for item in file.items {
         match item {
             Item::Function(value) => match value.comptime {
-                ComptimeCapability::Capable => result.push(value),
+                ComptimeCapability::Capable | ComptimeCapability::Derive => result.push(value),
                 ComptimeCapability::RuntimeOnly => (),
             },
             Item::ImplBlock(_) => (),
@@ -982,7 +1023,19 @@ fn build_comptime_module(
     let module = ctir::empty_module(package_name);
     let functions = capable_functions(file);
     for index in 0..functions.len() {
-        module.entries.push(ctir::CtEntry { name: functions[index].name, function_id: index })
+        let entry = ctir::CtEntry {
+            name: functions[index].name,
+            function_id: index,
+            public: match functions[index].visibility {
+                ast::Visibility::Public => true,
+                ast::Visibility::Private => false,
+            },
+        };
+        match functions[index].comptime {
+            ComptimeCapability::Capable => module.entries.push(entry),
+            ComptimeCapability::Derive => module.derive_entries.push(entry),
+            ComptimeCapability::RuntimeOnly => (),
+        }
     }
     for index in 0..functions.len() {
         let function = functions[index];
@@ -1014,6 +1067,10 @@ fn build_comptime_module(
             source_path: function.source_path,
             origin_spans: function.comptime_origins,
             origin_cursor: Ref::new(0),
+            derive: match function.comptime {
+                ComptimeCapability::Derive => true,
+                _ => false,
+            },
         };
         let parameter_types: Vec[ctir::CtType] = Vec::[];
         let parameter_error = Ref::new(Option::None);
@@ -1154,6 +1211,7 @@ fn constant_candidates(
             source_path: "<" + module.package_name + ">",
             origin_spans: Vec::[],
             origin_cursor: Ref::new(0),
+            derive: false,
         };
         match lower_const_expr(ctx, value.value) {
             Ok(expression) => result.push(
@@ -1188,6 +1246,7 @@ fn constant_candidates(
             source_path: value.source_path,
             origin_spans: value.comptime_origins,
             origin_cursor: Ref::new(0),
+            derive: false,
         };
         match lower_ct_expr(ctx, value.value) {
             Ok(expression) => result.push(
@@ -1469,6 +1528,9 @@ fn reify_ct_value(file: File, value: ctir::CtValue, ty: Type) -> Result[Expr, st
                 },
             )
         },
+        ctir::CtValue::Meta { .. } => {
+            Result::Err("derive metadata cannot be reified as a runtime value")
+        },
     }
 }
 
@@ -1714,6 +1776,7 @@ fn rewrite_comptime_expr(
                 source_path,
                 origin_spans: origins,
                 origin_cursor: Ref::new(0),
+                derive: false,
             };
             match lower_ct_expr(ctx, body) {
                 Ok(expression) => {

@@ -172,15 +172,26 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                 )
                             } else {};
                             let field_type_spans: Vec[Span] = Vec::[];
+                            let field_attrs: Vec[Vec[Attribute]] = Vec::[];
                             let fields = match first_child(variant, cst::NodeKind::TYPE_LIST) {
                                 Some(type_list) => {
                                     let lowered: Vec[TypeExpr] = Vec::[];
-                                    for ty in type_children(type_list) {
-                                        field_type_spans.push(type_head_span(ty));
-                                        match lower_ty(ctx, ty) {
-                                            Some(value) => lowered.push(value),
-                                            None => (),
-                                        }
+                                    for field in children_of_kind(
+                                        type_list,
+                                        cst::NodeKind::ENUM_TUPLE_FIELD,
+                                    ) {
+                                        let types = type_children(field);
+                                        if !types.is_empty() {
+                                            let ty = types[0];
+                                            field_type_spans.push(type_head_span(ty));
+                                            match lower_ty(ctx, ty) {
+                                                Some(value) => {
+                                                    lowered.push(value);
+                                                    field_attrs.push(lower_attributes(field))
+                                                },
+                                                None => (),
+                                            }
+                                        } else {}
                                     }
                                     EnumVariantFields::Tuple(lowered)
                                 },
@@ -211,7 +222,10 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                                                             field_type_spans.push(
                                                                 type_head_span(types[0]),
                                                             );
-                                                            named.push((name.token.text, ty))
+                                                            named.push((name.token.text, ty));
+                                                            field_attrs.push(
+                                                                lower_attributes(field),
+                                                            )
                                                         },
                                                         None => (),
                                                     }
@@ -236,9 +250,11 @@ fn lower_enum(ctx: LowerCtx, node: LocatedNode) -> Option[EnumDef] {
                             };
                             variants.push(
                                 EnumVariant {
+                                    attrs: lower_attributes(variant),
                                     name: variant_name.token.text,
                                     fields,
                                     field_type_spans,
+                                    field_attrs,
                                 },
                             )
                         },
@@ -274,6 +290,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
             let (generics, _) = lower_generics(ctx, node);
             let fields: Vec[(string, TypeExpr)] = Vec::[];
             let field_type_spans: Vec[Span] = Vec::[];
+            let field_attrs: Vec[Vec[Attribute]] = Vec::[];
             let public_fields: Vec[string] = Vec::[];
             match first_child(node, cst::NodeKind::STRUCT_FIELD_LIST) {
                 Some(list) => for field in children_of_kind(list, cst::NodeKind::STRUCT_FIELD) {
@@ -286,6 +303,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                                 Some(ty) => {
                                     field_type_spans.push(type_head_span(type_node));
                                     fields.push((name.token.text, ty));
+                                    field_attrs.push(lower_attributes(field));
                                     match lower_visibility(field) {
                                         Public => public_fields.push(name.token.text),
                                         Private => (),
@@ -307,6 +325,7 @@ fn lower_struct(ctx: LowerCtx, node: LocatedNode) -> Option[StructDef] {
                     generics,
                     fields,
                     field_type_spans,
+                    field_attrs,
                     public_fields,
                 },
             )

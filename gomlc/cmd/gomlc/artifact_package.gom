@@ -240,6 +240,24 @@ fn artifact_standard_needs_from_units(
     needs
 }
 
+fn artifact_verify_comptime_modules(comptime_modules: Vec[ctir::CtModule]) -> Result[unit, string] {
+    for module in comptime_modules {
+        let dependencies: Vec[ctir::CtModule] = Vec::[];
+        for candidate in comptime_modules {
+            if candidate.package_name != module.package_name {
+                dependencies.push(candidate)
+            } else {}
+        }
+        match ctfe::verify_module(module, dependencies) {
+            Ok(()) => (),
+            Err(message) => return Result::Err(
+                "invalid comptime interface for " + module.package_name + ": " + message,
+            ),
+        }
+    }
+    Result::Ok(())
+}
+
 fn artifact_dependency_environments(
     builtin: artifact::ArtifactPackageExports,
     standard: ArtifactStandardLibrary,
@@ -259,20 +277,7 @@ fn artifact_dependency_environments(
             None => (),
         }
     }
-    for module in comptime_modules {
-        let dependencies: Vec[ctir::CtModule] = Vec::[];
-        for candidate in comptime_modules {
-            if candidate.package_name != module.package_name {
-                dependencies.push(candidate)
-            } else {}
-        }
-        match ctfe::verify_module(module, dependencies) {
-            Ok(()) => (),
-            Err(message) => return Result::Err(
-                "invalid comptime interface for " + module.package_name + ": " + message,
-            ),
-        }
-    }
+    artifact_verify_comptime_modules(comptime_modules)?;
     let result: Vec[tast::DependencyEnvironment] = Vec::[];
     let value = artifact_dependency_environment_from_exports(builtin)?;
     let methods: Vec[tast::MethodInfo] = Vec::[];
@@ -623,14 +628,24 @@ fn compile_artifact_package(
     let public_names = public_item_names(ast_values, command.package_name);
     let test_candidates = collect_package_test_candidates(ast_values, command.inputs);
     fail_on_typer_diagnostics(test_candidates.diagnostics, "", "");
+    let provided = artifact_read_interface_units(command.interface_paths)?;
+    let derive_modules: Vec[ctir::CtModule] = Vec::[];
+    for interface_unit_value in provided {
+        match interface_unit_value.comptime {
+            Some(value) => derive_modules.push(value.module),
+            None => (),
+        }
+    }
+    artifact_verify_comptime_modules(derive_modules)?;
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     let derive_diagnostics: Vec[tast::Diagnostic] = Vec::[];
     let mut source_needs = no_standard_needs();
     for index in 0..ast_values.len() {
         let ast_value = ast_values[index];
         source_needs = merge_standard_needs(source_needs, source_standard_needs(ast_value));
-        let expanded = hir::expand_derives(
+        let expanded = hir::expand_derives_with_comptime(
             without_disallowed_standard_internal_imports(ast_value, command.package_name),
+            derive_modules,
         );
         for diagnostic in ast_diagnostics(expanded.diagnostics, "derive", command.inputs[index]) {
             derive_diagnostics.push(diagnostic)
@@ -643,7 +658,6 @@ fn compile_artifact_package(
         hir_files.push(checked_hir_file(lowered, command.package_name))
     }
     let dependency_names = direct_hir_dependencies(hir_files);
-    let provided = artifact_read_interface_units(command.interface_paths)?;
     let production_interface = if emit_tests {
         artifact_find_interface_unit(provided, command.package_name)
     } else {

@@ -314,20 +314,48 @@ fn pretty_binary_symbol(value: BinaryOp) -> string {
 }
 
 fn pretty_enum_variant_doc(value: EnumVariant) -> doc::Doc {
-    match value.fields {
+    let body = match value.fields {
         Unit => doc::text(value.name),
-        Tuple(types) => doc::append(
-            doc::text(value.name),
-            doc::delimited("(", ",", ")", pretty_type_docs(types)),
-        ),
+        Tuple(types) => {
+            let values: Vec[doc::Doc] = Vec::with_capacity(types.len());
+            for index in 0..types.len() {
+                values.push(
+                    doc::concat(
+                        Vec::[
+                            if index < value.field_attrs.len() {
+                                pretty_attributes_doc(value.field_attrs[index])
+                            } else {
+                                doc::nil()
+                            },
+                            pretty_type_doc(types[index]),
+                        ],
+                    ),
+                )
+            }
+            doc::append(doc::text(value.name), doc::delimited("(", ",", ")", values))
+        },
         Struct(fields) => {
             let values: Vec[doc::Doc] = Vec::with_capacity(fields.len());
-            for field in fields {
-                values.push(doc::concat(Vec::[doc::text(field.0 + ": "), pretty_type_doc(field.1)]))
+            for index in 0..fields.len() {
+                let field = fields[index];
+                values.push(
+                    doc::concat(
+                        Vec::[
+                            if index < value.field_attrs.len() {
+                                pretty_attributes_doc(value.field_attrs[index])
+                            } else {
+                                doc::nil()
+                            },
+                            doc::text(field.0 + ": "),
+                            pretty_type_doc(field.1),
+                        ],
+                    ),
+                )
             }
             pretty_record_doc(doc::text(value.name), values)
         },
-    }
+    };
+    doc::append(pretty_attributes_doc(value.attrs), body)
 }
 
 fn pretty_enum_doc(value: EnumDef) -> doc::Doc {
@@ -367,10 +395,16 @@ fn pretty_enum_doc(value: EnumDef) -> doc::Doc {
 
 fn pretty_struct_doc(value: StructDef) -> doc::Doc {
     let fields: Vec[doc::Doc] = Vec::with_capacity(value.fields.len());
-    for field in value.fields {
+    for index in 0..value.fields.len() {
+        let field = value.fields[index];
         fields.push(
             doc::concat(
                 Vec::[
+                    if index < value.field_attrs.len() {
+                        pretty_attributes_doc(value.field_attrs[index])
+                    } else {
+                        doc::nil()
+                    },
                     if collections::contains(value.public_fields, field.0) {
                         doc::text("pub ")
                     } else {

@@ -57,12 +57,20 @@ fn failed_check(source_path: string, stage: string, message: string) -> tast::Ch
     }
 }
 
-fn lower_package(value: Project) -> LoweredPackage {
+fn lower_package(value: Project, derive_modules: Vec[ctir::CtModule]) -> LoweredPackage {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     for file in value.files {
-        inputs.push((ast::lower(parser::parse(file.source)), file.path))
+        inputs.push(
+            (
+                hir::expand_derives_with_comptime(
+                    ast::lower(parser::parse(file.source)),
+                    derive_modules,
+                ),
+                file.path,
+            ),
+        )
     }
-    let lowered = hir::lower_package_files(inputs, value.package_name);
+    let lowered = hir::lower_expanded_package_files(inputs, value.package_name);
     let files: Vec[hir::File] = Vec::[];
     let diagnostics: Vec[tast::Diagnostic] = Vec::[];
     for value in lowered {
@@ -77,6 +85,41 @@ fn lower_package(value: Project) -> LoweredPackage {
         }
     }
     LoweredPackage { name: value.package_name, files, diagnostics }
+}
+
+fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule]) -> Vec[
+    tast::DependencyEnvironment,
+] {
+    let environments = tast::dependency_environments(files);
+    for index in 0..environments.len() {
+        let module = Ref::new(Option::None);
+        for value in modules {
+            if value.package_name == files[index].package_name {
+                module.set(Option::Some(value))
+            } else {}
+        }
+        environments.set(
+            index,
+            tast::dependency_environment_with_comptime(environments[index], module.get()),
+        )
+    }
+    environments
+}
+
+fn package_has_comptime(files: Vec[hir::File]) -> bool {
+    for file in files {
+        for item in file.items {
+            match item {
+                hir::Item::Function(value) => for attribute in value.attrs {
+                    if attribute.name == "comptime" || attribute.name == "comptime_derive" {
+                        return true
+                    } else {}
+                },
+                _ => (),
+            }
+        }
+    }
+    false
 }
 
 fn is_local_package(module_path: string, package_name: string) -> bool {
@@ -112,6 +155,7 @@ fn collect_dependency(
     diagnostics: Vec[tast::Diagnostic],
     all_sources: Vec[SourceFile],
     source_path: string,
+    derive_modules: Vec[ctir::CtModule],
 ) -> unit {
     if collections::contains(visited, package_name) {} else {
         visited.push(package_name);
@@ -127,11 +171,8 @@ fn collect_dependency(
                     package_name,
                     files: sources,
                 };
-                let lowered = lower_package(project);
-                for diagnostic in lowered.diagnostics {
-                    diagnostics.push(diagnostic)
-                }
-                for file in lowered.files {
+                let discovery = lower_package(project, derive_modules);
+                for file in discovery.files {
                     for import in file.import_aliases {
                         collect_dependency(
                             module_root,
@@ -143,9 +184,27 @@ fn collect_dependency(
                             diagnostics,
                             all_sources,
                             source_path,
+                            derive_modules,
                         )
                     }
                 }
+                let lowered = lower_package(project, derive_modules);
+                for diagnostic in lowered.diagnostics {
+                    diagnostics.push(diagnostic)
+                }
+                if package_has_comptime(lowered.files) {
+                    let checked = tast::check_package_files_for_link_with_environments(
+                        lowered.files,
+                        environments_with_comptime(dependencies, derive_modules),
+                    );
+                    if checked.diagnostics.is_empty() {
+                        derive_modules.push(checked.comptime)
+                    } else {
+                        for diagnostic in checked.diagnostics {
+                            diagnostics.push(diagnostic)
+                        }
+                    }
+                } else {};
                 for file in lowered.files {
                     dependencies.push(file)
                 }
@@ -158,13 +217,17 @@ fn collect_dependency(
 }
 
 fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck {
-    let all_sources = value.files;
-    let entry = lower_package(value);
+    let all_sources: Vec[SourceFile] = Vec::[];
+    for file in value.files {
+        all_sources.push(file)
+    }
+    let discovery = lower_package(value, Vec::[]);
     let dependencies: Vec[hir::File] = Vec::[];
-    let diagnostics = entry.diagnostics;
+    let diagnostics: Vec[tast::Diagnostic] = Vec::[];
     let visited: Vec[string] = Vec::[];
-    visited.push(entry.name);
-    for file in entry.files {
+    let derive_modules: Vec[ctir::CtModule] = Vec::[];
+    visited.push(discovery.name);
+    for file in discovery.files {
         for import in file.import_aliases {
             collect_dependency(
                 value.module_root,
@@ -176,8 +239,13 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
                 diagnostics,
                 all_sources,
                 value.files[0].path,
+                derive_modules,
             )
         }
+    }
+    let entry = lower_package(value, derive_modules);
+    for diagnostic in entry.diagnostics {
+        diagnostics.push(diagnostic)
     }
     let environment_files: Vec[hir::File] = Vec::[];
     for file in entry.files {
@@ -186,8 +254,8 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
     for file in dependencies {
         environment_files.push(file)
     }
-    let environments = tast::dependency_environments(environment_files);
-    let dependency_environments = tast::dependency_environments(dependencies);
+    let environments = environments_with_comptime(environment_files, derive_modules);
+    let dependency_environments = environments_with_comptime(dependencies, derive_modules);
     let checked = if !entry.files.is_empty() {
         tast::check_package_files_for_link_with_environments(entry.files, dependency_environments)
     } else {

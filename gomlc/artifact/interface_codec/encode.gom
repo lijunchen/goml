@@ -149,7 +149,7 @@ fn artifact_json_fn_scheme(
         writer,
         match value.comptime {
             tast::ComptimeCapability::Capable => true,
-            tast::ComptimeCapability::RuntimeOnly => false,
+            tast::ComptimeCapability::RuntimeOnly | tast::ComptimeCapability::Derive => false,
         },
     );
     wire::artifact_json_name(writer, "type_params");
@@ -394,9 +394,9 @@ fn artifact_json_interface_hash_view(
     wire::artifact_json_begin_object(writer);
     if wire::artifact_json_binary_mode(writer) < 2 {
         wire::artifact_json_name(writer, "format_version");
-        wire::artifact_json_number(writer, "20");
+        wire::artifact_json_number(writer, "21");
         wire::artifact_json_name(writer, "compiler_abi");
-        wire::artifact_json_number(writer, "4")
+        wire::artifact_json_number(writer, "5")
     } else {};
     wire::artifact_json_name(writer, "package");
     wire::artifact_json_string(writer, value.package_name);
@@ -461,9 +461,9 @@ pub fn artifact_json_interface_unit(
 ) -> unit {
     wire::artifact_json_begin_object(writer);
     wire::artifact_json_name(writer, "format_version");
-    wire::artifact_json_number(writer, "20");
+    wire::artifact_json_number(writer, "21");
     wire::artifact_json_name(writer, "compiler_abi");
-    wire::artifact_json_number(writer, "4");
+    wire::artifact_json_number(writer, "5");
     wire::artifact_json_name(writer, "package");
     wire::artifact_json_string(writer, value.package_name);
     wire::artifact_json_name(writer, "exports");

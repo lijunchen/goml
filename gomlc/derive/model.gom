@@ -1,0 +1,1206 @@
+package derive;
+
+use gomlc::ast;
+use gomlc::ctir;
+use std::text;
+
+pub struct DeriveIntrinsicSpec {
+    pub name: string,
+    pub params: Vec[string],
+    pub ret: string,
+}
+
+fn spec(name: string, params: Vec[string], ret: string) -> DeriveIntrinsicSpec {
+    DeriveIntrinsicSpec { name, params, ret }
+}
+
+fn no_types() -> Vec[string] {
+    Vec::[]
+}
+
+fn one_type(first: string) -> Vec[string] {
+    Vec::[first]
+}
+
+fn two_types(first: string, second: string) -> Vec[string] {
+    Vec::[first, second]
+}
+
+fn three_types(first: string, second: string, third: string) -> Vec[string] {
+    Vec::[first, second, third]
+}
+
+fn four_types(first: string, second: string, third: string, fourth: string) -> Vec[string] {
+    Vec::[first, second, third, fourth]
+}
+
+pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
+    Vec::[
+        spec("derive_item_name", one_type("DeriveInput"), "string"),
+        spec("derive_item_kind", one_type("DeriveInput"), "int"),
+        spec("derive_generic_count", one_type("DeriveInput"), "int"),
+        spec("derive_generic_name", two_types("DeriveInput", "int"), "string"),
+        spec("derive_field_count", one_type("DeriveInput"), "int"),
+        spec("derive_field_name", two_types("DeriveInput", "int"), "string"),
+        spec("derive_field_type", two_types("DeriveInput", "int"), "MetaType"),
+        spec("derive_field_attribute_count", two_types("DeriveInput", "int"), "int"),
+        spec("derive_field_attribute_name", three_types("DeriveInput", "int", "int"), "string"),
+        spec("derive_field_attribute_text", three_types("DeriveInput", "int", "int"), "string"),
+        spec("derive_variant_count", one_type("DeriveInput"), "int"),
+        spec("derive_variant_name", two_types("DeriveInput", "int"), "string"),
+        spec("derive_variant_attribute_count", two_types("DeriveInput", "int"), "int"),
+        spec("derive_variant_attribute_name", three_types("DeriveInput", "int", "int"), "string"),
+        spec("derive_variant_attribute_text", three_types("DeriveInput", "int", "int"), "string"),
+        spec("derive_variant_field_count", two_types("DeriveInput", "int"), "int"),
+        spec("derive_variant_field_name", three_types("DeriveInput", "int", "int"), "string"),
+        spec("derive_variant_field_type", three_types("DeriveInput", "int", "int"), "MetaType"),
+        spec(
+            "derive_variant_field_attribute_count",
+            three_types("DeriveInput", "int", "int"),
+            "int",
+        ),
+        spec(
+            "derive_variant_field_attribute_name",
+            four_types("DeriveInput", "int", "int", "int"),
+            "string",
+        ),
+        spec(
+            "derive_variant_field_attribute_text",
+            four_types("DeriveInput", "int", "int", "int"),
+            "string",
+        ),
+        spec("derive_attribute_count", one_type("DeriveInput"), "int"),
+        spec("derive_attribute_name", two_types("DeriveInput", "int"), "string"),
+        spec("derive_attribute_text", two_types("DeriveInput", "int"), "string"),
+        spec("derive_target_type", one_type("DeriveInput"), "MetaType"),
+        spec("derive_fresh_name", two_types("DeriveInput", "string"), "string"),
+        spec("meta_type_named", two_types("DeriveInput", "string"), "MetaType"),
+        spec("meta_type_call_site", one_type("string"), "MetaType"),
+        spec("meta_type_list_new", no_types(), "MetaTypeList"),
+        spec("meta_type_list_push", two_types("MetaTypeList", "MetaType"), "unit"),
+        spec("meta_type_tuple", one_type("MetaTypeList"), "MetaType"),
+        spec("meta_type_apply", two_types("MetaType", "MetaTypeList"), "MetaType"),
+        spec("meta_type_array", two_types("MetaType", "int"), "MetaType"),
+        spec("meta_expr_var", one_type("string"), "MetaExpr"),
+        spec("meta_expr_unit", no_types(), "MetaExpr"),
+        spec("meta_expr_bool", one_type("bool"), "MetaExpr"),
+        spec("meta_expr_int", one_type("int"), "MetaExpr"),
+        spec("meta_expr_string", one_type("string"), "MetaExpr"),
+        spec("meta_expr_field", two_types("MetaExpr", "string"), "MetaExpr"),
+        spec("meta_expr_index", two_types("MetaExpr", "MetaExpr"), "MetaExpr"),
+        spec("meta_expr_binary", three_types("int", "MetaExpr", "MetaExpr"), "MetaExpr"),
+        spec("meta_expr_call", three_types("DeriveInput", "string", "MetaExprList"), "MetaExpr"),
+        spec("meta_expr_call_site", two_types("string", "MetaExprList"), "MetaExpr"),
+        spec("meta_expr_tuple", one_type("MetaExprList"), "MetaExpr"),
+        spec("meta_expr_array", one_type("MetaExprList"), "MetaExpr"),
+        spec("meta_expr_if", three_types("MetaExpr", "MetaExpr", "MetaExpr"), "MetaExpr"),
+        spec("meta_expr_match", two_types("MetaExpr", "MetaArmList"), "MetaExpr"),
+        spec("meta_expr_cast", two_types("MetaExpr", "MetaType"), "MetaExpr"),
+        spec("meta_expr_list_new", no_types(), "MetaExprList"),
+        spec("meta_expr_list_push", two_types("MetaExprList", "MetaExpr"), "unit"),
+        spec("meta_pattern_wild", no_types(), "MetaPattern"),
+        spec("meta_pattern_bind", one_type("string"), "MetaPattern"),
+        spec("meta_pattern_tuple", one_type("MetaPatternList"), "MetaPattern"),
+        spec("meta_pattern_constructor", two_types("string", "MetaPatternList"), "MetaPattern"),
+        spec("meta_pattern_list_new", no_types(), "MetaPatternList"),
+        spec("meta_pattern_list_push", two_types("MetaPatternList", "MetaPattern"), "unit"),
+        spec("meta_arm", two_types("MetaPattern", "MetaExpr"), "MetaArm"),
+        spec("meta_arm_list_new", no_types(), "MetaArmList"),
+        spec("meta_arm_list_push", two_types("MetaArmList", "MetaArm"), "unit"),
+        spec("meta_block_new", no_types(), "MetaBlock"),
+        spec("meta_block_let", three_types("MetaBlock", "string", "MetaExpr"), "unit"),
+        spec("meta_block_expr", two_types("MetaBlock", "MetaExpr"), "unit"),
+        spec("meta_block_finish", two_types("MetaBlock", "MetaExpr"), "MetaExpr"),
+        spec("meta_param_list_new", no_types(), "MetaParamList"),
+        spec("meta_param_list_push", three_types("MetaParamList", "string", "MetaType"), "unit"),
+        spec(
+            "meta_method",
+            four_types("string", "MetaParamList", "MetaType", "MetaExpr"),
+            "MetaMethod",
+        ),
+        spec("derive_output_new", two_types("DeriveInput", "string"), "DeriveOutput"),
+        spec("derive_output_new_call_site", two_types("DeriveInput", "string"), "DeriveOutput"),
+        spec(
+            "derive_output_add_predicate",
+            three_types("DeriveOutput", "MetaType", "string"),
+            "unit",
+        ),
+        spec(
+            "derive_output_add_call_site_predicate",
+            three_types("DeriveOutput", "MetaType", "string"),
+            "unit",
+        ),
+        spec("derive_output_add_method", two_types("DeriveOutput", "MetaMethod"), "unit"),
+    ]
+}
+
+pub fn is_intrinsic(name: string) -> bool {
+    for value in intrinsic_specs() {
+        if value.name == name {
+            return true
+        } else {}
+    }
+    false
+}
+
+pub fn is_meta_type(name: string) -> bool {
+    name == "DeriveInput" || name == "DeriveOutput" || name == "MetaType" || name == "MetaTypeList"
+        || name == "MetaExpr"
+        || name == "MetaExprList"
+        || name == "MetaPattern"
+        || name == "MetaPatternList"
+        || name == "MetaArm"
+        || name == "MetaArmList"
+        || name == "MetaBlock"
+        || name == "MetaParamList"
+        || name == "MetaMethod"
+}
+
+pub enum DeriveItem {
+    Struct(ast::StructDef),
+    Enum(ast::EnumDef),
+}
+
+pub struct DeriveRequest {
+    pub item: DeriveItem,
+    pub attribute: ast::Attribute,
+    pub handler_package: string,
+}
+
+pub struct DeriveState {
+    pub request: DeriveRequest,
+    int_width: int,
+    definition_package: Ref[string],
+    pub types: Vec[ast::TypeExpr],
+    pub type_lists: Vec[Vec[ast::TypeExpr]],
+    pub exprs: Vec[ast::Expr],
+    pub expr_lists: Vec[Vec[ast::Expr]],
+    pub patterns: Vec[ast::Pat],
+    pub pattern_lists: Vec[Vec[ast::Pat]],
+    pub arms: Vec[ast::Arm],
+    pub arm_lists: Vec[Vec[ast::Arm]],
+    pub blocks: Vec[ast::Block],
+    pub param_lists: Vec[Vec[(string, ast::TypeExpr)]],
+    pub methods: Vec[ast::Function],
+    pub outputs: Vec[ast::ImplBlock],
+    pub fresh: Ref[int],
+    pub operations: Ref[int],
+}
+
+pub fn new_state(request: DeriveRequest, int_width: int) -> DeriveState {
+    DeriveState {
+        request,
+        int_width,
+        definition_package: Ref::new(request.handler_package),
+        types: Vec::[],
+        type_lists: Vec::[],
+        exprs: Vec::[],
+        expr_lists: Vec::[],
+        patterns: Vec::[],
+        pattern_lists: Vec::[],
+        arms: Vec::[],
+        arm_lists: Vec::[],
+        blocks: Vec::[],
+        param_lists: Vec::[],
+        methods: Vec::[],
+        outputs: Vec::[],
+        fresh: Ref::new(0),
+        operations: Ref::new(0),
+    }
+}
+
+fn span(state: DeriveState) -> ast::Span {
+    state.request.attribute.span
+}
+
+fn path(value: string, value_span: ast::Span) -> ast::Path {
+    let segments: Vec[ast::PathSegment] = Vec::[];
+    for value in text::split(value, "::") {
+        if value == "" {} else {
+            segments.push(ast::PathSegment { ident: value, span: value_span })
+        }
+    }
+    ast::Path { segments }
+}
+
+fn definition_name(state: DeriveState, value: string) -> string {
+    let package_name = state.definition_package.get();
+    if text::find(value, "::").is_some() || package_name == "" {
+        value
+    } else {
+        package_name + "::" + value
+    }
+}
+
+fn named_type(value: string, value_span: ast::Span) -> ast::TypeExpr {
+    if value == "unit" {
+        ast::TypeExpr::Unit
+    } else if value == "bool" {
+        ast::TypeExpr::Bool
+    } else if value == "int" {
+        ast::TypeExpr::Int
+    } else if value == "int8" {
+        ast::TypeExpr::Int8
+    } else if value == "int16" {
+        ast::TypeExpr::Int16
+    } else if value == "int32" {
+        ast::TypeExpr::Int32
+    } else if value == "int64" {
+        ast::TypeExpr::Int64
+    } else if value == "uint" {
+        ast::TypeExpr::Uint
+    } else if value == "uint8" || value == "byte" {
+        ast::TypeExpr::Uint8
+    } else if value == "uint16" {
+        ast::TypeExpr::Uint16
+    } else if value == "uint32" {
+        ast::TypeExpr::Uint32
+    } else if value == "uint64" {
+        ast::TypeExpr::Uint64
+    } else if value == "float32" {
+        ast::TypeExpr::Float32
+    } else if value == "float64" {
+        ast::TypeExpr::Float64
+    } else if value == "string" {
+        ast::TypeExpr::String
+    } else if value == "char" {
+        ast::TypeExpr::Char
+    } else {
+        ast::TypeExpr::Con { path: path(value, value_span) }
+    }
+}
+
+fn item_name(value: DeriveItem) -> string {
+    match value {
+        Struct(value) => value.name,
+        Enum(value) => value.name,
+    }
+}
+
+fn item_generics(value: DeriveItem) -> Vec[string] {
+    match value {
+        Struct(value) => value.generics,
+        Enum(value) => value.generics,
+    }
+}
+
+fn item_attributes(value: DeriveItem) -> Vec[ast::Attribute] {
+    match value {
+        Struct(value) => value.attrs,
+        Enum(value) => value.attrs,
+    }
+}
+
+fn target_type(value: DeriveItem, value_span: ast::Span) -> ast::TypeExpr {
+    let base = ast::TypeExpr::Con { path: path(item_name(value), value_span) };
+    let args: Vec[ast::TypeExpr] = Vec::[];
+    for generic in item_generics(value) {
+        args.push(ast::TypeExpr::Con { path: path(generic, value_span) })
+    }
+    if args.is_empty() {
+        base
+    } else {
+        ast::TypeExpr::App { ty: base, args }
+    }
+}
+
+fn meta(kind: string, id: int) -> ctir::CtValue {
+    ctir::CtValue::Meta { kind, id }
+}
+
+fn unit_value() -> ctir::CtValue {
+    ctir::CtValue::Unit
+}
+
+fn int_value(state: DeriveState, value: int) -> ctir::CtValue {
+    ctir::CtValue::Integer { signed: true, width: state.int_width, bits: value as uint64 }
+}
+
+fn argument(values: Vec[ctir::CtValue], index: int) -> Result[ctir::CtValue, string] {
+    if index < 0 || index >= values.len() {
+        Result::Err("derive intrinsic argument is missing")
+    } else {
+        Result::Ok(values[index])
+    }
+}
+
+fn int_argument(values: Vec[ctir::CtValue], index: int) -> Result[int, string] {
+    match argument(values, index)? {
+        ctir::CtValue::Integer { bits, .. } => Result::Ok(bits as int),
+        _ => Result::Err("derive intrinsic expects an integer argument"),
+    }
+}
+
+fn bool_argument(values: Vec[ctir::CtValue], index: int) -> Result[bool, string] {
+    match argument(values, index)? {
+        ctir::CtValue::Bool(value) => Result::Ok(value),
+        _ => Result::Err("derive intrinsic expects a boolean argument"),
+    }
+}
+
+fn string_argument(values: Vec[ctir::CtValue], index: int) -> Result[string, string] {
+    match argument(values, index)? {
+        ctir::CtValue::String(value) => Result::Ok(value),
+        _ => Result::Err("derive intrinsic expects a string argument"),
+    }
+}
+
+fn handle_argument(values: Vec[ctir::CtValue], index: int, kind: string) -> Result[int, string] {
+    match argument(values, index)? {
+        ctir::CtValue::Meta { kind: actual, id } => if actual == kind {
+            Result::Ok(id)
+        } else {
+            Result::Err("derive intrinsic expected " + kind + ", got " + actual)
+        },
+        _ => Result::Err("derive intrinsic expects " + kind),
+    }
+}
+
+fn checked_index(index: int, len: int, description: string) -> Result[int, string] {
+    if index < 0 || index >= len {
+        Result::Err(description + " index " + index.to_string() + " is out of bounds")
+    } else {
+        Result::Ok(index)
+    }
+}
+
+fn push_type(state: DeriveState, value: ast::TypeExpr) -> ctir::CtValue {
+    let id = state.types.len();
+    state.types.push(value);
+    meta("MetaType", id)
+}
+
+fn push_expr(state: DeriveState, value: ast::Expr) -> ctir::CtValue {
+    let id = state.exprs.len();
+    state.exprs.push(value);
+    meta("MetaExpr", id)
+}
+
+fn push_pattern(state: DeriveState, value: ast::Pat) -> ctir::CtValue {
+    let id = state.patterns.len();
+    state.patterns.push(value);
+    meta("MetaPattern", id)
+}
+
+fn type_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Result[
+    ast::TypeExpr,
+    string,
+] {
+    let id = handle_argument(values, index, "MetaType")?;
+    let id = checked_index(id, state.types.len(), "meta type")?;
+    Result::Ok(state.types[id])
+}
+
+fn expr_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Result[
+    ast::Expr,
+    string,
+] {
+    let id = handle_argument(values, index, "MetaExpr")?;
+    let id = checked_index(id, state.exprs.len(), "meta expression")?;
+    Result::Ok(state.exprs[id])
+}
+
+fn pattern_value(state: DeriveState, values: Vec[ctir::CtValue], index: int) -> Result[
+    ast::Pat,
+    string,
+] {
+    let id = handle_argument(values, index, "MetaPattern")?;
+    let id = checked_index(id, state.patterns.len(), "meta pattern")?;
+    Result::Ok(state.patterns[id])
+}
+
+fn struct_field(value: ast::StructDef, index: int) -> Result[(string, ast::TypeExpr), string] {
+    let index = checked_index(index, value.fields.len(), "derive field")?;
+    Result::Ok(value.fields[index])
+}
+
+fn enum_variant(value: ast::EnumDef, index: int) -> Result[ast::EnumVariant, string] {
+    let index = checked_index(index, value.variants.len(), "derive variant")?;
+    Result::Ok(value.variants[index])
+}
+
+fn variant_field_count(value: ast::EnumVariant) -> int {
+    match value.fields {
+        ast::EnumVariantFields::Unit => 0,
+        ast::EnumVariantFields::Tuple(values) => values.len(),
+        ast::EnumVariantFields::Struct(values) => values.len(),
+    }
+}
+
+fn variant_field(value: ast::EnumVariant, index: int) -> Result[(string, ast::TypeExpr), string] {
+    match value.fields {
+        ast::EnumVariantFields::Unit => Result::Err("unit variant has no fields"),
+        ast::EnumVariantFields::Tuple(values) => {
+            let index = checked_index(index, values.len(), "derive variant field")?;
+            Result::Ok((index.to_string(), values[index]))
+        },
+        ast::EnumVariantFields::Struct(values) => {
+            let index = checked_index(index, values.len(), "derive variant field")?;
+            Result::Ok(values[index])
+        },
+    }
+}
+
+fn attribute_value(values: Vec[ast::Attribute], index: int, description: string, text_value: bool) -> Result[
+    ctir::CtValue,
+    string,
+] {
+    let index = checked_index(index, values.len(), description)?;
+    if text_value {
+        Result::Ok(ctir::CtValue::String(values[index].text))
+    } else {
+        Result::Ok(ctir::CtValue::String(values[index].name))
+    }
+}
+
+fn binary_op(value: int) -> Result[ast::BinaryOp, string] {
+    match value {
+        0 => Result::Ok(ast::BinaryOp::Add),
+        1 => Result::Ok(ast::BinaryOp::Sub),
+        2 => Result::Ok(ast::BinaryOp::Mul),
+        3 => Result::Ok(ast::BinaryOp::Div),
+        4 => Result::Ok(ast::BinaryOp::Rem),
+        5 => Result::Ok(ast::BinaryOp::BitAnd),
+        6 => Result::Ok(ast::BinaryOp::BitOr),
+        7 => Result::Ok(ast::BinaryOp::BitXor),
+        8 => Result::Ok(ast::BinaryOp::Shl),
+        9 => Result::Ok(ast::BinaryOp::Shr),
+        10 => Result::Ok(ast::BinaryOp::And),
+        11 => Result::Ok(ast::BinaryOp::Or),
+        12 => Result::Ok(ast::BinaryOp::Less),
+        13 => Result::Ok(ast::BinaryOp::Greater),
+        14 => Result::Ok(ast::BinaryOp::LessEq),
+        15 => Result::Ok(ast::BinaryOp::GreaterEq),
+        16 => Result::Ok(ast::BinaryOp::Eq),
+        17 => Result::Ok(ast::BinaryOp::NotEq),
+        _ => Result::Err("unknown meta binary operator " + value.to_string()),
+    }
+}
+
+fn input_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -> Result[
+    ctir::CtValue,
+    string,
+] {
+    if name == "derive_item_name" {
+        return Result::Ok(ctir::CtValue::String(item_name(state.request.item)))
+    } else if name == "derive_item_kind" {
+        return Result::Ok(
+            int_value(
+                state,
+                match state.request.item {
+                    DeriveItem::Struct(_) => 0,
+                    DeriveItem::Enum(_) => 1,
+                },
+            ),
+        )
+    } else if name == "derive_generic_count" {
+        return Result::Ok(int_value(state, item_generics(state.request.item).len()))
+    } else if name == "derive_generic_name" {
+        let values = item_generics(state.request.item);
+        let index = checked_index(int_argument(args, 1)?, values.len(), "derive generic")?;
+        return Result::Ok(ctir::CtValue::String(values[index]))
+    } else if name == "derive_field_count" {
+        return match state.request.item {
+            DeriveItem::Struct(value) => Result::Ok(int_value(state, value.fields.len())),
+            DeriveItem::Enum(_) => Result::Err("derive_field_count expects a struct"),
+        }
+    } else if name == "derive_field_name" {
+        return match state.request.item {
+            DeriveItem::Struct(value) => {
+                let field = struct_field(value, int_argument(args, 1)?)?;
+                Result::Ok(ctir::CtValue::String(field.0))
+            },
+            DeriveItem::Enum(_) => Result::Err("derive_field_name expects a struct"),
+        }
+    } else if name == "derive_field_type" {
+        return match state.request.item {
+            DeriveItem::Struct(value) => {
+                let field = struct_field(value, int_argument(args, 1)?)?;
+                Result::Ok(push_type(state, field.1))
+            },
+            DeriveItem::Enum(_) => Result::Err("derive_field_type expects a struct"),
+        }
+    } else if name.starts_with("derive_field_attribute_") {
+        return match state.request.item {
+            DeriveItem::Struct(value) => {
+                let field = checked_index(
+                    int_argument(args, 1)?,
+                    value.field_attrs.len(),
+                    "derive field",
+                )?;
+                let values = value.field_attrs[field];
+                if name == "derive_field_attribute_count" {
+                    Result::Ok(int_value(state, values.len()))
+                } else {
+                    attribute_value(
+                        values,
+                        int_argument(args, 2)?,
+                        "derive field attribute",
+                        name == "derive_field_attribute_text",
+                    )
+                }
+            },
+            DeriveItem::Enum(_) => Result::Err("derive_field_attribute intrinsic expects a struct"),
+        }
+    } else if name == "derive_variant_count" {
+        return match state.request.item {
+            DeriveItem::Enum(value) => Result::Ok(int_value(state, value.variants.len())),
+            DeriveItem::Struct(_) => Result::Err("derive_variant_count expects an enum"),
+        }
+    } else if name == "derive_variant_name" {
+        return match state.request.item {
+            DeriveItem::Enum(value) => {
+                let variant = enum_variant(value, int_argument(args, 1)?)?;
+                Result::Ok(ctir::CtValue::String(variant.name))
+            },
+            DeriveItem::Struct(_) => Result::Err("derive_variant_name expects an enum"),
+        }
+    } else if name.starts_with("derive_variant_attribute_") {
+        return match state.request.item {
+            DeriveItem::Enum(value) => {
+                let variant = enum_variant(value, int_argument(args, 1)?)?;
+                if name == "derive_variant_attribute_count" {
+                    Result::Ok(int_value(state, variant.attrs.len()))
+                } else {
+                    attribute_value(
+                        variant.attrs,
+                        int_argument(args, 2)?,
+                        "derive variant attribute",
+                        name == "derive_variant_attribute_text",
+                    )
+                }
+            },
+            DeriveItem::Struct(_) => Result::Err(
+                "derive_variant_attribute intrinsic expects an enum",
+            ),
+        }
+    } else if name == "derive_variant_field_count" {
+        return match state.request.item {
+            DeriveItem::Enum(value) => {
+                let variant = enum_variant(value, int_argument(args, 1)?)?;
+                Result::Ok(int_value(state, variant_field_count(variant)))
+            },
+            DeriveItem::Struct(_) => Result::Err("derive_variant_field_count expects an enum"),
+        }
+    } else if name == "derive_variant_field_name" {
+        return match state.request.item {
+            DeriveItem::Enum(value) => {
+                let variant = enum_variant(value, int_argument(args, 1)?)?;
+                let field = variant_field(variant, int_argument(args, 2)?)?;
+                Result::Ok(ctir::CtValue::String(field.0))
+            },
+            DeriveItem::Struct(_) => Result::Err("derive_variant_field_name expects an enum"),
+        }
+    } else if name == "derive_variant_field_type" {
+        return match state.request.item {
+            DeriveItem::Enum(value) => {
+                let variant = enum_variant(value, int_argument(args, 1)?)?;
+                let field = variant_field(variant, int_argument(args, 2)?)?;
+                Result::Ok(push_type(state, field.1))
+            },
+            DeriveItem::Struct(_) => Result::Err("derive_variant_field_type expects an enum"),
+        }
+    } else if name.starts_with("derive_variant_field_attribute_") {
+        return match state.request.item {
+            DeriveItem::Enum(value) => {
+                let variant = enum_variant(value, int_argument(args, 1)?)?;
+                let field = checked_index(
+                    int_argument(args, 2)?,
+                    variant.field_attrs.len(),
+                    "derive variant field",
+                )?;
+                let values = variant.field_attrs[field];
+                if name == "derive_variant_field_attribute_count" {
+                    Result::Ok(int_value(state, values.len()))
+                } else {
+                    attribute_value(
+                        values,
+                        int_argument(args, 3)?,
+                        "derive variant field attribute",
+                        name == "derive_variant_field_attribute_text",
+                    )
+                }
+            },
+            DeriveItem::Struct(_) => Result::Err(
+                "derive_variant_field_attribute intrinsic expects an enum",
+            ),
+        }
+    } else if name == "derive_attribute_count" {
+        return Result::Ok(int_value(state, item_attributes(state.request.item).len()))
+    } else if name == "derive_attribute_name" || name == "derive_attribute_text" {
+        let values = item_attributes(state.request.item);
+        let index = checked_index(int_argument(args, 1)?, values.len(), "derive attribute")?;
+        if name == "derive_attribute_name" {
+            return Result::Ok(ctir::CtValue::String(values[index].name))
+        } else {
+            return Result::Ok(ctir::CtValue::String(values[index].text))
+        }
+    } else if name == "derive_target_type" {
+        return Result::Ok(push_type(state, target_type(state.request.item, span(state))))
+    } else if name == "derive_fresh_name" {
+        let id = state.fresh.get();
+        state.fresh.set(id + 1);
+        return Result::Ok(
+            ctir::CtValue::String("#derive" + id.to_string() + "_" + string_argument(args, 1)?),
+        )
+    } else {
+        Result::Err("unknown derive input intrinsic `" + name + "`")
+    }
+}
+
+fn type_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -> Result[
+    ctir::CtValue,
+    string,
+] {
+    if name == "meta_type_named" {
+        let value = string_argument(args, 1)?;
+        Result::Ok(
+            push_type(
+                state,
+                named_type(
+                    if value == "unit" || value == "bool" || value == "int" || value == "int8"
+                        || value == "int16"
+                        || value == "int32"
+                        || value == "int64"
+                        || value == "uint"
+                        || value == "uint8"
+                        || value == "byte"
+                        || value == "uint16"
+                        || value == "uint32"
+                        || value == "uint64"
+                        || value == "float32"
+                        || value == "float64"
+                        || value == "string"
+                        || value == "char" {
+                        value
+                    } else {
+                        definition_name(state, value)
+                    },
+                    span(state),
+                ),
+            ),
+        )
+    } else if name == "meta_type_call_site" {
+        Result::Ok(push_type(state, named_type(string_argument(args, 0)?, span(state))))
+    } else if name == "meta_type_list_new" {
+        let id = state.type_lists.len();
+        let values: Vec[ast::TypeExpr] = Vec::[];
+        state.type_lists.push(values);
+        Result::Ok(meta("MetaTypeList", id))
+    } else if name == "meta_type_list_push" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaTypeList")?,
+            state.type_lists.len(),
+            "meta type list",
+        )?;
+        state.type_lists[id].push(type_value(state, args, 1)?);
+        Result::Ok(unit_value())
+    } else if name == "meta_type_tuple" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaTypeList")?,
+            state.type_lists.len(),
+            "meta type list",
+        )?;
+        Result::Ok(push_type(state, ast::TypeExpr::Tuple { items: state.type_lists[id] }))
+    } else if name == "meta_type_apply" {
+        let base = type_value(state, args, 0)?;
+        let id = checked_index(
+            handle_argument(args, 1, "MetaTypeList")?,
+            state.type_lists.len(),
+            "meta type list",
+        )?;
+        Result::Ok(push_type(state, ast::TypeExpr::App { ty: base, args: state.type_lists[id] }))
+    } else if name == "meta_type_array" {
+        Result::Ok(
+            push_type(
+                state,
+                ast::TypeExpr::Array {
+                    len: int_argument(args, 1)?.to_string(),
+                    elem: type_value(state, args, 0)?,
+                },
+            ),
+        )
+    } else {
+        Result::Err("unknown derive type intrinsic `" + name + "`")
+    }
+}
+
+fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -> Result[
+    ctir::CtValue,
+    string,
+] {
+    let value_span = span(state);
+    if name == "meta_expr_var" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Path {
+                    path: path(string_argument(args, 0)?, value_span),
+                    owner_type_args: Vec::[],
+                    member_type_args: Vec::[],
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_unit" {
+        Result::Ok(push_expr(state, ast::Expr::Unit { span: value_span }))
+    } else if name == "meta_expr_bool" {
+        Result::Ok(
+            push_expr(state, ast::Expr::Bool { value: bool_argument(args, 0)?, span: value_span }),
+        )
+    } else if name == "meta_expr_int" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Int { value: int_argument(args, 0)?.to_string(), span: value_span },
+            ),
+        )
+    } else if name == "meta_expr_string" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::String { value: string_argument(args, 0)?, span: value_span },
+            ),
+        )
+    } else if name == "meta_expr_field" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Field {
+                    expr: expr_value(state, args, 0)?,
+                    field_name: string_argument(args, 1)?,
+                    method_type_args: Vec::[],
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_index" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Index {
+                    base: expr_value(state, args, 0)?,
+                    index: expr_value(state, args, 1)?,
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_binary" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Binary {
+                    op: binary_op(int_argument(args, 0)?)?,
+                    lhs: expr_value(state, args, 1)?,
+                    rhs: expr_value(state, args, 2)?,
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_call" || name == "meta_expr_call_site" {
+        let path_arg = if name == "meta_expr_call" {
+            1
+        } else {
+            0
+        };
+        let list_arg = if name == "meta_expr_call" {
+            2
+        } else {
+            1
+        };
+        let list = checked_index(
+            handle_argument(args, list_arg, "MetaExprList")?,
+            state.expr_lists.len(),
+            "meta expression list",
+        )?;
+        let function_name = if name == "meta_expr_call" {
+            definition_name(state, string_argument(args, path_arg)?)
+        } else {
+            string_argument(args, path_arg)?
+        };
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Call {
+                    func: ast::Expr::Path {
+                        path: path(function_name, value_span),
+                        owner_type_args: Vec::[],
+                        member_type_args: Vec::[],
+                        span: value_span,
+                    },
+                    args: state.expr_lists[list],
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_tuple" || name == "meta_expr_array" {
+        let list = checked_index(
+            handle_argument(args, 0, "MetaExprList")?,
+            state.expr_lists.len(),
+            "meta expression list",
+        )?;
+        let value = if name == "meta_expr_tuple" {
+            ast::Expr::Tuple { items: state.expr_lists[list], span: value_span }
+        } else {
+            ast::Expr::Array { items: state.expr_lists[list], span: value_span }
+        };
+        Result::Ok(push_expr(state, value))
+    } else if name == "meta_expr_if" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::If {
+                    cond: expr_value(state, args, 0)?,
+                    then_branch: expr_value(state, args, 1)?,
+                    else_branch: expr_value(state, args, 2)?,
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_match" {
+        let list = checked_index(
+            handle_argument(args, 1, "MetaArmList")?,
+            state.arm_lists.len(),
+            "meta arm list",
+        )?;
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Match {
+                    expr: expr_value(state, args, 0)?,
+                    arms: state.arm_lists[list],
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_cast" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Cast {
+                    expr: expr_value(state, args, 0)?,
+                    ty: type_value(state, args, 1)?,
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_expr_list_new" {
+        let id = state.expr_lists.len();
+        let values: Vec[ast::Expr] = Vec::[];
+        state.expr_lists.push(values);
+        Result::Ok(meta("MetaExprList", id))
+    } else if name == "meta_expr_list_push" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaExprList")?,
+            state.expr_lists.len(),
+            "meta expression list",
+        )?;
+        state.expr_lists[id].push(expr_value(state, args, 1)?);
+        Result::Ok(unit_value())
+    } else {
+        Result::Err("unknown derive expression intrinsic `" + name + "`")
+    }
+}
+
+fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -> Result[
+    ctir::CtValue,
+    string,
+] {
+    let value_span = span(state);
+    if name == "meta_pattern_wild" {
+        Result::Ok(push_pattern(state, ast::Pat::Wild { span: value_span }))
+    } else if name == "meta_pattern_bind" {
+        Result::Ok(
+            push_pattern(
+                state,
+                ast::Pat::Var { name: string_argument(args, 0)?, is_mut: false, span: value_span },
+            ),
+        )
+    } else if name == "meta_pattern_tuple" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaPatternList")?,
+            state.pattern_lists.len(),
+            "meta pattern list",
+        )?;
+        Result::Ok(
+            push_pattern(
+                state,
+                ast::Pat::Tuple { items: state.pattern_lists[id], span: value_span },
+            ),
+        )
+    } else if name == "meta_pattern_constructor" {
+        let id = checked_index(
+            handle_argument(args, 1, "MetaPatternList")?,
+            state.pattern_lists.len(),
+            "meta pattern list",
+        )?;
+        Result::Ok(
+            push_pattern(
+                state,
+                ast::Pat::Constr {
+                    constructor: path(string_argument(args, 0)?, value_span),
+                    args: state.pattern_lists[id],
+                    span: value_span,
+                },
+            ),
+        )
+    } else if name == "meta_pattern_list_new" {
+        let id = state.pattern_lists.len();
+        let values: Vec[ast::Pat] = Vec::[];
+        state.pattern_lists.push(values);
+        Result::Ok(meta("MetaPatternList", id))
+    } else if name == "meta_pattern_list_push" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaPatternList")?,
+            state.pattern_lists.len(),
+            "meta pattern list",
+        )?;
+        state.pattern_lists[id].push(pattern_value(state, args, 1)?);
+        Result::Ok(unit_value())
+    } else if name == "meta_arm" {
+        let id = state.arms.len();
+        state.arms.push(
+            ast::Arm {
+                pat: pattern_value(state, args, 0)?,
+                guard: Option::None,
+                body: expr_value(state, args, 1)?,
+            },
+        );
+        Result::Ok(meta("MetaArm", id))
+    } else if name == "meta_arm_list_new" {
+        let id = state.arm_lists.len();
+        let values: Vec[ast::Arm] = Vec::[];
+        state.arm_lists.push(values);
+        Result::Ok(meta("MetaArmList", id))
+    } else if name == "meta_arm_list_push" {
+        let list = checked_index(
+            handle_argument(args, 0, "MetaArmList")?,
+            state.arm_lists.len(),
+            "meta arm list",
+        )?;
+        let arm = checked_index(handle_argument(args, 1, "MetaArm")?, state.arms.len(), "meta arm")?;
+        state.arm_lists[list].push(state.arms[arm]);
+        Result::Ok(unit_value())
+    } else {
+        Result::Err("unknown derive pattern intrinsic `" + name + "`")
+    }
+}
+
+fn block_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -> Result[
+    ctir::CtValue,
+    string,
+] {
+    let value_span = span(state);
+    if name == "meta_block_new" {
+        let id = state.blocks.len();
+        state.blocks.push(ast::Block { stmts: Vec::[], tail: Option::None, span: value_span });
+        Result::Ok(meta("MetaBlock", id))
+    } else if name == "meta_block_let" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaBlock")?,
+            state.blocks.len(),
+            "meta block",
+        )?;
+        state.blocks[id].stmts.push(
+            ast::Stmt::Let {
+                is_mut: false,
+                pat: ast::Pat::Var {
+                    name: string_argument(args, 1)?,
+                    is_mut: false,
+                    span: value_span,
+                },
+                annotation: Option::None,
+                value: expr_value(state, args, 2)?,
+                else_branch: Option::None,
+                span: value_span,
+            },
+        );
+        Result::Ok(unit_value())
+    } else if name == "meta_block_expr" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaBlock")?,
+            state.blocks.len(),
+            "meta block",
+        )?;
+        state.blocks[id].stmts.push(
+            ast::Stmt::Expr { expr: expr_value(state, args, 1)?, span: value_span },
+        );
+        Result::Ok(unit_value())
+    } else if name == "meta_block_finish" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaBlock")?,
+            state.blocks.len(),
+            "meta block",
+        )?;
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::Block {
+                    block: ast::Block {
+                        stmts: state.blocks[id].stmts,
+                        tail: Option::Some(expr_value(state, args, 1)?),
+                        span: value_span,
+                    },
+                    span: value_span,
+                },
+            ),
+        )
+    } else {
+        Result::Err("unknown derive block intrinsic `" + name + "`")
+    }
+}
+
+fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -> Result[
+    ctir::CtValue,
+    string,
+] {
+    let value_span = span(state);
+    if name == "meta_param_list_new" {
+        let id = state.param_lists.len();
+        let values: Vec[(string, ast::TypeExpr)] = Vec::[];
+        state.param_lists.push(values);
+        Result::Ok(meta("MetaParamList", id))
+    } else if name == "meta_param_list_push" {
+        let id = checked_index(
+            handle_argument(args, 0, "MetaParamList")?,
+            state.param_lists.len(),
+            "meta parameter list",
+        )?;
+        state.param_lists[id].push((string_argument(args, 1)?, type_value(state, args, 2)?));
+        Result::Ok(unit_value())
+    } else if name == "meta_method" {
+        let params = checked_index(
+            handle_argument(args, 1, "MetaParamList")?,
+            state.param_lists.len(),
+            "meta parameter list",
+        )?;
+        let param_type_spans: Vec[ast::Span] = Vec::[];
+        for _ in state.param_lists[params] {
+            param_type_spans.push(value_span)
+        }
+        let id = state.methods.len();
+        state.methods.push(
+            ast::Function {
+                attrs: Vec::[],
+                visibility: ast::Visibility::Private,
+                name: string_argument(args, 0)?,
+                generics: Vec::[],
+                generic_bounds: Vec::[],
+                predicates: Vec::[],
+                params: state.param_lists[params],
+                param_type_spans,
+                ret_ty: Option::Some(type_value(state, args, 2)?),
+                ret_ty_span: Option::Some(value_span),
+                body: ast::Block {
+                    stmts: Vec::[],
+                    tail: Option::Some(expr_value(state, args, 3)?),
+                    span: value_span,
+                },
+            },
+        );
+        Result::Ok(meta("MetaMethod", id))
+    } else if name == "derive_output_new" || name == "derive_output_new_call_site" {
+        let trait_name = if name == "derive_output_new" {
+            definition_name(state, string_argument(args, 1)?)
+        } else {
+            string_argument(args, 1)?
+        };
+        let id = state.outputs.len();
+        state.outputs.push(
+            ast::ImplBlock {
+                attrs: Vec::[],
+                generics: item_generics(state.request.item),
+                generic_bounds: Vec::[],
+                predicates: Vec::[],
+                associated_types: Vec::[],
+                trait_ref: Option::Some(
+                    ast::TraitRef { path: path(trait_name, value_span), args: Vec::[] },
+                ),
+                for_type: target_type(state.request.item, value_span),
+                for_type_span: value_span,
+                methods: Vec::[],
+            },
+        );
+        Result::Ok(meta("DeriveOutput", id))
+    } else if name == "derive_output_add_predicate"
+        || name == "derive_output_add_call_site_predicate" {
+        let id = checked_index(
+            handle_argument(args, 0, "DeriveOutput")?,
+            state.outputs.len(),
+            "derive output",
+        )?;
+        let trait_name = if name == "derive_output_add_predicate" {
+            definition_name(state, string_argument(args, 2)?)
+        } else {
+            string_argument(args, 2)?
+        };
+        state.outputs[id].predicates.push(
+            ast::Predicate::Trait {
+                ty: type_value(state, args, 1)?,
+                trait_ref: ast::TraitRef { path: path(trait_name, value_span), args: Vec::[] },
+            },
+        );
+        Result::Ok(unit_value())
+    } else if name == "derive_output_add_method" {
+        let output = checked_index(
+            handle_argument(args, 0, "DeriveOutput")?,
+            state.outputs.len(),
+            "derive output",
+        )?;
+        let method = checked_index(
+            handle_argument(args, 1, "MetaMethod")?,
+            state.methods.len(),
+            "meta method",
+        )?;
+        state.outputs[output].methods.push(state.methods[method]);
+        Result::Ok(unit_value())
+    } else {
+        Result::Err("unknown derive output intrinsic `" + name + "`")
+    }
+}
+
+pub fn call_intrinsic(
+    state: DeriveState,
+    definition_package: string,
+    name: string,
+    args: Vec[ctir::CtValue],
+) -> Result[ctir::CtValue, string] {
+    state.definition_package.set(definition_package);
+    let operations = state.operations.get();
+    if operations >= 100000 {
+        return Result::Err("derive generated syntax limit exceeded")
+    } else {
+        state.operations.set(operations + 1)
+    };
+    if name.starts_with("derive_item_") || name.starts_with("derive_generic_")
+        || name.starts_with("derive_field_")
+        || name.starts_with("derive_variant_")
+        || name.starts_with("derive_attribute_")
+        || name == "derive_target_type"
+        || name == "derive_fresh_name" {
+        input_intrinsic(state, name, args)
+    } else if name.starts_with("meta_type_") {
+        type_intrinsic(state, name, args)
+    } else if name.starts_with("meta_expr_") {
+        expr_intrinsic(state, name, args)
+    } else if name.starts_with("meta_pattern_") || name.starts_with("meta_arm") {
+        pattern_intrinsic(state, name, args)
+    } else if name.starts_with("meta_block_") {
+        block_intrinsic(state, name, args)
+    } else {
+        output_intrinsic(state, name, args)
+    }
+}
+
+pub fn output(state: DeriveState, value: ctir::CtValue) -> Result[ast::ImplBlock, string] {
+    let id = match value {
+        ctir::CtValue::Meta { kind, id } => if kind == "DeriveOutput" {
+            id
+        } else {
+            return Result::Err("derive handler returned " + kind + " instead of DeriveOutput")
+        },
+        _ => return Result::Err("derive handler did not return DeriveOutput"),
+    };
+    let id = checked_index(id, state.outputs.len(), "derive output")?;
+    Result::Ok(state.outputs[id])
+}

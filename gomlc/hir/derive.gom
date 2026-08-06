@@ -2,7 +2,11 @@ package hir;
 
 use gomlc::ast;
 use gomlc::cst;
+use gomlc::ctfe;
+use gomlc::ctir;
+use gomlc::derive as derive_runtime;
 use std::collections;
+use std::text;
 
 fn dummy_span() -> ast::Span {
     ast::span(0, 0)
@@ -211,7 +215,7 @@ fn derives(attrs: Vec[ast::Attribute], name: string) -> bool {
                     ast::AttributeArg::Ident(target) => if target == name {
                         return true
                     } else {},
-                    ast::AttributeArg::String(_) => (),
+                    ast::AttributeArg::Path(_) | ast::AttributeArg::String(_) => (),
                 }
             }
         } else {}
@@ -228,20 +232,14 @@ fn validate_derive_attributes(attrs: Vec[ast::Attribute], diagnostics: Vec[cst::
         if attr.name == "derive" {
             for arg in attr.args {
                 match arg {
-                    ast::AttributeArg::Ident(target) => {
-                        let message = if !supported_derive(target) {
-                            Option::Some("unsupported derive target `" + target + "`")
-                        } else {
-                            Option::None
-                        };
-                        match message {
-                            Some(value) => diagnostics.push(
-                                cst::diagnostic(value, attr.span.start, attr.span.end),
-                            ),
-                            None => (),
-                        }
-                    },
-                    ast::AttributeArg::String(_) => (),
+                    ast::AttributeArg::Ident(_) | ast::AttributeArg::Path(_) => (),
+                    ast::AttributeArg::String(_) => diagnostics.push(
+                        cst::diagnostic(
+                            "derive target must be a path",
+                            attr.span.start,
+                            attr.span.end,
+                        ),
+                    ),
                 }
             }
         } else {}
@@ -895,7 +893,152 @@ fn trait_default_functions(value: ast::TraitDef) -> Vec[ast::Function] {
     result
 }
 
-fn expand_file_derives(value: ast::File) -> ast::File {
+fn use_alias(value: ast::UseDecl) -> string {
+    match value.alias {
+        Some(value) => value,
+        None => if value.path.segments.is_empty() {
+            ""
+        } else {
+            value.path.segments[value.path.segments.len() - 1].ident
+        },
+    }
+}
+
+fn resolved_derive_target(file: ast::File, target: string) -> Result[(string, string), string] {
+    let segments = text::split(target, "::");
+    if segments.len() < 2 {
+        return Result::Err("unsupported derive target `" + target + "`")
+    } else if segments.len() != 2 {
+        return Result::Err(
+            "custom derive target `" + target + "` must use an imported package alias",
+        )
+    } else {};
+    for value in file.uses {
+        if use_alias(value) == segments[0] {
+            return Result::Ok((path_key(value.path), segments[1]))
+        } else {}
+    }
+    Result::Err("derive target package `" + segments[0] + "` is not imported in this file")
+}
+
+fn resolve_derive_handler(file: ast::File, modules: Vec[ctir::CtModule], target: string) -> Result[
+    (ctir::CtModule, ctir::CtEntry),
+    string,
+] {
+    let resolved = resolved_derive_target(file, target)?;
+    let matches: Vec[(ctir::CtModule, ctir::CtEntry)] = Vec::[];
+    for module in modules {
+        if module.package_name != resolved.0 {
+            continue
+        } else {};
+        for entry in module.derive_entries {
+            if entry.public
+                && (entry.name == resolved.1 || entry.name == resolved.0 + "::" + resolved.1) {
+                matches.push((module, entry))
+            } else {}
+        }
+    }
+    if matches.is_empty() {
+        Result::Err("unsupported derive target `" + target + "`")
+    } else if matches.len() > 1 {
+        Result::Err("ambiguous derive target `" + target + "`")
+    } else {
+        Result::Ok(matches[0])
+    }
+}
+
+fn derive_dependencies(modules: Vec[ctir::CtModule], package_name: string) -> Vec[ctir::CtModule] {
+    let result: Vec[ctir::CtModule] = Vec::[];
+    for module in modules {
+        if module.package_name == package_name {} else {
+            result.push(module)
+        }
+    }
+    result
+}
+
+fn derive_error_message(value: ctfe::CtError) -> string {
+    let mut result = value.message;
+    if !value.stack.is_empty() {
+        result = result + "\ncomptime derive stack:";
+        for frame in value.stack {
+            result = result + "\n  " + frame.package_name + "::" + frame.function_name;
+        }
+    } else {};
+    result
+}
+
+fn expand_custom_derive(
+    file: ast::File,
+    item: derive_runtime::DeriveItem,
+    attribute: ast::Attribute,
+    target: string,
+    modules: Vec[ctir::CtModule],
+    diagnostics: Vec[cst::Diagnostic],
+) -> Option[ast::ImplBlock] {
+    let handler = match resolve_derive_handler(file, modules, target) {
+        Ok(value) => value,
+        Err(message) => {
+            diagnostics.push(cst::diagnostic(message, attribute.span.start, attribute.span.end));
+            return Option::None
+        },
+    };
+    match ctfe::evaluate_derive_entry(
+        handler.0,
+        derive_dependencies(modules, handler.0.package_name),
+        handler.1.name,
+        derive_runtime::DeriveRequest { item, attribute, handler_package: handler.0.package_name },
+        ctfe::default_limits(),
+    ) {
+        Ok(value) => Option::Some(value),
+        Err(error) => {
+            diagnostics.push(
+                cst::diagnostic(
+                    derive_error_message(error),
+                    attribute.span.start,
+                    attribute.span.end,
+                ),
+            );
+            Option::None
+        },
+    }
+}
+
+fn custom_derive_impls(
+    file: ast::File,
+    item: derive_runtime::DeriveItem,
+    attrs: Vec[ast::Attribute],
+    modules: Vec[ctir::CtModule],
+    diagnostics: Vec[cst::Diagnostic],
+) -> Vec[ast::ImplBlock] {
+    let result: Vec[ast::ImplBlock] = Vec::[];
+    for attribute in attrs {
+        if attribute.name == "derive" {
+            for arg in attribute.args {
+                let target = match arg {
+                    ast::AttributeArg::Ident(value) => if supported_derive(value) {
+                        continue
+                    } else {
+                        value
+                    },
+                    ast::AttributeArg::Path(value) => value,
+                    ast::AttributeArg::String(_) => continue,
+                };
+                match expand_custom_derive(file, item, attribute, target, modules, diagnostics) {
+                    Some(value) => result.push(value),
+                    None => (),
+                }
+            }
+        } else {}
+    }
+    result
+}
+
+fn expand_file_derives(
+    value: ast::File,
+    modules: Vec[ctir::CtModule],
+    diagnostics: Vec[cst::Diagnostic],
+) -> ast::File {
     let items: Vec[ast::Item] = Vec::[];
     for item in value.items {
         items.push(item);
@@ -904,9 +1047,27 @@ fn expand_file_derives(value: ast::File) -> ast::File {
                 for impl_block in derived_struct_impls(definition) {
                     items.push(ast::Item::ImplBlock(impl_block))
                 }
+                for impl_block in custom_derive_impls(
+                    value,
+                    derive_runtime::DeriveItem::Struct(definition),
+                    definition.attrs,
+                    modules,
+                    diagnostics,
+                ) {
+                    items.push(ast::Item::ImplBlock(impl_block))
+                }
             },
             EnumDef(definition) => {
                 for impl_block in derived_enum_impls(definition) {
+                    items.push(ast::Item::ImplBlock(impl_block))
+                }
+                for impl_block in custom_derive_impls(
+                    value,
+                    derive_runtime::DeriveItem::Enum(definition),
+                    definition.attrs,
+                    modules,
+                    diagnostics,
+                ) {
                     items.push(ast::Item::ImplBlock(impl_block))
                 }
             },
@@ -927,14 +1088,18 @@ fn expand_file_derives(value: ast::File) -> ast::File {
     }
 }
 
-pub fn expand_derives(value: ast::LowerResult) -> ast::LowerResult {
+pub fn expand_derives_with_comptime(value: ast::LowerResult, modules: Vec[ctir::CtModule]) -> ast::LowerResult {
     let diagnostics = value.diagnostics;
     let expanded = match value.ast {
         Some(file) => {
             validate_file_derives(file, diagnostics);
-            Option::Some(expand_file_derives(file))
+            Option::Some(expand_file_derives(file, modules, diagnostics))
         },
         None => Option::None,
     };
     ast::LowerResult { ast: expanded, diagnostics }
+}
+
+pub fn expand_derives(value: ast::LowerResult) -> ast::LowerResult {
+    expand_derives_with_comptime(value, Vec::[])
 }

@@ -13,7 +13,7 @@ fn function_context(
     type_params: Vec[string],
     predicates: Vec[TypePredicate],
     allow_unstructured_go: bool,
-    comptime: bool,
+    comptime: ComptimeCapability,
 ) -> Checker {
     let predicates = expand_implied_predicates(base, predicates);
     let param_aliases = predicate_type_aliases(predicates);
@@ -69,12 +69,12 @@ fn function_context(
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
         comptime_depth: Ref::new(
-            if comptime {
-                1
-            } else {
-                0
+            match comptime {
+                ComptimeCapability::Capable | ComptimeCapability::Derive => 1,
+                ComptimeCapability::RuntimeOnly => 0,
             },
         ),
+        comptime_capability: comptime,
         allow_unstructured_go,
     }
 }
@@ -131,6 +131,7 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         condition_depth: Ref::new(0),
         condition_loop_depth: Ref::new(0),
         comptime_depth: base.comptime_depth,
+        comptime_capability: base.comptime_capability,
         allow_unstructured_go: base.allow_unstructured_go,
     }
 }
@@ -143,7 +144,7 @@ fn attribute_allows(attrs: Vec[ast::Attribute], lint: string) -> bool {
                     ast::AttributeArg::Ident(value) => if value == lint {
                         return true
                     } else {},
-                    ast::AttributeArg::String(_) => (),
+                    ast::AttributeArg::String(_) | ast::AttributeArg::Path(_) => (),
                 }
             }
         } else {}
@@ -452,7 +453,7 @@ fn check_function(
     };
     let comptime_span = Ref::new(Option::None);
     for attribute in value.attrs {
-        if attribute.name == "comptime" {
+        if attribute.name == "comptime" || attribute.name == "comptime_derive" {
             comptime_span.set(Option::Some(attribute.span))
         } else {}
     }
@@ -484,9 +485,18 @@ fn check_function(
         ),
         true,
     );
+    let signature_ctx = function_context(
+        base,
+        Type::Unit,
+        self_ty,
+        type_params,
+        predicates,
+        false,
+        comptime,
+    );
     let previous_span = base.current_span.get();
     base.current_span.set(value.ret_ty_span);
-    let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
+    let ret_ty = resolve_signature_type(signature_ctx, raw_ret_ty, predicates, true);
     base.current_span.set(previous_span);
     let ctx = function_context(
         base,
@@ -495,10 +505,7 @@ fn check_function(
         type_params,
         predicates,
         attribute_allows(value.attrs, "unstructured_go"),
-        match comptime {
-            ComptimeCapability::Capable => true,
-            ComptimeCapability::RuntimeOnly => false,
-        },
+        comptime,
     );
     let comptime_origin_start = base.typeck_results.exprs.len();
     let params: Vec[(string, Type)] = Vec::[];
@@ -530,6 +537,30 @@ fn check_function(
         report_unresolved_block(ctx, value.body)
     } else {};
     let body = resolve_deferred_block(ctx, checked_body.0);
+    match comptime {
+        ComptimeCapability::Derive => if match value.visibility {
+            ast::Visibility::Public => true,
+            ast::Visibility::Private => false,
+        } {
+            let valid_param = params.len() == 1
+                && match resolve_type(params[0].1) {
+                    Type::Con { name } => name == "DeriveInput",
+                    _ => false,
+                };
+            let valid_return = match resolve_type(ret_ty) {
+                Type::Con { name } => name == "DeriveOutput",
+                _ => false,
+            };
+            if !valid_param || !valid_return {
+                push_diagnostic_at(
+                    base,
+                    "public #[comptime_derive] function must have signature (DeriveInput) -> DeriveOutput",
+                    comptime_span.get(),
+                )
+            } else {}
+        } else {},
+        _ => (),
+    };
     let comptime_origins: Vec[ast::Span] = Vec::[];
     for index in comptime_origin_start..base.typeck_results.exprs.len() {
         comptime_origins.push(base.typeck_results.exprs[index].span)
@@ -619,7 +650,15 @@ fn check_constant(base: Checker, value: hir::Constant) -> (
         push_diagnostic(base, "constant type must be bool, numeric, string, char, or byte")
     } else {};
     base.current_span.set(Option::Some(value.value.span));
-    let ctx = function_context(base, ty, Option::None, Vec::[], Vec::[], false, true);
+    let ctx = function_context(
+        base,
+        ty,
+        Option::None,
+        Vec::[],
+        Vec::[],
+        false,
+        ComptimeCapability::Capable,
+    );
     let comptime_origin_start = base.typeck_results.exprs.len();
     let checked = check_expr(ctx, value.value, Option::Some(ty));
     resolve_field_constraints(ctx);
@@ -1451,7 +1490,7 @@ fn validate_trait_impl_definition_requirements(
                 Vec::[],
                 predicates,
                 false,
-                false,
+                ComptimeCapability::RuntimeOnly,
             );
             validate_associated_type_cycles(validation_ctx, reference, associated_types);
             let substitutions = trait_substitutions(
@@ -2356,6 +2395,7 @@ fn validate_comptime_attributes(
     generic: bool,
 ) -> unit {
     let mut count = 0;
+    let mut derive_count = 0;
     for attribute in attrs {
         if attribute.name == "comptime" {
             count = count + 1;
@@ -2384,8 +2424,50 @@ fn validate_comptime_attributes(
                     )
                 } else {}
             }
+        } else if attribute.name == "comptime_derive" {
+            derive_count = derive_count + 1;
+            if !free_function {
+                comptime_attribute_diagnostic(
+                    ctx,
+                    attribute,
+                    "#[comptime_derive] is only valid on free function declarations",
+                )
+            } else {
+                if attribute.has_argument_list {
+                    comptime_attribute_diagnostic(
+                        ctx,
+                        attribute,
+                        "#[comptime_derive] does not accept arguments",
+                    )
+                } else {};
+                if derive_count > 1 {
+                    comptime_attribute_diagnostic(
+                        ctx,
+                        attribute,
+                        "duplicate #[comptime_derive] attribute",
+                    )
+                } else {};
+                if generic {
+                    comptime_attribute_diagnostic(
+                        ctx,
+                        attribute,
+                        "#[comptime_derive] functions cannot declare generic parameters or predicates",
+                    )
+                } else {}
+            }
         } else {}
     }
+    if count > 0 && derive_count > 0 {
+        for attribute in attrs {
+            if attribute.name == "comptime_derive" {
+                comptime_attribute_diagnostic(
+                    ctx,
+                    attribute,
+                    "function cannot be both #[comptime] and #[comptime_derive]",
+                )
+            } else {}
+        }
+    } else {}
 }
 
 fn validate_comptime_declarations(ctx: Checker, value: hir::File) -> unit {

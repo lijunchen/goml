@@ -78,6 +78,7 @@ pub struct Attribute {
 
 pub enum AttributeArg {
     Ident(string),
+    Path(string),
     String(string),
 }
 
@@ -170,9 +171,11 @@ pub struct EnumDef {
 }
 
 pub struct EnumVariant {
+    pub attrs: Vec[Attribute],
     pub name: string,
     pub fields: EnumVariantFields,
     pub field_type_spans: Vec[Span],
+    pub field_attrs: Vec[Vec[Attribute]],
 }
 
 pub enum EnumVariantFields {
@@ -188,6 +191,7 @@ pub struct StructDef {
     pub generics: Vec[string],
     pub fields: Vec[(string, TypeExpr)],
     pub field_type_spans: Vec[Span],
+    pub field_attrs: Vec[Vec[Attribute]],
     pub public_fields: Vec[string],
 }
 

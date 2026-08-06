@@ -1,6 +1,7 @@
 package tast;
 
 use gomlc::ast;
+use gomlc::derive;
 use gomlc::hir;
 use gomlc::numeric;
 use std::collections;
@@ -2534,6 +2535,18 @@ fn check_call_expr(
         },
         _ => typed_call_target(result, "<call>"),
     };
+    let call_capability = call_comptime_capability(ctx, result);
+    match call_capability {
+        ComptimeCapability::Derive => match ctx.comptime_capability {
+            ComptimeCapability::Derive => (),
+            _ => push_diagnostic_at(
+                ctx,
+                "#[comptime_derive] function is only callable from another derive handler",
+                Option::Some(call_span),
+            ),
+        },
+        _ => (),
+    };
     match result {
         Call {
             func: Callable { callable: Callable::Intrinsic("compile_error"), ty: _ },
@@ -2545,6 +2558,18 @@ fn check_call_expr(
                 "compile_error is only available in comptime",
                 Option::Some(call_span),
             )
+        } else {},
+        Call { func: Callable { callable: Callable::Intrinsic(name), ty: _ }, args: _, ty: _ } => if derive::is_intrinsic(
+            name,
+        ) {
+            match ctx.comptime_capability {
+                ComptimeCapability::Derive => (),
+                _ => push_diagnostic_at(
+                    ctx,
+                    "derive intrinsic `" + name + "` is only available in #[comptime_derive]",
+                    Option::Some(call_span),
+                ),
+            }
         } else {},
         _ => (),
     };
@@ -2563,7 +2588,7 @@ fn check_call_expr(
             callee_span: function_span,
             argument_spans,
             target,
-            comptime: call_comptime_capability(ctx, result),
+            comptime: call_capability,
             callee_ty: call_callee_type(result),
             result_ty: expr_type(result),
         },

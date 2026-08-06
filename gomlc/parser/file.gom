@@ -536,8 +536,13 @@ fn variant_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
     while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
-        if parser.at(lexer::TokenKind::Ident) {
-            variant(parser);
+        if parser.at(lexer::TokenKind::Ident) || parser.at(lexer::TokenKind::Pound) {
+            if parser.at(lexer::TokenKind::Pound) {
+                let attrs = attribute_list(parser);
+                variant_with_marker(parser, attrs.precede(parser))
+            } else {
+                variant(parser)
+            };
             if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace) {} else {
                 parser.error("expected `,` between enum variants")
             }
@@ -553,8 +558,14 @@ fn struct_field_list(parser: Parser) -> unit {
     parser.expect(lexer::TokenKind::LBrace);
     let marker = parser.open();
     while !parser.at(lexer::TokenKind::RBrace) && !parser.eof() {
-        if parser.at(lexer::TokenKind::Ident) || parser.at(lexer::TokenKind::PubKeyword) {
-            struct_field(parser);
+        if parser.at(lexer::TokenKind::Ident) || parser.at(lexer::TokenKind::PubKeyword)
+            || parser.at(lexer::TokenKind::Pound) {
+            if parser.at(lexer::TokenKind::Pound) {
+                let attrs = attribute_list(parser);
+                struct_field_with_marker(parser, attrs.precede(parser))
+            } else {
+                struct_field(parser)
+            };
             if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RBrace) {} else {
                 parser.error("expected `,` between struct fields")
             }
@@ -568,6 +579,10 @@ fn struct_field_list(parser: Parser) -> unit {
 
 fn struct_field(parser: Parser) -> unit {
     let marker = parser.open();
+    struct_field_with_marker(parser, marker)
+}
+
+fn struct_field_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     parser.eat(lexer::TokenKind::PubKeyword);
     parser.expect_lower_ident("field name");
     parser.expect(lexer::TokenKind::Colon);
@@ -577,13 +592,44 @@ fn struct_field(parser: Parser) -> unit {
 
 fn variant(parser: Parser) -> unit {
     let marker = parser.open();
+    variant_with_marker(parser, marker)
+}
+
+fn variant_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     parser.expect_upper_ident("enum variant name");
     if parser.at(lexer::TokenKind::LParen) {
-        type_list(parser)
+        variant_type_list(parser)
     } else if parser.at(lexer::TokenKind::LBrace) {
         struct_field_list(parser)
     } else {};
     let _ = parser.close(marker, cst::NodeKind::VARIANT);
+}
+
+fn variant_type_list(parser: Parser) -> unit {
+    let marker = parser.open();
+    parser.expect(lexer::TokenKind::LParen);
+    while !parser.at(lexer::TokenKind::RParen) && !parser.eof() {
+        if parser.at(lexer::TokenKind::Pound) || is_type_first(parser.peek()) {
+            let field_marker = if parser.at(lexer::TokenKind::Pound) {
+                attribute_list(parser).precede(parser)
+            } else {
+                parser.open()
+            };
+            if is_type_first(parser.peek()) {
+                type_expr(parser)
+            } else {
+                parser.error("expected a type after enum field attributes")
+            };
+            let _ = parser.close(field_marker, cst::NodeKind::ENUM_TUPLE_FIELD);
+            if parser.eat(lexer::TokenKind::Comma) {} else if parser.at(lexer::TokenKind::RParen) {} else {
+                parser.error("expected `,` between types")
+            }
+        } else {
+            parser.advance_with_error("expected a type")
+        }
+    }
+    parser.expect(lexer::TokenKind::RParen);
+    let _ = parser.close(marker, cst::NodeKind::TYPE_LIST);
 }
 
 fn type_list(parser: Parser) -> unit {

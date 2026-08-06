@@ -40,12 +40,26 @@ fn path_last(path: Path) -> Option[string] {
     }
 }
 
+fn push_attribute_path(args: Vec[AttributeArg], segments: Vec[string]) -> unit {
+    if segments.is_empty() {} else if segments.len() == 1 {
+        args.push(AttributeArg::Ident(segments[0]))
+    } else {
+        let mut value = segments[0];
+        for index in 1..segments.len() {
+            value = value + "::" + segments[index];
+        }
+        args.push(AttributeArg::Path(value))
+    }
+    segments.clear()
+}
+
 fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
     let attrs: Vec[Attribute] = Vec::[];
     match first_child(node, cst::NodeKind::ATTRIBUTE_LIST) {
         Some(list) => for attr in children_of_kind(list, cst::NodeKind::ATTRIBUTE) {
             let mut name = "";
             let args: Vec[AttributeArg] = Vec::[];
+            let path_segments: Vec[string] = Vec::[];
             let mut in_args = false;
             let mut has_argument_list = false;
             for token in direct_tokens(attr) {
@@ -55,18 +69,23 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                         has_argument_list = true;
                     },
                     lexer::TokenKind::RParen => {
+                        push_attribute_path(args, path_segments);
                         in_args = false;
                     },
                     lexer::TokenKind::Ident => if in_args {
-                        args.push(AttributeArg::Ident(token.token.text))
+                        path_segments.push(token.token.text)
                     } else {
                         name = token.token.text;
                     },
                     lexer::TokenKind::Str => if in_args {
+                        push_attribute_path(args, path_segments);
                         match strip_delimiters(token.token.text) {
                             Some(value) => args.push(AttributeArg::String(unescape_string(value))),
                             None => (),
                         }
+                    } else {},
+                    lexer::TokenKind::Comma => if in_args {
+                        push_attribute_path(args, path_segments)
                     } else {},
                     _ => (),
                 }

@@ -145,7 +145,7 @@ fn collect_function_test(
         } else if ignore_attr.args.len() == 1 {
             match ignore_attr.args[0] {
                 String(reason) => Option::Some(reason),
-                Ident(_) => {
+                Ident(_) | Path(_) => {
                     diagnostics.push(
                         package_test_diagnostic(
                             "attribute",

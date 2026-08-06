@@ -27,6 +27,7 @@ pub enum CtType {
         name: string,
         variants: Vec[Vec[CtType]],
     },
+    Meta(string),
 }
 
 pub enum CtValue {
@@ -49,6 +50,10 @@ pub enum CtValue {
         name: string,
         variant: int,
         fields: Vec[CtValue],
+    },
+    Meta {
+        kind: string,
+        id: int,
     },
 }
 
@@ -91,6 +96,7 @@ pub enum CtCallTarget {
         package_name: string,
         entry_name: string,
     },
+    Intrinsic(string),
 }
 
 pub enum CtPattern {
@@ -245,6 +251,7 @@ pub struct CtFunction {
 pub struct CtEntry {
     pub name: string,
     pub function_id: int,
+    pub public: bool,
 }
 
 pub enum CtSiteKind {
@@ -271,6 +278,7 @@ pub struct CtModule {
     pub target: CtTarget,
     pub functions: Vec[CtFunction],
     pub entries: Vec[CtEntry],
+    pub derive_entries: Vec[CtEntry],
     pub sites: Vec[CtSite],
     pub constants: Vec[CtConstant],
     pub origins: Vec[CtOrigin],
@@ -284,6 +292,7 @@ pub fn empty_module(package_name: string) -> CtModule {
         target: CtTarget { int_width: 64 },
         functions: Vec::[],
         entries: Vec::[],
+        derive_entries: Vec::[],
         sites: Vec::[],
         constants: Vec::[],
         origins,
@@ -363,7 +372,7 @@ fn collect_reachable_expr(
                 Local(id) => {
                     let _ = push_reachable_id(ids, id);
                 },
-                External { .. } => (),
+                External { .. } | Intrinsic(_) => (),
             };
             for value in args {
                 collect_reachable_expr(package_name, value, ids, constants)
@@ -410,6 +419,13 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
             let _ = push_reachable_id(ids, entry.function_id);
         } else {}
     }
+    let derive_entries: Vec[CtEntry] = Vec::[];
+    for entry in value.derive_entries {
+        if entry.public {
+            derive_entries.push(entry);
+            let _ = push_reachable_id(ids, entry.function_id);
+        } else {}
+    }
     let mut index = 0;
     while index < ids.len() {
         for function in value.functions {
@@ -436,6 +452,7 @@ pub fn public_module(value: CtModule, public_entries: Vec[string], public_consta
         target: value.target,
         functions,
         entries,
+        derive_entries,
         sites: Vec::[],
         constants: {
             let result: Vec[CtConstant] = Vec::[];

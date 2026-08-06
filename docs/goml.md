@@ -455,7 +455,7 @@ fn table() -> [int; 4] {
 
 A top-level constant initializer is an implicit compile-time context, so `const six: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. Top-level constants retain their scalar-only restriction. A `comptime` expression in ordinary code may produce a reifiable tuple, fixed array, struct, or enum in addition to `unit`, `bool`, integer, `string`, and `char` values.
 
-Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, `break`, `continue`, `return`, recursion, direct calls, and supported integer casts and operators. It cannot capture a surrounding runtime parameter or local. Closures, indirect calls, generic functions, methods, trait or dynamic dispatch, `for`, floating-point computation, `Ref`, `Vec`, `HashMap`, channels, goroutines, extern calls, host I/O, environment access, time, randomness, network access, type reflection, declaration generation, compile-time parameters, value generics, and type-level computation are not supported.
+Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, `break`, `continue`, `return`, recursion, direct calls, and supported integer casts and operators. It cannot capture a surrounding runtime parameter or local. Closures, indirect calls, generic functions, methods, trait or dynamic dispatch, `for`, floating-point computation, `Ref`, `Vec`, `HashMap`, channels, goroutines, extern calls, host I/O, environment access, time, randomness, network access, general type reflection, arbitrary declaration generation, compile-time parameters, value generics, and type-level computation are not supported. The constrained programmable derive interface described below is the only reflection and code-generation facility.
 
 `compile_error` is accepted only in a `#[comptime]` function, a `comptime` block, or a top-level constant initializer. It terminates compile-time evaluation with its message. If runtime execution of a `#[comptime]` function reaches it, the program traps:
 
@@ -1596,6 +1596,127 @@ All fields or variant payloads must support the derived trait. For a generic def
 
 Derived `Eq` provides `Eq::eq(left, right)`, making the type usable with `==` / `!=` and satisfying the key constraints of `HashMap`.
 
+### Programmable derive
+
+A dependency package may export a compile-time derive handler:
+
+```goml
+package labels;
+
+pub trait Label {
+    fn label(self: Self) -> string;
+}
+
+#[comptime_derive]
+pub fn derive_label(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "Label");
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    let body = meta_expr_string(derive_item_name(input));
+    let method = meta_method("label", params, meta_type_call_site("string"), body);
+    derive_output_add_method(output, method);
+    output
+}
+```
+
+Another package applies the handler through an imported package path:
+
+```goml
+use alice::labels;
+use labels::Label;
+
+#[derive(labels::derive_label)]
+struct User {
+    name: string,
+}
+```
+
+A custom handler path must have the form `package_alias::handler`, where `package_alias` is introduced by a `use` in the same source file. Bare handler names, unimported canonical package paths, and handlers visible only through a transitive dependency are rejected.
+
+`#[comptime_derive]` is valid only on a non-generic free function. A public handler must have the exact signature `(DeriveInput) -> DeriveOutput`. Private functions with the same attribute are compile-time-only helpers and are included in the interface when reachable from a public handler. A derive handler may call those helpers and ordinary `#[comptime]` functions, but it cannot be called from runtime code or ordinary value `comptime`. Derive handlers are not exported as runtime functions.
+
+The first version resolves handlers from already compiled dependency interfaces. A handler cannot be defined and applied within the same package compilation. Put reusable handlers and their generated traits in a separate package. The target may be a generic struct or enum; the generated impl inherits its type parameters. `derive_output_add_predicate` and `derive_output_add_call_site_predicate` add the bounds required by generated methods.
+
+The input reflection operations are:
+
+```text
+derive_item_name(input) -> string
+derive_item_kind(input) -> int
+derive_generic_count(input) -> int
+derive_generic_name(input, index) -> string
+derive_field_count/name/type(...)
+derive_variant_count/name(...)
+derive_variant_field_count/name/type(...)
+derive_attribute_count/name/text(...)
+derive_field_attribute_count/name/text(...)
+derive_variant_attribute_count/name/text(...)
+derive_variant_field_attribute_count/name/text(...)
+derive_target_type(input) -> MetaType
+derive_fresh_name(input, prefix) -> string
+```
+
+`derive_item_kind` returns zero for a struct and one for an enum. The count operation for a nested attribute takes the owner indexes; its name and text operations take one additional attribute index. Field operations require a struct, while variant operations require an enum. Invalid kinds and indexes are compile-time errors at the `#[derive(...)]` site. Attributes may be attached to struct fields, enum variants, and tuple or named variant fields. `name` returns the attribute name and `text` returns its complete source spelling.
+
+The structured output API provides opaque `MetaType`, `MetaExpr`, `MetaPattern`, `MetaArm`, `MetaBlock`, `MetaParamList`, `MetaMethod`, and list handles. Constructors use the `meta_type_*`, `meta_expr_*`, `meta_pattern_*`, `meta_arm*`, `meta_block_*`, and `meta_param_list_*` families. `meta_method` creates a concrete, non-generic trait method. A handler creates its single result with `derive_output_new` or `derive_output_new_call_site`, adds trait predicates and methods, and returns it.
+
+The builder operations are:
+
+```text
+meta_type_named(input, name) -> MetaType
+meta_type_call_site(name) -> MetaType
+meta_type_list_new() -> MetaTypeList
+meta_type_list_push(list, type) -> unit
+meta_type_tuple(list) -> MetaType
+meta_type_apply(type, arguments) -> MetaType
+meta_type_array(element, length) -> MetaType
+
+meta_expr_var(name) -> MetaExpr
+meta_expr_unit/bool/int/string(value...) -> MetaExpr
+meta_expr_field(value, name) -> MetaExpr
+meta_expr_index(value, index) -> MetaExpr
+meta_expr_binary(operator, left, right) -> MetaExpr
+meta_expr_call(input, name, arguments) -> MetaExpr
+meta_expr_call_site(name, arguments) -> MetaExpr
+meta_expr_tuple/array(elements) -> MetaExpr
+meta_expr_if(condition, then, else) -> MetaExpr
+meta_expr_match(value, arms) -> MetaExpr
+meta_expr_cast(value, type) -> MetaExpr
+meta_expr_list_new() -> MetaExprList
+meta_expr_list_push(list, expression) -> unit
+
+meta_pattern_wild() -> MetaPattern
+meta_pattern_bind(name) -> MetaPattern
+meta_pattern_tuple(patterns) -> MetaPattern
+meta_pattern_constructor(name, patterns) -> MetaPattern
+meta_pattern_list_new() -> MetaPatternList
+meta_pattern_list_push(list, pattern) -> unit
+meta_arm(pattern, expression) -> MetaArm
+meta_arm_list_new() -> MetaArmList
+meta_arm_list_push(list, arm) -> unit
+
+meta_block_new() -> MetaBlock
+meta_block_let(block, name, value) -> unit
+meta_block_expr(block, expression) -> unit
+meta_block_finish(block, tail) -> MetaExpr
+meta_param_list_new() -> MetaParamList
+meta_param_list_push(list, name, type) -> unit
+meta_method(name, parameters, return_type, body) -> MetaMethod
+
+derive_output_new(input, trait_name) -> DeriveOutput
+derive_output_new_call_site(input, trait_name) -> DeriveOutput
+derive_output_add_predicate(output, type, trait_name) -> unit
+derive_output_add_call_site_predicate(output, type, trait_name) -> unit
+derive_output_add_method(output, method) -> unit
+```
+
+`meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
+
+Unqualified names passed to `derive_output_new`, `derive_output_add_predicate`, `meta_type_named`, and `meta_expr_call` resolve in the handler's defining package. Their `_call_site` variants resolve in the target package. `derive_fresh_name` should be used for generated local bindings that must not collide with user names. Constructor patterns describe the target item and resolve at the call site.
+
+The result is restricted to one trait `impl` for the annotated type. It cannot create types, traits, functions, constants, modules, imports, inherent impls, extern declarations, attributes, generic methods, associated types, or raw tokens. The generated impl is processed by ordinary name resolution, orphan and coherence checks, type checking, monomorphization, and backend lowering. Duplicate or invalid generated implementations are regular compiler diagnostics.
+
+Handlers are deterministic and have no host access. Imported derive CTIR is verified as untrusted artifact data. Evaluation uses the ordinary compile-time limits plus a limit of 100,000 metadata and syntax-builder operations. Failures are anchored to the requesting derive attribute and include the compile-time derive call stack.
+
 ## Go FFI
 
 The typed Go FFI binds a top-level GoML declaration to an exported package-level Go function:
@@ -2195,6 +2316,8 @@ item          = attribute* visibility? function
 visibility    = "pub"
 attribute     = "#[" attribute_body "]"
 comptime_attribute = "#[" "comptime" "]"
+comptime_derive_attribute = "#[" "comptime_derive" "]"
+derive_attribute = "#[" "derive" "(" path ("," path)* ")" "]"
 go_ffi_attribute = "#[" "go_ffi" "(" string_literal "," string_literal ")" "]"
 go_ffi_extern = go_ffi_attribute visibility? "extern" "fn" lower_ident
                 param_list return_type? ";"

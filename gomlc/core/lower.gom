@@ -1822,16 +1822,19 @@ fn lower_file_with_types(
     let functions: Vec[Function] = Vec::[];
     for item in value.items {
         match item {
-            Function(function) => functions.push(
-                lower_function(
-                    ctx,
-                    function.name,
-                    FunctionOrigin::Source,
-                    Option::None,
-                    function,
-                    false,
+            Function(function) => match function.comptime {
+                tast::ComptimeCapability::Derive => (),
+                _ => functions.push(
+                    lower_function(
+                        ctx,
+                        function.name,
+                        FunctionOrigin::Source,
+                        Option::None,
+                        function,
+                        false,
+                    ),
                 ),
-            ),
+            },
             ImplBlock(block) => for method in block.methods {
                 let trait_impl = match block.trait_ref {
                     Some(reference) => Option::Some(

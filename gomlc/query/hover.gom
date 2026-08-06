@@ -32,6 +32,7 @@ fn hover_function_text(
             let builder = text::StringBuilder::new();
             match capability {
                 tast::ComptimeCapability::Capable => builder.write_string("comptime "),
+                tast::ComptimeCapability::Derive => builder.write_string("comptime derive "),
                 tast::ComptimeCapability::RuntimeOnly => (),
             };
             if !generics.is_empty() {
@@ -57,6 +58,7 @@ fn hover_call_text(capability: tast::ComptimeCapability, ty: tast::Type) -> Opti
     match hover_text(ty) {
         Some(signature) => match capability {
             tast::ComptimeCapability::Capable => Option::Some("comptime " + signature),
+            tast::ComptimeCapability::Derive => Option::Some("comptime derive " + signature),
             tast::ComptimeCapability::RuntimeOnly => Option::Some(signature),
         },
         None => Option::None,

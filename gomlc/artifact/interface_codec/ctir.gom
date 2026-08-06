@@ -51,6 +51,10 @@ fn ctir_type(writer: wire::ArtifactJsonWriter, value: ctir::CtType) -> unit {
             }
             wire::artifact_json_end_array(writer)
         },
+        ctir::CtType::Meta(name) => {
+            ctir_tag(writer, "meta");
+            wire::artifact_json_string(writer, name)
+        },
     };
     wire::artifact_json_end_array(writer)
 }
@@ -103,6 +107,11 @@ fn ctir_value(writer: wire::ArtifactJsonWriter, value: ctir::CtValue) -> unit {
             wire::artifact_json_string(writer, name);
             ctir_number(writer, variant);
             ctir_values(writer, fields)
+        },
+        ctir::CtValue::Meta { kind, id } => {
+            ctir_tag(writer, "meta");
+            wire::artifact_json_string(writer, kind);
+            ctir_number(writer, id)
         },
     };
     wire::artifact_json_end_array(writer)
@@ -325,6 +334,10 @@ fn ctir_expr(writer: wire::ArtifactJsonWriter, value: ctir::CtExpr, semantic: bo
                     wire::artifact_json_string(writer, package_name);
                     wire::artifact_json_string(writer, entry_name)
                 },
+                ctir::CtCallTarget::Intrinsic(name) => {
+                    ctir_tag(writer, "intrinsic");
+                    wire::artifact_json_string(writer, name)
+                },
             };
             wire::artifact_json_end_array(writer);
             ctir_exprs(writer, args, semantic)
@@ -477,6 +490,22 @@ fn ctir_module(writer: wire::ArtifactJsonWriter, value: ctir::CtModule, semantic
         wire::artifact_json_begin_array(writer);
         wire::artifact_json_string(writer, entry.name);
         ctir_number(writer, entry.function_id);
+        wire::artifact_json_bool(writer, entry.public);
+        wire::artifact_json_end_array(writer)
+    }
+    wire::artifact_json_end_array(writer);
+    wire::artifact_json_name(writer, "derive_entries");
+    let derive_entries = value.derive_entries;
+    collections::sort_by_ordering(
+        derive_entries,
+        |left: ctir::CtEntry, right: ctir::CtEntry| cmp::compare(left.name, right.name),
+    );
+    wire::artifact_json_begin_array(writer);
+    for entry in derive_entries {
+        wire::artifact_json_begin_array(writer);
+        wire::artifact_json_string(writer, entry.name);
+        ctir_number(writer, entry.function_id);
+        wire::artifact_json_bool(writer, entry.public);
         wire::artifact_json_end_array(writer)
     }
     wire::artifact_json_end_array(writer);
@@ -523,7 +552,7 @@ fn ctir_semantic_hash(value: ctir::CtModule) -> string {
 
 pub fn new_comptime_unit(value: ctir::CtModule) -> artifact::ArtifactComptimeUnit {
     artifact::ArtifactComptimeUnit {
-        version: 1,
+        version: 2,
         module: value,
         semantic_hash: ctir_semantic_hash(value),
     }
@@ -642,6 +671,10 @@ fn decode_ctir_type(value: wire::ArtifactValue) -> Result[ctir::CtType, string] 
             }
             Result::Ok(ctir::CtType::Enum { name: ctir_string(values[1], "enum name")?, variants })
         },
+        "meta" => {
+            ctir_expect_length(values, 2, "meta type")?;
+            Result::Ok(ctir::CtType::Meta(ctir_string(values[1], "meta type name")?))
+        },
         _ => Result::Err(wire::artifact_decode_error("CTIR type tag")),
     }
 }
@@ -741,6 +774,15 @@ fn decode_ctir_value(value: wire::ArtifactValue) -> Result[ctir::CtValue, string
                     name: ctir_string(values[1], "enum value name")?,
                     variant: ctir_int(values[2], "enum value variant")?,
                     fields: decode_ctir_values(values[3])?,
+                },
+            )
+        },
+        "meta" => {
+            ctir_expect_length(values, 3, "meta value")?;
+            Result::Ok(
+                ctir::CtValue::Meta {
+                    kind: ctir_string(values[1], "meta value kind")?,
+                    id: ctir_int(values[2], "meta value id")?,
                 },
             )
         },
@@ -1027,6 +1069,10 @@ fn decode_ctir_expr(value: wire::ArtifactValue) -> Result[ctir::CtExpr, string] 
                         entry_name: ctir_string(target_value[2], "external entry")?,
                     }
                 },
+                "intrinsic" => {
+                    ctir_expect_length(target_value, 2, "intrinsic call target")?;
+                    ctir::CtCallTarget::Intrinsic(ctir_string(target_value[1], "intrinsic name")?)
+                },
                 _ => return Result::Err(wire::artifact_decode_error("CTIR call target tag")),
             };
             ctir::CtExprKind::Call { target, args: decode_ctir_exprs(values[4])? }
@@ -1159,11 +1205,24 @@ fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, stri
     let entries: Vec[ctir::CtEntry] = Vec::[];
     for value in wire::artifact_json_field_array(object, "entries")? {
         let fields = ctir_array(value, "entry")?;
-        ctir_expect_length(fields, 2, "entry")?;
+        ctir_expect_length(fields, 3, "entry")?;
         entries.push(
             ctir::CtEntry {
                 name: ctir_string(fields[0], "entry name")?,
                 function_id: ctir_int(fields[1], "entry function id")?,
+                public: ctir_bool(fields[2], "entry visibility")?,
+            },
+        )
+    }
+    let derive_entries: Vec[ctir::CtEntry] = Vec::[];
+    for value in wire::artifact_json_field_array(object, "derive_entries")? {
+        let fields = ctir_array(value, "derive entry")?;
+        ctir_expect_length(fields, 3, "derive entry")?;
+        derive_entries.push(
+            ctir::CtEntry {
+                name: ctir_string(fields[0], "derive entry name")?,
+                function_id: ctir_int(fields[1], "derive entry function id")?,
+                public: ctir_bool(fields[2], "derive entry visibility")?,
             },
         )
     }
@@ -1196,6 +1255,7 @@ fn decode_ctir_module(value: wire::ArtifactValue) -> Result[ctir::CtModule, stri
             target,
             functions,
             entries,
+            derive_entries,
             sites: Vec::[],
             constants,
             origins,
@@ -1209,7 +1269,7 @@ pub fn artifact_decode_comptime_unit(value: wire::ArtifactValue) -> Result[
 ] {
     let object = wire::artifact_json_object(value, "comptime unit")?;
     let version = ctir_int(wire::artifact_json_required_field(object, "version")?, "version")?;
-    if version != 1 {
+    if version != 2 {
         return Result::Err("unsupported comptime artifact version")
     } else {};
     let module = decode_ctir_module(wire::artifact_json_required_field(object, "module")?)?;

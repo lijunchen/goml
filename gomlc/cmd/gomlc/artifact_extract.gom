@@ -477,9 +477,12 @@ fn artifact_package_exports(
         } else {}
     }
     for function in signatures.functions {
-        if !public_only || collections::contains(public_names, function.name) {
-            result.functions.push(artifact_fn_scheme(function))
-        } else {}
+        match function.comptime {
+            tast::ComptimeCapability::Derive => (),
+            _ => if !public_only || collections::contains(public_names, function.name) {
+                result.functions.push(artifact_fn_scheme(function))
+            } else {},
+        }
     }
     for value in signatures.constants {
         if !public_only || collections::contains(public_names, value.name) {
@@ -516,7 +519,7 @@ fn artifact_comptime_unit(value: ctir::CtModule, exports: artifact::ArtifactPack
     for function in exports.functions {
         match function.comptime {
             tast::ComptimeCapability::Capable => entries.push(function.name),
-            tast::ComptimeCapability::RuntimeOnly => (),
+            tast::ComptimeCapability::RuntimeOnly | tast::ComptimeCapability::Derive => (),
         }
     }
     for constant in exports.constants {
@@ -537,7 +540,7 @@ fn artifact_comptime_unit(value: ctir::CtModule, exports: artifact::ArtifactPack
             },
         )
     }
-    if module.entries.is_empty() && module.constants.is_empty() {
+    if module.entries.is_empty() && module.derive_entries.is_empty() && module.constants.is_empty() {
         Option::None
     } else {
         Option::Some(interface_codec::new_comptime_unit(module))

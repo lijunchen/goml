@@ -1,6 +1,8 @@
 package ctfe;
 
+use gomlc::ast;
 use gomlc::ctir;
+use gomlc::derive;
 
 pub struct EvalLimits {
     pub fuel: int,
@@ -61,6 +63,7 @@ struct EvalState {
     limits: EvalLimits,
     stack: Vec[CtStackFrame],
     memo: Vec[CtMemoEntry],
+    derive_state: Option[derive::DeriveState],
 }
 
 pub fn default_limits() -> EvalLimits {
@@ -155,6 +158,7 @@ fn value_byte_size(value: ctir::CtValue) -> int {
             }
             result
         },
+        ctir::CtValue::Meta { kind, id: _ } => kind.byte_len() + 8,
     }
 }
 
@@ -277,6 +281,12 @@ fn values_equal(left: ctir::CtValue, right: ctir::CtValue) -> bool {
                 == right_name
                 && variant == right_variant
                 && value_lists_equal(fields, right_fields),
+            _ => false,
+        },
+        ctir::CtValue::Meta { kind, id } => match right {
+            ctir::CtValue::Meta { kind: right_kind, id: right_id } => {
+                kind == right_kind && id == right_id
+            },
             _ => false,
         },
     }
@@ -849,6 +859,15 @@ fn find_entry(value: ctir::CtModule, name: string) -> Option[ctir::CtFunction] {
     Option::None
 }
 
+fn find_derive_entry(value: ctir::CtModule, name: string) -> Option[ctir::CtFunction] {
+    for entry in value.derive_entries {
+        if entry.name == name {
+            return find_function(value, entry.function_id)
+        } else {}
+    }
+    Option::None
+}
+
 fn call_target(state: EvalState, current: ctir::CtModule, target: ctir::CtCallTarget) -> Option[
     (ctir::CtModule, ctir::CtFunction),
 ] {
@@ -863,10 +882,14 @@ fn call_target(state: EvalState, current: ctir::CtModule, target: ctir::CtCallTa
         ) {
             Some(module) => match find_entry(module, entry_name) {
                 Some(function) => Option::Some((module, function)),
-                None => Option::None,
+                None => match find_derive_entry(module, entry_name) {
+                    Some(function) => Option::Some((module, function)),
+                    None => Option::None,
+                },
             },
             None => Option::None,
         },
+        ctir::CtCallTarget::Intrinsic(_) => Option::None,
     }
 }
 
@@ -918,9 +941,12 @@ fn eval_function(
             )
         } else {}
     }
-    match find_memoized(state, module.package_name, function.id, args) {
-        Some(value) => return Result::Ok(value),
-        None => (),
+    match state.derive_state {
+        Some(_) => (),
+        None => match find_memoized(state, module.package_name, function.id, args) {
+            Some(value) => return Result::Ok(value),
+            None => (),
+        },
     };
     state.call_depth.set(state.call_depth.get() + 1);
     state.stack.push(
@@ -949,14 +975,17 @@ fn eval_function(
     state.call_depth.set(state.call_depth.get() - 1);
     match result {
         Ok(EvalFlow::Value(value)) | Ok(EvalFlow::Return(value)) => {
-            state.memo.push(
-                CtMemoEntry {
-                    package_name: module.package_name,
-                    function_id: function.id,
-                    args,
-                    value,
-                },
-            );
+            match state.derive_state {
+                Some(_) => (),
+                None => state.memo.push(
+                    CtMemoEntry {
+                        package_name: module.package_name,
+                        function_id: function.id,
+                        args,
+                        value,
+                    },
+                ),
+            };
             Result::Ok(value)
         },
         Ok(_) => Result::Err(
@@ -1287,6 +1316,32 @@ fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: 
         },
         ctir::CtExprKind::Call { target, args } => {
             let args = eval_values(state, module, frame, args)?;
+            match target {
+                ctir::CtCallTarget::Intrinsic(name) => {
+                    let Some(derive_state) = state.derive_state else {
+                        return Result::Err(
+                            ct_error(
+                                state,
+                                module,
+                                value.origin,
+                                "derive intrinsic is unavailable in value comptime",
+                            ),
+                        )
+                    };
+                    return match derive::call_intrinsic(
+                        derive_state,
+                        module.package_name,
+                        name,
+                        args,
+                    ) {
+                        Ok(result) => Result::Ok(EvalFlow::Value(result)),
+                        Err(message) => {
+                            Result::Err(ct_error(state, module, value.origin, message))
+                        },
+                    }
+                },
+                _ => (),
+            };
             let Some((target_module, function)) = call_target(state, module, target) else {
                 return Result::Err(
                     ct_error(state, module, value.origin, "unresolved comptime function call"),
@@ -1447,7 +1502,11 @@ fn eval_block(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value:
     }
 }
 
-fn new_state(modules: Vec[ctir::CtModule], limits: EvalLimits) -> EvalState {
+fn new_state(
+    modules: Vec[ctir::CtModule],
+    limits: EvalLimits,
+    derive_state: Option[derive::DeriveState],
+) -> EvalState {
     EvalState {
         modules,
         fuel: Ref::new(limits.fuel),
@@ -1457,6 +1516,7 @@ fn new_state(modules: Vec[ctir::CtModule], limits: EvalLimits) -> EvalState {
         limits,
         stack: Vec::[],
         memo: Vec::[],
+        derive_state,
     }
 }
 
@@ -1502,7 +1562,7 @@ pub fn evaluate_site(
     for dependency in dependencies {
         modules.push(dependency)
     }
-    let state = new_state(modules, limits);
+    let state = new_state(modules, limits, Option::None);
     for site in module.sites {
         if site.id == site_id {
             let locals: Vec[Option[ctir::CtValue]] = Vec::with_capacity(site.local_count);
@@ -1532,7 +1592,7 @@ pub fn evaluate_entry(
     for dependency in dependencies {
         modules.push(dependency)
     }
-    let state = new_state(modules, limits);
+    let state = new_state(modules, limits, Option::None);
     let Some(function) = find_entry(module, entry_name) else {
         return Result::Err(ct_error(state, module, 0, "unknown comptime entry " + entry_name))
     };
@@ -1541,5 +1601,41 @@ pub fn evaluate_entry(
         Result::Err(ct_error(state, module, function.origin, "comptime result size limit exceeded"))
     } else {
         Result::Ok(value)
+    }
+}
+
+pub fn evaluate_derive_entry(
+    module: ctir::CtModule,
+    dependencies: Vec[ctir::CtModule],
+    entry_name: string,
+    request: derive::DeriveRequest,
+    limits: EvalLimits,
+) -> Result[ast::ImplBlock, CtError] {
+    match verify_module(module, dependencies) {
+        Ok(()) => (),
+        Err(message) => return Result::Err(invalid_ctir_error(module, message)),
+    };
+    let modules: Vec[ctir::CtModule] = Vec::with_capacity(dependencies.len() + 1);
+    modules.push(module);
+    for dependency in dependencies {
+        modules.push(dependency)
+    }
+    let derive_state = derive::new_state(request, module.target.int_width);
+    let state = new_state(modules, limits, Option::Some(derive_state));
+    let Some(function) = find_derive_entry(module, entry_name) else {
+        return Result::Err(
+            ct_error(state, module, 0, "unknown comptime derive entry " + entry_name),
+        )
+    };
+    let value = eval_function(
+        state,
+        module,
+        function,
+        Vec::[ctir::CtValue::Meta { kind: "DeriveInput", id: 0 }],
+        function.origin,
+    )?;
+    match derive::output(derive_state, value) {
+        Ok(value) => Result::Ok(value),
+        Err(message) => Result::Err(ct_error(state, module, function.origin, message)),
     }
 }

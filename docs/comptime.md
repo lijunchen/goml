@@ -31,3 +31,27 @@ Evaluation uses semantic fuel, call-depth, temporary-node, temporary-memory, and
 An interface artifact exports public comptime entries and the reachable closure of private comptime helpers and constants. Public constants carry canonical values. Source origins are debug metadata, use package-relative paths, and do not participate in the CTIR semantic hash. Function bodies, local slot types, target semantics, public values, and referenced dependency interface hashes do participate. The artifact decoder checks its format and semantic hash, and dependency loading then runs the CTIR verifier with the complete imported module set.
 
 CTFE failures are recoverable compiler diagnostics. They identify the failing source origin, the requesting comptime site, and the compile-time call stack. A failed or resource-exhausted evaluation never terminates the compiler process.
+
+## Programmable derive phase
+
+Programmable derive reuses verified CTIR but runs at an earlier consumer-side phase:
+
+```text
+dependency interface → verify derive CTIR ──────────────┐
+                                                        │
+source → parser → CST → AST → resolve derive entry → evaluate handler
+                                                        │
+                                                        ▼
+                                                generated AST impl
+                                                        │
+                                                        ▼
+                                          HIR → TAST → ordinary CTFE
+```
+
+The handler was type checked and lowered to CTIR when its defining package was compiled. The consuming package never executes untyped source or host code. Evaluation receives an opaque `DeriveInput` handle and must return an opaque `DeriveOutput` handle. Compiler intrinsics expose read-only item metadata and construct a structured implementation. The result cannot contain arbitrary tokens or declarations, and it enters normal HIR lowering, name resolution, coherence checking, type checking, monomorphization, and code generation.
+
+Public `#[comptime_derive]` entries and the reachable closure of private derive helpers are part of the interface CTIR semantic section. A derive body change therefore changes the interface hash. Derive entries are not runtime exports. The interface decoder verifies meta types, intrinsic signatures, direct-call targets, IDs, and the semantic hash before evaluation.
+
+Definition-site builders qualify unqualified trait, type, and function names with the handler package. Explicit call-site builders leave names in the target package scope. Generated local bindings use handler-selected names; `derive_fresh_name` provides collision-free compiler names. Generated nodes use the requesting derive attribute as their diagnostic origin.
+
+Derive evaluation uses the normal fuel, depth, value-node, and temporary-memory limits. It additionally permits at most 100,000 metadata or syntax-builder operations. Derive calls are not memoized because their opaque arena handles are evaluation-local.

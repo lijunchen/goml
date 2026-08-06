@@ -286,6 +286,9 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
     encode_list(builder, value.variants.len());
     for variant in value.variants {
         encode_open(builder, "Variant");
+        if !variant.attrs.is_empty() {
+            encode_attributes(builder, variant.attrs)
+        } else {};
         encode_string_value(builder, variant.name);
         match variant.fields {
             Unit => {
@@ -295,7 +298,11 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
             Tuple(types) => {
                 encode_open(builder, "Tuple");
                 encode_list(builder, types.len());
-                for ty in types {
+                for index in 0..types.len() {
+                    if index < variant.field_attrs.len() && !variant.field_attrs[index].is_empty() {
+                        encode_attributes(builder, variant.field_attrs[index])
+                    } else {};
+                    let ty = types[index];
                     encode_type(builder, ty)
                 }
                 encode_close(builder)
@@ -303,8 +310,12 @@ fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
             Struct(fields) => {
                 encode_open(builder, "Struct");
                 encode_list(builder, fields.len());
-                for field in fields {
+                for index in 0..fields.len() {
+                    let field = fields[index];
                     encode_open(builder, "Field");
+                    if index < variant.field_attrs.len() && !variant.field_attrs[index].is_empty() {
+                        encode_attributes(builder, variant.field_attrs[index])
+                    } else {};
                     encode_string_value(builder, field.0);
                     encode_type(builder, field.1);
                     encode_close(builder)
@@ -324,9 +335,13 @@ fn encode_struct(builder: text::StringBuilder, value: StructDef) -> unit {
     encode_string_value(builder, value.name);
     encode_generics(builder, value.generics);
     encode_list(builder, value.fields.len());
-    for field in value.fields {
+    for index in 0..value.fields.len() {
+        let field = value.fields[index];
         let (name, ty) = field;
         encode_open(builder, "Field");
+        if index < value.field_attrs.len() && !value.field_attrs[index].is_empty() {
+            encode_attributes(builder, value.field_attrs[index])
+        } else {};
         encode_string_value(builder, name);
         encode_type(builder, ty);
         encode_close(builder)

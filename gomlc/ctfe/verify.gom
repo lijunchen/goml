@@ -1,6 +1,7 @@
 package ctfe;
 
 use gomlc::ctir;
+use gomlc::derive;
 use std::collections;
 
 struct VerifyContext {
@@ -70,6 +71,10 @@ fn types_equal(left: ctir::CtType, right: ctir::CtType) -> bool {
             ctir::CtType::Enum { name: right_name, variants: right_variants } => {
                 name == right_name && type_list_lists_equal(variants, right_variants)
             },
+            _ => false,
+        },
+        ctir::CtType::Meta(name) => match right {
+            ctir::CtType::Meta(right_name) => name == right_name,
             _ => false,
         },
     }
@@ -168,6 +173,11 @@ fn verify_type(value: ctir::CtType) -> Result[unit, string] {
             }
             Result::Ok(())
         },
+        ctir::CtType::Meta(name) => if derive::is_meta_type(name) {
+            Result::Ok(())
+        } else {
+            Result::Err("unknown CTIR meta type")
+        },
         _ => Result::Ok(()),
     }
 }
@@ -216,6 +226,7 @@ fn value_type(value: ctir::CtValue) -> ctir::CtType {
             variants.push(types);
             ctir::CtType::Enum { name, variants }
         },
+        ctir::CtValue::Meta { kind, id: _ } => ctir::CtType::Meta(kind),
     }
 }
 
@@ -253,6 +264,9 @@ fn value_matches_type(value: ctir::CtValue, ty: ctir::CtType) -> bool {
             ctir::CtType::Enum { name: expected_name, variants },
         ) => name == expected_name && variant >= 0 && variant < variants.len()
             && value_list_matches_types(fields, variants[variant]),
+        (ctir::CtValue::Meta { kind, id: _ }, ctir::CtType::Meta(expected)) => {
+            kind == expected
+        },
         _ => false,
     }
 }
@@ -329,6 +343,9 @@ fn verify_value_limits(value: ctir::CtValue, nodes: Ref[int], bytes: Ref[int]) -
             for value in fields {
                 verify_value_limits(value, nodes, bytes)?
             }
+        },
+        ctir::CtValue::Meta { kind, id: _ } => {
+            own_bytes = kind.byte_len() + 8;
         },
     };
     if nodes.get() >= ctir_value_node_limit() {
@@ -490,6 +507,11 @@ fn verify_find_entry(module: ctir::CtModule, name: string) -> Option[ctir::CtFun
             return verify_find_function(module, entry.function_id)
         } else {}
     }
+    for entry in module.derive_entries {
+        if entry.name == name {
+            return verify_find_function(module, entry.function_id)
+        } else {}
+    }
     Option::None
 }
 
@@ -503,7 +525,37 @@ fn call_function(ctx: VerifyContext, target: ctir::CtCallTarget) -> Option[ctir:
             Some(module) => verify_find_entry(module, entry_name),
             None => Option::None,
         },
+        ctir::CtCallTarget::Intrinsic(_) => Option::None,
     }
+}
+
+fn derive_abi_type(module: ctir::CtModule, name: string) -> ctir::CtType {
+    if name == "unit" {
+        ctir::CtType::Unit
+    } else if name == "bool" {
+        ctir::CtType::Bool
+    } else if name == "int" {
+        ctir::CtType::Integer { signed: true, width: module.target.int_width }
+    } else if name == "string" {
+        ctir::CtType::String
+    } else {
+        ctir::CtType::Meta(name)
+    }
+}
+
+fn derive_intrinsic_signature(module: ctir::CtModule, name: string) -> Option[
+    (Vec[ctir::CtType], ctir::CtType),
+] {
+    for spec in derive::intrinsic_specs() {
+        if spec.name == name {
+            let params: Vec[ctir::CtType] = Vec::[];
+            for value in spec.params {
+                params.push(derive_abi_type(module, value))
+            }
+            return Option::Some((params, derive_abi_type(module, spec.ret)))
+        } else {}
+    }
+    Option::None
 }
 
 fn verify_expr_list(ctx: VerifyContext, values: Vec[ctir::CtExpr], types: Vec[ctir::CtType]) -> Result[
@@ -770,6 +822,18 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
             }
         },
         ctir::CtExprKind::Call { target, args } => {
+            match target {
+                ctir::CtCallTarget::Intrinsic(name) => {
+                    let Some(signature) = derive_intrinsic_signature(ctx.module, name) else {
+                        return Result::Err("unknown CTIR derive intrinsic")
+                    };
+                    if !types_equal(value.ty, signature.1) {
+                        return Result::Err("CTIR derive intrinsic return type mismatch")
+                    } else {};
+                    return verify_expr_list(ctx, args, signature.0)
+                },
+                _ => (),
+            };
             let Some(function) = call_function(ctx, target) else {
                 return Result::Err("unresolved CTIR call target")
             };
@@ -1010,6 +1074,24 @@ pub fn verify_module(module: ctir::CtModule, dependencies: Vec[ctir::CtModule]) 
         } else {
             entry_names.push(entry.name)
         }
+    }
+    for entry in module.derive_entries {
+        if entry.name == "" || collections::contains(entry_names, entry.name)
+            || verify_find_function(module, entry.function_id).is_none() {
+            return Result::Err("invalid CTIR derive entry")
+        } else {
+            entry_names.push(entry.name)
+        };
+        let Some(function) = verify_find_function(module, entry.function_id) else {
+            return Result::Err("invalid CTIR derive entry")
+        };
+        if entry.public {
+            if function.parameter_types.len() != 1
+                || !types_equal(function.parameter_types[0], ctir::CtType::Meta("DeriveInput"))
+                || !types_equal(function.return_type, ctir::CtType::Meta("DeriveOutput")) {
+                return Result::Err("invalid CTIR derive entry signature")
+            } else {}
+        } else {}
     }
     let site_ids: Vec[int] = Vec::[];
     for site in module.sites {
