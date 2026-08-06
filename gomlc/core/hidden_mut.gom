@@ -732,11 +732,23 @@ fn lower_hidden_expr(value: Expr, cells: Vec[(string, tast::Type)]) -> Expr {
             args: lower_hidden_exprs(args, cells),
             ty,
         },
-        TraitCall { trait_ref: reference, method_name: name, instance_name, receiver, args, ty } => Expr::TraitCall {
+        TraitCall {
             trait_ref: reference,
             method_name: name,
             instance_name,
-            receiver: lower_hidden_expr(receiver, cells),
+            for_ty,
+            receiver,
+            args,
+            ty,
+        } => Expr::TraitCall {
+            trait_ref: reference,
+            method_name: name,
+            instance_name,
+            for_ty,
+            receiver: match receiver {
+                Some(value) => Option::Some(lower_hidden_expr(value, cells)),
+                None => Option::None,
+            },
             args: lower_hidden_exprs(args, cells),
             ty,
         },

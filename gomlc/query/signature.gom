@@ -129,7 +129,7 @@ fn item_parameter_names(value: ast::Item, expected: string, expected_owner: Opti
 
 fn signature_target_owner(value: tast::ReferenceTarget) -> Option[string] {
     match value {
-        Callable(TraitMethod { trait_ref, method_name: _ },) => Option::Some(trait_ref.name),
+        Callable(TraitMethod { trait_ref, .. },) => Option::Some(trait_ref.name),
         Callable(DynTraitMethod { trait_name, dispatch_name: _, method_name: _ },) => Option::Some(
             trait_name,
         ),

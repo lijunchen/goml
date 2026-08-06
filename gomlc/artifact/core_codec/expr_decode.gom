@@ -118,10 +118,20 @@ fn artifact_decode_core_expr(context: ArtifactCoreDecodeContext, value: wire::Ar
             wire::artifact_json_required_field(object, "trait_ref")?,
         )?;
         let method_name = wire::artifact_json_field_string(object, "method_name")?;
+        let for_ty = artifact_decode_core_type_field(context, object, "for_ty")?;
+        let has_receiver = wire::artifact_json_bool_value(
+            wire::artifact_json_required_field(object, "has_receiver")?,
+            "trait callable receiver flag",
+        )?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(
             core::Expr::Callable {
-                callable: tast::Callable::TraitMethod { trait_ref, method_name },
+                callable: tast::Callable::TraitMethod {
+                    trait_ref,
+                    method_name,
+                    for_ty,
+                    has_receiver,
+                },
                 ty,
             },
         )
@@ -291,7 +301,11 @@ fn artifact_decode_core_expr_tail(
         let value = wire::artifact_json_required_field(object, "trait_ref")?;
         let trait_ref = tast_codec::artifact_decode_trait_ref(context.types, value)?;
         let method_name = wire::artifact_json_field_string(object, "method_name")?;
-        let receiver = artifact_decode_core_expr_field(context, object, "receiver")?;
+        let for_ty = artifact_decode_core_type_field(context, object, "for_ty")?;
+        let receiver = artifact_decode_optional_core_expr(
+            context,
+            wire::artifact_json_required_field(object, "receiver")?,
+        )?;
         let args = artifact_decode_core_expr_array_field(context, object, "args")?;
         let ty = artifact_decode_core_type_field(context, object, "ty")?;
         Result::Ok(
@@ -299,6 +313,7 @@ fn artifact_decode_core_expr_tail(
                 trait_ref,
                 method_name,
                 instance_name: Option::None,
+                for_ty,
                 receiver,
                 args,
                 ty,

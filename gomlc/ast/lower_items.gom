@@ -383,6 +383,8 @@ fn lower_trait_method(ctx: LowerCtx, node: LocatedNode) -> Option[TraitMethodSig
                 Some(value) => Option::Some(
                     TraitMethodSignature {
                         name: name_token.token.text,
+                        has_receiver: !params.is_empty() && params[0].0 == "self"
+                            && ast_type_is_self(params[0].1),
                         generics,
                         generic_bounds,
                         predicates: lower_where_clause(ctx, node),

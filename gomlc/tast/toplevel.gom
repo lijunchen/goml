@@ -580,6 +580,7 @@ fn check_function(
     Function {
         visibility: value.visibility,
         name: value.name,
+        has_receiver: value.has_receiver,
         comptime,
         derive_export_name,
         source_path: base.source_path,
@@ -1117,6 +1118,17 @@ fn validate_method_signature(
     owner_generic_count: int,
     owner_predicate_count: int,
 ) -> unit {
+    if expected.has_receiver != actual.has_receiver {
+        push_diagnostic(
+            ctx,
+            "Trait " + trait_name + "::" + actual.name
+                + if expected.has_receiver {
+                    " requires a self: Self receiver"
+                } else {
+                    " is an associated function and must not declare self: Self"
+                },
+        )
+    } else {};
     let actual_method_generics: Vec[string] = Vec::[];
     for index in owner_generic_count..actual.generics.len() {
         actual_method_generics.push(actual.generics[index])
@@ -1693,6 +1705,7 @@ fn default_trait_method(
     Function {
         visibility: ast::Visibility::Private,
         name: expected.name,
+        has_receiver: expected.has_receiver,
         comptime: ComptimeCapability::RuntimeOnly,
         derive_export_name: Option::None,
         source_path: ctx.source_path,
@@ -3085,6 +3098,8 @@ fn default_trait_method_scheme(
     let callable = Callable::TraitMethod {
         trait_ref: implementation.trait_ref,
         method_name: method.name,
+        for_ty: implementation.for_type,
+        has_receiver: method.has_receiver,
     };
     MethodInfo {
         owner_generics: implementation.generics,

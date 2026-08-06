@@ -59,12 +59,16 @@ fn probe_linear_expr(state: State, value: core::Expr) -> bool {
             Call { func, args, ty: _ } => probe_linear_expr(state, func)
                 && probe_linear_list(state, args)
                 && probe_bound_value(state),
-            DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
-                receiver,
-                args,
-                ..,
-            } => {
+            DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
                 probe_linear_expr(state, receiver) && probe_linear_list(state, args)
+                    && probe_bound_value(state)
+            },
+            TraitCall { receiver, args, .. } => {
+                match receiver {
+                    Some(value) => probe_linear_expr(state, value),
+                    None => true,
+                }
+                    && probe_linear_list(state, args)
                     && probe_bound_value(state)
             },
             _ => false,

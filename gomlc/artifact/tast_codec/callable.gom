@@ -71,11 +71,10 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
             import_path: Option::Some(import_path),
             symbol: Option::Some(symbol),
         },
-        TraitMethod { trait_ref: _, method_name: _ } | DynTraitMethod {
-            trait_name: _,
-            dispatch_name: _,
+        TraitMethod { .. } | DynTraitMethod { trait_name: _, dispatch_name: _, method_name: _ } | InherentMethod {
+            receiver_ty: _,
             method_name: _,
-        } | InherentMethod { receiver_ty: _, method_name: _ } => {
+        } => {
             invalid_artifact_callable("unresolved callable")
         },
     }

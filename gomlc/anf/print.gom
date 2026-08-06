@@ -39,7 +39,7 @@ fn callable_doc(value: tast::Callable) -> pretty::Doc {
                 pretty::text(")"),
             ],
         ),
-        TraitMethod { trait_ref: reference, method_name: name } => pretty::concat(
+        TraitMethod { trait_ref: reference, method_name: name, .. } => pretty::concat(
             Vec::[tast::trait_ref_doc(reference), pretty::text("::"), pretty::text(name)],
         ),
         DynTraitMethod { trait_name: owner, dispatch_name: dispatch, method_name: name } => {

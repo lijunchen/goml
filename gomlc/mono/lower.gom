@@ -607,24 +607,52 @@ fn lower_trait_call(
     reference: tast::TraitRef,
     method_name: string,
     instance_name: Option[string],
-    receiver: core::Expr,
+    for_ty: tast::Type,
+    receiver: Option[core::Expr],
     args: Vec[core::Expr],
     ty: tast::Type,
 ) -> core::Expr {
     let reference = collapse_trait_ref(ctx, reference);
+    let for_ty = collapse_type(ctx, for_ty);
     let ty = collapse_type(ctx, ty);
-    let receiver = lower_expr(ctx, receiver);
+    let receiver = lower_optional_expr(ctx, receiver);
     let args = lower_exprs(ctx, args);
-    let receiver_ty = core::expr_type(receiver);
-    match tast::resolve_type(receiver_ty) {
-        Dyn { trait_name: name, .. } => {
-            if reference.args.is_empty() && reference.name == name {
-                core::Expr::DynCall { trait_name: name, method_name, receiver, args, ty }
-            } else {
-                lower_static_trait_call(reference, method_name, instance_name, receiver, args, ty)
-            }
+    match receiver {
+        Some(value) => match tast::resolve_type(core::expr_type(value)) {
+            Dyn { trait_name: name, .. } => {
+                if reference.args.is_empty() && reference.name == name {
+                    core::Expr::DynCall { trait_name: name, method_name, receiver: value, args, ty }
+                } else {
+                    lower_static_trait_call(
+                        reference,
+                        method_name,
+                        instance_name,
+                        for_ty,
+                        Option::Some(value),
+                        args,
+                        ty,
+                    )
+                }
+            },
+            _ => lower_static_trait_call(
+                reference,
+                method_name,
+                instance_name,
+                for_ty,
+                Option::Some(value),
+                args,
+                ty,
+            ),
         },
-        _ => lower_static_trait_call(reference, method_name, instance_name, receiver, args, ty),
+        None => lower_static_trait_call(
+            reference,
+            method_name,
+            instance_name,
+            for_ty,
+            Option::None,
+            args,
+            ty,
+        ),
     }
 }
 
@@ -632,22 +660,27 @@ fn lower_static_trait_call(
     reference: tast::TraitRef,
     method_name: string,
     instance_name: Option[string],
-    receiver: core::Expr,
+    for_ty: tast::Type,
+    receiver: Option[core::Expr],
     args: Vec[core::Expr],
     ty: tast::Type,
 ) -> core::Expr {
-    let receiver_ty = core::expr_type(receiver);
     let params: Vec[tast::Type] = Vec::[];
     let call_args: Vec[core::Expr] = Vec::[];
-    params.push(receiver_ty);
-    call_args.push(receiver);
+    match receiver {
+        Some(value) => {
+            params.push(core::expr_type(value));
+            call_args.push(value)
+        },
+        None => (),
+    };
     for arg in args {
         params.push(core::expr_type(arg));
         call_args.push(arg)
     }
     let name = match instance_name {
         Some(value) => value,
-        None => trait_impl_name(reference, receiver_ty, method_name),
+        None => trait_impl_name(reference, for_ty, method_name),
     };
     core::Expr::Call {
         func: core::Expr::Var { name, ty: tast::Type::Func { params, ret_ty: ty } },
@@ -775,8 +808,8 @@ fn lower_expr(ctx: TypeCtx, value: core::Expr) -> core::Expr {
                 ty: collapse_type(ctx, ty),
             }
         },
-        TraitCall { trait_ref: reference, method_name, instance_name, receiver, args, ty } => {
-            lower_trait_call(ctx, reference, method_name, instance_name, receiver, args, ty)
+        TraitCall { trait_ref: reference, method_name, instance_name, for_ty, receiver, args, ty } => {
+            lower_trait_call(ctx, reference, method_name, instance_name, for_ty, receiver, args, ty)
         },
         Proj { tuple, index, ty } => {
             core::Expr::Proj { tuple: lower_expr(ctx, tuple), index, ty: collapse_type(ctx, ty) }
@@ -848,8 +881,9 @@ fn constructor_owner(name: string) -> string {
 
 fn collect_callable_type_names(ctx: TypeCtx, value: tast::Callable) -> unit {
     match value {
-        TraitMethod { trait_ref: reference, method_name: _ } => {
-            collect_trait_ref_type_names(ctx, reference)
+        TraitMethod { trait_ref: reference, for_ty, .. } => {
+            collect_trait_ref_type_names(ctx, reference);
+            collect_type_names(ctx, for_ty)
         },
         InherentMethod { receiver_ty: owner, method_name: _ } => collect_type_names(ctx, owner),
         _ => (),
@@ -942,9 +976,10 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
             collect_expr_type_names(ctx, receiver);
             collect_exprs_type_names(ctx, args)
         },
-        TraitCall { trait_ref: reference, receiver, args, .. } => {
+        TraitCall { trait_ref: reference, for_ty, receiver, args, .. } => {
             collect_trait_ref_type_names(ctx, reference);
-            collect_expr_type_names(ctx, receiver);
+            collect_type_names(ctx, for_ty);
+            collect_optional_expr_type_names(ctx, receiver);
             collect_exprs_type_names(ctx, args)
         },
     }

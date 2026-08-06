@@ -185,6 +185,8 @@ pub enum Callable {
     TraitMethod {
         trait_ref: TraitRef,
         method_name: string,
+        for_ty: Type,
+        has_receiver: bool,
     },
     DynTraitMethod {
         trait_name: string,
@@ -436,6 +438,7 @@ pub enum Pat {
 pub struct Function {
     pub visibility: ast::Visibility,
     pub name: string,
+    pub has_receiver: bool,
     pub comptime: ComptimeCapability,
     pub derive_export_name: Option[string],
     pub source_path: string,

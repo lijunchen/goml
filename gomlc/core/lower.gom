@@ -155,11 +155,13 @@ fn bool_expr(value: bool) -> Expr {
 fn trait_eq_call(trait_name: string, left: Expr, right: Expr) -> Expr {
     let args: Vec[Expr] = Vec::[];
     args.push(right);
+    let for_ty = expr_type(left);
     Expr::TraitCall {
         trait_ref: tast::TraitRef { name: trait_name, args: Vec::[] },
         method_name: "eq",
         instance_name: Option::None,
-        receiver: left,
+        for_ty,
+        receiver: Option::Some(left),
         args,
         ty: tast::Type::Bool,
     }
@@ -301,14 +303,25 @@ fn negated_integer(value: tast::Primitive) -> Option[tast::Primitive] {
 fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty: tast::Type) -> Expr {
     let args = lower_exprs(ctx, arguments);
     match function {
-        Callable { callable: TraitMethod { trait_ref: reference, method_name: name }, ty: _ } => if args.len()
-            > 0 {
+        Callable {
+            callable: TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver },
+            ty: _,
+        } => if !has_receiver || args.len() > 0 {
             Expr::TraitCall {
                 trait_ref: reference,
                 method_name: name,
                 instance_name: Option::None,
-                receiver: args[0],
-                args: arguments_after_first(args),
+                for_ty,
+                receiver: if has_receiver {
+                    Option::Some(args[0])
+                } else {
+                    Option::None
+                },
+                args: if has_receiver {
+                    arguments_after_first(args)
+                } else {
+                    args
+                },
                 ty,
             }
         } else {
@@ -317,6 +330,8 @@ fn lower_call(ctx: Lowerer, function: tast::Expr, arguments: Vec[tast::Expr], ty
                     callable: tast::Callable::TraitMethod {
                         trait_ref: reference,
                         method_name: name,
+                        for_ty,
+                        has_receiver,
                     },
                     ty: tast::Type::Error,
                 },
@@ -1178,11 +1193,14 @@ fn lower_iterator_for(
     let iterator_name = gensym(ctx, "for_iter");
     let next_name = gensym(ctx, "for_next");
     let no_args: Vec[Expr] = Vec::[];
+    let iterator_receiver = lower_expr(ctx, iterator);
+    let iterator_for_ty = expr_type(iterator_receiver);
     let iterator_value = Expr::TraitCall {
         trait_ref: into_iterator,
         method_name: "into_iter",
         instance_name: Option::None,
-        receiver: lower_expr(ctx, iterator),
+        for_ty: iterator_for_ty,
+        receiver: Option::Some(iterator_receiver),
         args: no_args,
         ty: iterator_ty,
     };
@@ -1191,7 +1209,8 @@ fn lower_iterator_for(
         trait_ref: iterator_trait,
         method_name: "next",
         instance_name: Option::None,
-        receiver: Expr::Var { name: iterator_name, ty: iterator_ty },
+        for_ty: iterator_ty,
+        receiver: Option::Some(Expr::Var { name: iterator_name, ty: iterator_ty }),
         args: next_args,
         ty: option_ty,
     };

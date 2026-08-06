@@ -1353,6 +1353,28 @@ trait Convert[T] {
 }
 ```
 
+A trait may also declare an associated function without a receiver. `Self` is inferred from its arguments or the expected return type:
+
+```goml
+trait Decode {
+    fn decode(input: string) -> Self;
+}
+
+trait Default {
+    fn default() -> Self;
+}
+
+fn decode_value[T: Decode](input: string) -> T {
+    Decode::decode(input)
+}
+
+fn default_value[T: Default]() -> T {
+    Default::default()
+}
+```
+
+An impl method must preserve whether the trait declaration has a `self: Self` receiver. Associated functions use static dispatch, cannot be called with method syntax, and do not participate in `dyn` dispatch. If neither arguments nor the expected result determine `Self`, the call is rejected as ambiguous.
+
 Traits can have supertraits, generic constraints, and associated types:
 
 ```goml

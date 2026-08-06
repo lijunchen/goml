@@ -337,7 +337,7 @@ fn callable_name(env: LowerEnv, value: tast::Callable, ty: tast::Type) -> string
         Runtime(name) => runtime_hook_name(name),
         Intrinsic(name) => go_ident(name),
         GoForeign { import_path, symbol } => go_foreign_wrapper_name(import_path, symbol, ty),
-        TraitMethod { trait_ref: reference, method_name: name } => {
+        TraitMethod { trait_ref: reference, method_name: name, .. } => {
             go_ident(reference.name + "#" + name)
         },
         DynTraitMethod { trait_name: owner, dispatch_name: dispatch, method_name: name } => {

@@ -29,7 +29,7 @@ fn callable_doc(value: tast::Callable) -> pretty::Doc {
         GoForeign { import_path, symbol } => {
             pretty::text("@go_ffi(" + import_path + ", " + symbol + ")")
         },
-        TraitMethod { trait_ref: reference, method_name: name } => pretty::concat(
+        TraitMethod { trait_ref: reference, method_name: name, .. } => pretty::concat(
             Vec::[tast::trait_ref_doc(reference), pretty::text("::" + name)],
         ),
         DynTraitMethod { trait_name: owner, dispatch_name: _, method_name: name } => {
@@ -358,7 +358,10 @@ fn expr_doc(value: Expr, style: PrintStyle) -> pretty::Doc {
         },
         TraitCall { trait_ref: reference, method_name, receiver, args, .. } => {
             let values: Vec[pretty::Doc] = Vec::with_capacity(args.len() + 1);
-            values.push(expr_doc(receiver, style));
+            match receiver {
+                Some(value) => values.push(expr_doc(value, style)),
+                None => (),
+            };
             for arg in args {
                 values.push(expr_doc(arg, style))
             }

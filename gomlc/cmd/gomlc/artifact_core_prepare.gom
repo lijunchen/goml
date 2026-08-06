@@ -232,12 +232,12 @@ fn artifact_prepare_core_expr(value: core::Expr, definitions: Vec[tast::StructDe
         ToDyn { trait_name: _, for_ty: _, expr, ty: _ } => {
             artifact_prepare_core_expr(expr, definitions)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
-            receiver,
-            args,
-            ..,
-        } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             artifact_prepare_core_expr(receiver, definitions);
+            artifact_prepare_core_exprs(args, definitions)
+        },
+        TraitCall { receiver, args, .. } => {
+            artifact_prepare_optional_core_expr(receiver, definitions);
             artifact_prepare_core_exprs(args, definitions)
         },
         Break { value, ty: _, .. } => match value {

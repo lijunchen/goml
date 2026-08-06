@@ -497,7 +497,7 @@ fn callable_doc(value: Callable) -> pretty::Doc {
         GoForeign { import_path, symbol } => {
             pretty::text("@go_ffi(" + import_path + ", " + symbol + ")")
         },
-        TraitMethod { trait_ref: reference, method_name: name } => pretty::concat(
+        TraitMethod { trait_ref: reference, method_name: name, .. } => pretty::concat(
             Vec::[trait_ref_doc(reference), pretty::text("::" + name)],
         ),
         DynTraitMethod { trait_name: owner, dispatch_name: _, method_name: name } => {

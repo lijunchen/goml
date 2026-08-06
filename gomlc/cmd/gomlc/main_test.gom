@@ -364,7 +364,7 @@ fn reports_driver_protocol_version() -> unit {
     );
     testing::assert_eq(
         version_output_with(VersionFormat::Json, Option::None, Option::None),
-        "{\"artifact_format\":17,\"compiler_abi\":5,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
+        "{\"artifact_format\":18,\"compiler_abi\":5,\"driver_protocol\":1,\"world_artifact\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\""
             + version::current()
             + "\"}",
     );
@@ -1082,7 +1082,7 @@ fn writes_interface_unit_shape_and_hash() -> unit {
     let encoded = interface_codec::encode_json(artifact_unit, false);
     testing::assert_eq(
         encoded,
-        "{\"format_version\":22,\"compiler_abi\":5,\"package\":\"audit::value\",\"exports\":{\"reexports\":{},\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
+        "{\"format_version\":23,\"compiler_abi\":5,\"package\":\"audit::value\",\"exports\":{\"reexports\":{},\"type_env\":{\"enums\":{},\"structs\":{},\"aliases\":{}}"
             + ",\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"comptime\":false,\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\",\"id\":\"audit::value::value\"}}},\"consts\":{}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"comptime\":null,\"deps\":{\"builtin\":\"03e930c72ad34b9d78ee4c6c55838bbd390ab7c11161e6edd7c6f616725f7cc8\"},\"interface_hash\":\"0c7c9e6db27cdf725b4f63951fe86bf8d8686ae0ea89acb630c6c8ac3c00a39f\"}",
     );
     let binary = match interface_codec::encode_binary(artifact_unit) {

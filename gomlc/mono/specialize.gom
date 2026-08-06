@@ -1264,10 +1264,12 @@ fn specialize_callable(ctx: SpecializeCtx, value: tast::Callable, bindings: Vec[
         GoForeign { import_path, symbol } => {
             tast::Callable::GoForeign { import_path, symbol }
         },
-        TraitMethod { trait_ref: reference, method_name: name } => {
+        TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver } => {
             tast::Callable::TraitMethod {
                 trait_ref: specialize_trait_ref(ctx, reference, bindings),
                 method_name: name,
+                for_ty: specialize_type(ctx, for_ty, bindings),
+                has_receiver,
             }
         },
         DynTraitMethod { trait_name: owner, dispatch_name: dispatch, method_name: name } => {
@@ -1362,13 +1364,14 @@ fn trait_call_types(receiver: core::Expr, args: Vec[core::Expr]) -> Vec[tast::Ty
 fn trait_method_bindings(
     function: core::Function,
     reference: tast::TraitRef,
+    for_ty: tast::Type,
     actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
 ) -> Option[Vec[TypeBinding]] {
     let bindings: Vec[TypeBinding] = Vec::[];
     let metadata = function.trait_impl?;
     if metadata.trait_ref.args.len() != reference.args.len()
-        || !unify_type(metadata.for_ty, actual_types[0], bindings)
+        || !unify_type(metadata.for_ty, for_ty, bindings)
         || !unify_types(metadata.trait_ref.args, reference.args, bindings) {
         return Option::None
     } else {};
@@ -1388,6 +1391,7 @@ fn ensure_trait_method_instance(
     ctx: SpecializeCtx,
     reference: tast::TraitRef,
     method_name: string,
+    for_ty: tast::Type,
     actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
 ) -> (tast::TraitRef, Option[string]) {
@@ -1397,7 +1401,7 @@ fn ensure_trait_method_instance(
         ctx.trait_method_index,
         lookup_pair_key(reference.name, method_name),
     ) {
-        match trait_method_bindings(function, reference, actual_types, ret_ty) {
+        match trait_method_bindings(function, reference, for_ty, actual_types, ret_ty) {
             Some(bindings) => if complete_bindings(ctx, function, bindings) {
                 let base_name = trait_instance_name(ctx, function, bindings);
                 let name = ensure_instance(ctx, function.name, bindings);
@@ -1419,17 +1423,11 @@ fn ensure_trait_call_instance(
     ctx: SpecializeCtx,
     reference: tast::TraitRef,
     method_name: string,
-    receiver: core::Expr,
-    args: Vec[core::Expr],
+    for_ty: tast::Type,
+    actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
 ) -> (tast::TraitRef, Option[string]) {
-    ensure_trait_method_instance(
-        ctx,
-        reference,
-        method_name,
-        trait_call_types(receiver, args),
-        ret_ty,
-    )
+    ensure_trait_method_instance(ctx, reference, method_name, for_ty, actual_types, ret_ty)
 }
 
 fn ensure_dyn_trait_impls(ctx: SpecializeCtx, trait_name: string, for_ty: tast::Type) -> unit {
@@ -1646,23 +1644,41 @@ fn specialize_expr(ctx: SpecializeCtx, bindings: Vec[TypeBinding], value: core::
                 ty: specialize_type(ctx, ty, bindings),
             }
         },
-        TraitCall { trait_ref: reference, method_name, instance_name: _, receiver, args, ty } => {
+        TraitCall {
+            trait_ref: reference,
+            method_name,
+            instance_name: _,
+            for_ty,
+            receiver,
+            args,
+            ty,
+        } => {
             let reference = specialize_trait_ref(ctx, reference, bindings);
-            let receiver = specialize_expr(ctx, bindings, receiver);
+            let for_ty = specialize_type(ctx, for_ty, bindings);
+            let receiver = specialize_optional_expr(ctx, bindings, receiver);
             let args = specialize_exprs(ctx, bindings, args);
             let ty = specialize_type(ctx, ty, bindings);
+            let actual_types: Vec[tast::Type] = Vec::[];
+            match receiver {
+                Some(value) => actual_types.push(core::expr_type(value)),
+                None => (),
+            };
+            for arg in args {
+                actual_types.push(core::expr_type(arg))
+            }
             let resolved = ensure_trait_call_instance(
                 ctx,
                 reference,
                 method_name,
-                receiver,
-                args,
+                for_ty,
+                actual_types,
                 ty,
             );
             core::Expr::TraitCall {
                 trait_ref: resolved.0,
                 method_name,
                 instance_name: resolved.1,
+                for_ty,
                 receiver,
                 args,
                 ty,
@@ -1687,6 +1703,7 @@ fn ensure_runtime_trait_impl(
         ctx,
         tast::TraitRef { name: trait_name, args: Vec::[] },
         method_name,
+        params[0],
         params,
         ret_ty,
     );
@@ -1818,12 +1835,15 @@ fn ensure_runtime_trait_impls_for_expr(ctx: SpecializeCtx, value: core::Expr) ->
             ensure_runtime_trait_impls_for_type(ctx, for_ty);
             ensure_runtime_trait_impls_for_expr(ctx, expr)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
-            receiver,
-            args,
-            ..,
-        } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             ensure_runtime_trait_impls_for_expr(ctx, receiver);
+            ensure_runtime_trait_impls_for_exprs(ctx, args)
+        },
+        TraitCall { receiver, args, .. } => {
+            match receiver {
+                Some(value) => ensure_runtime_trait_impls_for_expr(ctx, value),
+                None => (),
+            };
             ensure_runtime_trait_impls_for_exprs(ctx, args)
         },
         Break { value, ty: _, .. } => match value {

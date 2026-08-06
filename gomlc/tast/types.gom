@@ -1163,8 +1163,13 @@ fn normalize_trait_ref(ctx: Checker, value: TraitRef) -> TraitRef {
 
 fn normalize_callable(ctx: Checker, value: Callable) -> Callable {
     match value {
-        TraitMethod { trait_ref: reference, method_name: name } => {
-            Callable::TraitMethod { trait_ref: reference, method_name: name }
+        TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver } => {
+            Callable::TraitMethod {
+                trait_ref: reference,
+                method_name: name,
+                for_ty: normalize_type(ctx, for_ty),
+                has_receiver,
+            }
         },
         InherentMethod { receiver_ty: owner, method_name: name } => {
             Callable::InherentMethod { receiver_ty: normalize_type(ctx, owner), method_name: name }

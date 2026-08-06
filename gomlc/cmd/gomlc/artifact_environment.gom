@@ -164,6 +164,11 @@ fn artifact_dependency_trait(value: artifact::ArtifactTraitDef) -> Result[tast::
         methods.push(
             tast::TraitMethodInfo {
                 name: method.name,
+                has_receiver: !function_type.params.is_empty()
+                    && match tast::resolve_type(function_type.params[0]) {
+                        tast::Type::Param { name } => name == "Self",
+                        _ => false,
+                    },
                 generics: method.type_params,
                 predicates: artifact_dependency_trait_predicates(method.constraints),
                 params: function_type.params,
@@ -279,9 +284,15 @@ fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackage
                 },
             );
             for method in implementation.definition.methods {
+                let method_type = artifact_function_type_parts(
+                    artifact_dependency_trait_type(method.ty),
+                )?;
                 let callable = tast::Callable::TraitMethod {
                     trait_ref: implementation.trait_ref,
                     method_name: method.name,
+                    for_ty: implementation.for_ty,
+                    has_receiver: !method_type.params.is_empty()
+                        && tast::types_equal(method_type.params[0], implementation.for_ty),
                 };
                 let function = artifact_dependency_function_scheme(
                     method,

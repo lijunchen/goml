@@ -415,7 +415,7 @@ fn callable_name(value: tast::Callable) -> string {
         Function(name) | Runtime(name) | Intrinsic(name) => name,
         LangItem { item: _, function_name } => function_name,
         GoForeign { import_path: _, symbol } => symbol,
-        TraitMethod { trait_ref, method_name } => {
+        TraitMethod { trait_ref, method_name, .. } => {
             trait_ref.name + "::" + method_name
         },
         DynTraitMethod { trait_name, dispatch_name: _, method_name } => trait_name + "::"

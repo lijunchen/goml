@@ -1435,6 +1435,7 @@ fn lower_function(
     name: string,
     inherited_type_params: Vec[string],
 ) -> Function {
+    let has_receiver = !value.params.is_empty() && value.params[0].0 == "self";
     let env: Vec[(string, LocalId)] = Vec::[];
     let params: Vec[(LocalId, TypeExpr)] = Vec::[];
     let type_params = copy_strings(value.generics);
@@ -1461,6 +1462,7 @@ fn lower_function(
         attrs: value.attrs,
         visibility: value.visibility,
         name,
+        has_receiver,
         generics: value.generics,
         generic_bounds: lower_bounds(ctx, value.generic_bounds, type_params, true),
         predicates,
@@ -1606,6 +1608,7 @@ fn lower_trait(ctx: LowerCtx, value: ast::TraitDef, def_id: DefId) -> TraitDef {
         method_sigs.push(
             TraitMethodSignature {
                 name: method.name,
+                has_receiver: method.has_receiver,
                 generics: method.generics,
                 generic_bounds: lower_bounds(ctx, method.generic_bounds, method_type_params, false),
                 predicates: method_predicates,

@@ -1913,15 +1913,23 @@ fn specialize_array_callable(function: Expr, values: Vec[Expr]) -> Expr {
 
 fn trait_method_callable(value: Expr) -> bool {
     match value {
-        Callable { callable: TraitMethod { trait_ref: _, method_name: _ }, ty: _ } => true,
+        Callable { callable: TraitMethod { .. }, ty: _ } => true,
         _ => false,
     }
 }
 
 fn dyn_trait_method(function: Expr, values: Vec[Expr]) -> Option[(string, string)] {
     match function {
-        Callable { callable: TraitMethod { trait_ref: reference, method_name: name }, ty: _ } => {
-            if !values.is_empty() {
+        Callable {
+            callable: TraitMethod {
+                trait_ref: reference,
+                method_name: name,
+                for_ty: _,
+                has_receiver,
+            },
+            ty: _,
+        } => {
+            if has_receiver && !values.is_empty() {
                 match prune(expr_type(values[0])) {
                     Dyn { trait_name: owner, .. } => if names_match(owner, reference.name) {
                         Option::Some((reference.name, name))
@@ -1978,8 +1986,13 @@ fn arity_diagnostic_type(value: Type) -> Type {
     }
 }
 
-fn trait_arguments_match(params: Vec[Type], values: Vec[Expr]) -> bool {
-    for index in 1..values.len() {
+fn trait_arguments_match(params: Vec[Type], values: Vec[Expr], has_receiver: bool) -> bool {
+    let start = if has_receiver {
+        1
+    } else {
+        0
+    };
+    for index in start..values.len() {
         if index < params.len() && !call_types_compatible(params[index], expr_type(values[index])) {
             return false
         } else {}
@@ -2014,8 +2027,12 @@ fn apply_typed_call(
     }
     let arity_mismatch = !types_equal(ret_ty, Type::Error) && values.len() != params.len();
     let trait_method = trait_method_callable(function);
+    let trait_has_receiver = match function {
+        Callable { callable: TraitMethod { has_receiver, .. }, ty: _ } => has_receiver,
+        _ => false,
+    };
     let trait_argument_mismatch = trait_method && !arity_mismatch
-        && !trait_arguments_match(params, values);
+        && !trait_arguments_match(params, values, trait_has_receiver);
     let dyn_method = dyn_trait_method(function, values);
     if arity_mismatch {
         let actual_params: Vec[Type] = Vec::[];
@@ -2060,33 +2077,40 @@ fn apply_typed_call(
         };
     } else {};
     match function {
-        Callable { callable: TraitMethod { trait_ref: reference, method_name: _ }, ty: _ } => if is_static {
-            let receiver_ty = if !values.is_empty() {
-                expr_type(values[0])
-            } else {
-                Type::Unit
-            };
-            if contains_unbound_type_variable(ret_ty) {
-                let _ = unify(ret_ty, receiver_ty);
+        Callable {
+            callable: TraitMethod { trait_ref: reference, method_name: name, for_ty, has_receiver },
+            ty: _,
+        } => if is_static {
+            if has_receiver && !values.is_empty() {
+                let _ = unify(for_ty, expr_type(values[0]));
             } else {};
-            if contains_unbound_type_variable(receiver_ty) && is_numeric_type(receiver_ty) {
+            let owner_ty = normalize_type(ctx, for_ty);
+            if contains_unbound_any_variable(owner_ty) && !has_receiver {
+                push_diagnostic(
+                    ctx,
+                    "Could not infer the Self type for associated function "
+                        + short_name(reference.name)
+                        + "::"
+                        + name,
+                )
+            } else if contains_unbound_type_variable(owner_ty) && is_numeric_type(owner_ty) {
                 require_predicate(
                     ctx,
-                    TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
+                    TypePredicate::Trait { for_ty: owner_ty, trait_ref: reference },
                     "type predicate not satisfied",
                 )
             } else if arity_mismatch || trait_argument_mismatch {
                 require_predicate(
                     ctx,
-                    TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
+                    TypePredicate::Trait { for_ty: owner_ty, trait_ref: reference },
                     "type predicate not satisfied",
                 )
-            } else if !trait_bound_satisfied_at(ctx, receiver_ty, reference, Vec::[]) {
+            } else if !trait_bound_satisfied_at(ctx, owner_ty, reference, Vec::[]) {
                 push_diagnostic(
                     ctx,
                     predicate_requirement_message(
                         ctx,
-                        TypePredicate::Trait { for_ty: receiver_ty, trait_ref: reference },
+                        TypePredicate::Trait { for_ty: owner_ty, trait_ref: reference },
                         "type predicate not satisfied",
                     ),
                 )
@@ -2095,9 +2119,17 @@ fn apply_typed_call(
         _ => (),
     };
     let function = specialize_array_callable(function, values);
-    let function = if is_static && !values.is_empty() {
+    let function = if is_static && !values.is_empty() && trait_has_receiver {
         match function {
-            Callable { callable: TraitMethod { trait_ref: reference, method_name: name }, ty } => {
+            Callable {
+                callable: TraitMethod {
+                    trait_ref: reference,
+                    method_name: name,
+                    for_ty,
+                    has_receiver,
+                },
+                ty,
+            } => {
                 if reference.args.is_empty() {
                     match prune(expr_type(values[0])) {
                         Dyn { trait_name: owner, .. } => if trait_bound_satisfied_at(
@@ -2124,6 +2156,8 @@ fn apply_typed_call(
                                 callable: Callable::TraitMethod {
                                     trait_ref: reference,
                                     method_name: name,
+                                    for_ty,
+                                    has_receiver,
                                 },
                                 ty,
                             }
@@ -2132,13 +2166,20 @@ fn apply_typed_call(
                             callable: Callable::TraitMethod {
                                 trait_ref: reference,
                                 method_name: name,
+                                for_ty,
+                                has_receiver,
                             },
                             ty,
                         },
                     }
                 } else {
                     Expr::Callable {
-                        callable: Callable::TraitMethod { trait_ref: reference, method_name: name },
+                        callable: Callable::TraitMethod {
+                            trait_ref: reference,
+                            method_name: name,
+                            for_ty,
+                            has_receiver,
+                        },
                         ty,
                     }
                 }
@@ -2190,7 +2231,7 @@ fn apply_call(ctx: Checker, function: Expr, prefix: Vec[Expr], args: Vec[hir::Ex
         };
         values.push(
             match function {
-                Callable { callable: TraitMethod { trait_ref: _, method_name: _ }, ty: _ } => {
+                Callable { callable: TraitMethod { .. }, ty: _ } => {
                     coerce_expr(ctx, check_expr(ctx, value, Option::None), expected)
                 },
                 _ => check_expr(ctx, value, expected),
@@ -2247,7 +2288,7 @@ fn check_method_call(
     match resolved {
         Some(value) => {
             let trait_method = match value.callable {
-                TraitMethod { trait_ref: _, method_name: _ } => true,
+                TraitMethod { .. } => true,
                 _ => false,
             };
             let function = Expr::Callable { callable: value.callable, ty: value.ty };
@@ -2473,6 +2514,7 @@ fn check_call_expr(
                         let function = match resolved {
                             Some(value) => {
                                 require_predicates(ctx, value.predicates);
+                                constrain_callable_return(ctx, value.ty, expected);
                                 Expr::Callable { callable: value.callable, ty: value.ty }
                             },
                             None => if is_package_alias(ctx, owner) {

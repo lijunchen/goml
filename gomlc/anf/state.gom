@@ -181,12 +181,15 @@ fn expr_always_exits(value: core::Expr) -> bool {
         Call { func, args, ty: _ } => {
             expr_always_exits(func) || exprs_always_exit(args)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
-            receiver,
-            args,
-            ..,
-        } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             expr_always_exits(receiver) || exprs_always_exit(args)
+        },
+        TraitCall { receiver, args, .. } => {
+            match receiver {
+                Some(value) => expr_always_exits(value),
+                None => false,
+            }
+                || exprs_always_exit(args)
         },
         Var { name: _, ty: _ } | Callable { callable: _, ty: _ } | Prim { value: _, ty: _ } => false,
     }

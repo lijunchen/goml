@@ -137,12 +137,12 @@ fn observe_expr(maximum: Ref[int], value: core::Expr) -> unit {
             observe_expr(maximum, func);
             observe_exprs(maximum, args)
         },
-        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } | TraitCall {
-            receiver,
-            args,
-            ..,
-        } => {
+        DynCall { trait_name: _, method_name: _, receiver, args, ty: _ } => {
             observe_expr(maximum, receiver);
+            observe_exprs(maximum, args)
+        },
+        TraitCall { receiver, args, .. } => {
+            observe_optional_expr(maximum, receiver);
             observe_exprs(maximum, args)
         },
         Break { value, ty: _, .. } => observe_optional_expr(maximum, value),

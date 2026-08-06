@@ -1674,11 +1674,15 @@ fn trait_callable(
     name: string,
     params: Vec[Type],
     ret_ty: Type,
+    for_ty: Type,
+    has_receiver: bool,
 ) -> ResolvedCallable {
     ResolvedCallable {
         callable: Callable::TraitMethod {
             trait_ref: TraitRef { name: trait_name, args },
             method_name: name,
+            for_ty,
+            has_receiver,
         },
         ty: callable_type(params, ret_ty),
         predicates: Vec::[],
@@ -1706,7 +1710,15 @@ fn resolve_builtin_method(ctx: Checker, receiver: Type, name: string, method_exp
                 Option::Some(inherent_callable(owner, name, one_type(owner), Type::String))
             } else {
                 Option::Some(
-                    trait_callable("ToString", Vec::[], name, one_type(owner), Type::String),
+                    trait_callable(
+                        "ToString",
+                        Vec::[],
+                        name,
+                        one_type(owner),
+                        Type::String,
+                        owner,
+                        true,
+                    ),
                 )
             }
         } else if match receiver {
@@ -1718,7 +1730,15 @@ fn resolve_builtin_method(ctx: Checker, receiver: Type, name: string, method_exp
             let reference = TraitRef { name: "ToString", args: Vec::[] };
             if trait_bound_satisfied_at(ctx, receiver, reference, Vec::[]) {
                 Option::Some(
-                    trait_callable("ToString", Vec::[], name, one_type(receiver), Type::String),
+                    trait_callable(
+                        "ToString",
+                        Vec::[],
+                        name,
+                        one_type(receiver),
+                        Type::String,
+                        receiver,
+                        true,
+                    ),
                 )
             } else {
                 Option::None
@@ -2155,7 +2175,7 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
 
 fn dyn_method_callable(owner: string, name: string, value: ResolvedCallable) -> ResolvedCallable {
     let dispatch = match value.callable {
-        TraitMethod { trait_ref: reference, method_name: _ } => reference.name,
+        TraitMethod { trait_ref: reference, .. } => reference.name,
         _ => owner,
     };
     ResolvedCallable {
@@ -2337,6 +2357,7 @@ fn builtin_associated_type(name: string, bounds: Vec[TraitRef]) -> AssociatedTyp
 fn builtin_trait_method(name: string, params: Vec[Type], ret_ty: Type) -> TraitMethodInfo {
     TraitMethodInfo {
         name,
+        has_receiver: true,
         generics: Vec::[],
         predicates: Vec::[],
         params,
@@ -3007,10 +3028,10 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo, associated_types: Vec[(stri
                     Option::None,
                 )
             } else {};
-            if method.params.is_empty() {
+            if !method.has_receiver {
                 push_diagnostic_at(
                     ctx,
-                    f"Trait {info.name}::{method.name} is not dyn-safe: missing receiver parameter",
+                    f"Trait {info.name}::{method.name} is not dyn-safe: associated functions are not supported",
                     Option::None,
                 )
             } else {
@@ -3319,14 +3340,9 @@ fn resolve_trait_reference_method(
         Some(info) => if info.generics.len() == reference.args.len() {
             match find_trait_method(info, name) {
                 Some(method) => {
-                    let resolved_self_ty = match self_ty {
-                        Some(ty) => Option::Some(ty),
-                        None => if method.params.is_empty() {
-                            Option::Some(Type::Unit)
-                        } else {
-                            Option::None
-                        },
-                    };
+                    if self_ty.is_some() && !method.has_receiver {
+                        return Option::None
+                    } else {};
                     validate_explicit_method_type_arguments(
                         ctx,
                         method.name,
@@ -3335,7 +3351,7 @@ fn resolve_trait_reference_method(
                         method_explicit,
                     );
                     let substitutions = append_type_substitutions(
-                        trait_substitutions(ctx, info, reference, resolved_self_ty),
+                        trait_substitutions(ctx, info, reference, self_ty),
                         instantiate_substitutions(ctx.counter, method.generics, method_explicit),
                     );
                     let params: Vec[Type] = Vec::[];
@@ -3348,6 +3364,11 @@ fn resolve_trait_reference_method(
                         name,
                         params,
                         substitute_type(method.ret_ty, substitutions),
+                        match find_substitution(substitutions, "Self") {
+                            Some(ty) => ty,
+                            None => fresh_type(ctx.counter, VarKind::Any),
+                        },
+                        method.has_receiver,
                     );
                     let predicates = expand_implied_predicates(
                         ctx,
@@ -3488,17 +3509,29 @@ fn resolve_trait_static(
     if owner == "ToString" && name == "to_string" {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
-        Option::Some(trait_callable(owner, explicit, name, one_type(receiver), Type::String))
+        Option::Some(
+            trait_callable(owner, explicit, name, one_type(receiver), Type::String, receiver, true),
+        )
     } else if owner == "Eq" && name == "eq" {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         Option::Some(
-            trait_callable(owner, explicit, name, two_types(receiver, receiver), Type::Bool),
+            trait_callable(
+                owner,
+                explicit,
+                name,
+                two_types(receiver, receiver),
+                Type::Bool,
+                receiver,
+                true,
+            ),
         )
     } else if owner == "Hash" && name == "hash" {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
-        Option::Some(trait_callable(owner, explicit, name, one_type(receiver), Type::Uint64))
+        Option::Some(
+            trait_callable(owner, explicit, name, one_type(receiver), Type::Uint64, receiver, true),
+        )
     } else {
         match find_trait(ctx, owner) {
             Some(info) => {
