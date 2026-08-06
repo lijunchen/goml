@@ -1,7 +1,12 @@
 package query;
 
+use gomlc::ast;
 use gomlc::cst;
+use gomlc::ctir;
+use gomlc::hir;
 use gomlc::lexer;
+use gomlc::parser;
+use gomlc::tast;
 use std::fs;
 use std::testing;
 use std::text;
@@ -52,6 +57,66 @@ fn write_query_fixture(path: string, source: string) -> unit {
         Ok(()) => (),
         Err(error) => testing::fail(error),
     }
+}
+
+fn required_builtin_comptime_module() -> ctir::CtModule {
+    match builtin_comptime_module() {
+        Ok(Some(value)) => value,
+        Ok(None) => {
+            testing::fail("expected builtin comptime derive module");
+            ctir::empty_module("builtin")
+        },
+        Err(error) => {
+            testing::fail(error);
+            ctir::empty_module("builtin")
+        },
+    }
+}
+
+fn builtin_source_derive_expansion(source: string) -> string {
+    let expanded = hir::expand_derives_with_environment(
+        ast::lower(parser::parse(source)),
+        hir::DeriveEnvironment {
+            builtin: Option::Some(required_builtin_comptime_module()),
+            dependencies: Vec::[],
+            builtin_mode: hir::BuiltinDeriveMode::SourceHandlers,
+        },
+    );
+    if expanded.diagnostics.is_empty() {} else {
+        testing::fail(expanded.diagnostics[0].message)
+    };
+    let formatted = ast::pretty(expanded);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::[(expanded, "derive_test.gom")];
+    let files: Vec[hir::File] = Vec::[];
+    for lowered in hir::lower_expanded_package_files(inputs, "derive_test") {
+        if lowered.diagnostics.is_empty() {} else {
+            testing::fail(lowered.diagnostics[0].message)
+        };
+        match lowered.hir {
+            Some(file) => files.push(file),
+            None => testing::fail("expected expanded derive HIR"),
+        }
+    }
+    let checked = tast::check_package_files_for_link_with_dependencies(files, Vec::[]);
+    if checked.diagnostics.is_empty() {} else {
+        testing::fail(checked.diagnostics[0].message)
+    };
+    formatted
+}
+
+#[test]
+fn expands_builtin_derives_from_toolchain_source_handlers() -> unit {
+    let expanded = builtin_source_derive_expansion(
+        "#[derive(ToString, Eq, Hash)]\nstruct Pair[T] { left: T, label: string }\n\n#[derive(ToString, Eq, Hash)]\nenum State[T] { Idle, One(T), Named { value: T, label: string } }",
+    );
+    testing::assert(expanded.contains("impl[T] builtin::ToString for Pair[T]"));
+    testing::assert(expanded.contains("impl[T] builtin::Eq for Pair[T]"));
+    testing::assert(expanded.contains("impl[T] builtin::Hash for Pair[T]"));
+    testing::assert(expanded.contains("impl[T] builtin::ToString for State[T]"));
+    testing::assert(expanded.contains("impl[T] builtin::Eq for State[T]"));
+    testing::assert(expanded.contains("impl[T] builtin::Hash for State[T]"));
+    testing::assert(expanded.contains("14695981039346656037"));
+    testing::assert(expanded.contains("1099511628211"))
 }
 
 #[test]

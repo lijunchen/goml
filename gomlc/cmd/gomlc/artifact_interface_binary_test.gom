@@ -255,12 +255,16 @@ fn interface_hash_tracks_only_public_comptime_body_closures() -> unit {
 #[test]
 fn derive_entries_round_trip_and_affect_interface_hash() -> unit {
     let first = source_interface(
-        "package value; #[comptime_derive] fn helper(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") } #[comptime_derive] pub fn derive_value(input: DeriveInput) -> DeriveOutput { helper(input) }",
+        "package value; #[comptime_derive] fn helper(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") } #[comptime_derive(Value)] pub fn derive_value(input: DeriveInput) -> DeriveOutput { helper(input) }",
     );
     let changed = source_interface(
-        "package value; #[comptime_derive] fn helper(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Changed\") } #[comptime_derive] pub fn derive_value(input: DeriveInput) -> DeriveOutput { helper(input) }",
+        "package value; #[comptime_derive] fn helper(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Changed\") } #[comptime_derive(Value)] pub fn derive_value(input: DeriveInput) -> DeriveOutput { helper(input) }",
+    );
+    let renamed = source_interface(
+        "package value; #[comptime_derive] fn helper(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") } #[comptime_derive(Renamed)] pub fn derive_value(input: DeriveInput) -> DeriveOutput { helper(input) }",
     );
     testing::assert(first.interface_hash != changed.interface_hash);
+    testing::assert(first.interface_hash != renamed.interface_hash);
     let encoded = match interface_codec::encode_binary(first) {
         Ok(value) => value,
         Err(error) => {
@@ -279,6 +283,10 @@ fn derive_entries_round_trip_and_affect_interface_hash() -> unit {
         Some(value) => {
             testing::assert_eq(value.module.derive_entries.len(), 1);
             testing::assert_eq(value.module.derive_entries[0].name, "audit::value::derive_value");
+            match value.module.derive_entries[0].export_name {
+                Some(name) => testing::assert_eq(name, "Value"),
+                None => testing::fail("expected derive export name"),
+            };
             testing::assert_eq(value.module.functions.len(), 2)
         },
         None => testing::fail("expected derive comptime unit"),

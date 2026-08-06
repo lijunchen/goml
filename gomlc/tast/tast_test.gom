@@ -67,6 +67,35 @@ fn evaluates_explicit_comptime_functions() -> unit {
 
 #[test]
 fn validates_comptime_derive_capability_boundaries() -> unit {
+    let named = checked_file(
+        "#[comptime_derive(Label)] pub fn handler(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") }",
+    );
+    match named.items[0] {
+        Function(value) => match value.derive_export_name {
+            Some(name) => testing::assert_eq(name, "Label"),
+            None => testing::fail("expected named derive export"),
+        },
+        _ => testing::fail("expected named derive handler"),
+    };
+    let private_named = checked_diagnostics(
+        "#[comptime_derive(Label)] fn handler(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") }",
+    );
+    testing::assert(
+        has_diagnostic(private_named, "a named #[comptime_derive] export must be public"),
+    );
+    let invalid_name = checked_diagnostics(
+        "#[comptime_derive(owner::Label)] pub fn handler(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") }",
+    );
+    testing::assert(
+        has_diagnostic(
+            invalid_name,
+            "#[comptime_derive] accepts at most one identifier export name",
+        ),
+    );
+    let duplicate = checked_diagnostics(
+        "#[comptime_derive(Label)] pub fn first(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") } #[comptime_derive(Label)] pub fn second(input: DeriveInput) -> DeriveOutput { derive_output_new(input, \"Label\") }",
+    );
+    testing::assert(has_diagnostic(duplicate, "duplicate comptime derive export `Label`"));
     let invalid_signature = checked_diagnostics("#[comptime_derive] pub fn handler() -> int { 1 }");
     testing::assert(
         has_diagnostic(

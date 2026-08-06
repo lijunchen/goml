@@ -19,7 +19,7 @@ fn add_generic_predicates(input: DeriveInput, output: DeriveOutput) -> unit {
     }
 }
 
-#[comptime_derive]
+#[comptime_derive(Label)]
 pub fn derive_label(input: DeriveInput) -> DeriveOutput {
     let output = derive_output_new(input, "Label");
     add_generic_predicates(input, output);

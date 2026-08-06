@@ -3,7 +3,7 @@ package main;
 use tests::comptime_extensions::macros;
 use macros::Inspect;
 
-#[derive(macros::derive_inspect)]
+#[derive(Inspect)]
 struct Entry[T] {
     #[metadata(field_name, owner::value, "suffix")]
     name: string,
@@ -56,6 +56,7 @@ fn main() -> unit {
         Some(value) => println(value),
         None => println(0),
     };
+    println(entry.large());
     println(
         comptime {
             compile_text()

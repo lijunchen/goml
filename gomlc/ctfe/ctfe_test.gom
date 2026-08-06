@@ -880,7 +880,12 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
         },
     );
     invalid_signature.derive_entries.push(
-        ctir::CtEntry { name: "handler", function_id: 0, public: true },
+        ctir::CtDeriveEntry {
+            name: "handler",
+            function_id: 0,
+            public: true,
+            export_name: Option::None,
+        },
     );
     match verify_module(invalid_signature, Vec::[]) {
         Err(error) => testing::assert_eq(error, "invalid CTIR derive entry signature"),
@@ -916,7 +921,12 @@ fn rejects_invalid_derive_ctir_artifacts() -> unit {
         },
     );
     invalid_intrinsic.derive_entries.push(
-        ctir::CtEntry { name: "handler", function_id: 0, public: true },
+        ctir::CtDeriveEntry {
+            name: "handler",
+            function_id: 0,
+            public: true,
+            export_name: Option::None,
+        },
     );
     match verify_module(invalid_intrinsic, Vec::[]) {
         Err(error) => testing::assert_eq(error, "unknown CTIR intrinsic"),

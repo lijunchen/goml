@@ -1,6 +1,7 @@
 package hir;
 
 use gomlc::ast;
+use gomlc::ctir;
 use gomlc::parser;
 use std::testing;
 
@@ -46,6 +47,43 @@ fn lowered_package_file(source: string, package_name: string) -> File {
             }
         },
     }
+}
+
+fn derive_export_module(package_name: string, export_name: string) -> ctir::CtModule {
+    let module = ctir::empty_module(package_name);
+    module.derive_entries.push(
+        ctir::CtDeriveEntry {
+            name: package_name + "::handler",
+            function_id: 0,
+            public: true,
+            export_name: Option::Some(export_name),
+        },
+    );
+    module
+}
+
+#[test]
+fn rejects_ambiguous_imported_derive_names() -> unit {
+    let expanded = expand_derives_with_environment(
+        ast::lower(
+            parser::parse(
+                "use alice::first as first; use first::Label; use bob::second as second; use second::Label; #[derive(Label)] struct Value {}",
+            ),
+        ),
+        DeriveEnvironment {
+            builtin: Option::None,
+            dependencies: Vec::[
+                derive_export_module("alice::first", "Label"),
+                derive_export_module("bob::second", "Label"),
+            ],
+            builtin_mode: BuiltinDeriveMode::CompilerFallback,
+        },
+    );
+    testing::assert_eq(expanded.diagnostics.len(), 1);
+    testing::assert_eq(
+        expanded.diagnostics[0].message,
+        "derive name `Label` is ambiguous; use a package-qualified name or an import alias",
+    )
 }
 
 #[test]
@@ -373,7 +411,10 @@ fn rejects_invalid_derives() -> unit {
         "main.gom",
     );
     testing::assert_eq(unsupported.diagnostics.len(), 1);
-    testing::assert_eq(unsupported.diagnostics.get(0).message, "unsupported derive target `ToJson`");
+    testing::assert_eq(
+        unsupported.diagnostics.get(0).message,
+        "derive name `ToJson` is not in scope; library derives must be qualified or explicitly imported",
+    );
 }
 
 #[test]

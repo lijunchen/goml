@@ -2,14 +2,15 @@ package main;
 
 use tests::comptime_derive::macros;
 use macros::Label;
+use macros::Label as RenamedLabel;
 
-#[derive(macros::derive_label)]
+#[derive(Label)]
 struct Box[T] {
     #[field_label]
     value: T,
 }
 
-#[derive(macros::derive_label)]
+#[derive(macros::Label)]
 enum State {
     #[variant_label]
     Ready(
@@ -18,8 +19,14 @@ enum State {
     ),
 }
 
+#[derive(RenamedLabel)]
+struct Alias {
+    value: int,
+}
+
 fn main() -> unit {
     let value = Box { value: 1 };
     println(value.label());
-    println(State::Ready(1).label())
+    println(State::Ready(1).label());
+    println(Alias { value: 1 }.label())
 }

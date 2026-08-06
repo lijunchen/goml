@@ -12,6 +12,17 @@ pub trait Inspect {
     fn initial(self: Self) -> char;
     fn patterns(self: Self) -> int;
     fn maybe(self: Self) -> Option[int];
+    fn large(self: Self) -> uint64;
+}
+
+pub trait Render {
+    fn render(self: Self) -> string;
+}
+
+impl Render for string {
+    fn render(self: string) -> string {
+        self
+    }
 }
 
 #[comptime_derive]
@@ -20,7 +31,8 @@ fn inspect_method(input: DeriveInput) -> MetaMethod {
     meta_pattern_field_list_push(fields, "name", meta_pattern_bind("name"));
     let pattern = meta_pattern_struct(derive_item_name(input), fields, true);
     let args = meta_expr_list_new();
-    let rendered = meta_expr_method_call(meta_expr_var("name"), "to_string", args);
+    meta_expr_list_push(args, meta_expr_var("name"));
+    let rendered = meta_expr_trait_call(input, "Render", "render", args);
     let arms = meta_arm_list_new();
     meta_arm_list_push(arms, meta_arm(pattern, rendered));
     let matched = meta_expr_match(meta_expr_var("self"), arms);
@@ -134,6 +146,18 @@ fn maybe_method(input: DeriveInput) -> MetaMethod {
 }
 
 #[comptime_derive]
+fn large_method(input: DeriveInput) -> MetaMethod {
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    meta_method(
+        "large",
+        params,
+        meta_type_call_site("uint64"),
+        meta_expr_integer("14695981039346656037", meta_type_call_site("uint64")),
+    )
+}
+
+#[comptime_derive(Inspect)]
 pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
     let item_attribute = derive_attribute(input, 0);
     if meta_attribute_name(item_attribute) != "derive" {
@@ -171,7 +195,8 @@ pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
     } else {};
     let argument = meta_type_argument(field_type, 0);
     if meta_type_kind(argument) != "named" || meta_type_name(argument) != "T"
-        || !meta_type_contains_generic(input, field_type) {
+        || !meta_type_contains_generic(input, field_type)
+        || !meta_type_equal(argument, argument) {
         compile_error("generic type reflection failed")
     } else {};
     let tuple_type = derive_field_type(input, 2);
@@ -198,5 +223,6 @@ pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
     derive_output_add_method(output, initial_method(input));
     derive_output_add_method(output, patterns_method(input));
     derive_output_add_method(output, maybe_method(input));
+    derive_output_add_method(output, large_method(input));
     output
 }
