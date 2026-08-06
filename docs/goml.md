@@ -1680,20 +1680,26 @@ struct User {
 }
 ```
 
-The standard JSON handler serializes a struct as an object with source-order fields. It uses externally tagged enums: a unit variant is a string, a tuple variant is an object whose value is an array, and a struct-like variant is an object whose value is another object. `Serialize::serialize` returns `json::Value`; `json::stringify` serializes and encodes a value in one step. Unit, booleans, strings, chars, numeric primitives, `Value`, `Vec[T]`, `Option[T]`, and two- or three-element tuples have standard implementations.
+`std::json` supports two deliberately separate modes. The value mode uses `json::Value`, `json::parse`, and `json::encode` for schema-free inspection and editing. JSON numbers remain their exact source text in `Value::Number`. The precise typed mode uses `json::to_value`, `from_value`, `to_string`, and `from_string` through the shared serde traits. Numeric range and destination-width checks happen while deserializing into the requested type.
+
+`json` publicly re-exports the shared `Serialize` and `Deserialize` traits and derive handlers, so either `use serde::Serialize` or `use json::Serialize` selects the same implementation identity. The JSON adapter serializes a struct as an object with source-order fields. It uses externally tagged enums: a unit variant is a string, a tuple variant is an object whose value is an array, and a struct-like variant is an object whose value is another object. `json::stringify` remains an alias of `json::to_string`.
 
 ```goml
 use std::json;
-use json::Serialize;
+use json::{Deserialize, Serialize};
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 struct User {
     name: string,
     active: bool,
 }
 
 fn encode_user(value: User) -> string {
-    json::stringify(value)
+    json::to_string(value)
+}
+
+fn decode_user(input: string) -> Result[User, string] {
+    json::from_string(input)
 }
 ```
 
@@ -2272,7 +2278,7 @@ Current public entrances include:
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `iter::empty`, `once`, `from_fn`, iterator adapters, and single-pass consumers
-- `json::Value`, `parse`, `encode`, `Serialize`, `stringify`, `field`, and typed `as_*` accessors
+- `json::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `to_string`, `from_string`, `field`, and typed `as_*` accessors
 - `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
