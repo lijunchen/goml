@@ -99,17 +99,27 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
     assert_strings(
         standard_package_closure(Vec::["std::json", "std::fs"]),
         Vec::[
+            "std::internal::host",
+            "std::num",
+            "std::serde",
             "std::ascii",
             "std::bytes",
             "std::text",
             "std::json",
-            "std::internal::host",
             "std::fs",
         ],
     );
     assert_strings(
         standard_package_link_closure(Vec::["std::json", "std::fs"]),
-        Vec::["std::ascii", "std::bytes", "std::text", "std::json", "std::fs"],
+        Vec::[
+            "std::num",
+            "std::serde",
+            "std::ascii",
+            "std::bytes",
+            "std::text",
+            "std::json",
+            "std::fs",
+        ],
     )
 }
 

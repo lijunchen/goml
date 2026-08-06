@@ -1,0 +1,54 @@
+package main;
+
+use std::json;
+use json::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct User {
+    #[serde(rename = "display_name")]
+    name: string,
+    age: uint8,
+}
+
+#[derive(Serialize, Deserialize)]
+enum Event {
+    Idle,
+    Login(string, uint32),
+    State { active: bool },
+}
+
+fn decode_user(input: string) -> Result[User, string] {
+    json::from_string(input)
+}
+
+fn decode_event(input: string) -> Result[Event, string] {
+    json::from_string(input)
+}
+
+fn main() -> unit {
+    let parsed = match json::parse("{\"items\":[1,true,null]}") {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            json::Value::Null
+        },
+    };
+    println(json::encode(parsed));
+    let encoded = json::to_string(User { name: "goml", age: 13 });
+    println(encoded);
+    let user = match decode_user(encoded) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            User { name: "error", age: 0 }
+        },
+    };
+    println(user.name + user.age.to_string());
+    let event_text = json::to_string(Event::Login("li", 15));
+    println(event_text);
+    match decode_event(event_text) {
+        Ok(Login(name, id)) => println(name + id.to_string()),
+        Ok(_) => println("wrong event"),
+        Err(error) => println(error),
+    }
+}
