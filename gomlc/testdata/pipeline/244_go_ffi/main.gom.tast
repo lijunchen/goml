@@ -1,0 +1,9 @@
+fn main() -> unit {
+    (println : (string) -> unit)((@go_ffi(strings, ToUpper) : (string) -> string)("goml"));
+    let (before/0: string, after/1: string, found/2: bool) =
+      (@go_ffi(strings, Cut) : (string, string) -> (string, string, bool))("left:right", ":");
+    (println : (string) -> unit)((before/0 : string));
+    (println : (string) -> unit)((after/1 : string));
+    (println : (bool) -> unit)((found/2 : bool));
+    (@go_ffi(runtime, Gosched) : () -> unit)()
+}

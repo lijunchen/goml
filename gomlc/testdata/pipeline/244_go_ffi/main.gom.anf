@@ -1,0 +1,58 @@
+fn main() -> unit {
+  let t145 = @go_ffi(strings, ToUpper)("goml") in
+  join inline_cont167(_wild136: unit) -> unit {
+    let mtmp137 = @go_ffi(strings, Cut)("left:right", ":") in
+    let x138 = mtmp137.0 in
+    let x139 = mtmp137.1 in
+    let x140 = mtmp137.2 in
+    let found/2 = x140 in
+    let after/1 = x139 in
+    let before/0 = x138 in
+    join inline_cont164(_wild141: unit) -> unit {
+      join inline_cont161(_wild142: unit) -> unit {
+        join inline_cont158(_wild143: unit) -> unit {
+          let t146 = @go_ffi(runtime, Gosched)() in
+          ()
+        } in
+        let inline159 = trait_impl#ToString#bool#to_string(x140) in
+        let inline160 = @runtime(core.string_println)(inline159) in
+        jump inline_cont158(())
+      } in
+      let inline162 = trait_impl#ToString#string#to_string(x139) in
+      let inline163 = @runtime(core.string_println)(inline162) in
+      jump inline_cont161(())
+    } in
+    let inline165 = trait_impl#ToString#string#to_string(x138) in
+    let inline166 = @runtime(core.string_println)(inline165) in
+    jump inline_cont164(())
+  } in
+  let inline168 = trait_impl#ToString#string#to_string(t145) in
+  let inline169 = @runtime(core.string_println)(inline168) in
+  jump inline_cont167(())
+}
+
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont170(t148: string) -> unit {
+    let t149 = @runtime(core.string_println)(t148) in
+    ()
+  } in
+  jump inline_cont170(value/31)
+}
+
+fn println__T_bool(value/31: bool) -> unit {
+  join inline_cont171(t151: string) -> unit {
+    let t152 = @runtime(core.string_println)(t151) in
+    ()
+  } in
+  let inline172 = @runtime(core.bool_to_string)(value/31) in
+  jump inline_cont171(inline172)
+}
+
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
+}
+
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  let t157 = @runtime(core.bool_to_string)(self/66) in
+  t157
+}
