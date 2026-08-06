@@ -1515,7 +1515,12 @@ fn restores_core_metadata_from_artifact_exports() -> unit {
                             params: Vec::[tast::Type::Con { name: "audit::Numbers" }],
                             ret_ty: tast::Type::Int32,
                         },
-                        body: tast::Callable::TraitMethod { trait_ref, method_name: "read" },
+                        body: tast::Callable::TraitMethod {
+                            trait_ref,
+                            method_name: "read",
+                            for_ty: tast::Type::Con { name: "audit::Numbers" },
+                            has_receiver: true,
+                        },
                     },
                 ],
                 valid: true,
