@@ -740,7 +740,11 @@ fn execute_command(cancel: task::CancelToken, context: Context, value: Command) 
     );
     if command.0 == "go" {
         let _ = process.env("GOWORK", "off");
-        let _ = process.env("GO111MODULE", "off");
+        if !fs::is_file(path::join(context.graph.module_dir, "go.mod")) {
+            let _ = process.env("GO111MODULE", "off");
+        } else {
+            let _ = process.env("GO111MODULE", "on");
+        }
     } else {};
     match process.status_with(cancel) {
         Ok(task::WaitResult::Completed(status)) => if process::ExitStatus::success(status) {
@@ -769,6 +773,12 @@ fn prepare_cached_command(
     command: Command,
     identity: string,
 ) -> Result[CachePreparation, string] {
+    match command {
+        GoBuild { .. } if fs::is_file(path::join(context.graph.module_dir, "go.mod")) => {
+            return Result::Ok(CachePreparation::Execute(Option::None))
+        },
+        _ => (),
+    };
     match cache_spec(command) {
         Some(spec) => {
             let fingerprint = command_fingerprint(digests, context, identity, spec)?;

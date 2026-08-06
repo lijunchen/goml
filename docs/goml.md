@@ -17,7 +17,7 @@ GoML is a statically typed language with garbage collection. Its syntax is close
 9. Enumeration construction uses full names such as `Option::Some(value)`.In patterns, the enum qualifier may be omitted when the matched type determines it, such as `Some(value)` and `None`.
 10. For cross-package calls, write `alias::item`.Top-level items, structure fields, and native methods must all be marked with `pub` as required.
 11. Before using trait method syntax across packages, import the package and trait with `use alias::Trait;` or a braced import; when in doubt, use UFCS: `Trait::method(value)`.
-12. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, Go `var` / `:=` or user `extern fn`.
+12. Do not generate `mod`, `crate::`, `self::`, `super::`, root paths `::x`, Rust references, or Go `var` / `:=`. A user `extern fn` is valid only with the typed Go FFI attribute described below.
 13. The test function uses `#[test]`, which must have no parameters, no type parameters and return `unit`; the white-box test is placed in `*_test.gom` of the same package, and the black-box test is placed in the `tests/` directory of the package under test.
 
 ## minimal program
@@ -1544,9 +1544,67 @@ enum Entry[T, Marker] {
 }
 ```
 
-All fields or variant payloads must support the derived trait. For a generic definition, the generated impl constrains each distinct field or payload type that mentions a type parameter. In the example above the constraint is on `Vec[T]`, while the unused phantom parameter `Marker` receives no constraint. Except for `#[test]` and `#[ignore]` in the next section, other attributes and `extern fn` are used for the compiler's own runtime, intrinsic and lang items; ordinary GoML projects cannot use this to bind any Go symbols.
+All fields or variant payloads must support the derived trait. For a generic definition, the generated impl constrains each distinct field or payload type that mentions a type parameter. In the example above the constraint is on `Vec[T]`, while the unused phantom parameter `Marker` receives no constraint. Compiler-owned runtime, intrinsic, and lang-item attributes remain unavailable to ordinary projects. User projects may use the `go_ffi` attribute described in the next section.
 
 Derived `Eq` provides `Eq::eq(left, right)`, making the type usable with `==` / `!=` and satisfying the key constraints of `HashMap`.
+
+## Go FFI
+
+The typed Go FFI binds a top-level GoML declaration to an exported package-level Go function:
+
+```goml
+#[go_ffi("strings", "ToUpper")]
+extern fn to_upper(value: string) -> string;
+
+#[go_ffi("strings", "Cut")]
+extern fn cut(value: string, separator: string) -> (string, string, bool);
+
+fn example() -> string {
+    let (before, after, found) = cut("left:right", ":");
+    if found { to_upper(before + after) } else { "" }
+}
+```
+
+The first attribute argument is the Go import path and the second is an exported ASCII Go identifier. The GoML function name is local and may differ from the Go symbol. Add `pub` before `extern fn` to expose the binding through another GoML package; interface and Core artifacts preserve the Go import path and symbol.
+
+The initial ABI supports values whose generated Go representations are already directly assignable:
+
+| GoML type | Go representation |
+| --- | --- |
+| `bool`, numeric primitives, `string` | Corresponding Go primitive |
+| `char` | `rune` / `int32` |
+| `byte` | `byte` / `uint8` |
+| `[T; N]` | `[N]T` |
+| `Slice[T]` | `[]T` |
+| `Channel[T]` | `chan T` |
+| `unit` return | Go function with no result |
+| `(A, B, ...)` return | Multiple Go results in the same order |
+
+Tuple types are supported only as the complete return type. Tuple elements and array, slice, or channel elements must themselves be FFI-safe. Parameters cannot be `unit`.
+
+The declaration must be monomorphic and must describe the Go function exactly. GoML does not inspect Go package type information during type checking; the Go compiler is the final authority for symbol existence and assignability. In particular, a Go named type such as `time.Duration` is not interchangeable with a GoML `int64` parameter even when its underlying representation is the same.
+
+`Vec`, `Ref`, `HashMap`, `Option`, `Result`, user structs and enums, trait objects, function values, nested tuples, generic declarations, methods, callbacks, Go object handles, and automatic `error` conversion are not supported by this ABI. Write a small Go shim with an exported function and FFI-safe parameters when adapting such an API:
+
+```go
+package goshim
+
+import "os"
+
+func ReadText(name string) (string, bool) {
+    data, err := os.ReadFile(name)
+    return string(data), err == nil
+}
+```
+
+```goml
+#[go_ffi("example.com/myapp/goshim", "ReadText")]
+extern fn read_text(name: string) -> (string, bool);
+```
+
+When the GoML module root contains `go.mod`, `goml build`, `goml run`, and test linking invoke Go in module mode, so local shim packages and declared Go module dependencies can be imported. Go workspace mode remains disabled. Without `go.mod`, builds retain the existing module-off behavior. Module-mode Go builds always execute and delegate dependency and source freshness to Go's own build cache, so changes to `go.mod`, `go.sum`, and local `.go` shims are observed.
+
+This interface only calls Go from GoML. Exporting GoML functions to Go, calling methods, dynamic symbol lookup, and C ABI interoperation require separate mechanisms.
 
 ## test
 
@@ -2063,7 +2121,7 @@ Sorting mutates a `Vec[T]` in place. `sort` and `stable_sort` use `cmp::Ord`; `s
 | `use pkg::*` | List the required public items explicitly with `use pkg::{A, B};` |
 | `mod`、`crate::`、`super::` | Directory packages and canonical `use` paths |
 | `fn helper` inside function | Top-level function or local closure |
-| User `extern fn` | Use the API provided by compiler/prelude/stdlib |
+| Unannotated user `extern fn` | Use a normal GoML function or `#[go_ffi("import/path", "ExportedSymbol")] extern fn` |
 
 ## Informal Grammar Quick Facts
 
@@ -2082,8 +2140,12 @@ item          = attribute* visibility? function
               | attribute* visibility? enum_def
               | attribute* visibility? trait_def
               | attribute* impl_def
+              | go_ffi_extern
 visibility    = "pub"
 attribute     = "#[" attribute_body "]"
+go_ffi_attribute = "#[" "go_ffi" "(" string_literal "," string_literal ")" "]"
+go_ffi_extern = go_ffi_attribute visibility? "extern" "fn" lower_ident
+                param_list return_type? ";"
 
 function      = "fn" lower_ident generic_params? param_list return_type? where_clause? block
 method        = visibility? "fn" lower_ident generic_params? param_list return_type? where_clause? block

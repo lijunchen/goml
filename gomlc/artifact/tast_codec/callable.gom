@@ -8,17 +8,37 @@ pub struct ArtifactCallable {
     pub name: string,
     pub kind: string,
     pub id: Option[string],
+    pub import_path: Option[string],
+    pub symbol: Option[string],
 }
 
 fn invalid_artifact_callable(value: string) -> ArtifactCallable {
-    ArtifactCallable { name: value, kind: "invalid", id: Option::None }
+    ArtifactCallable {
+        name: value,
+        kind: "invalid",
+        id: Option::None,
+        import_path: Option::None,
+        symbol: Option::None,
+    }
 }
 
 pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
     match value {
-        Function(value) => ArtifactCallable { name: value, kind: "goml", id: Option::Some(value) },
+        Function(value) => ArtifactCallable {
+            name: value,
+            kind: "goml",
+            id: Option::Some(value),
+            import_path: Option::None,
+            symbol: Option::None,
+        },
         LangItem { item: _, function_name } => {
-            ArtifactCallable { name: function_name, kind: "goml", id: Option::Some(function_name) }
+            ArtifactCallable {
+                name: function_name,
+                kind: "goml",
+                id: Option::Some(function_name),
+                import_path: Option::None,
+                symbol: Option::None,
+            }
         },
         Runtime(value) => match resources::runtime_abi_by_key(value) {
             Some(spec) => ArtifactCallable {
@@ -29,6 +49,8 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
                 },
                 kind: "runtime",
                 id: Option::Some(spec.artifact_id),
+                import_path: Option::None,
+                symbol: Option::None,
             },
             None => invalid_artifact_callable(value),
         },
@@ -37,8 +59,17 @@ pub fn artifact_callable(value: tast::Callable) -> ArtifactCallable {
                 name: spec.source_name,
                 kind: "intrinsic",
                 id: Option::Some(spec.artifact_id),
+                import_path: Option::None,
+                symbol: Option::None,
             },
             None => invalid_artifact_callable(value),
+        },
+        GoForeign { import_path, symbol } => ArtifactCallable {
+            name: symbol,
+            kind: "go",
+            id: Option::None,
+            import_path: Option::Some(import_path),
+            symbol: Option::Some(symbol),
         },
         TraitMethod { trait_ref: _, method_name: _ } | DynTraitMethod {
             trait_name: _,
@@ -57,6 +88,20 @@ pub fn artifact_json_callable_body(writer: wire::ArtifactJsonWriter, value: Arti
     match value.id {
         Some(value) => {
             wire::artifact_json_name(writer, "id");
+            wire::artifact_json_string(writer, value)
+        },
+        None => (),
+    };
+    match value.import_path {
+        Some(value) => {
+            wire::artifact_json_name(writer, "import_path");
+            wire::artifact_json_string(writer, value)
+        },
+        None => (),
+    };
+    match value.symbol {
+        Some(value) => {
+            wire::artifact_json_name(writer, "symbol");
             wire::artifact_json_string(writer, value)
         },
         None => (),
@@ -91,6 +136,13 @@ pub fn artifact_decode_callable_body(name: string, value: wire::ArtifactValue) -
             ),
             None => Result::Ok(tast::Callable::Function(name)),
         }
+    } else if kind == "go" {
+        Result::Ok(
+            tast::Callable::GoForeign {
+                import_path: wire::artifact_json_field_string(object, "import_path")?,
+                symbol: wire::artifact_json_field_string(object, "symbol")?,
+            },
+        )
     } else {
         let id = wire::artifact_json_field_string(object, "id")?;
         if kind == "intrinsic" {

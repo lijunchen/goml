@@ -2648,6 +2648,7 @@ fn check_file_with_package(
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     }
+    validate_go_ffi_signatures(ctx, value);
     for index in 0..ctx.in_scope_traits.len() {
         ctx.in_scope_traits.set(index, canonical_imported_name(ctx, ctx.in_scope_traits[index]))
     }

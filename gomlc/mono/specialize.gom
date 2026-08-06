@@ -1261,6 +1261,9 @@ fn specialize_callable(ctx: SpecializeCtx, value: tast::Callable, bindings: Vec[
         LangItem { item, function_name } => tast::Callable::LangItem { item, function_name },
         Runtime(name) => tast::Callable::Runtime(name),
         Intrinsic(name) => tast::Callable::Intrinsic(name),
+        GoForeign { import_path, symbol } => {
+            tast::Callable::GoForeign { import_path, symbol }
+        },
         TraitMethod { trait_ref: reference, method_name: name } => {
             tast::Callable::TraitMethod {
                 trait_ref: specialize_trait_ref(ctx, reference, bindings),

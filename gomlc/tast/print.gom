@@ -494,6 +494,9 @@ fn callable_doc(value: Callable) -> pretty::Doc {
         LangItem { item: _, function_name } => pretty::text(function_name),
         Runtime(name) => pretty::text("@runtime(" + name + ")"),
         Intrinsic(name) => pretty::text("@intrinsic(" + name + ")"),
+        GoForeign { import_path, symbol } => {
+            pretty::text("@go_ffi(" + import_path + ", " + symbol + ")")
+        },
         TraitMethod { trait_ref: reference, method_name: name } => pretty::concat(
             Vec::[trait_ref_doc(reference), pretty::text("::" + name)],
         ),

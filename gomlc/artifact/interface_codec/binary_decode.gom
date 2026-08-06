@@ -567,6 +567,15 @@ fn artifact_interface_binary_callable(reader: ArtifactInterfaceBinaryReader, nam
         } else {
             Result::Err(artifact_interface_binary_error("callable body"))
         }
+    } else if kind == "go" {
+        if count != 3 {
+            return Result::Err(artifact_interface_binary_error("callable body"))
+        } else {};
+        artifact_interface_binary_field(reader, "import_path")?;
+        let import_path = artifact_interface_binary_string(reader, "Go import path")?;
+        artifact_interface_binary_field(reader, "symbol")?;
+        let symbol = artifact_interface_binary_string(reader, "Go symbol")?;
+        Result::Ok(tast::Callable::GoForeign { import_path, symbol })
     } else if count != 2 {
         Result::Err(artifact_interface_binary_error("callable body"))
     } else {
@@ -905,7 +914,7 @@ fn decode_artifact_interface_binary_value(
 ) -> Result[artifact::ArtifactInterfaceUnit, string] {
     let reader = new_artifact_interface_binary_reader(data, table);
     artifact_interface_binary_object(reader, 7, "interface unit")?;
-    artifact_interface_binary_version_field(reader, "format_version", "18")?;
+    artifact_interface_binary_version_field(reader, "format_version", "19")?;
     artifact_interface_binary_version_field(reader, "compiler_abi", "3")?;
     artifact_interface_binary_field(reader, "package")?;
     let package_name = artifact_interface_binary_string(reader, "package name")?;

@@ -683,11 +683,13 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     let attrs = lower_attributes(node);
     let intrinsic = find_attribute(attrs, "intrinsic");
     let runtime = find_attribute(attrs, "runtime");
-    if option_attribute_is_none(intrinsic) && option_attribute_is_none(runtime) {
+    let go_ffi = find_attribute(attrs, "go_ffi");
+    if option_attribute_is_none(intrinsic) && option_attribute_is_none(runtime)
+        && option_attribute_is_none(go_ffi) {
         push_error(
             ctx,
             node_span(node),
-            "Extern declarations require `#[intrinsic(...)]` or `#[runtime(...)]`.",
+            "Extern declarations require `#[intrinsic(...)]`, `#[runtime(...)]`, or `#[go_ffi(...)]`.",
         );
         Option::None
     } else if has_token(node, lexer::TokenKind::TypeKeyword) {
@@ -695,7 +697,10 @@ fn lower_extern(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
             Some(value) => value.span,
             None => match runtime {
                 Some(value) => value.span,
-                None => node_span(node),
+                None => match go_ffi {
+                    Some(value) => value.span,
+                    None => node_span(node),
+                },
             },
         };
         push_error(ctx, attr_span, "Extern function declarations cannot declare types");

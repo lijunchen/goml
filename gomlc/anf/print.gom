@@ -30,6 +30,15 @@ fn callable_doc(value: tast::Callable) -> pretty::Doc {
         Intrinsic(name) => pretty::concat(
             Vec::[pretty::text("@intrinsic("), pretty::text(name), pretty::text(")")],
         ),
+        GoForeign { import_path, symbol } => pretty::concat(
+            Vec::[
+                pretty::text("@go_ffi("),
+                pretty::text(import_path),
+                pretty::text(", "),
+                pretty::text(symbol),
+                pretty::text(")"),
+            ],
+        ),
         TraitMethod { trait_ref: reference, method_name: name } => pretty::concat(
             Vec::[tast::trait_ref_doc(reference), pretty::text("::"), pretty::text(name)],
         ),
