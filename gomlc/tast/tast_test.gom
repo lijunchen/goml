@@ -2760,6 +2760,42 @@ fn resolves_supertraits_and_implied_predicates() -> unit {
 }
 
 #[test]
+fn validates_trait_associated_function_self_resolution() -> unit {
+    let valid = checked_diagnostics(
+        "trait Decode { fn decode(input: string) -> Self; } trait Default { fn default() -> Self; } struct Value { value: int32 } impl Decode for Value { fn decode(input: string) -> Value { Value { value: 1 } } } impl Default for Value { fn default() -> Value { Value { value: 0 } } } fn decode[T: Decode](input: string) -> T { Decode::decode(input) } fn make[T: Default]() -> T { Default::default() }",
+    );
+    testing::assert_eq(valid.len(), 0);
+    let ambiguous = checked_diagnostics(
+        "trait Default { fn default() -> Self; } fn value() -> unit { let result = Default::default(); () }",
+    );
+    testing::assert(
+        has_diagnostic(
+            ambiguous,
+            "Could not infer the Self type for associated function Default::default",
+        ),
+    );
+    let mismatched = checked_diagnostics(
+        "trait Default { fn default() -> Self; } struct Value {} impl Default for Value { fn default(self: Value) -> Value { self } }",
+    );
+    testing::assert(
+        has_diagnostic(mismatched, "Trait Default::default expects 0 parameters but impl has 1"),
+    )
+}
+
+#[test]
+fn rejects_trait_associated_functions_in_dyn_traits() -> unit {
+    let diagnostics = checked_diagnostics(
+        "trait Factory { fn create(seed: int32) -> Self; } fn use_factory(value: dyn Factory) -> unit {}",
+    );
+    testing::assert(
+        has_diagnostic(
+            diagnostics,
+            "Trait Factory::create is not dyn-safe: associated functions are not supported",
+        ),
+    )
+}
+
+#[test]
 fn rejects_unsafe_dyn_body_annotations() -> unit {
     let diagnostics = checked_diagnostics(
         "trait Cloneish { fn clone(self: Self) -> Self; } struct Value { value: int32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 }; }",
