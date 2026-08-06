@@ -13,10 +13,17 @@ pub trait Inspect {
     fn patterns(self: Self) -> int;
     fn maybe(self: Self) -> Option[int];
     fn large(self: Self) -> uint64;
+    fn generic[A: Adapter](self: Self, adapter: A) -> Result[A::Output, string];
 }
 
 pub trait Render {
     fn render(self: Self) -> string;
+}
+
+pub trait Adapter {
+    type Output;
+
+    fn adapt(self: Self, value: string) -> Result[Self::Output, string];
 }
 
 impl Render for string {
@@ -29,7 +36,7 @@ impl Render for string {
 fn inspect_method(input: DeriveInput) -> MetaMethod {
     let fields = meta_pattern_field_list_new();
     meta_pattern_field_list_push(fields, "name", meta_pattern_bind("name"));
-    let pattern = meta_pattern_struct(derive_item_name(input), fields, true);
+    let pattern = meta_pattern_target_struct(input, fields, true);
     let args = meta_expr_list_new();
     meta_expr_list_push(args, meta_expr_var("name"));
     let rendered = meta_expr_trait_call(input, "Render", "render", args);
@@ -157,6 +164,41 @@ fn large_method(input: DeriveInput) -> MetaMethod {
     )
 }
 
+#[comptime_derive]
+fn generic_method(input: DeriveInput) -> MetaMethod {
+    let generic_type = meta_type_call_site("A");
+    let output_type = meta_type_projection(generic_type, "Output");
+    let result_args = meta_type_list_new();
+    meta_type_list_push(result_args, output_type);
+    meta_type_list_push(result_args, meta_type_call_site("string"));
+    let result_type = meta_type_apply(meta_type_call_site("Result"), result_args);
+    let call_args = meta_expr_list_new();
+    meta_expr_list_push(call_args, meta_expr_var("adapter"));
+    meta_expr_list_push(call_args, meta_expr_string("value"));
+    let block = meta_block_new();
+    meta_block_let_typed(
+        block,
+        "adapted",
+        output_type,
+        meta_expr_try(meta_expr_trait_call(input, "Adapter", "adapt", call_args)),
+    );
+    let ok_args = meta_expr_list_new();
+    meta_expr_list_push(ok_args, meta_expr_var("adapted"));
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    meta_param_list_push(params, "adapter", generic_type);
+    let generics = meta_generic_list_new();
+    meta_generic_list_push(generics, "A");
+    meta_generic_list_add_bound(input, generics, "A", "Adapter");
+    meta_method_generic(
+        "generic",
+        generics,
+        params,
+        result_type,
+        meta_block_finish(block, meta_expr_constructor("Result::Ok", ok_args)),
+    )
+}
+
 #[comptime_derive(Inspect)]
 pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
     let item_attribute = derive_attribute(input, 0);
@@ -183,7 +225,18 @@ pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
         || meta_attribute_argument_text(attribute, 1) != "owner::value" {
         compile_error("structured path attribute argument is missing")
     } else {};
-    if !text.starts_with("<meta") || !text.ends_with("suffix;") || !text.contains("field_name") {
+    if meta_attribute_argument_kind(attribute, 3) != "named"
+        || meta_attribute_argument_name(attribute, 3) != "rename"
+        || meta_attribute_argument_value_kind(attribute, 3) != "string"
+        || meta_attribute_argument_text(attribute, 3) != "entry"
+        || meta_attribute_argument_kind(attribute, 4) != "named"
+        || meta_attribute_argument_name(attribute, 4) != "with"
+        || meta_attribute_argument_value_kind(attribute, 4) != "path"
+        || meta_attribute_argument_text(attribute, 4) != "owner::codec" {
+        compile_error("structured named attribute argument is missing")
+    } else {};
+    if !text.starts_with("<meta") || !text.contains("string:suffix;")
+        || !text.contains("field_name") {
         compile_error("compile-time string search failed")
     } else if text.get(0) != '<' || text.byte_get(0) != 60 || text.byte_slice(0, 1) != "<"
         || !text.is_char_boundary(1) {
@@ -224,5 +277,6 @@ pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
     derive_output_add_method(output, patterns_method(input));
     derive_output_add_method(output, maybe_method(input));
     derive_output_add_method(output, large_method(input));
+    derive_output_add_method(output, generic_method(input));
     output
 }

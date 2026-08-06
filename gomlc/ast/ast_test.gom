@@ -96,6 +96,40 @@ fn lowers_attribute_names_and_arguments_structurally() -> unit {
 }
 
 #[test]
+fn lowers_named_attribute_arguments_structurally() -> unit {
+    let file = lowered_file(
+        "#[serde(rename = \"entry\", with = codec::value, skip)] struct Entry { value: int }",
+    );
+    match file.items[0] {
+        StructDef(value) => {
+            let attribute = value.attrs[0];
+            testing::assert_eq(attribute.args.len(), 3);
+            match attribute.args[0] {
+                AttributeArg::Named { name, value_kind, value } => {
+                    testing::assert_eq(name, "rename");
+                    testing::assert_eq(value_kind, "string");
+                    testing::assert_eq(value, "entry")
+                },
+                _ => testing::fail("expected named string attribute argument"),
+            };
+            match attribute.args[1] {
+                AttributeArg::Named { name, value_kind, value } => {
+                    testing::assert_eq(name, "with");
+                    testing::assert_eq(value_kind, "path");
+                    testing::assert_eq(value, "codec::value")
+                },
+                _ => testing::fail("expected named path attribute argument"),
+            };
+            match attribute.args[2] {
+                AttributeArg::Ident(value) => testing::assert_eq(value, "skip"),
+                _ => testing::fail("expected flag attribute argument"),
+            }
+        },
+        _ => testing::fail("expected struct"),
+    }
+}
+
+#[test]
 fn lowers_derive_paths_and_nested_item_attributes() -> unit {
     let file = lowered_file(
         "#[derive(macros::handler)] struct Box { #[field_tag] value: int } enum Choice { #[variant_tag] Data(#[payload_tag] int) }",

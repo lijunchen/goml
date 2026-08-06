@@ -5,7 +5,7 @@ use macros::Inspect;
 
 #[derive(Inspect)]
 struct Entry[T] {
-    #[metadata(field_name, owner::value, "suffix")]
+    #[metadata(field_name, owner::value, "suffix", rename = "entry", with = owner::codec)]
     name: string,
     value: Vec[T],
     pair: (T, int),
@@ -37,6 +37,16 @@ fn render(value: int) -> string {
     value.to_string()
 }
 
+struct StringAdapter {}
+
+impl macros::Adapter for StringAdapter {
+    type Output = string;
+
+    fn adapt(self: StringAdapter, value: string) -> Result[string, string] {
+        Result::Ok("adapted:" + value)
+    }
+}
+
 fn main() -> unit {
     let entry = Entry {
         name: "hello",
@@ -57,6 +67,10 @@ fn main() -> unit {
         None => println(0),
     };
     println(entry.large());
+    match entry.generic(StringAdapter {}) {
+        Ok(value) => println(value),
+        Err(error) => println(error),
+    };
     println(
         comptime {
             compile_text()
