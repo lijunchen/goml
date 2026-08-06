@@ -669,22 +669,22 @@ type Option__int32_Some struct {
 
 func (_ Option__int32_Some) isOption__int32() {}
 
-func _goml_m_trait__impl_i_Eq_i_FloatKey_i_eq(self__0 FloatKey, other__1 FloatKey) bool {
-    var t187 float64 = self__0.value
-    var t188 float64 = other__1.value
-    var inline386 bool = t187 == t188
-    return inline386
+func _goml_m_trait__impl_i_Hash_i_FloatKey_i_hash(self__0 FloatKey) uint64 {
+    var h__1 uint64 = 14695981039346656037
+    var t185 uint64 = h__1 * 1099511628211
+    var t186 float64 = self__0.value
+    var t187 uint64
+    var inline386 uint64 = _goml_runtime_core_float64_hash(t186)
+    t187 = inline386
+    var h__2 uint64 = t185 + t187
+    return h__2
 }
 
-func _goml_m_trait__impl_i_Hash_i_FloatKey_i_hash(self__2 FloatKey) uint64 {
-    var h__3 uint64 = 14695981039346656037
-    var t192 uint64 = h__3 * 1099511628211
-    var t193 float64 = self__2.value
-    var t194 uint64
-    var inline388 uint64 = _goml_runtime_core_float64_hash(t193)
-    t194 = inline388
-    var h__4 uint64 = t192 + t194
-    return h__4
+func _goml_m_trait__impl_i_Eq_i_FloatKey_i_eq(self__3 FloatKey, other__4 FloatKey) bool {
+    var t192 float64 = self__3.value
+    var t193 float64 = other__4.value
+    var inline388 bool = t192 == t193
+    return inline388
 }
 
 func _goml_m_trait__impl_i_Eq_i_CollisionKey_i_eq(self__5 CollisionKey, other__6 CollisionKey) bool {
@@ -1027,13 +1027,13 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_Eq_i_float64_i_eq(self__108 float64, other__109 float64) bool {
-    var t274 bool = self__108 == other__109
+func _goml_m_trait__impl_i_Hash_i_float64_i_hash(self__124 float64) uint64 {
+    var t274 uint64 = _goml_runtime_core_float64_hash(self__124)
     return t274
 }
 
-func _goml_m_trait__impl_i_Hash_i_float64_i_hash(self__124 float64) uint64 {
-    var t277 uint64 = _goml_runtime_core_float64_hash(self__124)
+func _goml_m_trait__impl_i_Eq_i_float64_i_eq(self__108 float64, other__109 float64) bool {
+    var t277 bool = self__108 == other__109
     return t277
 }
 

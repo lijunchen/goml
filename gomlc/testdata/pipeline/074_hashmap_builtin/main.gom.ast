@@ -5,12 +5,6 @@ struct Point {
     y: int32,
 }
 
-impl Eq for Point {
-  fn eq(self: Point, other: Point) -> bool {
-      true && Eq::eq(self.x, other.x) && Eq::eq(self.y, other.y)
-  }
-}
-
 impl Hash for Point {
   fn hash(self: Point) -> uint64 {
       let h: uint64 = 14695981039346656037;
@@ -20,22 +14,17 @@ impl Hash for Point {
   }
 }
 
+impl Eq for Point {
+  fn eq(self: Point, other: Point) -> bool {
+      true && Eq::eq(self.x, other.x) && Eq::eq(self.y, other.y)
+  }
+}
+
 #[derive(Hash, Eq)]
 enum Key {
     A,
     B(int32),
     P(Point)
-}
-
-impl Eq for Key {
-  fn eq(self: Key, other: Key) -> bool {
-      match (self, other) {
-          (Key::A, Key::A) => true,
-          (Key::B(__l1_0), Key::B(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
-          (Key::P(__l2_0), Key::P(__r2_0)) => true && Eq::eq(__l2_0, __r2_0),
-          _ => false,
-      }
-  }
 }
 
 impl Hash for Key {
@@ -58,6 +47,17 @@ impl Hash for Key {
                 let h = h * 1099511628211 + Hash::hash(__field2_0);
                 h
             },
+      }
+  }
+}
+
+impl Eq for Key {
+  fn eq(self: Key, other: Key) -> bool {
+      match (self, other) {
+          (Key::A, Key::A) => true,
+          (Key::B(__l1_0), Key::B(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
+          (Key::P(__l2_0), Key::P(__r2_0)) => true && Eq::eq(__l2_0, __r2_0),
+          _ => false,
       }
   }
 }

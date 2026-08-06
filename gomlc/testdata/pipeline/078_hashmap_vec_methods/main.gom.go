@@ -233,44 +233,44 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__0 Key, other__1 Key) bool {
-    switch other__1.(type) {
+func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__0 Key) uint64 {
+    switch self__0.(type) {
     case A:
-        switch self__0.(type) {
+        var h__1 uint64 = 14695981039346656037 + 1
+        return h__1
+    case B:
+        var x136 int32 = self__0.(B)._0
+        var h__3 uint64 = 14695981039346656037 + 2
+        var t163 uint64 = h__3 * 1099511628211
+        var t164 uint64
+        var inline251 uint64 = _goml_runtime_core_int32_hash(x136)
+        t164 = inline251
+        var h__4 uint64 = t163 + t164
+        return h__4
+    default:
+        panic("non-exhaustive match")
+    }
+}
+
+func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__5 Key, other__6 Key) bool {
+    switch other__6.(type) {
+    case A:
+        switch self__5.(type) {
         case A:
             return true
         default:
             return false
         }
     case B:
-        var x139 int32 = other__1.(B)._0
-        switch self__0.(type) {
+        var x140 int32 = other__6.(B)._0
+        switch self__5.(type) {
         case B:
-            var x141 int32 = self__0.(B)._0
-            var inline251 bool = x141 == x139
-            return inline251
+            var x142 int32 = self__5.(B)._0
+            var inline253 bool = x142 == x140
+            return inline253
         default:
             return false
         }
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
-func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__4 Key) uint64 {
-    switch self__4.(type) {
-    case A:
-        var h__5 uint64 = 14695981039346656037 + 1
-        return h__5
-    case B:
-        var x142 int32 = self__4.(B)._0
-        var h__7 uint64 = 14695981039346656037 + 2
-        var t174 uint64 = h__7 * 1099511628211
-        var t175 uint64
-        var inline253 uint64 = _goml_runtime_core_int32_hash(x142)
-        t175 = inline253
-        var h__8 uint64 = t174 + t175
-        return h__8
     default:
         panic("non-exhaustive match")
     }

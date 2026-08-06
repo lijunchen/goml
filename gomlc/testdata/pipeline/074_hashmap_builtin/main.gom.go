@@ -459,82 +459,82 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__6 Key, other__7 Key) bool {
-    switch other__7.(type) {
+func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__6 Key) uint64 {
+    switch self__6.(type) {
     case A:
-        switch self__6.(type) {
+        var h__7 uint64 = 14695981039346656037 + 1
+        return h__7
+    case B:
+        var x136 int32 = self__6.(B)._0
+        var h__9 uint64 = 14695981039346656037 + 2
+        var t190 uint64 = h__9 * 1099511628211
+        var t191 uint64
+        var inline323 uint64 = _goml_runtime_core_int32_hash(x136)
+        t191 = inline323
+        var h__10 uint64 = t190 + t191
+        return h__10
+    case P:
+        var x137 Point = self__6.(P)._0
+        var h__12 uint64 = 14695981039346656037 + 3
+        var t192 uint64 = h__12 * 1099511628211
+        var t193 uint64
+        var inline325 uint64 = 14695981039346656037
+        var inline326 uint64 = inline325 * 1099511628211
+        var inline327 int32 = x137.x
+        var inline328 uint64 = _goml_m_trait__impl_i_Hash_i_int32_i_hash(inline327)
+        var inline329 uint64 = inline326 + inline328
+        var inline330 uint64 = inline329 * 1099511628211
+        var inline331 int32 = x137.y
+        var inline332 uint64 = _goml_m_trait__impl_i_Hash_i_int32_i_hash(inline331)
+        var inline333 uint64 = inline330 + inline332
+        t193 = inline333
+        var h__13 uint64 = t192 + t193
+        return h__13
+    default:
+        panic("non-exhaustive match")
+    }
+}
+
+func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__14 Key, other__15 Key) bool {
+    switch other__15.(type) {
+    case A:
+        switch self__14.(type) {
         case A:
             return true
         default:
             return false
         }
     case B:
-        var x139 int32 = other__7.(B)._0
-        switch self__6.(type) {
+        var x141 int32 = other__15.(B)._0
+        switch self__14.(type) {
         case B:
-            var x143 int32 = self__6.(B)._0
-            var inline323 bool = x143 == x139
-            return inline323
+            var x145 int32 = self__14.(B)._0
+            var inline335 bool = x145 == x141
+            return inline335
         default:
             return false
         }
     case P:
-        var x140 Point = other__7.(P)._0
-        switch self__6.(type) {
+        var x142 Point = other__15.(P)._0
+        switch self__14.(type) {
         case P:
-            var x146 Point = self__6.(P)._0
-            var inline326 bool
-            var inline330 int32 = x146.x
-            var inline331 int32 = x140.x
-            var inline332 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(inline330, inline331)
-            inline326 = inline332
-            if inline326 {
-                var inline327 int32 = x146.y
-                var inline328 int32 = x140.y
-                var inline329 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(inline327, inline328)
-                return inline329
+            var x148 Point = self__14.(P)._0
+            var inline338 bool
+            var inline342 int32 = x148.x
+            var inline343 int32 = x142.x
+            var inline344 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(inline342, inline343)
+            inline338 = inline344
+            if inline338 {
+                var inline339 int32 = x148.y
+                var inline340 int32 = x142.y
+                var inline341 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(inline339, inline340)
+                return inline341
             } else {
                 return false
             }
         default:
             return false
         }
-    default:
-        panic("non-exhaustive match")
-    }
-}
-
-func _goml_m_trait__impl_i_Hash_i_Key_i_hash(self__12 Key) uint64 {
-    switch self__12.(type) {
-    case A:
-        var h__13 uint64 = 14695981039346656037 + 1
-        return h__13
-    case B:
-        var x147 int32 = self__12.(B)._0
-        var h__15 uint64 = 14695981039346656037 + 2
-        var t206 uint64 = h__15 * 1099511628211
-        var t207 uint64
-        var inline334 uint64 = _goml_runtime_core_int32_hash(x147)
-        t207 = inline334
-        var h__16 uint64 = t206 + t207
-        return h__16
-    case P:
-        var x148 Point = self__12.(P)._0
-        var h__18 uint64 = 14695981039346656037 + 3
-        var t208 uint64 = h__18 * 1099511628211
-        var t209 uint64
-        var inline336 uint64 = 14695981039346656037
-        var inline337 uint64 = inline336 * 1099511628211
-        var inline338 int32 = x148.x
-        var inline339 uint64 = _goml_m_trait__impl_i_Hash_i_int32_i_hash(inline338)
-        var inline340 uint64 = inline337 + inline339
-        var inline341 uint64 = inline340 * 1099511628211
-        var inline342 int32 = x148.y
-        var inline343 uint64 = _goml_m_trait__impl_i_Hash_i_int32_i_hash(inline342)
-        var inline344 uint64 = inline341 + inline343
-        t209 = inline344
-        var h__19 uint64 = t208 + t209
-        return h__19
     default:
         panic("non-exhaustive match")
     }
@@ -667,13 +667,13 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__94 int32, other__95 int32) bool {
-    var t235 bool = self__94 == other__95
+func _goml_m_trait__impl_i_Hash_i_int32_i_hash(self__117 int32) uint64 {
+    var t235 uint64 = _goml_runtime_core_int32_hash(self__117)
     return t235
 }
 
-func _goml_m_trait__impl_i_Hash_i_int32_i_hash(self__117 int32) uint64 {
-    var t238 uint64 = _goml_runtime_core_int32_hash(self__117)
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__94 int32, other__95 int32) bool {
+    var t238 bool = self__94 == other__95
     return t238
 }
 

@@ -22,44 +22,73 @@ fn trait_impl#ToString#Key#to_string(self/0: Key) -> string {
   }
 }
 
-fn trait_impl#Eq#Key#eq(self/3: Key, other/4: Key) -> bool {
+fn trait_impl#Hash#Key#hash(self/3: Key) -> uint64 {
+  match self/3 {
+    Key::Empty => {
+      {
+        let h/4 = (14695981039346656037 + 1) in
+        h/4
+      }
+    },
+    Key::Point(x138, x139) => {
+      {
+        let x138 = Key::Point._0(self/3) in
+        let x139 = Key::Point._1(self/3) in
+        {
+          let __field1_1/6 = x139 in
+          {
+            let __field1_0/5 = x138 in
+            {
+              let h/7 = (14695981039346656037 + 2) in
+              let h/8 = ((h/7 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/5)) in
+              let h/9 = ((h/8 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_1/6)) in
+              h/9
+            }
+          }
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#Eq#Key#eq(self/10: Key, other/11: Key) -> bool {
   {
-    let mtmp138 = (self/3, other/4) in
+    let mtmp140 = (self/10, other/11) in
     {
-      let x139 = mtmp138.0 in
-      let x140 = mtmp138.1 in
-      match x140 {
+      let x141 = mtmp140.0 in
+      let x142 = mtmp140.1 in
+      match x142 {
         Key::Empty => {
-          match x139 {
+          match x141 {
             Key::Empty => {
               true
             },
             _ => false,
           }
         },
-        Key::Point(x141, x142) => {
+        Key::Point(x143, x144) => {
           {
-            let x141 = Key::Point._0(x140) in
-            let x142 = Key::Point._1(x140) in
-            match x139 {
-              Key::Point(x145, x146) => {
+            let x143 = Key::Point._0(x142) in
+            let x144 = Key::Point._1(x142) in
+            match x141 {
+              Key::Point(x147, x148) => {
                 {
-                  let x145 = Key::Point._0(x139) in
-                  let x146 = Key::Point._1(x139) in
+                  let x147 = Key::Point._0(x141) in
+                  let x148 = Key::Point._1(x141) in
                   {
-                    let __l1_1/6 = x146 in
+                    let __l1_1/13 = x148 in
                     {
-                      let __l1_0/5 = x145 in
+                      let __l1_0/12 = x147 in
                       {
-                        let __r1_1/8 = x142 in
+                        let __r1_1/15 = x144 in
                         {
-                          let __r1_0/7 = x141 in
+                          let __r1_0/14 = x143 in
                           if if true {
-                              trait_impl#Eq#int32#eq(__l1_0/5, __r1_0/7)
+                              trait_impl#Eq#int32#eq(__l1_0/12, __r1_0/14)
                           } else {
                               false
                           } {
-                              trait_impl#Eq#int32#eq(__l1_1/6, __r1_1/8)
+                              trait_impl#Eq#int32#eq(__l1_1/13, __r1_1/15)
                           } else {
                               false
                           }
@@ -75,35 +104,6 @@ fn trait_impl#Eq#Key#eq(self/3: Key, other/4: Key) -> bool {
         },
       }
     }
-  }
-}
-
-fn trait_impl#Hash#Key#hash(self/9: Key) -> uint64 {
-  match self/9 {
-    Key::Empty => {
-      {
-        let h/10 = (14695981039346656037 + 1) in
-        h/10
-      }
-    },
-    Key::Point(x147, x148) => {
-      {
-        let x147 = Key::Point._0(self/9) in
-        let x148 = Key::Point._1(self/9) in
-        {
-          let __field1_1/12 = x148 in
-          {
-            let __field1_0/11 = x147 in
-            {
-              let h/13 = (14695981039346656037 + 2) in
-              let h/14 = ((h/13 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/11)) in
-              let h/15 = ((h/14 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_1/12)) in
-              h/15
-            }
-          }
-        }
-      }
-    },
   }
 }
 
@@ -178,12 +178,12 @@ fn inherent#int32#int32#to_string(self/35: int32) -> string {
   @runtime(core.int32_to_string)(self/35)
 }
 
-fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
-  @intrinsic(eq.primitive)(self/94, other/95)
-}
-
 fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
   @runtime(core.int32_hash)(self/117)
+}
+
+fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
+  @intrinsic(eq.primitive)(self/94, other/95)
 }
 
 fn println__T_int32(value/31: int32) -> unit {

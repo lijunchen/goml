@@ -1,20 +1,20 @@
-fn trait_impl#Eq#FloatKey#eq(self/0: FloatKey, other/1: FloatKey) -> bool {
-  let t187 = FloatKey.value(self/0) in
-  let t188 = FloatKey.value(other/1) in
-  let inline386 = @intrinsic(eq.primitive)(t187, t188) in
-  inline386
+fn trait_impl#Hash#FloatKey#hash(self/0: FloatKey) -> uint64 {
+  let h/1 = 14695981039346656037 in
+  let t185 = (h/1 * 1099511628211) in
+  let t186 = FloatKey.value(self/0) in
+  join inline_cont385(t187: uint64) -> uint64 {
+    let h/2 = (t185 + t187) in
+    h/2
+  } in
+  let inline386 = @runtime(core.float64_hash)(t186) in
+  jump inline_cont385(inline386)
 }
 
-fn trait_impl#Hash#FloatKey#hash(self/2: FloatKey) -> uint64 {
-  let h/3 = 14695981039346656037 in
-  let t192 = (h/3 * 1099511628211) in
-  let t193 = FloatKey.value(self/2) in
-  join inline_cont387(t194: uint64) -> uint64 {
-    let h/4 = (t192 + t194) in
-    h/4
-  } in
-  let inline388 = @runtime(core.float64_hash)(t193) in
-  jump inline_cont387(inline388)
+fn trait_impl#Eq#FloatKey#eq(self/3: FloatKey, other/4: FloatKey) -> bool {
+  let t192 = FloatKey.value(self/3) in
+  let t193 = FloatKey.value(other/4) in
+  let inline388 = @intrinsic(eq.primitive)(t192, t193) in
+  inline388
 }
 
 fn trait_impl#Eq#CollisionKey#eq(self/5: CollisionKey, other/6: CollisionKey) -> bool {
@@ -443,13 +443,13 @@ fn main() -> unit {
   ()
 }
 
-fn trait_impl#Eq#float64#eq(self/108: float64, other/109: float64) -> bool {
-  let t274 = @intrinsic(eq.primitive)(self/108, other/109) in
+fn trait_impl#Hash#float64#hash(self/124: float64) -> uint64 {
+  let t274 = @runtime(core.float64_hash)(self/124) in
   t274
 }
 
-fn trait_impl#Hash#float64#hash(self/124: float64) -> uint64 {
-  let t277 = @runtime(core.float64_hash)(self/124) in
+fn trait_impl#Eq#float64#eq(self/108: float64, other/109: float64) -> bool {
+  let t277 = @intrinsic(eq.primitive)(self/108, other/109) in
   t277
 }
 

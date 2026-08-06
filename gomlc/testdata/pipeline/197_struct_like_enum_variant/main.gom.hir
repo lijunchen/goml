@@ -24,35 +24,35 @@ file main.gom
     }
   }
 
-  impl Eq for Key {
-    fn eq(local/1/3: Key, local/1/4: Key) -> bool {
-        match (self/3, other/4) {
-            (ctor(def/1/1::v0), ctor(def/1/1::v0)) => true,
-            (
-              ctor(def/1/1::v1) { x: local/1/5, y: local/1/6 },
-              ctor(def/1/1::v1) { x: local/1/7, y: local/1/8 }
-            ) =>
-              true && Eq::eq(__l1_0/5, __r1_0/7) && Eq::eq(__l1_1/6, __r1_1/8),
-            _ => false,
+  impl Hash for Key {
+    fn hash(local/1/3: Key) -> uint64 {
+        match self/3 {
+            ctor(def/1/1::v0) =>
+              {
+                  let local/1/4: uint64 = 14695981039346656037 + 1;
+                  h/4
+              },
+            ctor(def/1/1::v1) { x: local/1/5, y: local/1/6 } =>
+              {
+                  let local/1/7: uint64 = 14695981039346656037 + 2;
+                  let local/1/8 = h/7 * 1099511628211 + Hash::hash(__field1_0/5);
+                  let local/1/9 = h/8 * 1099511628211 + Hash::hash(__field1_1/6);
+                  h/9
+              },
         }
     }
   }
 
-  impl Hash for Key {
-    fn hash(local/1/9: Key) -> uint64 {
-        match self/9 {
-            ctor(def/1/1::v0) =>
-              {
-                  let local/1/10: uint64 = 14695981039346656037 + 1;
-                  h/10
-              },
-            ctor(def/1/1::v1) { x: local/1/11, y: local/1/12 } =>
-              {
-                  let local/1/13: uint64 = 14695981039346656037 + 2;
-                  let local/1/14 = h/13 * 1099511628211 + Hash::hash(__field1_0/11);
-                  let local/1/15 = h/14 * 1099511628211 + Hash::hash(__field1_1/12);
-                  h/15
-              },
+  impl Eq for Key {
+    fn eq(local/1/10: Key, local/1/11: Key) -> bool {
+        match (self/10, other/11) {
+            (ctor(def/1/1::v0), ctor(def/1/1::v0)) => true,
+            (
+              ctor(def/1/1::v1) { x: local/1/12, y: local/1/13 },
+              ctor(def/1/1::v1) { x: local/1/14, y: local/1/15 }
+            ) =>
+              true && Eq::eq(__l1_0/12, __r1_0/14) && Eq::eq(__l1_1/13, __r1_1/15),
+            _ => false,
         }
     }
   }

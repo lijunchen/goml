@@ -1574,34 +1574,58 @@ fn inherent#Result#Result[T,E]#and_then[T, E, U](
   }
 }
 
-fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
+fn trait_impl#Hash#Key#hash(self/0: Key) -> uint64 {
+  match self/0 {
+    Key::A => {
+      {
+        let h/1 = (14695981039346656037 + 1) in
+        h/1
+      }
+    },
+    Key::B(x136) => {
+      {
+        let x136 = Key::B._0(self/0) in
+        {
+          let __field1_0/2 = x136 in
+          {
+            let h/3 = (14695981039346656037 + 2) in
+            let h/4 = ((h/3 * 1099511628211) + trait_call[Hash::hash](__field1_0/2)) in
+            h/4
+          }
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#Eq#Key#eq(self/5: Key, other/6: Key) -> bool {
   {
-    let mtmp136 = (self/0, other/1) in
+    let mtmp137 = (self/5, other/6) in
     {
-      let x137 = mtmp136.0 in
-      let x138 = mtmp136.1 in
-      match x138 {
+      let x138 = mtmp137.0 in
+      let x139 = mtmp137.1 in
+      match x139 {
         Key::A => {
-          match x137 {
+          match x138 {
             Key::A => {
               true
             },
             _ => false,
           }
         },
-        Key::B(x139) => {
+        Key::B(x140) => {
           {
-            let x139 = Key::B._0(x138) in
-            match x137 {
-              Key::B(x141) => {
+            let x140 = Key::B._0(x139) in
+            match x138 {
+              Key::B(x142) => {
                 {
-                  let x141 = Key::B._0(x137) in
+                  let x142 = Key::B._0(x138) in
                   {
-                    let __l1_0/2 = x141 in
+                    let __l1_0/7 = x142 in
                     {
-                      let __r1_0/3 = x139 in
+                      let __r1_0/8 = x140 in
                       if true {
-                          trait_call[Eq::eq](__l1_0/2, __r1_0/3)
+                          trait_call[Eq::eq](__l1_0/7, __r1_0/8)
                       } else {
                           false
                       }
@@ -1615,30 +1639,6 @@ fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
         },
       }
     }
-  }
-}
-
-fn trait_impl#Hash#Key#hash(self/4: Key) -> uint64 {
-  match self/4 {
-    Key::A => {
-      {
-        let h/5 = (14695981039346656037 + 1) in
-        h/5
-      }
-    },
-    Key::B(x142) => {
-      {
-        let x142 = Key::B._0(self/4) in
-        {
-          let __field1_0/6 = x142 in
-          {
-            let h/7 = (14695981039346656037 + 2) in
-            let h/8 = ((h/7 * 1099511628211) + trait_call[Hash::hash](__field1_0/6)) in
-            h/8
-          }
-        }
-      }
-    },
   }
 }
 

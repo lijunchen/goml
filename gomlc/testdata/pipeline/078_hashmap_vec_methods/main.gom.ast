@@ -5,16 +5,6 @@ enum Key {
     B(int32)
 }
 
-impl Eq for Key {
-  fn eq(self: Key, other: Key) -> bool {
-      match (self, other) {
-          (Key::A, Key::A) => true,
-          (Key::B(__l1_0), Key::B(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
-          _ => false,
-      }
-  }
-}
-
 impl Hash for Key {
   fn hash(self: Key) -> uint64 {
       match self {
@@ -29,6 +19,16 @@ impl Hash for Key {
                 let h = h * 1099511628211 + Hash::hash(__field1_0);
                 h
             },
+      }
+  }
+}
+
+impl Eq for Key {
+  fn eq(self: Key, other: Key) -> bool {
+      match (self, other) {
+          (Key::A, Key::A) => true,
+          (Key::B(__l1_0), Key::B(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
+          _ => false,
       }
   }
 }

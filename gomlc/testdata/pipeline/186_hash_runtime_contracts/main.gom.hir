@@ -5,17 +5,17 @@ file main.gom
       value: float64,
   }
 
-  impl Eq for FloatKey {
-    fn eq(local/1/0: FloatKey, local/1/1: FloatKey) -> bool {
-        true && Eq::eq(self/0.value, other/1.value)
+  impl Hash for FloatKey {
+    fn hash(local/1/0: FloatKey) -> uint64 {
+        let local/1/1: uint64 = 14695981039346656037;
+        let local/1/2 = h/1 * 1099511628211 + Hash::hash(self/0.value);
+        h/2
     }
   }
 
-  impl Hash for FloatKey {
-    fn hash(local/1/2: FloatKey) -> uint64 {
-        let local/1/3: uint64 = 14695981039346656037;
-        let local/1/4 = h/3 * 1099511628211 + Hash::hash(self/2.value);
-        h/4
+  impl Eq for FloatKey {
+    fn eq(local/1/3: FloatKey, local/1/4: FloatKey) -> bool {
+        true && Eq::eq(self/3.value, other/4.value)
     }
   }
 

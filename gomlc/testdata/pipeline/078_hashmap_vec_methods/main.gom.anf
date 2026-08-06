@@ -1,10 +1,31 @@
-fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
-  let mtmp136 = (self/0, other/1) in
-  let x137 = self/0 in
-  let x138 = other/1 in
-  match other/1 {
+fn trait_impl#Hash#Key#hash(self/0: Key) -> uint64 {
+  match self/0 {
     Tag_0 => {
-      match self/0 {
+      let h/1 = (14695981039346656037 + 1) in
+      h/1
+    },
+    Tag_1 => {
+      let x136 = Key::B._0(self/0) in
+      let __field1_0/2 = x136 in
+      let h/3 = (14695981039346656037 + 2) in
+      let t163 = (h/3 * 1099511628211) in
+      join inline_cont250(t164: uint64) -> uint64 {
+        let h/4 = (t163 + t164) in
+        h/4
+      } in
+      let inline251 = @runtime(core.int32_hash)(x136) in
+      jump inline_cont250(inline251)
+    },
+  }
+}
+
+fn trait_impl#Eq#Key#eq(self/5: Key, other/6: Key) -> bool {
+  let mtmp137 = (self/5, other/6) in
+  let x138 = self/5 in
+  let x139 = other/6 in
+  match other/6 {
+    Tag_0 => {
+      match self/5 {
         Tag_0 => {
           true
         },
@@ -14,40 +35,19 @@ fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
       }
     },
     Tag_1 => {
-      let x139 = Key::B._0(other/1) in
-      match self/0 {
+      let x140 = Key::B._0(other/6) in
+      match self/5 {
         Tag_1 => {
-          let x141 = Key::B._0(self/0) in
-          let __l1_0/2 = x141 in
-          let __r1_0/3 = x139 in
-          let inline251 = @intrinsic(eq.primitive)(x141, x139) in
-          inline251
+          let x142 = Key::B._0(self/5) in
+          let __l1_0/7 = x142 in
+          let __r1_0/8 = x140 in
+          let inline253 = @intrinsic(eq.primitive)(x142, x140) in
+          inline253
         },
         _ => {
           false
         },
       }
-    },
-  }
-}
-
-fn trait_impl#Hash#Key#hash(self/4: Key) -> uint64 {
-  match self/4 {
-    Tag_0 => {
-      let h/5 = (14695981039346656037 + 1) in
-      h/5
-    },
-    Tag_1 => {
-      let x142 = Key::B._0(self/4) in
-      let __field1_0/6 = x142 in
-      let h/7 = (14695981039346656037 + 2) in
-      let t174 = (h/7 * 1099511628211) in
-      join inline_cont252(t175: uint64) -> uint64 {
-        let h/8 = (t174 + t175) in
-        h/8
-      } in
-      let inline253 = @runtime(core.int32_hash)(x142) in
-      jump inline_cont252(inline253)
     },
   }
 }
@@ -174,13 +174,13 @@ fn main() -> unit {
   jump inline_cont306(inline308)
 }
 
-fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
-  let t196 = @intrinsic(eq.primitive)(self/94, other/95) in
+fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
+  let t196 = @runtime(core.int32_hash)(self/117) in
   t196
 }
 
-fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
-  let t199 = @runtime(core.int32_hash)(self/117) in
+fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
+  let t199 = @intrinsic(eq.primitive)(self/94, other/95) in
   t199
 }
 

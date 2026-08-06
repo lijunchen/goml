@@ -22,17 +22,6 @@ impl ToString for Key {
   }
 }
 
-impl Eq for Key {
-  fn eq(self: Key, other: Key) -> bool {
-      match (self, other) {
-          (Key::Empty, Key::Empty) => true,
-          (Key::Point { x: __l1_0, y: __l1_1 }, Key::Point { x: __r1_0, y: __r1_1 }) =>
-            true && Eq::eq(__l1_0, __r1_0) && Eq::eq(__l1_1, __r1_1),
-          _ => false,
-      }
-  }
-}
-
 impl Hash for Key {
   fn hash(self: Key) -> uint64 {
       match self {
@@ -48,6 +37,17 @@ impl Hash for Key {
                 let h = h * 1099511628211 + Hash::hash(__field1_1);
                 h
             },
+      }
+  }
+}
+
+impl Eq for Key {
+  fn eq(self: Key, other: Key) -> bool {
+      match (self, other) {
+          (Key::Empty, Key::Empty) => true,
+          (Key::Point { x: __l1_0, y: __l1_1 }, Key::Point { x: __r1_0, y: __r1_1 }) =>
+            true && Eq::eq(__l1_0, __r1_0) && Eq::eq(__l1_1, __r1_1),
+          _ => false,
       }
   }
 }

@@ -1,17 +1,17 @@
-impl Eq for FloatKey {
-  fn eq(self/0: FloatKey, other/1: FloatKey) -> bool {
-      true &&
-        (Eq::eq : (float64, float64) -> bool)((self/0 : FloatKey).value, (other/1 : FloatKey).value)
+impl Hash for FloatKey {
+  fn hash(self/0: FloatKey) -> uint64 {
+      let h/1: uint64 = 14695981039346656037;
+      let h/2: uint64 =
+        (h/1 : uint64) * 1099511628211 +
+          (Hash::hash : (float64) -> uint64)((self/0 : FloatKey).value);
+      (h/2 : uint64)
   }
 }
 
-impl Hash for FloatKey {
-  fn hash(self/2: FloatKey) -> uint64 {
-      let h/3: uint64 = 14695981039346656037;
-      let h/4: uint64 =
-        (h/3 : uint64) * 1099511628211 +
-          (Hash::hash : (float64) -> uint64)((self/2 : FloatKey).value);
-      (h/4 : uint64)
+impl Eq for FloatKey {
+  fn eq(self/3: FloatKey, other/4: FloatKey) -> bool {
+      true &&
+        (Eq::eq : (float64, float64) -> bool)((self/3 : FloatKey).value, (other/4 : FloatKey).value)
   }
 }
 

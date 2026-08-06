@@ -63,28 +63,28 @@ type Move struct {
 
 func (_ Move) isMessage__string() {}
 
-func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__3 Key, other__4 Key) bool {
-    switch other__4.(type) {
+func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__10 Key, other__11 Key) bool {
+    switch other__11.(type) {
     case Empty:
-        switch self__3.(type) {
+        switch self__10.(type) {
         case Empty:
             return true
         default:
             return false
         }
     case Point:
-        var x141 int32 = other__4.(Point)._0
-        var x142 int32 = other__4.(Point)._1
-        switch self__3.(type) {
+        var x143 int32 = other__11.(Point)._0
+        var x144 int32 = other__11.(Point)._1
+        switch self__10.(type) {
         case Point:
-            var x145 int32 = self__3.(Point)._0
-            var x146 int32 = self__3.(Point)._1
-            var jp184 bool
-            var inline243 bool = x145 == x141
-            jp184 = inline243
-            if jp184 {
-                var inline245 bool = x146 == x142
-                return inline245
+            var x147 int32 = self__10.(Point)._0
+            var x148 int32 = self__10.(Point)._1
+            var jp192 bool
+            var inline247 bool = x147 == x143
+            jp192 = inline247
+            if jp192 {
+                var inline249 bool = x148 == x144
+                return inline249
             } else {
                 return false
             }

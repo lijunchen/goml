@@ -27,13 +27,42 @@ fn trait_impl#ToString#Key#to_string(self/0: Key) -> string {
   }
 }
 
-fn trait_impl#Eq#Key#eq(self/3: Key, other/4: Key) -> bool {
-  let mtmp138 = (self/3, other/4) in
-  let x139 = self/3 in
-  let x140 = other/4 in
-  match other/4 {
+fn trait_impl#Hash#Key#hash(self/3: Key) -> uint64 {
+  match self/3 {
     Tag_0 => {
-      match self/3 {
+      let h/4 = (14695981039346656037 + 1) in
+      h/4
+    },
+    Tag_1 => {
+      let x138 = Key::Point._0(self/3) in
+      let x139 = Key::Point._1(self/3) in
+      let __field1_1/6 = x139 in
+      let __field1_0/5 = x138 in
+      let h/7 = (14695981039346656037 + 2) in
+      let t177 = (h/7 * 1099511628211) in
+      join inline_cont244(t178: uint64) -> uint64 {
+        let h/8 = (t177 + t178) in
+        let t179 = (h/8 * 1099511628211) in
+        join inline_cont242(t180: uint64) -> uint64 {
+          let h/9 = (t179 + t180) in
+          h/9
+        } in
+        let inline243 = @runtime(core.int32_hash)(x139) in
+        jump inline_cont242(inline243)
+      } in
+      let inline245 = @runtime(core.int32_hash)(x138) in
+      jump inline_cont244(inline245)
+    },
+  }
+}
+
+fn trait_impl#Eq#Key#eq(self/10: Key, other/11: Key) -> bool {
+  let mtmp140 = (self/10, other/11) in
+  let x141 = self/10 in
+  let x142 = other/11 in
+  match other/11 {
+    Tag_0 => {
+      match self/10 {
         Tag_0 => {
           true
         },
@@ -43,60 +72,31 @@ fn trait_impl#Eq#Key#eq(self/3: Key, other/4: Key) -> bool {
       }
     },
     Tag_1 => {
-      let x141 = Key::Point._0(other/4) in
-      let x142 = Key::Point._1(other/4) in
-      match self/3 {
+      let x143 = Key::Point._0(other/11) in
+      let x144 = Key::Point._1(other/11) in
+      match self/10 {
         Tag_1 => {
-          let x145 = Key::Point._0(self/3) in
-          let x146 = Key::Point._1(self/3) in
-          let __l1_1/6 = x146 in
-          let __l1_0/5 = x145 in
-          let __r1_1/8 = x142 in
-          let __r1_0/7 = x141 in
-          join k183(jp184: bool) -> bool {
-            if jp184 {
-              let inline245 = @intrinsic(eq.primitive)(x146, x142) in
-              inline245
+          let x147 = Key::Point._0(self/10) in
+          let x148 = Key::Point._1(self/10) in
+          let __l1_1/13 = x148 in
+          let __l1_0/12 = x147 in
+          let __r1_1/15 = x144 in
+          let __r1_0/14 = x143 in
+          join k191(jp192: bool) -> bool {
+            if jp192 {
+              let inline249 = @intrinsic(eq.primitive)(x148, x144) in
+              inline249
             } else {
               false
             }
           } in
-          let inline243 = @intrinsic(eq.primitive)(x145, x141) in
-          jump k183(inline243)
+          let inline247 = @intrinsic(eq.primitive)(x147, x143) in
+          jump k191(inline247)
         },
         _ => {
           false
         },
       }
-    },
-  }
-}
-
-fn trait_impl#Hash#Key#hash(self/9: Key) -> uint64 {
-  match self/9 {
-    Tag_0 => {
-      let h/10 = (14695981039346656037 + 1) in
-      h/10
-    },
-    Tag_1 => {
-      let x147 = Key::Point._0(self/9) in
-      let x148 = Key::Point._1(self/9) in
-      let __field1_1/12 = x148 in
-      let __field1_0/11 = x147 in
-      let h/13 = (14695981039346656037 + 2) in
-      let t191 = (h/13 * 1099511628211) in
-      join inline_cont248(t192: uint64) -> uint64 {
-        let h/14 = (t191 + t192) in
-        let t193 = (h/14 * 1099511628211) in
-        join inline_cont246(t194: uint64) -> uint64 {
-          let h/15 = (t193 + t194) in
-          h/15
-        } in
-        let inline247 = @runtime(core.int32_hash)(x148) in
-        jump inline_cont246(inline247)
-      } in
-      let inline249 = @runtime(core.int32_hash)(x147) in
-      jump inline_cont248(inline249)
     },
   }
 }
@@ -207,13 +207,13 @@ fn inherent#int32#int32#to_string(self/35: int32) -> string {
   t214
 }
 
-fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
-  let t217 = @intrinsic(eq.primitive)(self/94, other/95) in
+fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
+  let t217 = @runtime(core.int32_hash)(self/117) in
   t217
 }
 
-fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
-  let t220 = @runtime(core.int32_hash)(self/117) in
+fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
+  let t220 = @intrinsic(eq.primitive)(self/94, other/95) in
   t220
 }
 
