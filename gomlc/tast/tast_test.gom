@@ -1477,7 +1477,7 @@ fn filters_external_trait_methods_by_hir_scope() -> unit {
         Function(value) => match value.body.tail {
             Some(Call {
                 func: Callable {
-                    callable: TraitMethod { trait_ref: reference, method_name: name },
+                    callable: TraitMethod { trait_ref: reference, method_name: name, .. },
                     ty: _,
                 },
                 args: _,
@@ -1509,7 +1509,7 @@ fn imports_external_supertrait_methods_with_child_scope() -> unit {
         Function(value) => match value.body.tail {
             Some(Call {
                 func: Callable {
-                    callable: TraitMethod { trait_ref: reference, method_name: name },
+                    callable: TraitMethod { trait_ref: reference, method_name: name, .. },
                     ty: _,
                 },
                 args: _,
@@ -1876,7 +1876,7 @@ fn resolves_associated_types_and_bound_methods() -> unit {
         Function(value) => match value.body.tail {
             Some(Call {
                 func: Callable {
-                    callable: TraitMethod { trait_ref: reference, method_name: name },
+                    callable: TraitMethod { trait_ref: reference, method_name: name, .. },
                     ty: _,
                 },
                 args: _,
@@ -2314,7 +2314,7 @@ fn resolves_trait_methods_from_call_context() -> unit {
         Function(value) => match value.body.tail {
             Some(Call {
                 func: Callable {
-                    callable: TraitMethod { trait_ref: reference, method_name: name },
+                    callable: TraitMethod { trait_ref: reference, method_name: name, .. },
                     ty: _,
                 },
                 args: _,
@@ -2568,7 +2568,7 @@ fn resolves_projected_trait_impls() -> unit {
         Function(value) => match value.body.tail {
             Some(Call {
                 func: Callable {
-                    callable: TraitMethod { trait_ref: reference, method_name: name },
+                    callable: TraitMethod { trait_ref: reference, method_name: name, .. },
                     ty: _,
                 },
                 args: _,
@@ -2606,7 +2606,7 @@ fn resolves_constrained_blanket_methods() -> unit {
             Function(value) => match value.body.tail {
                 Some(Call {
                     func: Callable {
-                        callable: TraitMethod { trait_ref: reference, method_name: name },
+                        callable: TraitMethod { trait_ref: reference, method_name: name, .. },
                         ty: Func { params, ret_ty: String },
                     },
                     args: _,
@@ -2738,7 +2738,7 @@ fn resolves_supertraits_and_implied_predicates() -> unit {
         Function(value) => match value.body.tail {
             Some(Call {
                 func: Callable {
-                    callable: TraitMethod { trait_ref: reference, method_name: name },
+                    callable: TraitMethod { trait_ref: reference, method_name: name, .. },
                     ty: _,
                 },
                 args: _,
