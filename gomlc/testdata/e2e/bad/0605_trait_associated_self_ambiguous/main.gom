@@ -1,0 +1,20 @@
+trait Default {
+    fn default() -> Self;
+}
+
+struct Value {}
+
+impl Default for Value {
+    fn default() -> Value {
+        Value {}
+    }
+}
+
+fn ambiguous() -> unit {
+    let value = Default::default();
+    ()
+}
+
+fn main() -> unit {
+    ambiguous()
+}

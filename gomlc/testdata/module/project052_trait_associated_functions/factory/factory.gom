@@ -1,0 +1,20 @@
+package factory;
+
+pub trait Decode {
+    fn decode(input: string) -> Self;
+}
+
+pub struct Number {
+    pub value: int32,
+}
+
+impl Decode for Number {
+    fn decode(input: string) -> Number {
+        println(input);
+        Number { value: 52 }
+    }
+}
+
+pub fn decode[T: Decode](input: string) -> T {
+    Decode::decode(input)
+}
