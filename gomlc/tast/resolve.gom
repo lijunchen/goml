@@ -125,13 +125,17 @@ fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
     let name = canonical_imported_name(ctx, name);
     match ctx.enum_names[name] {
         Some(index) => Option::Some(ctx.enums[index]),
-        None => match ctx.enum_short_names[short_name(name)] {
-            Some(index) => if index >= 0 {
-                Option::Some(ctx.enums[index])
-            } else {
-                Option::None
-            },
-            None => Option::None,
+        None => if name.contains("::") {
+            Option::None
+        } else {
+            match ctx.enum_short_names[name] {
+                Some(index) => if index >= 0 {
+                    Option::Some(ctx.enums[index])
+                } else {
+                    Option::None
+                },
+                None => Option::None,
+            }
         },
     }
 }
@@ -149,13 +153,17 @@ fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
     let name = canonical_imported_name(ctx, name);
     match ctx.struct_names[name] {
         Some(index) => Option::Some(ctx.structs[index]),
-        None => match ctx.struct_short_names[short_name(name)] {
-            Some(index) => if index >= 0 {
-                Option::Some(ctx.structs[index])
-            } else {
-                Option::None
-            },
-            None => Option::None,
+        None => if name.contains("::") {
+            Option::None
+        } else {
+            match ctx.struct_short_names[name] {
+                Some(index) => if index >= 0 {
+                    Option::Some(ctx.structs[index])
+                } else {
+                    Option::None
+                },
+                None => Option::None,
+            }
         },
     }
 }
