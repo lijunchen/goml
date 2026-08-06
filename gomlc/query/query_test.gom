@@ -79,6 +79,7 @@ fn builtin_source_derive_expansion(source: string) -> string {
         hir::DeriveEnvironment {
             builtin: Option::Some(required_builtin_comptime_module()),
             dependencies: Vec::[],
+            reexports: Vec::[],
         },
     );
     if expanded.diagnostics.is_empty() {} else {
@@ -122,7 +123,7 @@ fn expands_builtin_derives_from_toolchain_source_handlers() -> unit {
 fn builtin_derives_require_builtin_source_exports() -> unit {
     let expanded = hir::expand_derives_with_environment(
         ast::lower(parser::parse("#[derive(Eq)] struct Key { value: int }")),
-        hir::DeriveEnvironment { builtin: Option::None, dependencies: Vec::[] },
+        hir::DeriveEnvironment { builtin: Option::None, dependencies: Vec::[], reexports: Vec::[] },
     );
     testing::assert_eq(expanded.diagnostics.len(), 1);
     testing::assert(expanded.diagnostics[0].message.contains("derive name `Eq` is not in scope"))

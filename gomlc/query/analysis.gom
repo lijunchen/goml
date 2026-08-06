@@ -64,13 +64,18 @@ fn lower_package(
     value: Project,
     builtin_derive: Option[ctir::CtModule],
     derive_modules: Vec[ctir::CtModule],
+    derive_reexports: Vec[(string, string)],
 ) -> LoweredPackage {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
     let expanded_sources: Vec[(string, string)] = Vec::[];
     for file in value.files {
         let expanded = hir::expand_derives_with_environment(
             ast::lower(parser::parse(file.source)),
-            hir::DeriveEnvironment { builtin: builtin_derive, dependencies: derive_modules },
+            hir::DeriveEnvironment {
+                builtin: builtin_derive,
+                dependencies: derive_modules,
+                reexports: derive_reexports,
+            },
         );
         expanded_sources.push((file.path, ast::pretty(expanded)));
         inputs.push((expanded, file.path))
@@ -90,6 +95,23 @@ fn lower_package(
         }
     }
     LoweredPackage { name: value.package_name, files, expanded_sources, diagnostics }
+}
+
+fn append_derive_reexports(files: Vec[hir::File], result: Vec[(string, string)]) -> unit {
+    for file in files {
+        for value in file.public_reexports {
+            result.push(
+                (
+                    if file.package_name == "main" || file.package_name == "builtin" {
+                        value.0
+                    } else {
+                        file.package_name + "::" + value.0
+                    },
+                    value.1,
+                ),
+            )
+        }
+    }
 }
 
 fn expanded_source_for_path(values: Vec[(string, string)], source_path: string) -> string {
@@ -176,6 +198,7 @@ fn collect_dependency(
     source_path: string,
     builtin_derive: Option[ctir::CtModule],
     derive_modules: Vec[ctir::CtModule],
+    derive_reexports: Vec[(string, string)],
 ) -> unit {
     if collections::contains(visited, package_name) {} else {
         visited.push(package_name);
@@ -191,7 +214,12 @@ fn collect_dependency(
                     package_name,
                     files: sources,
                 };
-                let discovery = lower_package(project, builtin_derive, derive_modules);
+                let discovery = lower_package(
+                    project,
+                    builtin_derive,
+                    derive_modules,
+                    derive_reexports,
+                );
                 for file in discovery.files {
                     for import in file.import_aliases {
                         collect_dependency(
@@ -206,10 +234,16 @@ fn collect_dependency(
                             source_path,
                             builtin_derive,
                             derive_modules,
+                            derive_reexports,
                         )
                     }
                 }
-                let lowered = lower_package(project, builtin_derive, derive_modules);
+                let lowered = lower_package(
+                    project,
+                    builtin_derive,
+                    derive_modules,
+                    derive_reexports,
+                );
                 for diagnostic in lowered.diagnostics {
                     diagnostics.push(diagnostic)
                 }
@@ -226,6 +260,7 @@ fn collect_dependency(
                         }
                     }
                 } else {};
+                append_derive_reexports(lowered.files, derive_reexports);
                 for file in lowered.files {
                     dependencies.push(file)
                 }
@@ -251,7 +286,8 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
             Option::None
         },
     };
-    let discovery = lower_package(value, builtin_derive, Vec::[]);
+    let derive_reexports: Vec[(string, string)] = Vec::[];
+    let discovery = lower_package(value, builtin_derive, Vec::[], derive_reexports);
     let visited: Vec[string] = Vec::[];
     let derive_modules: Vec[ctir::CtModule] = Vec::[];
     visited.push(discovery.name);
@@ -269,10 +305,11 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
                 value.files[0].path,
                 builtin_derive,
                 derive_modules,
+                derive_reexports,
             )
         }
     }
-    let entry = lower_package(value, builtin_derive, derive_modules);
+    let entry = lower_package(value, builtin_derive, derive_modules, derive_reexports);
     for diagnostic in entry.diagnostics {
         diagnostics.push(diagnostic)
     }

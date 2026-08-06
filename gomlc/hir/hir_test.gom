@@ -76,6 +76,7 @@ fn rejects_ambiguous_imported_derive_names() -> unit {
                 derive_export_module("alice::first", "Label"),
                 derive_export_module("bob::second", "Label"),
             ],
+            reexports: Vec::[],
         },
     );
     testing::assert_eq(expanded.diagnostics.len(), 1);

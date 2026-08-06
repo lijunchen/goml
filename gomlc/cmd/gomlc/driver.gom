@@ -521,7 +521,11 @@ fn expand_builtin_derives(value: ast::LowerResult) -> ast::LowerResult {
     };
     hir::expand_derives_with_environment(
         value,
-        hir::DeriveEnvironment { builtin: builtin_module, dependencies: Vec::[] },
+        hir::DeriveEnvironment {
+            builtin: builtin_module,
+            dependencies: Vec::[],
+            reexports: Vec::[],
+        },
     )
 }
 

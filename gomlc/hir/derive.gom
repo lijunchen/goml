@@ -5,6 +5,7 @@ use gomlc::cst;
 use gomlc::ctfe;
 use gomlc::ctir;
 use gomlc::derive as derive_runtime;
+use std::collections;
 use std::text;
 
 fn dummy_span() -> ast::Span {
@@ -126,6 +127,7 @@ fn trait_default_functions(value: ast::TraitDef) -> Vec[ast::Function] {
 pub struct DeriveEnvironment {
     pub builtin: Option[ctir::CtModule],
     pub dependencies: Vec[ctir::CtModule],
+    pub reexports: Vec[(string, string)],
 }
 
 struct ImportedDerive {
@@ -177,6 +179,53 @@ fn module_derive_exports(module: ctir::CtModule, name: string) -> Vec[ctir::CtDe
     result
 }
 
+fn split_derive_export_target(value: string) -> Option[(string, string)] {
+    let segments = text::split(value, "::");
+    if segments.len() < 2 {
+        Option::None
+    } else {
+        let package_segments: Vec[string] = Vec::[];
+        for index in 0..segments.len() - 1 {
+            package_segments.push(segments[index])
+        }
+        Option::Some((join_segments(package_segments), segments[segments.len() - 1]))
+    }
+}
+
+fn resolve_derive_export_target(
+    environment: DeriveEnvironment,
+    package_name: string,
+    export_name: string,
+    display_name: string,
+) -> Result[(string, string), string] {
+    let mut current = package_name + "::" + export_name;
+    let seen: Vec[string] = Vec::[];
+    while true {
+        if collections::contains(seen, current) {
+            return Result::Err("cyclic derive re-export `" + display_name + "`")
+        } else {
+            seen.push(current)
+        };
+        let targets: Vec[string] = Vec::[];
+        for value in environment.reexports {
+            if value.0 == current {
+                targets.push(value.1)
+            } else {}
+        }
+        if targets.len() > 1 {
+            return Result::Err("ambiguous derive re-export `" + display_name + "`")
+        } else if targets.is_empty() {
+            return match split_derive_export_target(current) {
+                Some(value) => Result::Ok(value),
+                None => Result::Err("invalid derive export target `" + current + "`"),
+            }
+        } else {
+            current = targets[0];
+        }
+    }
+    Result::Err("invalid derive export target `" + current + "`")
+}
+
 fn package_alias_target(file: ast::File, alias: string) -> Option[string] {
     for entry in prospective_use_aliases(file) {
         if entry.alias == alias {
@@ -192,10 +241,16 @@ fn resolve_package_derive(
     export_name: string,
     display_name: string,
 ) -> Result[(ctir::CtModule, ctir::CtDeriveEntry), string] {
+    let resolved = resolve_derive_export_target(
+        environment,
+        package_name,
+        export_name,
+        display_name,
+    )?;
     let matches: Vec[(ctir::CtModule, ctir::CtDeriveEntry)] = Vec::[];
     for module in environment_modules(environment) {
-        if module.package_name == package_name {
-            for entry in module_derive_exports(module, export_name) {
+        if module.package_name == resolved.0 {
+            for entry in module_derive_exports(module, resolved.1) {
                 matches.push((module, entry))
             }
         } else {}
@@ -237,9 +292,18 @@ fn module_imported_derives(
     local_name: string,
 ) -> Vec[ImportedDerive] {
     let result: Vec[ImportedDerive] = Vec::[];
+    let resolved = match resolve_derive_export_target(
+        environment,
+        package_name,
+        export_name,
+        local_name,
+    ) {
+        Ok(value) => value,
+        Err(_) => return result,
+    };
     for module in environment_modules(environment) {
-        if module.package_name == package_name {
-            for entry in module_derive_exports(module, export_name) {
+        if module.package_name == resolved.0 {
+            for entry in module_derive_exports(module, resolved.1) {
                 result.push(ImportedDerive { local_name, module, entry })
             }
         } else {}
@@ -505,7 +569,7 @@ pub fn expand_derives_with_environment(value: ast::LowerResult, environment: Der
 pub fn expand_derives_with_comptime(value: ast::LowerResult, modules: Vec[ctir::CtModule]) -> ast::LowerResult {
     expand_derives_with_environment(
         value,
-        DeriveEnvironment { builtin: Option::None, dependencies: modules },
+        DeriveEnvironment { builtin: Option::None, dependencies: modules, reexports: Vec::[] },
     )
 }
 
