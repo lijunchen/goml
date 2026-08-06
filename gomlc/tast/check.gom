@@ -3447,25 +3447,45 @@ fn check_result_try(ctx: Checker, index: int, inner: Expr, name: string, args: V
     Expr::Match { expr: inner, arms, ty: ok_ty }
 }
 
-fn check_try_expr(ctx: Checker, index: int, source: hir::Expr, span: ast::Span) -> Expr {
-    let expected = if is_numeric_literal_source(source) {
-        match try_type_parts(ctx.return_ty) {
+fn check_try_expr(
+    ctx: Checker,
+    index: int,
+    source: hir::Expr,
+    span: ast::Span,
+    result_expected: Option[Type],
+) -> Expr {
+    let expected = match propagated_expected(result_expected) {
+        Some(ok_ty) => match try_type_parts(ctx.return_ty) {
             Some(parts) => if names_match(parts.0, "Option") && parts.1.len() == 1 {
-                Option::Some(nominal_type(parts.0, one_type(fresh_type(ctx.counter, VarKind::Any))))
+                Option::Some(nominal_type(parts.0, one_type(ok_ty)))
             } else if names_match(parts.0, "Result") && parts.1.len() == 2 {
-                Option::Some(
-                    nominal_type(
-                        parts.0,
-                        two_types(fresh_type(ctx.counter, VarKind::Any), parts.1[1]),
-                    ),
-                )
+                Option::Some(nominal_type(parts.0, two_types(ok_ty, parts.1[1])))
             } else {
                 Option::None
             },
             None => Option::None,
-        }
-    } else {
-        Option::None
+        },
+        None => if is_numeric_literal_source(source) {
+            match try_type_parts(ctx.return_ty) {
+                Some(parts) => if names_match(parts.0, "Option") && parts.1.len() == 1 {
+                    Option::Some(
+                        nominal_type(parts.0, one_type(fresh_type(ctx.counter, VarKind::Any))),
+                    )
+                } else if names_match(parts.0, "Result") && parts.1.len() == 2 {
+                    Option::Some(
+                        nominal_type(
+                            parts.0,
+                            two_types(fresh_type(ctx.counter, VarKind::Any), parts.1[1]),
+                        ),
+                    )
+                } else {
+                    Option::None
+                },
+                None => Option::None,
+            }
+        } else {
+            Option::None
+        },
     };
     let constraint_start = ctx.numeric_literal_constraints.len();
     let coercion_start = ctx.coercion_constraints.len();
@@ -4369,7 +4389,13 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             },
             Try { depth: index, expr: value } => {
                 let source_span = value.span;
-                check_try_expr(ctx, index, value, ast::span(source_span.start, source_span.end + 1))
+                check_try_expr(
+                    ctx,
+                    index,
+                    value,
+                    ast::span(source_span.start, source_span.end + 1),
+                    Option::None,
+                )
             },
             Range { start, end, inclusive } => check_range_expr(ctx, start, end, inclusive),
             Binary { op, lhs: left, rhs: right } => {
@@ -4552,6 +4578,21 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
         },
         Call { func: function, args } => {
             let result = check_call_expr(ctx, value.span, function, args, expected);
+            if always_exits {
+                result
+            } else {
+                coerce_expr(ctx, result, expected)
+            }
+        },
+        Try { depth: index, expr: source } => {
+            let source_span = source.span;
+            let result = check_try_expr(
+                ctx,
+                index,
+                source,
+                ast::span(source_span.start, source_span.end + 1),
+                expected,
+            );
             if always_exits {
                 result
             } else {
