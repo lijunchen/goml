@@ -20,6 +20,7 @@ use std::text;
 struct StandardNeeds {
     root: bool,
     ascii: bool,
+    bincode: bool,
     bytes: bool,
     cmp: bool,
     collections: bool,
@@ -62,6 +63,7 @@ fn no_standard_needs() -> StandardNeeds {
     StandardNeeds {
         root: false,
         ascii: false,
+        bincode: false,
         bytes: false,
         cmp: false,
         collections: false,
@@ -88,6 +90,7 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
     StandardNeeds {
         root: collections::contains(closure, "std"),
         ascii: collections::contains(closure, "std::ascii"),
+        bincode: collections::contains(closure, "std::bincode"),
         bytes: collections::contains(closure, "std::bytes"),
         cmp: collections::contains(closure, "std::cmp"),
         collections: collections::contains(closure, "std::collections"),
@@ -123,6 +126,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
     StandardNeeds {
         root: left.root || right.root,
         ascii: left.ascii || right.ascii,
+        bincode: left.bincode || right.bincode,
         bytes: left.bytes || right.bytes,
         cmp: left.cmp || right.cmp,
         collections: left.collections || right.collections,
@@ -566,6 +570,9 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     if needs.ascii {
         result.push(standard.ascii)
     } else {};
+    if needs.bincode {
+        result.push(standard.bincode)
+    } else {};
     if needs.bytes {
         result.push(standard.bytes)
     } else {};
@@ -734,6 +741,9 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     let result: Vec[core::File] = Vec::[];
     if needs.ascii {
         result.push(standard.ascii.core_value)
+    } else {};
+    if needs.bincode {
+        result.push(standard.bincode.core_value)
     } else {};
     if needs.bytes {
         result.push(standard.bytes.core_value)

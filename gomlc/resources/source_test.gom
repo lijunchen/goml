@@ -43,6 +43,11 @@ fn loads_multifile_standard_package() -> unit {
         Ok(Some(values)) => testing::assert_eq(values.len(), 2),
         Ok(None) => testing::fail("expected standard package"),
         Err(error) => testing::fail(error),
+    };
+    match standard_sources("std::bincode") {
+        Ok(Some(values)) => testing::assert_eq(values.len(), 3),
+        Ok(None) => testing::fail("expected bincode package"),
+        Err(error) => testing::fail(error),
     }
 }
 
@@ -71,6 +76,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         standard_package_children("std"),
         Vec::[
             "ascii",
+            "bincode",
             "bytes",
             "cmp",
             "collections",

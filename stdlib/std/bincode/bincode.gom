@@ -1,0 +1,57 @@
+package bincode;
+
+use std::serde;
+pub use serde::{Deserialize, Serialize};
+
+pub enum Endianness {
+    Little,
+    Big,
+}
+
+pub enum IntEncoding {
+    Variable,
+    Fixed,
+}
+
+pub struct Config {
+    pub endianness: Endianness,
+    pub int_encoding: IntEncoding,
+}
+
+pub fn standard() -> Config {
+    Config { endianness: Endianness::Little, int_encoding: IntEncoding::Variable }
+}
+
+pub fn legacy() -> Config {
+    Config { endianness: Endianness::Little, int_encoding: IntEncoding::Fixed }
+}
+
+pub fn with_little_endian(config: Config) -> Config {
+    Config { endianness: Endianness::Little, int_encoding: config.int_encoding }
+}
+
+pub fn with_big_endian(config: Config) -> Config {
+    Config { endianness: Endianness::Big, int_encoding: config.int_encoding }
+}
+
+pub fn with_variable_int_encoding(config: Config) -> Config {
+    Config { endianness: config.endianness, int_encoding: IntEncoding::Variable }
+}
+
+pub fn with_fixed_int_encoding(config: Config) -> Config {
+    Config { endianness: config.endianness, int_encoding: IntEncoding::Fixed }
+}
+
+pub fn encode_to_vec[T: Serialize](value: T, config: Config) -> Result[Vec[byte], string] {
+    encode_value(serde::to_value(value), config)
+}
+
+pub fn decode_from_slice[T: Deserialize](input: Slice[byte], config: Config) -> Result[
+    (T, int),
+    string,
+] {
+    let schema: serde::TypedSchema[T] = Deserialize::schema();
+    let decoded = decode_value(input, schema.value, config)?;
+    let value: T = serde::from_value(decoded.0)?;
+    Result::Ok((value, decoded.1))
+}

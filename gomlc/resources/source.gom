@@ -45,6 +45,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             Vec::["std/lib.gom"],
             Vec::[
                 "std::ascii",
+                "std::bincode",
                 "std::bytes",
                 "std::cmp",
                 "std::collections",
@@ -64,6 +65,7 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             ],
             Vec::[
                 "std::ascii",
+                "std::bincode",
                 "std::bytes",
                 "std::cmp",
                 "std::collections",
@@ -89,6 +91,14 @@ pub fn standard_package_specs() -> Vec[StandardPackageSpec] {
             Vec::["std/ascii/ascii.gom"],
             Vec::[],
             Vec::[],
+        ),
+        standard_package(
+            "std::bincode",
+            "bincode",
+            "std",
+            Vec::["std/bincode/bincode.gom", "std/bincode/decode.gom", "std/bincode/encode.gom"],
+            Vec::["std::bytes", "std::serde"],
+            Vec::["std::bytes", "std::serde"],
         ),
         standard_package(
             "std::bytes",

@@ -103,6 +103,7 @@ fn world_add_standard_sections(
         (46 as uint16, value.task),
         (48 as uint16, value.serde),
         (50 as uint16, value.toml),
+        (52 as uint16, value.bincode),
     ];
     for package_value in packages {
         world_add_package_sections(sections, package_value.0, package_value.1)?
@@ -218,6 +219,7 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let task = world_decode_package(container, 46, "std::task")?;
     let serde = world_decode_package(container, 48, "std::serde")?;
     let toml = world_decode_package(container, 50, "std::toml")?;
+    let bincode = world_decode_package(container, 52, "std::bincode")?;
     let world = PackageWorld {
         counter,
         builtins: builtin_core.core_ir,
@@ -226,6 +228,7 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
             root,
             host,
             ascii,
+            bincode,
             bytes,
             cmp,
             collections,

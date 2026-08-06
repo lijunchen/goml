@@ -1,0 +1,227 @@
+package bincode;
+
+use std::bytes;
+use std::serde;
+
+#[go_ffi("math", "Float32bits")]
+extern fn float32_bits(value: float32) -> uint32;
+
+#[go_ffi("math", "Float64bits")]
+extern fn float64_bits(value: float64) -> uint64;
+
+fn little_endian(config: Config) -> bool {
+    match config.endianness {
+        Endianness::Little => true,
+        Endianness::Big => false,
+    }
+}
+
+fn variable_ints(config: Config) -> bool {
+    match config.int_encoding {
+        IntEncoding::Variable => true,
+        IntEncoding::Fixed => false,
+    }
+}
+
+fn push_fixed(output: Vec[byte], value: uint64, width: int, config: Config) -> unit {
+    let mut index = 0;
+    while index < width {
+        let position = if little_endian(config) {
+            index
+        } else {
+            width - index - 1
+        };
+        output.push((value >> (position * 8)) as byte);
+        index = index + 1;
+    }
+}
+
+fn push_variable(output: Vec[byte], value: uint64, config: Config) -> unit {
+    if value < 251 {
+        output.push(value as byte)
+    } else if value <= 65535 {
+        output.push(251);
+        push_fixed(output, value, 2, config)
+    } else if value <= 4294967295 {
+        output.push(252);
+        push_fixed(output, value, 4, config)
+    } else {
+        output.push(253);
+        push_fixed(output, value, 8, config)
+    }
+}
+
+fn normalized_width(width: int) -> int {
+    if width == 0 {
+        64
+    } else {
+        width
+    }
+}
+
+fn push_unsigned(output: Vec[byte], value: uint64, width: int, config: Config) -> unit {
+    let actual_width = normalized_width(width);
+    if actual_width == 8 {
+        output.push(value as byte)
+    } else if variable_ints(config) {
+        push_variable(output, value, config)
+    } else {
+        push_fixed(output, value, actual_width / 8, config)
+    }
+}
+
+fn zigzag(value: int64) -> uint64 {
+    ((value as uint64) << 1) ^ ((value >> 63) as uint64)
+}
+
+fn push_signed(output: Vec[byte], value: int64, width: int, config: Config) -> unit {
+    let actual_width = normalized_width(width);
+    if actual_width == 8 {
+        output.push(value as byte)
+    } else if variable_ints(config) {
+        push_variable(output, zigzag(value), config)
+    } else {
+        push_fixed(output, value as uint64, actual_width / 8, config)
+    }
+}
+
+fn push_length(output: Vec[byte], value: int, config: Config) -> Result[unit, string] {
+    if value < 0 {
+        Result::Err("negative collection length")
+    } else {
+        push_unsigned(output, value as uint64, 64, config);
+        Result::Ok(())
+    }
+}
+
+fn push_string(output: Vec[byte], value: string, config: Config) -> Result[unit, string] {
+    let encoded = bytes::Bytes::from_string(value).to_vec();
+    push_length(output, encoded.len(), config)?;
+    for value in encoded {
+        output.push(value)
+    }
+    Result::Ok(())
+}
+
+fn push_values(output: Vec[byte], values: Vec[serde::Value], config: Config) -> Result[unit, string] {
+    for value in values {
+        push_value(output, value, config)?
+    }
+    Result::Ok(())
+}
+
+fn push_fields(output: Vec[byte], fields: Vec[(string, serde::Value)], config: Config) -> Result[
+    unit,
+    string,
+] {
+    for field in fields {
+        push_value(output, field.1, config)?
+    }
+    Result::Ok(())
+}
+
+fn push_optional(output: Vec[byte], values: Vec[serde::Value], config: Config) -> Result[
+    unit,
+    string,
+] {
+    if values.len() == 0 {
+        output.push(0);
+        Result::Ok(())
+    } else if values.len() == 1 {
+        output.push(1);
+        push_value(output, values[0], config)
+    } else {
+        Result::Err("optional value contains more than one item")
+    }
+}
+
+fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[unit, string] {
+    match value {
+        serde::Value::Unit => Result::Ok(()),
+        serde::Value::Bool(value) => {
+            output.push(
+                if value {
+                    1
+                } else {
+                    0
+                },
+            );
+            Result::Ok(())
+        },
+        serde::Value::Int(value) => {
+            push_signed(output, value as int64, 0, config);
+            Result::Ok(())
+        },
+        serde::Value::Int8(value) => {
+            push_signed(output, value as int64, 8, config);
+            Result::Ok(())
+        },
+        serde::Value::Int16(value) => {
+            push_signed(output, value as int64, 16, config);
+            Result::Ok(())
+        },
+        serde::Value::Int32(value) => {
+            push_signed(output, value as int64, 32, config);
+            Result::Ok(())
+        },
+        serde::Value::Int64(value) => {
+            push_signed(output, value, 64, config);
+            Result::Ok(())
+        },
+        serde::Value::Uint(value) => {
+            push_unsigned(output, value as uint64, 0, config);
+            Result::Ok(())
+        },
+        serde::Value::Uint8(value) => {
+            push_unsigned(output, value as uint64, 8, config);
+            Result::Ok(())
+        },
+        serde::Value::Uint16(value) => {
+            push_unsigned(output, value as uint64, 16, config);
+            Result::Ok(())
+        },
+        serde::Value::Uint32(value) => {
+            push_unsigned(output, value as uint64, 32, config);
+            Result::Ok(())
+        },
+        serde::Value::Uint64(value) => {
+            push_unsigned(output, value, 64, config);
+            Result::Ok(())
+        },
+        serde::Value::Float32(value) => {
+            push_fixed(output, float32_bits(value) as uint64, 4, config);
+            Result::Ok(())
+        },
+        serde::Value::Float64(value) => {
+            push_fixed(output, float64_bits(value), 8, config);
+            Result::Ok(())
+        },
+        serde::Value::Number(_) => Result::Err("bincode requires a precise numeric type"),
+        serde::Value::String(value) => push_string(output, value, config),
+        serde::Value::Char(value) => {
+            push_unsigned(output, value as uint32 as uint64, 32, config);
+            Result::Ok(())
+        },
+        serde::Value::Sequence(values) => {
+            push_length(output, values.len(), config)?;
+            push_values(output, values, config)
+        },
+        serde::Value::Tuple(values) => push_values(output, values, config),
+        serde::Value::Optional(values) => push_optional(output, values, config),
+        serde::Value::Struct(fields) => push_fields(output, fields, config),
+        serde::Value::Variant { index, name: _, kind: _, fields } => {
+            if index < 0 {
+                Result::Err("negative enum variant index")
+            } else {
+                push_unsigned(output, index as uint64, 32, config);
+                push_fields(output, fields, config)
+            }
+        },
+    }
+}
+
+pub fn encode_value(value: serde::Value, config: Config) -> Result[Vec[byte], string] {
+    let output: Vec[byte] = Vec::[];
+    push_value(output, value, config)?;
+    Result::Ok(output)
+}

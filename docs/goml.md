@@ -2249,6 +2249,7 @@ The standard library is not equal to prelude and needs to be imported by package
 
 ```goml
 use std::ascii;
+use std::bincode;
 use std::bytes;
 use std::cmp;
 use std::collections;
@@ -2271,6 +2272,7 @@ use std::time;
 Current public entrances include:
 
 - `ascii::is_ascii`, character-class predicates, ASCII case conversion and comparison, and `escape_default`
+- `bincode::standard`, `legacy`, configuration builders, serde `Serialize` and `Deserialize` re-exports, `encode_to_vec`, and `decode_from_slice`
 - `bytes::Bytes`, a mutable byte buffer with conversion to and from strings and `Vec[uint8]`
 - `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`
@@ -2289,6 +2291,34 @@ Current public entrances include:
 - `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `eq_ignore_ascii_case`, `to_ascii_lowercase`, and `to_ascii_uppercase`
 - `toml::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `to_string`, and `from_string`
 - `time::Duration`, `Instant`, `SystemTime`, `sleep`, and `sleep_with`
+
+### Bincode typed binary data
+
+`std::bincode` is a typed-only serde format. `encode_to_vec` serializes a value with its precise `serde::Value` shape, while `decode_from_slice` obtains `Deserialize::schema` for the requested target and returns the value together with the number of consumed bytes. There is intentionally no schema-free bincode value mode because bincode does not carry field types, tuple lengths, or struct layouts on the wire.
+
+`bincode::standard()` uses little-endian variable integer encoding. `bincode::legacy()` uses little-endian fixed-width integers. `with_little_endian`, `with_big_endian`, `with_variable_int_encoding`, and `with_fixed_int_encoding` return adjusted configurations. The wire representation follows bincode 2 conventions for booleans, ZigZag signed varints, integer markers, IEEE floating-point bits, UTF-8 strings, collection lengths, one-byte option tags, source-order struct fields, and enum declaration indexes.
+
+```goml
+use std::bincode;
+use bincode::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct Message {
+    id: uint32,
+    text: string,
+}
+
+fn round_trip(value: Message) -> Result[Message, string] {
+    let encoded = bincode::encode_to_vec(value, bincode::standard())?;
+    let decoded: (Message, int) = bincode::decode_from_slice(
+        encoded.slice(0, encoded.len()),
+        bincode::standard(),
+    )?;
+    Result::Ok(decoded.0)
+}
+```
+
+The first version supports the shared serde primitives, `Vec`, `Option`, two- and three-element tuples, and derived structs and enums. Fixed arrays are not yet supported because GoML does not yet have const-generic serde implementations. `serde::Value`, `json::Value`, and `toml::Value` have schema-free `Deserialize` implementations and therefore cannot be bincode decode targets.
 
 ### TOML values and typed documents
 
