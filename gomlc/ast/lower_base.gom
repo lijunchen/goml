@@ -40,17 +40,57 @@ fn path_last(path: Path) -> Option[string] {
     }
 }
 
-fn push_attribute_path(args: Vec[AttributeArg], segments: Vec[string]) -> unit {
-    if segments.is_empty() {} else if segments.len() == 1 {
-        args.push(AttributeArg::Ident(segments[0]))
+fn take_attribute_path(segments: Vec[string]) -> Option[AttributeArg] {
+    let result = if segments.is_empty() {
+        Option::None
+    } else if segments.len() == 1 {
+        Option::Some(AttributeArg::Ident(segments[0]))
     } else {
         let mut value = segments[0];
         for index in 1..segments.len() {
             value = value + "::" + segments[index];
         }
-        args.push(AttributeArg::Path(value))
+        Option::Some(AttributeArg::Path(value))
+    };
+    segments.clear();
+    result
+}
+
+fn attribute_arg_kind(value: AttributeArg) -> string {
+    match value {
+        Ident(_) => "ident",
+        Path(_) => "path",
+        String(_) => "string",
+        Named { .. } => "named",
     }
-    segments.clear()
+}
+
+fn attribute_arg_text(value: AttributeArg) -> string {
+    match value {
+        Ident(value) | Path(value) | String(value) => value,
+        Named { name: _, value_kind: _, value } => value,
+    }
+}
+
+fn push_attribute_arg(args: Vec[AttributeArg], value: Option[AttributeArg], named: Option[string]) -> Option[
+    string,
+] {
+    match value {
+        Some(value) => {
+            match named {
+                Some(name) => args.push(
+                    AttributeArg::Named {
+                        name,
+                        value_kind: attribute_arg_kind(value),
+                        value: attribute_arg_text(value),
+                    },
+                ),
+                None => args.push(value),
+            };
+            Option::None
+        },
+        None => named,
+    }
 }
 
 fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
@@ -62,6 +102,7 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
             let path_segments: Vec[string] = Vec::[];
             let mut in_args = false;
             let mut has_argument_list = false;
+            let mut named_arg: Option[string] = Option::None;
             for token in direct_tokens(attr) {
                 match token.token.kind {
                     lexer::TokenKind::LParen => {
@@ -69,7 +110,11 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                         has_argument_list = true;
                     },
                     lexer::TokenKind::RParen => {
-                        push_attribute_path(args, path_segments);
+                        named_arg = push_attribute_arg(
+                            args,
+                            take_attribute_path(path_segments),
+                            named_arg,
+                        );
                         in_args = false;
                     },
                     lexer::TokenKind::Ident => if in_args {
@@ -78,14 +123,36 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                         name = token.token.text;
                     },
                     lexer::TokenKind::Str => if in_args {
-                        push_attribute_path(args, path_segments);
+                        named_arg = push_attribute_arg(
+                            args,
+                            take_attribute_path(path_segments),
+                            named_arg,
+                        );
                         match strip_delimiters(token.token.text) {
-                            Some(value) => args.push(AttributeArg::String(unescape_string(value))),
+                            Some(value) => {
+                                named_arg = push_attribute_arg(
+                                    args,
+                                    Option::Some(AttributeArg::String(unescape_string(value))),
+                                    named_arg,
+                                );
+                            },
                             None => (),
                         }
                     } else {},
                     lexer::TokenKind::Comma => if in_args {
-                        push_attribute_path(args, path_segments)
+                        named_arg = push_attribute_arg(
+                            args,
+                            take_attribute_path(path_segments),
+                            named_arg,
+                        );
+                    } else {},
+                    lexer::TokenKind::Eq => if in_args {
+                        match take_attribute_path(path_segments) {
+                            Some(value) => {
+                                named_arg = Option::Some(attribute_arg_text(value));
+                            },
+                            None => (),
+                        }
                     } else {},
                     _ => (),
                 }

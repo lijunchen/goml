@@ -144,7 +144,9 @@ fn attribute_allows(attrs: Vec[ast::Attribute], lint: string) -> bool {
                     ast::AttributeArg::Ident(value) => if value == lint {
                         return true
                     } else {},
-                    ast::AttributeArg::String(_) | ast::AttributeArg::Path(_) => (),
+                    ast::AttributeArg::String(_) | ast::AttributeArg::Path(_) | ast::AttributeArg::Named {
+                        ..,
+                    } => (),
                 }
             }
         } else {}

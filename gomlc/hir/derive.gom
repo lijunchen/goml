@@ -31,7 +31,7 @@ fn validate_derive_attributes(attrs: Vec[ast::Attribute], diagnostics: Vec[cst::
             for arg in attr.args {
                 match arg {
                     ast::AttributeArg::Ident(_) | ast::AttributeArg::Path(_) => (),
-                    ast::AttributeArg::String(_) => diagnostics.push(
+                    ast::AttributeArg::String(_) | ast::AttributeArg::Named { .. } => diagnostics.push(
                         cst::diagnostic(
                             "derive target must be a path",
                             attr.span.start,
@@ -419,7 +419,7 @@ fn derive_impls(
                         ),
                         Err(message) => Result::Err(message),
                     },
-                    ast::AttributeArg::String(_) => continue,
+                    ast::AttributeArg::String(_) | ast::AttributeArg::Named { .. } => continue,
                 };
                 match resolved {
                     Ok(ResolvedDerive::Handler { module, entry }) => match expand_handler_derive(

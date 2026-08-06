@@ -1714,9 +1714,9 @@ derive_fresh_name(input, prefix) -> string
 
 `derive_item_kind` returns zero for a struct and one for an enum. `derive_variant_kind` returns zero for a unit variant, one for a tuple variant, and two for a struct-like variant. The count operation for a nested attribute takes the owner indexes; its name and text operations take one additional attribute index. Field operations require a struct, while variant operations require an enum. Invalid kinds and indexes are compile-time errors at the `#[derive(...)]` site. Attributes may be attached to struct fields, enum variants, and tuple or named variant fields. `name` returns the attribute name and `text` returns its complete source spelling.
 
-The structured attribute handle exposes `meta_attribute_name`, `meta_attribute_text`, `meta_attribute_has_argument_list`, `meta_attribute_argument_count`, `meta_attribute_argument_kind`, and `meta_attribute_argument_text`. Argument kind is `ident`, `path`, or `string`, and argument text is decoded rather than raw source spelling.
+The structured attribute handle exposes `meta_attribute_name`, `meta_attribute_text`, `meta_attribute_has_argument_list`, `meta_attribute_argument_count`, `meta_attribute_argument_kind`, `meta_attribute_argument_name`, `meta_attribute_argument_value_kind`, and `meta_attribute_argument_text`. Argument kind is `ident`, `path`, `string`, or `named`. Named arguments use `name = value`, where the value may be an identifier, path, or string. `argument_name` returns the left-hand name, `argument_value_kind` describes the right-hand value, and `argument_text` returns its decoded value.
 
-The structured output API provides opaque `MetaAttribute`, `MetaType`, `MetaExpr`, `MetaPattern`, `MetaArm`, `MetaBlock`, `MetaParamList`, `MetaMethod`, and list handles. Constructors use the `meta_type_*`, `meta_expr_*`, `meta_pattern_*`, `meta_arm*`, `meta_block_*`, and `meta_param_list_*` families. `meta_method` creates a concrete, non-generic trait method. A handler creates its single result with `derive_output_new` or `derive_output_new_call_site`, adds trait predicates and methods, and returns it.
+The structured output API provides opaque `MetaAttribute`, `MetaType`, `MetaExpr`, `MetaPattern`, `MetaArm`, `MetaBlock`, `MetaParamList`, `MetaGenericList`, `MetaMethod`, and list handles. Constructors use the `meta_type_*`, `meta_expr_*`, `meta_pattern_*`, `meta_arm*`, `meta_block_*`, `meta_param_list_*`, and `meta_generic_list_*` families. `meta_method` creates a concrete trait method; `meta_method_generic` creates a method with explicit type parameters and bounds. A handler creates its single result with `derive_output_new` or `derive_output_new_call_site`, adds trait predicates and methods, and returns it.
 
 The builder operations are:
 
@@ -1728,6 +1728,7 @@ meta_type_list_push(list, type) -> unit
 meta_type_tuple(list) -> MetaType
 meta_type_apply(type, arguments) -> MetaType
 meta_type_array(element, length) -> MetaType
+meta_type_projection(type, associated_name) -> MetaType
 meta_type_kind/name(type) -> string
 meta_type_argument_count/argument(type, index...) -> int | MetaType
 meta_type_tuple_count/tuple_item(type, index...) -> int | MetaType
@@ -1749,15 +1750,18 @@ meta_expr_call_site(name, arguments) -> MetaExpr
 meta_expr_trait_call(input, trait_name, method_name, arguments) -> MetaExpr
 meta_expr_method_call(receiver, name, arguments) -> MetaExpr
 meta_expr_constructor(name, arguments) -> MetaExpr
+meta_expr_target_constructor(input, variant, arguments) -> MetaExpr
 meta_expr_tuple/array(elements) -> MetaExpr
 meta_expr_field_list_new() -> MetaExprFieldList
 meta_expr_field_list_push(list, name, value) -> unit
 meta_expr_struct(input, name, fields) -> MetaExpr
 meta_expr_struct_call_site(name, fields) -> MetaExpr
+meta_expr_target_struct(input, fields) -> MetaExpr
 meta_expr_if(condition, then, else) -> MetaExpr
 meta_expr_match(value, arms) -> MetaExpr
 meta_expr_cast(value, type) -> MetaExpr
 meta_expr_return(value) -> MetaExpr
+meta_expr_try(value) -> MetaExpr
 meta_expr_list_new() -> MetaExprList
 meta_expr_list_push(list, expression) -> unit
 
@@ -1766,9 +1770,11 @@ meta_pattern_bind(name) -> MetaPattern
 meta_pattern_unit/bool/int/string/char(value...) -> MetaPattern
 meta_pattern_tuple/array(patterns) -> MetaPattern
 meta_pattern_constructor(name, patterns) -> MetaPattern
+meta_pattern_target_constructor(input, variant, patterns) -> MetaPattern
 meta_pattern_field_list_new() -> MetaPatternFieldList
 meta_pattern_field_list_push(list, name, pattern) -> unit
 meta_pattern_struct(name, fields, has_rest) -> MetaPattern
+meta_pattern_target_struct(input, fields, has_rest) -> MetaPattern
 meta_pattern_alias(name, pattern) -> MetaPattern
 meta_pattern_or(patterns) -> MetaPattern
 meta_pattern_range(start, end, inclusive) -> MetaPattern
@@ -1782,6 +1788,7 @@ meta_arm_list_push(list, arm) -> unit
 meta_block_new() -> MetaBlock
 meta_block_let(block, name, value) -> unit
 meta_block_let_mut(block, name, value) -> unit
+meta_block_let_typed(block, name, type, value) -> unit
 meta_block_let_pattern(block, pattern, value) -> unit
 meta_block_assign(block, target, value) -> unit
 meta_block_expr(block, expression) -> unit
@@ -1789,7 +1796,11 @@ meta_block_finish(block, tail) -> MetaExpr
 meta_block_finish_unit(block) -> MetaExpr
 meta_param_list_new() -> MetaParamList
 meta_param_list_push(list, name, type) -> unit
+meta_generic_list_new() -> MetaGenericList
+meta_generic_list_push(list, name) -> unit
+meta_generic_list_add_bound(input, list, name, trait_name) -> unit
 meta_method(name, parameters, return_type, body) -> MetaMethod
+meta_method_generic(name, generics, parameters, return_type, body) -> MetaMethod
 
 derive_output_new(input, trait_name) -> DeriveOutput
 derive_output_new_call_site(input, trait_name) -> DeriveOutput
@@ -1800,9 +1811,9 @@ derive_output_add_method(output, method) -> unit
 
 `meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_expr_integer` accepts a normalized integer literal string plus its exact integer type, so builders can represent values outside the host `int` range. `meta_expr_trait_call` resolves the trait in the handler's defining package and builds a static trait method call. `meta_type_equal` compares structural type identity. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
 
-Unqualified names passed to `derive_output_new`, `derive_output_add_predicate`, `meta_type_named`, and `meta_expr_call` resolve in the handler's defining package. Their `_call_site` variants resolve in the target package. `derive_fresh_name` should be used for generated local bindings that must not collide with user names. Constructor patterns describe the target item and resolve at the call site.
+Unqualified names passed to `derive_output_new`, `derive_output_add_predicate`, `meta_type_named`, `meta_expr_call`, and `meta_generic_list_add_bound` resolve in the handler's defining package. Their `_call_site` variants resolve in the target package. `derive_fresh_name` should be used for generated local bindings that must not collide with user names. The `*_target_*` builders construct or match the annotated item by compiler identity and should be preferred over spelling its name manually.
 
-The result is restricted to one trait `impl` for the annotated type. It cannot create types, traits, functions, constants, modules, imports, inherent impls, extern declarations, attributes, generic methods, associated types, or raw tokens. The generated impl is processed by ordinary name resolution, orphan and coherence checks, type checking, monomorphization, and backend lowering. Duplicate or invalid generated implementations are regular compiler diagnostics.
+The result is restricted to one trait `impl` for the annotated type. It cannot create types, traits, functions, constants, modules, imports, inherent impls, extern declarations, attributes, associated types, or raw tokens. Generated method type parameters and trait bounds are supported. The generated impl is processed by ordinary name resolution, orphan and coherence checks, type checking, monomorphization, and backend lowering. Duplicate or invalid generated implementations are regular compiler diagnostics.
 
 Handlers are deterministic and have no host access. Imported derive CTIR is verified as untrusted artifact data. Evaluation uses the ordinary compile-time limits plus a limit of 100,000 metadata and syntax-builder operations. Failures are anchored to the requesting derive attribute and include the compile-time derive call stack.
 
