@@ -20,6 +20,16 @@ fn serde_items_to_toml(items: Vec[serde::Value]) -> Result[Vec[Value], string] {
     Result::Ok(result)
 }
 
+fn serde_optional_to_toml(items: Vec[serde::Value]) -> Result[Value, string] {
+    if items.len() == 0 {
+        Result::Err("TOML has no null value")
+    } else if items.len() == 1 {
+        from_serde_value(items[0])
+    } else {
+        Result::Err("optional value contains more than one item")
+    }
+}
+
 fn serde_variant_to_toml(name: string, kind: int, fields: Vec[(string, serde::Value)]) -> Result[
     Value,
     string,
@@ -79,6 +89,8 @@ pub fn from_serde_value(value: serde::Value) -> Result[Value, string] {
         serde::Value::String(value) => Result::Ok(Value::String(value)),
         serde::Value::Char(value) => Result::Ok(Value::String(value.to_string())),
         serde::Value::Sequence(items) => Result::Ok(Value::Array(serde_items_to_toml(items)?)),
+        serde::Value::Tuple(items) => Result::Ok(Value::Array(serde_items_to_toml(items)?)),
+        serde::Value::Optional(items) => serde_optional_to_toml(items),
         serde::Value::Struct(fields) => Result::Ok(Value::Table(serde_fields_to_toml(fields)?)),
         serde::Value::Variant { index: _, name, kind, fields } => {
             serde_variant_to_toml(name, kind, fields)
@@ -140,5 +152,9 @@ impl Serialize for Value {
 impl Deserialize for Value {
     fn deserialize(value: serde::Value) -> Result[Value, string] {
         from_serde_value(value)
+    }
+
+    fn schema() -> serde::TypedSchema[Value] {
+        serde::typed_schema(serde::Schema::Any)
     }
 }

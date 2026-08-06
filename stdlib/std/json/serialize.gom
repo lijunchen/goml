@@ -19,6 +19,14 @@ fn serde_items_to_json(items: Vec[serde::Value]) -> Vec[Value] {
     result
 }
 
+fn serde_optional_to_json(items: Vec[serde::Value]) -> Value {
+    if items.len() == 0 {
+        Value::Null
+    } else {
+        from_serde_value(items[0])
+    }
+}
+
 fn serde_variant_to_json(name: string, kind: int, fields: Vec[(string, serde::Value)]) -> Value {
     if kind == 0 {
         Value::String(name)
@@ -53,6 +61,8 @@ pub fn from_serde_value(value: serde::Value) -> Value {
         serde::Value::String(value) => Value::String(value),
         serde::Value::Char(value) => Value::String(value.to_string()),
         serde::Value::Sequence(items) => Value::Array(serde_items_to_json(items)),
+        serde::Value::Tuple(items) => Value::Array(serde_items_to_json(items)),
+        serde::Value::Optional(items) => serde_optional_to_json(items),
         serde::Value::Struct(fields) => Value::Object(serde_fields_to_json(fields)),
         serde::Value::Variant { index: _, name, kind, fields } => {
             serde_variant_to_json(name, kind, fields)
@@ -117,5 +127,9 @@ impl Serialize for Value {
 impl Deserialize for Value {
     fn deserialize(value: serde::Value) -> Result[Value, string] {
         Result::Ok(from_serde_value(value))
+    }
+
+    fn schema() -> serde::TypedSchema[Value] {
+        serde::typed_schema(serde::Schema::Any)
     }
 }

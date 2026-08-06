@@ -21,6 +21,8 @@ pub enum Value {
     String(string),
     Char(char),
     Sequence(Vec[Value]),
+    Tuple(Vec[Value]),
+    Optional(Vec[Value]),
     Struct(Vec[(string, Value)]),
     Variant {
         index: int,
@@ -30,12 +32,42 @@ pub enum Value {
     },
 }
 
+pub enum Schema {
+    Any,
+    Unit,
+    Bool,
+    Integer {
+        signed: bool,
+        width: int,
+    },
+    Float(int),
+    String,
+    Char,
+    Sequence(Vec[Schema]),
+    Tuple(Vec[Schema]),
+    Optional(Vec[Schema]),
+    Struct(Vec[(string, Schema)]),
+    Enum(Vec[VariantSchema]),
+}
+
+pub struct VariantSchema {
+    pub index: int,
+    pub name: string,
+    pub kind: int,
+    pub fields: Vec[(string, Schema)],
+}
+
+pub struct TypedSchema[T] {
+    pub value: Schema,
+}
+
 pub trait Serialize {
     fn serialize(self: Self) -> Value;
 }
 
 pub trait Deserialize {
     fn deserialize(value: Value) -> Result[Self, string];
+    fn schema() -> TypedSchema[Self];
 }
 
 pub fn to_value[T: Serialize](value: T) -> Value {
@@ -52,6 +84,22 @@ pub fn structure(fields: Vec[(string, Value)]) -> Value {
 
 pub fn variant(index: int, name: string, kind: int, fields: Vec[(string, Value)]) -> Value {
     Value::Variant { index, name, kind, fields }
+}
+
+pub fn typed_schema[T](value: Schema) -> TypedSchema[T] {
+    TypedSchema { value }
+}
+
+pub fn structure_schema(fields: Vec[(string, Schema)]) -> Schema {
+    Schema::Struct(fields)
+}
+
+pub fn variant_schema(index: int, name: string, kind: int, fields: Vec[(string, Schema)]) -> VariantSchema {
+    VariantSchema { index, name, kind, fields }
+}
+
+pub fn enumeration_schema(variants: Vec[VariantSchema]) -> Schema {
+    Schema::Enum(variants)
 }
 
 pub fn field(value: Value, name: string) -> Result[Value, string] {
@@ -102,6 +150,19 @@ pub fn variant_parts(value: Value) -> Result[(string, int, Vec[(string, Value)])
     }
 }
 
+fn tuple_values(value: Value, size: int) -> Result[Vec[Value], string] {
+    let values = match value {
+        Value::Tuple(values) => values,
+        Value::Sequence(values) => values,
+        _ => return Result::Err("expected tuple"),
+    };
+    if values.len() == size {
+        Result::Ok(values)
+    } else {
+        Result::Err("expected " + size.to_string() + "-element tuple")
+    }
+}
+
 pub fn error(message: string) -> Result[unit, string] {
     Result::Err(message)
 }
@@ -115,6 +176,10 @@ impl Serialize for Value {
 impl Deserialize for Value {
     fn deserialize(value: Value) -> Result[Value, string] {
         Result::Ok(value)
+    }
+
+    fn schema() -> TypedSchema[Value] {
+        typed_schema(Schema::Any)
     }
 }
 
@@ -131,6 +196,10 @@ impl Deserialize for unit {
             _ => Result::Err("expected unit"),
         }
     }
+
+    fn schema() -> TypedSchema[unit] {
+        typed_schema(Schema::Unit)
+    }
 }
 
 impl Serialize for bool {
@@ -146,6 +215,10 @@ impl Deserialize for bool {
             _ => Result::Err("expected bool"),
         }
     }
+
+    fn schema() -> TypedSchema[bool] {
+        typed_schema(Schema::Bool)
+    }
 }
 
 impl Serialize for string {
@@ -160,6 +233,10 @@ impl Deserialize for string {
             Value::String(value) => Result::Ok(value),
             _ => Result::Err("expected string"),
         }
+    }
+
+    fn schema() -> TypedSchema[string] {
+        typed_schema(Schema::String)
     }
 }
 
@@ -181,6 +258,10 @@ impl Deserialize for char {
             _ => Result::Err("expected char"),
         }
     }
+
+    fn schema() -> TypedSchema[char] {
+        typed_schema(Schema::Char)
+    }
 }
 
 impl Serialize for int {
@@ -196,6 +277,10 @@ impl Deserialize for int {
             Value::Number(value) => num::parse_int(value),
             _ => Result::Err("expected int"),
         }
+    }
+
+    fn schema() -> TypedSchema[int] {
+        typed_schema(Schema::Integer { signed: true, width: 64 })
     }
 }
 
@@ -220,6 +305,10 @@ impl Deserialize for int8 {
             _ => Result::Err("expected int8"),
         }
     }
+
+    fn schema() -> TypedSchema[int8] {
+        typed_schema(Schema::Integer { signed: true, width: 8 })
+    }
 }
 
 impl Serialize for int16 {
@@ -242,6 +331,10 @@ impl Deserialize for int16 {
             },
             _ => Result::Err("expected int16"),
         }
+    }
+
+    fn schema() -> TypedSchema[int16] {
+        typed_schema(Schema::Integer { signed: true, width: 16 })
     }
 }
 
@@ -266,6 +359,10 @@ impl Deserialize for int32 {
             _ => Result::Err("expected int32"),
         }
     }
+
+    fn schema() -> TypedSchema[int32] {
+        typed_schema(Schema::Integer { signed: true, width: 32 })
+    }
 }
 
 impl Serialize for int64 {
@@ -285,6 +382,10 @@ impl Deserialize for int64 {
             _ => Result::Err("expected int64"),
         }
     }
+
+    fn schema() -> TypedSchema[int64] {
+        typed_schema(Schema::Integer { signed: true, width: 64 })
+    }
 }
 
 impl Serialize for uint {
@@ -300,6 +401,10 @@ impl Deserialize for uint {
             Value::Number(value) => num::parse_uint(value),
             _ => Result::Err("expected uint"),
         }
+    }
+
+    fn schema() -> TypedSchema[uint] {
+        typed_schema(Schema::Integer { signed: false, width: 64 })
     }
 }
 
@@ -324,6 +429,10 @@ impl Deserialize for uint8 {
             _ => Result::Err("expected uint8"),
         }
     }
+
+    fn schema() -> TypedSchema[uint8] {
+        typed_schema(Schema::Integer { signed: false, width: 8 })
+    }
 }
 
 impl Serialize for uint16 {
@@ -346,6 +455,10 @@ impl Deserialize for uint16 {
             },
             _ => Result::Err("expected uint16"),
         }
+    }
+
+    fn schema() -> TypedSchema[uint16] {
+        typed_schema(Schema::Integer { signed: false, width: 16 })
     }
 }
 
@@ -370,6 +483,10 @@ impl Deserialize for uint32 {
             _ => Result::Err("expected uint32"),
         }
     }
+
+    fn schema() -> TypedSchema[uint32] {
+        typed_schema(Schema::Integer { signed: false, width: 32 })
+    }
 }
 
 impl Serialize for uint64 {
@@ -389,6 +506,10 @@ impl Deserialize for uint64 {
             _ => Result::Err("expected uint64"),
         }
     }
+
+    fn schema() -> TypedSchema[uint64] {
+        typed_schema(Schema::Integer { signed: false, width: 64 })
+    }
 }
 
 impl Serialize for float32 {
@@ -405,6 +526,10 @@ impl Deserialize for float32 {
             _ => Result::Err("expected float32"),
         }
     }
+
+    fn schema() -> TypedSchema[float32] {
+        typed_schema(Schema::Float(32))
+    }
 }
 
 impl Serialize for float64 {
@@ -420,6 +545,10 @@ impl Deserialize for float64 {
             Value::Number(value) => num::parse_float64(value),
             _ => Result::Err("expected float64"),
         }
+    }
+
+    fn schema() -> TypedSchema[float64] {
+        typed_schema(Schema::Float(64))
     }
 }
 
@@ -447,13 +576,18 @@ impl[T: Deserialize] Deserialize for Vec[T] {
             _ => Result::Err("expected sequence"),
         }
     }
+
+    fn schema() -> TypedSchema[Vec[T]] {
+        let item: TypedSchema[T] = Deserialize::schema();
+        typed_schema(Schema::Sequence(Vec::[item.value]))
+    }
 }
 
 impl[T: Serialize] Serialize for Option[T] {
     fn serialize(self: Option[T]) -> Value {
         match self {
-            Some(value) => value.serialize(),
-            None => Value::Unit,
+            Some(value) => Value::Optional(Vec::[value.serialize()]),
+            None => Value::Optional(Vec::[]),
         }
     }
 }
@@ -461,6 +595,14 @@ impl[T: Serialize] Serialize for Option[T] {
 impl[T: Deserialize] Deserialize for Option[T] {
     fn deserialize(value: Value) -> Result[Option[T], string] {
         match value {
+            Value::Optional(values) => if values.len() == 0 {
+                Result::Ok(Option::None)
+            } else if values.len() == 1 {
+                let item: T = Deserialize::deserialize(values[0])?;
+                Result::Ok(Option::Some(item))
+            } else {
+                Result::Err("optional value contains more than one item")
+            },
             Value::Unit => Result::Ok(Option::None),
             _ => {
                 let item: T = Deserialize::deserialize(value)?;
@@ -468,47 +610,53 @@ impl[T: Deserialize] Deserialize for Option[T] {
             },
         }
     }
+
+    fn schema() -> TypedSchema[Option[T]] {
+        let item: TypedSchema[T] = Deserialize::schema();
+        typed_schema(Schema::Optional(Vec::[item.value]))
+    }
 }
 
 impl[A: Serialize, B: Serialize] Serialize for (A, B) {
     fn serialize(self: (A, B)) -> Value {
-        Value::Sequence(Vec::[self.0.serialize(), self.1.serialize()])
+        Value::Tuple(Vec::[self.0.serialize(), self.1.serialize()])
     }
 }
 
 impl[A: Deserialize, B: Deserialize] Deserialize for (A, B) {
     fn deserialize(value: Value) -> Result[(A, B), string] {
-        match value {
-            Value::Sequence(values) => if values.len() == 2 {
-                let first: A = Deserialize::deserialize(values[0])?;
-                let second: B = Deserialize::deserialize(values[1])?;
-                Result::Ok((first, second))
-            } else {
-                Result::Err("expected two-element sequence")
-            },
-            _ => Result::Err("expected sequence"),
-        }
+        let values = tuple_values(value, 2)?;
+        let first: A = Deserialize::deserialize(values[0])?;
+        let second: B = Deserialize::deserialize(values[1])?;
+        Result::Ok((first, second))
+    }
+
+    fn schema() -> TypedSchema[(A, B)] {
+        let first: TypedSchema[A] = Deserialize::schema();
+        let second: TypedSchema[B] = Deserialize::schema();
+        typed_schema(Schema::Tuple(Vec::[first.value, second.value]))
     }
 }
 
 impl[A: Serialize, B: Serialize, C: Serialize] Serialize for (A, B, C) {
     fn serialize(self: (A, B, C)) -> Value {
-        Value::Sequence(Vec::[self.0.serialize(), self.1.serialize(), self.2.serialize()])
+        Value::Tuple(Vec::[self.0.serialize(), self.1.serialize(), self.2.serialize()])
     }
 }
 
 impl[A: Deserialize, B: Deserialize, C: Deserialize] Deserialize for (A, B, C) {
     fn deserialize(value: Value) -> Result[(A, B, C), string] {
-        match value {
-            Value::Sequence(values) => if values.len() == 3 {
-                let first: A = Deserialize::deserialize(values[0])?;
-                let second: B = Deserialize::deserialize(values[1])?;
-                let third: C = Deserialize::deserialize(values[2])?;
-                Result::Ok((first, second, third))
-            } else {
-                Result::Err("expected three-element sequence")
-            },
-            _ => Result::Err("expected sequence"),
-        }
+        let values = tuple_values(value, 3)?;
+        let first: A = Deserialize::deserialize(values[0])?;
+        let second: B = Deserialize::deserialize(values[1])?;
+        let third: C = Deserialize::deserialize(values[2])?;
+        Result::Ok((first, second, third))
+    }
+
+    fn schema() -> TypedSchema[(A, B, C)] {
+        let first: TypedSchema[A] = Deserialize::schema();
+        let second: TypedSchema[B] = Deserialize::schema();
+        let third: TypedSchema[C] = Deserialize::schema();
+        typed_schema(Schema::Tuple(Vec::[first.value, second.value, third.value]))
     }
 }

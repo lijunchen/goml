@@ -36,8 +36,20 @@ fn type_list_two(first: MetaType, second: MetaType) -> MetaTypeList {
 }
 
 #[comptime_derive]
+fn type_list_one(value: MetaType) -> MetaTypeList {
+    let values = meta_type_list_new();
+    meta_type_list_push(values, value);
+    values
+}
+
+#[comptime_derive]
 fn result_type(ok: MetaType) -> MetaType {
     meta_type_apply(meta_type_call_site("Result"), type_list_two(ok, meta_type_call_site("string")))
+}
+
+#[comptime_derive]
+fn typed_schema_type(input: DeriveInput, value: MetaType) -> MetaType {
+    meta_type_apply(meta_type_named(input, "TypedSchema"), type_list_one(value))
 }
 
 #[comptime_derive]
@@ -68,6 +80,11 @@ fn serialize_value(input: DeriveInput, value: MetaExpr) -> MetaExpr {
 #[comptime_derive]
 fn deserialize_value(input: DeriveInput, value: MetaExpr) -> MetaExpr {
     meta_expr_try(meta_expr_trait_call(input, "Deserialize", "deserialize", exprs_one(value)))
+}
+
+#[comptime_derive]
+fn deserialize_schema(input: DeriveInput) -> MetaExpr {
+    meta_expr_trait_call(input, "Deserialize", "schema", exprs())
 }
 
 #[comptime_derive]
@@ -426,6 +443,88 @@ fn deserialize_enum_body(input: DeriveInput) -> MetaExpr {
     meta_block_finish(block, meta_expr_match(meta_expr_var(name), arms))
 }
 
+#[comptime_derive]
+fn append_schema_field(
+    input: DeriveInput,
+    block: MetaBlock,
+    fields: MetaExpr,
+    name: string,
+    ty: MetaType,
+) -> unit {
+    let binding = derive_fresh_name(input, "serde_schema");
+    meta_block_let_typed(block, binding, typed_schema_type(input, ty), deserialize_schema(input));
+    meta_block_expr(
+        block,
+        push(fields, pair(name, meta_expr_field(meta_expr_var(binding), "value"))),
+    )
+}
+
+#[comptime_derive]
+fn deserialize_struct_schema(input: DeriveInput) -> MetaExpr {
+    let block = meta_block_new();
+    let fields = derive_fresh_name(input, "serde_schema_fields");
+    meta_block_let(block, fields, new_vec());
+    let mut field = 0;
+    while field < derive_field_count(input) {
+        append_schema_field(
+            input,
+            block,
+            meta_expr_var(fields),
+            field_name(input, field),
+            derive_field_type(input, field),
+        );
+        field = field + 1;
+    }
+    let schema = definition_call(input, "structure_schema", exprs_one(meta_expr_var(fields)));
+    meta_block_finish(block, definition_call(input, "typed_schema", exprs_one(schema)))
+}
+
+#[comptime_derive]
+fn deserialize_enum_schema(input: DeriveInput) -> MetaExpr {
+    let block = meta_block_new();
+    let variants = derive_fresh_name(input, "serde_schema_variants");
+    meta_block_let(block, variants, new_vec());
+    let mut variant = 0;
+    while variant < derive_variant_count(input) {
+        let fields = derive_fresh_name(input, "serde_schema_fields");
+        meta_block_let(block, fields, new_vec());
+        let mut field = 0;
+        while field < derive_variant_field_count(input, variant) {
+            append_schema_field(
+                input,
+                block,
+                meta_expr_var(fields),
+                if derive_variant_kind(input, variant) == 2 {
+                    variant_field_name(input, variant, field)
+                } else {
+                    ""
+                },
+                derive_variant_field_type(input, variant, field),
+            );
+            field = field + 1;
+        }
+        meta_block_expr(
+            block,
+            push(
+                meta_expr_var(variants),
+                definition_call(
+                    input,
+                    "variant_schema",
+                    exprs_four(
+                        meta_expr_int(variant),
+                        meta_expr_string(variant_name(input, variant)),
+                        meta_expr_int(derive_variant_kind(input, variant)),
+                        meta_expr_var(fields),
+                    ),
+                ),
+            ),
+        );
+        variant = variant + 1;
+    }
+    let schema = definition_call(input, "enumeration_schema", exprs_one(meta_expr_var(variants)));
+    meta_block_finish(block, definition_call(input, "typed_schema", exprs_one(schema)))
+}
+
 #[comptime_derive(Deserialize)]
 pub fn derive_deserialize(input: DeriveInput) -> DeriveOutput {
     let output = derive_output_new(input, "Deserialize");
@@ -442,6 +541,19 @@ pub fn derive_deserialize(input: DeriveInput) -> DeriveOutput {
                 deserialize_struct_body(input)
             } else {
                 deserialize_enum_body(input)
+            },
+        ),
+    );
+    derive_output_add_method(
+        output,
+        meta_method(
+            "schema",
+            meta_param_list_new(),
+            typed_schema_type(input, derive_target_type(input)),
+            if derive_item_kind(input) == 0 {
+                deserialize_struct_schema(input)
+            } else {
+                deserialize_enum_schema(input)
             },
         ),
     );
