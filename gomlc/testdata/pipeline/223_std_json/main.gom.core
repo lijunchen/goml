@@ -1735,17 +1735,40 @@ fn std::serde::variant(
   std::serde::Value::Variant(index/3, name/4, kind/5, fields/6)
 }
 
-fn std::serde::field(value/7: std::serde::Value, name/8: string) -> Result[
+fn std::serde::typed_schema(value/7: std::serde::Schema) -> std::serde::TypedSchema[T] {
+  std::serde::TypedSchema { value: value/7 }
+}
+
+fn std::serde::structure_schema(fields/8: Vec[(string, std::serde::Schema)]) -> std::serde::Schema {
+  std::serde::Schema::Struct(fields/8)
+}
+
+fn std::serde::variant_schema(
+  index/9: int,
+  name/10: string,
+  kind/11: int,
+  fields/12: Vec[(string, std::serde::Schema)]
+) -> std::serde::VariantSchema {
+  std::serde::VariantSchema { index: index/9, name: name/10, kind: kind/11, fields: fields/12 }
+}
+
+fn std::serde::enumeration_schema(
+  variants/13: Vec[std::serde::VariantSchema]
+) -> std::serde::Schema {
+  std::serde::Schema::Enum(variants/13)
+}
+
+fn std::serde::field(value/14: std::serde::Value, name/15: string) -> Result[
   std::serde::Value,
   string
 ] {
-  match value/7 {
-    std::serde::Value::Struct(x17) => {
+  match value/14 {
+    std::serde::Value::Struct(x19) => {
       {
-        let x17 = std::serde::Value::Struct._0(value/7) in
+        let x19 = std::serde::Value::Struct._0(value/14) in
         {
-          let fields/9 = x17 in
-          std::serde::named_field(fields/9, name/8)
+          let fields/16 = x19 in
+          std::serde::named_field(fields/16, name/15)
         }
       }
     },
@@ -1753,25 +1776,25 @@ fn std::serde::field(value/7: std::serde::Value, name/8: string) -> Result[
   }
 }
 
-fn std::serde::named_field(fields/10: Vec[(string, std::serde::Value)], name/11: string) -> Result[
+fn std::serde::named_field(fields/17: Vec[(string, std::serde::Value)], name/18: string) -> Result[
   std::serde::Value,
   string
 ] {
-  let _wild27 =
+  let _wild29 =
     {
-      let for_source22 = fields/10 in
-      let for_limit23 = @intrinsic(vec.len)(for_source22) in
-      let for_index24 = 0 in
-      while (for_index24 < for_limit23) {
+      let for_source24 = fields/17 in
+      let for_limit25 = @intrinsic(vec.len)(for_source24) in
+      let for_index26 = 0 in
+      while (for_index26 < for_limit25) {
           {
-            let for_item25 = @intrinsic(vec.get)(for_source22, for_index24) in
-            let _wild26 = for_index24 = (for_index24 + 1) in
+            let for_item27 = @intrinsic(vec.get)(for_source24, for_index26) in
+            let _wild28 = for_index26 = (for_index26 + 1) in
             {
-              let field/12 = for_item25 in
+              let field/19 = for_item27 in
               {
-                if trait_call[Eq::eq](field/12.0, name/11) {
+                if trait_call[Eq::eq](field/19.0, name/18) {
                     {
-                      return Result::Ok(field/12.1)
+                      return Result::Ok(field/19.1)
                     }
                 } else {
                     {
@@ -1783,124 +1806,124 @@ fn std::serde::named_field(fields/10: Vec[(string, std::serde::Value)], name/11:
           }
       }
     } in
-  Result::Err((("missing field `" + name/11) + "`"))
+  Result::Err((("missing field `" + name/18) + "`"))
 }
 
 fn std::serde::positional_field(
-  fields/13: Vec[(string, std::serde::Value)],
-  index/14: int
+  fields/20: Vec[(string, std::serde::Value)],
+  index/21: int
 ) -> Result[std::serde::Value, string] {
-  if if (index/14 < 0) {
+  if if (index/21 < 0) {
       true
   } else {
-      (index/14 >= inherent#Vec#Vec[(string,std::serde::Value)]#len(fields/13))
+      (index/21 >= inherent#Vec#Vec[(string,std::serde::Value)]#len(fields/20))
   } {
       {
-        Result::Err(("missing positional field " + inherent#int#int#to_string(index/14)))
+        Result::Err(("missing positional field " + inherent#int#int#to_string(index/21)))
       }
   } else {
       {
-        Result::Ok(@intrinsic(vec.get)(fields/13, index/14).1)
+        Result::Ok(@intrinsic(vec.get)(fields/20, index/21).1)
       }
   }
 }
 
-fn std::serde::variant_parts(value/15: std::serde::Value) -> Result[
+fn std::serde::variant_parts(value/22: std::serde::Value) -> Result[
   (string, int, Vec[(string, std::serde::Value)]),
   string
 ] {
-  match value/15 {
-    std::serde::Value::String(x42) => {
+  match value/22 {
+    std::serde::Value::String(x44) => {
       {
-        let x42 = std::serde::Value::String._0(value/15) in
+        let x44 = std::serde::Value::String._0(value/22) in
         {
-          let name/19 = x42 in
+          let name/26 = x44 in
           Result::Ok(
             (
-              name/19,
+              name/26,
               0,
               {
-                let vec_literal/2086 = inherent#Vec#Vec[(string,std::serde::Value)]#new() in
-                vec_literal/2086
+                let vec_literal/3093 = inherent#Vec#Vec[(string,std::serde::Value)]#new() in
+                vec_literal/3093
               }
             )
           )
         }
       }
     },
-    std::serde::Value::Struct(x45) => {
+    std::serde::Value::Struct(x49) => {
       {
-        let x45 = std::serde::Value::Struct._0(value/15) in
+        let x49 = std::serde::Value::Struct._0(value/22) in
         {
-          let fields/20 = x45 in
-          if trait_call[Eq::eq](inherent#Vec#Vec[(string,std::serde::Value)]#len(fields/20), 1) {
+          let fields/27 = x49 in
+          if trait_call[Eq::eq](inherent#Vec#Vec[(string,std::serde::Value)]#len(fields/27), 1) {
               {
-                let entry/21 = @intrinsic(vec.get)(fields/20, 0) in
+                let entry/28 = @intrinsic(vec.get)(fields/27, 0) in
                 {
-                  let mtmp50 = entry/21.1 in
-                  match mtmp50 {
-                    std::serde::Value::Sequence(x67) => {
+                  let mtmp54 = entry/28.1 in
+                  match mtmp54 {
+                    std::serde::Value::Sequence(x71) => {
                       {
-                        let x67 = std::serde::Value::Sequence._0(mtmp50) in
+                        let x71 = std::serde::Value::Sequence._0(mtmp54) in
                         {
-                          let values/22 = x67 in
+                          let values/29 = x71 in
                           {
-                            let result/23 =
+                            let result/30 =
                               inherent#Vec#Vec[(string,std::serde::Value)]#with_capacity(
-                                inherent#Vec#Vec[std::serde::Value]#len(values/22)
+                                inherent#Vec#Vec[std::serde::Value]#len(values/29)
                               ) in
-                            let _wild78 =
+                            let _wild84 =
                               {
-                                let for_source73 = values/22 in
-                                let for_limit74 = @intrinsic(vec.len)(for_source73) in
-                                let for_index75 = 0 in
-                                while (for_index75 < for_limit74) {
+                                let for_source79 = values/29 in
+                                let for_limit80 = @intrinsic(vec.len)(for_source79) in
+                                let for_index81 = 0 in
+                                while (for_index81 < for_limit80) {
                                     {
-                                      let for_item76 =
-                                        @intrinsic(vec.get)(for_source73, for_index75) in
-                                      let _wild77 = for_index75 = (for_index75 + 1) in
+                                      let for_item82 =
+                                        @intrinsic(vec.get)(for_source79, for_index81) in
+                                      let _wild83 = for_index81 = (for_index81 + 1) in
                                       {
-                                        let value/24 = for_item76 in
+                                        let value/31 = for_item82 in
                                         {
                                           inherent#Vec#Vec[(string,std::serde::Value)]#push(
-                                            result/23,
-                                            ("", value/24)
+                                            result/30,
+                                            ("", value/31)
                                           )
                                         }
                                       }
                                     }
                                 }
                               } in
-                            Result::Ok((entry/21.0, 1, result/23))
+                            Result::Ok((entry/28.0, 1, result/30))
                           }
                         }
                       }
                     },
-                    std::serde::Value::Struct(x68) => {
+                    std::serde::Value::Struct(x74) => {
                       {
-                        let x68 = std::serde::Value::Struct._0(mtmp50) in
+                        let x74 = std::serde::Value::Struct._0(mtmp54) in
                         {
-                          let values/25 = x68 in
-                          Result::Ok((entry/21.0, 2, values/25))
+                          let values/32 = x74 in
+                          Result::Ok((entry/28.0, 2, values/32))
                         }
                       }
                     },
                     _ =>
                       {
-                        let value/26 = mtmp50 in
+                        let value/33 = mtmp54 in
                         Result::Ok(
                           (
-                            entry/21.0,
+                            entry/28.0,
                             1,
                             {
-                              let vec_literal/2659 =
+                              let vec_literal/3666 =
                                 inherent#Vec#Vec[(string,std::serde::Value)]#new() in
-                              let _wild79 =
+                              let _wild85 =
                                 inherent#Vec#Vec[(string,std::serde::Value)]#push(
-                                  vec_literal/2659,
-                                  ("", value/26)
+                                  vec_literal/3666,
+                                  ("", value/33)
                                 ) in
-                              vec_literal/2659
+                              vec_literal/3666
                             }
                           )
                         )
@@ -1916,19 +1939,19 @@ fn std::serde::variant_parts(value/15: std::serde::Value) -> Result[
         }
       }
     },
-    std::serde::Value::Variant(x46, x47, x48, x49) => {
+    std::serde::Value::Variant(x50, x51, x52, x53) => {
       {
-        let x46 = std::serde::Value::Variant._0(value/15) in
-        let x47 = std::serde::Value::Variant._1(value/15) in
-        let x48 = std::serde::Value::Variant._2(value/15) in
-        let x49 = std::serde::Value::Variant._3(value/15) in
+        let x50 = std::serde::Value::Variant._0(value/22) in
+        let x51 = std::serde::Value::Variant._1(value/22) in
+        let x52 = std::serde::Value::Variant._2(value/22) in
+        let x53 = std::serde::Value::Variant._3(value/22) in
         {
-          let fields/18 = x49 in
+          let fields/25 = x53 in
           {
-            let kind/17 = x48 in
+            let kind/24 = x52 in
             {
-              let name/16 = x47 in
-              Result::Ok((name/16, kind/17, fields/18))
+              let name/23 = x51 in
+              Result::Ok((name/23, kind/24, fields/25))
             }
           }
         }
@@ -1938,31 +1961,74 @@ fn std::serde::variant_parts(value/15: std::serde::Value) -> Result[
   }
 }
 
-fn std::serde::error(message/27: string) -> Result[unit, string] {
-  Result::Err(message/27)
+fn std::serde::tuple_values(value/34: std::serde::Value, size/35: int) -> Result[
+  Vec[std::serde::Value],
+  string
+] {
+  let values/38 =
+    match value/34 {
+      std::serde::Value::Sequence(x102) => {
+        {
+          let x102 = std::serde::Value::Sequence._0(value/34) in
+          {
+            let values/37 = x102 in
+            values/37
+          }
+        }
+      },
+      std::serde::Value::Tuple(x103) => {
+        {
+          let x103 = std::serde::Value::Tuple._0(value/34) in
+          {
+            let values/36 = x103 in
+            values/36
+          }
+        }
+      },
+      _ => return Result::Err("expected tuple"),
+    } in
+  if trait_call[Eq::eq](inherent#Vec#Vec[std::serde::Value]#len(values/38), size/35) {
+      {
+        Result::Ok(values/38)
+      }
+  } else {
+      {
+        Result::Err((("expected " + inherent#int#int#to_string(size/35)) + "-element tuple"))
+      }
+  }
+}
+
+fn std::serde::error(message/39: string) -> Result[unit, string] {
+  Result::Err(message/39)
 }
 
 fn trait_impl#std::serde::Serialize#std::serde::Value#serialize(
-  self/28: std::serde::Value
+  self/40: std::serde::Value
 ) -> std::serde::Value {
-  self/28
+  self/40
 }
 
 fn trait_impl#std::serde::Deserialize#std::serde::Value#deserialize(
-  value/29: std::serde::Value
+  value/41: std::serde::Value
 ) -> Result[std::serde::Value, string] {
-  Result::Ok(value/29)
+  Result::Ok(value/41)
 }
 
-fn trait_impl#std::serde::Serialize#unit#serialize(self/30: unit) -> std::serde::Value {
+fn trait_impl#std::serde::Deserialize#std::serde::Value#schema() -> std::serde::TypedSchema[
+  std::serde::Value
+] {
+  std::serde::typed_schema(std::serde::Schema::Any)
+}
+
+fn trait_impl#std::serde::Serialize#unit#serialize(self/42: unit) -> std::serde::Value {
   std::serde::Value::Unit
 }
 
-fn trait_impl#std::serde::Deserialize#unit#deserialize(value/31: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Deserialize#unit#deserialize(value/43: std::serde::Value) -> Result[
   unit,
   string
 ] {
-  match value/31 {
+  match value/43 {
     std::serde::Value::Unit => {
       Result::Ok(())
     },
@@ -1970,21 +2036,25 @@ fn trait_impl#std::serde::Deserialize#unit#deserialize(value/31: std::serde::Val
   }
 }
 
-fn trait_impl#std::serde::Serialize#bool#serialize(self/32: bool) -> std::serde::Value {
-  std::serde::Value::Bool(self/32)
+fn trait_impl#std::serde::Deserialize#unit#schema() -> std::serde::TypedSchema[unit] {
+  std::serde::typed_schema(std::serde::Schema::Unit)
 }
 
-fn trait_impl#std::serde::Deserialize#bool#deserialize(value/33: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#bool#serialize(self/44: bool) -> std::serde::Value {
+  std::serde::Value::Bool(self/44)
+}
+
+fn trait_impl#std::serde::Deserialize#bool#deserialize(value/45: std::serde::Value) -> Result[
   bool,
   string
 ] {
-  match value/33 {
-    std::serde::Value::Bool(x102) => {
+  match value/45 {
+    std::serde::Value::Bool(x134) => {
       {
-        let x102 = std::serde::Value::Bool._0(value/33) in
+        let x134 = std::serde::Value::Bool._0(value/45) in
         {
-          let value/34 = x102 in
-          Result::Ok(value/34)
+          let value/46 = x134 in
+          Result::Ok(value/46)
         }
       }
     },
@@ -1992,21 +2062,25 @@ fn trait_impl#std::serde::Deserialize#bool#deserialize(value/33: std::serde::Val
   }
 }
 
-fn trait_impl#std::serde::Serialize#string#serialize(self/35: string) -> std::serde::Value {
-  std::serde::Value::String(self/35)
+fn trait_impl#std::serde::Deserialize#bool#schema() -> std::serde::TypedSchema[bool] {
+  std::serde::typed_schema(std::serde::Schema::Bool)
 }
 
-fn trait_impl#std::serde::Deserialize#string#deserialize(value/36: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#string#serialize(self/47: string) -> std::serde::Value {
+  std::serde::Value::String(self/47)
+}
+
+fn trait_impl#std::serde::Deserialize#string#deserialize(value/48: std::serde::Value) -> Result[
   string,
   string
 ] {
-  match value/36 {
-    std::serde::Value::String(x138) => {
+  match value/48 {
+    std::serde::Value::String(x172) => {
       {
-        let x138 = std::serde::Value::String._0(value/36) in
+        let x172 = std::serde::Value::String._0(value/48) in
         {
-          let value/37 = x138 in
-          Result::Ok(value/37)
+          let value/49 = x172 in
+          Result::Ok(value/49)
         }
       }
     },
@@ -2014,23 +2088,27 @@ fn trait_impl#std::serde::Deserialize#string#deserialize(value/36: std::serde::V
   }
 }
 
-fn trait_impl#std::serde::Serialize#char#serialize(self/38: char) -> std::serde::Value {
-  std::serde::Value::Char(self/38)
+fn trait_impl#std::serde::Deserialize#string#schema() -> std::serde::TypedSchema[string] {
+  std::serde::typed_schema(std::serde::Schema::String)
 }
 
-fn trait_impl#std::serde::Deserialize#char#deserialize(value/39: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#char#serialize(self/50: char) -> std::serde::Value {
+  std::serde::Value::Char(self/50)
+}
+
+fn trait_impl#std::serde::Deserialize#char#deserialize(value/51: std::serde::Value) -> Result[
   char,
   string
 ] {
-  match value/39 {
-    std::serde::Value::String(x160) => {
+  match value/51 {
+    std::serde::Value::String(x196) => {
       {
-        let x160 = std::serde::Value::String._0(value/39) in
+        let x196 = std::serde::Value::String._0(value/51) in
         {
-          let value/41 = x160 in
-          if trait_call[Eq::eq](inherent#string#string#len(value/41), 1) {
+          let value/53 = x196 in
+          if trait_call[Eq::eq](inherent#string#string#len(value/53), 1) {
               {
-                Result::Ok(inherent#string#string#get(value/41, 0))
+                Result::Ok(inherent#string#string#get(value/53, 0))
               }
           } else {
               {
@@ -2040,12 +2118,12 @@ fn trait_impl#std::serde::Deserialize#char#deserialize(value/39: std::serde::Val
         }
       }
     },
-    std::serde::Value::Char(x161) => {
+    std::serde::Value::Char(x197) => {
       {
-        let x161 = std::serde::Value::Char._0(value/39) in
+        let x197 = std::serde::Value::Char._0(value/51) in
         {
-          let value/40 = x161 in
-          Result::Ok(value/40)
+          let value/52 = x197 in
+          Result::Ok(value/52)
         }
       }
     },
@@ -2053,30 +2131,34 @@ fn trait_impl#std::serde::Deserialize#char#deserialize(value/39: std::serde::Val
   }
 }
 
-fn trait_impl#std::serde::Serialize#int#serialize(self/42: int) -> std::serde::Value {
-  std::serde::Value::Int(self/42)
+fn trait_impl#std::serde::Deserialize#char#schema() -> std::serde::TypedSchema[char] {
+  std::serde::typed_schema(std::serde::Schema::Char)
 }
 
-fn trait_impl#std::serde::Deserialize#int#deserialize(value/43: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#int#serialize(self/54: int) -> std::serde::Value {
+  std::serde::Value::Int(self/54)
+}
+
+fn trait_impl#std::serde::Deserialize#int#deserialize(value/55: std::serde::Value) -> Result[
   int,
   string
 ] {
-  match value/43 {
-    std::serde::Value::Int(x169) => {
+  match value/55 {
+    std::serde::Value::Int(x207) => {
       {
-        let x169 = std::serde::Value::Int._0(value/43) in
+        let x207 = std::serde::Value::Int._0(value/55) in
         {
-          let value/44 = x169 in
-          Result::Ok(value/44)
+          let value/56 = x207 in
+          Result::Ok(value/56)
         }
       }
     },
-    std::serde::Value::Number(x181) => {
+    std::serde::Value::Number(x219) => {
       {
-        let x181 = std::serde::Value::Number._0(value/43) in
+        let x219 = std::serde::Value::Number._0(value/55) in
         {
-          let value/45 = x181 in
-          std::num::parse_int(value/45)
+          let value/57 = x219 in
+          std::num::parse_int(value/57)
         }
       }
     },
@@ -2084,65 +2166,69 @@ fn trait_impl#std::serde::Deserialize#int#deserialize(value/43: std::serde::Valu
   }
 }
 
-fn trait_impl#std::serde::Serialize#int8#serialize(self/46: int8) -> std::serde::Value {
-  std::serde::Value::Int8(self/46)
+fn trait_impl#std::serde::Deserialize#int#schema() -> std::serde::TypedSchema[int] {
+  std::serde::typed_schema(std::serde::Schema::Integer(true, 64))
 }
 
-fn trait_impl#std::serde::Deserialize#int8#deserialize(value/47: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#int8#serialize(self/58: int8) -> std::serde::Value {
+  std::serde::Value::Int8(self/58)
+}
+
+fn trait_impl#std::serde::Deserialize#int8#deserialize(value/59: std::serde::Value) -> Result[
   int8,
   string
 ] {
-  match value/47 {
-    std::serde::Value::Int8(x192) => {
+  match value/59 {
+    std::serde::Value::Int8(x232) => {
       {
-        let x192 = std::serde::Value::Int8._0(value/47) in
+        let x232 = std::serde::Value::Int8._0(value/59) in
         {
-          let value/48 = x192 in
-          Result::Ok(value/48)
+          let value/60 = x232 in
+          Result::Ok(value/60)
         }
       }
     },
-    std::serde::Value::Number(x203) => {
+    std::serde::Value::Number(x243) => {
       {
-        let x203 = std::serde::Value::Number._0(value/47) in
+        let x243 = std::serde::Value::Number._0(value/59) in
         {
-          let value/49 = x203 in
+          let value/61 = x243 in
           {
-            let parsed/50 =
+            let parsed/62 =
               {
-                let mtmp212 = std::num::parse_int(value/49) in
-                match mtmp212 {
-                  Result::Ok(x213) => {
+                let mtmp254 = std::num::parse_int(value/61) in
+                match mtmp254 {
+                  Result::Ok(x255) => {
                     {
-                      let x213 = Result::Ok._0(mtmp212) in
+                      let x255 = Result::Ok._0(mtmp254) in
                       {
-                        let try_value/201 = x213 in
-                        try_value/201
+                        let try_value/257 = x255 in
+                        try_value/257
                       }
                     }
                   },
-                  Result::Err(x214) => {
+                  Result::Err(x256) => {
                     {
-                      let x214 = Result::Err._0(mtmp212) in
+                      let x256 = Result::Err._0(mtmp254) in
                       {
-                        let try_residual/201 = x214 in
-                        return Result::Err(try_residual/201)
+                        let try_residual/257 = x256 in
+                        return Result::Err(try_residual/257)
                       }
                     }
                   },
                 }
               } in
-            if if (parsed/50 < -128) {
+            if if (parsed/62 < -128) {
                 true
             } else {
-                (parsed/50 > 127)
+                (parsed/62 > 127)
             } {
                 {
                   Result::Err("int8 is out of range")
                 }
             } else {
                 {
-                  Result::Ok((parsed/50 as int8))
+                  Result::Ok((parsed/62 as int8))
                 }
             }
           }
@@ -2153,65 +2239,69 @@ fn trait_impl#std::serde::Deserialize#int8#deserialize(value/47: std::serde::Val
   }
 }
 
-fn trait_impl#std::serde::Serialize#int16#serialize(self/51: int16) -> std::serde::Value {
-  std::serde::Value::Int16(self/51)
+fn trait_impl#std::serde::Deserialize#int8#schema() -> std::serde::TypedSchema[int8] {
+  std::serde::typed_schema(std::serde::Schema::Integer(true, 8))
 }
 
-fn trait_impl#std::serde::Deserialize#int16#deserialize(value/52: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#int16#serialize(self/63: int16) -> std::serde::Value {
+  std::serde::Value::Int16(self/63)
+}
+
+fn trait_impl#std::serde::Deserialize#int16#deserialize(value/64: std::serde::Value) -> Result[
   int16,
   string
 ] {
-  match value/52 {
-    std::serde::Value::Int16(x218) => {
+  match value/64 {
+    std::serde::Value::Int16(x260) => {
       {
-        let x218 = std::serde::Value::Int16._0(value/52) in
+        let x260 = std::serde::Value::Int16._0(value/64) in
         {
-          let value/53 = x218 in
-          Result::Ok(value/53)
+          let value/65 = x260 in
+          Result::Ok(value/65)
         }
       }
     },
-    std::serde::Value::Number(x228) => {
+    std::serde::Value::Number(x270) => {
       {
-        let x228 = std::serde::Value::Number._0(value/52) in
+        let x270 = std::serde::Value::Number._0(value/64) in
         {
-          let value/54 = x228 in
+          let value/66 = x270 in
           {
-            let parsed/55 =
+            let parsed/67 =
               {
-                let mtmp237 = std::num::parse_int(value/54) in
-                match mtmp237 {
-                  Result::Ok(x238) => {
+                let mtmp281 = std::num::parse_int(value/66) in
+                match mtmp281 {
+                  Result::Ok(x282) => {
                     {
-                      let x238 = Result::Ok._0(mtmp237) in
+                      let x282 = Result::Ok._0(mtmp281) in
                       {
-                        let try_value/230 = x238 in
-                        try_value/230
+                        let try_value/291 = x282 in
+                        try_value/291
                       }
                     }
                   },
-                  Result::Err(x239) => {
+                  Result::Err(x283) => {
                     {
-                      let x239 = Result::Err._0(mtmp237) in
+                      let x283 = Result::Err._0(mtmp281) in
                       {
-                        let try_residual/230 = x239 in
-                        return Result::Err(try_residual/230)
+                        let try_residual/291 = x283 in
+                        return Result::Err(try_residual/291)
                       }
                     }
                   },
                 }
               } in
-            if if (parsed/55 < -32768) {
+            if if (parsed/67 < -32768) {
                 true
             } else {
-                (parsed/55 > 32767)
+                (parsed/67 > 32767)
             } {
                 {
                   Result::Err("int16 is out of range")
                 }
             } else {
                 {
-                  Result::Ok((parsed/55 as int16))
+                  Result::Ok((parsed/67 as int16))
                 }
             }
           }
@@ -2222,65 +2312,69 @@ fn trait_impl#std::serde::Deserialize#int16#deserialize(value/52: std::serde::Va
   }
 }
 
-fn trait_impl#std::serde::Serialize#int32#serialize(self/56: int32) -> std::serde::Value {
-  std::serde::Value::Int32(self/56)
+fn trait_impl#std::serde::Deserialize#int16#schema() -> std::serde::TypedSchema[int16] {
+  std::serde::typed_schema(std::serde::Schema::Integer(true, 16))
 }
 
-fn trait_impl#std::serde::Deserialize#int32#deserialize(value/57: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#int32#serialize(self/68: int32) -> std::serde::Value {
+  std::serde::Value::Int32(self/68)
+}
+
+fn trait_impl#std::serde::Deserialize#int32#deserialize(value/69: std::serde::Value) -> Result[
   int32,
   string
 ] {
-  match value/57 {
-    std::serde::Value::Int32(x244) => {
+  match value/69 {
+    std::serde::Value::Int32(x288) => {
       {
-        let x244 = std::serde::Value::Int32._0(value/57) in
+        let x288 = std::serde::Value::Int32._0(value/69) in
         {
-          let value/58 = x244 in
-          Result::Ok(value/58)
+          let value/70 = x288 in
+          Result::Ok(value/70)
         }
       }
     },
-    std::serde::Value::Number(x253) => {
+    std::serde::Value::Number(x297) => {
       {
-        let x253 = std::serde::Value::Number._0(value/57) in
+        let x297 = std::serde::Value::Number._0(value/69) in
         {
-          let value/59 = x253 in
+          let value/71 = x297 in
           {
-            let parsed/60 =
+            let parsed/72 =
               {
-                let mtmp262 = std::num::parse_int(value/59) in
-                match mtmp262 {
-                  Result::Ok(x263) => {
+                let mtmp308 = std::num::parse_int(value/71) in
+                match mtmp308 {
+                  Result::Ok(x309) => {
                     {
-                      let x263 = Result::Ok._0(mtmp262) in
+                      let x309 = Result::Ok._0(mtmp308) in
                       {
-                        let try_value/259 = x263 in
-                        try_value/259
+                        let try_value/325 = x309 in
+                        try_value/325
                       }
                     }
                   },
-                  Result::Err(x264) => {
+                  Result::Err(x310) => {
                     {
-                      let x264 = Result::Err._0(mtmp262) in
+                      let x310 = Result::Err._0(mtmp308) in
                       {
-                        let try_residual/259 = x264 in
-                        return Result::Err(try_residual/259)
+                        let try_residual/325 = x310 in
+                        return Result::Err(try_residual/325)
                       }
                     }
                   },
                 }
               } in
-            if if (parsed/60 < -2147483648) {
+            if if (parsed/72 < -2147483648) {
                 true
             } else {
-                (parsed/60 > 2147483647)
+                (parsed/72 > 2147483647)
             } {
                 {
                   Result::Err("int32 is out of range")
                 }
             } else {
                 {
-                  Result::Ok((parsed/60 as int32))
+                  Result::Ok((parsed/72 as int32))
                 }
             }
           }
@@ -2291,47 +2385,51 @@ fn trait_impl#std::serde::Deserialize#int32#deserialize(value/57: std::serde::Va
   }
 }
 
-fn trait_impl#std::serde::Serialize#int64#serialize(self/61: int64) -> std::serde::Value {
-  std::serde::Value::Int64(self/61)
+fn trait_impl#std::serde::Deserialize#int32#schema() -> std::serde::TypedSchema[int32] {
+  std::serde::typed_schema(std::serde::Schema::Integer(true, 32))
 }
 
-fn trait_impl#std::serde::Deserialize#int64#deserialize(value/62: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#int64#serialize(self/73: int64) -> std::serde::Value {
+  std::serde::Value::Int64(self/73)
+}
+
+fn trait_impl#std::serde::Deserialize#int64#deserialize(value/74: std::serde::Value) -> Result[
   int64,
   string
 ] {
-  match value/62 {
-    std::serde::Value::Int64(x270) => {
+  match value/74 {
+    std::serde::Value::Int64(x316) => {
       {
-        let x270 = std::serde::Value::Int64._0(value/62) in
+        let x316 = std::serde::Value::Int64._0(value/74) in
         {
-          let value/63 = x270 in
-          Result::Ok(value/63)
+          let value/75 = x316 in
+          Result::Ok(value/75)
         }
       }
     },
-    std::serde::Value::Number(x278) => {
+    std::serde::Value::Number(x324) => {
       {
-        let x278 = std::serde::Value::Number._0(value/62) in
+        let x324 = std::serde::Value::Number._0(value/74) in
         {
-          let value/64 = x278 in
+          let value/76 = x324 in
           {
-            let mtmp287 = std::num::parse_int(value/64) in
-            match mtmp287 {
-              Result::Ok(x288) => {
+            let mtmp335 = std::num::parse_int(value/76) in
+            match mtmp335 {
+              Result::Ok(x336) => {
                 {
-                  let x288 = Result::Ok._0(mtmp287) in
+                  let x336 = Result::Ok._0(mtmp335) in
                   {
-                    let value/65 = x288 in
-                    Result::Ok((value/65 as int64))
+                    let value/77 = x336 in
+                    Result::Ok((value/77 as int64))
                   }
                 }
               },
-              Result::Err(x289) => {
+              Result::Err(x337) => {
                 {
-                  let x289 = Result::Err._0(mtmp287) in
+                  let x337 = Result::Err._0(mtmp335) in
                   {
-                    let error/66 = x289 in
-                    Result::Err(error/66)
+                    let error/78 = x337 in
+                    Result::Err(error/78)
                   }
                 }
               },
@@ -2344,30 +2442,34 @@ fn trait_impl#std::serde::Deserialize#int64#deserialize(value/62: std::serde::Va
   }
 }
 
-fn trait_impl#std::serde::Serialize#uint#serialize(self/67: uint) -> std::serde::Value {
-  std::serde::Value::Uint(self/67)
+fn trait_impl#std::serde::Deserialize#int64#schema() -> std::serde::TypedSchema[int64] {
+  std::serde::typed_schema(std::serde::Schema::Integer(true, 64))
 }
 
-fn trait_impl#std::serde::Deserialize#uint#deserialize(value/68: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#uint#serialize(self/79: uint) -> std::serde::Value {
+  std::serde::Value::Uint(self/79)
+}
+
+fn trait_impl#std::serde::Deserialize#uint#deserialize(value/80: std::serde::Value) -> Result[
   uint,
   string
 ] {
-  match value/68 {
-    std::serde::Value::Uint(x296) => {
+  match value/80 {
+    std::serde::Value::Uint(x344) => {
       {
-        let x296 = std::serde::Value::Uint._0(value/68) in
+        let x344 = std::serde::Value::Uint._0(value/80) in
         {
-          let value/69 = x296 in
-          Result::Ok(value/69)
+          let value/81 = x344 in
+          Result::Ok(value/81)
         }
       }
     },
-    std::serde::Value::Number(x303) => {
+    std::serde::Value::Number(x351) => {
       {
-        let x303 = std::serde::Value::Number._0(value/68) in
+        let x351 = std::serde::Value::Number._0(value/80) in
         {
-          let value/70 = x303 in
-          std::num::parse_uint(value/70)
+          let value/82 = x351 in
+          std::num::parse_uint(value/82)
         }
       }
     },
@@ -2375,61 +2477,65 @@ fn trait_impl#std::serde::Deserialize#uint#deserialize(value/68: std::serde::Val
   }
 }
 
-fn trait_impl#std::serde::Serialize#uint8#serialize(self/71: uint8) -> std::serde::Value {
-  std::serde::Value::Uint8(self/71)
+fn trait_impl#std::serde::Deserialize#uint#schema() -> std::serde::TypedSchema[uint] {
+  std::serde::typed_schema(std::serde::Schema::Integer(false, 64))
 }
 
-fn trait_impl#std::serde::Deserialize#uint8#deserialize(value/72: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#uint8#serialize(self/83: uint8) -> std::serde::Value {
+  std::serde::Value::Uint8(self/83)
+}
+
+fn trait_impl#std::serde::Deserialize#uint8#deserialize(value/84: std::serde::Value) -> Result[
   uint8,
   string
 ] {
-  match value/72 {
-    std::serde::Value::Uint8(x319) => {
+  match value/84 {
+    std::serde::Value::Uint8(x369) => {
       {
-        let x319 = std::serde::Value::Uint8._0(value/72) in
+        let x369 = std::serde::Value::Uint8._0(value/84) in
         {
-          let value/73 = x319 in
-          Result::Ok(value/73)
+          let value/85 = x369 in
+          Result::Ok(value/85)
         }
       }
     },
-    std::serde::Value::Number(x325) => {
+    std::serde::Value::Number(x375) => {
       {
-        let x325 = std::serde::Value::Number._0(value/72) in
+        let x375 = std::serde::Value::Number._0(value/84) in
         {
-          let value/74 = x325 in
+          let value/86 = x375 in
           {
-            let parsed/75 =
+            let parsed/87 =
               {
-                let mtmp334 = std::num::parse_uint(value/74) in
-                match mtmp334 {
-                  Result::Ok(x335) => {
+                let mtmp386 = std::num::parse_uint(value/86) in
+                match mtmp386 {
+                  Result::Ok(x387) => {
                     {
-                      let x335 = Result::Ok._0(mtmp334) in
+                      let x387 = Result::Ok._0(mtmp386) in
                       {
-                        let try_value/316 = x335 in
-                        try_value/316
+                        let try_value/397 = x387 in
+                        try_value/397
                       }
                     }
                   },
-                  Result::Err(x336) => {
+                  Result::Err(x388) => {
                     {
-                      let x336 = Result::Err._0(mtmp334) in
+                      let x388 = Result::Err._0(mtmp386) in
                       {
-                        let try_residual/316 = x336 in
-                        return Result::Err(try_residual/316)
+                        let try_residual/397 = x388 in
+                        return Result::Err(try_residual/397)
                       }
                     }
                   },
                 }
               } in
-            if (parsed/75 > 255) {
+            if (parsed/87 > 255) {
                 {
                   Result::Err("uint8 is out of range")
                 }
             } else {
                 {
-                  Result::Ok((parsed/75 as uint8))
+                  Result::Ok((parsed/87 as uint8))
                 }
             }
           }
@@ -2440,61 +2546,65 @@ fn trait_impl#std::serde::Deserialize#uint8#deserialize(value/72: std::serde::Va
   }
 }
 
-fn trait_impl#std::serde::Serialize#uint16#serialize(self/76: uint16) -> std::serde::Value {
-  std::serde::Value::Uint16(self/76)
+fn trait_impl#std::serde::Deserialize#uint8#schema() -> std::serde::TypedSchema[uint8] {
+  std::serde::typed_schema(std::serde::Schema::Integer(false, 8))
 }
 
-fn trait_impl#std::serde::Deserialize#uint16#deserialize(value/77: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#uint16#serialize(self/88: uint16) -> std::serde::Value {
+  std::serde::Value::Uint16(self/88)
+}
+
+fn trait_impl#std::serde::Deserialize#uint16#deserialize(value/89: std::serde::Value) -> Result[
   uint16,
   string
 ] {
-  match value/77 {
-    std::serde::Value::Uint16(x345) => {
+  match value/89 {
+    std::serde::Value::Uint16(x397) => {
       {
-        let x345 = std::serde::Value::Uint16._0(value/77) in
+        let x397 = std::serde::Value::Uint16._0(value/89) in
         {
-          let value/78 = x345 in
-          Result::Ok(value/78)
+          let value/90 = x397 in
+          Result::Ok(value/90)
         }
       }
     },
-    std::serde::Value::Number(x350) => {
+    std::serde::Value::Number(x402) => {
       {
-        let x350 = std::serde::Value::Number._0(value/77) in
+        let x402 = std::serde::Value::Number._0(value/89) in
         {
-          let value/79 = x350 in
+          let value/91 = x402 in
           {
-            let parsed/80 =
+            let parsed/92 =
               {
-                let mtmp359 = std::num::parse_uint(value/79) in
-                match mtmp359 {
-                  Result::Ok(x360) => {
+                let mtmp413 = std::num::parse_uint(value/91) in
+                match mtmp413 {
+                  Result::Ok(x414) => {
                     {
-                      let x360 = Result::Ok._0(mtmp359) in
+                      let x414 = Result::Ok._0(mtmp413) in
                       {
-                        let try_value/340 = x360 in
-                        try_value/340
+                        let try_value/426 = x414 in
+                        try_value/426
                       }
                     }
                   },
-                  Result::Err(x361) => {
+                  Result::Err(x415) => {
                     {
-                      let x361 = Result::Err._0(mtmp359) in
+                      let x415 = Result::Err._0(mtmp413) in
                       {
-                        let try_residual/340 = x361 in
-                        return Result::Err(try_residual/340)
+                        let try_residual/426 = x415 in
+                        return Result::Err(try_residual/426)
                       }
                     }
                   },
                 }
               } in
-            if (parsed/80 > 65535) {
+            if (parsed/92 > 65535) {
                 {
                   Result::Err("uint16 is out of range")
                 }
             } else {
                 {
-                  Result::Ok((parsed/80 as uint16))
+                  Result::Ok((parsed/92 as uint16))
                 }
             }
           }
@@ -2505,61 +2615,65 @@ fn trait_impl#std::serde::Deserialize#uint16#deserialize(value/77: std::serde::V
   }
 }
 
-fn trait_impl#std::serde::Serialize#uint32#serialize(self/81: uint32) -> std::serde::Value {
-  std::serde::Value::Uint32(self/81)
+fn trait_impl#std::serde::Deserialize#uint16#schema() -> std::serde::TypedSchema[uint16] {
+  std::serde::typed_schema(std::serde::Schema::Integer(false, 16))
 }
 
-fn trait_impl#std::serde::Deserialize#uint32#deserialize(value/82: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#uint32#serialize(self/93: uint32) -> std::serde::Value {
+  std::serde::Value::Uint32(self/93)
+}
+
+fn trait_impl#std::serde::Deserialize#uint32#deserialize(value/94: std::serde::Value) -> Result[
   uint32,
   string
 ] {
-  match value/82 {
-    std::serde::Value::Uint32(x371) => {
+  match value/94 {
+    std::serde::Value::Uint32(x425) => {
       {
-        let x371 = std::serde::Value::Uint32._0(value/82) in
+        let x425 = std::serde::Value::Uint32._0(value/94) in
         {
-          let value/83 = x371 in
-          Result::Ok(value/83)
+          let value/95 = x425 in
+          Result::Ok(value/95)
         }
       }
     },
-    std::serde::Value::Number(x375) => {
+    std::serde::Value::Number(x429) => {
       {
-        let x375 = std::serde::Value::Number._0(value/82) in
+        let x429 = std::serde::Value::Number._0(value/94) in
         {
-          let value/84 = x375 in
+          let value/96 = x429 in
           {
-            let parsed/85 =
+            let parsed/97 =
               {
-                let mtmp384 = std::num::parse_uint(value/84) in
-                match mtmp384 {
-                  Result::Ok(x385) => {
+                let mtmp440 = std::num::parse_uint(value/96) in
+                match mtmp440 {
+                  Result::Ok(x441) => {
                     {
-                      let x385 = Result::Ok._0(mtmp384) in
+                      let x441 = Result::Ok._0(mtmp440) in
                       {
-                        let try_value/364 = x385 in
-                        try_value/364
+                        let try_value/455 = x441 in
+                        try_value/455
                       }
                     }
                   },
-                  Result::Err(x386) => {
+                  Result::Err(x442) => {
                     {
-                      let x386 = Result::Err._0(mtmp384) in
+                      let x442 = Result::Err._0(mtmp440) in
                       {
-                        let try_residual/364 = x386 in
-                        return Result::Err(try_residual/364)
+                        let try_residual/455 = x442 in
+                        return Result::Err(try_residual/455)
                       }
                     }
                   },
                 }
               } in
-            if (parsed/85 > 4294967295) {
+            if (parsed/97 > 4294967295) {
                 {
                   Result::Err("uint32 is out of range")
                 }
             } else {
                 {
-                  Result::Ok((parsed/85 as uint32))
+                  Result::Ok((parsed/97 as uint32))
                 }
             }
           }
@@ -2570,47 +2684,51 @@ fn trait_impl#std::serde::Deserialize#uint32#deserialize(value/82: std::serde::V
   }
 }
 
-fn trait_impl#std::serde::Serialize#uint64#serialize(self/86: uint64) -> std::serde::Value {
-  std::serde::Value::Uint64(self/86)
+fn trait_impl#std::serde::Deserialize#uint32#schema() -> std::serde::TypedSchema[uint32] {
+  std::serde::typed_schema(std::serde::Schema::Integer(false, 32))
 }
 
-fn trait_impl#std::serde::Deserialize#uint64#deserialize(value/87: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#uint64#serialize(self/98: uint64) -> std::serde::Value {
+  std::serde::Value::Uint64(self/98)
+}
+
+fn trait_impl#std::serde::Deserialize#uint64#deserialize(value/99: std::serde::Value) -> Result[
   uint64,
   string
 ] {
-  match value/87 {
-    std::serde::Value::Uint64(x397) => {
+  match value/99 {
+    std::serde::Value::Uint64(x453) => {
       {
-        let x397 = std::serde::Value::Uint64._0(value/87) in
+        let x453 = std::serde::Value::Uint64._0(value/99) in
         {
-          let value/88 = x397 in
-          Result::Ok(value/88)
+          let value/100 = x453 in
+          Result::Ok(value/100)
         }
       }
     },
-    std::serde::Value::Number(x400) => {
+    std::serde::Value::Number(x456) => {
       {
-        let x400 = std::serde::Value::Number._0(value/87) in
+        let x456 = std::serde::Value::Number._0(value/99) in
         {
-          let value/89 = x400 in
+          let value/101 = x456 in
           {
-            let mtmp409 = std::num::parse_uint(value/89) in
-            match mtmp409 {
-              Result::Ok(x410) => {
+            let mtmp467 = std::num::parse_uint(value/101) in
+            match mtmp467 {
+              Result::Ok(x468) => {
                 {
-                  let x410 = Result::Ok._0(mtmp409) in
+                  let x468 = Result::Ok._0(mtmp467) in
                   {
-                    let value/90 = x410 in
-                    Result::Ok((value/90 as uint64))
+                    let value/102 = x468 in
+                    Result::Ok((value/102 as uint64))
                   }
                 }
               },
-              Result::Err(x411) => {
+              Result::Err(x469) => {
                 {
-                  let x411 = Result::Err._0(mtmp409) in
+                  let x469 = Result::Err._0(mtmp467) in
                   {
-                    let error/91 = x411 in
-                    Result::Err(error/91)
+                    let error/103 = x469 in
+                    Result::Err(error/103)
                   }
                 }
               },
@@ -2623,30 +2741,34 @@ fn trait_impl#std::serde::Deserialize#uint64#deserialize(value/87: std::serde::V
   }
 }
 
-fn trait_impl#std::serde::Serialize#float32#serialize(self/92: float32) -> std::serde::Value {
-  std::serde::Value::Float32(self/92)
+fn trait_impl#std::serde::Deserialize#uint64#schema() -> std::serde::TypedSchema[uint64] {
+  std::serde::typed_schema(std::serde::Schema::Integer(false, 64))
 }
 
-fn trait_impl#std::serde::Deserialize#float32#deserialize(value/93: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#float32#serialize(self/104: float32) -> std::serde::Value {
+  std::serde::Value::Float32(self/104)
+}
+
+fn trait_impl#std::serde::Deserialize#float32#deserialize(value/105: std::serde::Value) -> Result[
   float32,
   string
 ] {
-  match value/93 {
-    std::serde::Value::Float32(x423) => {
+  match value/105 {
+    std::serde::Value::Float32(x481) => {
       {
-        let x423 = std::serde::Value::Float32._0(value/93) in
+        let x481 = std::serde::Value::Float32._0(value/105) in
         {
-          let value/94 = x423 in
-          Result::Ok(value/94)
+          let value/106 = x481 in
+          Result::Ok(value/106)
         }
       }
     },
-    std::serde::Value::Number(x425) => {
+    std::serde::Value::Number(x483) => {
       {
-        let x425 = std::serde::Value::Number._0(value/93) in
+        let x483 = std::serde::Value::Number._0(value/105) in
         {
-          let value/95 = x425 in
-          std::num::parse_float32(value/95)
+          let value/107 = x483 in
+          std::num::parse_float32(value/107)
         }
       }
     },
@@ -2654,30 +2776,34 @@ fn trait_impl#std::serde::Deserialize#float32#deserialize(value/93: std::serde::
   }
 }
 
-fn trait_impl#std::serde::Serialize#float64#serialize(self/96: float64) -> std::serde::Value {
-  std::serde::Value::Float64(self/96)
+fn trait_impl#std::serde::Deserialize#float32#schema() -> std::serde::TypedSchema[float32] {
+  std::serde::typed_schema(std::serde::Schema::Float(32))
 }
 
-fn trait_impl#std::serde::Deserialize#float64#deserialize(value/97: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Serialize#float64#serialize(self/108: float64) -> std::serde::Value {
+  std::serde::Value::Float64(self/108)
+}
+
+fn trait_impl#std::serde::Deserialize#float64#deserialize(value/109: std::serde::Value) -> Result[
   float64,
   string
 ] {
-  match value/97 {
-    std::serde::Value::Float64(x446) => {
+  match value/109 {
+    std::serde::Value::Float64(x506) => {
       {
-        let x446 = std::serde::Value::Float64._0(value/97) in
+        let x506 = std::serde::Value::Float64._0(value/109) in
         {
-          let value/98 = x446 in
-          Result::Ok(value/98)
+          let value/110 = x506 in
+          Result::Ok(value/110)
         }
       }
     },
-    std::serde::Value::Number(x447) => {
+    std::serde::Value::Number(x507) => {
       {
-        let x447 = std::serde::Value::Number._0(value/97) in
+        let x507 = std::serde::Value::Number._0(value/109) in
         {
-          let value/99 = x447 in
-          std::num::parse_float64(value/99)
+          let value/111 = x507 in
+          std::num::parse_float64(value/111)
         }
       }
     },
@@ -2685,96 +2811,100 @@ fn trait_impl#std::serde::Deserialize#float64#deserialize(value/97: std::serde::
   }
 }
 
-fn trait_impl#std::serde::Serialize#Vec[T]#serialize[T](self/100: Vec[T]) -> std::serde::Value {
-  let values/101 =
+fn trait_impl#std::serde::Deserialize#float64#schema() -> std::serde::TypedSchema[float64] {
+  std::serde::typed_schema(std::serde::Schema::Float(64))
+}
+
+fn trait_impl#std::serde::Serialize#Vec[T]#serialize[T](self/112: Vec[T]) -> std::serde::Value {
+  let values/113 =
     {
-      let vec_literal/11260 = inherent#Vec#Vec[std::serde::Value]#new() in
-      vec_literal/11260
+      let vec_literal/14381 = inherent#Vec#Vec[std::serde::Value]#new() in
+      vec_literal/14381
     } in
-  let _wild461 =
+  let _wild523 =
     {
-      let for_source456 = self/100 in
-      let for_limit457 = @intrinsic(vec.len)(for_source456) in
-      let for_index458 = 0 in
-      while (for_index458 < for_limit457) {
+      let for_source518 = self/112 in
+      let for_limit519 = @intrinsic(vec.len)(for_source518) in
+      let for_index520 = 0 in
+      while (for_index520 < for_limit519) {
           {
-            let for_item459 = @intrinsic(vec.get)(for_source456, for_index458) in
-            let _wild460 = for_index458 = (for_index458 + 1) in
+            let for_item521 = @intrinsic(vec.get)(for_source518, for_index520) in
+            let _wild522 = for_index520 = (for_index520 + 1) in
             {
-              let value/102 = for_item459 in
+              let value/114 = for_item521 in
               {
                 inherent#Vec#Vec[std::serde::Value]#push(
-                  values/101,
-                  trait_call[std::serde::Serialize::serialize](value/102)
+                  values/113,
+                  trait_call[std::serde::Serialize::serialize](value/114)
                 )
               }
             }
           }
       }
     } in
-  std::serde::Value::Sequence(values/101)
+  std::serde::Value::Sequence(values/113)
 }
 
-fn trait_impl#std::serde::Deserialize#Vec[T]#deserialize[T](value/103: std::serde::Value) -> Result[
+fn trait_impl#std::serde::Deserialize#Vec[T]#deserialize[T](value/115: std::serde::Value) -> Result[
   Vec[T],
   string
 ] {
-  match value/103 {
-    std::serde::Value::Sequence(x478) => {
+  match value/115 {
+    std::serde::Value::Sequence(x540) => {
       {
-        let x478 = std::serde::Value::Sequence._0(value/103) in
+        let x540 = std::serde::Value::Sequence._0(value/115) in
         {
-          let values/104 = x478 in
+          let values/116 = x540 in
           {
-            let result/105 =
+            let result/117 =
               {
-                let vec_literal/11598 = inherent#Vec#Vec[T]#new() in
-                vec_literal/11598
+                let vec_literal/14719 = inherent#Vec#Vec[T]#new() in
+                vec_literal/14719
               } in
-            let _wild492 =
+            let _wild556 =
               {
-                let for_source484 = values/104 in
-                let for_limit485 = @intrinsic(vec.len)(for_source484) in
-                let for_index486 = 0 in
-                while (for_index486 < for_limit485) {
+                let for_source548 = values/116 in
+                let for_limit549 = @intrinsic(vec.len)(for_source548) in
+                let for_index550 = 0 in
+                while (for_index550 < for_limit549) {
                     {
-                      let for_item487 = @intrinsic(vec.get)(for_source484, for_index486) in
-                      let _wild488 = for_index486 = (for_index486 + 1) in
+                      let for_item551 = @intrinsic(vec.get)(for_source548, for_index550) in
+                      let _wild552 = for_index550 = (for_index550 + 1) in
                       {
-                        let value/106 = for_item487 in
+                        let value/118 = for_item551 in
                         {
-                          let item/107 =
+                          let item/119 =
                             {
-                              let mtmp489 =
-                                trait_call[std::serde::Deserialize::deserialize](value/106) in
-                              match mtmp489 {
-                                Result::Ok(x490) => {
+                              let mtmp553 =
+                                trait_call[std::serde::Deserialize::deserialize](value/118) in
+                              match mtmp553 {
+                                Result::Ok(x554) => {
                                   {
-                                    let x490 = Result::Ok._0(mtmp489) in
+                                    let x554 = Result::Ok._0(mtmp553) in
                                     {
-                                      let try_value/437 = x490 in
-                                      try_value/437
+                                      let try_value/546 = x554 in
+                                      try_value/546
                                     }
                                   }
                                 },
-                                Result::Err(x491) => {
+                                Result::Err(x555) => {
                                   {
-                                    let x491 = Result::Err._0(mtmp489) in
+                                    let x555 = Result::Err._0(mtmp553) in
                                     {
-                                      let try_residual/437 = x491 in
-                                      return Result::Err(try_residual/437)
+                                      let try_residual/546 = x555 in
+                                      return Result::Err(try_residual/546)
                                     }
                                   }
                                 },
                               }
                             } in
-                          inherent#Vec#Vec[T]#push(result/105, item/107)
+                          inherent#Vec#Vec[T]#push(result/117, item/119)
                         }
                       }
                     }
                 }
               } in
-            Result::Ok(result/105)
+            Result::Ok(result/117)
           }
         }
       }
@@ -2783,19 +2913,51 @@ fn trait_impl#std::serde::Deserialize#Vec[T]#deserialize[T](value/103: std::serd
   }
 }
 
-fn trait_impl#std::serde::Serialize#Option[T]#serialize[T](
-  self/108: Option[T]
-) -> std::serde::Value {
-  match self/108 {
-    Option::None => {
-      std::serde::Value::Unit
-    },
-    Option::Some(x493) => {
+fn trait_impl#std::serde::Deserialize#Vec[T]#schema[T]() -> std::serde::TypedSchema[Vec[T]] {
+  let item/120 = trait_call[std::serde::Deserialize::schema]() in
+  std::serde::typed_schema(
+    std::serde::Schema::Sequence(
       {
-        let x493 = Option::Some._0(self/108) in
+        let vec_literal/15145 = inherent#Vec#Vec[std::serde::Schema]#new() in
+        let _wild557 =
+          inherent#Vec#Vec[std::serde::Schema]#push(
+            vec_literal/15145,
+            std::serde::TypedSchema.value(item/120)
+          ) in
+        vec_literal/15145
+      }
+    )
+  )
+}
+
+fn trait_impl#std::serde::Serialize#Option[T]#serialize[T](
+  self/121: Option[T]
+) -> std::serde::Value {
+  match self/121 {
+    Option::None => {
+      std::serde::Value::Optional(
         {
-          let value/109 = x493 in
-          trait_call[std::serde::Serialize::serialize](value/109)
+          let vec_literal/15391 = inherent#Vec#Vec[std::serde::Value]#new() in
+          vec_literal/15391
+        }
+      )
+    },
+    Option::Some(x558) => {
+      {
+        let x558 = Option::Some._0(self/121) in
+        {
+          let value/122 = x558 in
+          std::serde::Value::Optional(
+            {
+              let vec_literal/15328 = inherent#Vec#Vec[std::serde::Value]#new() in
+              let _wild559 =
+                inherent#Vec#Vec[std::serde::Value]#push(
+                  vec_literal/15328,
+                  trait_call[std::serde::Serialize::serialize](value/122)
+                ) in
+              vec_literal/15328
+            }
+          )
         }
       }
     },
@@ -2803,271 +2965,392 @@ fn trait_impl#std::serde::Serialize#Option[T]#serialize[T](
 }
 
 fn trait_impl#std::serde::Deserialize#Option[T]#deserialize[T](
-  value/110: std::serde::Value
+  value/123: std::serde::Value
 ) -> Result[Option[T], string] {
-  match value/110 {
+  match value/123 {
     std::serde::Value::Unit => {
       Result::Ok(Option::None)
     },
+    std::serde::Value::Optional(x578) => {
+      {
+        let x578 = std::serde::Value::Optional._0(value/123) in
+        {
+          let values/124 = x578 in
+          if trait_call[Eq::eq](inherent#Vec#Vec[std::serde::Value]#len(values/124), 0) {
+              {
+                Result::Ok(Option::None)
+              }
+          } else {
+              if trait_call[Eq::eq](inherent#Vec#Vec[std::serde::Value]#len(values/124), 1) {
+                  {
+                    let item/125 =
+                      {
+                        let mtmp584 =
+                          trait_call[std::serde::Deserialize::deserialize](
+                            @intrinsic(vec.get)(values/124, 0)
+                          ) in
+                        match mtmp584 {
+                          Result::Ok(x585) => {
+                            {
+                              let x585 = Result::Ok._0(mtmp584) in
+                              {
+                                let try_value/595 = x585 in
+                                try_value/595
+                              }
+                            }
+                          },
+                          Result::Err(x586) => {
+                            {
+                              let x586 = Result::Err._0(mtmp584) in
+                              {
+                                let try_residual/595 = x586 in
+                                return Result::Err(try_residual/595)
+                              }
+                            }
+                          },
+                        }
+                      } in
+                    Result::Ok(Option::Some(item/125))
+                  }
+              } else {
+                  {
+                    Result::Err("optional value contains more than one item")
+                  }
+              }
+          }
+        }
+      }
+    },
     _ =>
       {
-        let item/111 =
+        let item/126 =
           {
-            let mtmp516 = trait_call[std::serde::Deserialize::deserialize](value/110) in
-            match mtmp516 {
-              Result::Ok(x517) => {
+            let mtmp587 = trait_call[std::serde::Deserialize::deserialize](value/123) in
+            match mtmp587 {
+              Result::Ok(x588) => {
                 {
-                  let x517 = Result::Ok._0(mtmp516) in
+                  let x588 = Result::Ok._0(mtmp587) in
                   {
-                    let try_value/462 = x517 in
-                    try_value/462
+                    let try_value/610 = x588 in
+                    try_value/610
                   }
                 }
               },
-              Result::Err(x518) => {
+              Result::Err(x589) => {
                 {
-                  let x518 = Result::Err._0(mtmp516) in
+                  let x589 = Result::Err._0(mtmp587) in
                   {
-                    let try_residual/462 = x518 in
-                    return Result::Err(try_residual/462)
+                    let try_residual/610 = x589 in
+                    return Result::Err(try_residual/610)
                   }
                 }
               },
             }
           } in
-        Result::Ok(Option::Some(item/111))
+        Result::Ok(Option::Some(item/126))
       },
   }
 }
 
-fn trait_impl#std::serde::Serialize#(A,B)#serialize[A, B](self/112: (A, B)) -> std::serde::Value {
-  std::serde::Value::Sequence(
+fn trait_impl#std::serde::Deserialize#Option[T]#schema[T]() -> std::serde::TypedSchema[Option[T]] {
+  let item/127 = trait_call[std::serde::Deserialize::schema]() in
+  std::serde::typed_schema(
+    std::serde::Schema::Optional(
+      {
+        let vec_literal/16280 = inherent#Vec#Vec[std::serde::Schema]#new() in
+        let _wild590 =
+          inherent#Vec#Vec[std::serde::Schema]#push(
+            vec_literal/16280,
+            std::serde::TypedSchema.value(item/127)
+          ) in
+        vec_literal/16280
+      }
+    )
+  )
+}
+
+fn trait_impl#std::serde::Serialize#(A,B)#serialize[A, B](self/128: (A, B)) -> std::serde::Value {
+  std::serde::Value::Tuple(
     {
-      let vec_literal/12572 = inherent#Vec#Vec[std::serde::Value]#new() in
-      let _wild519 =
+      let vec_literal/16428 = inherent#Vec#Vec[std::serde::Value]#new() in
+      let _wild591 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/12572,
-          trait_call[std::serde::Serialize::serialize](self/112.0)
+          vec_literal/16428,
+          trait_call[std::serde::Serialize::serialize](self/128.0)
         ) in
-      let _wild520 =
+      let _wild592 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/12572,
-          trait_call[std::serde::Serialize::serialize](self/112.1)
+          vec_literal/16428,
+          trait_call[std::serde::Serialize::serialize](self/128.1)
         ) in
-      vec_literal/12572
+      vec_literal/16428
     }
   )
 }
 
 fn trait_impl#std::serde::Deserialize#(A,B)#deserialize[A, B](
-  value/113: std::serde::Value
+  value/129: std::serde::Value
 ) -> Result[(A, B), string] {
-  match value/113 {
-    std::serde::Value::Sequence(x537) => {
-      {
-        let x537 = std::serde::Value::Sequence._0(value/113) in
-        {
-          let values/114 = x537 in
-          if trait_call[Eq::eq](inherent#Vec#Vec[std::serde::Value]#len(values/114), 2) {
-              {
-                let first/115 =
-                  {
-                    let mtmp543 =
-                      trait_call[std::serde::Deserialize::deserialize](
-                        @intrinsic(vec.get)(values/114, 0)
-                      ) in
-                    match mtmp543 {
-                      Result::Ok(x544) => {
-                        {
-                          let x544 = Result::Ok._0(mtmp543) in
-                          {
-                            let try_value/489 = x544 in
-                            try_value/489
-                          }
-                        }
-                      },
-                      Result::Err(x545) => {
-                        {
-                          let x545 = Result::Err._0(mtmp543) in
-                          {
-                            let try_residual/489 = x545 in
-                            return Result::Err(try_residual/489)
-                          }
-                        }
-                      },
-                    }
-                  } in
-                let second/116 =
-                  {
-                    let mtmp546 =
-                      trait_call[std::serde::Deserialize::deserialize](
-                        @intrinsic(vec.get)(values/114, 1)
-                      ) in
-                    match mtmp546 {
-                      Result::Ok(x547) => {
-                        {
-                          let x547 = Result::Ok._0(mtmp546) in
-                          {
-                            let try_value/495 = x547 in
-                            try_value/495
-                          }
-                        }
-                      },
-                      Result::Err(x548) => {
-                        {
-                          let x548 = Result::Err._0(mtmp546) in
-                          {
-                            let try_residual/495 = x548 in
-                            return Result::Err(try_residual/495)
-                          }
-                        }
-                      },
-                    }
-                  } in
-                Result::Ok((first/115, second/116))
-              }
-          } else {
-              {
-                Result::Err("expected two-element sequence")
-              }
+  let values/130 =
+    {
+      let mtmp593 = std::serde::tuple_values(value/129, 2) in
+      match mtmp593 {
+        Result::Ok(x594) => {
+          {
+            let x594 = Result::Ok._0(mtmp593) in
+            {
+              let try_value/638 = x594 in
+              try_value/638
+            }
           }
-        }
+        },
+        Result::Err(x595) => {
+          {
+            let x595 = Result::Err._0(mtmp593) in
+            {
+              let try_residual/638 = x595 in
+              return Result::Err(try_residual/638)
+            }
+          }
+        },
       }
-    },
-    _ => Result::Err("expected sequence"),
-  }
+    } in
+  let first/131 =
+    {
+      let mtmp596 =
+        trait_call[std::serde::Deserialize::deserialize](@intrinsic(vec.get)(values/130, 0)) in
+      match mtmp596 {
+        Result::Ok(x597) => {
+          {
+            let x597 = Result::Ok._0(mtmp596) in
+            {
+              let try_value/644 = x597 in
+              try_value/644
+            }
+          }
+        },
+        Result::Err(x598) => {
+          {
+            let x598 = Result::Err._0(mtmp596) in
+            {
+              let try_residual/644 = x598 in
+              return Result::Err(try_residual/644)
+            }
+          }
+        },
+      }
+    } in
+  let second/132 =
+    {
+      let mtmp599 =
+        trait_call[std::serde::Deserialize::deserialize](@intrinsic(vec.get)(values/130, 1)) in
+      match mtmp599 {
+        Result::Ok(x600) => {
+          {
+            let x600 = Result::Ok._0(mtmp599) in
+            {
+              let try_value/650 = x600 in
+              try_value/650
+            }
+          }
+        },
+        Result::Err(x601) => {
+          {
+            let x601 = Result::Err._0(mtmp599) in
+            {
+              let try_residual/650 = x601 in
+              return Result::Err(try_residual/650)
+            }
+          }
+        },
+      }
+    } in
+  Result::Ok((first/131, second/132))
+}
+
+fn trait_impl#std::serde::Deserialize#(A,B)#schema[A, B]() -> std::serde::TypedSchema[(A, B)] {
+  let first/133 = trait_call[std::serde::Deserialize::schema]() in
+  let second/134 = trait_call[std::serde::Deserialize::schema]() in
+  std::serde::typed_schema(
+    std::serde::Schema::Tuple(
+      {
+        let vec_literal/17014 = inherent#Vec#Vec[std::serde::Schema]#new() in
+        let _wild602 =
+          inherent#Vec#Vec[std::serde::Schema]#push(
+            vec_literal/17014,
+            std::serde::TypedSchema.value(first/133)
+          ) in
+        let _wild603 =
+          inherent#Vec#Vec[std::serde::Schema]#push(
+            vec_literal/17014,
+            std::serde::TypedSchema.value(second/134)
+          ) in
+        vec_literal/17014
+      }
+    )
+  )
 }
 
 fn trait_impl#std::serde::Serialize#(A,B,C)#serialize[A, B, C](
-  self/117: (A, B, C)
+  self/135: (A, B, C)
 ) -> std::serde::Value {
-  std::serde::Value::Sequence(
+  std::serde::Value::Tuple(
     {
-      let vec_literal/13327 = inherent#Vec#Vec[std::serde::Value]#new() in
-      let _wild549 =
+      let vec_literal/17197 = inherent#Vec#Vec[std::serde::Value]#new() in
+      let _wild604 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/13327,
-          trait_call[std::serde::Serialize::serialize](self/117.0)
+          vec_literal/17197,
+          trait_call[std::serde::Serialize::serialize](self/135.0)
         ) in
-      let _wild550 =
+      let _wild605 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/13327,
-          trait_call[std::serde::Serialize::serialize](self/117.1)
+          vec_literal/17197,
+          trait_call[std::serde::Serialize::serialize](self/135.1)
         ) in
-      let _wild551 =
+      let _wild606 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/13327,
-          trait_call[std::serde::Serialize::serialize](self/117.2)
+          vec_literal/17197,
+          trait_call[std::serde::Serialize::serialize](self/135.2)
         ) in
-      vec_literal/13327
+      vec_literal/17197
     }
   )
 }
 
 fn trait_impl#std::serde::Deserialize#(A,B,C)#deserialize[A, B, C](
-  value/118: std::serde::Value
+  value/136: std::serde::Value
 ) -> Result[(A, B, C), string] {
-  match value/118 {
-    std::serde::Value::Sequence(x568) => {
-      {
-        let x568 = std::serde::Value::Sequence._0(value/118) in
-        {
-          let values/119 = x568 in
-          if trait_call[Eq::eq](inherent#Vec#Vec[std::serde::Value]#len(values/119), 3) {
-              {
-                let first/120 =
-                  {
-                    let mtmp574 =
-                      trait_call[std::serde::Deserialize::deserialize](
-                        @intrinsic(vec.get)(values/119, 0)
-                      ) in
-                    match mtmp574 {
-                      Result::Ok(x575) => {
-                        {
-                          let x575 = Result::Ok._0(mtmp574) in
-                          {
-                            let try_value/533 = x575 in
-                            try_value/533
-                          }
-                        }
-                      },
-                      Result::Err(x576) => {
-                        {
-                          let x576 = Result::Err._0(mtmp574) in
-                          {
-                            let try_residual/533 = x576 in
-                            return Result::Err(try_residual/533)
-                          }
-                        }
-                      },
-                    }
-                  } in
-                let second/121 =
-                  {
-                    let mtmp577 =
-                      trait_call[std::serde::Deserialize::deserialize](
-                        @intrinsic(vec.get)(values/119, 1)
-                      ) in
-                    match mtmp577 {
-                      Result::Ok(x578) => {
-                        {
-                          let x578 = Result::Ok._0(mtmp577) in
-                          {
-                            let try_value/539 = x578 in
-                            try_value/539
-                          }
-                        }
-                      },
-                      Result::Err(x579) => {
-                        {
-                          let x579 = Result::Err._0(mtmp577) in
-                          {
-                            let try_residual/539 = x579 in
-                            return Result::Err(try_residual/539)
-                          }
-                        }
-                      },
-                    }
-                  } in
-                let third/122 =
-                  {
-                    let mtmp580 =
-                      trait_call[std::serde::Deserialize::deserialize](
-                        @intrinsic(vec.get)(values/119, 2)
-                      ) in
-                    match mtmp580 {
-                      Result::Ok(x581) => {
-                        {
-                          let x581 = Result::Ok._0(mtmp580) in
-                          {
-                            let try_value/545 = x581 in
-                            try_value/545
-                          }
-                        }
-                      },
-                      Result::Err(x582) => {
-                        {
-                          let x582 = Result::Err._0(mtmp580) in
-                          {
-                            let try_residual/545 = x582 in
-                            return Result::Err(try_residual/545)
-                          }
-                        }
-                      },
-                    }
-                  } in
-                Result::Ok((first/120, second/121, third/122))
-              }
-          } else {
-              {
-                Result::Err("expected three-element sequence")
-              }
+  let values/137 =
+    {
+      let mtmp607 = std::serde::tuple_values(value/136, 3) in
+      match mtmp607 {
+        Result::Ok(x608) => {
+          {
+            let x608 = Result::Ok._0(mtmp607) in
+            {
+              let try_value/685 = x608 in
+              try_value/685
+            }
           }
-        }
+        },
+        Result::Err(x609) => {
+          {
+            let x609 = Result::Err._0(mtmp607) in
+            {
+              let try_residual/685 = x609 in
+              return Result::Err(try_residual/685)
+            }
+          }
+        },
       }
-    },
-    _ => Result::Err("expected sequence"),
-  }
+    } in
+  let first/138 =
+    {
+      let mtmp610 =
+        trait_call[std::serde::Deserialize::deserialize](@intrinsic(vec.get)(values/137, 0)) in
+      match mtmp610 {
+        Result::Ok(x611) => {
+          {
+            let x611 = Result::Ok._0(mtmp610) in
+            {
+              let try_value/691 = x611 in
+              try_value/691
+            }
+          }
+        },
+        Result::Err(x612) => {
+          {
+            let x612 = Result::Err._0(mtmp610) in
+            {
+              let try_residual/691 = x612 in
+              return Result::Err(try_residual/691)
+            }
+          }
+        },
+      }
+    } in
+  let second/139 =
+    {
+      let mtmp613 =
+        trait_call[std::serde::Deserialize::deserialize](@intrinsic(vec.get)(values/137, 1)) in
+      match mtmp613 {
+        Result::Ok(x614) => {
+          {
+            let x614 = Result::Ok._0(mtmp613) in
+            {
+              let try_value/697 = x614 in
+              try_value/697
+            }
+          }
+        },
+        Result::Err(x615) => {
+          {
+            let x615 = Result::Err._0(mtmp613) in
+            {
+              let try_residual/697 = x615 in
+              return Result::Err(try_residual/697)
+            }
+          }
+        },
+      }
+    } in
+  let third/140 =
+    {
+      let mtmp616 =
+        trait_call[std::serde::Deserialize::deserialize](@intrinsic(vec.get)(values/137, 2)) in
+      match mtmp616 {
+        Result::Ok(x617) => {
+          {
+            let x617 = Result::Ok._0(mtmp616) in
+            {
+              let try_value/703 = x617 in
+              try_value/703
+            }
+          }
+        },
+        Result::Err(x618) => {
+          {
+            let x618 = Result::Err._0(mtmp616) in
+            {
+              let try_residual/703 = x618 in
+              return Result::Err(try_residual/703)
+            }
+          }
+        },
+      }
+    } in
+  Result::Ok((first/138, second/139, third/140))
+}
+
+fn trait_impl#std::serde::Deserialize#(A,B,C)#schema[A, B, C]() -> std::serde::TypedSchema[
+  (A, B, C)
+] {
+  let first/141 = trait_call[std::serde::Deserialize::schema]() in
+  let second/142 = trait_call[std::serde::Deserialize::schema]() in
+  let third/143 = trait_call[std::serde::Deserialize::schema]() in
+  std::serde::typed_schema(
+    std::serde::Schema::Tuple(
+      {
+        let vec_literal/17955 = inherent#Vec#Vec[std::serde::Schema]#new() in
+        let _wild619 =
+          inherent#Vec#Vec[std::serde::Schema]#push(
+            vec_literal/17955,
+            std::serde::TypedSchema.value(first/141)
+          ) in
+        let _wild620 =
+          inherent#Vec#Vec[std::serde::Schema]#push(
+            vec_literal/17955,
+            std::serde::TypedSchema.value(second/142)
+          ) in
+        let _wild621 =
+          inherent#Vec#Vec[std::serde::Schema]#push(
+            vec_literal/17955,
+            std::serde::TypedSchema.value(third/143)
+          ) in
+        vec_literal/17955
+      }
+    )
+  )
 }
 
 fn std::ascii::is_ascii(value/0: uint8) -> bool {
@@ -6062,25 +6345,37 @@ fn std::json::serde_items_to_json(items/87: Vec[std::serde::Value]) -> Vec[std::
   result/88
 }
 
-fn std::json::serde_variant_to_json(
-  name/90: string,
-  kind/91: int,
-  fields/92: Vec[(string, std::serde::Value)]
-) -> std::json::Value {
-  if trait_call[Eq::eq](kind/91, 0) {
+fn std::json::serde_optional_to_json(items/90: Vec[std::serde::Value]) -> std::json::Value {
+  if trait_call[Eq::eq](inherent#Vec#Vec[std::serde::Value]#len(items/90), 0) {
       {
-        std::json::Value::String(name/90)
+        std::json::Value::Null
       }
   } else {
-      if trait_call[Eq::eq](kind/91, 1) {
+      {
+        std::json::from_serde_value(@intrinsic(vec.get)(items/90, 0))
+      }
+  }
+}
+
+fn std::json::serde_variant_to_json(
+  name/91: string,
+  kind/92: int,
+  fields/93: Vec[(string, std::serde::Value)]
+) -> std::json::Value {
+  if trait_call[Eq::eq](kind/92, 0) {
+      {
+        std::json::Value::String(name/91)
+      }
+  } else {
+      if trait_call[Eq::eq](kind/92, 1) {
           {
-            let values/93 =
+            let values/94 =
               inherent#Vec#Vec[std::json::Value]#with_capacity(
-                inherent#Vec#Vec[(string,std::serde::Value)]#len(fields/92)
+                inherent#Vec#Vec[(string,std::serde::Value)]#len(fields/93)
               ) in
             let _wild184 =
               {
-                let for_source179 = fields/92 in
+                let for_source179 = fields/93 in
                 let for_limit180 = @intrinsic(vec.len)(for_source179) in
                 let for_index181 = 0 in
                 while (for_index181 < for_limit180) {
@@ -6088,11 +6383,11 @@ fn std::json::serde_variant_to_json(
                       let for_item182 = @intrinsic(vec.get)(for_source179, for_index181) in
                       let _wild183 = for_index181 = (for_index181 + 1) in
                       {
-                        let field/94 = for_item182 in
+                        let field/95 = for_item182 in
                         {
                           inherent#Vec#Vec[std::json::Value]#push(
-                            values/93,
-                            std::json::from_serde_value(field/94.1)
+                            values/94,
+                            std::json::from_serde_value(field/95.1)
                           )
                         }
                       }
@@ -6101,13 +6396,13 @@ fn std::json::serde_variant_to_json(
               } in
             std::json::Value::Object(
               {
-                let vec_literal/903 = inherent#Vec#Vec[(string,std::json::Value)]#new() in
+                let vec_literal/1069 = inherent#Vec#Vec[(string,std::json::Value)]#new() in
                 let _wild185 =
                   inherent#Vec#Vec[(string,std::json::Value)]#push(
-                    vec_literal/903,
-                    (name/90, std::json::Value::Array(values/93))
+                    vec_literal/1069,
+                    (name/91, std::json::Value::Array(values/94))
                   ) in
-                vec_literal/903
+                vec_literal/1069
               }
             )
           }
@@ -6115,13 +6410,13 @@ fn std::json::serde_variant_to_json(
           {
             std::json::Value::Object(
               {
-                let vec_literal/975 = inherent#Vec#Vec[(string,std::json::Value)]#new() in
+                let vec_literal/1141 = inherent#Vec#Vec[(string,std::json::Value)]#new() in
                 let _wild186 =
                   inherent#Vec#Vec[(string,std::json::Value)]#push(
-                    vec_literal/975,
-                    (name/90, std::json::Value::Object(std::json::serde_fields_to_json(fields/92)))
+                    vec_literal/1141,
+                    (name/91, std::json::Value::Object(std::json::serde_fields_to_json(fields/93)))
                   ) in
-                vec_literal/975
+                vec_literal/1141
               }
             )
           }
@@ -6129,187 +6424,205 @@ fn std::json::serde_variant_to_json(
   }
 }
 
-fn std::json::from_serde_value(value/95: std::serde::Value) -> std::json::Value {
-  match value/95 {
+fn std::json::from_serde_value(value/96: std::serde::Value) -> std::json::Value {
+  match value/96 {
     std::serde::Value::Unit => {
       std::json::Value::Null
     },
     std::serde::Value::Bool(x187) => {
       {
-        let x187 = std::serde::Value::Bool._0(value/95) in
+        let x187 = std::serde::Value::Bool._0(value/96) in
         {
-          let value/96 = x187 in
-          std::json::Value::Bool(value/96)
+          let value/97 = x187 in
+          std::json::Value::Bool(value/97)
         }
       }
     },
     std::serde::Value::Int(x188) => {
       {
-        let x188 = std::serde::Value::Int._0(value/95) in
+        let x188 = std::serde::Value::Int._0(value/96) in
         {
-          let value/97 = x188 in
-          std::json::Value::Number(inherent#int#int#to_string(value/97))
+          let value/98 = x188 in
+          std::json::Value::Number(inherent#int#int#to_string(value/98))
         }
       }
     },
     std::serde::Value::Int8(x189) => {
       {
-        let x189 = std::serde::Value::Int8._0(value/95) in
+        let x189 = std::serde::Value::Int8._0(value/96) in
         {
-          let value/98 = x189 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/98))
+          let value/99 = x189 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/99))
         }
       }
     },
     std::serde::Value::Int16(x190) => {
       {
-        let x190 = std::serde::Value::Int16._0(value/95) in
+        let x190 = std::serde::Value::Int16._0(value/96) in
         {
-          let value/99 = x190 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/99))
+          let value/100 = x190 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/100))
         }
       }
     },
     std::serde::Value::Int32(x191) => {
       {
-        let x191 = std::serde::Value::Int32._0(value/95) in
+        let x191 = std::serde::Value::Int32._0(value/96) in
         {
-          let value/100 = x191 in
-          std::json::Value::Number(inherent#int32#int32#to_string(value/100))
+          let value/101 = x191 in
+          std::json::Value::Number(inherent#int32#int32#to_string(value/101))
         }
       }
     },
     std::serde::Value::Int64(x192) => {
       {
-        let x192 = std::serde::Value::Int64._0(value/95) in
+        let x192 = std::serde::Value::Int64._0(value/96) in
         {
-          let value/101 = x192 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/101))
+          let value/102 = x192 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/102))
         }
       }
     },
     std::serde::Value::Uint(x193) => {
       {
-        let x193 = std::serde::Value::Uint._0(value/95) in
+        let x193 = std::serde::Value::Uint._0(value/96) in
         {
-          let value/102 = x193 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/102))
+          let value/103 = x193 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/103))
         }
       }
     },
     std::serde::Value::Uint8(x194) => {
       {
-        let x194 = std::serde::Value::Uint8._0(value/95) in
+        let x194 = std::serde::Value::Uint8._0(value/96) in
         {
-          let value/103 = x194 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/103))
+          let value/104 = x194 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/104))
         }
       }
     },
     std::serde::Value::Uint16(x195) => {
       {
-        let x195 = std::serde::Value::Uint16._0(value/95) in
+        let x195 = std::serde::Value::Uint16._0(value/96) in
         {
-          let value/104 = x195 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/104))
+          let value/105 = x195 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/105))
         }
       }
     },
     std::serde::Value::Uint32(x196) => {
       {
-        let x196 = std::serde::Value::Uint32._0(value/95) in
+        let x196 = std::serde::Value::Uint32._0(value/96) in
         {
-          let value/105 = x196 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/105))
+          let value/106 = x196 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/106))
         }
       }
     },
     std::serde::Value::Uint64(x197) => {
       {
-        let x197 = std::serde::Value::Uint64._0(value/95) in
+        let x197 = std::serde::Value::Uint64._0(value/96) in
         {
-          let value/106 = x197 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/106))
+          let value/107 = x197 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/107))
         }
       }
     },
     std::serde::Value::Float32(x198) => {
       {
-        let x198 = std::serde::Value::Float32._0(value/95) in
+        let x198 = std::serde::Value::Float32._0(value/96) in
         {
-          let value/107 = x198 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/107))
+          let value/108 = x198 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/108))
         }
       }
     },
     std::serde::Value::Float64(x199) => {
       {
-        let x199 = std::serde::Value::Float64._0(value/95) in
+        let x199 = std::serde::Value::Float64._0(value/96) in
         {
-          let value/108 = x199 in
-          std::json::Value::Number(trait_call[ToString::to_string](value/108))
+          let value/109 = x199 in
+          std::json::Value::Number(trait_call[ToString::to_string](value/109))
         }
       }
     },
     std::serde::Value::Number(x200) => {
       {
-        let x200 = std::serde::Value::Number._0(value/95) in
+        let x200 = std::serde::Value::Number._0(value/96) in
         {
-          let value/109 = x200 in
-          std::json::Value::Number(value/109)
+          let value/110 = x200 in
+          std::json::Value::Number(value/110)
         }
       }
     },
     std::serde::Value::String(x201) => {
       {
-        let x201 = std::serde::Value::String._0(value/95) in
+        let x201 = std::serde::Value::String._0(value/96) in
         {
-          let value/110 = x201 in
-          std::json::Value::String(value/110)
+          let value/111 = x201 in
+          std::json::Value::String(value/111)
         }
       }
     },
     std::serde::Value::Char(x202) => {
       {
-        let x202 = std::serde::Value::Char._0(value/95) in
+        let x202 = std::serde::Value::Char._0(value/96) in
         {
-          let value/111 = x202 in
-          std::json::Value::String(inherent#char#char#to_string(value/111))
+          let value/112 = x202 in
+          std::json::Value::String(inherent#char#char#to_string(value/112))
         }
       }
     },
     std::serde::Value::Sequence(x203) => {
       {
-        let x203 = std::serde::Value::Sequence._0(value/95) in
+        let x203 = std::serde::Value::Sequence._0(value/96) in
         {
-          let items/112 = x203 in
-          std::json::Value::Array(std::json::serde_items_to_json(items/112))
+          let items/113 = x203 in
+          std::json::Value::Array(std::json::serde_items_to_json(items/113))
         }
       }
     },
-    std::serde::Value::Struct(x204) => {
+    std::serde::Value::Tuple(x204) => {
       {
-        let x204 = std::serde::Value::Struct._0(value/95) in
+        let x204 = std::serde::Value::Tuple._0(value/96) in
         {
-          let fields/113 = x204 in
-          std::json::Value::Object(std::json::serde_fields_to_json(fields/113))
+          let items/114 = x204 in
+          std::json::Value::Array(std::json::serde_items_to_json(items/114))
         }
       }
     },
-    std::serde::Value::Variant(x205, x206, x207, x208) => {
+    std::serde::Value::Optional(x205) => {
       {
-        let x205 = std::serde::Value::Variant._0(value/95) in
-        let x206 = std::serde::Value::Variant._1(value/95) in
-        let x207 = std::serde::Value::Variant._2(value/95) in
-        let x208 = std::serde::Value::Variant._3(value/95) in
+        let x205 = std::serde::Value::Optional._0(value/96) in
         {
-          let fields/116 = x208 in
+          let items/115 = x205 in
+          std::json::serde_optional_to_json(items/115)
+        }
+      }
+    },
+    std::serde::Value::Struct(x206) => {
+      {
+        let x206 = std::serde::Value::Struct._0(value/96) in
+        {
+          let fields/116 = x206 in
+          std::json::Value::Object(std::json::serde_fields_to_json(fields/116))
+        }
+      }
+    },
+    std::serde::Value::Variant(x207, x208, x209, x210) => {
+      {
+        let x207 = std::serde::Value::Variant._0(value/96) in
+        let x208 = std::serde::Value::Variant._1(value/96) in
+        let x209 = std::serde::Value::Variant._2(value/96) in
+        let x210 = std::serde::Value::Variant._3(value/96) in
+        {
+          let fields/119 = x210 in
           {
-            let kind/115 = x207 in
+            let kind/118 = x209 in
             {
-              let name/114 = x206 in
+              let name/117 = x208 in
               {
-                std::json::serde_variant_to_json(name/114, kind/115, fields/116)
+                std::json::serde_variant_to_json(name/117, kind/118, fields/119)
               }
             }
           }
@@ -6319,57 +6632,28 @@ fn std::json::from_serde_value(value/95: std::serde::Value) -> std::json::Value 
   }
 }
 
-fn std::json::json_fields_to_serde(fields/117: Vec[(string, std::json::Value)]) -> Vec[
+fn std::json::json_fields_to_serde(fields/120: Vec[(string, std::json::Value)]) -> Vec[
   (string, std::serde::Value)
 ] {
-  let result/118 =
+  let result/121 =
     inherent#Vec#Vec[(string,std::serde::Value)]#with_capacity(
-      inherent#Vec#Vec[(string,std::json::Value)]#len(fields/117)
+      inherent#Vec#Vec[(string,std::json::Value)]#len(fields/120)
     ) in
-  let _wild214 =
+  let _wild216 =
     {
-      let for_source209 = fields/117 in
-      let for_limit210 = @intrinsic(vec.len)(for_source209) in
-      let for_index211 = 0 in
-      while (for_index211 < for_limit210) {
+      let for_source211 = fields/120 in
+      let for_limit212 = @intrinsic(vec.len)(for_source211) in
+      let for_index213 = 0 in
+      while (for_index213 < for_limit212) {
           {
-            let for_item212 = @intrinsic(vec.get)(for_source209, for_index211) in
-            let _wild213 = for_index211 = (for_index211 + 1) in
+            let for_item214 = @intrinsic(vec.get)(for_source211, for_index213) in
+            let _wild215 = for_index213 = (for_index213 + 1) in
             {
-              let field/119 = for_item212 in
+              let field/122 = for_item214 in
               {
                 inherent#Vec#Vec[(string,std::serde::Value)]#push(
-                  result/118,
-                  (field/119.0, std::json::into_serde_value(field/119.1))
-                )
-              }
-            }
-          }
-      }
-    } in
-  result/118
-}
-
-fn std::json::json_items_to_serde(items/120: Vec[std::json::Value]) -> Vec[std::serde::Value] {
-  let result/121 =
-    inherent#Vec#Vec[std::serde::Value]#with_capacity(
-      inherent#Vec#Vec[std::json::Value]#len(items/120)
-    ) in
-  let _wild220 =
-    {
-      let for_source215 = items/120 in
-      let for_limit216 = @intrinsic(vec.len)(for_source215) in
-      let for_index217 = 0 in
-      while (for_index217 < for_limit216) {
-          {
-            let for_item218 = @intrinsic(vec.get)(for_source215, for_index217) in
-            let _wild219 = for_index217 = (for_index217 + 1) in
-            {
-              let item/122 = for_item218 in
-              {
-                inherent#Vec#Vec[std::serde::Value]#push(
                   result/121,
-                  std::json::into_serde_value(item/122)
+                  (field/122.0, std::json::into_serde_value(field/122.1))
                 )
               }
             }
@@ -6379,50 +6663,79 @@ fn std::json::json_items_to_serde(items/120: Vec[std::json::Value]) -> Vec[std::
   result/121
 }
 
-fn std::json::into_serde_value(value/123: std::json::Value) -> std::serde::Value {
-  match value/123 {
-    std::json::Value::Object(x221) => {
+fn std::json::json_items_to_serde(items/123: Vec[std::json::Value]) -> Vec[std::serde::Value] {
+  let result/124 =
+    inherent#Vec#Vec[std::serde::Value]#with_capacity(
+      inherent#Vec#Vec[std::json::Value]#len(items/123)
+    ) in
+  let _wild222 =
+    {
+      let for_source217 = items/123 in
+      let for_limit218 = @intrinsic(vec.len)(for_source217) in
+      let for_index219 = 0 in
+      while (for_index219 < for_limit218) {
+          {
+            let for_item220 = @intrinsic(vec.get)(for_source217, for_index219) in
+            let _wild221 = for_index219 = (for_index219 + 1) in
+            {
+              let item/125 = for_item220 in
+              {
+                inherent#Vec#Vec[std::serde::Value]#push(
+                  result/124,
+                  std::json::into_serde_value(item/125)
+                )
+              }
+            }
+          }
+      }
+    } in
+  result/124
+}
+
+fn std::json::into_serde_value(value/126: std::json::Value) -> std::serde::Value {
+  match value/126 {
+    std::json::Value::Object(x223) => {
       {
-        let x221 = std::json::Value::Object._0(value/123) in
+        let x223 = std::json::Value::Object._0(value/126) in
         {
-          let fields/124 = x221 in
-          std::serde::Value::Struct(std::json::json_fields_to_serde(fields/124))
+          let fields/127 = x223 in
+          std::serde::Value::Struct(std::json::json_fields_to_serde(fields/127))
         }
       }
     },
-    std::json::Value::Array(x222) => {
+    std::json::Value::Array(x224) => {
       {
-        let x222 = std::json::Value::Array._0(value/123) in
+        let x224 = std::json::Value::Array._0(value/126) in
         {
-          let items/125 = x222 in
-          std::serde::Value::Sequence(std::json::json_items_to_serde(items/125))
+          let items/128 = x224 in
+          std::serde::Value::Sequence(std::json::json_items_to_serde(items/128))
         }
       }
     },
-    std::json::Value::String(x223) => {
+    std::json::Value::String(x225) => {
       {
-        let x223 = std::json::Value::String._0(value/123) in
+        let x225 = std::json::Value::String._0(value/126) in
         {
-          let value/126 = x223 in
-          std::serde::Value::String(value/126)
+          let value/129 = x225 in
+          std::serde::Value::String(value/129)
         }
       }
     },
-    std::json::Value::Number(x224) => {
+    std::json::Value::Number(x226) => {
       {
-        let x224 = std::json::Value::Number._0(value/123) in
+        let x226 = std::json::Value::Number._0(value/126) in
         {
-          let value/127 = x224 in
-          std::serde::Value::Number(value/127)
+          let value/130 = x226 in
+          std::serde::Value::Number(value/130)
         }
       }
     },
-    std::json::Value::Bool(x225) => {
+    std::json::Value::Bool(x227) => {
       {
-        let x225 = std::json::Value::Bool._0(value/123) in
+        let x227 = std::json::Value::Bool._0(value/126) in
         {
-          let value/128 = x225 in
-          std::serde::Value::Bool(value/128)
+          let value/131 = x227 in
+          std::serde::Value::Bool(value/131)
         }
       }
     },
@@ -6432,60 +6745,66 @@ fn std::json::into_serde_value(value/123: std::json::Value) -> std::serde::Value
   }
 }
 
-fn std::json::to_value(value/129: T) -> std::json::Value {
-  std::json::from_serde_value(std::serde::to_value(value/129))
+fn std::json::to_value(value/132: T) -> std::json::Value {
+  std::json::from_serde_value(std::serde::to_value(value/132))
 }
 
-fn std::json::from_value(value/130: std::json::Value) -> Result[T, string] {
-  std::serde::from_value(std::json::into_serde_value(value/130))
+fn std::json::from_value(value/133: std::json::Value) -> Result[T, string] {
+  std::serde::from_value(std::json::into_serde_value(value/133))
 }
 
-fn std::json::stringify(value/131: T) -> string {
-  std::json::encode(std::json::to_value(value/131))
+fn std::json::stringify(value/134: T) -> string {
+  std::json::encode(std::json::to_value(value/134))
 }
 
-fn std::json::to_string(value/132: T) -> string {
-  std::json::stringify(value/132)
+fn std::json::to_string(value/135: T) -> string {
+  std::json::stringify(value/135)
 }
 
-fn std::json::from_string(input/133: string) -> Result[T, string] {
-  let value/134 =
+fn std::json::from_string(input/136: string) -> Result[T, string] {
+  let value/137 =
     {
-      let mtmp226 = std::json::parse(input/133) in
-      match mtmp226 {
-        Result::Ok(x227) => {
+      let mtmp228 = std::json::parse(input/136) in
+      match mtmp228 {
+        Result::Ok(x229) => {
           {
-            let x227 = Result::Ok._0(mtmp226) in
+            let x229 = Result::Ok._0(mtmp228) in
             {
-              let try_value/2068 = x227 in
-              try_value/2068
+              let try_value/2089 = x229 in
+              try_value/2089
             }
           }
         },
-        Result::Err(x228) => {
+        Result::Err(x230) => {
           {
-            let x228 = Result::Err._0(mtmp226) in
+            let x230 = Result::Err._0(mtmp228) in
             {
-              let try_residual/2068 = x228 in
-              return Result::Err(try_residual/2068)
+              let try_residual/2089 = x230 in
+              return Result::Err(try_residual/2089)
             }
           }
         },
       }
     } in
-  std::json::from_value(value/134)
+  std::json::from_value(value/137)
 }
 
 fn trait_impl#std::serde::Serialize#std::json::Value#serialize(
-  self/135: std::json::Value
+  self/138: std::json::Value
 ) -> std::serde::Value {
-  std::json::into_serde_value(self/135)
+  std::json::into_serde_value(self/138)
 }
 
 fn trait_impl#std::serde::Deserialize#std::json::Value#deserialize(
-  value/136: std::serde::Value
+  value/139: std::serde::Value
 ) -> Result[std::json::Value, string] {
-  Result::Ok(std::json::from_serde_value(value/136))
+  Result::Ok(std::json::from_serde_value(value/139))
+}
+
+fn trait_impl#std::serde::Deserialize#std::json::Value#schema() -> std::serde::TypedSchema[
+  std::json::Value
+] {
+  std::serde::typed_schema(std::serde::Schema::Any)
 }
 
 fn main() -> unit {
