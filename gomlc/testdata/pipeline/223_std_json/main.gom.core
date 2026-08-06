@@ -2167,7 +2167,7 @@ fn trait_impl#std::serde::Deserialize#int#deserialize(value/55: std::serde::Valu
 }
 
 fn trait_impl#std::serde::Deserialize#int#schema() -> std::serde::TypedSchema[int] {
-  std::serde::typed_schema(std::serde::Schema::Integer(true, 64))
+  std::serde::typed_schema(std::serde::Schema::Integer(true, 0))
 }
 
 fn trait_impl#std::serde::Serialize#int8#serialize(self/58: int8) -> std::serde::Value {
@@ -2478,7 +2478,7 @@ fn trait_impl#std::serde::Deserialize#uint#deserialize(value/80: std::serde::Val
 }
 
 fn trait_impl#std::serde::Deserialize#uint#schema() -> std::serde::TypedSchema[uint] {
-  std::serde::typed_schema(std::serde::Schema::Integer(false, 64))
+  std::serde::typed_schema(std::serde::Schema::Integer(false, 0))
 }
 
 fn trait_impl#std::serde::Serialize#uint8#serialize(self/83: uint8) -> std::serde::Value {
@@ -2818,8 +2818,8 @@ fn trait_impl#std::serde::Deserialize#float64#schema() -> std::serde::TypedSchem
 fn trait_impl#std::serde::Serialize#Vec[T]#serialize[T](self/112: Vec[T]) -> std::serde::Value {
   let values/113 =
     {
-      let vec_literal/14381 = inherent#Vec#Vec[std::serde::Value]#new() in
-      vec_literal/14381
+      let vec_literal/14379 = inherent#Vec#Vec[std::serde::Value]#new() in
+      vec_literal/14379
     } in
   let _wild523 =
     {
@@ -2858,8 +2858,8 @@ fn trait_impl#std::serde::Deserialize#Vec[T]#deserialize[T](value/115: std::serd
           {
             let result/117 =
               {
-                let vec_literal/14719 = inherent#Vec#Vec[T]#new() in
-                vec_literal/14719
+                let vec_literal/14717 = inherent#Vec#Vec[T]#new() in
+                vec_literal/14717
               } in
             let _wild556 =
               {
@@ -2918,13 +2918,13 @@ fn trait_impl#std::serde::Deserialize#Vec[T]#schema[T]() -> std::serde::TypedSch
   std::serde::typed_schema(
     std::serde::Schema::Sequence(
       {
-        let vec_literal/15145 = inherent#Vec#Vec[std::serde::Schema]#new() in
+        let vec_literal/15143 = inherent#Vec#Vec[std::serde::Schema]#new() in
         let _wild557 =
           inherent#Vec#Vec[std::serde::Schema]#push(
-            vec_literal/15145,
+            vec_literal/15143,
             std::serde::TypedSchema.value(item/120)
           ) in
-        vec_literal/15145
+        vec_literal/15143
       }
     )
   )
@@ -2937,8 +2937,8 @@ fn trait_impl#std::serde::Serialize#Option[T]#serialize[T](
     Option::None => {
       std::serde::Value::Optional(
         {
-          let vec_literal/15391 = inherent#Vec#Vec[std::serde::Value]#new() in
-          vec_literal/15391
+          let vec_literal/15389 = inherent#Vec#Vec[std::serde::Value]#new() in
+          vec_literal/15389
         }
       )
     },
@@ -2949,13 +2949,13 @@ fn trait_impl#std::serde::Serialize#Option[T]#serialize[T](
           let value/122 = x558 in
           std::serde::Value::Optional(
             {
-              let vec_literal/15328 = inherent#Vec#Vec[std::serde::Value]#new() in
+              let vec_literal/15326 = inherent#Vec#Vec[std::serde::Value]#new() in
               let _wild559 =
                 inherent#Vec#Vec[std::serde::Value]#push(
-                  vec_literal/15328,
+                  vec_literal/15326,
                   trait_call[std::serde::Serialize::serialize](value/122)
                 ) in
-              vec_literal/15328
+              vec_literal/15326
             }
           )
         }
@@ -3057,13 +3057,13 @@ fn trait_impl#std::serde::Deserialize#Option[T]#schema[T]() -> std::serde::Typed
   std::serde::typed_schema(
     std::serde::Schema::Optional(
       {
-        let vec_literal/16280 = inherent#Vec#Vec[std::serde::Schema]#new() in
+        let vec_literal/16278 = inherent#Vec#Vec[std::serde::Schema]#new() in
         let _wild590 =
           inherent#Vec#Vec[std::serde::Schema]#push(
-            vec_literal/16280,
+            vec_literal/16278,
             std::serde::TypedSchema.value(item/127)
           ) in
-        vec_literal/16280
+        vec_literal/16278
       }
     )
   )
@@ -3072,18 +3072,18 @@ fn trait_impl#std::serde::Deserialize#Option[T]#schema[T]() -> std::serde::Typed
 fn trait_impl#std::serde::Serialize#(A,B)#serialize[A, B](self/128: (A, B)) -> std::serde::Value {
   std::serde::Value::Tuple(
     {
-      let vec_literal/16428 = inherent#Vec#Vec[std::serde::Value]#new() in
+      let vec_literal/16426 = inherent#Vec#Vec[std::serde::Value]#new() in
       let _wild591 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/16428,
+          vec_literal/16426,
           trait_call[std::serde::Serialize::serialize](self/128.0)
         ) in
       let _wild592 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/16428,
+          vec_literal/16426,
           trait_call[std::serde::Serialize::serialize](self/128.1)
         ) in
-      vec_literal/16428
+      vec_literal/16426
     }
   )
 }
@@ -3174,18 +3174,18 @@ fn trait_impl#std::serde::Deserialize#(A,B)#schema[A, B]() -> std::serde::TypedS
   std::serde::typed_schema(
     std::serde::Schema::Tuple(
       {
-        let vec_literal/17014 = inherent#Vec#Vec[std::serde::Schema]#new() in
+        let vec_literal/17012 = inherent#Vec#Vec[std::serde::Schema]#new() in
         let _wild602 =
           inherent#Vec#Vec[std::serde::Schema]#push(
-            vec_literal/17014,
+            vec_literal/17012,
             std::serde::TypedSchema.value(first/133)
           ) in
         let _wild603 =
           inherent#Vec#Vec[std::serde::Schema]#push(
-            vec_literal/17014,
+            vec_literal/17012,
             std::serde::TypedSchema.value(second/134)
           ) in
-        vec_literal/17014
+        vec_literal/17012
       }
     )
   )
@@ -3196,23 +3196,23 @@ fn trait_impl#std::serde::Serialize#(A,B,C)#serialize[A, B, C](
 ) -> std::serde::Value {
   std::serde::Value::Tuple(
     {
-      let vec_literal/17197 = inherent#Vec#Vec[std::serde::Value]#new() in
+      let vec_literal/17195 = inherent#Vec#Vec[std::serde::Value]#new() in
       let _wild604 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/17197,
+          vec_literal/17195,
           trait_call[std::serde::Serialize::serialize](self/135.0)
         ) in
       let _wild605 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/17197,
+          vec_literal/17195,
           trait_call[std::serde::Serialize::serialize](self/135.1)
         ) in
       let _wild606 =
         inherent#Vec#Vec[std::serde::Value]#push(
-          vec_literal/17197,
+          vec_literal/17195,
           trait_call[std::serde::Serialize::serialize](self/135.2)
         ) in
-      vec_literal/17197
+      vec_literal/17195
     }
   )
 }
@@ -3331,23 +3331,23 @@ fn trait_impl#std::serde::Deserialize#(A,B,C)#schema[A, B, C]() -> std::serde::T
   std::serde::typed_schema(
     std::serde::Schema::Tuple(
       {
-        let vec_literal/17955 = inherent#Vec#Vec[std::serde::Schema]#new() in
+        let vec_literal/17953 = inherent#Vec#Vec[std::serde::Schema]#new() in
         let _wild619 =
           inherent#Vec#Vec[std::serde::Schema]#push(
-            vec_literal/17955,
+            vec_literal/17953,
             std::serde::TypedSchema.value(first/141)
           ) in
         let _wild620 =
           inherent#Vec#Vec[std::serde::Schema]#push(
-            vec_literal/17955,
+            vec_literal/17953,
             std::serde::TypedSchema.value(second/142)
           ) in
         let _wild621 =
           inherent#Vec#Vec[std::serde::Schema]#push(
-            vec_literal/17955,
+            vec_literal/17953,
             std::serde::TypedSchema.value(third/143)
           ) in
-        vec_literal/17955
+        vec_literal/17953
       }
     )
   )
