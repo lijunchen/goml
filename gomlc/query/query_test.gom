@@ -114,6 +114,25 @@ fn analyzes_toolchain_standard_library_dependencies() -> unit {
 }
 
 #[test]
+fn resolves_qualified_type_without_short_name_collision() -> unit {
+    let root = "../gomlc/testdata/module/project011_complex_dependency_graph";
+    let main_path = root + "/main.gom";
+    let source = "package main; use project011_complex_dependency_graph::core; fn inspect(value: core::Task[int]) -> unit { () } fn main() -> unit { () }";
+    let overrides = Vec::[
+        SourceOverride {
+            path: root + "/core/core.gom",
+            source: "package core; use project011_complex_dependency_graph::math; pub struct Task[T] { pub value: T } pub fn marker(value: math::Marker) -> math::Marker { value }",
+        },
+        SourceOverride {
+            path: root + "/math/math.gom",
+            source: "package math; enum Task { Pending } pub struct Marker {}",
+        },
+    ];
+    let analysis = analyze_with_overrides(main_path, source, overrides);
+    assert_no_diagnostics(analysis)
+}
+
+#[test]
 fn resolves_local_and_function_definitions() -> unit {
     let local_source = "fn main() -> int32 { let value = 42; value }";
     let local_analysis = analyze("main.gom", local_source);
