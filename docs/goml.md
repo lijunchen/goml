@@ -455,7 +455,9 @@ fn table() -> [int; 4] {
 
 A top-level constant initializer is an implicit compile-time context, so `const six: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. Top-level constants retain their scalar-only restriction. A `comptime` expression in ordinary code may produce a reifiable tuple, fixed array, struct, or enum in addition to `unit`, `bool`, integer, `string`, and `char` values.
 
-Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, `break`, `continue`, `return`, recursion, direct calls, and supported integer casts and operators. It cannot capture a surrounding runtime parameter or local. Closures, indirect calls, generic functions, methods, trait or dynamic dispatch, `for`, floating-point computation, `Ref`, `Vec`, `HashMap`, channels, goroutines, extern calls, host I/O, environment access, time, randomness, network access, general type reflection, arbitrary declaration generation, compile-time parameters, value generics, and type-level computation are not supported. The constrained programmable derive interface described below is the only reflection and code-generation facility.
+Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, restricted `for`, `break`, `continue`, `return`, recursion, direct calls, and supported integer casts and operators. A compile-time `for` accepts only a fixed array or the builtin `int` ranges `start..end` and `start..=end`; its source and range endpoints are evaluated once, and its pattern must be irrefutable. The deterministic string methods `len`, `byte_len`, `get`, `byte_get`, `byte_slice`, `is_char_boundary`, `starts_with`, `ends_with`, and `contains` are also available. String indexes and slices use byte offsets and reject invalid UTF-8 character boundaries.
+
+Compile-time code cannot capture a surrounding runtime parameter or local. Closures, indirect calls, generic functions, methods other than the string whitelist, trait or dynamic dispatch, general iterators, floating-point computation, `Ref`, `Vec`, `HashMap`, channels, goroutines, extern calls, host I/O, environment access, time, randomness, network access, general type reflection, arbitrary declaration generation, compile-time parameters, value generics, and type-level computation are not supported. The constrained programmable derive interface described below is the only reflection and code-generation facility.
 
 `compile_error` is accepted only in a `#[comptime]` function, a `comptime` block, or a top-level constant initializer. It terminates compile-time evaluation with its message. If runtime execution of a `#[comptime]` function reaches it, the program traps:
 
@@ -1037,7 +1039,7 @@ for value in values {
 };
 ```
 
-`for pattern in source { ... }` accepts values ​​that implement `IntoIterator`.Both the source expression and the `into_iter` transformation are executed only once.The pattern must be irrefutable and the loop body must return `unit`.`start..end` can be used directly as a native `int` range.
+`for pattern in source { ... }` accepts fixed arrays and values ​​that implement `IntoIterator`.Both the source expression and the `into_iter` transformation are executed only once.The pattern must be irrefutable and the loop body must return `unit`.`start..end` can be used directly as a native `int` range.
 
 Tuple destructuring can be used directly in loops:
 
@@ -1047,7 +1049,7 @@ for (key, value) in pairs {
 };
 ```
 
-`Vec[T]`, `Slice[T]` and all `Iterator` have corresponding `IntoIterator` implementations.
+Fixed arrays use a native indexed loop. `Vec[T]`, `Slice[T]` and all `Iterator` values have corresponding `IntoIterator` implementations.
 
 ### `break`, `continue` and `return`
 
@@ -1651,13 +1653,19 @@ derive_attribute_count/name/text(...)
 derive_field_attribute_count/name/text(...)
 derive_variant_attribute_count/name/text(...)
 derive_variant_field_attribute_count/name/text(...)
+derive_attribute(input, index) -> MetaAttribute
+derive_field_attribute(input, field, index) -> MetaAttribute
+derive_variant_attribute(input, variant, index) -> MetaAttribute
+derive_variant_field_attribute(input, variant, field, index) -> MetaAttribute
 derive_target_type(input) -> MetaType
 derive_fresh_name(input, prefix) -> string
 ```
 
 `derive_item_kind` returns zero for a struct and one for an enum. The count operation for a nested attribute takes the owner indexes; its name and text operations take one additional attribute index. Field operations require a struct, while variant operations require an enum. Invalid kinds and indexes are compile-time errors at the `#[derive(...)]` site. Attributes may be attached to struct fields, enum variants, and tuple or named variant fields. `name` returns the attribute name and `text` returns its complete source spelling.
 
-The structured output API provides opaque `MetaType`, `MetaExpr`, `MetaPattern`, `MetaArm`, `MetaBlock`, `MetaParamList`, `MetaMethod`, and list handles. Constructors use the `meta_type_*`, `meta_expr_*`, `meta_pattern_*`, `meta_arm*`, `meta_block_*`, and `meta_param_list_*` families. `meta_method` creates a concrete, non-generic trait method. A handler creates its single result with `derive_output_new` or `derive_output_new_call_site`, adds trait predicates and methods, and returns it.
+The structured attribute handle exposes `meta_attribute_name`, `meta_attribute_text`, `meta_attribute_has_argument_list`, `meta_attribute_argument_count`, `meta_attribute_argument_kind`, and `meta_attribute_argument_text`. Argument kind is `ident`, `path`, or `string`, and argument text is decoded rather than raw source spelling.
+
+The structured output API provides opaque `MetaAttribute`, `MetaType`, `MetaExpr`, `MetaPattern`, `MetaArm`, `MetaBlock`, `MetaParamList`, `MetaMethod`, and list handles. Constructors use the `meta_type_*`, `meta_expr_*`, `meta_pattern_*`, `meta_arm*`, `meta_block_*`, and `meta_param_list_*` families. `meta_method` creates a concrete, non-generic trait method. A handler creates its single result with `derive_output_new` or `derive_output_new_call_site`, adds trait predicates and methods, and returns it.
 
 The builder operations are:
 
@@ -1669,35 +1677,62 @@ meta_type_list_push(list, type) -> unit
 meta_type_tuple(list) -> MetaType
 meta_type_apply(type, arguments) -> MetaType
 meta_type_array(element, length) -> MetaType
+meta_type_kind/name(type) -> string
+meta_type_argument_count/argument(type, index...) -> int | MetaType
+meta_type_tuple_count/tuple_item(type, index...) -> int | MetaType
+meta_type_array_length/array_element(type) -> int | MetaType
+meta_type_function_parameter_count/parameter(type, index...) -> int | MetaType
+meta_type_function_return(type) -> MetaType
+meta_type_contains_generic(input, type) -> bool
 
 meta_expr_var(name) -> MetaExpr
-meta_expr_unit/bool/int/string(value...) -> MetaExpr
+meta_expr_unit/bool/int/string/char(value...) -> MetaExpr
 meta_expr_field(value, name) -> MetaExpr
 meta_expr_index(value, index) -> MetaExpr
+meta_expr_unary(operator, value) -> MetaExpr
 meta_expr_binary(operator, left, right) -> MetaExpr
 meta_expr_call(input, name, arguments) -> MetaExpr
 meta_expr_call_site(name, arguments) -> MetaExpr
+meta_expr_method_call(receiver, name, arguments) -> MetaExpr
+meta_expr_constructor(name, arguments) -> MetaExpr
 meta_expr_tuple/array(elements) -> MetaExpr
+meta_expr_field_list_new() -> MetaExprFieldList
+meta_expr_field_list_push(list, name, value) -> unit
+meta_expr_struct(input, name, fields) -> MetaExpr
+meta_expr_struct_call_site(name, fields) -> MetaExpr
 meta_expr_if(condition, then, else) -> MetaExpr
 meta_expr_match(value, arms) -> MetaExpr
 meta_expr_cast(value, type) -> MetaExpr
+meta_expr_return(value) -> MetaExpr
 meta_expr_list_new() -> MetaExprList
 meta_expr_list_push(list, expression) -> unit
 
 meta_pattern_wild() -> MetaPattern
 meta_pattern_bind(name) -> MetaPattern
-meta_pattern_tuple(patterns) -> MetaPattern
+meta_pattern_unit/bool/int/string/char(value...) -> MetaPattern
+meta_pattern_tuple/array(patterns) -> MetaPattern
 meta_pattern_constructor(name, patterns) -> MetaPattern
+meta_pattern_field_list_new() -> MetaPatternFieldList
+meta_pattern_field_list_push(list, name, pattern) -> unit
+meta_pattern_struct(name, fields, has_rest) -> MetaPattern
+meta_pattern_alias(name, pattern) -> MetaPattern
+meta_pattern_or(patterns) -> MetaPattern
+meta_pattern_range(start, end, inclusive) -> MetaPattern
 meta_pattern_list_new() -> MetaPatternList
 meta_pattern_list_push(list, pattern) -> unit
 meta_arm(pattern, expression) -> MetaArm
+meta_arm_guarded(pattern, guard, expression) -> MetaArm
 meta_arm_list_new() -> MetaArmList
 meta_arm_list_push(list, arm) -> unit
 
 meta_block_new() -> MetaBlock
 meta_block_let(block, name, value) -> unit
+meta_block_let_mut(block, name, value) -> unit
+meta_block_let_pattern(block, pattern, value) -> unit
+meta_block_assign(block, target, value) -> unit
 meta_block_expr(block, expression) -> unit
 meta_block_finish(block, tail) -> MetaExpr
+meta_block_finish_unit(block) -> MetaExpr
 meta_param_list_new() -> MetaParamList
 meta_param_list_push(list, name, type) -> unit
 meta_method(name, parameters, return_type, body) -> MetaMethod
@@ -1709,7 +1744,7 @@ derive_output_add_call_site_predicate(output, type, trait_name) -> unit
 derive_output_add_method(output, method) -> unit
 ```
 
-`meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
+`meta_expr_unary` uses operator numbers `0..2` for `-`, `!`, and `~`. `meta_expr_binary` uses operator numbers `0..17` for `+`, `-`, `*`, `/`, `%`, `&`, `|`, `^`, `<<`, `>>`, `&&`, `||`, `<`, `>`, `<=`, `>=`, `==`, and `!=`, respectively. `meta_type_kind` returns `primitive`, `named`, `tuple`, `application`, `array`, `function`, or `dyn`; shape-specific accessors reject other kinds. List handles are mutable only through their matching `push` operation and remain local to one derive evaluation.
 
 Unqualified names passed to `derive_output_new`, `derive_output_add_predicate`, `meta_type_named`, and `meta_expr_call` resolve in the handler's defining package. Their `_call_site` variants resolve in the target package. `derive_fresh_name` should be used for generated local bindings that must not collide with user names. Constructor patterns describe the target item and resolve at the call site.
 
@@ -1913,6 +1948,8 @@ Each test is executed in a separate runner process, and failure to exit and time
 ### LSP and editor
 
 LSP will construct the analysis package according to the production file, white box test file and black box test file respectively according to the path, so diagnosis, completion, hover and jump follow the corresponding visibility.`Run Test` CodeLens will appear on the `#[test]` function; the VS Code extension will save the dirty file first, and then call the module-level `goml test` with the complete test name and test type.
+
+The custom `goml/expandedDerive` request returns the formatted AST after built-in and programmable derives have run for the requested document. The VS Code command `GoML: Show Expanded Derive` opens that result beside the source file.
 
 `gomllsp` supports full-document formatting through `textDocument/formatting`. Formatting uses the latest unsaved document text and the fixed rules described in `docs/formatting.md`. Invalid documents are left unchanged.
 
@@ -2119,7 +2156,7 @@ let total = iter::fold(values, 0, |sum: int, value: int| sum + value);
 - adapters: `map`, `filter`, `filter_map`, `take`, `take_while`, `skip`, `skip_while`, `enumerate`, `zip`, `chain`, `inspect`, and `map_while`
 - consumers: `fold`, `collect`, `find`, `find_map`, `any`, `all`, `count`, `position`, `nth`, `last`, `for_each`, and `reduce`
 
-Iterators are single pass.`Vec[T]` and `Slice[T]` can be directly used in `for`, and the value implementing `Iterator` is also directly iterable through the identity `IntoIterator`.
+Iterators are single pass. Fixed arrays use native indexed `for` lowering. `Vec[T]` and `Slice[T]` can be directly used in `for`, and a value implementing `Iterator` is also directly iterable through the identity `IntoIterator`.
 
 ## Standard library package
 
@@ -2474,6 +2511,6 @@ goml fmt
 
 `goml check`, `goml build`, `goml test`, and `goml fmt` always operate on the complete module and do not accept package or file targets. `goml run [TARGET]` accepts an optional entry package file or directory when a module has multiple executable packages.
 
-When you need to inspect a compilation phase, add `--dump-ast`, `--dump-hir`, `--dump-tast`, `--dump-core`, `--dump-mono`, `--dump-lift`, `--dump-anf`, or `--dump-go` to `gomlc run-single`.
+When you need to inspect a compilation phase, add `--dump-ast`, `--dump-expanded-ast`, `--dump-hir`, `--dump-tast`, `--dump-ctir`, `--dump-core`, `--dump-mono`, `--dump-lift`, `--dump-anf`, or `--dump-go` to `gomlc run-single`. `--dump-ast` shows source lowering before derive expansion, while `--dump-expanded-ast` includes every generated implementation.
 
 The code agent should at least run the corresponding `goml check` or `gomlc run-single` before submitting the source code; when modifying the test, it should also run `goml check --tests` and the related `goml test`.When type inference fails, give priority to adding local result types, empty container types, closure parameter types, or using UFCS instead of rewriting to unsupported Rust/Go syntax.

@@ -98,6 +98,9 @@ fn initialize_result() -> json::Value {
     push_json_field(capabilities, "codeLensProvider", json::Value::Object(code_lens));
     push_json_field(capabilities, "codeActionProvider", json::Value::Bool(true));
     push_json_field(capabilities, "documentFormattingProvider", json::Value::Bool(true));
+    let experimental: Vec[(string, json::Value)] = Vec::[];
+    push_json_field(experimental, "expandedDerive", json::Value::Bool(true));
+    push_json_field(capabilities, "experimental", json::Value::Object(experimental));
     let server_info: Vec[(string, json::Value)] = Vec::[];
     push_json_field(server_info, "name", json::Value::String("gomllsp"));
     push_json_field(server_info, "version", json::Value::String(version::current()));
@@ -182,6 +185,12 @@ fn hover_response(server: Server, params: json::Value) -> Result[json::Value, st
         push_json_field(result, "contents", json::Value::Object(contents));
         Result::Ok(json::Value::Object(result))
     }
+}
+
+fn expanded_derive_response(server: Server, params: json::Value) -> Result[json::Value, string] {
+    let document = request_document(server, params)?;
+    let analysis = document_analysis(server, document);
+    Result::Ok(json::Value::String(query::expanded_derive(analysis)))
 }
 
 fn completion_kind(value: query::CompletionKind) -> int {
@@ -560,6 +569,8 @@ fn request_result(server: Server, message: RpcMessage) -> Result[json::Value, st
         Result::Ok(json::Value::Null)
     } else if message.method == "textDocument/hover" {
         hover_response(server, message.params)
+    } else if message.method == "goml/expandedDerive" {
+        expanded_derive_response(server, message.params)
     } else if message.method == "textDocument/completion" {
         completion_response(server, message.params)
     } else if message.method == "textDocument/signatureHelp" {

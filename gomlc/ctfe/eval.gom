@@ -1274,6 +1274,111 @@ fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: 
                 }
             }
         },
+        ctir::CtExprKind::ForRange { target, pattern, start, end, inclusive, body } => {
+            let mut current = expect_value(
+                state,
+                module,
+                start.origin,
+                eval_expr(state, module, frame, start)?,
+            )?;
+            let end_value = expect_value(
+                state,
+                module,
+                end.origin,
+                eval_expr(state, module, frame, end)?,
+            )?;
+            loop {
+                consume_fuel(state, module, value.origin)?;
+                let comparison = eval_binary_values(
+                    state,
+                    module,
+                    value.origin,
+                    if inclusive {
+                        ctir::CtBinaryOp::LessEq
+                    } else {
+                        ctir::CtBinaryOp::Less
+                    },
+                    current,
+                    end_value,
+                )?;
+                match comparison {
+                    ctir::CtValue::Bool(false) => return Result::Ok(
+                        EvalFlow::Value(ctir::CtValue::Unit),
+                    ),
+                    ctir::CtValue::Bool(true) => (),
+                    _ => return Result::Err(
+                        ct_error(state, module, value.origin, "comptime range is not integer"),
+                    ),
+                };
+                if !match_pattern(pattern, current, frame) {
+                    return Result::Err(
+                        ct_error(state, module, value.origin, "comptime for pattern did not match"),
+                    )
+                } else {};
+                match eval_expr(state, module, frame, body)? {
+                    EvalFlow::Value(_) => (),
+                    EvalFlow::Continue { target: branch_target } => if branch_target == target {} else {
+                        return Result::Ok(EvalFlow::Continue { target: branch_target })
+                    },
+                    EvalFlow::Break { target: branch_target, value: result } => if branch_target
+                        == target {
+                        return Result::Ok(EvalFlow::Value(ctir::CtValue::Unit))
+                    } else {
+                        return Result::Ok(EvalFlow::Break { target: branch_target, value: result })
+                    },
+                    flow => return Result::Ok(flow),
+                };
+                if inclusive && values_equal(current, end_value) {
+                    return Result::Ok(EvalFlow::Value(ctir::CtValue::Unit))
+                } else {};
+                current = eval_binary_values(
+                    state,
+                    module,
+                    value.origin,
+                    ctir::CtBinaryOp::Add,
+                    current,
+                    integer_value(true, module.target.int_width, 1),
+                )?;
+            }
+        },
+        ctir::CtExprKind::ForArray { target, pattern, value: source, body } => {
+            let source = expect_value(
+                state,
+                module,
+                source.origin,
+                eval_expr(state, module, frame, source)?,
+            )?;
+            let values = match source {
+                ctir::CtValue::Array(values) => values,
+                _ => return Result::Err(
+                    ct_error(state, module, value.origin, "comptime for source is not an array"),
+                ),
+            };
+            let mut index = 0;
+            while index < values.len() {
+                consume_fuel(state, module, value.origin)?;
+                if !match_pattern(pattern, values[index], frame) {
+                    return Result::Err(
+                        ct_error(state, module, value.origin, "comptime for pattern did not match"),
+                    )
+                } else {};
+                match eval_expr(state, module, frame, body)? {
+                    EvalFlow::Value(_) => (),
+                    EvalFlow::Continue { target: branch_target } => if branch_target == target {} else {
+                        return Result::Ok(EvalFlow::Continue { target: branch_target })
+                    },
+                    EvalFlow::Break { target: branch_target, value: result } => if branch_target
+                        == target {
+                        return Result::Ok(EvalFlow::Value(ctir::CtValue::Unit))
+                    } else {
+                        return Result::Ok(EvalFlow::Break { target: branch_target, value: result })
+                    },
+                    flow => return Result::Ok(flow),
+                };
+                index = index + 1;
+            }
+            Result::Ok(EvalFlow::Value(ctir::CtValue::Unit))
+        },
         ctir::CtExprKind::Loop { target, body } => loop {
             match eval_expr(state, module, frame, body)? {
                 EvalFlow::Value(_) => (),
@@ -1318,6 +1423,19 @@ fn eval_expr(state: EvalState, module: ctir::CtModule, frame: EvalFrame, value: 
             let args = eval_values(state, module, frame, args)?;
             match target {
                 ctir::CtCallTarget::Intrinsic(name) => {
+                    match call_value_intrinsic(module.target, name, args) {
+                        Some(result) => return match result {
+                            Ok(result) => Result::Ok(
+                                EvalFlow::Value(
+                                    allocate_value(state, module, value.origin, result)?,
+                                ),
+                            ),
+                            Err(message) => {
+                                Result::Err(ct_error(state, module, value.origin, message))
+                            },
+                        },
+                        None => (),
+                    };
                     let Some(derive_state) = state.derive_state else {
                         return Result::Err(
                             ct_error(

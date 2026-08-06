@@ -186,6 +186,20 @@ pub enum CtExprKind {
         condition: CtExpr,
         body: CtExpr,
     },
+    ForRange {
+        target: int,
+        pattern: CtPattern,
+        start: CtExpr,
+        end: CtExpr,
+        inclusive: bool,
+        body: CtExpr,
+    },
+    ForArray {
+        target: int,
+        pattern: CtPattern,
+        value: CtExpr,
+        body: CtExpr,
+    },
     Loop {
         target: int,
         body: CtExpr,
@@ -360,6 +374,15 @@ fn collect_reachable_expr(
         },
         While { target: _, condition, body } => {
             collect_reachable_expr(package_name, condition, ids, constants);
+            collect_reachable_expr(package_name, body, ids, constants)
+        },
+        ForRange { target: _, pattern: _, start, end, inclusive: _, body } => {
+            collect_reachable_expr(package_name, start, ids, constants);
+            collect_reachable_expr(package_name, end, ids, constants);
+            collect_reachable_expr(package_name, body, ids, constants)
+        },
+        ForArray { target: _, pattern: _, value, body } => {
+            collect_reachable_expr(package_name, value, ids, constants);
             collect_reachable_expr(package_name, body, ids, constants)
         },
         Loop { target: _, body } => collect_reachable_expr(package_name, body, ids, constants),

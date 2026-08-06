@@ -750,6 +750,64 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
                 Result::Err("CTIR while condition is not bool")
             }
         },
+        ctir::CtExprKind::ForRange { target, pattern, start, end, inclusive: _, body } => {
+            verify_expr(ctx, start)?;
+            verify_expr(ctx, end)?;
+            let item_ty = ctir::CtType::Integer { signed: true, width: ctx.module.target.int_width };
+            verify_pattern(ctx, pattern, item_ty)?;
+            let loops = ctx.loop_targets;
+            loops.push((target, ctir::CtType::Unit, false));
+            verify_expr(
+                VerifyContext {
+                    module: ctx.module,
+                    dependencies: ctx.dependencies,
+                    local_count: ctx.local_count,
+                    local_types: ctx.local_types,
+                    return_type: ctx.return_type,
+                    loop_targets: loops,
+                    value_nodes: ctx.value_nodes,
+                    value_bytes: ctx.value_bytes,
+                },
+                body,
+            )?;
+            if types_equal(value.ty, ctir::CtType::Unit)
+                && expression_type_matches(item_ty, start.ty)
+                && expression_type_matches(item_ty, end.ty)
+                && expression_type_matches(ctir::CtType::Unit, body.ty) {
+                Result::Ok(())
+            } else {
+                Result::Err("invalid CTIR range for expression types")
+            }
+        },
+        ctir::CtExprKind::ForArray { target, pattern, value: source, body } => {
+            verify_expr(ctx, source)?;
+            let item_ty = match source.ty {
+                ctir::CtType::Array { len: _, elem } => elem,
+                _ => return Result::Err("CTIR array for source is not an array"),
+            };
+            verify_pattern(ctx, pattern, item_ty)?;
+            let loops = ctx.loop_targets;
+            loops.push((target, ctir::CtType::Unit, false));
+            verify_expr(
+                VerifyContext {
+                    module: ctx.module,
+                    dependencies: ctx.dependencies,
+                    local_count: ctx.local_count,
+                    local_types: ctx.local_types,
+                    return_type: ctx.return_type,
+                    loop_targets: loops,
+                    value_nodes: ctx.value_nodes,
+                    value_bytes: ctx.value_bytes,
+                },
+                body,
+            )?;
+            if types_equal(value.ty, ctir::CtType::Unit)
+                && expression_type_matches(ctir::CtType::Unit, body.ty) {
+                Result::Ok(())
+            } else {
+                Result::Err("invalid CTIR array for expression types")
+            }
+        },
         ctir::CtExprKind::Loop { target, body } => {
             let loops = ctx.loop_targets;
             loops.push((target, value.ty, true));
@@ -824,11 +882,15 @@ fn verify_expr(ctx: VerifyContext, value: ctir::CtExpr) -> Result[unit, string] 
         ctir::CtExprKind::Call { target, args } => {
             match target {
                 ctir::CtCallTarget::Intrinsic(name) => {
-                    let Some(signature) = derive_intrinsic_signature(ctx.module, name) else {
-                        return Result::Err("unknown CTIR derive intrinsic")
+                    let signature = match value_intrinsic_signature(ctx.module.target, name) {
+                        Some(value) => Option::Some(value),
+                        None => derive_intrinsic_signature(ctx.module, name),
+                    };
+                    let Some(signature) = signature else {
+                        return Result::Err("unknown CTIR intrinsic")
                     };
                     if !types_equal(value.ty, signature.1) {
-                        return Result::Err("CTIR derive intrinsic return type mismatch")
+                        return Result::Err("CTIR intrinsic return type mismatch")
                     } else {};
                     return verify_expr_list(ctx, args, signature.0)
                 },

@@ -3964,7 +3964,11 @@ fn check_for_expr(
     let iterator = check_expr(ctx, iterator_source, Option::None);
     let source_ty = expr_type(iterator);
     let into_iterator_ref = TraitRef { name: "IntoIterator", args: Vec::[] };
-    if !trait_bound_satisfied_at(ctx, source_ty, into_iterator_ref, Vec::[]) {
+    let fixed_array = match normalize_type(ctx, source_ty) {
+        Array { len: _, elem: _ } => true,
+        _ => false,
+    };
+    if !fixed_array && !trait_bound_satisfied_at(ctx, source_ty, into_iterator_ref, Vec::[]) {
         push_diagnostic_at(
             ctx,
             "for loop expects a type implementing IntoIterator, got " + type_text(source_ty),

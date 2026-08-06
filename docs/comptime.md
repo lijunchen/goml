@@ -24,7 +24,7 @@ The phase boundary has three invariants:
 - Every imported CTIR unit is treated as untrusted data and verified before it enters a dependency environment.
 - Finalized TAST contains no `Comptime` expression. Core lowering checks this invariant again, so Core and every later IR are independent of CTFE.
 
-CTIR is a typed, direct-call, tree-walking representation. It contains deterministic values, local state, structured control flow, pattern matching, direct calls, and `compile_error`. It has no closures, indirect calls, dynamic dispatch, runtime hooks, host I/O, references, channels, or concurrency. Local slot types, call signatures, control-flow targets, source-origin IDs, structured value types, and target compatibility are verified before evaluation.
+CTIR is a typed, direct-call, tree-walking representation. It contains deterministic values, local state, structured control flow, pattern matching, fixed-array and builtin-range iteration, direct calls, deterministic string intrinsics, and `compile_error`. It has no closures, indirect calls, dynamic dispatch, runtime hooks, host I/O, references, channels, or concurrency. Local slot types, call signatures, control-flow targets, source-origin IDs, structured value types, and target compatibility are verified before evaluation.
 
 Evaluation uses semantic fuel, call-depth, temporary-node, temporary-memory, and final-result-size limits. It never uses a wall-clock deadline. Direct-call results are memoized only within the current evaluation. Integer values store signedness, width, and raw bits; the CTIR target specification determines the width of `int` and `uint` and participates in semantic hashing.
 
@@ -48,10 +48,12 @@ source → parser → CST → AST → resolve derive entry → evaluate handler
                                           HIR → TAST → ordinary CTFE
 ```
 
-The handler was type checked and lowered to CTIR when its defining package was compiled. The consuming package never executes untyped source or host code. Evaluation receives an opaque `DeriveInput` handle and must return an opaque `DeriveOutput` handle. Compiler intrinsics expose read-only item metadata and construct a structured implementation. The result cannot contain arbitrary tokens or declarations, and it enters normal HIR lowering, name resolution, coherence checking, type checking, monomorphization, and code generation.
+The handler was type checked and lowered to CTIR when its defining package was compiled. The consuming package never executes untyped source or host code. Evaluation receives an opaque `DeriveInput` handle and must return an opaque `DeriveOutput` handle. Compiler intrinsics expose structured attributes and type shapes through opaque `MetaAttribute` and `MetaType` handles, and expression, pattern, arm, block, and method builders construct a structured implementation. The result cannot contain arbitrary tokens or declarations, and it enters normal HIR lowering, name resolution, coherence checking, type checking, monomorphization, and code generation.
 
 Public `#[comptime_derive]` entries and the reachable closure of private derive helpers are part of the interface CTIR semantic section. A derive body change therefore changes the interface hash. Derive entries are not runtime exports. The interface decoder verifies meta types, intrinsic signatures, direct-call targets, IDs, and the semantic hash before evaluation.
 
 Definition-site builders qualify unqualified trait, type, and function names with the handler package. Explicit call-site builders leave names in the target package scope. Generated local bindings use handler-selected names; `derive_fresh_name` provides collision-free compiler names. Generated nodes use the requesting derive attribute as their diagnostic origin.
 
 Derive evaluation uses the normal fuel, depth, value-node, and temporary-memory limits. It additionally permits at most 100,000 metadata or syntax-builder operations. Derive calls are not memoized because their opaque arena handles are evaluation-local.
+
+The query layer retains formatted post-expansion AST per source file. `gomlc run-single --dump-expanded-ast` and the LSP `goml/expandedDerive` request expose the same expansion boundary without bypassing normal derive evaluation or diagnostics.

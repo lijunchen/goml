@@ -10,6 +10,7 @@ import {
     TaskScope,
     tasks,
     Uri,
+    ViewColumn,
     window,
     workspace,
 } from 'vscode';
@@ -56,6 +57,28 @@ export function activate(context: ExtensionContext) {
                 await tasks.executeTask(task);
             }
         )
+    );
+
+    context.subscriptions.push(
+        commands.registerCommand('goml.showExpandedDerive', async () => {
+            const editor = window.activeTextEditor;
+            if (!editor || editor.document.languageId !== 'goml') {
+                window.showErrorMessage('Open a GoML source file to show expanded derives.');
+                return;
+            }
+            if (!client) {
+                window.showErrorMessage('GoML language server is not running.');
+                return;
+            }
+            const text = await client.sendRequest<string>('goml/expandedDerive', {
+                textDocument: { uri: editor.document.uri.toString() },
+            });
+            const document = await workspace.openTextDocument({ language: 'goml', content: text });
+            await window.showTextDocument(document, {
+                preview: true,
+                viewColumn: ViewColumn.Beside,
+            });
+        })
     );
 
     const serverPath = findServerPath(context);

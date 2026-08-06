@@ -17,12 +17,14 @@ pub struct Analysis {
     pub environments: Vec[tast::DependencyEnvironment],
     pub parse: cst::ParseResult,
     pub syntax: SyntaxIndex,
+    pub expanded_source: string,
     pub checked: tast::CheckResult,
 }
 
 struct LoweredPackage {
     name: string,
     files: Vec[hir::File],
+    expanded_sources: Vec[(string, string)],
     diagnostics: Vec[tast::Diagnostic],
 }
 
@@ -30,6 +32,7 @@ struct ProjectCheck {
     checked: tast::CheckResult,
     sources: Vec[SourceFile],
     environments: Vec[tast::DependencyEnvironment],
+    expanded_sources: Vec[(string, string)],
 }
 
 fn query_diagnostic(source_path: string, stage: string, message: string, span: Option[ast::Span]) -> tast::Diagnostic {
@@ -59,16 +62,14 @@ fn failed_check(source_path: string, stage: string, message: string) -> tast::Ch
 
 fn lower_package(value: Project, derive_modules: Vec[ctir::CtModule]) -> LoweredPackage {
     let inputs: Vec[(ast::LowerResult, string)] = Vec::[];
+    let expanded_sources: Vec[(string, string)] = Vec::[];
     for file in value.files {
-        inputs.push(
-            (
-                hir::expand_derives_with_comptime(
-                    ast::lower(parser::parse(file.source)),
-                    derive_modules,
-                ),
-                file.path,
-            ),
-        )
+        let expanded = hir::expand_derives_with_comptime(
+            ast::lower(parser::parse(file.source)),
+            derive_modules,
+        );
+        expanded_sources.push((file.path, ast::pretty(expanded)));
+        inputs.push((expanded, file.path))
     }
     let lowered = hir::lower_expanded_package_files(inputs, value.package_name);
     let files: Vec[hir::File] = Vec::[];
@@ -84,7 +85,16 @@ fn lower_package(value: Project, derive_modules: Vec[ctir::CtModule]) -> Lowered
             None => (),
         }
     }
-    LoweredPackage { name: value.package_name, files, diagnostics }
+    LoweredPackage { name: value.package_name, files, expanded_sources, diagnostics }
+}
+
+fn expanded_source_for_path(values: Vec[(string, string)], source_path: string) -> string {
+    for value in values {
+        if value.0 == source_path {
+            return value.1
+        } else {}
+    }
+    ""
 }
 
 fn environments_with_comptime(files: Vec[hir::File], modules: Vec[ctir::CtModule]) -> Vec[
@@ -276,7 +286,12 @@ fn check_project(value: Project, overrides: Vec[SourceOverride]) -> ProjectCheck
             query_diagnostic("", "resources", error, Option::None),
         ),
     };
-    ProjectCheck { checked, sources: all_sources, environments }
+    ProjectCheck {
+        checked,
+        sources: all_sources,
+        environments,
+        expanded_sources: entry.expanded_sources,
+    }
 }
 
 fn single_file_analysis(
@@ -317,6 +332,7 @@ fn single_file_analysis(
         environments: result.environments,
         parse: parsed,
         syntax,
+        expanded_source: expanded_source_for_path(result.expanded_sources, source_path),
         checked: result.checked,
     }
 }
@@ -337,6 +353,7 @@ pub fn analyze_with_overrides(source_path: string, source: string, overrides: Ve
                 environments: result.environments,
                 parse: parsed,
                 syntax,
+                expanded_source: expanded_source_for_path(result.expanded_sources, source_path),
                 checked: result.checked,
             }
         },
@@ -352,6 +369,7 @@ pub fn analyze_with_overrides(source_path: string, source: string, overrides: Ve
             environments: Vec::[],
             parse: parsed,
             syntax,
+            expanded_source: source,
             checked: failed_check(source_path, "project", error),
         },
     }
@@ -363,4 +381,8 @@ pub fn analyze(source_path: string, source: string) -> Analysis {
 
 pub fn diagnostics(value: Analysis) -> Vec[tast::Diagnostic] {
     value.checked.diagnostics
+}
+
+pub fn expanded_derive(value: Analysis) -> string {
+    value.expanded_source
 }

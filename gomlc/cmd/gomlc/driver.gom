@@ -26,6 +26,7 @@ use std::process;
 use std::text;
 
 pub struct Compilation {
+    pub source_ast_value: ast::LowerResult,
     pub ast_value: ast::LowerResult,
     pub hir_value: hir::LowerResult,
     pub tast_value: tast::CheckResult,
@@ -1289,15 +1290,15 @@ fn fail_on_missing_single_file_entrypoint(value: tast::CheckResult) -> unit {
 pub fn compile_source(source_path: string, source: string) -> Compilation {
     let parsed = parser::parse(source);
     fail_on_ast_diagnostics(parsed.diagnostics, "parser", source_path, source);
-    let ast_value = ast::lower(parsed);
-    fail_on_ast_diagnostics(ast_value.diagnostics, "lower", source_path, source);
-    match single_file_project_import(ast_value) {
+    let source_ast_value = ast::lower(parsed);
+    fail_on_ast_diagnostics(source_ast_value.diagnostics, "lower", source_path, source);
+    match single_file_project_import(source_ast_value) {
         Some(package_path) => fail(
             "error[compile]: single-file compilation cannot use project package " + package_path,
         ),
         None => (),
     };
-    let ast_value = hir::expand_derives(ast_value);
+    let ast_value = hir::expand_derives(source_ast_value);
     fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
     let counter = Ref::new(0);
@@ -1334,6 +1335,7 @@ pub fn compile_source(source_path: string, source: string) -> Compilation {
     let anf_value = anf::lower_with_counter(lift_value, counter);
     let go_value = lower_go_or_fail(go_backend::lower(anf_value));
     Compilation {
+        source_ast_value,
         ast_value,
         hir_value,
         tast_value,
@@ -1352,19 +1354,19 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
             compact_ast_diagnostics(parsed.diagnostics, source, true),
         )
     } else {};
-    let ast_value = ast::lower(parsed);
-    if !ast_value.diagnostics.is_empty() {
+    let source_ast_value = ast::lower(parsed);
+    if !source_ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
-            compact_ast_diagnostics(ast_value.diagnostics, source, false),
+            compact_ast_diagnostics(source_ast_value.diagnostics, source, false),
         )
     } else {};
-    match single_file_project_import(ast_value) {
+    match single_file_project_import(source_ast_value) {
         Some(package_path) => return SourceCompilation::Diagnostics(
             "single-file compilation cannot use project package " + package_path + "\n",
         ),
         None => (),
     };
-    let ast_value = hir::expand_derives(ast_value);
+    let ast_value = hir::expand_derives(source_ast_value);
     if !ast_value.diagnostics.is_empty() {
         return SourceCompilation::Diagnostics(
             compact_ast_diagnostics(ast_value.diagnostics, source, false),
@@ -1420,6 +1422,7 @@ pub fn compile_source_or_diagnostics(source_path: string, source: string) -> Sou
             let go_value = lower_go_or_fail(go_backend::lower(anf_value));
             SourceCompilation::Compiled(
                 Compilation {
+                    source_ast_value,
                     ast_value,
                     hir_value,
                     tast_value,
@@ -1484,7 +1487,10 @@ fn encode_comptime_module(value: tast::CheckResult) -> string {
 fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> unit {
     let printed = Ref::new(false);
     if args.dump_ast {
-        print_dump(printed, "AST", ast::pretty(compilation.ast_value))
+        print_dump(printed, "AST", ast::pretty(compilation.source_ast_value))
+    } else {};
+    if args.dump_expanded_ast {
+        print_dump(printed, "Expanded AST", ast::pretty(compilation.ast_value))
     } else {};
     if args.dump_hir {
         print_dump(printed, "HIR", hir::encode(compilation.hir_value))

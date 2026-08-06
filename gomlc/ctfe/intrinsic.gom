@@ -1,0 +1,190 @@
+package ctfe;
+
+use gomlc::ctir;
+
+fn intrinsic_int_type(target: ctir::CtTarget) -> ctir::CtType {
+    ctir::CtType::Integer { signed: true, width: target.int_width }
+}
+
+fn intrinsic_int_value(target: ctir::CtTarget, value: int) -> ctir::CtValue {
+    ctir::CtValue::Integer { signed: true, width: target.int_width, bits: value as uint64 }
+}
+
+fn one_intrinsic_type(value: ctir::CtType) -> Vec[ctir::CtType] {
+    Vec::[value]
+}
+
+fn two_intrinsic_types(first: ctir::CtType, second: ctir::CtType) -> Vec[ctir::CtType] {
+    Vec::[first, second]
+}
+
+fn three_intrinsic_types(first: ctir::CtType, second: ctir::CtType, third: ctir::CtType) -> Vec[
+    ctir::CtType,
+] {
+    Vec::[first, second, third]
+}
+
+pub fn value_intrinsic_signature(target: ctir::CtTarget, name: string) -> Option[
+    (Vec[ctir::CtType], ctir::CtType),
+] {
+    let int_ty = intrinsic_int_type(target);
+    if name == "comptime.string.len" || name == "comptime.string.byte_len" {
+        Option::Some((one_intrinsic_type(ctir::CtType::String), int_ty))
+    } else if name == "comptime.string.get" {
+        Option::Some((two_intrinsic_types(ctir::CtType::String, int_ty), ctir::CtType::Char))
+    } else if name == "comptime.string.byte_get" {
+        Option::Some(
+            (
+                two_intrinsic_types(ctir::CtType::String, int_ty),
+                ctir::CtType::Integer { signed: false, width: 8 },
+            ),
+        )
+    } else if name == "comptime.string.byte_slice" {
+        Option::Some(
+            (three_intrinsic_types(ctir::CtType::String, int_ty, int_ty), ctir::CtType::String),
+        )
+    } else if name == "comptime.string.is_char_boundary" {
+        Option::Some((two_intrinsic_types(ctir::CtType::String, int_ty), ctir::CtType::Bool))
+    } else if name == "comptime.string.starts_with" || name == "comptime.string.ends_with"
+        || name == "comptime.string.contains" {
+        Option::Some(
+            (two_intrinsic_types(ctir::CtType::String, ctir::CtType::String), ctir::CtType::Bool),
+        )
+    } else {
+        Option::None
+    }
+}
+
+fn intrinsic_argument(values: Vec[ctir::CtValue], index: int) -> Result[ctir::CtValue, string] {
+    if index < 0 || index >= values.len() {
+        Result::Err("comptime intrinsic argument is missing")
+    } else {
+        Result::Ok(values[index])
+    }
+}
+
+fn intrinsic_string_argument(values: Vec[ctir::CtValue], index: int) -> Result[string, string] {
+    match intrinsic_argument(values, index)? {
+        ctir::CtValue::String(value) => Result::Ok(value),
+        _ => Result::Err("comptime string intrinsic expects a string"),
+    }
+}
+
+fn intrinsic_int_argument(values: Vec[ctir::CtValue], index: int) -> Result[int, string] {
+    match intrinsic_argument(values, index)? {
+        ctir::CtValue::Integer { signed: true, width, bits } => if width == 32 {
+            Result::Ok((bits as uint32) as int32 as int)
+        } else {
+            Result::Ok(bits as int64 as int)
+        },
+        _ => Result::Err("comptime string intrinsic expects an int index"),
+    }
+}
+
+fn valid_string_index(value: string, index: int) -> bool {
+    index >= 0 && index < value.byte_len() && value.is_char_boundary(index)
+}
+
+fn valid_string_slice(value: string, start: int, end: int) -> bool {
+    start >= 0 && start <= end && end <= value.byte_len() && value.is_char_boundary(start)
+        && value.is_char_boundary(end)
+}
+
+pub fn call_value_intrinsic(target: ctir::CtTarget, name: string, args: Vec[ctir::CtValue]) -> Option[
+    Result[ctir::CtValue, string],
+] {
+    if name == "comptime.string.len" || name == "comptime.string.byte_len" {
+        let value = intrinsic_string_argument(args, 0);
+        Option::Some(
+            match value {
+                Ok(value) => Result::Ok(intrinsic_int_value(target, value.byte_len())),
+                Err(error) => Result::Err(error),
+            },
+        )
+    } else if name == "comptime.string.get" {
+        let value = intrinsic_string_argument(args, 0);
+        let index = intrinsic_int_argument(args, 1);
+        Option::Some(
+            match (value, index) {
+                (Ok(value), Ok(index)) => if valid_string_index(value, index) {
+                    Result::Ok(ctir::CtValue::Char(value.get(index)))
+                } else {
+                    Result::Err(
+                        "comptime string index is out of bounds or not a character boundary",
+                    )
+                },
+                (Err(error), _) | (_, Err(error)) => Result::Err(error),
+            },
+        )
+    } else if name == "comptime.string.byte_get" {
+        let value = intrinsic_string_argument(args, 0);
+        let index = intrinsic_int_argument(args, 1);
+        Option::Some(
+            match (value, index) {
+                (Ok(value), Ok(index)) => if index >= 0 && index < value.byte_len() {
+                    Result::Ok(
+                        ctir::CtValue::Integer {
+                            signed: false,
+                            width: 8,
+                            bits: value.byte_get(index) as uint64,
+                        },
+                    )
+                } else {
+                    Result::Err("comptime string byte index is out of bounds")
+                },
+                (Err(error), _) | (_, Err(error)) => Result::Err(error),
+            },
+        )
+    } else if name == "comptime.string.byte_slice" {
+        let value = intrinsic_string_argument(args, 0);
+        let start = intrinsic_int_argument(args, 1);
+        let end = intrinsic_int_argument(args, 2);
+        Option::Some(
+            match (value, start, end) {
+                (Ok(value), Ok(start), Ok(end)) => if valid_string_slice(value, start, end) {
+                    Result::Ok(ctir::CtValue::String(value.byte_slice(start, end)))
+                } else {
+                    Result::Err(
+                        "comptime string slice is out of bounds or not on character boundaries",
+                    )
+                },
+                (Err(error), _, _) | (_, Err(error), _) | (_, _, Err(error)) => {
+                    Result::Err(error)
+                },
+            },
+        )
+    } else if name == "comptime.string.is_char_boundary" {
+        let value = intrinsic_string_argument(args, 0);
+        let index = intrinsic_int_argument(args, 1);
+        Option::Some(
+            match (value, index) {
+                (Ok(value), Ok(index)) => {
+                    Result::Ok(ctir::CtValue::Bool(value.is_char_boundary(index)))
+                },
+                (Err(error), _) | (_, Err(error)) => Result::Err(error),
+            },
+        )
+    } else if name == "comptime.string.starts_with" || name == "comptime.string.ends_with"
+        || name == "comptime.string.contains" {
+        let value = intrinsic_string_argument(args, 0);
+        let expected = intrinsic_string_argument(args, 1);
+        Option::Some(
+            match (value, expected) {
+                (Ok(value), Ok(expected)) => Result::Ok(
+                    ctir::CtValue::Bool(
+                        if name == "comptime.string.starts_with" {
+                            value.starts_with(expected)
+                        } else if name == "comptime.string.ends_with" {
+                            value.ends_with(expected)
+                        } else {
+                            value.contains(expected)
+                        },
+                    ),
+                ),
+                (Err(error), _) | (_, Err(error)) => Result::Err(error),
+            },
+        )
+    } else {
+        Option::None
+    }
+}

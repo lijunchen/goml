@@ -636,6 +636,23 @@ fn function_call_target(ctx: CtLowerContext, name: string) -> Option[ctir::CtCal
     Option::None
 }
 
+fn string_method_intrinsic(receiver_ty: Type, name: string) -> Option[string] {
+    match resolve_type(receiver_ty) {
+        Type::String => if name == "len" || name == "byte_len" || name == "get"
+            || name == "byte_get"
+            || name == "byte_slice"
+            || name == "is_char_boundary"
+            || name == "starts_with"
+            || name == "ends_with"
+            || name == "contains" {
+            Option::Some("comptime.string." + name)
+        } else {
+            Option::None
+        },
+        _ => Option::None,
+    }
+}
+
 fn external_call_return_type(ctx: CtLowerContext, target: ctir::CtCallTarget) -> Option[
     ctir::CtType,
 ] {
@@ -754,6 +771,73 @@ fn lower_ct_exprs(ctx: CtLowerContext, values: Vec[Expr]) -> Result[Vec[ctir::Ct
     Result::Ok(result)
 }
 
+fn lower_ct_for_body(ctx: CtLowerContext, target: int, body: Expr) -> Result[ctir::CtExpr, string] {
+    ctx.loop_targets.push(target);
+    let result = lower_ct_expr(ctx, body);
+    let _ = ctx.loop_targets.pop();
+    result
+}
+
+fn lower_ct_for(ctx: CtLowerContext, pattern: Pat, iterator: Expr, body: Expr) -> Result[
+    ctir::CtExprKind,
+    string,
+] {
+    let target = ctx.next_loop.get();
+    ctx.next_loop.set(target + 1);
+    let pattern = lower_ct_pattern(ctx, pattern)?;
+    match iterator {
+        Call {
+            func: Callable { callable: Callable::LangItem { item, function_name: _ }, ty: _ },
+            args,
+            ty: _,
+        } => if item == "range" || item == "range_inclusive" {
+            if args.len() != 2 {
+                Result::Err("comptime range for expects two bounds")
+            } else {
+                Result::Ok(
+                    ctir::CtExprKind::ForRange {
+                        target,
+                        pattern,
+                        start: lower_ct_expr(ctx, args[0])?,
+                        end: lower_ct_expr(ctx, args[1])?,
+                        inclusive: item == "range_inclusive",
+                        body: lower_ct_for_body(ctx, target, body)?,
+                    },
+                )
+            }
+        } else {
+            Result::Err("comptime for only supports fixed arrays and builtin ranges")
+        },
+        other => match resolve_type(expr_type(other)) {
+            Type::Array { len: _, elem: _ } => Result::Ok(
+                ctir::CtExprKind::ForArray {
+                    target,
+                    pattern,
+                    value: lower_ct_expr(ctx, other)?,
+                    body: lower_ct_for_body(ctx, target, body)?,
+                },
+            ),
+            _ => Result::Err("comptime for only supports fixed arrays and builtin ranges"),
+        },
+    }
+}
+
+fn ct_builtin_equality_type(ty: Type) -> bool {
+    match resolve_type(ty) {
+        Type::Unit | Type::Bool | Type::Int | Type::Int8 | Type::Int16 | Type::Int32 | Type::Int64 | Type::Uint | Type::Uint8 | Type::Uint16 | Type::Uint32 | Type::Uint64 | Type::String | Type::Char => true,
+        Type::Tuple { items } => {
+            for item in items {
+                if !ct_builtin_equality_type(item) {
+                    return false
+                } else {}
+            }
+            true
+        },
+        Type::Array { len: _, elem } => ct_builtin_equality_type(elem),
+        _ => false,
+    }
+}
+
 fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, string] {
     match value {
         Closure { .. } => return Result::Err("closures are not available in comptime"),
@@ -838,7 +922,15 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
             let _ = ctx.loop_targets.pop();
             ctir::CtExprKind::Loop { target, body }
         },
-        For { .. } => return Result::Err("for loops are not available in comptime"),
+        For {
+            pat,
+            iterator,
+            into_iter_trait_ref: _,
+            iterator_trait_ref: _,
+            iterator_ty: _,
+            body,
+            ty: _,
+        } => lower_ct_for(ctx, pat, iterator, body)?,
         Break { target, value, ty: _ } => ctir::CtExprKind::Break {
             target: if target < ctx.loop_targets.len() {
                 ctx.loop_targets[ctx.loop_targets.len() - target - 1]
@@ -887,6 +979,15 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
                     };
                     ctir::CtExprKind::Call { target, args: lower_ct_exprs(ctx, args)? }
                 },
+                Callable::InherentMethod { receiver_ty, method_name } => {
+                    let Some(name) = string_method_intrinsic(receiver_ty, method_name) else {
+                        return Result::Err("comptime only supports deterministic string methods")
+                    };
+                    ctir::CtExprKind::Call {
+                        target: ctir::CtCallTarget::Intrinsic(name),
+                        args: lower_ct_exprs(ctx, args)?,
+                    }
+                },
                 _ => return Result::Err("comptime only supports direct #[comptime] function calls"),
             },
             _ => return Result::Err("comptime only supports direct function calls"),
@@ -932,7 +1033,9 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
         Binary { op, lhs, rhs, ty: _, resolution } => {
             match resolution {
                 BinaryResolution::Builtin => (),
-                BinaryResolution::Overloaded { trait_name: _ } => {
+                BinaryResolution::Overloaded { trait_name } => if trait_name == "Eq"
+                    && ct_builtin_equality_type(expr_type(lhs))
+                    && ct_builtin_equality_type(expr_type(rhs)) {} else {
                     return Result::Err("overloaded operators are not available in comptime")
                 },
             };

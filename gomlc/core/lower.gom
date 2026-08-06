@@ -1076,6 +1076,39 @@ fn direct_container_for(
     )
 }
 
+fn direct_array_for(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    iterator: tast::Expr,
+    container_ty: tast::Type,
+    length: int,
+    body: tast::Expr,
+) -> Expr {
+    let item_ty = tast::pat_type(pattern);
+    let source_name = gensym(ctx, "for_source");
+    let limit_name = gensym(ctx, "for_limit");
+    let index_name = gensym(ctx, "for_index");
+    let stmts: Vec[LetStmt] = Vec::[];
+    stmts.push(LetStmt { name: source_name, value: lower_expr(ctx, iterator), ty: container_ty });
+    stmts.push(LetStmt { name: limit_name, value: ordered_int(length), ty: tast::Type::Int });
+    stmts.push(LetStmt { name: index_name, value: ordered_int(0), ty: tast::Type::Int });
+    let get_params: Vec[tast::Type] = Vec::[];
+    get_params.push(container_ty);
+    get_params.push(tast::Type::Int);
+    let get_args: Vec[Expr] = Vec::[];
+    get_args.push(Expr::Var { name: source_name, ty: container_ty });
+    get_args.push(Expr::Var { name: index_name, ty: tast::Type::Int });
+    direct_for_loop(
+        ctx,
+        pattern,
+        stmts,
+        index_name,
+        limit_name,
+        place_intrinsic_call("array.get", get_params, item_ty, get_args),
+        body,
+    )
+}
+
 fn lower_direct_for(ctx: Lowerer, pattern: tast::Pat, iterator: tast::Expr, body: tast::Expr) -> Option[
     Expr,
 ] {
@@ -1098,6 +1131,9 @@ fn lower_direct_for(ctx: Lowerer, pattern: tast::Pat, iterator: tast::Expr, body
         other => {
             let container_ty = tast::resolve_type(tast::expr_type(other));
             match container_ty {
+                Array { len, elem: _ } => Option::Some(
+                    direct_array_for(ctx, pattern, other, container_ty, len, body),
+                ),
                 VecType { elem: _ } => Option::Some(
                     direct_container_for(
                         ctx,

@@ -297,6 +297,22 @@ fn ctir_expr(writer: wire::ArtifactJsonWriter, value: ctir::CtExpr, semantic: bo
             ctir_expr(writer, condition, semantic);
             ctir_expr(writer, body, semantic)
         },
+        ctir::CtExprKind::ForRange { target, pattern, start, end, inclusive, body } => {
+            ctir_tag(writer, "for_range");
+            ctir_number(writer, target);
+            ctir_pattern(writer, pattern);
+            ctir_expr(writer, start, semantic);
+            ctir_expr(writer, end, semantic);
+            wire::artifact_json_bool(writer, inclusive);
+            ctir_expr(writer, body, semantic)
+        },
+        ctir::CtExprKind::ForArray { target, pattern, value, body } => {
+            ctir_tag(writer, "for_array");
+            ctir_number(writer, target);
+            ctir_pattern(writer, pattern);
+            ctir_expr(writer, value, semantic);
+            ctir_expr(writer, body, semantic)
+        },
         ctir::CtExprKind::Loop { target, body } => {
             ctir_tag(writer, "loop");
             ctir_number(writer, target);
@@ -552,7 +568,7 @@ fn ctir_semantic_hash(value: ctir::CtModule) -> string {
 
 pub fn new_comptime_unit(value: ctir::CtModule) -> artifact::ArtifactComptimeUnit {
     artifact::ArtifactComptimeUnit {
-        version: 2,
+        version: 3,
         module: value,
         semantic_hash: ctir_semantic_hash(value),
     }
@@ -1029,6 +1045,26 @@ fn decode_ctir_expr(value: wire::ArtifactValue) -> Result[ctir::CtExpr, string] 
                 body: decode_ctir_expr(values[5])?,
             }
         },
+        "for_range" => {
+            ctir_expect_length(values, 9, "range for expression")?;
+            ctir::CtExprKind::ForRange {
+                target: ctir_int(values[3], "range for target")?,
+                pattern: decode_ctir_pattern(values[4])?,
+                start: decode_ctir_expr(values[5])?,
+                end: decode_ctir_expr(values[6])?,
+                inclusive: ctir_bool(values[7], "range for inclusivity")?,
+                body: decode_ctir_expr(values[8])?,
+            }
+        },
+        "for_array" => {
+            ctir_expect_length(values, 7, "array for expression")?;
+            ctir::CtExprKind::ForArray {
+                target: ctir_int(values[3], "array for target")?,
+                pattern: decode_ctir_pattern(values[4])?,
+                value: decode_ctir_expr(values[5])?,
+                body: decode_ctir_expr(values[6])?,
+            }
+        },
         "loop" => {
             ctir_expect_length(values, 5, "loop expression")?;
             ctir::CtExprKind::Loop {
@@ -1269,7 +1305,7 @@ pub fn artifact_decode_comptime_unit(value: wire::ArtifactValue) -> Result[
 ] {
     let object = wire::artifact_json_object(value, "comptime unit")?;
     let version = ctir_int(wire::artifact_json_required_field(object, "version")?, "version")?;
-    if version != 2 {
+    if version != 3 {
         return Result::Err("unsupported comptime artifact version")
     } else {};
     let module = decode_ctir_module(wire::artifact_json_required_field(object, "module")?)?;
