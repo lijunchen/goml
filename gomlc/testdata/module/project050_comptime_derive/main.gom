@@ -1,6 +1,8 @@
 package main;
 
 use tests::comptime_derive::macros;
+use tests::comptime_derive::json;
+use json::Serialize;
 use macros::Label;
 use macros::Label as RenamedLabel;
 
@@ -24,9 +26,15 @@ struct Alias {
     value: int,
 }
 
+#[derive(Serialize)]
+struct Record {
+    value: int,
+}
+
 fn main() -> unit {
     let value = Box { value: 1 };
     println(value.label());
     println(State::Ready(1).label());
-    println(Alias { value: 1 }.label())
+    println(Alias { value: 1 }.label());
+    println(Record { value: 1 }.serialize())
 }

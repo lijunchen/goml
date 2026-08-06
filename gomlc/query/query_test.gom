@@ -120,6 +120,20 @@ fn expands_builtin_derives_from_toolchain_source_handlers() -> unit {
 }
 
 #[test]
+fn source_handler_mode_requires_builtin_source_exports() -> unit {
+    let expanded = hir::expand_derives_with_environment(
+        ast::lower(parser::parse("#[derive(Eq)] struct Key { value: int }")),
+        hir::DeriveEnvironment {
+            builtin: Option::None,
+            dependencies: Vec::[],
+            builtin_mode: hir::BuiltinDeriveMode::SourceHandlers,
+        },
+    );
+    testing::assert_eq(expanded.diagnostics.len(), 1);
+    testing::assert(expanded.diagnostics[0].message.contains("derive name `Eq` is not in scope"))
+}
+
+#[test]
 fn parses_module_paths_and_package_names() -> unit {
     match manifest_module_path(
         "[build]\ntarget-dir = \"out\"\n\n[module]\npath = \"alice::tools\"\n",
@@ -190,7 +204,11 @@ fn returns_cross_package_expanded_derive_source() -> unit {
             testing::assert(
                 expanded.contains("impl[T] tests::comptime_derive::macros::Label for Box[T]"),
             );
-            testing::assert(expanded.contains("fn label(self: Box[T]) -> string"))
+            testing::assert(expanded.contains("fn label(self: Box[T]) -> string"));
+            testing::assert(
+                expanded.contains("impl tests::comptime_derive::json::Serialize for Record"),
+            );
+            testing::assert(expanded.contains("fn serialize(self: Record) -> string"))
         },
         Err(error) => testing::fail(error),
     }

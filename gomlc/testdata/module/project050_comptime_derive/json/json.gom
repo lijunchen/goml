@@ -1,0 +1,22 @@
+package json;
+
+pub trait Serialize {
+    fn serialize(self: Self) -> string;
+}
+
+#[comptime_derive(Serialize)]
+pub fn derive_serialize(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "Serialize");
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    derive_output_add_method(
+        output,
+        meta_method(
+            "serialize",
+            params,
+            meta_type_call_site("string"),
+            meta_expr_string(derive_item_name(input)),
+        ),
+    );
+    output
+}
