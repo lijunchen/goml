@@ -1664,7 +1664,21 @@ struct Group {
 
 A public `#[comptime_derive(Name)]` handler exports the derive name `Name`, independently of its implementation function name. Export names are unique within one package and cannot contain `::`. The named form requires `pub`; private `#[comptime_derive]` functions remain implementation helpers. The unnamed public form remains available and exports the handler function's short name.
 
-Derive names have their own namespace, but ordinary `use` declarations populate it alongside the type and trait namespaces. For example, after `use std::json;`, `use json::Serialize;` makes both the `Serialize` trait and a derive export named `Serialize` available as `Serialize`, so `#[derive(Serialize)]` works without another import form. An import alias applies to both namespaces: `use json::Serialize as JsonSerialize;` permits `#[derive(JsonSerialize)]`. A package import permits the qualified spelling `#[derive(json::Serialize)]`. Public re-exports preserve the derive handler's definition identity, so facade packages can use `pub use` to expose a standard-library or third-party derive without copying its implementation.
+Derive names have their own namespace, but ordinary `use` declarations populate it alongside the type and trait namespaces. For example, after `use std::serde;`, `use serde::Serialize;` makes both the `Serialize` trait and a derive export named `Serialize` available as `Serialize`, so `#[derive(Serialize)]` works without another import form. An import alias applies to both namespaces: `use serde::Serialize as DataSerialize;` permits `#[derive(DataSerialize)]`. A package import permits the qualified spelling `#[derive(serde::Serialize)]`. Public re-exports preserve the derive handler's definition identity, so facade packages can use `pub use` to expose a standard-library or third-party derive without copying its implementation.
+
+`std::serde` owns the format-independent `Serialize` and `Deserialize` traits and their derives. Both traits convert through `serde::Value`; exact signed and unsigned integer widths, floating-point widths, enum declaration indexes, field order, and variant shape are retained in that intermediate value. `Value::Number(string)` is reserved for textual formats whose parsed number has no requested destination type. This separation lets binary formats consume precise values while JSON and TOML defer numeric conversion until `Deserialize` knows the target type. Struct and enum fields support `#[serde(rename = "wire_name")]`. Unit, booleans, strings, chars, numeric primitives, `Value`, `Vec[T]`, `Option[T]`, and two- or three-element tuples have standard implementations.
+
+```goml
+use std::serde;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct User {
+    #[serde(rename = "display_name")]
+    name: string,
+    active: bool,
+}
+```
 
 The standard JSON handler serializes a struct as an object with source-order fields. It uses externally tagged enums: a unit variant is a string, a tuple variant is an object whose value is an array, and a struct-like variant is an object whose value is another object. `Serialize::serialize` returns `json::Value`; `json::stringify` serializes and encodes a value in one step. Unit, booleans, strings, chars, numeric primitives, `Value`, `Vec[T]`, `Option[T]`, and two- or three-element tuples have standard implementations.
 
@@ -2240,6 +2254,7 @@ use std::json;
 use std::num;
 use std::path;
 use std::process;
+use std::serde;
 use std::task;
 use std::testing;
 use std::text;
@@ -2261,6 +2276,7 @@ Current public entrances include:
 - `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
+- `serde::Value`, `Serialize`, `Deserialize`, `to_value`, and `from_value`
 - `task::Scope`, `Task[T]`, `CancelToken`, `WaitResult[T]`, `scope`, and `try_scope`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
 - `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `eq_ignore_ascii_case`, `to_ascii_lowercase`, and `to_ascii_uppercase`

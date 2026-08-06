@@ -1,0 +1,449 @@
+package serde;
+
+#[comptime_derive]
+fn exprs() -> MetaExprList {
+    meta_expr_list_new()
+}
+
+#[comptime_derive]
+fn exprs_one(value: MetaExpr) -> MetaExprList {
+    let values = exprs();
+    meta_expr_list_push(values, value);
+    values
+}
+
+#[comptime_derive]
+fn exprs_two(first: MetaExpr, second: MetaExpr) -> MetaExprList {
+    let values = exprs_one(first);
+    meta_expr_list_push(values, second);
+    values
+}
+
+#[comptime_derive]
+fn exprs_four(first: MetaExpr, second: MetaExpr, third: MetaExpr, fourth: MetaExpr) -> MetaExprList {
+    let values = exprs_two(first, second);
+    meta_expr_list_push(values, third);
+    meta_expr_list_push(values, fourth);
+    values
+}
+
+#[comptime_derive]
+fn type_list_two(first: MetaType, second: MetaType) -> MetaTypeList {
+    let values = meta_type_list_new();
+    meta_type_list_push(values, first);
+    meta_type_list_push(values, second);
+    values
+}
+
+#[comptime_derive]
+fn result_type(ok: MetaType) -> MetaType {
+    meta_type_apply(meta_type_call_site("Result"), type_list_two(ok, meta_type_call_site("string")))
+}
+
+#[comptime_derive]
+fn pair(name: string, value: MetaExpr) -> MetaExpr {
+    meta_expr_tuple(exprs_two(meta_expr_string(name), value))
+}
+
+#[comptime_derive]
+fn new_vec() -> MetaExpr {
+    meta_expr_call_site("vec_new", exprs())
+}
+
+#[comptime_derive]
+fn push(target: MetaExpr, value: MetaExpr) -> MetaExpr {
+    meta_expr_call_site("vec_push", exprs_two(target, value))
+}
+
+#[comptime_derive]
+fn definition_call(input: DeriveInput, name: string, args: MetaExprList) -> MetaExpr {
+    meta_expr_call(input, name, args)
+}
+
+#[comptime_derive]
+fn serialize_value(input: DeriveInput, value: MetaExpr) -> MetaExpr {
+    meta_expr_trait_call(input, "Serialize", "serialize", exprs_one(value))
+}
+
+#[comptime_derive]
+fn deserialize_value(input: DeriveInput, value: MetaExpr) -> MetaExpr {
+    meta_expr_try(meta_expr_trait_call(input, "Deserialize", "deserialize", exprs_one(value)))
+}
+
+#[comptime_derive]
+fn result_ok(value: MetaExpr) -> MetaExpr {
+    meta_expr_constructor("Result::Ok", exprs_one(value))
+}
+
+#[comptime_derive]
+fn result_err(message: string) -> MetaExpr {
+    meta_expr_constructor("Result::Err", exprs_one(meta_expr_string(message)))
+}
+
+#[comptime_derive]
+fn renamed_attribute(attribute: MetaAttribute, fallback: string) -> string {
+    if meta_attribute_name(attribute) != "serde" {
+        fallback
+    } else {
+        let mut index = 0;
+        while index < meta_attribute_argument_count(attribute) {
+            if meta_attribute_argument_kind(attribute, index) == "named"
+                && meta_attribute_argument_name(attribute, index) == "rename"
+                && meta_attribute_argument_value_kind(attribute, index) == "string" {
+                return meta_attribute_argument_text(attribute, index)
+            } else {};
+            index = index + 1;
+        }
+        fallback
+    }
+}
+
+#[comptime_derive]
+fn field_name(input: DeriveInput, field: int) -> string {
+    let mut result = derive_field_name(input, field);
+    let mut index = 0;
+    while index < derive_field_attribute_count(input, field) {
+        result = renamed_attribute(derive_field_attribute(input, field, index), result);
+        index = index + 1;
+    }
+    result
+}
+
+#[comptime_derive]
+fn variant_name(input: DeriveInput, variant: int) -> string {
+    let mut result = derive_variant_name(input, variant);
+    let mut index = 0;
+    while index < derive_variant_attribute_count(input, variant) {
+        result = renamed_attribute(derive_variant_attribute(input, variant, index), result);
+        index = index + 1;
+    }
+    result
+}
+
+#[comptime_derive]
+fn variant_field_name(input: DeriveInput, variant: int, field: int) -> string {
+    let mut result = derive_variant_field_name(input, variant, field);
+    let mut index = 0;
+    while index < derive_variant_field_attribute_count(input, variant, field) {
+        result = renamed_attribute(
+            derive_variant_field_attribute(input, variant, field, index),
+            result,
+        );
+        index = index + 1;
+    }
+    result
+}
+
+#[comptime_derive]
+fn type_seen(input: DeriveInput, variant: int, field: int, ty: MetaType) -> bool {
+    if derive_item_kind(input) == 0 {
+        let mut previous = 0;
+        while previous < field {
+            if meta_type_equal(derive_field_type(input, previous), ty) {
+                return true
+            } else {};
+            previous = previous + 1;
+        }
+    } else {
+        let mut previous_variant = 0;
+        while previous_variant < variant {
+            let mut previous_field = 0;
+            while previous_field < derive_variant_field_count(input, previous_variant) {
+                if meta_type_equal(
+                    derive_variant_field_type(input, previous_variant, previous_field),
+                    ty,
+                ) {
+                    return true
+                } else {};
+                previous_field = previous_field + 1;
+            }
+            previous_variant = previous_variant + 1;
+        }
+        let mut previous_field = 0;
+        while previous_field < field {
+            if meta_type_equal(derive_variant_field_type(input, variant, previous_field), ty) {
+                return true
+            } else {};
+            previous_field = previous_field + 1;
+        }
+    };
+    false
+}
+
+#[comptime_derive]
+fn add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> unit {
+    if derive_item_kind(input) == 0 {
+        let mut field = 0;
+        while field < derive_field_count(input) {
+            let ty = derive_field_type(input, field);
+            if meta_type_contains_generic(input, ty) && !type_seen(input, 0, field, ty) {
+                derive_output_add_predicate(output, ty, trait_name)
+            } else {};
+            field = field + 1;
+        }
+    } else {
+        let mut variant = 0;
+        while variant < derive_variant_count(input) {
+            let mut field = 0;
+            while field < derive_variant_field_count(input, variant) {
+                let ty = derive_variant_field_type(input, variant, field);
+                if meta_type_contains_generic(input, ty) && !type_seen(input, variant, field, ty) {
+                    derive_output_add_predicate(output, ty, trait_name)
+                } else {};
+                field = field + 1;
+            }
+            variant = variant + 1;
+        }
+    }
+}
+
+#[comptime_derive]
+fn serialize_struct_body(input: DeriveInput) -> MetaExpr {
+    let block = meta_block_new();
+    let fields = derive_fresh_name(input, "serde_fields");
+    meta_block_let(block, fields, new_vec());
+    let mut field = 0;
+    while field < derive_field_count(input) {
+        let source_name = derive_field_name(input, field);
+        meta_block_expr(
+            block,
+            push(
+                meta_expr_var(fields),
+                pair(
+                    field_name(input, field),
+                    serialize_value(input, meta_expr_field(meta_expr_var("self"), source_name)),
+                ),
+            ),
+        );
+        field = field + 1;
+    }
+    meta_block_finish(block, definition_call(input, "structure", exprs_one(meta_expr_var(fields))))
+}
+
+#[comptime_derive]
+fn serialize_enum_body(input: DeriveInput) -> MetaExpr {
+    let arms = meta_arm_list_new();
+    let mut variant = 0;
+    while variant < derive_variant_count(input) {
+        let source_name = derive_variant_name(input, variant);
+        let kind = derive_variant_kind(input, variant);
+        let positional = meta_pattern_list_new();
+        let named = meta_pattern_field_list_new();
+        let block = meta_block_new();
+        let fields = derive_fresh_name(input, "serde_fields");
+        meta_block_let(block, fields, new_vec());
+        let mut field = 0;
+        while field < derive_variant_field_count(input, variant) {
+            let binding = derive_fresh_name(input, "serde_field");
+            if kind == 2 {
+                meta_pattern_field_list_push(
+                    named,
+                    derive_variant_field_name(input, variant, field),
+                    meta_pattern_bind(binding),
+                )
+            } else {
+                meta_pattern_list_push(positional, meta_pattern_bind(binding))
+            };
+            meta_block_expr(
+                block,
+                push(
+                    meta_expr_var(fields),
+                    pair(
+                        if kind == 2 {
+                            variant_field_name(input, variant, field)
+                        } else {
+                            ""
+                        },
+                        serialize_value(input, meta_expr_var(binding)),
+                    ),
+                ),
+            );
+            field = field + 1;
+        }
+        let pattern = if kind == 2 {
+            meta_pattern_struct(derive_item_name(input) + "::" + source_name, named, false)
+        } else {
+            meta_pattern_target_constructor(input, source_name, positional)
+        };
+        let body = meta_block_finish(
+            block,
+            definition_call(
+                input,
+                "variant",
+                exprs_four(
+                    meta_expr_int(variant),
+                    meta_expr_string(variant_name(input, variant)),
+                    meta_expr_int(kind),
+                    meta_expr_var(fields),
+                ),
+            ),
+        );
+        meta_arm_list_push(arms, meta_arm(pattern, body));
+        variant = variant + 1;
+    }
+    meta_expr_match(meta_expr_var("self"), arms)
+}
+
+#[comptime_derive(Serialize)]
+pub fn derive_serialize(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "Serialize");
+    add_predicates(input, output, "Serialize");
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    derive_output_add_method(
+        output,
+        meta_method(
+            "serialize",
+            params,
+            meta_type_named(input, "Value"),
+            if derive_item_kind(input) == 0 {
+                serialize_struct_body(input)
+            } else {
+                serialize_enum_body(input)
+            },
+        ),
+    );
+    output
+}
+
+#[comptime_derive]
+fn deserialize_field(
+    input: DeriveInput,
+    block: MetaBlock,
+    result_fields: MetaExprFieldList,
+    field: int,
+) -> unit {
+    let source_name = derive_field_name(input, field);
+    let binding = derive_fresh_name(input, "serde_field");
+    let encoded = meta_expr_try(
+        definition_call(
+            input,
+            "field",
+            exprs_two(meta_expr_var("value"), meta_expr_string(field_name(input, field))),
+        ),
+    );
+    meta_block_let_typed(
+        block,
+        binding,
+        derive_field_type(input, field),
+        deserialize_value(input, encoded),
+    );
+    meta_expr_field_list_push(result_fields, source_name, meta_expr_var(binding))
+}
+
+#[comptime_derive]
+fn deserialize_struct_body(input: DeriveInput) -> MetaExpr {
+    let block = meta_block_new();
+    let fields = meta_expr_field_list_new();
+    let mut field = 0;
+    while field < derive_field_count(input) {
+        deserialize_field(input, block, fields, field);
+        field = field + 1;
+    }
+    meta_block_finish(block, result_ok(meta_expr_target_struct(input, fields)))
+}
+
+#[comptime_derive]
+fn deserialize_variant_body(input: DeriveInput, variant: int, fields_name: string) -> MetaExpr {
+    let kind = derive_variant_kind(input, variant);
+    let block = meta_block_new();
+    let positional = exprs();
+    let named = meta_expr_field_list_new();
+    let mut field = 0;
+    while field < derive_variant_field_count(input, variant) {
+        let binding = derive_fresh_name(input, "serde_field");
+        let encoded = meta_expr_try(
+            definition_call(
+                input,
+                if kind == 2 {
+                    "named_field"
+                } else {
+                    "positional_field"
+                },
+                if kind == 2 {
+                    exprs_two(
+                        meta_expr_var(fields_name),
+                        meta_expr_string(variant_field_name(input, variant, field)),
+                    )
+                } else {
+                    exprs_two(meta_expr_var(fields_name), meta_expr_int(field))
+                },
+            ),
+        );
+        meta_block_let_typed(
+            block,
+            binding,
+            derive_variant_field_type(input, variant, field),
+            deserialize_value(input, encoded),
+        );
+        if kind == 2 {
+            meta_expr_field_list_push(
+                named,
+                derive_variant_field_name(input, variant, field),
+                meta_expr_var(binding),
+            )
+        } else {
+            meta_expr_list_push(positional, meta_expr_var(binding))
+        };
+        field = field + 1;
+    }
+    let source_name = derive_variant_name(input, variant);
+    let value = if kind == 2 {
+        meta_expr_struct_call_site(derive_item_name(input) + "::" + source_name, named)
+    } else {
+        meta_expr_target_constructor(input, source_name, positional)
+    };
+    meta_block_finish(block, result_ok(value))
+}
+
+#[comptime_derive]
+fn deserialize_enum_body(input: DeriveInput) -> MetaExpr {
+    let block = meta_block_new();
+    let name = derive_fresh_name(input, "serde_variant_name");
+    let fields_name = derive_fresh_name(input, "serde_variant_fields");
+    let parts = meta_pattern_list_new();
+    meta_pattern_list_push(parts, meta_pattern_bind(name));
+    meta_pattern_list_push(parts, meta_pattern_wild());
+    meta_pattern_list_push(parts, meta_pattern_bind(fields_name));
+    meta_block_let_pattern(
+        block,
+        meta_pattern_tuple(parts),
+        meta_expr_try(definition_call(input, "variant_parts", exprs_one(meta_expr_var("value")))),
+    );
+    let arms = meta_arm_list_new();
+    let mut variant = 0;
+    while variant < derive_variant_count(input) {
+        meta_arm_list_push(
+            arms,
+            meta_arm(
+                meta_pattern_string(variant_name(input, variant)),
+                deserialize_variant_body(input, variant, fields_name),
+            ),
+        );
+        variant = variant + 1;
+    }
+    meta_arm_list_push(arms, meta_arm(meta_pattern_wild(), result_err("unknown enum variant")));
+    meta_block_finish(block, meta_expr_match(meta_expr_var(name), arms))
+}
+
+#[comptime_derive(Deserialize)]
+pub fn derive_deserialize(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "Deserialize");
+    add_predicates(input, output, "Deserialize");
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "value", meta_type_named(input, "Value"));
+    derive_output_add_method(
+        output,
+        meta_method(
+            "deserialize",
+            params,
+            result_type(derive_target_type(input)),
+            if derive_item_kind(input) == 0 {
+                deserialize_struct_body(input)
+            } else {
+                deserialize_enum_body(input)
+            },
+        ),
+    );
+    output
+}

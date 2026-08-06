@@ -32,6 +32,7 @@ struct StandardNeeds {
     num: bool,
     path: bool,
     process: bool,
+    serde: bool,
     task: bool,
     testing: bool,
     text: bool,
@@ -72,6 +73,7 @@ fn no_standard_needs() -> StandardNeeds {
         num: false,
         path: false,
         process: false,
+        serde: false,
         task: false,
         testing: false,
         text: false,
@@ -96,6 +98,7 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         num: collections::contains(closure, "std::num"),
         path: collections::contains(closure, "std::path"),
         process: collections::contains(closure, "std::process"),
+        serde: collections::contains(closure, "std::serde"),
         task: collections::contains(closure, "std::task"),
         testing: collections::contains(closure, "std::testing"),
         text: collections::contains(closure, "std::text"),
@@ -129,6 +132,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         num: left.num || right.num,
         path: left.path || right.path,
         process: left.process || right.process,
+        serde: left.serde || right.serde,
         task: left.task || right.task,
         testing: left.testing || right.testing,
         text: left.text || right.text,
@@ -591,6 +595,9 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     if needs.process {
         result.push(standard.process)
     } else {};
+    if needs.serde {
+        result.push(standard.serde)
+    } else {};
     if needs.task {
         result.push(standard.task)
     } else {};
@@ -753,6 +760,9 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     } else {};
     if needs.process {
         result.push(standard.process.core_value)
+    } else {};
+    if needs.serde {
+        result.push(standard.serde.core_value)
     } else {};
     if needs.task {
         result.push(standard.task.core_value)

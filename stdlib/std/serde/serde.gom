@@ -1,0 +1,497 @@
+package serde;
+
+use std::num;
+
+pub enum Value {
+    Unit,
+    Bool(bool),
+    Int(int),
+    Int8(int8),
+    Int16(int16),
+    Int32(int32),
+    Int64(int64),
+    Uint(uint),
+    Uint8(uint8),
+    Uint16(uint16),
+    Uint32(uint32),
+    Uint64(uint64),
+    Float32(float32),
+    Float64(float64),
+    Number(string),
+    String(string),
+    Char(char),
+    Sequence(Vec[Value]),
+    Struct(Vec[(string, Value)]),
+    Variant {
+        index: int,
+        name: string,
+        kind: int,
+        fields: Vec[(string, Value)],
+    },
+}
+
+pub trait Serialize {
+    fn serialize(self: Self) -> Value;
+}
+
+pub trait Deserialize {
+    fn deserialize(value: Value) -> Result[Self, string];
+}
+
+pub fn to_value[T: Serialize](value: T) -> Value {
+    value.serialize()
+}
+
+pub fn from_value[T: Deserialize](value: Value) -> Result[T, string] {
+    Deserialize::deserialize(value)
+}
+
+pub fn structure(fields: Vec[(string, Value)]) -> Value {
+    Value::Struct(fields)
+}
+
+pub fn variant(index: int, name: string, kind: int, fields: Vec[(string, Value)]) -> Value {
+    Value::Variant { index, name, kind, fields }
+}
+
+pub fn field(value: Value, name: string) -> Result[Value, string] {
+    match value {
+        Value::Struct(fields) => named_field(fields, name),
+        _ => Result::Err("expected struct value"),
+    }
+}
+
+pub fn named_field(fields: Vec[(string, Value)], name: string) -> Result[Value, string] {
+    for field in fields {
+        if field.0 == name {
+            return Result::Ok(field.1)
+        } else {}
+    }
+    Result::Err("missing field `" + name + "`")
+}
+
+pub fn positional_field(fields: Vec[(string, Value)], index: int) -> Result[Value, string] {
+    if index < 0 || index >= fields.len() {
+        Result::Err("missing positional field " + index.to_string())
+    } else {
+        Result::Ok(fields[index].1)
+    }
+}
+
+pub fn variant_parts(value: Value) -> Result[(string, int, Vec[(string, Value)]), string] {
+    match value {
+        Value::Variant { index: _, name, kind, fields } => Result::Ok((name, kind, fields)),
+        _ => Result::Err("expected enum variant"),
+    }
+}
+
+pub fn error(message: string) -> Result[unit, string] {
+    Result::Err(message)
+}
+
+impl Serialize for Value {
+    fn serialize(self: Value) -> Value {
+        self
+    }
+}
+
+impl Deserialize for Value {
+    fn deserialize(value: Value) -> Result[Value, string] {
+        Result::Ok(value)
+    }
+}
+
+impl Serialize for unit {
+    fn serialize(self: unit) -> Value {
+        Value::Unit
+    }
+}
+
+impl Deserialize for unit {
+    fn deserialize(value: Value) -> Result[unit, string] {
+        match value {
+            Value::Unit => Result::Ok(()),
+            _ => Result::Err("expected unit"),
+        }
+    }
+}
+
+impl Serialize for bool {
+    fn serialize(self: bool) -> Value {
+        Value::Bool(self)
+    }
+}
+
+impl Deserialize for bool {
+    fn deserialize(value: Value) -> Result[bool, string] {
+        match value {
+            Value::Bool(value) => Result::Ok(value),
+            _ => Result::Err("expected bool"),
+        }
+    }
+}
+
+impl Serialize for string {
+    fn serialize(self: string) -> Value {
+        Value::String(self)
+    }
+}
+
+impl Deserialize for string {
+    fn deserialize(value: Value) -> Result[string, string] {
+        match value {
+            Value::String(value) => Result::Ok(value),
+            _ => Result::Err("expected string"),
+        }
+    }
+}
+
+impl Serialize for char {
+    fn serialize(self: char) -> Value {
+        Value::Char(self)
+    }
+}
+
+impl Deserialize for char {
+    fn deserialize(value: Value) -> Result[char, string] {
+        match value {
+            Value::Char(value) => Result::Ok(value),
+            Value::String(value) => if value.len() == 1 {
+                Result::Ok(value.get(0))
+            } else {
+                Result::Err("expected one-character string")
+            },
+            _ => Result::Err("expected char"),
+        }
+    }
+}
+
+impl Serialize for int {
+    fn serialize(self: int) -> Value {
+        Value::Int(self)
+    }
+}
+
+impl Deserialize for int {
+    fn deserialize(value: Value) -> Result[int, string] {
+        match value {
+            Value::Int(value) => Result::Ok(value),
+            Value::Number(value) => num::parse_int(value),
+            _ => Result::Err("expected int"),
+        }
+    }
+}
+
+impl Serialize for int8 {
+    fn serialize(self: int8) -> Value {
+        Value::Int8(self)
+    }
+}
+
+impl Deserialize for int8 {
+    fn deserialize(value: Value) -> Result[int8, string] {
+        match value {
+            Value::Int8(value) => Result::Ok(value),
+            Value::Number(value) => {
+                let parsed = num::parse_int(value)?;
+                if parsed < -128 || parsed > 127 {
+                    Result::Err("int8 is out of range")
+                } else {
+                    Result::Ok(parsed as int8)
+                }
+            },
+            _ => Result::Err("expected int8"),
+        }
+    }
+}
+
+impl Serialize for int16 {
+    fn serialize(self: int16) -> Value {
+        Value::Int16(self)
+    }
+}
+
+impl Deserialize for int16 {
+    fn deserialize(value: Value) -> Result[int16, string] {
+        match value {
+            Value::Int16(value) => Result::Ok(value),
+            Value::Number(value) => {
+                let parsed = num::parse_int(value)?;
+                if parsed < -32768 || parsed > 32767 {
+                    Result::Err("int16 is out of range")
+                } else {
+                    Result::Ok(parsed as int16)
+                }
+            },
+            _ => Result::Err("expected int16"),
+        }
+    }
+}
+
+impl Serialize for int32 {
+    fn serialize(self: int32) -> Value {
+        Value::Int32(self)
+    }
+}
+
+impl Deserialize for int32 {
+    fn deserialize(value: Value) -> Result[int32, string] {
+        match value {
+            Value::Int32(value) => Result::Ok(value),
+            Value::Number(value) => {
+                let parsed = num::parse_int(value)?;
+                if parsed < -2147483648 || parsed > 2147483647 {
+                    Result::Err("int32 is out of range")
+                } else {
+                    Result::Ok(parsed as int32)
+                }
+            },
+            _ => Result::Err("expected int32"),
+        }
+    }
+}
+
+impl Serialize for int64 {
+    fn serialize(self: int64) -> Value {
+        Value::Int64(self)
+    }
+}
+
+impl Deserialize for int64 {
+    fn deserialize(value: Value) -> Result[int64, string] {
+        match value {
+            Value::Int64(value) => Result::Ok(value),
+            Value::Number(value) => match num::parse_int(value) {
+                Ok(value) => Result::Ok(value as int64),
+                Err(error) => Result::Err(error),
+            },
+            _ => Result::Err("expected int64"),
+        }
+    }
+}
+
+impl Serialize for uint {
+    fn serialize(self: uint) -> Value {
+        Value::Uint(self)
+    }
+}
+
+impl Deserialize for uint {
+    fn deserialize(value: Value) -> Result[uint, string] {
+        match value {
+            Value::Uint(value) => Result::Ok(value),
+            Value::Number(value) => num::parse_uint(value),
+            _ => Result::Err("expected uint"),
+        }
+    }
+}
+
+impl Serialize for uint8 {
+    fn serialize(self: uint8) -> Value {
+        Value::Uint8(self)
+    }
+}
+
+impl Deserialize for uint8 {
+    fn deserialize(value: Value) -> Result[uint8, string] {
+        match value {
+            Value::Uint8(value) => Result::Ok(value),
+            Value::Number(value) => {
+                let parsed = num::parse_uint(value)?;
+                if parsed > 255 {
+                    Result::Err("uint8 is out of range")
+                } else {
+                    Result::Ok(parsed as uint8)
+                }
+            },
+            _ => Result::Err("expected uint8"),
+        }
+    }
+}
+
+impl Serialize for uint16 {
+    fn serialize(self: uint16) -> Value {
+        Value::Uint16(self)
+    }
+}
+
+impl Deserialize for uint16 {
+    fn deserialize(value: Value) -> Result[uint16, string] {
+        match value {
+            Value::Uint16(value) => Result::Ok(value),
+            Value::Number(value) => {
+                let parsed = num::parse_uint(value)?;
+                if parsed > 65535 {
+                    Result::Err("uint16 is out of range")
+                } else {
+                    Result::Ok(parsed as uint16)
+                }
+            },
+            _ => Result::Err("expected uint16"),
+        }
+    }
+}
+
+impl Serialize for uint32 {
+    fn serialize(self: uint32) -> Value {
+        Value::Uint32(self)
+    }
+}
+
+impl Deserialize for uint32 {
+    fn deserialize(value: Value) -> Result[uint32, string] {
+        match value {
+            Value::Uint32(value) => Result::Ok(value),
+            Value::Number(value) => {
+                let parsed = num::parse_uint(value)?;
+                if parsed > 4294967295 {
+                    Result::Err("uint32 is out of range")
+                } else {
+                    Result::Ok(parsed as uint32)
+                }
+            },
+            _ => Result::Err("expected uint32"),
+        }
+    }
+}
+
+impl Serialize for uint64 {
+    fn serialize(self: uint64) -> Value {
+        Value::Uint64(self)
+    }
+}
+
+impl Deserialize for uint64 {
+    fn deserialize(value: Value) -> Result[uint64, string] {
+        match value {
+            Value::Uint64(value) => Result::Ok(value),
+            Value::Number(value) => match num::parse_uint(value) {
+                Ok(value) => Result::Ok(value as uint64),
+                Err(error) => Result::Err(error),
+            },
+            _ => Result::Err("expected uint64"),
+        }
+    }
+}
+
+impl Serialize for float32 {
+    fn serialize(self: float32) -> Value {
+        Value::Float32(self)
+    }
+}
+
+impl Deserialize for float32 {
+    fn deserialize(value: Value) -> Result[float32, string] {
+        match value {
+            Value::Float32(value) => Result::Ok(value),
+            Value::Number(value) => num::parse_float32(value),
+            _ => Result::Err("expected float32"),
+        }
+    }
+}
+
+impl Serialize for float64 {
+    fn serialize(self: float64) -> Value {
+        Value::Float64(self)
+    }
+}
+
+impl Deserialize for float64 {
+    fn deserialize(value: Value) -> Result[float64, string] {
+        match value {
+            Value::Float64(value) => Result::Ok(value),
+            Value::Number(value) => num::parse_float64(value),
+            _ => Result::Err("expected float64"),
+        }
+    }
+}
+
+impl[T: Serialize] Serialize for Vec[T] {
+    fn serialize(self: Vec[T]) -> Value {
+        let values: Vec[Value] = Vec::[];
+        for value in self {
+            values.push(value.serialize())
+        }
+        Value::Sequence(values)
+    }
+}
+
+impl[T: Deserialize] Deserialize for Vec[T] {
+    fn deserialize(value: Value) -> Result[Vec[T], string] {
+        match value {
+            Value::Sequence(values) => {
+                let result: Vec[T] = Vec::[];
+                for value in values {
+                    let item: T = Deserialize::deserialize(value)?;
+                    result.push(item)
+                }
+                Result::Ok(result)
+            },
+            _ => Result::Err("expected sequence"),
+        }
+    }
+}
+
+impl[T: Serialize] Serialize for Option[T] {
+    fn serialize(self: Option[T]) -> Value {
+        match self {
+            Some(value) => value.serialize(),
+            None => Value::Unit,
+        }
+    }
+}
+
+impl[T: Deserialize] Deserialize for Option[T] {
+    fn deserialize(value: Value) -> Result[Option[T], string] {
+        match value {
+            Value::Unit => Result::Ok(Option::None),
+            _ => {
+                let item: T = Deserialize::deserialize(value)?;
+                Result::Ok(Option::Some(item))
+            },
+        }
+    }
+}
+
+impl[A: Serialize, B: Serialize] Serialize for (A, B) {
+    fn serialize(self: (A, B)) -> Value {
+        Value::Sequence(Vec::[self.0.serialize(), self.1.serialize()])
+    }
+}
+
+impl[A: Deserialize, B: Deserialize] Deserialize for (A, B) {
+    fn deserialize(value: Value) -> Result[(A, B), string] {
+        match value {
+            Value::Sequence(values) => if values.len() == 2 {
+                let first: A = Deserialize::deserialize(values[0])?;
+                let second: B = Deserialize::deserialize(values[1])?;
+                Result::Ok((first, second))
+            } else {
+                Result::Err("expected two-element sequence")
+            },
+            _ => Result::Err("expected sequence"),
+        }
+    }
+}
+
+impl[A: Serialize, B: Serialize, C: Serialize] Serialize for (A, B, C) {
+    fn serialize(self: (A, B, C)) -> Value {
+        Value::Sequence(Vec::[self.0.serialize(), self.1.serialize(), self.2.serialize()])
+    }
+}
+
+impl[A: Deserialize, B: Deserialize, C: Deserialize] Deserialize for (A, B, C) {
+    fn deserialize(value: Value) -> Result[(A, B, C), string] {
+        match value {
+            Value::Sequence(values) => if values.len() == 3 {
+                let first: A = Deserialize::deserialize(values[0])?;
+                let second: B = Deserialize::deserialize(values[1])?;
+                let third: C = Deserialize::deserialize(values[2])?;
+                Result::Ok((first, second, third))
+            } else {
+                Result::Err("expected three-element sequence")
+            },
+            _ => Result::Err("expected sequence"),
+        }
+    }
+}

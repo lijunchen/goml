@@ -101,6 +101,7 @@ fn world_add_standard_sections(
         (42 as uint16, value.cmp),
         (44 as uint16, value.internal_task),
         (46 as uint16, value.task),
+        (48 as uint16, value.serde),
     ];
     for package_value in packages {
         world_add_package_sections(sections, package_value.0, package_value.1)?
@@ -214,6 +215,7 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
     let cmp = world_decode_package(container, 42, "std::cmp")?;
     let internal_task = world_decode_package(container, 44, "std::internal::task")?;
     let task = world_decode_package(container, 46, "std::task")?;
+    let serde = world_decode_package(container, 48, "std::serde")?;
     let world = PackageWorld {
         counter,
         builtins: builtin_core.core_ir,
@@ -234,6 +236,7 @@ fn decode_package_world(data: bytes::Bytes) -> Result[PackageWorld, string] {
             num,
             path: path_value,
             process,
+            serde,
             task,
             testing,
             text: text_value,
