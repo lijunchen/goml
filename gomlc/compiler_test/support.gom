@@ -51,7 +51,7 @@ pub fn collect_main_sources(directory: string, result: Vec[string]) -> unit {
         let entry = path::join(directory, name);
         if fs::is_dir(entry) {
             collect_main_sources(entry, result)
-        } else if name == "main.gom" && fs::is_file(entry + ".out") {
+        } else if name == "main.gom" && (fs::is_file(entry + ".out") || update_expected()) {
             result.push(entry)
         } else {}
     }
