@@ -8,8 +8,12 @@ file main.gom
 
   impl ToString for Point {
     fn to_string(local/1/0: Point) -> string {
-        let Point { x: local/1/1, y: local/1/2 } = self/0;
-        "Point { " + "x: " + x/1.to_string() + ", " + "y: " + y/2.to_string() + " }"
+        {
+            let Point { x: local/1/1, y: local/1/2 } = self/0;
+            "Point { " + "x: " + ToString::to_string(#derive0_field/1) + ", " + "y: " +
+              ToString::to_string(#derive1_field/2) +
+              " }"
+        }
     }
   }
 
@@ -25,8 +29,10 @@ file main.gom
         match self/3 {
             ctor(def/1/2::v0) => "Message::Quit",
             ctor(def/1/2::v1)(local/1/4, local/1/5) =>
-              "Message::Move(" + __field0/4.to_string() + ", " + __field1/5.to_string() + ")",
-            ctor(def/1/2::v2)(local/1/6) => "Message::Write(" + __field0/6 + ")",
+              "Message::Move(" + ToString::to_string(#derive0_field/4) + ", " +
+                ToString::to_string(#derive1_field/5) +
+                ")",
+            ctor(def/1/2::v2)(local/1/6) => "Message::Write(" + #derive2_field/6 + ")",
         }
     }
   }

@@ -10,13 +10,13 @@ impl Hash for Key {
       match self {
           Key::A =>
             {
-                let h: uint64 = 14695981039346656037 + 1;
+                let h = 0 as uint64 + 14695981039346656037 + 1;
                 h
             },
-          Key::B(__field1_0) =>
+          Key::B(#derive0_field) =>
             {
-                let h: uint64 = 14695981039346656037 + 2;
-                let h = h * 1099511628211 + Hash::hash(__field1_0);
+                let h = 0 as uint64 + 14695981039346656037 + 2;
+                let h = h * 0 as uint64 + 1099511628211 + Hash::hash(#derive0_field);
                 h
             },
       }
@@ -27,7 +27,8 @@ impl Eq for Key {
   fn eq(self: Key, other: Key) -> bool {
       match (self, other) {
           (Key::A, Key::A) => true,
-          (Key::B(__l1_0), Key::B(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
+          (Key::B(#derive0_left), Key::B(#derive1_right)) =>
+            true && Eq::eq(#derive0_left, #derive1_right),
           _ => false,
       }
   }

@@ -34,9 +34,12 @@ file main.gom
 
   impl[T, Marker] ToString for Generic[T, Marker] where Wrapper[T]: ToString {
     fn to_string(local/1/4: Generic[T, Marker]) -> string {
-        let Generic { first: local/1/5, second: local/1/6 } = self/4;
-        "Generic { " + "first: " + first/5.to_string() + ", " + "second: " + second/6.to_string() +
-          " }"
+        {
+            let Generic { first: local/1/5, second: local/1/6 } = self/4;
+            "Generic { " + "first: " + ToString::to_string(#derive0_field/5) + ", " + "second: " +
+              ToString::to_string(#derive1_field/6) +
+              " }"
+        }
     }
   }
 
@@ -48,10 +51,12 @@ file main.gom
 
   impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
     fn hash(local/1/9: Generic[T, Marker]) -> uint64 {
-        let local/1/10: uint64 = 14695981039346656037;
-        let local/1/11 = h/10 * 1099511628211 + Hash::hash(self/9.first);
-        let local/1/12 = h/11 * 1099511628211 + Hash::hash(self/9.second);
-        h/12
+        {
+            let local/1/10 = 0 as uint64 + 14695981039346656037;
+            let local/1/11 = h/10 * 0 as uint64 + 1099511628211 + Hash::hash(self/9.first);
+            let local/1/12 = h/11 * 0 as uint64 + 1099511628211 + Hash::hash(self/9.second);
+            h/12
+        }
     }
   }
 
@@ -66,7 +71,7 @@ file main.gom
         match self/13 {
             ctor(def/1/9::v0) => "GenericChoice::Empty",
             ctor(def/1/9::v1)(local/1/14) =>
-              "GenericChoice::Value(" + __field0/14.to_string() + ")",
+              "GenericChoice::Value(" + ToString::to_string(#derive0_field/14) + ")",
         }
     }
   }
@@ -76,7 +81,7 @@ file main.gom
         match (self/15, other/16) {
             (ctor(def/1/9::v0), ctor(def/1/9::v0)) => true,
             (ctor(def/1/9::v1)(local/1/17), ctor(def/1/9::v1)(local/1/18)) =>
-              true && Eq::eq(__l1_0/17, __r1_0/18),
+              true && Eq::eq(#derive0_left/17, #derive1_right/18),
             _ => false,
         }
     }
@@ -87,13 +92,14 @@ file main.gom
         match self/19 {
             ctor(def/1/9::v0) =>
               {
-                  let local/1/20: uint64 = 14695981039346656037 + 1;
+                  let local/1/20 = 0 as uint64 + 14695981039346656037 + 1;
                   h/20
               },
             ctor(def/1/9::v1)(local/1/21) =>
               {
-                  let local/1/22: uint64 = 14695981039346656037 + 2;
-                  let local/1/23 = h/22 * 1099511628211 + Hash::hash(__field1_0/21);
+                  let local/1/22 = 0 as uint64 + 14695981039346656037 + 2;
+                  let local/1/23 =
+                    h/22 * 0 as uint64 + 1099511628211 + Hash::hash(#derive0_field/21);
                   h/23
               },
         }

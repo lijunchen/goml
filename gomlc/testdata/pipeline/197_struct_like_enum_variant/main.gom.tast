@@ -2,11 +2,12 @@ impl ToString for Key {
   fn to_string(self/0: Key) -> string {
       match (self/0 : Key) {
           Key::Empty => "Key::Empty",
-          Key::Point(__field0/1: int32, __field1/2: int32) =>
-            "Key::Point { " + "x: " + (int32::to_string : (int32) -> string)((__field0/1 : int32)) +
+          Key::Point(#derive0_field/1: int32, #derive1_field/2: int32) =>
+            "Key::Point { " + "x: " +
+              (ToString::to_string : (int32) -> string)((#derive0_field/1 : int32)) +
               ", " +
               "y: " +
-              (int32::to_string : (int32) -> string)((__field1/2 : int32)) +
+              (ToString::to_string : (int32) -> string)((#derive1_field/2 : int32)) +
               " }",
       }
   }
@@ -17,18 +18,18 @@ impl Hash for Key {
       match (self/3 : Key) {
           Key::Empty =>
             {
-                let h/4: uint64 = 14695981039346656037 + 1;
+                let h/4: uint64 = 0 as uint64 + 14695981039346656037 + 1;
                 (h/4 : uint64)
             },
-          Key::Point(__field1_0/5: int32, __field1_1/6: int32) =>
+          Key::Point(#derive0_field/5: int32, #derive1_field/6: int32) =>
             {
-                let h/7: uint64 = 14695981039346656037 + 2;
+                let h/7: uint64 = 0 as uint64 + 14695981039346656037 + 2;
                 let h/8: uint64 =
-                  (h/7 : uint64) * 1099511628211 +
-                    (Hash::hash : (int32) -> uint64)((__field1_0/5 : int32));
+                  (h/7 : uint64) * 0 as uint64 + 1099511628211 +
+                    (Hash::hash : (int32) -> uint64)((#derive0_field/5 : int32));
                 let h/9: uint64 =
-                  (h/8 : uint64) * 1099511628211 +
-                    (Hash::hash : (int32) -> uint64)((__field1_1/6 : int32));
+                  (h/8 : uint64) * 0 as uint64 + 1099511628211 +
+                    (Hash::hash : (int32) -> uint64)((#derive1_field/6 : int32));
                 (h/9 : uint64)
             },
       }
@@ -40,11 +41,18 @@ impl Eq for Key {
       match ((self/10 : Key), (other/11 : Key)) {
           (Key::Empty, Key::Empty) => true,
           (
-            Key::Point(__l1_0/12: int32, __l1_1/13: int32),
-            Key::Point(__r1_0/14: int32, __r1_1/15: int32)
+            Key::Point(#derive0_left/12: int32, #derive2_left/13: int32),
+            Key::Point(#derive1_right/14: int32, #derive3_right/15: int32)
           ) =>
-            true && (Eq::eq : (int32, int32) -> bool)((__l1_0/12 : int32), (__r1_0/14 : int32)) &&
-              (Eq::eq : (int32, int32) -> bool)((__l1_1/13 : int32), (__r1_1/15 : int32)),
+            true &&
+              (Eq::eq : (int32, int32) -> bool)(
+                (#derive0_left/12 : int32),
+                (#derive1_right/14 : int32)
+              ) &&
+              (Eq::eq : (int32, int32) -> bool)(
+                (#derive2_left/13 : int32),
+                (#derive3_right/15 : int32)
+              ),
           _ : (Key, Key) => false,
       }
   }

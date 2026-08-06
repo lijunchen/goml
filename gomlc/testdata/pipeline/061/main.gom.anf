@@ -17,9 +17,9 @@ fn trait_impl#ToString#Point#to_string(self/1: Point) -> string {
   let x137 = Point.x(self/1) in
   let x138 = Point.y(self/1) in
   let x139 = Point.color(self/1) in
-  let color/4 = x139 in
-  let y/3 = x138 in
-  let x/2 = x137 in
+  let #derive2_field/4 = x139 in
+  let #derive1_field/3 = x138 in
+  let #derive0_field/2 = x137 in
   let t153 = ("Point { " + "x: ") in
   join inline_cont208(t154: string) -> string {
     let t155 = (t153 + t154) in
@@ -63,9 +63,9 @@ fn trait_impl#ToString#Line#to_string(self/8: Line) -> string {
   let x141 = Line.from(self/8) in
   let x142 = Line.to(self/8) in
   let x143 = Line.color(self/8) in
-  let color/11 = x143 in
-  let to/10 = x142 in
-  let from/9 = x141 in
+  let #derive2_field/11 = x143 in
+  let #derive1_field/10 = x142 in
+  let #derive0_field/9 = x141 in
   let t170 = ("Line { " + "from: ") in
   let t171 = trait_impl#ToString#Point#to_string(x141) in
   let t172 = (t170 + t171) in
@@ -106,8 +106,8 @@ fn trait_impl#ToString#LineList#to_string(self/15: LineList) -> string {
     Tag_1 => {
       let x144 = LineList::Cons._0(self/15) in
       let x145 = LineList::Cons._1(self/15) in
-      let __field1/17 = x145 in
-      let __field0/16 = x144 in
+      let #derive1_field/17 = x145 in
+      let #derive0_field/16 = x144 in
       let t189 = trait_impl#ToString#Line#to_string(x144) in
       let t190 = ("LineList::Cons(" + t189) in
       let t191 = (t190 + ", ") in
@@ -143,8 +143,8 @@ fn main() -> unit {
   jump inline_cont220(inline223)
 }
 
-fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t199 = @runtime(core.int32_to_string)(self/35) in
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  let t199 = @runtime(core.int32_to_string)(self/72) in
   t199
 }
 

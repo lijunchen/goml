@@ -2,8 +2,8 @@ fn trait_impl#ToString#Point#to_string(self/0: Point) -> string {
   let mtmp136 = self/0 in
   let x137 = Point.x(self/0) in
   let x138 = Point.y(self/0) in
-  let y/2 = x138 in
-  let x/1 = x137 in
+  let #derive1_field/2 = x138 in
+  let #derive0_field/1 = x137 in
   let t148 = ("Point { " + "x: ") in
   join inline_cont181(t149: string) -> string {
     let t150 = (t148 + t149) in
@@ -29,8 +29,8 @@ fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
     Tag_1 => {
       let x139 = Message::Move._0(self/3) in
       let x140 = Message::Move._1(self/3) in
-      let __field1/5 = x140 in
-      let __field0/4 = x139 in
+      let #derive1_field/5 = x140 in
+      let #derive0_field/4 = x139 in
       join inline_cont185(t160: string) -> string {
         let t161 = ("Message::Move(" + t160) in
         let t162 = (t161 + ", ") in
@@ -47,7 +47,7 @@ fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
     },
     Tag_2 => {
       let x141 = Message::Write._0(self/3) in
-      let __field0/6 = x141 in
+      let #derive2_field/6 = x141 in
       let t166 = ("Message::Write(" + x141) in
       let t167 = (t166 + ")") in
       t167
@@ -88,18 +88,18 @@ fn main() -> unit {
   let inline203 = inline202 in
   let inline204 = inline201 in
   let inline205 = ("Point { " + "x: ") in
-  let inline206 = inherent#int32#int32#to_string(inline201) in
+  let inline206 = trait_impl#ToString#int32#to_string(inline201) in
   let inline207 = (inline205 + inline206) in
   let inline208 = (inline207 + ", ") in
   let inline209 = (inline208 + "y: ") in
-  let inline210 = inherent#int32#int32#to_string(inline202) in
+  let inline210 = trait_impl#ToString#int32#to_string(inline202) in
   let inline211 = (inline209 + inline210) in
   let inline212 = (inline211 + " }") in
   jump inline_cont199(inline212)
 }
 
-fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t173 = @runtime(core.int32_to_string)(self/35) in
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  let t173 = @runtime(core.int32_to_string)(self/72) in
   t173
 }
 

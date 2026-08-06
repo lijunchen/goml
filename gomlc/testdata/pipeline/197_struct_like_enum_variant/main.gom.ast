@@ -15,8 +15,9 @@ impl ToString for Key {
   fn to_string(self: Key) -> string {
       match self {
           Key::Empty => "Key::Empty",
-          Key::Point { x: __field0, y: __field1 } =>
-            "Key::Point { " + "x: " + __field0.to_string() + ", " + "y: " + __field1.to_string() +
+          Key::Point { x: #derive0_field, y: #derive1_field } =>
+            "Key::Point { " + "x: " + ToString::to_string(#derive0_field) + ", " + "y: " +
+              ToString::to_string(#derive1_field) +
               " }",
       }
   }
@@ -27,14 +28,14 @@ impl Hash for Key {
       match self {
           Key::Empty =>
             {
-                let h: uint64 = 14695981039346656037 + 1;
+                let h = 0 as uint64 + 14695981039346656037 + 1;
                 h
             },
-          Key::Point { x: __field1_0, y: __field1_1 } =>
+          Key::Point { x: #derive0_field, y: #derive1_field } =>
             {
-                let h: uint64 = 14695981039346656037 + 2;
-                let h = h * 1099511628211 + Hash::hash(__field1_0);
-                let h = h * 1099511628211 + Hash::hash(__field1_1);
+                let h = 0 as uint64 + 14695981039346656037 + 2;
+                let h = h * 0 as uint64 + 1099511628211 + Hash::hash(#derive0_field);
+                let h = h * 0 as uint64 + 1099511628211 + Hash::hash(#derive1_field);
                 h
             },
       }
@@ -45,8 +46,11 @@ impl Eq for Key {
   fn eq(self: Key, other: Key) -> bool {
       match (self, other) {
           (Key::Empty, Key::Empty) => true,
-          (Key::Point { x: __l1_0, y: __l1_1 }, Key::Point { x: __r1_0, y: __r1_1 }) =>
-            true && Eq::eq(__l1_0, __r1_0) && Eq::eq(__l1_1, __r1_1),
+          (
+            Key::Point { x: #derive0_left, y: #derive2_left },
+            Key::Point { x: #derive1_right, y: #derive3_right }
+          ) =>
+            true && Eq::eq(#derive0_left, #derive1_right) && Eq::eq(#derive2_left, #derive3_right),
           _ => false,
       }
   }

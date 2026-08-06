@@ -38,12 +38,13 @@ fn trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(
   let mtmp136 = self/4 in
   let x137 = Generic__NoTraits__NoTraits.first(mtmp136) in
   let x138 = Generic__NoTraits__NoTraits.second(mtmp136) in
-  let second/6 = x138 in
-  let first/5 = x137 in
-  (((((("Generic { " + "first: ") + trait_impl#ToString#Wrapper__NoTraits#to_string(first/5)) +
+  let #derive1_field/6 = x138 in
+  let #derive0_field/5 = x137 in
+  (((((("Generic { " + "first: ") +
+    trait_impl#ToString#Wrapper__NoTraits#to_string(#derive0_field/5)) +
     ", ") +
     "second: ") +
-    trait_impl#ToString#Wrapper__NoTraits#to_string(second/6)) +
+    trait_impl#ToString#Wrapper__NoTraits#to_string(#derive1_field/6)) +
     " }")
 }
 
@@ -73,12 +74,12 @@ fn trait_impl#Eq#Generic__NoTraits__NoTraits#eq(
 }
 
 fn trait_impl#Hash#Generic__NoTraits__NoTraits#hash(self/9: Generic__NoTraits__NoTraits) -> uint64 {
-  let h/10 = 14695981039346656037 in
+  let h/10 = ((0 as uint64) + 14695981039346656037) in
   let h/11 =
-    ((h/10 * 1099511628211) +
+    ((h/10 * ((0 as uint64) + 1099511628211)) +
       trait_impl#Hash#Wrapper__NoTraits#hash(Generic__NoTraits__NoTraits.first(self/9))) in
   let h/12 =
-    ((h/11 * 1099511628211) +
+    ((h/11 * ((0 as uint64) + 1099511628211)) +
       trait_impl#Hash#Wrapper__NoTraits#hash(Generic__NoTraits__NoTraits.second(self/9))) in
   h/12
 }
@@ -96,8 +97,9 @@ fn trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(
     },
     GenericChoice__NoTraits__NoTraits::Value(x139) => {
       let x139 = GenericChoice__NoTraits__NoTraits::Value._0(self/13) in
-      let __field0/14 = x139 in
-      (("GenericChoice::Value(" + trait_impl#ToString#Wrapper__NoTraits#to_string(__field0/14)) +
+      let #derive0_field/14 = x139 in
+      (("GenericChoice::Value(" +
+        trait_impl#ToString#Wrapper__NoTraits#to_string(#derive0_field/14)) +
         ")")
     },
   }
@@ -124,10 +126,10 @@ fn trait_impl#Eq#GenericChoice__NoTraits__NoTraits#eq(
       match x141 {
         GenericChoice__NoTraits__NoTraits::Value(x145) => {
           let x145 = GenericChoice__NoTraits__NoTraits::Value._0(x141) in
-          let __l1_0/17 = x145 in
-          let __r1_0/18 = x143 in
+          let #derive0_left/17 = x145 in
+          let #derive1_right/18 = x143 in
           if true {
-              trait_impl#Eq#Wrapper__NoTraits#eq(__l1_0/17, __r1_0/18)
+              trait_impl#Eq#Wrapper__NoTraits#eq(#derive0_left/17, #derive1_right/18)
           } else {
               false
           }
@@ -143,14 +145,16 @@ fn trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(
 ) -> uint64 {
   match self/19 {
     GenericChoice__NoTraits__NoTraits::Empty => {
-      let h/20 = (14695981039346656037 + 1) in
+      let h/20 = (((0 as uint64) + 14695981039346656037) + 1) in
       h/20
     },
     GenericChoice__NoTraits__NoTraits::Value(x146) => {
       let x146 = GenericChoice__NoTraits__NoTraits::Value._0(self/19) in
-      let __field1_0/21 = x146 in
-      let h/22 = (14695981039346656037 + 2) in
-      let h/23 = ((h/22 * 1099511628211) + trait_impl#Hash#Wrapper__NoTraits#hash(__field1_0/21)) in
+      let #derive0_field/21 = x146 in
+      let h/22 = (((0 as uint64) + 14695981039346656037) + 2) in
+      let h/23 =
+        ((h/22 * ((0 as uint64) + 1099511628211)) +
+          trait_impl#Hash#Wrapper__NoTraits#hash(#derive0_field/21)) in
       h/23
     },
   }

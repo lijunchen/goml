@@ -1,27 +1,30 @@
 fn trait_impl#Hash#FloatKey#hash(self/0: FloatKey) -> uint64 {
-  let h/1 = 14695981039346656037 in
-  let t185 = (h/1 * 1099511628211) in
-  let t186 = FloatKey.value(self/0) in
-  join inline_cont385(t187: uint64) -> uint64 {
-    let h/2 = (t185 + t187) in
+  let t185 = (0 as uint64) in
+  let h/1 = (t185 + 14695981039346656037) in
+  let t186 = (0 as uint64) in
+  let t187 = (t186 + 1099511628211) in
+  let t188 = (h/1 * t187) in
+  let t189 = FloatKey.value(self/0) in
+  join inline_cont388(t190: uint64) -> uint64 {
+    let h/2 = (t188 + t190) in
     h/2
   } in
-  let inline386 = @runtime(core.float64_hash)(t186) in
-  jump inline_cont385(inline386)
+  let inline389 = @runtime(core.float64_hash)(t189) in
+  jump inline_cont388(inline389)
 }
 
 fn trait_impl#Eq#FloatKey#eq(self/3: FloatKey, other/4: FloatKey) -> bool {
-  let t192 = FloatKey.value(self/3) in
-  let t193 = FloatKey.value(other/4) in
-  let inline388 = @intrinsic(eq.primitive)(t192, t193) in
-  inline388
+  let t195 = FloatKey.value(self/3) in
+  let t196 = FloatKey.value(other/4) in
+  let inline391 = @intrinsic(eq.primitive)(t195, t196) in
+  inline391
 }
 
 fn trait_impl#Eq#CollisionKey#eq(self/5: CollisionKey, other/6: CollisionKey) -> bool {
-  let t197 = CollisionKey.value(self/5) in
-  let t198 = CollisionKey.value(other/6) in
-  let inline390 = @intrinsic(eq.primitive)(t197, t198) in
-  inline390
+  let t200 = CollisionKey.value(self/5) in
+  let t201 = CollisionKey.value(other/6) in
+  let inline393 = @intrinsic(eq.primitive)(t200, t201) in
+  inline393
 }
 
 fn trait_impl#Hash#CollisionKey#hash(self/7: CollisionKey) -> uint64 {
@@ -31,16 +34,16 @@ fn trait_impl#Hash#CollisionKey#hash(self/7: CollisionKey) -> uint64 {
 fn print_opt_string(value/8: Option__string) -> unit {
   match value/8 {
     Tag_0 => {
-      let inline392 = "none" in
-      let inline393 = trait_impl#ToString#string#to_string(inline392) in
-      let inline394 = @runtime(core.string_println)(inline393) in
+      let inline395 = "none" in
+      let inline396 = trait_impl#ToString#string#to_string(inline395) in
+      let inline397 = @runtime(core.string_println)(inline396) in
       ()
     },
     Tag_1 => {
       let x136 = Option__string::Some._0(value/8) in
       let text/9 = x136 in
-      let inline396 = trait_impl#ToString#string#to_string(x136) in
-      let inline397 = @runtime(core.string_println)(inline396) in
+      let inline399 = trait_impl#ToString#string#to_string(x136) in
+      let inline400 = @runtime(core.string_println)(inline399) in
       ()
     },
   }
@@ -49,16 +52,16 @@ fn print_opt_string(value/8: Option__string) -> unit {
 fn print_opt_int(value/10: Option__int32) -> unit {
   match value/10 {
     Tag_0 => {
-      let inline399 = "none" in
-      let inline400 = trait_impl#ToString#string#to_string(inline399) in
-      let inline401 = @runtime(core.string_println)(inline400) in
+      let inline402 = "none" in
+      let inline403 = trait_impl#ToString#string#to_string(inline402) in
+      let inline404 = @runtime(core.string_println)(inline403) in
       ()
     },
     Tag_1 => {
       let x137 = Option__int32::Some._0(value/10) in
       let number/11 = x137 in
-      let inline403 = trait_impl#ToString#int32#to_string(x137) in
-      let inline404 = @runtime(core.string_println)(inline403) in
+      let inline406 = trait_impl#ToString#int32#to_string(x137) in
+      let inline407 = @runtime(core.string_println)(inline406) in
       ()
     },
   }
@@ -67,373 +70,373 @@ fn print_opt_int(value/10: Option__int32) -> unit {
 fn float_zero_contracts() -> unit {
   let zero32/12 = 0 in
   let negative_zero32/13 = (-zero32/12) in
-  let t211 = trait_impl#Hash#float32#hash(zero32/12) in
-  let t212 = trait_impl#Hash#float32#hash(negative_zero32/13) in
-  let t213 = trait_impl#Eq#uint64#eq(t211, t212) in
-  let t214 = trait_impl#ToString#bool#to_string(t213) in
-  let _wild138 = println__T_string(t214) in
+  let t214 = trait_impl#Hash#float32#hash(zero32/12) in
+  let t215 = trait_impl#Hash#float32#hash(negative_zero32/13) in
+  let t216 = trait_impl#Eq#uint64#eq(t214, t215) in
+  let t217 = trait_impl#ToString#bool#to_string(t216) in
+  let _wild138 = println__T_string(t217) in
   let values32/14 = inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() in
   let _wild139 =
     inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(values32/14, zero32/12, "f32") in
-  let t215 =
+  let t218 =
     inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(values32/14, negative_zero32/13) in
-  let _wild140 = print_opt_string(t215) in
+  let _wild140 = print_opt_string(t218) in
   let _wild141 =
     inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(
       values32/14,
       negative_zero32/13,
       "f32-updated"
     ) in
-  join inline_cont449(t216: int) -> unit {
-    let _wild142 = println__T_int(t216) in
-    join inline_cont447(t217: Option__string) -> unit {
-      let _wild143 = print_opt_string(t217) in
-      join inline_cont445(_wild144: unit) -> unit {
-        join inline_cont443(t218: int) -> unit {
-          join inline_cont440(_wild145: unit) -> unit {
+  join inline_cont452(t219: int) -> unit {
+    let _wild142 = println__T_int(t219) in
+    join inline_cont450(t220: Option__string) -> unit {
+      let _wild143 = print_opt_string(t220) in
+      join inline_cont448(_wild144: unit) -> unit {
+        join inline_cont446(t221: int) -> unit {
+          join inline_cont443(_wild145: unit) -> unit {
             let zero64/15 = 0 in
             let negative_zero64/16 = (-zero64/15) in
-            join inline_cont438(t219: uint64) -> unit {
-              join inline_cont436(t220: uint64) -> unit {
-                join inline_cont434(t221: bool) -> unit {
-                  join inline_cont432(t222: string) -> unit {
-                    join inline_cont429(_wild146: unit) -> unit {
-                      join inline_cont427(values64/17: HashMap[float64, string]) -> unit {
-                        join inline_cont424(_wild147: unit) -> unit {
-                          join inline_cont422(t223: Option__string) -> unit {
-                            join inline_cont417(_wild148: unit) -> unit {
-                              join inline_cont415(derived/18: HashMap[FloatKey, string]) -> unit {
-                                let t224 = FloatKey { value: zero64/15 } in
-                                join inline_cont412(_wild149: unit) -> unit {
-                                  let t225 = FloatKey { value: negative_zero64/16 } in
-                                  join inline_cont410(t226: Option__string) -> unit {
-                                    match t226 {
+            join inline_cont441(t222: uint64) -> unit {
+              join inline_cont439(t223: uint64) -> unit {
+                join inline_cont437(t224: bool) -> unit {
+                  join inline_cont435(t225: string) -> unit {
+                    join inline_cont432(_wild146: unit) -> unit {
+                      join inline_cont430(values64/17: HashMap[float64, string]) -> unit {
+                        join inline_cont427(_wild147: unit) -> unit {
+                          join inline_cont425(t226: Option__string) -> unit {
+                            join inline_cont420(_wild148: unit) -> unit {
+                              join inline_cont418(derived/18: HashMap[FloatKey, string]) -> unit {
+                                let t227 = FloatKey { value: zero64/15 } in
+                                join inline_cont415(_wild149: unit) -> unit {
+                                  let t228 = FloatKey { value: negative_zero64/16 } in
+                                  join inline_cont413(t229: Option__string) -> unit {
+                                    match t229 {
                                       Tag_0 => {
-                                        let inline406 = println__T_string("none") in
+                                        let inline409 = println__T_string("none") in
                                         ()
                                       },
                                       Tag_1 => {
-                                        let inline407 = Option__string::Some._0(t226) in
-                                        let inline408 = inline407 in
-                                        let inline409 = println__T_string(inline407) in
+                                        let inline410 = Option__string::Some._0(t229) in
+                                        let inline411 = inline410 in
+                                        let inline412 = println__T_string(inline410) in
                                         ()
                                       },
                                     }
                                   } in
-                                  let inline411 = @intrinsic(hashmap.get)(derived/18, t225) in
-                                  jump inline_cont410(inline411)
+                                  let inline414 = @intrinsic(hashmap.get)(derived/18, t228) in
+                                  jump inline_cont413(inline414)
                                 } in
-                                let inline413 = "derived" in
-                                let inline414 =
-                                  @intrinsic(hashmap.set)(derived/18, t224, inline413) in
-                                jump inline_cont412(())
+                                let inline416 = "derived" in
+                                let inline417 =
+                                  @intrinsic(hashmap.set)(derived/18, t227, inline416) in
+                                jump inline_cont415(())
                               } in
-                              let inline416 = @intrinsic(hashmap.new)() in
-                              jump inline_cont415(inline416)
+                              let inline419 = @intrinsic(hashmap.new)() in
+                              jump inline_cont418(inline419)
                             } in
-                            match t223 {
+                            match t226 {
                               Tag_0 => {
-                                let inline418 = println__T_string("none") in
-                                jump inline_cont417(())
+                                let inline421 = println__T_string("none") in
+                                jump inline_cont420(())
                               },
                               Tag_1 => {
-                                let inline419 = Option__string::Some._0(t223) in
-                                let inline420 = inline419 in
-                                let inline421 = println__T_string(inline419) in
-                                jump inline_cont417(())
+                                let inline422 = Option__string::Some._0(t226) in
+                                let inline423 = inline422 in
+                                let inline424 = println__T_string(inline422) in
+                                jump inline_cont420(())
                               },
                             }
                           } in
-                          let inline423 =
+                          let inline426 =
                             @intrinsic(hashmap.get)(values64/17, negative_zero64/16) in
-                          jump inline_cont422(inline423)
+                          jump inline_cont425(inline426)
                         } in
-                        let inline425 = "f64" in
-                        let inline426 =
-                          @intrinsic(hashmap.set)(values64/17, zero64/15, inline425) in
-                        jump inline_cont424(())
+                        let inline428 = "f64" in
+                        let inline429 =
+                          @intrinsic(hashmap.set)(values64/17, zero64/15, inline428) in
+                        jump inline_cont427(())
                       } in
-                      let inline428 = @intrinsic(hashmap.new)() in
-                      jump inline_cont427(inline428)
+                      let inline431 = @intrinsic(hashmap.new)() in
+                      jump inline_cont430(inline431)
                     } in
-                    let inline430 = trait_impl#ToString#string#to_string(t222) in
-                    let inline431 = @runtime(core.string_println)(inline430) in
-                    jump inline_cont429(())
+                    let inline433 = trait_impl#ToString#string#to_string(t225) in
+                    let inline434 = @runtime(core.string_println)(inline433) in
+                    jump inline_cont432(())
                   } in
-                  let inline433 = @runtime(core.bool_to_string)(t221) in
-                  jump inline_cont432(inline433)
+                  let inline436 = @runtime(core.bool_to_string)(t224) in
+                  jump inline_cont435(inline436)
                 } in
-                let inline435 = @intrinsic(eq.primitive)(t219, t220) in
-                jump inline_cont434(inline435)
+                let inline438 = @intrinsic(eq.primitive)(t222, t223) in
+                jump inline_cont437(inline438)
               } in
-              let inline437 = @runtime(core.float64_hash)(negative_zero64/16) in
-              jump inline_cont436(inline437)
+              let inline440 = @runtime(core.float64_hash)(negative_zero64/16) in
+              jump inline_cont439(inline440)
             } in
-            let inline439 = @runtime(core.float64_hash)(zero64/15) in
-            jump inline_cont438(inline439)
+            let inline442 = @runtime(core.float64_hash)(zero64/15) in
+            jump inline_cont441(inline442)
           } in
-          let inline441 = trait_impl#ToString#int#to_string(t218) in
-          let inline442 = @runtime(core.string_println)(inline441) in
-          jump inline_cont440(())
+          let inline444 = trait_impl#ToString#int#to_string(t221) in
+          let inline445 = @runtime(core.string_println)(inline444) in
+          jump inline_cont443(())
         } in
-        let inline444 = @intrinsic(hashmap.len)(values32/14) in
-        jump inline_cont443(inline444)
+        let inline447 = @intrinsic(hashmap.len)(values32/14) in
+        jump inline_cont446(inline447)
       } in
-      let inline446 = @intrinsic(hashmap.remove)(values32/14, negative_zero32/13) in
-      jump inline_cont445(())
+      let inline449 = @intrinsic(hashmap.remove)(values32/14, negative_zero32/13) in
+      jump inline_cont448(())
     } in
-    let inline448 = @intrinsic(hashmap.get)(values32/14, zero32/12) in
-    jump inline_cont447(inline448)
+    let inline451 = @intrinsic(hashmap.get)(values32/14, zero32/12) in
+    jump inline_cont450(inline451)
   } in
-  let inline450 = @intrinsic(hashmap.len)(values32/14) in
-  jump inline_cont449(inline450)
+  let inline453 = @intrinsic(hashmap.len)(values32/14) in
+  jump inline_cont452(inline453)
 }
 
 fn collision_contracts() -> unit {
   let values/19 = inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() in
-  let t228 = CollisionKey { value: 1 } in
-  let _wild151 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t228, 10) in
-  let t229 = CollisionKey { value: 2 } in
-  let _wild152 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t229, 20) in
-  let t230 = CollisionKey { value: 3 } in
-  let _wild153 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t230, 30) in
-  let t231 = CollisionKey { value: 2 } in
-  let _wild154 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, t231) in
-  let t232 = CollisionKey { value: 1 } in
-  let t233 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t232) in
-  let _wild155 = print_opt_int(t233) in
+  let t231 = CollisionKey { value: 1 } in
+  let _wild151 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t231, 10) in
+  let t232 = CollisionKey { value: 2 } in
+  let _wild152 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t232, 20) in
+  let t233 = CollisionKey { value: 3 } in
+  let _wild153 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t233, 30) in
   let t234 = CollisionKey { value: 2 } in
-  let t235 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t234) in
-  let _wild156 = print_opt_int(t235) in
-  let t236 = CollisionKey { value: 3 } in
-  let t237 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t236) in
-  let _wild157 = print_opt_int(t237) in
-  let t238 = CollisionKey { value: 4 } in
-  let _wild158 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t238, 40) in
-  let t239 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
-  let _wild159 = println__T_int(t239) in
-  let t240 = CollisionKey { value: 4 } in
-  join inline_cont497(t241: Option__int32) -> unit {
-    let _wild160 = print_opt_int(t241) in
-    let t242 = CollisionKey { value: 4 } in
-    join inline_cont494(_wild161: unit) -> unit {
-      join inline_cont492(t243: int) -> unit {
-        join inline_cont489(_wild162: unit) -> unit {
-          let t244 = CollisionKey { value: 4 } in
-          join inline_cont487(t245: Option__int32) -> unit {
-            join inline_cont482(_wild163: unit) -> unit {
-              let t246 = CollisionKey { value: 99 } in
-              join inline_cont480(_wild164: unit) -> unit {
-                let t247 = CollisionKey { value: 99 } in
-                join inline_cont478(_wild165: unit) -> unit {
-                  join inline_cont476(t248: int) -> unit {
-                    join inline_cont473(_wild166: unit) -> unit {
-                      join inline_cont470(index/20: Ref[int32]) -> unit {
-                        join exit249() -> unit {
+  let _wild154 = inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(values/19, t234) in
+  let t235 = CollisionKey { value: 1 } in
+  let t236 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t235) in
+  let _wild155 = print_opt_int(t236) in
+  let t237 = CollisionKey { value: 2 } in
+  let t238 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t237) in
+  let _wild156 = print_opt_int(t238) in
+  let t239 = CollisionKey { value: 3 } in
+  let t240 = inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(values/19, t239) in
+  let _wild157 = print_opt_int(t240) in
+  let t241 = CollisionKey { value: 4 } in
+  let _wild158 = inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(values/19, t241, 40) in
+  let t242 = inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(values/19) in
+  let _wild159 = println__T_int(t242) in
+  let t243 = CollisionKey { value: 4 } in
+  join inline_cont500(t244: Option__int32) -> unit {
+    let _wild160 = print_opt_int(t244) in
+    let t245 = CollisionKey { value: 4 } in
+    join inline_cont497(_wild161: unit) -> unit {
+      join inline_cont495(t246: int) -> unit {
+        join inline_cont492(_wild162: unit) -> unit {
+          let t247 = CollisionKey { value: 4 } in
+          join inline_cont490(t248: Option__int32) -> unit {
+            join inline_cont485(_wild163: unit) -> unit {
+              let t249 = CollisionKey { value: 99 } in
+              join inline_cont483(_wild164: unit) -> unit {
+                let t250 = CollisionKey { value: 99 } in
+                join inline_cont481(_wild165: unit) -> unit {
+                  join inline_cont479(t251: int) -> unit {
+                    join inline_cont476(_wild166: unit) -> unit {
+                      join inline_cont473(index/20: Ref[int32]) -> unit {
+                        join exit252() -> unit {
                           let _wild170 = () in
-                          join inline_cont468(t250: int) -> unit {
-                            let inline466 = trait_impl#ToString#int#to_string(t250) in
-                            let inline467 = @runtime(core.string_println)(inline466) in
+                          join inline_cont471(t253: int) -> unit {
+                            let inline469 = trait_impl#ToString#int#to_string(t253) in
+                            let inline470 = @runtime(core.string_println)(inline469) in
                             ()
                           } in
-                          let inline469 = @intrinsic(hashmap.len)(values/19) in
-                          jump inline_cont468(inline469)
+                          let inline472 = @intrinsic(hashmap.len)(values/19) in
+                          jump inline_cont471(inline472)
                         } in
                         joinrec {
-                          join loop251() -> unit {
-                            join inline_cont463(t252: int32) -> unit {
-                              let t253 = (t252 < 2000) in
-                              if t253 {
-                                join inline_cont461(t254: int32) -> unit {
-                                  let t255 = (1000 + t254) in
-                                  let key/21 = CollisionKey { value: t255 } in
-                                  join inline_cont459(t256: int32) -> unit {
-                                    join inline_cont457(_wild167: unit) -> unit {
-                                      join inline_cont455(_wild168: unit) -> unit {
-                                        join inline_cont453(t257: int32) -> unit {
-                                          let t258 = (t257 + 1) in
-                                          let inline452 = @intrinsic(ref.set)(index/20, t258) in
-                                          jump loop251()
+                          join loop254() -> unit {
+                            join inline_cont466(t255: int32) -> unit {
+                              let t256 = (t255 < 2000) in
+                              if t256 {
+                                join inline_cont464(t257: int32) -> unit {
+                                  let t258 = (1000 + t257) in
+                                  let key/21 = CollisionKey { value: t258 } in
+                                  join inline_cont462(t259: int32) -> unit {
+                                    join inline_cont460(_wild167: unit) -> unit {
+                                      join inline_cont458(_wild168: unit) -> unit {
+                                        join inline_cont456(t260: int32) -> unit {
+                                          let t261 = (t260 + 1) in
+                                          let inline455 = @intrinsic(ref.set)(index/20, t261) in
+                                          jump loop254()
                                         } in
-                                        let inline454 = @intrinsic(ref.get)(index/20) in
-                                        jump inline_cont453(inline454)
+                                        let inline457 = @intrinsic(ref.get)(index/20) in
+                                        jump inline_cont456(inline457)
                                       } in
-                                      let inline456 =
+                                      let inline459 =
                                         @intrinsic(hashmap.remove)(values/19, key/21) in
-                                      jump inline_cont455(())
+                                      jump inline_cont458(())
                                     } in
-                                    let inline458 =
-                                      @intrinsic(hashmap.set)(values/19, key/21, t256) in
-                                    jump inline_cont457(())
+                                    let inline461 =
+                                      @intrinsic(hashmap.set)(values/19, key/21, t259) in
+                                    jump inline_cont460(())
                                   } in
-                                  let inline460 = @intrinsic(ref.get)(index/20) in
-                                  jump inline_cont459(inline460)
+                                  let inline463 = @intrinsic(ref.get)(index/20) in
+                                  jump inline_cont462(inline463)
                                 } in
-                                let inline462 = @intrinsic(ref.get)(index/20) in
-                                jump inline_cont461(inline462)
+                                let inline465 = @intrinsic(ref.get)(index/20) in
+                                jump inline_cont464(inline465)
                               } else {
-                                jump exit249()
+                                jump exit252()
                               }
                             } in
-                            let inline464 = @intrinsic(ref.get)(index/20) in
-                            jump inline_cont463(inline464)
+                            let inline467 = @intrinsic(ref.get)(index/20) in
+                            jump inline_cont466(inline467)
                           } in
                         } in
-                        jump loop251()
+                        jump loop254()
                       } in
-                      let inline471 = 0 in
-                      let inline472 = @intrinsic(ref.new)(inline471) in
-                      jump inline_cont470(inline472)
+                      let inline474 = 0 in
+                      let inline475 = @intrinsic(ref.new)(inline474) in
+                      jump inline_cont473(inline475)
                     } in
-                    let inline474 = trait_impl#ToString#int#to_string(t248) in
-                    let inline475 = @runtime(core.string_println)(inline474) in
-                    jump inline_cont473(())
+                    let inline477 = trait_impl#ToString#int#to_string(t251) in
+                    let inline478 = @runtime(core.string_println)(inline477) in
+                    jump inline_cont476(())
                   } in
-                  let inline477 = @intrinsic(hashmap.len)(values/19) in
-                  jump inline_cont476(inline477)
+                  let inline480 = @intrinsic(hashmap.len)(values/19) in
+                  jump inline_cont479(inline480)
                 } in
-                let inline479 = @intrinsic(hashmap.remove)(values/19, t247) in
-                jump inline_cont478(())
+                let inline482 = @intrinsic(hashmap.remove)(values/19, t250) in
+                jump inline_cont481(())
               } in
-              let inline481 = @intrinsic(hashmap.remove)(values/19, t246) in
-              jump inline_cont480(())
+              let inline484 = @intrinsic(hashmap.remove)(values/19, t249) in
+              jump inline_cont483(())
             } in
-            match t245 {
+            match t248 {
               Tag_0 => {
-                let inline483 = println__T_string("none") in
-                jump inline_cont482(())
+                let inline486 = println__T_string("none") in
+                jump inline_cont485(())
               },
               Tag_1 => {
-                let inline484 = Option__int32::Some._0(t245) in
-                let inline485 = inline484 in
-                let inline486 = println__T_int32(inline484) in
-                jump inline_cont482(())
+                let inline487 = Option__int32::Some._0(t248) in
+                let inline488 = inline487 in
+                let inline489 = println__T_int32(inline487) in
+                jump inline_cont485(())
               },
             }
           } in
-          let inline488 = @intrinsic(hashmap.get)(values/19, t244) in
-          jump inline_cont487(inline488)
+          let inline491 = @intrinsic(hashmap.get)(values/19, t247) in
+          jump inline_cont490(inline491)
         } in
-        let inline490 = trait_impl#ToString#int#to_string(t243) in
-        let inline491 = @runtime(core.string_println)(inline490) in
-        jump inline_cont489(())
+        let inline493 = trait_impl#ToString#int#to_string(t246) in
+        let inline494 = @runtime(core.string_println)(inline493) in
+        jump inline_cont492(())
       } in
-      let inline493 = @intrinsic(hashmap.len)(values/19) in
-      jump inline_cont492(inline493)
+      let inline496 = @intrinsic(hashmap.len)(values/19) in
+      jump inline_cont495(inline496)
     } in
-    let inline495 = 41 in
-    let inline496 = @intrinsic(hashmap.set)(values/19, t242, inline495) in
-    jump inline_cont494(())
+    let inline498 = 41 in
+    let inline499 = @intrinsic(hashmap.set)(values/19, t245, inline498) in
+    jump inline_cont497(())
   } in
-  let inline498 = @intrinsic(hashmap.get)(values/19, t240) in
-  jump inline_cont497(inline498)
+  let inline501 = @intrinsic(hashmap.get)(values/19, t243) in
+  jump inline_cont500(inline501)
 }
 
 fn reference_contracts() -> unit {
   let values/22 = inherent#HashMap#HashMap[K,V]#new__K_Ref[CollisionKey]__V_string() in
-  let t260 = CollisionKey { value: 1 } in
-  let key/23 = inherent#Ref#Ref[T]#new__T_CollisionKey(t260) in
+  let t263 = CollisionKey { value: 1 } in
+  let key/23 = inherent#Ref#Ref[T]#new__T_CollisionKey(t263) in
   let alias/24 = key/23 in
-  let t261 = CollisionKey { value: 1 } in
-  let equal_value/25 = inherent#Ref#Ref[T]#new__T_CollisionKey(t261) in
+  let t264 = CollisionKey { value: 1 } in
+  let equal_value/25 = inherent#Ref#Ref[T]#new__T_CollisionKey(t264) in
   let _wild172 =
     inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(
       values/22,
       key/23,
       "identity"
     ) in
-  join inline_cont539(t262: bool) -> unit {
-    join inline_cont536(_wild173: unit) -> unit {
-      join inline_cont534(t263: bool) -> unit {
-        join inline_cont531(_wild174: unit) -> unit {
-          join inline_cont529(t264: uint64) -> unit {
-            join inline_cont527(t265: uint64) -> unit {
-              join inline_cont525(t266: bool) -> unit {
-                join inline_cont522(_wild175: unit) -> unit {
-                  join inline_cont520(t267: Option__string) -> unit {
-                    join inline_cont515(_wild176: unit) -> unit {
-                      join inline_cont513(t268: Option__string) -> unit {
-                        join inline_cont508(_wild177: unit) -> unit {
-                          let t269 = CollisionKey { value: 99 } in
-                          join inline_cont506(_wild178: unit) -> unit {
-                            join inline_cont504(t270: Option__string) -> unit {
-                              match t270 {
+  join inline_cont542(t265: bool) -> unit {
+    join inline_cont539(_wild173: unit) -> unit {
+      join inline_cont537(t266: bool) -> unit {
+        join inline_cont534(_wild174: unit) -> unit {
+          join inline_cont532(t267: uint64) -> unit {
+            join inline_cont530(t268: uint64) -> unit {
+              join inline_cont528(t269: bool) -> unit {
+                join inline_cont525(_wild175: unit) -> unit {
+                  join inline_cont523(t270: Option__string) -> unit {
+                    join inline_cont518(_wild176: unit) -> unit {
+                      join inline_cont516(t271: Option__string) -> unit {
+                        join inline_cont511(_wild177: unit) -> unit {
+                          let t272 = CollisionKey { value: 99 } in
+                          join inline_cont509(_wild178: unit) -> unit {
+                            join inline_cont507(t273: Option__string) -> unit {
+                              match t273 {
                                 Tag_0 => {
-                                  let inline500 = println__T_string("none") in
+                                  let inline503 = println__T_string("none") in
                                   ()
                                 },
                                 Tag_1 => {
-                                  let inline501 = Option__string::Some._0(t270) in
-                                  let inline502 = inline501 in
-                                  let inline503 = println__T_string(inline501) in
+                                  let inline504 = Option__string::Some._0(t273) in
+                                  let inline505 = inline504 in
+                                  let inline506 = println__T_string(inline504) in
                                   ()
                                 },
                               }
                             } in
-                            let inline505 = @intrinsic(hashmap.get)(values/22, key/23) in
-                            jump inline_cont504(inline505)
+                            let inline508 = @intrinsic(hashmap.get)(values/22, key/23) in
+                            jump inline_cont507(inline508)
                           } in
-                          let inline507 = @intrinsic(ref.set)(key/23, t269) in
-                          jump inline_cont506(())
+                          let inline510 = @intrinsic(ref.set)(key/23, t272) in
+                          jump inline_cont509(())
                         } in
-                        match t268 {
+                        match t271 {
                           Tag_0 => {
-                            let inline509 = println__T_string("none") in
-                            jump inline_cont508(())
+                            let inline512 = println__T_string("none") in
+                            jump inline_cont511(())
                           },
                           Tag_1 => {
-                            let inline510 = Option__string::Some._0(t268) in
-                            let inline511 = inline510 in
-                            let inline512 = println__T_string(inline510) in
-                            jump inline_cont508(())
+                            let inline513 = Option__string::Some._0(t271) in
+                            let inline514 = inline513 in
+                            let inline515 = println__T_string(inline513) in
+                            jump inline_cont511(())
                           },
                         }
                       } in
-                      let inline514 = @intrinsic(hashmap.get)(values/22, equal_value/25) in
-                      jump inline_cont513(inline514)
+                      let inline517 = @intrinsic(hashmap.get)(values/22, equal_value/25) in
+                      jump inline_cont516(inline517)
                     } in
-                    match t267 {
+                    match t270 {
                       Tag_0 => {
-                        let inline516 = println__T_string("none") in
-                        jump inline_cont515(())
+                        let inline519 = println__T_string("none") in
+                        jump inline_cont518(())
                       },
                       Tag_1 => {
-                        let inline517 = Option__string::Some._0(t267) in
-                        let inline518 = inline517 in
-                        let inline519 = println__T_string(inline517) in
-                        jump inline_cont515(())
+                        let inline520 = Option__string::Some._0(t270) in
+                        let inline521 = inline520 in
+                        let inline522 = println__T_string(inline520) in
+                        jump inline_cont518(())
                       },
                     }
                   } in
-                  let inline521 = @intrinsic(hashmap.get)(values/22, key/23) in
-                  jump inline_cont520(inline521)
+                  let inline524 = @intrinsic(hashmap.get)(values/22, key/23) in
+                  jump inline_cont523(inline524)
                 } in
-                let inline523 = trait_impl#ToString#bool#to_string(t266) in
-                let inline524 = @runtime(core.string_println)(inline523) in
-                jump inline_cont522(())
+                let inline526 = trait_impl#ToString#bool#to_string(t269) in
+                let inline527 = @runtime(core.string_println)(inline526) in
+                jump inline_cont525(())
               } in
-              let inline526 = @intrinsic(eq.primitive)(t264, t265) in
-              jump inline_cont525(inline526)
+              let inline529 = @intrinsic(eq.primitive)(t267, t268) in
+              jump inline_cont528(inline529)
             } in
-            let inline528 = @intrinsic(ref.ptr_hash)(key/23) in
-            jump inline_cont527(inline528)
+            let inline531 = @intrinsic(ref.ptr_hash)(key/23) in
+            jump inline_cont530(inline531)
           } in
-          let inline530 = @intrinsic(ref.ptr_hash)(key/23) in
-          jump inline_cont529(inline530)
+          let inline533 = @intrinsic(ref.ptr_hash)(key/23) in
+          jump inline_cont532(inline533)
         } in
-        let inline532 = trait_impl#ToString#bool#to_string(t263) in
-        let inline533 = @runtime(core.string_println)(inline532) in
-        jump inline_cont531(())
+        let inline535 = trait_impl#ToString#bool#to_string(t266) in
+        let inline536 = @runtime(core.string_println)(inline535) in
+        jump inline_cont534(())
       } in
-      let inline535 = @intrinsic(ref.ptr_eq)(key/23, equal_value/25) in
-      jump inline_cont534(inline535)
+      let inline538 = @intrinsic(ref.ptr_eq)(key/23, equal_value/25) in
+      jump inline_cont537(inline538)
     } in
-    let inline537 = trait_impl#ToString#bool#to_string(t262) in
-    let inline538 = @runtime(core.string_println)(inline537) in
-    jump inline_cont536(())
+    let inline540 = trait_impl#ToString#bool#to_string(t265) in
+    let inline541 = @runtime(core.string_println)(inline540) in
+    jump inline_cont539(())
   } in
-  let inline540 = @intrinsic(ref.ptr_eq)(key/23, key/23) in
-  jump inline_cont539(inline540)
+  let inline543 = @intrinsic(ref.ptr_eq)(key/23, key/23) in
+  jump inline_cont542(inline543)
 }
 
 fn main() -> unit {
@@ -444,55 +447,55 @@ fn main() -> unit {
 }
 
 fn trait_impl#Hash#float64#hash(self/124: float64) -> uint64 {
-  let t274 = @runtime(core.float64_hash)(self/124) in
-  t274
-}
-
-fn trait_impl#Eq#float64#eq(self/108: float64, other/109: float64) -> bool {
-  let t277 = @intrinsic(eq.primitive)(self/108, other/109) in
+  let t277 = @runtime(core.float64_hash)(self/124) in
   t277
 }
 
-fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
-  let t280 = @intrinsic(eq.primitive)(self/94, other/95) in
+fn trait_impl#Eq#float64#eq(self/108: float64, other/109: float64) -> bool {
+  let t280 = @intrinsic(eq.primitive)(self/108, other/109) in
   t280
 }
 
-fn println__T_string(value/31: string) -> unit {
-  join inline_cont541(t282: string) -> unit {
-    let t283 = @runtime(core.string_println)(t282) in
-    ()
-  } in
-  jump inline_cont541(value/31)
+fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
+  let t283 = @intrinsic(eq.primitive)(self/94, other/95) in
+  t283
 }
 
-fn println__T_int32(value/31: int32) -> unit {
-  join inline_cont542(t285: string) -> unit {
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont544(t285: string) -> unit {
     let t286 = @runtime(core.string_println)(t285) in
     ()
   } in
-  let inline543 = @runtime(core.int32_to_string)(value/31) in
-  jump inline_cont542(inline543)
+  jump inline_cont544(value/31)
+}
+
+fn println__T_int32(value/31: int32) -> unit {
+  join inline_cont545(t288: string) -> unit {
+    let t289 = @runtime(core.string_println)(t288) in
+    ()
+  } in
+  let inline546 = @runtime(core.int32_to_string)(value/31) in
+  jump inline_cont545(inline546)
 }
 
 fn trait_impl#Hash#float32#hash(self/123: float32) -> uint64 {
-  let t289 = @runtime(core.float32_hash)(self/123) in
-  t289
-}
-
-fn trait_impl#Eq#uint64#eq(self/104: uint64, other/105: uint64) -> bool {
-  let t292 = @intrinsic(eq.primitive)(self/104, other/105) in
+  let t292 = @runtime(core.float32_hash)(self/123) in
   t292
 }
 
-fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  let t295 = @runtime(core.bool_to_string)(self/66) in
+fn trait_impl#Eq#uint64#eq(self/104: uint64, other/105: uint64) -> bool {
+  let t295 = @intrinsic(eq.primitive)(self/104, other/105) in
   t295
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() -> HashMap[float32, string] {
-  let t298 = @intrinsic(hashmap.new)() in
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  let t298 = @runtime(core.bool_to_string)(self/66) in
   t298
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_float32__V_string() -> HashMap[float32, string] {
+  let t301 = @intrinsic(hashmap.new)() in
+  t301
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(
@@ -500,7 +503,7 @@ fn inherent#HashMap#HashMap[K,V]#set__K_float32__V_string(
   key/207: float32,
   value/208: string
 ) -> unit {
-  let t300 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
+  let t303 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
   ()
 }
 
@@ -508,37 +511,37 @@ fn inherent#HashMap#HashMap[K,V]#get__K_float32__V_string(
   self/204: HashMap[float32, string],
   key/205: float32
 ) -> Option__string {
-  let t303 = @intrinsic(hashmap.get)(self/204, key/205) in
-  t303
+  let t306 = @intrinsic(hashmap.get)(self/204, key/205) in
+  t306
 }
 
 fn println__T_int(value/31: int) -> unit {
-  join inline_cont544(t305: string) -> unit {
-    let t306 = @runtime(core.string_println)(t305) in
+  join inline_cont547(t308: string) -> unit {
+    let t309 = @runtime(core.string_println)(t308) in
     ()
   } in
-  let inline545 = @runtime(core.int_to_string)(value/31) in
-  jump inline_cont544(inline545)
+  let inline548 = @runtime(core.int_to_string)(value/31) in
+  jump inline_cont547(inline548)
 }
 
 fn inherent#HashMap#HashMap[K,V]#len__K_float32__V_string(
   self/211: HashMap[float32, string]
 ) -> int {
-  let t309 = @intrinsic(hashmap.len)(self/211) in
-  t309
+  let t312 = @intrinsic(hashmap.len)(self/211) in
+  t312
 }
 
 fn inherent#HashMap#HashMap[K,V]#remove__K_float32__V_string(
   self/209: HashMap[float32, string],
   key/210: float32
 ) -> unit {
-  let t311 = @intrinsic(hashmap.remove)(self/209, key/210) in
+  let t314 = @intrinsic(hashmap.remove)(self/209, key/210) in
   ()
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_float64__V_string() -> HashMap[float64, string] {
-  let t314 = @intrinsic(hashmap.new)() in
-  t314
+  let t317 = @intrinsic(hashmap.new)() in
+  t317
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(
@@ -546,7 +549,7 @@ fn inherent#HashMap#HashMap[K,V]#set__K_float64__V_string(
   key/207: float64,
   value/208: string
 ) -> unit {
-  let t316 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
+  let t319 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
   ()
 }
 
@@ -554,13 +557,13 @@ fn inherent#HashMap#HashMap[K,V]#get__K_float64__V_string(
   self/204: HashMap[float64, string],
   key/205: float64
 ) -> Option__string {
-  let t319 = @intrinsic(hashmap.get)(self/204, key/205) in
-  t319
+  let t322 = @intrinsic(hashmap.get)(self/204, key/205) in
+  t322
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_FloatKey__V_string() -> HashMap[FloatKey, string] {
-  let t322 = @intrinsic(hashmap.new)() in
-  t322
+  let t325 = @intrinsic(hashmap.new)() in
+  t325
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(
@@ -568,7 +571,7 @@ fn inherent#HashMap#HashMap[K,V]#set__K_FloatKey__V_string(
   key/207: FloatKey,
   value/208: string
 ) -> unit {
-  let t324 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
+  let t327 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
   ()
 }
 
@@ -576,13 +579,13 @@ fn inherent#HashMap#HashMap[K,V]#get__K_FloatKey__V_string(
   self/204: HashMap[FloatKey, string],
   key/205: FloatKey
 ) -> Option__string {
-  let t327 = @intrinsic(hashmap.get)(self/204, key/205) in
-  t327
+  let t330 = @intrinsic(hashmap.get)(self/204, key/205) in
+  t330
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_CollisionKey__V_int32() -> HashMap[CollisionKey, int32] {
-  let t330 = @intrinsic(hashmap.new)() in
-  t330
+  let t333 = @intrinsic(hashmap.new)() in
+  t333
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
@@ -590,7 +593,7 @@ fn inherent#HashMap#HashMap[K,V]#set__K_CollisionKey__V_int32(
   key/207: CollisionKey,
   value/208: int32
 ) -> unit {
-  let t332 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
+  let t335 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
   ()
 }
 
@@ -598,7 +601,7 @@ fn inherent#HashMap#HashMap[K,V]#remove__K_CollisionKey__V_int32(
   self/209: HashMap[CollisionKey, int32],
   key/210: CollisionKey
 ) -> unit {
-  let t334 = @intrinsic(hashmap.remove)(self/209, key/210) in
+  let t337 = @intrinsic(hashmap.remove)(self/209, key/210) in
   ()
 }
 
@@ -606,29 +609,29 @@ fn inherent#HashMap#HashMap[K,V]#get__K_CollisionKey__V_int32(
   self/204: HashMap[CollisionKey, int32],
   key/205: CollisionKey
 ) -> Option__int32 {
-  let t337 = @intrinsic(hashmap.get)(self/204, key/205) in
-  t337
+  let t340 = @intrinsic(hashmap.get)(self/204, key/205) in
+  t340
 }
 
 fn inherent#HashMap#HashMap[K,V]#len__K_CollisionKey__V_int32(
   self/211: HashMap[CollisionKey, int32]
 ) -> int {
-  let t340 = @intrinsic(hashmap.len)(self/211) in
-  t340
-}
-
-fn inherent#Ref#Ref[T]#new__T_int32(value/215: int32) -> Ref[int32] {
-  let t343 = @intrinsic(ref.new)(value/215) in
+  let t343 = @intrinsic(hashmap.len)(self/211) in
   t343
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/216: Ref[int32]) -> int32 {
-  let t346 = @intrinsic(ref.get)(self/216) in
+fn inherent#Ref#Ref[T]#new__T_int32(value/215: int32) -> Ref[int32] {
+  let t346 = @intrinsic(ref.new)(value/215) in
   t346
 }
 
+fn inherent#Ref#Ref[T]#get__T_int32(self/216: Ref[int32]) -> int32 {
+  let t349 = @intrinsic(ref.get)(self/216) in
+  t349
+}
+
 fn inherent#Ref#Ref[T]#set__T_int32(self/217: Ref[int32], value/218: int32) -> unit {
-  let t348 = @intrinsic(ref.set)(self/217, value/218) in
+  let t351 = @intrinsic(ref.set)(self/217, value/218) in
   ()
 }
 
@@ -636,13 +639,13 @@ fn inherent#HashMap#HashMap[K,V]#new__K_Ref[CollisionKey]__V_string() -> HashMap
   Ref[CollisionKey],
   string
 ] {
-  let t351 = @intrinsic(hashmap.new)() in
-  t351
+  let t354 = @intrinsic(hashmap.new)() in
+  t354
 }
 
 fn inherent#Ref#Ref[T]#new__T_CollisionKey(value/215: CollisionKey) -> Ref[CollisionKey] {
-  let t354 = @intrinsic(ref.new)(value/215) in
-  t354
+  let t357 = @intrinsic(ref.new)(value/215) in
+  t357
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(
@@ -650,45 +653,45 @@ fn inherent#HashMap#HashMap[K,V]#set__K_Ref[CollisionKey]__V_string(
   key/207: Ref[CollisionKey],
   value/208: string
 ) -> unit {
-  let t356 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
+  let t359 = @intrinsic(hashmap.set)(self/206, key/207, value/208) in
   ()
 }
 
 fn println__T_bool(value/31: bool) -> unit {
-  join inline_cont546(t358: string) -> unit {
-    let t359 = @runtime(core.string_println)(t358) in
+  join inline_cont549(t361: string) -> unit {
+    let t362 = @runtime(core.string_println)(t361) in
     ()
   } in
-  let inline547 = @runtime(core.bool_to_string)(value/31) in
-  jump inline_cont546(inline547)
+  let inline550 = @runtime(core.bool_to_string)(value/31) in
+  jump inline_cont549(inline550)
 }
 
 fn trait_impl#Eq#Ref[CollisionKey]#eq(
   self/125: Ref[CollisionKey],
   other/126: Ref[CollisionKey]
 ) -> bool {
-  let t362 = @intrinsic(ref.ptr_eq)(self/125, other/126) in
-  t362
+  let t365 = @intrinsic(ref.ptr_eq)(self/125, other/126) in
+  t365
 }
 
 fn trait_impl#Hash#Ref[CollisionKey]#hash(self/127: Ref[CollisionKey]) -> uint64 {
-  let t365 = @intrinsic(ref.ptr_hash)(self/127) in
-  t365
+  let t368 = @intrinsic(ref.ptr_hash)(self/127) in
+  t368
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_Ref[CollisionKey]__V_string(
   self/204: HashMap[Ref[CollisionKey], string],
   key/205: Ref[CollisionKey]
 ) -> Option__string {
-  let t368 = @intrinsic(hashmap.get)(self/204, key/205) in
-  t368
+  let t371 = @intrinsic(hashmap.get)(self/204, key/205) in
+  t371
 }
 
 fn inherent#Ref#Ref[T]#set__T_CollisionKey(
   self/217: Ref[CollisionKey],
   value/218: CollisionKey
 ) -> unit {
-  let t370 = @intrinsic(ref.set)(self/217, value/218) in
+  let t373 = @intrinsic(ref.set)(self/217, value/218) in
   ()
 }
 
@@ -697,21 +700,21 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  let t375 = @runtime(core.int32_to_string)(self/72) in
-  t375
-}
-
-fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t378 = @runtime(core.int_to_string)(self/69) in
+  let t378 = @runtime(core.int32_to_string)(self/72) in
   t378
 }
 
-fn trait_impl#Eq#float32#eq(self/106: float32, other/107: float32) -> bool {
-  let t381 = @intrinsic(eq.primitive)(self/106, other/107) in
+fn trait_impl#ToString#int#to_string(self/69: int) -> string {
+  let t381 = @runtime(core.int_to_string)(self/69) in
   t381
 }
 
-fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
-  let t384 = @runtime(core.int32_hash)(self/117) in
+fn trait_impl#Eq#float32#eq(self/106: float32, other/107: float32) -> bool {
+  let t384 = @intrinsic(eq.primitive)(self/106, other/107) in
   t384
+}
+
+fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
+  let t387 = @runtime(core.int32_hash)(self/117) in
+  t387
 }

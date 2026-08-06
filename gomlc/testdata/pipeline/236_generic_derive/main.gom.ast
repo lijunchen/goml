@@ -33,8 +33,12 @@ struct Generic[T, Marker] {
 
 impl[T, Marker] ToString for Generic[T, Marker] where Wrapper[T]: ToString {
   fn to_string(self: Generic[T, Marker]) -> string {
-      let Generic { first: first, second: second } = self;
-      "Generic { " + "first: " + first.to_string() + ", " + "second: " + second.to_string() + " }"
+      {
+          let Generic { first: #derive0_field, second: #derive1_field } = self;
+          "Generic { " + "first: " + ToString::to_string(#derive0_field) + ", " + "second: " +
+            ToString::to_string(#derive1_field) +
+            " }"
+      }
   }
 }
 
@@ -46,10 +50,12 @@ impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq {
 
 impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
   fn hash(self: Generic[T, Marker]) -> uint64 {
-      let h: uint64 = 14695981039346656037;
-      let h = h * 1099511628211 + Hash::hash(self.first);
-      let h = h * 1099511628211 + Hash::hash(self.second);
-      h
+      {
+          let h = 0 as uint64 + 14695981039346656037;
+          let h = h * 0 as uint64 + 1099511628211 + Hash::hash(self.first);
+          let h = h * 0 as uint64 + 1099511628211 + Hash::hash(self.second);
+          h
+      }
   }
 }
 
@@ -63,7 +69,8 @@ impl[T, Marker] ToString for GenericChoice[T, Marker] where Wrapper[T]: ToString
   fn to_string(self: GenericChoice[T, Marker]) -> string {
       match self {
           GenericChoice::Empty => "GenericChoice::Empty",
-          GenericChoice::Value(__field0) => "GenericChoice::Value(" + __field0.to_string() + ")",
+          GenericChoice::Value(#derive0_field) =>
+            "GenericChoice::Value(" + ToString::to_string(#derive0_field) + ")",
       }
   }
 }
@@ -72,8 +79,8 @@ impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {
   fn eq(self: GenericChoice[T, Marker], other: GenericChoice[T, Marker]) -> bool {
       match (self, other) {
           (GenericChoice::Empty, GenericChoice::Empty) => true,
-          (GenericChoice::Value(__l1_0), GenericChoice::Value(__r1_0)) =>
-            true && Eq::eq(__l1_0, __r1_0),
+          (GenericChoice::Value(#derive0_left), GenericChoice::Value(#derive1_right)) =>
+            true && Eq::eq(#derive0_left, #derive1_right),
           _ => false,
       }
   }
@@ -84,13 +91,13 @@ impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
       match self {
           GenericChoice::Empty =>
             {
-                let h: uint64 = 14695981039346656037 + 1;
+                let h = 0 as uint64 + 14695981039346656037 + 1;
                 h
             },
-          GenericChoice::Value(__field1_0) =>
+          GenericChoice::Value(#derive0_field) =>
             {
-                let h: uint64 = 14695981039346656037 + 2;
-                let h = h * 1099511628211 + Hash::hash(__field1_0);
+                let h = 0 as uint64 + 14695981039346656037 + 2;
+                let h = h * 0 as uint64 + 1099511628211 + Hash::hash(#derive0_field);
                 h
             },
       }

@@ -1,6 +1,8 @@
 fn trait_impl#Hash#FloatKey#hash(self/0: FloatKey) -> uint64 {
-  let h/1 = 14695981039346656037 in
-  let h/2 = ((h/1 * 1099511628211) + trait_impl#Hash#float64#hash(FloatKey.value(self/0))) in
+  let h/1 = ((0 as uint64) + 14695981039346656037) in
+  let h/2 =
+    ((h/1 * ((0 as uint64) + 1099511628211)) +
+      trait_impl#Hash#float64#hash(FloatKey.value(self/0))) in
   h/2
 }
 

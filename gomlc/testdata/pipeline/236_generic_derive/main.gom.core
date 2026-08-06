@@ -1589,19 +1589,22 @@ fn trait_impl#Hash#Wrapper[T]#hash[T](self/3: Wrapper[T]) -> uint64 {
 fn trait_impl#ToString#Generic[T,Marker]#to_string[T, Marker](
   self/4: Generic[T, Marker]
 ) -> string {
-  let mtmp136 = self/4 in
   {
-    let x137 = Generic.first(mtmp136) in
-    let x138 = Generic.second(mtmp136) in
+    let mtmp136 = self/4 in
     {
-      let second/6 = x138 in
+      let x137 = Generic.first(mtmp136) in
+      let x138 = Generic.second(mtmp136) in
       {
-        let first/5 = x137 in
+        let #derive1_field/6 = x138 in
         {
-          (((((("Generic { " + "first: ") + trait_call[ToString::to_string](first/5)) + ", ") +
-            "second: ") +
-            trait_call[ToString::to_string](second/6)) +
-            " }")
+          let #derive0_field/5 = x137 in
+          {
+            (((((("Generic { " + "first: ") + trait_call[ToString::to_string](#derive0_field/5)) +
+              ", ") +
+              "second: ") +
+              trait_call[ToString::to_string](#derive1_field/6)) +
+              " }")
+          }
         }
       }
     }
@@ -1624,10 +1627,14 @@ fn trait_impl#Eq#Generic[T,Marker]#eq[T, Marker](
 }
 
 fn trait_impl#Hash#Generic[T,Marker]#hash[T, Marker](self/9: Generic[T, Marker]) -> uint64 {
-  let h/10 = 14695981039346656037 in
-  let h/11 = ((h/10 * 1099511628211) + trait_call[Hash::hash](Generic.first(self/9))) in
-  let h/12 = ((h/11 * 1099511628211) + trait_call[Hash::hash](Generic.second(self/9))) in
-  h/12
+  {
+    let h/10 = ((0 as uint64) + 14695981039346656037) in
+    let h/11 =
+      ((h/10 * ((0 as uint64) + 1099511628211)) + trait_call[Hash::hash](Generic.first(self/9))) in
+    let h/12 =
+      ((h/11 * ((0 as uint64) + 1099511628211)) + trait_call[Hash::hash](Generic.second(self/9))) in
+    h/12
+  }
 }
 
 fn trait_impl#ToString#GenericChoice[T,Marker]#to_string[T, Marker](
@@ -1641,8 +1648,8 @@ fn trait_impl#ToString#GenericChoice[T,Marker]#to_string[T, Marker](
       {
         let x139 = GenericChoice::Value._0(self/13) in
         {
-          let __field0/14 = x139 in
-          (("GenericChoice::Value(" + trait_call[ToString::to_string](__field0/14)) + ")")
+          let #derive0_field/14 = x139 in
+          (("GenericChoice::Value(" + trait_call[ToString::to_string](#derive0_field/14)) + ")")
         }
       }
     },
@@ -1675,11 +1682,11 @@ fn trait_impl#Eq#GenericChoice[T,Marker]#eq[T, Marker](
                 {
                   let x145 = GenericChoice::Value._0(x141) in
                   {
-                    let __l1_0/17 = x145 in
+                    let #derive0_left/17 = x145 in
                     {
-                      let __r1_0/18 = x143 in
+                      let #derive1_right/18 = x143 in
                       if true {
-                          trait_call[Eq::eq](__l1_0/17, __r1_0/18)
+                          trait_call[Eq::eq](#derive0_left/17, #derive1_right/18)
                       } else {
                           false
                       }
@@ -1702,7 +1709,7 @@ fn trait_impl#Hash#GenericChoice[T,Marker]#hash[T, Marker](
   match self/19 {
     GenericChoice::Empty => {
       {
-        let h/20 = (14695981039346656037 + 1) in
+        let h/20 = (((0 as uint64) + 14695981039346656037) + 1) in
         h/20
       }
     },
@@ -1710,10 +1717,12 @@ fn trait_impl#Hash#GenericChoice[T,Marker]#hash[T, Marker](
       {
         let x146 = GenericChoice::Value._0(self/19) in
         {
-          let __field1_0/21 = x146 in
+          let #derive0_field/21 = x146 in
           {
-            let h/22 = (14695981039346656037 + 2) in
-            let h/23 = ((h/22 * 1099511628211) + trait_call[Hash::hash](__field1_0/21)) in
+            let h/22 = (((0 as uint64) + 14695981039346656037) + 2) in
+            let h/23 =
+              ((h/22 * ((0 as uint64) + 1099511628211)) +
+                trait_call[Hash::hash](#derive0_field/21)) in
             h/23
           }
         }

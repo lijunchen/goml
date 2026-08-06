@@ -1,7 +1,9 @@
 fn trait_impl#Hash#Point#hash(self/0: Point) -> uint64 {
-  let h/1 = 14695981039346656037 in
-  let h/2 = ((h/1 * 1099511628211) + trait_impl#Hash#int32#hash(Point.x(self/0))) in
-  let h/3 = ((h/2 * 1099511628211) + trait_impl#Hash#int32#hash(Point.y(self/0))) in
+  let h/1 = ((0 as uint64) + 14695981039346656037) in
+  let h/2 =
+    ((h/1 * ((0 as uint64) + 1099511628211)) + trait_impl#Hash#int32#hash(Point.x(self/0))) in
+  let h/3 =
+    ((h/2 * ((0 as uint64) + 1099511628211)) + trait_impl#Hash#int32#hash(Point.y(self/0))) in
   h/3
 }
 
@@ -20,21 +22,24 @@ fn trait_impl#Eq#Point#eq(self/4: Point, other/5: Point) -> bool {
 fn trait_impl#Hash#Key#hash(self/6: Key) -> uint64 {
   match self/6 {
     Key::A => {
-      let h/7 = (14695981039346656037 + 1) in
+      let h/7 = (((0 as uint64) + 14695981039346656037) + 1) in
       h/7
     },
     Key::B(x136) => {
       let x136 = Key::B._0(self/6) in
-      let __field1_0/8 = x136 in
-      let h/9 = (14695981039346656037 + 2) in
-      let h/10 = ((h/9 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/8)) in
+      let #derive0_field/8 = x136 in
+      let h/9 = (((0 as uint64) + 14695981039346656037) + 2) in
+      let h/10 =
+        ((h/9 * ((0 as uint64) + 1099511628211)) + trait_impl#Hash#int32#hash(#derive0_field/8)) in
       h/10
     },
     Key::P(x137) => {
       let x137 = Key::P._0(self/6) in
-      let __field2_0/11 = x137 in
-      let h/12 = (14695981039346656037 + 3) in
-      let h/13 = ((h/12 * 1099511628211) + trait_impl#Hash#Point#hash(__field2_0/11)) in
+      let #derive1_field/11 = x137 in
+      let h/12 = (((0 as uint64) + 14695981039346656037) + 3) in
+      let h/13 =
+        ((h/12 * ((0 as uint64) + 1099511628211)) +
+          trait_impl#Hash#Point#hash(#derive1_field/11)) in
       h/13
     },
   }
@@ -58,10 +63,10 @@ fn trait_impl#Eq#Key#eq(self/14: Key, other/15: Key) -> bool {
       match x139 {
         Key::B(x145) => {
           let x145 = Key::B._0(x139) in
-          let __l1_0/16 = x145 in
-          let __r1_0/17 = x141 in
+          let #derive0_left/16 = x145 in
+          let #derive1_right/17 = x141 in
           if true {
-              trait_impl#Eq#int32#eq(__l1_0/16, __r1_0/17)
+              trait_impl#Eq#int32#eq(#derive0_left/16, #derive1_right/17)
           } else {
               false
           }
@@ -74,10 +79,10 @@ fn trait_impl#Eq#Key#eq(self/14: Key, other/15: Key) -> bool {
       match x139 {
         Key::P(x148) => {
           let x148 = Key::P._0(x139) in
-          let __l2_0/18 = x148 in
-          let __r2_0/19 = x142 in
+          let #derive2_left/18 = x148 in
+          let #derive3_right/19 = x142 in
           if true {
-              trait_impl#Eq#Point#eq(__l2_0/18, __r2_0/19)
+              trait_impl#Eq#Point#eq(#derive2_left/18, #derive3_right/19)
           } else {
               false
           }

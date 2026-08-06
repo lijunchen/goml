@@ -2,7 +2,7 @@ fn trait_impl#Hash#Key#hash(self/0: Key) -> uint64 {
   match self/0 {
     Key::A => {
       {
-        let h/1 = (14695981039346656037 + 1) in
+        let h/1 = (((0 as uint64) + 14695981039346656037) + 1) in
         h/1
       }
     },
@@ -10,10 +10,12 @@ fn trait_impl#Hash#Key#hash(self/0: Key) -> uint64 {
       {
         let x136 = Key::B._0(self/0) in
         {
-          let __field1_0/2 = x136 in
+          let #derive0_field/2 = x136 in
           {
-            let h/3 = (14695981039346656037 + 2) in
-            let h/4 = ((h/3 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/2)) in
+            let h/3 = (((0 as uint64) + 14695981039346656037) + 2) in
+            let h/4 =
+              ((h/3 * ((0 as uint64) + 1099511628211)) +
+                trait_impl#Hash#int32#hash(#derive0_field/2)) in
             h/4
           }
         }
@@ -45,11 +47,11 @@ fn trait_impl#Eq#Key#eq(self/5: Key, other/6: Key) -> bool {
                 {
                   let x142 = Key::B._0(x138) in
                   {
-                    let __l1_0/7 = x142 in
+                    let #derive0_left/7 = x142 in
                     {
-                      let __r1_0/8 = x140 in
+                      let #derive1_right/8 = x140 in
                       if true {
-                          trait_impl#Eq#int32#eq(__l1_0/7, __r1_0/8)
+                          trait_impl#Eq#int32#eq(#derive0_left/7, #derive1_right/8)
                       } else {
                           false
                       }

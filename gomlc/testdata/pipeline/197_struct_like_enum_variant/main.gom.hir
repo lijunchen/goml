@@ -17,8 +17,8 @@ file main.gom
         match self/0 {
             ctor(def/1/1::v0) => "Key::Empty",
             ctor(def/1/1::v1) { x: local/1/1, y: local/1/2 } =>
-              "Key::Point { " + "x: " + __field0/1.to_string() + ", " + "y: " +
-                __field1/2.to_string() +
+              "Key::Point { " + "x: " + ToString::to_string(#derive0_field/1) + ", " + "y: " +
+                ToString::to_string(#derive1_field/2) +
                 " }",
         }
     }
@@ -29,14 +29,14 @@ file main.gom
         match self/3 {
             ctor(def/1/1::v0) =>
               {
-                  let local/1/4: uint64 = 14695981039346656037 + 1;
+                  let local/1/4 = 0 as uint64 + 14695981039346656037 + 1;
                   h/4
               },
             ctor(def/1/1::v1) { x: local/1/5, y: local/1/6 } =>
               {
-                  let local/1/7: uint64 = 14695981039346656037 + 2;
-                  let local/1/8 = h/7 * 1099511628211 + Hash::hash(__field1_0/5);
-                  let local/1/9 = h/8 * 1099511628211 + Hash::hash(__field1_1/6);
+                  let local/1/7 = 0 as uint64 + 14695981039346656037 + 2;
+                  let local/1/8 = h/7 * 0 as uint64 + 1099511628211 + Hash::hash(#derive0_field/5);
+                  let local/1/9 = h/8 * 0 as uint64 + 1099511628211 + Hash::hash(#derive1_field/6);
                   h/9
               },
         }
@@ -51,7 +51,8 @@ file main.gom
               ctor(def/1/1::v1) { x: local/1/12, y: local/1/13 },
               ctor(def/1/1::v1) { x: local/1/14, y: local/1/15 }
             ) =>
-              true && Eq::eq(__l1_0/12, __r1_0/14) && Eq::eq(__l1_1/13, __r1_1/15),
+              true && Eq::eq(#derive0_left/12, #derive1_right/14) &&
+                Eq::eq(#derive2_left/13, #derive3_right/15),
             _ => false,
         }
     }

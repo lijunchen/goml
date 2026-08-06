@@ -1,9 +1,14 @@
 impl ToString for Point {
   fn to_string(self/0: Point) -> string {
-      let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point);
-      "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/1 : int32)) + ", " + "y: " +
-        (int32::to_string : (int32) -> string)((y/2 : int32)) +
-        " }"
+      {
+          let Point { x: #derive0_field/1: int32, y: #derive1_field/2: int32 } = (self/0 : Point);
+          "Point { " + "x: " +
+            (ToString::to_string : (int32) -> string)((#derive0_field/1 : int32)) +
+            ", " +
+            "y: " +
+            (ToString::to_string : (int32) -> string)((#derive1_field/2 : int32)) +
+            " }"
+      }
   }
 }
 
@@ -11,11 +16,14 @@ impl ToString for Message {
   fn to_string(self/3: Message) -> string {
       match (self/3 : Message) {
           Message::Quit => "Message::Quit",
-          Message::Move(__field0/4: int32, __field1/5: int32) =>
-            "Message::Move(" + (int32::to_string : (int32) -> string)((__field0/4 : int32)) + ", " +
-              (int32::to_string : (int32) -> string)((__field1/5 : int32)) +
+          Message::Move(#derive0_field/4: int32, #derive1_field/5: int32) =>
+            "Message::Move(" +
+              (ToString::to_string : (int32) -> string)((#derive0_field/4 : int32)) +
+              ", " +
+              (ToString::to_string : (int32) -> string)((#derive1_field/5 : int32)) +
               ")",
-          Message::Write(__field0/6: string) => "Message::Write(" + (__field0/6 : string) + ")",
+          Message::Write(#derive2_field/6: string) =>
+            "Message::Write(" + (#derive2_field/6 : string) + ")",
       }
   }
 }

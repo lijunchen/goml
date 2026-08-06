@@ -6,9 +6,11 @@ struct FloatKey {
 
 impl Hash for FloatKey {
   fn hash(self: FloatKey) -> uint64 {
-      let h: uint64 = 14695981039346656037;
-      let h = h * 1099511628211 + Hash::hash(self.value);
-      h
+      {
+          let h = 0 as uint64 + 14695981039346656037;
+          let h = h * 0 as uint64 + 1099511628211 + Hash::hash(self.value);
+          h
+      }
   }
 }
 

@@ -25,10 +25,15 @@ struct Point {
 
 impl ToString for Point {
   fn to_string(self: Point) -> string {
-      let Point { x: x, y: y, color: color } = self;
-      "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + ", " + "color: " +
-        color.to_string() +
-        " }"
+      {
+          let Point { x: #derive0_field, y: #derive1_field, color: #derive2_field } = self;
+          "Point { " + "x: " + ToString::to_string(#derive0_field) + ", " + "y: " +
+            ToString::to_string(#derive1_field) +
+            ", " +
+            "color: " +
+            ToString::to_string(#derive2_field) +
+            " }"
+      }
   }
 }
 
@@ -47,10 +52,15 @@ struct Line {
 
 impl ToString for Line {
   fn to_string(self: Line) -> string {
-      let Line { from: from, to: to, color: color } = self;
-      "Line { " + "from: " + from.to_string() + ", " + "to: " + to.to_string() + ", " + "color: " +
-        color.to_string() +
-        " }"
+      {
+          let Line { from: #derive0_field, to: #derive1_field, color: #derive2_field } = self;
+          "Line { " + "from: " + ToString::to_string(#derive0_field) + ", " + "to: " +
+            ToString::to_string(#derive1_field) +
+            ", " +
+            "color: " +
+            ToString::to_string(#derive2_field) +
+            " }"
+      }
   }
 }
 
@@ -70,8 +80,10 @@ impl ToString for LineList {
   fn to_string(self: LineList) -> string {
       match self {
           LineList::Nil => "LineList::Nil",
-          LineList::Cons(__field0, __field1) =>
-            "LineList::Cons(" + __field0.to_string() + ", " + __field1.to_string() + ")",
+          LineList::Cons(#derive0_field, #derive1_field) =>
+            "LineList::Cons(" + ToString::to_string(#derive0_field) + ", " +
+              ToString::to_string(#derive1_field) +
+              ")",
       }
   }
 }
