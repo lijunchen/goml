@@ -4506,6 +4506,191 @@ fn std::json::object(fields/83: Vec[(string, std::json::Value)]) -> std::json::V
   std::json::Value::Object(fields/83)
 }
 
+fn std::json::array(items/84: Vec[std::json::Value]) -> std::json::Value {
+  std::json::Value::Array(items/84)
+}
+
+fn std::json::string_value(value/85: string) -> std::json::Value {
+  std::json::Value::String(value/85)
+}
+
+fn std::json::variant(name/86: string, value/87: std::json::Value) -> std::json::Value {
+  std::json::Value::Object(
+    {
+      let vec_literal/295 = inherent#Vec#Vec[(string,std::json::Value)]#new() in
+      let _wild167 =
+        inherent#Vec#Vec[(string,std::json::Value)]#push(vec_literal/295, (name/86, value/87)) in
+      vec_literal/295
+    }
+  )
+}
+
+fn std::json::stringify(value/88: T) -> string {
+  std::json::encode(trait_call[std::json::Serialize::serialize](value/88))
+}
+
+fn trait_impl#std::json::Serialize#std::json::Value#serialize(
+  self/89: std::json::Value
+) -> std::json::Value {
+  self/89
+}
+
+fn trait_impl#std::json::Serialize#unit#serialize(self/90: unit) -> std::json::Value {
+  std::json::Value::Null
+}
+
+fn trait_impl#std::json::Serialize#bool#serialize(self/91: bool) -> std::json::Value {
+  std::json::Value::Bool(self/91)
+}
+
+fn trait_impl#std::json::Serialize#string#serialize(self/92: string) -> std::json::Value {
+  std::json::Value::String(self/92)
+}
+
+fn trait_impl#std::json::Serialize#char#serialize(self/93: char) -> std::json::Value {
+  std::json::Value::String(inherent#char#char#to_string(self/93))
+}
+
+fn trait_impl#std::json::Serialize#int#serialize(self/94: int) -> std::json::Value {
+  std::json::Value::Number(inherent#int#int#to_string(self/94))
+}
+
+fn trait_impl#std::json::Serialize#int8#serialize(self/95: int8) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/95))
+}
+
+fn trait_impl#std::json::Serialize#int16#serialize(self/96: int16) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/96))
+}
+
+fn trait_impl#std::json::Serialize#int32#serialize(self/97: int32) -> std::json::Value {
+  std::json::Value::Number(inherent#int32#int32#to_string(self/97))
+}
+
+fn trait_impl#std::json::Serialize#int64#serialize(self/98: int64) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/98))
+}
+
+fn trait_impl#std::json::Serialize#uint#serialize(self/99: uint) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/99))
+}
+
+fn trait_impl#std::json::Serialize#uint8#serialize(self/100: uint8) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/100))
+}
+
+fn trait_impl#std::json::Serialize#uint16#serialize(self/101: uint16) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/101))
+}
+
+fn trait_impl#std::json::Serialize#uint32#serialize(self/102: uint32) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/102))
+}
+
+fn trait_impl#std::json::Serialize#uint64#serialize(self/103: uint64) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/103))
+}
+
+fn trait_impl#std::json::Serialize#float32#serialize(self/104: float32) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/104))
+}
+
+fn trait_impl#std::json::Serialize#float64#serialize(self/105: float64) -> std::json::Value {
+  std::json::Value::Number(trait_call[ToString::to_string](self/105))
+}
+
+fn trait_impl#std::json::Serialize#Vec[T]#serialize[T](self/106: Vec[T]) -> std::json::Value {
+  let items/107 =
+    {
+      let vec_literal/2440 = inherent#Vec#Vec[std::json::Value]#new() in
+      vec_literal/2440
+    } in
+  let _wild173 =
+    {
+      let for_source168 = self/106 in
+      let for_limit169 = @intrinsic(vec.len)(for_source168) in
+      let for_index170 = 0 in
+      while (for_index170 < for_limit169) {
+          {
+            let for_item171 = @intrinsic(vec.get)(for_source168, for_index170) in
+            let _wild172 = for_index170 = (for_index170 + 1) in
+            {
+              let item/108 = for_item171 in
+              {
+                inherent#Vec#Vec[std::json::Value]#push(
+                  items/107,
+                  trait_call[std::json::Serialize::serialize](item/108)
+                )
+              }
+            }
+          }
+      }
+    } in
+  std::json::Value::Array(items/107)
+}
+
+fn trait_impl#std::json::Serialize#Option[T]#serialize[T](self/109: Option[T]) -> std::json::Value {
+  match self/109 {
+    Option::None => {
+      std::json::Value::Null
+    },
+    Option::Some(x174) => {
+      {
+        let x174 = Option::Some._0(self/109) in
+        {
+          let value/110 = x174 in
+          trait_call[std::json::Serialize::serialize](value/110)
+        }
+      }
+    },
+  }
+}
+
+fn trait_impl#std::json::Serialize#(A,B)#serialize[A, B](self/111: (A, B)) -> std::json::Value {
+  std::json::Value::Array(
+    {
+      let vec_literal/2892 = inherent#Vec#Vec[std::json::Value]#new() in
+      let _wild175 =
+        inherent#Vec#Vec[std::json::Value]#push(
+          vec_literal/2892,
+          trait_call[std::json::Serialize::serialize](self/111.0)
+        ) in
+      let _wild176 =
+        inherent#Vec#Vec[std::json::Value]#push(
+          vec_literal/2892,
+          trait_call[std::json::Serialize::serialize](self/111.1)
+        ) in
+      vec_literal/2892
+    }
+  )
+}
+
+fn trait_impl#std::json::Serialize#(A,B,C)#serialize[A, B, C](
+  self/112: (A, B, C)
+) -> std::json::Value {
+  std::json::Value::Array(
+    {
+      let vec_literal/3087 = inherent#Vec#Vec[std::json::Value]#new() in
+      let _wild177 =
+        inherent#Vec#Vec[std::json::Value]#push(
+          vec_literal/3087,
+          trait_call[std::json::Serialize::serialize](self/112.0)
+        ) in
+      let _wild178 =
+        inherent#Vec#Vec[std::json::Value]#push(
+          vec_literal/3087,
+          trait_call[std::json::Serialize::serialize](self/112.1)
+        ) in
+      let _wild179 =
+        inherent#Vec#Vec[std::json::Value]#push(
+          vec_literal/3087,
+          trait_call[std::json::Serialize::serialize](self/112.2)
+        ) in
+      vec_literal/3087
+    }
+  )
+}
+
 fn main() -> unit {
   let value/2 =
     {

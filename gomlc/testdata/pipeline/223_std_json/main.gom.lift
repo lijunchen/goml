@@ -2250,6 +2250,93 @@ fn std::json::object(fields/83: Vec[(string, std::json::Value)]) -> std::json::V
   std::json::Value::Object(fields/83)
 }
 
+fn std::json::array(items/84: Vec[std::json::Value]) -> std::json::Value {
+  std::json::Value::Array(items/84)
+}
+
+fn std::json::string_value(value/85: string) -> std::json::Value {
+  std::json::Value::String(value/85)
+}
+
+fn std::json::variant(name/86: string, value/87: std::json::Value) -> std::json::Value {
+  std::json::Value::Object(
+    let vec_literal/295 = inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() in
+    let _wild167 =
+      inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(vec_literal/295, (name/86, value/87)) in
+    vec_literal/295
+  )
+}
+
+fn trait_impl#std::json::Serialize#std::json::Value#serialize(
+  self/89: std::json::Value
+) -> std::json::Value {
+  self/89
+}
+
+fn trait_impl#std::json::Serialize#unit#serialize(self/90: unit) -> std::json::Value {
+  std::json::Value::Null
+}
+
+fn trait_impl#std::json::Serialize#bool#serialize(self/91: bool) -> std::json::Value {
+  std::json::Value::Bool(self/91)
+}
+
+fn trait_impl#std::json::Serialize#string#serialize(self/92: string) -> std::json::Value {
+  std::json::Value::String(self/92)
+}
+
+fn trait_impl#std::json::Serialize#char#serialize(self/93: char) -> std::json::Value {
+  std::json::Value::String(inherent#char#char#to_string(self/93))
+}
+
+fn trait_impl#std::json::Serialize#int#serialize(self/94: int) -> std::json::Value {
+  std::json::Value::Number(inherent#int#int#to_string(self/94))
+}
+
+fn trait_impl#std::json::Serialize#int8#serialize(self/95: int8) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#int8#to_string(self/95))
+}
+
+fn trait_impl#std::json::Serialize#int16#serialize(self/96: int16) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#int16#to_string(self/96))
+}
+
+fn trait_impl#std::json::Serialize#int32#serialize(self/97: int32) -> std::json::Value {
+  std::json::Value::Number(inherent#int32#int32#to_string(self/97))
+}
+
+fn trait_impl#std::json::Serialize#int64#serialize(self/98: int64) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#int64#to_string(self/98))
+}
+
+fn trait_impl#std::json::Serialize#uint#serialize(self/99: uint) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#uint#to_string(self/99))
+}
+
+fn trait_impl#std::json::Serialize#uint8#serialize(self/100: uint8) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#uint8#to_string(self/100))
+}
+
+fn trait_impl#std::json::Serialize#uint16#serialize(self/101: uint16) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#uint16#to_string(self/101))
+}
+
+fn trait_impl#std::json::Serialize#uint32#serialize(self/102: uint32) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#uint32#to_string(self/102))
+}
+
+fn trait_impl#std::json::Serialize#uint64#serialize(self/103: uint64) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#uint64#to_string(self/103))
+}
+
+fn trait_impl#std::json::Serialize#float32#serialize(self/104: float32) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#float32#to_string(self/104))
+}
+
+fn trait_impl#std::json::Serialize#float64#serialize(self/105: float64) -> std::json::Value {
+  std::json::Value::Number(trait_impl#ToString#float64#to_string(self/105))
+}
+
 fn main() -> unit {
   let value/2 =
     let mtmp136 = std::json::parse("{\"name\":\"goml\",\"version\":1,\"stable\":true}") in
@@ -2530,6 +2617,50 @@ fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(
   elem/135: (string, std::json::Value)
 ) -> unit {
   @intrinsic(vec.push)(self/134, elem/135)
+}
+
+fn trait_impl#ToString#int8#to_string(self/70: int8) -> string {
+  @runtime(core.int8_to_string)(self/70)
+}
+
+fn trait_impl#ToString#int16#to_string(self/71: int16) -> string {
+  @runtime(core.int16_to_string)(self/71)
+}
+
+fn inherent#int32#int32#to_string(self/35: int32) -> string {
+  @runtime(core.int32_to_string)(self/35)
+}
+
+fn trait_impl#ToString#int64#to_string(self/73: int64) -> string {
+  @runtime(core.int64_to_string)(self/73)
+}
+
+fn trait_impl#ToString#uint#to_string(self/232: uint) -> string {
+  @runtime(core.uint_to_string)(self/232)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/74: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/74)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/75: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/75)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/76: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/76)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/77: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/77)
+}
+
+fn trait_impl#ToString#float32#to_string(self/78: float32) -> string {
+  @runtime(core.float32_to_string)(self/78)
+}
+
+fn trait_impl#ToString#float64#to_string(self/79: float64) -> string {
+  @runtime(core.float64_to_string)(self/79)
 }
 
 fn println__T_string(value/31: string) -> unit {
