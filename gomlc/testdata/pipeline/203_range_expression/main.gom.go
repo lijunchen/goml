@@ -221,13 +221,13 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__216 *ref_int_x) int {
-    var t213 int = ref_get__Ref_3int(self__216)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__233 *ref_int_x) int {
+    var t213 int = ref_get__Ref_3int(self__233)
     return t213
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__217 *ref_int_x, value__218 int) struct{} {
-    ref_set__Ref_3int(self__217, value__218)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__234 *ref_int_x, value__235 int) struct{} {
+    ref_set__Ref_3int(self__234, value__235)
     return struct{}{}
 }
 
@@ -236,9 +236,9 @@ func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
     return t238
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__130 func() Option__int) FnIterator__int {
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__147 func() Option__int) FnIterator__int {
     var t244 FnIterator__int = FnIterator__int{
-        next_fn: next_fn__130,
+        next_fn: next_fn__147,
     }
     return t244
 }
@@ -253,33 +253,33 @@ func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string 
 }
 
 func _goml_m_inherent_i_closure__en_hb902f75cf29154a7d4df1174edbd9988_sive__0_i_apply(env169 closure_env_goml_builtin_range_inclusive_0) Option__int {
-    var finished__265 *ref_bool_x = env169.finished_0
-    var current__264 *ref_int_x = env169.current_1
-    var end__263 int = env169.end_2
-    var t270 bool = ref_get__Ref_4bool(finished__265)
+    var finished__283 *ref_bool_x = env169.finished_0
+    var current__282 *ref_int_x = env169.current_1
+    var end__281 int = env169.end_2
+    var t270 bool = ref_get__Ref_4bool(finished__283)
     var jp265 bool
     if t270 {
         jp265 = true
     } else {
-        var t271 int = ref_get__Ref_3int(current__264)
-        var t272 bool = t271 > end__263
+        var t271 int = ref_get__Ref_3int(current__282)
+        var t272 bool = t271 > end__281
         jp265 = t272
     }
     if jp265 {
         return None{}
     } else {
-        var value__266 int = ref_get__Ref_3int(current__264)
+        var value__284 int = ref_get__Ref_3int(current__282)
         var t268 bool
-        var inline337 bool = value__266 == end__263
+        var inline337 bool = value__284 == end__281
         t268 = inline337
         if t268 {
-            ref_set__Ref_4bool(finished__265, true)
+            ref_set__Ref_4bool(finished__283, true)
         } else {
-            var t269 int = value__266 + 1
-            ref_set__Ref_3int(current__264, t269)
+            var t269 int = value__284 + 1
+            ref_set__Ref_3int(current__282, t269)
         }
         var t267 Option__int = Some{
-            _0: value__266,
+            _0: value__284,
         }
         return t267
     }

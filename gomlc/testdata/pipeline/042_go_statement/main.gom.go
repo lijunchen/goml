@@ -59,8 +59,8 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__217 *ref_int32_x, value__218 int32) struct{} {
-    ref_set__Ref_5int32(self__217, value__218)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__234 *ref_int32_x, value__235 int32) struct{} {
+    ref_set__Ref_5int32(self__234, value__235)
     return struct{}{}
 }
 

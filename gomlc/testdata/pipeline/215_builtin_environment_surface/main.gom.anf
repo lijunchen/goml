@@ -135,9 +135,9 @@ fn std::iter::fold__A_int__I_FnIterator[int]__T_int(
   jump loop_expr182()
 }
 
-fn range(start/230: int, end/231: int) -> FnIterator__int {
-  let inline290 = @intrinsic(ref.new)(start/230) in
-  let inline291 = closure_env_goml_builtin_range_1 { current_0: inline290, end_1: end/231 } in
+fn range(start/247: int, end/248: int) -> FnIterator__int {
+  let inline290 = @intrinsic(ref.new)(start/247) in
+  let inline291 = closure_env_goml_builtin_range_1 { current_0: inline290, end_1: end/248 } in
   let inline292 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(inline291) in
   inline292
 }
@@ -209,15 +209,15 @@ fn string_is_char_boundary(value/15: string, index/16: int) -> bool {
   }
 }
 
-fn trait_impl#Iterator#FnIterator__int#next(self/131: FnIterator__int) -> Option__int {
-  let t219 = FnIterator__int.next_fn(self/131) in
+fn trait_impl#Iterator#FnIterator__int#next(self/148: FnIterator__int) -> Option__int {
+  let t219 = FnIterator__int.next_fn(self/148) in
   let t220 = t219() in
   t220
 }
 
-fn __goml_builtin_range(start/226: int, end/227: int) -> FnIterator__int {
-  let current/228 = @intrinsic(ref.new)(start/226) in
-  let t223 = closure_env_goml_builtin_range_1 { current_0: current/228, end_1: end/227 } in
+fn __goml_builtin_range(start/243: int, end/244: int) -> FnIterator__int {
+  let current/245 = @intrinsic(ref.new)(start/243) in
+  let t223 = closure_env_goml_builtin_range_1 { current_0: current/245, end_1: end/244 } in
   let t224 = inherent#FnIterator#FnIterator[T]#from_fn__T_int(t223) in
   t224
 }
@@ -231,8 +231,8 @@ fn inherent#string#string#byte_len(self/38: string) -> int {
   t229
 }
 
-fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
-  let t232 = @intrinsic(eq.primitive)(self/88, other/89) in
+fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+  let t232 = @intrinsic(eq.primitive)(self/103, other/104) in
   t232
 }
 
@@ -241,30 +241,30 @@ fn inherent#string#string#byte_get(self/41: string, index/42: int) -> uint8 {
   t235
 }
 
-fn trait_impl#Eq#uint8#eq(self/98: uint8, other/99: uint8) -> bool {
-  let t238 = @intrinsic(eq.primitive)(self/98, other/99) in
+fn trait_impl#Eq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
+  let t238 = @intrinsic(eq.primitive)(self/113, other/114) in
   t238
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-  next_fn/130: () -> Option__int
+  next_fn/147: () -> Option__int
 ) -> FnIterator__int {
-  let t241 = FnIterator__int { next_fn: next_fn/130 } in
+  let t241 = FnIterator__int { next_fn: next_fn/147 } in
   t241
 }
 
-fn trait_impl#Eq#int32#eq(self/94: int32, other/95: int32) -> bool {
-  let t244 = @intrinsic(eq.primitive)(self/94, other/95) in
+fn trait_impl#Eq#int32#eq(self/109: int32, other/110: int32) -> bool {
+  let t244 = @intrinsic(eq.primitive)(self/109, other/110) in
   t244
 }
 
-fn trait_impl#Hash#int32#hash(self/117: int32) -> uint64 {
-  let t247 = @runtime(core.int32_hash)(self/117) in
+fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
+  let t247 = @runtime(core.int32_hash)(self/132) in
   t247
 }
 
-fn trait_impl#Hash#int#hash(self/114: int) -> uint64 {
-  let t250 = @runtime(core.int_hash)(self/114) in
+fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
+  let t250 = @runtime(core.int_hash)(self/129) in
   t250
 }
 
@@ -280,14 +280,14 @@ fn inherent#closure_env_main_0#closure_env_main_0#apply(
 fn inherent#closure_env_goml_builtin_range_1#closure_env_goml_builtin_range_1#apply(
   env144: closure_env_goml_builtin_range_1
 ) -> Option__int {
-  let current/228 = closure_env_goml_builtin_range_1.current_0(env144) in
-  let end/227 = closure_env_goml_builtin_range_1.end_1(env144) in
-  let value/229 = @intrinsic(ref.get)(current/228) in
-  let t258 = (value/229 < end/227) in
+  let current/245 = closure_env_goml_builtin_range_1.current_0(env144) in
+  let end/244 = closure_env_goml_builtin_range_1.end_1(env144) in
+  let value/246 = @intrinsic(ref.get)(current/245) in
+  let t258 = (value/246 < end/244) in
   if t258 {
-    let t259 = (value/229 + 1) in
-    let _wild110 = @intrinsic(ref.set)(current/228, t259) in
-    let t260 = Option__int::Some(value/229) in
+    let t259 = (value/246 + 1) in
+    let _wild110 = @intrinsic(ref.set)(current/245, t259) in
+    let t260 = Option__int::Some(value/246) in
     t260
   } else {
     Tag_0

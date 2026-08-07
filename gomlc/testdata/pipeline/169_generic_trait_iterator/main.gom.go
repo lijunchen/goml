@@ -298,18 +298,18 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__215 int32) *ref_int32_x {
-    var t212 *ref_int32_x = ref__Ref_5int32(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__232 int32) *ref_int32_x {
+    var t212 *ref_int32_x = ref__Ref_5int32(value__232)
     return t212
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__216 *ref_int32_x) int32 {
-    var t215 int32 = ref_get__Ref_5int32(self__216)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__233 *ref_int32_x) int32 {
+    var t215 int32 = ref_get__Ref_5int32(self__233)
     return t215
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__217 *ref_int32_x, value__218 int32) struct{} {
-    ref_set__Ref_5int32(self__217, value__218)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__234 *ref_int32_x, value__235 int32) struct{} {
+    ref_set__Ref_5int32(self__234, value__235)
     return struct{}{}
 }
 
@@ -417,23 +417,23 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
     return self__67
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(next_fn__130 func() Option__int32) FnIterator__int32 {
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(next_fn__147 func() Option__int32) FnIterator__int32 {
     var t286 FnIterator__int32 = FnIterator__int32{
-        next_fn: next_fn__130,
+        next_fn: next_fn__147,
     }
     return t286
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__215 int) *ref_int_x {
-    var t289 *ref_int_x = ref__Ref_3int(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__232 int) *ref_int_x {
+    var t289 *ref_int_x = ref__Ref_3int(value__232)
     return t289
 }
 
-func __goml_builtin_range(start__226 int, end__227 int) FnIterator__int {
-    var current__228 *ref_int_x = ref__Ref_3int(start__226)
+func __goml_builtin_range(start__243 int, end__244 int) FnIterator__int {
+    var current__245 *ref_int_x = ref__Ref_3int(start__243)
     var t304 closure_env_goml_builtin_range_8 = closure_env_goml_builtin_range_8{
-        current_0: current__228,
-        end_1: end__227,
+        current_0: current__245,
+        end_1: end__244,
     }
     var t305 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
         return _goml_m_inherent_i_closure__en_he266c1d56cf5cac23de741e24d448aa5_ange__8_i_apply(t304)
@@ -446,16 +446,16 @@ func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
     return t308
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__string(next_fn__130 func() Option__string) FnIterator__string {
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__string(next_fn__147 func() Option__string) FnIterator__string {
     var t320 FnIterator__string = FnIterator__string{
-        next_fn: next_fn__130,
+        next_fn: next_fn__147,
     }
     return t320
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__130 func() Option__int) FnIterator__int {
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__147 func() Option__int) FnIterator__int {
     var t323 FnIterator__int = FnIterator__int{
-        next_fn: next_fn__130,
+        next_fn: next_fn__147,
     }
     return t323
 }
@@ -581,15 +581,15 @@ func _goml_m_inherent_i_closure__en_hee33584d6eb8d0339494367cef42ffc0__int__7_i_
 }
 
 func _goml_m_inherent_i_closure__en_he266c1d56cf5cac23de741e24d448aa5_ange__8_i_apply(env164 closure_env_goml_builtin_range_8) Option__int {
-    var current__228 *ref_int_x = env164.current_0
-    var end__227 int = env164.end_1
-    var value__229 int = ref_get__Ref_3int(current__228)
-    var t380 bool = value__229 < end__227
+    var current__245 *ref_int_x = env164.current_0
+    var end__244 int = env164.end_1
+    var value__246 int = ref_get__Ref_3int(current__245)
+    var t380 bool = value__246 < end__244
     if t380 {
-        var t381 int = value__229 + 1
-        ref_set__Ref_3int(current__228, t381)
+        var t381 int = value__246 + 1
+        ref_set__Ref_3int(current__245, t381)
         var t382 Option__int = Option__int_Some{
-            _0: value__229,
+            _0: value__246,
         }
         return t382
     } else {

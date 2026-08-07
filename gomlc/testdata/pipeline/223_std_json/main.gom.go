@@ -3733,8 +3733,8 @@ func _goml_m_inherent_i_string_i_string_i_get(self__39 string, index__40 int) ru
     }
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint8_i_eq(self__98 uint8, other__99 uint8) bool {
-    var t2196 bool = self__98 == other__99
+func _goml_m_trait__impl_i_Eq_i_uint8_i_eq(self__113 uint8, other__114 uint8) bool {
+    var t2196 bool = self__113 == other__114
     return t2196
 }
 
@@ -3820,18 +3820,18 @@ func _goml_m_inherent_i_string_i_string_i_byte__slice(self__43 string, start__44
     }
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__215 int) *ref_int_x {
-    var t2283 *ref_int_x = ref__Ref_3int(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__232 int) *ref_int_x {
+    var t2283 *ref_int_x = ref__Ref_3int(value__232)
     return t2283
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__216 *ref_int_x) int {
-    var t2286 int = ref_get__Ref_3int(self__216)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__233 *ref_int_x) int {
+    var t2286 int = ref_get__Ref_3int(self__233)
     return t2286
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__217 *ref_int_x, value__218 int) struct{} {
-    ref_set__Ref_3int(self__217, value__218)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int(self__234 *ref_int_x, value__235 int) struct{} {
+    ref_set__Ref_3int(self__234, value__235)
     return struct{}{}
 }
 
@@ -3869,8 +3869,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__std_p_json_p_Value() *_goml
     return t2297
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__std_p_json_p_Value(self__134 *_goml_vec__goml_m_std_p_json_p_Value, elem__135 _goml_m_std_p_json_p_Value) struct{} {
-    vec_push___goml_m_Vec__16std_p_json_p_Value(self__134, elem__135)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__std_p_json_p_Value(self__151 *_goml_vec__goml_m_std_p_json_p_Value, elem__152 _goml_m_std_p_json_p_Value) struct{} {
+    vec_push___goml_m_Vec__16std_p_json_p_Value(self__151, elem__152)
     return struct{}{}
 }
 
@@ -3879,8 +3879,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_h57e42dbef834e6b8ee6cf77cf9eb9d23_json_p_Val
     return t2302
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_h153048c8bd06f0dfabad32cddaecb150_json_p_Value_q_(self__134 *_goml_vec__goml_m_Tuple2__6string__16std_p_json_p_Value, elem__135 Tuple2_6string_26_goml_m_std_p_json_p_Value) struct{} {
-    vec_push___goml_m_Vec__33Tuple2__6string__16std_p_json_p_Value(self__134, elem__135)
+func _goml_m_inherent_i_Vec_i_Vec_l_h153048c8bd06f0dfabad32cddaecb150_json_p_Value_q_(self__151 *_goml_vec__goml_m_Tuple2__6string__16std_p_json_p_Value, elem__152 Tuple2_6string_26_goml_m_std_p_json_p_Value) struct{} {
+    vec_push___goml_m_Vec__33Tuple2__6string__16std_p_json_p_Value(self__151, elem__152)
     return struct{}{}
 }
 
@@ -4340,8 +4340,8 @@ func utf8_invalid_continuation(value__3 uint32) bool {
     }
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__102 uint32, other__103 uint32) bool {
-    var t2563 bool = self__102 == other__103
+func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__117 uint32, other__118 uint32) bool {
+    var t2563 bool = self__117 == other__118
     return t2563
 }
 

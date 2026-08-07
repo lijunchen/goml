@@ -230,13 +230,13 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(self__267 Option__int, map_fn__268 func(int) string) Option__string {
-    switch self__267.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_map____T__int____U__string(self__285 Option__int, map_fn__286 func(int) string) Option__string {
+    switch self__285.(type) {
     case Option__int_None:
         return Option__string_None{}
     case Option__int_Some:
-        var x127 int = self__267.(Option__int_Some)._0
-        var t175 string = map_fn__268(x127)
+        var x127 int = self__285.(Option__int_Some)._0
+        var t175 string = map_fn__286(x127)
         var t176 Option__string = Option__string_Some{
             _0: t175,
         }
@@ -253,56 +253,56 @@ func println__T_string(value__31 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__247 Option__string, fallback__248 string) string {
-    switch self__247.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_unwrap__or____T__string(self__265 Option__string, fallback__266 string) string {
+    switch self__265.(type) {
     case Option__string_None:
-        return fallback__248
+        return fallback__266
     case Option__string_Some:
-        var x116 string = self__247.(Option__string_Some)._0
+        var x116 string = self__265.(Option__string_Some)._0
         return x116
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__int____U__string(self__270 Option__int, next__271 func(int) Option__string) Option__string {
-    switch self__270.(type) {
+func _goml_m_inherent_i_Option_i_Option_l_T_r__i_and__then____T__int____U__string(self__288 Option__int, next__289 func(int) Option__string) Option__string {
+    switch self__288.(type) {
     case Option__int_None:
         return Option__string_None{}
     case Option__int_Some:
-        var x128 int = self__270.(Option__int_Some)._0
-        var t188 Option__string = next__271(x128)
+        var x128 int = self__288.(Option__int_Some)._0
+        var t188 Option__string = next__289(x128)
         return t188
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T__int(self__258 Result__int__string, fallback__259 func(string) int) int {
-    switch self__258.(type) {
+func _goml_m_inherent_i_Result_i_Re_hc96813df8abfc41fedd0a57a48dec607_tring____T__int(self__276 Result__int__string, fallback__277 func(string) int) int {
+    switch self__276.(type) {
     case Result__int__string_Ok:
-        var x122 int = self__258.(Result__int__string_Ok)._0
+        var x122 int = self__276.(Result__int__string_Ok)._0
         return x122
     case Result__int__string_Err:
-        var x123 string = self__258.(Result__int__string_Err)._0
-        var t205 int = fallback__259(x123)
+        var x123 string = self__276.(Result__int__string_Err)._0
+        var t205 int = fallback__277(x123)
         return t205
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U__int(self__276 Result__int__string, map_fn__277 func(int) int) Result__int__string {
-    switch self__276.(type) {
+func _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U__int(self__294 Result__int__string, map_fn__295 func(int) int) Result__int__string {
+    switch self__294.(type) {
     case Result__int__string_Ok:
-        var x130 int = self__276.(Result__int__string_Ok)._0
-        var t210 int = map_fn__277(x130)
+        var x130 int = self__294.(Result__int__string_Ok)._0
+        var t210 int = map_fn__295(x130)
         var t211 Result__int__string = Result__int__string_Ok{
             _0: t210,
         }
         return t211
     case Result__int__string_Err:
-        var x131 string = self__276.(Result__int__string_Err)._0
+        var x131 string = self__294.(Result__int__string_Err)._0
         var t212 Result__int__string = Result__int__string_Err{
             _0: x131,
         }
@@ -312,17 +312,17 @@ func _goml_m_inherent_i_Result_i_Re_h53d708ed89bfa167dab0055b53066fb7___int____U
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_h03ce7a8acc541bce463170495d022e64___int____T__int(self__280 Result__int__string, map_fn__281 func(string) int) Result__int__int {
-    switch self__280.(type) {
+func _goml_m_inherent_i_Result_i_Re_h03ce7a8acc541bce463170495d022e64___int____T__int(self__298 Result__int__string, map_fn__299 func(string) int) Result__int__int {
+    switch self__298.(type) {
     case Result__int__string_Ok:
-        var x132 int = self__280.(Result__int__string_Ok)._0
+        var x132 int = self__298.(Result__int__string_Ok)._0
         var t221 Result__int__int = Result__int__int_Ok{
             _0: x132,
         }
         return t221
     case Result__int__string_Err:
-        var x133 string = self__280.(Result__int__string_Err)._0
-        var t222 int = map_fn__281(x133)
+        var x133 string = self__298.(Result__int__string_Err)._0
+        var t222 int = map_fn__299(x133)
         var t223 Result__int__int = Result__int__int_Err{
             _0: t222,
         }
@@ -332,28 +332,28 @@ func _goml_m_inherent_i_Result_i_Re_h03ce7a8acc541bce463170495d022e64___int____T
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_h2418c806a6b88d5083ec4bf87e533749___int____T__int(self__258 Result__int__int, fallback__259 func(int) int) int {
-    switch self__258.(type) {
+func _goml_m_inherent_i_Result_i_Re_h2418c806a6b88d5083ec4bf87e533749___int____T__int(self__276 Result__int__int, fallback__277 func(int) int) int {
+    switch self__276.(type) {
     case Result__int__int_Ok:
-        var x122 int = self__258.(Result__int__int_Ok)._0
+        var x122 int = self__276.(Result__int__int_Ok)._0
         return x122
     case Result__int__int_Err:
-        var x123 int = self__258.(Result__int__int_Err)._0
-        var t228 int = fallback__259(x123)
+        var x123 int = self__276.(Result__int__int_Err)._0
+        var t228 int = fallback__277(x123)
         return t228
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_inherent_i_Result_i_Re_he0ddc48027611d42dc9ea3b49867094c_nt____U__string(self__284 Result__int__string, next__285 func(int) Result__string__string) Result__string__string {
-    switch self__284.(type) {
+func _goml_m_inherent_i_Result_i_Re_he0ddc48027611d42dc9ea3b49867094c_nt____U__string(self__302 Result__int__string, next__303 func(int) Result__string__string) Result__string__string {
+    switch self__302.(type) {
     case Result__int__string_Ok:
-        var x134 int = self__284.(Result__int__string_Ok)._0
-        var t233 Result__string__string = next__285(x134)
+        var x134 int = self__302.(Result__int__string_Ok)._0
+        var t233 Result__string__string = next__303(x134)
         return t233
     case Result__int__string_Err:
-        var x135 string = self__284.(Result__int__string_Err)._0
+        var x135 string = self__302.(Result__int__string_Err)._0
         var t234 Result__string__string = Result__string__string_Err{
             _0: x135,
         }

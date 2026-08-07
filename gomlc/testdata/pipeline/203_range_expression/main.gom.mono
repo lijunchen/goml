@@ -120,57 +120,57 @@ fn main() -> unit {
   let _wild168 = println__T_int32(range(10, 20)) in
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/216: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/216)
+fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/233)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/217: Ref[int], value/218: int) -> unit {
-  @intrinsic(ref.set)(self/217, value/218)
+fn inherent#Ref#Ref[T]#set__T_int(self/234: Ref[int], value/235: int) -> unit {
+  @intrinsic(ref.set)(self/234, value/235)
 }
 
 fn println__T_int(value/31: int) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/215: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/215)
+fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/232)
 }
 
-fn __goml_builtin_range_inclusive(start/262: int, end/263: int) -> FnIterator__int {
-  let current/264 = @intrinsic(ref.new)(start/262) in
-  let finished/265 = @intrinsic(ref.new)(false) in
+fn __goml_builtin_range_inclusive(start/280: int, end/281: int) -> FnIterator__int {
+  let current/282 = @intrinsic(ref.new)(start/280) in
+  let finished/283 = @intrinsic(ref.new)(false) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
     || {
-      if if @intrinsic(ref.get)(finished/265) {
+      if if @intrinsic(ref.get)(finished/283) {
           true
       } else {
-          (@intrinsic(ref.get)(current/264) > end/263)
+          (@intrinsic(ref.get)(current/282) > end/281)
       } {
           {
             Option__int::None
           }
       } else {
           {
-            let value/266 = @intrinsic(ref.get)(current/264) in
+            let value/284 = @intrinsic(ref.get)(current/282) in
             let _wild126 =
-              if trait_impl#Eq#int#eq(value/266, end/263) {
+              if trait_impl#Eq#int#eq(value/284, end/281) {
                   {
-                    let _wild124 = @intrinsic(ref.set)(finished/265, true) in
+                    let _wild124 = @intrinsic(ref.set)(finished/283, true) in
                   }
               } else {
                   {
-                    let _wild125 = @intrinsic(ref.set)(current/264, (value/266 + 1)) in
+                    let _wild125 = @intrinsic(ref.set)(current/282, (value/284 + 1)) in
                   }
               } in
-            Option__int::Some(value/266)
+            Option__int::Some(value/284)
           }
       }
     }
   )
 }
 
-fn trait_impl#Iterator#FnIterator__int#next(self/131: FnIterator__int) -> Option__int {
-  FnIterator__int.next_fn(self/131)()
+fn trait_impl#Iterator#FnIterator__int#next(self/148: FnIterator__int) -> Option__int {
+  FnIterator__int.next_fn(self/148)()
 }
 
 fn println__T_string(value/31: string) -> unit {
@@ -185,14 +185,14 @@ fn trait_impl#ToString#int#to_string(self/69: int) -> string {
   @runtime(core.int_to_string)(self/69)
 }
 
-fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
-  @intrinsic(eq.primitive)(self/88, other/89)
+fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+  @intrinsic(eq.primitive)(self/103, other/104)
 }
 
 fn inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-  next_fn/130: () -> Option__int
+  next_fn/147: () -> Option__int
 ) -> FnIterator__int {
-  FnIterator__int { next_fn: next_fn/130 }
+  FnIterator__int { next_fn: next_fn/147 }
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -203,16 +203,16 @@ fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
   @runtime(core.int32_to_string)(self/72)
 }
 
-fn trait_impl#Hash#int#hash(self/114: int) -> uint64 {
-  @runtime(core.int_hash)(self/114)
+fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
+  @runtime(core.int_hash)(self/129)
 }
 
-fn trait_impl#Eq#bool#eq(self/82: bool, other/83: bool) -> bool {
-  @intrinsic(eq.primitive)(self/82, other/83)
+fn trait_impl#Eq#bool#eq(self/97: bool, other/98: bool) -> bool {
+  @intrinsic(eq.primitive)(self/97, other/98)
 }
 
-fn trait_impl#Hash#bool#hash(self/111: bool) -> uint64 {
-  if self/111 {
+fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
+  if self/126 {
       {
         1
       }

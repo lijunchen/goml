@@ -156,8 +156,8 @@ fn println__T_dynToString(value/31: dyn ToString) -> unit {
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/215: int) -> Ref[int] {
-  let t185 = @intrinsic(ref.new)(value/215) in
+fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
+  let t185 = @intrinsic(ref.new)(value/232) in
   t185
 }
 
@@ -195,31 +195,31 @@ fn trait_impl#ToString#unit#to_string(self/65: unit) -> string {
   t199
 }
 
-fn trait_impl#ToString#Ref[int]#to_string(self/128: Ref[int]) -> string {
-  join inline_cont284(v/129: int) -> string {
+fn trait_impl#ToString#Ref[int]#to_string(self/143: Ref[int]) -> string {
+  join inline_cont284(v/144: int) -> string {
     join inline_cont282(t202: string) -> string {
       let t203 = ("ref(" + t202) in
       let t204 = (t203 + ")") in
       t204
     } in
-    let inline283 = @runtime(core.int_to_string)(v/129) in
+    let inline283 = @runtime(core.int_to_string)(v/144) in
     jump inline_cont282(inline283)
   } in
-  let inline285 = @intrinsic(ref.get)(self/128) in
+  let inline285 = @intrinsic(ref.get)(self/143) in
   jump inline_cont284(inline285)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/216: Ref[int]) -> int {
-  let t207 = @intrinsic(ref.get)(self/216) in
+fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
+  let t207 = @intrinsic(ref.get)(self/233) in
   t207
 }
 
-fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
-  let t210 = @intrinsic(eq.primitive)(self/88, other/89) in
+fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+  let t210 = @intrinsic(eq.primitive)(self/103, other/104) in
   t210
 }
 
-fn trait_impl#Hash#int#hash(self/114: int) -> uint64 {
-  let t213 = @runtime(core.int_hash)(self/114) in
+fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
+  let t213 = @runtime(core.int_hash)(self/129) in
   t213
 }

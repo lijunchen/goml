@@ -200,8 +200,8 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__232 uint) string {
-    var t169 string = _goml_runtime_core_uint_to_string(self__232)
+func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__249 uint) string {
+    var t169 string = _goml_runtime_core_uint_to_string(self__249)
     return t169
 }
 
@@ -219,13 +219,13 @@ func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__77 uint64) strin
     return t191
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint_i_eq(self__233 uint, other__234 uint) bool {
-    var t194 bool = self__233 == other__234
+func _goml_m_trait__impl_i_Eq_i_uint_i_eq(self__251 uint, other__252 uint) bool {
+    var t194 bool = self__251 == other__252
     return t194
 }
 
-func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__235 uint) uint64 {
-    var t197 uint64 = _goml_runtime_core_uint_hash(self__235)
+func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__253 uint) uint64 {
+    var t197 uint64 = _goml_runtime_core_uint_hash(self__253)
     return t197
 }
 

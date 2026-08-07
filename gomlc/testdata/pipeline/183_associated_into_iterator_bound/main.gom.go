@@ -161,15 +161,15 @@ func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string 
     return t171
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__186 *_goml_vec_int32) FnIterator__int32 {
-    var index__187 *ref_int_x = ref__Ref_3int(0)
-    var len__188 int
-    var inline254 int = vec_len__Vec_5int32(self__186)
-    len__188 = inline254
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__203 *_goml_vec_int32) FnIterator__int32 {
+    var index__204 *ref_int_x = ref__Ref_3int(0)
+    var len__205 int
+    var inline254 int = vec_len__Vec_5int32(self__203)
+    len__205 = inline254
     var t189 closure_env_inherent_Vec_Vec_T_iter_T_int32_0 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0{
-        index_0: index__187,
-        len_1: len__188,
-        self_2: self__186,
+        index_0: index__204,
+        len_1: len__205,
+        self_2: self__203,
     }
     var t190 FnIterator__int32 = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(func() Option__int32 {
         return _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(t189)
@@ -177,25 +177,25 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__186 *_goml_vec
     return t190
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(next_fn__130 func() Option__int32) FnIterator__int32 {
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(next_fn__147 func() Option__int32) FnIterator__int32 {
     var t196 FnIterator__int32 = FnIterator__int32{
-        next_fn: next_fn__130,
+        next_fn: next_fn__147,
     }
     return t196
 }
 
 func _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(env145 closure_env_inherent_Vec_Vec_T_iter_T_int32_0) Option__int32 {
-    var index__187 *ref_int_x = env145.index_0
-    var len__188 int = env145.len_1
-    var self__186 *_goml_vec_int32 = env145.self_2
-    var current__189 int = ref_get__Ref_3int(index__187)
-    var t213 bool = current__189 < len__188
+    var index__204 *ref_int_x = env145.index_0
+    var len__205 int = env145.len_1
+    var self__203 *_goml_vec_int32 = env145.self_2
+    var current__206 int = ref_get__Ref_3int(index__204)
+    var t213 bool = current__206 < len__205
     if t213 {
-        var value__190 int32 = vec_get__Vec_5int32(self__186, current__189)
-        var t214 int = current__189 + 1
-        ref_set__Ref_3int(index__187, t214)
+        var value__207 int32 = vec_get__Vec_5int32(self__203, current__206)
+        var t214 int = current__206 + 1
+        ref_set__Ref_3int(index__204, t214)
         var t215 Option__int32 = Some{
-            _0: value__190,
+            _0: value__207,
         }
         return t215
     } else {

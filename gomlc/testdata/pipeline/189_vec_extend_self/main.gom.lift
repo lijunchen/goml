@@ -33,8 +33,8 @@ fn println__T_int(value/31: int) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/145: Vec[int32]) -> int {
-  @intrinsic(vec.len)(self/145)
+fn inherent#Vec#Vec[T]#len__T_int32(self/162: Vec[int32]) -> int {
+  @intrinsic(vec.len)(self/162)
 }
 
 fn println__T_int32(value/31: int32) -> unit {
@@ -45,21 +45,21 @@ fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/134: Vec[int32], elem/135: int32) -> unit {
-  @intrinsic(vec.push)(self/134, elem/135)
+fn inherent#Vec#Vec[T]#push__T_int32(self/151: Vec[int32], elem/152: int32) -> unit {
+  @intrinsic(vec.push)(self/151, elem/152)
 }
 
-fn inherent#Vec#Vec[T]#extend__T_int32(self/179: Vec[int32], other/180: Vec[int32]) -> unit {
-  let len/181 = inherent#Vec#Vec[T]#len__T_int32(other/180) in
-  let _wild100 = inherent#Vec#Vec[T]#reserve__T_int32(self/179, len/181) in
-  let index/182 = 0 in
-  while (index/182 < len/181) {
+fn inherent#Vec#Vec[T]#extend__T_int32(self/196: Vec[int32], other/197: Vec[int32]) -> unit {
+  let len/198 = inherent#Vec#Vec[T]#len__T_int32(other/197) in
+  let _wild100 = inherent#Vec#Vec[T]#reserve__T_int32(self/196, len/198) in
+  let index/199 = 0 in
+  while (index/199 < len/198) {
       let _wild101 =
-        inherent#Vec#Vec[T]#push__T_int32(self/179, @intrinsic(vec.get)(other/180, index/182)) in
+        inherent#Vec#Vec[T]#push__T_int32(self/196, @intrinsic(vec.get)(other/197, index/199)) in
       let _wild104 =
-        let compound_old102 = index/182 in
+        let compound_old102 = index/199 in
         let compound_value103 = 1 in
-        index/182 = (compound_old102 + compound_value103) in
+        index/199 = (compound_old102 + compound_value103) in
       ()
   }
 }
@@ -72,6 +72,6 @@ fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
   @runtime(core.int32_to_string)(self/72)
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_int32(self/148: Vec[int32], additional/149: int) -> unit {
-  @intrinsic(vec.reserve)(self/148, additional/149)
+fn inherent#Vec#Vec[T]#reserve__T_int32(self/165: Vec[int32], additional/166: int) -> unit {
+  @intrinsic(vec.reserve)(self/165, additional/166)
 }

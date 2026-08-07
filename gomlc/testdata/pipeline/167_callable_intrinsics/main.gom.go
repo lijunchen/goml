@@ -107,35 +107,35 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__136 *_goml_vec_int32, elem__137 int32) *_goml_vec_int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__153 *_goml_vec_int32, elem__154 int32) *_goml_vec_int32 {
     var t179 int
-    var inline252 int = vec_len__Vec_5int32(self__136)
+    var inline252 int = vec_len__Vec_5int32(self__153)
     t179 = inline252
     var t180 int = t179 + 1
-    var result__138 *_goml_vec_int32
+    var result__155 *_goml_vec_int32
     var inline250 *_goml_vec_int32 = vec_with_capacity__Vec_5int32(t180)
-    result__138 = inline250
-    var index__139 int = 0
+    result__155 = inline250
+    var index__156 int = 0
     Loop_loop182:
     for {
         var t183 int
-        var inline246 int = vec_len__Vec_5int32(self__136)
+        var inline246 int = vec_len__Vec_5int32(self__153)
         t183 = inline246
-        var t184 bool = index__139 < t183
+        var t184 bool = index__156 < t183
         if t184 {
-            var t185 int32 = vec_get__Vec_5int32(self__136, index__139)
-            vec_push__Vec_5int32(result__138, t185)
-            var compound_old44 int = index__139
+            var t185 int32 = vec_get__Vec_5int32(self__153, index__156)
+            vec_push__Vec_5int32(result__155, t185)
+            var compound_old44 int = index__156
             var compound_value45 int = 1
             var t186 int = compound_old44 + compound_value45
-            index__139 = t186
+            index__156 = t186
             continue
         } else {
             break Loop_loop182
         }
     }
-    vec_push__Vec_5int32(result__138, elem__137)
-    return result__138
+    vec_push__Vec_5int32(result__155, elem__154)
+    return result__155
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

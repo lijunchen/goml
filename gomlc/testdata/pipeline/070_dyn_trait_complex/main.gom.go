@@ -434,8 +434,8 @@ func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
     return t262
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__215 int32) *ref_int32_x {
-    var t270 *ref_int32_x = ref__Ref_5int32(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__232 int32) *ref_int32_x {
+    var t270 *ref_int32_x = ref__Ref_5int32(value__232)
     return t270
 }
 

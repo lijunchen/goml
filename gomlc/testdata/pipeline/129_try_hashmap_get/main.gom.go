@@ -211,13 +211,13 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
     return self__67
 }
 
-func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__84 string, other__85 string) bool {
-    var t179 bool = self__84 == other__85
+func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__99 string, other__100 string) bool {
+    var t179 bool = self__99 == other__100
     return t179
 }
 
-func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__112 string) uint64 {
-    var t182 uint64 = _goml_runtime_core_string_hash(self__112)
+func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__127 string) uint64 {
+    var t182 uint64 = _goml_runtime_core_string_hash(self__127)
     return t182
 }
 

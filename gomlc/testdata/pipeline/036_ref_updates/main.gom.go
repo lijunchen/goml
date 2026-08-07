@@ -190,33 +190,33 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__216 *ref_int32_x) int32 {
-    var t197 int32 = ref_get__Ref_5int32(self__216)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__233 *ref_int32_x) int32 {
+    var t197 int32 = ref_get__Ref_5int32(self__233)
     return t197
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__217 *ref_int32_x, value__218 int32) struct{} {
-    ref_set__Ref_5int32(self__217, value__218)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__234 *ref_int32_x, value__235 int32) struct{} {
+    ref_set__Ref_5int32(self__234, value__235)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Ref_l_int32_r_(self__216 *ref_Ref_5int32_x) *ref_int32_x {
-    var t207 *ref_int32_x = ref_get__Ref_10Ref_5int32(self__216)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Ref_l_int32_r_(self__233 *ref_Ref_5int32_x) *ref_int32_x {
+    var t207 *ref_int32_x = ref_get__Ref_10Ref_5int32(self__233)
     return t207
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__215 int32) *ref_int32_x {
-    var t210 *ref_int32_x = ref__Ref_5int32(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__232 int32) *ref_int32_x {
+    var t210 *ref_int32_x = ref__Ref_5int32(value__232)
     return t210
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__215 bool) *ref_bool_x {
-    var t213 *ref_bool_x = ref__Ref_4bool(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__232 bool) *ref_bool_x {
+    var t213 *ref_bool_x = ref__Ref_4bool(value__232)
     return t213
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Ref_l_int32_r_(value__215 *ref_int32_x) *ref_Ref_5int32_x {
-    var t216 *ref_Ref_5int32_x = ref__Ref_10Ref_5int32(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Ref_l_int32_r_(value__232 *ref_int32_x) *ref_Ref_5int32_x {
+    var t216 *ref_Ref_5int32_x = ref__Ref_10Ref_5int32(value__232)
     return t216
 }
 

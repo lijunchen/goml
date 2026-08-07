@@ -151,12 +151,12 @@ func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__65 struct{}) strin
     return t199
 }
 
-func _goml_m_trait__impl_i_ToString_i_Ref_l_int_r__i_to__string(self__128 *ref_int_x) string {
-    var v__129 int
-    var inline285 int = ref_get__Ref_3int(self__128)
-    v__129 = inline285
+func _goml_m_trait__impl_i_ToString_i_Ref_l_int_r__i_to__string(self__143 *ref_int_x) string {
+    var v__144 int
+    var inline285 int = ref_get__Ref_3int(self__143)
+    v__144 = inline285
     var t202 string
-    var inline283 string = _goml_runtime_core_int_to_string(v__129)
+    var inline283 string = _goml_runtime_core_int_to_string(v__144)
     t202 = inline283
     var t203 string = "ref(" + t202
     var t204 string = t203 + ")"

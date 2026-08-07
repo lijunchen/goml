@@ -1,0 +1,52 @@
+package main;
+#[derive(Debug)]
+struct Point {
+    x: int32,
+    label: string,
+}
+
+impl Debug for Point {
+  fn debug(self: Point) -> string {
+      {
+          let Point { x: #derive0_field, label: #derive1_field } = self;
+          "Point { " + "x: " + Debug::debug(#derive0_field) + ", " + "label: " +
+            Debug::debug(#derive1_field) +
+            " }"
+      }
+  }
+}
+
+#[derive(Debug)]
+enum State[T] {
+    Idle,
+    Value(T),
+    Named { value: T }
+}
+
+impl[T] Debug for State[T] where T: Debug {
+  fn debug(self: State[T]) -> string {
+      match self {
+          State::Idle => "State::Idle",
+          State::Value(#derive0_field) => "State::Value(" + Debug::debug(#derive0_field) + ")",
+          State::Named { value: #derive1_field } =>
+            "State::Named { " + "value: " + Debug::debug(#derive1_field) + " }",
+      }
+  }
+}
+
+fn debug_dyn(value: dyn Debug) -> string {
+    value.debug()
+}
+
+fn main() -> unit {
+    let point = Point { x: 3, label: "east" };
+    let idle: State[int32] = State::Idle;
+    let value = State::Value(point);
+    let named = State::Named { value: 7 };
+    println(point.debug());
+    println(idle.debug());
+    println(value.debug());
+    println(Debug::debug(named));
+    println(debug_dyn(9))
+}
+

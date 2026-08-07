@@ -3501,14 +3501,14 @@ fn main() -> unit {
   println__T_string(std::json::encode(value/2))
 }
 
-fn trait_impl#Eq#string#eq(self/84: string, other/85: string) -> bool {
-  @intrinsic(eq.primitive)(self/84, other/85)
+fn trait_impl#Eq#string#eq(self/99: string, other/100: string) -> bool {
+  @intrinsic(eq.primitive)(self/99, other/100)
 }
 
 fn inherent#Vec#Vec[T]#len__T_(string,std::serde::Value)(
-  self/145: Vec[(string, std::serde::Value)]
+  self/162: Vec[(string, std::serde::Value)]
 ) -> int {
-  @intrinsic(vec.len)(self/145)
+  @intrinsic(vec.len)(self/162)
 }
 
 fn inherent#int#int#to_string(self/34: int) -> string {
@@ -3519,25 +3519,25 @@ fn inherent#Vec#Vec[T]#new__T_(string,std::serde::Value)() -> Vec[(string, std::
   @intrinsic(vec.new)()
 }
 
-fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
-  @intrinsic(eq.primitive)(self/88, other/89)
+fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+  @intrinsic(eq.primitive)(self/103, other/104)
 }
 
-fn inherent#Vec#Vec[T]#len__T_std::serde::Value(self/145: Vec[std::serde::Value]) -> int {
-  @intrinsic(vec.len)(self/145)
+fn inherent#Vec#Vec[T]#len__T_std::serde::Value(self/162: Vec[std::serde::Value]) -> int {
+  @intrinsic(vec.len)(self/162)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::serde::Value)(capacity/133: int) -> Vec[
+fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::serde::Value)(capacity/150: int) -> Vec[
   (string, std::serde::Value)
 ] {
-  @intrinsic(vec.with_capacity)(capacity/133)
+  @intrinsic(vec.with_capacity)(capacity/150)
 }
 
 fn inherent#Vec#Vec[T]#push__T_(string,std::serde::Value)(
-  self/134: Vec[(string, std::serde::Value)],
-  elem/135: (string, std::serde::Value)
+  self/151: Vec[(string, std::serde::Value)],
+  elem/152: (string, std::serde::Value)
 ) -> unit {
-  @intrinsic(vec.push)(self/134, elem/135)
+  @intrinsic(vec.push)(self/151, elem/152)
 }
 
 fn std::serde::typed_schema__T_std::serde::Value(
@@ -3638,16 +3638,16 @@ fn std::serde::typed_schema__T_float64(
   std::serde::TypedSchema__float64 { value: value/7 }
 }
 
-fn trait_impl#Eq#uint8#eq(self/98: uint8, other/99: uint8) -> bool {
-  @intrinsic(eq.primitive)(self/98, other/99)
+fn trait_impl#Eq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
+  @intrinsic(eq.primitive)(self/113, other/114)
 }
 
 fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/134: Vec[uint8], elem/135: uint8) -> unit {
-  @intrinsic(vec.push)(self/134, elem/135)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/151: Vec[uint8], elem/152: uint8) -> unit {
+  @intrinsic(vec.push)(self/151, elem/152)
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -3681,53 +3681,53 @@ fn inherent#char#char#to_string(self/36: char) -> string {
   char_to_string(self/36)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/133: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/133)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/150: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/150)
 }
 
 fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
   @runtime(core.string_to_bytes)(self/53)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/145: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/145)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/162: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/162)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/146: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/146)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/163: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/163)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/147: Vec[uint8]) -> bool {
-  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/147), 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/164: Vec[uint8]) -> bool {
+  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/164), 0)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/155: Vec[uint8]) -> Option__uint8 {
-  let len/156 = inherent#Vec#Vec[T]#len__T_uint8(self/155) in
-  if trait_impl#Eq#int#eq(len/156, 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/172: Vec[uint8]) -> Option__uint8 {
+  let len/173 = inherent#Vec#Vec[T]#len__T_uint8(self/172) in
+  if trait_impl#Eq#int#eq(len/173, 0) {
       Option__uint8::None
   } else {
-      let value/157 = @intrinsic(vec.get)(self/155, (len/156 - 1)) in
-      let _wild49 = inherent#Vec#Vec[T]#truncate__T_uint8(self/155, (len/156 - 1)) in
-      Option__uint8::Some(value/157)
+      let value/174 = @intrinsic(vec.get)(self/172, (len/173 - 1)) in
+      let _wild49 = inherent#Vec#Vec[T]#truncate__T_uint8(self/172, (len/173 - 1)) in
+      Option__uint8::Some(value/174)
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/148: Vec[uint8], additional/149: int) -> unit {
-  @intrinsic(vec.reserve)(self/148, additional/149)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/165: Vec[uint8], additional/166: int) -> unit {
+  @intrinsic(vec.reserve)(self/165, additional/166)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/150: Vec[uint8], len/151: int) -> unit {
-  @intrinsic(vec.truncate)(self/150, len/151)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/167: Vec[uint8], len/168: int) -> unit {
+  @intrinsic(vec.truncate)(self/167, len/168)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/152: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/152, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/169: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/169, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/183: Vec[uint8], start/184: int, end/185: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/200: Vec[uint8], start/201: int, end/202: int) -> Slice[
   uint8
 ] {
-  @intrinsic(slice.new)(self/183, start/184, end/185)
+  @intrinsic(slice.new)(self/200, start/201, end/202)
 }
 
 fn inherent#string#string#byte_len(self/38: string) -> int {
@@ -3750,39 +3750,39 @@ fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/134: Vec[string], elem/135: string) -> unit {
-  @intrinsic(vec.push)(self/134, elem/135)
+fn inherent#Vec#Vec[T]#push__T_string(self/151: Vec[string], elem/152: string) -> unit {
+  @intrinsic(vec.push)(self/151, elem/152)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_string(self/147: Vec[string]) -> bool {
-  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/147), 0)
+fn inherent#Vec#Vec[T]#is_empty__T_string(self/164: Vec[string]) -> bool {
+  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/164), 0)
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/145: Vec[string]) -> int {
-  @intrinsic(vec.len)(self/145)
+fn inherent#Vec#Vec[T]#len__T_string(self/162: Vec[string]) -> int {
+  @intrinsic(vec.len)(self/162)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_string(self/155: Vec[string]) -> Option__string {
-  let len/156 = inherent#Vec#Vec[T]#len__T_string(self/155) in
-  if trait_impl#Eq#int#eq(len/156, 0) {
+fn inherent#Vec#Vec[T]#pop__T_string(self/172: Vec[string]) -> Option__string {
+  let len/173 = inherent#Vec#Vec[T]#len__T_string(self/172) in
+  if trait_impl#Eq#int#eq(len/173, 0) {
       Option__string::None
   } else {
-      let value/157 = @intrinsic(vec.get)(self/155, (len/156 - 1)) in
-      let _wild49 = inherent#Vec#Vec[T]#truncate__T_string(self/155, (len/156 - 1)) in
-      Option__string::Some(value/157)
+      let value/174 = @intrinsic(vec.get)(self/172, (len/173 - 1)) in
+      let _wild49 = inherent#Vec#Vec[T]#truncate__T_string(self/172, (len/173 - 1)) in
+      Option__string::Some(value/174)
   }
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/215: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/215)
+fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/232)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/216: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/216)
+fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/233)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/217: Ref[int], value/218: int) -> unit {
-  @intrinsic(ref.set)(self/217, value/218)
+fn inherent#Ref#Ref[T]#set__T_int(self/234: Ref[int], value/235: int) -> unit {
+  @intrinsic(ref.set)(self/234, value/235)
 }
 
 fn char_from_uint32(value/32: uint32) -> Option__char {
@@ -3802,10 +3802,10 @@ fn inherent#Vec#Vec[T]#new__T_std::json::Value() -> Vec[std::json::Value] {
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::json::Value(
-  self/134: Vec[std::json::Value],
-  elem/135: std::json::Value
+  self/151: Vec[std::json::Value],
+  elem/152: std::json::Value
 ) -> unit {
-  @intrinsic(vec.push)(self/134, elem/135)
+  @intrinsic(vec.push)(self/151, elem/152)
 }
 
 fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::json::Value)] {
@@ -3813,22 +3813,22 @@ fn inherent#Vec#Vec[T]#new__T_(string,std::json::Value)() -> Vec[(string, std::j
 }
 
 fn inherent#Vec#Vec[T]#push__T_(string,std::json::Value)(
-  self/134: Vec[(string, std::json::Value)],
-  elem/135: (string, std::json::Value)
+  self/151: Vec[(string, std::json::Value)],
+  elem/152: (string, std::json::Value)
 ) -> unit {
-  @intrinsic(vec.push)(self/134, elem/135)
+  @intrinsic(vec.push)(self/151, elem/152)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::json::Value)(capacity/133: int) -> Vec[
+fn inherent#Vec#Vec[T]#with_capacity__T_(string,std::json::Value)(capacity/150: int) -> Vec[
   (string, std::json::Value)
 ] {
-  @intrinsic(vec.with_capacity)(capacity/133)
+  @intrinsic(vec.with_capacity)(capacity/150)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_std::json::Value(capacity/133: int) -> Vec[
+fn inherent#Vec#Vec[T]#with_capacity__T_std::json::Value(capacity/150: int) -> Vec[
   std::json::Value
 ] {
-  @intrinsic(vec.with_capacity)(capacity/133)
+  @intrinsic(vec.with_capacity)(capacity/150)
 }
 
 fn trait_impl#ToString#int8#to_string(self/70: int8) -> string {
@@ -3847,8 +3847,8 @@ fn trait_impl#ToString#int64#to_string(self/73: int64) -> string {
   @runtime(core.int64_to_string)(self/73)
 }
 
-fn trait_impl#ToString#uint#to_string(self/232: uint) -> string {
-  @runtime(core.uint_to_string)(self/232)
+fn trait_impl#ToString#uint#to_string(self/249: uint) -> string {
+  @runtime(core.uint_to_string)(self/249)
 }
 
 fn trait_impl#ToString#uint8#to_string(self/74: uint8) -> string {
@@ -3876,26 +3876,26 @@ fn trait_impl#ToString#float64#to_string(self/79: float64) -> string {
 }
 
 fn inherent#Vec#Vec[T]#len__T_(string,std::json::Value)(
-  self/145: Vec[(string, std::json::Value)]
+  self/162: Vec[(string, std::json::Value)]
 ) -> int {
-  @intrinsic(vec.len)(self/145)
+  @intrinsic(vec.len)(self/162)
 }
 
-fn inherent#Vec#Vec[T]#len__T_std::json::Value(self/145: Vec[std::json::Value]) -> int {
-  @intrinsic(vec.len)(self/145)
+fn inherent#Vec#Vec[T]#len__T_std::json::Value(self/162: Vec[std::json::Value]) -> int {
+  @intrinsic(vec.len)(self/162)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_std::serde::Value(capacity/133: int) -> Vec[
+fn inherent#Vec#Vec[T]#with_capacity__T_std::serde::Value(capacity/150: int) -> Vec[
   std::serde::Value
 ] {
-  @intrinsic(vec.with_capacity)(capacity/133)
+  @intrinsic(vec.with_capacity)(capacity/150)
 }
 
 fn inherent#Vec#Vec[T]#push__T_std::serde::Value(
-  self/134: Vec[std::serde::Value],
-  elem/135: std::serde::Value
+  self/151: Vec[std::serde::Value],
+  elem/152: std::serde::Value
 ) -> unit {
-  @intrinsic(vec.push)(self/134, elem/135)
+  @intrinsic(vec.push)(self/151, elem/152)
 }
 
 fn std::serde::typed_schema__T_std::json::Value(
@@ -4099,8 +4099,8 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
   }
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_string(self/150: Vec[string], len/151: int) -> unit {
-  @intrinsic(vec.truncate)(self/150, len/151)
+fn inherent#Vec#Vec[T]#truncate__T_string(self/167: Vec[string], len/168: int) -> unit {
+  @intrinsic(vec.truncate)(self/167, len/168)
 }
 
 fn utf8_valid_scalar(value/4: uint32) -> bool {
@@ -4153,10 +4153,10 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn trait_impl#Eq#uint32#eq(self/102: uint32, other/103: uint32) -> bool {
-  @intrinsic(eq.primitive)(self/102, other/103)
+fn trait_impl#Eq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
+  @intrinsic(eq.primitive)(self/117, other/118)
 }
 
-fn trait_impl#Hash#int#hash(self/114: int) -> uint64 {
-  @runtime(core.int_hash)(self/114)
+fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
+  @runtime(core.int_hash)(self/129)
 }

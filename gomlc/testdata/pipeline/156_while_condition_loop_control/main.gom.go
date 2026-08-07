@@ -152,13 +152,13 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__215 int) *ref_int_x {
-    var t184 *ref_int_x = ref__Ref_3int(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__232 int) *ref_int_x {
+    var t184 *ref_int_x = ref__Ref_3int(value__232)
     return t184
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__216 *ref_int_x) int {
-    var t187 int = ref_get__Ref_3int(self__216)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__233 *ref_int_x) int {
+    var t187 int = ref_get__Ref_3int(self__233)
     return t187
 }
 

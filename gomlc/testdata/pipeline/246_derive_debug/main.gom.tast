@@ -1,0 +1,46 @@
+impl Debug for Point {
+  fn debug(self/0: Point) -> string {
+      {
+          let Point { x: #derive0_field/1: int32, label: #derive1_field/2: string } =
+            (self/0 : Point);
+          "Point { " + "x: " + (Debug::debug : (int32) -> string)((#derive0_field/1 : int32)) +
+            ", " +
+            "label: " +
+            (Debug::debug : (string) -> string)((#derive1_field/2 : string)) +
+            " }"
+      }
+  }
+}
+
+impl[T] Debug for State[T] where T: Debug {
+  fn debug(self/3: State[T]) -> string {
+      match (self/3 : State[T]) {
+          State::Idle => "State::Idle",
+          State::Value(#derive0_field/4: T) =>
+            "State::Value(" + (Debug::debug : (T) -> string)((#derive0_field/4 : T)) + ")",
+          State::Named(#derive1_field/5: T) =>
+            "State::Named { " + "value: " + (Debug::debug : (T) -> string)((#derive1_field/5 : T)) +
+              " }",
+      }
+  }
+}
+
+fn debug_dyn(value/6: dyn Debug) -> string {
+    (dyn Debug::debug : (dyn Debug) -> string)((value/6 : dyn Debug))
+}
+
+fn main() -> unit {
+    let point/7: Point = Point { x: 3, label: "east" };
+    let idle/8: State[int32] = State::Idle;
+    let value/9: State[Point] = State::Value((point/7 : Point));
+    let named/10: State[int] = State::Named(7);
+    (println : (string) -> unit)((Debug::debug : (Point) -> string)((point/7 : Point)));
+    (println : (string) -> unit)(
+      (Debug::debug : (State[int32]) -> string)((idle/8 : State[int32]))
+    );
+    (println : (string) -> unit)(
+      (Debug::debug : (State[Point]) -> string)((value/9 : State[Point]))
+    );
+    (println : (string) -> unit)((Debug::debug : (State[int]) -> string)((named/10 : State[int])));
+    (println : (string) -> unit)((debug_dyn : (dyn Debug) -> string)(to_dyn[Debug]{int}(9)))
+}

@@ -100,22 +100,22 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(self__179 *_goml_vec_int32, other__180 *_goml_vec_int32) struct{} {
-    var len__181 int
-    var inline228 int = vec_len__Vec_5int32(other__180)
-    len__181 = inline228
-    vec_reserve__Vec_5int32(self__179, len__181)
-    var index__182 int = 0
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_extend____T__int32(self__196 *_goml_vec_int32, other__197 *_goml_vec_int32) struct{} {
+    var len__198 int
+    var inline228 int = vec_len__Vec_5int32(other__197)
+    len__198 = inline228
+    vec_reserve__Vec_5int32(self__196, len__198)
+    var index__199 int = 0
     Loop_loop177:
     for {
-        var t178 bool = index__182 < len__181
+        var t178 bool = index__199 < len__198
         if t178 {
-            var t179 int32 = vec_get__Vec_5int32(other__180, index__182)
-            vec_push__Vec_5int32(self__179, t179)
-            var compound_old102 int = index__182
+            var t179 int32 = vec_get__Vec_5int32(other__197, index__199)
+            vec_push__Vec_5int32(self__196, t179)
+            var compound_old102 int = index__199
             var compound_value103 int = 1
             var t180 int = compound_old102 + compound_value103
-            index__182 = t180
+            index__199 = t180
             continue
         } else {
             break Loop_loop177

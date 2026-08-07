@@ -149,8 +149,8 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__94 int32, other__95 int32) bool {
-    var t180 bool = self__94 == other__95
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__109 int32, other__110 int32) bool {
+    var t180 bool = self__109 == other__110
     return t180
 }
 

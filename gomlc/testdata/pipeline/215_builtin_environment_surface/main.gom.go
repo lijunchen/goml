@@ -368,11 +368,11 @@ func string_is_char_boundary(value__15 string, index__16 int) bool {
     }
 }
 
-func __goml_builtin_range(start__226 int, end__227 int) FnIterator__int {
-    var current__228 *ref_int_x = ref__Ref_3int(start__226)
+func __goml_builtin_range(start__243 int, end__244 int) FnIterator__int {
+    var current__245 *ref_int_x = ref__Ref_3int(start__243)
     var t223 closure_env_goml_builtin_range_1 = closure_env_goml_builtin_range_1{
-        current_0: current__228,
-        end_1: end__227,
+        current_0: current__245,
+        end_1: end__244,
     }
     var t224 FnIterator__int = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(func() Option__int {
         return _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(t223)
@@ -384,9 +384,9 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
     return self__67
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__130 func() Option__int) FnIterator__int {
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int(next_fn__147 func() Option__int) FnIterator__int {
     var t241 FnIterator__int = FnIterator__int{
-        next_fn: next_fn__130,
+        next_fn: next_fn__147,
     }
     return t241
 }
@@ -397,15 +397,15 @@ func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(en
 }
 
 func _goml_m_inherent_i_closure__en_h07c29ff1f344b08e028033881af7c2d9_ange__1_i_apply(env144 closure_env_goml_builtin_range_1) Option__int {
-    var current__228 *ref_int_x = env144.current_0
-    var end__227 int = env144.end_1
-    var value__229 int = ref_get__Ref_3int(current__228)
-    var t258 bool = value__229 < end__227
+    var current__245 *ref_int_x = env144.current_0
+    var end__244 int = env144.end_1
+    var value__246 int = ref_get__Ref_3int(current__245)
+    var t258 bool = value__246 < end__244
     if t258 {
-        var t259 int = value__229 + 1
-        ref_set__Ref_3int(current__228, t259)
+        var t259 int = value__246 + 1
+        ref_set__Ref_3int(current__245, t259)
         var t260 Option__int = Some{
-            _0: value__229,
+            _0: value__246,
         }
         return t260
     } else {

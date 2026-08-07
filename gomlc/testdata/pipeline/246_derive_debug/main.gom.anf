@@ -1,0 +1,234 @@
+fn trait_impl#Debug#Point#debug(self/0: Point) -> string {
+  let mtmp136 = self/0 in
+  let x137 = Point.x(self/0) in
+  let x138 = Point.label(self/0) in
+  let #derive1_field/2 = x138 in
+  let #derive0_field/1 = x137 in
+  let t147 = ("Point { " + "x: ") in
+  join inline_cont221(t148: string) -> string {
+    let t149 = (t147 + t148) in
+    let t150 = (t149 + ", ") in
+    let t151 = (t150 + "label: ") in
+    join inline_cont219(t152: string) -> string {
+      let t153 = (t151 + t152) in
+      let t154 = (t153 + " }") in
+      t154
+    } in
+    let inline220 = trait_impl#ToString#string#to_string(x138) in
+    jump inline_cont219(inline220)
+  } in
+  let inline222 = trait_impl#ToString#int32#to_string(x137) in
+  jump inline_cont221(inline222)
+}
+
+fn debug_dyn(value/6: dyn Debug) -> string {
+  let t157 = dyn_call[Debug::debug](value/6) in
+  t157
+}
+
+fn main() -> unit {
+  let point/7 = Point { x: 3, label: "east" } in
+  let idle/8 = Tag_0 in
+  let value/9 = State__Point::Value(point/7) in
+  let named/10 = State__int::Named(7) in
+  let t159 = trait_impl#Debug#Point#debug(point/7) in
+  join inline_cont261(_wild141: unit) -> unit {
+    let t160 = trait_impl#Debug#State__int32#debug(idle/8) in
+    join inline_cont258(_wild142: unit) -> unit {
+      join inline_cont246(t161: string) -> unit {
+        join inline_cont243(_wild143: unit) -> unit {
+          join inline_cont231(t162: string) -> unit {
+            join inline_cont228(_wild144: unit) -> unit {
+              let t163 = to_dyn[Debug]{int}(9) in
+              join inline_cont226(t164: string) -> unit {
+                let inline224 = trait_impl#ToString#string#to_string(t164) in
+                let inline225 = @runtime(core.string_println)(inline224) in
+                ()
+              } in
+              let inline227 = dyn_call[Debug::debug](t163) in
+              jump inline_cont226(inline227)
+            } in
+            let inline229 = trait_impl#ToString#string#to_string(t162) in
+            let inline230 = @runtime(core.string_println)(inline229) in
+            jump inline_cont228(())
+          } in
+          let inline237 = 7 in
+          let inline238 = inline237 in
+          let inline239 = ("State::Named { " + "value: ") in
+          let inline240 = trait_impl#Debug#int#debug(inline237) in
+          let inline241 = (inline239 + inline240) in
+          let inline242 = (inline241 + " }") in
+          jump inline_cont231(inline242)
+        } in
+        let inline244 = trait_impl#ToString#string#to_string(t161) in
+        let inline245 = @runtime(core.string_println)(inline244) in
+        jump inline_cont243(())
+      } in
+      let inline247 = point/7 in
+      let inline248 = point/7 in
+      let inline249 = trait_impl#Debug#Point#debug(point/7) in
+      let inline250 = ("State::Value(" + inline249) in
+      let inline251 = (inline250 + ")") in
+      jump inline_cont246(inline251)
+    } in
+    let inline259 = trait_impl#ToString#string#to_string(t160) in
+    let inline260 = @runtime(core.string_println)(inline259) in
+    jump inline_cont258(())
+  } in
+  let inline262 = trait_impl#ToString#string#to_string(t159) in
+  let inline263 = @runtime(core.string_println)(inline262) in
+  jump inline_cont261(())
+}
+
+fn trait_impl#Debug#int32#debug(self/87: int32) -> string {
+  let inline265 = @runtime(core.int32_to_string)(self/87) in
+  inline265
+}
+
+fn trait_impl#Debug#string#debug(self/82: string) -> string {
+  self/82
+}
+
+fn println__T_string(value/31: string) -> unit {
+  join inline_cont267(t173: string) -> unit {
+    let t174 = @runtime(core.string_println)(t173) in
+    ()
+  } in
+  jump inline_cont267(value/31)
+}
+
+fn trait_impl#Debug#State__int32#debug(self/3: State__int32) -> string {
+  match self/3 {
+    Tag_0 => {
+      "State::Idle"
+    },
+    Tag_1 => {
+      let x139 = State__int32::Value._0(self/3) in
+      let #derive0_field/4 = x139 in
+      join inline_cont268(t179: string) -> string {
+        let t180 = ("State::Value(" + t179) in
+        let t181 = (t180 + ")") in
+        t181
+      } in
+      let inline269 = trait_impl#ToString#int32#to_string(x139) in
+      jump inline_cont268(inline269)
+    },
+    Tag_2 => {
+      let x140 = State__int32::Named._0(self/3) in
+      let #derive1_field/5 = x140 in
+      let t182 = ("State::Named { " + "value: ") in
+      join inline_cont270(t183: string) -> string {
+        let t184 = (t182 + t183) in
+        let t185 = (t184 + " }") in
+        t185
+      } in
+      let inline271 = trait_impl#ToString#int32#to_string(x140) in
+      jump inline_cont270(inline271)
+    },
+  }
+}
+
+fn trait_impl#Debug#State__Point#debug(self/3: State__Point) -> string {
+  match self/3 {
+    Tag_0 => {
+      "State::Idle"
+    },
+    Tag_1 => {
+      let x139 = State__Point::Value._0(self/3) in
+      let #derive0_field/4 = x139 in
+      join inline_cont272(t190: string) -> string {
+        let t191 = ("State::Value(" + t190) in
+        let t192 = (t191 + ")") in
+        t192
+      } in
+      let inline273 = x139 in
+      let inline274 = Point.x(x139) in
+      let inline275 = Point.label(x139) in
+      let inline276 = inline275 in
+      let inline277 = inline274 in
+      let inline278 = ("Point { " + "x: ") in
+      let inline279 = trait_impl#Debug#int32#debug(inline274) in
+      let inline280 = (inline278 + inline279) in
+      let inline281 = (inline280 + ", ") in
+      let inline282 = (inline281 + "label: ") in
+      let inline283 = trait_impl#Debug#string#debug(inline275) in
+      let inline284 = (inline282 + inline283) in
+      let inline285 = (inline284 + " }") in
+      jump inline_cont272(inline285)
+    },
+    Tag_2 => {
+      let x140 = State__Point::Named._0(self/3) in
+      let #derive1_field/5 = x140 in
+      let t193 = ("State::Named { " + "value: ") in
+      join inline_cont286(t194: string) -> string {
+        let t195 = (t193 + t194) in
+        let t196 = (t195 + " }") in
+        t196
+      } in
+      let inline287 = x140 in
+      let inline288 = Point.x(x140) in
+      let inline289 = Point.label(x140) in
+      let inline290 = inline289 in
+      let inline291 = inline288 in
+      let inline292 = ("Point { " + "x: ") in
+      let inline293 = trait_impl#Debug#int32#debug(inline288) in
+      let inline294 = (inline292 + inline293) in
+      let inline295 = (inline294 + ", ") in
+      let inline296 = (inline295 + "label: ") in
+      let inline297 = trait_impl#Debug#string#debug(inline289) in
+      let inline298 = (inline296 + inline297) in
+      let inline299 = (inline298 + " }") in
+      jump inline_cont286(inline299)
+    },
+  }
+}
+
+fn trait_impl#Debug#State__int#debug(self/3: State__int) -> string {
+  match self/3 {
+    Tag_0 => {
+      "State::Idle"
+    },
+    Tag_1 => {
+      let x139 = State__int::Value._0(self/3) in
+      let #derive0_field/4 = x139 in
+      join inline_cont300(t201: string) -> string {
+        let t202 = ("State::Value(" + t201) in
+        let t203 = (t202 + ")") in
+        t203
+      } in
+      let inline301 = trait_impl#ToString#int#to_string(x139) in
+      jump inline_cont300(inline301)
+    },
+    Tag_2 => {
+      let x140 = State__int::Named._0(self/3) in
+      let #derive1_field/5 = x140 in
+      let t204 = ("State::Named { " + "value: ") in
+      join inline_cont302(t205: string) -> string {
+        let t206 = (t204 + t205) in
+        let t207 = (t206 + " }") in
+        t207
+      } in
+      let inline303 = trait_impl#ToString#int#to_string(x140) in
+      jump inline_cont302(inline303)
+    },
+  }
+}
+
+fn trait_impl#Debug#int#debug(self/84: int) -> string {
+  let inline305 = @runtime(core.int_to_string)(self/84) in
+  inline305
+}
+
+fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
+  let t213 = @runtime(core.int32_to_string)(self/72) in
+  t213
+}
+
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
+}
+
+fn trait_impl#ToString#int#to_string(self/69: int) -> string {
+  let t218 = @runtime(core.int_to_string)(self/69) in
+  t218
+}

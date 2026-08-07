@@ -580,8 +580,8 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   t329
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/133: int) -> Vec[uint8] {
-  let t332 = @intrinsic(vec.with_capacity)(capacity/133) in
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/150: int) -> Vec[uint8] {
+  let t332 = @intrinsic(vec.with_capacity)(capacity/150) in
   t332
 }
 
@@ -590,73 +590,73 @@ fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
   t335
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/145: Vec[uint8]) -> int {
-  let t338 = @intrinsic(vec.len)(self/145) in
+fn inherent#Vec#Vec[T]#len__T_uint8(self/162: Vec[uint8]) -> int {
+  let t338 = @intrinsic(vec.len)(self/162) in
   t338
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/146: Vec[uint8]) -> int {
-  let t341 = @intrinsic(vec.capacity)(self/146) in
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/163: Vec[uint8]) -> int {
+  let t341 = @intrinsic(vec.capacity)(self/163) in
   t341
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/147: Vec[uint8]) -> bool {
-  let t344 = @intrinsic(vec.len)(self/147) in
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/164: Vec[uint8]) -> bool {
+  let t344 = @intrinsic(vec.len)(self/164) in
   let inline675 = 0 in
   let inline676 = @intrinsic(eq.primitive)(t344, inline675) in
   inline676
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/134: Vec[uint8], elem/135: uint8) -> unit {
-  let t347 = @intrinsic(vec.push)(self/134, elem/135) in
+fn inherent#Vec#Vec[T]#push__T_uint8(self/151: Vec[uint8], elem/152: uint8) -> unit {
+  let t347 = @intrinsic(vec.push)(self/151, elem/152) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/155: Vec[uint8]) -> Option__uint8 {
-  join inline_cont682(len/156: int) -> Option__uint8 {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/172: Vec[uint8]) -> Option__uint8 {
+  join inline_cont682(len/173: int) -> Option__uint8 {
     join inline_cont679(t352: bool) -> Option__uint8 {
       if t352 {
         Tag_0
       } else {
-        let t353 = (len/156 - 1) in
-        let value/157 = @intrinsic(vec.get)(self/155, t353) in
-        let t354 = (len/156 - 1) in
+        let t353 = (len/173 - 1) in
+        let value/174 = @intrinsic(vec.get)(self/172, t353) in
+        let t354 = (len/173 - 1) in
         join inline_cont677(_wild49: unit) -> Option__uint8 {
-          let t355 = Option__uint8::Some(value/157) in
+          let t355 = Option__uint8::Some(value/174) in
           t355
         } in
-        let inline678 = @intrinsic(vec.truncate)(self/155, t354) in
+        let inline678 = @intrinsic(vec.truncate)(self/172, t354) in
         jump inline_cont677(())
       }
     } in
     let inline680 = 0 in
-    let inline681 = @intrinsic(eq.primitive)(len/156, inline680) in
+    let inline681 = @intrinsic(eq.primitive)(len/173, inline680) in
     jump inline_cont679(inline681)
   } in
-  let inline683 = @intrinsic(vec.len)(self/155) in
+  let inline683 = @intrinsic(vec.len)(self/172) in
   jump inline_cont682(inline683)
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/148: Vec[uint8], additional/149: int) -> unit {
-  let t357 = @intrinsic(vec.reserve)(self/148, additional/149) in
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/165: Vec[uint8], additional/166: int) -> unit {
+  let t357 = @intrinsic(vec.reserve)(self/165, additional/166) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/150: Vec[uint8], len/151: int) -> unit {
-  let t359 = @intrinsic(vec.truncate)(self/150, len/151) in
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/167: Vec[uint8], len/168: int) -> unit {
+  let t359 = @intrinsic(vec.truncate)(self/167, len/168) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/152: Vec[uint8]) -> unit {
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/169: Vec[uint8]) -> unit {
   let inline685 = 0 in
-  let inline686 = @intrinsic(vec.truncate)(self/152, inline685) in
+  let inline686 = @intrinsic(vec.truncate)(self/169, inline685) in
   ()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/183: Vec[uint8], start/184: int, end/185: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/200: Vec[uint8], start/201: int, end/202: int) -> Slice[
   uint8
 ] {
-  let t364 = @intrinsic(slice.new)(self/183, start/184, end/185) in
+  let t364 = @intrinsic(slice.new)(self/200, start/201, end/202) in
   t364
 }
 
@@ -704,8 +704,8 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   jump loop369()
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/145: Vec[string]) -> int {
-  let t378 = @intrinsic(vec.len)(self/145) in
+fn inherent#Vec#Vec[T]#len__T_string(self/162: Vec[string]) -> int {
+  let t378 = @intrinsic(vec.len)(self/162) in
   t378
 }
 
@@ -722,8 +722,8 @@ fn std::io::println__T_string(value/1: string) -> unit {
   jump inline_cont689(value/1)
 }
 
-fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
-  let t387 = @intrinsic(eq.primitive)(self/88, other/89) in
+fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+  let t387 = @intrinsic(eq.primitive)(self/103, other/104) in
   t387
 }
 
@@ -1055,8 +1055,8 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn trait_impl#Eq#uint32#eq(self/102: uint32, other/103: uint32) -> bool {
-  let t533 = @intrinsic(eq.primitive)(self/102, other/103) in
+fn trait_impl#Eq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
+  let t533 = @intrinsic(eq.primitive)(self/117, other/118) in
   t533
 }
 

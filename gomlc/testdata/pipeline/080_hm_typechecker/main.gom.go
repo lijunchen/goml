@@ -1552,18 +1552,18 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__217 *ref_int32_x, value__218 int32) struct{} {
-    ref_set__Ref_5int32(self__217, value__218)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__234 *ref_int32_x, value__235 int32) struct{} {
+    ref_set__Ref_5int32(self__234, value__235)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__216 *ref_int32_x) int32 {
-    var t775 int32 = ref_get__Ref_5int32(self__216)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__233 *ref_int32_x) int32 {
+    var t775 int32 = ref_get__Ref_5int32(self__233)
     return t775
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(value__215 Tv) *ref_Tv_x {
-    var t784 *ref_Tv_x = ref__Ref_2Tv(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(value__232 Tv) *ref_Tv_x {
+    var t784 *ref_Tv_x = ref__Ref_2Tv(value__232)
     return t784
 }
 
@@ -1572,35 +1572,35 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry() *_goml_vec_EnvEn
     return t790
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__136 *_goml_vec_SubstEntry, elem__137 SubstEntry) *_goml_vec_SubstEntry {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SubstEntry(self__153 *_goml_vec_SubstEntry, elem__154 SubstEntry) *_goml_vec_SubstEntry {
     var t828 int
-    var inline1164 int = vec_len__Vec_10SubstEntry(self__136)
+    var inline1164 int = vec_len__Vec_10SubstEntry(self__153)
     t828 = inline1164
     var t829 int = t828 + 1
-    var result__138 *_goml_vec_SubstEntry
+    var result__155 *_goml_vec_SubstEntry
     var inline1162 *_goml_vec_SubstEntry = vec_with_capacity__Vec_10SubstEntry(t829)
-    result__138 = inline1162
-    var index__139 int = 0
+    result__155 = inline1162
+    var index__156 int = 0
     Loop_loop831:
     for {
         var t832 int
-        var inline1158 int = vec_len__Vec_10SubstEntry(self__136)
+        var inline1158 int = vec_len__Vec_10SubstEntry(self__153)
         t832 = inline1158
-        var t833 bool = index__139 < t832
+        var t833 bool = index__156 < t832
         if t833 {
-            var t834 SubstEntry = vec_get__Vec_10SubstEntry(self__136, index__139)
-            vec_push__Vec_10SubstEntry(result__138, t834)
-            var compound_old44 int = index__139
+            var t834 SubstEntry = vec_get__Vec_10SubstEntry(self__153, index__156)
+            vec_push__Vec_10SubstEntry(result__155, t834)
+            var compound_old44 int = index__156
             var compound_value45 int = 1
             var t835 int = compound_old44 + compound_value45
-            index__139 = t835
+            index__156 = t835
             continue
         } else {
             break Loop_loop831
         }
     }
-    vec_push__Vec_10SubstEntry(result__138, elem__137)
-    return result__138
+    vec_push__Vec_10SubstEntry(result__155, elem__154)
+    return result__155
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry() *_goml_vec_SubstEntry {
@@ -1608,35 +1608,35 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry() *_goml_vec_Sub
     return t839
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__136 *_goml_vec_EnvEntry, elem__137 EnvEntry) *_goml_vec_EnvEntry {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__EnvEntry(self__153 *_goml_vec_EnvEntry, elem__154 EnvEntry) *_goml_vec_EnvEntry {
     var t842 int
-    var inline1174 int = vec_len__Vec_8EnvEntry(self__136)
+    var inline1174 int = vec_len__Vec_8EnvEntry(self__153)
     t842 = inline1174
     var t843 int = t842 + 1
-    var result__138 *_goml_vec_EnvEntry
+    var result__155 *_goml_vec_EnvEntry
     var inline1172 *_goml_vec_EnvEntry = vec_with_capacity__Vec_8EnvEntry(t843)
-    result__138 = inline1172
-    var index__139 int = 0
+    result__155 = inline1172
+    var index__156 int = 0
     Loop_loop845:
     for {
         var t846 int
-        var inline1168 int = vec_len__Vec_8EnvEntry(self__136)
+        var inline1168 int = vec_len__Vec_8EnvEntry(self__153)
         t846 = inline1168
-        var t847 bool = index__139 < t846
+        var t847 bool = index__156 < t846
         if t847 {
-            var t848 EnvEntry = vec_get__Vec_8EnvEntry(self__136, index__139)
-            vec_push__Vec_8EnvEntry(result__138, t848)
-            var compound_old44 int = index__139
+            var t848 EnvEntry = vec_get__Vec_8EnvEntry(self__153, index__156)
+            vec_push__Vec_8EnvEntry(result__155, t848)
+            var compound_old44 int = index__156
             var compound_value45 int = 1
             var t849 int = compound_old44 + compound_value45
-            index__139 = t849
+            index__156 = t849
             continue
         } else {
             break Loop_loop845
         }
     }
-    vec_push__Vec_8EnvEntry(result__138, elem__137)
-    return result__138
+    vec_push__Vec_8EnvEntry(result__155, elem__154)
+    return result__155
 }
 
 func println__T_string(value__31 string) struct{} {

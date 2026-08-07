@@ -341,8 +341,8 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__145 *_goml_vec_uint8) int {
-    var t259 int = vec_len__Vec_5uint8(self__145)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__162 *_goml_vec_uint8) int {
+    var t259 int = vec_len__Vec_5uint8(self__162)
     return t259
 }
 
@@ -391,8 +391,8 @@ func println__T_bool(value__31 bool) struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_Eq_i_bool_i_eq(self__82 bool, other__83 bool) bool {
-    var t276 bool = self__82 == other__83
+func _goml_m_trait__impl_i_Eq_i_bool_i_eq(self__97 bool, other__98 bool) bool {
+    var t276 bool = self__97 == other__98
     return t276
 }
 
@@ -401,18 +401,18 @@ func _goml_m_inherent_i_string_i_string_i_byte__len(self__38 string) int {
     return t279
 }
 
-func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__88 int, other__89 int) bool {
-    var t282 bool = self__88 == other__89
+func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__103 int, other__104 int) bool {
+    var t282 bool = self__103 == other__104
     return t282
 }
 
-func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__84 string, other__85 string) bool {
-    var t285 bool = self__84 == other__85
+func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__99 string, other__100 string) bool {
+    var t285 bool = self__99 == other__100
     return t285
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__102 uint32, other__103 uint32) bool {
-    var t294 bool = self__102 == other__103
+func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__117 uint32, other__118 uint32) bool {
+    var t294 bool = self__117 == other__118
     return t294
 }
 
@@ -421,8 +421,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__uint8() *_goml_vec_uint8 {
     return t297
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__uint8(self__134 *_goml_vec_uint8, elem__135 uint8) struct{} {
-    vec_push__Vec_5uint8(self__134, elem__135)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__uint8(self__151 *_goml_vec_uint8, elem__152 uint8) struct{} {
+    vec_push__Vec_5uint8(self__151, elem__152)
     return struct{}{}
 }
 

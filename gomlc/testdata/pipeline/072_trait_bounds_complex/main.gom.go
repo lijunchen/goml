@@ -176,8 +176,8 @@ func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
     return t224
 }
 
-func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__94 int32, other__95 int32) bool {
-    var t227 bool = self__94 == other__95
+func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__109 int32, other__110 int32) bool {
+    var t227 bool = self__109 == other__110
     return t227
 }
 

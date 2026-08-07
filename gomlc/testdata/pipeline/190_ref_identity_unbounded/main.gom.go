@@ -267,8 +267,8 @@ func main0() struct{} {
     }
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(self__204 *hashmap_Ref_4Node_string_x, key__205 *ref_Node_x) Option__string {
-    var t166 Option__string = hashmap_get__HashMap_9Ref_4Node_6string(self__204, key__205)
+func _goml_m_inherent_i_HashMap_i_H_h9ede9e5e4b19497ae51b9af572b3f34a_r_____V__string(self__221 *hashmap_Ref_4Node_string_x, key__222 *ref_Node_x) Option__string {
+    var t166 Option__string = hashmap_get__HashMap_9Ref_4Node_6string(self__221, key__222)
     return t166
 }
 
@@ -279,8 +279,8 @@ func println__T_string(value__31 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Node(value__215 Node) *ref_Node_x {
-    var t172 *ref_Node_x = ref__Ref_4Node(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Node(value__232 Node) *ref_Node_x {
+    var t172 *ref_Node_x = ref__Ref_4Node(value__232)
     return t172
 }
 
@@ -292,18 +292,18 @@ func println__T_bool(value__31 bool) struct{} {
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_Eq_i_Ref_l_Node_r__i_eq(self__125 *ref_Node_x, other__126 *ref_Node_x) bool {
-    var t178 bool = ptr_eq__Ref_4Node(self__125, other__126)
+func _goml_m_trait__impl_i_Eq_i_Ref_l_Node_r__i_eq(self__140 *ref_Node_x, other__141 *ref_Node_x) bool {
+    var t178 bool = ptr_eq__Ref_4Node(self__140, other__141)
     return t178
 }
 
-func _goml_m_trait__impl_i_Hash_i_Ref_l_Node_r__i_hash(self__127 *ref_Node_x) uint64 {
-    var t181 uint64 = ptr_hash__Ref_4Node(self__127)
+func _goml_m_trait__impl_i_Hash_i_Ref_l_Node_r__i_hash(self__142 *ref_Node_x) uint64 {
+    var t181 uint64 = ptr_hash__Ref_4Node(self__142)
     return t181
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint64_i_eq(self__104 uint64, other__105 uint64) bool {
-    var t184 bool = self__104 == other__105
+func _goml_m_trait__impl_i_Eq_i_uint64_i_eq(self__119 uint64, other__120 uint64) bool {
+    var t184 bool = self__119 == other__120
     return t184
 }
 

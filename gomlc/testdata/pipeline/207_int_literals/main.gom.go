@@ -170,13 +170,13 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__216 *ref_uint32_x) uint32 {
-    var t182 uint32 = ref_get__Ref_6uint32(self__216)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__uint32(self__233 *ref_uint32_x) uint32 {
+    var t182 uint32 = ref_get__Ref_6uint32(self__233)
     return t182
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__215 uint32) *ref_uint32_x {
-    var t185 *ref_uint32_x = ref__Ref_6uint32(value__215)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__uint32(value__232 uint32) *ref_uint32_x {
+    var t185 *ref_uint32_x = ref__Ref_6uint32(value__232)
     return t185
 }
 

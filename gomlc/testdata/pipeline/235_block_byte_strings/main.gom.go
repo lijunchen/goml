@@ -163,8 +163,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__uint8() *_goml_vec_uint8 {
     return t214
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__uint8(self__134 *_goml_vec_uint8, elem__135 uint8) struct{} {
-    vec_push__Vec_5uint8(self__134, elem__135)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__uint8(self__151 *_goml_vec_uint8, elem__152 uint8) struct{} {
+    vec_push__Vec_5uint8(self__151, elem__152)
     return struct{}{}
 }
 
@@ -175,8 +175,8 @@ func println__T_string(value__31 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__145 *_goml_vec_uint8) int {
-    var t222 int = vec_len__Vec_5uint8(self__145)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__uint8(self__162 *_goml_vec_uint8) int {
+    var t222 int = vec_len__Vec_5uint8(self__162)
     return t222
 }
 

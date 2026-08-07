@@ -436,8 +436,8 @@ func string_from_utf8(bytes__24 *_goml_vec_uint8) Tuple2_4bool_6string {
     return t368
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__145 *_goml_vec_string) int {
-    var t378 int = vec_len__Vec_6string(self__145)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__162 *_goml_vec_string) int {
+    var t378 int = vec_len__Vec_6string(self__162)
     return t378
 }
 
@@ -793,8 +793,8 @@ func utf8_invalid_continuation(value__3 uint32) bool {
     }
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__102 uint32, other__103 uint32) bool {
-    var t533 bool = self__102 == other__103
+func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__117 uint32, other__118 uint32) bool {
+    var t533 bool = self__117 == other__118
     return t533
 }
 

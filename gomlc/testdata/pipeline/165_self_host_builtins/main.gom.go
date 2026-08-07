@@ -853,8 +853,8 @@ func utf8_invalid_continuation(value__3 uint32) bool {
     }
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__102 uint32, other__103 uint32) bool {
-    var t561 bool = self__102 == other__103
+func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__117 uint32, other__118 uint32) bool {
+    var t561 bool = self__117 == other__118
     return t561
 }
 

@@ -187,33 +187,33 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(capacity__219 int) chan string {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__string(capacity__236 int) chan string {
     var t168 chan string = func(p0 int) chan string {
         return make(chan string, p0)
-    }(capacity__219)
+    }(capacity__236)
     return t168
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__219 int) chan int {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_new____T__int(capacity__236 int) chan int {
     var t171 chan int = func(p0 int) chan int {
         return make(chan int, p0)
-    }(capacity__219)
+    }(capacity__236)
     return t171
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__220 chan int, value__221 int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_send____T__int(self__237 chan int, value__238 int) struct{} {
     func(p0 chan int, p1 int) struct{} {
         p0 <- p1
         return struct{}{}
-    }(self__220, value__221)
+    }(self__237, value__238)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__225 chan int) struct{} {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_close____T__int(self__242 chan int) struct{} {
     func(p0 chan int) struct{} {
         close(p0)
         return struct{}{}
-    }(self__225)
+    }(self__242)
     return struct{}{}
 }
 
@@ -226,7 +226,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
     return self__67
 }
 
-func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__222 chan string) Option__string {
+func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__239 chan string) Option__string {
     var mtmp107 Tuple2_6string_4bool = func(p0 chan string) Tuple2_6string_4bool {
         var value string
         var ok bool
@@ -235,7 +235,7 @@ func _goml_m_inherent_i_Channel_i_Channel_l_T_r__i_recv____T__string(self__222 c
             _0: value,
             _1: ok,
         }
-    }(self__222)
+    }(self__239)
     var x108 string = mtmp107._0
     var x109 bool = mtmp107._1
     if x109 {

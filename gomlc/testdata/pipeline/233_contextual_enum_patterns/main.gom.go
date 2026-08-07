@@ -371,8 +371,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__Boxed_l_int_r_() *_goml_vec
     return t269
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(self__134 *_goml_vec_Boxed__int, elem__135 Boxed__int) struct{} {
-    vec_push__Vec_10Boxed__int(self__134, elem__135)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__Boxed_l_int_r_(self__151 *_goml_vec_Boxed__int, elem__152 Boxed__int) struct{} {
+    vec_push__Vec_10Boxed__int(self__151, elem__152)
     return struct{}{}
 }
 

@@ -572,61 +572,61 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/133: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/133)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/150: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/150)
 }
 
 fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
   @runtime(core.string_to_bytes)(self/53)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/145: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/145)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/162: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/162)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/146: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/146)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/163: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/163)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/147: Vec[uint8]) -> bool {
-  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/147), 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/164: Vec[uint8]) -> bool {
+  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/164), 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/134: Vec[uint8], elem/135: uint8) -> unit {
-  @intrinsic(vec.push)(self/134, elem/135)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/151: Vec[uint8], elem/152: uint8) -> unit {
+  @intrinsic(vec.push)(self/151, elem/152)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/155: Vec[uint8]) -> Option__uint8 {
-  let len/156 = inherent#Vec#Vec[T]#len__T_uint8(self/155) in
-  if trait_impl#Eq#int#eq(len/156, 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/172: Vec[uint8]) -> Option__uint8 {
+  let len/173 = inherent#Vec#Vec[T]#len__T_uint8(self/172) in
+  if trait_impl#Eq#int#eq(len/173, 0) {
       {
         Option__uint8::None
       }
   } else {
       {
-        let value/157 = @intrinsic(vec.get)(self/155, (len/156 - 1)) in
-        let _wild49 = inherent#Vec#Vec[T]#truncate__T_uint8(self/155, (len/156 - 1)) in
-        Option__uint8::Some(value/157)
+        let value/174 = @intrinsic(vec.get)(self/172, (len/173 - 1)) in
+        let _wild49 = inherent#Vec#Vec[T]#truncate__T_uint8(self/172, (len/173 - 1)) in
+        Option__uint8::Some(value/174)
       }
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/148: Vec[uint8], additional/149: int) -> unit {
-  @intrinsic(vec.reserve)(self/148, additional/149)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/165: Vec[uint8], additional/166: int) -> unit {
+  @intrinsic(vec.reserve)(self/165, additional/166)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/150: Vec[uint8], len/151: int) -> unit {
-  @intrinsic(vec.truncate)(self/150, len/151)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/167: Vec[uint8], len/168: int) -> unit {
+  @intrinsic(vec.truncate)(self/167, len/168)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/152: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/152, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/169: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/169, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/183: Vec[uint8], start/184: int, end/185: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/200: Vec[uint8], start/201: int, end/202: int) -> Slice[
   uint8
 ] {
-  @intrinsic(slice.new)(self/183, start/184, end/185)
+  @intrinsic(slice.new)(self/200, start/201, end/202)
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -705,8 +705,8 @@ fn std::io::eprintln__T_string(value/3: string) -> unit {
   @runtime(std.io.eprint)((trait_impl#ToString#string#to_string(value/3) + "\n"))
 }
 
-fn trait_impl#Eq#int#eq(self/88: int, other/89: int) -> bool {
-  @intrinsic(eq.primitive)(self/88, other/89)
+fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+  @intrinsic(eq.primitive)(self/103, other/104)
 }
 
 fn inherent#string#string#byte_len(self/38: string) -> int {
@@ -948,12 +948,12 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn trait_impl#Eq#uint32#eq(self/102: uint32, other/103: uint32) -> bool {
-  @intrinsic(eq.primitive)(self/102, other/103)
+fn trait_impl#Eq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
+  @intrinsic(eq.primitive)(self/117, other/118)
 }
 
-fn trait_impl#Eq#uint8#eq(self/98: uint8, other/99: uint8) -> bool {
-  @intrinsic(eq.primitive)(self/98, other/99)
+fn trait_impl#Eq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
+  @intrinsic(eq.primitive)(self/113, other/114)
 }
 
 fn char_from_uint32(value/32: uint32) -> Option__char {
