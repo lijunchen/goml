@@ -1293,7 +1293,7 @@ fn builtin_trait_bound_satisfied(
                 }
                 false
             },
-            _ => if trait_name == "ToString" {
+            _ => if trait_name == "ToString" || trait_name == "Debug" {
                 if builtin_value_trait_type(bound_ty) {
                     true
                 } else {
@@ -1301,7 +1301,7 @@ fn builtin_trait_bound_satisfied(
                         RefType { elem: inner } => trait_bound_satisfied_at(
                             ctx,
                             inner,
-                            TraitRef { name: "ToString", args: Vec::[] },
+                            TraitRef { name: trait_name, args: Vec::[] },
                             goals,
                         ),
                         _ => false,
@@ -1504,6 +1504,8 @@ fn builtin_ref_impl_trait(name: string) -> bool {
     if names_match(name, "Eq") {
         true
     } else if names_match(name, "Hash") {
+        true
+    } else if names_match(name, "Debug") {
         true
     } else {
         false
@@ -2449,7 +2451,12 @@ pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
                 methods: Vec::[builtin_trait_method("hash", one_type(self_ty), Type::Uint64)],
             },
         )
-    } else if name == "ToString" {
+    } else if name == "ToString" || name == "Debug" {
+        let method_name = if name == "ToString" {
+            "to_string"
+        } else {
+            "debug"
+        };
         Option::Some(
             TraitInfo {
                 name,
@@ -2457,7 +2464,7 @@ pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
                 predicates: Vec::[],
                 supertraits: Vec::[],
                 associated_types: Vec::[],
-                methods: Vec::[builtin_trait_method("to_string", one_type(self_ty), Type::String)],
+                methods: Vec::[builtin_trait_method(method_name, one_type(self_ty), Type::String)],
             },
         )
     } else {
@@ -3506,7 +3513,7 @@ fn resolve_trait_static(
     explicit: Vec[Type],
     method_explicit: Vec[Type],
 ) -> Option[ResolvedCallable] {
-    if owner == "ToString" && name == "to_string" {
+    if (owner == "ToString" && name == "to_string") || (owner == "Debug" && name == "debug") {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         Option::Some(

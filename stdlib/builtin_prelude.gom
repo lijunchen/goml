@@ -342,6 +342,96 @@ impl ToString for float64 {
     }
 }
 
+impl Debug for unit {
+    fn debug(self: unit) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for bool {
+    fn debug(self: bool) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for string {
+    fn debug(self: string) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for char {
+    fn debug(self: char) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for int {
+    fn debug(self: int) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for int8 {
+    fn debug(self: int8) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for int16 {
+    fn debug(self: int16) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for int32 {
+    fn debug(self: int32) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for int64 {
+    fn debug(self: int64) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for uint8 {
+    fn debug(self: uint8) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for uint16 {
+    fn debug(self: uint16) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for uint32 {
+    fn debug(self: uint32) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for uint64 {
+    fn debug(self: uint64) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for float32 {
+    fn debug(self: float32) -> string {
+        ToString::to_string(self)
+    }
+}
+
+impl Debug for float64 {
+    fn debug(self: float64) -> string {
+        ToString::to_string(self)
+    }
+}
+
 impl Eq for unit {
     fn eq(self: unit, other: unit) -> bool {
         true
@@ -542,6 +632,13 @@ impl[T: ToString] ToString for Ref[T] {
     fn to_string(self: Ref[T]) -> string {
         let v: T = self.get();
         "ref(" + ToString::to_string(v) + ")"
+    }
+}
+
+impl[T: Debug] Debug for Ref[T] {
+    fn debug(self: Ref[T]) -> string {
+        let value: T = self.get();
+        "ref(" + Debug::debug(value) + ")"
     }
 }
 
@@ -875,6 +972,12 @@ fn range(start: int, end: int) -> FnIterator[int] {
 impl ToString for uint {
     fn to_string(self: uint) -> string {
         uint_to_string(self)
+    }
+}
+
+impl Debug for uint {
+    fn debug(self: uint) -> string {
+        ToString::to_string(self)
     }
 }
 

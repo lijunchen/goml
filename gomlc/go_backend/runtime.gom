@@ -2245,6 +2245,15 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
                 ret_ty: tast::Type::String,
             },
         )
+    } else if trait_name == "Debug" && !contains_method(result, "debug") {
+        result.push(
+            DynMethod {
+                name: "debug",
+                dispatch_trait: trait_name,
+                params: Vec::[],
+                ret_ty: tast::Type::String,
+            },
+        )
     } else {};
     result
 }

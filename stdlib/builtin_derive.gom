@@ -26,11 +26,18 @@ fn derive_trait_call(
 }
 
 #[comptime_derive]
-fn derive_to_string_value(input: DeriveInput, value: MetaExpr, ty: MetaType) -> MetaExpr {
-    if meta_type_kind(ty) == "primitive" && meta_type_name(ty) == "string" {
+fn derive_format_value(
+    input: DeriveInput,
+    value: MetaExpr,
+    ty: MetaType,
+    trait_name: string,
+    method_name: string,
+) -> MetaExpr {
+    if trait_name == "ToString" && meta_type_kind(ty) == "primitive"
+        && meta_type_name(ty) == "string" {
         value
     } else {
-        derive_trait_call(input, "ToString", "to_string", derive_expr_list_one(value))
+        derive_trait_call(input, trait_name, method_name, derive_expr_list_one(value))
     }
 }
 
@@ -125,7 +132,7 @@ fn derive_eq_params(input: DeriveInput) -> MetaParamList {
 }
 
 #[comptime_derive]
-fn derive_struct_to_string_body(input: DeriveInput) -> MetaExpr {
+fn derive_struct_format_body(input: DeriveInput, trait_name: string, method_name: string) -> MetaExpr {
     let item_name = derive_item_name(input);
     if derive_field_count(input) == 0 {
         return meta_expr_string(item_name + " {}")
@@ -144,7 +151,13 @@ fn derive_struct_to_string_body(input: DeriveInput) -> MetaExpr {
         result = derive_concat(result, meta_expr_string(field_name + ": "));
         result = derive_concat(
             result,
-            derive_to_string_value(input, meta_expr_var(binding), derive_field_type(input, index)),
+            derive_format_value(
+                input,
+                meta_expr_var(binding),
+                derive_field_type(input, index),
+                trait_name,
+                method_name,
+            ),
         );
         index = index + 1;
     }
@@ -158,7 +171,7 @@ fn derive_struct_to_string_body(input: DeriveInput) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn derive_enum_to_string_body(input: DeriveInput) -> MetaExpr {
+fn derive_enum_format_body(input: DeriveInput, trait_name: string, method_name: string) -> MetaExpr {
     let item_name = derive_item_name(input);
     let arms = meta_arm_list_new();
     let mut variant_index = 0;
@@ -193,10 +206,12 @@ fn derive_enum_to_string_body(input: DeriveInput) -> MetaExpr {
             } else {};
             result = derive_concat(
                 result,
-                derive_to_string_value(
+                derive_format_value(
                     input,
                     meta_expr_var(binding),
                     derive_variant_field_type(input, variant_index, field_index),
+                    trait_name,
+                    method_name,
                 ),
             );
             field_index = field_index + 1;
@@ -228,13 +243,29 @@ pub fn derive_to_string(input: DeriveInput) -> DeriveOutput {
     let output = derive_output_new(input, "ToString");
     derive_add_predicates(input, output, "ToString");
     let body = if derive_item_kind(input) == 0 {
-        derive_struct_to_string_body(input)
+        derive_struct_format_body(input, "ToString", "to_string")
     } else {
-        derive_enum_to_string_body(input)
+        derive_enum_format_body(input, "ToString", "to_string")
     };
     derive_output_add_method(
         output,
         meta_method("to_string", derive_self_params(input), meta_type_call_site("string"), body),
+    );
+    output
+}
+
+#[comptime_derive(Debug)]
+pub fn derive_debug(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "Debug");
+    derive_add_predicates(input, output, "Debug");
+    let body = if derive_item_kind(input) == 0 {
+        derive_struct_format_body(input, "Debug", "debug")
+    } else {
+        derive_enum_format_body(input, "Debug", "debug")
+    };
+    derive_output_add_method(
+        output,
+        meta_method("debug", derive_self_params(input), meta_type_call_site("string"), body),
     );
     output
 }

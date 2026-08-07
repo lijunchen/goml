@@ -1600,16 +1600,16 @@ Current limitations:
 
 ## Properties and Derivations
 
-User source code supports deriving `ToString`, `Eq` and `Hash` for structures and enumerations, including generic types:
+User source code supports deriving `ToString`, `Debug`, `Eq` and `Hash` for structures and enumerations, including generic types:
 
 ```goml
-#[derive(ToString, Eq, Hash)]
+#[derive(ToString, Debug, Eq, Hash)]
 struct Key {
     name: string,
     version: int32,
 }
 
-#[derive(ToString, Eq, Hash)]
+#[derive(ToString, Debug, Eq, Hash)]
 enum Entry[T, Marker] {
     Empty,
     Value(Vec[T]),
@@ -1618,7 +1618,9 @@ enum Entry[T, Marker] {
 
 All fields or variant payloads must support the derived trait. For a generic definition, the generated impl constrains each distinct field or payload type that mentions a type parameter. In the example above the constraint is on `Vec[T]`, while the unused phantom parameter `Marker` receives no constraint. Compiler-owned runtime, intrinsic, and lang-item attributes remain unavailable to ordinary projects. User projects may use the `go_ffi` attribute described in the next section.
 
-`ToString`, `Eq`, and `Hash` are prelude derive exports supplied by verified handlers in the toolchain's builtin sources. They are not hard-coded code generators in the compiler. Standard-library and third-party derives use the same handler and artifact mechanism, but they are not added to the prelude: import the trait or its package before using the derive name.
+`ToString`, `Debug`, `Eq`, and `Hash` are prelude derive exports supplied by verified handlers in the toolchain's builtin sources. They are not hard-coded code generators in the compiler. Standard-library and third-party derives use the same handler and artifact mechanism, but they are not added to the prelude: import the trait or its package before using the derive name.
+
+Derived `Debug` provides `Debug::debug(value)` and the `.debug()` method. It formats structs with their type and field names and enums with their type and variant names. Primitive field values use their ordinary textual representation, while nested values recursively use `Debug`.
 
 Derived `Eq` provides `Eq::eq(left, right)`, making the type usable with `==` / `!=` and satisfying the key constraints of `HashMap`.
 
@@ -2075,6 +2077,7 @@ Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`
 - `print[T: ToString](value: T) -> unit`
 - `println[T: ToString](value: T) -> unit`
 - `value.to_string() -> string`, suitable for values ​​that implement `ToString`
+- `value.debug() -> string`, suitable for values that implement `Debug`
 - `string.len() -> int` and `string.byte_len() -> int`, both returning the UTF-8 byte length
 - `string.get(index: int) -> char`, decoding a character at a UTF-8 byte boundary
 - `string.byte_get(index: int) -> uint8`
@@ -2088,7 +2091,7 @@ Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`
 - `string.ends_with(suffix: string) -> bool`
 - `string.contains(expected: string) -> bool`
 
-The basic scalar types all implement `ToString`.String concatenation uses `+`.
+The basic scalar types all implement `ToString` and `Debug`. String concatenation uses `+`.
 
 The signatures of built-in key-related traits are `Eq::eq(self, other: Self) -> bool` and `Hash::hash(self) -> uint64`; user types can be handwritten impl, and structures and enumerations can also be generated using derive.
 

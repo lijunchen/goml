@@ -1215,7 +1215,8 @@ fn builtin_trait_satisfied(for_ty: tast::Type, reference: tast::TraitRef) -> boo
     reference.args.is_empty()
         && match tast::resolve_type(for_ty) {
             Dyn { trait_name: name, .. } => reference.name == name,
-            other => if reference.name == "ToString" || reference.name == "Eq"
+            other => if reference.name == "ToString" || reference.name == "Debug"
+                || reference.name == "Eq"
                 || reference.name == "Hash" {
                 builtin_scalar_type(other)
             } else if reference.name == "Iterator" {

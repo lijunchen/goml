@@ -107,12 +107,14 @@ fn builtin_source_derive_expansion(source: string) -> string {
 #[test]
 fn expands_builtin_derives_from_toolchain_source_handlers() -> unit {
     let expanded = builtin_source_derive_expansion(
-        "#[derive(ToString, Eq, Hash)]\nstruct Pair[T] { left: T, label: string }\n\n#[derive(ToString, Eq, Hash)]\nenum State[T] { Idle, One(T), Named { value: T, label: string } }",
+        "#[derive(ToString, Debug, Eq, Hash)]\nstruct Pair[T] { left: T, label: string }\n\n#[derive(ToString, Debug, Eq, Hash)]\nenum State[T] { Idle, One(T), Named { value: T, label: string } }",
     );
     testing::assert(expanded.contains("impl[T] ToString for Pair[T]"));
+    testing::assert(expanded.contains("impl[T] Debug for Pair[T]"));
     testing::assert(expanded.contains("impl[T] Eq for Pair[T]"));
     testing::assert(expanded.contains("impl[T] Hash for Pair[T]"));
     testing::assert(expanded.contains("impl[T] ToString for State[T]"));
+    testing::assert(expanded.contains("impl[T] Debug for State[T]"));
     testing::assert(expanded.contains("impl[T] Eq for State[T]"));
     testing::assert(expanded.contains("impl[T] Hash for State[T]"));
     testing::assert(expanded.contains("14695981039346656037"));
