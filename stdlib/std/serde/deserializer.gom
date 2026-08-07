@@ -1,0 +1,288 @@
+package serde;
+
+pub enum FieldKey {
+    Position(int),
+    Name(string),
+}
+
+pub enum VariantKey {
+    Index(int),
+    Name(string),
+}
+
+pub trait Deserializer {
+    fn error(self: Self, message: string) -> string {
+        message
+    }
+    fn deserialize_any(self: Self) -> Result[Value, string];
+    fn deserialize_unit(self: Self) -> Result[unit, string];
+    fn deserialize_bool(self: Self) -> Result[bool, string];
+    fn deserialize_int(self: Self) -> Result[int, string];
+    fn deserialize_int8(self: Self) -> Result[int8, string];
+    fn deserialize_int16(self: Self) -> Result[int16, string];
+    fn deserialize_int32(self: Self) -> Result[int32, string];
+    fn deserialize_int64(self: Self) -> Result[int64, string];
+    fn deserialize_uint(self: Self) -> Result[uint, string];
+    fn deserialize_uint8(self: Self) -> Result[uint8, string];
+    fn deserialize_uint16(self: Self) -> Result[uint16, string];
+    fn deserialize_uint32(self: Self) -> Result[uint32, string];
+    fn deserialize_uint64(self: Self) -> Result[uint64, string];
+    fn deserialize_float32(self: Self) -> Result[float32, string];
+    fn deserialize_float64(self: Self) -> Result[float64, string];
+    fn deserialize_number(self: Self) -> Result[string, string];
+    fn deserialize_string(self: Self) -> Result[string, string];
+    fn deserialize_char(self: Self) -> Result[char, string];
+    fn deserialize_bytes(self: Self) -> Result[Vec[byte], string];
+    fn begin_optional(self: Self) -> Result[bool, string];
+    fn end_optional(self: Self) -> Result[unit, string];
+    fn begin_sequence(self: Self) -> Result[Option[int], string];
+    fn next_sequence_element(self: Self) -> Result[bool, string];
+    fn end_sequence(self: Self) -> Result[unit, string];
+    fn begin_tuple(self: Self, length: int) -> Result[unit, string];
+    fn begin_tuple_element(self: Self, index: int) -> Result[unit, string];
+    fn end_tuple(self: Self) -> Result[unit, string];
+    fn begin_map(self: Self) -> Result[Option[int], string];
+    fn next_map_entry(self: Self) -> Result[bool, string];
+    fn begin_map_key(self: Self) -> Result[unit, string];
+    fn begin_map_value(self: Self) -> Result[unit, string];
+    fn end_map(self: Self) -> Result[unit, string];
+    fn begin_struct(self: Self, name: string, fields: int) -> Result[unit, string];
+    fn next_struct_field(self: Self) -> Result[Option[FieldKey], string];
+    fn skip_value(self: Self) -> Result[unit, string];
+    fn end_struct(self: Self) -> Result[unit, string];
+    fn begin_variant(self: Self, enum_name: string, variants: int) -> Result[VariantKey, string];
+    fn begin_variant_fields(self: Self, kind: int, fields: int) -> Result[unit, string];
+    fn next_variant_field(self: Self) -> Result[Option[FieldKey], string];
+    fn end_variant(self: Self) -> Result[unit, string];
+}
+
+pub fn field_key_matches(value: Option[FieldKey], index: int, name: string) -> bool {
+    match value {
+        Some(FieldKey::Position(actual)) => actual == index,
+        Some(FieldKey::Name(actual)) => actual == name,
+        None => false,
+    }
+}
+
+pub fn variant_key_matches(value: VariantKey, index: int, name: string) -> bool {
+    match value {
+        VariantKey::Index(actual) => actual == index,
+        VariantKey::Name(actual) => actual == name,
+    }
+}
+
+pub fn required_field[T](value: Option[T], name: string) -> Result[T, string] {
+    match value {
+        Some(value) => Result::Ok(value),
+        None => Result::Err("missing field `" + name + "`"),
+    }
+}
+
+fn schema_field_index(fields: Vec[(string, Schema)], key: FieldKey) -> int {
+    match key {
+        FieldKey::Position(index) => if index >= 0 && index < fields.len() {
+            index
+        } else {
+            -1
+        },
+        FieldKey::Name(name) => {
+            let mut index = 0;
+            while index < fields.len() {
+                if fields[index].0 == name {
+                    return index
+                } else {};
+                index = index + 1;
+            };
+            -1
+        },
+    }
+}
+
+fn schema_variant_index(variants: Vec[VariantSchema], key: VariantKey) -> int {
+    match key {
+        VariantKey::Index(expected) => {
+            let mut index = 0;
+            while index < variants.len() {
+                if variants[index].index == expected {
+                    return index
+                } else {};
+                index = index + 1;
+            };
+            -1
+        },
+        VariantKey::Name(expected) => {
+            let mut index = 0;
+            while index < variants.len() {
+                if variants[index].name == expected {
+                    return index
+                } else {};
+                index = index + 1;
+            };
+            -1
+        },
+    }
+}
+
+fn deserialize_integer_schema[D: Deserializer](deserializer: D, signed: bool, width: int) -> Result[
+    Value,
+    string,
+] {
+    if signed {
+        if width == 0 {
+            Result::Ok(Value::Int(deserializer.deserialize_int()?))
+        } else if width == 8 {
+            Result::Ok(Value::Int8(deserializer.deserialize_int8()?))
+        } else if width == 16 {
+            Result::Ok(Value::Int16(deserializer.deserialize_int16()?))
+        } else if width == 32 {
+            Result::Ok(Value::Int32(deserializer.deserialize_int32()?))
+        } else if width == 64 {
+            Result::Ok(Value::Int64(deserializer.deserialize_int64()?))
+        } else {
+            Result::Err("unsupported signed integer width")
+        }
+    } else if width == 0 {
+        Result::Ok(Value::Uint(deserializer.deserialize_uint()?))
+    } else if width == 8 {
+        Result::Ok(Value::Uint8(deserializer.deserialize_uint8()?))
+    } else if width == 16 {
+        Result::Ok(Value::Uint16(deserializer.deserialize_uint16()?))
+    } else if width == 32 {
+        Result::Ok(Value::Uint32(deserializer.deserialize_uint32()?))
+    } else if width == 64 {
+        Result::Ok(Value::Uint64(deserializer.deserialize_uint64()?))
+    } else {
+        Result::Err("unsupported unsigned integer width")
+    }
+}
+
+fn deserialize_sequence_schema[D: Deserializer](deserializer: D, schemas: Vec[Schema]) -> Result[
+    Value,
+    string,
+] {
+    if schemas.len() != 1 {
+        return Result::Err("sequence schema must contain one item")
+    } else {};
+    let _ = deserializer.begin_sequence()?;
+    let values: Vec[Value] = Vec::[];
+    while deserializer.next_sequence_element()? {
+        values.push(deserialize_schema_from(deserializer, schemas[0])?)
+    }
+    deserializer.end_sequence()?;
+    Result::Ok(Value::Sequence(values))
+}
+
+fn deserialize_tuple_schema[D: Deserializer](deserializer: D, schemas: Vec[Schema]) -> Result[
+    Value,
+    string,
+] {
+    deserializer.begin_tuple(schemas.len())?;
+    let values: Vec[Value] = Vec::with_capacity(schemas.len());
+    let mut index = 0;
+    while index < schemas.len() {
+        deserializer.begin_tuple_element(index)?;
+        values.push(deserialize_schema_from(deserializer, schemas[index])?);
+        index = index + 1;
+    }
+    deserializer.end_tuple()?;
+    Result::Ok(Value::Tuple(values))
+}
+
+fn deserialize_optional_schema[D: Deserializer](deserializer: D, schemas: Vec[Schema]) -> Result[
+    Value,
+    string,
+] {
+    if schemas.len() != 1 {
+        return Result::Err("optional schema must contain one item")
+    } else {};
+    let values: Vec[Value] = Vec::[];
+    if deserializer.begin_optional()? {
+        values.push(deserialize_schema_from(deserializer, schemas[0])?)
+    } else {};
+    deserializer.end_optional()?;
+    Result::Ok(Value::Optional(values))
+}
+
+fn deserialize_struct_schema_value[D: Deserializer](deserializer: D, fields: Vec[(string, Schema)]) -> Result[
+    Value,
+    string,
+] {
+    deserializer.begin_struct("", fields.len())?;
+    let values: Vec[(string, Value)] = Vec::[];
+    let mut next = deserializer.next_struct_field()?;
+    while next.is_some() {
+        let key = next.unwrap_or(FieldKey::Position(-1));
+        let index = schema_field_index(fields, key);
+        if index < 0 {
+            deserializer.skip_value()?
+        } else {
+            values.push((fields[index].0, deserialize_schema_from(deserializer, fields[index].1)?))
+        };
+        next = deserializer.next_struct_field()?;
+    }
+    deserializer.end_struct()?;
+    Result::Ok(Value::Struct(values))
+}
+
+fn deserialize_variant_schema_value[D: Deserializer](deserializer: D, variants: Vec[VariantSchema]) -> Result[
+    Value,
+    string,
+] {
+    let key = deserializer.begin_variant("", variants.len())?;
+    let variant_index = schema_variant_index(variants, key);
+    if variant_index < 0 {
+        return Result::Err("unknown enum variant")
+    } else {};
+    let variant = variants[variant_index];
+    deserializer.begin_variant_fields(variant.kind, variant.fields.len())?;
+    let fields: Vec[(string, Value)] = Vec::[];
+    let mut next = deserializer.next_variant_field()?;
+    while next.is_some() {
+        let key = next.unwrap_or(FieldKey::Position(-1));
+        let index = schema_field_index(variant.fields, key);
+        if index < 0 {
+            deserializer.skip_value()?
+        } else {
+            fields.push(
+                (
+                    variant.fields[index].0,
+                    deserialize_schema_from(deserializer, variant.fields[index].1)?,
+                ),
+            )
+        };
+        next = deserializer.next_variant_field()?;
+    }
+    deserializer.end_variant()?;
+    Result::Ok(
+        Value::Variant { index: variant.index, name: variant.name, kind: variant.kind, fields },
+    )
+}
+
+pub fn deserialize_schema_from[D: Deserializer](deserializer: D, schema: Schema) -> Result[
+    Value,
+    string,
+] {
+    match schema {
+        Schema::Any => deserializer.deserialize_any(),
+        Schema::Unit => {
+            deserializer.deserialize_unit()?;
+            Result::Ok(Value::Unit)
+        },
+        Schema::Bool => Result::Ok(Value::Bool(deserializer.deserialize_bool()?)),
+        Schema::Integer { signed, width } => deserialize_integer_schema(deserializer, signed, width),
+        Schema::Float(width) => if width == 32 {
+            Result::Ok(Value::Float32(deserializer.deserialize_float32()?))
+        } else if width == 64 {
+            Result::Ok(Value::Float64(deserializer.deserialize_float64()?))
+        } else {
+            Result::Err("unsupported float width")
+        },
+        Schema::String => Result::Ok(Value::String(deserializer.deserialize_string()?)),
+        Schema::Char => Result::Ok(Value::Char(deserializer.deserialize_char()?)),
+        Schema::Sequence(schemas) => deserialize_sequence_schema(deserializer, schemas),
+        Schema::Tuple(schemas) => deserialize_tuple_schema(deserializer, schemas),
+        Schema::Optional(schemas) => deserialize_optional_schema(deserializer, schemas),
+        Schema::Struct(fields) => deserialize_struct_schema_value(deserializer, fields),
+        Schema::Enum(variants) => deserialize_variant_schema_value(deserializer, variants),
+    }
+}

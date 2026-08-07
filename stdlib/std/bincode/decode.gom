@@ -9,14 +9,96 @@ extern fn float32_from_bits(value: uint32) -> float32;
 #[go_ffi("math", "Float64frombits")]
 extern fn float64_from_bits(value: uint64) -> float64;
 
+enum BincodeFrame {
+    Optional {
+        ready: Ref[bool],
+    },
+    Sequence {
+        length: int,
+        index: Ref[int],
+        ready: Ref[bool],
+    },
+    Tuple {
+        length: int,
+        index: Ref[int],
+        ready: Ref[bool],
+    },
+    Map {
+        length: int,
+        index: Ref[int],
+        state: Ref[int],
+    },
+    Struct {
+        name: string,
+        fields: int,
+        index: Ref[int],
+        ready: Ref[bool],
+    },
+    Variant {
+        enum_name: string,
+        variant: int,
+        fields: Ref[int],
+        index: Ref[int],
+        begun: Ref[bool],
+        ready: Ref[bool],
+    },
+}
+
 struct Decoder {
     input: Slice[byte],
     offset: Ref[int],
     config: Config,
+    frames: Vec[BincodeFrame],
+}
+
+fn bincode_deserializer(input: Slice[byte], config: Config) -> Decoder {
+    Decoder { input, offset: Ref::new(0), config, frames: Vec::[] }
+}
+
+fn bincode_current_index(index: Ref[int]) -> int {
+    if index.get() > 0 {
+        index.get() - 1
+    } else {
+        0
+    }
+}
+
+fn bincode_decoder_path(decoder: Decoder) -> string {
+    let mut path = "$";
+    for frame in decoder.frames {
+        let segment = match frame {
+            BincodeFrame::Optional { ready: _ } => ".Some",
+            BincodeFrame::Sequence { length: _, index, ready: _ } => {
+                "[" + bincode_current_index(index).to_string() + "]"
+            },
+            BincodeFrame::Tuple { length: _, index, ready: _ } => {
+                "[" + bincode_current_index(index).to_string() + "]"
+            },
+            BincodeFrame::Map { length: _, index, state } => {
+                let entry = "[" + index.get().to_string() + "]";
+                if state.get() <= 3 {
+                    entry + ".key"
+                } else {
+                    entry + ".value"
+                }
+            },
+            BincodeFrame::Struct { name, fields: _, index, ready: _ } => {
+                "." + name + "[" + bincode_current_index(index).to_string() + "]"
+            },
+            BincodeFrame::Variant { enum_name, variant, fields: _, index, begun: _, ready: _ } => {
+                "." + enum_name + "::" + variant.to_string() + "["
+                    + bincode_current_index(index).to_string()
+                    + "]"
+            },
+        };
+        path = path + segment;
+    }
+    path
 }
 
 fn decoder_error(decoder: Decoder, message: string) -> string {
-    message + " at byte " + decoder.offset.get().to_string()
+    message + " at path " + bincode_decoder_path(decoder) + " at byte "
+        + decoder.offset.get().to_string()
 }
 
 fn read_byte(decoder: Decoder) -> Result[byte, string] {
@@ -321,11 +403,504 @@ fn read_schema(decoder: Decoder, schema: serde::Schema) -> Result[serde::Value, 
     }
 }
 
+fn decoder_frame_index(decoder: Decoder) -> Result[int, string] {
+    if decoder.frames.is_empty() {
+        Result::Err(decoder_error(decoder, "no active compound value"))
+    } else {
+        Result::Ok(decoder.frames.len() - 1)
+    }
+}
+
+fn pop_decoder_frame(decoder: Decoder) -> unit {
+    let _ = decoder.frames.pop();
+}
+
+fn claim_bincode_input(decoder: Decoder) -> Result[unit, string] {
+    if decoder.frames.is_empty() {
+        Result::Ok(())
+    } else {
+        let frame = decoder.frames.len() - 1;
+        match decoder.frames[frame] {
+            BincodeFrame::Optional { ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err(decoder_error(decoder, "optional is not expecting a value"))
+            },
+            BincodeFrame::Sequence { length: _, index: _, ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err(decoder_error(decoder, "sequence is not expecting a value"))
+            },
+            BincodeFrame::Tuple { length: _, index: _, ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err(decoder_error(decoder, "tuple is not expecting a value"))
+            },
+            BincodeFrame::Map { length: _, index: _, state } => if state.get() == 2 {
+                state.set(3);
+                Result::Ok(())
+            } else if state.get() == 4 {
+                state.set(5);
+                Result::Ok(())
+            } else {
+                Result::Err(decoder_error(decoder, "map is not expecting a value"))
+            },
+            BincodeFrame::Struct { name: _, fields: _, index: _, ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err(decoder_error(decoder, "struct is not expecting a value"))
+            },
+            BincodeFrame::Variant { enum_name: _, variant: _, fields: _, index: _, begun, ready } => if begun.get()
+                && ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err(decoder_error(decoder, "variant is not expecting a value"))
+            },
+        }
+    }
+}
+
+impl serde::Deserializer for Decoder {
+    fn error(self: Decoder, message: string) -> string {
+        decoder_error(self, message)
+    }
+
+    fn deserialize_any(self: Decoder) -> Result[serde::Value, string] {
+        Result::Err(decoder_error(self, "bincode cannot decode a schema-free value"))
+    }
+
+    fn deserialize_unit(self: Decoder) -> Result[unit, string] {
+        claim_bincode_input(self)
+    }
+
+    fn deserialize_bool(self: Decoder) -> Result[bool, string] {
+        claim_bincode_input(self)?;
+        let value = read_byte(self)?;
+        if value == 0 {
+            Result::Ok(false)
+        } else if value == 1 {
+            Result::Ok(true)
+        } else {
+            Result::Err(decoder_error(self, "invalid bool value"))
+        }
+    }
+
+    fn deserialize_int(self: Decoder) -> Result[int, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(read_signed(self, 0)? as int)
+    }
+
+    fn deserialize_int8(self: Decoder) -> Result[int8, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(read_signed(self, 8)? as int8)
+    }
+
+    fn deserialize_int16(self: Decoder) -> Result[int16, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(read_signed(self, 16)? as int16)
+    }
+
+    fn deserialize_int32(self: Decoder) -> Result[int32, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(read_signed(self, 32)? as int32)
+    }
+
+    fn deserialize_int64(self: Decoder) -> Result[int64, string] {
+        claim_bincode_input(self)?;
+        read_signed(self, 64)
+    }
+
+    fn deserialize_uint(self: Decoder) -> Result[uint, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(read_unsigned(self, 0)? as uint)
+    }
+
+    fn deserialize_uint8(self: Decoder) -> Result[uint8, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(read_unsigned(self, 8)? as uint8)
+    }
+
+    fn deserialize_uint16(self: Decoder) -> Result[uint16, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(read_unsigned(self, 16)? as uint16)
+    }
+
+    fn deserialize_uint32(self: Decoder) -> Result[uint32, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(read_unsigned(self, 32)? as uint32)
+    }
+
+    fn deserialize_uint64(self: Decoder) -> Result[uint64, string] {
+        claim_bincode_input(self)?;
+        read_unsigned(self, 64)
+    }
+
+    fn deserialize_float32(self: Decoder) -> Result[float32, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(float32_from_bits(read_fixed(self, 4)? as uint32))
+    }
+
+    fn deserialize_float64(self: Decoder) -> Result[float64, string] {
+        claim_bincode_input(self)?;
+        Result::Ok(float64_from_bits(read_fixed(self, 8)?))
+    }
+
+    fn deserialize_number(self: Decoder) -> Result[string, string] {
+        Result::Err(decoder_error(self, "bincode requires a precise numeric type"))
+    }
+
+    fn deserialize_string(self: Decoder) -> Result[string, string] {
+        claim_bincode_input(self)?;
+        read_string(self)
+    }
+
+    fn deserialize_char(self: Decoder) -> Result[char, string] {
+        claim_bincode_input(self)?;
+        let value = read_unsigned(self, 32)?;
+        match char_from_uint32(value as uint32) {
+            Some(value) => Result::Ok(value),
+            None => Result::Err(decoder_error(self, "invalid Unicode scalar value")),
+        }
+    }
+
+    fn deserialize_bytes(self: Decoder) -> Result[Vec[byte], string] {
+        claim_bincode_input(self)?;
+        let length = read_length(self)?;
+        let values: Vec[byte] = Vec::with_capacity(length);
+        let mut index = 0;
+        while index < length {
+            values.push(read_byte(self)?);
+            index = index + 1;
+        }
+        Result::Ok(values)
+    }
+
+    fn begin_optional(self: Decoder) -> Result[bool, string] {
+        claim_bincode_input(self)?;
+        let tag = read_byte(self)?;
+        if tag == 0 || tag == 1 {
+            self.frames.push(BincodeFrame::Optional { ready: Ref::new(tag == 1) });
+            Result::Ok(tag == 1)
+        } else {
+            Result::Err(decoder_error(self, "invalid option tag"))
+        }
+    }
+
+    fn end_optional(self: Decoder) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Optional { ready } => if ready.get() {
+                Result::Err(decoder_error(self, "optional item was not consumed"))
+            } else {
+                pop_decoder_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "end_optional does not match active value")),
+        }
+    }
+
+    fn begin_sequence(self: Decoder) -> Result[Option[int], string] {
+        claim_bincode_input(self)?;
+        let length = read_length(self)?;
+        self.frames.push(
+            BincodeFrame::Sequence { length, index: Ref::new(0), ready: Ref::new(false) },
+        );
+        Result::Ok(Option::Some(length))
+    }
+
+    fn next_sequence_element(self: Decoder) -> Result[bool, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Sequence { length, index, ready } => if ready.get() {
+                Result::Err(decoder_error(self, "previous sequence element was not consumed"))
+            } else if index.get() >= length {
+                Result::Ok(false)
+            } else {
+                index.set(index.get() + 1);
+                ready.set(true);
+                Result::Ok(true)
+            },
+            _ => Result::Err(decoder_error(self, "sequence element outside a sequence")),
+        }
+    }
+
+    fn end_sequence(self: Decoder) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Sequence { length, index, ready } => if ready.get()
+                || index.get() != length {
+                Result::Err(decoder_error(self, "sequence ended before all elements"))
+            } else {
+                pop_decoder_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "end_sequence does not match active value")),
+        }
+    }
+
+    fn begin_tuple(self: Decoder, length: int) -> Result[unit, string] {
+        if length < 0 {
+            Result::Err(decoder_error(self, "tuple length cannot be negative"))
+        } else {
+            claim_bincode_input(self)?;
+            self.frames.push(
+                BincodeFrame::Tuple { length, index: Ref::new(0), ready: Ref::new(false) },
+            );
+            Result::Ok(())
+        }
+    }
+
+    fn begin_tuple_element(self: Decoder, index: int) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Tuple { length, index: next, ready } => if ready.get()
+                || index != next.get()
+                || index >= length {
+                Result::Err(decoder_error(self, "tuple element index is out of order"))
+            } else {
+                next.set(index + 1);
+                ready.set(true);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "tuple element outside a tuple")),
+        }
+    }
+
+    fn end_tuple(self: Decoder) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Tuple { length, index, ready } => if ready.get() || index.get() != length {
+                Result::Err(decoder_error(self, "tuple ended before all elements"))
+            } else {
+                pop_decoder_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "end_tuple does not match active value")),
+        }
+    }
+
+    fn begin_map(self: Decoder) -> Result[Option[int], string] {
+        claim_bincode_input(self)?;
+        let length = read_length(self)?;
+        self.frames.push(BincodeFrame::Map { length, index: Ref::new(0), state: Ref::new(0) });
+        Result::Ok(Option::Some(length))
+    }
+
+    fn next_map_entry(self: Decoder) -> Result[bool, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Map { length, index, state } => {
+                let next = if state.get() == 5 {
+                    index.get() + 1
+                } else {
+                    index.get()
+                };
+                if state.get() != 0 && state.get() != 5 {
+                    Result::Err(decoder_error(self, "previous map entry is incomplete"))
+                } else if next >= length {
+                    index.set(next);
+                    state.set(0);
+                    Result::Ok(false)
+                } else {
+                    index.set(next);
+                    state.set(1);
+                    Result::Ok(true)
+                }
+            },
+            _ => Result::Err(decoder_error(self, "map entry outside a map")),
+        }
+    }
+
+    fn begin_map_key(self: Decoder) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Map { length: _, index: _, state } => if state.get() != 1 {
+                Result::Err(decoder_error(self, "map is not expecting a key"))
+            } else {
+                state.set(2);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "map key outside a map")),
+        }
+    }
+
+    fn begin_map_value(self: Decoder) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Map { length: _, index: _, state } => if state.get() != 3 {
+                Result::Err(decoder_error(self, "map is not expecting a value"))
+            } else {
+                state.set(4);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "map value outside a map")),
+        }
+    }
+
+    fn end_map(self: Decoder) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Map { length, index, state } => {
+                let next = if state.get() == 5 {
+                    index.get() + 1
+                } else {
+                    index.get()
+                };
+                if next != length || state.get() != 0 && state.get() != 5 {
+                    Result::Err(decoder_error(self, "map ended before all entries"))
+                } else {
+                    pop_decoder_frame(self);
+                    Result::Ok(())
+                }
+            },
+            _ => Result::Err(decoder_error(self, "end_map does not match active value")),
+        }
+    }
+
+    fn begin_struct(self: Decoder, name: string, fields: int) -> Result[unit, string] {
+        if fields < 0 {
+            Result::Err(decoder_error(self, "struct field count cannot be negative"))
+        } else {
+            claim_bincode_input(self)?;
+            self.frames.push(
+                BincodeFrame::Struct { name, fields, index: Ref::new(0), ready: Ref::new(false) },
+            );
+            Result::Ok(())
+        }
+    }
+
+    fn next_struct_field(self: Decoder) -> Result[Option[serde::FieldKey], string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Struct { name: _, fields, index, ready } => if ready.get() {
+                Result::Err(decoder_error(self, "previous struct field was not consumed"))
+            } else if index.get() >= fields {
+                Result::Ok(Option::None)
+            } else {
+                let position = index.get();
+                index.set(position + 1);
+                ready.set(true);
+                Result::Ok(Option::Some(serde::FieldKey::Position(position)))
+            },
+            _ => Result::Err(decoder_error(self, "struct field outside a struct")),
+        }
+    }
+
+    fn skip_value(self: Decoder) -> Result[unit, string] {
+        Result::Err(decoder_error(self, "bincode cannot skip an untyped value"))
+    }
+
+    fn end_struct(self: Decoder) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Struct { name: _, fields, index, ready } => if ready.get()
+                || index.get() != fields {
+                Result::Err(decoder_error(self, "struct ended before all fields"))
+            } else {
+                pop_decoder_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "end_struct does not match active value")),
+        }
+    }
+
+    fn begin_variant(self: Decoder, enum_name: string, variants: int) -> Result[
+        serde::VariantKey,
+        string,
+    ] {
+        if variants < 0 {
+            return Result::Err(decoder_error(self, "enum variant count cannot be negative"))
+        } else {};
+        claim_bincode_input(self)?;
+        let index = read_unsigned(self, 32)?;
+        if index > 9223372036854775807 as uint64 {
+            Result::Err(decoder_error(self, "enum variant index is too large"))
+        } else {
+            self.frames.push(
+                BincodeFrame::Variant {
+                    enum_name,
+                    variant: index as int,
+                    fields: Ref::new(0),
+                    index: Ref::new(0),
+                    begun: Ref::new(false),
+                    ready: Ref::new(false),
+                },
+            );
+            Result::Ok(serde::VariantKey::Index(index as int))
+        }
+    }
+
+    fn begin_variant_fields(self: Decoder, kind: int, fields: int) -> Result[unit, string] {
+        if kind < 0 || kind > 2 || fields < 0 || kind == 0 && fields != 0 {
+            return Result::Err(decoder_error(self, "invalid variant field state"))
+        } else {};
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Variant {
+                enum_name: _,
+                variant: _,
+                fields: actual_fields,
+                index,
+                begun,
+                ready,
+            } => if begun.get() {
+                Result::Err(decoder_error(self, "invalid variant field state"))
+            } else {
+                actual_fields.set(fields);
+                index.set(0);
+                begun.set(true);
+                ready.set(false);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "variant fields outside a variant")),
+        }
+    }
+
+    fn next_variant_field(self: Decoder) -> Result[Option[serde::FieldKey], string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Variant { enum_name: _, variant: _, fields, index, begun, ready } => if !begun.get() {
+                Result::Err(decoder_error(self, "variant fields were not begun"))
+            } else if ready.get() {
+                Result::Err(decoder_error(self, "previous variant field was not consumed"))
+            } else if index.get() >= fields.get() {
+                Result::Ok(Option::None)
+            } else {
+                let position = index.get();
+                index.set(position + 1);
+                ready.set(true);
+                Result::Ok(Option::Some(serde::FieldKey::Position(position)))
+            },
+            _ => Result::Err(decoder_error(self, "variant field outside a variant")),
+        }
+    }
+
+    fn end_variant(self: Decoder) -> Result[unit, string] {
+        let frame = decoder_frame_index(self)?;
+        match self.frames[frame] {
+            BincodeFrame::Variant { enum_name: _, variant: _, fields, index, begun, ready } => if !begun.get()
+                || ready.get()
+                || index.get() != fields.get() {
+                Result::Err(decoder_error(self, "variant ended before all fields"))
+            } else {
+                pop_decoder_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err(decoder_error(self, "end_variant does not match active value")),
+        }
+    }
+}
+
 pub fn decode_value(input: Slice[byte], schema: serde::Schema, config: Config) -> Result[
     (serde::Value, int),
     string,
 ] {
-    let decoder = Decoder { input, offset: Ref::new(0), config };
+    let decoder = bincode_deserializer(input, config);
     let value = read_schema(decoder, schema)?;
     Result::Ok((value, decoder.offset.get()))
 }

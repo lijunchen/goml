@@ -1,0 +1,586 @@
+package serde;
+
+enum ValueDeserializeFrame {
+    Optional,
+    Sequence {
+        values: Vec[Value],
+        index: Ref[int],
+    },
+    Tuple {
+        values: Vec[Value],
+        index: Ref[int],
+    },
+    Map {
+        entries: Vec[Value],
+        index: Ref[int],
+        state: Ref[int],
+    },
+    Struct {
+        fields: Vec[(string, Value)],
+        index: Ref[int],
+    },
+    Variant {
+        kind: int,
+        fields: Vec[(string, Value)],
+        index: Ref[int],
+        begun: Ref[bool],
+    },
+}
+
+pub struct ValueDeserializer {
+    current: Ref[Option[Value]],
+    frames: Vec[ValueDeserializeFrame],
+}
+
+pub fn value_deserializer(value: Value) -> ValueDeserializer {
+    ValueDeserializer { current: Ref::new(Option::Some(value)), frames: Vec::[] }
+}
+
+pub fn finish_value_deserializer(deserializer: ValueDeserializer) -> Result[unit, string] {
+    if !deserializer.frames.is_empty() {
+        Result::Err("deserialization ended inside a compound value")
+    } else if deserializer.current.get().is_some() {
+        Result::Err("deserialization did not consume the value")
+    } else {
+        Result::Ok(())
+    }
+}
+
+fn take_deserializer_value(deserializer: ValueDeserializer) -> Result[Value, string] {
+    match deserializer.current.get() {
+        Some(value) => {
+            deserializer.current.set(Option::None);
+            Result::Ok(value)
+        },
+        None => Result::Err("deserializer is not positioned at a value"),
+    }
+}
+
+fn set_deserializer_value(deserializer: ValueDeserializer, value: Value) -> Result[unit, string] {
+    if deserializer.current.get().is_some() {
+        Result::Err("previous deserializer value was not consumed")
+    } else {
+        deserializer.current.set(Option::Some(value));
+        Result::Ok(())
+    }
+}
+
+fn pop_value_deserializer_frame(deserializer: ValueDeserializer) -> unit {
+    let _ = deserializer.frames.pop();
+}
+
+fn deserialize_number_value(value: Value) -> Result[string, string] {
+    match value {
+        Value::Number(value) => Result::Ok(value),
+        Value::Int(value) => Result::Ok(value.to_string()),
+        Value::Int8(value) => Result::Ok(value.to_string()),
+        Value::Int16(value) => Result::Ok(value.to_string()),
+        Value::Int32(value) => Result::Ok(value.to_string()),
+        Value::Int64(value) => Result::Ok(value.to_string()),
+        Value::Uint(value) => Result::Ok(value.to_string()),
+        Value::Uint8(value) => Result::Ok(value.to_string()),
+        Value::Uint16(value) => Result::Ok(value.to_string()),
+        Value::Uint32(value) => Result::Ok(value.to_string()),
+        Value::Uint64(value) => Result::Ok(value.to_string()),
+        Value::Float32(value) => Result::Ok(value.to_string()),
+        Value::Float64(value) => Result::Ok(value.to_string()),
+        _ => Result::Err("expected number"),
+    }
+}
+
+fn deserialize_bytes_value(value: Value) -> Result[Vec[byte], string] {
+    match value {
+        Value::Sequence(values) => {
+            let bytes: Vec[byte] = Vec::with_capacity(values.len());
+            for value in values {
+                let byte: uint8 = Deserialize::deserialize(value)?;
+                bytes.push(byte)
+            }
+            Result::Ok(bytes)
+        },
+        _ => Result::Err("expected byte sequence"),
+    }
+}
+
+impl Deserializer for ValueDeserializer {
+    fn deserialize_any(self: ValueDeserializer) -> Result[Value, string] {
+        take_deserializer_value(self)
+    }
+
+    fn deserialize_unit(self: ValueDeserializer) -> Result[unit, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_bool(self: ValueDeserializer) -> Result[bool, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_int(self: ValueDeserializer) -> Result[int, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_int8(self: ValueDeserializer) -> Result[int8, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_int16(self: ValueDeserializer) -> Result[int16, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_int32(self: ValueDeserializer) -> Result[int32, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_int64(self: ValueDeserializer) -> Result[int64, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_uint(self: ValueDeserializer) -> Result[uint, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_uint8(self: ValueDeserializer) -> Result[uint8, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_uint16(self: ValueDeserializer) -> Result[uint16, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_uint32(self: ValueDeserializer) -> Result[uint32, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_uint64(self: ValueDeserializer) -> Result[uint64, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_float32(self: ValueDeserializer) -> Result[float32, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_float64(self: ValueDeserializer) -> Result[float64, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_number(self: ValueDeserializer) -> Result[string, string] {
+        deserialize_number_value(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_string(self: ValueDeserializer) -> Result[string, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_char(self: ValueDeserializer) -> Result[char, string] {
+        Deserialize::deserialize(take_deserializer_value(self)?)
+    }
+
+    fn deserialize_bytes(self: ValueDeserializer) -> Result[Vec[byte], string] {
+        deserialize_bytes_value(take_deserializer_value(self)?)
+    }
+
+    fn begin_optional(self: ValueDeserializer) -> Result[bool, string] {
+        let value = take_deserializer_value(self)?;
+        match value {
+            Value::Optional(values) => if values.len() == 0 {
+                self.frames.push(ValueDeserializeFrame::Optional);
+                Result::Ok(false)
+            } else if values.len() == 1 {
+                self.frames.push(ValueDeserializeFrame::Optional);
+                set_deserializer_value(self, values[0])?;
+                Result::Ok(true)
+            } else {
+                Result::Err("optional value contains more than one item")
+            },
+            Value::Unit => {
+                self.frames.push(ValueDeserializeFrame::Optional);
+                Result::Ok(false)
+            },
+            value => {
+                self.frames.push(ValueDeserializeFrame::Optional);
+                set_deserializer_value(self, value)?;
+                Result::Ok(true)
+            },
+        }
+    }
+
+    fn end_optional(self: ValueDeserializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_optional without begin_optional")
+        } else if self.current.get().is_some() {
+            return Result::Err("optional item was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Optional => {
+                pop_value_deserializer_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err("end_optional does not match the active compound value"),
+        }
+    }
+
+    fn begin_sequence(self: ValueDeserializer) -> Result[Option[int], string] {
+        match take_deserializer_value(self)? {
+            Value::Sequence(values) => {
+                let length = values.len();
+                self.frames.push(ValueDeserializeFrame::Sequence { values, index: Ref::new(0) });
+                Result::Ok(Option::Some(length))
+            },
+            _ => Result::Err("expected sequence"),
+        }
+    }
+
+    fn next_sequence_element(self: ValueDeserializer) -> Result[bool, string] {
+        if self.frames.is_empty() {
+            return Result::Err("sequence element without sequence")
+        } else if self.current.get().is_some() {
+            return Result::Err("previous sequence element was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Sequence { values, index } => if index.get() >= values.len() {
+                Result::Ok(false)
+            } else {
+                set_deserializer_value(self, values[index.get()])?;
+                index.set(index.get() + 1);
+                Result::Ok(true)
+            },
+            _ => Result::Err("sequence element outside a sequence"),
+        }
+    }
+
+    fn end_sequence(self: ValueDeserializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_sequence without begin_sequence")
+        } else if self.current.get().is_some() {
+            return Result::Err("sequence element was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Sequence { values, index } => if index.get() != values.len() {
+                Result::Err("sequence ended before all elements were consumed")
+            } else {
+                pop_value_deserializer_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err("end_sequence does not match the active compound value"),
+        }
+    }
+
+    fn begin_tuple(self: ValueDeserializer, length: int) -> Result[unit, string] {
+        let value = take_deserializer_value(self)?;
+        let values = match value {
+            Value::Tuple(values) => values,
+            Value::Sequence(values) => values,
+            _ => return Result::Err("expected tuple"),
+        };
+        if values.len() != length {
+            Result::Err("tuple length does not match the expected length")
+        } else {
+            self.frames.push(ValueDeserializeFrame::Tuple { values, index: Ref::new(0) });
+            Result::Ok(())
+        }
+    }
+
+    fn begin_tuple_element(self: ValueDeserializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("tuple element without tuple")
+        } else if self.current.get().is_some() {
+            return Result::Err("previous tuple element was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Tuple { values, index: next } => if index != next.get()
+                || index >= values.len() {
+                Result::Err("tuple element index is out of order")
+            } else {
+                set_deserializer_value(self, values[index])?;
+                next.set(index + 1);
+                Result::Ok(())
+            },
+            _ => Result::Err("tuple element outside a tuple"),
+        }
+    }
+
+    fn end_tuple(self: ValueDeserializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_tuple without begin_tuple")
+        } else if self.current.get().is_some() {
+            return Result::Err("tuple element was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Tuple { values, index } => if index.get() != values.len() {
+                Result::Err("tuple ended before all elements were consumed")
+            } else {
+                pop_value_deserializer_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err("end_tuple does not match the active compound value"),
+        }
+    }
+
+    fn begin_map(self: ValueDeserializer) -> Result[Option[int], string] {
+        match take_deserializer_value(self)? {
+            Value::Sequence(entries) => {
+                let length = entries.len();
+                self.frames.push(
+                    ValueDeserializeFrame::Map { entries, index: Ref::new(0), state: Ref::new(0) },
+                );
+                Result::Ok(Option::Some(length))
+            },
+            _ => Result::Err("expected map entries"),
+        }
+    }
+
+    fn next_map_entry(self: ValueDeserializer) -> Result[bool, string] {
+        if self.frames.is_empty() {
+            return Result::Err("map entry without map")
+        } else if self.current.get().is_some() {
+            return Result::Err("previous map value was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Map { entries, index, state } => {
+                if state.get() == 2 {
+                    index.set(index.get() + 1);
+                    state.set(0)
+                } else if state.get() != 0 {
+                    return Result::Err("previous map entry is incomplete")
+                } else {};
+                if index.get() >= entries.len() {
+                    Result::Ok(false)
+                } else {
+                    state.set(1);
+                    Result::Ok(true)
+                }
+            },
+            _ => Result::Err("map entry outside a map"),
+        }
+    }
+
+    fn begin_map_key(self: ValueDeserializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("map key without map")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Map { entries, index, state } => if state.get() != 1 {
+                Result::Err("map is not expecting a key")
+            } else {
+                match entries[index.get()] {
+                    Value::Tuple(values) => if values.len() == 2 {
+                        set_deserializer_value(self, values[0])?;
+                        state.set(3);
+                        Result::Ok(())
+                    } else {
+                        Result::Err("map entry tuple must contain two values")
+                    },
+                    _ => Result::Err("map entry must be a tuple"),
+                }
+            },
+            _ => Result::Err("map key outside a map"),
+        }
+    }
+
+    fn begin_map_value(self: ValueDeserializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("map value without map")
+        } else if self.current.get().is_some() {
+            return Result::Err("map key was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Map { entries, index, state } => if state.get() != 3 {
+                Result::Err("map is not expecting a value")
+            } else {
+                match entries[index.get()] {
+                    Value::Tuple(values) => {
+                        set_deserializer_value(self, values[1])?;
+                        state.set(2);
+                        Result::Ok(())
+                    },
+                    _ => Result::Err("map entry must be a tuple"),
+                }
+            },
+            _ => Result::Err("map value outside a map"),
+        }
+    }
+
+    fn end_map(self: ValueDeserializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_map without begin_map")
+        } else if self.current.get().is_some() {
+            return Result::Err("map value was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Map { entries, index, state } => {
+                if state.get() == 2 {
+                    index.set(index.get() + 1);
+                    state.set(0)
+                } else {};
+                if state.get() != 0 || index.get() != entries.len() {
+                    Result::Err("map ended before all entries were consumed")
+                } else {
+                    pop_value_deserializer_frame(self);
+                    Result::Ok(())
+                }
+            },
+            _ => Result::Err("end_map does not match the active compound value"),
+        }
+    }
+
+    fn begin_struct(self: ValueDeserializer, name: string, fields: int) -> Result[unit, string] {
+        let _ = name;
+        let _ = fields;
+        match take_deserializer_value(self)? {
+            Value::Struct(values) => {
+                self.frames.push(
+                    ValueDeserializeFrame::Struct { fields: values, index: Ref::new(0) },
+                );
+                Result::Ok(())
+            },
+            _ => Result::Err("expected struct value"),
+        }
+    }
+
+    fn next_struct_field(self: ValueDeserializer) -> Result[Option[FieldKey], string] {
+        if self.frames.is_empty() {
+            return Result::Err("struct field without struct")
+        } else if self.current.get().is_some() {
+            return Result::Err("previous struct field was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Struct { fields, index } => if index.get() >= fields.len() {
+                Result::Ok(Option::None)
+            } else {
+                let position = index.get();
+                let field = fields[position];
+                index.set(position + 1);
+                set_deserializer_value(self, field.1)?;
+                if field.0 == "" {
+                    Result::Ok(Option::Some(FieldKey::Position(position)))
+                } else {
+                    Result::Ok(Option::Some(FieldKey::Name(field.0)))
+                }
+            },
+            _ => Result::Err("struct field outside a struct"),
+        }
+    }
+
+    fn skip_value(self: ValueDeserializer) -> Result[unit, string] {
+        let _ = take_deserializer_value(self)?;
+        Result::Ok(())
+    }
+
+    fn end_struct(self: ValueDeserializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_struct without begin_struct")
+        } else if self.current.get().is_some() {
+            return Result::Err("struct field was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Struct { fields, index } => if index.get() != fields.len() {
+                Result::Err("struct ended before all fields were consumed")
+            } else {
+                pop_value_deserializer_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err("end_struct does not match the active compound value"),
+        }
+    }
+
+    fn begin_variant(self: ValueDeserializer, enum_name: string, variants: int) -> Result[
+        VariantKey,
+        string,
+    ] {
+        let _ = enum_name;
+        let _ = variants;
+        let value = take_deserializer_value(self)?;
+        match value {
+            Value::Variant { index, name: _, kind, fields } => {
+                self.frames.push(
+                    ValueDeserializeFrame::Variant {
+                        kind,
+                        fields,
+                        index: Ref::new(0),
+                        begun: Ref::new(false),
+                    },
+                );
+                Result::Ok(VariantKey::Index(index))
+            },
+            value => {
+                let parts = variant_parts(value)?;
+                self.frames.push(
+                    ValueDeserializeFrame::Variant {
+                        kind: parts.1,
+                        fields: parts.2,
+                        index: Ref::new(0),
+                        begun: Ref::new(false),
+                    },
+                );
+                Result::Ok(VariantKey::Name(parts.0))
+            },
+        }
+    }
+
+    fn begin_variant_fields(self: ValueDeserializer, kind: int, fields: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("variant fields without variant")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Variant {
+                kind: actual_kind,
+                fields: actual_fields,
+                index: _,
+                begun,
+            } => if begun.get() {
+                Result::Err("variant fields were already begun")
+            } else if actual_kind != kind || actual_fields.len() != fields {
+                Result::Err("variant payload shape does not match the expected shape")
+            } else {
+                begun.set(true);
+                Result::Ok(())
+            },
+            _ => Result::Err("variant fields outside a variant"),
+        }
+    }
+
+    fn next_variant_field(self: ValueDeserializer) -> Result[Option[FieldKey], string] {
+        if self.frames.is_empty() {
+            return Result::Err("variant field without variant")
+        } else if self.current.get().is_some() {
+            return Result::Err("previous variant field was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Variant { kind, fields, index, begun } => if !begun.get() {
+                Result::Err("variant fields were not begun")
+            } else if index.get() >= fields.len() {
+                Result::Ok(Option::None)
+            } else {
+                let position = index.get();
+                let field = fields[position];
+                index.set(position + 1);
+                set_deserializer_value(self, field.1)?;
+                if kind == 2 && field.0 != "" {
+                    Result::Ok(Option::Some(FieldKey::Name(field.0)))
+                } else {
+                    Result::Ok(Option::Some(FieldKey::Position(position)))
+                }
+            },
+            _ => Result::Err("variant field outside a variant"),
+        }
+    }
+
+    fn end_variant(self: ValueDeserializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_variant without begin_variant")
+        } else if self.current.get().is_some() {
+            return Result::Err("variant field was not consumed")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueDeserializeFrame::Variant { kind: _, fields, index, begun } => if !begun.get() {
+                Result::Err("variant fields were not begun")
+            } else if index.get() != fields.len() {
+                Result::Err("variant ended before all fields were consumed")
+            } else {
+                pop_value_deserializer_frame(self);
+                Result::Ok(())
+            },
+            _ => Result::Err("end_variant does not match the active compound value"),
+        }
+    }
+}

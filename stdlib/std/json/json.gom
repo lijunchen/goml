@@ -180,7 +180,7 @@ fn parse_digits(value: JsonParser) -> bool {
     value.index.get() > start
 }
 
-fn parse_json_number(value: JsonParser) -> Result[Value, string] {
+fn parse_json_number_text(value: JsonParser) -> Result[string, string] {
     let start = value.index.get();
     if value.input.byte_get(value.index.get()) == b'-' {
         value.index.set(value.index.get() + 1)
@@ -215,7 +215,11 @@ fn parse_json_number(value: JsonParser) -> Result[Value, string] {
             return Result::Err(json_error(value, "missing exponent digits"))
         } else {}
     } else {};
-    Result::Ok(Value::Number(value.input.byte_slice(start, value.index.get())))
+    Result::Ok(value.input.byte_slice(start, value.index.get()))
+}
+
+fn parse_json_number(value: JsonParser) -> Result[Value, string] {
+    Result::Ok(Value::Number(parse_json_number_text(value)?))
 }
 
 fn parse_json_literal(value: JsonParser, expected: string, result: Value) -> Result[Value, string] {

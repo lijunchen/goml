@@ -220,6 +220,546 @@ fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[
     }
 }
 
+enum BincodeSerializeFrame {
+    Optional {
+        ready: Ref[bool],
+    },
+    Sequence {
+        length: int,
+        index: Ref[int],
+        ready: Ref[bool],
+    },
+    Tuple {
+        length: int,
+        index: Ref[int],
+        ready: Ref[bool],
+    },
+    Map {
+        length: int,
+        index: Ref[int],
+        state: Ref[int],
+    },
+    Struct {
+        length: int,
+        index: Ref[int],
+        ready: Ref[bool],
+    },
+    Variant {
+        length: int,
+        index: Ref[int],
+        ready: Ref[bool],
+    },
+}
+
+struct BincodeSerializer {
+    output: Vec[byte],
+    config: Config,
+    frames: Vec[BincodeSerializeFrame],
+    root_written: Ref[bool],
+}
+
+fn bincode_serializer(config: Config) -> BincodeSerializer {
+    BincodeSerializer { output: Vec::[], config, frames: Vec::[], root_written: Ref::new(false) }
+}
+
+fn claim_bincode_value(serializer: BincodeSerializer) -> Result[unit, string] {
+    if serializer.frames.is_empty() {
+        if serializer.root_written.get() {
+            Result::Err("bincode serialization produced more than one root value")
+        } else {
+            serializer.root_written.set(true);
+            Result::Ok(())
+        }
+    } else {
+        let frame = serializer.frames.len() - 1;
+        match serializer.frames[frame] {
+            BincodeSerializeFrame::Optional { ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err("optional is not expecting a value")
+            },
+            BincodeSerializeFrame::Sequence { length: _, index: _, ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err("sequence is not expecting a value")
+            },
+            BincodeSerializeFrame::Tuple { length: _, index: _, ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err("tuple is not expecting a value")
+            },
+            BincodeSerializeFrame::Map { length: _, index, state } => if state.get() == 1 {
+                state.set(2);
+                Result::Ok(())
+            } else if state.get() == 3 {
+                index.set(index.get() + 1);
+                state.set(0);
+                Result::Ok(())
+            } else {
+                Result::Err("map is not expecting a value")
+            },
+            BincodeSerializeFrame::Struct { length: _, index: _, ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err("struct is not expecting a value")
+            },
+            BincodeSerializeFrame::Variant { length: _, index: _, ready } => if ready.get() {
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err("variant is not expecting a value")
+            },
+        }
+    }
+}
+
+fn finish_bincode_serializer(serializer: BincodeSerializer) -> Result[unit, string] {
+    if !serializer.frames.is_empty() {
+        Result::Err("bincode serialization ended inside a compound value")
+    } else if !serializer.root_written.get() {
+        Result::Err("bincode serialization produced no value")
+    } else {
+        Result::Ok(())
+    }
+}
+
+impl serde::Serializer for BincodeSerializer {
+    fn serialize_unit(self: BincodeSerializer) -> Result[unit, string] {
+        claim_bincode_value(self)
+    }
+
+    fn serialize_bool(self: BincodeSerializer, value: bool) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        self.output.push(
+            if value {
+                1
+            } else {
+                0
+            },
+        );
+        Result::Ok(())
+    }
+
+    fn serialize_int(self: BincodeSerializer, value: int) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_signed(self.output, value as int64, 0, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_int8(self: BincodeSerializer, value: int8) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_signed(self.output, value as int64, 8, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_int16(self: BincodeSerializer, value: int16) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_signed(self.output, value as int64, 16, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_int32(self: BincodeSerializer, value: int32) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_signed(self.output, value as int64, 32, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_int64(self: BincodeSerializer, value: int64) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_signed(self.output, value, 64, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_uint(self: BincodeSerializer, value: uint) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_unsigned(self.output, value as uint64, 0, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_uint8(self: BincodeSerializer, value: uint8) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_unsigned(self.output, value as uint64, 8, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_uint16(self: BincodeSerializer, value: uint16) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_unsigned(self.output, value as uint64, 16, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_uint32(self: BincodeSerializer, value: uint32) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_unsigned(self.output, value as uint64, 32, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_uint64(self: BincodeSerializer, value: uint64) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_unsigned(self.output, value, 64, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_float32(self: BincodeSerializer, value: float32) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_fixed(self.output, float32_bits(value) as uint64, 4, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_float64(self: BincodeSerializer, value: float64) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_fixed(self.output, float64_bits(value), 8, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_number(self: BincodeSerializer, value: string) -> Result[unit, string] {
+        let _ = self;
+        let _ = value;
+        Result::Err("bincode requires a precise numeric type")
+    }
+
+    fn serialize_string(self: BincodeSerializer, value: string) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_string(self.output, value, self.config)
+    }
+
+    fn serialize_char(self: BincodeSerializer, value: char) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_unsigned(self.output, value as uint32 as uint64, 32, self.config);
+        Result::Ok(())
+    }
+
+    fn serialize_bytes(self: BincodeSerializer, value: Slice[byte]) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        push_length(self.output, value.len(), self.config)?;
+        let mut index = 0;
+        while index < value.len() {
+            self.output.push(value[index]);
+            index = index + 1;
+        }
+        Result::Ok(())
+    }
+
+    fn begin_optional(self: BincodeSerializer, present: bool) -> Result[unit, string] {
+        claim_bincode_value(self)?;
+        self.output.push(
+            if present {
+                1
+            } else {
+                0
+            },
+        );
+        self.frames.push(BincodeSerializeFrame::Optional { ready: Ref::new(present) });
+        Result::Ok(())
+    }
+
+    fn end_optional(self: BincodeSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_optional without begin_optional")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            BincodeSerializeFrame::Optional { ready } => if ready.get() {
+                Result::Err("optional item was not serialized")
+            } else {
+                let _ = self.frames.pop();
+                Result::Ok(())
+            },
+            _ => Result::Err("end_optional does not match active bincode value"),
+        }
+    }
+
+    fn begin_sequence(self: BincodeSerializer, length: int) -> Result[unit, string] {
+        if length < 0 {
+            Result::Err("negative collection length")
+        } else {
+            claim_bincode_value(self)?;
+            push_length(self.output, length, self.config)?;
+            self.frames.push(
+                BincodeSerializeFrame::Sequence {
+                    length,
+                    index: Ref::new(0),
+                    ready: Ref::new(false),
+                },
+            );
+            Result::Ok(())
+        }
+    }
+
+    fn begin_sequence_element(self: BincodeSerializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("sequence element without sequence")
+        } else {};
+        let frame = self.frames.len() - 1;
+        match self.frames[frame] {
+            BincodeSerializeFrame::Sequence { length, index: next, ready } => if ready.get()
+                || index != next.get()
+                || index >= length {
+                Result::Err("sequence element index is out of order")
+            } else {
+                next.set(index + 1);
+                ready.set(true);
+                Result::Ok(())
+            },
+            _ => Result::Err("sequence element outside a sequence"),
+        }
+    }
+
+    fn end_sequence(self: BincodeSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_sequence without begin_sequence")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            BincodeSerializeFrame::Sequence { length, index, ready } => if ready.get()
+                || index.get() != length {
+                Result::Err("sequence length does not match serialized elements")
+            } else {
+                let _ = self.frames.pop();
+                Result::Ok(())
+            },
+            _ => Result::Err("end_sequence does not match active bincode value"),
+        }
+    }
+
+    fn begin_tuple(self: BincodeSerializer, length: int) -> Result[unit, string] {
+        if length < 0 {
+            Result::Err("tuple length cannot be negative")
+        } else {
+            claim_bincode_value(self)?;
+            self.frames.push(
+                BincodeSerializeFrame::Tuple { length, index: Ref::new(0), ready: Ref::new(false) },
+            );
+            Result::Ok(())
+        }
+    }
+
+    fn begin_tuple_element(self: BincodeSerializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("tuple element without tuple")
+        } else {};
+        let frame = self.frames.len() - 1;
+        match self.frames[frame] {
+            BincodeSerializeFrame::Tuple { length, index: next, ready } => if ready.get()
+                || index != next.get()
+                || index >= length {
+                Result::Err("tuple element index is out of order")
+            } else {
+                next.set(index + 1);
+                ready.set(true);
+                Result::Ok(())
+            },
+            _ => Result::Err("tuple element outside a tuple"),
+        }
+    }
+
+    fn end_tuple(self: BincodeSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_tuple without begin_tuple")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            BincodeSerializeFrame::Tuple { length, index, ready } => if ready.get()
+                || index.get() != length {
+                Result::Err("tuple length does not match serialized elements")
+            } else {
+                let _ = self.frames.pop();
+                Result::Ok(())
+            },
+            _ => Result::Err("end_tuple does not match active bincode value"),
+        }
+    }
+
+    fn begin_map(self: BincodeSerializer, length: int) -> Result[unit, string] {
+        if length < 0 {
+            Result::Err("negative collection length")
+        } else {
+            claim_bincode_value(self)?;
+            push_length(self.output, length, self.config)?;
+            self.frames.push(
+                BincodeSerializeFrame::Map { length, index: Ref::new(0), state: Ref::new(0) },
+            );
+            Result::Ok(())
+        }
+    }
+
+    fn begin_map_key(self: BincodeSerializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("map key without map")
+        } else {};
+        let frame = self.frames.len() - 1;
+        match self.frames[frame] {
+            BincodeSerializeFrame::Map { length, index: next, state } => if state.get() != 0
+                || index != next.get()
+                || index >= length {
+                Result::Err("map key index is out of order")
+            } else {
+                state.set(1);
+                Result::Ok(())
+            },
+            _ => Result::Err("map key outside a map"),
+        }
+    }
+
+    fn begin_map_value(self: BincodeSerializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("map value without map")
+        } else {};
+        let frame = self.frames.len() - 1;
+        match self.frames[frame] {
+            BincodeSerializeFrame::Map { length: _, index: next, state } => if state.get() != 2
+                || index != next.get() {
+                Result::Err("map value has no completed key")
+            } else {
+                state.set(3);
+                Result::Ok(())
+            },
+            _ => Result::Err("map value outside a map"),
+        }
+    }
+
+    fn end_map(self: BincodeSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_map without begin_map")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            BincodeSerializeFrame::Map { length, index, state } => if state.get() != 0
+                || index.get() != length {
+                Result::Err("map length does not match serialized entries")
+            } else {
+                let _ = self.frames.pop();
+                Result::Ok(())
+            },
+            _ => Result::Err("end_map does not match active bincode value"),
+        }
+    }
+
+    fn begin_struct(self: BincodeSerializer, name: string, fields: int) -> Result[unit, string] {
+        let _ = name;
+        if fields < 0 {
+            Result::Err("struct field count cannot be negative")
+        } else {
+            claim_bincode_value(self)?;
+            self.frames.push(
+                BincodeSerializeFrame::Struct {
+                    length: fields,
+                    index: Ref::new(0),
+                    ready: Ref::new(false),
+                },
+            );
+            Result::Ok(())
+        }
+    }
+
+    fn begin_struct_field(self: BincodeSerializer, index: int, name: string) -> Result[unit, string] {
+        let _ = name;
+        if self.frames.is_empty() {
+            return Result::Err("struct field without struct")
+        } else {};
+        let frame = self.frames.len() - 1;
+        match self.frames[frame] {
+            BincodeSerializeFrame::Struct { length, index: next, ready } => if ready.get()
+                || index != next.get()
+                || index >= length {
+                Result::Err("struct field index is out of order")
+            } else {
+                next.set(index + 1);
+                ready.set(true);
+                Result::Ok(())
+            },
+            _ => Result::Err("struct field outside a struct"),
+        }
+    }
+
+    fn end_struct(self: BincodeSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_struct without begin_struct")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            BincodeSerializeFrame::Struct { length, index, ready } => if ready.get()
+                || index.get() != length {
+                Result::Err("struct field count does not match serialized values")
+            } else {
+                let _ = self.frames.pop();
+                Result::Ok(())
+            },
+            _ => Result::Err("end_struct does not match active bincode value"),
+        }
+    }
+
+    fn begin_variant(
+        self: BincodeSerializer,
+        enum_name: string,
+        index: int,
+        name: string,
+        kind: int,
+        fields: int,
+    ) -> Result[unit, string] {
+        let _ = enum_name;
+        let _ = name;
+        if index < 0 {
+            Result::Err("negative enum variant index")
+        } else if kind < 0 || kind > 2 {
+            Result::Err("invalid enum variant kind")
+        } else if fields < 0 {
+            Result::Err("enum variant field count cannot be negative")
+        } else if kind == 0 && fields != 0 {
+            Result::Err("unit enum variant cannot contain fields")
+        } else {
+            claim_bincode_value(self)?;
+            push_unsigned(self.output, index as uint64, 32, self.config);
+            self.frames.push(
+                BincodeSerializeFrame::Variant {
+                    length: fields,
+                    index: Ref::new(0),
+                    ready: Ref::new(false),
+                },
+            );
+            Result::Ok(())
+        }
+    }
+
+    fn begin_variant_field(self: BincodeSerializer, index: int, name: string) -> Result[
+        unit,
+        string,
+    ] {
+        let _ = name;
+        if self.frames.is_empty() {
+            return Result::Err("variant field without variant")
+        } else {};
+        let frame = self.frames.len() - 1;
+        match self.frames[frame] {
+            BincodeSerializeFrame::Variant { length, index: next, ready } => if ready.get()
+                || index != next.get()
+                || index >= length {
+                Result::Err("variant field index is out of order")
+            } else {
+                next.set(index + 1);
+                ready.set(true);
+                Result::Ok(())
+            },
+            _ => Result::Err("variant field outside a variant"),
+        }
+    }
+
+    fn end_variant(self: BincodeSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_variant without begin_variant")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            BincodeSerializeFrame::Variant { length, index, ready } => if ready.get()
+                || index.get() != length {
+                Result::Err("variant field count does not match serialized values")
+            } else {
+                let _ = self.frames.pop();
+                Result::Ok(())
+            },
+            _ => Result::Err("end_variant does not match active bincode value"),
+        }
+    }
+}
+
 pub fn encode_value(value: serde::Value, config: Config) -> Result[Vec[byte], string] {
     let output: Vec[byte] = Vec::[];
     push_value(output, value, config)?;

@@ -1719,6 +1719,32 @@ fn contains_function_named(values: Vec[Function], name: string) -> bool {
     false
 }
 
+fn canonical_default_trait_ref(ctx: Checker, value: TraitRef) -> TraitRef {
+    TraitRef {
+        name: match find_trait(ctx, value.name) {
+            Some(info) => info.name,
+            None => value.name,
+        },
+        args: value.args,
+    }
+}
+
+fn canonical_default_predicates(ctx: Checker, values: Vec[TypePredicate]) -> Vec[TypePredicate] {
+    let result: Vec[TypePredicate] = Vec::[];
+    for value in values {
+        result.push(
+            match value {
+                Trait { for_ty, trait_ref } => TypePredicate::Trait {
+                    for_ty,
+                    trait_ref: canonical_default_trait_ref(ctx, trait_ref),
+                },
+                Equality { lhs, rhs } => TypePredicate::Equality { lhs, rhs },
+            },
+        )
+    }
+    result
+}
+
 fn default_trait_method(
     ctx: Checker,
     expected: TraitMethodInfo,
@@ -1747,7 +1773,7 @@ fn default_trait_method(
     let ret_ty = resolve_impl_alias_type(ctx, substitute_type(expected.ret_ty, substitutions));
     let predicates = append_predicates(
         owner_predicates,
-        substitute_predicates(expected.predicates, substitutions),
+        canonical_default_predicates(ctx, substitute_predicates(expected.predicates, substitutions)),
     );
     let function_ty = Type::Func { params: param_types, ret_ty };
     Function {
@@ -3142,11 +3168,14 @@ fn default_trait_method_scheme(
     for param in method.params {
         params.push(substitute_type(param, method_substitutions))
     }
-    let callable = Callable::TraitMethod {
-        trait_ref: implementation.trait_ref,
-        method_name: method.name,
-        for_ty: implementation.for_type,
-        has_receiver: method.has_receiver,
+    let callable = match method.default_name {
+        Some(name) => Callable::Function(name),
+        None => Callable::TraitMethod {
+            trait_ref: implementation.trait_ref,
+            method_name: method.name,
+            for_ty: implementation.for_type,
+            has_receiver: method.has_receiver,
+        },
     };
     MethodInfo {
         owner_generics: implementation.generics,
@@ -3161,7 +3190,10 @@ fn default_trait_method_scheme(
             generics: append_names(implementation.generics, method.generics),
             predicates: append_predicates(
                 implementation.predicates,
-                substitute_predicates(method.predicates, method_substitutions),
+                canonical_default_predicates(
+                    ctx,
+                    substitute_predicates(method.predicates, method_substitutions),
+                ),
             ),
             params,
             ret_ty: substitute_type(method.ret_ty, method_substitutions),

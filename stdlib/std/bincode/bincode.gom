@@ -43,15 +43,17 @@ pub fn with_fixed_int_encoding(config: Config) -> Config {
 }
 
 pub fn encode_to_vec[T: Serialize](value: T, config: Config) -> Result[Vec[byte], string] {
-    encode_value(serde::to_value(value), config)
+    let serializer = bincode_serializer(config);
+    Serialize::serialize_into(value, serializer)?;
+    finish_bincode_serializer(serializer)?;
+    Result::Ok(serializer.output)
 }
 
 pub fn decode_from_slice[T: Deserialize](input: Slice[byte], config: Config) -> Result[
     (T, int),
     string,
 ] {
-    let schema: serde::TypedSchema[T] = Deserialize::schema();
-    let decoded = decode_value(input, schema.value, config)?;
-    let value: T = serde::from_value(decoded.0)?;
-    Result::Ok((value, decoded.1))
+    let deserializer = bincode_deserializer(input, config);
+    let value: T = Deserialize::deserialize_from(deserializer)?;
+    Result::Ok((value, deserializer.offset.get()))
 }

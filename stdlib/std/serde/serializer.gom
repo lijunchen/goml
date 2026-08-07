@@ -1,0 +1,119 @@
+package serde;
+
+pub trait Serializer {
+    fn serialize_unit(self: Self) -> Result[unit, string];
+    fn serialize_bool(self: Self, value: bool) -> Result[unit, string];
+    fn serialize_int(self: Self, value: int) -> Result[unit, string];
+    fn serialize_int8(self: Self, value: int8) -> Result[unit, string];
+    fn serialize_int16(self: Self, value: int16) -> Result[unit, string];
+    fn serialize_int32(self: Self, value: int32) -> Result[unit, string];
+    fn serialize_int64(self: Self, value: int64) -> Result[unit, string];
+    fn serialize_uint(self: Self, value: uint) -> Result[unit, string];
+    fn serialize_uint8(self: Self, value: uint8) -> Result[unit, string];
+    fn serialize_uint16(self: Self, value: uint16) -> Result[unit, string];
+    fn serialize_uint32(self: Self, value: uint32) -> Result[unit, string];
+    fn serialize_uint64(self: Self, value: uint64) -> Result[unit, string];
+    fn serialize_float32(self: Self, value: float32) -> Result[unit, string];
+    fn serialize_float64(self: Self, value: float64) -> Result[unit, string];
+    fn serialize_number(self: Self, value: string) -> Result[unit, string];
+    fn serialize_string(self: Self, value: string) -> Result[unit, string];
+    fn serialize_char(self: Self, value: char) -> Result[unit, string];
+    fn serialize_bytes(self: Self, value: Slice[byte]) -> Result[unit, string];
+    fn begin_optional(self: Self, present: bool) -> Result[unit, string];
+    fn end_optional(self: Self) -> Result[unit, string];
+    fn begin_sequence(self: Self, length: int) -> Result[unit, string];
+    fn begin_sequence_element(self: Self, index: int) -> Result[unit, string];
+    fn end_sequence(self: Self) -> Result[unit, string];
+    fn begin_tuple(self: Self, length: int) -> Result[unit, string];
+    fn begin_tuple_element(self: Self, index: int) -> Result[unit, string];
+    fn end_tuple(self: Self) -> Result[unit, string];
+    fn begin_map(self: Self, length: int) -> Result[unit, string];
+    fn begin_map_key(self: Self, index: int) -> Result[unit, string];
+    fn begin_map_value(self: Self, index: int) -> Result[unit, string];
+    fn end_map(self: Self) -> Result[unit, string];
+    fn begin_struct(self: Self, name: string, fields: int) -> Result[unit, string];
+    fn begin_struct_field(self: Self, index: int, name: string) -> Result[unit, string];
+    fn end_struct(self: Self) -> Result[unit, string];
+    fn begin_variant(
+        self: Self,
+        enum_name: string,
+        index: int,
+        name: string,
+        kind: int,
+        fields: int,
+    ) -> Result[unit, string];
+    fn begin_variant_field(self: Self, index: int, name: string) -> Result[unit, string];
+    fn end_variant(self: Self) -> Result[unit, string];
+}
+
+pub fn serialize_value_into[S: Serializer](value: Value, serializer: S) -> Result[unit, string] {
+    match value {
+        Value::Unit => serializer.serialize_unit(),
+        Value::Bool(value) => serializer.serialize_bool(value),
+        Value::Int(value) => serializer.serialize_int(value),
+        Value::Int8(value) => serializer.serialize_int8(value),
+        Value::Int16(value) => serializer.serialize_int16(value),
+        Value::Int32(value) => serializer.serialize_int32(value),
+        Value::Int64(value) => serializer.serialize_int64(value),
+        Value::Uint(value) => serializer.serialize_uint(value),
+        Value::Uint8(value) => serializer.serialize_uint8(value),
+        Value::Uint16(value) => serializer.serialize_uint16(value),
+        Value::Uint32(value) => serializer.serialize_uint32(value),
+        Value::Uint64(value) => serializer.serialize_uint64(value),
+        Value::Float32(value) => serializer.serialize_float32(value),
+        Value::Float64(value) => serializer.serialize_float64(value),
+        Value::Number(value) => serializer.serialize_number(value),
+        Value::String(value) => serializer.serialize_string(value),
+        Value::Char(value) => serializer.serialize_char(value),
+        Value::Sequence(values) => {
+            serializer.begin_sequence(values.len())?;
+            let mut index = 0;
+            while index < values.len() {
+                serializer.begin_sequence_element(index)?;
+                serialize_value_into(values[index], serializer)?;
+                index = index + 1;
+            }
+            serializer.end_sequence()
+        },
+        Value::Tuple(values) => {
+            serializer.begin_tuple(values.len())?;
+            let mut index = 0;
+            while index < values.len() {
+                serializer.begin_tuple_element(index)?;
+                serialize_value_into(values[index], serializer)?;
+                index = index + 1;
+            }
+            serializer.end_tuple()
+        },
+        Value::Optional(values) => if values.len() == 0 {
+            serializer.begin_optional(false)?;
+            serializer.end_optional()
+        } else if values.len() == 1 {
+            serializer.begin_optional(true)?;
+            serialize_value_into(values[0], serializer)?;
+            serializer.end_optional()
+        } else {
+            Result::Err("optional value contains more than one item")
+        },
+        Value::Struct(fields) => {
+            serializer.begin_struct("", fields.len())?;
+            let mut index = 0;
+            while index < fields.len() {
+                serializer.begin_struct_field(index, fields[index].0)?;
+                serialize_value_into(fields[index].1, serializer)?;
+                index = index + 1;
+            }
+            serializer.end_struct()
+        },
+        Value::Variant { index, name, kind, fields } => {
+            serializer.begin_variant("", index, name, kind, fields.len())?;
+            let mut field = 0;
+            while field < fields.len() {
+                serializer.begin_variant_field(field, fields[field].0)?;
+                serialize_value_into(fields[field].1, serializer)?;
+                field = field + 1;
+            }
+            serializer.end_variant()
+        },
+    }
+}

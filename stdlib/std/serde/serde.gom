@@ -63,19 +63,36 @@ pub struct TypedSchema[T] {
 
 pub trait Serialize {
     fn serialize(self: Self) -> Value;
+    fn serialize_into[S: Serializer](self: Self, serializer: S) -> Result[unit, string] {
+        serialize_value_into(self.serialize(), serializer)
+    }
 }
 
 pub trait Deserialize {
     fn deserialize(value: Value) -> Result[Self, string];
     fn schema() -> TypedSchema[Self];
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[Self, string] {
+        let schema: TypedSchema[Self] = Deserialize::schema();
+        Deserialize::deserialize(deserialize_schema_from(deserializer, schema.value)?)
+    }
 }
 
 pub fn to_value[T: Serialize](value: T) -> Value {
-    value.serialize()
+    let serializer = value_serializer();
+    match Serialize::serialize_into(value, serializer) {
+        Ok(()) => match finish_value_serializer(serializer) {
+            Ok(encoded) => encoded,
+            Err(_) => value.serialize(),
+        },
+        Err(_) => value.serialize(),
+    }
 }
 
 pub fn from_value[T: Deserialize](value: Value) -> Result[T, string] {
-    Deserialize::deserialize(value)
+    let deserializer = value_deserializer(value);
+    let decoded: T = Deserialize::deserialize_from(deserializer)?;
+    finish_value_deserializer(deserializer)?;
+    Result::Ok(decoded)
 }
 
 pub fn structure(fields: Vec[(string, Value)]) -> Value {
@@ -171,6 +188,10 @@ impl Serialize for Value {
     fn serialize(self: Value) -> Value {
         self
     }
+
+    fn serialize_into[S: Serializer](self: Value, serializer: S) -> Result[unit, string] {
+        serialize_value_into(self, serializer)
+    }
 }
 
 impl Deserialize for Value {
@@ -181,11 +202,19 @@ impl Deserialize for Value {
     fn schema() -> TypedSchema[Value] {
         typed_schema(Schema::Any)
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[Value, string] {
+        deserializer.deserialize_any()
+    }
 }
 
 impl Serialize for unit {
     fn serialize(self: unit) -> Value {
         Value::Unit
+    }
+
+    fn serialize_into[S: Serializer](self: unit, serializer: S) -> Result[unit, string] {
+        serializer.serialize_unit()
     }
 }
 
@@ -200,11 +229,19 @@ impl Deserialize for unit {
     fn schema() -> TypedSchema[unit] {
         typed_schema(Schema::Unit)
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[unit, string] {
+        deserializer.deserialize_unit()
+    }
 }
 
 impl Serialize for bool {
     fn serialize(self: bool) -> Value {
         Value::Bool(self)
+    }
+
+    fn serialize_into[S: Serializer](self: bool, serializer: S) -> Result[unit, string] {
+        serializer.serialize_bool(self)
     }
 }
 
@@ -219,11 +256,19 @@ impl Deserialize for bool {
     fn schema() -> TypedSchema[bool] {
         typed_schema(Schema::Bool)
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[bool, string] {
+        deserializer.deserialize_bool()
+    }
 }
 
 impl Serialize for string {
     fn serialize(self: string) -> Value {
         Value::String(self)
+    }
+
+    fn serialize_into[S: Serializer](self: string, serializer: S) -> Result[unit, string] {
+        serializer.serialize_string(self)
     }
 }
 
@@ -238,11 +283,19 @@ impl Deserialize for string {
     fn schema() -> TypedSchema[string] {
         typed_schema(Schema::String)
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[string, string] {
+        deserializer.deserialize_string()
+    }
 }
 
 impl Serialize for char {
     fn serialize(self: char) -> Value {
         Value::Char(self)
+    }
+
+    fn serialize_into[S: Serializer](self: char, serializer: S) -> Result[unit, string] {
+        serializer.serialize_char(self)
     }
 }
 
@@ -262,11 +315,19 @@ impl Deserialize for char {
     fn schema() -> TypedSchema[char] {
         typed_schema(Schema::Char)
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[char, string] {
+        deserializer.deserialize_char()
+    }
 }
 
 impl Serialize for int {
     fn serialize(self: int) -> Value {
         Value::Int(self)
+    }
+
+    fn serialize_into[S: Serializer](self: int, serializer: S) -> Result[unit, string] {
+        serializer.serialize_int(self)
     }
 }
 
@@ -282,11 +343,19 @@ impl Deserialize for int {
     fn schema() -> TypedSchema[int] {
         typed_schema(Schema::Integer { signed: true, width: 0 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[int, string] {
+        deserializer.deserialize_int()
+    }
 }
 
 impl Serialize for int8 {
     fn serialize(self: int8) -> Value {
         Value::Int8(self)
+    }
+
+    fn serialize_into[S: Serializer](self: int8, serializer: S) -> Result[unit, string] {
+        serializer.serialize_int8(self)
     }
 }
 
@@ -309,11 +378,19 @@ impl Deserialize for int8 {
     fn schema() -> TypedSchema[int8] {
         typed_schema(Schema::Integer { signed: true, width: 8 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[int8, string] {
+        deserializer.deserialize_int8()
+    }
 }
 
 impl Serialize for int16 {
     fn serialize(self: int16) -> Value {
         Value::Int16(self)
+    }
+
+    fn serialize_into[S: Serializer](self: int16, serializer: S) -> Result[unit, string] {
+        serializer.serialize_int16(self)
     }
 }
 
@@ -336,11 +413,19 @@ impl Deserialize for int16 {
     fn schema() -> TypedSchema[int16] {
         typed_schema(Schema::Integer { signed: true, width: 16 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[int16, string] {
+        deserializer.deserialize_int16()
+    }
 }
 
 impl Serialize for int32 {
     fn serialize(self: int32) -> Value {
         Value::Int32(self)
+    }
+
+    fn serialize_into[S: Serializer](self: int32, serializer: S) -> Result[unit, string] {
+        serializer.serialize_int32(self)
     }
 }
 
@@ -363,11 +448,19 @@ impl Deserialize for int32 {
     fn schema() -> TypedSchema[int32] {
         typed_schema(Schema::Integer { signed: true, width: 32 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[int32, string] {
+        deserializer.deserialize_int32()
+    }
 }
 
 impl Serialize for int64 {
     fn serialize(self: int64) -> Value {
         Value::Int64(self)
+    }
+
+    fn serialize_into[S: Serializer](self: int64, serializer: S) -> Result[unit, string] {
+        serializer.serialize_int64(self)
     }
 }
 
@@ -386,11 +479,19 @@ impl Deserialize for int64 {
     fn schema() -> TypedSchema[int64] {
         typed_schema(Schema::Integer { signed: true, width: 64 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[int64, string] {
+        deserializer.deserialize_int64()
+    }
 }
 
 impl Serialize for uint {
     fn serialize(self: uint) -> Value {
         Value::Uint(self)
+    }
+
+    fn serialize_into[S: Serializer](self: uint, serializer: S) -> Result[unit, string] {
+        serializer.serialize_uint(self)
     }
 }
 
@@ -406,11 +507,19 @@ impl Deserialize for uint {
     fn schema() -> TypedSchema[uint] {
         typed_schema(Schema::Integer { signed: false, width: 0 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[uint, string] {
+        deserializer.deserialize_uint()
+    }
 }
 
 impl Serialize for uint8 {
     fn serialize(self: uint8) -> Value {
         Value::Uint8(self)
+    }
+
+    fn serialize_into[S: Serializer](self: uint8, serializer: S) -> Result[unit, string] {
+        serializer.serialize_uint8(self)
     }
 }
 
@@ -433,11 +542,19 @@ impl Deserialize for uint8 {
     fn schema() -> TypedSchema[uint8] {
         typed_schema(Schema::Integer { signed: false, width: 8 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[uint8, string] {
+        deserializer.deserialize_uint8()
+    }
 }
 
 impl Serialize for uint16 {
     fn serialize(self: uint16) -> Value {
         Value::Uint16(self)
+    }
+
+    fn serialize_into[S: Serializer](self: uint16, serializer: S) -> Result[unit, string] {
+        serializer.serialize_uint16(self)
     }
 }
 
@@ -460,11 +577,19 @@ impl Deserialize for uint16 {
     fn schema() -> TypedSchema[uint16] {
         typed_schema(Schema::Integer { signed: false, width: 16 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[uint16, string] {
+        deserializer.deserialize_uint16()
+    }
 }
 
 impl Serialize for uint32 {
     fn serialize(self: uint32) -> Value {
         Value::Uint32(self)
+    }
+
+    fn serialize_into[S: Serializer](self: uint32, serializer: S) -> Result[unit, string] {
+        serializer.serialize_uint32(self)
     }
 }
 
@@ -487,11 +612,19 @@ impl Deserialize for uint32 {
     fn schema() -> TypedSchema[uint32] {
         typed_schema(Schema::Integer { signed: false, width: 32 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[uint32, string] {
+        deserializer.deserialize_uint32()
+    }
 }
 
 impl Serialize for uint64 {
     fn serialize(self: uint64) -> Value {
         Value::Uint64(self)
+    }
+
+    fn serialize_into[S: Serializer](self: uint64, serializer: S) -> Result[unit, string] {
+        serializer.serialize_uint64(self)
     }
 }
 
@@ -510,11 +643,19 @@ impl Deserialize for uint64 {
     fn schema() -> TypedSchema[uint64] {
         typed_schema(Schema::Integer { signed: false, width: 64 })
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[uint64, string] {
+        deserializer.deserialize_uint64()
+    }
 }
 
 impl Serialize for float32 {
     fn serialize(self: float32) -> Value {
         Value::Float32(self)
+    }
+
+    fn serialize_into[S: Serializer](self: float32, serializer: S) -> Result[unit, string] {
+        serializer.serialize_float32(self)
     }
 }
 
@@ -530,11 +671,19 @@ impl Deserialize for float32 {
     fn schema() -> TypedSchema[float32] {
         typed_schema(Schema::Float(32))
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[float32, string] {
+        deserializer.deserialize_float32()
+    }
 }
 
 impl Serialize for float64 {
     fn serialize(self: float64) -> Value {
         Value::Float64(self)
+    }
+
+    fn serialize_into[S: Serializer](self: float64, serializer: S) -> Result[unit, string] {
+        serializer.serialize_float64(self)
     }
 }
 
@@ -550,6 +699,10 @@ impl Deserialize for float64 {
     fn schema() -> TypedSchema[float64] {
         typed_schema(Schema::Float(64))
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[float64, string] {
+        deserializer.deserialize_float64()
+    }
 }
 
 impl[T: Serialize] Serialize for Vec[T] {
@@ -559,6 +712,17 @@ impl[T: Serialize] Serialize for Vec[T] {
             values.push(value.serialize())
         }
         Value::Sequence(values)
+    }
+
+    fn serialize_into[S: Serializer](self: Vec[T], serializer: S) -> Result[unit, string] {
+        serializer.begin_sequence(self.len())?;
+        let mut index = 0;
+        while index < self.len() {
+            serializer.begin_sequence_element(index)?;
+            Serialize::serialize_into(self[index], serializer)?;
+            index = index + 1;
+        }
+        serializer.end_sequence()
     }
 }
 
@@ -581,6 +745,17 @@ impl[T: Deserialize] Deserialize for Vec[T] {
         let item: TypedSchema[T] = Deserialize::schema();
         typed_schema(Schema::Sequence(Vec::[item.value]))
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[Vec[T], string] {
+        let length = deserializer.begin_sequence()?;
+        let result: Vec[T] = Vec::with_capacity(length.unwrap_or(0));
+        while deserializer.next_sequence_element()? {
+            let item: T = Deserialize::deserialize_from(deserializer)?;
+            result.push(item)
+        }
+        deserializer.end_sequence()?;
+        Result::Ok(result)
+    }
 }
 
 impl[T: Serialize] Serialize for Option[T] {
@@ -588,6 +763,20 @@ impl[T: Serialize] Serialize for Option[T] {
         match self {
             Some(value) => Value::Optional(Vec::[value.serialize()]),
             None => Value::Optional(Vec::[]),
+        }
+    }
+
+    fn serialize_into[S: Serializer](self: Option[T], serializer: S) -> Result[unit, string] {
+        match self {
+            Some(value) => {
+                serializer.begin_optional(true)?;
+                Serialize::serialize_into(value, serializer)?;
+                serializer.end_optional()
+            },
+            None => {
+                serializer.begin_optional(false)?;
+                serializer.end_optional()
+            },
         }
     }
 }
@@ -615,11 +804,31 @@ impl[T: Deserialize] Deserialize for Option[T] {
         let item: TypedSchema[T] = Deserialize::schema();
         typed_schema(Schema::Optional(Vec::[item.value]))
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[Option[T], string] {
+        let result = if deserializer.begin_optional()? {
+            let item: T = Deserialize::deserialize_from(deserializer)?;
+            Option::Some(item)
+        } else {
+            Option::None
+        };
+        deserializer.end_optional()?;
+        Result::Ok(result)
+    }
 }
 
 impl[A: Serialize, B: Serialize] Serialize for (A, B) {
     fn serialize(self: (A, B)) -> Value {
         Value::Tuple(Vec::[self.0.serialize(), self.1.serialize()])
+    }
+
+    fn serialize_into[S: Serializer](self: (A, B), serializer: S) -> Result[unit, string] {
+        serializer.begin_tuple(2)?;
+        serializer.begin_tuple_element(0)?;
+        Serialize::serialize_into(self.0, serializer)?;
+        serializer.begin_tuple_element(1)?;
+        Serialize::serialize_into(self.1, serializer)?;
+        serializer.end_tuple()
     }
 }
 
@@ -636,11 +845,32 @@ impl[A: Deserialize, B: Deserialize] Deserialize for (A, B) {
         let second: TypedSchema[B] = Deserialize::schema();
         typed_schema(Schema::Tuple(Vec::[first.value, second.value]))
     }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[(A, B), string] {
+        deserializer.begin_tuple(2)?;
+        deserializer.begin_tuple_element(0)?;
+        let first: A = Deserialize::deserialize_from(deserializer)?;
+        deserializer.begin_tuple_element(1)?;
+        let second: B = Deserialize::deserialize_from(deserializer)?;
+        deserializer.end_tuple()?;
+        Result::Ok((first, second))
+    }
 }
 
 impl[A: Serialize, B: Serialize, C: Serialize] Serialize for (A, B, C) {
     fn serialize(self: (A, B, C)) -> Value {
         Value::Tuple(Vec::[self.0.serialize(), self.1.serialize(), self.2.serialize()])
+    }
+
+    fn serialize_into[S: Serializer](self: (A, B, C), serializer: S) -> Result[unit, string] {
+        serializer.begin_tuple(3)?;
+        serializer.begin_tuple_element(0)?;
+        Serialize::serialize_into(self.0, serializer)?;
+        serializer.begin_tuple_element(1)?;
+        Serialize::serialize_into(self.1, serializer)?;
+        serializer.begin_tuple_element(2)?;
+        Serialize::serialize_into(self.2, serializer)?;
+        serializer.end_tuple()
     }
 }
 
@@ -658,5 +888,17 @@ impl[A: Deserialize, B: Deserialize, C: Deserialize] Deserialize for (A, B, C) {
         let second: TypedSchema[B] = Deserialize::schema();
         let third: TypedSchema[C] = Deserialize::schema();
         typed_schema(Schema::Tuple(Vec::[first.value, second.value, third.value]))
+    }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[(A, B, C), string] {
+        deserializer.begin_tuple(3)?;
+        deserializer.begin_tuple_element(0)?;
+        let first: A = Deserialize::deserialize_from(deserializer)?;
+        deserializer.begin_tuple_element(1)?;
+        let second: B = Deserialize::deserialize_from(deserializer)?;
+        deserializer.begin_tuple_element(2)?;
+        let third: C = Deserialize::deserialize_from(deserializer)?;
+        deserializer.end_tuple()?;
+        Result::Ok((first, second, third))
     }
 }

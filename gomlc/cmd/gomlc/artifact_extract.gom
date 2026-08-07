@@ -203,6 +203,25 @@ fn artifact_method_constraints(value: tast::Function, start: int) -> Vec[tast::T
     result
 }
 
+fn artifact_default_method_name(value: tast::Function) -> Option[string] {
+    if !value.body.stmts.is_empty() {
+        Option::None
+    } else {
+        match value.body.tail {
+            Some(tast::Expr::Call {
+                func: tast::Expr::Callable { callable: tast::Callable::Function(name), ty: _ },
+                args: _,
+                ty: _,
+            }) => if name.contains("trait_default#") {
+                Option::Some(name)
+            } else {
+                Option::None
+            },
+            _ => Option::None,
+        }
+    }
+}
+
 fn artifact_method_scheme(value: tast::Function, owner_generic_count: int, constraint_start: int) -> artifact::ArtifactFnScheme {
     let type_params: Vec[string] = Vec::[];
     for index in owner_generic_count..value.generics.len() {
@@ -214,7 +233,12 @@ fn artifact_method_scheme(value: tast::Function, owner_generic_count: int, const
         type_params,
         constraints: artifact_method_constraints(value, constraint_start),
         ty: artifact_function_type(value.params, value.ret_ty),
-        body: tast::Callable::Function(value.name),
+        body: tast::Callable::Function(
+            match artifact_default_method_name(value) {
+                Some(name) => name,
+                None => value.name,
+            },
+        ),
     }
 }
 

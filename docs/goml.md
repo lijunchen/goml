@@ -1695,7 +1695,15 @@ A public `#[comptime_derive(Name)]` handler exports the derive name `Name`, inde
 
 Derive names have their own namespace, but ordinary `use` declarations populate it alongside the type and trait namespaces. For example, after `use std::serde;`, `use serde::Serialize;` makes both the `Serialize` trait and a derive export named `Serialize` available as `Serialize`, so `#[derive(Serialize)]` works without another import form. An import alias applies to both namespaces: `use serde::Serialize as DataSerialize;` permits `#[derive(DataSerialize)]`. A package import permits the qualified spelling `#[derive(serde::Serialize)]`. Public re-exports preserve the derive handler's definition identity, so facade packages can use `pub use` to expose a standard-library or third-party derive without copying its implementation.
 
-`std::serde` owns the format-independent `Serialize` and `Deserialize` traits and their derives. Both traits convert through `serde::Value`; exact signed and unsigned integer widths, floating-point widths, enum declaration indexes, field order, and variant shape are retained in that intermediate value. `Sequence`, `Tuple`, and `Optional` are distinct so binary formats do not need to infer whether a length or option tag belongs on the wire. `Value::Number(string)` is reserved for textual formats whose parsed number has no requested destination type. This separation lets binary formats consume precise values while JSON and TOML defer numeric conversion until `Deserialize` knows the target type. `Deserialize::schema` exposes the precise destination layout as a `TypedSchema[Self]`; derived implementations recursively describe their fields and variants for non-self-describing formats. Struct and enum fields support `#[serde(rename = "wire_name")]`. Unit, booleans, strings, chars, numeric primitives, `Value`, `Vec[T]`, `Option[T]`, and two- or three-element tuples have standard implementations.
+`std::serde` owns the format-independent `Serialize`, `Deserialize`, `Serializer`, and `Deserializer` traits and the two derives. Typed formats use `Serialize::serialize_into` and `Deserialize::deserialize_from`: the format handle is a method-level generic parameter, so monomorphization produces ordinary static calls without a runtime serializer trait object, Go interface dispatch, or runtime reflection. A derived struct emits fields directly and a derived enum emits its declaration index, wire name, shape, and payload directly. Derived named-field decoding accepts arbitrary field order, skips unknown fields, and rejects duplicate or missing fields. Struct fields, enum variants, and named variant fields support `#[serde(rename = "wire_name")]`.
+
+`serde::Value` remains the explicit dynamic data model. It retains exact signed and unsigned integer widths, floating-point widths, enum declaration indexes, field order, and variant shape. `Sequence`, `Tuple`, and `Optional` are distinct, and `Value::Number(string)` represents a textual number whose destination type is not yet known. `serde::to_value` and `serde::from_value` connect typed values to this model through `ValueSerializer` and `ValueDeserializer`; using them intentionally constructs or consumes a complete value tree. Unit, booleans, strings, chars, numeric primitives, `Value`, `Vec[T]`, `Option[T]`, and two- or three-element tuples have standard direct implementations.
+
+The current release is a source-compatible transition. Handwritten implementations may still provide the former `Serialize::serialize() -> Value` and `Deserialize::deserialize(Value)` plus `schema`; default generic methods adapt those implementations through `Value`. Derives provide both forms, while typed JSON and bincode prefer the direct generic form. The compatibility methods will remain until a released stage0 can compile the final trait shape.
+
+This design removes the mandatory intermediate tree, but it is not an absolute zero-cost or Rust-style zero-copy guarantee. GoML has GC rather than ownership and `Deserialize<'de>` lifetimes, format buffers and decoded strings still allocate when required, and the Go compiler decides which static calls it inlines. The direct path means no data-model tree or dynamic dispatch is inherently required; allocations must still be measured for each format and value shape.
+
+`just bench-serde` measures a deterministic corpus containing nested structs, all enum shapes, options, tuples, short and long vectors, and large strings. It reports wall time, `ns/op`, bytes and allocations per operation, encoded size, generated Go size and function count, and executable size for JSON, bincode standard and legacy, and TOML. The harness also checks generated Go to ensure direct JSON and bincode entry points do not reference `Value`, schema construction, or serializer vtables.
 
 ```goml
 use std::serde;
@@ -1709,9 +1717,9 @@ struct User {
 }
 ```
 
-`std::json` supports two deliberately separate modes. The value mode uses `json::Value`, `json::parse`, and `json::encode` for schema-free inspection and editing. JSON numbers remain their exact source text in `Value::Number`. The precise typed mode uses `json::to_value`, `from_value`, `to_string`, and `from_string` through the shared serde traits. Numeric range and destination-width checks happen while deserializing into the requested type.
+`std::json` supports two deliberately separate modes. The value mode uses `json::Value`, `json::parse`, and `json::encode` for schema-free inspection and editing. JSON numbers remain their exact source text in `Value::Number`. In the typed mode, `json::to_string` and `from_string` write and consume JSON directly through the streaming serde traits; neither operation first builds a `json::Value` or `serde::Value` tree. `json::to_value` and `from_value` are the explicit bridge to the dynamic JSON model. Numeric range and destination-width checks happen while deserializing into the requested type. `json::try_to_string` and `try_stringify` return serialization errors; the older infallible `to_string` and `stringify` signatures remain compatibility wrappers and return an empty string on such an error.
 
-`json` publicly re-exports the shared `Serialize` and `Deserialize` traits and derive handlers, so either `use serde::Serialize` or `use json::Serialize` selects the same implementation identity. The JSON adapter serializes a struct as an object with source-order fields. It uses externally tagged enums: a unit variant is a string, a tuple variant is an object whose value is an array, and a struct-like variant is an object whose value is another object. `json::stringify` remains an alias of `json::to_string`.
+`json` publicly re-exports the shared `Serialize` and `Deserialize` traits and derive handlers, so either `use serde::Serialize` or `use json::Serialize` selects the same implementation identity. The JSON serializer emits struct fields in source order. Direct maps use JSON objects and therefore require keys whose direct representation is a string or char; `try_to_string` returns a recoverable error for other key types. The deserializer accepts any field order, recursively skips unknown values, rejects duplicate and missing fields, and rejects trailing input. Typed errors retain the byte offset and nested struct, sequence, map, or enum path. JSON uses externally tagged enums: a unit variant is a string, a tuple variant is an object whose value is an array, and a struct-like variant is an object whose value is another object. `json::stringify` remains an alias of `json::to_string`.
 
 ```goml
 use std::json;
@@ -1807,6 +1815,7 @@ meta_expr_struct(input, name, fields) -> MetaExpr
 meta_expr_struct_call_site(name, fields) -> MetaExpr
 meta_expr_target_struct(input, fields) -> MetaExpr
 meta_expr_if(condition, then, else) -> MetaExpr
+meta_expr_while(condition, body) -> MetaExpr
 meta_expr_match(value, arms) -> MetaExpr
 meta_expr_cast(value, type) -> MetaExpr
 meta_expr_return(value) -> MetaExpr
@@ -1837,6 +1846,7 @@ meta_arm_list_push(list, arm) -> unit
 meta_block_new() -> MetaBlock
 meta_block_let(block, name, value) -> unit
 meta_block_let_mut(block, name, value) -> unit
+meta_block_let_mut_typed(block, name, type, value) -> unit
 meta_block_let_typed(block, name, type, value) -> unit
 meta_block_let_pattern(block, pattern, value) -> unit
 meta_block_assign(block, target, value) -> unit
@@ -2311,11 +2321,11 @@ Current public entrances include:
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `iter::empty`, `once`, `from_fn`, iterator adapters, and single-pass consumers
-- `json::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `to_string`, `from_string`, `field`, and typed `as_*` accessors
+- `json::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `try_to_string`, `try_stringify`, `to_string`, `from_string`, `field`, and typed `as_*` accessors
 - `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
 - `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
-- `serde::Value`, `Serialize`, `Deserialize`, `to_value`, and `from_value`
+- `serde::Value`, `Serializer`, `Deserializer`, `Serialize`, `Deserialize`, `value_serializer`, `value_deserializer`, `to_value`, and `from_value`
 - `task::Scope`, `Task[T]`, `CancelToken`, `WaitResult[T]`, `scope`, and `try_scope`
 - `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
 - `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `eq_ignore_ascii_case`, `to_ascii_lowercase`, and `to_ascii_uppercase`
@@ -2324,7 +2334,9 @@ Current public entrances include:
 
 ### Bincode typed binary data
 
-`std::bincode` is a typed-only serde format. `encode_to_vec` serializes a value with its precise `serde::Value` shape, while `decode_from_slice` obtains `Deserialize::schema` for the requested target and returns the value together with the number of consumed bytes. There is intentionally no schema-free bincode value mode because bincode does not carry field types, tuple lengths, or struct layouts on the wire.
+`std::bincode` is primarily a typed serde format. `encode_to_vec` writes the requested type directly to the output buffer, while `decode_from_slice` lets the requested type pull its fields directly from the input and returns the value together with the number of consumed bytes. The typed path does not construct `serde::Value` or request `Deserialize::schema`. The lower-level `encode_value` and `decode_value` functions remain available for explicit dynamic and compatibility work; `decode_value` needs a schema because bincode does not carry field types, tuple lengths, or struct layouts on the wire.
+
+The typed encoder and decoder validate every compound begin, element or field, and end transition. A malformed handwritten serde implementation returns an error instead of producing partial data or panicking. Decode errors include both the byte offset and a path through positional fields, collection elements, map entries, and enum variants.
 
 `bincode::standard()` uses little-endian variable integer encoding. `bincode::legacy()` uses little-endian fixed-width integers. `with_little_endian`, `with_big_endian`, `with_variable_int_encoding`, and `with_fixed_int_encoding` return adjusted configurations. The wire representation follows bincode 2 conventions for booleans, ZigZag signed varints, integer markers, IEEE floating-point bits, UTF-8 strings, collection lengths, one-byte option tags, source-order struct fields, and enum declaration indexes.
 
@@ -2348,11 +2360,11 @@ fn round_trip(value: Message) -> Result[Message, string] {
 }
 ```
 
-The first version supports the shared serde primitives, `Vec`, `Option`, two- and three-element tuples, and derived structs and enums. Fixed arrays are not yet supported because GoML does not yet have const-generic serde implementations. `serde::Value`, `json::Value`, and `toml::Value` have schema-free `Deserialize` implementations and therefore cannot be bincode decode targets.
+The first version supports the shared serde primitives, byte slices through custom direct implementations, `Vec`, `Option`, two- and three-element tuples, and derived structs and enums. Fixed arrays are not yet supported because GoML does not yet have const-generic serde implementations. Dynamic `serde::Value`, `json::Value`, and `toml::Value` do not describe the concrete binary layout needed by typed bincode decode.
 
 ### TOML values and typed documents
 
-`std::toml` follows the same split as JSON. `toml::Value` has string, signed 64-bit integer, 64-bit float, boolean, datetime text, array, and table variants. `parse` and `encode` operate on that schema-free representation. `to_value`, `from_value`, `to_string`, and `from_string` use the shared serde traits and enforce the destination type. Unsigned values above the TOML signed-integer range are rejected, and unit or `None` cannot be encoded because TOML has no null value.
+`std::toml` follows the same public split as JSON. `toml::Value` has string, signed 64-bit integer, 64-bit float, boolean, datetime text, array, and table variants. `parse` and `encode` operate on that schema-free representation. `to_value`, `from_value`, `to_string`, and `from_string` use the shared serde traits and enforce the destination type. TOML still plans a complete table tree before emission because headers and dotted paths require document-wide organization; it is compatible with the streaming traits but is not currently a fully direct format. Unsigned values above the TOML signed-integer range are rejected, and unit or `None` cannot be encoded because TOML has no null value.
 
 The first parser accepts basic and literal strings, Unicode escapes, booleans, decimal and base-prefixed integers, floats, datetime text, arrays, inline tables, dotted keys, and ordinary table headers. It preserves table and field order for deterministic output. Multiline strings, array-of-table headers, and dotted keys inside inline tables are not yet supported.
 

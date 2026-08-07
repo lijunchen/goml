@@ -146,6 +146,7 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
         spec("meta_expr_tuple", one_type("MetaExprList"), "MetaExpr"),
         spec("meta_expr_array", one_type("MetaExprList"), "MetaExpr"),
         spec("meta_expr_if", three_types("MetaExpr", "MetaExpr", "MetaExpr"), "MetaExpr"),
+        spec("meta_expr_while", two_types("MetaExpr", "MetaExpr"), "MetaExpr"),
         spec("meta_expr_match", two_types("MetaExpr", "MetaArmList"), "MetaExpr"),
         spec("meta_expr_cast", two_types("MetaExpr", "MetaType"), "MetaExpr"),
         spec("meta_expr_constructor", two_types("string", "MetaExprList"), "MetaExpr"),
@@ -221,6 +222,11 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
         spec("meta_block_new", no_types(), "MetaBlock"),
         spec("meta_block_let", three_types("MetaBlock", "string", "MetaExpr"), "unit"),
         spec("meta_block_let_mut", three_types("MetaBlock", "string", "MetaExpr"), "unit"),
+        spec(
+            "meta_block_let_mut_typed",
+            four_types("MetaBlock", "string", "MetaType", "MetaExpr"),
+            "unit",
+        ),
         spec(
             "meta_block_let_typed",
             four_types("MetaBlock", "string", "MetaType", "MetaExpr"),
@@ -1538,6 +1544,18 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 },
             ),
         )
+    } else if name == "meta_expr_while" {
+        Result::Ok(
+            push_expr(
+                state,
+                ast::Expr::While {
+                    label: Option::None,
+                    cond: expr_value(state, args, 0)?,
+                    body: expr_value(state, args, 1)?,
+                    span: value_span,
+                },
+            ),
+        )
     } else if name == "meta_expr_match" {
         let list = checked_index(
             handle_argument(args, 1, "MetaArmList")?,
@@ -1959,20 +1977,17 @@ fn block_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) -
             },
         );
         Result::Ok(unit_value())
-    } else if name == "meta_block_let_typed" {
+    } else if name == "meta_block_let_typed" || name == "meta_block_let_mut_typed" {
         let id = checked_index(
             handle_argument(args, 0, "MetaBlock")?,
             state.blocks.len(),
             "meta block",
         )?;
+        let is_mut = name == "meta_block_let_mut_typed";
         state.blocks[id].stmts.push(
             ast::Stmt::Let {
-                is_mut: false,
-                pat: ast::Pat::Var {
-                    name: string_argument(args, 1)?,
-                    is_mut: false,
-                    span: value_span,
-                },
+                is_mut,
+                pat: ast::Pat::Var { name: string_argument(args, 1)?, is_mut, span: value_span },
                 annotation: Option::Some(type_value(state, args, 2)?),
                 value: expr_value(state, args, 3)?,
                 else_branch: Option::None,

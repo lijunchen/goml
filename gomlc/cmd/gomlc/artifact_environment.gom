@@ -287,12 +287,19 @@ fn artifact_dependency_environment_from_exports(value: artifact::ArtifactPackage
                 let method_type = artifact_function_type_parts(
                     artifact_dependency_trait_type(method.ty),
                 )?;
-                let callable = tast::Callable::TraitMethod {
-                    trait_ref: implementation.trait_ref,
-                    method_name: method.name,
-                    for_ty: implementation.for_ty,
-                    has_receiver: !method_type.params.is_empty()
-                        && tast::types_equal(method_type.params[0], implementation.for_ty),
+                let callable = match method.body {
+                    tast::Callable::Function(name) => if name == method.name {
+                        tast::Callable::TraitMethod {
+                            trait_ref: implementation.trait_ref,
+                            method_name: method.name,
+                            for_ty: implementation.for_ty,
+                            has_receiver: !method_type.params.is_empty()
+                                && tast::types_equal(method_type.params[0], implementation.for_ty),
+                        }
+                    } else {
+                        tast::Callable::Function(name)
+                    },
+                    other => other,
                 };
                 let function = artifact_dependency_function_scheme(
                     method,

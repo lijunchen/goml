@@ -1,0 +1,545 @@
+package serde;
+
+enum ValueSerializeFrame {
+    Optional {
+        values: Vec[Value],
+        present: bool,
+        ready: Ref[bool],
+    },
+    Sequence {
+        values: Vec[Value],
+        length: int,
+        ready: Ref[bool],
+    },
+    Tuple {
+        values: Vec[Value],
+        length: int,
+        ready: Ref[bool],
+    },
+    Map {
+        entries: Vec[Value],
+        length: int,
+        state: Ref[int],
+        key: Ref[Option[Value]],
+    },
+    Struct {
+        fields: Vec[(string, Value)],
+        length: int,
+        pending: Ref[Option[string]],
+    },
+    Variant {
+        index: int,
+        name: string,
+        kind: int,
+        fields: Vec[(string, Value)],
+        length: int,
+        pending: Ref[Option[string]],
+    },
+}
+
+pub struct ValueSerializer {
+    frames: Vec[ValueSerializeFrame],
+    result: Ref[Option[Value]],
+}
+
+pub fn value_serializer() -> ValueSerializer {
+    ValueSerializer { frames: Vec::[], result: Ref::new(Option::None) }
+}
+
+pub fn finish_value_serializer(serializer: ValueSerializer) -> Result[Value, string] {
+    if !serializer.frames.is_empty() {
+        Result::Err("serialization ended inside a compound value")
+    } else {
+        match serializer.result.get() {
+            Some(value) => Result::Ok(value),
+            None => Result::Err("serialization produced no value"),
+        }
+    }
+}
+
+fn value_slot_ready(serializer: ValueSerializer) -> bool {
+    if serializer.frames.is_empty() {
+        serializer.result.get().is_none()
+    } else {
+        match serializer.frames[serializer.frames.len() - 1] {
+            ValueSerializeFrame::Optional { values: _, present: _, ready } => ready.get(),
+            ValueSerializeFrame::Sequence { values: _, length: _, ready } => ready.get(),
+            ValueSerializeFrame::Tuple { values: _, length: _, ready } => ready.get(),
+            ValueSerializeFrame::Map { entries: _, length: _, state, key: _ } => {
+                state.get() == 1 || state.get() == 2
+            },
+            ValueSerializeFrame::Struct { fields: _, length: _, pending } => {
+                pending.get().is_some()
+            },
+            ValueSerializeFrame::Variant {
+                index: _,
+                name: _,
+                kind: _,
+                fields: _,
+                length: _,
+                pending,
+            } => pending.get().is_some(),
+        }
+    }
+}
+
+fn append_serialized_value(serializer: ValueSerializer, value: Value) -> Result[unit, string] {
+    if serializer.frames.is_empty() {
+        if serializer.result.get().is_some() {
+            Result::Err("serialization produced more than one root value")
+        } else {
+            serializer.result.set(Option::Some(value));
+            Result::Ok(())
+        }
+    } else {
+        match serializer.frames[serializer.frames.len() - 1] {
+            ValueSerializeFrame::Optional { values, present: _, ready } => if ready.get() {
+                values.push(value);
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err("optional value is not expecting an item")
+            },
+            ValueSerializeFrame::Sequence { values, length: _, ready } => if ready.get() {
+                values.push(value);
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err("sequence is not expecting an element")
+            },
+            ValueSerializeFrame::Tuple { values, length: _, ready } => if ready.get() {
+                values.push(value);
+                ready.set(false);
+                Result::Ok(())
+            } else {
+                Result::Err("tuple is not expecting an element")
+            },
+            ValueSerializeFrame::Map { entries, length: _, state, key } => if state.get() == 1 {
+                key.set(Option::Some(value));
+                state.set(0);
+                Result::Ok(())
+            } else if state.get() == 2 {
+                match key.get() {
+                    Some(encoded_key) => {
+                        entries.push(Value::Tuple(Vec::[encoded_key, value]));
+                        key.set(Option::None);
+                        state.set(0);
+                        Result::Ok(())
+                    },
+                    None => Result::Err("map value has no key"),
+                }
+            } else {
+                Result::Err("map is not expecting a value")
+            },
+            ValueSerializeFrame::Struct { fields, length: _, pending } => match pending.get() {
+                Some(name) => {
+                    fields.push((name, value));
+                    pending.set(Option::None);
+                    Result::Ok(())
+                },
+                None => Result::Err("struct is not expecting a field value"),
+            },
+            ValueSerializeFrame::Variant { index: _, name: _, kind: _, fields, length: _, pending } => match pending.get() {
+                Some(name) => {
+                    fields.push((name, value));
+                    pending.set(Option::None);
+                    Result::Ok(())
+                },
+                None => Result::Err("variant is not expecting a field value"),
+            },
+        }
+    }
+}
+
+fn begin_value_frame(serializer: ValueSerializer, frame: ValueSerializeFrame) -> Result[
+    unit,
+    string,
+] {
+    if value_slot_ready(serializer) {
+        serializer.frames.push(frame);
+        Result::Ok(())
+    } else {
+        Result::Err("serializer is not expecting a value")
+    }
+}
+
+impl Serializer for ValueSerializer {
+    fn serialize_unit(self: ValueSerializer) -> Result[unit, string] {
+        append_serialized_value(self, Value::Unit)
+    }
+
+    fn serialize_bool(self: ValueSerializer, value: bool) -> Result[unit, string] {
+        append_serialized_value(self, Value::Bool(value))
+    }
+
+    fn serialize_int(self: ValueSerializer, value: int) -> Result[unit, string] {
+        append_serialized_value(self, Value::Int(value))
+    }
+
+    fn serialize_int8(self: ValueSerializer, value: int8) -> Result[unit, string] {
+        append_serialized_value(self, Value::Int8(value))
+    }
+
+    fn serialize_int16(self: ValueSerializer, value: int16) -> Result[unit, string] {
+        append_serialized_value(self, Value::Int16(value))
+    }
+
+    fn serialize_int32(self: ValueSerializer, value: int32) -> Result[unit, string] {
+        append_serialized_value(self, Value::Int32(value))
+    }
+
+    fn serialize_int64(self: ValueSerializer, value: int64) -> Result[unit, string] {
+        append_serialized_value(self, Value::Int64(value))
+    }
+
+    fn serialize_uint(self: ValueSerializer, value: uint) -> Result[unit, string] {
+        append_serialized_value(self, Value::Uint(value))
+    }
+
+    fn serialize_uint8(self: ValueSerializer, value: uint8) -> Result[unit, string] {
+        append_serialized_value(self, Value::Uint8(value))
+    }
+
+    fn serialize_uint16(self: ValueSerializer, value: uint16) -> Result[unit, string] {
+        append_serialized_value(self, Value::Uint16(value))
+    }
+
+    fn serialize_uint32(self: ValueSerializer, value: uint32) -> Result[unit, string] {
+        append_serialized_value(self, Value::Uint32(value))
+    }
+
+    fn serialize_uint64(self: ValueSerializer, value: uint64) -> Result[unit, string] {
+        append_serialized_value(self, Value::Uint64(value))
+    }
+
+    fn serialize_float32(self: ValueSerializer, value: float32) -> Result[unit, string] {
+        append_serialized_value(self, Value::Float32(value))
+    }
+
+    fn serialize_float64(self: ValueSerializer, value: float64) -> Result[unit, string] {
+        append_serialized_value(self, Value::Float64(value))
+    }
+
+    fn serialize_number(self: ValueSerializer, value: string) -> Result[unit, string] {
+        append_serialized_value(self, Value::Number(value))
+    }
+
+    fn serialize_string(self: ValueSerializer, value: string) -> Result[unit, string] {
+        append_serialized_value(self, Value::String(value))
+    }
+
+    fn serialize_char(self: ValueSerializer, value: char) -> Result[unit, string] {
+        append_serialized_value(self, Value::Char(value))
+    }
+
+    fn serialize_bytes(self: ValueSerializer, value: Slice[byte]) -> Result[unit, string] {
+        let values: Vec[Value] = Vec::with_capacity(value.len());
+        let mut index = 0;
+        while index < value.len() {
+            values.push(Value::Uint8(value[index]));
+            index = index + 1;
+        }
+        append_serialized_value(self, Value::Sequence(values))
+    }
+
+    fn begin_optional(self: ValueSerializer, present: bool) -> Result[unit, string] {
+        begin_value_frame(
+            self,
+            ValueSerializeFrame::Optional { values: Vec::[], present, ready: Ref::new(present) },
+        )
+    }
+
+    fn end_optional(self: ValueSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_optional without begin_optional")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Optional { values, present, ready } => {
+                if ready.get()
+                    || values.len()
+                        != if present {
+                            1
+                        } else {
+                            0
+                        } {
+                    return Result::Err("optional value has the wrong number of items")
+                } else {};
+                let _ = self.frames.pop();
+                append_serialized_value(self, Value::Optional(values))
+            },
+            _ => Result::Err("end_optional does not match the active compound value"),
+        }
+    }
+
+    fn begin_sequence(self: ValueSerializer, length: int) -> Result[unit, string] {
+        if length < 0 {
+            Result::Err("sequence length cannot be negative")
+        } else {
+            begin_value_frame(
+                self,
+                ValueSerializeFrame::Sequence {
+                    values: Vec::with_capacity(length),
+                    length,
+                    ready: Ref::new(false),
+                },
+            )
+        }
+    }
+
+    fn begin_sequence_element(self: ValueSerializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("sequence element without sequence")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Sequence { values, length, ready } => if ready.get() {
+                Result::Err("previous sequence element has no value")
+            } else if index != values.len() || index >= length {
+                Result::Err("sequence element index is out of order")
+            } else {
+                ready.set(true);
+                Result::Ok(())
+            },
+            _ => Result::Err("sequence element outside a sequence"),
+        }
+    }
+
+    fn end_sequence(self: ValueSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_sequence without begin_sequence")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Sequence { values, length, ready } => {
+                if ready.get() || values.len() != length {
+                    return Result::Err("sequence length does not match its elements")
+                } else {};
+                let _ = self.frames.pop();
+                append_serialized_value(self, Value::Sequence(values))
+            },
+            _ => Result::Err("end_sequence does not match the active compound value"),
+        }
+    }
+
+    fn begin_tuple(self: ValueSerializer, length: int) -> Result[unit, string] {
+        if length < 0 {
+            Result::Err("tuple length cannot be negative")
+        } else {
+            begin_value_frame(
+                self,
+                ValueSerializeFrame::Tuple {
+                    values: Vec::with_capacity(length),
+                    length,
+                    ready: Ref::new(false),
+                },
+            )
+        }
+    }
+
+    fn begin_tuple_element(self: ValueSerializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("tuple element without tuple")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Tuple { values, length, ready } => if ready.get() {
+                Result::Err("previous tuple element has no value")
+            } else if index != values.len() || index >= length {
+                Result::Err("tuple element index is out of order")
+            } else {
+                ready.set(true);
+                Result::Ok(())
+            },
+            _ => Result::Err("tuple element outside a tuple"),
+        }
+    }
+
+    fn end_tuple(self: ValueSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_tuple without begin_tuple")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Tuple { values, length, ready } => {
+                if ready.get() || values.len() != length {
+                    return Result::Err("tuple length does not match its elements")
+                } else {};
+                let _ = self.frames.pop();
+                append_serialized_value(self, Value::Tuple(values))
+            },
+            _ => Result::Err("end_tuple does not match the active compound value"),
+        }
+    }
+
+    fn begin_map(self: ValueSerializer, length: int) -> Result[unit, string] {
+        if length < 0 {
+            Result::Err("map length cannot be negative")
+        } else {
+            begin_value_frame(
+                self,
+                ValueSerializeFrame::Map {
+                    entries: Vec::with_capacity(length),
+                    length,
+                    state: Ref::new(0),
+                    key: Ref::new(Option::None),
+                },
+            )
+        }
+    }
+
+    fn begin_map_key(self: ValueSerializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("map key without map")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Map { entries, length, state, key } => if state.get() != 0
+                || key.get().is_some() {
+                Result::Err("previous map entry is incomplete")
+            } else if index != entries.len() || index >= length {
+                Result::Err("map entry index is out of order")
+            } else {
+                state.set(1);
+                Result::Ok(())
+            },
+            _ => Result::Err("map key outside a map"),
+        }
+    }
+
+    fn begin_map_value(self: ValueSerializer, index: int) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("map value without map")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Map { entries, length: _, state, key } => if state.get() != 0
+                || key.get().is_none() {
+                Result::Err("map value has no completed key")
+            } else if index != entries.len() {
+                Result::Err("map entry index is out of order")
+            } else {
+                state.set(2);
+                Result::Ok(())
+            },
+            _ => Result::Err("map value outside a map"),
+        }
+    }
+
+    fn end_map(self: ValueSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_map without begin_map")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Map { entries, length, state, key } => {
+                if state.get() != 0 || key.get().is_some() || entries.len() != length {
+                    return Result::Err("map length does not match its entries")
+                } else {};
+                let _ = self.frames.pop();
+                append_serialized_value(self, Value::Sequence(entries))
+            },
+            _ => Result::Err("end_map does not match the active compound value"),
+        }
+    }
+
+    fn begin_struct(self: ValueSerializer, name: string, fields: int) -> Result[unit, string] {
+        let _ = name;
+        if fields < 0 {
+            Result::Err("struct field count cannot be negative")
+        } else {
+            begin_value_frame(
+                self,
+                ValueSerializeFrame::Struct {
+                    fields: Vec::with_capacity(fields),
+                    length: fields,
+                    pending: Ref::new(Option::None),
+                },
+            )
+        }
+    }
+
+    fn begin_struct_field(self: ValueSerializer, index: int, name: string) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("struct field without struct")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Struct { fields, length, pending } => if pending.get().is_some() {
+                Result::Err("previous struct field has no value")
+            } else if index != fields.len() || index >= length {
+                Result::Err("struct field index is out of order")
+            } else {
+                pending.set(Option::Some(name));
+                Result::Ok(())
+            },
+            _ => Result::Err("struct field outside a struct"),
+        }
+    }
+
+    fn end_struct(self: ValueSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_struct without begin_struct")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Struct { fields, length, pending } => {
+                if pending.get().is_some() || fields.len() != length {
+                    return Result::Err("struct field count does not match its values")
+                } else {};
+                let _ = self.frames.pop();
+                append_serialized_value(self, Value::Struct(fields))
+            },
+            _ => Result::Err("end_struct does not match the active compound value"),
+        }
+    }
+
+    fn begin_variant(
+        self: ValueSerializer,
+        enum_name: string,
+        index: int,
+        name: string,
+        kind: int,
+        fields: int,
+    ) -> Result[unit, string] {
+        let _ = enum_name;
+        if fields < 0 {
+            Result::Err("variant field count cannot be negative")
+        } else {
+            begin_value_frame(
+                self,
+                ValueSerializeFrame::Variant {
+                    index,
+                    name,
+                    kind,
+                    fields: Vec::with_capacity(fields),
+                    length: fields,
+                    pending: Ref::new(Option::None),
+                },
+            )
+        }
+    }
+
+    fn begin_variant_field(self: ValueSerializer, index: int, name: string) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("variant field without variant")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Variant { index: _, name: _, kind: _, fields, length, pending } => if pending.get().is_some() {
+                Result::Err("previous variant field has no value")
+            } else if index != fields.len() || index >= length {
+                Result::Err("variant field index is out of order")
+            } else {
+                pending.set(Option::Some(name));
+                Result::Ok(())
+            },
+            _ => Result::Err("variant field outside a variant"),
+        }
+    }
+
+    fn end_variant(self: ValueSerializer) -> Result[unit, string] {
+        if self.frames.is_empty() {
+            return Result::Err("end_variant without begin_variant")
+        } else {};
+        match self.frames[self.frames.len() - 1] {
+            ValueSerializeFrame::Variant { index, name, kind, fields, length, pending } => {
+                if pending.get().is_some() || fields.len() != length {
+                    return Result::Err("variant field count does not match its values")
+                } else {};
+                let _ = self.frames.pop();
+                append_serialized_value(self, Value::Variant { index, name, kind, fields })
+            },
+            _ => Result::Err("end_variant does not match the active compound value"),
+        }
+    }
+}
