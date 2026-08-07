@@ -127,7 +127,7 @@ pub fn into_serde_value(value: Value) -> serde::Value {
 }
 
 pub fn to_value[T: Serialize](value: T) -> Result[Value, string] {
-    from_serde_value(serde::to_value(value))
+    from_serde_value(serde::to_value(value)?)
 }
 
 pub fn from_value[T: Deserialize](value: Value) -> Result[T, string] {
@@ -144,17 +144,13 @@ pub fn from_string[T: Deserialize](input: string) -> Result[T, string] {
 }
 
 impl Serialize for Value {
-    fn serialize(self: Value) -> serde::Value {
-        into_serde_value(self)
+    fn serialize[S: serde::Serializer](self: Value, serializer: S) -> Result[unit, string] {
+        serde::serialize_value_into(into_serde_value(self), serializer)
     }
 }
 
 impl Deserialize for Value {
-    fn deserialize(value: serde::Value) -> Result[Value, string] {
-        from_serde_value(value)
-    }
-
-    fn schema() -> serde::TypedSchema[Value] {
-        serde::typed_schema(serde::Schema::Any)
+    fn deserialize[D: serde::Deserializer](deserializer: D) -> Result[Value, string] {
+        from_serde_value(serde::Deserializer::deserialize_any(deserializer)?)
     }
 }

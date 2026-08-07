@@ -67,42 +67,17 @@ fn option_type(value: MetaType) -> MetaType {
 }
 
 #[comptime_derive]
-fn typed_schema_type(input: DeriveInput, value: MetaType) -> MetaType {
-    meta_type_apply(meta_type_named(input, "TypedSchema"), type_list_one(value))
-}
-
-#[comptime_derive]
-fn pair(name: string, value: MetaExpr) -> MetaExpr {
-    meta_expr_tuple(exprs_two(meta_expr_string(name), value))
-}
-
-#[comptime_derive]
-fn new_vec() -> MetaExpr {
-    meta_expr_call_site("vec_new", exprs())
-}
-
-#[comptime_derive]
-fn push(target: MetaExpr, value: MetaExpr) -> MetaExpr {
-    meta_expr_call_site("vec_push", exprs_two(target, value))
-}
-
-#[comptime_derive]
 fn definition_call(input: DeriveInput, name: string, args: MetaExprList) -> MetaExpr {
     meta_expr_call(input, name, args)
 }
 
 #[comptime_derive]
 fn serialize_value(input: DeriveInput, value: MetaExpr) -> MetaExpr {
-    meta_expr_trait_call(input, "Serialize", "serialize", exprs_one(value))
-}
-
-#[comptime_derive]
-fn serialize_into_value(input: DeriveInput, value: MetaExpr) -> MetaExpr {
     meta_expr_try(
         meta_expr_trait_call(
             input,
             "Serialize",
-            "serialize_into",
+            "serialize",
             exprs_two(value, meta_expr_var("serializer")),
         ),
     )
@@ -119,17 +94,12 @@ fn try_serializer_call(name: string, args: MetaExprList) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn deserialize_value(input: DeriveInput, value: MetaExpr) -> MetaExpr {
-    meta_expr_try(meta_expr_trait_call(input, "Deserialize", "deserialize", exprs_one(value)))
-}
-
-#[comptime_derive]
-fn deserialize_from_value(input: DeriveInput) -> MetaExpr {
+fn deserialize_value(input: DeriveInput) -> MetaExpr {
     meta_expr_try(
         meta_expr_trait_call(
             input,
             "Deserialize",
-            "deserialize_from",
+            "deserialize",
             exprs_one(meta_expr_var("deserializer")),
         ),
     )
@@ -146,18 +116,8 @@ fn try_deserializer_call(name: string, args: MetaExprList) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn deserialize_schema(input: DeriveInput) -> MetaExpr {
-    meta_expr_trait_call(input, "Deserialize", "schema", exprs())
-}
-
-#[comptime_derive]
 fn result_ok(value: MetaExpr) -> MetaExpr {
     meta_expr_constructor("Result::Ok", exprs_one(value))
-}
-
-#[comptime_derive]
-fn result_err(message: string) -> MetaExpr {
-    meta_expr_constructor("Result::Err", exprs_one(meta_expr_string(message)))
 }
 
 #[comptime_derive]
@@ -288,93 +248,6 @@ fn add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) 
 #[comptime_derive]
 fn serialize_struct_body(input: DeriveInput) -> MetaExpr {
     let block = meta_block_new();
-    let fields = derive_fresh_name(input, "serde_fields");
-    meta_block_let(block, fields, new_vec());
-    let mut field = 0;
-    while field < derive_field_count(input) {
-        let source_name = derive_field_name(input, field);
-        meta_block_expr(
-            block,
-            push(
-                meta_expr_var(fields),
-                pair(
-                    field_name(input, field),
-                    serialize_value(input, meta_expr_field(meta_expr_var("self"), source_name)),
-                ),
-            ),
-        );
-        field = field + 1;
-    }
-    meta_block_finish(block, definition_call(input, "structure", exprs_one(meta_expr_var(fields))))
-}
-
-#[comptime_derive]
-fn serialize_enum_body(input: DeriveInput) -> MetaExpr {
-    let arms = meta_arm_list_new();
-    let mut variant = 0;
-    while variant < derive_variant_count(input) {
-        let source_name = derive_variant_name(input, variant);
-        let kind = derive_variant_kind(input, variant);
-        let positional = meta_pattern_list_new();
-        let named = meta_pattern_field_list_new();
-        let block = meta_block_new();
-        let fields = derive_fresh_name(input, "serde_fields");
-        meta_block_let(block, fields, new_vec());
-        let mut field = 0;
-        while field < derive_variant_field_count(input, variant) {
-            let binding = derive_fresh_name(input, "serde_field");
-            if kind == 2 {
-                meta_pattern_field_list_push(
-                    named,
-                    derive_variant_field_name(input, variant, field),
-                    meta_pattern_bind(binding),
-                )
-            } else {
-                meta_pattern_list_push(positional, meta_pattern_bind(binding))
-            };
-            meta_block_expr(
-                block,
-                push(
-                    meta_expr_var(fields),
-                    pair(
-                        if kind == 2 {
-                            variant_field_name(input, variant, field)
-                        } else {
-                            ""
-                        },
-                        serialize_value(input, meta_expr_var(binding)),
-                    ),
-                ),
-            );
-            field = field + 1;
-        }
-        let pattern = if kind == 2 {
-            meta_pattern_struct(derive_item_name(input) + "::" + source_name, named, false)
-        } else {
-            meta_pattern_target_constructor(input, source_name, positional)
-        };
-        let body = meta_block_finish(
-            block,
-            definition_call(
-                input,
-                "variant",
-                exprs_four(
-                    meta_expr_int(variant),
-                    meta_expr_string(variant_name(input, variant)),
-                    meta_expr_int(kind),
-                    meta_expr_var(fields),
-                ),
-            ),
-        );
-        meta_arm_list_push(arms, meta_arm(pattern, body));
-        variant = variant + 1;
-    }
-    meta_expr_match(meta_expr_var("self"), arms)
-}
-
-#[comptime_derive]
-fn serialize_into_struct_body(input: DeriveInput) -> MetaExpr {
-    let block = meta_block_new();
     meta_block_expr(
         block,
         try_serializer_call(
@@ -396,7 +269,7 @@ fn serialize_into_struct_body(input: DeriveInput) -> MetaExpr {
         );
         meta_block_expr(
             block,
-            serialize_into_value(
+            serialize_value(
                 input,
                 meta_expr_field(meta_expr_var("self"), derive_field_name(input, field)),
             ),
@@ -407,7 +280,7 @@ fn serialize_into_struct_body(input: DeriveInput) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn serialize_into_enum_body(input: DeriveInput) -> MetaExpr {
+fn serialize_enum_body(input: DeriveInput) -> MetaExpr {
     let arms = meta_arm_list_new();
     let mut variant = 0;
     while variant < derive_variant_count(input) {
@@ -457,7 +330,7 @@ fn serialize_into_enum_body(input: DeriveInput) -> MetaExpr {
                     ),
                 ),
             );
-            meta_block_expr(block, serialize_into_value(input, meta_expr_var(binding)));
+            meta_block_expr(block, serialize_value(input, meta_expr_var(binding)));
             field = field + 1;
         }
         let pattern = if kind == 2 {
@@ -478,21 +351,6 @@ fn serialize_into_enum_body(input: DeriveInput) -> MetaExpr {
 pub fn derive_serialize(input: DeriveInput) -> DeriveOutput {
     let output = derive_output_new(input, "Serialize");
     add_predicates(input, output, "Serialize");
-    let params = meta_param_list_new();
-    meta_param_list_push(params, "self", derive_target_type(input));
-    derive_output_add_method(
-        output,
-        meta_method(
-            "serialize",
-            params,
-            meta_type_named(input, "Value"),
-            if derive_item_kind(input) == 0 {
-                serialize_struct_body(input)
-            } else {
-                serialize_enum_body(input)
-            },
-        ),
-    );
     let direct_params = meta_param_list_new();
     meta_param_list_push(direct_params, "self", derive_target_type(input));
     meta_param_list_push(direct_params, "serializer", meta_type_call_site("S"));
@@ -502,220 +360,18 @@ pub fn derive_serialize(input: DeriveInput) -> DeriveOutput {
     derive_output_add_method(
         output,
         meta_method_generic(
-            "serialize_into",
+            "serialize",
             direct_generics,
             direct_params,
             result_type(meta_type_call_site("unit")),
             if derive_item_kind(input) == 0 {
-                serialize_into_struct_body(input)
+                serialize_struct_body(input)
             } else {
-                serialize_into_enum_body(input)
+                serialize_enum_body(input)
             },
         ),
     );
     output
-}
-
-#[comptime_derive]
-fn deserialize_field(
-    input: DeriveInput,
-    block: MetaBlock,
-    result_fields: MetaExprFieldList,
-    field: int,
-) -> unit {
-    let source_name = derive_field_name(input, field);
-    let binding = derive_fresh_name(input, "serde_field");
-    let encoded = meta_expr_try(
-        definition_call(
-            input,
-            "field",
-            exprs_two(meta_expr_var("value"), meta_expr_string(field_name(input, field))),
-        ),
-    );
-    meta_block_let_typed(
-        block,
-        binding,
-        derive_field_type(input, field),
-        deserialize_value(input, encoded),
-    );
-    meta_expr_field_list_push(result_fields, source_name, meta_expr_var(binding))
-}
-
-#[comptime_derive]
-fn deserialize_struct_body(input: DeriveInput) -> MetaExpr {
-    let block = meta_block_new();
-    let fields = meta_expr_field_list_new();
-    let mut field = 0;
-    while field < derive_field_count(input) {
-        deserialize_field(input, block, fields, field);
-        field = field + 1;
-    }
-    meta_block_finish(block, result_ok(meta_expr_target_struct(input, fields)))
-}
-
-#[comptime_derive]
-fn deserialize_variant_body(input: DeriveInput, variant: int, fields_name: string) -> MetaExpr {
-    let kind = derive_variant_kind(input, variant);
-    let block = meta_block_new();
-    let positional = exprs();
-    let named = meta_expr_field_list_new();
-    let mut field = 0;
-    while field < derive_variant_field_count(input, variant) {
-        let binding = derive_fresh_name(input, "serde_field");
-        let encoded = meta_expr_try(
-            definition_call(
-                input,
-                if kind == 2 {
-                    "named_field"
-                } else {
-                    "positional_field"
-                },
-                if kind == 2 {
-                    exprs_two(
-                        meta_expr_var(fields_name),
-                        meta_expr_string(variant_field_name(input, variant, field)),
-                    )
-                } else {
-                    exprs_two(meta_expr_var(fields_name), meta_expr_int(field))
-                },
-            ),
-        );
-        meta_block_let_typed(
-            block,
-            binding,
-            derive_variant_field_type(input, variant, field),
-            deserialize_value(input, encoded),
-        );
-        if kind == 2 {
-            meta_expr_field_list_push(
-                named,
-                derive_variant_field_name(input, variant, field),
-                meta_expr_var(binding),
-            )
-        } else {
-            meta_expr_list_push(positional, meta_expr_var(binding))
-        };
-        field = field + 1;
-    }
-    let source_name = derive_variant_name(input, variant);
-    let value = if kind == 2 {
-        meta_expr_struct_call_site(derive_item_name(input) + "::" + source_name, named)
-    } else {
-        meta_expr_target_constructor(input, source_name, positional)
-    };
-    meta_block_finish(block, result_ok(value))
-}
-
-#[comptime_derive]
-fn deserialize_enum_body(input: DeriveInput) -> MetaExpr {
-    let block = meta_block_new();
-    let name = derive_fresh_name(input, "serde_variant_name");
-    let fields_name = derive_fresh_name(input, "serde_variant_fields");
-    let parts = meta_pattern_list_new();
-    meta_pattern_list_push(parts, meta_pattern_bind(name));
-    meta_pattern_list_push(parts, meta_pattern_wild());
-    meta_pattern_list_push(parts, meta_pattern_bind(fields_name));
-    meta_block_let_pattern(
-        block,
-        meta_pattern_tuple(parts),
-        meta_expr_try(definition_call(input, "variant_parts", exprs_one(meta_expr_var("value")))),
-    );
-    let arms = meta_arm_list_new();
-    let mut variant = 0;
-    while variant < derive_variant_count(input) {
-        meta_arm_list_push(
-            arms,
-            meta_arm(
-                meta_pattern_string(variant_name(input, variant)),
-                deserialize_variant_body(input, variant, fields_name),
-            ),
-        );
-        variant = variant + 1;
-    }
-    meta_arm_list_push(arms, meta_arm(meta_pattern_wild(), result_err("unknown enum variant")));
-    meta_block_finish(block, meta_expr_match(meta_expr_var(name), arms))
-}
-
-#[comptime_derive]
-fn append_schema_field(
-    input: DeriveInput,
-    block: MetaBlock,
-    fields: MetaExpr,
-    name: string,
-    ty: MetaType,
-) -> unit {
-    let binding = derive_fresh_name(input, "serde_schema");
-    meta_block_let_typed(block, binding, typed_schema_type(input, ty), deserialize_schema(input));
-    meta_block_expr(
-        block,
-        push(fields, pair(name, meta_expr_field(meta_expr_var(binding), "value"))),
-    )
-}
-
-#[comptime_derive]
-fn deserialize_struct_schema(input: DeriveInput) -> MetaExpr {
-    let block = meta_block_new();
-    let fields = derive_fresh_name(input, "serde_schema_fields");
-    meta_block_let(block, fields, new_vec());
-    let mut field = 0;
-    while field < derive_field_count(input) {
-        append_schema_field(
-            input,
-            block,
-            meta_expr_var(fields),
-            field_name(input, field),
-            derive_field_type(input, field),
-        );
-        field = field + 1;
-    }
-    let schema = definition_call(input, "structure_schema", exprs_one(meta_expr_var(fields)));
-    meta_block_finish(block, definition_call(input, "typed_schema", exprs_one(schema)))
-}
-
-#[comptime_derive]
-fn deserialize_enum_schema(input: DeriveInput) -> MetaExpr {
-    let block = meta_block_new();
-    let variants = derive_fresh_name(input, "serde_schema_variants");
-    meta_block_let(block, variants, new_vec());
-    let mut variant = 0;
-    while variant < derive_variant_count(input) {
-        let fields = derive_fresh_name(input, "serde_schema_fields");
-        meta_block_let(block, fields, new_vec());
-        let mut field = 0;
-        while field < derive_variant_field_count(input, variant) {
-            append_schema_field(
-                input,
-                block,
-                meta_expr_var(fields),
-                if derive_variant_kind(input, variant) == 2 {
-                    variant_field_name(input, variant, field)
-                } else {
-                    ""
-                },
-                derive_variant_field_type(input, variant, field),
-            );
-            field = field + 1;
-        }
-        meta_block_expr(
-            block,
-            push(
-                meta_expr_var(variants),
-                definition_call(
-                    input,
-                    "variant_schema",
-                    exprs_four(
-                        meta_expr_int(variant),
-                        meta_expr_string(variant_name(input, variant)),
-                        meta_expr_int(derive_variant_kind(input, variant)),
-                        meta_expr_var(fields),
-                    ),
-                ),
-            ),
-        );
-        variant = variant + 1;
-    }
-    let schema = definition_call(input, "enumeration_schema", exprs_one(meta_expr_var(variants)));
-    meta_block_finish(block, definition_call(input, "typed_schema", exprs_one(schema)))
 }
 
 #[comptime_derive]
@@ -740,7 +396,7 @@ fn deserialize_direct_struct_field_branch(
     meta_block_assign(
         block,
         meta_expr_var(binding),
-        meta_expr_constructor("Option::Some", exprs_one(deserialize_from_value(input))),
+        meta_expr_constructor("Option::Some", exprs_one(deserialize_value(input))),
     );
     meta_expr_if(
         definition_call(
@@ -763,7 +419,7 @@ fn direct_field_binding(input: DeriveInput, field: int) -> string {
 }
 
 #[comptime_derive]
-fn deserialize_from_struct_body(input: DeriveInput) -> MetaExpr {
+fn deserialize_struct_body(input: DeriveInput) -> MetaExpr {
     let block = meta_block_new();
     meta_block_expr(
         block,
@@ -892,7 +548,7 @@ fn deserialize_direct_variant_field_branch(
     meta_block_assign(
         block,
         meta_expr_var(binding),
-        meta_expr_constructor("Option::Some", exprs_one(deserialize_from_value(input))),
+        meta_expr_constructor("Option::Some", exprs_one(deserialize_value(input))),
     );
     meta_expr_if(
         definition_call(
@@ -916,7 +572,7 @@ fn deserialize_direct_variant_field_branch(
 }
 
 #[comptime_derive]
-fn deserialize_from_variant_body(input: DeriveInput, variant: int) -> MetaExpr {
+fn deserialize_variant_body(input: DeriveInput, variant: int) -> MetaExpr {
     let block = meta_block_new();
     let kind = derive_variant_kind(input, variant);
     let field_count = derive_variant_field_count(input, variant);
@@ -1015,7 +671,7 @@ fn deserialize_from_variant_body(input: DeriveInput, variant: int) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn deserialize_from_enum_body(input: DeriveInput) -> MetaExpr {
+fn deserialize_enum_body(input: DeriveInput) -> MetaExpr {
     let block = meta_block_new();
     let key = derive_fresh_name(input, "serde_variant_key");
     meta_block_let(
@@ -1043,7 +699,7 @@ fn deserialize_from_enum_body(input: DeriveInput) -> MetaExpr {
                     meta_expr_string(variant_name(input, variant)),
                 ),
             ),
-            deserialize_from_variant_body(input, variant),
+            deserialize_variant_body(input, variant),
             branch,
         );
     }
@@ -1054,34 +710,6 @@ fn deserialize_from_enum_body(input: DeriveInput) -> MetaExpr {
 pub fn derive_deserialize(input: DeriveInput) -> DeriveOutput {
     let output = derive_output_new(input, "Deserialize");
     add_predicates(input, output, "Deserialize");
-    let params = meta_param_list_new();
-    meta_param_list_push(params, "value", meta_type_named(input, "Value"));
-    derive_output_add_method(
-        output,
-        meta_method(
-            "deserialize",
-            params,
-            result_type(derive_target_type(input)),
-            if derive_item_kind(input) == 0 {
-                deserialize_struct_body(input)
-            } else {
-                deserialize_enum_body(input)
-            },
-        ),
-    );
-    derive_output_add_method(
-        output,
-        meta_method(
-            "schema",
-            meta_param_list_new(),
-            typed_schema_type(input, derive_target_type(input)),
-            if derive_item_kind(input) == 0 {
-                deserialize_struct_schema(input)
-            } else {
-                deserialize_enum_schema(input)
-            },
-        ),
-    );
     let direct_params = meta_param_list_new();
     meta_param_list_push(direct_params, "deserializer", meta_type_call_site("D"));
     let direct_generics = meta_generic_list_new();
@@ -1090,14 +718,14 @@ pub fn derive_deserialize(input: DeriveInput) -> DeriveOutput {
     derive_output_add_method(
         output,
         meta_method_generic(
-            "deserialize_from",
+            "deserialize",
             direct_generics,
             direct_params,
             result_type(derive_target_type(input)),
             if derive_item_kind(input) == 0 {
-                deserialize_from_struct_body(input)
+                deserialize_struct_body(input)
             } else {
-                deserialize_from_enum_body(input)
+                deserialize_enum_body(input)
             },
         ),
     );

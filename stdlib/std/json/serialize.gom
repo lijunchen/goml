@@ -664,8 +664,8 @@ pub fn into_serde_value(value: Value) -> serde::Value {
     }
 }
 
-pub fn to_value[T: Serialize](value: T) -> Value {
-    from_serde_value(serde::to_value(value))
+pub fn to_value[T: Serialize](value: T) -> Result[Value, string] {
+    Result::Ok(from_serde_value(serde::to_value(value)?))
 }
 
 pub fn from_value[T: Deserialize](value: Value) -> Result[T, string] {
@@ -674,7 +674,7 @@ pub fn from_value[T: Deserialize](value: Value) -> Result[T, string] {
 
 pub fn try_stringify[T: Serialize](value: T) -> Result[string, string] {
     let serializer = json_serializer();
-    Serialize::serialize_into(value, serializer)?;
+    Serialize::serialize(value, serializer)?;
     finish_json_serializer(serializer)
 }
 
@@ -695,7 +695,7 @@ pub fn to_string[T: Serialize](value: T) -> string {
 
 pub fn from_string[T: Deserialize](input: string) -> Result[T, string] {
     let deserializer = json_deserializer(input);
-    let decoded: Result[T, string] = Deserialize::deserialize_from(deserializer);
+    let decoded: Result[T, string] = Deserialize::deserialize(deserializer);
     let value: T = match decoded {
         Ok(value) => value,
         Err(error) => return Result::Err(contextualize_json_error(deserializer, error)),
@@ -707,25 +707,13 @@ pub fn from_string[T: Deserialize](input: string) -> Result[T, string] {
 }
 
 impl Serialize for Value {
-    fn serialize(self: Value) -> serde::Value {
-        into_serde_value(self)
-    }
-
-    fn serialize_into[S: serde::Serializer](self: Value, serializer: S) -> Result[unit, string] {
+    fn serialize[S: serde::Serializer](self: Value, serializer: S) -> Result[unit, string] {
         serde::serialize_value_into(into_serde_value(self), serializer)
     }
 }
 
 impl Deserialize for Value {
-    fn deserialize(value: serde::Value) -> Result[Value, string] {
-        Result::Ok(from_serde_value(value))
-    }
-
-    fn schema() -> serde::TypedSchema[Value] {
-        serde::typed_schema(serde::Schema::Any)
-    }
-
-    fn deserialize_from[D: serde::Deserializer](deserializer: D) -> Result[Value, string] {
+    fn deserialize[D: serde::Deserializer](deserializer: D) -> Result[Value, string] {
         Result::Ok(from_serde_value(serde::Deserializer::deserialize_any(deserializer)?))
     }
 }
