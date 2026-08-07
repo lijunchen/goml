@@ -206,7 +206,8 @@ fn returns_cross_package_expanded_derive_source() -> unit {
             );
             testing::assert(expanded.contains("fn label(self: Box[T]) -> string"));
             testing::assert(expanded.contains("impl std::serde::Serialize for Record"));
-            testing::assert(expanded.contains("fn serialize(self: Record) -> std::serde::Value"))
+            testing::assert(expanded.contains("fn serialize[S"));
+            testing::assert(expanded.contains("self: Record, serializer: S"))
         },
         Err(error) => testing::fail(error),
     }

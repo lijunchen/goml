@@ -27,27 +27,9 @@ struct RawBytes {
 }
 
 impl Deserialize for RawBytes {
-    fn deserialize(value: serde::Value) -> Result[RawBytes, string] {
-        match value {
-            serde::Value::Sequence(values) => {
-                let bytes: Vec[byte] = Vec::with_capacity(values.len());
-                for value in values {
-                    let byte: uint8 = Deserialize::deserialize(value)?;
-                    bytes.push(byte)
-                }
-                Result::Ok(RawBytes { values: bytes })
-            },
-            _ => Result::Err("expected byte array"),
-        }
-    }
 
-    fn schema() -> serde::TypedSchema[RawBytes] {
-        serde::typed_schema(
-            serde::Schema::Sequence(Vec::[serde::Schema::Integer { signed: false, width: 8 }]),
-        )
-    }
 
-    fn deserialize_from[D: serde::Deserializer](deserializer: D) -> Result[RawBytes, string] {
+    fn deserialize[D: serde::Deserializer](deserializer: D) -> Result[RawBytes, string] {
         Result::Ok(RawBytes { values: deserializer.deserialize_bytes()? })
     }
 }

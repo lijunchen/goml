@@ -28,11 +28,8 @@ struct StringIntMap {
 struct InvalidSequence {}
 
 impl Serialize for InvalidSequence {
-    fn serialize(self: InvalidSequence) -> serde::Value {
-        serde::Value::Sequence(Vec::[])
-    }
 
-    fn serialize_into[S: Serializer](self: InvalidSequence, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: InvalidSequence, serializer: S) -> Result[unit, string] {
         let _ = self;
         serializer.begin_sequence(1)?;
         serializer.end_sequence()
@@ -42,13 +39,8 @@ impl Serialize for InvalidSequence {
 struct IntKeyMap {}
 
 impl Serialize for IntKeyMap {
-    fn serialize(self: IntKeyMap) -> serde::Value {
-        serde::Value::Sequence(
-            Vec::[serde::Value::Tuple(Vec::[serde::Value::Int32(1), serde::Value::String("one")])],
-        )
-    }
 
-    fn serialize_into[S: Serializer](self: IntKeyMap, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: IntKeyMap, serializer: S) -> Result[unit, string] {
         let _ = self;
         serializer.begin_map(1)?;
         serializer.begin_map_key(0)?;
@@ -62,18 +54,9 @@ impl Serialize for IntKeyMap {
 struct SkippedSequence {}
 
 impl Deserialize for SkippedSequence {
-    fn deserialize(value: serde::Value) -> Result[SkippedSequence, string] {
-        let _ = value;
-        Result::Ok(SkippedSequence {})
-    }
 
-    fn schema() -> serde::TypedSchema[SkippedSequence] {
-        serde::typed_schema(
-            serde::Schema::Sequence(Vec::[serde::Schema::Integer { signed: true, width: 32 }]),
-        )
-    }
 
-    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[SkippedSequence, string] {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[SkippedSequence, string] {
         let _ = deserializer.begin_sequence()?;
         let _ = deserializer.next_sequence_element()?;
         let _ = deserializer.next_sequence_element()?;
@@ -112,40 +95,16 @@ struct ByteBuffer {
 }
 
 impl Serialize for ByteBuffer {
-    fn serialize(self: ByteBuffer) -> serde::Value {
-        let values: Vec[serde::Value] = Vec::with_capacity(self.values.len());
-        for value in self.values {
-            values.push(serde::Value::Uint8(value))
-        }
-        serde::Value::Sequence(values)
-    }
 
-    fn serialize_into[S: Serializer](self: ByteBuffer, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: ByteBuffer, serializer: S) -> Result[unit, string] {
         serializer.serialize_bytes(self.values.slice(0, self.values.len()))
     }
 }
 
 impl Deserialize for ByteBuffer {
-    fn deserialize(value: serde::Value) -> Result[ByteBuffer, string] {
-        let encoded = match value {
-            serde::Value::Sequence(values) => values,
-            _ => return Result::Err("expected byte sequence"),
-        };
-        let values: Vec[byte] = Vec::with_capacity(encoded.len());
-        for value in encoded {
-            let byte: uint8 = Deserialize::deserialize(value)?;
-            values.push(byte)
-        }
-        Result::Ok(ByteBuffer { values })
-    }
 
-    fn schema() -> serde::TypedSchema[ByteBuffer] {
-        serde::typed_schema(
-            serde::Schema::Sequence(Vec::[serde::Schema::Integer { signed: false, width: 8 }]),
-        )
-    }
 
-    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[ByteBuffer, string] {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[ByteBuffer, string] {
         Result::Ok(ByteBuffer { values: deserializer.deserialize_bytes()? })
     }
 }
@@ -155,28 +114,16 @@ struct NumberText {
 }
 
 impl Serialize for NumberText {
-    fn serialize(self: NumberText) -> serde::Value {
-        serde::Value::Number(self.value)
-    }
 
-    fn serialize_into[S: Serializer](self: NumberText, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: NumberText, serializer: S) -> Result[unit, string] {
         serializer.serialize_number(self.value)
     }
 }
 
 impl Deserialize for NumberText {
-    fn deserialize(value: serde::Value) -> Result[NumberText, string] {
-        match value {
-            serde::Value::Number(value) => Result::Ok(NumberText { value }),
-            _ => Result::Err("expected number text"),
-        }
-    }
 
-    fn schema() -> serde::TypedSchema[NumberText] {
-        serde::typed_schema(serde::Schema::Any)
-    }
 
-    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[NumberText, string] {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[NumberText, string] {
         Result::Ok(NumberText { value: deserializer.deserialize_number()? })
     }
 }
@@ -203,26 +150,15 @@ fn primitives() -> Primitives {
 }
 
 impl Serialize for StringIntMap {
-    fn serialize(self: StringIntMap) -> serde::Value {
-        let entries: Vec[serde::Value] = Vec::with_capacity(self.entries.len());
-        for entry in self.entries {
-            entries.push(
-                serde::Value::Tuple(
-                    Vec::[serde::Value::String(entry.0), serde::Value::Int32(entry.1)],
-                ),
-            )
-        }
-        serde::Value::Sequence(entries)
-    }
 
-    fn serialize_into[S: Serializer](self: StringIntMap, serializer: S) -> Result[unit, string] {
+    fn serialize[S: Serializer](self: StringIntMap, serializer: S) -> Result[unit, string] {
         serializer.begin_map(self.entries.len())?;
         let mut index = 0;
         while index < self.entries.len() {
             serializer.begin_map_key(index)?;
-            Serialize::serialize_into(self.entries[index].0, serializer)?;
+            Serialize::serialize(self.entries[index].0, serializer)?;
             serializer.begin_map_value(index)?;
-            Serialize::serialize_into(self.entries[index].1, serializer)?;
+            Serialize::serialize(self.entries[index].1, serializer)?;
             index = index + 1;
         }
         serializer.end_map()
@@ -230,50 +166,16 @@ impl Serialize for StringIntMap {
 }
 
 impl Deserialize for StringIntMap {
-    fn deserialize(value: serde::Value) -> Result[StringIntMap, string] {
-        let encoded = match value {
-            serde::Value::Sequence(values) => values,
-            _ => return Result::Err("expected map entries"),
-        };
-        let entries: Vec[(string, int32)] = Vec::with_capacity(encoded.len());
-        for entry in encoded {
-            let fields = match entry {
-                serde::Value::Tuple(fields) => fields,
-                _ => return Result::Err("expected map entry tuple"),
-            };
-            if fields.len() != 2 {
-                return Result::Err("expected two map entry fields")
-            } else {};
-            let key: string = Deserialize::deserialize(fields[0])?;
-            let value: int32 = Deserialize::deserialize(fields[1])?;
-            entries.push((key, value))
-        }
-        Result::Ok(StringIntMap { entries })
-    }
 
-    fn schema() -> serde::TypedSchema[StringIntMap] {
-        serde::typed_schema(
-            serde::Schema::Sequence(
-                Vec::[
-                    serde::Schema::Tuple(
-                        Vec::[
-                            serde::Schema::String,
-                            serde::Schema::Integer { signed: true, width: 32 },
-                        ],
-                    ),
-                ],
-            ),
-        )
-    }
 
-    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[StringIntMap, string] {
+    fn deserialize[D: Deserializer](deserializer: D) -> Result[StringIntMap, string] {
         let _ = deserializer.begin_map()?;
         let entries: Vec[(string, int32)] = Vec::[];
         while deserializer.next_map_entry()? {
             deserializer.begin_map_key()?;
-            let key: string = Deserialize::deserialize_from(deserializer)?;
+            let key: string = Deserialize::deserialize(deserializer)?;
             deserializer.begin_map_value()?;
-            let value: int32 = Deserialize::deserialize_from(deserializer)?;
+            let value: int32 = Deserialize::deserialize(deserializer)?;
             entries.push((key, value))
         }
         deserializer.end_map()?;
@@ -283,32 +185,32 @@ impl Deserialize for StringIntMap {
 
 fn round_trip_item(value: Item) -> Result[Item, string] {
     let serializer = serde::value_serializer();
-    Serialize::serialize_into(value, serializer)?;
+    Serialize::serialize(value, serializer)?;
     let encoded = serde::finish_value_serializer(serializer)?;
     let deserializer = serde::value_deserializer(encoded);
-    let decoded: Item = Deserialize::deserialize_from(deserializer)?;
+    let decoded: Item = Deserialize::deserialize(deserializer)?;
     serde::finish_value_deserializer(deserializer)?;
     Result::Ok(decoded)
 }
 
 fn round_trip_choice(value: Choice) -> Result[Choice, string] {
     let serializer = serde::value_serializer();
-    Serialize::serialize_into(value, serializer)?;
+    Serialize::serialize(value, serializer)?;
     let encoded = serde::finish_value_serializer(serializer)?;
     let deserializer = serde::value_deserializer(encoded);
-    let decoded: Choice = Deserialize::deserialize_from(deserializer)?;
+    let decoded: Choice = Deserialize::deserialize(deserializer)?;
     serde::finish_value_deserializer(deserializer)?;
     Result::Ok(decoded)
 }
 
 fn decode_item(value: serde::Value) -> Result[Item, string] {
     let deserializer = serde::value_deserializer(value);
-    Deserialize::deserialize_from(deserializer)
+    Deserialize::deserialize(deserializer)
 }
 
 fn decode_choice(value: serde::Value) -> Result[Choice, string] {
     let deserializer = serde::value_deserializer(value);
-    Deserialize::deserialize_from(deserializer)
+    Deserialize::deserialize(deserializer)
 }
 
 fn bytes_equal(left: Vec[byte], right: Vec[byte]) -> bool {
@@ -392,7 +294,7 @@ fn main() -> unit {
     );
     let _ = unfinished.begin_sequence();
     println(serde::finish_value_deserializer(unfinished).is_err());
-    let legacy_value = serde::to_value(legacy::Legacy { value: 31 });
+    let legacy_value = serde::to_value(legacy::Legacy { value: 31 }).unwrap_or(serde::Value::Unit);
     let legacy_decoded: Result[legacy::Legacy, string] = serde::from_value(legacy_value);
     match legacy_decoded {
         Ok(value) => println(value.value),
@@ -456,7 +358,7 @@ fn main() -> unit {
         ),
         Err(error) => println(error),
     };
-    let string_map_value: serde::Value = serde::to_value(string_map);
+    let string_map_value: serde::Value = serde::to_value(string_map).unwrap_or(serde::Value::Unit);
     let string_map_from_value: Result[StringIntMap, string] = serde::from_value(string_map_value);
     match string_map_from_value {
         Ok(value) => println(value.entries[1].0 + ":" + value.entries[1].1.to_string()),
@@ -553,14 +455,17 @@ fn main() -> unit {
         values: Vec::[Option::Some(5), Option::None, Option::Some(-8)],
     };
     let differential_json = json::to_string(differential);
-    println(differential_json == json::encode(json::to_value(differential)));
+    println(
+        differential_json
+            == json::encode(json::to_value(differential).unwrap_or(json::Value::Null)),
+    );
     let standard = bincode::standard();
     let direct_standard: Vec[byte] = match bincode::encode_to_vec(differential, standard) {
         Ok(value) => value,
         Err(_) => Vec::[],
     };
     let value_standard: Vec[byte] = match bincode::encode_value(
-        serde::to_value(differential),
+        serde::to_value(differential).unwrap_or(serde::Value::Unit),
         standard,
     ) {
         Ok(value) => value,
@@ -572,15 +477,32 @@ fn main() -> unit {
         Ok(value) => value,
         Err(_) => Vec::[],
     };
-    let value_legacy: Vec[byte] = match bincode::encode_value(serde::to_value(differential), legacy) {
+    let value_legacy: Vec[byte] = match bincode::encode_value(
+        serde::to_value(differential).unwrap_or(serde::Value::Unit),
+        legacy,
+    ) {
         Ok(value) => value,
         Err(_) => Vec::[],
     };
     println(bytes_equal(direct_legacy, value_legacy));
-    let schema: serde::TypedSchema[Item] = Deserialize::schema();
+    let schema = serde::structure_schema(
+        Vec::[
+            ("item_name", serde::Schema::String),
+            (
+                "values",
+                serde::Schema::Sequence(
+                    Vec::[
+                        serde::Schema::Optional(
+                            Vec::[serde::Schema::Integer { signed: true, width: 32 }],
+                        ),
+                    ],
+                ),
+            ),
+        ],
+    );
     let dynamic_item: Item = match bincode::decode_value(
         direct_standard.slice(0, direct_standard.len()),
-        schema.value,
+        schema,
         standard,
     ) {
         Ok((value, _)) => serde::from_value(value).unwrap_or(

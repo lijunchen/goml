@@ -1855,8 +1855,8 @@ fn renders_source_path_for_spanless_diagnostics() -> unit {
 }
 
 #[test]
-fn preserves_inherited_trait_default_callables_in_artifacts() -> unit {
-    let expected = "std::serde::trait_default#Deserialize#deserialize_from";
+fn preserves_generic_trait_methods_in_artifacts() -> unit {
+    let expected = "deserialize";
     let world = package_world();
     let exports = world.standard.toml.interface_unit.exports;
     let exported = Ref::new(false);
@@ -1865,10 +1865,10 @@ fn preserves_inherited_trait_default_callables_in_artifacts() -> unit {
             match implementation.for_ty {
                 tast::Type::Con { name } => if name == "std::toml::Value" {
                     for method in implementation.definition.methods {
-                        if method.name == "deserialize_from" {
+                        if method.name == "deserialize" {
                             match method.body {
                                 tast::Callable::Function(name) => testing::assert_eq(name, expected),
-                                _ => testing::fail("expected inherited default callable"),
+                                _ => testing::fail("expected generic trait method callable"),
                             };
                             exported.set(true)
                         } else {}
@@ -1879,32 +1879,9 @@ fn preserves_inherited_trait_default_callables_in_artifacts() -> unit {
         } else {}
     }
     testing::assert(exported.get());
-    let environment = match artifact_dependency_environment_from_exports(exports) {
-        Ok(value) => value,
-        Err(error) => {
-            testing::fail(error);
-            return
-        },
-    };
-    let restored = Ref::new(false);
-    for method in environment.methods {
-        if method.function.name == "deserialize_from" {
-            match method.for_type {
-                tast::Type::Con { name } => if name == "std::toml::Value" {
-                    match method.function.callable {
-                        tast::Callable::Function(name) => testing::assert_eq(name, expected),
-                        _ => testing::fail("expected restored default callable"),
-                    };
-                    restored.set(true)
-                } else {},
-                _ => (),
-            }
-        } else {}
-    }
-    testing::assert(restored.get());
     let canonical = Ref::new(false);
     for function in world.standard.toml.core_value.functions {
-        if function.name == "trait_impl#std::serde::Deserialize#std::toml::Value#deserialize_from" {
+        if function.name == "trait_impl#std::serde::Deserialize#std::toml::Value#deserialize" {
             match function.predicates[0] {
                 tast::TypePredicate::Trait { for_ty: _, trait_ref } => {
                     testing::assert_eq(trait_ref.name, "std::serde::Deserializer");

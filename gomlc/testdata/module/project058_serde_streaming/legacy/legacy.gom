@@ -8,21 +8,38 @@ pub struct Legacy {
 }
 
 impl Serialize for Legacy {
-    fn serialize(self: Legacy) -> serde::Value {
-        serde::Value::Struct(Vec::[("value", serde::Value::Int32(self.value))])
+    fn serialize[S: serde::Serializer](self: Legacy, serializer: S) -> Result[unit, string] {
+        serializer.begin_struct("Legacy", 1)?;
+        serializer.begin_struct_field(0, "value")?;
+        Serialize::serialize(self.value, serializer)?;
+        serializer.end_struct()
     }
 }
 
 impl Deserialize for Legacy {
-    fn deserialize(value: serde::Value) -> Result[Legacy, string] {
-        Result::Ok(Legacy { value: Deserialize::deserialize(serde::field(value, "value")?)? })
-    }
-
-    fn schema() -> serde::TypedSchema[Legacy] {
-        serde::typed_schema(
-            serde::structure_schema(
-                Vec::[("value", serde::Schema::Integer { signed: true, width: 32 })],
-            ),
-        )
+    fn deserialize[D: serde::Deserializer](deserializer: D) -> Result[Legacy, string] {
+        deserializer.begin_struct("Legacy", 1)?;
+        let mut value: Option[int32] = Option::None;
+        let mut field = deserializer.next_struct_field()?;
+        while field.is_some() {
+            match field {
+                Some(serde::FieldKey::Position(0)) => {
+                    value = Option::Some(Deserialize::deserialize(deserializer)?);
+                },
+                Some(serde::FieldKey::Name(name)) => if name == "value" {
+                    value = Option::Some(Deserialize::deserialize(deserializer)?);
+                } else {
+                    deserializer.skip_value()?
+                },
+                Some(_) => deserializer.skip_value()?,
+                None => (),
+            };
+            field = deserializer.next_struct_field()?;
+        }
+        deserializer.end_struct()?;
+        match value {
+            Some(value) => Result::Ok(Legacy { value }),
+            None => Result::Err("missing field `value`"),
+        }
     }
 }
