@@ -1,0 +1,34 @@
+package main;
+
+use std::cmp;
+use std::collections;
+use tests::derive_traits::model;
+
+fn main() -> unit {
+    let first = model::Key { major: 1, minor: 2 };
+    let second = model::Key { major: 1, minor: 3 };
+    println((first < second).to_string());
+    println(cmp::Ord::cmp(first, second).is_lt().to_string());
+    let default_key: model::Key = Default::default();
+    println(Debug::debug(default_key));
+    let state: model::State = Default::default();
+    println(Debug::debug(state));
+    let values: HashMap[model::Key, string] = HashMap::new();
+    values.set(first, "found");
+    println(values.get(model::Key { major: 1, minor: 2 }).unwrap_or("missing"));
+    let set: collections::HashSet[int] = Default::default();
+    let index_map: collections::IndexMap[int, string] = Default::default();
+    let stack: collections::Stack[int] = Default::default();
+    let deque: collections::Deque[int] = Default::default();
+    let bit_set: collections::BitSet = Default::default();
+    let arena: collections::Arena[int] = Default::default();
+    let index_vec: collections::IndexVec[int] = Default::default();
+    let interner: collections::Interner = Default::default();
+    println(
+        (set.is_empty() && index_map.is_empty() && stack.is_empty() && deque.is_empty()
+            && bit_set.is_empty()
+            && arena.is_empty()
+            && index_vec.is_empty()
+            && interner.is_empty()).to_string(),
+    )
+}

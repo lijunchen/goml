@@ -1,0 +1,84 @@
+#[derive(PartialEq, Default, Debug)]
+struct Settings {
+    enabled: bool,
+    retries: int,
+    label: string,
+}
+
+struct NoDefault {
+    value: int,
+}
+
+#[derive(Default, Debug)]
+struct Empty {}
+
+#[derive(Default)]
+struct PairDefaults[T] {
+    first: T,
+    second: T,
+    nested: Option[T],
+}
+
+#[derive(Default, Debug)]
+enum State {
+    Idle,
+    Running(int),
+}
+
+#[derive(Default, Debug)]
+enum Message {
+    Data(string, int),
+    Empty,
+}
+
+#[derive(Default, Debug)]
+enum Event {
+    Data {
+        name: string,
+        count: int,
+    },
+    Empty,
+}
+
+#[derive(Default)]
+enum Lazy[T] {
+    Empty,
+    Value(T),
+}
+
+#[derive(Default)]
+enum Selected[T] {
+    Values(T, T),
+    Ignored(Ref[NoDefault]),
+}
+
+fn main() -> unit {
+    let settings: Settings = Default::default();
+    println(settings.debug());
+    println((settings == Settings { enabled: false, retries: 0, label: "" }).to_string());
+    let empty: Empty = Default::default();
+    println(empty.debug());
+    let pair: PairDefaults[int] = Default::default();
+    println((pair.first + pair.second).to_string());
+    println(pair.nested.is_none().to_string());
+    let state: State = Default::default();
+    println(state.debug());
+    let message: Message = Default::default();
+    println(message.debug());
+    let event: Event = Default::default();
+    println(event.debug());
+    let lazy: Lazy[NoDefault] = Default::default();
+    println(
+        match lazy {
+            Lazy::Empty => "empty",
+            Lazy::Value(_) => "value",
+        },
+    );
+    let selected: Selected[int] = Default::default();
+    println(
+        match selected {
+            Selected::Values(first, second) => (first + second).to_string(),
+            Selected::Ignored(_) => "ignored",
+        },
+    )
+}

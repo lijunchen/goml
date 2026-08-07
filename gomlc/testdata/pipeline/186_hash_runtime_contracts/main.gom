@@ -1,4 +1,6 @@
-#[derive(Hash, Eq)]
+use std::cmp;
+
+#[derive(PartialEq, PartialOrd)]
 struct FloatKey {
     value: float64,
 }
@@ -33,29 +35,17 @@ fn print_opt_int(value: Option[int32]) -> unit {
     }
 }
 
-fn float_zero_contracts() -> unit {
+fn float_comparison_contracts() -> unit {
     let zero32: float32 = 0.0;
     let negative_zero32 = -zero32;
-    println((Hash::hash(zero32) == Hash::hash(negative_zero32)).to_string());
-    let values32: HashMap[float32, string] = HashMap::new();
-    values32.set(zero32, "f32");
-    print_opt_string(values32.get(negative_zero32));
-    values32.set(negative_zero32, "f32-updated");
-    println(values32.len());
-    print_opt_string(values32.get(zero32));
-    values32.remove(negative_zero32);
-    println(values32.len());
-
+    println((zero32 == negative_zero32).to_string());
     let zero64: float64 = 0.0;
     let negative_zero64 = -zero64;
-    println((Hash::hash(zero64) == Hash::hash(negative_zero64)).to_string());
-    let values64: HashMap[float64, string] = HashMap::new();
-    values64.set(zero64, "f64");
-    print_opt_string(values64.get(negative_zero64));
-
-    let derived: HashMap[FloatKey, string] = HashMap::new();
-    derived.set(FloatKey { value: zero64 }, "derived");
-    print_opt_string(derived.get(FloatKey { value: negative_zero64 }));
+    println((zero64 == negative_zero64).to_string());
+    println((FloatKey { value: zero64 } == FloatKey { value: negative_zero64 }).to_string());
+    let nan = zero64 / zero64;
+    println((nan == nan).to_string());
+    println(cmp::PartialOrd::partial_cmp(nan, nan).is_none().to_string());
 }
 
 fn collision_contracts() -> unit {
@@ -76,14 +66,13 @@ fn collision_contracts() -> unit {
     values.remove(CollisionKey { value: 99 });
     values.remove(CollisionKey { value: 99 });
     println(values.len());
-
     let index = Ref::new(0);
     while index.get() < 2000 {
         let key = CollisionKey { value: 1000 + index.get() };
         values.set(key, index.get());
         values.remove(key);
         index.set(index.get() + 1);
-    };
+    }
     println(values.len());
 }
 
@@ -103,7 +92,7 @@ fn reference_contracts() -> unit {
 }
 
 fn main() -> unit {
-    float_zero_contracts();
+    float_comparison_contracts();
     collision_contracts();
     reference_contracts();
 }

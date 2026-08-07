@@ -1011,7 +1011,7 @@ fn writes_core_file_shape() -> unit {
     );
     testing::assert_eq(
         wire::artifact_json_finish(writer),
-        "{\"toplevels\":[{\"name\":\"audit::answer\",\"origin\":{\"Source\":null},\"root\":true,\"generics\":[],\"trait_impl\":null,\"params\":[],\"ret_ty\":\"TInt32\",\"body\":{\"stmts\":[],\"tail\":{\"EPrim\":{\"value\":{\"Int32\":{\"value\":41}},\"ty\":\"TInt32\"}}}}],\"constants\":[]}",
+        "{\"toplevels\":[{\"name\":\"audit::answer\",\"origin\":{\"Source\":null},\"root\":true,\"generics\":[],\"predicates\":[],\"trait_impl\":null,\"params\":[],\"ret_ty\":\"TInt32\",\"body\":{\"stmts\":[],\"tail\":{\"EPrim\":{\"value\":{\"Int32\":{\"value\":41}},\"ty\":\"TInt32\"}}}}],\"constants\":[]}",
     )
 }
 
@@ -1367,7 +1367,7 @@ fn writes_core_unit_from_checked_package() -> unit {
     let encoded = core_codec::encode_json(core_unit, false);
     testing::assert_eq(
         hash::sha256_hex(encoded),
-        "ca1f57be8d0ce497aaaaa99bb8d3d706ef67b1ddfa702977d34878bfb887951c",
+        "8987b2d3394cd6863809ecd5a4eadd23b7b41bb5c5ea000990ffd55b8d9ece0f",
     );
     let binary = match core_codec::encode_binary(core_unit) {
         Ok(value) => value,

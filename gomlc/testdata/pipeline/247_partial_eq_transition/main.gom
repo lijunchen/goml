@@ -1,0 +1,73 @@
+use std::cmp;
+
+#[derive(Eq, Hash)]
+struct LegacyKey {
+    value: int,
+}
+
+struct ModernKey {
+    value: int,
+}
+
+impl PartialEq for ModernKey {
+    fn eq(self: ModernKey, other: ModernKey) -> bool {
+        self.value % 10 == other.value % 10
+    }
+}
+
+impl Eq for ModernKey {}
+
+impl Hash for ModernKey {
+    fn hash(self: ModernKey) -> uint64 {
+        (self.value % 10) as uint64
+    }
+}
+
+struct Rank {
+    value: int,
+}
+
+impl PartialEq for Rank {
+    fn eq(self: Rank, other: Rank) -> bool {
+        self.value == other.value
+    }
+}
+
+impl cmp::PartialOrd for Rank {
+    fn partial_cmp(self: Rank, other: Rank) -> Option[cmp::Ordering] {
+        Option::Some(
+            if self.value > other.value {
+                cmp::Ordering::Less
+            } else if self.value < other.value {
+                cmp::Ordering::Greater
+            } else {
+                cmp::Ordering::Equal
+            },
+        )
+    }
+}
+
+fn equal[T: Eq](left: T, right: T) -> bool {
+    left == right
+}
+
+fn main() -> unit {
+    let legacy = LegacyKey { value: 7 };
+    let modern = ModernKey { value: 9 };
+    println(equal(legacy, LegacyKey { value: 7 }));
+    println(Eq::eq(legacy, LegacyKey { value: 8 }));
+    println(equal(modern, ModernKey { value: 19 }));
+    println((modern != ModernKey { value: 20 }).to_string());
+    let legacy_map: HashMap[LegacyKey, string] = HashMap::new();
+    legacy_map.set(legacy, "legacy");
+    println(legacy_map.get(LegacyKey { value: 7 }).unwrap_or("missing"));
+    let modern_map: HashMap[ModernKey, string] = HashMap::new();
+    modern_map.set(modern, "modern");
+    println(modern_map.get(ModernKey { value: 19 }).unwrap_or("missing"));
+    let high = Rank { value: 2 };
+    let low = Rank { value: 1 };
+    println((high < low).to_string());
+    println((high <= high).to_string());
+    println((low > high).to_string());
+    println((low >= low).to_string())
+}

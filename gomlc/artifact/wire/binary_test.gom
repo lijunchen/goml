@@ -7,7 +7,7 @@ fn artifact_binary_test_bytes(values: Vec[uint8]) -> bytes::Bytes {
     bytes::Bytes::from_vec(values)
 }
 
-fn artifact_binary_expect_ok[T: Eq + ToString](value: Result[T, string], expected: T) -> unit {
+fn artifact_binary_expect_ok[T: PartialEq + Debug](value: Result[T, string], expected: T) -> unit {
     match value {
         Ok(actual) => testing::assert_eq(actual, expected),
         Err(error) => testing::fail(error),

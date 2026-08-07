@@ -51,7 +51,8 @@ pub fn collect_main_sources(directory: string, result: Vec[string]) -> unit {
         let entry = path::join(directory, name);
         if fs::is_dir(entry) {
             collect_main_sources(entry, result)
-        } else if name == "main.gom" && fs::is_file(entry + ".out") {
+        } else if name == "main.gom"
+            && (fs::is_file(entry + ".out") || (update_expected() && fs::is_file(entry + ".update"))) {
             result.push(entry)
         } else {}
     }
@@ -237,7 +238,11 @@ pub fn assert_e2e_suite(kind: string, shard: int, shard_count: int) -> unit {
         index.set(current + 1);
         if current % shard_count == shard {
             let source = read_file(source_path);
-            let expected = read_file(source_path + ".out");
+            let expected = if update_expected() {
+                ""
+            } else {
+                read_file(source_path + ".out")
+            };
             let actual = match compiler_driver::compile_source_or_diagnostics(source_path, source) {
                 Compiled(compilation) => execute_go(
                     go_backend::encode(compilation.go_value),
@@ -260,7 +265,7 @@ pub fn assert_e2e_counts() -> unit {
     collect_main_sources(path::join(root, "good"), good);
     collect_main_sources(path::join(root, "bad"), bad);
     testing::assert_eq(good.len(), 560);
-    testing::assert_eq(bad.len(), 71)
+    testing::assert_eq(bad.len(), 78)
 }
 
 pub fn assert_diagnostic_suite(name: string, expected_count: int) -> unit {
@@ -339,7 +344,7 @@ fn module_projects() -> Vec[string] {
 }
 
 pub fn assert_module_count() -> unit {
-    testing::assert_eq(module_projects().len(), 54)
+    testing::assert_eq(module_projects().len(), 55)
 }
 
 fn directory_contains_extension(directory: string, extension: string) -> bool {

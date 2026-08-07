@@ -903,7 +903,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
         hir::lower(
             ast::lower(
                 parser::parse(
-                    "fn main() -> unit { let left: Vec[int32] = Vec::new(); let right: Vec[int32] = Vec::new(); let _ = left == right; }",
+                    "fn main() -> unit { let left: (int32) -> int32 = |value| value; let right: (int32) -> int32 = |value| value; let _ = left == right; }",
                 ),
             ),
             "main.gom",
@@ -912,7 +912,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
     testing::assert_eq(equality_result.diagnostics.len(), 1);
     testing::assert_eq(
         equality_result.diagnostics.get(0).message,
-        "No instance found for trait Eq<Vec[int32]>",
+        "No instance found for trait PartialEq<(int32) -> int32>",
     )
 }
 
