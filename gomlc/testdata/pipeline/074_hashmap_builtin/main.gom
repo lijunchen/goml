@@ -1,10 +1,10 @@
-#[derive(Hash, Eq)]
+#[derive(Hash, PartialEq, Eq)]
 struct Point {
     x: int32,
     y: int32,
 }
 
-#[derive(Hash, Eq)]
+#[derive(Hash, PartialEq, Eq)]
 enum Key {
     A,
     B(int32),
@@ -37,7 +37,7 @@ fn main() -> unit {
     print_opt_int(m2.get(p2));
     p1.set(Point { x: 9, y: 8 });
     print_opt_int(m2.get(p1));
-    println(Eq::eq(p1, p2));
+    println(PartialEq::eq(p1, p2));
 
     let m3 = HashMap::new();
     let k1 = Ref::new(Key::B(7));

@@ -1,8 +1,10 @@
-impl Eq for dyn Hash {
+impl PartialEq for dyn Hash {
     fn eq(self: dyn Hash, other: dyn Hash) -> bool {
         Hash::hash(self) == Hash::hash(other)
     }
 }
+
+impl Eq for dyn Hash {}
 
 fn main() -> unit {
     let h: HashMap[Ref[dyn Hash], string] = HashMap::new();

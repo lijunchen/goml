@@ -6,11 +6,13 @@ pub struct CollisionKey {
     value: int32,
 }
 
-impl Eq for CollisionKey {
+impl PartialEq for CollisionKey {
     fn eq(self: CollisionKey, other: CollisionKey) -> bool {
         self.value == other.value
     }
 }
+
+impl Eq for CollisionKey {}
 
 impl Hash for CollisionKey {
     fn hash(self: CollisionKey) -> uint64 {

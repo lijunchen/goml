@@ -8,11 +8,13 @@ impl Show for int32 {
     }
 }
 
-impl Eq for Ref[dyn Show] {
+impl PartialEq for Ref[dyn Show] {
     fn eq(self: Ref[dyn Show], other: Ref[dyn Show]) -> bool {
         Show::show(self.get()) == Show::show(other.get())
     }
 }
+
+impl Eq for Ref[dyn Show] {}
 
 impl Hash for Ref[dyn Show] {
     fn hash(self: Ref[dyn Show]) -> uint64 {

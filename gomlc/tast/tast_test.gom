@@ -1185,15 +1185,19 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
 #[test]
 fn rejects_impls_overlapping_builtin_ref_blankets() -> unit {
     let diagnostics = checked_diagnostics(
-        "impl Eq for Ref[int32] { fn eq(self: Ref[int32], other: Ref[int32]) -> bool { true } } impl Hash for Ref[int32] { fn hash(self: Ref[int32]) -> uint64 { 0 } }",
+        "impl PartialEq for Ref[int32] { fn eq(self: Ref[int32], other: Ref[int32]) -> bool { true } } impl Eq for Ref[int32] {} impl Hash for Ref[int32] { fn hash(self: Ref[int32]) -> uint64 { 0 } }",
     );
-    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert_eq(diagnostics.len(), 3);
     testing::assert_eq(
         diagnostics.get(0).message,
-        "Trait Eq implementation for Ref[int32] overlaps with builtin implementation",
+        "Trait PartialEq implementation for Ref[int32] overlaps with builtin implementation",
     );
     testing::assert_eq(
         diagnostics.get(1).message,
+        "Trait Eq implementation for Ref[int32] overlaps with builtin implementation",
+    );
+    testing::assert_eq(
+        diagnostics.get(2).message,
         "Trait Hash implementation for Ref[int32] overlaps with builtin implementation",
     );
     for diagnostic in diagnostics {

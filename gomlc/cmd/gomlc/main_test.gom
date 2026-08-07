@@ -260,11 +260,12 @@ fn parses_run_single_without_dumps() -> unit {
 fn preserves_source_and_expanded_ast_views() -> unit {
     let compilation = compile_source(
         "main.gom",
-        "#[derive(Eq)] struct Key { value: int } fn main() -> unit { () }",
+        "#[derive(PartialEq, Eq)] struct Key { value: int } fn main() -> unit { () }",
     );
     let source = ast::pretty(compilation.source_ast_value);
     let expanded = ast::pretty(compilation.ast_value);
     testing::assert(!source.contains("impl Eq for Key"));
+    testing::assert(expanded.contains("impl PartialEq for Key"));
     testing::assert(expanded.contains("impl Eq for Key"))
 }
 

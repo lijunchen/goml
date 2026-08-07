@@ -2,11 +2,13 @@ struct Wrap[T] {
     value: T,
 }
 
-impl[T: Eq] Eq for Wrap[T] {
+impl[T: PartialEq] PartialEq for Wrap[T] {
     fn eq(self: Wrap[T], other: Wrap[T]) -> bool {
-        Eq::eq(self.value, other.value)
+        PartialEq::eq(self.value, other.value)
     }
 }
+
+impl[T: Eq] Eq for Wrap[T] {}
 
 impl[T: Hash] Hash for Wrap[T] {
     fn hash(self: Wrap[T]) -> uint64 {

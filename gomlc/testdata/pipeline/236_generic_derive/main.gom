@@ -12,11 +12,13 @@ impl[T] ToString for Wrapper[T] {
     }
 }
 
-impl[T] Eq for Wrapper[T] {
+impl[T] PartialEq for Wrapper[T] {
     fn eq(self: Wrapper[T], other: Wrapper[T]) -> bool {
         true
     }
 }
+
+impl[T] Eq for Wrapper[T] {}
 
 impl[T] Hash for Wrapper[T] {
     fn hash(self: Wrapper[T]) -> uint64 {
@@ -24,13 +26,13 @@ impl[T] Hash for Wrapper[T] {
     }
 }
 
-#[derive(ToString, Eq, Hash)]
+#[derive(ToString, PartialEq, Eq, Hash)]
 struct Generic[T, Marker] {
     first: Wrapper[T],
     second: Wrapper[T],
 }
 
-#[derive(ToString, Eq, Hash)]
+#[derive(ToString, PartialEq, Eq, Hash)]
 enum GenericChoice[T, Marker] {
     Empty,
     Value(Wrapper[T]),

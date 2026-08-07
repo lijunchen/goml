@@ -3,21 +3,23 @@ enum Maybe[T] {
     Some(T),
 }
 
-#[derive(Hash, Eq)]
+#[derive(Hash, PartialEq, Eq)]
 struct Node {
     value: int32,
     next: Ref[Maybe[Node]],
 }
 
-impl Eq for Maybe[Node] {
+impl PartialEq for Maybe[Node] {
     fn eq(self: Maybe[Node], other: Maybe[Node]) -> bool {
         match (self, other) {
             (Maybe::None, Maybe::None) => true,
-            (Maybe::Some(a), Maybe::Some(b)) => Eq::eq(a, b),
+            (Maybe::Some(a), Maybe::Some(b)) => PartialEq::eq(a, b),
             _ => false,
         }
     }
 }
+
+impl Eq for Maybe[Node] {}
 
 impl Hash for Maybe[Node] {
     fn hash(self: Maybe[Node]) -> uint64 {

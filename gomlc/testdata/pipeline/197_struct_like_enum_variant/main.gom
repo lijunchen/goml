@@ -8,7 +8,7 @@ enum Message[T] {
     },
 }
 
-#[derive(ToString, Hash, Eq)]
+#[derive(ToString, Hash, PartialEq, Eq)]
 enum Key {
     Empty,
     Point {
@@ -56,7 +56,7 @@ fn main() -> unit {
         x: 1,
         y: 2,
     }.to_string());
-    println(Eq::eq(
+    println(PartialEq::eq(
         Key::Point {
             x: 1,
             y: 2,
