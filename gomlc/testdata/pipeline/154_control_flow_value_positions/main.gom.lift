@@ -1,59 +1,59 @@
 fn main() -> unit {
   let i/0 = inherent#Ref#Ref[T]#new__T_int(0) in
   let sum/1 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild138 =
+  let _wild174 =
     while (inherent#Ref#Ref[T]#get__T_int(i/0) < 5) {
-        let _wild136 =
+        let _wild172 =
           inherent#Ref#Ref[T]#set__T_int(i/0, (inherent#Ref#Ref[T]#get__T_int(i/0) + 1)) in
         let cur/2 =
-          if trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(i/0), 3) {
+          if trait_impl#PartialEq#int#eq(inherent#Ref#Ref[T]#get__T_int(i/0), 3) {
               continue
           } else {
               inherent#Ref#Ref[T]#get__T_int(i/0)
           } in
-        let _wild137 =
+        let _wild173 =
           inherent#Ref#Ref[T]#set__T_int(sum/1, (inherent#Ref#Ref[T]#get__T_int(sum/1) + cur/2)) in
         ()
     } in
-  let _wild139 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/1)) in
+  let _wild175 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/1)) in
   let j/3 = inherent#Ref#Ref[T]#new__T_int(0) in
   let total/4 = inherent#Ref#Ref[T]#new__T_int(0) in
-  let _wild143 =
+  let _wild179 =
     while true {
-        let _wild140 =
+        let _wild176 =
           inherent#Ref#Ref[T]#set__T_int(j/3, (inherent#Ref#Ref[T]#get__T_int(j/3) + 1)) in
         let cur/5 =
-          let mtmp141 = inherent#Ref#Ref[T]#get__T_int(j/3) in
-          match mtmp141 {
+          let mtmp177 = inherent#Ref#Ref[T]#get__T_int(j/3) in
+          match mtmp177 {
             5 => {
               break
             },
             _ => inherent#Ref#Ref[T]#get__T_int(j/3),
           } in
-        let _wild142 =
+        let _wild178 =
           inherent#Ref#Ref[T]#set__T_int(
             total/4,
             (inherent#Ref#Ref[T]#get__T_int(total/4) + cur/5)
           ) in
         ()
     } in
-  let _wild144 = println__T_int(inherent#Ref#Ref[T]#get__T_int(total/4)) in
+  let _wild180 = println__T_int(inherent#Ref#Ref[T]#get__T_int(total/4)) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/257)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/234: Ref[int], value/235: int) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 

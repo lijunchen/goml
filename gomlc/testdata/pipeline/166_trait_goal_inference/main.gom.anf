@@ -1,44 +1,44 @@
 fn trait_impl#Measure#Vec[int32]#measure(self/0: Vec[int32]) -> int {
-  let inline158 = @intrinsic(vec.len)(self/0) in
-  inline158
+  let inline194 = @intrinsic(vec.len)(self/0) in
+  inline194
 }
 
 fn main() -> unit {
   let values/2 = @intrinsic(vec.new)() in
-  join inline_cont164(t140: int) -> unit {
-    join inline_cont162(t141: string) -> unit {
-      let inline160 = trait_impl#ToString#string#to_string(t141) in
-      let inline161 = @runtime(core.string_println)(inline160) in
+  join inline_cont200(t176: int) -> unit {
+    join inline_cont198(t177: string) -> unit {
+      let inline196 = trait_impl#ToString#string#to_string(t177) in
+      let inline197 = @runtime(core.string_println)(inline196) in
       ()
     } in
-    let inline163 = @runtime(core.int_to_string)(t140) in
-    jump inline_cont162(inline163)
+    let inline199 = @runtime(core.int_to_string)(t176) in
+    jump inline_cont198(inline199)
   } in
-  let inline165 = trait_impl#Measure#Vec[int32]#measure(values/2) in
-  jump inline_cont164(inline165)
+  let inline201 = trait_impl#Measure#Vec[int32]#measure(values/2) in
+  jump inline_cont200(inline201)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/162: Vec[int32]) -> int {
-  let t145 = @intrinsic(vec.len)(self/162) in
-  t145
+fn inherent#Vec#Vec[T]#len__T_int32(self/187: Vec[int32]) -> int {
+  let t181 = @intrinsic(vec.len)(self/187) in
+  t181
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont166(t147: string) -> unit {
-    let t148 = @runtime(core.string_println)(t147) in
+  join inline_cont202(t183: string) -> unit {
+    let t184 = @runtime(core.string_println)(t183) in
     ()
   } in
-  jump inline_cont166(value/31)
+  jump inline_cont202(value/31)
 }
 
 fn read_measure__T_Vec[int32](value/1: Vec[int32]) -> int {
-  let inline168 = inherent#Vec#Vec[T]#len__T_int32(value/1) in
-  inline168
+  let inline204 = inherent#Vec#Vec[T]#len__T_int32(value/1) in
+  inline204
 }
 
 fn inherent#int#int#to_string(self/34: int) -> string {
-  let t154 = @runtime(core.int_to_string)(self/34) in
-  t154
+  let t190 = @runtime(core.int_to_string)(self/34) in
+  t190
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

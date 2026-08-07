@@ -3,20 +3,20 @@ fn trait_impl#ToString#S#to_string(self/0: S) -> string {
 }
 
 fn main() -> unit {
-  let _wild136 = println__T_int(1) in
-  let _wild137 = println__T_bool(true) in
-  let _wild138 = println__T_string("hi") in
-  let _wild139 = println__T_unit(()) in
-  let _wild140 = println__T_string(trait_impl#ToString#int#to_string(2)) in
-  let _wild141 = println__T_string(inherent#int#int#to_string(2)) in
+  let _wild172 = println__T_int(1) in
+  let _wild173 = println__T_bool(true) in
+  let _wild174 = println__T_string("hi") in
+  let _wild175 = println__T_unit(()) in
+  let _wild176 = println__T_string(trait_impl#ToString#int#to_string(2)) in
+  let _wild177 = println__T_string(inherent#int#int#to_string(2)) in
   let s/1 = S { value: 9 } in
-  let _wild142 = println__T_S(s/1) in
+  let _wild178 = println__T_S(s/1) in
   let d/2 = to_dyn[ToString]{S}(s/1) in
-  let _wild143 = println__T_dynToString(d/2) in
+  let _wild179 = println__T_dynToString(d/2) in
   let r/3 = inherent#Ref#Ref[T]#new__T_int(5) in
-  let _wild144 = println__T_Ref[int](r/3) in
-  let _wild145 = print__T_string("no-newline") in
-  let _wild146 = println__T_string("!") in
+  let _wild180 = println__T_Ref[int](r/3) in
+  let _wild181 = print__T_string("no-newline") in
+  let _wild182 = println__T_string("!") in
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
@@ -55,8 +55,8 @@ fn println__T_dynToString(value/31: dyn ToString) -> unit {
   @runtime(core.string_println)(dyn_call[ToString::to_string](value/31))
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/257)
 }
 
 fn println__T_Ref[int](value/31: Ref[int]) -> unit {
@@ -79,16 +79,16 @@ fn trait_impl#ToString#unit#to_string(self/65: unit) -> string {
   @runtime(core.unit_to_string)(self/65)
 }
 
-fn trait_impl#ToString#Ref[int]#to_string(self/143: Ref[int]) -> string {
-  let v/144 = inherent#Ref#Ref[T]#get__T_int(self/143) in
-  (("ref(" + trait_impl#ToString#int#to_string(v/144)) + ")")
+fn trait_impl#ToString#Ref[int]#to_string(self/168: Ref[int]) -> string {
+  let v/169 = inherent#Ref#Ref[T]#get__T_int(self/168) in
+  (("ref(" + trait_impl#ToString#int#to_string(v/169)) + ")")
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 

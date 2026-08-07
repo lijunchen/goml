@@ -40,103 +40,103 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 func main0() struct{} {
     var sum__0 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
     var i__1 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(1)
-    Loop_loop163:
+    Loop_loop199:
     for {
-        var t164 int
-        var inline215 int = ref_get__Ref_3int(i__1)
-        t164 = inline215
-        var t165 bool = t164 <= 100
-        if t165 {
-            var t172 int
-            var inline213 int = ref_get__Ref_3int(i__1)
-            t172 = inline213
-            var t173 bool
-            var inline210 int = 50
-            var inline211 bool = t172 == inline210
-            t173 = inline211
-            if t173 {
-                break Loop_loop163
+        var t200 int
+        var inline251 int = ref_get__Ref_3int(i__1)
+        t200 = inline251
+        var t201 bool = t200 <= 100
+        if t201 {
+            var t208 int
+            var inline249 int = ref_get__Ref_3int(i__1)
+            t208 = inline249
+            var t209 bool
+            var inline246 int = 50
+            var inline247 bool = t208 == inline246
+            t209 = inline247
+            if t209 {
+                break Loop_loop199
             } else {
-                var t167 int
-                var inline208 int = ref_get__Ref_3int(sum__0)
-                t167 = inline208
-                var t168 int
-                var inline206 int = ref_get__Ref_3int(i__1)
-                t168 = inline206
-                var t169 int = t167 + t168
-                ref_set__Ref_3int(sum__0, t169)
-                var t170 int
-                var inline202 int = ref_get__Ref_3int(i__1)
-                t170 = inline202
-                var t171 int = t170 + 1
-                ref_set__Ref_3int(i__1, t171)
+                var t203 int
+                var inline244 int = ref_get__Ref_3int(sum__0)
+                t203 = inline244
+                var t204 int
+                var inline242 int = ref_get__Ref_3int(i__1)
+                t204 = inline242
+                var t205 int = t203 + t204
+                ref_set__Ref_3int(sum__0, t205)
+                var t206 int
+                var inline238 int = ref_get__Ref_3int(i__1)
+                t206 = inline238
+                var t207 int = t206 + 1
+                ref_set__Ref_3int(i__1, t207)
                 continue
             }
         } else {
-            break Loop_loop163
+            break Loop_loop199
         }
     }
-    var inline249 string = "sum up to break: "
-    var inline250 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline249)
-    _goml_runtime_core_string_print(inline250)
-    var t150 int
-    var inline247 int = ref_get__Ref_3int(sum__0)
-    t150 = inline247
-    var inline244 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t150)
-    _goml_runtime_core_string_println(inline244)
+    var inline285 string = "sum up to break: "
+    var inline286 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline285)
+    _goml_runtime_core_string_print(inline286)
+    var t186 int
+    var inline283 int = ref_get__Ref_3int(sum__0)
+    t186 = inline283
+    var inline280 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t186)
+    _goml_runtime_core_string_println(inline280)
     var even_sum__2 *ref_int_x
-    var inline241 int = 0
-    var inline242 *ref_int_x = ref__Ref_3int(inline241)
-    even_sum__2 = inline242
+    var inline277 int = 0
+    var inline278 *ref_int_x = ref__Ref_3int(inline277)
+    even_sum__2 = inline278
     var j__3 *ref_int_x
-    var inline238 int = 1
-    var inline239 *ref_int_x = ref__Ref_3int(inline238)
-    j__3 = inline239
-    Loop_loop153:
+    var inline274 int = 1
+    var inline275 *ref_int_x = ref__Ref_3int(inline274)
+    j__3 = inline275
+    Loop_loop189:
     for {
-        var t154 int
-        var inline227 int = ref_get__Ref_3int(j__3)
-        t154 = inline227
-        var t155 bool = t154 <= 10
-        if t155 {
+        var t190 int
+        var inline263 int = ref_get__Ref_3int(j__3)
+        t190 = inline263
+        var t191 bool = t190 <= 10
+        if t191 {
             var cur__4 int
-            var inline225 int = ref_get__Ref_3int(j__3)
-            cur__4 = inline225
-            var t156 int = cur__4 + 1
-            ref_set__Ref_3int(j__3, t156)
-            var t158 int = cur__4 / 2
-            var t159 int = t158 * 2
-            var t160 bool
-            var inline221 bool = cur__4 == t159
-            t160 = inline221
-            if t160 {
-                var t161 int
-                var inline219 int = ref_get__Ref_3int(even_sum__2)
-                t161 = inline219
-                var t162 int = t161 + cur__4
-                ref_set__Ref_3int(even_sum__2, t162)
+            var inline261 int = ref_get__Ref_3int(j__3)
+            cur__4 = inline261
+            var t192 int = cur__4 + 1
+            ref_set__Ref_3int(j__3, t192)
+            var t194 int = cur__4 / 2
+            var t195 int = t194 * 2
+            var t196 bool
+            var inline257 bool = cur__4 == t195
+            t196 = inline257
+            if t196 {
+                var t197 int
+                var inline255 int = ref_get__Ref_3int(even_sum__2)
+                t197 = inline255
+                var t198 int = t197 + cur__4
+                ref_set__Ref_3int(even_sum__2, t198)
                 continue
             } else {
                 continue
             }
         } else {
-            break Loop_loop153
+            break Loop_loop189
         }
     }
-    var inline234 string = "even sum: "
-    var inline235 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline234)
-    _goml_runtime_core_string_print(inline235)
-    var t152 int
-    var inline232 int = ref_get__Ref_3int(even_sum__2)
-    t152 = inline232
-    var inline229 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t152)
-    _goml_runtime_core_string_println(inline229)
+    var inline270 string = "even sum: "
+    var inline271 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline270)
+    _goml_runtime_core_string_print(inline271)
+    var t188 int
+    var inline268 int = ref_get__Ref_3int(even_sum__2)
+    t188 = inline268
+    var inline265 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t188)
+    _goml_runtime_core_string_println(inline265)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__232 int) *ref_int_x {
-    var t176 *ref_int_x = ref__Ref_3int(value__232)
-    return t176
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__257 int) *ref_int_x {
+    var t212 *ref_int_x = ref__Ref_3int(value__257)
+    return t212
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
@@ -144,8 +144,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t195 string = _goml_runtime_core_int_to_string(self__69)
-    return t195
+    var t231 string = _goml_runtime_core_int_to_string(self__69)
+    return t231
 }
 
 func main() {

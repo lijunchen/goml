@@ -45,46 +45,46 @@ func main0() struct{} {
     var unsigned__2 uint64 = 4294967296
     var float__3 float64 = 125
     var small__4 float32 = 2.5
-    var inline193 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(integer__1)
-    _goml_runtime_core_string_println(inline193)
-    var inline190 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(unsigned__2)
-    _goml_runtime_core_string_println(inline190)
-    var inline187 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(float__3)
-    _goml_runtime_core_string_println(inline187)
-    var inline184 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(small__4)
-    _goml_runtime_core_string_println(inline184)
+    var inline229 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(integer__1)
+    _goml_runtime_core_string_println(inline229)
+    var inline226 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(unsigned__2)
+    _goml_runtime_core_string_println(inline226)
+    var inline223 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(float__3)
+    _goml_runtime_core_string_println(inline223)
+    var inline220 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(small__4)
+    _goml_runtime_core_string_println(inline220)
     switch integer__1 {
     case 1000:
-        var inline176 string = "matched"
-        var inline177 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline176)
-        _goml_runtime_core_string_println(inline177)
+        var inline212 string = "matched"
+        var inline213 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline212)
+        _goml_runtime_core_string_println(inline213)
         return struct{}{}
     default:
-        var inline180 string = "missed"
-        var inline181 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline180)
-        _goml_runtime_core_string_println(inline181)
+        var inline216 string = "missed"
+        var inline217 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline216)
+        _goml_runtime_core_string_println(inline217)
         return struct{}{}
     }
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__72 int32) string {
-    var t163 string = _goml_runtime_core_int32_to_string(self__72)
-    return t163
+    var t199 string = _goml_runtime_core_int32_to_string(self__72)
+    return t199
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__77 uint64) string {
-    var t166 string = _goml_runtime_core_uint64_to_string(self__77)
-    return t166
+    var t202 string = _goml_runtime_core_uint64_to_string(self__77)
+    return t202
 }
 
 func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__79 float64) string {
-    var t169 string = _goml_runtime_core_float64_to_string(self__79)
-    return t169
+    var t205 string = _goml_runtime_core_float64_to_string(self__79)
+    return t205
 }
 
 func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__78 float32) string {
-    var t172 string = _goml_runtime_core_float32_to_string(self__78)
-    return t172
+    var t208 string = _goml_runtime_core_float32_to_string(self__78)
+    return t208
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

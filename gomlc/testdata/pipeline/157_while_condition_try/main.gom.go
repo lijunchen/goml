@@ -62,168 +62,168 @@ func (_ Option__int32_Some) isOption__int32() {}
 
 func run_some() Option__int32 {
     var i__2 *ref_int32_x
-    var inline245 int32 = 0
-    var inline246 *ref_int32_x = ref__Ref_5int32(inline245)
-    i__2 = inline246
+    var inline281 int32 = 0
+    var inline282 *ref_int32_x = ref__Ref_5int32(inline281)
+    i__2 = inline282
     var total__3 *ref_int32_x
-    var inline242 int32 = 0
-    var inline243 *ref_int32_x = ref__Ref_5int32(inline242)
-    total__3 = inline243
-    Loop_loop167:
+    var inline278 int32 = 0
+    var inline279 *ref_int32_x = ref__Ref_5int32(inline278)
+    total__3 = inline279
+    Loop_loop203:
     for {
-        var t168 int32
-        var inline238 int32 = ref_get__Ref_5int32(i__2)
-        t168 = inline238
-        var mtmp136 Option__bool
-        var inline234 bool = t168 < 3
-        if inline234 {
-            var inline235 Option__bool = Option__bool_Some{
+        var t204 int32
+        var inline274 int32 = ref_get__Ref_5int32(i__2)
+        t204 = inline274
+        var mtmp172 Option__bool
+        var inline270 bool = t204 < 3
+        if inline270 {
+            var inline271 Option__bool = Option__bool_Some{
                 _0: true,
             }
-            mtmp136 = inline235
+            mtmp172 = inline271
         } else {
-            var inline236 Option__bool = Option__bool_Some{
+            var inline272 Option__bool = Option__bool_Some{
                 _0: false,
             }
-            mtmp136 = inline236
+            mtmp172 = inline272
         }
-        var jp170 bool
-        switch mtmp136.(type) {
+        var jp206 bool
+        switch mtmp172.(type) {
         case Option__bool_None:
             return Option__int32_None{}
         case Option__bool_Some:
-            var x137 bool = mtmp136.(Option__bool_Some)._0
-            jp170 = x137
-            if jp170 {
-                var t171 int32
-                var inline232 int32 = ref_get__Ref_5int32(total__3)
-                t171 = inline232
-                var t172 int32
-                var inline230 int32 = ref_get__Ref_5int32(i__2)
-                t172 = inline230
-                var t173 int32 = t171 + t172
-                ref_set__Ref_5int32(total__3, t173)
-                var t174 int32
-                var inline226 int32 = ref_get__Ref_5int32(i__2)
-                t174 = inline226
-                var t175 int32 = t174 + 1
-                ref_set__Ref_5int32(i__2, t175)
+            var x173 bool = mtmp172.(Option__bool_Some)._0
+            jp206 = x173
+            if jp206 {
+                var t207 int32
+                var inline268 int32 = ref_get__Ref_5int32(total__3)
+                t207 = inline268
+                var t208 int32
+                var inline266 int32 = ref_get__Ref_5int32(i__2)
+                t208 = inline266
+                var t209 int32 = t207 + t208
+                ref_set__Ref_5int32(total__3, t209)
+                var t210 int32
+                var inline262 int32 = ref_get__Ref_5int32(i__2)
+                t210 = inline262
+                var t211 int32 = t210 + 1
+                ref_set__Ref_5int32(i__2, t211)
                 continue
             } else {
-                break Loop_loop167
+                break Loop_loop203
             }
         default:
             panic("non-exhaustive match")
         }
     }
-    var t165 int32
-    var inline240 int32 = ref_get__Ref_5int32(total__3)
-    t165 = inline240
-    var t166 Option__int32 = Option__int32_Some{
-        _0: t165,
+    var t201 int32
+    var inline276 int32 = ref_get__Ref_5int32(total__3)
+    t201 = inline276
+    var t202 Option__int32 = Option__int32_Some{
+        _0: t201,
     }
-    return t166
+    return t202
 }
 
 func run_none() Option__int32 {
     var i__4 *ref_int32_x
-    var inline268 int32 = 0
-    var inline269 *ref_int32_x = ref__Ref_5int32(inline268)
-    i__4 = inline269
+    var inline304 int32 = 0
+    var inline305 *ref_int32_x = ref__Ref_5int32(inline304)
+    i__4 = inline305
     var total__5 *ref_int32_x
-    var inline265 int32 = 0
-    var inline266 *ref_int32_x = ref__Ref_5int32(inline265)
-    total__5 = inline266
-    Loop_loop181:
+    var inline301 int32 = 0
+    var inline302 *ref_int32_x = ref__Ref_5int32(inline301)
+    total__5 = inline302
+    Loop_loop217:
     for {
-        var t182 int32
-        var inline261 int32 = ref_get__Ref_5int32(i__4)
-        t182 = inline261
-        var mtmp141 Option__bool
-        var inline258 bool = t182 < 2
-        if inline258 {
-            var inline259 Option__bool = Option__bool_Some{
+        var t218 int32
+        var inline297 int32 = ref_get__Ref_5int32(i__4)
+        t218 = inline297
+        var mtmp177 Option__bool
+        var inline294 bool = t218 < 2
+        if inline294 {
+            var inline295 Option__bool = Option__bool_Some{
                 _0: true,
             }
-            mtmp141 = inline259
+            mtmp177 = inline295
         } else {
-            mtmp141 = Option__bool_None{}
+            mtmp177 = Option__bool_None{}
         }
-        var jp184 bool
-        switch mtmp141.(type) {
+        var jp220 bool
+        switch mtmp177.(type) {
         case Option__bool_None:
             return Option__int32_None{}
         case Option__bool_Some:
-            var x142 bool = mtmp141.(Option__bool_Some)._0
-            jp184 = x142
-            if jp184 {
-                var t185 int32
-                var inline256 int32 = ref_get__Ref_5int32(total__5)
-                t185 = inline256
-                var t186 int32
-                var inline254 int32 = ref_get__Ref_5int32(i__4)
-                t186 = inline254
-                var t187 int32 = t185 + t186
-                ref_set__Ref_5int32(total__5, t187)
-                var t188 int32
-                var inline250 int32 = ref_get__Ref_5int32(i__4)
-                t188 = inline250
-                var t189 int32 = t188 + 1
-                ref_set__Ref_5int32(i__4, t189)
+            var x178 bool = mtmp177.(Option__bool_Some)._0
+            jp220 = x178
+            if jp220 {
+                var t221 int32
+                var inline292 int32 = ref_get__Ref_5int32(total__5)
+                t221 = inline292
+                var t222 int32
+                var inline290 int32 = ref_get__Ref_5int32(i__4)
+                t222 = inline290
+                var t223 int32 = t221 + t222
+                ref_set__Ref_5int32(total__5, t223)
+                var t224 int32
+                var inline286 int32 = ref_get__Ref_5int32(i__4)
+                t224 = inline286
+                var t225 int32 = t224 + 1
+                ref_set__Ref_5int32(i__4, t225)
                 continue
             } else {
-                break Loop_loop181
+                break Loop_loop217
             }
         default:
             panic("non-exhaustive match")
         }
     }
-    var t179 int32
-    var inline263 int32 = ref_get__Ref_5int32(total__5)
-    t179 = inline263
-    var t180 Option__int32 = Option__int32_Some{
-        _0: t179,
+    var t215 int32
+    var inline299 int32 = ref_get__Ref_5int32(total__5)
+    t215 = inline299
+    var t216 Option__int32 = Option__int32_Some{
+        _0: t215,
     }
-    return t180
+    return t216
 }
 
 func main0() struct{} {
-    var t197 Option__int32 = run_some()
-    var t198 string
-    switch t197.(type) {
+    var t233 Option__int32 = run_some()
+    var t234 string
+    switch t233.(type) {
     case Option__int32_None:
-        t198 = "none"
+        t234 = "none"
     case Option__int32_Some:
-        var inline284 int32 = t197.(Option__int32_Some)._0
-        var inline286 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline284)
-        var inline287 string = "some=" + inline286
-        t198 = inline287
+        var inline320 int32 = t233.(Option__int32_Some)._0
+        var inline322 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline320)
+        var inline323 string = "some=" + inline322
+        t234 = inline323
     default:
         panic("non-exhaustive match")
     }
-    var inline281 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t198)
-    _goml_runtime_core_string_println(inline281)
-    var t199 Option__int32 = run_none()
-    var t200 string
-    switch t199.(type) {
+    var inline317 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t234)
+    _goml_runtime_core_string_println(inline317)
+    var t235 Option__int32 = run_none()
+    var t236 string
+    switch t235.(type) {
     case Option__int32_None:
-        t200 = "none"
+        t236 = "none"
     case Option__int32_Some:
-        var inline276 int32 = t199.(Option__int32_Some)._0
-        var inline278 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline276)
-        var inline279 string = "some=" + inline278
-        t200 = inline279
+        var inline312 int32 = t235.(Option__int32_Some)._0
+        var inline314 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline312)
+        var inline315 string = "some=" + inline314
+        t236 = inline315
     default:
         panic("non-exhaustive match")
     }
-    var inline273 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-    _goml_runtime_core_string_println(inline273)
+    var inline309 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t236)
+    _goml_runtime_core_string_println(inline309)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t211 string = _goml_runtime_core_int32_to_string(self__35)
-    return t211
+    var t247 string = _goml_runtime_core_int32_to_string(self__35)
+    return t247
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

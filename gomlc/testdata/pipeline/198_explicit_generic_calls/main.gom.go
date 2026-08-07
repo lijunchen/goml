@@ -14,19 +14,19 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var t138 string
-    var inline165 string = "direct"
-    t138 = inline165
-    var inline162 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t138)
-    _goml_runtime_core_string_println(inline162)
-    var t139 int32
-    var inline160 int32 = 42
-    t139 = inline160
-    var t140 string
-    var inline158 string = _goml_runtime_core_int32_to_string(t139)
-    t140 = inline158
-    var inline155 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t140)
-    _goml_runtime_core_string_println(inline155)
+    var t174 string
+    var inline201 string = "direct"
+    t174 = inline201
+    var inline198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t174)
+    _goml_runtime_core_string_println(inline198)
+    var t175 int32
+    var inline196 int32 = 42
+    t175 = inline196
+    var t176 string
+    var inline194 string = _goml_runtime_core_int32_to_string(t175)
+    t176 = inline194
+    var inline191 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t176)
+    _goml_runtime_core_string_println(inline191)
     return struct{}{}
 }
 

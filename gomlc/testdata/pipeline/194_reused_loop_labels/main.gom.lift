@@ -1,9 +1,9 @@
 fn main() -> unit {
   let running/0 = inherent#Ref#Ref[T]#new__T_bool(true) in
-  let _wild138 =
+  let _wild174 =
     while inherent#Ref#Ref[T]#get__T_bool(running/0) {
         let event/1 = Event::Open in
-        let _wild136 =
+        let _wild172 =
           match event/1 {
             Event::Open => {
               let scanning/2 = inherent#Ref#Ref[T]#new__T_bool(false) in
@@ -22,7 +22,7 @@ fn main() -> unit {
             },
           } in
         let scanning/3 = inherent#Ref#Ref[T]#new__T_bool(false) in
-        let _wild137 =
+        let _wild173 =
           while inherent#Ref#Ref[T]#get__T_bool(scanning/3) {
               ()
           } in
@@ -31,16 +31,16 @@ fn main() -> unit {
   println__T_string("ok")
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/232: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_bool(value/257: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/257)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/233: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_bool(self/258: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/234: Ref[bool], value/235: bool) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_bool(self/259: Ref[bool], value/260: bool) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
 fn println__T_string(value/31: string) -> unit {
@@ -51,7 +51,7 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
-fn trait_impl#Eq#bool#eq(self/97: bool, other/98: bool) -> bool {
+fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
   @intrinsic(eq.primitive)(self/97, other/98)
 }
 

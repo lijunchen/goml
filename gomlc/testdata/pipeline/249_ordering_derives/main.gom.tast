@@ -1,0 +1,933 @@
+impl PartialEq for Version {
+  fn eq(self/0: Version, other/1: Version) -> bool {
+      true &&
+        (PartialEq::eq : (int, int) -> bool)((self/0 : Version).major, (other/1 : Version).major) &&
+        (PartialEq::eq : (int, int) -> bool)((self/0 : Version).minor, (other/1 : Version).minor)
+  }
+}
+
+impl Eq for Version where int: Eq, int: PartialEq {}
+
+impl std::cmp::PartialOrd for Version {
+  fn partial_cmp(self/2: Version, other/3: Version) -> Option[std::cmp::Ordering] {
+      match (std::cmp::PartialOrd::partial_cmp : (int, int) -> Option[std::cmp::Ordering])(
+        (self/2 : Version).major,
+        (other/3 : Version).major
+      ) {
+          Option::None => Option::None,
+          Option::Some(std::cmp::Ordering::Equal) =>
+            match (std::cmp::PartialOrd::partial_cmp : (int, int) -> Option[std::cmp::Ordering])(
+              (self/2 : Version).minor,
+              (other/3 : Version).minor
+            ) {
+                Option::None => Option::None,
+                Option::Some(std::cmp::Ordering::Equal) => Option::Some(std::cmp::Ordering::Equal),
+                Option::Some(#derive0_ordering/4: std::cmp::Ordering) =>
+                  Option::Some((#derive0_ordering/4 : std::cmp::Ordering)),
+            },
+          Option::Some(#derive1_ordering/5: std::cmp::Ordering) =>
+            Option::Some((#derive1_ordering/5 : std::cmp::Ordering)),
+      }
+  }
+  fn lt(default_arg0: Version, default_arg1: Version) -> bool {
+      (std::cmp::trait_default#PartialOrd#lt : (Version, Version) -> bool)(
+        (default_arg0 : Version),
+        (default_arg1 : Version)
+      )
+  }
+  fn le(default_arg0: Version, default_arg1: Version) -> bool {
+      (std::cmp::trait_default#PartialOrd#le : (Version, Version) -> bool)(
+        (default_arg0 : Version),
+        (default_arg1 : Version)
+      )
+  }
+  fn gt(default_arg0: Version, default_arg1: Version) -> bool {
+      (std::cmp::trait_default#PartialOrd#gt : (Version, Version) -> bool)(
+        (default_arg0 : Version),
+        (default_arg1 : Version)
+      )
+  }
+  fn ge(default_arg0: Version, default_arg1: Version) -> bool {
+      (std::cmp::trait_default#PartialOrd#ge : (Version, Version) -> bool)(
+        (default_arg0 : Version),
+        (default_arg1 : Version)
+      )
+  }
+}
+
+impl std::cmp::Ord for Version {
+  fn cmp(self/6: Version, other/7: Version) -> std::cmp::Ordering {
+      {
+          let #derive1_ordering/8: std::cmp::Ordering =
+            (std::cmp::Ord::cmp : (int, int) -> std::cmp::Ordering)(
+              (self/6 : Version).major,
+              (other/7 : Version).major
+            );
+          if (#derive1_ordering/8 : std::cmp::Ordering) == std::cmp::Ordering::Equal {
+              {
+                  let #derive0_ordering/9: std::cmp::Ordering =
+                    (std::cmp::Ord::cmp : (int, int) -> std::cmp::Ordering)(
+                      (self/6 : Version).minor,
+                      (other/7 : Version).minor
+                    );
+                  if (#derive0_ordering/9 : std::cmp::Ordering) == std::cmp::Ordering::Equal {
+                      std::cmp::Ordering::Equal
+                  } else {
+                      (#derive0_ordering/9 : std::cmp::Ordering)
+                  }
+              }
+          } else {
+              (#derive1_ordering/8 : std::cmp::Ordering)
+          }
+      }
+  }
+}
+
+impl Debug for Version {
+  fn debug(self/10: Version) -> string {
+      {
+          let Version { major: #derive0_field/11: int, minor: #derive1_field/12: int } =
+            (self/10 : Version);
+          "Version { " + "major: " + (Debug::debug : (int) -> string)((#derive0_field/11 : int)) +
+            ", " +
+            "minor: " +
+            (Debug::debug : (int) -> string)((#derive1_field/12 : int)) +
+            " }"
+      }
+  }
+}
+
+impl PartialEq for Level {
+  fn eq(self/13: Level, other/14: Level) -> bool {
+      match ((self/13 : Level), (other/14 : Level)) {
+          (Level::Low, Level::Low) => true,
+          (
+            Level::Medium(#derive0_left/15: int, #derive2_left/16: int),
+            Level::Medium(#derive1_right/17: int, #derive3_right/18: int)
+          ) =>
+            true &&
+              (PartialEq::eq : (int, int) -> bool)(
+                (#derive0_left/15 : int),
+                (#derive1_right/17 : int)
+              ) &&
+              (PartialEq::eq : (int, int) -> bool)(
+                (#derive2_left/16 : int),
+                (#derive3_right/18 : int)
+              ),
+          (
+            Level::High(#derive4_left/19: int, #derive6_left/20: int),
+            Level::High(#derive5_right/21: int, #derive7_right/22: int)
+          ) =>
+            true &&
+              (PartialEq::eq : (int, int) -> bool)(
+                (#derive4_left/19 : int),
+                (#derive5_right/21 : int)
+              ) &&
+              (PartialEq::eq : (int, int) -> bool)(
+                (#derive6_left/20 : int),
+                (#derive7_right/22 : int)
+              ),
+          _ : (Level, Level) => false,
+      }
+  }
+}
+
+impl Eq for Level where int: Eq, int: PartialEq {}
+
+impl std::cmp::PartialOrd for Level {
+  fn partial_cmp(self/23: Level, other/24: Level) -> Option[std::cmp::Ordering] {
+      {
+          let #derive0_left_tag/25: int =
+            match (self/23 : Level) {
+                Level::Low => 0,
+                Level::Medium(_ : int, _ : int) => 1,
+                Level::High(_ : int, _ : int) => 2,
+            };
+          let #derive1_right_tag/26: int =
+            match (other/24 : Level) {
+                Level::Low => 0,
+                Level::Medium(_ : int, _ : int) => 1,
+                Level::High(_ : int, _ : int) => 2,
+            };
+          if (#derive0_left_tag/25 : int) < (#derive1_right_tag/26 : int) {
+              Option::Some(std::cmp::Ordering::Less)
+          } else {
+              if (#derive0_left_tag/25 : int) > (#derive1_right_tag/26 : int) {
+                  Option::Some(std::cmp::Ordering::Greater)
+              } else {
+                  match ((self/23 : Level), (other/24 : Level)) {
+                      (Level::Low, Level::Low) => Option::Some(std::cmp::Ordering::Equal),
+                      (
+                        Level::Medium(#derive5_left/27: int, #derive2_left/28: int),
+                        Level::Medium(#derive6_right/29: int, #derive3_right/30: int)
+                      ) =>
+                        match (std::cmp::PartialOrd::partial_cmp : (int, int) -> Option[
+                          std::cmp::Ordering
+                        ])((#derive5_left/27 : int), (#derive6_right/29 : int)) {
+                            Option::None => Option::None,
+                            Option::Some(std::cmp::Ordering::Equal) =>
+                              match (std::cmp::PartialOrd::partial_cmp : (int, int) -> Option[
+                                std::cmp::Ordering
+                              ])((#derive2_left/28 : int), (#derive3_right/30 : int)) {
+                                  Option::None => Option::None,
+                                  Option::Some(std::cmp::Ordering::Equal) =>
+                                    Option::Some(std::cmp::Ordering::Equal),
+                                  Option::Some(#derive4_ordering/31: std::cmp::Ordering) =>
+                                    Option::Some((#derive4_ordering/31 : std::cmp::Ordering)),
+                              },
+                            Option::Some(#derive7_ordering/32: std::cmp::Ordering) =>
+                              Option::Some((#derive7_ordering/32 : std::cmp::Ordering)),
+                        },
+                      (
+                        Level::High(#derive11_left/34: int, #derive8_left/33: int),
+                        Level::High(#derive12_right/36: int, #derive9_right/35: int)
+                      ) =>
+                        match (std::cmp::PartialOrd::partial_cmp : (int, int) -> Option[
+                          std::cmp::Ordering
+                        ])((#derive11_left/34 : int), (#derive12_right/36 : int)) {
+                            Option::None => Option::None,
+                            Option::Some(std::cmp::Ordering::Equal) =>
+                              match (std::cmp::PartialOrd::partial_cmp : (int, int) -> Option[
+                                std::cmp::Ordering
+                              ])((#derive8_left/33 : int), (#derive9_right/35 : int)) {
+                                  Option::None => Option::None,
+                                  Option::Some(std::cmp::Ordering::Equal) =>
+                                    Option::Some(std::cmp::Ordering::Equal),
+                                  Option::Some(#derive10_ordering/37: std::cmp::Ordering) =>
+                                    Option::Some((#derive10_ordering/37 : std::cmp::Ordering)),
+                              },
+                            Option::Some(#derive13_ordering/38: std::cmp::Ordering) =>
+                              Option::Some((#derive13_ordering/38 : std::cmp::Ordering)),
+                        },
+                      _ : (Level, Level) => Option::Some(std::cmp::Ordering::Equal),
+                  }
+              }
+          }
+      }
+  }
+  fn lt(default_arg0: Level, default_arg1: Level) -> bool {
+      (std::cmp::trait_default#PartialOrd#lt : (Level, Level) -> bool)(
+        (default_arg0 : Level),
+        (default_arg1 : Level)
+      )
+  }
+  fn le(default_arg0: Level, default_arg1: Level) -> bool {
+      (std::cmp::trait_default#PartialOrd#le : (Level, Level) -> bool)(
+        (default_arg0 : Level),
+        (default_arg1 : Level)
+      )
+  }
+  fn gt(default_arg0: Level, default_arg1: Level) -> bool {
+      (std::cmp::trait_default#PartialOrd#gt : (Level, Level) -> bool)(
+        (default_arg0 : Level),
+        (default_arg1 : Level)
+      )
+  }
+  fn ge(default_arg0: Level, default_arg1: Level) -> bool {
+      (std::cmp::trait_default#PartialOrd#ge : (Level, Level) -> bool)(
+        (default_arg0 : Level),
+        (default_arg1 : Level)
+      )
+  }
+}
+
+impl std::cmp::Ord for Level {
+  fn cmp(self/39: Level, other/40: Level) -> std::cmp::Ordering {
+      {
+          let #derive0_left_tag/41: int =
+            match (self/39 : Level) {
+                Level::Low => 0,
+                Level::Medium(_ : int, _ : int) => 1,
+                Level::High(_ : int, _ : int) => 2,
+            };
+          let #derive1_right_tag/42: int =
+            match (other/40 : Level) {
+                Level::Low => 0,
+                Level::Medium(_ : int, _ : int) => 1,
+                Level::High(_ : int, _ : int) => 2,
+            };
+          if (#derive0_left_tag/41 : int) < (#derive1_right_tag/42 : int) {
+              std::cmp::Ordering::Less
+          } else {
+              if (#derive0_left_tag/41 : int) > (#derive1_right_tag/42 : int) {
+                  std::cmp::Ordering::Greater
+              } else {
+                  match ((self/39 : Level), (other/40 : Level)) {
+                      (Level::Low, Level::Low) => std::cmp::Ordering::Equal,
+                      (
+                        Level::Medium(#derive5_left/43: int, #derive2_left/44: int),
+                        Level::Medium(#derive6_right/45: int, #derive3_right/46: int)
+                      ) =>
+                        {
+                            let #derive7_ordering/47: std::cmp::Ordering =
+                              (std::cmp::Ord::cmp : (int, int) -> std::cmp::Ordering)(
+                                (#derive5_left/43 : int),
+                                (#derive6_right/45 : int)
+                              );
+                            if (#derive7_ordering/47 : std::cmp::Ordering) ==
+                              std::cmp::Ordering::Equal {
+                                {
+                                    let #derive4_ordering/48: std::cmp::Ordering =
+                                      (std::cmp::Ord::cmp : (int, int) -> std::cmp::Ordering)(
+                                        (#derive2_left/44 : int),
+                                        (#derive3_right/46 : int)
+                                      );
+                                    if (#derive4_ordering/48 : std::cmp::Ordering) ==
+                                      std::cmp::Ordering::Equal {
+                                        std::cmp::Ordering::Equal
+                                    } else {
+                                        (#derive4_ordering/48 : std::cmp::Ordering)
+                                    }
+                                }
+                            } else {
+                                (#derive7_ordering/47 : std::cmp::Ordering)
+                            }
+                        },
+                      (
+                        Level::High(#derive11_left/50: int, #derive8_left/49: int),
+                        Level::High(#derive12_right/52: int, #derive9_right/51: int)
+                      ) =>
+                        {
+                            let #derive13_ordering/53: std::cmp::Ordering =
+                              (std::cmp::Ord::cmp : (int, int) -> std::cmp::Ordering)(
+                                (#derive11_left/50 : int),
+                                (#derive12_right/52 : int)
+                              );
+                            if (#derive13_ordering/53 : std::cmp::Ordering) ==
+                              std::cmp::Ordering::Equal {
+                                {
+                                    let #derive10_ordering/54: std::cmp::Ordering =
+                                      (std::cmp::Ord::cmp : (int, int) -> std::cmp::Ordering)(
+                                        (#derive8_left/49 : int),
+                                        (#derive9_right/51 : int)
+                                      );
+                                    if (#derive10_ordering/54 : std::cmp::Ordering) ==
+                                      std::cmp::Ordering::Equal {
+                                        std::cmp::Ordering::Equal
+                                    } else {
+                                        (#derive10_ordering/54 : std::cmp::Ordering)
+                                    }
+                                }
+                            } else {
+                                (#derive13_ordering/53 : std::cmp::Ordering)
+                            }
+                        },
+                      _ : (Level, Level) => std::cmp::Ordering::Equal,
+                  }
+              }
+          }
+      }
+  }
+}
+
+impl Debug for Level {
+  fn debug(self/55: Level) -> string {
+      match (self/55 : Level) {
+          Level::Low => "Level::Low",
+          Level::Medium(#derive0_field/56: int, #derive1_field/57: int) =>
+            "Level::Medium(" + (Debug::debug : (int) -> string)((#derive0_field/56 : int)) + ", " +
+              (Debug::debug : (int) -> string)((#derive1_field/57 : int)) +
+              ")",
+          Level::High(#derive2_field/58: int, #derive3_field/59: int) =>
+            "Level::High { " + "rank: " +
+              (Debug::debug : (int) -> string)((#derive2_field/58 : int)) +
+              ", " +
+              "detail: " +
+              (Debug::debug : (int) -> string)((#derive3_field/59 : int)) +
+              " }",
+      }
+  }
+}
+
+impl PartialEq for MaybeNumber {
+  fn eq(self/60: MaybeNumber, other/61: MaybeNumber) -> bool {
+      true &&
+        (PartialEq::eq : (float64, float64) -> bool)(
+          (self/60 : MaybeNumber).value,
+          (other/61 : MaybeNumber).value
+        )
+  }
+}
+
+impl std::cmp::PartialOrd for MaybeNumber {
+  fn partial_cmp(self/62: MaybeNumber, other/63: MaybeNumber) -> Option[std::cmp::Ordering] {
+      match (std::cmp::PartialOrd::partial_cmp : (float64, float64) -> Option[std::cmp::Ordering])(
+        (self/62 : MaybeNumber).value,
+        (other/63 : MaybeNumber).value
+      ) {
+          Option::None => Option::None,
+          Option::Some(std::cmp::Ordering::Equal) => Option::Some(std::cmp::Ordering::Equal),
+          Option::Some(#derive0_ordering/64: std::cmp::Ordering) =>
+            Option::Some((#derive0_ordering/64 : std::cmp::Ordering)),
+      }
+  }
+  fn lt(default_arg0: MaybeNumber, default_arg1: MaybeNumber) -> bool {
+      (std::cmp::trait_default#PartialOrd#lt : (MaybeNumber, MaybeNumber) -> bool)(
+        (default_arg0 : MaybeNumber),
+        (default_arg1 : MaybeNumber)
+      )
+  }
+  fn le(default_arg0: MaybeNumber, default_arg1: MaybeNumber) -> bool {
+      (std::cmp::trait_default#PartialOrd#le : (MaybeNumber, MaybeNumber) -> bool)(
+        (default_arg0 : MaybeNumber),
+        (default_arg1 : MaybeNumber)
+      )
+  }
+  fn gt(default_arg0: MaybeNumber, default_arg1: MaybeNumber) -> bool {
+      (std::cmp::trait_default#PartialOrd#gt : (MaybeNumber, MaybeNumber) -> bool)(
+        (default_arg0 : MaybeNumber),
+        (default_arg1 : MaybeNumber)
+      )
+  }
+  fn ge(default_arg0: MaybeNumber, default_arg1: MaybeNumber) -> bool {
+      (std::cmp::trait_default#PartialOrd#ge : (MaybeNumber, MaybeNumber) -> bool)(
+        (default_arg0 : MaybeNumber),
+        (default_arg1 : MaybeNumber)
+      )
+  }
+}
+
+impl[T] PartialEq for GenericPair[T] where T: PartialEq, Vec[T]: PartialEq {
+  fn eq(self/65: GenericPair[T], other/66: GenericPair[T]) -> bool {
+      true &&
+        (PartialEq::eq : (T, T) -> bool)(
+          (self/65 : GenericPair[T]).first,
+          (other/66 : GenericPair[T]).first
+        ) &&
+        (PartialEq::eq : (T, T) -> bool)(
+          (self/65 : GenericPair[T]).second,
+          (other/66 : GenericPair[T]).second
+        ) &&
+        (PartialEq::eq : (Vec[T], Vec[T]) -> bool)(
+          (self/65 : GenericPair[T]).nested,
+          (other/66 : GenericPair[T]).nested
+        )
+  }
+}
+
+impl[T] Eq for GenericPair[T] where T: Eq, Vec[T]: Eq, T: PartialEq, Vec[T]: PartialEq {}
+
+impl[T] std::cmp::PartialOrd for GenericPair[T] where
+  T: std::cmp::PartialOrd,
+  Vec[T]: std::cmp::PartialOrd,
+  T: PartialEq,
+  Vec[T]: PartialEq {
+  fn partial_cmp(self/67: GenericPair[T], other/68: GenericPair[T]) -> Option[std::cmp::Ordering] {
+      match (std::cmp::PartialOrd::partial_cmp : (T, T) -> Option[std::cmp::Ordering])(
+        (self/67 : GenericPair[T]).first,
+        (other/68 : GenericPair[T]).first
+      ) {
+          Option::None => Option::None,
+          Option::Some(std::cmp::Ordering::Equal) =>
+            match (std::cmp::PartialOrd::partial_cmp : (T, T) -> Option[std::cmp::Ordering])(
+              (self/67 : GenericPair[T]).second,
+              (other/68 : GenericPair[T]).second
+            ) {
+                Option::None => Option::None,
+                Option::Some(std::cmp::Ordering::Equal) =>
+                  match (std::cmp::PartialOrd::partial_cmp : (Vec[T], Vec[T]) -> Option[
+                    std::cmp::Ordering
+                  ])((self/67 : GenericPair[T]).nested, (other/68 : GenericPair[T]).nested) {
+                      Option::None => Option::None,
+                      Option::Some(std::cmp::Ordering::Equal) =>
+                        Option::Some(std::cmp::Ordering::Equal),
+                      Option::Some(#derive0_ordering/69: std::cmp::Ordering) =>
+                        Option::Some((#derive0_ordering/69 : std::cmp::Ordering)),
+                  },
+                Option::Some(#derive1_ordering/70: std::cmp::Ordering) =>
+                  Option::Some((#derive1_ordering/70 : std::cmp::Ordering)),
+            },
+          Option::Some(#derive2_ordering/71: std::cmp::Ordering) =>
+            Option::Some((#derive2_ordering/71 : std::cmp::Ordering)),
+      }
+  }
+  fn lt(default_arg0: GenericPair[T], default_arg1: GenericPair[T]) -> bool {
+      (std::cmp::trait_default#PartialOrd#lt : (GenericPair[T], GenericPair[T]) -> bool)(
+        (default_arg0 : GenericPair[T]),
+        (default_arg1 : GenericPair[T])
+      )
+  }
+  fn le(default_arg0: GenericPair[T], default_arg1: GenericPair[T]) -> bool {
+      (std::cmp::trait_default#PartialOrd#le : (GenericPair[T], GenericPair[T]) -> bool)(
+        (default_arg0 : GenericPair[T]),
+        (default_arg1 : GenericPair[T])
+      )
+  }
+  fn gt(default_arg0: GenericPair[T], default_arg1: GenericPair[T]) -> bool {
+      (std::cmp::trait_default#PartialOrd#gt : (GenericPair[T], GenericPair[T]) -> bool)(
+        (default_arg0 : GenericPair[T]),
+        (default_arg1 : GenericPair[T])
+      )
+  }
+  fn ge(default_arg0: GenericPair[T], default_arg1: GenericPair[T]) -> bool {
+      (std::cmp::trait_default#PartialOrd#ge : (GenericPair[T], GenericPair[T]) -> bool)(
+        (default_arg0 : GenericPair[T]),
+        (default_arg1 : GenericPair[T])
+      )
+  }
+}
+
+impl[T] std::cmp::Ord for GenericPair[T] where
+  T: std::cmp::Ord,
+  Vec[T]: std::cmp::Ord,
+  T: Eq,
+  T: std::cmp::PartialOrd,
+  T: PartialEq,
+  Vec[T]: Eq,
+  Vec[T]: std::cmp::PartialOrd,
+  Vec[T]: PartialEq {
+  fn cmp(self/72: GenericPair[T], other/73: GenericPair[T]) -> std::cmp::Ordering {
+      {
+          let #derive2_ordering/74: std::cmp::Ordering =
+            (std::cmp::Ord::cmp : (T, T) -> std::cmp::Ordering)(
+              (self/72 : GenericPair[T]).first,
+              (other/73 : GenericPair[T]).first
+            );
+          if (#derive2_ordering/74 : std::cmp::Ordering) == std::cmp::Ordering::Equal {
+              {
+                  let #derive1_ordering/75: std::cmp::Ordering =
+                    (std::cmp::Ord::cmp : (T, T) -> std::cmp::Ordering)(
+                      (self/72 : GenericPair[T]).second,
+                      (other/73 : GenericPair[T]).second
+                    );
+                  if (#derive1_ordering/75 : std::cmp::Ordering) == std::cmp::Ordering::Equal {
+                      {
+                          let #derive0_ordering/76: std::cmp::Ordering =
+                            (std::cmp::Ord::cmp : (Vec[T], Vec[T]) -> std::cmp::Ordering)(
+                              (self/72 : GenericPair[T]).nested,
+                              (other/73 : GenericPair[T]).nested
+                            );
+                          if (#derive0_ordering/76 : std::cmp::Ordering) ==
+                            std::cmp::Ordering::Equal {
+                              std::cmp::Ordering::Equal
+                          } else {
+                              (#derive0_ordering/76 : std::cmp::Ordering)
+                          }
+                      }
+                  } else {
+                      (#derive1_ordering/75 : std::cmp::Ordering)
+                  }
+              }
+          } else {
+              (#derive2_ordering/74 : std::cmp::Ordering)
+          }
+      }
+  }
+}
+
+impl[T] Debug for GenericPair[T] where T: Debug, Vec[T]: Debug {
+  fn debug(self/77: GenericPair[T]) -> string {
+      {
+          let GenericPair {
+            first: #derive0_field/78: T,
+            second: #derive1_field/79: T,
+            nested: #derive2_field/80: Vec[T]
+          } =
+            (self/77 : GenericPair[T]);
+          "GenericPair { " + "first: " + (Debug::debug : (T) -> string)((#derive0_field/78 : T)) +
+            ", " +
+            "second: " +
+            (Debug::debug : (T) -> string)((#derive1_field/79 : T)) +
+            ", " +
+            "nested: " +
+            (Debug::debug : (Vec[T]) -> string)((#derive2_field/80 : Vec[T])) +
+            " }"
+      }
+  }
+}
+
+impl[T] PartialEq for Phantom[T] {
+  fn eq(self/81: Phantom[T], other/82: Phantom[T]) -> bool {
+      match ((self/81 : Phantom[T]), (other/82 : Phantom[T])) {
+          (Phantom::First, Phantom::First) => true,
+          (Phantom::Second, Phantom::Second) => true,
+          _ : (Phantom[T], Phantom[T]) => false,
+      }
+  }
+}
+
+impl[T] Eq for Phantom[T] {}
+
+impl[T] std::cmp::PartialOrd for Phantom[T] {
+  fn partial_cmp(self/83: Phantom[T], other/84: Phantom[T]) -> Option[std::cmp::Ordering] {
+      {
+          let #derive0_left_tag/85: int =
+            match (self/83 : Phantom[T]) {
+                Phantom::First => 0,
+                Phantom::Second => 1,
+            };
+          let #derive1_right_tag/86: int =
+            match (other/84 : Phantom[T]) {
+                Phantom::First => 0,
+                Phantom::Second => 1,
+            };
+          if (#derive0_left_tag/85 : int) < (#derive1_right_tag/86 : int) {
+              Option::Some(std::cmp::Ordering::Less)
+          } else {
+              if (#derive0_left_tag/85 : int) > (#derive1_right_tag/86 : int) {
+                  Option::Some(std::cmp::Ordering::Greater)
+              } else {
+                  match ((self/83 : Phantom[T]), (other/84 : Phantom[T])) {
+                      (Phantom::First, Phantom::First) => Option::Some(std::cmp::Ordering::Equal),
+                      (Phantom::Second, Phantom::Second) => Option::Some(std::cmp::Ordering::Equal),
+                      _ : (Phantom[T], Phantom[T]) => Option::Some(std::cmp::Ordering::Equal),
+                  }
+              }
+          }
+      }
+  }
+  fn lt(default_arg0: Phantom[T], default_arg1: Phantom[T]) -> bool {
+      (std::cmp::trait_default#PartialOrd#lt : (Phantom[T], Phantom[T]) -> bool)(
+        (default_arg0 : Phantom[T]),
+        (default_arg1 : Phantom[T])
+      )
+  }
+  fn le(default_arg0: Phantom[T], default_arg1: Phantom[T]) -> bool {
+      (std::cmp::trait_default#PartialOrd#le : (Phantom[T], Phantom[T]) -> bool)(
+        (default_arg0 : Phantom[T]),
+        (default_arg1 : Phantom[T])
+      )
+  }
+  fn gt(default_arg0: Phantom[T], default_arg1: Phantom[T]) -> bool {
+      (std::cmp::trait_default#PartialOrd#gt : (Phantom[T], Phantom[T]) -> bool)(
+        (default_arg0 : Phantom[T]),
+        (default_arg1 : Phantom[T])
+      )
+  }
+  fn ge(default_arg0: Phantom[T], default_arg1: Phantom[T]) -> bool {
+      (std::cmp::trait_default#PartialOrd#ge : (Phantom[T], Phantom[T]) -> bool)(
+        (default_arg0 : Phantom[T]),
+        (default_arg1 : Phantom[T])
+      )
+  }
+}
+
+impl[T] std::cmp::Ord for Phantom[T] {
+  fn cmp(self/87: Phantom[T], other/88: Phantom[T]) -> std::cmp::Ordering {
+      {
+          let #derive0_left_tag/89: int =
+            match (self/87 : Phantom[T]) {
+                Phantom::First => 0,
+                Phantom::Second => 1,
+            };
+          let #derive1_right_tag/90: int =
+            match (other/88 : Phantom[T]) {
+                Phantom::First => 0,
+                Phantom::Second => 1,
+            };
+          if (#derive0_left_tag/89 : int) < (#derive1_right_tag/90 : int) {
+              std::cmp::Ordering::Less
+          } else {
+              if (#derive0_left_tag/89 : int) > (#derive1_right_tag/90 : int) {
+                  std::cmp::Ordering::Greater
+              } else {
+                  match ((self/87 : Phantom[T]), (other/88 : Phantom[T])) {
+                      (Phantom::First, Phantom::First) => std::cmp::Ordering::Equal,
+                      (Phantom::Second, Phantom::Second) => std::cmp::Ordering::Equal,
+                      _ : (Phantom[T], Phantom[T]) => std::cmp::Ordering::Equal,
+                  }
+              }
+          }
+      }
+  }
+}
+
+impl PartialEq for PartialLevel {
+  fn eq(self/91: PartialLevel, other/92: PartialLevel) -> bool {
+      match ((self/91 : PartialLevel), (other/92 : PartialLevel)) {
+          (
+            PartialLevel::Value(#derive0_left/93: float64),
+            PartialLevel::Value(#derive1_right/94: float64)
+          ) =>
+            true &&
+              (PartialEq::eq : (float64, float64) -> bool)(
+                (#derive0_left/93 : float64),
+                (#derive1_right/94 : float64)
+              ),
+          (PartialLevel::Empty, PartialLevel::Empty) => true,
+          _ : (PartialLevel, PartialLevel) => false,
+      }
+  }
+}
+
+impl std::cmp::PartialOrd for PartialLevel {
+  fn partial_cmp(self/95: PartialLevel, other/96: PartialLevel) -> Option[std::cmp::Ordering] {
+      {
+          let #derive0_left_tag/97: int =
+            match (self/95 : PartialLevel) {
+                PartialLevel::Value(_ : float64) => 0,
+                PartialLevel::Empty => 1,
+            };
+          let #derive1_right_tag/98: int =
+            match (other/96 : PartialLevel) {
+                PartialLevel::Value(_ : float64) => 0,
+                PartialLevel::Empty => 1,
+            };
+          if (#derive0_left_tag/97 : int) < (#derive1_right_tag/98 : int) {
+              Option::Some(std::cmp::Ordering::Less)
+          } else {
+              if (#derive0_left_tag/97 : int) > (#derive1_right_tag/98 : int) {
+                  Option::Some(std::cmp::Ordering::Greater)
+              } else {
+                  match ((self/95 : PartialLevel), (other/96 : PartialLevel)) {
+                      (
+                        PartialLevel::Value(#derive2_left/99: float64),
+                        PartialLevel::Value(#derive3_right/100: float64)
+                      ) =>
+                        match (std::cmp::PartialOrd::partial_cmp : (float64, float64) -> Option[
+                          std::cmp::Ordering
+                        ])((#derive2_left/99 : float64), (#derive3_right/100 : float64)) {
+                            Option::None => Option::None,
+                            Option::Some(std::cmp::Ordering::Equal) =>
+                              Option::Some(std::cmp::Ordering::Equal),
+                            Option::Some(#derive4_ordering/101: std::cmp::Ordering) =>
+                              Option::Some((#derive4_ordering/101 : std::cmp::Ordering)),
+                        },
+                      (PartialLevel::Empty, PartialLevel::Empty) =>
+                        Option::Some(std::cmp::Ordering::Equal),
+                      _ : (PartialLevel, PartialLevel) => Option::Some(std::cmp::Ordering::Equal),
+                  }
+              }
+          }
+      }
+  }
+  fn lt(default_arg0: PartialLevel, default_arg1: PartialLevel) -> bool {
+      (std::cmp::trait_default#PartialOrd#lt : (PartialLevel, PartialLevel) -> bool)(
+        (default_arg0 : PartialLevel),
+        (default_arg1 : PartialLevel)
+      )
+  }
+  fn le(default_arg0: PartialLevel, default_arg1: PartialLevel) -> bool {
+      (std::cmp::trait_default#PartialOrd#le : (PartialLevel, PartialLevel) -> bool)(
+        (default_arg0 : PartialLevel),
+        (default_arg1 : PartialLevel)
+      )
+  }
+  fn gt(default_arg0: PartialLevel, default_arg1: PartialLevel) -> bool {
+      (std::cmp::trait_default#PartialOrd#gt : (PartialLevel, PartialLevel) -> bool)(
+        (default_arg0 : PartialLevel),
+        (default_arg1 : PartialLevel)
+      )
+  }
+  fn ge(default_arg0: PartialLevel, default_arg1: PartialLevel) -> bool {
+      (std::cmp::trait_default#PartialOrd#ge : (PartialLevel, PartialLevel) -> bool)(
+        (default_arg0 : PartialLevel),
+        (default_arg1 : PartialLevel)
+      )
+  }
+}
+
+fn ordering_name(value/102: std::cmp::Ordering) -> string {
+    match (value/102 : std::cmp::Ordering) {
+        std::cmp::Ordering::Less => "less",
+        std::cmp::Ordering::Equal => "equal",
+        std::cmp::Ordering::Greater => "greater",
+    }
+}
+
+fn main() -> unit {
+    let first/103: Version = Version { major: 1, minor: 9 };
+    let second/104: Version = Version { major: 2, minor: 0 };
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)((first/103 : Version) < (second/104 : Version))
+    );
+    (println : (string) -> unit)(
+      (ordering_name : (std::cmp::Ordering) -> string)(
+        (std::cmp::Ord::cmp : (Version, Version) -> std::cmp::Ordering)(
+          (first/103 : Version),
+          (second/104 : Version)
+        )
+      )
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(Level::Low < Level::Medium(0, 0))
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(Level::Medium(1, 9) < Level::Medium(2, 0))
+    );
+    (println : (string) -> unit)(
+      (ordering_name : (std::cmp::Ordering) -> string)(
+        (std::cmp::Ord::cmp : (Level, Level) -> std::cmp::Ordering)(
+          Level::High(3, 1),
+          Level::High(3, 1)
+        )
+      )
+    );
+    let zero/105: float64 = 0;
+    let nan/106: MaybeNumber = MaybeNumber { value: (zero/105 : float64) / (zero/105 : float64) };
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)((nan/106 : MaybeNumber) == (nan/106 : MaybeNumber))
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (Option[std::cmp::Ordering]::is_none : (Option[std::cmp::Ordering]) -> bool)(
+          (std::cmp::PartialOrd::partial_cmp : (MaybeNumber, MaybeNumber) -> Option[
+            std::cmp::Ordering
+          ])((nan/106 : MaybeNumber), (nan/106 : MaybeNumber))
+        )
+      )
+    );
+    let generic_first/107: GenericPair[int] =
+      GenericPair {
+        first: 1,
+        second: 2,
+        nested: {
+            let vec_literal/1621: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1621 : Vec[int]), 3);
+            (vec_literal/1621 : Vec[int])
+        }
+      };
+    let generic_second/108: GenericPair[int] =
+      GenericPair {
+        first: 1,
+        second: 3,
+        nested: {
+            let vec_literal/1701: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+            (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/1701 : Vec[int]), 0);
+            (vec_literal/1701 : Vec[int])
+        }
+      };
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (generic_first/107 : GenericPair[int]) < (generic_second/108 : GenericPair[int])
+      )
+    );
+    let phantom_first/109: Phantom[NoTraits] = Phantom::First;
+    let phantom_second/110: Phantom[NoTraits] = Phantom::Second;
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (phantom_first/109 : Phantom[NoTraits]) < (phantom_second/110 : Phantom[NoTraits])
+      )
+    );
+    let partial_nan/111: PartialLevel =
+      PartialLevel::Value((zero/105 : float64) / (zero/105 : float64));
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (Option[std::cmp::Ordering]::is_none : (Option[std::cmp::Ordering]) -> bool)(
+          (std::cmp::PartialOrd::partial_cmp : (PartialLevel, PartialLevel) -> Option[
+            std::cmp::Ordering
+          ])((partial_nan/111 : PartialLevel), (partial_nan/111 : PartialLevel))
+        )
+      )
+    );
+    let first_values/112: Vec[int] =
+      {
+          let vec_literal/2131: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2131 : Vec[int]), 1);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2131 : Vec[int]), 2);
+          (vec_literal/2131 : Vec[int])
+      };
+    let second_values/113: Vec[int] =
+      {
+          let vec_literal/2178: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2178 : Vec[int]), 1);
+          (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2178 : Vec[int]), 3);
+          (vec_literal/2178 : Vec[int])
+      };
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (first_values/112 : Vec[int]) < (second_values/113 : Vec[int])
+      )
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(Option::Some(2) < Option::Some(3))
+    );
+    let ok/114: Result[int, string] = Result::Ok(1);
+    let error/115: Result[int, string] = Result::Err("error");
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (ok/114 : Result[int, string]) < (error/115 : Result[int, string])
+      )
+    );
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (Vec[int]::slice : (Vec[int], int, int) -> Slice[int])(
+          (first_values/112 : Vec[int]),
+          0,
+          2
+        ) <
+          (Vec[int]::slice : (Vec[int], int, int) -> Slice[int])(
+            (second_values/113 : Vec[int]),
+            0,
+            2
+          )
+      )
+    );
+    let values/116: HashMap[Vec[int], string] =
+      (HashMap[Vec[int], string]::new : () -> HashMap[Vec[int], string])();
+    (HashMap[Vec[int], string]::set : (HashMap[Vec[int], string], Vec[int], string) -> unit)(
+      (values/116 : HashMap[Vec[int], string]),
+      (first_values/112 : Vec[int]),
+      "vector"
+    );
+    (println : (string) -> unit)(
+      (Option[string]::unwrap_or : (Option[string], string) -> string)(
+        (HashMap[Vec[int], string]::get : (HashMap[Vec[int], string], Vec[int]) -> Option[string])(
+          (values/116 : HashMap[Vec[int], string]),
+          {
+              let vec_literal/2661: Vec[int] = (Vec[int]::new : () -> Vec[int])();
+              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2661 : Vec[int]), 1);
+              (Vec[int]::push : (Vec[int], int) -> unit)((vec_literal/2661 : Vec[int]), 2);
+              (vec_literal/2661 : Vec[int])
+          }
+        ),
+        "missing"
+      )
+    );
+    let default_tuple/117: (int, string) = (Default::default : () -> (int, string))();
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)((default_tuple/117 : (int, string)) == (0, ""))
+    );
+    let default_array/118: [int; 3] = (Default::default : () -> [int; 3])();
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)((default_array/118 : [int; 3]) == [0, 0, 0])
+    );
+    (println : (string) -> unit)((ToString::to_string : (bool) -> string)((1, 2) < (1, 3)));
+    (println : (string) -> unit)(
+      (ordering_name : (std::cmp::Ordering) -> string)(
+        (std::cmp::Ord::cmp : ([int; 2], [int; 2]) -> std::cmp::Ordering)([1, 2], [1, 3])
+      )
+    );
+    let tuple_nan/119: (float64, float64) = (0, (zero/105 : float64) / (zero/105 : float64));
+    (println : (string) -> unit)(
+      (ToString::to_string : (bool) -> string)(
+        (Option[std::cmp::Ordering]::is_none : (Option[std::cmp::Ordering]) -> bool)(
+          (std::cmp::PartialOrd::partial_cmp : ((float64, float64), (float64, float64)) -> Option[
+            std::cmp::Ordering
+          ])((tuple_nan/119 : (float64, float64)), (tuple_nan/119 : (float64, float64)))
+        )
+      )
+    );
+    let tuple_values/120: HashMap[(int, string), string] =
+      (HashMap[(int, string), string]::new : () -> HashMap[(int, string), string])();
+    (HashMap[(int, string), string]::set : (
+      HashMap[(int, string), string],
+      (int, string),
+      string
+    ) -> unit)((tuple_values/120 : HashMap[(int, string), string]), (1, "one"), "tuple");
+    (println : (string) -> unit)(
+      (Option[string]::unwrap_or : (Option[string], string) -> string)(
+        (HashMap[(int, string), string]::get : (
+          HashMap[(int, string), string],
+          (int, string)
+        ) -> Option[string])((tuple_values/120 : HashMap[(int, string), string]), (1, "one")),
+        "missing"
+      )
+    );
+    let array_values/121: HashMap[[int; 2], string] =
+      (HashMap[[int; 2], string]::new : () -> HashMap[[int; 2], string])();
+    (HashMap[[int; 2], string]::set : (HashMap[[int; 2], string], [int; 2], string) -> unit)(
+      (array_values/121 : HashMap[[int; 2], string]),
+      [1, 2],
+      "array"
+    );
+    (println : (string) -> unit)(
+      (Option[string]::unwrap_or : (Option[string], string) -> string)(
+        (HashMap[[int; 2], string]::get : (HashMap[[int; 2], string], [int; 2]) -> Option[string])(
+          (array_values/121 : HashMap[[int; 2], string]),
+          [1, 2]
+        ),
+        "missing"
+      )
+    )
+}

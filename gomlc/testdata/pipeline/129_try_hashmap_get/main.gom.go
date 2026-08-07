@@ -59,7 +59,7 @@ func hashmap_lookup__HashMap_6string_5int32(m *hashmap_string_int32_x, key strin
             break
         }
         var entry hashmap_string_int32_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_Eq_i_string_i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_string_i_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -96,7 +96,7 @@ func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, 
             break
         }
         var entry hashmap_string_int32_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_Eq_i_string_i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_string_i_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -140,85 +140,85 @@ func (_ Some) isOption__int32() {}
 
 func fetch(flag__0 bool) Option__int32 {
     var m__1 *hashmap_string_int32_x
-    var inline191 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
-    m__1 = inline191
+    var inline227 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
+    m__1 = inline227
     if flag__0 {
-        var inline184 string = "a"
-        var inline185 int32 = 7
-        hashmap_set__HashMap_6string_5int32(m__1, inline184, inline185)
+        var inline220 string = "a"
+        var inline221 int32 = 7
+        hashmap_set__HashMap_6string_5int32(m__1, inline220, inline221)
     } else {}
-    var mtmp138 Option__int32
-    var inline188 string = "a"
-    var inline189 Option__int32 = hashmap_get__HashMap_6string_5int32(m__1, inline188)
-    mtmp138 = inline189
-    var jp147 int32
-    switch mtmp138.(type) {
+    var mtmp174 Option__int32
+    var inline224 string = "a"
+    var inline225 Option__int32 = hashmap_get__HashMap_6string_5int32(m__1, inline224)
+    mtmp174 = inline225
+    var jp183 int32
+    switch mtmp174.(type) {
     case None:
         return None{}
     case Some:
-        var x139 int32 = mtmp138.(Some)._0
-        jp147 = x139
-        var t148 int32 = jp147 + 1
-        var t149 Option__int32 = Some{
-            _0: t148,
+        var x175 int32 = mtmp174.(Some)._0
+        jp183 = x175
+        var t184 int32 = jp183 + 1
+        var t185 Option__int32 = Some{
+            _0: t184,
         }
-        return t149
+        return t185
     default:
         panic("non-exhaustive match")
     }
 }
 
 func main0() struct{} {
-    var t157 Option__int32 = fetch(true)
-    var t158 string
-    switch t157.(type) {
+    var t193 Option__int32 = fetch(true)
+    var t194 string
+    switch t193.(type) {
     case None:
-        t158 = "none"
+        t194 = "none"
     case Some:
-        var inline206 int32 = t157.(Some)._0
-        var inline208 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline206)
-        var inline209 string = "some=" + inline208
-        t158 = inline209
+        var inline242 int32 = t193.(Some)._0
+        var inline244 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline242)
+        var inline245 string = "some=" + inline244
+        t194 = inline245
     default:
         panic("non-exhaustive match")
     }
-    var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t158)
-    _goml_runtime_core_string_println(inline203)
-    var t159 Option__int32 = fetch(false)
-    var t160 string
-    switch t159.(type) {
+    var inline239 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t194)
+    _goml_runtime_core_string_println(inline239)
+    var t195 Option__int32 = fetch(false)
+    var t196 string
+    switch t195.(type) {
     case None:
-        t160 = "none"
+        t196 = "none"
     case Some:
-        var inline198 int32 = t159.(Some)._0
-        var inline200 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline198)
-        var inline201 string = "some=" + inline200
-        t160 = inline201
+        var inline234 int32 = t195.(Some)._0
+        var inline236 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline234)
+        var inline237 string = "some=" + inline236
+        t196 = inline237
     default:
         panic("non-exhaustive match")
     }
-    var inline195 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t160)
-    _goml_runtime_core_string_println(inline195)
+    var inline231 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+    _goml_runtime_core_string_println(inline231)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t171 string = _goml_runtime_core_int32_to_string(self__35)
-    return t171
+    var t207 string = _goml_runtime_core_int32_to_string(self__35)
+    return t207
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
     return self__67
 }
 
-func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__99 string, other__100 string) bool {
-    var t179 bool = self__99 == other__100
-    return t179
+func _goml_m_trait__impl_i_PartialEq_i_string_i_eq(self__99 string, other__100 string) bool {
+    var t215 bool = self__99 == other__100
+    return t215
 }
 
 func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__127 string) uint64 {
-    var t182 uint64 = _goml_runtime_core_string_hash(self__127)
-    return t182
+    var t218 uint64 = _goml_runtime_core_string_hash(self__127)
+    return t218
 }
 
 func main() {

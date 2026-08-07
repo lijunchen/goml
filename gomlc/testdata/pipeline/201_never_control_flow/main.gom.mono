@@ -16,10 +16,10 @@ fn continue_branch() -> unit {
   let count/2 = inherent#Ref#Ref[T]#new__T_int(0) in
   while (inherent#Ref#Ref[T]#get__T_int(count/2) < 2) {
       {
-        let _wild136 =
+        let _wild172 =
           inherent#Ref#Ref[T]#set__T_int(count/2, (inherent#Ref#Ref[T]#get__T_int(count/2) + 1)) in
         let value/3 =
-          if trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(count/2), 1) {
+          if trait_impl#PartialEq#int#eq(inherent#Ref#Ref[T]#get__T_int(count/2), 1) {
               {
                 continue
               }
@@ -46,33 +46,33 @@ fn break_branch(stop/4: bool) -> unit {
                 9
               }
           } in
-        let _wild137 = println__T_int(value/5) in
+        let _wild173 = println__T_int(value/5) in
         break
       }
   }
 }
 
 fn main() -> unit {
-  let _wild138 = println__T_int32(choose(false)) in
-  let _wild139 = println__T_int32(choose(true)) in
-  let _wild140 = continue_branch() in
-  let _wild141 = break_branch(false) in
+  let _wild174 = println__T_int32(choose(false)) in
+  let _wild175 = println__T_int32(choose(true)) in
+  let _wild176 = continue_branch() in
+  let _wild177 = break_branch(false) in
   break_branch(true)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/257)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/234: Ref[int], value/235: int) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 

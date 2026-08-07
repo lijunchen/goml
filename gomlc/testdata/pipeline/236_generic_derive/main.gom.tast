@@ -4,11 +4,13 @@ impl[T] ToString for Wrapper[T] {
   }
 }
 
-impl[T] Eq for Wrapper[T] {
+impl[T] PartialEq for Wrapper[T] {
   fn eq(self/1: Wrapper[T], other/2: Wrapper[T]) -> bool {
       true
   }
 }
+
+impl[T] Eq for Wrapper[T] {}
 
 impl[T] Hash for Wrapper[T] {
   fn hash(self/3: Wrapper[T]) -> uint64 {
@@ -34,19 +36,21 @@ impl[T, Marker] ToString for Generic[T, Marker] where Wrapper[T]: ToString {
   }
 }
 
-impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq {
+impl[T, Marker] PartialEq for Generic[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: PartialEq {
   fn eq(self/7: Generic[T, Marker], other/8: Generic[T, Marker]) -> bool {
       true &&
-        (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
+        (PartialEq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
           (self/7 : Generic[T, Marker]).first,
           (other/8 : Generic[T, Marker]).first
         ) &&
-        (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
+        (PartialEq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
           (self/7 : Generic[T, Marker]).second,
           (other/8 : Generic[T, Marker]).second
         )
   }
 }
+
+impl[T, Marker] Eq for Generic[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: PartialEq {}
 
 impl[T, Marker] Hash for Generic[T, Marker] where Wrapper[T]: Hash {
   fn hash(self/9: Generic[T, Marker]) -> uint64 {
@@ -75,7 +79,7 @@ impl[T, Marker] ToString for GenericChoice[T, Marker] where Wrapper[T]: ToString
   }
 }
 
-impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {
+impl[T, Marker] PartialEq for GenericChoice[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: PartialEq {
   fn eq(self/15: GenericChoice[T, Marker], other/16: GenericChoice[T, Marker]) -> bool {
       match ((self/15 : GenericChoice[T, Marker]), (other/16 : GenericChoice[T, Marker])) {
           (GenericChoice::Empty, GenericChoice::Empty) => true,
@@ -84,7 +88,7 @@ impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {
             GenericChoice::Value(#derive1_right/18: Wrapper[T])
           ) =>
             true &&
-              (Eq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
+              (PartialEq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
                 (#derive0_left/17 : Wrapper[T]),
                 (#derive1_right/18 : Wrapper[T])
               ),
@@ -92,6 +96,8 @@ impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq {
       }
   }
 }
+
+impl[T, Marker] Eq for GenericChoice[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: PartialEq {}
 
 impl[T, Marker] Hash for GenericChoice[T, Marker] where Wrapper[T]: Hash {
   fn hash(self/19: GenericChoice[T, Marker]) -> uint64 {

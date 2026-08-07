@@ -1,0 +1,200 @@
+package main;
+#[derive(PartialEq, Default, Debug)]
+struct Settings {
+    enabled: bool,
+    retries: int,
+    label: string,
+}
+
+impl PartialEq for Settings {
+  fn eq(self: Settings, other: Settings) -> bool {
+      true && PartialEq::eq(self.enabled, other.enabled) &&
+        PartialEq::eq(self.retries, other.retries) &&
+        PartialEq::eq(self.label, other.label)
+  }
+}
+
+impl Default for Settings {
+  fn default() -> Settings {
+      Settings {
+        enabled: Default::default(),
+        retries: Default::default(),
+        label: Default::default()
+      }
+  }
+}
+
+impl Debug for Settings {
+  fn debug(self: Settings) -> string {
+      {
+          let Settings { enabled: #derive0_field, retries: #derive1_field, label: #derive2_field } =
+            self;
+          "Settings { " + "enabled: " + Debug::debug(#derive0_field) + ", " + "retries: " +
+            Debug::debug(#derive1_field) +
+            ", " +
+            "label: " +
+            Debug::debug(#derive2_field) +
+            " }"
+      }
+  }
+}
+
+struct NoDefault {
+    value: int,
+}
+
+#[derive(Default, Debug)]
+struct Empty {}
+
+impl Default for Empty {
+  fn default() -> Empty {
+      Empty {}
+  }
+}
+
+impl Debug for Empty {
+  fn debug(self: Empty) -> string {
+      "Empty {}"
+  }
+}
+
+#[derive(Default)]
+struct PairDefaults[T] {
+    first: T,
+    second: T,
+    nested: Option[T],
+}
+
+impl[T] Default for PairDefaults[T] where T: Default, Option[T]: Default {
+  fn default() -> PairDefaults[T] {
+      PairDefaults {
+        first: Default::default(),
+        second: Default::default(),
+        nested: Default::default()
+      }
+  }
+}
+
+#[derive(Default, Debug)]
+enum State {
+    Idle,
+    Running(int)
+}
+
+impl Default for State {
+  fn default() -> State {
+      State::Idle
+  }
+}
+
+impl Debug for State {
+  fn debug(self: State) -> string {
+      match self {
+          State::Idle => "State::Idle",
+          State::Running(#derive0_field) => "State::Running(" + Debug::debug(#derive0_field) + ")",
+      }
+  }
+}
+
+#[derive(Default, Debug)]
+enum Message {
+    Data(string, int),
+    Empty
+}
+
+impl Default for Message {
+  fn default() -> Message {
+      Message::Data(Default::default(), Default::default())
+  }
+}
+
+impl Debug for Message {
+  fn debug(self: Message) -> string {
+      match self {
+          Message::Data(#derive0_field, #derive1_field) =>
+            "Message::Data(" + Debug::debug(#derive0_field) + ", " + Debug::debug(#derive1_field) +
+              ")",
+          Message::Empty => "Message::Empty",
+      }
+  }
+}
+
+#[derive(Default, Debug)]
+enum Event {
+    Data { name: string, count: int },
+    Empty
+}
+
+impl Default for Event {
+  fn default() -> Event {
+      Event::Data { name: Default::default(), count: Default::default() }
+  }
+}
+
+impl Debug for Event {
+  fn debug(self: Event) -> string {
+      match self {
+          Event::Data { name: #derive0_field, count: #derive1_field } =>
+            "Event::Data { " + "name: " + Debug::debug(#derive0_field) + ", " + "count: " +
+              Debug::debug(#derive1_field) +
+              " }",
+          Event::Empty => "Event::Empty",
+      }
+  }
+}
+
+#[derive(Default)]
+enum Lazy[T] {
+    Empty,
+    Value(T)
+}
+
+impl[T] Default for Lazy[T] {
+  fn default() -> Lazy[T] {
+      Lazy::Empty
+  }
+}
+
+#[derive(Default)]
+enum Selected[T] {
+    Values(T, T),
+    Ignored(Ref[NoDefault])
+}
+
+impl[T] Default for Selected[T] where T: Default {
+  fn default() -> Selected[T] {
+      Selected::Values(Default::default(), Default::default())
+  }
+}
+
+fn main() -> unit {
+    let settings: Settings = Default::default();
+    println(settings.debug());
+    println(settings == Settings { enabled: false, retries: 0, label: "" }.to_string());
+    let empty: Empty = Default::default();
+    println(empty.debug());
+    let pair: PairDefaults[int] = Default::default();
+    println(pair.first + pair.second.to_string());
+    println(pair.nested.is_none().to_string());
+    let state: State = Default::default();
+    println(state.debug());
+    let message: Message = Default::default();
+    println(message.debug());
+    let event: Event = Default::default();
+    println(event.debug());
+    let lazy: Lazy[NoDefault] = Default::default();
+    println(
+      match lazy {
+          Lazy::Empty => "empty",
+          Lazy::Value(_) => "value",
+      }
+    );
+    let selected: Selected[int] = Default::default();
+    println(
+      match selected {
+          Selected::Values(first, second) => first + second.to_string(),
+          Selected::Ignored(_) => "ignored",
+      }
+    )
+}
+

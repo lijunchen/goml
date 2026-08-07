@@ -29,23 +29,23 @@ type B struct {
 func (_ B) isT() {}
 
 func main0() struct{} {
-    var x136 bool = true
-    switch x136 {
+    var x172 bool = true
+    switch x172 {
     case true:
-        var t144 string
-        var inline160 int = 2
-        var inline161 string = _goml_runtime_core_int_to_string(inline160)
-        t144 = inline161
-        var inline157 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t144)
-        _goml_runtime_core_string_println(inline157)
+        var t180 string
+        var inline196 int = 2
+        var inline197 string = _goml_runtime_core_int_to_string(inline196)
+        t180 = inline197
+        var inline193 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t180)
+        _goml_runtime_core_string_println(inline193)
         return struct{}{}
     case false:
-        var t146 string
-        var inline166 int = 3
-        var inline167 string = _goml_runtime_core_int_to_string(inline166)
-        t146 = inline167
-        var inline163 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t146)
-        _goml_runtime_core_string_println(inline163)
+        var t182 string
+        var inline202 int = 3
+        var inline203 string = _goml_runtime_core_int_to_string(inline202)
+        t182 = inline203
+        var inline199 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
+        _goml_runtime_core_string_println(inline199)
         return struct{}{}
     default:
         panic("non-exhaustive match")

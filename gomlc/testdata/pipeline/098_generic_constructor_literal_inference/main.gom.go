@@ -28,12 +28,12 @@ type None struct {}
 func (_ None) isOption__uint8() {}
 
 func main0() struct{} {
-    var x136 uint8 = 42
-    var t140 string
-    var inline155 string = _goml_runtime_core_uint8_to_string(x136)
-    t140 = inline155
-    var inline152 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t140)
-    _goml_runtime_core_string_println(inline152)
+    var x172 uint8 = 42
+    var t176 string
+    var inline191 string = _goml_runtime_core_uint8_to_string(x172)
+    t176 = inline191
+    var inline188 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t176)
+    _goml_runtime_core_string_println(inline188)
     return struct{}{}
 }
 

@@ -36,7 +36,7 @@ impl Hash for Key {
   }
 }
 
-impl Eq for Key {
+impl PartialEq for Key where int32: Eq, int32: PartialEq {
   fn eq(self/10: Key, other/11: Key) -> bool {
       match ((self/10 : Key), (other/11 : Key)) {
           (Key::Empty, Key::Empty) => true,
@@ -45,11 +45,11 @@ impl Eq for Key {
             Key::Point(#derive1_right/14: int32, #derive3_right/15: int32)
           ) =>
             true &&
-              (Eq::eq : (int32, int32) -> bool)(
+              (PartialEq::eq : (int32, int32) -> bool)(
                 (#derive0_left/12 : int32),
                 (#derive1_right/14 : int32)
               ) &&
-              (Eq::eq : (int32, int32) -> bool)(
+              (PartialEq::eq : (int32, int32) -> bool)(
                 (#derive2_left/13 : int32),
                 (#derive3_right/15 : int32)
               ),
@@ -57,6 +57,8 @@ impl Eq for Key {
       }
   }
 }
+
+impl Eq for Key where int32: Eq, int32: PartialEq {}
 
 fn score(value/16: Message[string]) -> int32 {
     match (value/16 : Message[string]) {
@@ -85,5 +87,7 @@ fn main() -> unit {
       (label : (Message[string]) -> string)((second/25 : Message[string]))
     );
     (println : (string) -> unit)((ToString::to_string : (Key) -> string)(Key::Point(1, 2)));
-    (println : (bool) -> unit)((Eq::eq : (Key, Key) -> bool)(Key::Point(1, 2), Key::Point(1, 2)));
+    (println : (bool) -> unit)(
+      (PartialEq::eq : (Key, Key) -> bool)(Key::Point(1, 2), Key::Point(1, 2))
+    );
 }

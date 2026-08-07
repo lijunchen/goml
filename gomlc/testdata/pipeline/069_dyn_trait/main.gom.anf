@@ -1,24 +1,24 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  let t140 = Point.x(self/0) in
-  join inline_cont166(t141: string) -> string {
-    let t142 = ("Point(" + t141) in
-    let t143 = (t142 + ",") in
-    let t144 = Point.y(self/0) in
-    join inline_cont164(t145: string) -> string {
-      let t146 = (t143 + t145) in
-      let t147 = (t146 + ")") in
-      t147
+  let t176 = Point.x(self/0) in
+  join inline_cont202(t177: string) -> string {
+    let t178 = ("Point(" + t177) in
+    let t179 = (t178 + ",") in
+    let t180 = Point.y(self/0) in
+    join inline_cont200(t181: string) -> string {
+      let t182 = (t179 + t181) in
+      let t183 = (t182 + ")") in
+      t183
     } in
-    let inline165 = @runtime(core.int32_to_string)(t144) in
-    jump inline_cont164(inline165)
+    let inline201 = @runtime(core.int32_to_string)(t180) in
+    jump inline_cont200(inline201)
   } in
-  let inline167 = @runtime(core.int32_to_string)(t140) in
-  jump inline_cont166(inline167)
+  let inline203 = @runtime(core.int32_to_string)(t176) in
+  jump inline_cont202(inline203)
 }
 
 fn trait_impl#Display#Flag#show(self/1: Flag) -> string {
-  let t152 = Flag.value(self/1) in
-  if t152 {
+  let t188 = Flag.value(self/1) in
+  if t188 {
     "Flag(true)"
   } else {
     "Flag(false)"
@@ -30,29 +30,29 @@ fn main() -> unit {
   let t/3 = Flag { value: true } in
   let dp/4 = to_dyn[Display]{Point}(p/2) in
   let dt/5 = to_dyn[Display]{Flag}(t/3) in
-  let t154 = dyn_call[Display::show](dp/4) in
-  join inline_cont171(mtmp136: unit) -> unit {
-    let t155 = dyn_call[Display::show](dt/5) in
-    let inline169 = trait_impl#ToString#string#to_string(t155) in
-    let inline170 = @runtime(core.string_println)(inline169) in
+  let t190 = dyn_call[Display::show](dp/4) in
+  join inline_cont207(mtmp172: unit) -> unit {
+    let t191 = dyn_call[Display::show](dt/5) in
+    let inline205 = trait_impl#ToString#string#to_string(t191) in
+    let inline206 = @runtime(core.string_println)(inline205) in
     ()
   } in
-  let inline172 = trait_impl#ToString#string#to_string(t154) in
-  let inline173 = @runtime(core.string_println)(inline172) in
-  jump inline_cont171(())
+  let inline208 = trait_impl#ToString#string#to_string(t190) in
+  let inline209 = @runtime(core.string_println)(inline208) in
+  jump inline_cont207(())
 }
 
 fn inherent#int32#int32#to_string(self/35: int32) -> string {
-  let t158 = @runtime(core.int32_to_string)(self/35) in
-  t158
+  let t194 = @runtime(core.int32_to_string)(self/35) in
+  t194
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont174(t160: string) -> unit {
-    let t161 = @runtime(core.string_println)(t160) in
+  join inline_cont210(t196: string) -> unit {
+    let t197 = @runtime(core.string_println)(t196) in
     ()
   } in
-  jump inline_cont174(value/31)
+  jump inline_cont210(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

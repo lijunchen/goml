@@ -1,0 +1,89 @@
+package main
+file main.gom
+  #[derive(Eq, Hash)]
+  struct LegacyKey {
+      value: int,
+  }
+
+  impl Eq for LegacyKey where int: Eq {
+    fn eq(local/1/0: LegacyKey, local/1/1: LegacyKey) -> bool {
+        true && Eq::eq(self/0.value, other/1.value)
+    }
+  }
+
+  impl Hash for LegacyKey {
+    fn hash(local/1/2: LegacyKey) -> uint64 {
+        {
+            let local/1/3 = 0 as uint64 + 14695981039346656037;
+            let local/1/4 = h/3 * 0 as uint64 + 1099511628211 + Hash::hash(self/2.value);
+            h/4
+        }
+    }
+  }
+
+  struct ModernKey {
+      value: int,
+  }
+
+  impl PartialEq for ModernKey {
+    fn eq(local/1/5: ModernKey, local/1/6: ModernKey) -> bool {
+        self/5.value % 10 == other/6.value % 10
+    }
+  }
+
+  impl Eq for ModernKey {}
+
+  impl Hash for ModernKey {
+    fn hash(local/1/7: ModernKey) -> uint64 {
+        self/7.value % 10 as uint64
+    }
+  }
+
+  struct Rank {
+      value: int,
+  }
+
+  impl PartialEq for Rank {
+    fn eq(local/1/8: Rank, local/1/9: Rank) -> bool {
+        self/8.value == other/9.value
+    }
+  }
+
+  impl cmp::PartialOrd for Rank {
+    fn partial_cmp(local/1/10: Rank, local/1/11: Rank) -> Option[cmp::Ordering] {
+        Option::Some(
+          if self/10.value > other/11.value {
+              cmp::Ordering::Less
+          } else if self/10.value < other/11.value {
+              cmp::Ordering::Greater
+          } else {
+              cmp::Ordering::Equal
+          }
+        )
+    }
+  }
+
+  fn equal[T: Eq](local/1/12: T, local/1/13: T) -> bool {
+      left/12 == right/13
+  }
+
+  fn main() -> unit {
+      let local/1/14 = LegacyKey { value: 7 };
+      let local/1/15 = ModernKey { value: 9 };
+      println(def/1/10(legacy/14, LegacyKey { value: 7 }));
+      println(Eq::eq(legacy/14, LegacyKey { value: 8 }));
+      println(def/1/10(modern/15, ModernKey { value: 19 }));
+      println(modern/15 != ModernKey { value: 20 }.to_string());
+      let local/1/16: HashMap[LegacyKey, string] = HashMap::new();
+      legacy_map/16.set(legacy/14, "legacy");
+      println(legacy_map/16.get(LegacyKey { value: 7 }).unwrap_or("missing"));
+      let local/1/17: HashMap[ModernKey, string] = HashMap::new();
+      modern_map/17.set(modern/15, "modern");
+      println(modern_map/17.get(ModernKey { value: 19 }).unwrap_or("missing"));
+      let local/1/18 = Rank { value: 2 };
+      let local/1/19 = Rank { value: 1 };
+      println(high/18 < low/19.to_string());
+      println(high/18 <= high/18.to_string());
+      println(low/19 > high/18.to_string());
+      println(low/19 >= low/19.to_string())
+  }

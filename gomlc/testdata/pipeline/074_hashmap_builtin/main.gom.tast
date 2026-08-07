@@ -13,12 +13,14 @@ impl Hash for Point {
   }
 }
 
-impl Eq for Point {
+impl PartialEq for Point where int32: Eq, int32: PartialEq {
   fn eq(self/4: Point, other/5: Point) -> bool {
-      true && (Eq::eq : (int32, int32) -> bool)((self/4 : Point).x, (other/5 : Point).x) &&
-        (Eq::eq : (int32, int32) -> bool)((self/4 : Point).y, (other/5 : Point).y)
+      true && (PartialEq::eq : (int32, int32) -> bool)((self/4 : Point).x, (other/5 : Point).x) &&
+        (PartialEq::eq : (int32, int32) -> bool)((self/4 : Point).y, (other/5 : Point).y)
   }
 }
+
+impl Eq for Point where int32: Eq, int32: PartialEq {}
 
 impl Hash for Key {
   fn hash(self/6: Key) -> uint64 {
@@ -48,19 +50,19 @@ impl Hash for Key {
   }
 }
 
-impl Eq for Key {
+impl PartialEq for Key where int32: Eq, Point: Eq, int32: PartialEq, Point: PartialEq {
   fn eq(self/14: Key, other/15: Key) -> bool {
       match ((self/14 : Key), (other/15 : Key)) {
           (Key::A, Key::A) => true,
           (Key::B(#derive0_left/16: int32), Key::B(#derive1_right/17: int32)) =>
             true &&
-              (Eq::eq : (int32, int32) -> bool)(
+              (PartialEq::eq : (int32, int32) -> bool)(
                 (#derive0_left/16 : int32),
                 (#derive1_right/17 : int32)
               ),
           (Key::P(#derive2_left/18: Point), Key::P(#derive3_right/19: Point)) =>
             true &&
-              (Eq::eq : (Point, Point) -> bool)(
+              (PartialEq::eq : (Point, Point) -> bool)(
                 (#derive2_left/18 : Point),
                 (#derive3_right/19 : Point)
               ),
@@ -68,6 +70,8 @@ impl Eq for Key {
       }
   }
 }
+
+impl Eq for Key where int32: Eq, Point: Eq, int32: PartialEq, Point: PartialEq {}
 
 fn print_opt_int(x/20: Option[int32]) -> unit {
     match (x/20 : Option[int32]) {
@@ -145,7 +149,7 @@ fn main() -> unit {
       )
     );
     (println : (bool) -> unit)(
-      (Eq::eq : (Ref[Point], Ref[Point]) -> bool)((p1/24 : Ref[Point]), (p2/25 : Ref[Point]))
+      (PartialEq::eq : (Ref[Point], Ref[Point]) -> bool)((p1/24 : Ref[Point]), (p2/25 : Ref[Point]))
     );
     let m3/26: HashMap[Ref[Key], int32] =
       (HashMap[Ref[Key], int32]::new : () -> HashMap[Ref[Key], int32])();

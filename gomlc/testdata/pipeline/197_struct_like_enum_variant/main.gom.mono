@@ -3,14 +3,14 @@ fn trait_impl#ToString#Key#to_string(self/0: Key) -> string {
     Key::Empty => {
       "Key::Empty"
     },
-    Key::Point(x136, x137) => {
+    Key::Point(x172, x173) => {
       {
-        let x136 = Key::Point._0(self/0) in
-        let x137 = Key::Point._1(self/0) in
+        let x172 = Key::Point._0(self/0) in
+        let x173 = Key::Point._1(self/0) in
         {
-          let #derive1_field/2 = x137 in
+          let #derive1_field/2 = x173 in
           {
-            let #derive0_field/1 = x136 in
+            let #derive0_field/1 = x172 in
             (((((("Key::Point { " + "x: ") +
               trait_impl#ToString#int32#to_string(#derive0_field/1)) +
               ", ") +
@@ -32,14 +32,14 @@ fn trait_impl#Hash#Key#hash(self/3: Key) -> uint64 {
         h/4
       }
     },
-    Key::Point(x138, x139) => {
+    Key::Point(x174, x175) => {
       {
-        let x138 = Key::Point._0(self/3) in
-        let x139 = Key::Point._1(self/3) in
+        let x174 = Key::Point._0(self/3) in
+        let x175 = Key::Point._1(self/3) in
         {
-          let #derive1_field/6 = x139 in
+          let #derive1_field/6 = x175 in
           {
-            let #derive0_field/5 = x138 in
+            let #derive0_field/5 = x174 in
             {
               let h/7 = (((0 as uint64) + 14695981039346656037) + 2) in
               let h/8 =
@@ -57,44 +57,44 @@ fn trait_impl#Hash#Key#hash(self/3: Key) -> uint64 {
   }
 }
 
-fn trait_impl#Eq#Key#eq(self/10: Key, other/11: Key) -> bool {
+fn trait_impl#PartialEq#Key#eq(self/10: Key, other/11: Key) -> bool {
   {
-    let mtmp140 = (self/10, other/11) in
+    let mtmp176 = (self/10, other/11) in
     {
-      let x141 = mtmp140.0 in
-      let x142 = mtmp140.1 in
-      match x142 {
+      let x177 = mtmp176.0 in
+      let x178 = mtmp176.1 in
+      match x178 {
         Key::Empty => {
-          match x141 {
+          match x177 {
             Key::Empty => {
               true
             },
             _ => false,
           }
         },
-        Key::Point(x143, x144) => {
+        Key::Point(x179, x180) => {
           {
-            let x143 = Key::Point._0(x142) in
-            let x144 = Key::Point._1(x142) in
-            match x141 {
-              Key::Point(x147, x148) => {
+            let x179 = Key::Point._0(x178) in
+            let x180 = Key::Point._1(x178) in
+            match x177 {
+              Key::Point(x183, x184) => {
                 {
-                  let x147 = Key::Point._0(x141) in
-                  let x148 = Key::Point._1(x141) in
+                  let x183 = Key::Point._0(x177) in
+                  let x184 = Key::Point._1(x177) in
                   {
-                    let #derive2_left/13 = x148 in
+                    let #derive2_left/13 = x184 in
                     {
-                      let #derive0_left/12 = x147 in
+                      let #derive0_left/12 = x183 in
                       {
-                        let #derive3_right/15 = x144 in
+                        let #derive3_right/15 = x180 in
                         {
-                          let #derive1_right/14 = x143 in
+                          let #derive1_right/14 = x179 in
                           if if true {
-                              trait_impl#Eq#int32#eq(#derive0_left/12, #derive1_right/14)
+                              trait_impl#PartialEq#int32#eq(#derive0_left/12, #derive1_right/14)
                           } else {
                               false
                           } {
-                              trait_impl#Eq#int32#eq(#derive2_left/13, #derive3_right/15)
+                              trait_impl#PartialEq#int32#eq(#derive2_left/13, #derive3_right/15)
                           } else {
                               false
                           }
@@ -118,21 +118,21 @@ fn score(value/16: Message__string) -> int32 {
     Message__string::Quit => {
       0
     },
-    Message__string::Write(x149) => {
+    Message__string::Write(x185) => {
       {
-        let x149 = Message__string::Write._0(value/16) in
+        let x185 = Message__string::Write._0(value/16) in
         1
       }
     },
-    Message__string::Move(x150, x151, x152) => {
+    Message__string::Move(x186, x187, x188) => {
       {
-        let x150 = Message__string::Move._0(value/16) in
-        let x151 = Message__string::Move._1(value/16) in
-        let x152 = Message__string::Move._2(value/16) in
+        let x186 = Message__string::Move._0(value/16) in
+        let x187 = Message__string::Move._1(value/16) in
+        let x188 = Message__string::Move._2(value/16) in
         {
-          let vertical/18 = x151 in
+          let vertical/18 = x187 in
           {
-            let x/17 = x150 in
+            let x/17 = x186 in
             (x/17 + vertical/18)
           }
         }
@@ -146,22 +146,22 @@ fn label(value/19: Message__string) -> string {
     Message__string::Quit => {
       "quit"
     },
-    Message__string::Write(x153) => {
+    Message__string::Write(x189) => {
       {
-        let x153 = Message__string::Write._0(value/19) in
+        let x189 = Message__string::Write._0(value/19) in
         {
-          let text/21 = x153 in
+          let text/21 = x189 in
           text/21
         }
       }
     },
-    Message__string::Move(x154, x155, x156) => {
+    Message__string::Move(x190, x191, x192) => {
       {
-        let x154 = Message__string::Move._0(value/19) in
-        let x155 = Message__string::Move._1(value/19) in
-        let x156 = Message__string::Move._2(value/19) in
+        let x190 = Message__string::Move._0(value/19) in
+        let x191 = Message__string::Move._1(value/19) in
+        let x192 = Message__string::Move._2(value/19) in
         {
-          let label/20 = x156 in
+          let label/20 = x192 in
           label/20
         }
       }
@@ -174,10 +174,10 @@ fn main() -> unit {
   let direction/23 = "north" in
   let first/24 = Message__string::Move(x/22, 4, direction/23) in
   let second/25 = Message__string::Move(3, 4, "north") in
-  let _wild157 = println__T_int32(score(first/24)) in
-  let _wild158 = println__T_string(label(second/25)) in
-  let _wild159 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
-  let _wild160 = println__T_bool(trait_impl#Eq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
+  let _wild193 = println__T_int32(score(first/24)) in
+  let _wild194 = println__T_string(label(second/25)) in
+  let _wild195 = println__T_string(trait_impl#ToString#Key#to_string(Key::Point(1, 2))) in
+  let _wild196 = println__T_bool(trait_impl#PartialEq#Key#eq(Key::Point(1, 2), Key::Point(1, 2))) in
 }
 
 fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
@@ -188,7 +188,7 @@ fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
   @runtime(core.int32_hash)(self/132)
 }
 
-fn trait_impl#Eq#int32#eq(self/109: int32, other/110: int32) -> bool {
+fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
   @intrinsic(eq.primitive)(self/109, other/110)
 }
 

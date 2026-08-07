@@ -19,17 +19,17 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var a__0 int8 = -128
-    var t139 string
-    var inline161 string = _goml_runtime_core_int8_to_string(a__0)
-    t139 = inline161
-    var inline158 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t139)
-    _goml_runtime_core_string_println(inline158)
+    var t175 string
+    var inline197 string = _goml_runtime_core_int8_to_string(a__0)
+    t175 = inline197
+    var inline194 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t175)
+    _goml_runtime_core_string_println(inline194)
     var b__1 int16 = -32768
-    var t140 string
-    var inline156 string = _goml_runtime_core_int16_to_string(b__1)
-    t140 = inline156
-    var inline153 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t140)
-    _goml_runtime_core_string_println(inline153)
+    var t176 string
+    var inline192 string = _goml_runtime_core_int16_to_string(b__1)
+    t176 = inline192
+    var inline189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t176)
+    _goml_runtime_core_string_println(inline189)
     return struct{}{}
 }
 

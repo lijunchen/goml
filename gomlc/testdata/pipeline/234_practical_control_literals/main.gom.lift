@@ -1,13 +1,13 @@
 fn unwrap_or_negative(value/0: Option__int) -> int {
-  let mtmp136 = value/0 in
-  match mtmp136 {
-    Option__int::Some(x137) => {
-      let x137 = Option__int::Some._0(mtmp136) in
-      let result/1 = x137 in
+  let mtmp172 = value/0 in
+  match mtmp172 {
+    Option__int::Some(x173) => {
+      let x173 = Option__int::Some._0(mtmp172) in
+      let result/1 = x173 in
       result/1
     },
     _ =>
-      let _wild138 = return -1 in
+      let _wild174 = return -1 in
       (),
   }
 }
@@ -15,37 +15,37 @@ fn unwrap_or_negative(value/0: Option__int) -> int {
 fn count_to(limit/2: int) -> int {
   let counter/3 = inherent#Ref#Ref[T]#new__T_int(0) in
   loop let current/4 = inherent#Ref#Ref[T]#get__T_int(counter/3) in
-  let _wild140 =
+  let _wild176 =
     if (current/4 >= limit/2) {
-        let _wild139 = break current/4 in
+        let _wild175 = break current/4 in
         ()
     } else {
         ()
     } in
-  let _wild141 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
+  let _wild177 = inherent#Ref#Ref[T]#set__T_int(counter/3, (current/4 + 1)) in
   ()
 }
 
 fn loop_option(value/5: Option__int) -> int {
-  loop let mtmp142 = value/5 in
-  match mtmp142 {
-    Option__int::Some(x143) => {
-      let x143 = Option__int::Some._0(mtmp142) in
-      let item/6 = x143 in
-      let _wild144 = break item/6 in
+  loop let mtmp178 = value/5 in
+  match mtmp178 {
+    Option__int::Some(x179) => {
+      let x179 = Option__int::Some._0(mtmp178) in
+      let item/6 = x179 in
+      let _wild180 = break item/6 in
       ()
     },
     _ =>
-      let _wild145 = break -2 in
+      let _wild181 = break -2 in
       (),
   }
 }
 
 fn nested_loop_value() -> int {
-  loop let _wild147 =
-    loop let _wild146 = break in
+  loop let _wild183 =
+    loop let _wild182 = break in
     () in
-  let _wild148 = break 7 in
+  let _wild184 = break 7 in
   ()
 }
 
@@ -63,31 +63,31 @@ fn matches_raw_path(value/7: string) -> bool {
 }
 
 fn main() -> unit {
-  let _wild149 = println__T_string("C:\\tmp\\\"quoted\\\"") in
-  let _wild150 = println__T_string(("" + "}")) in
-  let _wild151 =
+  let _wild185 = println__T_string("C:\\tmp\\\"quoted\\\"") in
+  let _wild186 = println__T_string(("" + "}")) in
+  let _wild187 =
     println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::Some(11)))) in
-  let _wild152 =
+  let _wild188 =
     println__T_string(inherent#int#int#to_string(unwrap_or_negative(Option__int::None))) in
-  let _wild153 = println__T_string(inherent#int#int#to_string(count_to(4))) in
-  let _wild154 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
-  let _wild155 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
-  let _wild156 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
-  let _wild157 =
+  let _wild189 = println__T_string(inherent#int#int#to_string(count_to(4))) in
+  let _wild190 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::Some(9)))) in
+  let _wild191 = println__T_string(inherent#int#int#to_string(loop_option(Option__int::None))) in
+  let _wild192 = println__T_string(inherent#int#int#to_string(nested_loop_value())) in
+  let _wild193 =
     println__T_string(trait_impl#ToString#bool#to_string(matches_raw_path("C:\\tmp"))) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/257)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/234: Ref[int], value/235: int) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
 fn println__T_string(value/31: string) -> unit {
@@ -106,7 +106,7 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 

@@ -42,7 +42,7 @@ impl Hash for Key {
   }
 }
 
-impl Eq for Key {
+impl Eq for Key where int32: Eq {
   fn eq(self: Key, other: Key) -> bool {
       match (self, other) {
           (Key::Empty, Key::Empty) => true,

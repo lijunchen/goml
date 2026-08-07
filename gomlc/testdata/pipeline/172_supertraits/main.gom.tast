@@ -10,7 +10,7 @@ impl[T] Render for Box[T] {
   }
 }
 
-impl[T] Child[T] for Box[T] where T: ToString, T: Eq {
+impl[T] Child[T] for Box[T] where T: ToString, T: Eq, T: PartialEq {
   fn child(self/2: Box[T]) -> string {
       ":child"
   }
@@ -21,7 +21,8 @@ fn describe[T, B](value/3: B) -> string where
   T: ToString,
   T: Eq,
   B: Parent[T],
-  B: Render {
+  B: Render,
+  T: PartialEq {
     (ToString::to_string : (T) -> string)((Parent[T]::parent : (B) -> T)((value/3 : B))) +
       (Render::render : (B) -> string)((value/3 : B)) +
       (Child[T]::child : (B) -> string)((value/3 : B))

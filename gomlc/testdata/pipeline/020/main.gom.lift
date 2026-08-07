@@ -1,13 +1,13 @@
 fn bounce_int(shape/0: Shape__int32) -> Shape__int32 {
   match shape/0 {
-    Shape__int32::Dot(x136) => {
-      let x136 = Shape__int32::Dot._0(shape/0) in
-      let point/1 = x136 in
+    Shape__int32::Dot(x172) => {
+      let x172 = Shape__int32::Dot._0(shape/0) in
+      let point/1 = x172 in
       Shape__int32::Dot(point/1)
     },
-    Shape__int32::Wrapped(x137) => {
-      let x137 = Shape__int32::Wrapped._0(shape/0) in
-      let inner/2 = x137 in
+    Shape__int32::Wrapped(x173) => {
+      let x173 = Shape__int32::Wrapped._0(shape/0) in
+      let inner/2 = x173 in
       Shape__int32::Wrapped(inner/2)
     },
     Shape__int32::Origin => {
@@ -32,11 +32,11 @@ fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper__int32) -> Shape__int32
 }
 
 fn point32_to_string(point/8: Point) -> string {
-  let mtmp140 = point/8 in
-  let x141 = Point.x(mtmp140) in
-  let x142 = Point.y(mtmp140) in
-  let y/10 = x142 in
-  let x/9 = x141 in
+  let mtmp176 = point/8 in
+  let x177 = Point.x(mtmp176) in
+  let x178 = Point.y(mtmp176) in
+  let y/10 = x178 in
+  let x/9 = x177 in
   let with_x/11 = ("Point { x: " + inherent#int32#int32#to_string(x/9)) in
   let with_y_label/12 = (with_x/11 + ", y: ") in
   let with_y/13 = (with_y_label/12 + inherent#int32#int32#to_string(y/10)) in
@@ -44,32 +44,32 @@ fn point32_to_string(point/8: Point) -> string {
 }
 
 fn wrapper_int32_to_string(wrapper/14: Wrapper__int32) -> string {
-  let mtmp143 = wrapper/14 in
-  let x144 = Wrapper__int32.value(mtmp143) in
-  let value/15 = x144 in
+  let mtmp179 = wrapper/14 in
+  let x180 = Wrapper__int32.value(mtmp179) in
+  let value/15 = x180 in
   let prefix/16 = ("Wrapper[int32] { value: " + inherent#int32#int32#to_string(value/15)) in
   (prefix/16 + " }")
 }
 
 fn wrapper_unit_to_string(wrapper/17: Wrapper__unit) -> string {
-  let mtmp145 = wrapper/17 in
-  let x146 = Wrapper__unit.value(mtmp145) in
-  let value/18 = x146 in
+  let mtmp181 = wrapper/17 in
+  let x182 = Wrapper__unit.value(mtmp181) in
+  let value/18 = x182 in
   let prefix/19 = ("Wrapper[unit] { value: " + trait_impl#ToString#unit#to_string(value/18)) in
   (prefix/19 + " }")
 }
 
 fn shape_int32_to_string(shape/20: Shape__int32) -> string {
   match shape/20 {
-    Shape__int32::Dot(x147) => {
-      let x147 = Shape__int32::Dot._0(shape/20) in
-      let point/21 = x147 in
+    Shape__int32::Dot(x183) => {
+      let x183 = Shape__int32::Dot._0(shape/20) in
+      let point/21 = x183 in
       let prefix/22 = ("Shape::Dot(" + point32_to_string(point/21)) in
       (prefix/22 + ")")
     },
-    Shape__int32::Wrapped(x148) => {
-      let x148 = Shape__int32::Wrapped._0(shape/20) in
-      let wrapper/23 = x148 in
+    Shape__int32::Wrapped(x184) => {
+      let x184 = Shape__int32::Wrapped._0(shape/20) in
+      let wrapper/23 = x184 in
       let prefix/24 = ("Shape::Wrapped(" + wrapper_int32_to_string(wrapper/23)) in
       (prefix/24 + ")")
     },
@@ -81,15 +81,15 @@ fn shape_int32_to_string(shape/20: Shape__int32) -> string {
 
 fn shape_unit_to_string(shape/25: Shape__unit) -> string {
   match shape/25 {
-    Shape__unit::Dot(x149) => {
-      let x149 = Shape__unit::Dot._0(shape/25) in
-      let point/26 = x149 in
+    Shape__unit::Dot(x185) => {
+      let x185 = Shape__unit::Dot._0(shape/25) in
+      let point/26 = x185 in
       let prefix/27 = ("Shape::Dot(" + point32_to_string(point/26)) in
       (prefix/27 + ")")
     },
-    Shape__unit::Wrapped(x150) => {
-      let x150 = Shape__unit::Wrapped._0(shape/25) in
-      let wrapper/28 = x150 in
+    Shape__unit::Wrapped(x186) => {
+      let x186 = Shape__unit::Wrapped._0(shape/25) in
+      let wrapper/28 = x186 in
       let prefix/29 = ("Shape::Wrapped(" + wrapper_unit_to_string(wrapper/28)) in
       (prefix/29 + ")")
     },
@@ -100,19 +100,19 @@ fn shape_unit_to_string(shape/25: Shape__unit) -> string {
 }
 
 fn main() -> unit {
-  let mtmp151 = println__T_string(point32_to_string(Point { x: 3, y: 4 })) in
-  let mtmp152 = println__T_string(wrapper_int32_to_string(Wrapper__int32 { value: 7 })) in
-  let mtmp153 = println__T_string(wrapper_unit_to_string(Wrapper__unit { value: () })) in
+  let mtmp187 = println__T_string(point32_to_string(Point { x: 3, y: 4 })) in
+  let mtmp188 = println__T_string(wrapper_int32_to_string(Wrapper__int32 { value: 7 })) in
+  let mtmp189 = println__T_string(wrapper_unit_to_string(Wrapper__unit { value: () })) in
   let bounced_origin/30 = bounce_int(Shape__int32::Origin) in
-  let mtmp154 = println__T_string(shape_int32_to_string(Shape__int32::Dot(Point { x: 3, y: 4 }))) in
-  let mtmp155 =
+  let mtmp190 = println__T_string(shape_int32_to_string(Shape__int32::Dot(Point { x: 3, y: 4 }))) in
+  let mtmp191 =
     println__T_string(shape_int32_to_string(Shape__int32::Wrapped(Wrapper__int32 { value: 7 }))) in
-  let mtmp156 = println__T_string(shape_int32_to_string(bounced_origin/30)) in
-  let mtmp157 = println__T_string(shape_unit_to_string(Shape__unit::Dot(Point { x: 3, y: 4 }))) in
-  let mtmp158 =
+  let mtmp192 = println__T_string(shape_int32_to_string(bounced_origin/30)) in
+  let mtmp193 = println__T_string(shape_unit_to_string(Shape__unit::Dot(Point { x: 3, y: 4 }))) in
+  let mtmp194 =
     println__T_string(shape_unit_to_string(Shape__unit::Wrapped(Wrapper__unit { value: () }))) in
-  let mtmp159 = println__T_string(shape_unit_to_string(Shape__unit::Origin)) in
-  let mtmp160 = describe__T_int32(bounce_int(Shape__int32::Origin)) in
+  let mtmp195 = println__T_string(shape_unit_to_string(Shape__unit::Origin)) in
+  let mtmp196 = describe__T_int32(bounce_int(Shape__int32::Origin)) in
   println__T_string("struct enums!")
 }
 
@@ -130,12 +130,12 @@ fn println__T_string(value/31: string) -> unit {
 
 fn describe__T_int32(shape/7: Shape__int32) -> int32 {
   match shape/7 {
-    Shape__int32::Dot(x138) => {
-      let x138 = Shape__int32::Dot._0(shape/7) in
+    Shape__int32::Dot(x174) => {
+      let x174 = Shape__int32::Dot._0(shape/7) in
       1
     },
-    Shape__int32::Wrapped(x139) => {
-      let x139 = Shape__int32::Wrapped._0(shape/7) in
+    Shape__int32::Wrapped(x175) => {
+      let x175 = Shape__int32::Wrapped._0(shape/7) in
       2
     },
     Shape__int32::Origin => {

@@ -15,88 +15,88 @@ type Tuple2_4bool_4bool struct {
 }
 
 func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{} {
-    var x136 bool = x__0._0
-    var x137 bool = x__0._1
-    switch x137 {
+    var x172 bool = x__0._0
+    var x173 bool = x__0._1
+    switch x173 {
     case true:
-        var x138 bool = y__1._0
-        var x139 bool = y__1._1
-        switch x139 {
+        var x174 bool = y__1._0
+        var x175 bool = y__1._1
+        switch x175 {
         case true:
-            switch x138 {
+            switch x174 {
             case true:
-                var inline181 string = "case4"
-                var inline182 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline181)
-                _goml_runtime_core_string_println(inline182)
+                var inline217 string = "case4"
+                var inline218 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline217)
+                _goml_runtime_core_string_println(inline218)
                 return struct{}{}
             case false:
-                var inline185 string = "case3"
-                var inline186 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline185)
-                _goml_runtime_core_string_println(inline186)
+                var inline221 string = "case3"
+                var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline221)
+                _goml_runtime_core_string_println(inline222)
                 return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
         case false:
-            var inline189 string = "case4"
-            var inline190 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline189)
-            _goml_runtime_core_string_println(inline190)
+            var inline225 string = "case4"
+            var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline225)
+            _goml_runtime_core_string_println(inline226)
             return struct{}{}
         default:
             panic("non-exhaustive match")
         }
     case false:
-        switch x136 {
+        switch x172 {
         case true:
-            var x140 bool = y__1._0
-            var x141 bool = y__1._1
-            switch x141 {
+            var x176 bool = y__1._0
+            var x177 bool = y__1._1
+            switch x177 {
             case true:
-                switch x140 {
+                switch x176 {
                 case true:
-                    var inline193 string = "case2"
-                    var inline194 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline193)
-                    _goml_runtime_core_string_println(inline194)
+                    var inline229 string = "case2"
+                    var inline230 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline229)
+                    _goml_runtime_core_string_println(inline230)
                     return struct{}{}
                 case false:
-                    var inline197 string = "case1"
-                    var inline198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline197)
-                    _goml_runtime_core_string_println(inline198)
+                    var inline233 string = "case1"
+                    var inline234 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline233)
+                    _goml_runtime_core_string_println(inline234)
                     return struct{}{}
                 default:
                     panic("non-exhaustive match")
                 }
             case false:
-                var inline201 string = "case2"
-                var inline202 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline201)
-                _goml_runtime_core_string_println(inline202)
+                var inline237 string = "case2"
+                var inline238 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline237)
+                _goml_runtime_core_string_println(inline238)
                 return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
         case false:
-            var x142 bool = y__1._0
-            var x143 bool = y__1._1
-            switch x143 {
+            var x178 bool = y__1._0
+            var x179 bool = y__1._1
+            switch x179 {
             case true:
-                switch x142 {
+                switch x178 {
                 case true:
-                    var inline205 string = "case4"
-                    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline205)
-                    _goml_runtime_core_string_println(inline206)
+                    var inline241 string = "case4"
+                    var inline242 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline241)
+                    _goml_runtime_core_string_println(inline242)
                     return struct{}{}
                 case false:
-                    var inline209 string = "case3"
-                    var inline210 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline209)
-                    _goml_runtime_core_string_println(inline210)
+                    var inline245 string = "case3"
+                    var inline246 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline245)
+                    _goml_runtime_core_string_println(inline246)
                     return struct{}{}
                 default:
                     panic("non-exhaustive match")
                 }
             case false:
-                var inline213 string = "case4"
-                var inline214 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline213)
-                _goml_runtime_core_string_println(inline214)
+                var inline249 string = "case4"
+                var inline250 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline249)
+                _goml_runtime_core_string_println(inline250)
                 return struct{}{}
             default:
                 panic("non-exhaustive match")
@@ -110,42 +110,42 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
 }
 
 func main0() struct{} {
-    var t167 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t203 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    var t168 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t204 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    test_nested_match(t167, t168)
-    var t169 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    test_nested_match(t203, t204)
+    var t205 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    var t170 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t206 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    test_nested_match(t169, t170)
-    var t171 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    test_nested_match(t205, t206)
+    var t207 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    var t172 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t208 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    test_nested_match(t171, t172)
-    var t173 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    test_nested_match(t207, t208)
+    var t209 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    var t174 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
+    var t210 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    test_nested_match(t173, t174)
+    test_nested_match(t209, t210)
     return struct{}{}
 }
 

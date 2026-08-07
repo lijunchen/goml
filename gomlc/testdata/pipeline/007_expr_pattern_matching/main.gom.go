@@ -42,24 +42,24 @@ type Mul struct {
 func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var x140 Expr = Zero{}
-    switch x140.(type) {
+    var x176 Expr = Zero{}
+    switch x176.(type) {
     case Zero:
-        var inline198 int = 3
-        var inline199 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline198)
-        _goml_runtime_core_string_print(inline199)
+        var inline234 int = 3
+        var inline235 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline234)
+        _goml_runtime_core_string_print(inline235)
         return struct{}{}
     default:
-        var inline202 int = 4
-        var inline203 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline202)
-        _goml_runtime_core_string_print(inline203)
+        var inline238 int = 4
+        var inline239 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(inline238)
+        _goml_runtime_core_string_print(inline239)
         return struct{}{}
     }
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t196 string = _goml_runtime_core_int_to_string(self__69)
-    return t196
+    var t232 string = _goml_runtime_core_int_to_string(self__69)
+    return t232
 }
 
 func main() {

@@ -7,17 +7,17 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 }
 
 fn check(ok/1: bool) -> Result__string__string {
-  let mtmp139 =
-    let mtmp136 = parse_text(ok/1) in
-    match mtmp136 {
-      Result__string__string::Ok(x137) => {
-        let x137 = Result__string__string::Ok._0(mtmp136) in
-        let try_value/12 = x137 in
+  let mtmp175 =
+    let mtmp172 = parse_text(ok/1) in
+    match mtmp172 {
+      Result__string__string::Ok(x173) => {
+        let x173 = Result__string__string::Ok._0(mtmp172) in
+        let try_value/12 = x173 in
         try_value/12
       },
-      Result__string__string::Err(x138) => {
-        let x138 = Result__string__string::Err._0(mtmp136) in
-        let try_residual/12 = x138 in
+      Result__string__string::Err(x174) => {
+        let x174 = Result__string__string::Err._0(mtmp172) in
+        let try_residual/12 = x174 in
         return Result__string__string::Err(try_residual/12)
       },
     } in
@@ -26,22 +26,22 @@ fn check(ok/1: bool) -> Result__string__string {
 
 fn show(res/2: Result__string__string) -> string {
   match res/2 {
-    Result__string__string::Ok(x140) => {
-      let x140 = Result__string__string::Ok._0(res/2) in
-      let value/3 = x140 in
+    Result__string__string::Ok(x176) => {
+      let x176 = Result__string__string::Ok._0(res/2) in
+      let value/3 = x176 in
       ("ok " + value/3)
     },
-    Result__string__string::Err(x141) => {
-      let x141 = Result__string__string::Err._0(res/2) in
-      let err/4 = x141 in
+    Result__string__string::Err(x177) => {
+      let x177 = Result__string__string::Err._0(res/2) in
+      let err/4 = x177 in
       ("err " + err/4)
     },
   }
 }
 
 fn main() -> unit {
-  let _wild142 = println__T_string(show(check(true))) in
-  let _wild143 = println__T_string(show(check(false))) in
+  let _wild178 = println__T_string(show(check(true))) in
+  let _wild179 = println__T_string(show(check(false))) in
   ()
 }
 

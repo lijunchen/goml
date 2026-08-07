@@ -1,8 +1,8 @@
 fn main() -> unit {
   let x/0 = @intrinsic(ref.new)(0) in
   let inc/1 = closure_env_inc_0 { x_0: x/0 } in
-  let mtmp137 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
-  let _wild138 = println__T_string(inherent#int#int#to_string(@intrinsic(ref.get)(x/0))) in
+  let mtmp173 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
+  let _wild174 = println__T_string(inherent#int#int#to_string(@intrinsic(ref.get)(x/0))) in
   ()
 }
 
@@ -18,7 +18,7 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 
@@ -26,8 +26,8 @@ fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
   @runtime(core.int_hash)(self/129)
 }
 
-fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env139: closure_env_inc_0) -> int {
-  let x/0 = closure_env_inc_0.x_0(env139) in
-  let _wild136 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in
+fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env175: closure_env_inc_0) -> int {
+  let x/0 = closure_env_inc_0.x_0(env175) in
+  let _wild172 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in
   @intrinsic(ref.get)(x/0)
 }

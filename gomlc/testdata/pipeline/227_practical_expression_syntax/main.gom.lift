@@ -1,5 +1,5 @@
 fn record(log/0: Ref[string], label/1: string, value/2: int) -> int {
-  let _wild136 =
+  let _wild172 =
     inherent#Ref#Ref[T]#set__T_string(
       log/0,
       (inherent#Ref#Ref[T]#get__T_string(log/0) + label/1)
@@ -8,7 +8,7 @@ fn record(log/0: Ref[string], label/1: string, value/2: int) -> int {
 }
 
 fn record_point(log/3: Ref[string], label/4: string, value/5: Point) -> Point {
-  let _wild137 =
+  let _wild173 =
     inherent#Ref#Ref[T]#set__T_string(
       log/3,
       (inherent#Ref#Ref[T]#get__T_string(log/3) + label/4)
@@ -17,7 +17,7 @@ fn record_point(log/3: Ref[string], label/4: string, value/5: Point) -> Point {
 }
 
 fn record_vec(log/6: Ref[string], label/7: string, value/8: Vec[int]) -> Vec[int] {
-  let _wild138 =
+  let _wild174 =
     inherent#Ref#Ref[T]#set__T_string(
       log/6,
       (inherent#Ref#Ref[T]#get__T_string(log/6) + label/7)
@@ -27,37 +27,37 @@ fn record_vec(log/6: Ref[string], label/7: string, value/8: Vec[int]) -> Vec[int
 
 fn main() -> unit {
   let number/9 = 5 in
-  let _wild141 =
-    let compound_old139 = number/9 in
-    let compound_value140 = 3 in
-    number/9 = (compound_old139 + compound_value140) in
-  let _wild144 =
-    let compound_old142 = number/9 in
-    let compound_value143 = 2 in
-    number/9 = (compound_old142 * compound_value143) in
-  let _wild147 =
-    let compound_old145 = number/9 in
-    let compound_value146 = 1 in
-    number/9 = (compound_old145 >> compound_value146) in
-  let _wild148 = println__T_string(inherent#int#int#to_string(number/9)) in
+  let _wild177 =
+    let compound_old175 = number/9 in
+    let compound_value176 = 3 in
+    number/9 = (compound_old175 + compound_value176) in
+  let _wild180 =
+    let compound_old178 = number/9 in
+    let compound_value179 = 2 in
+    number/9 = (compound_old178 * compound_value179) in
+  let _wild183 =
+    let compound_old181 = number/9 in
+    let compound_value182 = 1 in
+    number/9 = (compound_old181 >> compound_value182) in
+  let _wild184 = println__T_string(inherent#int#int#to_string(number/9)) in
   let direct/10 = Point { x: 3, y: 4 } in
-  let _wild152 =
-    let place_root149 = direct/10 in
-    let place150 = Point.x(place_root149) in
-    let value151 = 5 in
-    direct/10 = Point { x: (place150 + value151), y: Point.y(place_root149) } in
-  let _wild153 =
+  let _wild188 =
+    let place_root185 = direct/10 in
+    let place186 = Point.x(place_root185) in
+    let value187 = 5 in
+    direct/10 = Point { x: (place186 + value187), y: Point.y(place_root185) } in
+  let _wild189 =
     println__T_string(
       ((("" + inherent#int#int#to_string(Point.x(direct/10))) + ",") +
         inherent#int#int#to_string(Point.y(direct/10)))
     ) in
   let pair/11 = (2, 9) in
-  let _wild157 =
-    let place_root154 = pair/11 in
-    let place155 = place_root154.0 in
-    let value156 = 3 in
-    pair/11 = ((place155 * value156), place_root154.1) in
-  let _wild158 =
+  let _wild193 =
+    let place_root190 = pair/11 in
+    let place191 = place_root190.0 in
+    let value192 = 3 in
+    pair/11 = ((place191 * value192), place_root190.1) in
+  let _wild194 =
     println__T_string(
       ((("" + inherent#int#int#to_string(pair/11.0)) + ",") + inherent#int#int#to_string(pair/11.1))
     ) in
@@ -67,63 +67,63 @@ fn main() -> unit {
     let struct_update_field/780/0 = record(log/12, "F", 7) in
     let struct_update_base/780 = record_point(log/12, "B", base/13) in
     Point { x: struct_update_field/780/0, y: Point.y(struct_update_base/780) } in
-  let _wild159 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
-  let _wild160 =
+  let _wild195 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
+  let _wild196 =
     println__T_string(
       ((("" + inherent#int#int#to_string(Point.x(updated/14))) + ",") +
         inherent#int#int#to_string(Point.y(updated/14)))
     ) in
-  let _wild161 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
+  let _wild197 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
   let values/15 =
     let vec_literal/967 = inherent#Vec#Vec[T]#new__T_int() in
-    let _wild162 = inherent#Vec#Vec[T]#push__T_int(vec_literal/967, record(log/12, "A", 10)) in
-    let _wild163 = inherent#Vec#Vec[T]#push__T_int(vec_literal/967, record(log/12, "B", 20)) in
+    let _wild198 = inherent#Vec#Vec[T]#push__T_int(vec_literal/967, record(log/12, "A", 10)) in
+    let _wild199 = inherent#Vec#Vec[T]#push__T_int(vec_literal/967, record(log/12, "B", 20)) in
     vec_literal/967 in
-  let _wild168 =
-    let place_root164 = record_vec(log/12, "R", values/15) in
-    let index165 = record(log/12, "I", 1) in
-    let place166 = @intrinsic(vec.get)(place_root164, index165) in
-    let value167 = record(log/12, "V", 5) in
-    @intrinsic(vec.set)(place_root164, index165, (place166 + value167)) in
-  let _wild169 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
-  let _wild170 =
+  let _wild204 =
+    let place_root200 = record_vec(log/12, "R", values/15) in
+    let index201 = record(log/12, "I", 1) in
+    let place202 = @intrinsic(vec.get)(place_root200, index201) in
+    let value203 = record(log/12, "V", 5) in
+    @intrinsic(vec.set)(place_root200, index201, (place202 + value203)) in
+  let _wild205 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
+  let _wild206 =
     println__T_string(
       ((("" + inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(values/15, 0))) + ",") +
         inherent#int#int#to_string(inherent#Vec#Vec[T]#get__T_int(values/15, 1)))
     ) in
-  let _wild171 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
+  let _wild207 = inherent#Ref#Ref[T]#set__T_string(log/12, "") in
   let table/16 =
     let hashmap_literal/1226 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int() in
-    let _wild172 =
+    let _wild208 =
       inherent#HashMap#HashMap[K,V]#set__K_string__V_int(
         hashmap_literal/1226,
         (("" + "k") + inherent#int#int#to_string(record(log/12, "K", 1))),
         record(log/12, "V", 11)
       ) in
-    let _wild173 =
+    let _wild209 =
       inherent#HashMap#HashMap[K,V]#set__K_string__V_int(
         hashmap_literal/1226,
         "same",
         record(log/12, "A", 1)
       ) in
-    let _wild174 =
+    let _wild210 =
       inherent#HashMap#HashMap[K,V]#set__K_string__V_int(
         hashmap_literal/1226,
         "same",
         record(log/12, "B", 2)
       ) in
     hashmap_literal/1226 in
-  let _wild175 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
-  let _wild178 =
+  let _wild211 = println__T_string(inherent#Ref#Ref[T]#get__T_string(log/12)) in
+  let _wild214 =
     println__T_string(
-      let mtmp176 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int(table/16, "same") in
-      match mtmp176 {
+      let mtmp212 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int(table/16, "same") in
+      match mtmp212 {
         Option__int::None => {
           "missing"
         },
-        Option__int::Some(x177) => {
-          let x177 = Option__int::Some._0(mtmp176) in
-          let value/17 = x177 in
+        Option__int::Some(x213) => {
+          let x213 = Option__int::Some._0(mtmp212) in
+          let value/17 = x213 in
           inherent#int#int#to_string(value/17)
         },
       }
@@ -134,7 +134,7 @@ fn main() -> unit {
   let empty_table/19 =
     let hashmap_literal/1623 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int() in
     hashmap_literal/1623 in
-  let _wild179 =
+  let _wild215 =
     println__T_string(
       ((("" + "empty=") +
         inherent#int#int#to_string(
@@ -146,12 +146,12 @@ fn main() -> unit {
   ()
 }
 
-fn inherent#Ref#Ref[T]#get__T_string(self/233: Ref[string]) -> string {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_string(self/258: Ref[string]) -> string {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn inherent#Ref#Ref[T]#set__T_string(self/234: Ref[string], value/235: string) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_string(self/259: Ref[string], value/260: string) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
 fn println__T_string(value/31: string) -> unit {
@@ -162,20 +162,20 @@ fn inherent#int#int#to_string(self/34: int) -> string {
   @runtime(core.int_to_string)(self/34)
 }
 
-fn inherent#Ref#Ref[T]#new__T_string(value/232: string) -> Ref[string] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_string(value/257: string) -> Ref[string] {
+  @intrinsic(ref.new)(value/257)
 }
 
 fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_int(self/151: Vec[int], elem/152: int) -> unit {
-  @intrinsic(vec.push)(self/151, elem/152)
+fn inherent#Vec#Vec[T]#push__T_int(self/176: Vec[int], elem/177: int) -> unit {
+  @intrinsic(vec.push)(self/176, elem/177)
 }
 
-fn inherent#Vec#Vec[T]#get__T_int(self/157: Vec[int], index/158: int) -> int {
-  @intrinsic(vec.get)(self/157, index/158)
+fn inherent#Vec#Vec[T]#get__T_int(self/182: Vec[int], index/183: int) -> int {
+  @intrinsic(vec.get)(self/182, index/183)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int() -> HashMap[string, int] {
@@ -183,33 +183,33 @@ fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int() -> HashMap[string, int] 
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int(
-  self/223: HashMap[string, int],
-  key/224: string,
-  value/225: int
+  self/248: HashMap[string, int],
+  key/249: string,
+  value/250: int
 ) -> unit {
-  @intrinsic(hashmap.set)(self/223, key/224, value/225)
+  @intrinsic(hashmap.set)(self/248, key/249, value/250)
 }
 
 fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int(
-  self/221: HashMap[string, int],
-  key/222: string
+  self/246: HashMap[string, int],
+  key/247: string
 ) -> Option__int {
-  @intrinsic(hashmap.get)(self/221, key/222)
+  @intrinsic(hashmap.get)(self/246, key/247)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int(self/162: Vec[int]) -> int {
-  @intrinsic(vec.len)(self/162)
+fn inherent#Vec#Vec[T]#len__T_int(self/187: Vec[int]) -> int {
+  @intrinsic(vec.len)(self/187)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_string__V_int(self/228: HashMap[string, int]) -> int {
-  @intrinsic(hashmap.len)(self/228)
+fn inherent#HashMap#HashMap[K,V]#len__K_string__V_int(self/253: HashMap[string, int]) -> int {
+  @intrinsic(hashmap.len)(self/253)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
-fn trait_impl#Eq#string#eq(self/99: string, other/100: string) -> bool {
+fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
   @intrinsic(eq.primitive)(self/99, other/100)
 }
 

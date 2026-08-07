@@ -30,40 +30,40 @@ type Point__string__int32 struct {
 
 func main0() struct{} {
     var p1__4 Point__int32__string
-    var inline181 int32 = 10
-    var inline182 string = "hello"
-    var inline183 Point__int32__string = Point__int32__string{
-        x: inline181,
-        y: inline182,
+    var inline217 int32 = 10
+    var inline218 string = "hello"
+    var inline219 Point__int32__string = Point__int32__string{
+        x: inline217,
+        y: inline218,
     }
-    p1__4 = inline183
+    p1__4 = inline219
     var p2__5 Point__string__string
-    var inline177 string = "goml"
-    var inline178 string = "lang"
-    var inline179 Point__string__string = Point__string__string{
-        x: inline177,
-        y: inline178,
+    var inline213 string = "goml"
+    var inline214 string = "lang"
+    var inline215 Point__string__string = Point__string__string{
+        x: inline213,
+        y: inline214,
     }
-    p2__5 = inline179
+    p2__5 = inline215
     var p3__6 Point__string__int32
-    var inline173 string = p1__4.y
-    var inline174 int32 = p1__4.x
-    var inline175 Point__string__int32 = Point__string__int32{
-        x: inline173,
-        y: inline174,
+    var inline209 string = p1__4.y
+    var inline210 int32 = p1__4.x
+    var inline211 Point__string__int32 = Point__string__int32{
+        x: inline209,
+        y: inline210,
     }
-    p3__6 = inline175
+    p3__6 = inline211
     var x__7 int32 = p3__6.y
-    var t138 string
-    var inline171 string = _goml_runtime_core_int32_to_string(x__7)
-    t138 = inline171
-    var inline168 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t138)
-    _goml_runtime_core_string_println(inline168)
+    var t174 string
+    var inline207 string = _goml_runtime_core_int32_to_string(x__7)
+    t174 = inline207
+    var inline204 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t174)
+    _goml_runtime_core_string_println(inline204)
     var x2__8 string
-    var inline166 string = p2__5.x
-    x2__8 = inline166
-    var inline163 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x2__8)
-    _goml_runtime_core_string_println(inline163)
+    var inline202 string = p2__5.x
+    x2__8 = inline202
+    var inline199 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x2__8)
+    _goml_runtime_core_string_println(inline199)
     return struct{}{}
 }
 

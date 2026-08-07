@@ -1,335 +1,335 @@
 fn trait_impl#Source#NumberSource#get(self/0: NumberSource) -> int {
-  let t204 = NumberSource.value(self/0) in
-  t204
+  let t240 = NumberSource.value(self/0) in
+  t240
 }
 
 fn read(source/1: dyn Source[Item = int]) -> int {
-  let t207 = dyn_call[Source::get](source/1) in
-  t207
+  let t243 = dyn_call[Source::get](source/1) in
+  t243
 }
 
 fn labeled_cleanup() -> unit {
-  join exit209() -> unit {
+  join exit245() -> unit {
     ()
   } in
   joinrec {
-    join loop_expr210() -> unit {
+    join loop_expr246() -> unit {
       joinrec {
-        join loop_expr213() -> unit {
-          join inline_cont311(_defer136: unit) -> unit {
-            let inline308 = "outer cleanup" in
-            let inline309 = trait_impl#ToString#string#to_string(inline308) in
-            let inline310 = @runtime(core.string_println)(inline309) in
-            jump exit209()
+        join loop_expr249() -> unit {
+          join inline_cont347(_defer172: unit) -> unit {
+            let inline344 = "outer cleanup" in
+            let inline345 = trait_impl#ToString#string#to_string(inline344) in
+            let inline346 = @runtime(core.string_println)(inline345) in
+            jump exit245()
           } in
-          let inline312 = "inner cleanup" in
-          let inline313 = trait_impl#ToString#string#to_string(inline312) in
-          let inline314 = @runtime(core.string_println)(inline313) in
-          jump inline_cont311(())
+          let inline348 = "inner cleanup" in
+          let inline349 = trait_impl#ToString#string#to_string(inline348) in
+          let inline350 = @runtime(core.string_println)(inline349) in
+          jump inline_cont347(())
         } in
       } in
-      jump loop_expr213()
+      jump loop_expr249()
     } in
   } in
-  jump loop_expr210()
+  jump loop_expr246()
 }
 
 fn main() -> unit {
-  let t215 = NumberSource { value: 11 } in
-  let t216 = to_dyn[Source]{NumberSource}(t215) in
-  let t217 = read(t216) in
-  let _wild140 = println__T_int(t217) in
-  let mtmp141 = (1, 2) in
-  let x142 = 1 in
-  let x143 = 2 in
-  let value/3 = x143 in
-  let index/2 = x142 in
-  let compound_old144 = index/2 in
-  let compound_value145 = x143 in
-  let t218 = (compound_old144 + x143) in
-  let t219 = index/2 = t218 in
-  let _wild146 = t219 in
-  join inline_cont363(_wild147: unit) -> unit {
-    let mtmp148 = (3, 0) in
-    let x149 = 3 in
-    let x150 = 0 in
-    let captured/4 = @intrinsic(ref.new)(x149) in
+  let t251 = NumberSource { value: 11 } in
+  let t252 = to_dyn[Source]{NumberSource}(t251) in
+  let t253 = read(t252) in
+  let _wild176 = println__T_int(t253) in
+  let mtmp177 = (1, 2) in
+  let x178 = 1 in
+  let x179 = 2 in
+  let value/3 = x179 in
+  let index/2 = x178 in
+  let compound_old180 = index/2 in
+  let compound_value181 = x179 in
+  let t254 = (compound_old180 + x179) in
+  let t255 = index/2 = t254 in
+  let _wild182 = t255 in
+  join inline_cont399(_wild183: unit) -> unit {
+    let mtmp184 = (3, 0) in
+    let x185 = 3 in
+    let x186 = 0 in
+    let captured/4 = @intrinsic(ref.new)(x185) in
     let increment/5 = closure_env_increment_0 { captured_0: captured/4 } in
-    join inline_cont356(_wild154: unit) -> unit {
-      let t220 = @intrinsic(ref.get)(captured/4) in
-      join inline_cont353(_wild155: unit) -> unit {
-        let mtmp156 = Option__int::Some(4) in
-        join k221() -> unit {
-          let _wild161 = () in
-          join inline_cont351(values/7: Vec[int]) -> unit {
-            join inline_cont348(_wild162: unit) -> unit {
-              let for_source163 = values/7 in
-              let for_limit164 = @intrinsic(vec.len)(values/7) in
-              let for_index165 = 0 in
-              join exit222() -> unit {
-                let _wild171 = () in
+    join inline_cont392(_wild190: unit) -> unit {
+      let t256 = @intrinsic(ref.get)(captured/4) in
+      join inline_cont389(_wild191: unit) -> unit {
+        let mtmp192 = Option__int::Some(4) in
+        join k257() -> unit {
+          let _wild197 = () in
+          join inline_cont387(values/7: Vec[int]) -> unit {
+            join inline_cont384(_wild198: unit) -> unit {
+              let for_source199 = values/7 in
+              let for_limit200 = @intrinsic(vec.len)(values/7) in
+              let for_index201 = 0 in
+              join exit258() -> unit {
+                let _wild207 = () in
                 let legacy/9 = (8, 9) in
-                let place_root172 = legacy/9 in
-                let place173 = place_root172.0 in
-                let value174 = 1 in
-                let t223 = (place173 + value174) in
-                let t224 = place_root172.1 in
-                let t225 = (t223, t224) in
-                let t226 = legacy/9 = t225 in
-                let _wild175 = t226 in
-                let place_root176 = legacy/9 in
-                let place177 = place_root176.1 in
-                let value178 = 1 in
-                let t227 = place_root176.0 in
-                let t228 = (place177 + value178) in
-                let t229 = (t227, t228) in
-                let t230 = legacy/9 = t229 in
-                let _wild179 = t230 in
-                let t231 = legacy/9.0 in
-                let t232 = legacy/9.1 in
-                let t233 = (t231 + t232) in
-                join inline_cont345(_wild180: unit) -> unit {
+                let place_root208 = legacy/9 in
+                let place209 = place_root208.0 in
+                let value210 = 1 in
+                let t259 = (place209 + value210) in
+                let t260 = place_root208.1 in
+                let t261 = (t259, t260) in
+                let t262 = legacy/9 = t261 in
+                let _wild211 = t262 in
+                let place_root212 = legacy/9 in
+                let place213 = place_root212.1 in
+                let value214 = 1 in
+                let t263 = place_root212.0 in
+                let t264 = (place213 + value214) in
+                let t265 = (t263, t264) in
+                let t266 = legacy/9 = t265 in
+                let _wild215 = t266 in
+                let t267 = legacy/9.0 in
+                let t268 = legacy/9.1 in
+                let t269 = (t267 + t268) in
+                join inline_cont381(_wild216: unit) -> unit {
                   let steps/10 = 0 in
-                  join exit234() -> unit {
-                    let _wild185 = () in
-                    join inline_cont342(_wild186: unit) -> unit {
-                      join inline_cont339(seen/11: Ref[int]) -> unit {
-                        let for_index187 = 0 in
-                        let for_limit188 = 3 in
-                        join exit235() -> unit {
-                          let _wild197 = () in
-                          join inline_cont337(t236: int) -> unit {
-                            join inline_cont334(_wild198: unit) -> unit {
-                              join exit237(jp238: int) -> unit {
-                                let answer/14 = jp238 in
-                                join inline_cont331(_wild200: unit) -> unit {
-                                  let t239 = labeled_cleanup() in
+                  join exit270() -> unit {
+                    let _wild221 = () in
+                    join inline_cont378(_wild222: unit) -> unit {
+                      join inline_cont375(seen/11: Ref[int]) -> unit {
+                        let for_index223 = 0 in
+                        let for_limit224 = 3 in
+                        join exit271() -> unit {
+                          let _wild233 = () in
+                          join inline_cont373(t272: int) -> unit {
+                            join inline_cont370(_wild234: unit) -> unit {
+                              join exit273(jp274: int) -> unit {
+                                let answer/14 = jp274 in
+                                join inline_cont367(_wild236: unit) -> unit {
+                                  let t275 = labeled_cleanup() in
                                   ()
                                 } in
-                                let inline332 = trait_impl#ToString#int#to_string(jp238) in
-                                let inline333 = @runtime(core.string_println)(inline332) in
-                                jump inline_cont331(())
+                                let inline368 = trait_impl#ToString#int#to_string(jp274) in
+                                let inline369 = @runtime(core.string_println)(inline368) in
+                                jump inline_cont367(())
                               } in
                               joinrec {
-                                join loop_expr240() -> unit {
+                                join loop_expr276() -> unit {
                                   joinrec {
-                                    join loop_expr243() -> unit {
-                                      jump exit237(42)
+                                    join loop_expr279() -> unit {
+                                      jump exit273(42)
                                     } in
                                   } in
-                                  jump loop_expr243()
+                                  jump loop_expr279()
                                 } in
                               } in
-                              jump loop_expr240()
+                              jump loop_expr276()
                             } in
-                            let inline335 = trait_impl#ToString#int#to_string(t236) in
-                            let inline336 = @runtime(core.string_println)(inline335) in
-                            jump inline_cont334(())
+                            let inline371 = trait_impl#ToString#int#to_string(t272) in
+                            let inline372 = @runtime(core.string_println)(inline371) in
+                            jump inline_cont370(())
                           } in
-                          let inline338 = @intrinsic(ref.get)(seen/11) in
-                          jump inline_cont337(inline338)
+                          let inline374 = @intrinsic(ref.get)(seen/11) in
+                          jump inline_cont373(inline374)
                         } in
                         joinrec {
-                          join loop244() -> unit {
-                            let t245 = (for_index187 < for_limit188) in
-                            if t245 {
-                              let for_item189 = for_index187 in
-                              let t246 = (for_index187 + 1) in
-                              let _wild190 = for_index187 = t246 in
-                              let row/12 = for_item189 in
-                              let for_index191 = 0 in
-                              let for_limit192 = 3 in
-                              join exit247() -> unit {
-                                jump loop244()
+                          join loop280() -> unit {
+                            let t281 = (for_index223 < for_limit224) in
+                            if t281 {
+                              let for_item225 = for_index223 in
+                              let t282 = (for_index223 + 1) in
+                              let _wild226 = for_index223 = t282 in
+                              let row/12 = for_item225 in
+                              let for_index227 = 0 in
+                              let for_limit228 = 3 in
+                              join exit283() -> unit {
+                                jump loop280()
                               } in
                               joinrec {
-                                join loop248() -> unit {
-                                  let t249 = (for_index191 < for_limit192) in
-                                  if t249 {
-                                    let for_item193 = for_index191 in
-                                    let t250 = (for_index191 + 1) in
-                                    let _wild194 = for_index191 = t250 in
-                                    let column/13 = for_item193 in
-                                    join inline_cont329(t251: int) -> unit {
-                                      let t252 = (t251 + 1) in
-                                      join inline_cont327(_wild195: unit) -> unit {
-                                        join inline_cont324(t256: bool) -> unit {
-                                          join k254(jp255: bool) -> unit {
-                                            if jp255 {
-                                              jump exit235()
+                                join loop284() -> unit {
+                                  let t285 = (for_index227 < for_limit228) in
+                                  if t285 {
+                                    let for_item229 = for_index227 in
+                                    let t286 = (for_index227 + 1) in
+                                    let _wild230 = for_index227 = t286 in
+                                    let column/13 = for_item229 in
+                                    join inline_cont365(t287: int) -> unit {
+                                      let t288 = (t287 + 1) in
+                                      join inline_cont363(_wild231: unit) -> unit {
+                                        join inline_cont360(t292: bool) -> unit {
+                                          join k290(jp291: bool) -> unit {
+                                            if jp291 {
+                                              jump exit271()
                                             } else {
-                                              jump loop248()
+                                              jump loop284()
                                             }
                                           } in
-                                          if t256 {
-                                            let inline322 = 1 in
-                                            let inline323 =
-                                              @intrinsic(eq.primitive)(for_item193, inline322) in
-                                            jump k254(inline323)
+                                          if t292 {
+                                            let inline358 = 1 in
+                                            let inline359 =
+                                              @intrinsic(eq.primitive)(for_item229, inline358) in
+                                            jump k290(inline359)
                                           } else {
-                                            jump k254(false)
+                                            jump k290(false)
                                           }
                                         } in
-                                        let inline325 = 1 in
-                                        let inline326 =
-                                          @intrinsic(eq.primitive)(for_item189, inline325) in
-                                        jump inline_cont324(inline326)
+                                        let inline361 = 1 in
+                                        let inline362 =
+                                          @intrinsic(eq.primitive)(for_item225, inline361) in
+                                        jump inline_cont360(inline362)
                                       } in
-                                      let inline328 = @intrinsic(ref.set)(seen/11, t252) in
-                                      jump inline_cont327(())
+                                      let inline364 = @intrinsic(ref.set)(seen/11, t288) in
+                                      jump inline_cont363(())
                                     } in
-                                    let inline330 = @intrinsic(ref.get)(seen/11) in
-                                    jump inline_cont329(inline330)
+                                    let inline366 = @intrinsic(ref.get)(seen/11) in
+                                    jump inline_cont365(inline366)
                                   } else {
-                                    jump exit247()
+                                    jump exit283()
                                   }
                                 } in
                               } in
-                              jump loop248()
+                              jump loop284()
                             } else {
-                              jump exit235()
+                              jump exit271()
                             }
                           } in
                         } in
-                        jump loop244()
+                        jump loop280()
                       } in
-                      let inline340 = 0 in
-                      let inline341 = @intrinsic(ref.new)(inline340) in
-                      jump inline_cont339(inline341)
+                      let inline376 = 0 in
+                      let inline377 = @intrinsic(ref.new)(inline376) in
+                      jump inline_cont375(inline377)
                     } in
-                    let inline343 = trait_impl#ToString#int#to_string(steps/10) in
-                    let inline344 = @runtime(core.string_println)(inline343) in
-                    jump inline_cont342(())
+                    let inline379 = trait_impl#ToString#int#to_string(steps/10) in
+                    let inline380 = @runtime(core.string_println)(inline379) in
+                    jump inline_cont378(())
                   } in
                   joinrec {
-                    join loop258() -> unit {
-                      let t259 = (steps/10 < 3) in
-                      if t259 {
-                        let compound_old181 = steps/10 in
-                        let compound_value182 = 1 in
-                        let t260 = (compound_old181 + compound_value182) in
-                        let t261 = steps/10 = t260 in
-                        let _wild183 = t261 in
+                    join loop294() -> unit {
+                      let t295 = (steps/10 < 3) in
+                      if t295 {
+                        let compound_old217 = steps/10 in
+                        let compound_value218 = 1 in
+                        let t296 = (compound_old217 + compound_value218) in
+                        let t297 = steps/10 = t296 in
+                        let _wild219 = t297 in
                         joinrec {
-                          join loop_expr264() -> unit {
-                            jump loop258()
+                          join loop_expr300() -> unit {
+                            jump loop294()
                           } in
                         } in
-                        jump loop_expr264()
+                        jump loop_expr300()
                       } else {
-                        jump exit234()
+                        jump exit270()
                       }
                     } in
                   } in
-                  jump loop258()
+                  jump loop294()
                 } in
-                let inline346 = trait_impl#ToString#int#to_string(t233) in
-                let inline347 = @runtime(core.string_println)(inline346) in
-                jump inline_cont345(())
+                let inline382 = trait_impl#ToString#int#to_string(t269) in
+                let inline383 = @runtime(core.string_println)(inline382) in
+                jump inline_cont381(())
               } in
               joinrec {
-                join loop265() -> unit {
-                  let t266 = (for_index165 < for_limit164) in
-                  if t266 {
-                    let for_item166 = @intrinsic(vec.get)(values/7, for_index165) in
-                    let t267 = (for_index165 + 1) in
-                    let _wild167 = for_index165 = t267 in
-                    let item/8 = for_item166 in
-                    let compound_old168 = item/8 in
-                    let compound_value169 = 1 in
-                    let t268 = (compound_old168 + compound_value169) in
-                    let t269 = item/8 = t268 in
-                    let _wild170 = t269 in
-                    let inline319 = trait_impl#ToString#int#to_string(item/8) in
-                    let inline320 = @runtime(core.string_println)(inline319) in
-                    jump loop265()
+                join loop301() -> unit {
+                  let t302 = (for_index201 < for_limit200) in
+                  if t302 {
+                    let for_item202 = @intrinsic(vec.get)(values/7, for_index201) in
+                    let t303 = (for_index201 + 1) in
+                    let _wild203 = for_index201 = t303 in
+                    let item/8 = for_item202 in
+                    let compound_old204 = item/8 in
+                    let compound_value205 = 1 in
+                    let t304 = (compound_old204 + compound_value205) in
+                    let t305 = item/8 = t304 in
+                    let _wild206 = t305 in
+                    let inline355 = trait_impl#ToString#int#to_string(item/8) in
+                    let inline356 = @runtime(core.string_println)(inline355) in
+                    jump loop301()
                   } else {
-                    jump exit222()
+                    jump exit258()
                   }
                 } in
               } in
-              jump loop265()
+              jump loop301()
             } in
-            let inline349 = 6 in
-            let inline350 = @intrinsic(vec.push)(values/7, inline349) in
-            jump inline_cont348(())
+            let inline385 = 6 in
+            let inline386 = @intrinsic(vec.push)(values/7, inline385) in
+            jump inline_cont384(())
           } in
-          let inline352 = @intrinsic(vec.new)() in
-          jump inline_cont351(inline352)
+          let inline388 = @intrinsic(vec.new)() in
+          jump inline_cont387(inline388)
         } in
-        let x157 = 4 in
-        let count/6 = x157 in
-        let compound_old158 = count/6 in
-        let compound_value159 = 1 in
-        let t271 = (compound_old158 + compound_value159) in
-        let t272 = count/6 = t271 in
-        let _wild160 = t272 in
-        let inline316 = trait_impl#ToString#int#to_string(count/6) in
-        let inline317 = @runtime(core.string_println)(inline316) in
-        jump k221()
+        let x193 = 4 in
+        let count/6 = x193 in
+        let compound_old194 = count/6 in
+        let compound_value195 = 1 in
+        let t307 = (compound_old194 + compound_value195) in
+        let t308 = count/6 = t307 in
+        let _wild196 = t308 in
+        let inline352 = trait_impl#ToString#int#to_string(count/6) in
+        let inline353 = @runtime(core.string_println)(inline352) in
+        jump k257()
       } in
-      let inline354 = trait_impl#ToString#int#to_string(t220) in
-      let inline355 = @runtime(core.string_println)(inline354) in
-      jump inline_cont353(())
+      let inline390 = trait_impl#ToString#int#to_string(t256) in
+      let inline391 = @runtime(core.string_println)(inline390) in
+      jump inline_cont389(())
     } in
-    let inline357 = captured/4 in
-    let inline358 = @intrinsic(ref.get)(captured/4) in
-    let inline359 = 1 in
-    let inline360 = (inline358 + inline359) in
-    let inline361 = @intrinsic(ref.set)(captured/4, inline360) in
-    let inline362 = inline361 in
-    jump inline_cont356(())
+    let inline393 = captured/4 in
+    let inline394 = @intrinsic(ref.get)(captured/4) in
+    let inline395 = 1 in
+    let inline396 = (inline394 + inline395) in
+    let inline397 = @intrinsic(ref.set)(captured/4, inline396) in
+    let inline398 = inline397 in
+    jump inline_cont392(())
   } in
-  let inline364 = trait_impl#ToString#int#to_string(index/2) in
-  let inline365 = @runtime(core.string_println)(inline364) in
-  jump inline_cont363(())
+  let inline400 = trait_impl#ToString#int#to_string(index/2) in
+  let inline401 = @runtime(core.string_println)(inline400) in
+  jump inline_cont399(())
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont366(t275: string) -> unit {
-    let t276 = @runtime(core.string_println)(t275) in
+  join inline_cont402(t311: string) -> unit {
+    let t312 = @runtime(core.string_println)(t311) in
     ()
   } in
-  jump inline_cont366(value/31)
+  jump inline_cont402(value/31)
 }
 
 fn println__T_int(value/31: int) -> unit {
-  join inline_cont367(t278: string) -> unit {
-    let t279 = @runtime(core.string_println)(t278) in
+  join inline_cont403(t314: string) -> unit {
+    let t315 = @runtime(core.string_println)(t314) in
     ()
   } in
-  let inline368 = @runtime(core.int_to_string)(value/31) in
-  jump inline_cont367(inline368)
+  let inline404 = @runtime(core.int_to_string)(value/31) in
+  jump inline_cont403(inline404)
 }
 
 fn inherent#Vec#Vec[T]#new__T_int() -> Vec[int] {
-  let t282 = @intrinsic(vec.new)() in
-  t282
+  let t318 = @intrinsic(vec.new)() in
+  t318
 }
 
-fn inherent#Vec#Vec[T]#push__T_int(self/151: Vec[int], elem/152: int) -> unit {
-  let t284 = @intrinsic(vec.push)(self/151, elem/152) in
+fn inherent#Vec#Vec[T]#push__T_int(self/176: Vec[int], elem/177: int) -> unit {
+  let t320 = @intrinsic(vec.push)(self/176, elem/177) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
-  let t287 = @intrinsic(ref.new)(value/232) in
-  t287
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  let t323 = @intrinsic(ref.new)(value/257) in
+  t323
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
-  let t290 = @intrinsic(ref.get)(self/233) in
-  t290
+fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
+  let t326 = @intrinsic(ref.get)(self/258) in
+  t326
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/234: Ref[int], value/235: int) -> unit {
-  let t292 = @intrinsic(ref.set)(self/234, value/235) in
+fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
+  let t328 = @intrinsic(ref.set)(self/259, value/260) in
   ()
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
-  let t295 = @intrinsic(eq.primitive)(self/103, other/104) in
-  t295
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  let t331 = @intrinsic(eq.primitive)(self/103, other/104) in
+  t331
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
@@ -337,23 +337,23 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
 }
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
-  let t300 = @runtime(core.int_to_string)(self/69) in
-  t300
+  let t336 = @runtime(core.int_to_string)(self/69) in
+  t336
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
-  let t303 = @runtime(core.int_hash)(self/129) in
-  t303
+  let t339 = @runtime(core.int_hash)(self/129) in
+  t339
 }
 
 fn inherent#closure_env_increment_0#closure_env_increment_0#apply(
-  env201: closure_env_increment_0
+  env237: closure_env_increment_0
 ) -> unit {
-  let captured/4 = closure_env_increment_0.captured_0(env201) in
-  let compound_old151 = @intrinsic(ref.get)(captured/4) in
-  let compound_value152 = 1 in
-  let t305 = (compound_old151 + compound_value152) in
-  let t306 = @intrinsic(ref.set)(captured/4, t305) in
-  let _wild153 = t306 in
+  let captured/4 = closure_env_increment_0.captured_0(env237) in
+  let compound_old187 = @intrinsic(ref.get)(captured/4) in
+  let compound_value188 = 1 in
+  let t341 = (compound_old187 + compound_value188) in
+  let t342 = @intrinsic(ref.set)(captured/4, t341) in
+  let _wild189 = t342 in
   ()
 }

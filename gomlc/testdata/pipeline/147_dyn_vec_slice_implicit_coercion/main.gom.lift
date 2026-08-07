@@ -10,12 +10,12 @@ fn main() -> unit {
   let v/2 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
   let first/3 = 10 in
   let second/4 = 20 in
-  let _wild136 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(first/3)) in
-  let _wild137 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(second/4)) in
+  let _wild172 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(first/3)) in
+  let _wild173 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(second/4)) in
   let s/5 = inherent#Vec#Vec[T]#slice__T_dynDisplay(v/2, 0, 2) in
-  let _wild138 = println__T_string(render(@intrinsic(slice.get)(s/5, 0))) in
+  let _wild174 = println__T_string(render(@intrinsic(slice.get)(s/5, 0))) in
   let t/6 = inherent#Slice#Slice[T]#sub__T_dynDisplay(s/5, 1, 2) in
-  let _wild139 = println__T_string(render(@intrinsic(slice.get)(t/6, 0))) in
+  let _wild175 = println__T_string(render(@intrinsic(slice.get)(t/6, 0))) in
   ()
 }
 
@@ -28,18 +28,18 @@ fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
 }
 
 fn inherent#Vec#Vec[T]#push__T_dynDisplay(
-  self/151: Vec[dyn Display],
-  elem/152: dyn Display
+  self/176: Vec[dyn Display],
+  elem/177: dyn Display
 ) -> unit {
-  @intrinsic(vec.push)(self/151, elem/152)
+  @intrinsic(vec.push)(self/176, elem/177)
 }
 
 fn inherent#Vec#Vec[T]#slice__T_dynDisplay(
-  self/200: Vec[dyn Display],
-  start/201: int,
-  end/202: int
+  self/225: Vec[dyn Display],
+  start/226: int,
+  end/227: int
 ) -> Slice[dyn Display] {
-  @intrinsic(slice.new)(self/200, start/201, end/202)
+  @intrinsic(slice.new)(self/225, start/226, end/227)
 }
 
 fn println__T_string(value/31: string) -> unit {
@@ -47,11 +47,11 @@ fn println__T_string(value/31: string) -> unit {
 }
 
 fn inherent#Slice#Slice[T]#sub__T_dynDisplay(
-  self/212: Slice[dyn Display],
-  start/213: int,
-  end/214: int
+  self/237: Slice[dyn Display],
+  start/238: int,
+  end/239: int
 ) -> Slice[dyn Display] {
-  @intrinsic(slice.sub)(self/212, start/213, end/214)
+  @intrinsic(slice.sub)(self/237, start/238, end/239)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

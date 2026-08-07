@@ -15,13 +15,13 @@ func _goml_runtime_core_string_println(s string) struct{} {
 
 func main0() struct{} {
     var x__0 int = 1
-    var t139 int = x__0 + 1
-    x__0 = t139
-    var t140 string
-    var inline153 string = _goml_runtime_core_int_to_string(x__0)
-    t140 = inline153
-    var inline150 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t140)
-    _goml_runtime_core_string_println(inline150)
+    var t175 int = x__0 + 1
+    x__0 = t175
+    var t176 string
+    var inline189 string = _goml_runtime_core_int_to_string(x__0)
+    t176 = inline189
+    var inline186 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t176)
+    _goml_runtime_core_string_println(inline186)
     return struct{}{}
 }
 

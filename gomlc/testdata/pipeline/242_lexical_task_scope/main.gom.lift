@@ -129,25 +129,25 @@ fn std::task::sleep_nanoseconds_with(
 fn main() -> unit {
   let completed/0 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let total/7 = std::task::scope__T_int(closure_env_main_3 { completed_0: completed/0 }) in
-  let _wild137 = println__T_int(total/7) in
-  let _wild138 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
+  let _wild173 = println__T_int(total/7) in
+  let _wild174 = println__T_bool(inherent#Ref#Ref[T]#get__T_bool(completed/0)) in
   let nested/12 = std::task::scope__T_int(closure_env_main_6 {}) in
-  let _wild139 = println__T_int(nested/12) in
+  let _wild175 = println__T_int(nested/12) in
   let scope/13 = 3 in
   let spawn/15 = closure_env_spawn_7 {} in
   println__T_int(inherent#closure_env_spawn_7#closure_env_spawn_7#apply(spawn/15, scope/13))
 }
 
-fn inherent#Channel#Channel[T]#new__T_unit(capacity/236: int) -> Channel[unit] {
-  @intrinsic(channel.new)(capacity/236)
+fn inherent#Channel#Channel[T]#new__T_unit(capacity/261: int) -> Channel[unit] {
+  @intrinsic(channel.new)(capacity/261)
 }
 
-fn inherent#Channel#Channel[T]#send__T_unit(self/237: Channel[unit], value/238: unit) -> unit {
-  @intrinsic(channel.send)(self/237, value/238)
+fn inherent#Channel#Channel[T]#send__T_unit(self/262: Channel[unit], value/263: unit) -> unit {
+  @intrinsic(channel.send)(self/262, value/263)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/232: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_bool(value/257: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/257)
 }
 
 fn std::task::scope__T_int(body/9: (std::task::Scope) -> int) -> int {
@@ -188,8 +188,8 @@ fn inherent#std::task::Scope#std::task::Scope#spawn__T_int(
   std::task::Task__int { result: result/27, ready: ready/28 }
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/234: Ref[bool], value/235: bool) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_bool(self/259: Ref[bool], value/260: bool) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
 fn inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
@@ -239,8 +239,8 @@ fn println__T_bool(value/31: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/233: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_bool(self/258: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/258)
 }
 
 fn std::task::scope_with__T_int(
@@ -261,15 +261,15 @@ fn std::task::scope_with__T_int(
   std::task::completed_scope_value__T_int(result/15)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[int](value/232: Option__int) -> Ref[Option__int] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_Option[int](value/257: Option__int) -> Ref[Option__int] {
+  @intrinsic(ref.new)(value/257)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[int](
-  self/234: Ref[Option__int],
-  value/235: Option__int
+  self/259: Ref[Option__int],
+  value/260: Option__int
 ) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
 fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
@@ -286,36 +286,36 @@ fn std::task::completed_scope_value__T_int(result/0: Ref[Option__int]) -> int {
   }
 }
 
-fn inherent#Channel#Channel[T]#close__T_unit(self/242: Channel[unit]) -> unit {
-  @intrinsic(channel.close)(self/242)
+fn inherent#Channel#Channel[T]#close__T_unit(self/267: Channel[unit]) -> unit {
+  @intrinsic(channel.close)(self/267)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Option[unit](value/232: Option__unit) -> Ref[Option__unit] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_Option[unit](value/257: Option__unit) -> Ref[Option__unit] {
+  @intrinsic(ref.new)(value/257)
 }
 
 fn inherent#Ref#Ref[T]#set__T_Option[unit](
-  self/234: Ref[Option__unit],
-  value/235: Option__unit
+  self/259: Ref[Option__unit],
+  value/260: Option__unit
 ) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
-fn inherent#Channel#Channel[T]#recv__T_unit(self/239: Channel[unit]) -> Option__unit {
-  let mtmp107 = @intrinsic(channel.recv)(self/239) in
-  let x108 = mtmp107.0 in
-  let x109 = mtmp107.1 in
-  let ok/241 = x109 in
-  let value/240 = x108 in
-  if ok/241 {
-      Option__unit::Some(value/240)
+fn inherent#Channel#Channel[T]#recv__T_unit(self/264: Channel[unit]) -> Option__unit {
+  let mtmp143 = @intrinsic(channel.recv)(self/264) in
+  let x144 = mtmp143.0 in
+  let x145 = mtmp143.1 in
+  let ok/266 = x145 in
+  let value/265 = x144 in
+  if ok/266 {
+      Option__unit::Some(value/265)
   } else {
       Option__unit::None
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_Option[int](self/233: Ref[Option__int]) -> Option__int {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_Option[int](self/258: Ref[Option__int]) -> Option__int {
+  @intrinsic(ref.get)(self/258)
 }
 
 fn trait_impl#ToString#int#to_string(self/69: int) -> string {
@@ -326,7 +326,7 @@ fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
   @runtime(core.bool_to_string)(self/66)
 }
 
-fn trait_impl#Eq#bool#eq(self/97: bool, other/98: bool) -> bool {
+fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
   @intrinsic(eq.primitive)(self/97, other/98)
 }
 
@@ -338,38 +338,136 @@ fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
   }
 }
 
+fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option__int) -> bool {
+  let mtmp61 = (self/153, other/154) in
+  let x62 = mtmp61.0 in
+  let x63 = mtmp61.1 in
+  match x63 {
+    Option__int::None => {
+      match x62 {
+        Option__int::None => {
+          true
+        },
+        _ => false,
+      }
+    },
+    Option__int::Some(x64) => {
+      let x64 = Option__int::Some._0(x63) in
+      match x62 {
+        Option__int::Some(x66) => {
+          let x66 = Option__int::Some._0(x62) in
+          let left/155 = x66 in
+          let right/156 = x64 in
+          trait_impl#PartialEq#int#eq(left/155, right/156)
+        },
+        _ => false,
+      }
+    },
+  }
+}
+
+fn trait_impl#Hash#Option__int#hash(self/157: Option__int) -> uint64 {
+  match self/157 {
+    Option__int::None => {
+      14695981039346656038
+    },
+    Option__int::Some(x67) => {
+      let x67 = Option__int::Some._0(self/157) in
+      let value/158 = x67 in
+      (14695981039346656039 + trait_impl#Hash#int#hash(value/158))
+    },
+  }
+}
+
+fn trait_impl#PartialEq#Option__unit#eq(self/153: Option__unit, other/154: Option__unit) -> bool {
+  let mtmp61 = (self/153, other/154) in
+  let x62 = mtmp61.0 in
+  let x63 = mtmp61.1 in
+  match x63 {
+    Option__unit::None => {
+      match x62 {
+        Option__unit::None => {
+          true
+        },
+        _ => false,
+      }
+    },
+    Option__unit::Some(x64) => {
+      let x64 = Option__unit::Some._0(x63) in
+      match x62 {
+        Option__unit::Some(x66) => {
+          let x66 = Option__unit::Some._0(x62) in
+          let left/155 = x66 in
+          let right/156 = x64 in
+          trait_impl#PartialEq#unit#eq(left/155, right/156)
+        },
+        _ => false,
+      }
+    },
+  }
+}
+
+fn trait_impl#Hash#Option__unit#hash(self/157: Option__unit) -> uint64 {
+  match self/157 {
+    Option__unit::None => {
+      14695981039346656038
+    },
+    Option__unit::Some(x67) => {
+      let x67 = Option__unit::Some._0(self/157) in
+      let value/158 = x67 in
+      (14695981039346656039 + trait_impl#Hash#unit#hash(value/158))
+    },
+  }
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  @intrinsic(eq.primitive)(self/103, other/104)
+}
+
+fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
+  @runtime(core.int_hash)(self/129)
+}
+
+fn trait_impl#PartialEq#unit#eq(self/95: unit, other/96: unit) -> bool {
+  true
+}
+
+fn trait_impl#Hash#unit#hash(self/125: unit) -> uint64 {
+  0
+}
+
 fn inherent#closure_env_main_0#closure_env_main_0#apply(
-  env140: closure_env_main_0,
+  env176: closure_env_main_0,
   _cancel/2: std::task::CancelToken
 ) -> int {
   20
 }
 
 fn inherent#closure_env_main_1#closure_env_main_1#apply(
-  env141: closure_env_main_1,
+  env177: closure_env_main_1,
   _cancel/4: std::task::CancelToken
 ) -> int {
   22
 }
 
 fn inherent#closure_env_main_2#closure_env_main_2#apply(
-  env142: closure_env_main_2,
+  env178: closure_env_main_2,
   _cancel/6: std::task::CancelToken
 ) -> unit {
-  let completed/0 = closure_env_main_2.completed_0(env142) in
+  let completed/0 = closure_env_main_2.completed_0(env178) in
   inherent#Ref#Ref[T]#set__T_bool(completed/0, true)
 }
 
 fn inherent#closure_env_main_3#closure_env_main_3#apply(
-  env143: closure_env_main_3,
+  env179: closure_env_main_3,
   scope/1: std::task::Scope
 ) -> int {
-  let completed/0 = closure_env_main_3.completed_0(env143) in
+  let completed/0 = closure_env_main_3.completed_0(env179) in
   let left/3 =
     inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, closure_env_main_0 {}) in
   let right/5 =
     inherent#std::task::Scope#std::task::Scope#spawn__T_int(scope/1, closure_env_main_1 {}) in
-  let mtmp136 =
+  let mtmp172 =
     inherent#std::task::Scope#std::task::Scope#spawn__T_unit(
       scope/1,
       closure_env_main_2 { completed_0: completed/0 }
@@ -379,14 +477,14 @@ fn inherent#closure_env_main_3#closure_env_main_3#apply(
 }
 
 fn inherent#closure_env_main_4#closure_env_main_4#apply(
-  env144: closure_env_main_4,
+  env180: closure_env_main_4,
   _cancel/10: std::task::CancelToken
 ) -> int {
   7
 }
 
 fn inherent#closure_env_main_5#closure_env_main_5#apply(
-  env145: closure_env_main_5,
+  env181: closure_env_main_5,
   scope/9: std::task::Scope
 ) -> int {
   let value/11 =
@@ -395,7 +493,7 @@ fn inherent#closure_env_main_5#closure_env_main_5#apply(
 }
 
 fn inherent#closure_env_main_6#closure_env_main_6#apply(
-  env146: closure_env_main_6,
+  env182: closure_env_main_6,
   scope/8: std::task::Scope
 ) -> int {
   std::task::scope_with__T_int(
@@ -405,18 +503,18 @@ fn inherent#closure_env_main_6#closure_env_main_6#apply(
 }
 
 fn inherent#closure_env_spawn_7#closure_env_spawn_7#apply(
-  env147: closure_env_spawn_7,
+  env183: closure_env_spawn_7,
   value/14: int
 ) -> int {
   (value/14 + 1)
 }
 
 fn inherent#closure_env_std_task_scope_T_int_8#closure_env_std_task_scope_T_int_8#apply(
-  env148: closure_env_std_task_scope_T_int_8
+  env184: closure_env_std_task_scope_T_int_8
 ) -> unit {
-  let result/11 = closure_env_std_task_scope_T_int_8.result_0(env148) in
-  let body/9 = closure_env_std_task_scope_T_int_8.body_1(env148) in
-  let handle/10 = closure_env_std_task_scope_T_int_8.handle_2(env148) in
+  let result/11 = closure_env_std_task_scope_T_int_8.result_0(env184) in
+  let body/9 = closure_env_std_task_scope_T_int_8.body_1(env184) in
+  let handle/10 = closure_env_std_task_scope_T_int_8.handle_2(env184) in
   inherent#Ref#Ref[T]#set__T_Option[int](
     result/11,
     Option__int::Some(body/9(std::task::Scope { handle: handle/10 }))
@@ -424,39 +522,39 @@ fn inherent#closure_env_std_task_scope_T_int_8#closure_env_std_task_scope_T_int_
 }
 
 fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9#apply(
-  env149: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9
+  env185: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9
 ) -> unit {
   let result/27 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.result_0(env149) in
-  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.body_1(env149) in
-  let token/29 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.token_2(env149) in
-  let ready/28 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.ready_3(env149) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.result_0(env185) in
+  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.body_1(env185) in
+  let token/29 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.token_2(env185) in
+  let ready/28 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_int_9.ready_3(env185) in
   let _wild17 =
     inherent#Ref#Ref[T]#set__T_Option[int](result/27, Option__int::Some(body/26(token/29))) in
   inherent#Channel#Channel[T]#close__T_unit(ready/28)
 }
 
 fn inherent#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10#apply(
-  env150: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10
+  env186: closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10
 ) -> unit {
   let result/27 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.result_0(env150) in
-  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.body_1(env150) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.result_0(env186) in
+  let body/26 = closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.body_1(env186) in
   let token/29 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.token_2(env150) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.token_2(env186) in
   let ready/28 =
-    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.ready_3(env150) in
+    closure_env_inherent_std_task_Scope_std_task_Scope_spawn_T_unit_10.ready_3(env186) in
   let _wild17 =
     inherent#Ref#Ref[T]#set__T_Option[unit](result/27, Option__unit::Some(body/26(token/29))) in
   inherent#Channel#Channel[T]#close__T_unit(ready/28)
 }
 
 fn inherent#closure_env_std_task_scope_with_T_int_11#closure_env_std_task_scope_with_T_int_11#apply(
-  env151: closure_env_std_task_scope_with_T_int_11
+  env187: closure_env_std_task_scope_with_T_int_11
 ) -> unit {
-  let result/15 = closure_env_std_task_scope_with_T_int_11.result_0(env151) in
-  let body/13 = closure_env_std_task_scope_with_T_int_11.body_1(env151) in
-  let handle/14 = closure_env_std_task_scope_with_T_int_11.handle_2(env151) in
+  let result/15 = closure_env_std_task_scope_with_T_int_11.result_0(env187) in
+  let body/13 = closure_env_std_task_scope_with_T_int_11.body_1(env187) in
+  let handle/14 = closure_env_std_task_scope_with_T_int_11.handle_2(env187) in
   inherent#Ref#Ref[T]#set__T_Option[int](
     result/15,
     Option__int::Some(body/13(std::task::Scope { handle: handle/14 }))

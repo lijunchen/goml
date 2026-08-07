@@ -39,118 +39,118 @@ const (
 
 func main0() struct{} {
     var running__0 *ref_bool_x
-    var inline192 bool = true
-    var inline193 *ref_bool_x = ref__Ref_4bool(inline192)
-    running__0 = inline193
-    Loop_loop142:
+    var inline228 bool = true
+    var inline229 *ref_bool_x = ref__Ref_4bool(inline228)
+    running__0 = inline229
+    Loop_loop178:
     for {
-        var t143 bool
-        var inline186 bool = ref_get__Ref_4bool(running__0)
-        t143 = inline186
-        if t143 {
+        var t179 bool
+        var inline222 bool = ref_get__Ref_4bool(running__0)
+        t179 = inline222
+        if t179 {
             var event__1 Event = Open
             switch event__1 {
             case Open:
                 var scanning__2 *ref_bool_x
-                var inline175 bool = false
-                var inline176 *ref_bool_x = ref__Ref_4bool(inline175)
-                scanning__2 = inline176
-                Loop_loop150:
+                var inline211 bool = false
+                var inline212 *ref_bool_x = ref__Ref_4bool(inline211)
+                scanning__2 = inline212
+                Loop_loop186:
                 for {
-                    var t151 bool
-                    var inline173 bool = ref_get__Ref_4bool(scanning__2)
-                    t151 = inline173
-                    if t151 {
+                    var t187 bool
+                    var inline209 bool = ref_get__Ref_4bool(scanning__2)
+                    t187 = inline209
+                    if t187 {
                         continue
                     } else {
-                        break Loop_loop150
+                        break Loop_loop186
                     }
                 }
                 var scanning__3 *ref_bool_x
-                var inline183 bool = false
-                var inline184 *ref_bool_x = ref__Ref_4bool(inline183)
-                scanning__3 = inline184
-                Loop_loop147:
+                var inline219 bool = false
+                var inline220 *ref_bool_x = ref__Ref_4bool(inline219)
+                scanning__3 = inline220
+                Loop_loop183:
                 for {
-                    var t148 bool
-                    var inline178 bool = ref_get__Ref_4bool(scanning__3)
-                    t148 = inline178
-                    if t148 {
+                    var t184 bool
+                    var inline214 bool = ref_get__Ref_4bool(scanning__3)
+                    t184 = inline214
+                    if t184 {
                         continue
                     } else {
-                        break Loop_loop147
+                        break Loop_loop183
                     }
                 }
-                var inline180 bool = false
-                ref_set__Ref_4bool(running__0, inline180)
+                var inline216 bool = false
+                ref_set__Ref_4bool(running__0, inline216)
                 continue
             case Close:
                 var scanning__3 *ref_bool_x
-                var inline183 bool = false
-                var inline184 *ref_bool_x = ref__Ref_4bool(inline183)
-                scanning__3 = inline184
-                Loop_loop147__2:
+                var inline219 bool = false
+                var inline220 *ref_bool_x = ref__Ref_4bool(inline219)
+                scanning__3 = inline220
+                Loop_loop183__2:
                 for {
-                    var t148 bool
-                    var inline178 bool = ref_get__Ref_4bool(scanning__3)
-                    t148 = inline178
-                    if t148 {
+                    var t184 bool
+                    var inline214 bool = ref_get__Ref_4bool(scanning__3)
+                    t184 = inline214
+                    if t184 {
                         continue
                     } else {
-                        break Loop_loop147__2
+                        break Loop_loop183__2
                     }
                 }
-                var inline180 bool = false
-                ref_set__Ref_4bool(running__0, inline180)
+                var inline216 bool = false
+                ref_set__Ref_4bool(running__0, inline216)
                 continue
             case Advance:
                 var scanning__3 *ref_bool_x
-                var inline183 bool = false
-                var inline184 *ref_bool_x = ref__Ref_4bool(inline183)
-                scanning__3 = inline184
-                Loop_loop147__3:
+                var inline219 bool = false
+                var inline220 *ref_bool_x = ref__Ref_4bool(inline219)
+                scanning__3 = inline220
+                Loop_loop183__3:
                 for {
-                    var t148 bool
-                    var inline178 bool = ref_get__Ref_4bool(scanning__3)
-                    t148 = inline178
-                    if t148 {
+                    var t184 bool
+                    var inline214 bool = ref_get__Ref_4bool(scanning__3)
+                    t184 = inline214
+                    if t184 {
                         continue
                     } else {
-                        break Loop_loop147__3
+                        break Loop_loop183__3
                     }
                 }
-                var inline180 bool = false
-                ref_set__Ref_4bool(running__0, inline180)
+                var inline216 bool = false
+                ref_set__Ref_4bool(running__0, inline216)
                 continue
             case Error:
                 var scanning__3 *ref_bool_x
-                var inline183 bool = false
-                var inline184 *ref_bool_x = ref__Ref_4bool(inline183)
-                scanning__3 = inline184
-                Loop_loop147__4:
+                var inline219 bool = false
+                var inline220 *ref_bool_x = ref__Ref_4bool(inline219)
+                scanning__3 = inline220
+                Loop_loop183__4:
                 for {
-                    var t148 bool
-                    var inline178 bool = ref_get__Ref_4bool(scanning__3)
-                    t148 = inline178
-                    if t148 {
+                    var t184 bool
+                    var inline214 bool = ref_get__Ref_4bool(scanning__3)
+                    t184 = inline214
+                    if t184 {
                         continue
                     } else {
-                        break Loop_loop147__4
+                        break Loop_loop183__4
                     }
                 }
-                var inline180 bool = false
-                ref_set__Ref_4bool(running__0, inline180)
+                var inline216 bool = false
+                ref_set__Ref_4bool(running__0, inline216)
                 continue
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop142
+            break Loop_loop178
         }
     }
-    var inline188 string = "ok"
-    var inline189 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline188)
-    _goml_runtime_core_string_println(inline189)
+    var inline224 string = "ok"
+    var inline225 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline224)
+    _goml_runtime_core_string_println(inline225)
     return struct{}{}
 }
 

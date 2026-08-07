@@ -16,7 +16,7 @@ impl Hash for Point {
   }
 }
 
-impl Eq for Point {
+impl Eq for Point where int32: Eq {
   fn eq(self: Point, other: Point) -> bool {
       true && Eq::eq(self.x, other.x) && Eq::eq(self.y, other.y)
   }
@@ -53,7 +53,7 @@ impl Hash for Key {
   }
 }
 
-impl Eq for Key {
+impl Eq for Key where int32: Eq, Point: Eq {
   fn eq(self: Key, other: Key) -> bool {
       match (self, other) {
           (Key::A, Key::A) => true,

@@ -1,5 +1,5 @@
 fn bump(cell/0: Ref[int32]) -> int32 {
-  let mtmp136 =
+  let mtmp172 =
     inherent#Ref#Ref[T]#set__T_int32(cell/0, (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1)) in
   {
     inherent#Ref#Ref[T]#get__T_int32(cell/0)
@@ -8,7 +8,7 @@ fn bump(cell/0: Ref[int32]) -> int32 {
 
 fn flip(flag/1: Ref[bool]) -> bool {
   let current/2 = inherent#Ref#Ref[T]#get__T_bool(flag/1) in
-  let mtmp137 = inherent#Ref#Ref[T]#set__T_bool(flag/1, (!current/2)) in
+  let mtmp173 = inherent#Ref#Ref[T]#set__T_bool(flag/1, (!current/2)) in
   {
     inherent#Ref#Ref[T]#get__T_bool(flag/1)
   }
@@ -17,7 +17,7 @@ fn flip(flag/1: Ref[bool]) -> bool {
 fn nested_total(cell/3: Ref[Ref[int32]]) -> int32 {
   let inner/4 = inherent#Ref#Ref[T]#get__T_Ref[int32](cell/3) in
   let before/5 = inherent#Ref#Ref[T]#get__T_int32(inner/4) in
-  let mtmp138 = inherent#Ref#Ref[T]#set__T_int32(inner/4, (before/5 + 2)) in
+  let mtmp174 = inherent#Ref#Ref[T]#set__T_int32(inner/4, (before/5 + 2)) in
   {
     (before/5 + inherent#Ref#Ref[T]#get__T_int32(inner/4))
   }
@@ -25,7 +25,7 @@ fn nested_total(cell/3: Ref[Ref[int32]]) -> int32 {
 
 fn alias_bump(cell/6: Ref[int32]) -> int32 {
   let alias/7 = cell/6 in
-  let mtmp139 =
+  let mtmp175 =
     inherent#Ref#Ref[T]#set__T_int32(alias/7, (inherent#Ref#Ref[T]#get__T_int32(alias/7) + 5)) in
   {
     inherent#Ref#Ref[T]#get__T_int32(alias/7)
@@ -35,7 +35,7 @@ fn alias_bump(cell/6: Ref[int32]) -> int32 {
 fn pair_sum() -> int32 {
   let first/8 = inherent#Ref#Ref[T]#new__T_int32(4) in
   let second/9 = inherent#Ref#Ref[T]#new__T_int32(6) in
-  let mtmp140 =
+  let mtmp176 =
     inherent#Ref#Ref[T]#set__T_int32(
       first/8,
       (inherent#Ref#Ref[T]#get__T_int32(first/8) + inherent#Ref#Ref[T]#get__T_int32(second/9))
@@ -47,7 +47,7 @@ fn pair_sum() -> int32 {
 
 fn reassign_nested(nested/10: Ref[Ref[int32]]) -> int32 {
   let inner/11 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/10) in
-  let mtmp141 =
+  let mtmp177 =
     inherent#Ref#Ref[T]#set__T_int32(inner/11, (inherent#Ref#Ref[T]#get__T_int32(inner/11) + 7)) in
   {
     inherent#Ref#Ref[T]#get__T_int32(inner/11)
@@ -62,7 +62,7 @@ fn main() -> unit {
   let flipped/16 = flip(toggler/13) in
   let flipped_again/17 = flip(toggler/13) in
   let inner/18 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/14) in
-  let mtmp142 =
+  let mtmp178 =
     inherent#Ref#Ref[T]#set__T_int32(
       inner/18,
       (inherent#Ref#Ref[T]#get__T_int32(inner/18) + bumped/15)
@@ -73,19 +73,19 @@ fn main() -> unit {
     let pair_total/21 = pair_sum() in
     let reassigned/22 = reassign_nested(nested/14) in
     let bool_check/23 = (!false) in
-    let mtmp143 =
+    let mtmp179 =
       println__T_string(
         inherent#int32#int32#to_string((bumped/15 + inherent#Ref#Ref[T]#get__T_int32(counter/12)))
       ) in
     {
-      let mtmp144 =
+      let mtmp180 =
         println__T_string(
           inherent#int32#int32#to_string(((nested_total_val/19 + alias_total/20) + reassigned/22))
         ) in
       {
-        let mtmp145 = println__T_string(inherent#int32#int32#to_string(pair_total/21)) in
+        let mtmp181 = println__T_string(inherent#int32#int32#to_string(pair_total/21)) in
         {
-          let mtmp146 =
+          let mtmp182 =
             println__T_string(
               trait_impl#ToString#bool#to_string(
                 if if flipped/16 {
@@ -108,36 +108,36 @@ fn main() -> unit {
   }
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/233: Ref[int32]) -> int32 {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_int32(self/258: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/234: Ref[int32], value/235: int32) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_int32(self/259: Ref[int32], value/260: int32) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/233: Ref[bool]) -> bool {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_bool(self/258: Ref[bool]) -> bool {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/234: Ref[bool], value/235: bool) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_bool(self/259: Ref[bool], value/260: bool) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
-fn inherent#Ref#Ref[T]#get__T_Ref[int32](self/233: Ref[Ref[int32]]) -> Ref[int32] {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_Ref[int32](self/258: Ref[Ref[int32]]) -> Ref[int32] {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/232: int32) -> Ref[int32] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_int32(value/257: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/257)
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/232: bool) -> Ref[bool] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_bool(value/257: bool) -> Ref[bool] {
+  @intrinsic(ref.new)(value/257)
 }
 
-fn inherent#Ref#Ref[T]#new__T_Ref[int32](value/232: Ref[int32]) -> Ref[Ref[int32]] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_Ref[int32](value/257: Ref[int32]) -> Ref[Ref[int32]] {
+  @intrinsic(ref.new)(value/257)
 }
 
 fn println__T_string(value/31: string) -> unit {
@@ -156,7 +156,7 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
-fn trait_impl#Eq#int32#eq(self/109: int32, other/110: int32) -> bool {
+fn trait_impl#PartialEq#int32#eq(self/109: int32, other/110: int32) -> bool {
   @intrinsic(eq.primitive)(self/109, other/110)
 }
 
@@ -164,7 +164,7 @@ fn trait_impl#Hash#int32#hash(self/132: int32) -> uint64 {
   @runtime(core.int32_hash)(self/132)
 }
 
-fn trait_impl#Eq#bool#eq(self/97: bool, other/98: bool) -> bool {
+fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
   @intrinsic(eq.primitive)(self/97, other/98)
 }
 
@@ -180,10 +180,10 @@ fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
   }
 }
 
-fn trait_impl#Eq#Ref[int32]#eq(self/140: Ref[int32], other/141: Ref[int32]) -> bool {
-  @intrinsic(ref.ptr_eq)(self/140, other/141)
+fn trait_impl#PartialEq#Ref[int32]#eq(self/138: Ref[int32], other/139: Ref[int32]) -> bool {
+  @intrinsic(ref.ptr_eq)(self/138, other/139)
 }
 
-fn trait_impl#Hash#Ref[int32]#hash(self/142: Ref[int32]) -> uint64 {
-  @intrinsic(ref.ptr_hash)(self/142)
+fn trait_impl#Hash#Ref[int32]#hash(self/140: Ref[int32]) -> uint64 {
+  @intrinsic(ref.ptr_hash)(self/140)
 }

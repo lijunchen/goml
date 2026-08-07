@@ -18,13 +18,13 @@ impl Hash for Key {
   }
 }
 
-impl Eq for Key {
+impl PartialEq for Key where int32: Eq, int32: PartialEq {
   fn eq(self/5: Key, other/6: Key) -> bool {
       match ((self/5 : Key), (other/6 : Key)) {
           (Key::A, Key::A) => true,
           (Key::B(#derive0_left/7: int32), Key::B(#derive1_right/8: int32)) =>
             true &&
-              (Eq::eq : (int32, int32) -> bool)(
+              (PartialEq::eq : (int32, int32) -> bool)(
                 (#derive0_left/7 : int32),
                 (#derive1_right/8 : int32)
               ),
@@ -32,6 +32,8 @@ impl Eq for Key {
       }
   }
 }
+
+impl Eq for Key where int32: Eq, int32: PartialEq {}
 
 fn print_opt_int(x/9: Option[int32]) -> unit {
     match (x/9 : Option[int32]) {

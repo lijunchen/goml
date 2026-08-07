@@ -1,37 +1,37 @@
 fn fib(x/0: int32) -> int32 {
-  let mtmp136 = (x/0 < 2) in
-  match mtmp136 {
+  let mtmp172 = (x/0 < 2) in
+  match mtmp172 {
     true => {
       1
     },
     false => {
-      let t142 = (x/0 - 1) in
-      let t143 = fib(t142) in
-      let t144 = (x/0 - 2) in
-      let t145 = fib(t144) in
-      let t146 = (t143 + t145) in
-      t146
+      let t178 = (x/0 - 1) in
+      let t179 = fib(t178) in
+      let t180 = (x/0 - 2) in
+      let t181 = fib(t180) in
+      let t182 = (t179 + t181) in
+      t182
     },
   }
 }
 
 fn main() -> unit {
-  let t148 = fib(10) in
-  let inline156 = trait_impl#ToString#int32#to_string(t148) in
-  let inline157 = @runtime(core.string_print)(inline156) in
+  let t184 = fib(10) in
+  let inline192 = trait_impl#ToString#int32#to_string(t184) in
+  let inline193 = @runtime(core.string_print)(inline192) in
   ()
 }
 
 fn print__T_int32(value/30: int32) -> unit {
-  join inline_cont158(t150: string) -> unit {
-    let t151 = @runtime(core.string_print)(t150) in
+  join inline_cont194(t186: string) -> unit {
+    let t187 = @runtime(core.string_print)(t186) in
     ()
   } in
-  let inline159 = @runtime(core.int32_to_string)(value/30) in
-  jump inline_cont158(inline159)
+  let inline195 = @runtime(core.int32_to_string)(value/30) in
+  jump inline_cont194(inline195)
 }
 
 fn trait_impl#ToString#int32#to_string(self/72: int32) -> string {
-  let t154 = @runtime(core.int32_to_string)(self/72) in
-  t154
+  let t190 = @runtime(core.int32_to_string)(self/72) in
+  t190
 }

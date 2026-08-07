@@ -33,13 +33,13 @@ type dyn__Display struct {
 }
 
 func main0() struct{} {
-    var t143 int32
-    t143 = 9
-    var t144 string
-    var inline160 string = _goml_runtime_core_int32_to_string(t143)
-    t144 = inline160
-    var inline157 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t144)
-    _goml_runtime_core_string_println(inline157)
+    var t179 int32
+    t179 = 9
+    var t180 string
+    var inline196 string = _goml_runtime_core_int32_to_string(t179)
+    t180 = inline196
+    var inline193 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t180)
+    _goml_runtime_core_string_println(inline193)
     return struct{}{}
 }
 

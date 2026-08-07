@@ -15,22 +15,22 @@ fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
     || {
       let text/3 =
         {
-          let mtmp136 = parse_text(ok/2) in
-          match mtmp136 {
-            Result__string__string::Ok(x137) => {
+          let mtmp172 = parse_text(ok/2) in
+          match mtmp172 {
+            Result__string__string::Ok(x173) => {
               {
-                let x137 = Result__string__string::Ok._0(mtmp136) in
+                let x173 = Result__string__string::Ok._0(mtmp172) in
                 {
-                  let try_value/12 = x137 in
+                  let try_value/12 = x173 in
                   try_value/12
                 }
               }
             },
-            Result__string__string::Err(x138) => {
+            Result__string__string::Err(x174) => {
               {
-                let x138 = Result__string__string::Err._0(mtmp136) in
+                let x174 = Result__string__string::Err._0(mtmp172) in
                 {
-                  let try_residual/12 = x138 in
+                  let try_residual/12 = x174 in
                   return Result__string__string::Err(try_residual/12)
                 }
               }
@@ -44,20 +44,20 @@ fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
 
 fn show(res/5: Result__string__string) -> string {
   match res/5 {
-    Result__string__string::Ok(x139) => {
+    Result__string__string::Ok(x175) => {
       {
-        let x139 = Result__string__string::Ok._0(res/5) in
+        let x175 = Result__string__string::Ok._0(res/5) in
         {
-          let value/6 = x139 in
+          let value/6 = x175 in
           ("ok " + value/6)
         }
       }
     },
-    Result__string__string::Err(x140) => {
+    Result__string__string::Err(x176) => {
       {
-        let x140 = Result__string__string::Err._0(res/5) in
+        let x176 = Result__string__string::Err._0(res/5) in
         {
-          let err/7 = x140 in
+          let err/7 = x176 in
           ("err " + err/7)
         }
       }
@@ -66,8 +66,8 @@ fn show(res/5: Result__string__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild141 = println__T_string(show(decorate("outer", true))) in
-  let _wild142 = println__T_string(show(decorate("outer", false))) in
+  let _wild177 = println__T_string(show(decorate("outer", true))) in
+  let _wild178 = println__T_string(show(decorate("outer", false))) in
 }
 
 fn println__T_string(value/31: string) -> unit {

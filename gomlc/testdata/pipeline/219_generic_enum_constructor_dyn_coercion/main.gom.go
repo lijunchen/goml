@@ -50,9 +50,9 @@ func dyn__Show__vtable__Boxed__int32() *dyn__Show_vtable {
 func _goml_m_trait__impl_i_Show_i_Boxed____int32_i_show(self__0 Boxed__int32) string {
     switch self__0.(type) {
     case One:
-        var x136 int32 = self__0.(One)._0
-        var inline159 string = _goml_runtime_core_int32_to_string(x136)
-        return inline159
+        var x172 int32 = self__0.(One)._0
+        var inline195 string = _goml_runtime_core_int32_to_string(x172)
+        return inline195
     default:
         panic("non-exhaustive match")
     }
@@ -60,18 +60,18 @@ func _goml_m_trait__impl_i_Show_i_Boxed____int32_i_show(self__0 Boxed__int32) st
 
 func main0() struct{} {
     var value__3 int32 = 42
-    var t146 Boxed__int32 = One{
+    var t182 Boxed__int32 = One{
         _0: value__3,
     }
-    var t147 dyn__Show = dyn__Show{
-        data: t146,
+    var t183 dyn__Show = dyn__Show{
+        data: t182,
         vtable: dyn__Show__vtable__Boxed__int32(),
     }
-    var t148 string
-    var inline164 string = t147.vtable.show(t147.data)
-    t148 = inline164
-    var inline161 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t148)
-    _goml_runtime_core_string_println(inline161)
+    var t184 string
+    var inline200 string = t183.vtable.show(t183.data)
+    t184 = inline200
+    var inline197 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t184)
+    _goml_runtime_core_string_println(inline197)
     return struct{}{}
 }
 

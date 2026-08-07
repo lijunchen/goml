@@ -1,34 +1,34 @@
 fn main() -> unit {
   let sum/0 = inherent#Ref#Ref[T]#new__T_int(0) in
   let i/1 = inherent#Ref#Ref[T]#new__T_int(1) in
-  let _wild139 =
+  let _wild175 =
     while (inherent#Ref#Ref[T]#get__T_int(i/1) <= 100) {
-        let _wild136 =
-          if trait_impl#Eq#int#eq(inherent#Ref#Ref[T]#get__T_int(i/1), 50) {
+        let _wild172 =
+          if trait_impl#PartialEq#int#eq(inherent#Ref#Ref[T]#get__T_int(i/1), 50) {
               break
           } else {
               ()
           } in
-        let _wild137 =
+        let _wild173 =
           inherent#Ref#Ref[T]#set__T_int(
             sum/0,
             (inherent#Ref#Ref[T]#get__T_int(sum/0) + inherent#Ref#Ref[T]#get__T_int(i/1))
           ) in
-        let _wild138 =
+        let _wild174 =
           inherent#Ref#Ref[T]#set__T_int(i/1, (inherent#Ref#Ref[T]#get__T_int(i/1) + 1)) in
         ()
     } in
-  let mtmp140 = print__T_string("sum up to break: ") in
-  let mtmp141 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/0)) in
+  let mtmp176 = print__T_string("sum up to break: ") in
+  let mtmp177 = println__T_int(inherent#Ref#Ref[T]#get__T_int(sum/0)) in
   let even_sum/2 = inherent#Ref#Ref[T]#new__T_int(0) in
   let j/3 = inherent#Ref#Ref[T]#new__T_int(1) in
-  let _wild145 =
+  let _wild181 =
     while (inherent#Ref#Ref[T]#get__T_int(j/3) <= 10) {
         let cur/4 = inherent#Ref#Ref[T]#get__T_int(j/3) in
-        let _wild142 = inherent#Ref#Ref[T]#set__T_int(j/3, (cur/4 + 1)) in
-        let _wild144 =
-          if trait_impl#Eq#int#eq(cur/4, ((cur/4 / 2) * 2)) {
-              let _wild143 =
+        let _wild178 = inherent#Ref#Ref[T]#set__T_int(j/3, (cur/4 + 1)) in
+        let _wild180 =
+          if trait_impl#PartialEq#int#eq(cur/4, ((cur/4 / 2) * 2)) {
+              let _wild179 =
                 inherent#Ref#Ref[T]#set__T_int(
                   even_sum/2,
                   (inherent#Ref#Ref[T]#get__T_int(even_sum/2) + cur/4)
@@ -39,25 +39,25 @@ fn main() -> unit {
           } in
         ()
     } in
-  let mtmp146 = print__T_string("even sum: ") in
-  let mtmp147 = println__T_int(inherent#Ref#Ref[T]#get__T_int(even_sum/2)) in
+  let mtmp182 = print__T_string("even sum: ") in
+  let mtmp183 = println__T_int(inherent#Ref#Ref[T]#get__T_int(even_sum/2)) in
   ()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
-  @intrinsic(ref.new)(value/232)
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  @intrinsic(ref.new)(value/257)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int(self/233: Ref[int]) -> int {
-  @intrinsic(ref.get)(self/233)
+fn inherent#Ref#Ref[T]#get__T_int(self/258: Ref[int]) -> int {
+  @intrinsic(ref.get)(self/258)
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int(self/234: Ref[int], value/235: int) -> unit {
-  @intrinsic(ref.set)(self/234, value/235)
+fn inherent#Ref#Ref[T]#set__T_int(self/259: Ref[int], value/260: int) -> unit {
+  @intrinsic(ref.set)(self/259, value/260)
 }
 
 fn print__T_string(value/30: string) -> unit {

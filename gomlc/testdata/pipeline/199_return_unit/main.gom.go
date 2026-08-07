@@ -10,9 +10,9 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var inline147 string = "continued"
-    var inline148 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline147)
-    _goml_runtime_core_string_println(inline148)
+    var inline183 string = "continued"
+    var inline184 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline183)
+    _goml_runtime_core_string_println(inline184)
     return struct{}{}
 }
 

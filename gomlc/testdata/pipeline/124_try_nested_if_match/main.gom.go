@@ -35,67 +35,67 @@ type Some struct {
 func (_ Some) isOption__int32() {}
 
 func nested(top__1 bool, mode__2 Mode, inner_flag__3 bool) Option__int32 {
-    var jp152 int32
+    var jp188 int32
     if top__1 {
         switch mode__2 {
         case Take:
-            var mtmp136 Option__int32
+            var mtmp172 Option__int32
             if inner_flag__3 {
-                var inline184 Option__int32 = Some{
+                var inline220 Option__int32 = Some{
                     _0: 8,
                 }
-                mtmp136 = inline184
+                mtmp172 = inline220
             } else {
-                mtmp136 = None{}
+                mtmp172 = None{}
             }
-            var jp157 int32
-            switch mtmp136.(type) {
+            var jp193 int32
+            switch mtmp172.(type) {
             case None:
                 return None{}
             case Some:
-                var x137 int32 = mtmp136.(Some)._0
-                jp157 = x137
-                var t158 int32 = jp157 + 1
-                jp152 = t158
-                var t153 Option__int32 = Some{
-                    _0: jp152,
+                var x173 int32 = mtmp172.(Some)._0
+                jp193 = x173
+                var t194 int32 = jp193 + 1
+                jp188 = t194
+                var t189 Option__int32 = Some{
+                    _0: jp188,
                 }
-                return t153
+                return t189
             default:
                 panic("non-exhaustive match")
             }
         case Skip:
-            jp152 = 20
-            var t153 Option__int32 = Some{
-                _0: jp152,
+            jp188 = 20
+            var t189 Option__int32 = Some{
+                _0: jp188,
             }
-            return t153
+            return t189
         default:
             panic("non-exhaustive match")
         }
     } else {
-        var mtmp138 Option__int32
+        var mtmp174 Option__int32
         if inner_flag__3 {
-            var inline186 Option__int32 = Some{
+            var inline222 Option__int32 = Some{
                 _0: 8,
             }
-            mtmp138 = inline186
+            mtmp174 = inline222
         } else {
-            mtmp138 = None{}
+            mtmp174 = None{}
         }
-        var jp160 int32
-        switch mtmp138.(type) {
+        var jp196 int32
+        switch mtmp174.(type) {
         case None:
             return None{}
         case Some:
-            var x139 int32 = mtmp138.(Some)._0
-            jp160 = x139
-            var t161 int32 = jp160 + 2
-            jp152 = t161
-            var t153 Option__int32 = Some{
-                _0: jp152,
+            var x175 int32 = mtmp174.(Some)._0
+            jp196 = x175
+            var t197 int32 = jp196 + 2
+            jp188 = t197
+            var t189 Option__int32 = Some{
+                _0: jp188,
             }
-            return t153
+            return t189
         default:
             panic("non-exhaustive match")
         }
@@ -103,57 +103,57 @@ func nested(top__1 bool, mode__2 Mode, inner_flag__3 bool) Option__int32 {
 }
 
 func main0() struct{} {
-    var t169 Option__int32 = nested(true, Take, true)
-    var t170 string
-    switch t169.(type) {
+    var t205 Option__int32 = nested(true, Take, true)
+    var t206 string
+    switch t205.(type) {
     case None:
-        t170 = "none"
+        t206 = "none"
     case Some:
-        var inline209 int32 = t169.(Some)._0
-        var inline211 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline209)
-        var inline212 string = "some=" + inline211
-        t170 = inline212
+        var inline245 int32 = t205.(Some)._0
+        var inline247 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline245)
+        var inline248 string = "some=" + inline247
+        t206 = inline248
     default:
         panic("non-exhaustive match")
     }
-    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t170)
-    _goml_runtime_core_string_println(inline206)
-    var t171 Option__int32 = nested(true, Skip, false)
-    var t172 string
-    switch t171.(type) {
+    var inline242 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t206)
+    _goml_runtime_core_string_println(inline242)
+    var t207 Option__int32 = nested(true, Skip, false)
+    var t208 string
+    switch t207.(type) {
     case None:
-        t172 = "none"
+        t208 = "none"
     case Some:
-        var inline201 int32 = t171.(Some)._0
-        var inline203 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline201)
-        var inline204 string = "some=" + inline203
-        t172 = inline204
+        var inline237 int32 = t207.(Some)._0
+        var inline239 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline237)
+        var inline240 string = "some=" + inline239
+        t208 = inline240
     default:
         panic("non-exhaustive match")
     }
-    var inline198 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t172)
-    _goml_runtime_core_string_println(inline198)
-    var t173 Option__int32 = nested(false, Take, false)
-    var t174 string
-    switch t173.(type) {
+    var inline234 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t208)
+    _goml_runtime_core_string_println(inline234)
+    var t209 Option__int32 = nested(false, Take, false)
+    var t210 string
+    switch t209.(type) {
     case None:
-        t174 = "none"
+        t210 = "none"
     case Some:
-        var inline193 int32 = t173.(Some)._0
-        var inline195 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline193)
-        var inline196 string = "some=" + inline195
-        t174 = inline196
+        var inline229 int32 = t209.(Some)._0
+        var inline231 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline229)
+        var inline232 string = "some=" + inline231
+        t210 = inline232
     default:
         panic("non-exhaustive match")
     }
-    var inline190 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t174)
-    _goml_runtime_core_string_println(inline190)
+    var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t210)
+    _goml_runtime_core_string_println(inline226)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t177 string = _goml_runtime_core_int32_to_string(self__35)
-    return t177
+    var t213 string = _goml_runtime_core_int32_to_string(self__35)
+    return t213
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

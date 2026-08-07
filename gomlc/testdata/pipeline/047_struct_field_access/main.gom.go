@@ -7,22 +7,22 @@ type Point struct {
 
 func main0() int32 {
     var p__2 Point
-    var inline159 int32 = 5
-    var inline160 int32 = inline159 + 1
-    var inline161 Point = Point{
-        x: inline159,
-        y: inline160,
+    var inline195 int32 = 5
+    var inline196 int32 = inline195 + 1
+    var inline197 Point = Point{
+        x: inline195,
+        y: inline196,
     }
-    p__2 = inline161
-    var t147 int32 = p__2.x
-    var t148 int32 = t147 + 1
-    var t149 int32 = p__2.y
-    var t150 int32 = t149 - 2
-    var t152 int32
-    var inline157 int32 = t148 + t150
-    t152 = inline157
-    var t153 int32 = t148 + t152
-    return t153
+    p__2 = inline197
+    var t183 int32 = p__2.x
+    var t184 int32 = t183 + 1
+    var t185 int32 = p__2.y
+    var t186 int32 = t185 - 2
+    var t188 int32
+    var inline193 int32 = t184 + t186
+    t188 = inline193
+    var t189 int32 = t184 + t188
+    return t189
 }
 
 func main() {

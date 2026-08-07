@@ -2,26 +2,29 @@ fn main() -> unit {
   let wrapped/24 = Wrapper__NoTraits { value: NoTraits { value: 1 } } in
   let left/25 = Generic__NoTraits__NoTraits { first: wrapped/24, second: wrapped/24 } in
   let right/26 = Generic__NoTraits__NoTraits { first: wrapped/24, second: wrapped/24 } in
-  let _wild147 =
+  let _wild183 =
     println__T_string(trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(left/25)) in
-  let _wild148 = println__T_bool(trait_impl#Eq#Generic__NoTraits__NoTraits#eq(left/25, right/26)) in
-  let _wild149 =
+  let _wild184 =
+    println__T_bool(trait_impl#PartialEq#Generic__NoTraits__NoTraits#eq(left/25, right/26)) in
+  let _wild185 =
     println__T_bool(
-      trait_impl#Eq#uint64#eq(
+      trait_impl#PartialEq#uint64#eq(
         trait_impl#Hash#Generic__NoTraits__NoTraits#hash(left/25),
         trait_impl#Hash#Generic__NoTraits__NoTraits#hash(right/26)
       )
     ) in
   let empty/27 = GenericChoice__NoTraits__NoTraits::Empty in
   let value/28 = GenericChoice__NoTraits__NoTraits::Value(wrapped/24) in
-  let _wild150 =
+  let _wild186 =
     println__T_string(trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(empty/27)) in
-  let _wild151 =
+  let _wild187 =
     println__T_string(trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(value/28)) in
-  let _wild152 =
-    println__T_bool((!trait_impl#Eq#GenericChoice__NoTraits__NoTraits#eq(empty/27, value/28))) in
+  let _wild188 =
+    println__T_bool(
+      (!trait_impl#PartialEq#GenericChoice__NoTraits__NoTraits#eq(empty/27, value/28))
+    ) in
   println__T_bool(
-    trait_impl#Eq#uint64#eq(
+    trait_impl#PartialEq#uint64#eq(
       trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28),
       trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(value/28)
     )
@@ -36,14 +39,14 @@ fn trait_impl#ToString#Generic__NoTraits__NoTraits#to_string(
   self/4: Generic__NoTraits__NoTraits
 ) -> string {
   {
-    let mtmp136 = self/4 in
+    let mtmp172 = self/4 in
     {
-      let x137 = Generic__NoTraits__NoTraits.first(mtmp136) in
-      let x138 = Generic__NoTraits__NoTraits.second(mtmp136) in
+      let x173 = Generic__NoTraits__NoTraits.first(mtmp172) in
+      let x174 = Generic__NoTraits__NoTraits.second(mtmp172) in
       {
-        let #derive1_field/6 = x138 in
+        let #derive1_field/6 = x174 in
         {
-          let #derive0_field/5 = x137 in
+          let #derive0_field/5 = x173 in
           {
             (((((("Generic { " + "first: ") +
               trait_impl#ToString#Wrapper__NoTraits#to_string(#derive0_field/5)) +
@@ -62,19 +65,19 @@ fn println__T_bool(value/31: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
 }
 
-fn trait_impl#Eq#Generic__NoTraits__NoTraits#eq(
+fn trait_impl#PartialEq#Generic__NoTraits__NoTraits#eq(
   self/7: Generic__NoTraits__NoTraits,
   other/8: Generic__NoTraits__NoTraits
 ) -> bool {
   if if true {
-      trait_impl#Eq#Wrapper__NoTraits#eq(
+      trait_impl#PartialEq#Wrapper__NoTraits#eq(
         Generic__NoTraits__NoTraits.first(self/7),
         Generic__NoTraits__NoTraits.first(other/8)
       )
   } else {
       false
   } {
-      trait_impl#Eq#Wrapper__NoTraits#eq(
+      trait_impl#PartialEq#Wrapper__NoTraits#eq(
         Generic__NoTraits__NoTraits.second(self/7),
         Generic__NoTraits__NoTraits.second(other/8)
       )
@@ -96,7 +99,7 @@ fn trait_impl#Hash#Generic__NoTraits__NoTraits#hash(self/9: Generic__NoTraits__N
   }
 }
 
-fn trait_impl#Eq#uint64#eq(self/119: uint64, other/120: uint64) -> bool {
+fn trait_impl#PartialEq#uint64#eq(self/119: uint64, other/120: uint64) -> bool {
   @intrinsic(eq.primitive)(self/119, other/120)
 }
 
@@ -107,11 +110,11 @@ fn trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(
     GenericChoice__NoTraits__NoTraits::Empty => {
       "GenericChoice::Empty"
     },
-    GenericChoice__NoTraits__NoTraits::Value(x139) => {
+    GenericChoice__NoTraits__NoTraits::Value(x175) => {
       {
-        let x139 = GenericChoice__NoTraits__NoTraits::Value._0(self/13) in
+        let x175 = GenericChoice__NoTraits__NoTraits::Value._0(self/13) in
         {
-          let #derive0_field/14 = x139 in
+          let #derive0_field/14 = x175 in
           (("GenericChoice::Value(" +
             trait_impl#ToString#Wrapper__NoTraits#to_string(#derive0_field/14)) +
             ")")
@@ -121,37 +124,40 @@ fn trait_impl#ToString#GenericChoice__NoTraits__NoTraits#to_string(
   }
 }
 
-fn trait_impl#Eq#GenericChoice__NoTraits__NoTraits#eq(
+fn trait_impl#PartialEq#GenericChoice__NoTraits__NoTraits#eq(
   self/15: GenericChoice__NoTraits__NoTraits,
   other/16: GenericChoice__NoTraits__NoTraits
 ) -> bool {
   {
-    let mtmp140 = (self/15, other/16) in
+    let mtmp176 = (self/15, other/16) in
     {
-      let x141 = mtmp140.0 in
-      let x142 = mtmp140.1 in
-      match x142 {
+      let x177 = mtmp176.0 in
+      let x178 = mtmp176.1 in
+      match x178 {
         GenericChoice__NoTraits__NoTraits::Empty => {
-          match x141 {
+          match x177 {
             GenericChoice__NoTraits__NoTraits::Empty => {
               true
             },
             _ => false,
           }
         },
-        GenericChoice__NoTraits__NoTraits::Value(x143) => {
+        GenericChoice__NoTraits__NoTraits::Value(x179) => {
           {
-            let x143 = GenericChoice__NoTraits__NoTraits::Value._0(x142) in
-            match x141 {
-              GenericChoice__NoTraits__NoTraits::Value(x145) => {
+            let x179 = GenericChoice__NoTraits__NoTraits::Value._0(x178) in
+            match x177 {
+              GenericChoice__NoTraits__NoTraits::Value(x181) => {
                 {
-                  let x145 = GenericChoice__NoTraits__NoTraits::Value._0(x141) in
+                  let x181 = GenericChoice__NoTraits__NoTraits::Value._0(x177) in
                   {
-                    let #derive0_left/17 = x145 in
+                    let #derive0_left/17 = x181 in
                     {
-                      let #derive1_right/18 = x143 in
+                      let #derive1_right/18 = x179 in
                       if true {
-                          trait_impl#Eq#Wrapper__NoTraits#eq(#derive0_left/17, #derive1_right/18)
+                          trait_impl#PartialEq#Wrapper__NoTraits#eq(
+                            #derive0_left/17,
+                            #derive1_right/18
+                          )
                       } else {
                           false
                       }
@@ -178,11 +184,11 @@ fn trait_impl#Hash#GenericChoice__NoTraits__NoTraits#hash(
         h/20
       }
     },
-    GenericChoice__NoTraits__NoTraits::Value(x146) => {
+    GenericChoice__NoTraits__NoTraits::Value(x182) => {
       {
-        let x146 = GenericChoice__NoTraits__NoTraits::Value._0(self/19) in
+        let x182 = GenericChoice__NoTraits__NoTraits::Value._0(self/19) in
         {
-          let #derive0_field/21 = x146 in
+          let #derive0_field/21 = x182 in
           {
             let h/22 = (((0 as uint64) + 14695981039346656037) + 2) in
             let h/23 =
@@ -208,7 +214,7 @@ fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
   @runtime(core.bool_to_string)(self/66)
 }
 
-fn trait_impl#Eq#Wrapper__NoTraits#eq(
+fn trait_impl#PartialEq#Wrapper__NoTraits#eq(
   self/1: Wrapper__NoTraits,
   other/2: Wrapper__NoTraits
 ) -> bool {

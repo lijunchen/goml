@@ -73,35 +73,35 @@ type Some struct {
 func (_ Some) isOption__int() {}
 
 func early_return() int {
-    var defer_return136 int = 7
-    var inline266 string = "return:inner"
-    var inline267 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline266)
-    _goml_runtime_core_string_println(inline267)
-    var inline262 string = "return:outer"
-    var inline263 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline262)
-    _goml_runtime_core_string_println(inline263)
-    return defer_return136
+    var defer_return172 int = 7
+    var inline302 string = "return:inner"
+    var inline303 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline302)
+    _goml_runtime_core_string_println(inline303)
+    var inline298 string = "return:outer"
+    var inline299 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline298)
+    _goml_runtime_core_string_println(inline299)
+    return defer_return172
 }
 
 func maybe(value__0 Option__int) Option__int {
-    var jp191 int
+    var jp227 int
     switch value__0.(type) {
     case None:
-        var defer_return145 Option__int = None{}
-        var inline270 string = "try:cleanup"
-        var inline271 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline270)
-        _goml_runtime_core_string_println(inline271)
-        return defer_return145
+        var defer_return181 Option__int = None{}
+        var inline306 string = "try:cleanup"
+        var inline307 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline306)
+        _goml_runtime_core_string_println(inline307)
+        return defer_return181
     case Some:
-        var x144 int = value__0.(Some)._0
-        jp191 = x144
-        var defer_result147 Option__int = Some{
-            _0: jp191,
+        var x180 int = value__0.(Some)._0
+        jp227 = x180
+        var defer_result183 Option__int = Some{
+            _0: jp227,
         }
-        var inline274 string = "try:cleanup"
-        var inline275 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline274)
-        _goml_runtime_core_string_println(inline275)
-        return defer_result147
+        var inline310 string = "try:cleanup"
+        var inline311 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline310)
+        _goml_runtime_core_string_println(inline311)
+        return defer_result183
     default:
         panic("non-exhaustive match")
     }
@@ -109,58 +109,58 @@ func maybe(value__0 Option__int) Option__int {
 
 func loop_cleanup() struct{} {
     var index__2 *ref_int_x
-    var inline305 int = 0
-    var inline306 *ref_int_x = ref__Ref_3int(inline305)
-    index__2 = inline306
-    Loop_loop194:
+    var inline341 int = 0
+    var inline342 *ref_int_x = ref__Ref_3int(inline341)
+    index__2 = inline342
+    Loop_loop230:
     for {
-        var t195 int
-        var inline303 int = ref_get__Ref_3int(index__2)
-        t195 = inline303
-        var t196 bool = t195 < 3
-        if t196 {
+        var t231 int
+        var inline339 int = ref_get__Ref_3int(index__2)
+        t231 = inline339
+        var t232 bool = t231 < 3
+        if t232 {
             var current__3 int
-            var inline301 int = ref_get__Ref_3int(index__2)
-            current__3 = inline301
-            var t197 int = current__3 + 1
-            ref_set__Ref_3int(index__2, t197)
-            var t201 bool
-            var inline296 int = 0
-            var inline297 bool = current__3 == inline296
-            t201 = inline297
-            if t201 {
-                var t202 string
-                var inline281 string = _goml_runtime_core_int_to_string(current__3)
-                t202 = inline281
-                var t203 string = "loop:" + t202
-                var inline278 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t203)
-                _goml_runtime_core_string_println(inline278)
+            var inline337 int = ref_get__Ref_3int(index__2)
+            current__3 = inline337
+            var t233 int = current__3 + 1
+            ref_set__Ref_3int(index__2, t233)
+            var t237 bool
+            var inline332 int = 0
+            var inline333 bool = current__3 == inline332
+            t237 = inline333
+            if t237 {
+                var t238 string
+                var inline317 string = _goml_runtime_core_int_to_string(current__3)
+                t238 = inline317
+                var t239 string = "loop:" + t238
+                var inline314 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t239)
+                _goml_runtime_core_string_println(inline314)
                 continue
             } else {
-                var t205 bool
-                var inline288 int = 1
-                var inline289 bool = current__3 == inline288
-                t205 = inline289
-                if t205 {
-                    var t206 string
-                    var inline286 string = _goml_runtime_core_int_to_string(current__3)
-                    t206 = inline286
-                    var t207 string = "loop:" + t206
-                    var inline283 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t207)
-                    _goml_runtime_core_string_println(inline283)
-                    break Loop_loop194
+                var t241 bool
+                var inline324 int = 1
+                var inline325 bool = current__3 == inline324
+                t241 = inline325
+                if t241 {
+                    var t242 string
+                    var inline322 string = _goml_runtime_core_int_to_string(current__3)
+                    t242 = inline322
+                    var t243 string = "loop:" + t242
+                    var inline319 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t243)
+                    _goml_runtime_core_string_println(inline319)
+                    break Loop_loop230
                 } else {
-                    var t199 string
-                    var inline294 string = _goml_runtime_core_int_to_string(current__3)
-                    t199 = inline294
-                    var t200 string = "loop:" + t199
-                    var inline291 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t200)
-                    _goml_runtime_core_string_println(inline291)
+                    var t235 string
+                    var inline330 string = _goml_runtime_core_int_to_string(current__3)
+                    t235 = inline330
+                    var t236 string = "loop:" + t235
+                    var inline327 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t236)
+                    _goml_runtime_core_string_println(inline327)
                     continue
                 }
             }
         } else {
-            break Loop_loop194
+            break Loop_loop230
         }
     }
     return struct{}{}
@@ -169,102 +169,102 @@ func loop_cleanup() struct{} {
 func pattern_cleanup(value__5 Option__int) int {
     switch value__5.(type) {
     case Some:
-        var x160 int = value__5.(Some)._0
-        var x163 int = 2
-        var defer_tast_result159 int = x160 + x163
-        var inline319 string = "pattern:cleanup"
-        var inline320 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline319)
-        _goml_runtime_core_string_println(inline320)
-        return defer_tast_result159
+        var x196 int = value__5.(Some)._0
+        var x199 int = 2
+        var defer_tast_result195 int = x196 + x199
+        var inline355 string = "pattern:cleanup"
+        var inline356 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline355)
+        _goml_runtime_core_string_println(inline356)
+        return defer_tast_result195
     default:
-        var defer_return165 int = 0
-        var inline323 string = "pattern:cleanup"
-        var inline324 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline323)
-        _goml_runtime_core_string_println(inline324)
-        return defer_return165
+        var defer_return201 int = 0
+        var inline359 string = "pattern:cleanup"
+        var inline360 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline359)
+        _goml_runtime_core_string_println(inline360)
+        return defer_return201
     }
 }
 
 func main0() struct{} {
     println__T_string("body")
     println__T_string("block")
-    var t217 int = early_return()
-    var t218 string
-    var inline383 string = _goml_runtime_core_int_to_string(t217)
-    t218 = inline383
-    var inline380 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t218)
-    _goml_runtime_core_string_println(inline380)
+    var t253 int = early_return()
+    var t254 string
+    var inline419 string = _goml_runtime_core_int_to_string(t253)
+    t254 = inline419
+    var inline416 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t254)
+    _goml_runtime_core_string_println(inline416)
     maybe(None{})
     loop_cleanup()
-    var inline374 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("before")
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(inline374, "after")
-    var inline376 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(inline374)
-    var inline377 string = "observed:" + inline376
-    println__T_string(inline377)
-    var t219 Option__int = Some{
+    var inline410 *ref_string_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string("before")
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(inline410, "after")
+    var inline412 string = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(inline410)
+    var inline413 string = "observed:" + inline412
+    println__T_string(inline413)
+    var t255 Option__int = Some{
         _0: 3,
     }
-    var t220 int = pattern_cleanup(t219)
-    var t221 string
-    var inline372 string = _goml_runtime_core_int_to_string(t220)
-    t221 = inline372
-    var inline369 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t221)
-    _goml_runtime_core_string_println(inline369)
-    var t222 int
-    var inline366 int = 0
+    var t256 int = pattern_cleanup(t255)
+    var t257 string
+    var inline408 string = _goml_runtime_core_int_to_string(t256)
+    t257 = inline408
+    var inline405 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t257)
+    _goml_runtime_core_string_println(inline405)
+    var t258 int
+    var inline402 int = 0
     println__T_string("pattern:cleanup")
-    t222 = inline366
-    var t223 string
-    var inline354 string = _goml_runtime_core_int_to_string(t222)
-    t223 = inline354
-    var inline351 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t223)
-    _goml_runtime_core_string_println(inline351)
-    var inline346 closure_env_run_0 = closure_env_run_0{}
-    _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline346)
+    t258 = inline402
+    var t259 string
+    var inline390 string = _goml_runtime_core_int_to_string(t258)
+    t259 = inline390
+    var inline387 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t259)
+    _goml_runtime_core_string_println(inline387)
+    var inline382 closure_env_run_0 = closure_env_run_0{}
+    _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(inline382)
     println__T_string("closure:after")
     println__T_string("closure:outer")
-    var inline342 string = "main:second"
-    var inline343 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline342)
-    _goml_runtime_core_string_println(inline343)
-    var inline338 string = "main:first"
-    var inline339 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline338)
-    _goml_runtime_core_string_println(inline339)
+    var inline378 string = "main:second"
+    var inline379 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline378)
+    _goml_runtime_core_string_println(inline379)
+    var inline374 string = "main:first"
+    var inline375 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline374)
+    _goml_runtime_core_string_println(inline375)
     return struct{}{}
 }
 
 func println__T_string(value__31 string) struct{} {
-    var t225 string
-    t225 = value__31
-    _goml_runtime_core_string_println(t225)
+    var t261 string
+    t261 = value__31
+    _goml_runtime_core_string_println(t261)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__232 string) *ref_string_x {
-    var t243 *ref_string_x = ref__Ref_6string(value__232)
-    return t243
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__string(value__257 string) *ref_string_x {
+    var t279 *ref_string_x = ref__Ref_6string(value__257)
+    return t279
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__234 *ref_string_x, value__235 string) struct{} {
-    ref_set__Ref_6string(self__234, value__235)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__string(self__259 *ref_string_x, value__260 string) struct{} {
+    ref_set__Ref_6string(self__259, value__260)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__233 *ref_string_x) string {
-    var t248 string = ref_get__Ref_6string(self__233)
-    return t248
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__string(self__258 *ref_string_x) string {
+    var t284 string = ref_get__Ref_6string(self__258)
+    return t284
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
     return self__67
 }
 
-func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env185 closure_env_run_0) struct{} {
-    var inline390 string = "closure:body"
-    var inline391 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline390)
-    _goml_runtime_core_string_println(inline391)
-    var inline386 string = "closure:inner"
-    var inline387 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline386)
-    _goml_runtime_core_string_println(inline387)
+func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env221 closure_env_run_0) struct{} {
+    var inline426 string = "closure:body"
+    var inline427 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline426)
+    _goml_runtime_core_string_println(inline427)
+    var inline422 string = "closure:inner"
+    var inline423 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline422)
+    _goml_runtime_core_string_println(inline423)
     return struct{}{}
 }
 

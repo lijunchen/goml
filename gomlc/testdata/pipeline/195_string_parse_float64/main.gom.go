@@ -55,45 +55,45 @@ type Tuple2_4bool_7float64 struct {
 }
 
 func main0() struct{} {
-    var mtmp136 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float64("3.125")
-    var x137 bool = mtmp136._0
-    var x138 float64 = mtmp136._1
-    var t151 string
-    var inline198 string = _goml_runtime_core_bool_to_string(x137)
-    t151 = inline198
-    var inline195 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t151)
-    _goml_runtime_core_string_println(inline195)
-    var t152 string
-    var inline193 string = _goml_runtime_core_float64_to_string(x138)
-    t152 = inline193
-    var inline190 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t152)
-    _goml_runtime_core_string_println(inline190)
-    var mtmp141 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float32("3.14")
-    var x142 bool = mtmp141._0
-    var x143 float64 = mtmp141._1
-    var t153 string
-    var inline188 string = _goml_runtime_core_bool_to_string(x142)
-    t153 = inline188
-    var inline185 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t153)
-    _goml_runtime_core_string_println(inline185)
-    var t154 string
-    var inline183 string = _goml_runtime_core_float64_to_string(x143)
-    t154 = inline183
-    var inline180 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t154)
-    _goml_runtime_core_string_println(inline180)
-    var mtmp146 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float64("not-a-number")
-    var x147 bool = mtmp146._0
-    var x148 float64 = mtmp146._1
-    var t155 string
-    var inline178 string = _goml_runtime_core_bool_to_string(x147)
-    t155 = inline178
-    var inline175 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t155)
-    _goml_runtime_core_string_println(inline175)
-    var t156 string
-    var inline173 string = _goml_runtime_core_float64_to_string(x148)
-    t156 = inline173
-    var inline170 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t156)
-    _goml_runtime_core_string_println(inline170)
+    var mtmp172 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float64("3.125")
+    var x173 bool = mtmp172._0
+    var x174 float64 = mtmp172._1
+    var t187 string
+    var inline234 string = _goml_runtime_core_bool_to_string(x173)
+    t187 = inline234
+    var inline231 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t187)
+    _goml_runtime_core_string_println(inline231)
+    var t188 string
+    var inline229 string = _goml_runtime_core_float64_to_string(x174)
+    t188 = inline229
+    var inline226 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t188)
+    _goml_runtime_core_string_println(inline226)
+    var mtmp177 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float32("3.14")
+    var x178 bool = mtmp177._0
+    var x179 float64 = mtmp177._1
+    var t189 string
+    var inline224 string = _goml_runtime_core_bool_to_string(x178)
+    t189 = inline224
+    var inline221 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
+    _goml_runtime_core_string_println(inline221)
+    var t190 string
+    var inline219 string = _goml_runtime_core_float64_to_string(x179)
+    t190 = inline219
+    var inline216 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
+    _goml_runtime_core_string_println(inline216)
+    var mtmp182 Tuple2_4bool_7float64 = _goml_runtime_core_string_parse_float64("not-a-number")
+    var x183 bool = mtmp182._0
+    var x184 float64 = mtmp182._1
+    var t191 string
+    var inline214 string = _goml_runtime_core_bool_to_string(x183)
+    t191 = inline214
+    var inline211 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t191)
+    _goml_runtime_core_string_println(inline211)
+    var t192 string
+    var inline209 string = _goml_runtime_core_float64_to_string(x184)
+    t192 = inline209
+    var inline206 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t192)
+    _goml_runtime_core_string_println(inline206)
     return struct{}{}
 }
 

@@ -15,11 +15,11 @@ fn factorial(value/0: int) -> int {
 fn accumulate(limit/1: int) -> int {
   let index/2 = 0 in
   let total/3 = 0 in
-  let _wild138 =
+  let _wild174 =
     while (index/2 < limit/1) {
         {
-          let _wild136 = total/3 = (total/3 + index/2) in
-          let _wild137 = index/2 = (index/2 + 1) in
+          let _wild172 = total/3 = (total/3 + index/2) in
+          let _wild173 = index/2 = (index/2 + 1) in
         }
     } in
   total/3
@@ -71,18 +71,18 @@ fn main() -> unit {
   let values/12 = [6, 10, 4] in
   let pair/13 = Pair { left: 7, right: 8 } in
   let choice/14 = Choice::Value(9) in
-  let _wild139 = println__T_int(answer) in
-  let _wild140 = println__T_int(@intrinsic(array.get)(values/12, 0)) in
-  let _wild141 = println__T_int(@intrinsic(array.get)(values/12, 1)) in
-  let _wild142 = println__T_int(@intrinsic(array.get)(values/12, 2)) in
-  let _wild143 = println__T_int((Pair.left(pair/13) + Pair.right(pair/13))) in
-  let _wild145 =
+  let _wild175 = println__T_int(answer) in
+  let _wild176 = println__T_int(@intrinsic(array.get)(values/12, 0)) in
+  let _wild177 = println__T_int(@intrinsic(array.get)(values/12, 1)) in
+  let _wild178 = println__T_int(@intrinsic(array.get)(values/12, 2)) in
+  let _wild179 = println__T_int((Pair.left(pair/13) + Pair.right(pair/13))) in
+  let _wild181 =
     match choice/14 {
-      Choice::Value(x144) => {
+      Choice::Value(x180) => {
         {
-          let x144 = Choice::Value._0(choice/14) in
+          let x180 = Choice::Value._0(choice/14) in
           {
-            let value/15 = x144 in
+            let value/15 = x180 in
             println__T_int(value/15)
           }
         }
@@ -91,12 +91,12 @@ fn main() -> unit {
         println__T_int(0)
       },
     } in
-  let _wild146 = println__T_bool(trait_impl#Eq#int#eq(factorial(5), answer)) in
+  let _wild182 = println__T_bool(trait_impl#PartialEq#int#eq(factorial(5), answer)) in
   let shadowed/16 = 12 in
-  let _wild147 = println__T_int(shadowed/16) in
-  let _wild148 = println__T_bool(trait_impl#Eq#int#eq(shadow(3), shadowed/16)) in
+  let _wild183 = println__T_int(shadowed/16) in
+  let _wild184 = println__T_bool(trait_impl#PartialEq#int#eq(shadow(3), shadowed/16)) in
   let widened/17 = 18446744073709551615 in
-  let _wild149 = println__T_bool(trait_impl#Eq#uint64#eq(widened/17, widen_negative(-1))) in
+  let _wild185 = println__T_bool(trait_impl#PartialEq#uint64#eq(widened/17, widen_negative(-1))) in
   println__T_int(factorial(4))
 }
 
@@ -108,11 +108,11 @@ fn println__T_bool(value/31: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 
-fn trait_impl#Eq#uint64#eq(self/119: uint64, other/120: uint64) -> bool {
+fn trait_impl#PartialEq#uint64#eq(self/119: uint64, other/120: uint64) -> bool {
   @intrinsic(eq.primitive)(self/119, other/120)
 }
 

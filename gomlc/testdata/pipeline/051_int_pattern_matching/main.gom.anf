@@ -55,11 +55,11 @@ fn is_special64(value/3: int64) -> bool {
 }
 
 fn match_tuple(values/4: (int8, int16)) -> bool {
-  let x136 = values/4.0 in
-  let x137 = values/4.1 in
-  match x137 {
+  let x172 = values/4.0 in
+  let x173 = values/4.1 in
+  match x173 {
     2 => {
-      match x136 {
+      match x172 {
         1 => {
           true
         },
@@ -75,11 +75,11 @@ fn match_tuple(values/4: (int8, int16)) -> bool {
 }
 
 fn match_struct(pair/5: PairData) -> bool {
-  let x138 = PairData.head(pair/5) in
-  let x139 = PairData.tail(pair/5) in
-  match x139 {
+  let x174 = PairData.head(pair/5) in
+  let x175 = PairData.tail(pair/5) in
+  match x175 {
     200 => {
-      match x138 {
+      match x174 {
         100 => {
           true
         },
@@ -98,160 +98,160 @@ fn match_struct(pair/5: PairData) -> bool {
 }
 
 fn report(label/6: string, value/7: bool) -> string {
-  join inline_cont198(t171: string) -> string {
-    let t172 = (label/6 + t171) in
-    t172
+  join inline_cont234(t207: string) -> string {
+    let t208 = (label/6 + t207) in
+    t208
   } in
-  let inline199 = @runtime(core.bool_to_string)(value/7) in
-  jump inline_cont198(inline199)
+  let inline235 = @runtime(core.bool_to_string)(value/7) in
+  jump inline_cont234(inline235)
 }
 
 fn main() -> unit {
   let tuple_first/8 = 1 in
   let tuple_second/9 = 2 in
-  let t174 = (tuple_first/8, tuple_second/9) in
-  let tuple_result_hit/10 = match_tuple(t174) in
-  let t175 = (3, 4) in
-  let tuple_result_miss/11 = match_tuple(t175) in
-  let t176 = PairData { head: 100, tail: 200 } in
-  let pair_first/12 = match_struct(t176) in
-  let t177 = PairData { head: 10, tail: 300 } in
-  let pair_second/13 = match_struct(t177) in
-  let t178 = is_special8(5) in
-  join inline_cont243(part1/14: string) -> unit {
-    join inline_cont241(t179: bool) -> unit {
-      join inline_cont237(part2/15: string) -> unit {
-        join inline_cont235(t180: bool) -> unit {
-          join inline_cont231(part3/16: string) -> unit {
-            join inline_cont229(t181: bool) -> unit {
-              join inline_cont225(part4/17: string) -> unit {
-                join inline_cont223(t182: bool) -> unit {
-                  join inline_cont219(part5/18: string) -> unit {
-                    join inline_cont215(part6/19: string) -> unit {
-                      join inline_cont211(part7/20: string) -> unit {
-                        join inline_cont207(part8/21: string) -> unit {
-                          join inline_cont203(part9/22: string) -> unit {
-                            let t183 = (part1/14 + part2/15) in
-                            let t184 = (t183 + part3/16) in
-                            let t185 = (t184 + part4/17) in
-                            let t186 = (t185 + part5/18) in
-                            let t187 = (t186 + part6/19) in
-                            let t188 = (t187 + part7/20) in
-                            let t189 = (t188 + part8/21) in
-                            let message/23 = (t189 + part9/22) in
-                            let inline201 = trait_impl#ToString#string#to_string(message/23) in
-                            let inline202 = @runtime(core.string_println)(inline201) in
+  let t210 = (tuple_first/8, tuple_second/9) in
+  let tuple_result_hit/10 = match_tuple(t210) in
+  let t211 = (3, 4) in
+  let tuple_result_miss/11 = match_tuple(t211) in
+  let t212 = PairData { head: 100, tail: 200 } in
+  let pair_first/12 = match_struct(t212) in
+  let t213 = PairData { head: 10, tail: 300 } in
+  let pair_second/13 = match_struct(t213) in
+  let t214 = is_special8(5) in
+  join inline_cont279(part1/14: string) -> unit {
+    join inline_cont277(t215: bool) -> unit {
+      join inline_cont273(part2/15: string) -> unit {
+        join inline_cont271(t216: bool) -> unit {
+          join inline_cont267(part3/16: string) -> unit {
+            join inline_cont265(t217: bool) -> unit {
+              join inline_cont261(part4/17: string) -> unit {
+                join inline_cont259(t218: bool) -> unit {
+                  join inline_cont255(part5/18: string) -> unit {
+                    join inline_cont251(part6/19: string) -> unit {
+                      join inline_cont247(part7/20: string) -> unit {
+                        join inline_cont243(part8/21: string) -> unit {
+                          join inline_cont239(part9/22: string) -> unit {
+                            let t219 = (part1/14 + part2/15) in
+                            let t220 = (t219 + part3/16) in
+                            let t221 = (t220 + part4/17) in
+                            let t222 = (t221 + part5/18) in
+                            let t223 = (t222 + part6/19) in
+                            let t224 = (t223 + part7/20) in
+                            let t225 = (t224 + part8/21) in
+                            let message/23 = (t225 + part9/22) in
+                            let inline237 = trait_impl#ToString#string#to_string(message/23) in
+                            let inline238 = @runtime(core.string_println)(inline237) in
                             ()
                           } in
-                          let inline204 = ",struct_second=" in
-                          let inline205 = trait_impl#ToString#bool#to_string(pair_second/13) in
-                          let inline206 = (inline204 + inline205) in
-                          jump inline_cont203(inline206)
+                          let inline240 = ",struct_second=" in
+                          let inline241 = trait_impl#ToString#bool#to_string(pair_second/13) in
+                          let inline242 = (inline240 + inline241) in
+                          jump inline_cont239(inline242)
                         } in
-                        let inline208 = ",struct_first=" in
-                        let inline209 = trait_impl#ToString#bool#to_string(pair_first/12) in
-                        let inline210 = (inline208 + inline209) in
-                        jump inline_cont207(inline210)
+                        let inline244 = ",struct_first=" in
+                        let inline245 = trait_impl#ToString#bool#to_string(pair_first/12) in
+                        let inline246 = (inline244 + inline245) in
+                        jump inline_cont243(inline246)
                       } in
-                      let inline212 = ",tuple_miss=" in
-                      let inline213 = trait_impl#ToString#bool#to_string(tuple_result_miss/11) in
-                      let inline214 = (inline212 + inline213) in
-                      jump inline_cont211(inline214)
+                      let inline248 = ",tuple_miss=" in
+                      let inline249 = trait_impl#ToString#bool#to_string(tuple_result_miss/11) in
+                      let inline250 = (inline248 + inline249) in
+                      jump inline_cont247(inline250)
                     } in
-                    let inline216 = ",tuple_hit=" in
-                    let inline217 = trait_impl#ToString#bool#to_string(tuple_result_hit/10) in
-                    let inline218 = (inline216 + inline217) in
-                    jump inline_cont215(inline218)
+                    let inline252 = ",tuple_hit=" in
+                    let inline253 = trait_impl#ToString#bool#to_string(tuple_result_hit/10) in
+                    let inline254 = (inline252 + inline253) in
+                    jump inline_cont251(inline254)
                   } in
-                  let inline220 = ",int64_b=" in
-                  let inline221 = trait_impl#ToString#bool#to_string(t182) in
-                  let inline222 = (inline220 + inline221) in
-                  jump inline_cont219(inline222)
+                  let inline256 = ",int64_b=" in
+                  let inline257 = trait_impl#ToString#bool#to_string(t218) in
+                  let inline258 = (inline256 + inline257) in
+                  jump inline_cont255(inline258)
                 } in
-                let inline224 = 32768 in
-                match inline224 {
+                let inline260 = 32768 in
+                match inline260 {
                   16384 => {
-                    jump inline_cont223(true)
+                    jump inline_cont259(true)
                   },
                   32768 => {
-                    jump inline_cont223(true)
+                    jump inline_cont259(true)
                   },
                   _ => {
-                    jump inline_cont223(false)
+                    jump inline_cont259(false)
                   },
                 }
               } in
-              let inline226 = ",int64_a=" in
-              let inline227 = trait_impl#ToString#bool#to_string(t181) in
-              let inline228 = (inline226 + inline227) in
-              jump inline_cont225(inline228)
+              let inline262 = ",int64_a=" in
+              let inline263 = trait_impl#ToString#bool#to_string(t217) in
+              let inline264 = (inline262 + inline263) in
+              jump inline_cont261(inline264)
             } in
-            let inline230 = 16384 in
-            match inline230 {
+            let inline266 = 16384 in
+            match inline266 {
               16384 => {
-                jump inline_cont229(true)
+                jump inline_cont265(true)
               },
               32768 => {
-                jump inline_cont229(true)
+                jump inline_cont265(true)
               },
               _ => {
-                jump inline_cont229(false)
+                jump inline_cont265(false)
               },
             }
           } in
-          let inline232 = ",int32=" in
-          let inline233 = trait_impl#ToString#bool#to_string(t180) in
-          let inline234 = (inline232 + inline233) in
-          jump inline_cont231(inline234)
+          let inline268 = ",int32=" in
+          let inline269 = trait_impl#ToString#bool#to_string(t216) in
+          let inline270 = (inline268 + inline269) in
+          jump inline_cont267(inline270)
         } in
-        let inline236 = 8192 in
-        match inline236 {
+        let inline272 = 8192 in
+        match inline272 {
           4096 => {
-            jump inline_cont235(true)
+            jump inline_cont271(true)
           },
           8192 => {
-            jump inline_cont235(true)
+            jump inline_cont271(true)
           },
           _ => {
-            jump inline_cont235(false)
+            jump inline_cont271(false)
           },
         }
       } in
-      let inline238 = ",int16=" in
-      let inline239 = trait_impl#ToString#bool#to_string(t179) in
-      let inline240 = (inline238 + inline239) in
-      jump inline_cont237(inline240)
+      let inline274 = ",int16=" in
+      let inline275 = trait_impl#ToString#bool#to_string(t215) in
+      let inline276 = (inline274 + inline275) in
+      jump inline_cont273(inline276)
     } in
-    let inline242 = 1024 in
-    match inline242 {
+    let inline278 = 1024 in
+    match inline278 {
       1024 => {
-        jump inline_cont241(true)
+        jump inline_cont277(true)
       },
       2048 => {
-        jump inline_cont241(true)
+        jump inline_cont277(true)
       },
       _ => {
-        jump inline_cont241(false)
+        jump inline_cont277(false)
       },
     }
   } in
-  let inline244 = "int8=" in
-  let inline245 = trait_impl#ToString#bool#to_string(t178) in
-  let inline246 = (inline244 + inline245) in
-  jump inline_cont243(inline246)
+  let inline280 = "int8=" in
+  let inline281 = trait_impl#ToString#bool#to_string(t214) in
+  let inline282 = (inline280 + inline281) in
+  jump inline_cont279(inline282)
 }
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  let t192 = @runtime(core.bool_to_string)(self/66) in
-  t192
+  let t228 = @runtime(core.bool_to_string)(self/66) in
+  t228
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont247(t194: string) -> unit {
-    let t195 = @runtime(core.string_println)(t194) in
+  join inline_cont283(t230: string) -> unit {
+    let t231 = @runtime(core.string_println)(t230) in
     ()
   } in
-  jump inline_cont247(value/31)
+  jump inline_cont283(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

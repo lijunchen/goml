@@ -1,50 +1,50 @@
 fn main() -> unit {
   let x/0 = @intrinsic(ref.new)(0) in
   let get/1 = closure_env_get_0 { x_0: x/0 } in
-  let _wild136 = @intrinsic(ref.set)(x/0, 41) in
-  join inline_cont164(t140: int) -> unit {
-    join inline_cont162(t141: string) -> unit {
-      let inline160 = trait_impl#ToString#string#to_string(t141) in
-      let inline161 = @runtime(core.string_println)(inline160) in
+  let _wild172 = @intrinsic(ref.set)(x/0, 41) in
+  join inline_cont200(t176: int) -> unit {
+    join inline_cont198(t177: string) -> unit {
+      let inline196 = trait_impl#ToString#string#to_string(t177) in
+      let inline197 = @runtime(core.string_println)(inline196) in
       ()
     } in
-    let inline163 = @runtime(core.int_to_string)(t140) in
-    jump inline_cont162(inline163)
+    let inline199 = @runtime(core.int_to_string)(t176) in
+    jump inline_cont198(inline199)
   } in
-  let inline165 = x/0 in
-  let inline166 = @intrinsic(ref.get)(x/0) in
-  jump inline_cont164(inline166)
+  let inline201 = x/0 in
+  let inline202 = @intrinsic(ref.get)(x/0) in
+  jump inline_cont200(inline202)
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont167(t143: string) -> unit {
-    let t144 = @runtime(core.string_println)(t143) in
+  join inline_cont203(t179: string) -> unit {
+    let t180 = @runtime(core.string_println)(t179) in
     ()
   } in
-  jump inline_cont167(value/31)
+  jump inline_cont203(value/31)
 }
 
 fn inherent#int#int#to_string(self/34: int) -> string {
-  let t147 = @runtime(core.int_to_string)(self/34) in
-  t147
+  let t183 = @runtime(core.int_to_string)(self/34) in
+  t183
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
-  let t152 = @intrinsic(eq.primitive)(self/103, other/104) in
-  t152
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  let t188 = @intrinsic(eq.primitive)(self/103, other/104) in
+  t188
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
-  let t155 = @runtime(core.int_hash)(self/129) in
-  t155
+  let t191 = @runtime(core.int_hash)(self/129) in
+  t191
 }
 
-fn inherent#closure_env_get_0#closure_env_get_0#apply(env138: closure_env_get_0) -> int {
-  let x/0 = closure_env_get_0.x_0(env138) in
-  let t158 = @intrinsic(ref.get)(x/0) in
-  t158
+fn inherent#closure_env_get_0#closure_env_get_0#apply(env174: closure_env_get_0) -> int {
+  let x/0 = closure_env_get_0.x_0(env174) in
+  let t194 = @intrinsic(ref.get)(x/0) in
+  t194
 }

@@ -1,35 +1,35 @@
 fn make_point(base/0: int32) -> Point {
-  let t138 = (base/0 + 1) in
-  let t139 = Point { x: base/0, y: t138 } in
-  t139
+  let t174 = (base/0 + 1) in
+  let t175 = Point { x: base/0, y: t174 } in
+  t175
 }
 
 fn sum_point(p/1: Point) -> int32 {
-  let t142 = Point.x(p/1) in
-  let t143 = Point.y(p/1) in
-  let t144 = (t142 + t143) in
-  t144
+  let t178 = Point.x(p/1) in
+  let t179 = Point.y(p/1) in
+  let t180 = (t178 + t179) in
+  t180
 }
 
 fn main() -> int32 {
-  join inline_cont158(p/2: Point) -> int32 {
-    let t147 = Point.x(p/2) in
-    let t148 = (t147 + 1) in
-    let t149 = Point.y(p/2) in
-    let t150 = (t149 - 2) in
-    let shifted/3 = Point { x: t148, y: t150 } in
-    let t151 = t148 in
-    join inline_cont154(t152: int32) -> int32 {
-      let t153 = (t148 + t152) in
-      t153
+  join inline_cont194(p/2: Point) -> int32 {
+    let t183 = Point.x(p/2) in
+    let t184 = (t183 + 1) in
+    let t185 = Point.y(p/2) in
+    let t186 = (t185 - 2) in
+    let shifted/3 = Point { x: t184, y: t186 } in
+    let t187 = t184 in
+    join inline_cont190(t188: int32) -> int32 {
+      let t189 = (t184 + t188) in
+      t189
     } in
-    let inline155 = t148 in
-    let inline156 = t150 in
-    let inline157 = (t148 + t150) in
-    jump inline_cont154(inline157)
+    let inline191 = t184 in
+    let inline192 = t186 in
+    let inline193 = (t184 + t186) in
+    jump inline_cont190(inline193)
   } in
-  let inline159 = 5 in
-  let inline160 = (inline159 + 1) in
-  let inline161 = Point { x: inline159, y: inline160 } in
-  jump inline_cont158(inline161)
+  let inline195 = 5 in
+  let inline196 = (inline195 + 1) in
+  let inline197 = Point { x: inline195, y: inline196 } in
+  jump inline_cont194(inline197)
 }

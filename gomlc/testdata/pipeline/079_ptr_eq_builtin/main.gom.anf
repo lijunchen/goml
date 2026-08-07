@@ -1,52 +1,52 @@
 fn main() -> unit {
-  join inline_cont165(a/0: Ref[int]) -> unit {
+  join inline_cont201(a/0: Ref[int]) -> unit {
     let b/1 = a/0 in
-    join inline_cont162(c/2: Ref[int]) -> unit {
-      let t139 = @intrinsic(ref.ptr_eq)(a/0, a/0) in
-      join inline_cont159(_wild136: unit) -> unit {
-        let t140 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
-        let inline157 = trait_impl#ToString#bool#to_string(t140) in
-        let inline158 = @runtime(core.string_println)(inline157) in
+    join inline_cont198(c/2: Ref[int]) -> unit {
+      let t175 = @intrinsic(ref.ptr_eq)(a/0, a/0) in
+      join inline_cont195(_wild172: unit) -> unit {
+        let t176 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
+        let inline193 = trait_impl#ToString#bool#to_string(t176) in
+        let inline194 = @runtime(core.string_println)(inline193) in
         ()
       } in
-      let inline160 = trait_impl#ToString#bool#to_string(t139) in
-      let inline161 = @runtime(core.string_println)(inline160) in
-      jump inline_cont159(())
+      let inline196 = trait_impl#ToString#bool#to_string(t175) in
+      let inline197 = @runtime(core.string_println)(inline196) in
+      jump inline_cont195(())
     } in
-    let inline163 = 1 in
-    let inline164 = @intrinsic(ref.new)(inline163) in
-    jump inline_cont162(inline164)
+    let inline199 = 1 in
+    let inline200 = @intrinsic(ref.new)(inline199) in
+    jump inline_cont198(inline200)
   } in
-  let inline166 = 1 in
-  let inline167 = @intrinsic(ref.new)(inline166) in
-  jump inline_cont165(inline167)
+  let inline202 = 1 in
+  let inline203 = @intrinsic(ref.new)(inline202) in
+  jump inline_cont201(inline203)
 }
 
-fn inherent#Ref#Ref[T]#new__T_int(value/232: int) -> Ref[int] {
-  let t143 = @intrinsic(ref.new)(value/232) in
-  t143
+fn inherent#Ref#Ref[T]#new__T_int(value/257: int) -> Ref[int] {
+  let t179 = @intrinsic(ref.new)(value/257) in
+  t179
 }
 
 fn println__T_bool(value/31: bool) -> unit {
-  join inline_cont168(t145: string) -> unit {
-    let t146 = @runtime(core.string_println)(t145) in
+  join inline_cont204(t181: string) -> unit {
+    let t182 = @runtime(core.string_println)(t181) in
     ()
   } in
-  let inline169 = @runtime(core.bool_to_string)(value/31) in
-  jump inline_cont168(inline169)
+  let inline205 = @runtime(core.bool_to_string)(value/31) in
+  jump inline_cont204(inline205)
 }
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
-  let t149 = @runtime(core.bool_to_string)(self/66) in
-  t149
+  let t185 = @runtime(core.bool_to_string)(self/66) in
+  t185
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
-  let t152 = @intrinsic(eq.primitive)(self/103, other/104) in
-  t152
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  let t188 = @intrinsic(eq.primitive)(self/103, other/104) in
+  t188
 }
 
 fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
-  let t155 = @runtime(core.int_hash)(self/129) in
-  t155
+  let t191 = @runtime(core.int_hash)(self/129) in
+  t191
 }

@@ -1,8 +1,10 @@
-impl Eq for AlwaysDifferent {
+impl PartialEq for AlwaysDifferent {
   fn eq(self/0: AlwaysDifferent, other/1: AlwaysDifferent) -> bool {
       false
   }
 }
+
+impl Eq for AlwaysDifferent {}
 
 fn main() -> unit {
     let first/2: AlwaysDifferent = AlwaysDifferent { value: 7 };

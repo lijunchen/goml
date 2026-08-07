@@ -13,22 +13,22 @@ fn parse(flag/0: bool) -> Result__int32__string {
 fn compute(flag/1: bool) -> Result__int32__string {
   let value/2 =
     {
-      let mtmp136 = parse(flag/1) in
-      match mtmp136 {
-        Result__int32__string::Err(x137) => {
+      let mtmp172 = parse(flag/1) in
+      match mtmp172 {
+        Result__int32__string::Err(x173) => {
           {
-            let x137 = Result__int32__string::Err._0(mtmp136) in
+            let x173 = Result__int32__string::Err._0(mtmp172) in
             {
-              let try_residual/12 = x137 in
+              let try_residual/12 = x173 in
               return Result__int32__string::Err(try_residual/12)
             }
           }
         },
-        Result__int32__string::Ok(x138) => {
+        Result__int32__string::Ok(x174) => {
           {
-            let x138 = Result__int32__string::Ok._0(mtmp136) in
+            let x174 = Result__int32__string::Ok._0(mtmp172) in
             {
-              let try_value/12 = x138 in
+              let try_value/12 = x174 in
               try_value/12
             }
           }
@@ -40,20 +40,20 @@ fn compute(flag/1: bool) -> Result__int32__string {
 
 fn show(value/3: Result__int32__string) -> string {
   match value/3 {
-    Result__int32__string::Err(x139) => {
+    Result__int32__string::Err(x175) => {
       {
-        let x139 = Result__int32__string::Err._0(value/3) in
+        let x175 = Result__int32__string::Err._0(value/3) in
         {
-          let error/5 = x139 in
+          let error/5 = x175 in
           error/5
         }
       }
     },
-    Result__int32__string::Ok(x140) => {
+    Result__int32__string::Ok(x176) => {
       {
-        let x140 = Result__int32__string::Ok._0(value/3) in
+        let x176 = Result__int32__string::Ok._0(value/3) in
         {
-          let value/4 = x140 in
+          let value/4 = x176 in
           inherent#int32#int32#to_string(value/4)
         }
       }
@@ -62,7 +62,7 @@ fn show(value/3: Result__int32__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild141 = println__T_string(show(compute(true))) in
+  let _wild177 = println__T_string(show(compute(true))) in
   println__T_string(show(compute(false)))
 }
 

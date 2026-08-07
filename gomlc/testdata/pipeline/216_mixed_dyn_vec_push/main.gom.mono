@@ -9,10 +9,10 @@ fn trait_impl#Show#Wrap#show(self/1: Wrap) -> string {
 fn main() -> unit {
   let values/2 = inherent#Vec#Vec[T]#new__T_dynShow() in
   let value/3 = 10 in
-  let _wild136 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{int32}(value/3)) in
-  let _wild137 =
+  let _wild172 = inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{int32}(value/3)) in
+  let _wild173 =
     inherent#Vec#Vec[T]#push__T_dynShow(values/2, to_dyn[Show]{Wrap}(Wrap { value: "ok" })) in
-  let _wild138 = println__T_string(dyn_call[Show::show](@intrinsic(vec.get)(values/2, 0))) in
+  let _wild174 = println__T_string(dyn_call[Show::show](@intrinsic(vec.get)(values/2, 0))) in
   println__T_string(dyn_call[Show::show](@intrinsic(vec.get)(values/2, 1)))
 }
 
@@ -24,8 +24,8 @@ fn inherent#Vec#Vec[T]#new__T_dynShow() -> Vec[dyn Show] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynShow(self/151: Vec[dyn Show], elem/152: dyn Show) -> unit {
-  @intrinsic(vec.push)(self/151, elem/152)
+fn inherent#Vec#Vec[T]#push__T_dynShow(self/176: Vec[dyn Show], elem/177: dyn Show) -> unit {
+  @intrinsic(vec.push)(self/176, elem/177)
 }
 
 fn println__T_string(value/31: string) -> unit {

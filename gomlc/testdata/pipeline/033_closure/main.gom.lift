@@ -2,7 +2,7 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = closure_env_f_0 { y_0: y/0, z_1: z/1 } in
-  let mtmp136 =
+  let mtmp172 =
     println__T_string(
       inherent#int32#int32#to_string(inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 2))
     ) in
@@ -20,19 +20,19 @@ fn main() -> unit {
   let add_base/8 = closure_env_add_base_1 { base_0: base/6 } in
   let result/9 = inherent#closure_env_add_base_1#closure_env_add_base_1#apply(add_base/8, 7) in
   let printer/13 = closure_env_printer_2 {} in
-  let mtmp137 =
+  let mtmp173 =
     inherent#closure_env_printer_2#closure_env_printer_2#apply(printer/13, "result: ", result/9) in
   let unused/15 = closure_env_unused_3 { result_0: result/9 } in
   let no_capture/17 = closure_env_no_capture_4 {} in
   let doubled/18 =
     inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(no_capture/17, 3) in
-  let mtmp138 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
-  let mtmp139 = test() in
+  let mtmp174 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
+  let mtmp175 = test() in
   let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
   let point/20 = Point { x: 10, y: 20 } in
   let play_list_and_point/25 =
     closure_env_play_list_and_point_5 { list123_0: list123/19, point_1: point/20 } in
-  let mtmp146 =
+  let mtmp182 =
     inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(
       play_list_and_point/25
     ) in
@@ -51,22 +51,22 @@ fn trait_impl#ToString#string#to_string(self/67: string) -> string {
   self/67
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env147: closure_env_f_0, x/2: int32) -> int32 {
-  let y/0 = closure_env_f_0.y_0(env147) in
-  let z/1 = closure_env_f_0.z_1(env147) in
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env183: closure_env_f_0, x/2: int32) -> int32 {
+  let y/0 = closure_env_f_0.y_0(env183) in
+  let z/1 = closure_env_f_0.z_1(env183) in
   ((x/2 * y/0) * z/1)
 }
 
 fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(
-  env148: closure_env_add_base_1,
+  env184: closure_env_add_base_1,
   x/7: int32
 ) -> int32 {
-  let base/6 = closure_env_add_base_1.base_0(env148) in
+  let base/6 = closure_env_add_base_1.base_0(env184) in
   (x/7 + base/6)
 }
 
 fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
-  env149: closure_env_printer_2,
+  env185: closure_env_printer_2,
   prefix/10: string,
   value/11: int32
 ) -> unit {
@@ -75,40 +75,40 @@ fn inherent#closure_env_printer_2#closure_env_printer_2#apply(
 }
 
 fn inherent#closure_env_unused_3#closure_env_unused_3#apply(
-  env150: closure_env_unused_3,
+  env186: closure_env_unused_3,
   y/14: int32
 ) -> int32 {
-  let result/9 = closure_env_unused_3.result_0(env150) in
+  let result/9 = closure_env_unused_3.result_0(env186) in
   (y/14 + result/9)
 }
 
 fn inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(
-  env151: closure_env_no_capture_4,
+  env187: closure_env_no_capture_4,
   z/16: int32
 ) -> int32 {
   (z/16 * 2)
 }
 
 fn inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(
-  env152: closure_env_play_list_and_point_5
+  env188: closure_env_play_list_and_point_5
 ) -> unit {
-  let list123/19 = closure_env_play_list_and_point_5.list123_0(env152) in
-  let point/20 = closure_env_play_list_and_point_5.point_1(env152) in
+  let list123/19 = closure_env_play_list_and_point_5.list123_0(env188) in
+  let point/20 = closure_env_play_list_and_point_5.point_1(env188) in
   match list123/19 {
     IntList::Nil => {
       println__T_string("Empty list")
     },
-    IntList::Cons(x140, x141) => {
-      let x140 = IntList::Cons._0(list123/19) in
-      let x141 = IntList::Cons._1(list123/19) in
-      let tail/22 = x141 in
-      let head/21 = x140 in
-      let mtmp142 = println__T_string(inherent#int32#int32#to_string(head/21)) in
-      let x143 = Point.x(point/20) in
-      let x144 = Point.y(point/20) in
-      let y/24 = x144 in
-      let x/23 = x143 in
-      let mtmp145 =
+    IntList::Cons(x176, x177) => {
+      let x176 = IntList::Cons._0(list123/19) in
+      let x177 = IntList::Cons._1(list123/19) in
+      let tail/22 = x177 in
+      let head/21 = x176 in
+      let mtmp178 = println__T_string(inherent#int32#int32#to_string(head/21)) in
+      let x179 = Point.x(point/20) in
+      let x180 = Point.y(point/20) in
+      let y/24 = x180 in
+      let x/23 = x179 in
+      let mtmp181 =
         println__T_string(
           (((("Point: (" + inherent#int32#int32#to_string(x/23)) + ", ") +
             inherent#int32#int32#to_string(y/24)) +

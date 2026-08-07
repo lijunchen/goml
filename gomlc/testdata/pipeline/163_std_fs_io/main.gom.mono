@@ -514,20 +514,20 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
 
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
-    Result__string__string::Ok(x136) => {
+    Result__string__string::Ok(x172) => {
       {
-        let x136 = Result__string__string::Ok._0(res/0) in
+        let x172 = Result__string__string::Ok._0(res/0) in
         {
-          let value/1 = x136 in
+          let value/1 = x172 in
           value/1
         }
       }
     },
-    Result__string__string::Err(x137) => {
+    Result__string__string::Err(x173) => {
       {
-        let x137 = Result__string__string::Err._0(res/0) in
+        let x173 = Result__string__string::Err._0(res/0) in
         {
-          let err/2 = x137 in
+          let err/2 = x173 in
           ("err " + err/2)
         }
       }
@@ -537,20 +537,20 @@ fn show_read(res/0: Result__string__string) -> string {
 
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
   match res/3 {
-    Result__Vec[string]__string::Ok(x138) => {
+    Result__Vec[string]__string::Ok(x174) => {
       {
-        let x138 = Result__Vec[string]__string::Ok._0(res/3) in
+        let x174 = Result__Vec[string]__string::Ok._0(res/3) in
         {
-          let names/4 = x138 in
+          let names/4 = x174 in
           trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(names/4) > 0))
         }
       }
     },
-    Result__Vec[string]__string::Err(x139) => {
+    Result__Vec[string]__string::Err(x175) => {
       {
-        let x139 = Result__Vec[string]__string::Err._0(res/3) in
+        let x175 = Result__Vec[string]__string::Err._0(res/3) in
         {
-          let err/5 = x139 in
+          let err/5 = x175 in
           ("err " + err/5)
         }
       }
@@ -559,14 +559,14 @@ fn show_dir(res/3: Result__Vec[string]__string) -> string {
 }
 
 fn main() -> unit {
-  let mtmp140 = std::fs::write_file("goml-std-test.txt", "std-ok") in
+  let mtmp176 = std::fs::write_file("goml-std-test.txt", "std-ok") in
   {
-    let _wild141 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
-    let _wild142 =
+    let _wild177 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
+    let _wild178 =
       std::io::println__T_string(
         trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))
       ) in
-    let _wild143 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
+    let _wild179 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
   }
 }
 
@@ -574,61 +574,61 @@ fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/150: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/150)
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/175: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/175)
 }
 
 fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
   @runtime(core.string_to_bytes)(self/53)
 }
 
-fn inherent#Vec#Vec[T]#len__T_uint8(self/162: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/162)
+fn inherent#Vec#Vec[T]#len__T_uint8(self/187: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/187)
 }
 
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/163: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/163)
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/188: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/188)
 }
 
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/164: Vec[uint8]) -> bool {
-  trait_impl#Eq#int#eq(@intrinsic(vec.len)(self/164), 0)
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/189: Vec[uint8]) -> bool {
+  trait_impl#PartialEq#int#eq(@intrinsic(vec.len)(self/189), 0)
 }
 
-fn inherent#Vec#Vec[T]#push__T_uint8(self/151: Vec[uint8], elem/152: uint8) -> unit {
-  @intrinsic(vec.push)(self/151, elem/152)
+fn inherent#Vec#Vec[T]#push__T_uint8(self/176: Vec[uint8], elem/177: uint8) -> unit {
+  @intrinsic(vec.push)(self/176, elem/177)
 }
 
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/172: Vec[uint8]) -> Option__uint8 {
-  let len/173 = inherent#Vec#Vec[T]#len__T_uint8(self/172) in
-  if trait_impl#Eq#int#eq(len/173, 0) {
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/197: Vec[uint8]) -> Option__uint8 {
+  let len/198 = inherent#Vec#Vec[T]#len__T_uint8(self/197) in
+  if trait_impl#PartialEq#int#eq(len/198, 0) {
       {
         Option__uint8::None
       }
   } else {
       {
-        let value/174 = @intrinsic(vec.get)(self/172, (len/173 - 1)) in
-        let _wild49 = inherent#Vec#Vec[T]#truncate__T_uint8(self/172, (len/173 - 1)) in
-        Option__uint8::Some(value/174)
+        let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
+        let _wild85 = inherent#Vec#Vec[T]#truncate__T_uint8(self/197, (len/198 - 1)) in
+        Option__uint8::Some(value/199)
       }
   }
 }
 
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/165: Vec[uint8], additional/166: int) -> unit {
-  @intrinsic(vec.reserve)(self/165, additional/166)
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/190: Vec[uint8], additional/191: int) -> unit {
+  @intrinsic(vec.reserve)(self/190, additional/191)
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/167: Vec[uint8], len/168: int) -> unit {
-  @intrinsic(vec.truncate)(self/167, len/168)
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/192: Vec[uint8], len/193: int) -> unit {
+  @intrinsic(vec.truncate)(self/192, len/193)
 }
 
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/169: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/169, 0)
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/194: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/194, 0)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/200: Vec[uint8], start/201: int, end/202: int) -> Slice[
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/225: Vec[uint8], start/226: int, end/227: int) -> Slice[
   uint8
 ] {
-  @intrinsic(slice.new)(self/200, start/201, end/202)
+  @intrinsic(slice.new)(self/225, start/226, end/227)
 }
 
 fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
@@ -679,8 +679,8 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   }
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/162: Vec[string]) -> int {
-  @intrinsic(vec.len)(self/162)
+fn inherent#Vec#Vec[T]#len__T_string(self/187: Vec[string]) -> int {
+  @intrinsic(vec.len)(self/187)
 }
 
 fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
@@ -691,7 +691,7 @@ fn std::io::println__T_string(value/1: string) -> unit {
   @runtime(std.io.println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#Eq#int#eq(self/103: int, other/104: int) -> bool {
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 
@@ -774,7 +774,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                     } {
                         true
                     } else {
-                        if trait_impl#Eq#uint32#eq(first/8, 224) {
+                        if trait_impl#PartialEq#uint32#eq(first/8, 224) {
                             (second/10 < 160)
                         } else {
                             false
@@ -782,7 +782,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                     } {
                         true
                     } else {
-                        if trait_impl#Eq#uint32#eq(first/8, 237) {
+                        if trait_impl#PartialEq#uint32#eq(first/8, 237) {
                             (second/10 >= 160)
                         } else {
                             false
@@ -830,7 +830,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         } {
                             true
                         } else {
-                            if trait_impl#Eq#uint32#eq(first/8, 240) {
+                            if trait_impl#PartialEq#uint32#eq(first/8, 240) {
                                 (second/12 < 144)
                             } else {
                                 false
@@ -838,7 +838,7 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
                         } {
                             true
                         } else {
-                            if trait_impl#Eq#uint32#eq(first/8, 244) {
+                            if trait_impl#PartialEq#uint32#eq(first/8, 244) {
                                 (second/12 > 143)
                             } else {
                                 false
@@ -909,7 +909,7 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   }
 }
 
-fn trait_impl#Eq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
+fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
   @intrinsic(eq.primitive)(self/117, other/118)
 }
 

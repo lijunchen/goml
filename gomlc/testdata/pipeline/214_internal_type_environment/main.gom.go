@@ -70,12 +70,12 @@ func (_ Origin) isShape__int32() {}
 func list_value(value__10 List) int32 {
     switch value__10.(type) {
     case Cons:
-        var x138 Node = value__10.(Cons)._0
-        var t168 int32 = x138.value
-        var t169 List = x138.next
-        var t170 int32 = list_value(t169)
-        var t171 int32 = t168 + t170
-        return t171
+        var x174 Node = value__10.(Cons)._0
+        var t204 int32 = x174.value
+        var t205 List = x174.next
+        var t206 int32 = list_value(t205)
+        var t207 int32 = t204 + t206
+        return t207
     case Nil:
         return 0
     default:
@@ -85,60 +85,60 @@ func list_value(value__10 List) int32 {
 
 func main0() struct{} {
     var offset__12 int32 = 1
-    var t173 int32
-    var inline235 int32 = 1
-    var inline237 int32 = inline235 + offset__12
-    t173 = inline237
+    var t209 int32
+    var inline271 int32 = 1
+    var inline273 int32 = inline271 + offset__12
+    t209 = inline273
     var point__15 Point
-    var inline232 int32 = 3
-    var inline233 Point = Point{
-        x: t173,
-        y: inline232,
+    var inline268 int32 = 3
+    var inline269 Point = Point{
+        x: t209,
+        y: inline268,
     }
-    point__15 = inline233
-    var t174 Point
-    var inline230 Point = Point{
+    point__15 = inline269
+    var t210 Point
+    var inline266 Point = Point{
         x: 0,
         y: 0,
     }
-    t174 = inline230
+    t210 = inline266
     var combined__16 Point
-    var inline222 int32 = point__15.x
-    var inline223 int32 = t174.x
-    var inline224 int32 = inline222 + inline223
-    var inline225 int32 = point__15.y
-    var inline226 int32 = t174.y
-    var inline227 int32 = inline225 + inline226
-    var inline228 Point = Point{
-        x: inline224,
-        y: inline227,
+    var inline258 int32 = point__15.x
+    var inline259 int32 = t210.x
+    var inline260 int32 = inline258 + inline259
+    var inline261 int32 = point__15.y
+    var inline262 int32 = t210.y
+    var inline263 int32 = inline261 + inline262
+    var inline264 Point = Point{
+        x: inline260,
+        y: inline263,
     }
-    combined__16 = inline228
-    var t175 int32
-    var inline218 int32 = 4
-    var inline219 closure_env_id_1 = closure_env_id_1{}
-    var inline220 int32 = _goml_m_inherent_i_closure__env__id__1_i_closure__env__id__1_i_apply(inline219, inline218)
-    t175 = inline220
-    var t177 Node = Node{
+    combined__16 = inline264
+    var t211 int32
+    var inline254 int32 = 4
+    var inline255 closure_env_id_1 = closure_env_id_1{}
+    var inline256 int32 = _goml_m_inherent_i_closure__env__id__1_i_closure__env__id__1_i_apply(inline255, inline254)
+    t211 = inline256
+    var t213 Node = Node{
         value: 5,
         next: Nil{},
     }
     var list__18 List = Cons{
-        _0: t177,
+        _0: t213,
     }
-    var t178 int32 = combined__16.x
-    var t179 int32 = combined__16.y
-    var t180 int32 = t178 + t179
-    var t181 int32
-    t181 = t175
-    var t182 int32 = t180 + t181
-    var t183 int32 = list_value(list__18)
-    var t184 int32 = t182 + t183
-    var t185 string
-    var inline207 string = _goml_runtime_core_int32_to_string(t184)
-    t185 = inline207
-    var inline204 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t185)
-    _goml_runtime_core_string_println(inline204)
+    var t214 int32 = combined__16.x
+    var t215 int32 = combined__16.y
+    var t216 int32 = t214 + t215
+    var t217 int32
+    t217 = t211
+    var t218 int32 = t216 + t217
+    var t219 int32 = list_value(list__18)
+    var t220 int32 = t218 + t219
+    var t221 string
+    var inline243 string = _goml_runtime_core_int32_to_string(t220)
+    t221 = inline243
+    var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t221)
+    _goml_runtime_core_string_println(inline240)
     return struct{}{}
 }
 
@@ -146,7 +146,7 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
     return self__67
 }
 
-func _goml_m_inherent_i_closure__env__id__1_i_closure__env__id__1_i_apply(env140 closure_env_id_1, item__5 int32) int32 {
+func _goml_m_inherent_i_closure__env__id__1_i_closure__env__id__1_i_apply(env176 closure_env_id_1, item__5 int32) int32 {
     return item__5
 }
 

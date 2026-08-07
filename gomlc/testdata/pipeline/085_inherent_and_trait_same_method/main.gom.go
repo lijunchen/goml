@@ -18,22 +18,22 @@ type Boxed struct {
 }
 
 func main0() struct{} {
-    var t146 string
-    t146 = "inherent"
-    var inline166 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t146)
-    _goml_runtime_core_string_println(inline166)
-    var t148 string
-    var inline163 int32 = 9
-    var inline164 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline163)
-    t148 = inline164
-    var inline160 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t148)
-    _goml_runtime_core_string_println(inline160)
+    var t182 string
+    t182 = "inherent"
+    var inline202 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
+    _goml_runtime_core_string_println(inline202)
+    var t184 string
+    var inline199 int32 = 9
+    var inline200 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline199)
+    t184 = inline200
+    var inline196 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t184)
+    _goml_runtime_core_string_println(inline196)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t151 string = _goml_runtime_core_int32_to_string(self__35)
-    return t151
+    var t187 string = _goml_runtime_core_int32_to_string(self__35)
+    return t187
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

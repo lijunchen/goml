@@ -62,7 +62,7 @@ func hashmap_lookup__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint) (
             break
         }
         var entry hashmap_uint_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_Eq_i_uint_i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -99,7 +99,7 @@ func hashmap_set__HashMap_4uint_6string(m *hashmap_uint_string_x, key uint, valu
             break
         }
         var entry hashmap_uint_string_x_entry = bucket[i]
-        if entry.active && _goml_m_trait__impl_i_Eq_i_uint_i_eq(entry.key, key) {
+        if entry.active && _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -146,63 +146,63 @@ func main0() struct{} {
     var right__4_source int = 2
     var right__4 uint = uint(int(right__4_source))
     var result__5 uint
-    var inline232 uint = left__3 + right__4
-    var inline233 uint = inline232 * 2
-    result__5 = inline233
-    var inline229 string = _goml_m_trait__impl_i_ToString_i_uint_i_to__string(result__5)
-    _goml_runtime_core_string_println(inline229)
-    var t153 string
-    var inline227 string = _goml_runtime_core_uint_to_string(result__5)
-    t153 = inline227
-    var inline224 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t153)
-    _goml_runtime_core_string_println(inline224)
-    var t154 string
+    var inline268 uint = left__3 + right__4
+    var inline269 uint = inline268 * 2
+    result__5 = inline269
+    var inline265 string = _goml_m_trait__impl_i_ToString_i_uint_i_to__string(result__5)
+    _goml_runtime_core_string_println(inline265)
+    var t189 string
+    var inline263 string = _goml_runtime_core_uint_to_string(result__5)
+    t189 = inline263
+    var inline260 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t189)
+    _goml_runtime_core_string_println(inline260)
+    var t190 string
     switch result__5 {
     case 0:
-        t154 = "zero"
+        t190 = "zero"
     case 42:
-        t154 = "answer"
+        t190 = "answer"
     default:
-        t154 = "other"
+        t190 = "other"
     }
-    var inline220 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t154)
-    _goml_runtime_core_string_println(inline220)
-    var t155 bool = result__5 > left__3
-    var inline217 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t155)
-    _goml_runtime_core_string_println(inline217)
-    var t156_rhs uint = 15
-    var t156 uint = result__5 & t156_rhs
-    var t157 uint64 = uint64(uint(t156))
-    var inline214 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(t157)
-    _goml_runtime_core_string_println(inline214)
+    var inline256 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t190)
+    _goml_runtime_core_string_println(inline256)
+    var t191 bool = result__5 > left__3
+    var inline253 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t191)
+    _goml_runtime_core_string_println(inline253)
+    var t192_rhs uint = 15
+    var t192 uint = result__5 & t192_rhs
+    var t193 uint64 = uint64(uint(t192))
+    var inline250 string = _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(t193)
+    _goml_runtime_core_string_println(inline250)
     var values__6 *hashmap_uint_string_x
-    var inline212 *hashmap_uint_string_x = hashmap_new__HashMap_4uint_6string()
-    values__6 = inline212
-    var inline209 string = "stored"
-    hashmap_set__HashMap_4uint_6string(values__6, result__5, inline209)
-    var mtmp142 Option__string
-    var inline206 uint = 42
-    var inline207 Option__string = hashmap_get__HashMap_4uint_6string(values__6, inline206)
-    mtmp142 = inline207
-    switch mtmp142.(type) {
+    var inline248 *hashmap_uint_string_x = hashmap_new__HashMap_4uint_6string()
+    values__6 = inline248
+    var inline245 string = "stored"
+    hashmap_set__HashMap_4uint_6string(values__6, result__5, inline245)
+    var mtmp178 Option__string
+    var inline242 uint = 42
+    var inline243 Option__string = hashmap_get__HashMap_4uint_6string(values__6, inline242)
+    mtmp178 = inline243
+    switch mtmp178.(type) {
     case None:
-        var inline199 string = "missing"
-        var inline200 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline199)
-        _goml_runtime_core_string_println(inline200)
+        var inline235 string = "missing"
+        var inline236 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline235)
+        _goml_runtime_core_string_println(inline236)
         return struct{}{}
     case Some:
-        var x143 string = mtmp142.(Some)._0
-        var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x143)
-        _goml_runtime_core_string_println(inline203)
+        var x179 string = mtmp178.(Some)._0
+        var inline239 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(x179)
+        _goml_runtime_core_string_println(inline239)
         return struct{}{}
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__249 uint) string {
-    var t169 string = _goml_runtime_core_uint_to_string(self__249)
-    return t169
+func _goml_m_trait__impl_i_ToString_i_uint_i_to__string(self__274 uint) string {
+    var t205 string = _goml_runtime_core_uint_to_string(self__274)
+    return t205
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
@@ -210,23 +210,23 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t188 string = _goml_runtime_core_bool_to_string(self__66)
-    return t188
+    var t224 string = _goml_runtime_core_bool_to_string(self__66)
+    return t224
 }
 
 func _goml_m_trait__impl_i_ToString_i_uint64_i_to__string(self__77 uint64) string {
-    var t191 string = _goml_runtime_core_uint64_to_string(self__77)
-    return t191
+    var t227 string = _goml_runtime_core_uint64_to_string(self__77)
+    return t227
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint_i_eq(self__251 uint, other__252 uint) bool {
-    var t194 bool = self__251 == other__252
-    return t194
+func _goml_m_trait__impl_i_PartialEq_i_uint_i_eq(self__276 uint, other__277 uint) bool {
+    var t230 bool = self__276 == other__277
+    return t230
 }
 
-func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__253 uint) uint64 {
-    var t197 uint64 = _goml_runtime_core_uint_hash(self__253)
-    return t197
+func _goml_m_trait__impl_i_Hash_i_uint_i_hash(self__278 uint) uint64 {
+    var t233 uint64 = _goml_runtime_core_uint_hash(self__278)
+    return t233
 }
 
 func main() {

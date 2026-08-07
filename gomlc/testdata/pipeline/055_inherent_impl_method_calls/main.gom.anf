@@ -3,58 +3,58 @@ fn inherent#Shape#Shape#name(self/0: Shape) -> string {
 }
 
 fn inherent#Shape#Shape#rename(self/1: Shape, suffix/2: string) -> string {
-  join inline_cont156(t142: string) -> string {
-    let t143 = (t142 + suffix/2) in
-    t143
+  join inline_cont192(t178: string) -> string {
+    let t179 = (t178 + suffix/2) in
+    t179
   } in
-  jump inline_cont156("Shape")
+  jump inline_cont192("Shape")
 }
 
 fn inherent#Shape#Shape#join(self/3: Shape, left/4: string, right/5: string) -> string {
-  join inline_cont157(t146: string) -> string {
-    let t147 = (left/4 + t146) in
-    let t148 = (t147 + right/5) in
-    t148
+  join inline_cont193(t182: string) -> string {
+    let t183 = (left/4 + t182) in
+    let t184 = (t183 + right/5) in
+    t184
   } in
-  jump inline_cont157("Shape")
+  jump inline_cont193("Shape")
 }
 
 fn announce(shape/6: Shape) -> unit {
-  join inline_cont169(base/7: string) -> unit {
-    join inline_cont165(with_suffix/8: string) -> unit {
-      join inline_cont161(combined/9: string) -> unit {
-        let inline159 = trait_impl#ToString#string#to_string(combined/9) in
-        let inline160 = @runtime(core.string_println)(inline159) in
+  join inline_cont205(base/7: string) -> unit {
+    join inline_cont201(with_suffix/8: string) -> unit {
+      join inline_cont197(combined/9: string) -> unit {
+        let inline195 = trait_impl#ToString#string#to_string(combined/9) in
+        let inline196 = @runtime(core.string_println)(inline195) in
         ()
       } in
-      let inline162 = inherent#Shape#Shape#name(shape/6) in
-      let inline163 = (base/7 + inline162) in
-      let inline164 = (inline163 + with_suffix/8) in
-      jump inline_cont161(inline164)
+      let inline198 = inherent#Shape#Shape#name(shape/6) in
+      let inline199 = (base/7 + inline198) in
+      let inline200 = (inline199 + with_suffix/8) in
+      jump inline_cont197(inline200)
     } in
-    let inline166 = "!" in
-    let inline167 = inherent#Shape#Shape#name(shape/6) in
-    let inline168 = (inline167 + inline166) in
-    jump inline_cont165(inline168)
+    let inline202 = "!" in
+    let inline203 = inherent#Shape#Shape#name(shape/6) in
+    let inline204 = (inline203 + inline202) in
+    jump inline_cont201(inline204)
   } in
-  jump inline_cont169("Shape")
+  jump inline_cont205("Shape")
 }
 
 fn main() -> unit {
   let shape/10 = Shape {} in
-  let inline171 = inherent#Shape#Shape#name(shape/10) in
-  let inline172 = inherent#Shape#Shape#rename(shape/10, "!") in
-  let inline173 = inherent#Shape#Shape#join(shape/10, inline171, inline172) in
-  let inline174 = println__T_string(inline173) in
+  let inline207 = inherent#Shape#Shape#name(shape/10) in
+  let inline208 = inherent#Shape#Shape#rename(shape/10, "!") in
+  let inline209 = inherent#Shape#Shape#join(shape/10, inline207, inline208) in
+  let inline210 = println__T_string(inline209) in
   ()
 }
 
 fn println__T_string(value/31: string) -> unit {
-  join inline_cont175(t152: string) -> unit {
-    let t153 = @runtime(core.string_println)(t152) in
+  join inline_cont211(t188: string) -> unit {
+    let t189 = @runtime(core.string_println)(t188) in
     ()
   } in
-  jump inline_cont175(value/31)
+  jump inline_cont211(value/31)
 }
 
 fn trait_impl#ToString#string#to_string(self/67: string) -> string {

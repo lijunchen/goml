@@ -159,18 +159,18 @@ type Option__char_Some struct {
 func (_ Option__char_Some) isOption__char() {}
 
 func main0() struct{} {
-    var t251 *_goml_vec_string
-    var inline526 *_goml_vec_string = _goml_runtime_std_env_args()
-    t251 = inline526
-    var t252 int
-    var inline524 int = vec_len__Vec_6string(t251)
-    t252 = inline524
-    var t253 bool = t252 > 0
-    var t254 string
-    var inline522 string = _goml_runtime_core_bool_to_string(t253)
-    t254 = inline522
-    var inline519 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t254)
-    _goml_runtime_std_io_println(inline519)
+    var t287 *_goml_vec_string
+    var inline562 *_goml_vec_string = _goml_runtime_std_env_args()
+    t287 = inline562
+    var t288 int
+    var inline560 int = vec_len__Vec_6string(t287)
+    t288 = inline560
+    var t289 bool = t288 > 0
+    var t290 string
+    var inline558 string = _goml_runtime_core_bool_to_string(t289)
+    t290 = inline558
+    var inline555 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t290)
+    _goml_runtime_std_io_println(inline555)
     return struct{}{}
 }
 

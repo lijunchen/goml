@@ -43,7 +43,7 @@ file main.gom
     }
   }
 
-  impl Eq for Key {
+  impl Eq for Key where int32: Eq {
     fn eq(local/1/10: Key, local/1/11: Key) -> bool {
         match (self/10, other/11) {
             (ctor(def/1/1::v0), ctor(def/1/1::v0)) => true,

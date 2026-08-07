@@ -42,18 +42,18 @@ type closure_env_get_1 struct {
 
 func main0() struct{} {
     var x__0 *ref_int_x = ref__Ref_3int(0)
-    var inline176 int = ref_get__Ref_3int(x__0)
-    var inline177 int = inline176 + 1
-    ref_set__Ref_3int(x__0, inline177)
+    var inline212 int = ref_get__Ref_3int(x__0)
+    var inline213 int = inline212 + 1
+    ref_set__Ref_3int(x__0, inline213)
     ref_get__Ref_3int(x__0)
-    var t142 int
-    var inline173 int = ref_get__Ref_3int(x__0)
-    t142 = inline173
-    var t143 string
-    var inline170 string = _goml_runtime_core_int_to_string(t142)
-    t143 = inline170
-    var inline167 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t143)
-    _goml_runtime_core_string_println(inline167)
+    var t178 int
+    var inline209 int = ref_get__Ref_3int(x__0)
+    t178 = inline209
+    var t179 string
+    var inline206 string = _goml_runtime_core_int_to_string(t178)
+    t179 = inline206
+    var inline203 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t179)
+    _goml_runtime_core_string_println(inline203)
     return struct{}{}
 }
 

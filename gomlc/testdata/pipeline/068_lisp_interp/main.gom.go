@@ -523,108 +523,108 @@ func (_ Some) isOption__char() {}
 
 func is_int_text(text__2 string) bool {
     var len__3 int = _goml_m_inherent_i_string_i_string_i_len(text__2)
-    var t286 bool
-    var inline1205 int = 0
-    var inline1206 bool = len__3 == inline1205
-    t286 = inline1206
-    if t286 {
+    var t322 bool
+    var inline1271 int = 0
+    var inline1272 bool = len__3 == inline1271
+    t322 = inline1272
+    if t322 {
         return false
     } else {
         var i__4 *ref_int_x
-        var inline1202 int = 0
-        var inline1203 *ref_int_x = ref__Ref_3int(inline1202)
-        i__4 = inline1203
+        var inline1268 int = 0
+        var inline1269 *ref_int_x = ref__Ref_3int(inline1268)
+        i__4 = inline1269
         var saw_digit__5 *ref_bool_x
-        var inline1199 bool = false
-        var inline1200 *ref_bool_x = ref__Ref_4bool(inline1199)
-        saw_digit__5 = inline1200
+        var inline1265 bool = false
+        var inline1266 *ref_bool_x = ref__Ref_4bool(inline1265)
+        saw_digit__5 = inline1266
         var ok__6 *ref_bool_x
-        var inline1196 bool = true
-        var inline1197 *ref_bool_x = ref__Ref_4bool(inline1196)
-        ok__6 = inline1197
+        var inline1262 bool = true
+        var inline1263 *ref_bool_x = ref__Ref_4bool(inline1262)
+        ok__6 = inline1263
         var started__7 *ref_bool_x
-        var inline1193 bool = false
-        var inline1194 *ref_bool_x = ref__Ref_4bool(inline1193)
-        started__7 = inline1194
-        Loop_loop292:
+        var inline1259 bool = false
+        var inline1260 *ref_bool_x = ref__Ref_4bool(inline1259)
+        started__7 = inline1260
+        Loop_loop328:
         for {
-            var t311 bool
-            var inline1187 bool = ref_get__Ref_4bool(ok__6)
-            t311 = inline1187
-            var jp294 bool
-            if t311 {
-                var t312 int
-                var inline1153 int = ref_get__Ref_3int(i__4)
-                t312 = inline1153
-                var t313 bool = t312 < len__3
-                jp294 = t313
+            var t347 bool
+            var inline1253 bool = ref_get__Ref_4bool(ok__6)
+            t347 = inline1253
+            var jp330 bool
+            if t347 {
+                var t348 int
+                var inline1219 int = ref_get__Ref_3int(i__4)
+                t348 = inline1219
+                var t349 bool = t348 < len__3
+                jp330 = t349
             } else {
-                jp294 = false
+                jp330 = false
             }
-            if jp294 {
-                var t295 int
-                var inline1185 int = ref_get__Ref_3int(i__4)
-                t295 = inline1185
+            if jp330 {
+                var t331 int
+                var inline1251 int = ref_get__Ref_3int(i__4)
+                t331 = inline1251
                 var ch__8 rune
-                var inline1183 rune = string_get(text__2, t295)
-                ch__8 = inline1183
-                var t308 bool
-                var inline1181 bool = ref_get__Ref_4bool(started__7)
-                t308 = inline1181
-                var t309 bool = !t308
-                var jp298 bool
-                if t309 {
-                    var inline1155 rune = 45
-                    var inline1156 bool = ch__8 == inline1155
-                    jp298 = inline1156
+                var inline1249 rune = string_get(text__2, t331)
+                ch__8 = inline1249
+                var t344 bool
+                var inline1247 bool = ref_get__Ref_4bool(started__7)
+                t344 = inline1247
+                var t345 bool = !t344
+                var jp334 bool
+                if t345 {
+                    var inline1221 rune = 45
+                    var inline1222 bool = ch__8 == inline1221
+                    jp334 = inline1222
                 } else {
-                    jp298 = false
+                    jp334 = false
                 }
-                if jp298 {
-                    var inline1162 bool = true
-                    ref_set__Ref_4bool(started__7, inline1162)
-                    var t299 int
-                    var inline1160 int = ref_get__Ref_3int(i__4)
-                    t299 = inline1160
-                    var t300 int = t299 + 1
-                    ref_set__Ref_3int(i__4, t300)
+                if jp334 {
+                    var inline1228 bool = true
+                    ref_set__Ref_4bool(started__7, inline1228)
+                    var t335 int
+                    var inline1226 int = ref_get__Ref_3int(i__4)
+                    t335 = inline1226
+                    var t336 int = t335 + 1
+                    ref_set__Ref_3int(i__4, t336)
                     continue
                 } else {
-                    var t303 bool
-                    var inline1178 bool = ch__8 >= 48
-                    if inline1178 {
-                        var inline1179 bool = ch__8 <= 57
-                        t303 = inline1179
+                    var t339 bool
+                    var inline1244 bool = ch__8 >= 48
+                    if inline1244 {
+                        var inline1245 bool = ch__8 <= 57
+                        t339 = inline1245
                     } else {
-                        t303 = false
+                        t339 = false
                     }
-                    if t303 {
-                        var inline1172 bool = true
-                        ref_set__Ref_4bool(started__7, inline1172)
-                        var inline1169 bool = true
-                        ref_set__Ref_4bool(saw_digit__5, inline1169)
-                        var t304 int
-                        var inline1167 int = ref_get__Ref_3int(i__4)
-                        t304 = inline1167
-                        var t305 int = t304 + 1
-                        ref_set__Ref_3int(i__4, t305)
+                    if t339 {
+                        var inline1238 bool = true
+                        ref_set__Ref_4bool(started__7, inline1238)
+                        var inline1235 bool = true
+                        ref_set__Ref_4bool(saw_digit__5, inline1235)
+                        var t340 int
+                        var inline1233 int = ref_get__Ref_3int(i__4)
+                        t340 = inline1233
+                        var t341 int = t340 + 1
+                        ref_set__Ref_3int(i__4, t341)
                         continue
                     } else {
-                        var inline1175 bool = false
-                        ref_set__Ref_4bool(ok__6, inline1175)
+                        var inline1241 bool = false
+                        ref_set__Ref_4bool(ok__6, inline1241)
                         continue
                     }
                 }
             } else {
-                break Loop_loop292
+                break Loop_loop328
             }
         }
-        var t290 bool
-        var inline1191 bool = ref_get__Ref_4bool(ok__6)
-        t290 = inline1191
-        if t290 {
-            var inline1189 bool = ref_get__Ref_4bool(saw_digit__5)
-            return inline1189
+        var t326 bool
+        var inline1257 bool = ref_get__Ref_4bool(ok__6)
+        t326 = inline1257
+        if t326 {
+            var inline1255 bool = ref_get__Ref_4bool(saw_digit__5)
+            return inline1255
         } else {
             return false
         }
@@ -637,48 +637,48 @@ func parse_int32(text__9 string) int32 {
     var negative__12 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
     var started__13 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
     var acc__14 *ref_int32_x
-    var inline1247 int32 = 0
-    var inline1248 *ref_int32_x = ref__Ref_5int32(inline1247)
-    acc__14 = inline1248
-    Loop_loop323:
+    var inline1313 int32 = 0
+    var inline1314 *ref_int32_x = ref__Ref_5int32(inline1313)
+    acc__14 = inline1314
+    Loop_loop359:
     for {
-        var t324 int
-        var inline1239 int = ref_get__Ref_3int(i__11)
-        t324 = inline1239
-        var t325 bool = t324 < len__10
-        if t325 {
-            var t326 int
-            var inline1237 int = ref_get__Ref_3int(i__11)
-            t326 = inline1237
+        var t360 int
+        var inline1305 int = ref_get__Ref_3int(i__11)
+        t360 = inline1305
+        var t361 bool = t360 < len__10
+        if t361 {
+            var t362 int
+            var inline1303 int = ref_get__Ref_3int(i__11)
+            t362 = inline1303
             var ch__15 rune
-            var inline1235 rune = string_get(text__9, t326)
-            ch__15 = inline1235
-            var t339 bool
-            var inline1233 bool = ref_get__Ref_4bool(started__13)
-            t339 = inline1233
-            var t340 bool = !t339
-            var jp329 bool
-            if t340 {
-                var inline1208 rune = 45
-                var inline1209 bool = ch__15 == inline1208
-                jp329 = inline1209
+            var inline1301 rune = string_get(text__9, t362)
+            ch__15 = inline1301
+            var t375 bool
+            var inline1299 bool = ref_get__Ref_4bool(started__13)
+            t375 = inline1299
+            var t376 bool = !t375
+            var jp365 bool
+            if t376 {
+                var inline1274 rune = 45
+                var inline1275 bool = ch__15 == inline1274
+                jp365 = inline1275
             } else {
-                jp329 = false
+                jp365 = false
             }
-            if jp329 {
-                var inline1218 bool = true
-                ref_set__Ref_4bool(started__13, inline1218)
-                var inline1215 bool = true
-                ref_set__Ref_4bool(negative__12, inline1215)
-                var t330 int
-                var inline1213 int = ref_get__Ref_3int(i__11)
-                t330 = inline1213
-                var t331 int = t330 + 1
-                ref_set__Ref_3int(i__11, t331)
+            if jp365 {
+                var inline1284 bool = true
+                ref_set__Ref_4bool(started__13, inline1284)
+                var inline1281 bool = true
+                ref_set__Ref_4bool(negative__12, inline1281)
+                var t366 int
+                var inline1279 int = ref_get__Ref_3int(i__11)
+                t366 = inline1279
+                var t367 int = t366 + 1
+                ref_set__Ref_3int(i__11, t367)
                 continue
             } else {
-                var inline1230 bool = true
-                ref_set__Ref_4bool(started__13, inline1230)
+                var inline1296 bool = true
+                ref_set__Ref_4bool(started__13, inline1296)
                 var d__16 int32
                 switch ch__15 {
                 case 48:
@@ -704,471 +704,471 @@ func parse_int32(text__9 string) int32 {
                 default:
                     d__16 = 0
                 }
-                var t333 int32
-                var inline1227 int32 = ref_get__Ref_5int32(acc__14)
-                t333 = inline1227
-                var t334 int32 = t333 * 10
-                var t335 int32 = t334 + d__16
-                ref_set__Ref_5int32(acc__14, t335)
-                var t336 int
-                var inline1223 int = ref_get__Ref_3int(i__11)
-                t336 = inline1223
-                var t337 int = t336 + 1
-                ref_set__Ref_3int(i__11, t337)
+                var t369 int32
+                var inline1293 int32 = ref_get__Ref_5int32(acc__14)
+                t369 = inline1293
+                var t370 int32 = t369 * 10
+                var t371 int32 = t370 + d__16
+                ref_set__Ref_5int32(acc__14, t371)
+                var t372 int
+                var inline1289 int = ref_get__Ref_3int(i__11)
+                t372 = inline1289
+                var t373 int = t372 + 1
+                ref_set__Ref_3int(i__11, t373)
                 continue
             }
         } else {
-            break Loop_loop323
+            break Loop_loop359
         }
     }
-    var t319 bool
-    var inline1245 bool = ref_get__Ref_4bool(negative__12)
-    t319 = inline1245
-    if t319 {
-        var t320 int32
-        var inline1241 int32 = ref_get__Ref_5int32(acc__14)
-        t320 = inline1241
-        var t321 int32 = 0 - t320
-        return t321
+    var t355 bool
+    var inline1311 bool = ref_get__Ref_4bool(negative__12)
+    t355 = inline1311
+    if t355 {
+        var t356 int32
+        var inline1307 int32 = ref_get__Ref_5int32(acc__14)
+        t356 = inline1307
+        var t357 int32 = 0 - t356
+        return t357
     } else {
-        var inline1243 int32 = ref_get__Ref_5int32(acc__14)
-        return inline1243
+        var inline1309 int32 = ref_get__Ref_5int32(acc__14)
+        return inline1309
     }
 }
 
 func lex_atom(source__18 string, start__19 int) Tuple2_5Token_3int {
     var len__20 int
-    var inline1298 int = _goml_runtime_core_string_len(source__18)
-    len__20 = inline1298
+    var inline1364 int = _goml_runtime_core_string_len(source__18)
+    len__20 = inline1364
     var text__21 *ref_string_x
-    var inline1295 string = ""
-    var inline1296 *ref_string_x = ref__Ref_6string(inline1295)
-    text__21 = inline1296
+    var inline1361 string = ""
+    var inline1362 *ref_string_x = ref__Ref_6string(inline1361)
+    text__21 = inline1362
     var i__22 *ref_int_x
-    var inline1293 *ref_int_x = ref__Ref_3int(start__19)
-    i__22 = inline1293
+    var inline1359 *ref_int_x = ref__Ref_3int(start__19)
+    i__22 = inline1359
     var done__23 *ref_bool_x
-    var inline1290 bool = false
-    var inline1291 *ref_bool_x = ref__Ref_4bool(inline1290)
-    done__23 = inline1291
-    Loop_loop366:
+    var inline1356 bool = false
+    var inline1357 *ref_bool_x = ref__Ref_4bool(inline1356)
+    done__23 = inline1357
+    Loop_loop402:
     for {
-        var t379 bool
-        var inline1284 bool = ref_get__Ref_4bool(done__23)
-        t379 = inline1284
-        var t380 bool = !t379
-        var jp368 bool
-        if t380 {
-            var t381 int
-            var inline1259 int = ref_get__Ref_3int(i__22)
-            t381 = inline1259
-            var t382 bool = t381 < len__20
-            jp368 = t382
+        var t415 bool
+        var inline1350 bool = ref_get__Ref_4bool(done__23)
+        t415 = inline1350
+        var t416 bool = !t415
+        var jp404 bool
+        if t416 {
+            var t417 int
+            var inline1325 int = ref_get__Ref_3int(i__22)
+            t417 = inline1325
+            var t418 bool = t417 < len__20
+            jp404 = t418
         } else {
-            jp368 = false
+            jp404 = false
         }
-        if jp368 {
-            var t369 int
-            var inline1282 int = ref_get__Ref_3int(i__22)
-            t369 = inline1282
+        if jp404 {
+            var t405 int
+            var inline1348 int = ref_get__Ref_3int(i__22)
+            t405 = inline1348
             var ch__24 rune
-            var inline1280 rune = string_get(source__18, t369)
-            ch__24 = inline1280
-            var t371 bool
-            var inline1274 bool = _goml_m_trait__impl_i_Eq_i_char_i_eq(ch__24, 40)
-            var inline1276 bool
-            if inline1274 {
-                inline1276 = true
+            var inline1346 rune = string_get(source__18, t405)
+            ch__24 = inline1346
+            var t407 bool
+            var inline1340 bool = _goml_m_trait__impl_i_PartialEq_i_char_i_eq(ch__24, 40)
+            var inline1342 bool
+            if inline1340 {
+                inline1342 = true
             } else {
-                var inline1278 bool = _goml_m_trait__impl_i_Eq_i_char_i_eq(ch__24, 41)
-                inline1276 = inline1278
+                var inline1344 bool = _goml_m_trait__impl_i_PartialEq_i_char_i_eq(ch__24, 41)
+                inline1342 = inline1344
             }
-            if inline1276 {
-                t371 = true
-                if t371 {
-                    var inline1261 bool = true
-                    ref_set__Ref_4bool(done__23, inline1261)
+            if inline1342 {
+                t407 = true
+                if t407 {
+                    var inline1327 bool = true
+                    ref_set__Ref_4bool(done__23, inline1327)
                     continue
                 } else {
-                    var t373 string
-                    var inline1272 string = ref_get__Ref_6string(text__21)
-                    t373 = inline1272
-                    var t374 string
-                    var inline1270 string = char_to_string(ch__24)
-                    t374 = inline1270
-                    var t375 string = t373 + t374
-                    ref_set__Ref_6string(text__21, t375)
-                    var t376 int
-                    var inline1266 int = ref_get__Ref_3int(i__22)
-                    t376 = inline1266
-                    var t377 int = t376 + 1
-                    ref_set__Ref_3int(i__22, t377)
+                    var t409 string
+                    var inline1338 string = ref_get__Ref_6string(text__21)
+                    t409 = inline1338
+                    var t410 string
+                    var inline1336 string = char_to_string(ch__24)
+                    t410 = inline1336
+                    var t411 string = t409 + t410
+                    ref_set__Ref_6string(text__21, t411)
+                    var t412 int
+                    var inline1332 int = ref_get__Ref_3int(i__22)
+                    t412 = inline1332
+                    var t413 int = t412 + 1
+                    ref_set__Ref_3int(i__22, t413)
                     continue
                 }
             } else {
-                var inline1277 bool = _goml_m_trait__impl_i_Eq_i_char_i_eq(ch__24, 32)
-                t371 = inline1277
-                if t371 {
-                    var inline1261 bool = true
-                    ref_set__Ref_4bool(done__23, inline1261)
+                var inline1343 bool = _goml_m_trait__impl_i_PartialEq_i_char_i_eq(ch__24, 32)
+                t407 = inline1343
+                if t407 {
+                    var inline1327 bool = true
+                    ref_set__Ref_4bool(done__23, inline1327)
                     continue
                 } else {
-                    var t373 string
-                    var inline1272 string = ref_get__Ref_6string(text__21)
-                    t373 = inline1272
-                    var t374 string
-                    var inline1270 string = char_to_string(ch__24)
-                    t374 = inline1270
-                    var t375 string = t373 + t374
-                    ref_set__Ref_6string(text__21, t375)
-                    var t376 int
-                    var inline1266 int = ref_get__Ref_3int(i__22)
-                    t376 = inline1266
-                    var t377 int = t376 + 1
-                    ref_set__Ref_3int(i__22, t377)
+                    var t409 string
+                    var inline1338 string = ref_get__Ref_6string(text__21)
+                    t409 = inline1338
+                    var t410 string
+                    var inline1336 string = char_to_string(ch__24)
+                    t410 = inline1336
+                    var t411 string = t409 + t410
+                    ref_set__Ref_6string(text__21, t411)
+                    var t412 int
+                    var inline1332 int = ref_get__Ref_3int(i__22)
+                    t412 = inline1332
+                    var t413 int = t412 + 1
+                    ref_set__Ref_3int(i__22, t413)
                     continue
                 }
             }
         } else {
-            break Loop_loop366
+            break Loop_loop402
         }
     }
     var atom__25 string
-    var inline1288 string = ref_get__Ref_6string(text__21)
-    atom__25 = inline1288
-    var jp355 Token
+    var inline1354 string = ref_get__Ref_6string(text__21)
+    atom__25 = inline1354
+    var jp391 Token
     switch atom__25 {
     case "true":
-        var t358 Token = Token_Bool{
+        var t394 Token = Token_Bool{
             _0: true,
         }
-        jp355 = t358
+        jp391 = t394
     case "false":
-        var t359 Token = Token_Bool{
+        var t395 Token = Token_Bool{
             _0: false,
         }
-        jp355 = t359
+        jp391 = t395
     default:
-        var t362 bool = is_int_text(atom__25)
-        if t362 {
-            var t363 int32 = parse_int32(atom__25)
-            var t364 Token = Token_Int{
-                _0: t363,
+        var t398 bool = is_int_text(atom__25)
+        if t398 {
+            var t399 int32 = parse_int32(atom__25)
+            var t400 Token = Token_Int{
+                _0: t399,
             }
-            jp355 = t364
+            jp391 = t400
         } else {
-            var t365 Token = Token_Sym{
+            var t401 Token = Token_Sym{
                 _0: atom__25,
             }
-            jp355 = t365
+            jp391 = t401
         }
     }
-    var t356 int
-    var inline1286 int = ref_get__Ref_3int(i__22)
-    t356 = inline1286
-    var t357 Tuple2_5Token_3int = Tuple2_5Token_3int{
-        _0: jp355,
-        _1: t356,
+    var t392 int
+    var inline1352 int = ref_get__Ref_3int(i__22)
+    t392 = inline1352
+    var t393 Tuple2_5Token_3int = Tuple2_5Token_3int{
+        _0: jp391,
+        _1: t392,
     }
-    return t357
+    return t393
 }
 
 func lex(source__27 string) *_goml_vec_Token {
     var len__28 int = _goml_m_inherent_i_string_i_string_i_len(source__27)
     var toks0__29 *_goml_vec_Token
-    var inline1350 *_goml_vec_Token = vec_new__Vec_5Token()
-    toks0__29 = inline1350
+    var inline1416 *_goml_vec_Token = vec_new__Vec_5Token()
+    toks0__29 = inline1416
     var toks__30 *ref_Vec_5Token_x
-    var inline1348 *ref_Vec_5Token_x = ref__Ref_10Vec_5Token(toks0__29)
-    toks__30 = inline1348
+    var inline1414 *ref_Vec_5Token_x = ref__Ref_10Vec_5Token(toks0__29)
+    toks__30 = inline1414
     var i__31 *ref_int_x
-    var inline1345 int = 0
-    var inline1346 *ref_int_x = ref__Ref_3int(inline1345)
-    i__31 = inline1346
-    Loop_loop387:
+    var inline1411 int = 0
+    var inline1412 *ref_int_x = ref__Ref_3int(inline1411)
+    i__31 = inline1412
+    Loop_loop423:
     for {
-        var t388 int
-        var inline1341 int = ref_get__Ref_3int(i__31)
-        t388 = inline1341
-        var t389 bool = t388 < len__28
-        if t389 {
-            var t390 int
-            var inline1339 int = ref_get__Ref_3int(i__31)
-            t390 = inline1339
+        var t424 int
+        var inline1407 int = ref_get__Ref_3int(i__31)
+        t424 = inline1407
+        var t425 bool = t424 < len__28
+        if t425 {
+            var t426 int
+            var inline1405 int = ref_get__Ref_3int(i__31)
+            t426 = inline1405
             var ch__32 rune
-            var inline1337 rune = string_get(source__27, t390)
-            ch__32 = inline1337
-            var t392 bool
-            var inline1334 rune = 40
-            var inline1335 bool = ch__32 == inline1334
-            t392 = inline1335
-            if t392 {
-                var t393 *_goml_vec_Token
-                var inline1306 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__30)
-                t393 = inline1306
-                var t394 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t393, LParen{})
-                ref_set__Ref_10Vec_5Token(toks__30, t394)
-                var t395 int
-                var inline1302 int = ref_get__Ref_3int(i__31)
-                t395 = inline1302
-                var t396 int = t395 + 1
-                ref_set__Ref_3int(i__31, t396)
+            var inline1403 rune = string_get(source__27, t426)
+            ch__32 = inline1403
+            var t428 bool
+            var inline1400 rune = 40
+            var inline1401 bool = ch__32 == inline1400
+            t428 = inline1401
+            if t428 {
+                var t429 *_goml_vec_Token
+                var inline1372 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__30)
+                t429 = inline1372
+                var t430 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t429, LParen{})
+                ref_set__Ref_10Vec_5Token(toks__30, t430)
+                var t431 int
+                var inline1368 int = ref_get__Ref_3int(i__31)
+                t431 = inline1368
+                var t432 int = t431 + 1
+                ref_set__Ref_3int(i__31, t432)
                 continue
             } else {
-                var t399 bool
-                var inline1331 rune = 41
-                var inline1332 bool = ch__32 == inline1331
-                t399 = inline1332
-                if t399 {
-                    var t400 *_goml_vec_Token
-                    var inline1314 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__30)
-                    t400 = inline1314
-                    var t401 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t400, RParen{})
-                    ref_set__Ref_10Vec_5Token(toks__30, t401)
-                    var t402 int
-                    var inline1310 int = ref_get__Ref_3int(i__31)
-                    t402 = inline1310
-                    var t403 int = t402 + 1
-                    ref_set__Ref_3int(i__31, t403)
+                var t435 bool
+                var inline1397 rune = 41
+                var inline1398 bool = ch__32 == inline1397
+                t435 = inline1398
+                if t435 {
+                    var t436 *_goml_vec_Token
+                    var inline1380 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__30)
+                    t436 = inline1380
+                    var t437 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t436, RParen{})
+                    ref_set__Ref_10Vec_5Token(toks__30, t437)
+                    var t438 int
+                    var inline1376 int = ref_get__Ref_3int(i__31)
+                    t438 = inline1376
+                    var t439 int = t438 + 1
+                    ref_set__Ref_3int(i__31, t439)
                     continue
                 } else {
-                    var t406 bool
-                    var inline1328 rune = 32
-                    var inline1329 bool = ch__32 == inline1328
-                    t406 = inline1329
-                    if t406 {
-                        var t407 int
-                        var inline1318 int = ref_get__Ref_3int(i__31)
-                        t407 = inline1318
-                        var t408 int = t407 + 1
-                        ref_set__Ref_3int(i__31, t408)
+                    var t442 bool
+                    var inline1394 rune = 32
+                    var inline1395 bool = ch__32 == inline1394
+                    t442 = inline1395
+                    if t442 {
+                        var t443 int
+                        var inline1384 int = ref_get__Ref_3int(i__31)
+                        t443 = inline1384
+                        var t444 int = t443 + 1
+                        ref_set__Ref_3int(i__31, t444)
                         continue
                     } else {
-                        var t410 int
-                        var inline1326 int = ref_get__Ref_3int(i__31)
-                        t410 = inline1326
-                        var mtmp149 Tuple2_5Token_3int = lex_atom(source__27, t410)
-                        var x150 Token = mtmp149._0
-                        var x151 int = mtmp149._1
-                        var t411 *_goml_vec_Token
-                        var inline1324 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__30)
-                        t411 = inline1324
-                        var t412 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t411, x150)
-                        ref_set__Ref_10Vec_5Token(toks__30, t412)
-                        ref_set__Ref_3int(i__31, x151)
+                        var t446 int
+                        var inline1392 int = ref_get__Ref_3int(i__31)
+                        t446 = inline1392
+                        var mtmp185 Tuple2_5Token_3int = lex_atom(source__27, t446)
+                        var x186 Token = mtmp185._0
+                        var x187 int = mtmp185._1
+                        var t447 *_goml_vec_Token
+                        var inline1390 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__30)
+                        t447 = inline1390
+                        var t448 *_goml_vec_Token = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(t447, x186)
+                        ref_set__Ref_10Vec_5Token(toks__30, t448)
+                        ref_set__Ref_3int(i__31, x187)
                         continue
                     }
                 }
             }
         } else {
-            break Loop_loop387
+            break Loop_loop423
         }
     }
-    var inline1343 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__30)
-    return inline1343
+    var inline1409 *_goml_vec_Token = ref_get__Ref_10Vec_5Token(toks__30)
+    return inline1409
 }
 
 func env_lookup(env__35 *_goml_vec_Binding, name__36 string) Value {
-    var t416 int
-    var inline1378 int = vec_len__Vec_7Binding(env__35)
-    t416 = inline1378
-    var t417 int = t416 - 1
+    var t452 int
+    var inline1444 int = vec_len__Vec_7Binding(env__35)
+    t452 = inline1444
+    var t453 int = t452 - 1
     var i__37 *ref_int_x
-    var inline1376 *ref_int_x = ref__Ref_3int(t417)
-    i__37 = inline1376
+    var inline1442 *ref_int_x = ref__Ref_3int(t453)
+    i__37 = inline1442
     var result__38 *ref_Value_x
-    var inline1374 *ref_Value_x = ref__Ref_5Value(Nil{})
-    result__38 = inline1374
+    var inline1440 *ref_Value_x = ref__Ref_5Value(Nil{})
+    result__38 = inline1440
     var done__39 *ref_bool_x
-    var inline1371 bool = false
-    var inline1372 *ref_bool_x = ref__Ref_4bool(inline1371)
-    done__39 = inline1372
-    Loop_loop420:
+    var inline1437 bool = false
+    var inline1438 *ref_bool_x = ref__Ref_4bool(inline1437)
+    done__39 = inline1438
+    Loop_loop456:
     for {
-        var t432 bool
-        var inline1367 bool = ref_get__Ref_4bool(done__39)
-        t432 = inline1367
-        var t433 bool = !t432
-        var jp422 bool
-        if t433 {
-            var t434 int
-            var inline1352 int = ref_get__Ref_3int(i__37)
-            t434 = inline1352
-            var t435 bool = t434 >= 0
-            jp422 = t435
+        var t468 bool
+        var inline1433 bool = ref_get__Ref_4bool(done__39)
+        t468 = inline1433
+        var t469 bool = !t468
+        var jp458 bool
+        if t469 {
+            var t470 int
+            var inline1418 int = ref_get__Ref_3int(i__37)
+            t470 = inline1418
+            var t471 bool = t470 >= 0
+            jp458 = t471
         } else {
-            jp422 = false
+            jp458 = false
         }
-        if jp422 {
-            var t423 int
-            var inline1365 int = ref_get__Ref_3int(i__37)
-            t423 = inline1365
-            var binding__40 Binding = vec_get__Vec_7Binding(env__35, t423)
-            var t425 string = binding__40.name
-            var t426 bool
-            var inline1363 bool = t425 == name__36
-            t426 = inline1363
-            if t426 {
-                var t427 Value = binding__40.value
-                ref_set__Ref_5Value(result__38, t427)
-                var inline1354 bool = true
-                ref_set__Ref_4bool(done__39, inline1354)
+        if jp458 {
+            var t459 int
+            var inline1431 int = ref_get__Ref_3int(i__37)
+            t459 = inline1431
+            var binding__40 Binding = vec_get__Vec_7Binding(env__35, t459)
+            var t461 string = binding__40.name
+            var t462 bool
+            var inline1429 bool = t461 == name__36
+            t462 = inline1429
+            if t462 {
+                var t463 Value = binding__40.value
+                ref_set__Ref_5Value(result__38, t463)
+                var inline1420 bool = true
+                ref_set__Ref_4bool(done__39, inline1420)
                 continue
             } else {
-                var t429 int
-                var inline1361 int = ref_get__Ref_3int(i__37)
-                t429 = inline1361
-                var t430 int = t429 - 1
-                ref_set__Ref_3int(i__37, t430)
+                var t465 int
+                var inline1427 int = ref_get__Ref_3int(i__37)
+                t465 = inline1427
+                var t466 int = t465 - 1
+                ref_set__Ref_3int(i__37, t466)
                 continue
             }
         } else {
-            break Loop_loop420
+            break Loop_loop456
         }
     }
-    var inline1369 Value = ref_get__Ref_5Value(result__38)
-    return inline1369
+    var inline1435 Value = ref_get__Ref_5Value(result__38)
+    return inline1435
 }
 
 func parse_list(tokens__45 *_goml_vec_Token, start__46 int) Tuple2_10Vec_5SExpr_3int {
     var acc__47 *_goml_vec_SExpr
-    var inline1414 *_goml_vec_SExpr = vec_new__Vec_5SExpr()
-    acc__47 = inline1414
+    var inline1480 *_goml_vec_SExpr = vec_new__Vec_5SExpr()
+    acc__47 = inline1480
     var exprs__48 *ref_Vec_5SExpr_x
-    var inline1412 *ref_Vec_5SExpr_x = ref__Ref_10Vec_5SExpr(acc__47)
-    exprs__48 = inline1412
+    var inline1478 *ref_Vec_5SExpr_x = ref__Ref_10Vec_5SExpr(acc__47)
+    exprs__48 = inline1478
     var i__49 *ref_int_x
-    var inline1410 *ref_int_x = ref__Ref_3int(start__46)
-    i__49 = inline1410
+    var inline1476 *ref_int_x = ref__Ref_3int(start__46)
+    i__49 = inline1476
     var done__50 *ref_bool_x
-    var inline1407 bool = false
-    var inline1408 *ref_bool_x = ref__Ref_4bool(inline1407)
-    done__50 = inline1408
-    Loop_loop447:
+    var inline1473 bool = false
+    var inline1474 *ref_bool_x = ref__Ref_4bool(inline1473)
+    done__50 = inline1474
+    Loop_loop483:
     for {
-        var t459 bool
-        var inline1401 bool = ref_get__Ref_4bool(done__50)
-        t459 = inline1401
-        var t460 bool = !t459
-        var jp449 bool
-        if t460 {
-            var t461 int
-            var inline1382 int = ref_get__Ref_3int(i__49)
-            t461 = inline1382
-            var t462 int
-            var inline1380 int = vec_len__Vec_5Token(tokens__45)
-            t462 = inline1380
-            var t463 bool = t461 < t462
-            jp449 = t463
+        var t495 bool
+        var inline1467 bool = ref_get__Ref_4bool(done__50)
+        t495 = inline1467
+        var t496 bool = !t495
+        var jp485 bool
+        if t496 {
+            var t497 int
+            var inline1448 int = ref_get__Ref_3int(i__49)
+            t497 = inline1448
+            var t498 int
+            var inline1446 int = vec_len__Vec_5Token(tokens__45)
+            t498 = inline1446
+            var t499 bool = t497 < t498
+            jp485 = t499
         } else {
-            jp449 = false
+            jp485 = false
         }
-        if jp449 {
-            var t450 int
-            var inline1399 int = ref_get__Ref_3int(i__49)
-            t450 = inline1399
-            var mtmp160 Token = vec_get__Vec_5Token(tokens__45, t450)
-            switch mtmp160.(type) {
+        if jp485 {
+            var t486 int
+            var inline1465 int = ref_get__Ref_3int(i__49)
+            t486 = inline1465
+            var mtmp196 Token = vec_get__Vec_5Token(tokens__45, t486)
+            switch mtmp196.(type) {
             case RParen:
-                var inline1388 bool = true
-                ref_set__Ref_4bool(done__50, inline1388)
-                var t452 int
-                var inline1386 int = ref_get__Ref_3int(i__49)
-                t452 = inline1386
-                var t453 int = t452 + 1
-                ref_set__Ref_3int(i__49, t453)
+                var inline1454 bool = true
+                ref_set__Ref_4bool(done__50, inline1454)
+                var t488 int
+                var inline1452 int = ref_get__Ref_3int(i__49)
+                t488 = inline1452
+                var t489 int = t488 + 1
+                ref_set__Ref_3int(i__49, t489)
                 continue
             default:
-                var t455 int
-                var inline1397 int = ref_get__Ref_3int(i__49)
-                t455 = inline1397
-                var mtmp165 Tuple2_5SExpr_3int = parse_expr(tokens__45, t455)
-                var x166 SExpr = mtmp165._0
-                var x167 int = mtmp165._1
-                var t456 *_goml_vec_SExpr
-                var inline1395 *_goml_vec_SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
-                t456 = inline1395
-                var t457 *_goml_vec_SExpr = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(t456, x166)
-                ref_set__Ref_10Vec_5SExpr(exprs__48, t457)
-                ref_set__Ref_3int(i__49, x167)
+                var t491 int
+                var inline1463 int = ref_get__Ref_3int(i__49)
+                t491 = inline1463
+                var mtmp201 Tuple2_5SExpr_3int = parse_expr(tokens__45, t491)
+                var x202 SExpr = mtmp201._0
+                var x203 int = mtmp201._1
+                var t492 *_goml_vec_SExpr
+                var inline1461 *_goml_vec_SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
+                t492 = inline1461
+                var t493 *_goml_vec_SExpr = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(t492, x202)
+                ref_set__Ref_10Vec_5SExpr(exprs__48, t493)
+                ref_set__Ref_3int(i__49, x203)
                 continue
             }
         } else {
-            break Loop_loop447
+            break Loop_loop483
         }
     }
-    var t444 *_goml_vec_SExpr
-    var inline1405 *_goml_vec_SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
-    t444 = inline1405
-    var t445 int
-    var inline1403 int = ref_get__Ref_3int(i__49)
-    t445 = inline1403
-    var t446 Tuple2_10Vec_5SExpr_3int = Tuple2_10Vec_5SExpr_3int{
-        _0: t444,
-        _1: t445,
+    var t480 *_goml_vec_SExpr
+    var inline1471 *_goml_vec_SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
+    t480 = inline1471
+    var t481 int
+    var inline1469 int = ref_get__Ref_3int(i__49)
+    t481 = inline1469
+    var t482 Tuple2_10Vec_5SExpr_3int = Tuple2_10Vec_5SExpr_3int{
+        _0: t480,
+        _1: t481,
     }
-    return t446
+    return t482
 }
 
 func parse_expr(tokens__53 *_goml_vec_Token, start__54 int) Tuple2_5SExpr_3int {
-    var mtmp170 Token = vec_get__Vec_5Token(tokens__53, start__54)
-    switch mtmp170.(type) {
+    var mtmp206 Token = vec_get__Vec_5Token(tokens__53, start__54)
+    switch mtmp206.(type) {
     case LParen:
-        var t468 int = start__54 + 1
-        var mtmp174 Tuple2_10Vec_5SExpr_3int = parse_list(tokens__53, t468)
-        var x175 *_goml_vec_SExpr = mtmp174._0
-        var x176 int = mtmp174._1
-        var t469 SExpr = List{
-            _0: x175,
+        var t504 int = start__54 + 1
+        var mtmp210 Tuple2_10Vec_5SExpr_3int = parse_list(tokens__53, t504)
+        var x211 *_goml_vec_SExpr = mtmp210._0
+        var x212 int = mtmp210._1
+        var t505 SExpr = List{
+            _0: x211,
         }
-        var t470 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
-            _0: t469,
-            _1: x176,
+        var t506 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
+            _0: t505,
+            _1: x212,
         }
-        return t470
+        return t506
     case RParen:
-        var t471 SExpr = SExpr_Sym{
+        var t507 SExpr = SExpr_Sym{
             _0: ")",
         }
-        var t472 int = start__54 + 1
-        var t473 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
-            _0: t471,
-            _1: t472,
+        var t508 int = start__54 + 1
+        var t509 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
+            _0: t507,
+            _1: t508,
         }
-        return t473
+        return t509
     case Token_Sym:
-        var x171 string = mtmp170.(Token_Sym)._0
-        var t474 SExpr = SExpr_Sym{
-            _0: x171,
+        var x207 string = mtmp206.(Token_Sym)._0
+        var t510 SExpr = SExpr_Sym{
+            _0: x207,
         }
-        var t475 int = start__54 + 1
-        var t476 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
-            _0: t474,
-            _1: t475,
+        var t511 int = start__54 + 1
+        var t512 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
+            _0: t510,
+            _1: t511,
         }
-        return t476
+        return t512
     case Token_Int:
-        var x172 int32 = mtmp170.(Token_Int)._0
-        var t477 SExpr = SExpr_Int{
-            _0: x172,
+        var x208 int32 = mtmp206.(Token_Int)._0
+        var t513 SExpr = SExpr_Int{
+            _0: x208,
         }
-        var t478 int = start__54 + 1
-        var t479 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
-            _0: t477,
-            _1: t478,
+        var t514 int = start__54 + 1
+        var t515 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
+            _0: t513,
+            _1: t514,
         }
-        return t479
+        return t515
     case Token_Bool:
-        var x173 bool = mtmp170.(Token_Bool)._0
-        var t480 SExpr = SExpr_Bool{
-            _0: x173,
+        var x209 bool = mtmp206.(Token_Bool)._0
+        var t516 SExpr = SExpr_Bool{
+            _0: x209,
         }
-        var t481 int = start__54 + 1
-        var t482 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
-            _0: t480,
-            _1: t481,
+        var t517 int = start__54 + 1
+        var t518 Tuple2_5SExpr_3int = Tuple2_5SExpr_3int{
+            _0: t516,
+            _1: t517,
         }
-        return t482
+        return t518
     default:
         panic("non-exhaustive match")
     }
@@ -1176,91 +1176,91 @@ func parse_expr(tokens__53 *_goml_vec_Token, start__54 int) Tuple2_5SExpr_3int {
 
 func parse_program(tokens__60 *_goml_vec_Token) *_goml_vec_SExpr {
     var i__61 *ref_int_x
-    var inline1434 int = 0
-    var inline1435 *ref_int_x = ref__Ref_3int(inline1434)
-    i__61 = inline1435
+    var inline1500 int = 0
+    var inline1501 *ref_int_x = ref__Ref_3int(inline1500)
+    i__61 = inline1501
     var acc__62 *_goml_vec_SExpr
-    var inline1432 *_goml_vec_SExpr = vec_new__Vec_5SExpr()
-    acc__62 = inline1432
+    var inline1498 *_goml_vec_SExpr = vec_new__Vec_5SExpr()
+    acc__62 = inline1498
     var exprs__63 *ref_Vec_5SExpr_x
-    var inline1430 *ref_Vec_5SExpr_x = ref__Ref_10Vec_5SExpr(acc__62)
-    exprs__63 = inline1430
-    Loop_loop487:
+    var inline1496 *ref_Vec_5SExpr_x = ref__Ref_10Vec_5SExpr(acc__62)
+    exprs__63 = inline1496
+    Loop_loop523:
     for {
-        var t488 int
-        var inline1426 int = ref_get__Ref_3int(i__61)
-        t488 = inline1426
-        var t489 int
-        var inline1424 int = vec_len__Vec_5Token(tokens__60)
-        t489 = inline1424
-        var t490 bool = t488 < t489
-        if t490 {
-            var t491 int
-            var inline1422 int = ref_get__Ref_3int(i__61)
-            t491 = inline1422
-            var mtmp177 Tuple2_5SExpr_3int = parse_expr(tokens__60, t491)
-            var x178 SExpr = mtmp177._0
-            var x179 int = mtmp177._1
-            var t492 *_goml_vec_SExpr
-            var inline1420 *_goml_vec_SExpr = ref_get__Ref_10Vec_5SExpr(exprs__63)
-            t492 = inline1420
-            var t493 *_goml_vec_SExpr = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(t492, x178)
-            ref_set__Ref_10Vec_5SExpr(exprs__63, t493)
-            ref_set__Ref_3int(i__61, x179)
+        var t524 int
+        var inline1492 int = ref_get__Ref_3int(i__61)
+        t524 = inline1492
+        var t525 int
+        var inline1490 int = vec_len__Vec_5Token(tokens__60)
+        t525 = inline1490
+        var t526 bool = t524 < t525
+        if t526 {
+            var t527 int
+            var inline1488 int = ref_get__Ref_3int(i__61)
+            t527 = inline1488
+            var mtmp213 Tuple2_5SExpr_3int = parse_expr(tokens__60, t527)
+            var x214 SExpr = mtmp213._0
+            var x215 int = mtmp213._1
+            var t528 *_goml_vec_SExpr
+            var inline1486 *_goml_vec_SExpr = ref_get__Ref_10Vec_5SExpr(exprs__63)
+            t528 = inline1486
+            var t529 *_goml_vec_SExpr = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(t528, x214)
+            ref_set__Ref_10Vec_5SExpr(exprs__63, t529)
+            ref_set__Ref_3int(i__61, x215)
             continue
         } else {
-            break Loop_loop487
+            break Loop_loop523
         }
     }
-    var inline1428 *_goml_vec_SExpr = ref_get__Ref_10Vec_5SExpr(exprs__63)
-    return inline1428
+    var inline1494 *_goml_vec_SExpr = ref_get__Ref_10Vec_5SExpr(exprs__63)
+    return inline1494
 }
 
 func eval(expr__72 SExpr, local__73 *_goml_vec_Binding, global__74 *ref_Vec_7Binding_x) Value {
     switch expr__72.(type) {
     case SExpr_Int:
-        var x188 int32 = expr__72.(SExpr_Int)._0
-        var t511 Value = Value_Int{
-            _0: x188,
+        var x224 int32 = expr__72.(SExpr_Int)._0
+        var t547 Value = Value_Int{
+            _0: x224,
         }
-        return t511
+        return t547
     case SExpr_Bool:
-        var x189 bool = expr__72.(SExpr_Bool)._0
-        var t512 Value = Value_Bool{
-            _0: x189,
+        var x225 bool = expr__72.(SExpr_Bool)._0
+        var t548 Value = Value_Bool{
+            _0: x225,
         }
-        return t512
+        return t548
     case SExpr_Sym:
-        var x190 string = expr__72.(SExpr_Sym)._0
-        var t513 *_goml_vec_Binding
-        var inline1448 *_goml_vec_Binding = ref_get__Ref_12Vec_7Binding(global__74)
-        t513 = inline1448
-        var inline1444 Value = env_lookup(local__73, x190)
-        switch inline1444.(type) {
+        var x226 string = expr__72.(SExpr_Sym)._0
+        var t549 *_goml_vec_Binding
+        var inline1514 *_goml_vec_Binding = ref_get__Ref_12Vec_7Binding(global__74)
+        t549 = inline1514
+        var inline1510 Value = env_lookup(local__73, x226)
+        switch inline1510.(type) {
         case Nil:
-            var inline1445 Value = env_lookup(t513, x190)
-            return inline1445
+            var inline1511 Value = env_lookup(t549, x226)
+            return inline1511
         default:
-            return inline1444
+            return inline1510
         }
     case List:
-        var x191 *_goml_vec_SExpr = expr__72.(List)._0
-        var inline1450 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SExpr(x191)
-        var inline1451 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(inline1450, 0)
-        if inline1451 {
+        var x227 *_goml_vec_SExpr = expr__72.(List)._0
+        var inline1516 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SExpr(x227)
+        var inline1517 bool = _goml_m_trait__impl_i_PartialEq_i_int_i_eq(inline1516, 0)
+        if inline1517 {
             return Nil{}
         } else {
-            var inline1452 SExpr = vec_get__Vec_5SExpr(x191, 0)
-            switch inline1452.(type) {
+            var inline1518 SExpr = vec_get__Vec_5SExpr(x227, 0)
+            switch inline1518.(type) {
             case SExpr_Sym:
-                var inline1453 string = inline1452.(SExpr_Sym)._0
-                var inline1455 Value = eval_list_sym(inline1453, x191, local__73, global__74)
-                return inline1455
+                var inline1519 string = inline1518.(SExpr_Sym)._0
+                var inline1521 Value = eval_list_sym(inline1519, x227, local__73, global__74)
+                return inline1521
             default:
-                var inline1456 Value = eval(inline1452, local__73, global__74)
-                var inline1457 *_goml_vec_Value = eval_args(x191, 1, local__73, global__74)
-                var inline1458 Value = apply(inline1456, inline1457, global__74)
-                return inline1458
+                var inline1522 Value = eval(inline1518, local__73, global__74)
+                var inline1523 *_goml_vec_Value = eval_args(x227, 1, local__73, global__74)
+                var inline1524 Value = apply(inline1522, inline1523, global__74)
+                return inline1524
             }
         }
     default:
@@ -1271,31 +1271,31 @@ func eval(expr__72 SExpr, local__73 *_goml_vec_Binding, global__74 *ref_Vec_7Bin
 func eval_list_sym(name__86 string, items__87 *_goml_vec_SExpr, local__88 *_goml_vec_Binding, global__89 *ref_Vec_7Binding_x) Value {
     switch name__86 {
     case "begin":
-        var t530 Value = eval_begin(items__87, 1, local__88, global__89)
-        return t530
+        var t566 Value = eval_begin(items__87, 1, local__88, global__89)
+        return t566
     case "define":
-        var t533 int
-        var inline1476 int = vec_len__Vec_5SExpr(items__87)
-        t533 = inline1476
-        var t534 bool
-        var inline1473 int = 3
-        var inline1474 bool = t533 == inline1473
-        t534 = inline1474
-        if t534 {
-            var mtmp196 SExpr = vec_get__Vec_5SExpr(items__87, 1)
-            switch mtmp196.(type) {
+        var t569 int
+        var inline1542 int = vec_len__Vec_5SExpr(items__87)
+        t569 = inline1542
+        var t570 bool
+        var inline1539 int = 3
+        var inline1540 bool = t569 == inline1539
+        t570 = inline1540
+        if t570 {
+            var mtmp232 SExpr = vec_get__Vec_5SExpr(items__87, 1)
+            switch mtmp232.(type) {
             case SExpr_Sym:
-                var x199 string = mtmp196.(SExpr_Sym)._0
-                var t537 SExpr = vec_get__Vec_5SExpr(items__87, 2)
-                var value__91 Value = eval(t537, local__88, global__89)
+                var x235 string = mtmp232.(SExpr_Sym)._0
+                var t573 SExpr = vec_get__Vec_5SExpr(items__87, 2)
+                var value__91 Value = eval(t573, local__88, global__89)
                 var env__92 *_goml_vec_Binding
-                var inline1471 *_goml_vec_Binding = ref_get__Ref_12Vec_7Binding(global__89)
-                env__92 = inline1471
-                var t538 Binding = Binding{
-                    name: x199,
+                var inline1537 *_goml_vec_Binding = ref_get__Ref_12Vec_7Binding(global__89)
+                env__92 = inline1537
+                var t574 Binding = Binding{
+                    name: x235,
                     value: value__91,
                 }
-                var updated__93 *_goml_vec_Binding = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(env__92, t538)
+                var updated__93 *_goml_vec_Binding = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(env__92, t574)
                 ref_set__Ref_12Vec_7Binding(global__89, updated__93)
                 return value__91
             default:
@@ -1305,70 +1305,70 @@ func eval_list_sym(name__86 string, items__87 *_goml_vec_SExpr, local__88 *_goml
             return Nil{}
         }
     case "if":
-        var t541 int
-        var inline1489 int = vec_len__Vec_5SExpr(items__87)
-        t541 = inline1489
-        var t542 bool
-        var inline1486 int = 4
-        var inline1487 bool = t541 == inline1486
-        t542 = inline1487
-        if t542 {
-            var t543 SExpr = vec_get__Vec_5SExpr(items__87, 1)
-            var cond__94 Value = eval(t543, local__88, global__89)
-            var t546 bool
+        var t577 int
+        var inline1555 int = vec_len__Vec_5SExpr(items__87)
+        t577 = inline1555
+        var t578 bool
+        var inline1552 int = 4
+        var inline1553 bool = t577 == inline1552
+        t578 = inline1553
+        if t578 {
+            var t579 SExpr = vec_get__Vec_5SExpr(items__87, 1)
+            var cond__94 Value = eval(t579, local__88, global__89)
+            var t582 bool
             switch cond__94.(type) {
             case Value_Int:
-                var inline1478 int32 = cond__94.(Value_Int)._0
-                var inline1480 bool = _goml_m_trait__impl_i_Eq_i_int32_i_eq(inline1478, 0)
-                var inline1481 bool = !inline1480
-                t546 = inline1481
+                var inline1544 int32 = cond__94.(Value_Int)._0
+                var inline1546 bool = _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(inline1544, 0)
+                var inline1547 bool = !inline1546
+                t582 = inline1547
             case Value_Bool:
-                var inline1482 bool = cond__94.(Value_Bool)._0
-                t546 = inline1482
+                var inline1548 bool = cond__94.(Value_Bool)._0
+                t582 = inline1548
             case Func:
-                t546 = true
+                t582 = true
             case Nil:
-                t546 = false
+                t582 = false
             default:
                 panic("non-exhaustive match")
             }
-            if t546 {
-                var t547 SExpr = vec_get__Vec_5SExpr(items__87, 2)
-                var t548 Value = eval(t547, local__88, global__89)
-                return t548
+            if t582 {
+                var t583 SExpr = vec_get__Vec_5SExpr(items__87, 2)
+                var t584 Value = eval(t583, local__88, global__89)
+                return t584
             } else {
-                var t549 SExpr = vec_get__Vec_5SExpr(items__87, 3)
-                var t550 Value = eval(t549, local__88, global__89)
-                return t550
+                var t585 SExpr = vec_get__Vec_5SExpr(items__87, 3)
+                var t586 Value = eval(t585, local__88, global__89)
+                return t586
             }
         } else {
             return Nil{}
         }
     case "lambda":
-        var t553 int
-        var inline1494 int = vec_len__Vec_5SExpr(items__87)
-        t553 = inline1494
-        var t554 bool
-        var inline1491 int = 3
-        var inline1492 bool = t553 == inline1491
-        t554 = inline1492
-        if t554 {
-            var mtmp202 SExpr = vec_get__Vec_5SExpr(items__87, 1)
-            switch mtmp202.(type) {
+        var t589 int
+        var inline1560 int = vec_len__Vec_5SExpr(items__87)
+        t589 = inline1560
+        var t590 bool
+        var inline1557 int = 3
+        var inline1558 bool = t589 == inline1557
+        t590 = inline1558
+        if t590 {
+            var mtmp238 SExpr = vec_get__Vec_5SExpr(items__87, 1)
+            switch mtmp238.(type) {
             case List:
-                var x206 *_goml_vec_SExpr = mtmp202.(List)._0
-                var params__96 *_goml_vec_string = params_from_sexprs(x206)
+                var x242 *_goml_vec_SExpr = mtmp238.(List)._0
+                var params__96 *_goml_vec_string = params_from_sexprs(x242)
                 var body__97 SExpr = vec_get__Vec_5SExpr(items__87, 2)
-                var t557 Lambda = Lambda{
+                var t593 Lambda = Lambda{
                     params: params__96,
                     body: body__97,
                     env: local__88,
                     global: global__89,
                 }
-                var t558 Value = Func{
-                    _0: t557,
+                var t594 Value = Func{
+                    _0: t593,
                 }
-                return t558
+                return t594
             default:
                 return Nil{}
             }
@@ -1376,36 +1376,36 @@ func eval_list_sym(name__86 string, items__87 *_goml_vec_SExpr, local__88 *_goml
             return Nil{}
         }
     case "+":
-        var t559 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
-        var t560 Value = apply_builtin("+", t559)
-        return t560
+        var t595 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
+        var t596 Value = apply_builtin("+", t595)
+        return t596
     case "-":
-        var t561 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
-        var t562 Value = apply_builtin("-", t561)
-        return t562
+        var t597 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
+        var t598 Value = apply_builtin("-", t597)
+        return t598
     case "*":
-        var t563 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
-        var t564 Value = apply_builtin("*", t563)
-        return t564
+        var t599 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
+        var t600 Value = apply_builtin("*", t599)
+        return t600
     case "/":
-        var t565 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
-        var t566 Value = apply_builtin("/", t565)
-        return t566
+        var t601 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
+        var t602 Value = apply_builtin("/", t601)
+        return t602
     case "=":
-        var t567 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
-        var t568 Value = apply_builtin("=", t567)
-        return t568
+        var t603 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
+        var t604 Value = apply_builtin("=", t603)
+        return t604
     default:
-        var t569 SExpr = SExpr_Sym{
+        var t605 SExpr = SExpr_Sym{
             _0: name__86,
         }
-        var f__98 Value = eval(t569, local__88, global__89)
+        var f__98 Value = eval(t605, local__88, global__89)
         var args__99 *_goml_vec_Value = eval_args(items__87, 1, local__88, global__89)
         switch f__98.(type) {
         case Func:
-            var inline1496 Lambda = f__98.(Func)._0
-            var inline1498 Value = apply_lambda(inline1496, args__99)
-            return inline1498
+            var inline1562 Lambda = f__98.(Func)._0
+            var inline1564 Value = apply_lambda(inline1562, args__99)
+            return inline1564
         default:
             return Nil{}
         }
@@ -1414,334 +1414,334 @@ func eval_list_sym(name__86 string, items__87 *_goml_vec_SExpr, local__88 *_goml
 
 func eval_begin(items__100 *_goml_vec_SExpr, start__101 int, local__102 *_goml_vec_Binding, global__103 *ref_Vec_7Binding_x) Value {
     var i__104 *ref_int_x
-    var inline1516 *ref_int_x = ref__Ref_3int(start__101)
-    i__104 = inline1516
+    var inline1582 *ref_int_x = ref__Ref_3int(start__101)
+    i__104 = inline1582
     var last__105 *ref_Value_x
-    var inline1514 *ref_Value_x = ref__Ref_5Value(Nil{})
-    last__105 = inline1514
-    Loop_loop575:
+    var inline1580 *ref_Value_x = ref__Ref_5Value(Nil{})
+    last__105 = inline1580
+    Loop_loop611:
     for {
-        var t576 int
-        var inline1510 int = ref_get__Ref_3int(i__104)
-        t576 = inline1510
-        var t577 int
-        var inline1508 int = vec_len__Vec_5SExpr(items__100)
-        t577 = inline1508
-        var t578 bool = t576 < t577
-        if t578 {
-            var t579 int
-            var inline1506 int = ref_get__Ref_3int(i__104)
-            t579 = inline1506
-            var t580 SExpr = vec_get__Vec_5SExpr(items__100, t579)
-            var v__106 Value = eval(t580, local__102, global__103)
+        var t612 int
+        var inline1576 int = ref_get__Ref_3int(i__104)
+        t612 = inline1576
+        var t613 int
+        var inline1574 int = vec_len__Vec_5SExpr(items__100)
+        t613 = inline1574
+        var t614 bool = t612 < t613
+        if t614 {
+            var t615 int
+            var inline1572 int = ref_get__Ref_3int(i__104)
+            t615 = inline1572
+            var t616 SExpr = vec_get__Vec_5SExpr(items__100, t615)
+            var v__106 Value = eval(t616, local__102, global__103)
             ref_set__Ref_5Value(last__105, v__106)
-            var t581 int
-            var inline1502 int = ref_get__Ref_3int(i__104)
-            t581 = inline1502
-            var t582 int = t581 + 1
-            ref_set__Ref_3int(i__104, t582)
+            var t617 int
+            var inline1568 int = ref_get__Ref_3int(i__104)
+            t617 = inline1568
+            var t618 int = t617 + 1
+            ref_set__Ref_3int(i__104, t618)
             continue
         } else {
-            break Loop_loop575
+            break Loop_loop611
         }
     }
-    var inline1512 Value = ref_get__Ref_5Value(last__105)
-    return inline1512
+    var inline1578 Value = ref_get__Ref_5Value(last__105)
+    return inline1578
 }
 
 func params_from_sexprs(items__107 *_goml_vec_SExpr) *_goml_vec_string {
     var i__108 *ref_int_x
-    var inline1542 int = 0
-    var inline1543 *ref_int_x = ref__Ref_3int(inline1542)
-    i__108 = inline1543
+    var inline1608 int = 0
+    var inline1609 *ref_int_x = ref__Ref_3int(inline1608)
+    i__108 = inline1609
     var acc__109 *_goml_vec_string
-    var inline1540 *_goml_vec_string = vec_new__Vec_6string()
-    acc__109 = inline1540
+    var inline1606 *_goml_vec_string = vec_new__Vec_6string()
+    acc__109 = inline1606
     var params__110 *ref_Vec_6string_x
-    var inline1538 *ref_Vec_6string_x = ref__Ref_11Vec_6string(acc__109)
-    params__110 = inline1538
-    Loop_loop588:
+    var inline1604 *ref_Vec_6string_x = ref__Ref_11Vec_6string(acc__109)
+    params__110 = inline1604
+    Loop_loop624:
     for {
-        var t589 int
-        var inline1534 int = ref_get__Ref_3int(i__108)
-        t589 = inline1534
-        var t590 int
-        var inline1532 int = vec_len__Vec_5SExpr(items__107)
-        t590 = inline1532
-        var t591 bool = t589 < t590
-        if t591 {
-            var t592 int
-            var inline1530 int = ref_get__Ref_3int(i__108)
-            t592 = inline1530
-            var mtmp209 SExpr = vec_get__Vec_5SExpr(items__107, t592)
-            switch mtmp209.(type) {
+        var t625 int
+        var inline1600 int = ref_get__Ref_3int(i__108)
+        t625 = inline1600
+        var t626 int
+        var inline1598 int = vec_len__Vec_5SExpr(items__107)
+        t626 = inline1598
+        var t627 bool = t625 < t626
+        if t627 {
+            var t628 int
+            var inline1596 int = ref_get__Ref_3int(i__108)
+            t628 = inline1596
+            var mtmp245 SExpr = vec_get__Vec_5SExpr(items__107, t628)
+            switch mtmp245.(type) {
             case SExpr_Sym:
-                var x212 string = mtmp209.(SExpr_Sym)._0
-                var t594 *_goml_vec_string
-                var inline1524 *_goml_vec_string = ref_get__Ref_11Vec_6string(params__110)
-                t594 = inline1524
-                var t595 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t594, x212)
-                ref_set__Ref_11Vec_6string(params__110, t595)
-                var t596 int
-                var inline1520 int = ref_get__Ref_3int(i__108)
-                t596 = inline1520
-                var t597 int = t596 + 1
-                ref_set__Ref_3int(i__108, t597)
+                var x248 string = mtmp245.(SExpr_Sym)._0
+                var t630 *_goml_vec_string
+                var inline1590 *_goml_vec_string = ref_get__Ref_11Vec_6string(params__110)
+                t630 = inline1590
+                var t631 *_goml_vec_string = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(t630, x248)
+                ref_set__Ref_11Vec_6string(params__110, t631)
+                var t632 int
+                var inline1586 int = ref_get__Ref_3int(i__108)
+                t632 = inline1586
+                var t633 int = t632 + 1
+                ref_set__Ref_3int(i__108, t633)
                 continue
             default:
-                var t599 int
-                var inline1528 int = ref_get__Ref_3int(i__108)
-                t599 = inline1528
-                var t600 int = t599 + 1
-                ref_set__Ref_3int(i__108, t600)
+                var t635 int
+                var inline1594 int = ref_get__Ref_3int(i__108)
+                t635 = inline1594
+                var t636 int = t635 + 1
+                ref_set__Ref_3int(i__108, t636)
                 continue
             }
         } else {
-            break Loop_loop588
+            break Loop_loop624
         }
     }
-    var inline1536 *_goml_vec_string = ref_get__Ref_11Vec_6string(params__110)
-    return inline1536
+    var inline1602 *_goml_vec_string = ref_get__Ref_11Vec_6string(params__110)
+    return inline1602
 }
 
 func eval_args(items__112 *_goml_vec_SExpr, start__113 int, local__114 *_goml_vec_Binding, global__115 *ref_Vec_7Binding_x) *_goml_vec_Value {
     var i__116 *ref_int_x
-    var inline1565 *ref_int_x = ref__Ref_3int(start__113)
-    i__116 = inline1565
+    var inline1631 *ref_int_x = ref__Ref_3int(start__113)
+    i__116 = inline1631
     var acc__117 *_goml_vec_Value
-    var inline1563 *_goml_vec_Value = vec_new__Vec_5Value()
-    acc__117 = inline1563
+    var inline1629 *_goml_vec_Value = vec_new__Vec_5Value()
+    acc__117 = inline1629
     var args__118 *ref_Vec_5Value_x
-    var inline1561 *ref_Vec_5Value_x = ref__Ref_10Vec_5Value(acc__117)
-    args__118 = inline1561
-    Loop_loop606:
+    var inline1627 *ref_Vec_5Value_x = ref__Ref_10Vec_5Value(acc__117)
+    args__118 = inline1627
+    Loop_loop642:
     for {
-        var t607 int
-        var inline1557 int = ref_get__Ref_3int(i__116)
-        t607 = inline1557
-        var t608 int
-        var inline1555 int = vec_len__Vec_5SExpr(items__112)
-        t608 = inline1555
-        var t609 bool = t607 < t608
-        if t609 {
-            var t610 int
-            var inline1553 int = ref_get__Ref_3int(i__116)
-            t610 = inline1553
-            var t611 SExpr = vec_get__Vec_5SExpr(items__112, t610)
-            var v__119 Value = eval(t611, local__114, global__115)
-            var t612 *_goml_vec_Value
-            var inline1551 *_goml_vec_Value = ref_get__Ref_10Vec_5Value(args__118)
-            t612 = inline1551
-            var t613 *_goml_vec_Value = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Value(t612, v__119)
-            ref_set__Ref_10Vec_5Value(args__118, t613)
-            var t614 int
-            var inline1547 int = ref_get__Ref_3int(i__116)
-            t614 = inline1547
-            var t615 int = t614 + 1
-            ref_set__Ref_3int(i__116, t615)
+        var t643 int
+        var inline1623 int = ref_get__Ref_3int(i__116)
+        t643 = inline1623
+        var t644 int
+        var inline1621 int = vec_len__Vec_5SExpr(items__112)
+        t644 = inline1621
+        var t645 bool = t643 < t644
+        if t645 {
+            var t646 int
+            var inline1619 int = ref_get__Ref_3int(i__116)
+            t646 = inline1619
+            var t647 SExpr = vec_get__Vec_5SExpr(items__112, t646)
+            var v__119 Value = eval(t647, local__114, global__115)
+            var t648 *_goml_vec_Value
+            var inline1617 *_goml_vec_Value = ref_get__Ref_10Vec_5Value(args__118)
+            t648 = inline1617
+            var t649 *_goml_vec_Value = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Value(t648, v__119)
+            ref_set__Ref_10Vec_5Value(args__118, t649)
+            var t650 int
+            var inline1613 int = ref_get__Ref_3int(i__116)
+            t650 = inline1613
+            var t651 int = t650 + 1
+            ref_set__Ref_3int(i__116, t651)
             continue
         } else {
-            break Loop_loop606
+            break Loop_loop642
         }
     }
-    var inline1559 *_goml_vec_Value = ref_get__Ref_10Vec_5Value(args__118)
-    return inline1559
+    var inline1625 *_goml_vec_Value = ref_get__Ref_10Vec_5Value(args__118)
+    return inline1625
 }
 
 func apply_builtin(name__120 string, args__121 *_goml_vec_Value) Value {
     switch name__120 {
     case "=":
-        var t623 int
-        var inline1574 int = vec_len__Vec_5Value(args__121)
-        t623 = inline1574
-        var t624 bool
-        var inline1571 int = 2
-        var inline1572 bool = t623 == inline1571
-        t624 = inline1572
-        if t624 {
-            var t625 Value = vec_get__Vec_5Value(args__121, 0)
-            var t626 Value = vec_get__Vec_5Value(args__121, 1)
-            switch t626.(type) {
+        var t659 int
+        var inline1640 int = vec_len__Vec_5Value(args__121)
+        t659 = inline1640
+        var t660 bool
+        var inline1637 int = 2
+        var inline1638 bool = t659 == inline1637
+        t660 = inline1638
+        if t660 {
+            var t661 Value = vec_get__Vec_5Value(args__121, 0)
+            var t662 Value = vec_get__Vec_5Value(args__121, 1)
+            switch t662.(type) {
             case Value_Int:
-                var x221 int32 = t626.(Value_Int)._0
-                switch t625.(type) {
+                var x257 int32 = t662.(Value_Int)._0
+                switch t661.(type) {
                 case Value_Int:
-                    var x224 int32 = t625.(Value_Int)._0
-                    var t631 bool
-                    var inline1567 bool = x224 == x221
-                    t631 = inline1567
-                    var t632 Value = Value_Bool{
-                        _0: t631,
+                    var x260 int32 = t661.(Value_Int)._0
+                    var t667 bool
+                    var inline1633 bool = x260 == x257
+                    t667 = inline1633
+                    var t668 Value = Value_Bool{
+                        _0: t667,
                     }
-                    return t632
+                    return t668
                 default:
-                    var t633 Value = Value_Bool{
+                    var t669 Value = Value_Bool{
                         _0: false,
                     }
-                    return t633
+                    return t669
                 }
             case Value_Bool:
-                var x222 bool = t626.(Value_Bool)._0
-                switch t625.(type) {
+                var x258 bool = t662.(Value_Bool)._0
+                switch t661.(type) {
                 case Value_Bool:
-                    var x228 bool = t625.(Value_Bool)._0
-                    var t636 bool
-                    var inline1569 bool = x228 == x222
-                    t636 = inline1569
-                    var t637 Value = Value_Bool{
-                        _0: t636,
+                    var x264 bool = t661.(Value_Bool)._0
+                    var t672 bool
+                    var inline1635 bool = x264 == x258
+                    t672 = inline1635
+                    var t673 Value = Value_Bool{
+                        _0: t672,
                     }
-                    return t637
+                    return t673
                 default:
-                    var t638 Value = Value_Bool{
+                    var t674 Value = Value_Bool{
                         _0: false,
                     }
-                    return t638
+                    return t674
                 }
             default:
-                var t639 Value = Value_Bool{
+                var t675 Value = Value_Bool{
                     _0: false,
                 }
-                return t639
+                return t675
             }
         } else {
-            var t640 Value = Value_Bool{
+            var t676 Value = Value_Bool{
                 _0: false,
             }
-            return t640
+            return t676
         }
     case "+":
         var i__126 *ref_int_x
-        var inline1599 int = 0
-        var inline1600 *ref_int_x = ref__Ref_3int(inline1599)
-        i__126 = inline1600
+        var inline1665 int = 0
+        var inline1666 *ref_int_x = ref__Ref_3int(inline1665)
+        i__126 = inline1666
         var acc__127 *ref_int32_x
-        var inline1596 int32 = 0
-        var inline1597 *ref_int32_x = ref__Ref_5int32(inline1596)
-        acc__127 = inline1597
-        Loop_loop644:
+        var inline1662 int32 = 0
+        var inline1663 *ref_int32_x = ref__Ref_5int32(inline1662)
+        acc__127 = inline1663
+        Loop_loop680:
         for {
-            var t645 int
-            var inline1592 int = ref_get__Ref_3int(i__126)
-            t645 = inline1592
-            var t646 int
-            var inline1590 int = vec_len__Vec_5Value(args__121)
-            t646 = inline1590
-            var t647 bool = t645 < t646
-            if t647 {
-                var t648 int
-                var inline1588 int = ref_get__Ref_3int(i__126)
-                t648 = inline1588
-                var mtmp230 Value = vec_get__Vec_5Value(args__121, t648)
-                switch mtmp230.(type) {
+            var t681 int
+            var inline1658 int = ref_get__Ref_3int(i__126)
+            t681 = inline1658
+            var t682 int
+            var inline1656 int = vec_len__Vec_5Value(args__121)
+            t682 = inline1656
+            var t683 bool = t681 < t682
+            if t683 {
+                var t684 int
+                var inline1654 int = ref_get__Ref_3int(i__126)
+                t684 = inline1654
+                var mtmp266 Value = vec_get__Vec_5Value(args__121, t684)
+                switch mtmp266.(type) {
                 case Value_Int:
-                    var x231 int32 = mtmp230.(Value_Int)._0
-                    var t650 int32
-                    var inline1582 int32 = ref_get__Ref_5int32(acc__127)
-                    t650 = inline1582
-                    var t651 int32 = t650 + x231
-                    ref_set__Ref_5int32(acc__127, t651)
-                    var t652 int
-                    var inline1578 int = ref_get__Ref_3int(i__126)
-                    t652 = inline1578
-                    var t653 int = t652 + 1
-                    ref_set__Ref_3int(i__126, t653)
+                    var x267 int32 = mtmp266.(Value_Int)._0
+                    var t686 int32
+                    var inline1648 int32 = ref_get__Ref_5int32(acc__127)
+                    t686 = inline1648
+                    var t687 int32 = t686 + x267
+                    ref_set__Ref_5int32(acc__127, t687)
+                    var t688 int
+                    var inline1644 int = ref_get__Ref_3int(i__126)
+                    t688 = inline1644
+                    var t689 int = t688 + 1
+                    ref_set__Ref_3int(i__126, t689)
                     continue
                 default:
-                    var t655 int
-                    var inline1586 int = ref_get__Ref_3int(i__126)
-                    t655 = inline1586
-                    var t656 int = t655 + 1
-                    ref_set__Ref_3int(i__126, t656)
+                    var t691 int
+                    var inline1652 int = ref_get__Ref_3int(i__126)
+                    t691 = inline1652
+                    var t692 int = t691 + 1
+                    ref_set__Ref_3int(i__126, t692)
                     continue
                 }
             } else {
-                break Loop_loop644
+                break Loop_loop680
             }
         }
-        var t642 int32
-        var inline1594 int32 = ref_get__Ref_5int32(acc__127)
-        t642 = inline1594
-        var t643 Value = Value_Int{
-            _0: t642,
+        var t678 int32
+        var inline1660 int32 = ref_get__Ref_5int32(acc__127)
+        t678 = inline1660
+        var t679 Value = Value_Int{
+            _0: t678,
         }
-        return t643
+        return t679
     case "*":
         var i__129 *ref_int_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(0)
         var acc__130 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(1)
-        Loop_loop661:
+        Loop_loop697:
         for {
-            var t662 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__129)
-            var t663 int
-            var inline1616 int = vec_len__Vec_5Value(args__121)
-            t663 = inline1616
-            var t664 bool = t662 < t663
-            if t664 {
-                var t665 int
-                var inline1614 int = ref_get__Ref_3int(i__129)
-                t665 = inline1614
-                var mtmp236 Value = vec_get__Vec_5Value(args__121, t665)
-                switch mtmp236.(type) {
+            var t698 int = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(i__129)
+            var t699 int
+            var inline1682 int = vec_len__Vec_5Value(args__121)
+            t699 = inline1682
+            var t700 bool = t698 < t699
+            if t700 {
+                var t701 int
+                var inline1680 int = ref_get__Ref_3int(i__129)
+                t701 = inline1680
+                var mtmp272 Value = vec_get__Vec_5Value(args__121, t701)
+                switch mtmp272.(type) {
                 case Value_Int:
-                    var x237 int32 = mtmp236.(Value_Int)._0
-                    var t667 int32
-                    var inline1608 int32 = ref_get__Ref_5int32(acc__130)
-                    t667 = inline1608
-                    var t668 int32 = t667 * x237
-                    ref_set__Ref_5int32(acc__130, t668)
-                    var t669 int
-                    var inline1604 int = ref_get__Ref_3int(i__129)
-                    t669 = inline1604
-                    var t670 int = t669 + 1
-                    ref_set__Ref_3int(i__129, t670)
+                    var x273 int32 = mtmp272.(Value_Int)._0
+                    var t703 int32
+                    var inline1674 int32 = ref_get__Ref_5int32(acc__130)
+                    t703 = inline1674
+                    var t704 int32 = t703 * x273
+                    ref_set__Ref_5int32(acc__130, t704)
+                    var t705 int
+                    var inline1670 int = ref_get__Ref_3int(i__129)
+                    t705 = inline1670
+                    var t706 int = t705 + 1
+                    ref_set__Ref_3int(i__129, t706)
                     continue
                 default:
-                    var t672 int
-                    var inline1612 int = ref_get__Ref_3int(i__129)
-                    t672 = inline1612
-                    var t673 int = t672 + 1
-                    ref_set__Ref_3int(i__129, t673)
+                    var t708 int
+                    var inline1678 int = ref_get__Ref_3int(i__129)
+                    t708 = inline1678
+                    var t709 int = t708 + 1
+                    ref_set__Ref_3int(i__129, t709)
                     continue
                 }
             } else {
-                break Loop_loop661
+                break Loop_loop697
             }
         }
-        var t659 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(acc__130)
-        var t660 Value = Value_Int{
-            _0: t659,
+        var t695 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(acc__130)
+        var t696 Value = Value_Int{
+            _0: t695,
         }
-        return t660
+        return t696
     case "-":
-        var mtmp242 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__Value(args__121)
-        switch mtmp242 {
+        var mtmp278 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__Value(args__121)
+        switch mtmp278 {
         case 1:
-            var mtmp243 Value = vec_get__Vec_5Value(args__121, 0)
-            switch mtmp243.(type) {
+            var mtmp279 Value = vec_get__Vec_5Value(args__121, 0)
+            switch mtmp279.(type) {
             case Value_Int:
-                var x244 int32 = mtmp243.(Value_Int)._0
-                var t679 int32 = 0 - x244
-                var t680 Value = Value_Int{
-                    _0: t679,
+                var x280 int32 = mtmp279.(Value_Int)._0
+                var t715 int32 = 0 - x280
+                var t716 Value = Value_Int{
+                    _0: t715,
                 }
-                return t680
+                return t716
             default:
                 return Nil{}
             }
         case 2:
-            var t681 Value = vec_get__Vec_5Value(args__121, 0)
-            var t682 Value = vec_get__Vec_5Value(args__121, 1)
-            switch t682.(type) {
+            var t717 Value = vec_get__Vec_5Value(args__121, 0)
+            var t718 Value = vec_get__Vec_5Value(args__121, 1)
+            switch t718.(type) {
             case Value_Int:
-                var x250 int32 = t682.(Value_Int)._0
-                switch t681.(type) {
+                var x286 int32 = t718.(Value_Int)._0
+                switch t717.(type) {
                 case Value_Int:
-                    var x253 int32 = t681.(Value_Int)._0
-                    var t687 int32 = x253 - x250
-                    var t688 Value = Value_Int{
-                        _0: t687,
+                    var x289 int32 = t717.(Value_Int)._0
+                    var t723 int32 = x289 - x286
+                    var t724 Value = Value_Int{
+                        _0: t723,
                     }
-                    return t688
+                    return t724
                 default:
                     return Nil{}
                 }
@@ -1752,22 +1752,22 @@ func apply_builtin(name__120 string, args__121 *_goml_vec_Value) Value {
             return Nil{}
         }
     case "/":
-        var t691 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__Value(args__121)
-        var t692 bool = _goml_m_trait__impl_i_Eq_i_int_i_eq(t691, 2)
-        if t692 {
-            var t693 Value = vec_get__Vec_5Value(args__121, 0)
-            var t694 Value = vec_get__Vec_5Value(args__121, 1)
-            switch t694.(type) {
+        var t727 int = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__Value(args__121)
+        var t728 bool = _goml_m_trait__impl_i_PartialEq_i_int_i_eq(t727, 2)
+        if t728 {
+            var t729 Value = vec_get__Vec_5Value(args__121, 0)
+            var t730 Value = vec_get__Vec_5Value(args__121, 1)
+            switch t730.(type) {
             case Value_Int:
-                var x259 int32 = t694.(Value_Int)._0
-                switch t693.(type) {
+                var x295 int32 = t730.(Value_Int)._0
+                switch t729.(type) {
                 case Value_Int:
-                    var x262 int32 = t693.(Value_Int)._0
-                    var t699 int32 = x262 / x259
-                    var t700 Value = Value_Int{
-                        _0: t699,
+                    var x298 int32 = t729.(Value_Int)._0
+                    var t735 int32 = x298 / x295
+                    var t736 Value = Value_Int{
+                        _0: t735,
                     }
-                    return t700
+                    return t736
                 default:
                     return Nil{}
                 }
@@ -1785,365 +1785,365 @@ func apply_builtin(name__120 string, args__121 *_goml_vec_Value) Value {
 func apply(func__137 Value, args__138 *_goml_vec_Value, global__139 *ref_Vec_7Binding_x) Value {
     switch func__137.(type) {
     case Func:
-        var x267 Lambda = func__137.(Func)._0
-        var t705 Value = apply_lambda(x267, args__138)
-        return t705
+        var x303 Lambda = func__137.(Func)._0
+        var t741 Value = apply_lambda(x303, args__138)
+        return t741
     default:
         return Nil{}
     }
 }
 
 func apply_lambda(lambda__141 Lambda, args__142 *_goml_vec_Value) Value {
-    var t708 *_goml_vec_Binding = lambda__141.env
+    var t744 *_goml_vec_Binding = lambda__141.env
     var env__143 *ref_Vec_7Binding_x
-    var inline1643 *ref_Vec_7Binding_x = ref__Ref_12Vec_7Binding(t708)
-    env__143 = inline1643
+    var inline1709 *ref_Vec_7Binding_x = ref__Ref_12Vec_7Binding(t744)
+    env__143 = inline1709
     var i__144 *ref_int_x
-    var inline1640 int = 0
-    var inline1641 *ref_int_x = ref__Ref_3int(inline1640)
-    i__144 = inline1641
-    Loop_loop714:
+    var inline1706 int = 0
+    var inline1707 *ref_int_x = ref__Ref_3int(inline1706)
+    i__144 = inline1707
+    Loop_loop750:
     for {
-        var t725 int
-        var inline1636 int = ref_get__Ref_3int(i__144)
-        t725 = inline1636
-        var t726 *_goml_vec_string = lambda__141.params
-        var t727 int
-        var inline1634 int = vec_len__Vec_6string(t726)
-        t727 = inline1634
-        var t728 bool = t725 < t727
-        var jp716 bool
-        if t728 {
-            var t729 int
-            var inline1620 int = ref_get__Ref_3int(i__144)
-            t729 = inline1620
-            var t730 int
-            var inline1618 int = vec_len__Vec_5Value(args__142)
-            t730 = inline1618
-            var t731 bool = t729 < t730
-            jp716 = t731
+        var t761 int
+        var inline1702 int = ref_get__Ref_3int(i__144)
+        t761 = inline1702
+        var t762 *_goml_vec_string = lambda__141.params
+        var t763 int
+        var inline1700 int = vec_len__Vec_6string(t762)
+        t763 = inline1700
+        var t764 bool = t761 < t763
+        var jp752 bool
+        if t764 {
+            var t765 int
+            var inline1686 int = ref_get__Ref_3int(i__144)
+            t765 = inline1686
+            var t766 int
+            var inline1684 int = vec_len__Vec_5Value(args__142)
+            t766 = inline1684
+            var t767 bool = t765 < t766
+            jp752 = t767
         } else {
-            jp716 = false
+            jp752 = false
         }
-        if jp716 {
-            var t717 *_goml_vec_string = lambda__141.params
-            var t718 int
-            var inline1632 int = ref_get__Ref_3int(i__144)
-            t718 = inline1632
-            var name__145 string = vec_get__Vec_6string(t717, t718)
-            var t719 int
-            var inline1630 int = ref_get__Ref_3int(i__144)
-            t719 = inline1630
-            var value__146 Value = vec_get__Vec_5Value(args__142, t719)
-            var t720 *_goml_vec_Binding
-            var inline1628 *_goml_vec_Binding = ref_get__Ref_12Vec_7Binding(env__143)
-            t720 = inline1628
-            var t721 Binding = Binding{
+        if jp752 {
+            var t753 *_goml_vec_string = lambda__141.params
+            var t754 int
+            var inline1698 int = ref_get__Ref_3int(i__144)
+            t754 = inline1698
+            var name__145 string = vec_get__Vec_6string(t753, t754)
+            var t755 int
+            var inline1696 int = ref_get__Ref_3int(i__144)
+            t755 = inline1696
+            var value__146 Value = vec_get__Vec_5Value(args__142, t755)
+            var t756 *_goml_vec_Binding
+            var inline1694 *_goml_vec_Binding = ref_get__Ref_12Vec_7Binding(env__143)
+            t756 = inline1694
+            var t757 Binding = Binding{
                 name: name__145,
                 value: value__146,
             }
-            var updated__147 *_goml_vec_Binding = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(t720, t721)
+            var updated__147 *_goml_vec_Binding = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(t756, t757)
             ref_set__Ref_12Vec_7Binding(env__143, updated__147)
-            var t722 int
-            var inline1624 int = ref_get__Ref_3int(i__144)
-            t722 = inline1624
-            var t723 int = t722 + 1
-            ref_set__Ref_3int(i__144, t723)
+            var t758 int
+            var inline1690 int = ref_get__Ref_3int(i__144)
+            t758 = inline1690
+            var t759 int = t758 + 1
+            ref_set__Ref_3int(i__144, t759)
             continue
         } else {
-            break Loop_loop714
+            break Loop_loop750
         }
     }
-    var t710 SExpr = lambda__141.body
-    var t711 *_goml_vec_Binding
-    var inline1638 *_goml_vec_Binding = ref_get__Ref_12Vec_7Binding(env__143)
-    t711 = inline1638
-    var t712 *ref_Vec_7Binding_x = lambda__141.global
-    var t713 Value = eval(t710, t711, t712)
-    return t713
+    var t746 SExpr = lambda__141.body
+    var t747 *_goml_vec_Binding
+    var inline1704 *_goml_vec_Binding = ref_get__Ref_12Vec_7Binding(env__143)
+    t747 = inline1704
+    var t748 *ref_Vec_7Binding_x = lambda__141.global
+    var t749 Value = eval(t746, t747, t748)
+    return t749
 }
 
 func main0() struct{} {
-    var t733 *_goml_vec_Binding
-    var inline1673 *_goml_vec_Binding = vec_new__Vec_7Binding()
-    t733 = inline1673
+    var t769 *_goml_vec_Binding
+    var inline1739 *_goml_vec_Binding = vec_new__Vec_7Binding()
+    t769 = inline1739
     var global__148 *ref_Vec_7Binding_x
-    var inline1671 *ref_Vec_7Binding_x = ref__Ref_12Vec_7Binding(t733)
-    global__148 = inline1671
+    var inline1737 *ref_Vec_7Binding_x = ref__Ref_12Vec_7Binding(t769)
+    global__148 = inline1737
     var program__149 string = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))"
-    var t734 *_goml_vec_Token = lex(program__149)
-    var exprs__150 *_goml_vec_SExpr = parse_program(t734)
-    var t735 SExpr = vec_get__Vec_5SExpr(exprs__150, 0)
-    var t736 *_goml_vec_Binding
-    var inline1669 *_goml_vec_Binding = vec_new__Vec_7Binding()
-    t736 = inline1669
-    var result__151 Value = eval(t735, t736, global__148)
-    var t737 string
+    var t770 *_goml_vec_Token = lex(program__149)
+    var exprs__150 *_goml_vec_SExpr = parse_program(t770)
+    var t771 SExpr = vec_get__Vec_5SExpr(exprs__150, 0)
+    var t772 *_goml_vec_Binding
+    var inline1735 *_goml_vec_Binding = vec_new__Vec_7Binding()
+    t772 = inline1735
+    var result__151 Value = eval(t771, t772, global__148)
+    var t773 string
     switch result__151.(type) {
     case Value_Int:
-        var inline1661 int32 = result__151.(Value_Int)._0
-        var inline1663 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline1661)
-        t737 = inline1663
+        var inline1727 int32 = result__151.(Value_Int)._0
+        var inline1729 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline1727)
+        t773 = inline1729
     case Value_Bool:
-        var inline1664 bool = result__151.(Value_Bool)._0
-        var inline1666 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline1664)
-        t737 = inline1666
+        var inline1730 bool = result__151.(Value_Bool)._0
+        var inline1732 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline1730)
+        t773 = inline1732
     case Func:
-        t737 = "<lambda>"
+        t773 = "<lambda>"
     case Nil:
-        t737 = "nil"
+        t773 = "nil"
     default:
         panic("non-exhaustive match")
     }
-    var inline1658 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t737)
-    _goml_runtime_core_string_println(inline1658)
-    var t738 *_goml_vec_Token = lex("(add3 10 20 30)")
-    var exprs2__152 *_goml_vec_SExpr = parse_program(t738)
-    var t739 SExpr = vec_get__Vec_5SExpr(exprs2__152, 0)
-    var t740 *_goml_vec_Binding
-    var inline1656 *_goml_vec_Binding = vec_new__Vec_7Binding()
-    t740 = inline1656
-    var result2__153 Value = eval(t739, t740, global__148)
-    var t741 string
+    var inline1724 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t773)
+    _goml_runtime_core_string_println(inline1724)
+    var t774 *_goml_vec_Token = lex("(add3 10 20 30)")
+    var exprs2__152 *_goml_vec_SExpr = parse_program(t774)
+    var t775 SExpr = vec_get__Vec_5SExpr(exprs2__152, 0)
+    var t776 *_goml_vec_Binding
+    var inline1722 *_goml_vec_Binding = vec_new__Vec_7Binding()
+    t776 = inline1722
+    var result2__153 Value = eval(t775, t776, global__148)
+    var t777 string
     switch result2__153.(type) {
     case Value_Int:
-        var inline1648 int32 = result2__153.(Value_Int)._0
-        var inline1650 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline1648)
-        t741 = inline1650
+        var inline1714 int32 = result2__153.(Value_Int)._0
+        var inline1716 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline1714)
+        t777 = inline1716
     case Value_Bool:
-        var inline1651 bool = result2__153.(Value_Bool)._0
-        var inline1653 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline1651)
-        t741 = inline1653
+        var inline1717 bool = result2__153.(Value_Bool)._0
+        var inline1719 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(inline1717)
+        t777 = inline1719
     case Func:
-        t741 = "<lambda>"
+        t777 = "<lambda>"
     case Nil:
-        t741 = "nil"
+        t777 = "nil"
     default:
         panic("non-exhaustive match")
     }
-    var inline1645 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t741)
-    _goml_runtime_core_string_println(inline1645)
+    var inline1711 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t777)
+    _goml_runtime_core_string_println(inline1711)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_string_i_string_i_len(self__37 string) int {
-    var t744 int = _goml_runtime_core_string_len(self__37)
-    return t744
+    var t780 int = _goml_runtime_core_string_len(self__37)
+    return t780
 }
 
-func _goml_m_trait__impl_i_Eq_i_int_i_eq(self__103 int, other__104 int) bool {
-    var t747 bool = self__103 == other__104
-    return t747
+func _goml_m_trait__impl_i_PartialEq_i_int_i_eq(self__103 int, other__104 int) bool {
+    var t783 bool = self__103 == other__104
+    return t783
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__232 int) *ref_int_x {
-    var t750 *ref_int_x = ref__Ref_3int(value__232)
-    return t750
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int(value__257 int) *ref_int_x {
+    var t786 *ref_int_x = ref__Ref_3int(value__257)
+    return t786
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__232 bool) *ref_bool_x {
-    var t753 *ref_bool_x = ref__Ref_4bool(value__232)
-    return t753
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__257 bool) *ref_bool_x {
+    var t789 *ref_bool_x = ref__Ref_4bool(value__257)
+    return t789
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__233 *ref_int_x) int {
-    var t759 int = ref_get__Ref_3int(self__233)
-    return t759
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int(self__258 *ref_int_x) int {
+    var t795 int = ref_get__Ref_3int(self__258)
+    return t795
 }
 
-func _goml_m_trait__impl_i_Eq_i_char_i_eq(self__101 rune, other__102 rune) bool {
-    var t765 bool = self__101 == other__102
-    return t765
+func _goml_m_trait__impl_i_PartialEq_i_char_i_eq(self__101 rune, other__102 rune) bool {
+    var t801 bool = self__101 == other__102
+    return t801
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__232 int32) *ref_int32_x {
-    var t772 *ref_int32_x = ref__Ref_5int32(value__232)
-    return t772
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__257 int32) *ref_int32_x {
+    var t808 *ref_int32_x = ref__Ref_5int32(value__257)
+    return t808
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__233 *ref_int32_x) int32 {
-    var t775 int32 = ref_get__Ref_5int32(self__233)
-    return t775
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__258 *ref_int32_x) int32 {
+    var t811 int32 = ref_get__Ref_5int32(self__258)
+    return t811
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(self__153 *_goml_vec_Token, elem__154 Token) *_goml_vec_Token {
-    var t800 int
-    var inline1696 int = vec_len__Vec_5Token(self__153)
-    t800 = inline1696
-    var t801 int = t800 + 1
-    var result__155 *_goml_vec_Token
-    var inline1694 *_goml_vec_Token = vec_with_capacity__Vec_5Token(t801)
-    result__155 = inline1694
-    var index__156 int = 0
-    Loop_loop803:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Token(self__178 *_goml_vec_Token, elem__179 Token) *_goml_vec_Token {
+    var t836 int
+    var inline1762 int = vec_len__Vec_5Token(self__178)
+    t836 = inline1762
+    var t837 int = t836 + 1
+    var result__180 *_goml_vec_Token
+    var inline1760 *_goml_vec_Token = vec_with_capacity__Vec_5Token(t837)
+    result__180 = inline1760
+    var index__181 int = 0
+    Loop_loop839:
     for {
-        var t804 int
-        var inline1690 int = vec_len__Vec_5Token(self__153)
-        t804 = inline1690
-        var t805 bool = index__156 < t804
-        if t805 {
-            var t806 Token = vec_get__Vec_5Token(self__153, index__156)
-            vec_push__Vec_5Token(result__155, t806)
-            var compound_old44 int = index__156
-            var compound_value45 int = 1
-            var t807 int = compound_old44 + compound_value45
-            index__156 = t807
+        var t840 int
+        var inline1756 int = vec_len__Vec_5Token(self__178)
+        t840 = inline1756
+        var t841 bool = index__181 < t840
+        if t841 {
+            var t842 Token = vec_get__Vec_5Token(self__178, index__181)
+            vec_push__Vec_5Token(result__180, t842)
+            var compound_old80 int = index__181
+            var compound_value81 int = 1
+            var t843 int = compound_old80 + compound_value81
+            index__181 = t843
             continue
         } else {
-            break Loop_loop803
+            break Loop_loop839
         }
     }
-    vec_push__Vec_5Token(result__155, elem__154)
-    return result__155
+    vec_push__Vec_5Token(result__180, elem__179)
+    return result__180
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(self__153 *_goml_vec_SExpr, elem__154 SExpr) *_goml_vec_SExpr {
-    var t839 int
-    var inline1706 int = vec_len__Vec_5SExpr(self__153)
-    t839 = inline1706
-    var t840 int = t839 + 1
-    var result__155 *_goml_vec_SExpr
-    var inline1704 *_goml_vec_SExpr = vec_with_capacity__Vec_5SExpr(t840)
-    result__155 = inline1704
-    var index__156 int = 0
-    Loop_loop842:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__SExpr(self__178 *_goml_vec_SExpr, elem__179 SExpr) *_goml_vec_SExpr {
+    var t875 int
+    var inline1772 int = vec_len__Vec_5SExpr(self__178)
+    t875 = inline1772
+    var t876 int = t875 + 1
+    var result__180 *_goml_vec_SExpr
+    var inline1770 *_goml_vec_SExpr = vec_with_capacity__Vec_5SExpr(t876)
+    result__180 = inline1770
+    var index__181 int = 0
+    Loop_loop878:
     for {
-        var t843 int
-        var inline1700 int = vec_len__Vec_5SExpr(self__153)
-        t843 = inline1700
-        var t844 bool = index__156 < t843
-        if t844 {
-            var t845 SExpr = vec_get__Vec_5SExpr(self__153, index__156)
-            vec_push__Vec_5SExpr(result__155, t845)
-            var compound_old44 int = index__156
-            var compound_value45 int = 1
-            var t846 int = compound_old44 + compound_value45
-            index__156 = t846
+        var t879 int
+        var inline1766 int = vec_len__Vec_5SExpr(self__178)
+        t879 = inline1766
+        var t880 bool = index__181 < t879
+        if t880 {
+            var t881 SExpr = vec_get__Vec_5SExpr(self__178, index__181)
+            vec_push__Vec_5SExpr(result__180, t881)
+            var compound_old80 int = index__181
+            var compound_value81 int = 1
+            var t882 int = compound_old80 + compound_value81
+            index__181 = t882
             continue
         } else {
-            break Loop_loop842
+            break Loop_loop878
         }
     }
-    vec_push__Vec_5SExpr(result__155, elem__154)
-    return result__155
+    vec_push__Vec_5SExpr(result__180, elem__179)
+    return result__180
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t852 string = _goml_runtime_core_int32_to_string(self__35)
-    return t852
+    var t888 string = _goml_runtime_core_int32_to_string(self__35)
+    return t888
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t855 string = _goml_runtime_core_bool_to_string(self__66)
-    return t855
+    var t891 string = _goml_runtime_core_bool_to_string(self__66)
+    return t891
 }
 
-func _goml_m_trait__impl_i_Eq_i_int32_i_eq(self__109 int32, other__110 int32) bool {
-    var t858 bool = self__109 == other__110
-    return t858
+func _goml_m_trait__impl_i_PartialEq_i_int32_i_eq(self__109 int32, other__110 int32) bool {
+    var t894 bool = self__109 == other__110
+    return t894
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SExpr(self__162 *_goml_vec_SExpr) int {
-    var t864 int = vec_len__Vec_5SExpr(self__162)
-    return t864
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SExpr(self__187 *_goml_vec_SExpr) int {
+    var t900 int = vec_len__Vec_5SExpr(self__187)
+    return t900
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(self__153 *_goml_vec_Binding, elem__154 Binding) *_goml_vec_Binding {
-    var t867 int
-    var inline1716 int = vec_len__Vec_7Binding(self__153)
-    t867 = inline1716
-    var t868 int = t867 + 1
-    var result__155 *_goml_vec_Binding
-    var inline1714 *_goml_vec_Binding = vec_with_capacity__Vec_7Binding(t868)
-    result__155 = inline1714
-    var index__156 int = 0
-    Loop_loop870:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Binding(self__178 *_goml_vec_Binding, elem__179 Binding) *_goml_vec_Binding {
+    var t903 int
+    var inline1782 int = vec_len__Vec_7Binding(self__178)
+    t903 = inline1782
+    var t904 int = t903 + 1
+    var result__180 *_goml_vec_Binding
+    var inline1780 *_goml_vec_Binding = vec_with_capacity__Vec_7Binding(t904)
+    result__180 = inline1780
+    var index__181 int = 0
+    Loop_loop906:
     for {
-        var t871 int
-        var inline1710 int = vec_len__Vec_7Binding(self__153)
-        t871 = inline1710
-        var t872 bool = index__156 < t871
-        if t872 {
-            var t873 Binding = vec_get__Vec_7Binding(self__153, index__156)
-            vec_push__Vec_7Binding(result__155, t873)
-            var compound_old44 int = index__156
-            var compound_value45 int = 1
-            var t874 int = compound_old44 + compound_value45
-            index__156 = t874
+        var t907 int
+        var inline1776 int = vec_len__Vec_7Binding(self__178)
+        t907 = inline1776
+        var t908 bool = index__181 < t907
+        if t908 {
+            var t909 Binding = vec_get__Vec_7Binding(self__178, index__181)
+            vec_push__Vec_7Binding(result__180, t909)
+            var compound_old80 int = index__181
+            var compound_value81 int = 1
+            var t910 int = compound_old80 + compound_value81
+            index__181 = t910
             continue
         } else {
-            break Loop_loop870
+            break Loop_loop906
         }
     }
-    vec_push__Vec_7Binding(result__155, elem__154)
-    return result__155
+    vec_push__Vec_7Binding(result__180, elem__179)
+    return result__180
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(self__153 *_goml_vec_string, elem__154 string) *_goml_vec_string {
-    var t889 int
-    var inline1726 int = vec_len__Vec_6string(self__153)
-    t889 = inline1726
-    var t890 int = t889 + 1
-    var result__155 *_goml_vec_string
-    var inline1724 *_goml_vec_string = vec_with_capacity__Vec_6string(t890)
-    result__155 = inline1724
-    var index__156 int = 0
-    Loop_loop892:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__string(self__178 *_goml_vec_string, elem__179 string) *_goml_vec_string {
+    var t925 int
+    var inline1792 int = vec_len__Vec_6string(self__178)
+    t925 = inline1792
+    var t926 int = t925 + 1
+    var result__180 *_goml_vec_string
+    var inline1790 *_goml_vec_string = vec_with_capacity__Vec_6string(t926)
+    result__180 = inline1790
+    var index__181 int = 0
+    Loop_loop928:
     for {
-        var t893 int
-        var inline1720 int = vec_len__Vec_6string(self__153)
-        t893 = inline1720
-        var t894 bool = index__156 < t893
-        if t894 {
-            var t895 string = vec_get__Vec_6string(self__153, index__156)
-            vec_push__Vec_6string(result__155, t895)
-            var compound_old44 int = index__156
-            var compound_value45 int = 1
-            var t896 int = compound_old44 + compound_value45
-            index__156 = t896
+        var t929 int
+        var inline1786 int = vec_len__Vec_6string(self__178)
+        t929 = inline1786
+        var t930 bool = index__181 < t929
+        if t930 {
+            var t931 string = vec_get__Vec_6string(self__178, index__181)
+            vec_push__Vec_6string(result__180, t931)
+            var compound_old80 int = index__181
+            var compound_value81 int = 1
+            var t932 int = compound_old80 + compound_value81
+            index__181 = t932
             continue
         } else {
-            break Loop_loop892
+            break Loop_loop928
         }
     }
-    vec_push__Vec_6string(result__155, elem__154)
-    return result__155
+    vec_push__Vec_6string(result__180, elem__179)
+    return result__180
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Value(self__153 *_goml_vec_Value, elem__154 Value) *_goml_vec_Value {
-    var t911 int
-    var inline1736 int = vec_len__Vec_5Value(self__153)
-    t911 = inline1736
-    var t912 int = t911 + 1
-    var result__155 *_goml_vec_Value
-    var inline1734 *_goml_vec_Value = vec_with_capacity__Vec_5Value(t912)
-    result__155 = inline1734
-    var index__156 int = 0
-    Loop_loop914:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__Value(self__178 *_goml_vec_Value, elem__179 Value) *_goml_vec_Value {
+    var t947 int
+    var inline1802 int = vec_len__Vec_5Value(self__178)
+    t947 = inline1802
+    var t948 int = t947 + 1
+    var result__180 *_goml_vec_Value
+    var inline1800 *_goml_vec_Value = vec_with_capacity__Vec_5Value(t948)
+    result__180 = inline1800
+    var index__181 int = 0
+    Loop_loop950:
     for {
-        var t915 int
-        var inline1730 int = vec_len__Vec_5Value(self__153)
-        t915 = inline1730
-        var t916 bool = index__156 < t915
-        if t916 {
-            var t917 Value = vec_get__Vec_5Value(self__153, index__156)
-            vec_push__Vec_5Value(result__155, t917)
-            var compound_old44 int = index__156
-            var compound_value45 int = 1
-            var t918 int = compound_old44 + compound_value45
-            index__156 = t918
+        var t951 int
+        var inline1796 int = vec_len__Vec_5Value(self__178)
+        t951 = inline1796
+        var t952 bool = index__181 < t951
+        if t952 {
+            var t953 Value = vec_get__Vec_5Value(self__178, index__181)
+            vec_push__Vec_5Value(result__180, t953)
+            var compound_old80 int = index__181
+            var compound_value81 int = 1
+            var t954 int = compound_old80 + compound_value81
+            index__181 = t954
             continue
         } else {
-            break Loop_loop914
+            break Loop_loop950
         }
     }
-    vec_push__Vec_5Value(result__155, elem__154)
-    return result__155
+    vec_push__Vec_5Value(result__180, elem__179)
+    return result__180
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__Value(self__162 *_goml_vec_Value) int {
-    var t924 int = vec_len__Vec_5Value(self__162)
-    return t924
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__Value(self__187 *_goml_vec_Value) int {
+    var t960 int = vec_len__Vec_5Value(self__187)
+    return t960
 }
 
 func string_get(value__17 string, index__18 int) rune {
@@ -2153,32 +2153,32 @@ func string_get(value__17 string, index__18 int) rune {
     if x7 {
         return x8
     } else {
-        var t944 rune = _goml_runtime_core_string_get("", -1)
-        return t944
+        var t980 rune = _goml_runtime_core_string_get("", -1)
+        return t980
     }
 }
 
 func char_to_string(value__29 rune) string {
-    var t949 uint32 = uint32(rune(value__29))
-    var t950 bool
-    var inline1739 bool = t949 <= 1114111
-    if inline1739 {
-        var inline1740 bool = t949 >= 55296
-        var inline1742 bool
-        if inline1740 {
-            var inline1744 bool = t949 <= 57343
-            inline1742 = inline1744
+    var t985 uint32 = uint32(rune(value__29))
+    var t986 bool
+    var inline1805 bool = t985 <= 1114111
+    if inline1805 {
+        var inline1806 bool = t985 >= 55296
+        var inline1808 bool
+        if inline1806 {
+            var inline1810 bool = t985 <= 57343
+            inline1808 = inline1810
         } else {
-            inline1742 = false
+            inline1808 = false
         }
-        var inline1743 bool = !inline1742
-        t950 = inline1743
+        var inline1809 bool = !inline1808
+        t986 = inline1809
     } else {
-        t950 = false
+        t986 = false
     }
-    if t950 {
-        var t951 string = _goml_runtime_core_char_to_string(value__29)
-        return t951
+    if t986 {
+        var t987 string = _goml_runtime_core_char_to_string(value__29)
+        return t987
     } else {
         _goml_runtime_core_string_get("", -1)
         return ""
@@ -2191,287 +2191,287 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 
 func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3int {
     var length__7 int = _goml_m_inherent_i_string_i_string_i_byte__len(value__5)
-    var t1097 bool = index__6 < 0
-    var jp1095 bool
-    if t1097 {
-        jp1095 = true
+    var t1133 bool = index__6 < 0
+    var jp1131 bool
+    if t1133 {
+        jp1131 = true
     } else {
-        var t1098 bool = index__6 >= length__7
-        jp1095 = t1098
+        var t1134 bool = index__6 >= length__7
+        jp1131 = t1134
     }
-    if jp1095 {
-        var inline1746 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+    if jp1131 {
+        var inline1812 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
             _0: false,
             _1: 0,
             _2: 0,
         }
-        return inline1746
+        return inline1812
     } else {
-        var t982 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, index__6)
-        var first__8 uint32 = uint32(uint8(t982))
-        var t985 bool = first__8 < 128
-        if t985 {
-            var inline1748 int = 1
-            var inline1749 Option__char = char_from_uint32(first__8)
-            switch inline1749.(type) {
+        var t1018 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, index__6)
+        var first__8 uint32 = uint32(uint8(t1018))
+        var t1021 bool = first__8 < 128
+        if t1021 {
+            var inline1814 int = 1
+            var inline1815 Option__char = char_from_uint32(first__8)
+            switch inline1815.(type) {
             case None:
-                var inline1750 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                return inline1750
+                var inline1816 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                return inline1816
             case Some:
-                var inline1751 rune = inline1749.(Some)._0
-                var inline1753 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                var inline1817 rune = inline1815.(Some)._0
+                var inline1819 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: true,
-                    _1: inline1751,
-                    _2: inline1748,
+                    _1: inline1817,
+                    _2: inline1814,
                 }
-                return inline1753
+                return inline1819
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            var t989 bool = first__8 < 194
-            if t989 {
-                var inline1755 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+            var t1025 bool = first__8 < 194
+            if t1025 {
+                var inline1821 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                     _0: false,
                     _1: 0,
                     _2: 0,
                 }
-                return inline1755
+                return inline1821
             } else {
-                var t993 bool = first__8 < 224
-                if t993 {
-                    var t1006 int = length__7 - index__6
-                    var t1007 bool = t1006 < 2
-                    if t1007 {
-                        var inline1757 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                var t1029 bool = first__8 < 224
+                if t1029 {
+                    var t1042 int = length__7 - index__6
+                    var t1043 bool = t1042 < 2
+                    if t1043 {
+                        var inline1823 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                             _0: false,
                             _1: 0,
                             _2: 0,
                         }
-                        return inline1757
+                        return inline1823
                     } else {
-                        var t995 int = index__6 + 1
-                        var t996 uint8
-                        var inline1771 uint8 = _goml_runtime_core_string_byte_get(value__5, t995)
-                        t996 = inline1771
-                        var second__9 uint32 = uint32(uint8(t996))
-                        var t999 bool
-                        var inline1768 bool = second__9 < 128
-                        if inline1768 {
-                            t999 = true
+                        var t1031 int = index__6 + 1
+                        var t1032 uint8
+                        var inline1837 uint8 = _goml_runtime_core_string_byte_get(value__5, t1031)
+                        t1032 = inline1837
+                        var second__9 uint32 = uint32(uint8(t1032))
+                        var t1035 bool
+                        var inline1834 bool = second__9 < 128
+                        if inline1834 {
+                            t1035 = true
                         } else {
-                            var inline1769 bool = second__9 > 191
-                            t999 = inline1769
+                            var inline1835 bool = second__9 > 191
+                            t1035 = inline1835
                         }
-                        if t999 {
-                            var inline1759 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                        if t1035 {
+                            var inline1825 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                 _0: false,
                                 _1: 0,
                                 _2: 0,
                             }
-                            return inline1759
+                            return inline1825
                         } else {
-                            var t1001_rhs uint32 = 31
-                            var t1001 uint32 = first__8 & t1001_rhs
-                            var t1002_rhs int = 6
-                            var t1002 uint32 = t1001 << t1002_rhs
-                            var t1003_rhs uint32 = 63
-                            var t1003 uint32 = second__9 & t1003_rhs
-                            var t1004 uint32 = t1002 | t1003
-                            var inline1761 int = 2
-                            var inline1762 Option__char = char_from_uint32(t1004)
-                            switch inline1762.(type) {
+                            var t1037_rhs uint32 = 31
+                            var t1037 uint32 = first__8 & t1037_rhs
+                            var t1038_rhs int = 6
+                            var t1038 uint32 = t1037 << t1038_rhs
+                            var t1039_rhs uint32 = 63
+                            var t1039 uint32 = second__9 & t1039_rhs
+                            var t1040 uint32 = t1038 | t1039
+                            var inline1827 int = 2
+                            var inline1828 Option__char = char_from_uint32(t1040)
+                            switch inline1828.(type) {
                             case None:
-                                var inline1763 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                                return inline1763
+                                var inline1829 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                                return inline1829
                             case Some:
-                                var inline1764 rune = inline1762.(Some)._0
-                                var inline1766 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                                var inline1830 rune = inline1828.(Some)._0
+                                var inline1832 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: true,
-                                    _1: inline1764,
-                                    _2: inline1761,
+                                    _1: inline1830,
+                                    _2: inline1827,
                                 }
-                                return inline1766
+                                return inline1832
                             default:
                                 panic("non-exhaustive match")
                             }
                         }
                     }
                 } else {
-                    var t1011 bool = first__8 < 240
-                    if t1011 {
-                        var t1044 int = length__7 - index__6
-                        var t1045 bool = t1044 < 3
-                        if t1045 {
-                            var inline1773 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                    var t1047 bool = first__8 < 240
+                    if t1047 {
+                        var t1080 int = length__7 - index__6
+                        var t1081 bool = t1080 < 3
+                        if t1081 {
+                            var inline1839 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                 _0: false,
                                 _1: 0,
                                 _2: 0,
                             }
-                            return inline1773
+                            return inline1839
                         } else {
-                            var t1013 int = index__6 + 1
-                            var t1014 uint8
-                            var inline1788 uint8 = _goml_runtime_core_string_byte_get(value__5, t1013)
-                            t1014 = inline1788
-                            var second__10 uint32 = uint32(uint8(t1014))
-                            var t1015 int = index__6 + 2
-                            var t1016 uint8
-                            var inline1786 uint8 = _goml_runtime_core_string_byte_get(value__5, t1015)
-                            t1016 = inline1786
-                            var third__11 uint32 = uint32(uint8(t1016))
-                            var t1042 bool = utf8_invalid_continuation(second__10)
-                            var jp1037 bool
-                            if t1042 {
-                                jp1037 = true
+                            var t1049 int = index__6 + 1
+                            var t1050 uint8
+                            var inline1854 uint8 = _goml_runtime_core_string_byte_get(value__5, t1049)
+                            t1050 = inline1854
+                            var second__10 uint32 = uint32(uint8(t1050))
+                            var t1051 int = index__6 + 2
+                            var t1052 uint8
+                            var inline1852 uint8 = _goml_runtime_core_string_byte_get(value__5, t1051)
+                            t1052 = inline1852
+                            var third__11 uint32 = uint32(uint8(t1052))
+                            var t1078 bool = utf8_invalid_continuation(second__10)
+                            var jp1073 bool
+                            if t1078 {
+                                jp1073 = true
                             } else {
-                                var inline1775 bool = third__11 < 128
-                                if inline1775 {
-                                    jp1037 = true
+                                var inline1841 bool = third__11 < 128
+                                if inline1841 {
+                                    jp1073 = true
                                 } else {
-                                    var inline1776 bool = third__11 > 191
-                                    jp1037 = inline1776
+                                    var inline1842 bool = third__11 > 191
+                                    jp1073 = inline1842
                                 }
                             }
-                            var jp1031 bool
-                            if jp1037 {
-                                jp1031 = true
+                            var jp1067 bool
+                            if jp1073 {
+                                jp1067 = true
                             } else {
-                                var t1040 bool
-                                var inline1778 uint32 = 224
-                                var inline1779 bool = first__8 == inline1778
-                                t1040 = inline1779
-                                if t1040 {
-                                    var t1041 bool = second__10 < 160
-                                    jp1031 = t1041
+                                var t1076 bool
+                                var inline1844 uint32 = 224
+                                var inline1845 bool = first__8 == inline1844
+                                t1076 = inline1845
+                                if t1076 {
+                                    var t1077 bool = second__10 < 160
+                                    jp1067 = t1077
                                 } else {
-                                    jp1031 = false
+                                    jp1067 = false
                                 }
                             }
-                            var jp1020 bool
-                            if jp1031 {
-                                jp1020 = true
+                            var jp1056 bool
+                            if jp1067 {
+                                jp1056 = true
                             } else {
-                                var t1034 bool
-                                var inline1781 uint32 = 237
-                                var inline1782 bool = first__8 == inline1781
-                                t1034 = inline1782
-                                if t1034 {
-                                    var t1035 bool = second__10 >= 160
-                                    jp1020 = t1035
+                                var t1070 bool
+                                var inline1847 uint32 = 237
+                                var inline1848 bool = first__8 == inline1847
+                                t1070 = inline1848
+                                if t1070 {
+                                    var t1071 bool = second__10 >= 160
+                                    jp1056 = t1071
                                 } else {
-                                    jp1020 = false
+                                    jp1056 = false
                                 }
                             }
-                            if jp1020 {
-                                var inline1784 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+                            if jp1056 {
+                                var inline1850 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
                                     _0: false,
                                     _1: 0,
                                     _2: 0,
                                 }
-                                return inline1784
+                                return inline1850
                             } else {
-                                var t1022_rhs uint32 = 15
-                                var t1022 uint32 = first__8 & t1022_rhs
-                                var t1023_rhs int = 12
-                                var t1023 uint32 = t1022 << t1023_rhs
-                                var t1024_rhs uint32 = 63
-                                var t1024 uint32 = second__10 & t1024_rhs
-                                var t1025_rhs int = 6
-                                var t1025 uint32 = t1024 << t1025_rhs
-                                var t1026 uint32 = t1023 | t1025
-                                var t1027_rhs uint32 = 63
-                                var t1027 uint32 = third__11 & t1027_rhs
-                                var t1028 uint32 = t1026 | t1027
-                                var t1029 Tuple3_4bool_4char_3int = utf8_valid_decode(t1028, 3)
-                                return t1029
+                                var t1058_rhs uint32 = 15
+                                var t1058 uint32 = first__8 & t1058_rhs
+                                var t1059_rhs int = 12
+                                var t1059 uint32 = t1058 << t1059_rhs
+                                var t1060_rhs uint32 = 63
+                                var t1060 uint32 = second__10 & t1060_rhs
+                                var t1061_rhs int = 6
+                                var t1061 uint32 = t1060 << t1061_rhs
+                                var t1062 uint32 = t1059 | t1061
+                                var t1063_rhs uint32 = 63
+                                var t1063 uint32 = third__11 & t1063_rhs
+                                var t1064 uint32 = t1062 | t1063
+                                var t1065 Tuple3_4bool_4char_3int = utf8_valid_decode(t1064, 3)
+                                return t1065
                             }
                         }
                     } else {
-                        var t1049 bool = first__8 < 245
-                        if t1049 {
-                            var t1090 int = length__7 - index__6
-                            var t1091 bool = t1090 < 4
-                            if t1091 {
-                                var t1092 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                                return t1092
+                        var t1085 bool = first__8 < 245
+                        if t1085 {
+                            var t1126 int = length__7 - index__6
+                            var t1127 bool = t1126 < 4
+                            if t1127 {
+                                var t1128 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                                return t1128
                             } else {
-                                var t1051 int = index__6 + 1
-                                var t1052 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t1051)
-                                var second__12 uint32 = uint32(uint8(t1052))
-                                var t1053 int = index__6 + 2
-                                var t1054 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t1053)
-                                var third__13 uint32 = uint32(uint8(t1054))
-                                var t1055 int = index__6 + 3
-                                var t1056 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t1055)
-                                var fourth__14 uint32 = uint32(uint8(t1056))
-                                var t1088 bool = utf8_invalid_continuation(second__12)
-                                var jp1086 bool
-                                if t1088 {
-                                    jp1086 = true
+                                var t1087 int = index__6 + 1
+                                var t1088 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t1087)
+                                var second__12 uint32 = uint32(uint8(t1088))
+                                var t1089 int = index__6 + 2
+                                var t1090 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t1089)
+                                var third__13 uint32 = uint32(uint8(t1090))
+                                var t1091 int = index__6 + 3
+                                var t1092 uint8 = _goml_m_inherent_i_string_i_string_i_byte__get(value__5, t1091)
+                                var fourth__14 uint32 = uint32(uint8(t1092))
+                                var t1124 bool = utf8_invalid_continuation(second__12)
+                                var jp1122 bool
+                                if t1124 {
+                                    jp1122 = true
                                 } else {
-                                    var t1089 bool = utf8_invalid_continuation(third__13)
-                                    jp1086 = t1089
+                                    var t1125 bool = utf8_invalid_continuation(third__13)
+                                    jp1122 = t1125
                                 }
-                                var jp1080 bool
-                                if jp1086 {
-                                    jp1080 = true
+                                var jp1116 bool
+                                if jp1122 {
+                                    jp1116 = true
                                 } else {
-                                    var t1087 bool = utf8_invalid_continuation(fourth__14)
-                                    jp1080 = t1087
+                                    var t1123 bool = utf8_invalid_continuation(fourth__14)
+                                    jp1116 = t1123
                                 }
-                                var jp1074 bool
-                                if jp1080 {
-                                    jp1074 = true
+                                var jp1110 bool
+                                if jp1116 {
+                                    jp1110 = true
                                 } else {
-                                    var t1083 bool = _goml_m_trait__impl_i_Eq_i_uint32_i_eq(first__8, 240)
-                                    if t1083 {
-                                        var t1084 bool = second__12 < 144
-                                        jp1074 = t1084
+                                    var t1119 bool = _goml_m_trait__impl_i_PartialEq_i_uint32_i_eq(first__8, 240)
+                                    if t1119 {
+                                        var t1120 bool = second__12 < 144
+                                        jp1110 = t1120
                                     } else {
-                                        jp1074 = false
+                                        jp1110 = false
                                     }
                                 }
-                                var jp1060 bool
-                                if jp1074 {
-                                    jp1060 = true
+                                var jp1096 bool
+                                if jp1110 {
+                                    jp1096 = true
                                 } else {
-                                    var t1077 bool = _goml_m_trait__impl_i_Eq_i_uint32_i_eq(first__8, 244)
-                                    if t1077 {
-                                        var t1078 bool = second__12 > 143
-                                        jp1060 = t1078
+                                    var t1113 bool = _goml_m_trait__impl_i_PartialEq_i_uint32_i_eq(first__8, 244)
+                                    if t1113 {
+                                        var t1114 bool = second__12 > 143
+                                        jp1096 = t1114
                                     } else {
-                                        jp1060 = false
+                                        jp1096 = false
                                     }
                                 }
-                                if jp1060 {
-                                    var t1061 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                                    return t1061
+                                if jp1096 {
+                                    var t1097 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                                    return t1097
                                 } else {
-                                    var t1062_rhs uint32 = 7
-                                    var t1062 uint32 = first__8 & t1062_rhs
-                                    var t1063_rhs int = 18
-                                    var t1063 uint32 = t1062 << t1063_rhs
-                                    var t1064_rhs uint32 = 63
-                                    var t1064 uint32 = second__12 & t1064_rhs
-                                    var t1065_rhs int = 12
-                                    var t1065 uint32 = t1064 << t1065_rhs
-                                    var t1066 uint32 = t1063 | t1065
-                                    var t1067_rhs uint32 = 63
-                                    var t1067 uint32 = third__13 & t1067_rhs
-                                    var t1068_rhs int = 6
-                                    var t1068 uint32 = t1067 << t1068_rhs
-                                    var t1069 uint32 = t1066 | t1068
-                                    var t1070_rhs uint32 = 63
-                                    var t1070 uint32 = fourth__14 & t1070_rhs
-                                    var t1071 uint32 = t1069 | t1070
-                                    var t1072 Tuple3_4bool_4char_3int = utf8_valid_decode(t1071, 4)
-                                    return t1072
+                                    var t1098_rhs uint32 = 7
+                                    var t1098 uint32 = first__8 & t1098_rhs
+                                    var t1099_rhs int = 18
+                                    var t1099 uint32 = t1098 << t1099_rhs
+                                    var t1100_rhs uint32 = 63
+                                    var t1100 uint32 = second__12 & t1100_rhs
+                                    var t1101_rhs int = 12
+                                    var t1101 uint32 = t1100 << t1101_rhs
+                                    var t1102 uint32 = t1099 | t1101
+                                    var t1103_rhs uint32 = 63
+                                    var t1103 uint32 = third__13 & t1103_rhs
+                                    var t1104_rhs int = 6
+                                    var t1104 uint32 = t1103 << t1104_rhs
+                                    var t1105 uint32 = t1102 | t1104
+                                    var t1106_rhs uint32 = 63
+                                    var t1106 uint32 = fourth__14 & t1106_rhs
+                                    var t1107 uint32 = t1105 | t1106
+                                    var t1108 Tuple3_4bool_4char_3int = utf8_valid_decode(t1107, 4)
+                                    return t1108
                                 }
                             }
                         } else {
-                            var t1093 Tuple3_4bool_4char_3int = utf8_invalid_decode()
-                            return t1093
+                            var t1129 Tuple3_4bool_4char_3int = utf8_invalid_decode()
+                            return t1129
                         }
                     }
                 }
@@ -2481,104 +2481,104 @@ func string_decode_utf8_at(value__5 string, index__6 int) Tuple3_4bool_4char_3in
 }
 
 func utf8_valid_scalar(value__4 uint32) bool {
-    var t1103 bool = value__4 <= 1114111
-    if t1103 {
-        var t1107 bool = value__4 >= 55296
-        var jp1105 bool
-        if t1107 {
-            var t1108 bool = value__4 <= 57343
-            jp1105 = t1108
+    var t1139 bool = value__4 <= 1114111
+    if t1139 {
+        var t1143 bool = value__4 >= 55296
+        var jp1141 bool
+        if t1143 {
+            var t1144 bool = value__4 <= 57343
+            jp1141 = t1144
         } else {
-            jp1105 = false
+            jp1141 = false
         }
-        var t1106 bool = !jp1105
-        return t1106
+        var t1142 bool = !jp1141
+        return t1142
     } else {
         return false
     }
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__len(self__38 string) int {
-    var t1111 int = _goml_runtime_core_string_len(self__38)
-    return t1111
+    var t1147 int = _goml_runtime_core_string_len(self__38)
+    return t1147
 }
 
 func utf8_invalid_decode() Tuple3_4bool_4char_3int {
-    var t1114 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+    var t1150 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
         _0: false,
         _1: 0,
         _2: 0,
     }
-    return t1114
+    return t1150
 }
 
 func _goml_m_inherent_i_string_i_string_i_byte__get(self__41 string, index__42 int) uint8 {
-    var t1117 uint8 = _goml_runtime_core_string_byte_get(self__41, index__42)
-    return t1117
+    var t1153 uint8 = _goml_runtime_core_string_byte_get(self__41, index__42)
+    return t1153
 }
 
 func utf8_valid_decode(value__0 uint32, width__1 int) Tuple3_4bool_4char_3int {
-    var commute_field1806 rune
-    var inline1792 bool = utf8_valid_scalar(value__0)
-    if inline1792 {
-        var inline1793 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
-        var inline1795 rune = inline1793._1
-        commute_field1806 = inline1795
-        var t1123 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+    var commute_field1886 rune
+    var inline1858 bool = utf8_valid_scalar(value__0)
+    if inline1858 {
+        var inline1859 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__0)
+        var inline1861 rune = inline1859._1
+        commute_field1886 = inline1861
+        var t1159 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
             _0: true,
-            _1: commute_field1806,
+            _1: commute_field1886,
             _2: width__1,
         }
-        return t1123
+        return t1159
     } else {
-        var inline1790 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
+        var inline1856 Tuple3_4bool_4char_3int = Tuple3_4bool_4char_3int{
             _0: false,
             _1: 0,
             _2: 0,
         }
-        return inline1790
+        return inline1856
     }
 }
 
 func utf8_invalid_continuation(value__3 uint32) bool {
-    var t1128 bool = value__3 < 128
-    if t1128 {
+    var t1164 bool = value__3 < 128
+    if t1164 {
         return true
     } else {
-        var t1129 bool = value__3 > 191
-        return t1129
+        var t1165 bool = value__3 > 191
+        return t1165
     }
 }
 
-func _goml_m_trait__impl_i_Eq_i_uint32_i_eq(self__117 uint32, other__118 uint32) bool {
-    var t1132 bool = self__117 == other__118
-    return t1132
+func _goml_m_trait__impl_i_PartialEq_i_uint32_i_eq(self__117 uint32, other__118 uint32) bool {
+    var t1168 bool = self__117 == other__118
+    return t1168
 }
 
 func char_from_uint32(value__32 uint32) Option__char {
-    var t1137 bool
-    var inline1799 bool = value__32 <= 1114111
-    if inline1799 {
-        var inline1800 bool = value__32 >= 55296
-        var inline1802 bool
-        if inline1800 {
-            var inline1804 bool = value__32 <= 57343
-            inline1802 = inline1804
+    var t1173 bool
+    var inline1865 bool = value__32 <= 1114111
+    if inline1865 {
+        var inline1866 bool = value__32 >= 55296
+        var inline1868 bool
+        if inline1866 {
+            var inline1870 bool = value__32 <= 57343
+            inline1868 = inline1870
         } else {
-            inline1802 = false
+            inline1868 = false
         }
-        var inline1803 bool = !inline1802
-        t1137 = inline1803
+        var inline1869 bool = !inline1868
+        t1173 = inline1869
     } else {
-        t1137 = false
+        t1173 = false
     }
-    if t1137 {
+    if t1173 {
         var mtmp22 Tuple2_4bool_4char = _goml_runtime_core_char_from_uint32(value__32)
         var x24 rune = mtmp22._1
-        var t1138 Option__char = Some{
+        var t1174 Option__char = Some{
             _0: x24,
         }
-        return t1138
+        return t1174
     } else {
         return None{}
     }

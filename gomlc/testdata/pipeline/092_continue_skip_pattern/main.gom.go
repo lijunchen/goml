@@ -34,62 +34,62 @@ func ref_set__Ref_3int(reference *ref_int_x, value int) struct{} {
 
 func main0() struct{} {
     var i__0 *ref_int_x
-    var inline207 int = 0
-    var inline208 *ref_int_x = ref__Ref_3int(inline207)
-    i__0 = inline208
-    Loop_loop144:
+    var inline243 int = 0
+    var inline244 *ref_int_x = ref__Ref_3int(inline243)
+    i__0 = inline244
+    Loop_loop180:
     for {
-        var t145 int
-        var inline201 int = ref_get__Ref_3int(i__0)
-        t145 = inline201
-        var t146 bool = t145 < 8
-        if t146 {
-            var t147 int
-            var inline199 int = ref_get__Ref_3int(i__0)
-            t147 = inline199
-            var t148 int = t147 + 1
-            ref_set__Ref_3int(i__0, t148)
-            var t154 int
-            var inline195 int = ref_get__Ref_3int(i__0)
-            t154 = inline195
-            var t155 bool
-            var inline192 int = 3
-            var inline193 bool = t154 == inline192
-            t155 = inline193
-            if t155 {
+        var t181 int
+        var inline237 int = ref_get__Ref_3int(i__0)
+        t181 = inline237
+        var t182 bool = t181 < 8
+        if t182 {
+            var t183 int
+            var inline235 int = ref_get__Ref_3int(i__0)
+            t183 = inline235
+            var t184 int = t183 + 1
+            ref_set__Ref_3int(i__0, t184)
+            var t190 int
+            var inline231 int = ref_get__Ref_3int(i__0)
+            t190 = inline231
+            var t191 bool
+            var inline228 int = 3
+            var inline229 bool = t190 == inline228
+            t191 = inline229
+            if t191 {
                 continue
             } else {
-                var t152 int
-                var inline190 int = ref_get__Ref_3int(i__0)
-                t152 = inline190
-                var t153 bool
-                var inline187 int = 6
-                var inline188 bool = t152 == inline187
-                t153 = inline188
-                if t153 {
+                var t188 int
+                var inline226 int = ref_get__Ref_3int(i__0)
+                t188 = inline226
+                var t189 bool
+                var inline223 int = 6
+                var inline224 bool = t188 == inline223
+                t189 = inline224
+                if t189 {
                     continue
                 } else {
-                    var t151 int
-                    var inline185 int = ref_get__Ref_3int(i__0)
-                    t151 = inline185
-                    var inline182 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t151)
-                    _goml_runtime_core_string_println(inline182)
+                    var t187 int
+                    var inline221 int = ref_get__Ref_3int(i__0)
+                    t187 = inline221
+                    var inline218 string = _goml_m_trait__impl_i_ToString_i_int_i_to__string(t187)
+                    _goml_runtime_core_string_println(inline218)
                     continue
                 }
             }
         } else {
-            break Loop_loop144
+            break Loop_loop180
         }
     }
-    var inline203 string = "done"
-    var inline204 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline203)
-    _goml_runtime_core_string_println(inline204)
+    var inline239 string = "done"
+    var inline240 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(inline239)
+    _goml_runtime_core_string_println(inline240)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int_i_to__string(self__69 int) string {
-    var t175 string = _goml_runtime_core_int_to_string(self__69)
-    return t175
+    var t211 string = _goml_runtime_core_int_to_string(self__69)
+    return t211
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {

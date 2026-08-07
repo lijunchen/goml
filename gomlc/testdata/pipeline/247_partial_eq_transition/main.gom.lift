@@ -1,0 +1,2165 @@
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#from_int(value/0: int) -> std::cmp::Ordering {
+  if (value/0 < 0) {
+      std::cmp::Ordering::Less
+  } else {
+      if (value/0 > 0) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#to_int(self/1: std::cmp::Ordering) -> int {
+  match self/1 {
+    std::cmp::Ordering::Less => {
+      -1
+    },
+    std::cmp::Ordering::Equal => {
+      0
+    },
+    std::cmp::Ordering::Greater => {
+      1
+    },
+  }
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#is_lt(self/2: std::cmp::Ordering) -> bool {
+  trait_impl#PartialEq#std::cmp::Ordering#eq(self/2, std::cmp::Ordering::Less)
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#is_eq(self/3: std::cmp::Ordering) -> bool {
+  trait_impl#PartialEq#std::cmp::Ordering#eq(self/3, std::cmp::Ordering::Equal)
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#is_gt(self/4: std::cmp::Ordering) -> bool {
+  trait_impl#PartialEq#std::cmp::Ordering#eq(self/4, std::cmp::Ordering::Greater)
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#is_le(self/5: std::cmp::Ordering) -> bool {
+  (!trait_impl#PartialEq#std::cmp::Ordering#eq(self/5, std::cmp::Ordering::Greater))
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#is_ge(self/6: std::cmp::Ordering) -> bool {
+  (!trait_impl#PartialEq#std::cmp::Ordering#eq(self/6, std::cmp::Ordering::Less))
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#is_ne(self/7: std::cmp::Ordering) -> bool {
+  (!trait_impl#PartialEq#std::cmp::Ordering#eq(self/7, std::cmp::Ordering::Equal))
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#reverse(
+  self/8: std::cmp::Ordering
+) -> std::cmp::Ordering {
+  match self/8 {
+    std::cmp::Ordering::Less => {
+      std::cmp::Ordering::Greater
+    },
+    std::cmp::Ordering::Equal => {
+      std::cmp::Ordering::Equal
+    },
+    std::cmp::Ordering::Greater => {
+      std::cmp::Ordering::Less
+    },
+  }
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#then(
+  self/9: std::cmp::Ordering,
+  other/10: std::cmp::Ordering
+) -> std::cmp::Ordering {
+  if trait_impl#PartialEq#std::cmp::Ordering#eq(self/9, std::cmp::Ordering::Equal) {
+      other/10
+  } else {
+      self/9
+  }
+}
+
+fn inherent#std::cmp::Ordering#std::cmp::Ordering#then_with(
+  self/11: std::cmp::Ordering,
+  compare/12: () -> std::cmp::Ordering
+) -> std::cmp::Ordering {
+  if trait_impl#PartialEq#std::cmp::Ordering#eq(self/11, std::cmp::Ordering::Equal) {
+      compare/12()
+  } else {
+      self/11
+  }
+}
+
+fn trait_impl#PartialEq#std::cmp::Ordering#eq(
+  self/13: std::cmp::Ordering,
+  other/14: std::cmp::Ordering
+) -> bool {
+  match self/13 {
+    std::cmp::Ordering::Less => {
+      match other/14 {
+        std::cmp::Ordering::Less => {
+          true
+        },
+        _ => false,
+      }
+    },
+    std::cmp::Ordering::Equal => {
+      match other/14 {
+        std::cmp::Ordering::Equal => {
+          true
+        },
+        _ => false,
+      }
+    },
+    std::cmp::Ordering::Greater => {
+      match other/14 {
+        std::cmp::Ordering::Greater => {
+          true
+        },
+        _ => false,
+      }
+    },
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#partial_cmp(
+  self/27: std::cmp::Ordering,
+  other/28: std::cmp::Ordering
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if trait_impl#PartialEq#std::cmp::Ordering#eq(self/27, other/28) {
+        std::cmp::Ordering::Equal
+    } else {
+        match self/27 {
+          std::cmp::Ordering::Less => {
+            std::cmp::Ordering::Less
+          },
+          std::cmp::Ordering::Equal => {
+            if trait_impl#PartialEq#std::cmp::Ordering#eq(other/28, std::cmp::Ordering::Greater) {
+                std::cmp::Ordering::Less
+            } else {
+                std::cmp::Ordering::Greater
+            }
+          },
+          std::cmp::Ordering::Greater => {
+            std::cmp::Ordering::Greater
+          },
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#lt(
+  default_arg0: std::cmp::Ordering,
+  default_arg1: std::cmp::Ordering
+) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_std::cmp::Ordering(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#le(
+  default_arg0: std::cmp::Ordering,
+  default_arg1: std::cmp::Ordering
+) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_std::cmp::Ordering(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#gt(
+  default_arg0: std::cmp::Ordering,
+  default_arg1: std::cmp::Ordering
+) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_std::cmp::Ordering(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#ge(
+  default_arg0: std::cmp::Ordering,
+  default_arg1: std::cmp::Ordering
+) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_std::cmp::Ordering(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#std::cmp::Ordering#cmp(
+  self/29: std::cmp::Ordering,
+  other/30: std::cmp::Ordering
+) -> std::cmp::Ordering {
+  if trait_impl#PartialEq#std::cmp::Ordering#eq(self/29, other/30) {
+      std::cmp::Ordering::Equal
+  } else {
+      match self/29 {
+        std::cmp::Ordering::Less => {
+          std::cmp::Ordering::Less
+        },
+        std::cmp::Ordering::Equal => {
+          if trait_impl#PartialEq#std::cmp::Ordering#eq(other/30, std::cmp::Ordering::Greater) {
+              std::cmp::Ordering::Less
+          } else {
+              std::cmp::Ordering::Greater
+          }
+        },
+        std::cmp::Ordering::Greater => {
+          std::cmp::Ordering::Greater
+        },
+      }
+  }
+}
+
+fn trait_impl#std::cmp::Ord#unit#cmp(self/31: unit, other/32: unit) -> std::cmp::Ordering {
+  std::cmp::Ordering::Equal
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#partial_cmp(
+  self/33: unit,
+  other/34: unit
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(std::cmp::Ordering::Equal)
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#lt(default_arg0: unit, default_arg1: unit) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_unit(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#le(default_arg0: unit, default_arg1: unit) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_unit(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#gt(default_arg0: unit, default_arg1: unit) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_unit(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#unit#ge(default_arg0: unit, default_arg1: unit) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_unit(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#bool#cmp(self/35: bool, other/36: bool) -> std::cmp::Ordering {
+  if trait_impl#PartialEq#bool#eq(self/35, other/36) {
+      std::cmp::Ordering::Equal
+  } else {
+      if self/35 {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Less
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#partial_cmp(
+  self/37: bool,
+  other/38: bool
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if trait_impl#PartialEq#bool#eq(self/37, other/38) {
+        std::cmp::Ordering::Equal
+    } else {
+        if self/37 {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Less
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#lt(default_arg0: bool, default_arg1: bool) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_bool(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#le(default_arg0: bool, default_arg1: bool) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_bool(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#gt(default_arg0: bool, default_arg1: bool) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_bool(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#bool#ge(default_arg0: bool, default_arg1: bool) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_bool(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#string#cmp(self/39: string, other/40: string) -> std::cmp::Ordering {
+  if (self/39 < other/40) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/39 > other/40) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#partial_cmp(
+  self/41: string,
+  other/42: string
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/41 < other/42) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/41 > other/42) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#lt(default_arg0: string, default_arg1: string) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_string(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#le(default_arg0: string, default_arg1: string) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_string(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#gt(default_arg0: string, default_arg1: string) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_string(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#string#ge(default_arg0: string, default_arg1: string) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_string(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#char#cmp(self/43: char, other/44: char) -> std::cmp::Ordering {
+  if (self/43 < other/44) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/43 > other/44) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#partial_cmp(
+  self/45: char,
+  other/46: char
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/45 < other/46) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/45 > other/46) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#lt(default_arg0: char, default_arg1: char) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_char(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#le(default_arg0: char, default_arg1: char) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_char(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#gt(default_arg0: char, default_arg1: char) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_char(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#char#ge(default_arg0: char, default_arg1: char) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_char(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#int#cmp(self/47: int, other/48: int) -> std::cmp::Ordering {
+  if (self/47 < other/48) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/47 > other/48) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#partial_cmp(
+  self/49: int,
+  other/50: int
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/49 < other/50) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/49 > other/50) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#lt(default_arg0: int, default_arg1: int) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_int(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#le(default_arg0: int, default_arg1: int) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_int(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#gt(default_arg0: int, default_arg1: int) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_int(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int#ge(default_arg0: int, default_arg1: int) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_int(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#int8#cmp(self/51: int8, other/52: int8) -> std::cmp::Ordering {
+  if (self/51 < other/52) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/51 > other/52) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#partial_cmp(
+  self/53: int8,
+  other/54: int8
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/53 < other/54) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/53 > other/54) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#lt(default_arg0: int8, default_arg1: int8) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_int8(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#le(default_arg0: int8, default_arg1: int8) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_int8(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#gt(default_arg0: int8, default_arg1: int8) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_int8(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int8#ge(default_arg0: int8, default_arg1: int8) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_int8(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#int16#cmp(self/55: int16, other/56: int16) -> std::cmp::Ordering {
+  if (self/55 < other/56) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/55 > other/56) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#partial_cmp(
+  self/57: int16,
+  other/58: int16
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/57 < other/58) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/57 > other/58) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#lt(default_arg0: int16, default_arg1: int16) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_int16(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#le(default_arg0: int16, default_arg1: int16) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_int16(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#gt(default_arg0: int16, default_arg1: int16) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_int16(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int16#ge(default_arg0: int16, default_arg1: int16) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_int16(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#int32#cmp(self/59: int32, other/60: int32) -> std::cmp::Ordering {
+  if (self/59 < other/60) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/59 > other/60) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#partial_cmp(
+  self/61: int32,
+  other/62: int32
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/61 < other/62) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/61 > other/62) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#lt(default_arg0: int32, default_arg1: int32) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_int32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#le(default_arg0: int32, default_arg1: int32) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_int32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#gt(default_arg0: int32, default_arg1: int32) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_int32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int32#ge(default_arg0: int32, default_arg1: int32) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_int32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#int64#cmp(self/63: int64, other/64: int64) -> std::cmp::Ordering {
+  if (self/63 < other/64) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/63 > other/64) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#partial_cmp(
+  self/65: int64,
+  other/66: int64
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/65 < other/66) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/65 > other/66) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#lt(default_arg0: int64, default_arg1: int64) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_int64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#le(default_arg0: int64, default_arg1: int64) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_int64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#gt(default_arg0: int64, default_arg1: int64) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_int64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#int64#ge(default_arg0: int64, default_arg1: int64) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_int64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#uint#cmp(self/67: uint, other/68: uint) -> std::cmp::Ordering {
+  if (self/67 < other/68) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/67 > other/68) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#partial_cmp(
+  self/69: uint,
+  other/70: uint
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/69 < other/70) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/69 > other/70) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#lt(default_arg0: uint, default_arg1: uint) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_uint(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#le(default_arg0: uint, default_arg1: uint) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_uint(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#gt(default_arg0: uint, default_arg1: uint) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_uint(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint#ge(default_arg0: uint, default_arg1: uint) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_uint(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#uint8#cmp(self/71: uint8, other/72: uint8) -> std::cmp::Ordering {
+  if (self/71 < other/72) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/71 > other/72) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(
+  self/73: uint8,
+  other/74: uint8
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/73 < other/74) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/73 > other/74) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#lt(default_arg0: uint8, default_arg1: uint8) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_uint8(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#le(default_arg0: uint8, default_arg1: uint8) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_uint8(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#gt(default_arg0: uint8, default_arg1: uint8) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_uint8(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint8#ge(default_arg0: uint8, default_arg1: uint8) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_uint8(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#uint16#cmp(self/75: uint16, other/76: uint16) -> std::cmp::Ordering {
+  if (self/75 < other/76) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/75 > other/76) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(
+  self/77: uint16,
+  other/78: uint16
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/77 < other/78) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/77 > other/78) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#lt(default_arg0: uint16, default_arg1: uint16) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_uint16(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#le(default_arg0: uint16, default_arg1: uint16) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_uint16(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#gt(default_arg0: uint16, default_arg1: uint16) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_uint16(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint16#ge(default_arg0: uint16, default_arg1: uint16) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_uint16(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#uint32#cmp(self/79: uint32, other/80: uint32) -> std::cmp::Ordering {
+  if (self/79 < other/80) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/79 > other/80) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(
+  self/81: uint32,
+  other/82: uint32
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/81 < other/82) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/81 > other/82) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#lt(default_arg0: uint32, default_arg1: uint32) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_uint32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#le(default_arg0: uint32, default_arg1: uint32) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_uint32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#gt(default_arg0: uint32, default_arg1: uint32) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_uint32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint32#ge(default_arg0: uint32, default_arg1: uint32) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_uint32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::Ord#uint64#cmp(self/83: uint64, other/84: uint64) -> std::cmp::Ordering {
+  if (self/83 < other/84) {
+      std::cmp::Ordering::Less
+  } else {
+      if (self/83 > other/84) {
+          std::cmp::Ordering::Greater
+      } else {
+          std::cmp::Ordering::Equal
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(
+  self/85: uint64,
+  other/86: uint64
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (self/85 < other/86) {
+        std::cmp::Ordering::Less
+    } else {
+        if (self/85 > other/86) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#lt(default_arg0: uint64, default_arg1: uint64) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_uint64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#le(default_arg0: uint64, default_arg1: uint64) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_uint64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#gt(default_arg0: uint64, default_arg1: uint64) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_uint64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#uint64#ge(default_arg0: uint64, default_arg1: uint64) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_uint64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#partial_cmp(
+  self/87: float32,
+  other/88: float32
+) -> Option__std::cmp::Ordering {
+  if (self/87 < other/88) {
+      Option__std::cmp::Ordering::Some(std::cmp::Ordering::Less)
+  } else {
+      if (self/87 > other/88) {
+          Option__std::cmp::Ordering::Some(std::cmp::Ordering::Greater)
+      } else {
+          if trait_impl#PartialEq#float32#eq(self/87, other/88) {
+              Option__std::cmp::Ordering::Some(std::cmp::Ordering::Equal)
+          } else {
+              Option__std::cmp::Ordering::None
+          }
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#lt(
+  default_arg0: float32,
+  default_arg1: float32
+) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_float32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#le(
+  default_arg0: float32,
+  default_arg1: float32
+) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_float32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#gt(
+  default_arg0: float32,
+  default_arg1: float32
+) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_float32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#float32#ge(
+  default_arg0: float32,
+  default_arg1: float32
+) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_float32(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#partial_cmp(
+  self/89: float64,
+  other/90: float64
+) -> Option__std::cmp::Ordering {
+  if (self/89 < other/90) {
+      Option__std::cmp::Ordering::Some(std::cmp::Ordering::Less)
+  } else {
+      if (self/89 > other/90) {
+          Option__std::cmp::Ordering::Some(std::cmp::Ordering::Greater)
+      } else {
+          if trait_impl#PartialEq#float64#eq(self/89, other/90) {
+              Option__std::cmp::Ordering::Some(std::cmp::Ordering::Equal)
+          } else {
+              Option__std::cmp::Ordering::None
+          }
+      }
+  }
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#lt(
+  default_arg0: float64,
+  default_arg1: float64
+) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_float64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#le(
+  default_arg0: float64,
+  default_arg1: float64
+) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_float64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#gt(
+  default_arg0: float64,
+  default_arg1: float64
+) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_float64(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#float64#ge(
+  default_arg0: float64,
+  default_arg1: float64
+) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_float64(default_arg0, default_arg1)
+}
+
+fn trait_impl#PartialEq#LegacyKey#eq(self/0: LegacyKey, other/1: LegacyKey) -> bool {
+  if true {
+      trait_impl#PartialEq#int#eq(LegacyKey.value(self/0), LegacyKey.value(other/1))
+  } else {
+      false
+  }
+}
+
+fn trait_impl#Hash#LegacyKey#hash(self/2: LegacyKey) -> uint64 {
+  let h/3 = ((0 as uint64) + 14695981039346656037) in
+  let h/4 =
+    ((h/3 * ((0 as uint64) + 1099511628211)) + trait_impl#Hash#int#hash(LegacyKey.value(self/2))) in
+  h/4
+}
+
+fn trait_impl#PartialEq#ModernKey#eq(self/5: ModernKey, other/6: ModernKey) -> bool {
+  trait_impl#PartialEq#int#eq((ModernKey.value(self/5) % 10), (ModernKey.value(other/6) % 10))
+}
+
+fn trait_impl#Hash#ModernKey#hash(self/7: ModernKey) -> uint64 {
+  ((ModernKey.value(self/7) % 10) as uint64)
+}
+
+fn trait_impl#PartialEq#Rank#eq(self/8: Rank, other/9: Rank) -> bool {
+  trait_impl#PartialEq#int#eq(Rank.value(self/8), Rank.value(other/9))
+}
+
+fn trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(
+  self/10: Rank,
+  other/11: Rank
+) -> Option__std::cmp::Ordering {
+  Option__std::cmp::Ordering::Some(
+    if (Rank.value(self/10) > Rank.value(other/11)) {
+        std::cmp::Ordering::Less
+    } else {
+        if (Rank.value(self/10) < Rank.value(other/11)) {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+  )
+}
+
+fn trait_impl#std::cmp::PartialOrd#Rank#lt(default_arg0: Rank, default_arg1: Rank) -> bool {
+  std::cmp::trait_default#PartialOrd#lt__Self_Rank(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#Rank#le(default_arg0: Rank, default_arg1: Rank) -> bool {
+  std::cmp::trait_default#PartialOrd#le__Self_Rank(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#Rank#gt(default_arg0: Rank, default_arg1: Rank) -> bool {
+  std::cmp::trait_default#PartialOrd#gt__Self_Rank(default_arg0, default_arg1)
+}
+
+fn trait_impl#std::cmp::PartialOrd#Rank#ge(default_arg0: Rank, default_arg1: Rank) -> bool {
+  std::cmp::trait_default#PartialOrd#ge__Self_Rank(default_arg0, default_arg1)
+}
+
+fn main() -> unit {
+  let legacy/14 = LegacyKey { value: 7 } in
+  let modern/15 = ModernKey { value: 9 } in
+  let _wild172 = println__T_bool(equal__T_LegacyKey(legacy/14, LegacyKey { value: 7 })) in
+  let _wild173 =
+    println__T_bool(trait_impl#PartialEq#LegacyKey#eq(legacy/14, LegacyKey { value: 8 })) in
+  let _wild174 = println__T_bool(equal__T_ModernKey(modern/15, ModernKey { value: 19 })) in
+  let _wild175 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(
+        (!trait_impl#PartialEq#ModernKey#eq(modern/15, ModernKey { value: 20 }))
+      )
+    ) in
+  let legacy_map/16 = inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() in
+  let _wild176 =
+    inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(legacy_map/16, legacy/14, "legacy") in
+  let _wild177 =
+    println__T_string(
+      inherent#Option#Option[T]#unwrap_or__T_string(
+        inherent#HashMap#HashMap[K,V]#get__K_LegacyKey__V_string(
+          legacy_map/16,
+          LegacyKey { value: 7 }
+        ),
+        "missing"
+      )
+    ) in
+  let modern_map/17 = inherent#HashMap#HashMap[K,V]#new__K_ModernKey__V_string() in
+  let _wild178 =
+    inherent#HashMap#HashMap[K,V]#set__K_ModernKey__V_string(modern_map/17, modern/15, "modern") in
+  let _wild179 =
+    println__T_string(
+      inherent#Option#Option[T]#unwrap_or__T_string(
+        inherent#HashMap#HashMap[K,V]#get__K_ModernKey__V_string(
+          modern_map/17,
+          ModernKey { value: 19 }
+        ),
+        "missing"
+      )
+    ) in
+  let high/18 = Rank { value: 2 } in
+  let low/19 = Rank { value: 1 } in
+  let _wild180 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(trait_impl#std::cmp::PartialOrd#Rank#lt(high/18, low/19))
+    ) in
+  let _wild181 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(trait_impl#std::cmp::PartialOrd#Rank#le(high/18, high/18))
+    ) in
+  let _wild182 =
+    println__T_string(
+      trait_impl#ToString#bool#to_string(trait_impl#std::cmp::PartialOrd#Rank#gt(low/19, high/18))
+    ) in
+  println__T_string(
+    trait_impl#ToString#bool#to_string(trait_impl#std::cmp::PartialOrd#Rank#ge(low/19, low/19))
+  )
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_std::cmp::Ordering(
+  self/15: std::cmp::Ordering,
+  other/16: std::cmp::Ordering
+) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_std::cmp::Ordering(
+  self/18: std::cmp::Ordering,
+  other/19: std::cmp::Ordering
+) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_std::cmp::Ordering(
+  self/21: std::cmp::Ordering,
+  other/22: std::cmp::Ordering
+) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_std::cmp::Ordering(
+  self/24: std::cmp::Ordering,
+  other/25: std::cmp::Ordering
+) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#std::cmp::Ordering#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_unit(self/15: unit, other/16: unit) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_unit(self/18: unit, other/19: unit) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_unit(self/21: unit, other/22: unit) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_unit(self/24: unit, other/25: unit) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#unit#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
+  @intrinsic(eq.primitive)(self/97, other/98)
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_bool(self/15: bool, other/16: bool) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_bool(self/18: bool, other/19: bool) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_bool(self/21: bool, other/22: bool) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_bool(self/24: bool, other/25: bool) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#bool#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_string(self/15: string, other/16: string) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_string(self/18: string, other/19: string) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_string(self/21: string, other/22: string) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_string(self/24: string, other/25: string) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#string#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_char(self/15: char, other/16: char) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_char(self/18: char, other/19: char) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_char(self/21: char, other/22: char) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_char(self/24: char, other/25: char) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#char#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int(self/15: int, other/16: int) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#int#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int(self/18: int, other/19: int) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#int#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int(self/21: int, other/22: int) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#int#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int(self/24: int, other/25: int) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#int#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int8(self/15: int8, other/16: int8) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#int8#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int8(self/18: int8, other/19: int8) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#int8#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int8(self/21: int8, other/22: int8) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#int8#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int8(self/24: int8, other/25: int8) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#int8#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int16(self/15: int16, other/16: int16) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#int16#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int16(self/18: int16, other/19: int16) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#int16#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int16(self/21: int16, other/22: int16) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#int16#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int16(self/24: int16, other/25: int16) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#int16#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int32(self/15: int32, other/16: int32) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#int32#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int32(self/18: int32, other/19: int32) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#int32#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int32(self/21: int32, other/22: int32) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#int32#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int32(self/24: int32, other/25: int32) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#int32#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_int64(self/15: int64, other/16: int64) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#int64#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_int64(self/18: int64, other/19: int64) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#int64#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_int64(self/21: int64, other/22: int64) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#int64#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_int64(self/24: int64, other/25: int64) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#int64#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint(self/15: uint, other/16: uint) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#uint#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint(self/18: uint, other/19: uint) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#uint#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint(self/21: uint, other/22: uint) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#uint#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint(self/24: uint, other/25: uint) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#uint#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint8(self/15: uint8, other/16: uint8) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint8(self/18: uint8, other/19: uint8) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint8(self/21: uint8, other/22: uint8) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint8(self/24: uint8, other/25: uint8) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#uint8#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint16(self/15: uint16, other/16: uint16) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint16(self/18: uint16, other/19: uint16) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint16(self/21: uint16, other/22: uint16) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint16(self/24: uint16, other/25: uint16) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#uint16#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint32(self/15: uint32, other/16: uint32) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint32(self/18: uint32, other/19: uint32) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint32(self/21: uint32, other/22: uint32) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint32(self/24: uint32, other/25: uint32) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#uint32#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_uint64(self/15: uint64, other/16: uint64) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_uint64(self/18: uint64, other/19: uint64) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_uint64(self/21: uint64, other/22: uint64) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_uint64(self/24: uint64, other/25: uint64) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#uint64#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn trait_impl#PartialEq#float32#eq(self/121: float32, other/122: float32) -> bool {
+  @intrinsic(eq.primitive)(self/121, other/122)
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_float32(
+  self/15: float32,
+  other/16: float32
+) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#float32#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_float32(
+  self/18: float32,
+  other/19: float32
+) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#float32#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_float32(
+  self/21: float32,
+  other/22: float32
+) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#float32#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_float32(
+  self/24: float32,
+  other/25: float32
+) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#float32#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn trait_impl#PartialEq#float64#eq(self/123: float64, other/124: float64) -> bool {
+  @intrinsic(eq.primitive)(self/123, other/124)
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_float64(
+  self/15: float64,
+  other/16: float64
+) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#float64#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_float64(
+  self/18: float64,
+  other/19: float64
+) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#float64#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_float64(
+  self/21: float64,
+  other/22: float64
+) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#float64#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_float64(
+  self/24: float64,
+  other/25: float64
+) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#float64#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  @intrinsic(eq.primitive)(self/103, other/104)
+}
+
+fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
+  @runtime(core.int_hash)(self/129)
+}
+
+fn std::cmp::trait_default#PartialOrd#lt__Self_Rank(self/15: Rank, other/16: Rank) -> bool {
+  let mtmp0 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(self/15, other/16) in
+  match mtmp0 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x1) => {
+      let x1 = Option__std::cmp::Ordering::Some._0(mtmp0) in
+      let ordering/17 = x1 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/17, std::cmp::Ordering::Less)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#le__Self_Rank(self/18: Rank, other/19: Rank) -> bool {
+  let mtmp2 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(self/18, other/19) in
+  match mtmp2 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x3) => {
+      let x3 = Option__std::cmp::Ordering::Some._0(mtmp2) in
+      let ordering/20 = x3 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/20, std::cmp::Ordering::Greater))
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#gt__Self_Rank(self/21: Rank, other/22: Rank) -> bool {
+  let mtmp4 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(self/21, other/22) in
+  match mtmp4 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x5) => {
+      let x5 = Option__std::cmp::Ordering::Some._0(mtmp4) in
+      let ordering/23 = x5 in
+      trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/23, std::cmp::Ordering::Greater)
+    },
+  }
+}
+
+fn std::cmp::trait_default#PartialOrd#ge__Self_Rank(self/24: Rank, other/25: Rank) -> bool {
+  let mtmp6 = trait_impl#std::cmp::PartialOrd#Rank#partial_cmp(self/24, other/25) in
+  match mtmp6 {
+    Option__std::cmp::Ordering::None => {
+      false
+    },
+    Option__std::cmp::Ordering::Some(x7) => {
+      let x7 = Option__std::cmp::Ordering::Some._0(mtmp6) in
+      let ordering/26 = x7 in
+      (!trait_impl#PartialEq#std::cmp::Ordering#eq(ordering/26, std::cmp::Ordering::Less))
+    },
+  }
+}
+
+fn println__T_bool(value/31: bool) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
+}
+
+fn equal__T_LegacyKey(left/12: LegacyKey, right/13: LegacyKey) -> bool {
+  trait_impl#PartialEq#LegacyKey#eq(left/12, right/13)
+}
+
+fn equal__T_ModernKey(left/12: ModernKey, right/13: ModernKey) -> bool {
+  trait_impl#PartialEq#ModernKey#eq(left/12, right/13)
+}
+
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
+}
+
+fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
+  @runtime(core.bool_to_string)(self/66)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_LegacyKey__V_string() -> HashMap[LegacyKey, string] {
+  @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#set__K_LegacyKey__V_string(
+  self/248: HashMap[LegacyKey, string],
+  key/249: LegacyKey,
+  value/250: string
+) -> unit {
+  @intrinsic(hashmap.set)(self/248, key/249, value/250)
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_LegacyKey__V_string(
+  self/246: HashMap[LegacyKey, string],
+  key/247: LegacyKey
+) -> Option__string {
+  @intrinsic(hashmap.get)(self/246, key/247)
+}
+
+fn inherent#Option#Option[T]#unwrap_or__T_string(
+  self/290: Option__string,
+  fallback/291: string
+) -> string {
+  match self/290 {
+    Option__string::None => {
+      fallback/291
+    },
+    Option__string::Some(x152) => {
+      let x152 = Option__string::Some._0(self/290) in
+      let value/292 = x152 in
+      value/292
+    },
+  }
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_ModernKey__V_string() -> HashMap[ModernKey, string] {
+  @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#set__K_ModernKey__V_string(
+  self/248: HashMap[ModernKey, string],
+  key/249: ModernKey,
+  value/250: string
+) -> unit {
+  @intrinsic(hashmap.set)(self/248, key/249, value/250)
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_ModernKey__V_string(
+  self/246: HashMap[ModernKey, string],
+  key/247: ModernKey
+) -> Option__string {
+  @intrinsic(hashmap.get)(self/246, key/247)
+}
+
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
+}

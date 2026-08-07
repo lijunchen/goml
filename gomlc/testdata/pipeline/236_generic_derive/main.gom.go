@@ -50,11 +50,11 @@ type Value struct {
 func (_ Value) isGenericChoice__NoTraits__NoTraits() {}
 
 func main0() struct{} {
-    var t154 NoTraits = NoTraits{
+    var t190 NoTraits = NoTraits{
         value: 1,
     }
     var wrapped__24 Wrapper__NoTraits = Wrapper__NoTraits{
-        value: t154,
+        value: t190,
     }
     var left__25 Generic__NoTraits__NoTraits = Generic__NoTraits__NoTraits{
         first: wrapped__24,
@@ -64,95 +64,95 @@ func main0() struct{} {
         first: wrapped__24,
         second: wrapped__24,
     }
-    var t155 string = _goml_m_trait__impl_i_ToString_i_Generic____NoTraits____NoTraits_i_to__string(left__25)
-    println__T_string(t155)
-    var t156 bool = _goml_m_trait__impl_i_Eq_i_Generic____NoTraits____NoTraits_i_eq(left__25, right__26)
-    println__T_bool(t156)
-    var t157 uint64 = _goml_m_trait__impl_i_Hash_i_Generic____NoTraits____NoTraits_i_hash(left__25)
-    var t158 uint64 = _goml_m_trait__impl_i_Hash_i_Generic____NoTraits____NoTraits_i_hash(right__26)
-    var t159 bool
-    var inline296 bool = t157 == t158
-    t159 = inline296
-    println__T_bool(t159)
+    var t191 string = _goml_m_trait__impl_i_ToString_i_Generic____NoTraits____NoTraits_i_to__string(left__25)
+    println__T_string(t191)
+    var t192 bool = _goml_m_trait__impl_i_PartialEq_i_Generic____NoTraits____NoTraits_i_eq(left__25, right__26)
+    println__T_bool(t192)
+    var t193 uint64 = _goml_m_trait__impl_i_Hash_i_Generic____NoTraits____NoTraits_i_hash(left__25)
+    var t194 uint64 = _goml_m_trait__impl_i_Hash_i_Generic____NoTraits____NoTraits_i_hash(right__26)
+    var t195 bool
+    var inline332 bool = t193 == t194
+    t195 = inline332
+    println__T_bool(t195)
     var empty__27 GenericChoice__NoTraits__NoTraits = Empty{}
     var value__28 GenericChoice__NoTraits__NoTraits = Value{
         _0: wrapped__24,
     }
-    var t160 string = _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__string(empty__27)
-    var inline293 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t160)
-    _goml_runtime_core_string_println(inline293)
-    var t161 string = _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__string(value__28)
-    var inline290 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t161)
+    var t196 string = _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__string(empty__27)
+    var inline329 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t196)
+    _goml_runtime_core_string_println(inline329)
+    var t197 string = _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__string(value__28)
+    var inline326 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t197)
+    _goml_runtime_core_string_println(inline326)
+    var t198 bool = _goml_m_trait__impl_i_PartialEq_i_GenericChoice____NoTraits____NoTraits_i_eq(empty__27, value__28)
+    var t199 bool = !t198
+    var inline323 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t199)
+    _goml_runtime_core_string_println(inline323)
+    var t200 uint64
+    var inline314_source int = 0
+    var inline314 uint64 = uint64(int(inline314_source))
+    var inline315 uint64 = inline314 + 14695981039346656037
+    var inline316 uint64 = inline315 + 2
+    var inline317_source int = 0
+    var inline317 uint64 = uint64(int(inline317_source))
+    var inline318 uint64 = inline317 + 1099511628211
+    var inline319 uint64 = inline316 * inline318
+    var inline320 uint64 = _goml_m_trait__impl_i_Hash_i_Wrapper____NoTraits_i_hash(wrapped__24)
+    var inline321 uint64 = inline319 + inline320
+    t200 = inline321
+    var t201 uint64
+    var inline300_source int = 0
+    var inline300 uint64 = uint64(int(inline300_source))
+    var inline301 uint64 = inline300 + 14695981039346656037
+    var inline302 uint64 = inline301 + 2
+    var inline303_source int = 0
+    var inline303 uint64 = uint64(int(inline303_source))
+    var inline304 uint64 = inline303 + 1099511628211
+    var inline305 uint64 = inline302 * inline304
+    var inline306 uint64 = _goml_m_trait__impl_i_Hash_i_Wrapper____NoTraits_i_hash(wrapped__24)
+    var inline307 uint64 = inline305 + inline306
+    t201 = inline307
+    var t202 bool
+    var inline293 bool = t200 == t201
+    t202 = inline293
+    var inline290 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t202)
     _goml_runtime_core_string_println(inline290)
-    var t162 bool = _goml_m_trait__impl_i_Eq_i_GenericChoice____NoTraits____NoTraits_i_eq(empty__27, value__28)
-    var t163 bool = !t162
-    var inline287 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t163)
-    _goml_runtime_core_string_println(inline287)
-    var t164 uint64
-    var inline278_source int = 0
-    var inline278 uint64 = uint64(int(inline278_source))
-    var inline279 uint64 = inline278 + 14695981039346656037
-    var inline280 uint64 = inline279 + 2
-    var inline281_source int = 0
-    var inline281 uint64 = uint64(int(inline281_source))
-    var inline282 uint64 = inline281 + 1099511628211
-    var inline283 uint64 = inline280 * inline282
-    var inline284 uint64 = _goml_m_trait__impl_i_Hash_i_Wrapper____NoTraits_i_hash(wrapped__24)
-    var inline285 uint64 = inline283 + inline284
-    t164 = inline285
-    var t165 uint64
-    var inline264_source int = 0
-    var inline264 uint64 = uint64(int(inline264_source))
-    var inline265 uint64 = inline264 + 14695981039346656037
-    var inline266 uint64 = inline265 + 2
-    var inline267_source int = 0
-    var inline267 uint64 = uint64(int(inline267_source))
-    var inline268 uint64 = inline267 + 1099511628211
-    var inline269 uint64 = inline266 * inline268
-    var inline270 uint64 = _goml_m_trait__impl_i_Hash_i_Wrapper____NoTraits_i_hash(wrapped__24)
-    var inline271 uint64 = inline269 + inline270
-    t165 = inline271
-    var t166 bool
-    var inline257 bool = t164 == t165
-    t166 = inline257
-    var inline254 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t166)
-    _goml_runtime_core_string_println(inline254)
     return struct{}{}
 }
 
 func println__T_string(value__31 string) struct{} {
-    var t169 string
-    t169 = value__31
-    _goml_runtime_core_string_println(t169)
+    var t205 string
+    t205 = value__31
+    _goml_runtime_core_string_println(t205)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_Generic____NoTraits____NoTraits_i_to__string(self__4 Generic__NoTraits__NoTraits) string {
-    var t173 string = "Generic { " + "first: "
-    var t174 string
-    t174 = "wrapped"
-    var t175 string = t173 + t174
-    var t176 string = t175 + ", "
-    var t177 string = t176 + "second: "
-    var t178 string
-    t178 = "wrapped"
-    var t179 string = t177 + t178
-    var t180 string = t179 + " }"
-    return t180
+    var t209 string = "Generic { " + "first: "
+    var t210 string
+    t210 = "wrapped"
+    var t211 string = t209 + t210
+    var t212 string = t211 + ", "
+    var t213 string = t212 + "second: "
+    var t214 string
+    t214 = "wrapped"
+    var t215 string = t213 + t214
+    var t216 string = t215 + " }"
+    return t216
 }
 
 func println__T_bool(value__31 bool) struct{} {
-    var t182 string
-    var inline301 string = _goml_runtime_core_bool_to_string(value__31)
-    t182 = inline301
-    _goml_runtime_core_string_println(t182)
+    var t218 string
+    var inline337 string = _goml_runtime_core_bool_to_string(value__31)
+    t218 = inline337
+    _goml_runtime_core_string_println(t218)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_Eq_i_Generic____NoTraits____NoTraits_i_eq(self__7 Generic__NoTraits__NoTraits, other__8 Generic__NoTraits__NoTraits) bool {
-    var jp189 bool
-    jp189 = true
-    if jp189 {
+func _goml_m_trait__impl_i_PartialEq_i_Generic____NoTraits____NoTraits_i_eq(self__7 Generic__NoTraits__NoTraits, other__8 Generic__NoTraits__NoTraits) bool {
+    var jp225 bool
+    jp225 = true
+    if jp225 {
         return true
     } else {
         return false
@@ -160,23 +160,23 @@ func _goml_m_trait__impl_i_Eq_i_Generic____NoTraits____NoTraits_i_eq(self__7 Gen
 }
 
 func _goml_m_trait__impl_i_Hash_i_Generic____NoTraits____NoTraits_i_hash(self__9 Generic__NoTraits__NoTraits) uint64 {
-    var t198_source int = 0
-    var t198 uint64 = uint64(int(t198_source))
-    var h__10 uint64 = t198 + 14695981039346656037
-    var t199_source int = 0
-    var t199 uint64 = uint64(int(t199_source))
-    var t200 uint64 = t199 + 1099511628211
-    var t201 uint64 = h__10 * t200
-    var t203 uint64
-    t203 = 7
-    var h__11 uint64 = t201 + t203
-    var t204_source int = 0
-    var t204 uint64 = uint64(int(t204_source))
-    var t205 uint64 = t204 + 1099511628211
-    var t206 uint64 = h__11 * t205
-    var t208 uint64
-    t208 = 7
-    var h__12 uint64 = t206 + t208
+    var t234_source int = 0
+    var t234 uint64 = uint64(int(t234_source))
+    var h__10 uint64 = t234 + 14695981039346656037
+    var t235_source int = 0
+    var t235 uint64 = uint64(int(t235_source))
+    var t236 uint64 = t235 + 1099511628211
+    var t237 uint64 = h__10 * t236
+    var t239 uint64
+    t239 = 7
+    var h__11 uint64 = t237 + t239
+    var t240_source int = 0
+    var t240 uint64 = uint64(int(t240_source))
+    var t241 uint64 = t240 + 1099511628211
+    var t242 uint64 = h__11 * t241
+    var t244 uint64
+    t244 = 7
+    var h__12 uint64 = t242 + t244
     return h__12
 }
 
@@ -185,17 +185,17 @@ func _goml_m_trait__impl_i_ToString_hfd40b94e3e10293076a83269859fcdb0_ts_i_to__s
     case Empty:
         return "GenericChoice::Empty"
     case Value:
-        var t216 string
-        t216 = "wrapped"
-        var t217 string = "GenericChoice::Value(" + t216
-        var t218 string = t217 + ")"
-        return t218
+        var t252 string
+        t252 = "wrapped"
+        var t253 string = "GenericChoice::Value(" + t252
+        var t254 string = t253 + ")"
+        return t254
     default:
         panic("non-exhaustive match")
     }
 }
 
-func _goml_m_trait__impl_i_Eq_i_GenericChoice____NoTraits____NoTraits_i_eq(self__15 GenericChoice__NoTraits__NoTraits, other__16 GenericChoice__NoTraits__NoTraits) bool {
+func _goml_m_trait__impl_i_PartialEq_i_GenericChoice____NoTraits____NoTraits_i_eq(self__15 GenericChoice__NoTraits__NoTraits, other__16 GenericChoice__NoTraits__NoTraits) bool {
     switch other__16.(type) {
     case Empty:
         switch self__15.(type) {
@@ -221,8 +221,8 @@ func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) strin
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__66 bool) string {
-    var t248 string = _goml_runtime_core_bool_to_string(self__66)
-    return t248
+    var t284 string = _goml_runtime_core_bool_to_string(self__66)
+    return t284
 }
 
 func _goml_m_trait__impl_i_Hash_i_Wrapper____NoTraits_i_hash(self__3 Wrapper__NoTraits) uint64 {

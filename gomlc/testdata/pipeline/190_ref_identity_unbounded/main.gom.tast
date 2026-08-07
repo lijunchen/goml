@@ -12,10 +12,13 @@ fn main() -> unit {
     let alias/4: Ref[Node] = (first/3 : Ref[Node]);
     let distinct/5: Ref[Node] = (Ref[Node]::new : (Node) -> Ref[Node])(Node { value: 1 });
     (println : (bool) -> unit)(
-      (Eq::eq : (Ref[Node], Ref[Node]) -> bool)((first/3 : Ref[Node]), (alias/4 : Ref[Node]))
+      (PartialEq::eq : (Ref[Node], Ref[Node]) -> bool)((first/3 : Ref[Node]), (alias/4 : Ref[Node]))
     );
     (println : (bool) -> unit)(
-      (Eq::eq : (Ref[Node], Ref[Node]) -> bool)((first/3 : Ref[Node]), (distinct/5 : Ref[Node]))
+      (PartialEq::eq : (Ref[Node], Ref[Node]) -> bool)(
+        (first/3 : Ref[Node]),
+        (distinct/5 : Ref[Node])
+      )
     );
     (println : (bool) -> unit)(
       (Hash::hash : (Ref[Node]) -> uint64)((first/3 : Ref[Node])) ==

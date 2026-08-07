@@ -33,47 +33,47 @@ const (
 )
 
 func line_to_string(l__4 Line) string {
-    var x140 Point = l__4.from
-    var x141 Point = l__4.to
-    var x142 Color = l__4.color
-    var t161 string
-    var inline211 int32 = x140.x
-    var inline212 int32 = x140.y
-    var inline215 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline211)
-    var inline216 string = "Point { x: " + inline215
-    var inline217 string = inline216 + ", y: "
-    var inline218 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline212)
-    var inline219 string = inline217 + inline218
-    var inline220 string = inline219 + " }"
-    t161 = inline220
-    var t162 string = "Line { from: " + t161
-    var t163 string = t162 + ", to: "
-    var t164 string
-    var inline199 int32 = x141.x
-    var inline200 int32 = x141.y
-    var inline203 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline199)
-    var inline204 string = "Point { x: " + inline203
-    var inline205 string = inline204 + ", y: "
-    var inline206 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline200)
-    var inline207 string = inline205 + inline206
-    var inline208 string = inline207 + " }"
-    t164 = inline208
-    var t165 string = t163 + t164
-    var t166 string = t165 + ", color: "
-    var t167 string
-    switch x142 {
+    var x176 Point = l__4.from
+    var x177 Point = l__4.to
+    var x178 Color = l__4.color
+    var t197 string
+    var inline247 int32 = x176.x
+    var inline248 int32 = x176.y
+    var inline251 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline247)
+    var inline252 string = "Point { x: " + inline251
+    var inline253 string = inline252 + ", y: "
+    var inline254 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline248)
+    var inline255 string = inline253 + inline254
+    var inline256 string = inline255 + " }"
+    t197 = inline256
+    var t198 string = "Line { from: " + t197
+    var t199 string = t198 + ", to: "
+    var t200 string
+    var inline235 int32 = x177.x
+    var inline236 int32 = x177.y
+    var inline239 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline235)
+    var inline240 string = "Point { x: " + inline239
+    var inline241 string = inline240 + ", y: "
+    var inline242 string = _goml_m_inherent_i_int32_i_int32_i_to__string(inline236)
+    var inline243 string = inline241 + inline242
+    var inline244 string = inline243 + " }"
+    t200 = inline244
+    var t201 string = t199 + t200
+    var t202 string = t201 + ", color: "
+    var t203 string
+    switch x178 {
     case Red:
-        t167 = "Red"
+        t203 = "Red"
     case Green:
-        t167 = "Green"
+        t203 = "Green"
     case Blue:
-        t167 = "Blue"
+        t203 = "Blue"
     default:
         panic("non-exhaustive match")
     }
-    var t168 string = t166 + t167
-    var t169 string = t168 + " }"
-    return t169
+    var t204 string = t202 + t203
+    var t205 string = t204 + " }"
+    return t205
 }
 
 func main0() struct{} {
@@ -81,39 +81,39 @@ func main0() struct{} {
         x: 0,
         y: 0,
     }
-    var t181 string
-    var inline228 int32 = 0
-    var inline229 int32 = 0
-    switch inline228 {
+    var t217 string
+    var inline264 int32 = 0
+    var inline265 int32 = 0
+    switch inline264 {
     case 0:
-        switch inline229 {
+        switch inline265 {
         case 0:
-            t181 = "origin"
+            t217 = "origin"
         case 1:
-            t181 = "up"
+            t217 = "up"
         default:
-            var inline231 bool = 0 < inline229
-            switch inline231 {
+            var inline267 bool = 0 < inline265
+            switch inline267 {
             case true:
-                t181 = "above"
+                t217 = "above"
             case false:
-                t181 = "below"
+                t217 = "below"
             default:
                 panic("non-exhaustive match")
             }
         }
     case 1:
-        switch inline229 {
+        switch inline265 {
         case 0:
-            t181 = "right"
+            t217 = "right"
         default:
-            t181 = "unknown"
+            t217 = "unknown"
         }
     default:
-        t181 = "unknown"
+        t217 = "unknown"
     }
-    var inline225 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t181)
-    _goml_runtime_core_string_println(inline225)
+    var inline261 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t217)
+    _goml_runtime_core_string_println(inline261)
     var p1__11 Point = Point{
         x: 10,
         y: 10,
@@ -123,15 +123,15 @@ func main0() struct{} {
         to: p1__11,
         color: Red,
     }
-    var t182 string = line_to_string(line__12)
-    var inline222 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t182)
-    _goml_runtime_core_string_println(inline222)
+    var t218 string = line_to_string(line__12)
+    var inline258 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t218)
+    _goml_runtime_core_string_println(inline258)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__35 int32) string {
-    var t186 string = _goml_runtime_core_int32_to_string(self__35)
-    return t186
+    var t222 string = _goml_runtime_core_int32_to_string(self__35)
+    return t222
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__67 string) string {
