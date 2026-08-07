@@ -2075,8 +2075,8 @@ fn describe_dyn(value/6: dyn Describe) -> string {
 
 fn main() -> unit {
   let default_value/7 = DefaultValue { name: "value" } in
-  let _wild172 = println(trait_call[Describe::describe](default_value/7)) in
-  let _wild173 = println(trait_call[Keep::keep](default_value/7, "generic")) in
+  let _wild172 = println(trait_default#Describe#describe(default_value/7)) in
+  let _wild173 = println(trait_default#Keep#keep(default_value/7, "generic")) in
   let _wild174 = println(trait_call[Describe::describe](OverrideValue {})) in
   let _wild175 = println(describe_dyn(to_dyn[Describe]{DefaultValue}(default_value/7))) in
 }
