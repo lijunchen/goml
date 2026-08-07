@@ -1,0 +1,30 @@
+#[derive(Debug)]
+struct Point {
+    x: int32,
+    label: string,
+}
+
+#[derive(Debug)]
+enum State[T] {
+    Idle,
+    Value(T),
+    Named {
+        value: T,
+    },
+}
+
+fn debug_dyn(value: dyn Debug) -> string {
+    value.debug()
+}
+
+fn main() -> unit {
+    let point = Point { x: 3, label: "east" };
+    let idle: State[int32] = State::Idle;
+    let value = State::Value(point);
+    let named = State::Named { value: 7 };
+    println(point.debug());
+    println(idle.debug());
+    println(value.debug());
+    println(Debug::debug(named));
+    println(debug_dyn(9))
+}
