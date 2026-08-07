@@ -1262,6 +1262,18 @@ fn builtin_value_trait_type(value: Type) -> bool {
     }
 }
 
+fn builtin_total_value_trait_type(value: Type) -> bool {
+    match prune(value) {
+        Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | String | Char => true,
+        Var(variable) => match variable.get() {
+            Unbound { id: _, kind: Integer } => true,
+            Link(inner) => builtin_total_value_trait_type(inner),
+            Unbound { id: _, kind: Float } | Unbound { id: _, kind: Any } => false,
+        },
+        _ => false,
+    }
+}
+
 fn iterator_trait_ref() -> TraitRef {
     TraitRef { name: "Iterator", args: Vec::[] }
 }
@@ -1269,6 +1281,27 @@ fn iterator_trait_ref() -> TraitRef {
 fn builtin_iterator_bound_satisfied(ctx: Checker, bound_ty: Type) -> bool {
     match prune(normalize_type(ctx, bound_ty)) {
         App { ty: Con { name }, args } => name == "FnIterator" && args.len() == 1,
+        _ => false,
+    }
+}
+
+fn builtin_container_trait_satisfied(
+    ctx: Checker,
+    bound_ty: Type,
+    trait_name: string,
+    goals: Vec[string],
+) -> bool {
+    let reference = TraitRef { name: trait_name, args: Vec::[] };
+    match bound_ty {
+        VecType { elem } | Slice { elem } => trait_bound_satisfied_at(ctx, elem, reference, goals),
+        App { ty: Con { name }, args } => if name == "Option" && args.len() == 1 {
+            trait_bound_satisfied_at(ctx, args[0], reference, goals)
+        } else if name == "Result" && args.len() == 2 {
+            trait_bound_satisfied_at(ctx, args[0], reference, goals)
+                && trait_bound_satisfied_at(ctx, args[1], reference, goals)
+        } else {
+            false
+        },
         _ => false,
     }
 }
@@ -1307,9 +1340,13 @@ fn builtin_trait_bound_satisfied(
                         _ => false,
                     }
                 }
-            } else if trait_name == "Eq" || trait_name == "Hash" {
-                if trait_name == "Eq" {
-                    if builtin_value_trait_type(bound_ty) {
+            } else if trait_name == "PartialEq" || trait_name == "Eq" || trait_name == "Hash" {
+                if trait_name == "PartialEq" || trait_name == "Eq" {
+                    if if trait_name == "PartialEq" {
+                        builtin_value_trait_type(bound_ty)
+                    } else {
+                        builtin_total_value_trait_type(bound_ty)
+                    } {
                         true
                     } else {
                         match bound_ty {
@@ -1319,7 +1356,7 @@ fn builtin_trait_bound_satisfied(
                                     if !trait_bound_satisfied_at(
                                         ctx,
                                         value,
-                                        TraitRef { name: "Eq", args: Vec::[] },
+                                        TraitRef { name: trait_name, args: Vec::[] },
                                         goals,
                                     ) {
                                         return false
@@ -1330,18 +1367,97 @@ fn builtin_trait_bound_satisfied(
                             Array { len: _, elem: element } => trait_bound_satisfied_at(
                                 ctx,
                                 element,
-                                TraitRef { name: "Eq", args: Vec::[] },
+                                TraitRef { name: trait_name, args: Vec::[] },
                                 goals,
                             ),
-                            _ => false,
+                            _ => builtin_container_trait_satisfied(ctx, bound_ty, trait_name, goals),
                         }
                     }
                 } else {
-                    builtin_value_trait_type(bound_ty)
+                    builtin_total_value_trait_type(bound_ty)
                         || match bound_ty {
                             RefType { elem: _ } => true,
-                            _ => false,
+                            Tuple { items: values } => {
+                                for value in values {
+                                    if !trait_bound_satisfied_at(
+                                        ctx,
+                                        value,
+                                        TraitRef { name: trait_name, args: Vec::[] },
+                                        goals,
+                                    ) {
+                                        return false
+                                    } else {}
+                                }
+                                true
+                            },
+                            Array { len: _, elem: element } => trait_bound_satisfied_at(
+                                ctx,
+                                element,
+                                TraitRef { name: trait_name, args: Vec::[] },
+                                goals,
+                            ),
+                            _ => builtin_container_trait_satisfied(ctx, bound_ty, trait_name, goals),
                         }
+                }
+            } else if trait_name == "PartialOrd" || trait_name == "Ord" {
+                if if trait_name == "PartialOrd" {
+                    builtin_value_trait_type(bound_ty)
+                } else {
+                    builtin_total_value_trait_type(bound_ty)
+                } {
+                    true
+                } else {
+                    match bound_ty {
+                        Tuple { items: values } => {
+                            for value in values {
+                                if !trait_bound_satisfied_at(
+                                    ctx,
+                                    value,
+                                    TraitRef { name: reference.name, args: Vec::[] },
+                                    goals,
+                                ) {
+                                    return false
+                                } else {}
+                            }
+                            true
+                        },
+                        Array { len: _, elem: element } => trait_bound_satisfied_at(
+                            ctx,
+                            element,
+                            TraitRef { name: reference.name, args: Vec::[] },
+                            goals,
+                        ),
+                        _ => false,
+                    }
+                }
+            } else if trait_name == "Default" {
+                if builtin_value_trait_type(bound_ty) {
+                    true
+                } else {
+                    match bound_ty {
+                        VecType { elem: _ } => true,
+                        App { ty: Con { name }, args } => name == "Option" && args.len() == 1,
+                        Tuple { items: values } => {
+                            for value in values {
+                                if !trait_bound_satisfied_at(
+                                    ctx,
+                                    value,
+                                    TraitRef { name: trait_name, args: Vec::[] },
+                                    goals,
+                                ) {
+                                    return false
+                                } else {}
+                            }
+                            true
+                        },
+                        Array { len: _, elem: element } => trait_bound_satisfied_at(
+                            ctx,
+                            element,
+                            TraitRef { name: trait_name, args: Vec::[] },
+                            goals,
+                        ),
+                        _ => false,
+                    }
                 }
             } else if trait_name == "Iterator" {
                 builtin_iterator_bound_satisfied(ctx, bound_ty)
@@ -1374,6 +1490,10 @@ fn extend_trait_goals(goals: Vec[string], goal: string) -> Vec[string] {
     result
 }
 
+fn trait_names_match_in_context(ctx: Checker, left: string, right: string) -> bool {
+    names_match(canonical_imported_name(ctx, left), canonical_imported_name(ctx, right))
+}
+
 fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, goals: Vec[string]) -> bool {
     let bound_ty = normalize_type(ctx, bound_ty);
     let reference = normalize_trait_ref(ctx, reference);
@@ -1398,7 +1518,7 @@ fn trait_bound_satisfied_at(ctx: Checker, bound_ty: Type, reference: TraitRef, g
             } else {};
             for impl_info in ctx.impls {
                 if !collections::contains(ctx.invalid_impl_origins, impl_info.origin)
-                    && names_match(impl_info.trait_ref.name, reference.name) {
+                    && trait_names_match_in_context(ctx, impl_info.trait_ref.name, reference.name) {
                     let substitutions = instantiate_substitutions(
                         ctx.counter,
                         impl_info.generics,
@@ -1430,10 +1550,13 @@ fn compatible_impl_count(ctx: Checker, bound_ty: Type, reference: TraitRef) -> i
     let mut count = 0;
     for impl_info in ctx.impls {
         if !collections::contains(ctx.invalid_impl_origins, impl_info.origin)
-            && names_match(impl_info.trait_ref.name, reference.name) {
+            && trait_names_match_in_context(ctx, impl_info.trait_ref.name, reference.name) {
             let substitutions = instantiate_substitutions(ctx.counter, impl_info.generics, Vec::[]);
             let owner = substitute_type(impl_info.for_type, substitutions);
-            let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
+            let application = normalize_trait_ref(
+                ctx,
+                substitute_trait_ref(impl_info.trait_ref, substitutions),
+            );
             if call_types_compatible(owner, bound_ty)
                 && call_type_lists_compatible(application.args, reference.args) {
                 count += 1;
@@ -1453,7 +1576,7 @@ fn instantiated_impl_parts(ctx: Checker, value: ImplInfo) -> (Type, TraitRef, Ve
 }
 
 fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
-    if !names_match(left.trait_ref.name, right.trait_ref.name) {
+    if !trait_names_match_in_context(ctx, left.trait_ref.name, right.trait_ref.name) {
         false
     } else {
         let left = instantiated_impl_parts(ctx, left);
@@ -1501,7 +1624,9 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
 }
 
 fn builtin_ref_impl_trait(name: string) -> bool {
-    if names_match(name, "Eq") {
+    if names_match(name, "PartialEq") {
+        true
+    } else if names_match(name, "Eq") {
         true
     } else if names_match(name, "Hash") {
         true
@@ -2368,6 +2493,18 @@ fn builtin_trait_method(name: string, params: Vec[Type], ret_ty: Type) -> TraitM
     }
 }
 
+fn builtin_static_trait_method(name: string, params: Vec[Type], ret_ty: Type) -> TraitMethodInfo {
+    TraitMethodInfo {
+        name,
+        has_receiver: false,
+        generics: Vec::[],
+        predicates: Vec::[],
+        params,
+        ret_ty,
+        default_name: Option::None,
+    }
+}
+
 pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
     let self_ty = Type::Param { name: "Self" };
     if name == "Iterator" {
@@ -2429,7 +2566,7 @@ pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
                 methods,
             },
         )
-    } else if name == "Eq" {
+    } else if name == "PartialEq" {
         Option::Some(
             TraitInfo {
                 name,
@@ -2438,6 +2575,17 @@ pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
                 supertraits: Vec::[],
                 associated_types: Vec::[],
                 methods: Vec::[builtin_trait_method("eq", two_types(self_ty, self_ty), Type::Bool)],
+            },
+        )
+    } else if name == "Eq" {
+        Option::Some(
+            TraitInfo {
+                name,
+                generics: Vec::[],
+                predicates: Vec::[],
+                supertraits: Vec::[TraitRef { name: "PartialEq", args: Vec::[] }],
+                associated_types: Vec::[],
+                methods: Vec::[],
             },
         )
     } else if name == "Hash" {
@@ -2449,6 +2597,17 @@ pub fn builtin_trait_info(name: string) -> Option[TraitInfo] {
                 supertraits: Vec::[],
                 associated_types: Vec::[],
                 methods: Vec::[builtin_trait_method("hash", one_type(self_ty), Type::Uint64)],
+            },
+        )
+    } else if name == "Default" {
+        Option::Some(
+            TraitInfo {
+                name,
+                generics: Vec::[],
+                predicates: Vec::[],
+                supertraits: Vec::[],
+                associated_types: Vec::[],
+                methods: Vec::[builtin_static_trait_method("default", Vec::[], self_ty)],
             },
         )
     } else if name == "ToString" || name == "Debug" {
@@ -2525,6 +2684,10 @@ fn trait_ref_closure(ctx: Checker, reference: TraitRef) -> Vec[TraitRef] {
                 );
                 for supertrait in info.supertraits {
                     let resolved = substitute_trait_ref(supertrait, substitutions);
+                    let resolved = TraitRef {
+                        name: canonical_supertrait_scope_name(ctx, info.name, resolved.name),
+                        args: resolved.args,
+                    };
                     if contains_trait_ref(result, resolved) {} else {
                         result.push(resolved)
                     }
@@ -3519,12 +3682,12 @@ fn resolve_trait_static(
         Option::Some(
             trait_callable(owner, explicit, name, one_type(receiver), Type::String, receiver, true),
         )
-    } else if owner == "Eq" && name == "eq" {
+    } else if owner == "PartialEq" && name == "eq" {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         Option::Some(
             trait_callable(
-                owner,
+                "PartialEq",
                 explicit,
                 name,
                 two_types(receiver, receiver),
@@ -3533,12 +3696,40 @@ fn resolve_trait_static(
                 true,
             ),
         )
+    } else if owner == "Eq" && name == "eq" && !trait_infos_contain_exact_name(ctx.traits, "Eq") {
+        validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
+        let receiver = fresh_type(ctx.counter, VarKind::Any);
+        let callable = trait_callable(
+            "PartialEq",
+            explicit,
+            name,
+            two_types(receiver, receiver),
+            Type::Bool,
+            receiver,
+            true,
+        );
+        Option::Some(
+            ResolvedCallable {
+                callable: callable.callable,
+                ty: callable.ty,
+                predicates: Vec::[
+                    TypePredicate::Trait {
+                        for_ty: receiver,
+                        trait_ref: TraitRef { name: "Eq", args: explicit },
+                    },
+                ],
+            },
+        )
     } else if owner == "Hash" && name == "hash" {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
         Option::Some(
             trait_callable(owner, explicit, name, one_type(receiver), Type::Uint64, receiver, true),
         )
+    } else if owner == "Default" && name == "default" {
+        validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
+        let receiver = fresh_type(ctx.counter, VarKind::Any);
+        Option::Some(trait_callable(owner, explicit, name, Vec::[], receiver, receiver, false))
     } else {
         match find_trait(ctx, owner) {
             Some(info) => {

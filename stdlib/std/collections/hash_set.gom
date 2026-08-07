@@ -4,6 +4,12 @@ pub struct HashSet[K] {
     pub entries: HashMap[K, unit],
 }
 
+impl[K: Eq + Hash] Default for HashSet[K] {
+    fn default() -> HashSet[K] {
+        HashSet::new()
+    }
+}
+
 impl[K: Eq + Hash] HashSet[K] {
     pub fn new() -> HashSet[K] {
         HashSet { entries: HashMap::{} }

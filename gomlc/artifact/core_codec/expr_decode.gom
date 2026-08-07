@@ -394,6 +394,18 @@ fn artifact_decode_core_params(context: ArtifactCoreDecodeContext, value: wire::
     Result::Ok(result)
 }
 
+fn artifact_decode_core_predicates(context: ArtifactCoreDecodeContext, value: wire::ArtifactValue) -> Result[
+    Vec[tast::TypePredicate],
+    string,
+] {
+    let values = wire::artifact_json_array(value, "Core function predicates")?;
+    let result: Vec[tast::TypePredicate] = Vec::[];
+    for value in values {
+        result.push(tast_codec::artifact_decode_predicate(context.types, value)?)
+    }
+    Result::Ok(result)
+}
+
 fn artifact_decode_core_function_origin(
     context: ArtifactCoreDecodeContext,
     value: wire::ArtifactValue,
@@ -435,6 +447,8 @@ fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire
     let root = wire::artifact_json_bool_value(value, "Core function root")?;
     let value = wire::artifact_json_required_field(object, "generics")?;
     let generics = wire::artifact_decode_string_array(value, "Core function generics")?;
+    let value = wire::artifact_json_required_field(object, "predicates")?;
+    let predicates = artifact_decode_core_predicates(context, value)?;
     let value = wire::artifact_json_required_field(object, "trait_impl")?;
     let trait_impl = artifact_decode_core_trait_impl(context, value)?;
     let value = wire::artifact_json_required_field(object, "params")?;
@@ -448,7 +462,7 @@ fn artifact_decode_core_function(context: ArtifactCoreDecodeContext, value: wire
             origin,
             root,
             generics,
-            predicates: Vec::[],
+            predicates,
             trait_impl,
             params,
             ret_ty,

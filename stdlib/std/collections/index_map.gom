@@ -18,6 +18,12 @@ pub struct IndexMap[K, V] {
     deleted: Ref[int],
 }
 
+impl[K: Eq + Hash, V] Default for IndexMap[K, V] {
+    fn default() -> IndexMap[K, V] {
+        IndexMap::new()
+    }
+}
+
 fn index_map_capacity_for_entries(entries: int) -> int {
     let requested = if entries < 0 {
         0
@@ -93,7 +99,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
             } else {
                 match self.entries.get()[dense_index] {
                     Some(entry) => {
-                        if entry.hash == hash && Eq::eq(entry.key, key) {
+                        if entry.hash == hash && PartialEq::eq(entry.key, key) {
                             return IndexMapProbe::Found(position, dense_index)
                         } else {}
                     },

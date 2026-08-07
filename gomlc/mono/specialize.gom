@@ -1,5 +1,6 @@
 package mono;
 
+use gomlc::ast;
 use gomlc::core;
 use gomlc::tast;
 use std::cmp;
@@ -407,6 +408,503 @@ fn indexed_functions(index: FunctionIndex, key: string) -> Vec[core::Function] {
     match index[key] {
         Some(functions) => functions,
         None => Vec::[],
+    }
+}
+
+fn mono_short_name(value: string) -> string {
+    match text::rfind(value, "::") {
+        Some(index) => value.byte_slice(index + 2, value.byte_len()),
+        None => value,
+    }
+}
+
+fn structural_trait_type(value: tast::Type) -> bool {
+    match tast::resolve_type(value) {
+        Tuple { items: _ } | Array { len: _, elem: _ } => true,
+        _ => false,
+    }
+}
+
+fn core_var(name: string, ty: tast::Type) -> core::Expr {
+    core::Expr::Var { name, ty }
+}
+
+fn core_uint64(value: string) -> core::Expr {
+    core::Expr::Prim { value: tast::Primitive::Int { value }, ty: tast::Type::Uint64 }
+}
+
+fn core_trait_call(
+    reference: tast::TraitRef,
+    method_name: string,
+    for_ty: tast::Type,
+    receiver: Option[core::Expr],
+    args: Vec[core::Expr],
+    ty: tast::Type,
+) -> core::Expr {
+    core::Expr::TraitCall {
+        trait_ref: reference,
+        method_name,
+        instance_name: Option::None,
+        for_ty,
+        receiver,
+        args,
+        ty,
+    }
+}
+
+fn structural_array_item(value: core::Expr, owner: tast::Type, elem: tast::Type, index: int) -> core::Expr {
+    let params = Vec::[owner, tast::Type::Int];
+    core::Expr::Call {
+        func: core::Expr::Callable {
+            callable: tast::Callable::Intrinsic("array.get"),
+            ty: tast::Type::Func { params, ret_ty: elem },
+        },
+        args: Vec::[
+            value,
+            core::Expr::Prim {
+                value: tast::Primitive::Int { value: index.to_string() },
+                ty: tast::Type::Int,
+            },
+        ],
+        ty: elem,
+    }
+}
+
+fn structural_items(value: core::Expr, ty: tast::Type) -> Vec[(core::Expr, tast::Type)] {
+    let result: Vec[(core::Expr, tast::Type)] = Vec::[];
+    match tast::resolve_type(ty) {
+        Tuple { items } => for index in 0..items.len() {
+            result.push((core::Expr::Proj { tuple: value, index, ty: items[index] }, items[index]))
+        },
+        Array { len, elem } => for index in 0..len {
+            result.push((structural_array_item(value, ty, elem, index), elem))
+        },
+        _ => (),
+    };
+    result
+}
+
+fn core_bool(value: bool) -> core::Expr {
+    core::Expr::Prim { value: tast::Primitive::Bool { value }, ty: tast::Type::Bool }
+}
+
+fn core_bool_conjunction(values: Vec[core::Expr]) -> core::Expr {
+    let mut result = core_bool(true);
+    let mut index = values.len();
+    while index > 0 {
+        index = index - 1;
+        result = core::Expr::If {
+            cond: values[index],
+            then_branch: result,
+            else_branch: core_bool(false),
+            ty: tast::Type::Bool,
+        };
+    }
+    result
+}
+
+fn structural_partial_eq_body(ty: tast::Type) -> core::Expr {
+    let left = structural_items(core_var("self", ty), ty);
+    let right = structural_items(core_var("other", ty), ty);
+    let comparisons: Vec[core::Expr] = Vec::[];
+    for index in 0..left.len() {
+        comparisons.push(
+            core_trait_call(
+                tast::TraitRef { name: "PartialEq", args: Vec::[] },
+                "eq",
+                left[index].1,
+                Option::Some(left[index].0),
+                Vec::[right[index].0],
+                tast::Type::Bool,
+            ),
+        )
+    }
+    core_bool_conjunction(comparisons)
+}
+
+fn structural_hash_body(ty: tast::Type) -> core::Expr {
+    let stmts: Vec[core::LetStmt] = Vec::[];
+    let mut previous = "_structural_hash_0";
+    stmts.push(
+        core::LetStmt {
+            name: previous,
+            value: core_uint64("14695981039346656037"),
+            ty: tast::Type::Uint64,
+        },
+    );
+    let mut index = 0;
+    for item in structural_items(core_var("self", ty), ty) {
+        let hash = core_trait_call(
+            tast::TraitRef { name: "Hash", args: Vec::[] },
+            "hash",
+            item.1,
+            Option::Some(item.0),
+            Vec::[],
+            tast::Type::Uint64,
+        );
+        let next = "_structural_hash_" + (index + 1).to_string();
+        stmts.push(
+            core::LetStmt {
+                name: next,
+                value: core::Expr::Binary {
+                    op: ast::BinaryOp::Add,
+                    lhs: core::Expr::Binary {
+                        op: ast::BinaryOp::Mul,
+                        lhs: core_var(previous, tast::Type::Uint64),
+                        rhs: core_uint64("1099511628211"),
+                        ty: tast::Type::Uint64,
+                    },
+                    rhs: hash,
+                    ty: tast::Type::Uint64,
+                },
+                ty: tast::Type::Uint64,
+            },
+        );
+        previous = next;
+        index = index + 1;
+    }
+    core::Expr::Block {
+        block: core::Block { stmts, tail: Option::Some(core_var(previous, tast::Type::Uint64)) },
+        ty: tast::Type::Uint64,
+    }
+}
+
+fn structural_default_body(ty: tast::Type) -> core::Expr {
+    match tast::resolve_type(ty) {
+        Tuple { items } => {
+            let values: Vec[core::Expr] = Vec::[];
+            for item in items {
+                values.push(
+                    core_trait_call(
+                        tast::TraitRef { name: "Default", args: Vec::[] },
+                        "default",
+                        item,
+                        Option::None,
+                        Vec::[],
+                        item,
+                    ),
+                )
+            }
+            core::Expr::Tuple { items: values, ty }
+        },
+        Array { len, elem } => {
+            let values: Vec[core::Expr] = Vec::[];
+            for _ in 0..len {
+                values.push(
+                    core_trait_call(
+                        tast::TraitRef { name: "Default", args: Vec::[] },
+                        "default",
+                        elem,
+                        Option::None,
+                        Vec::[],
+                        elem,
+                    ),
+                )
+            }
+            core::Expr::Array { items: values, ty }
+        },
+        _ => core::Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit },
+    }
+}
+
+fn nominal_type_name(value: tast::Type) -> string {
+    match tast::resolve_type(value) {
+        Con { name } => name,
+        App { ty: Con { name }, args: _ } => name,
+        _ => "",
+    }
+}
+
+fn ordering_constructor(ordering_ty: tast::Type, name: string, tag: int) -> core::Expr {
+    core::Expr::Constr {
+        constructor: tast::Constructor {
+            name: nominal_type_name(ordering_ty) + "::" + name,
+            fields: Vec::[],
+            is_struct: false,
+            tag: Option::Some(tag),
+        },
+        args: Vec::[],
+        ty: ordering_ty,
+    }
+}
+
+fn option_constructor(option_ty: tast::Type, name: string, tag: int, args: Vec[core::Expr]) -> core::Expr {
+    core::Expr::Constr {
+        constructor: tast::Constructor {
+            name: nominal_type_name(option_ty) + "::" + name,
+            fields: Vec::[],
+            is_struct: false,
+            tag: Option::Some(tag),
+        },
+        args,
+        ty: option_ty,
+    }
+}
+
+fn option_item_type(value: tast::Type) -> tast::Type {
+    match tast::resolve_type(value) {
+        App { ty: Con { name: _ }, args } if args.len() == 1 => args[0],
+        _ => tast::Type::Error,
+    }
+}
+
+fn ordering_is_equal(value: core::Expr, ordering_ty: tast::Type) -> core::Expr {
+    core_trait_call(
+        tast::TraitRef { name: "PartialEq", args: Vec::[] },
+        "eq",
+        ordering_ty,
+        Option::Some(value),
+        Vec::[ordering_constructor(ordering_ty, "Equal", 1)],
+        tast::Type::Bool,
+    )
+}
+
+fn structural_partial_ord_bool_body(reference: tast::TraitRef, method_name: string, ty: tast::Type) -> core::Expr {
+    let left = structural_items(core_var("self", ty), ty);
+    let right = structural_items(core_var("other", ty), ty);
+    let mut result = core_bool(method_name == "le" || method_name == "ge");
+    let mut index = left.len();
+    while index > 0 {
+        index = index - 1;
+        let equals = core_trait_call(
+            tast::TraitRef { name: "PartialEq", args: Vec::[] },
+            "eq",
+            left[index].1,
+            Option::Some(left[index].0),
+            Vec::[right[index].0],
+            tast::Type::Bool,
+        );
+        let ordered = core_trait_call(
+            reference,
+            if method_name == "le" {
+                "lt"
+            } else if method_name == "ge" {
+                "gt"
+            } else {
+                method_name
+            },
+            left[index].1,
+            Option::Some(left[index].0),
+            Vec::[right[index].0],
+            tast::Type::Bool,
+        );
+        result = core::Expr::If {
+            cond: equals,
+            then_branch: result,
+            else_branch: ordered,
+            ty: tast::Type::Bool,
+        };
+    }
+    result
+}
+
+fn structural_ord_body(reference: tast::TraitRef, ty: tast::Type, ordering_ty: tast::Type) -> core::Expr {
+    let left = structural_items(core_var("self", ty), ty);
+    let right = structural_items(core_var("other", ty), ty);
+    let mut result = ordering_constructor(ordering_ty, "Equal", 1);
+    let mut index = left.len();
+    while index > 0 {
+        index = index - 1;
+        let name = "_structural_ordering_" + index.to_string();
+        let comparison = core_trait_call(
+            reference,
+            "cmp",
+            left[index].1,
+            Option::Some(left[index].0),
+            Vec::[right[index].0],
+            ordering_ty,
+        );
+        result = core::Expr::Block {
+            block: core::Block {
+                stmts: Vec::[core::LetStmt { name, value: comparison, ty: ordering_ty }],
+                tail: Option::Some(
+                    core::Expr::If {
+                        cond: ordering_is_equal(core_var(name, ordering_ty), ordering_ty),
+                        then_branch: result,
+                        else_branch: core_var(name, ordering_ty),
+                        ty: ordering_ty,
+                    },
+                ),
+            },
+            ty: ordering_ty,
+        };
+    }
+    result
+}
+
+fn structural_partial_ord_body(reference: tast::TraitRef, ty: tast::Type, option_ty: tast::Type) -> core::Expr {
+    let ordering_ty = option_item_type(option_ty);
+    let left = structural_items(core_var("self", ty), ty);
+    let right = structural_items(core_var("other", ty), ty);
+    let mut result = option_constructor(
+        option_ty,
+        "Some",
+        1,
+        Vec::[ordering_constructor(ordering_ty, "Equal", 1)],
+    );
+    let some = tast::Constructor {
+        name: nominal_type_name(option_ty) + "::Some",
+        fields: Vec::[],
+        is_struct: false,
+        tag: Option::Some(1),
+    };
+    let none = tast::Constructor {
+        name: nominal_type_name(option_ty) + "::None",
+        fields: Vec::[],
+        is_struct: false,
+        tag: Option::Some(0),
+    };
+    let mut index = left.len();
+    while index > 0 {
+        index = index - 1;
+        let comparison_name = "_structural_partial_ordering_" + index.to_string();
+        let ordering_name = comparison_name + "_value";
+        let comparison = core_trait_call(
+            reference,
+            "partial_cmp",
+            left[index].1,
+            Option::Some(left[index].0),
+            Vec::[right[index].0],
+            option_ty,
+        );
+        let ordering = core::Expr::ConstrGet {
+            expr: core_var(comparison_name, option_ty),
+            constructor: some,
+            field_index: 0,
+            ty: ordering_ty,
+        };
+        let some_body = core::Expr::Block {
+            block: core::Block {
+                stmts: Vec::[
+                    core::LetStmt { name: ordering_name, value: ordering, ty: ordering_ty },
+                ],
+                tail: Option::Some(
+                    core::Expr::If {
+                        cond: ordering_is_equal(core_var(ordering_name, ordering_ty), ordering_ty),
+                        then_branch: result,
+                        else_branch: core_var(comparison_name, option_ty),
+                        ty: option_ty,
+                    },
+                ),
+            },
+            ty: option_ty,
+        };
+        result = core::Expr::Block {
+            block: core::Block {
+                stmts: Vec::[
+                    core::LetStmt { name: comparison_name, value: comparison, ty: option_ty },
+                ],
+                tail: Option::Some(
+                    core::Expr::Match {
+                        expr: core_var(comparison_name, option_ty),
+                        arms: Vec::[
+                            core::Arm {
+                                lhs: core::Expr::Constr {
+                                    constructor: none,
+                                    args: Vec::[],
+                                    ty: option_ty,
+                                },
+                                body: core_var(comparison_name, option_ty),
+                            },
+                            core::Arm {
+                                lhs: core::Expr::Constr {
+                                    constructor: some,
+                                    args: Vec::[core_var(ordering_name, ordering_ty)],
+                                    ty: option_ty,
+                                },
+                                body: some_body,
+                            },
+                        ],
+                        default: Option::None,
+                        ty: option_ty,
+                    },
+                ),
+            },
+            ty: option_ty,
+        };
+    }
+    result
+}
+
+fn synthetic_structural_trait_function(
+    reference: tast::TraitRef,
+    method_name: string,
+    for_ty: tast::Type,
+    ret_ty: tast::Type,
+) -> Option[core::Function] {
+    if !structural_trait_type(for_ty) {
+        Option::None
+    } else {
+        let trait_name = mono_short_name(reference.name);
+        let body = if trait_name == "PartialEq" && method_name == "eq" {
+            structural_partial_eq_body(for_ty)
+        } else if trait_name == "Hash" && method_name == "hash" {
+            structural_hash_body(for_ty)
+        } else if trait_name == "Default" && method_name == "default" {
+            structural_default_body(for_ty)
+        } else if trait_name == "PartialOrd" && method_name == "partial_cmp" {
+            structural_partial_ord_body(reference, for_ty, ret_ty)
+        } else if trait_name == "PartialOrd"
+            && (method_name == "lt" || method_name == "le" || method_name == "gt"
+                || method_name == "ge") {
+            structural_partial_ord_bool_body(reference, method_name, for_ty)
+        } else if trait_name == "Ord" && method_name == "cmp" {
+            structural_ord_body(reference, for_ty, ret_ty)
+        } else {
+            return Option::None
+        };
+        let params = if method_name == "default" {
+            Vec::[]
+        } else if method_name == "hash" {
+            Vec::[("self", for_ty)]
+        } else {
+            Vec::[("self", for_ty), ("other", for_ty)]
+        };
+        Option::Some(
+            core::Function {
+                name: trait_impl_name(reference, for_ty, method_name),
+                origin: core::FunctionOrigin::TraitImplementation { method_name },
+                root: false,
+                generics: Vec::[],
+                predicates: Vec::[],
+                trait_impl: Option::Some(
+                    core::TraitImpl {
+                        trait_ref: reference,
+                        for_ty,
+                        associated_types: Vec::[],
+                        generic_count: 0,
+                        predicate_count: 0,
+                    },
+                ),
+                params,
+                ret_ty,
+                body: core::Block { stmts: Vec::[], tail: Option::Some(body) },
+            },
+        )
+    }
+}
+
+fn register_structural_trait_function(
+    ctx: SpecializeCtx,
+    reference: tast::TraitRef,
+    method_name: string,
+    for_ty: tast::Type,
+    ret_ty: tast::Type,
+) -> unit {
+    match synthetic_structural_trait_function(reference, method_name, for_ty, ret_ty) {
+        Some(function) => if ctx.function_index.contains(function.name) {} else {
+            ctx.functions.push(function);
+            ctx.function_index[function.name] = function;
+            add_indexed_function(ctx.trait_function_index, reference.name, function);
+            ctx.trait_method_names[function.name] = method_name;
+            add_indexed_function(
+                ctx.trait_method_index,
+                lookup_pair_key(reference.name, method_name),
+                function,
+            );
+            ctx.used_names[function.name] = ();
+        },
+        None => (),
     }
 }
 
@@ -1204,6 +1702,29 @@ fn builtin_scalar_type(value: tast::Type) -> bool {
     }
 }
 
+fn builtin_total_scalar_type(value: tast::Type) -> bool {
+    match tast::resolve_type(value) {
+        Unit | Bool | Int | Int8 | Int16 | Int32 | Int64 | Uint | Uint8 | Uint16 | Uint32 | Uint64 | String | Char => true,
+        _ => false,
+    }
+}
+
+fn builtin_structural_trait_satisfied(for_ty: tast::Type, reference: tast::TraitRef) -> bool {
+    match tast::resolve_type(for_ty) {
+        RefType { elem: _ } => true,
+        Tuple { items } => {
+            for item in items {
+                if !builtin_trait_satisfied(item, reference) {
+                    return false
+                } else {}
+            }
+            true
+        },
+        Array { len: _, elem } => builtin_trait_satisfied(elem, reference),
+        _ => false,
+    }
+}
+
 fn builtin_iterator_type(value: tast::Type) -> bool {
     match tast::resolve_type(value) {
         App { ty: Con { name }, args } => name == "FnIterator" && args.len() == 1,
@@ -1215,13 +1736,23 @@ fn builtin_trait_satisfied(for_ty: tast::Type, reference: tast::TraitRef) -> boo
     reference.args.is_empty()
         && match tast::resolve_type(for_ty) {
             Dyn { trait_name: name, .. } => reference.name == name,
-            other => if reference.name == "ToString" || reference.name == "Debug"
-                || reference.name == "Eq"
-                || reference.name == "Hash" {
+            other => if mono_short_name(reference.name) == "ToString"
+                || mono_short_name(reference.name) == "Debug" {
                 builtin_scalar_type(other)
-            } else if reference.name == "Iterator" {
+            } else if mono_short_name(reference.name) == "PartialEq" {
+                builtin_scalar_type(other) || builtin_structural_trait_satisfied(other, reference)
+            } else if mono_short_name(reference.name) == "Eq"
+                || mono_short_name(reference.name) == "Hash"
+                || mono_short_name(reference.name) == "Ord" {
+                builtin_total_scalar_type(other)
+                    || builtin_structural_trait_satisfied(other, reference)
+            } else if mono_short_name(reference.name) == "PartialOrd" {
+                builtin_scalar_type(other) || builtin_structural_trait_satisfied(other, reference)
+            } else if mono_short_name(reference.name) == "Default" {
+                builtin_scalar_type(other) || builtin_structural_trait_satisfied(other, reference)
+            } else if mono_short_name(reference.name) == "Iterator" {
                 builtin_iterator_type(other)
-            } else if reference.name == "IntoIterator" {
+            } else if mono_short_name(reference.name) == "IntoIterator" {
                 match other {
                     VecType { elem: _ } | Slice { elem: _ } => true,
                     value => builtin_iterator_type(value),
@@ -1254,6 +1785,38 @@ fn complete_bindings_up_to(
 
 fn complete_bindings(ctx: SpecializeCtx, value: core::Function, bindings: Vec[TypeBinding]) -> bool {
     complete_bindings_up_to(ctx, value, bindings, value.generics.len(), value.predicates.len())
+}
+
+fn incomplete_function_message(
+    ctx: SpecializeCtx,
+    value: core::Function,
+    bindings: Vec[TypeBinding],
+) -> string {
+    for predicate in value.predicates {
+        match predicate {
+            Trait { for_ty, trait_ref: reference } => {
+                let for_ty = substitute_type(for_ty, bindings);
+                let reference = substitute_trait_ref(reference, bindings);
+                if type_is_concrete(for_ty)
+                    && (builtin_trait_satisfied(for_ty, reference)
+                        || matching_trait_selections(ctx, for_ty, reference, bindings).len() == 1) {} else {
+                    return "cannot specialize " + value.name + ": " + compact_type(for_ty)
+                        + " does not satisfy "
+                        + trait_ref_key(reference)
+                }
+            },
+            Equality { lhs, rhs } => {
+                let lhs = substitute_type(lhs, bindings);
+                let rhs = substitute_type(rhs, bindings);
+                if compact_type(lhs) == compact_type(rhs) {} else {
+                    return "cannot specialize " + value.name + ": " + compact_type(lhs)
+                        + " does not equal "
+                        + compact_type(rhs)
+                }
+            },
+        }
+    }
+    "cannot specialize " + value.name + ": incomplete generic bindings"
 }
 
 fn specialize_callable(ctx: SpecializeCtx, value: tast::Callable, bindings: Vec[TypeBinding]) -> tast::Callable {
@@ -1396,6 +1959,7 @@ fn ensure_trait_method_instance(
     actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
 ) -> (tast::TraitRef, Option[string]) {
+    register_structural_trait_function(ctx, reference, method_name, for_ty, ret_ty);
     let mut resolved = reference;
     let mut instance_name: Option[string] = Option::None;
     for function in indexed_functions(
@@ -1461,6 +2025,11 @@ fn specialize_found_var_with_projection_bindings(
                 && complete_bindings(ctx, function, call_bindings) {
                 core::Expr::Var { name: ensure_instance(ctx, function.name, call_bindings), ty }
             } else {
+                if allow_projection_bindings && unify_type(function_type(function), ty, Vec::[]) {
+                    ctx.error.set(
+                        Option::Some(incomplete_function_message(ctx, function, call_bindings)),
+                    )
+                } else {};
                 core::Expr::Var { name, ty }
             }
         } else {
@@ -1711,7 +2280,7 @@ fn ensure_runtime_trait_impl(
 }
 
 fn ensure_eq_hash_impls(ctx: SpecializeCtx, ty: tast::Type) -> unit {
-    ensure_runtime_trait_impl(ctx, "Eq", "eq", Vec::[ty, ty], tast::Type::Bool);
+    ensure_runtime_trait_impl(ctx, "PartialEq", "eq", Vec::[ty, ty], tast::Type::Bool);
     ensure_runtime_trait_impl(ctx, "Hash", "hash", Vec::[ty], tast::Type::Uint64)
 }
 

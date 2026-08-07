@@ -865,8 +865,9 @@ let valid = !(predicate());
 - `&& || !` only accepts `bool`.
 - The unary `-` only accepts signed integers or floating point numbers.
 - Both sides of the comparison must be of the same type.
-- `< > <= >=` supports numeric values, `string` and `char`.
-- `== !=` uses the `Eq` trait; the concrete type must have a visible `Eq` implementation.Tuples and fixed arrays recursively support equality comparisons when the elements support `Eq`.
+- `< > <= >=` uses `PartialOrd`. Primitive numbers, `string`, `char`, tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` provide the corresponding conditional implementations.
+- `== !=` uses `PartialEq`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` compare recursively when their elements implement `PartialEq`.
+- Floating-point values implement `PartialEq + PartialOrd`, but not `Eq + Ord + Hash`. In particular, NaN is unequal to itself and its `partial_cmp` result is `None`.
 - `as` supports explicit conversions between integer types, and `char as uint32`.`uint32` to `char` should use `char_from_uint32` which returns `Option[char]`.
 
 There are no exponentiation, null coalescing or user-defined operators.
@@ -1396,6 +1397,26 @@ where
 }
 ```
 
+The standard comparison hierarchy follows the distinction between partial comparison and total equivalence:
+
+```goml
+trait PartialEq {
+    fn eq(self: Self, other: Self) -> bool;
+}
+
+trait Eq: PartialEq {}
+
+trait PartialOrd: PartialEq {
+    fn partial_cmp(self: Self, other: Self) -> Option[Ordering];
+}
+
+trait Ord: Eq + PartialOrd {
+    fn cmp(self: Self, other: Self) -> Ordering;
+}
+```
+
+`Eq` is a marker trait and has no methods. During the bootstrap transition, an old `impl Eq` containing `fn eq` is still accepted and is interpreted as a `PartialEq` implementation plus an `Eq` marker; new code should write the two impls separately. The compatibility spelling `Eq::eq(left, right)` requires `Eq` and dispatches to `PartialEq::eq`.
+
 Trait methods may provide a default body. An impl may omit such a method and will inherit the default; an explicitly declared impl method overrides it. Default bodies are checked using the trait's generic parameters, predicates, associated types, and `Self`, and remain available across package boundaries:
 
 ```goml
@@ -1600,29 +1621,35 @@ Current limitations:
 
 ## Properties and Derivations
 
-User source code supports deriving `ToString`, `Debug`, `Eq` and `Hash` for structures and enumerations, including generic types:
+User source code supports deriving `ToString`, `Debug`, `PartialEq`, `Eq`, `PartialOrd`, `Ord`, `Hash`, and `Default` for structures and enumerations, including generic types. `Serialize` and `Deserialize` are also available after importing them from `std::serde` or a re-exporting format package:
 
 ```goml
-#[derive(ToString, Debug, Eq, Hash)]
+#[derive(ToString, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 struct Key {
     name: string,
     version: int32,
 }
 
-#[derive(ToString, Debug, Eq, Hash)]
+#[derive(ToString, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 enum Entry[T, Marker] {
     Empty,
     Value(Vec[T]),
 }
 ```
 
-All fields or variant payloads must support the derived trait. For a generic definition, the generated impl constrains each distinct field or payload type that mentions a type parameter. In the example above the constraint is on `Vec[T]`, while the unused phantom parameter `Marker` receives no constraint. Compiler-owned runtime, intrinsic, and lang-item attributes remain unavailable to ordinary projects. User projects may use the `go_ffi` attribute described in the next section.
+All fields or variant payloads used by a derive must support that trait. For a generic definition, the generated impl constrains each distinct participating field or payload type that mentions a type parameter. An unused phantom parameter receives no constraint. Compiler-owned runtime, intrinsic, and lang-item attributes remain unavailable to ordinary projects. User projects may use the `go_ffi` attribute described in the next section.
 
-`ToString`, `Debug`, `Eq`, and `Hash` are prelude derive exports supplied by verified handlers in the toolchain's builtin sources. They are not hard-coded code generators in the compiler. Standard-library and third-party derives use the same handler and artifact mechanism, but they are not added to the prelude: import the trait or its package before using the derive name.
+The eight prelude derives are supplied by verified handlers in the toolchain's builtin sources. They are not hard-coded code generators in the compiler. Standard-library and third-party derives use the same handler and artifact mechanism, but they are not added to the prelude: import the trait or its package before using the derive name.
 
 Derived `Debug` provides `Debug::debug(value)` and the `.debug()` method. It formats structs with their type and field names and enums with their type and variant names. Primitive field values use their ordinary textual representation, while nested values recursively use `Debug`.
 
-Derived `Eq` provides `Eq::eq(left, right)`, making the type usable with `==` / `!=` and satisfying the key constraints of `HashMap`.
+`PartialEq` compares struct fields in declaration order and compares enum variants and payloads structurally. `Eq` generates only the marker implementation and does not implicitly derive `PartialEq`. The usual total-equivalence spelling is therefore `#[derive(PartialEq, Eq)]`.
+
+`PartialOrd` and `Ord` use lexicographic field order. Enum variants are ordered by declaration order, followed by their payload fields. `PartialOrd` immediately propagates `None`; `Ord` returns a definite `Ordering`. Neither derive implicitly generates its supertraits, so the usual total-order spelling is `#[derive(PartialEq, Eq, PartialOrd, Ord)]`.
+
+`Hash` combines fields in declaration order and includes the enum variant discriminant. It can be derived independently, although hash-map keys still require both `Eq` and `Hash`.
+
+`Default` initializes every struct field with `Default::default()`. For an enum it always selects the first declared variant and recursively defaults that variant's tuple or named payload. An empty enum cannot derive `Default`. Reordering enum variants therefore changes both the derived default value and the derived ordering; the first version does not support `#[default]`.
 
 ### Programmable derive
 
@@ -1942,8 +1969,8 @@ fn integration_case() -> unit {
 
 - `testing::fail(message)`: Fail the current test immediately;
 - `testing::assert(condition)`: requires the condition to be `true`;
-- `testing::assert_eq(actual, expected)`: requires two values ​​of the same type that implement `Eq + ToString` to be equal;
-- `testing::assert_ne(actual, expected)`: Requires that two values ​​of the same type that implement `Eq + ToString` are not equal.
+- `testing::assert_eq(actual, expected)`: requires two values of the same type that implement `PartialEq + Debug` to be equal;
+- `testing::assert_ne(actual, expected)`: requires two values of the same type that implement `PartialEq + Debug` to be unequal.
 
 ### White box testing and black box testing
 
@@ -2093,7 +2120,7 @@ Construction uses `Option::Some`, `Option::None`, `Result::Ok` and `Result::Err`
 
 The basic scalar types all implement `ToString` and `Debug`. String concatenation uses `+`.
 
-The signatures of built-in key-related traits are `Eq::eq(self, other: Self) -> bool` and `Hash::hash(self) -> uint64`; user types can be handwritten impl, and structures and enumerations can also be generated using derive.
+The key-related traits are the method-bearing `PartialEq::eq(self, other: Self) -> bool`, the marker `Eq: PartialEq`, and `Hash::hash(self) -> uint64`. User types can use handwritten impls or derive the corresponding traits.
 
 ### `Ref[T]`
 
@@ -2110,7 +2137,7 @@ API：
 - `reference.set(value) -> unit`
 - `ptr_eq(a, b) -> bool`, compare reference identities
 
-The built-in `Eq` and `Hash` implementations for `Ref[T]` use reference identity and do not require `T` to implement `Eq` or `Hash`. Mutating the referenced value therefore does not change equality or hashing.
+The built-in `PartialEq`, `Eq`, and `Hash` implementations for `Ref[T]` use reference identity and do not require `T` to implement those traits. Mutating the referenced value therefore does not change equality or hashing. `Ref[T]` does not implement `Default`, because implicit allocation and recursive default construction would be surprising.
 
 ### fixed array
 
@@ -2171,7 +2198,7 @@ Commonly used methods: `get`, `len`, `sub`, `iter`.`view[index]` can be written,
 
 ### `HashMap[K, V]`
 
-The key type must implement both `Hash` and `Eq`:
+The key type must implement both `Hash` and `Eq`; bucket equality dispatches through the `PartialEq` supertrait:
 
 ```goml
 let counts = HashMap::{
@@ -2346,7 +2373,9 @@ fn load(input: string) -> Result[Server, string] {
 
 `std::ascii` operates on `byte`. Classification and case conversion use only the 7-bit ASCII range, and bytes above `0x7f` remain unchanged. `escape_default` emits short escapes for tabs, carriage returns, newlines, quotes, and backslashes, preserves printable ASCII, and uses lowercase `\\xNN` escapes for other bytes.
 
-`std::cmp` provides total ordering for `unit`, `bool`, `string`, `char`, and all signed and unsigned integer types. Floating-point values intentionally do not implement `cmp::Ord` because NaN does not form a total order. `cmp::compare` returns `Ordering::Less`, `Equal`, or `Greater`; `Ordering` supports predicates, reversal, lexicographic chaining, and conversion to the negative/zero/positive integer convention. `cmp::Reverse[T]` reverses an existing total ordering. `cmp::clamp` returns an error when the minimum exceeds the maximum.
+`std::cmp` provides `PartialOrd` and `Ord`. `unit`, `bool`, `string`, `char`, and all signed and unsigned integer types implement both. Floating-point values implement only `PartialOrd`, because NaN does not form a total order; comparison with NaN yields `Option::None`. Tuples, fixed arrays, `Vec`, `Slice`, `Option`, and `Result` implement the comparison traits conditionally and use lexicographic order. `cmp::compare` returns `Ordering::Less`, `Equal`, or `Greater`; `Ordering` supports predicates, reversal, lexicographic chaining, and conversion to the negative/zero/positive integer convention. `cmp::Reverse[T]` reverses an existing ordering. `cmp::clamp` returns an error when the minimum exceeds the maximum.
+
+The prelude `Default` implementations use `()` for `unit`, `false` for `bool`, zero for numeric types, and the empty string for `string`. `Vec` and `HashMap` default to empty containers, and the standard collection types `HashSet`, `IndexMap`, `Stack`, `Deque`, `BitSet`, `Arena`, `IndexVec`, and `Interner` likewise default through their empty constructors. `Option[T]` defaults to `None` without requiring `T: Default`, while tuples and fixed arrays default each element. `Result[T, E]` and `Ref[T]` intentionally have no global default implementation.
 
 ### Structured concurrency
 
@@ -2406,7 +2435,7 @@ GoML has no lifetime or linear type system, so a `Scope` value can currently esc
 
 ### `collections::IndexMap[K, V]`
 
-`IndexMap` is an insertion-ordered hash map. Its key type must implement `Eq` and `Hash`:
+`IndexMap` is an insertion-ordered hash map. Its key type must implement `Eq` and `Hash`, while actual key comparison uses `PartialEq`:
 
 ```goml
 use std::collections;

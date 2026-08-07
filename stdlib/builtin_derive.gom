@@ -118,6 +118,52 @@ fn derive_add_predicates(input: DeriveInput, output: DeriveOutput, trait_name: s
 }
 
 #[comptime_derive]
+fn derive_add_all_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> unit {
+    if derive_item_kind(input) == 0 {
+        let mut index = 0;
+        while index < derive_field_count(input) {
+            let ty = derive_field_type(input, index);
+            if derive_struct_type_seen(input, index, ty) {} else {
+                derive_output_add_predicate(output, ty, trait_name)
+            };
+            index = index + 1;
+        }
+    } else {
+        let mut variant_index = 0;
+        while variant_index < derive_variant_count(input) {
+            let mut field_index = 0;
+            while field_index < derive_variant_field_count(input, variant_index) {
+                let ty = derive_variant_field_type(input, variant_index, field_index);
+                if derive_enum_type_seen(input, variant_index, field_index, ty) {} else {
+                    derive_output_add_predicate(output, ty, trait_name)
+                };
+                field_index = field_index + 1;
+            }
+            variant_index = variant_index + 1;
+        }
+    }
+}
+
+#[comptime_derive]
+fn derive_has(input: DeriveInput, name: string) -> bool {
+    let mut attribute = 0;
+    while attribute < derive_attribute_count(input) {
+        let value = derive_attribute(input, attribute);
+        if meta_attribute_name(value) == "derive" {
+            let mut argument = 0;
+            while argument < meta_attribute_argument_count(value) {
+                if meta_attribute_argument_text(value, argument) == name {
+                    return true
+                } else {};
+                argument = argument + 1;
+            }
+        } else {};
+        attribute = attribute + 1;
+    }
+    false
+}
+
+#[comptime_derive]
 fn derive_self_params(input: DeriveInput) -> MetaParamList {
     let params = meta_param_list_new();
     meta_param_list_push(params, "self", derive_target_type(input));
@@ -271,7 +317,7 @@ pub fn derive_debug(input: DeriveInput) -> DeriveOutput {
 }
 
 #[comptime_derive]
-fn derive_struct_eq_body(input: DeriveInput) -> MetaExpr {
+fn derive_struct_eq_body(input: DeriveInput, trait_name: string) -> MetaExpr {
     let mut result = meta_expr_bool(true);
     let mut index = 0;
     while index < derive_field_count(input) {
@@ -280,7 +326,7 @@ fn derive_struct_eq_body(input: DeriveInput) -> MetaExpr {
             result,
             derive_trait_call(
                 input,
-                "Eq",
+                trait_name,
                 "eq",
                 derive_expr_list_two(
                     meta_expr_field(meta_expr_var("self"), field_name),
@@ -294,7 +340,7 @@ fn derive_struct_eq_body(input: DeriveInput) -> MetaExpr {
 }
 
 #[comptime_derive]
-fn derive_enum_eq_body(input: DeriveInput) -> MetaExpr {
+fn derive_enum_eq_body(input: DeriveInput, trait_name: string) -> MetaExpr {
     let item_name = derive_item_name(input);
     let arms = meta_arm_list_new();
     let mut variant_index = 0;
@@ -324,7 +370,7 @@ fn derive_enum_eq_body(input: DeriveInput) -> MetaExpr {
                 body,
                 derive_trait_call(
                     input,
-                    "Eq",
+                    trait_name,
                     "eq",
                     derive_expr_list_two(meta_expr_var(left), meta_expr_var(right)),
                 ),
@@ -355,19 +401,37 @@ fn derive_enum_eq_body(input: DeriveInput) -> MetaExpr {
     )
 }
 
-#[comptime_derive(Eq)]
-pub fn derive_eq(input: DeriveInput) -> DeriveOutput {
-    let output = derive_output_new(input, "Eq");
-    derive_add_predicates(input, output, "Eq");
+#[comptime_derive(PartialEq)]
+pub fn derive_partial_eq(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "PartialEq");
+    derive_add_predicates(input, output, "PartialEq");
     let body = if derive_item_kind(input) == 0 {
-        derive_struct_eq_body(input)
+        derive_struct_eq_body(input, "PartialEq")
     } else {
-        derive_enum_eq_body(input)
+        derive_enum_eq_body(input, "PartialEq")
     };
     derive_output_add_method(
         output,
         meta_method("eq", derive_eq_params(input), meta_type_call_site("bool"), body),
     );
+    output
+}
+
+#[comptime_derive(Eq)]
+pub fn derive_eq(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new(input, "Eq");
+    derive_add_all_predicates(input, output, "Eq");
+    if derive_has(input, "PartialEq") {} else {
+        let body = if derive_item_kind(input) == 0 {
+            derive_struct_eq_body(input, "Eq")
+        } else {
+            derive_enum_eq_body(input, "Eq")
+        };
+        derive_output_add_method(
+            output,
+            meta_method("eq", derive_eq_params(input), meta_type_call_site("bool"), body),
+        )
+    };
     output
 }
 
@@ -461,6 +525,403 @@ pub fn derive_hash(input: DeriveInput) -> DeriveOutput {
     derive_output_add_method(
         output,
         meta_method("hash", derive_self_params(input), meta_type_call_site("uint64"), body),
+    );
+    output
+}
+
+#[comptime_derive]
+fn derive_default_value(input: DeriveInput) -> MetaExpr {
+    derive_trait_call(input, "Default", "default", meta_expr_list_new())
+}
+
+#[comptime_derive]
+fn derive_add_default_predicates(input: DeriveInput, output: DeriveOutput) -> unit {
+    if derive_item_kind(input) == 0 {
+        let mut index = 0;
+        while index < derive_field_count(input) {
+            let ty = derive_field_type(input, index);
+            if meta_type_contains_generic(input, ty) && !derive_struct_type_seen(input, index, ty) {
+                derive_output_add_predicate(output, ty, "Default")
+            } else {};
+            index = index + 1;
+        }
+    } else if derive_variant_count(input) > 0 {
+        let mut index = 0;
+        while index < derive_variant_field_count(input, 0) {
+            let ty = derive_variant_field_type(input, 0, index);
+            if meta_type_contains_generic(input, ty) && !derive_enum_type_seen(input, 0, index, ty) {
+                derive_output_add_predicate(output, ty, "Default")
+            } else {};
+            index = index + 1;
+        }
+    } else {}
+}
+
+#[comptime_derive]
+fn derive_struct_default_body(input: DeriveInput) -> MetaExpr {
+    let fields = meta_expr_field_list_new();
+    let mut index = 0;
+    while index < derive_field_count(input) {
+        meta_expr_field_list_push(
+            fields,
+            derive_field_name(input, index),
+            derive_default_value(input),
+        );
+        index = index + 1;
+    }
+    meta_expr_target_struct(input, fields)
+}
+
+#[comptime_derive]
+fn derive_enum_default_body(input: DeriveInput) -> MetaExpr {
+    let variant_name = derive_variant_name(input, 0);
+    let kind = derive_variant_kind(input, 0);
+    if kind == 2 {
+        let fields = meta_expr_field_list_new();
+        let mut index = 0;
+        while index < derive_variant_field_count(input, 0) {
+            meta_expr_field_list_push(
+                fields,
+                derive_variant_field_name(input, 0, index),
+                derive_default_value(input),
+            );
+            index = index + 1;
+        }
+        meta_expr_target_variant_struct(input, variant_name, fields)
+    } else {
+        let values = meta_expr_list_new();
+        let mut index = 0;
+        while index < derive_variant_field_count(input, 0) {
+            meta_expr_list_push(values, derive_default_value(input));
+            index = index + 1;
+        }
+        meta_expr_target_constructor(input, variant_name, values)
+    }
+}
+
+#[comptime_derive(Default)]
+pub fn derive_default(input: DeriveInput) -> DeriveOutput {
+    if derive_item_kind(input) != 0 && derive_variant_count(input) == 0 {
+        derive_error(input, "Default cannot be derived for an empty enum")
+    } else {
+        let output = derive_output_new(input, "Default");
+        derive_add_default_predicates(input, output);
+        let body = if derive_item_kind(input) == 0 {
+            derive_struct_default_body(input)
+        } else {
+            derive_enum_default_body(input)
+        };
+        derive_output_add_method(
+            output,
+            meta_method("default", meta_param_list_new(), derive_target_type(input), body),
+        );
+        output
+    }
+}
+
+#[comptime_derive]
+fn derive_call_site_trait(trait_name: string, method_name: string, values: MetaExprList) -> MetaExpr {
+    meta_expr_trait_call_site(trait_name, method_name, values)
+}
+
+#[comptime_derive]
+fn derive_ordering(name: string) -> MetaExpr {
+    meta_expr_constructor("std::cmp::Ordering::" + name, meta_expr_list_new())
+}
+
+#[comptime_derive]
+fn derive_some(value: MetaExpr) -> MetaExpr {
+    meta_expr_constructor("Option::Some", derive_expr_list_one(value))
+}
+
+#[comptime_derive]
+fn derive_none() -> MetaExpr {
+    meta_expr_constructor("Option::None", meta_expr_list_new())
+}
+
+#[comptime_derive]
+fn derive_ord_step(input: DeriveInput, left: MetaExpr, right: MetaExpr, rest: MetaExpr) -> MetaExpr {
+    let block = meta_block_new();
+    let result = derive_fresh_name(input, "ordering");
+    meta_block_let(
+        block,
+        result,
+        derive_call_site_trait("std::cmp::Ord", "cmp", derive_expr_list_two(left, right)),
+    );
+    meta_block_finish(
+        block,
+        meta_expr_if(
+            meta_expr_binary(16, meta_expr_var(result), derive_ordering("Equal")),
+            rest,
+            meta_expr_var(result),
+        ),
+    )
+}
+
+#[comptime_derive]
+fn derive_partial_ord_step(input: DeriveInput, left: MetaExpr, right: MetaExpr, rest: MetaExpr) -> MetaExpr {
+    let arms = meta_arm_list_new();
+    meta_arm_list_push(
+        arms,
+        meta_arm(meta_pattern_constructor("Option::None", meta_pattern_list_new()), derive_none()),
+    );
+    let equal = meta_pattern_list_new();
+    meta_pattern_list_push(
+        equal,
+        meta_pattern_constructor("std::cmp::Ordering::Equal", meta_pattern_list_new()),
+    );
+    meta_arm_list_push(arms, meta_arm(meta_pattern_constructor("Option::Some", equal), rest));
+    let ordering = derive_fresh_name(input, "ordering");
+    let other = meta_pattern_list_new();
+    meta_pattern_list_push(other, meta_pattern_bind(ordering));
+    meta_arm_list_push(
+        arms,
+        meta_arm(
+            meta_pattern_constructor("Option::Some", other),
+            derive_some(meta_expr_var(ordering)),
+        ),
+    );
+    meta_expr_match(
+        derive_call_site_trait(
+            "std::cmp::PartialOrd",
+            "partial_cmp",
+            derive_expr_list_two(left, right),
+        ),
+        arms,
+    )
+}
+
+#[comptime_derive]
+fn derive_struct_ord_body(input: DeriveInput, partial: bool) -> MetaExpr {
+    let mut result = if partial {
+        derive_some(derive_ordering("Equal"))
+    } else {
+        derive_ordering("Equal")
+    };
+    let mut index = derive_field_count(input);
+    while index > 0 {
+        index = index - 1;
+        let field_name = derive_field_name(input, index);
+        let left = meta_expr_field(meta_expr_var("self"), field_name);
+        let right = meta_expr_field(meta_expr_var("other"), field_name);
+        result = if partial {
+            derive_partial_ord_step(input, left, right, result)
+        } else {
+            derive_ord_step(input, left, right, result)
+        };
+    }
+    result
+}
+
+#[comptime_derive]
+fn derive_enum_tag(input: DeriveInput, value: MetaExpr) -> MetaExpr {
+    let arms = meta_arm_list_new();
+    let mut variant = 0;
+    while variant < derive_variant_count(input) {
+        let kind = derive_variant_kind(input, variant);
+        let pattern = if kind == 2 {
+            let fields = meta_pattern_field_list_new();
+            let mut field = 0;
+            while field < derive_variant_field_count(input, variant) {
+                meta_pattern_field_list_push(
+                    fields,
+                    derive_variant_field_name(input, variant, field),
+                    meta_pattern_wild(),
+                );
+                field = field + 1;
+            }
+            meta_pattern_struct(
+                derive_item_name(input) + "::" + derive_variant_name(input, variant),
+                fields,
+                false,
+            )
+        } else {
+            let fields = meta_pattern_list_new();
+            let mut field = 0;
+            while field < derive_variant_field_count(input, variant) {
+                meta_pattern_list_push(fields, meta_pattern_wild());
+                field = field + 1;
+            }
+            meta_pattern_target_constructor(input, derive_variant_name(input, variant), fields)
+        };
+        meta_arm_list_push(arms, meta_arm(pattern, meta_expr_int(variant)));
+        variant = variant + 1;
+    }
+    meta_expr_match(value, arms)
+}
+
+#[comptime_derive]
+fn derive_enum_same_variant_body(input: DeriveInput, variant: int, partial: bool) -> MetaArm {
+    let kind = derive_variant_kind(input, variant);
+    let left_positional = meta_pattern_list_new();
+    let right_positional = meta_pattern_list_new();
+    let left_named = meta_pattern_field_list_new();
+    let right_named = meta_pattern_field_list_new();
+    let mut body = if partial {
+        derive_some(derive_ordering("Equal"))
+    } else {
+        derive_ordering("Equal")
+    };
+    let mut field = derive_variant_field_count(input, variant);
+    while field > 0 {
+        field = field - 1;
+        let left = derive_fresh_name(input, "left");
+        let right = derive_fresh_name(input, "right");
+        if kind == 2 {
+            let name = derive_variant_field_name(input, variant, field);
+            meta_pattern_field_list_push(left_named, name, meta_pattern_bind(left));
+            meta_pattern_field_list_push(right_named, name, meta_pattern_bind(right))
+        } else {
+            meta_pattern_list_prepend(left_positional, meta_pattern_bind(left));
+            meta_pattern_list_prepend(right_positional, meta_pattern_bind(right))
+        };
+        body = if partial {
+            derive_partial_ord_step(input, meta_expr_var(left), meta_expr_var(right), body)
+        } else {
+            derive_ord_step(input, meta_expr_var(left), meta_expr_var(right), body)
+        };
+    }
+    let constructor = derive_item_name(input) + "::" + derive_variant_name(input, variant);
+    let left_pattern = if kind == 2 {
+        meta_pattern_struct(constructor, left_named, false)
+    } else {
+        meta_pattern_constructor(constructor, left_positional)
+    };
+    let right_pattern = if kind == 2 {
+        meta_pattern_struct(constructor, right_named, false)
+    } else {
+        meta_pattern_constructor(constructor, right_positional)
+    };
+    let pair = meta_pattern_list_new();
+    meta_pattern_list_push(pair, left_pattern);
+    meta_pattern_list_push(pair, right_pattern);
+    meta_arm(meta_pattern_tuple(pair), body)
+}
+
+#[comptime_derive]
+fn derive_enum_payload_order(input: DeriveInput, partial: bool) -> MetaExpr {
+    let arms = meta_arm_list_new();
+    let mut variant = 0;
+    while variant < derive_variant_count(input) {
+        meta_arm_list_push(arms, derive_enum_same_variant_body(input, variant, partial));
+        variant = variant + 1;
+    }
+    meta_arm_list_push(
+        arms,
+        meta_arm(
+            meta_pattern_wild(),
+            if partial {
+                derive_some(derive_ordering("Equal"))
+            } else {
+                derive_ordering("Equal")
+            },
+        ),
+    );
+    meta_expr_match(
+        meta_expr_tuple(derive_expr_list_two(meta_expr_var("self"), meta_expr_var("other"))),
+        arms,
+    )
+}
+
+#[comptime_derive]
+fn derive_enum_ord_body(input: DeriveInput, partial: bool) -> MetaExpr {
+    let block = meta_block_new();
+    let left_tag = derive_fresh_name(input, "left_tag");
+    let right_tag = derive_fresh_name(input, "right_tag");
+    meta_block_let(block, left_tag, derive_enum_tag(input, meta_expr_var("self")));
+    meta_block_let(block, right_tag, derive_enum_tag(input, meta_expr_var("other")));
+    let less = if partial {
+        derive_some(derive_ordering("Less"))
+    } else {
+        derive_ordering("Less")
+    };
+    let greater = if partial {
+        derive_some(derive_ordering("Greater"))
+    } else {
+        derive_ordering("Greater")
+    };
+    meta_block_finish(
+        block,
+        meta_expr_if(
+            meta_expr_binary(12, meta_expr_var(left_tag), meta_expr_var(right_tag)),
+            less,
+            meta_expr_if(
+                meta_expr_binary(13, meta_expr_var(left_tag), meta_expr_var(right_tag)),
+                greater,
+                derive_enum_payload_order(input, partial),
+            ),
+        ),
+    )
+}
+
+#[comptime_derive]
+fn derive_add_call_site_predicates(input: DeriveInput, output: DeriveOutput, trait_name: string) -> unit {
+    if derive_item_kind(input) == 0 {
+        let mut index = 0;
+        while index < derive_field_count(input) {
+            let ty = derive_field_type(input, index);
+            if meta_type_contains_generic(input, ty) && !derive_struct_type_seen(input, index, ty) {
+                derive_output_add_call_site_predicate(output, ty, trait_name)
+            } else {};
+            index = index + 1;
+        }
+    } else {
+        let mut variant = 0;
+        while variant < derive_variant_count(input) {
+            let mut field = 0;
+            while field < derive_variant_field_count(input, variant) {
+                let ty = derive_variant_field_type(input, variant, field);
+                if meta_type_contains_generic(input, ty)
+                    && !derive_enum_type_seen(input, variant, field, ty) {
+                    derive_output_add_call_site_predicate(output, ty, trait_name)
+                } else {};
+                field = field + 1;
+            }
+            variant = variant + 1;
+        }
+    }
+}
+
+#[comptime_derive(PartialOrd)]
+pub fn derive_partial_ord(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new_call_site(input, "std::cmp::PartialOrd");
+    derive_add_call_site_predicates(input, output, "std::cmp::PartialOrd");
+    let ordering = meta_type_call_site("std::cmp::Ordering");
+    let values = meta_type_list_new();
+    meta_type_list_push(values, ordering);
+    let ret_ty = meta_type_apply(meta_type_call_site("Option"), values);
+    derive_output_add_method(
+        output,
+        meta_method(
+            "partial_cmp",
+            derive_eq_params(input),
+            ret_ty,
+            if derive_item_kind(input) == 0 {
+                derive_struct_ord_body(input, true)
+            } else {
+                derive_enum_ord_body(input, true)
+            },
+        ),
+    );
+    output
+}
+
+#[comptime_derive(Ord)]
+pub fn derive_ord(input: DeriveInput) -> DeriveOutput {
+    let output = derive_output_new_call_site(input, "std::cmp::Ord");
+    derive_add_call_site_predicates(input, output, "std::cmp::Ord");
+    derive_output_add_method(
+        output,
+        meta_method(
+            "cmp",
+            derive_eq_params(input),
+            meta_type_call_site("std::cmp::Ordering"),
+            if derive_item_kind(input) == 0 {
+                derive_struct_ord_body(input, false)
+            } else {
+                derive_enum_ord_body(input, false)
+            },
+        ),
     );
     output
 }

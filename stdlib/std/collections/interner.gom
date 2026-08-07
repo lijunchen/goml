@@ -27,6 +27,12 @@ pub struct Interner {
     pub values: Vec[string],
 }
 
+impl Default for Interner {
+    fn default() -> Interner {
+        Interner::new()
+    }
+}
+
 impl Interner {
     pub fn new() -> Interner {
         Interner { symbols: HashMap::{}, values: Vec::[] }

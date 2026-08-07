@@ -26,6 +26,12 @@ pub struct IndexVec[T] {
     pub values: Vec[T],
 }
 
+impl[T] Default for IndexVec[T] {
+    fn default() -> IndexVec[T] {
+        IndexVec::new()
+    }
+}
+
 impl[T] IndexVec[T] {
     pub fn new() -> IndexVec[T] {
         IndexVec { values: Vec::[] }

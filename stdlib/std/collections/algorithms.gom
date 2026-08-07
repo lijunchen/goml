@@ -116,8 +116,8 @@ pub fn position_by[T](values: Vec[T], predicate: (T) -> bool) -> Option[int] {
     Option::None
 }
 
-pub fn contains[T: Eq](values: Vec[T], expected: T) -> bool {
-    position_by(values, |value: T| Eq::eq(value, expected)).is_some()
+pub fn contains[T: PartialEq](values: Vec[T], expected: T) -> bool {
+    position_by(values, |value: T| PartialEq::eq(value, expected)).is_some()
 }
 
 pub fn min_by[T](values: Vec[T], compare: (T, T) -> int) -> Option[T] {
@@ -181,6 +181,6 @@ pub fn dedup_by[T](values: Vec[T], equal: (T, T) -> bool) -> unit {
     values.truncate(output)
 }
 
-pub fn dedup[T: Eq](values: Vec[T]) -> unit {
-    dedup_by(values, |left: T, right: T| Eq::eq(left, right))
+pub fn dedup[T: PartialEq](values: Vec[T]) -> unit {
+    dedup_by(values, |left: T, right: T| PartialEq::eq(left, right))
 }

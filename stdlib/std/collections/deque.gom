@@ -6,6 +6,12 @@ pub struct Deque[T] {
     pub len: Ref[int],
 }
 
+impl[T] Default for Deque[T] {
+    fn default() -> Deque[T] {
+        Deque::new()
+    }
+}
+
 impl[T] Deque[T] {
     pub fn new() -> Deque[T] {
         Deque { slots: Ref::new(Vec::[]), head: Ref::new(0), len: Ref::new(0) }

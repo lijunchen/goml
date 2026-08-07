@@ -393,7 +393,7 @@ fn builtin_artifact_interface_unit() -> artifact::ArtifactInterfaceUnit {
             traits.push(value)
         }
     }
-    for name in Vec::["Iterator", "IntoIterator", "Eq", "Hash", "ToString"] {
+    for name in Vec::["Iterator", "IntoIterator", "PartialEq", "Eq", "Hash", "ToString", "Default"] {
         match tast::builtin_trait_info(name) {
             Some(value) => traits.push(value),
             None => fail("error[compile]: missing builtin trait " + name),

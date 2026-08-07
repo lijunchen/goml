@@ -35,9 +35,7 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
     let length = value.byte_len();
     if index < 0 || index >= length {
         return utf8_invalid_decode()
-    } else {
-        ()
-    };
+    } else {};
     let first = value.byte_get(index) as uint32;
     if first < 128 {
         utf8_valid_decode(first, 1)
@@ -46,9 +44,7 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
     } else if first < 224 {
         if length - index < 2 {
             return utf8_invalid_decode()
-        } else {
-            ()
-        };
+        } else {};
         let second = value.byte_get(index + 1) as uint32;
         if utf8_invalid_continuation(second) {
             utf8_invalid_decode()
@@ -58,9 +54,7 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
     } else if first < 240 {
         if length - index < 3 {
             return utf8_invalid_decode()
-        } else {
-            ()
-        };
+        } else {};
         let second = value.byte_get(index + 1) as uint32;
         let third = value.byte_get(index + 2) as uint32;
         if utf8_invalid_continuation(second) || utf8_invalid_continuation(third)
@@ -73,9 +67,7 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
     } else if first < 245 {
         if length - index < 4 {
             return utf8_invalid_decode()
-        } else {
-            ()
-        };
+        } else {};
         let second = value.byte_get(index + 1) as uint32;
         let third = value.byte_get(index + 2) as uint32;
         let fourth = value.byte_get(index + 3) as uint32;
@@ -510,13 +502,13 @@ impl Eq for uint64 {
     }
 }
 
-impl Eq for float32 {
+impl PartialEq for float32 {
     fn eq(self: float32, other: float32) -> bool {
         __goml_primitive_eq(self, other)
     }
 }
 
-impl Eq for float64 {
+impl PartialEq for float64 {
     fn eq(self: float64, other: float64) -> bool {
         __goml_primitive_eq(self, other)
     }
@@ -604,18 +596,6 @@ impl Hash for uint64 {
     }
 }
 
-impl Hash for float32 {
-    fn hash(self: float32) -> uint64 {
-        float32_hash(self)
-    }
-}
-
-impl Hash for float64 {
-    fn hash(self: float64) -> uint64 {
-        float64_hash(self)
-    }
-}
-
 impl[T] Eq for Ref[T] {
     fn eq(self: Ref[T], other: Ref[T]) -> bool {
         ptr_eq(self, other)
@@ -625,6 +605,224 @@ impl[T] Eq for Ref[T] {
 impl[T] Hash for Ref[T] {
     fn hash(self: Ref[T]) -> uint64 {
         ptr_hash(self)
+    }
+}
+
+impl Default for unit {
+    fn default() -> unit {}
+}
+
+impl Default for bool {
+    fn default() -> bool {
+        false
+    }
+}
+
+impl Default for string {
+    fn default() -> string {
+        ""
+    }
+}
+
+impl Default for char {
+    fn default() -> char {
+        '\u0000'
+    }
+}
+
+impl Default for int {
+    fn default() -> int {
+        0
+    }
+}
+
+impl Default for int8 {
+    fn default() -> int8 {
+        0
+    }
+}
+
+impl Default for int16 {
+    fn default() -> int16 {
+        0
+    }
+}
+
+impl Default for int32 {
+    fn default() -> int32 {
+        0
+    }
+}
+
+impl Default for int64 {
+    fn default() -> int64 {
+        0
+    }
+}
+
+impl Default for uint {
+    fn default() -> uint {
+        0
+    }
+}
+
+impl Default for uint8 {
+    fn default() -> uint8 {
+        0
+    }
+}
+
+impl Default for uint16 {
+    fn default() -> uint16 {
+        0
+    }
+}
+
+impl Default for uint32 {
+    fn default() -> uint32 {
+        0
+    }
+}
+
+impl Default for uint64 {
+    fn default() -> uint64 {
+        0
+    }
+}
+
+impl Default for float32 {
+    fn default() -> float32 {
+        0.0
+    }
+}
+
+impl Default for float64 {
+    fn default() -> float64 {
+        0.0
+    }
+}
+
+impl[T] Default for Vec[T] {
+    fn default() -> Vec[T] {
+        Vec::new()
+    }
+}
+
+impl[K: Eq + Hash, V] Default for HashMap[K, V] {
+    fn default() -> HashMap[K, V] {
+        HashMap::new()
+    }
+}
+
+impl[T] Default for Option[T] {
+    fn default() -> Option[T] {
+        Option::None
+    }
+}
+
+impl[T: PartialEq] PartialEq for Vec[T] {
+    fn eq(self: Vec[T], other: Vec[T]) -> bool {
+        if self.len() != other.len() {
+            false
+        } else {
+            let mut index = 0;
+            while index < self.len() {
+                if self[index] == other[index] {
+                    index += 1;
+                } else {
+                    return false
+                }
+            }
+            true
+        }
+    }
+}
+
+impl[T: Eq] Eq for Vec[T] {}
+
+impl[T: Hash] Hash for Vec[T] {
+    fn hash(self: Vec[T]) -> uint64 {
+        let mut value: uint64 = 14695981039346656037;
+        let mut index = 0;
+        while index < self.len() {
+            value = value * 1099511628211 + Hash::hash(self[index]);
+            index += 1;
+        }
+        value
+    }
+}
+
+impl[T: PartialEq] PartialEq for Slice[T] {
+    fn eq(self: Slice[T], other: Slice[T]) -> bool {
+        if self.len() != other.len() {
+            false
+        } else {
+            let mut index = 0;
+            while index < self.len() {
+                if self[index] == other[index] {
+                    index += 1;
+                } else {
+                    return false
+                }
+            }
+            true
+        }
+    }
+}
+
+impl[T: Eq] Eq for Slice[T] {}
+
+impl[T: Hash] Hash for Slice[T] {
+    fn hash(self: Slice[T]) -> uint64 {
+        let mut value: uint64 = 14695981039346656037;
+        let mut index = 0;
+        while index < self.len() {
+            value = value * 1099511628211 + Hash::hash(self[index]);
+            index += 1;
+        }
+        value
+    }
+}
+
+impl[T: PartialEq] PartialEq for Option[T] {
+    fn eq(self: Option[T], other: Option[T]) -> bool {
+        match (self, other) {
+            (Option::None, Option::None) => true,
+            (Option::Some(left), Option::Some(right)) => left == right,
+            _ => false,
+        }
+    }
+}
+
+impl[T: Eq] Eq for Option[T] {}
+
+impl[T: Hash] Hash for Option[T] {
+    fn hash(self: Option[T]) -> uint64 {
+        match self {
+            Option::None => 14695981039346656038,
+            Option::Some(value) => 14695981039346656039 + Hash::hash(value),
+        }
+    }
+}
+
+impl[T: PartialEq, E: PartialEq] PartialEq for Result[T, E] {
+    fn eq(self: Result[T, E], other: Result[T, E]) -> bool {
+        match (self, other) {
+            (Result::Ok(left), Result::Ok(right)) => left == right,
+            (Result::Err(left), Result::Err(right)) => left == right,
+            _ => false,
+        }
+    }
+}
+
+impl[T: Eq, E: Eq] Eq for Result[T, E] {}
+
+impl[T: Hash, E: Hash] Hash for Result[T, E] {
+    fn hash(self: Result[T, E]) -> uint64 {
+        match self {
+            Result::Ok(value) => 14695981039346656038 + Hash::hash(value),
+            Result::Err(value) => 14695981039346656039 + Hash::hash(value),
+        }
     }
 }
 
@@ -685,7 +883,7 @@ impl[T] Vec[T] {
         while index < self.len() {
             result.push(self[index]);
             index += 1;
-        };
+        }
         result.push(elem);
         result
     }
@@ -753,9 +951,7 @@ impl[T] Vec[T] {
         let value = self[index];
         if index + 1 < len {
             self[index] = self[len - 1];
-        } else {
-            ()
-        };
+        } else {};
         self.truncate(len - 1);
         value
     }
@@ -771,7 +967,7 @@ impl[T] Vec[T] {
             while current > index {
                 self[current] = self[current - 1];
                 current -= 1;
-            };
+            }
             self[index] = value;
         }
     }
@@ -783,7 +979,7 @@ impl[T] Vec[T] {
         while current + 1 < len {
             self[current] = self[current + 1];
             current += 1;
-        };
+        }
         self.truncate(len - 1);
         value
     }
@@ -1019,10 +1215,8 @@ impl string {
                 if self.is_char_boundary(start) && self.is_char_boundary(end)
                     && self.byte_slice(start, end) == expected {
                     return true
-                } else {
-                    ()
-                }
-            };
+                } else {}
+            }
             false
         }
     }

@@ -2719,6 +2719,22 @@ fn order_comparable_type(value: Type) -> bool {
         }
 }
 
+fn partial_order_trait(ctx: Checker, value: Type) -> Option[string] {
+    match find_trait(ctx, "PartialOrd") {
+        Some(info) => if trait_bound_satisfied_at(
+            ctx,
+            value,
+            TraitRef { name: info.name, args: Vec::[] },
+            Vec::[],
+        ) {
+            Option::Some(info.name)
+        } else {
+            Option::None
+        },
+        None => Option::None,
+    }
+}
+
 fn is_bitwise_op(value: ast::BinaryOp) -> bool {
     match value {
         BitAnd | BitOr | BitXor | Shl | Shr => true,
@@ -2830,7 +2846,7 @@ fn check_binary_expr(
             && !trait_bound_satisfied_at(
                 ctx,
                 expr_type(left),
-                TraitRef { name: "Eq", args: Vec::[] },
+                TraitRef { name: "PartialEq", args: Vec::[] },
                 Vec::[],
             ) {
             push_diagnostic_at(
@@ -2839,14 +2855,17 @@ fn check_binary_expr(
                     ctx,
                     TypePredicate::Trait {
                         for_ty: expr_type(left),
-                        trait_ref: TraitRef { name: "Eq", args: Vec::[] },
+                        trait_ref: TraitRef { name: "PartialEq", args: Vec::[] },
                     },
                     "type predicate not satisfied",
                 ),
                 Option::Some(left_source.span),
             )
         } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
-            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
+            match partial_order_trait(ctx, expr_type(left)) {
+                Some(_) => (),
+                None => push_operator_not_defined(ctx, op, expr_type(left), left_source.span),
+            }
         } else if is_arithmetic_op(op) && !is_numeric_type(expr_type(left))
             && !(match prune(expr_type(left)) {
                 String => match op {
@@ -2868,7 +2887,12 @@ fn check_binary_expr(
                 expr_type(left)
             },
             resolution: if is_equality_op(op) {
-                BinaryResolution::Overloaded { trait_name: "Eq" }
+                BinaryResolution::Overloaded { trait_name: "PartialEq" }
+            } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
+                match partial_order_trait(ctx, expr_type(left)) {
+                    Some(trait_name) => BinaryResolution::Overloaded { trait_name },
+                    None => BinaryResolution::Builtin,
+                }
             } else {
                 BinaryResolution::Builtin
             },

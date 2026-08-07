@@ -4,6 +4,12 @@ pub struct Stack[T] {
     pub values: Vec[T],
 }
 
+impl[T] Default for Stack[T] {
+    fn default() -> Stack[T] {
+        Stack::new()
+    }
+}
+
 impl[T] Stack[T] {
     pub fn new() -> Stack[T] {
         Stack { values: Vec::[] }

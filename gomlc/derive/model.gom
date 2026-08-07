@@ -138,6 +138,11 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
             four_types("DeriveInput", "string", "string", "MetaExprList"),
             "MetaExpr",
         ),
+        spec(
+            "meta_expr_trait_call_site",
+            three_types("string", "string", "MetaExprList"),
+            "MetaExpr",
+        ),
         spec("meta_expr_tuple", one_type("MetaExprList"), "MetaExpr"),
         spec("meta_expr_array", one_type("MetaExprList"), "MetaExpr"),
         spec("meta_expr_if", three_types("MetaExpr", "MetaExpr", "MetaExpr"), "MetaExpr"),
@@ -162,6 +167,11 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
         ),
         spec("meta_expr_struct_call_site", two_types("string", "MetaExprFieldList"), "MetaExpr"),
         spec("meta_expr_target_struct", two_types("DeriveInput", "MetaExprFieldList"), "MetaExpr"),
+        spec(
+            "meta_expr_target_variant_struct",
+            three_types("DeriveInput", "string", "MetaExprFieldList"),
+            "MetaExpr",
+        ),
         spec("meta_expr_method_call", three_types("MetaExpr", "string", "MetaExprList"), "MetaExpr"),
         spec("meta_expr_return", one_type("MetaExpr"), "MetaExpr"),
         spec("meta_expr_try", one_type("MetaExpr"), "MetaExpr"),
@@ -203,6 +213,7 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
         spec("meta_pattern_range", three_types("MetaPattern", "MetaPattern", "bool"), "MetaPattern"),
         spec("meta_pattern_list_new", no_types(), "MetaPatternList"),
         spec("meta_pattern_list_push", two_types("MetaPatternList", "MetaPattern"), "unit"),
+        spec("meta_pattern_list_prepend", two_types("MetaPatternList", "MetaPattern"), "unit"),
         spec("meta_arm", two_types("MetaPattern", "MetaExpr"), "MetaArm"),
         spec("meta_arm_guarded", three_types("MetaPattern", "MetaExpr", "MetaExpr"), "MetaArm"),
         spec("meta_arm_list_new", no_types(), "MetaArmList"),
@@ -252,6 +263,7 @@ pub fn intrinsic_specs() -> Vec[DeriveIntrinsicSpec] {
             "unit",
         ),
         spec("derive_output_add_method", two_types("DeriveOutput", "MetaMethod"), "unit"),
+        spec("derive_error", two_types("DeriveInput", "string"), "DeriveOutput"),
     ]
 }
 
@@ -1434,14 +1446,23 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
                 },
             ),
         )
-    } else if name == "meta_expr_trait_call" {
+    } else if name == "meta_expr_trait_call" || name == "meta_expr_trait_call_site" {
+        let offset = if name == "meta_expr_trait_call" {
+            1
+        } else {
+            0
+        };
         let list = checked_index(
-            handle_argument(args, 3, "MetaExprList")?,
+            handle_argument(args, 2 + offset, "MetaExprList")?,
             state.expr_lists.len(),
             "meta expression list",
         )?;
-        let function_name = definition_name(state, string_argument(args, 1)?) + "::"
-            + string_argument(args, 2)?;
+        let trait_name = if name == "meta_expr_trait_call" {
+            definition_name(state, string_argument(args, 1)?)
+        } else {
+            string_argument(args, 0)?
+        };
+        let function_name = trait_name + "::" + string_argument(args, 1 + offset)?;
         Result::Ok(
             push_expr(
                 state,
@@ -1589,13 +1610,14 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         state.expr_fields[id].push((string_argument(args, 1)?, expr_value(state, args, 2)?));
         Result::Ok(unit_value())
     } else if name == "meta_expr_struct" || name == "meta_expr_struct_call_site"
-        || name == "meta_expr_target_struct" {
+        || name == "meta_expr_target_struct"
+        || name == "meta_expr_target_variant_struct" {
         let name_index = if name == "meta_expr_struct" {
             1
         } else {
             0
         };
-        let list_index = if name == "meta_expr_struct" {
+        let list_index = if name == "meta_expr_struct" || name == "meta_expr_target_variant_struct" {
             2
         } else if name == "meta_expr_target_struct" {
             1
@@ -1609,6 +1631,8 @@ fn expr_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) ->
         )?;
         let name = if name == "meta_expr_struct" {
             definition_name(state, string_argument(args, name_index)?)
+        } else if name == "meta_expr_target_variant_struct" {
+            item_name(state.request.item) + "::" + string_argument(args, 1)?
         } else if name == "meta_expr_target_struct" {
             item_name(state.request.item)
         } else {
@@ -1856,13 +1880,18 @@ fn pattern_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue])
         let values: Vec[ast::Pat] = Vec::[];
         state.pattern_lists.push(values);
         Result::Ok(meta("MetaPatternList", id))
-    } else if name == "meta_pattern_list_push" {
+    } else if name == "meta_pattern_list_push" || name == "meta_pattern_list_prepend" {
         let id = checked_index(
             handle_argument(args, 0, "MetaPatternList")?,
             state.pattern_lists.len(),
             "meta pattern list",
         )?;
-        state.pattern_lists[id].push(pattern_value(state, args, 1)?);
+        let pattern = pattern_value(state, args, 1)?;
+        if name == "meta_pattern_list_push" {
+            state.pattern_lists[id].push(pattern)
+        } else {
+            state.pattern_lists[id].insert(0, pattern)
+        };
         Result::Ok(unit_value())
     } else if name == "meta_arm" {
         let id = state.arms.len();
@@ -2179,6 +2208,8 @@ fn output_intrinsic(state: DeriveState, name: string, args: Vec[ctir::CtValue]) 
         )?;
         state.outputs[output].methods.push(state.methods[method]);
         Result::Ok(unit_value())
+    } else if name == "derive_error" {
+        Result::Err(string_argument(args, 1)?)
     } else {
         Result::Err("unknown derive output intrinsic `" + name + "`")
     }

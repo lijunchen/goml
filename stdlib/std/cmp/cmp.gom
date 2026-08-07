@@ -93,7 +93,55 @@ impl Eq for Ordering {
     }
 }
 
-pub trait Ord: Eq {
+pub trait PartialOrd: PartialEq {
+    fn partial_cmp(self: Self, other: Self) -> Option[Ordering];
+    fn lt(self: Self, other: Self) -> bool {
+        match self.partial_cmp(other) {
+            Option::Some(ordering) => ordering == Ordering::Less,
+            Option::None => false,
+        }
+    }
+    fn le(self: Self, other: Self) -> bool {
+        match self.partial_cmp(other) {
+            Option::Some(ordering) => ordering != Ordering::Greater,
+            Option::None => false,
+        }
+    }
+    fn gt(self: Self, other: Self) -> bool {
+        match self.partial_cmp(other) {
+            Option::Some(ordering) => ordering == Ordering::Greater,
+            Option::None => false,
+        }
+    }
+    fn ge(self: Self, other: Self) -> bool {
+        match self.partial_cmp(other) {
+            Option::Some(ordering) => ordering != Ordering::Less,
+            Option::None => false,
+        }
+    }
+}
+
+impl PartialOrd for Ordering {
+    fn partial_cmp(self: Ordering, other: Ordering) -> Option[Ordering] {
+        Option::Some(
+            if self == other {
+                Ordering::Equal
+            } else {
+                match self {
+                    Ordering::Less => Ordering::Less,
+                    Ordering::Equal => if other == Ordering::Greater {
+                        Ordering::Less
+                    } else {
+                        Ordering::Greater
+                    },
+                    Ordering::Greater => Ordering::Greater,
+                }
+            },
+        )
+    }
+}
+
+pub trait Ord: Eq + PartialOrd {
     fn cmp(self: Self, other: Self) -> Ordering;
 }
 
@@ -121,6 +169,12 @@ impl Ord for unit {
     }
 }
 
+impl PartialOrd for unit {
+    fn partial_cmp(self: unit, other: unit) -> Option[Ordering] {
+        Option::Some(Ordering::Equal)
+    }
+}
+
 impl Ord for bool {
     fn cmp(self: bool, other: bool) -> Ordering {
         if self == other {
@@ -130,6 +184,20 @@ impl Ord for bool {
         } else {
             Ordering::Less
         }
+    }
+}
+
+impl PartialOrd for bool {
+    fn partial_cmp(self: bool, other: bool) -> Option[Ordering] {
+        Option::Some(
+            if self == other {
+                Ordering::Equal
+            } else if self {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            },
+        )
     }
 }
 
@@ -145,6 +213,20 @@ impl Ord for string {
     }
 }
 
+impl PartialOrd for string {
+    fn partial_cmp(self: string, other: string) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
+    }
+}
+
 impl Ord for char {
     fn cmp(self: char, other: char) -> Ordering {
         if self < other {
@@ -154,6 +236,20 @@ impl Ord for char {
         } else {
             Ordering::Equal
         }
+    }
+}
+
+impl PartialOrd for char {
+    fn partial_cmp(self: char, other: char) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
     }
 }
 
@@ -169,6 +265,20 @@ impl Ord for int {
     }
 }
 
+impl PartialOrd for int {
+    fn partial_cmp(self: int, other: int) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
+    }
+}
+
 impl Ord for int8 {
     fn cmp(self: int8, other: int8) -> Ordering {
         if self < other {
@@ -178,6 +288,20 @@ impl Ord for int8 {
         } else {
             Ordering::Equal
         }
+    }
+}
+
+impl PartialOrd for int8 {
+    fn partial_cmp(self: int8, other: int8) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
     }
 }
 
@@ -193,6 +317,20 @@ impl Ord for int16 {
     }
 }
 
+impl PartialOrd for int16 {
+    fn partial_cmp(self: int16, other: int16) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
+    }
+}
+
 impl Ord for int32 {
     fn cmp(self: int32, other: int32) -> Ordering {
         if self < other {
@@ -202,6 +340,20 @@ impl Ord for int32 {
         } else {
             Ordering::Equal
         }
+    }
+}
+
+impl PartialOrd for int32 {
+    fn partial_cmp(self: int32, other: int32) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
     }
 }
 
@@ -217,6 +369,20 @@ impl Ord for int64 {
     }
 }
 
+impl PartialOrd for int64 {
+    fn partial_cmp(self: int64, other: int64) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
+    }
+}
+
 impl Ord for uint {
     fn cmp(self: uint, other: uint) -> Ordering {
         if self < other {
@@ -226,6 +392,20 @@ impl Ord for uint {
         } else {
             Ordering::Equal
         }
+    }
+}
+
+impl PartialOrd for uint {
+    fn partial_cmp(self: uint, other: uint) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
     }
 }
 
@@ -241,6 +421,20 @@ impl Ord for uint8 {
     }
 }
 
+impl PartialOrd for uint8 {
+    fn partial_cmp(self: uint8, other: uint8) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
+    }
+}
+
 impl Ord for uint16 {
     fn cmp(self: uint16, other: uint16) -> Ordering {
         if self < other {
@@ -250,6 +444,20 @@ impl Ord for uint16 {
         } else {
             Ordering::Equal
         }
+    }
+}
+
+impl PartialOrd for uint16 {
+    fn partial_cmp(self: uint16, other: uint16) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
     }
 }
 
@@ -265,6 +473,20 @@ impl Ord for uint32 {
     }
 }
 
+impl PartialOrd for uint32 {
+    fn partial_cmp(self: uint32, other: uint32) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
+    }
+}
+
 impl Ord for uint64 {
     fn cmp(self: uint64, other: uint64) -> Ordering {
         if self < other {
@@ -273,6 +495,174 @@ impl Ord for uint64 {
             Ordering::Greater
         } else {
             Ordering::Equal
+        }
+    }
+}
+
+impl PartialOrd for uint64 {
+    fn partial_cmp(self: uint64, other: uint64) -> Option[Ordering] {
+        Option::Some(
+            if self < other {
+                Ordering::Less
+            } else if self > other {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            },
+        )
+    }
+}
+
+impl PartialOrd for float32 {
+    fn partial_cmp(self: float32, other: float32) -> Option[Ordering] {
+        if self < other {
+            Option::Some(Ordering::Less)
+        } else if self > other {
+            Option::Some(Ordering::Greater)
+        } else if self == other {
+            Option::Some(Ordering::Equal)
+        } else {
+            Option::None
+        }
+    }
+}
+
+impl PartialOrd for float64 {
+    fn partial_cmp(self: float64, other: float64) -> Option[Ordering] {
+        if self < other {
+            Option::Some(Ordering::Less)
+        } else if self > other {
+            Option::Some(Ordering::Greater)
+        } else if self == other {
+            Option::Some(Ordering::Equal)
+        } else {
+            Option::None
+        }
+    }
+}
+
+impl[T: PartialOrd] PartialOrd for Vec[T] {
+    fn partial_cmp(self: Vec[T], other: Vec[T]) -> Option[Ordering] {
+        let limit = if self.len() < other.len() {
+            self.len()
+        } else {
+            other.len()
+        };
+        let mut index = 0;
+        while index < limit {
+            match PartialOrd::partial_cmp(self[index], other[index]) {
+                Option::None => return Option::None,
+                Option::Some(Ordering::Equal) => {
+                    index += 1;
+                },
+                Option::Some(ordering) => return Option::Some(ordering),
+            }
+        }
+        PartialOrd::partial_cmp(self.len(), other.len())
+    }
+}
+
+impl[T: Ord] Ord for Vec[T] {
+    fn cmp(self: Vec[T], other: Vec[T]) -> Ordering {
+        let limit = if self.len() < other.len() {
+            self.len()
+        } else {
+            other.len()
+        };
+        let mut index = 0;
+        while index < limit {
+            match Ord::cmp(self[index], other[index]) {
+                Ordering::Equal => {
+                    index += 1;
+                },
+                ordering => return ordering,
+            }
+        }
+        Ord::cmp(self.len(), other.len())
+    }
+}
+
+impl[T: PartialOrd] PartialOrd for Slice[T] {
+    fn partial_cmp(self: Slice[T], other: Slice[T]) -> Option[Ordering] {
+        let limit = if self.len() < other.len() {
+            self.len()
+        } else {
+            other.len()
+        };
+        let mut index = 0;
+        while index < limit {
+            match PartialOrd::partial_cmp(self[index], other[index]) {
+                Option::None => return Option::None,
+                Option::Some(Ordering::Equal) => {
+                    index += 1;
+                },
+                Option::Some(ordering) => return Option::Some(ordering),
+            }
+        }
+        PartialOrd::partial_cmp(self.len(), other.len())
+    }
+}
+
+impl[T: Ord] Ord for Slice[T] {
+    fn cmp(self: Slice[T], other: Slice[T]) -> Ordering {
+        let limit = if self.len() < other.len() {
+            self.len()
+        } else {
+            other.len()
+        };
+        let mut index = 0;
+        while index < limit {
+            match Ord::cmp(self[index], other[index]) {
+                Ordering::Equal => {
+                    index += 1;
+                },
+                ordering => return ordering,
+            }
+        }
+        Ord::cmp(self.len(), other.len())
+    }
+}
+
+impl[T: PartialOrd] PartialOrd for Option[T] {
+    fn partial_cmp(self: Option[T], other: Option[T]) -> Option[Ordering] {
+        match (self, other) {
+            (Option::None, Option::None) => Option::Some(Ordering::Equal),
+            (Option::None, Option::Some(_)) => Option::Some(Ordering::Less),
+            (Option::Some(_), Option::None) => Option::Some(Ordering::Greater),
+            (Option::Some(left), Option::Some(right)) => PartialOrd::partial_cmp(left, right),
+        }
+    }
+}
+
+impl[T: Ord] Ord for Option[T] {
+    fn cmp(self: Option[T], other: Option[T]) -> Ordering {
+        match (self, other) {
+            (Option::None, Option::None) => Ordering::Equal,
+            (Option::None, Option::Some(_)) => Ordering::Less,
+            (Option::Some(_), Option::None) => Ordering::Greater,
+            (Option::Some(left), Option::Some(right)) => Ord::cmp(left, right),
+        }
+    }
+}
+
+impl[T: PartialOrd, E: PartialOrd] PartialOrd for Result[T, E] {
+    fn partial_cmp(self: Result[T, E], other: Result[T, E]) -> Option[Ordering] {
+        match (self, other) {
+            (Result::Ok(left), Result::Ok(right)) => PartialOrd::partial_cmp(left, right),
+            (Result::Ok(_), Result::Err(_)) => Option::Some(Ordering::Less),
+            (Result::Err(_), Result::Ok(_)) => Option::Some(Ordering::Greater),
+            (Result::Err(left), Result::Err(right)) => PartialOrd::partial_cmp(left, right),
+        }
+    }
+}
+
+impl[T: Ord, E: Ord] Ord for Result[T, E] {
+    fn cmp(self: Result[T, E], other: Result[T, E]) -> Ordering {
+        match (self, other) {
+            (Result::Ok(left), Result::Ok(right)) => Ord::cmp(left, right),
+            (Result::Ok(_), Result::Err(_)) => Ordering::Less,
+            (Result::Err(_), Result::Ok(_)) => Ordering::Greater,
+            (Result::Err(left), Result::Err(right)) => Ord::cmp(left, right),
         }
     }
 }
@@ -291,9 +681,17 @@ impl[T] Reverse[T] {
     }
 }
 
-impl[T: Eq] Eq for Reverse[T] {
+impl[T: PartialEq] PartialEq for Reverse[T] {
     fn eq(self: Reverse[T], other: Reverse[T]) -> bool {
         self.value == other.value
+    }
+}
+
+impl[T: Eq] Eq for Reverse[T] {}
+
+impl[T: PartialOrd] PartialOrd for Reverse[T] {
+    fn partial_cmp(self: Reverse[T], other: Reverse[T]) -> Option[Ordering] {
+        PartialOrd::partial_cmp(other.value, self.value)
     }
 }
 

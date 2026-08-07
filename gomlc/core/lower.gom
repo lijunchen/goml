@@ -152,19 +152,48 @@ fn bool_expr(value: bool) -> Expr {
     Expr::Prim { value: tast::Primitive::Bool { value }, ty: tast::Type::Bool }
 }
 
-fn trait_eq_call(trait_name: string, left: Expr, right: Expr) -> Expr {
+fn trait_bool_call(trait_name: string, method_name: string, left: Expr, right: Expr) -> Expr {
     let args: Vec[Expr] = Vec::[];
     args.push(right);
     let for_ty = expr_type(left);
     Expr::TraitCall {
         trait_ref: tast::TraitRef { name: trait_name, args: Vec::[] },
-        method_name: "eq",
+        method_name,
         instance_name: Option::None,
         for_ty,
         receiver: Option::Some(left),
         args,
         ty: tast::Type::Bool,
     }
+}
+
+fn trait_eq_call(trait_name: string, left: Expr, right: Expr) -> Expr {
+    trait_bool_call(trait_name, "eq", left, right)
+}
+
+fn order_method_name(op: ast::BinaryOp) -> string {
+    match op {
+        Less => "lt",
+        Greater => "gt",
+        LessEq => "le",
+        GreaterEq => "ge",
+        _ => "lt",
+    }
+}
+
+fn lower_order_expr(
+    ctx: Lowerer,
+    trait_name: string,
+    op: ast::BinaryOp,
+    left: tast::Expr,
+    right: tast::Expr,
+) -> Expr {
+    trait_bool_call(
+        trait_name,
+        order_method_name(op),
+        lower_expr(ctx, left),
+        lower_expr(ctx, right),
+    )
 }
 
 fn eq_conjunction(values: Vec[Expr]) -> Expr {
@@ -1440,8 +1469,13 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
             else_branch: lower_expr(ctx, right),
             ty,
         },
-        Binary { op, lhs: left, rhs: right, ty: _, resolution: Overloaded { trait_name } } => {
+        Binary { op, lhs: left, rhs: right, ty: _, resolution: Overloaded { trait_name } } => if match op {
+            Eq | NotEq => true,
+            _ => false,
+        } {
             lower_eq_expr(ctx, trait_name, op, left, right)
+        } else {
+            lower_order_expr(ctx, trait_name, op, left, right)
         },
         Binary { op, lhs: left, rhs: right, ty, resolution: _ } => {
             Expr::Binary { op, lhs: lower_expr(ctx, left), rhs: lower_expr(ctx, right), ty }
@@ -1842,6 +1876,31 @@ fn lower_function(
     }
 }
 
+fn lower_marker_trait_witness(block: tast::ImplBlock, reference: tast::TraitRef) -> Function {
+    Function {
+        name: trait_impl_method_name(reference, block.for_type, "__marker"),
+        origin: FunctionOrigin::TraitImplementation { method_name: "__marker" },
+        root: false,
+        generics: block.generics,
+        predicates: block.predicates,
+        trait_impl: Option::Some(
+            TraitImpl {
+                trait_ref: reference,
+                for_ty: block.for_type,
+                associated_types: block.associated_types,
+                generic_count: block.generics.len(),
+                predicate_count: block.predicates.len(),
+            },
+        ),
+        params: Vec::[],
+        ret_ty: tast::Type::Unit,
+        body: Block {
+            stmts: Vec::[],
+            tail: Option::Some(Expr::Prim { value: tast::Primitive::Unit, ty: tast::Type::Unit }),
+        },
+    }
+}
+
 fn lower_file_with_types(
     value: tast::File,
     counter: Ref[int],
@@ -1890,35 +1949,42 @@ fn lower_file_with_types(
                     ),
                 ),
             },
-            ImplBlock(block) => for method in block.methods {
-                let trait_impl = match block.trait_ref {
-                    Some(reference) => Option::Some(
-                        TraitImpl {
-                            trait_ref: reference,
-                            for_ty: block.for_type,
-                            associated_types: block.associated_types,
-                            generic_count: block.generics.len(),
-                            predicate_count: block.predicates.len(),
+            ImplBlock(block) => if block.methods.is_empty() {
+                match block.trait_ref {
+                    Some(reference) => functions.push(lower_marker_trait_witness(block, reference)),
+                    None => (),
+                }
+            } else {
+                for method in block.methods {
+                    let trait_impl = match block.trait_ref {
+                        Some(reference) => Option::Some(
+                            TraitImpl {
+                                trait_ref: reference,
+                                for_ty: block.for_type,
+                                associated_types: block.associated_types,
+                                generic_count: block.generics.len(),
+                                predicate_count: block.predicates.len(),
+                            },
+                        ),
+                        None => Option::None,
+                    };
+                    let name = match block.trait_ref {
+                        Some(reference) => trait_impl_method_name(
+                            reference,
+                            block.for_type,
+                            method.name,
+                        ),
+                        None => inherent_method_name(block.for_type, method.name),
+                    };
+                    let origin = match block.trait_ref {
+                        Some(_) => FunctionOrigin::TraitImplementation { method_name: method.name },
+                        None => FunctionOrigin::Inherent {
+                            owner: block.for_type,
+                            method_name: method.name,
                         },
-                    ),
-                    None => Option::None,
-                };
-                let name = match block.trait_ref {
-                    Some(reference) => trait_impl_method_name(
-                        reference,
-                        block.for_type,
-                        method.name,
-                    ),
-                    None => inherent_method_name(block.for_type, method.name),
-                };
-                let origin = match block.trait_ref {
-                    Some(_) => FunctionOrigin::TraitImplementation { method_name: method.name },
-                    None => FunctionOrigin::Inherent {
-                        owner: block.for_type,
-                        method_name: method.name,
-                    },
-                };
-                functions.push(lower_function(ctx, name, origin, trait_impl, method, true))
+                    };
+                    functions.push(lower_function(ctx, name, origin, trait_impl, method, true))
+                }
             },
         }
     }

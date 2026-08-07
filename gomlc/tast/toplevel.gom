@@ -980,7 +980,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                         + type_text(for_type),
                 ),
             };
-            Option::Some(reference)
+            Option::Some(normalize_trait_ref(base, reference))
         },
         None => Option::None,
     };
@@ -1039,6 +1039,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 for_type,
                 associated_types,
                 predicates,
+                value.generics,
             );
             if base.diagnostics.len() > validation_start {
                 invalid = true;
@@ -1489,13 +1490,62 @@ fn validate_trait_impl_requirements(
     }
 }
 
+fn type_contains_any_parameter(value: Type, parameters: Vec[string]) -> bool {
+    for parameter in parameters {
+        if type_contains_parameter(value, parameter) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn trait_ref_contains_any_parameter(reference: TraitRef, parameters: Vec[string]) -> bool {
+    for arg in reference.args {
+        if type_contains_any_parameter(arg, parameters) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn predicate_contains_any_parameter(value: TypePredicate, parameters: Vec[string]) -> bool {
+    match value {
+        Trait { for_ty, trait_ref } => {
+            type_contains_any_parameter(for_ty, parameters)
+                || trait_ref_contains_any_parameter(trait_ref, parameters)
+        },
+        Equality { lhs, rhs } => {
+            type_contains_any_parameter(lhs, parameters)
+                || type_contains_any_parameter(rhs, parameters)
+        },
+    }
+}
+
+fn validate_concrete_impl_predicates(
+    ctx: Checker,
+    predicates: Vec[TypePredicate],
+    owner_generics: Vec[string],
+) -> unit {
+    for predicate in predicates {
+        if predicate_contains_any_parameter(predicate, owner_generics)
+            || predicates_satisfied_at(ctx, Vec::[predicate], Vec::[]) {} else {
+            push_diagnostic(
+                ctx,
+                predicate_requirement_message(ctx, predicate, "type predicate not satisfied"),
+            )
+        }
+    }
+}
+
 fn validate_trait_impl_definition_requirements(
     ctx: Checker,
     reference: TraitRef,
     for_type: Type,
     associated_types: Vec[(string, Type)],
     predicates: Vec[TypePredicate],
+    owner_generics: Vec[string],
 ) -> unit {
+    validate_concrete_impl_predicates(ctx, predicates, owner_generics);
     match find_trait(ctx, reference.name) {
         Some(info) => {
             let validation_ctx = function_context(
@@ -3000,7 +3050,12 @@ fn check_file_with_package(
     let items: Vec[Item] = Vec::[];
     for item in value.items {
         match item {
-            ImplBlock(value) => items.push(Item::ImplBlock(check_impl(ctx, value))),
+            ImplBlock(value) => if legacy_builtin_eq_impl(value, ctx.traits) {
+                items.push(Item::ImplBlock(check_impl(ctx, legacy_partial_eq_impl(value))));
+                items.push(Item::ImplBlock(check_impl(ctx, legacy_eq_marker_impl(value))))
+            } else {
+                items.push(Item::ImplBlock(check_impl(ctx, value)))
+            },
             Function(value) => items.push(
                 Item::Function(check_function(ctx, value, Vec::[], Vec::[], Option::None)),
             ),

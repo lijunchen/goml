@@ -1033,7 +1033,7 @@ fn lower_ct_expr(ctx: CtLowerContext, value: Expr) -> Result[ctir::CtExpr, strin
         Binary { op, lhs, rhs, ty: _, resolution } => {
             match resolution {
                 BinaryResolution::Builtin => (),
-                BinaryResolution::Overloaded { trait_name } => if trait_name == "Eq"
+                BinaryResolution::Overloaded { trait_name } => if trait_name == "PartialEq"
                     && ct_builtin_equality_type(expr_type(lhs))
                     && ct_builtin_equality_type(expr_type(rhs)) {} else {
                     return Result::Err("overloaded operators are not available in comptime")

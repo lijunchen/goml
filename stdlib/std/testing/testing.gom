@@ -12,18 +12,18 @@ pub fn assert(condition: bool) -> unit {
     }
 }
 
-pub fn assert_eq[T: Eq + ToString](actual: T, expected: T) -> unit {
-    if Eq::eq(actual, expected) {} else {
+pub fn assert_eq[T: PartialEq + Debug](actual: T, expected: T) -> unit {
+    if PartialEq::eq(actual, expected) {} else {
         fail(
-            "assertion failed: values are not equal\n  actual: " + ToString::to_string(actual)
+            "assertion failed: values are not equal\n  actual: " + Debug::debug(actual)
                 + "\nexpected: "
-                + ToString::to_string(expected),
+                + Debug::debug(expected),
         )
     }
 }
 
-pub fn assert_ne[T: Eq + ToString](actual: T, expected: T) -> unit {
-    if Eq::eq(actual, expected) {
-        fail("assertion failed: values are equal\nvalue: " + ToString::to_string(actual))
+pub fn assert_ne[T: PartialEq + Debug](actual: T, expected: T) -> unit {
+    if PartialEq::eq(actual, expected) {
+        fail("assertion failed: values are equal\nvalue: " + Debug::debug(actual))
     } else {}
 }

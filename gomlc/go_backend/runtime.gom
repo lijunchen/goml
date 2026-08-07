@@ -1322,7 +1322,7 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
                 op: BinaryOp::And,
                 lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
                 rhs: Expr::Call {
-                    func: Expr::Var { name: hashmap_trait_impl_name("Eq", key, "eq") },
+                    func: Expr::Var { name: hashmap_trait_impl_name("PartialEq", key, "eq") },
                     args: eq_args,
                 },
             },
@@ -1559,7 +1559,7 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
                 op: BinaryOp::And,
                 lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
                 rhs: Expr::Call {
-                    func: Expr::Var { name: hashmap_trait_impl_name("Eq", key, "eq") },
+                    func: Expr::Var { name: hashmap_trait_impl_name("PartialEq", key, "eq") },
                     args: eq_args,
                 },
             },
@@ -1746,7 +1746,7 @@ fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
                 op: BinaryOp::And,
                 lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
                 rhs: Expr::Call {
-                    func: Expr::Var { name: hashmap_trait_impl_name("Eq", key, "eq") },
+                    func: Expr::Var { name: hashmap_trait_impl_name("PartialEq", key, "eq") },
                     args: eq_args,
                 },
             },
@@ -1856,7 +1856,7 @@ fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
                 op: BinaryOp::And,
                 lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "active" },
                 rhs: Expr::Call {
-                    func: Expr::Var { name: hashmap_trait_impl_name("Eq", key, "eq") },
+                    func: Expr::Var { name: hashmap_trait_impl_name("PartialEq", key, "eq") },
                     args: eq_args,
                 },
             },

@@ -5,6 +5,12 @@ pub struct BitSet {
     pub len: Ref[int],
 }
 
+impl Default for BitSet {
+    fn default() -> BitSet {
+        BitSet::new()
+    }
+}
+
 impl BitSet {
     pub fn new() -> BitSet {
         BitSet { words: Vec::[], len: Ref::new(0) }
