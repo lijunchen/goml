@@ -1,6 +1,8 @@
 package main;
 
 use std::json;
+use std::serde;
+use std::toml;
 use json::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -11,10 +13,43 @@ struct User {
 }
 
 #[derive(Serialize, Deserialize)]
+struct Empty {}
+
+#[derive(Serialize, Deserialize)]
 enum Event {
     Idle,
     Login(string, uint32),
     State { active: bool },
+}
+
+struct RawBytes {
+    values: Vec[byte],
+}
+
+impl Deserialize for RawBytes {
+    fn deserialize(value: serde::Value) -> Result[RawBytes, string] {
+        match value {
+            serde::Value::Sequence(values) => {
+                let bytes: Vec[byte] = Vec::with_capacity(values.len());
+                for value in values {
+                    let byte: uint8 = Deserialize::deserialize(value)?;
+                    bytes.push(byte)
+                }
+                Result::Ok(RawBytes { values: bytes })
+            },
+            _ => Result::Err("expected byte array"),
+        }
+    }
+
+    fn schema() -> serde::TypedSchema[RawBytes] {
+        serde::typed_schema(
+            serde::Schema::Sequence(Vec::[serde::Schema::Integer { signed: false, width: 8 }]),
+        )
+    }
+
+    fn deserialize_from[D: serde::Deserializer](deserializer: D) -> Result[RawBytes, string] {
+        Result::Ok(RawBytes { values: deserializer.deserialize_bytes()? })
+    }
 }
 
 fn decode_user(input: string) -> Result[User, string] {
@@ -50,5 +85,67 @@ fn main() -> unit {
         Ok(Login(name, id)) => println(name + id.to_string()),
         Ok(_) => println("wrong event"),
         Err(error) => println(error),
-    }
+    };
+    match decode_user(
+        "{\"ignored\":{\"nested\":[1,{\"ok\":true}]},\"age\":9,\"display_name\":\"order\"}",
+    ) {
+        Ok(value) => println(value.name + value.age.to_string()),
+        Err(error) => println(error),
+    };
+    match decode_user("{\"display_name\":\"first\",\"display_name\":\"second\",\"age\":1}") {
+        Ok(_) => println("wrong duplicate"),
+        Err(error) => println(error),
+    };
+    match decode_user("{\"display_name\":\"missing\"}") {
+        Ok(_) => println("wrong missing"),
+        Err(error) => println(error),
+    };
+    match decode_event("{\"State\":{\"active\":true}}") {
+        Ok(State { active }) => println(active),
+        Ok(_) => println("wrong state"),
+        Err(error) => println(error),
+    };
+    match decode_event("{\"State\":{\"ignored\":{\"deep\":[1,null]},\"active\":false}}") {
+        Ok(State { active }) => println(active),
+        Ok(_) => println("wrong unknown state field"),
+        Err(error) => println(error),
+    };
+    match decode_event("{\"State\":{\"active\":true,\"active\":false}}") {
+        Ok(_) => println("wrong duplicate state field"),
+        Err(error) => println(error),
+    };
+    match decode_event("{\"State\":{}}") {
+        Ok(_) => println("wrong missing state field"),
+        Err(error) => println(error),
+    };
+    match decode_event("\"Idle\"") {
+        Ok(Idle) => println("idle"),
+        Ok(_) => println("wrong idle"),
+        Err(error) => println(error),
+    };
+    match decode_user("{\"display_name\":\"trail\",\"age\":2} true") {
+        Ok(_) => println("wrong trailing"),
+        Err(error) => println(error),
+    };
+    let dynamic: Result[json::Value, string] = json::from_string("{\"value\":[1,null]}");
+    match dynamic {
+        Ok(value) => println(json::encode(value)),
+        Err(error) => println(error),
+    };
+    println(json::to_string(toml::Value::String("world-default")));
+    let legacy: Result[toml::Value, string] = json::from_string("\"world-default\"");
+    match legacy {
+        Ok(toml::Value::String(value)) => println(value),
+        Ok(_) => println("wrong legacy value"),
+        Err(error) => println(error),
+    };
+    let bytes: Result[RawBytes, string] = json::from_string("[1,2,255]");
+    match bytes {
+        Ok(value) => println(value.values.len().to_string() + ":" + value.values[2].to_string()),
+        Err(error) => println(error),
+    };
+    let empty_text = json::to_string(Empty {});
+    println(empty_text);
+    let empty: Result[Empty, string] = json::from_string(empty_text);
+    println(empty.is_ok())
 }

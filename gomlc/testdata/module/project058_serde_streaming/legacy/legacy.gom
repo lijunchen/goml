@@ -1,0 +1,28 @@
+package legacy;
+
+use std::serde;
+use serde::{Deserialize, Serialize};
+
+pub struct Legacy {
+    pub value: int32,
+}
+
+impl Serialize for Legacy {
+    fn serialize(self: Legacy) -> serde::Value {
+        serde::Value::Struct(Vec::[("value", serde::Value::Int32(self.value))])
+    }
+}
+
+impl Deserialize for Legacy {
+    fn deserialize(value: serde::Value) -> Result[Legacy, string] {
+        Result::Ok(Legacy { value: Deserialize::deserialize(serde::field(value, "value")?)? })
+    }
+
+    fn schema() -> serde::TypedSchema[Legacy] {
+        serde::typed_schema(
+            serde::structure_schema(
+                Vec::[("value", serde::Schema::Integer { signed: true, width: 32 })],
+            ),
+        )
+    }
+}

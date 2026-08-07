@@ -1,0 +1,642 @@
+package main;
+
+use std::bincode;
+use std::json;
+use std::serde;
+use tests::serde_streaming::legacy;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+#[derive(Serialize, Deserialize)]
+struct Item {
+    #[serde(rename = "item_name")]
+    name: string,
+    values: Vec[Option[int32]],
+}
+
+#[derive(Serialize, Deserialize)]
+enum Choice {
+    None,
+    #[serde(rename = "renamed_pair")]
+    Pair(int16, string),
+    Named { enabled: bool },
+}
+
+struct StringIntMap {
+    entries: Vec[(string, int32)],
+}
+
+struct InvalidSequence {}
+
+impl Serialize for InvalidSequence {
+    fn serialize(self: InvalidSequence) -> serde::Value {
+        serde::Value::Sequence(Vec::[])
+    }
+
+    fn serialize_into[S: Serializer](self: InvalidSequence, serializer: S) -> Result[unit, string] {
+        let _ = self;
+        serializer.begin_sequence(1)?;
+        serializer.end_sequence()
+    }
+}
+
+struct IntKeyMap {}
+
+impl Serialize for IntKeyMap {
+    fn serialize(self: IntKeyMap) -> serde::Value {
+        serde::Value::Sequence(
+            Vec::[serde::Value::Tuple(Vec::[serde::Value::Int32(1), serde::Value::String("one")])],
+        )
+    }
+
+    fn serialize_into[S: Serializer](self: IntKeyMap, serializer: S) -> Result[unit, string] {
+        let _ = self;
+        serializer.begin_map(1)?;
+        serializer.begin_map_key(0)?;
+        serializer.serialize_int32(1)?;
+        serializer.begin_map_value(0)?;
+        serializer.serialize_string("one")?;
+        serializer.end_map()
+    }
+}
+
+struct SkippedSequence {}
+
+impl Deserialize for SkippedSequence {
+    fn deserialize(value: serde::Value) -> Result[SkippedSequence, string] {
+        let _ = value;
+        Result::Ok(SkippedSequence {})
+    }
+
+    fn schema() -> serde::TypedSchema[SkippedSequence] {
+        serde::typed_schema(
+            serde::Schema::Sequence(Vec::[serde::Schema::Integer { signed: true, width: 32 }]),
+        )
+    }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[SkippedSequence, string] {
+        let _ = deserializer.begin_sequence()?;
+        let _ = deserializer.next_sequence_element()?;
+        let _ = deserializer.next_sequence_element()?;
+        deserializer.end_sequence()?;
+        Result::Ok(SkippedSequence {})
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+struct Primitives {
+    nothing: unit,
+    flag: bool,
+    signed: int,
+    signed8: int8,
+    signed16: int16,
+    signed32: int32,
+    signed64: int64,
+    unsigned: uint,
+    unsigned8: uint8,
+    unsigned16: uint16,
+    unsigned32: uint32,
+    unsigned64: uint64,
+    float32_value: float32,
+    float64_value: float64,
+    text: string,
+    letter: char,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Numeric {
+    value: int32,
+}
+
+struct ByteBuffer {
+    values: Vec[byte],
+}
+
+impl Serialize for ByteBuffer {
+    fn serialize(self: ByteBuffer) -> serde::Value {
+        let values: Vec[serde::Value] = Vec::with_capacity(self.values.len());
+        for value in self.values {
+            values.push(serde::Value::Uint8(value))
+        }
+        serde::Value::Sequence(values)
+    }
+
+    fn serialize_into[S: Serializer](self: ByteBuffer, serializer: S) -> Result[unit, string] {
+        serializer.serialize_bytes(self.values.slice(0, self.values.len()))
+    }
+}
+
+impl Deserialize for ByteBuffer {
+    fn deserialize(value: serde::Value) -> Result[ByteBuffer, string] {
+        let encoded = match value {
+            serde::Value::Sequence(values) => values,
+            _ => return Result::Err("expected byte sequence"),
+        };
+        let values: Vec[byte] = Vec::with_capacity(encoded.len());
+        for value in encoded {
+            let byte: uint8 = Deserialize::deserialize(value)?;
+            values.push(byte)
+        }
+        Result::Ok(ByteBuffer { values })
+    }
+
+    fn schema() -> serde::TypedSchema[ByteBuffer] {
+        serde::typed_schema(
+            serde::Schema::Sequence(Vec::[serde::Schema::Integer { signed: false, width: 8 }]),
+        )
+    }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[ByteBuffer, string] {
+        Result::Ok(ByteBuffer { values: deserializer.deserialize_bytes()? })
+    }
+}
+
+struct NumberText {
+    value: string,
+}
+
+impl Serialize for NumberText {
+    fn serialize(self: NumberText) -> serde::Value {
+        serde::Value::Number(self.value)
+    }
+
+    fn serialize_into[S: Serializer](self: NumberText, serializer: S) -> Result[unit, string] {
+        serializer.serialize_number(self.value)
+    }
+}
+
+impl Deserialize for NumberText {
+    fn deserialize(value: serde::Value) -> Result[NumberText, string] {
+        match value {
+            serde::Value::Number(value) => Result::Ok(NumberText { value }),
+            _ => Result::Err("expected number text"),
+        }
+    }
+
+    fn schema() -> serde::TypedSchema[NumberText] {
+        serde::typed_schema(serde::Schema::Any)
+    }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[NumberText, string] {
+        Result::Ok(NumberText { value: deserializer.deserialize_number()? })
+    }
+}
+
+fn primitives() -> Primitives {
+    Primitives {
+        nothing: (),
+        flag: true,
+        signed: -1,
+        signed8: -8,
+        signed16: -16,
+        signed32: -32,
+        signed64: -64,
+        unsigned: 1,
+        unsigned8: 8,
+        unsigned16: 16,
+        unsigned32: 32,
+        unsigned64: 64,
+        float32_value: 1.25,
+        float64_value: -2.5,
+        text: "primitive",
+        letter: 'λ',
+    }
+}
+
+impl Serialize for StringIntMap {
+    fn serialize(self: StringIntMap) -> serde::Value {
+        let entries: Vec[serde::Value] = Vec::with_capacity(self.entries.len());
+        for entry in self.entries {
+            entries.push(
+                serde::Value::Tuple(
+                    Vec::[serde::Value::String(entry.0), serde::Value::Int32(entry.1)],
+                ),
+            )
+        }
+        serde::Value::Sequence(entries)
+    }
+
+    fn serialize_into[S: Serializer](self: StringIntMap, serializer: S) -> Result[unit, string] {
+        serializer.begin_map(self.entries.len())?;
+        let mut index = 0;
+        while index < self.entries.len() {
+            serializer.begin_map_key(index)?;
+            Serialize::serialize_into(self.entries[index].0, serializer)?;
+            serializer.begin_map_value(index)?;
+            Serialize::serialize_into(self.entries[index].1, serializer)?;
+            index = index + 1;
+        }
+        serializer.end_map()
+    }
+}
+
+impl Deserialize for StringIntMap {
+    fn deserialize(value: serde::Value) -> Result[StringIntMap, string] {
+        let encoded = match value {
+            serde::Value::Sequence(values) => values,
+            _ => return Result::Err("expected map entries"),
+        };
+        let entries: Vec[(string, int32)] = Vec::with_capacity(encoded.len());
+        for entry in encoded {
+            let fields = match entry {
+                serde::Value::Tuple(fields) => fields,
+                _ => return Result::Err("expected map entry tuple"),
+            };
+            if fields.len() != 2 {
+                return Result::Err("expected two map entry fields")
+            } else {};
+            let key: string = Deserialize::deserialize(fields[0])?;
+            let value: int32 = Deserialize::deserialize(fields[1])?;
+            entries.push((key, value))
+        }
+        Result::Ok(StringIntMap { entries })
+    }
+
+    fn schema() -> serde::TypedSchema[StringIntMap] {
+        serde::typed_schema(
+            serde::Schema::Sequence(
+                Vec::[
+                    serde::Schema::Tuple(
+                        Vec::[
+                            serde::Schema::String,
+                            serde::Schema::Integer { signed: true, width: 32 },
+                        ],
+                    ),
+                ],
+            ),
+        )
+    }
+
+    fn deserialize_from[D: Deserializer](deserializer: D) -> Result[StringIntMap, string] {
+        let _ = deserializer.begin_map()?;
+        let entries: Vec[(string, int32)] = Vec::[];
+        while deserializer.next_map_entry()? {
+            deserializer.begin_map_key()?;
+            let key: string = Deserialize::deserialize_from(deserializer)?;
+            deserializer.begin_map_value()?;
+            let value: int32 = Deserialize::deserialize_from(deserializer)?;
+            entries.push((key, value))
+        }
+        deserializer.end_map()?;
+        Result::Ok(StringIntMap { entries })
+    }
+}
+
+fn round_trip_item(value: Item) -> Result[Item, string] {
+    let serializer = serde::value_serializer();
+    Serialize::serialize_into(value, serializer)?;
+    let encoded = serde::finish_value_serializer(serializer)?;
+    let deserializer = serde::value_deserializer(encoded);
+    let decoded: Item = Deserialize::deserialize_from(deserializer)?;
+    serde::finish_value_deserializer(deserializer)?;
+    Result::Ok(decoded)
+}
+
+fn round_trip_choice(value: Choice) -> Result[Choice, string] {
+    let serializer = serde::value_serializer();
+    Serialize::serialize_into(value, serializer)?;
+    let encoded = serde::finish_value_serializer(serializer)?;
+    let deserializer = serde::value_deserializer(encoded);
+    let decoded: Choice = Deserialize::deserialize_from(deserializer)?;
+    serde::finish_value_deserializer(deserializer)?;
+    Result::Ok(decoded)
+}
+
+fn decode_item(value: serde::Value) -> Result[Item, string] {
+    let deserializer = serde::value_deserializer(value);
+    Deserialize::deserialize_from(deserializer)
+}
+
+fn decode_choice(value: serde::Value) -> Result[Choice, string] {
+    let deserializer = serde::value_deserializer(value);
+    Deserialize::deserialize_from(deserializer)
+}
+
+fn bytes_equal(left: Vec[byte], right: Vec[byte]) -> bool {
+    if left.len() != right.len() {
+        return false
+    } else {};
+    for index in 0..left.len() {
+        if left[index] != right[index] {
+            return false
+        } else {}
+    }
+    true
+}
+
+fn main() -> unit {
+    let item = round_trip_item(
+        Item { name: "numbers", values: Vec::[Option::Some(7), Option::None, Option::Some(9)] },
+    ).unwrap_or(Item { name: "error", values: Vec::[] });
+    println(item.name + ":" + item.values.len().to_string());
+    match round_trip_choice(Choice::Pair(12, "twelve")).unwrap_or(Choice::None) {
+        Choice::Pair(number, name) => println(number.to_string() + ":" + name),
+        _ => println("wrong pair"),
+    };
+    match round_trip_choice(Choice::Named { enabled: true }).unwrap_or(Choice::None) {
+        Choice::Named { enabled } => println(enabled),
+        _ => println("wrong named"),
+    };
+    let reordered = decode_item(
+        serde::Value::Struct(
+            Vec::[
+                ("unknown", serde::Value::Bool(false)),
+                (
+                    "values",
+                    serde::Value::Sequence(
+                        Vec::[serde::Value::Optional(Vec::[serde::Value::Int32(4)])],
+                    ),
+                ),
+                ("item_name", serde::Value::String("reordered")),
+            ],
+        ),
+    ).unwrap_or(Item { name: "error", values: Vec::[] });
+    println(reordered.name + ":" + reordered.values.len().to_string());
+    match decode_item(
+        serde::Value::Struct(
+            Vec::[
+                ("item_name", serde::Value::String("first")),
+                ("item_name", serde::Value::String("second")),
+                ("values", serde::Value::Sequence(Vec::[])),
+            ],
+        ),
+    ) {
+        Ok(_) => println("wrong duplicate"),
+        Err(error) => println(error),
+    };
+    match decode_item(serde::Value::Struct(Vec::[("item_name", serde::Value::String("missing"))])) {
+        Ok(_) => println("wrong missing"),
+        Err(error) => println(error),
+    };
+    match decode_choice(
+        serde::Value::Struct(
+            Vec::[
+                (
+                    "renamed_pair",
+                    serde::Value::Sequence(
+                        Vec::[serde::Value::Int16(21), serde::Value::String("named")],
+                    ),
+                ),
+            ],
+        ),
+    ).unwrap_or(Choice::None) {
+        Choice::Pair(number, name) => println(number.to_string() + ":" + name),
+        _ => println("wrong named variant"),
+    };
+    let invalid = serde::value_serializer();
+    println(invalid.end_struct().is_err());
+    let incomplete = serde::value_serializer();
+    let _ = incomplete.begin_sequence(1);
+    println(incomplete.end_sequence().is_err());
+    let unfinished = serde::value_deserializer(
+        serde::Value::Sequence(Vec::[serde::Value::Int32(1)]),
+    );
+    let _ = unfinished.begin_sequence();
+    println(serde::finish_value_deserializer(unfinished).is_err());
+    let legacy_value = serde::to_value(legacy::Legacy { value: 31 });
+    let legacy_decoded: Result[legacy::Legacy, string] = serde::from_value(legacy_value);
+    match legacy_decoded {
+        Ok(value) => println(value.value),
+        Err(error) => println(error),
+    };
+    let legacy_json = json::to_string(legacy::Legacy { value: 32 });
+    println(legacy_json);
+    let legacy_from_json: Result[legacy::Legacy, string] = json::from_string(legacy_json);
+    match legacy_from_json {
+        Ok(value) => println(value.value),
+        Err(error) => println(error),
+    };
+    let legacy_bytes: Vec[byte] = match bincode::encode_to_vec(
+        legacy::Legacy { value: 33 },
+        bincode::standard(),
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    let legacy_from_bytes: Result[(legacy::Legacy, int), string] = bincode::decode_from_slice(
+        legacy_bytes.slice(0, legacy_bytes.len()),
+        bincode::standard(),
+    );
+    match legacy_from_bytes {
+        Ok((value, consumed)) => println(value.value.to_string() + ":" + consumed.to_string()),
+        Err(error) => println(error),
+    };
+    let string_map = StringIntMap { entries: Vec::[("one", 1 as int32), ("two", 2 as int32)] };
+    let string_map_json: string = json::to_string(string_map);
+    println(string_map_json);
+    let string_map_from_json: Result[StringIntMap, string] = json::from_string(string_map_json);
+    match string_map_from_json {
+        Ok(value) => println(
+            value.entries[0].0 + ":" + value.entries[0].1.to_string() + "," + value.entries[1].0
+                + ":"
+                + value.entries[1].1.to_string(),
+        ),
+        Err(error) => println(error),
+    };
+    let string_map_encoded: Result[Vec[byte], string] = bincode::encode_to_vec(
+        string_map,
+        bincode::standard(),
+    );
+    let string_map_bytes: Vec[byte] = match string_map_encoded {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    let string_map_from_bytes: Result[(StringIntMap, int), string] = bincode::decode_from_slice(
+        string_map_bytes.slice(0, string_map_bytes.len()),
+        bincode::standard(),
+    );
+    match string_map_from_bytes {
+        Ok((value, consumed)) => println(
+            value.entries.len().to_string() + ":" + consumed.to_string(),
+        ),
+        Err(error) => println(error),
+    };
+    let string_map_value: serde::Value = serde::to_value(string_map);
+    let string_map_from_value: Result[StringIntMap, string] = serde::from_value(string_map_value);
+    match string_map_from_value {
+        Ok(value) => println(value.entries[1].0 + ":" + value.entries[1].1.to_string()),
+        Err(error) => println(error),
+    };
+    match bincode::encode_to_vec(InvalidSequence {}, bincode::standard()) {
+        Ok(_) => println("wrong bincode state"),
+        Err(error) => println(error),
+    };
+    match json::try_to_string(IntKeyMap {}) {
+        Ok(_) => println("wrong JSON map key"),
+        Err(error) => println(error),
+    };
+    let sequence_bytes: Vec[byte] = match bincode::encode_to_vec(
+        Vec::[1 as int32, 2 as int32],
+        bincode::standard(),
+    ) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    let skipped: Result[(SkippedSequence, int), string] = bincode::decode_from_slice(
+        sequence_bytes.slice(0, sequence_bytes.len()),
+        bincode::standard(),
+    );
+    match skipped {
+        Ok(_) => println("wrong bincode decode state"),
+        Err(error) => println(error),
+    };
+    let primitive_json = json::to_string(primitives());
+    let primitive_from_json: Result[Primitives, string] = json::from_string(primitive_json);
+    match primitive_from_json {
+        Ok(value) => println(
+            value.signed64.to_string() + ":" + value.unsigned64.to_string() + ":"
+                + value.float64_value.to_string()
+                + ":"
+                + value.letter.to_string(),
+        ),
+        Err(error) => println(error),
+    };
+    let primitive_bytes: Vec[byte] = match bincode::encode_to_vec(primitives(), bincode::standard()) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    let primitive_from_bytes: Result[(Primitives, int), string] = bincode::decode_from_slice(
+        primitive_bytes.slice(0, primitive_bytes.len()),
+        bincode::standard(),
+    );
+    match primitive_from_bytes {
+        Ok((value, consumed)) => println(
+            value.text + ":" + value.signed32.to_string() + ":" + consumed.to_string(),
+        ),
+        Err(error) => println(error),
+    };
+    let bytes = ByteBuffer { values: Vec::[0 as byte, 1 as byte, 255 as byte] };
+    let bytes_json = json::to_string(bytes);
+    println(bytes_json);
+    let bytes_from_json: Result[ByteBuffer, string] = json::from_string(bytes_json);
+    match bytes_from_json {
+        Ok(value) => println(value.values[2]),
+        Err(error) => println(error),
+    };
+    let encoded_bytes: Vec[byte] = match bincode::encode_to_vec(bytes, bincode::standard()) {
+        Ok(value) => value,
+        Err(error) => {
+            println(error);
+            Vec::[]
+        },
+    };
+    let decoded_bytes: Result[(ByteBuffer, int), string] = bincode::decode_from_slice(
+        encoded_bytes.slice(0, encoded_bytes.len()),
+        bincode::standard(),
+    );
+    match decoded_bytes {
+        Ok((value, consumed)) => println(
+            value.values.len().to_string() + ":" + consumed.to_string(),
+        ),
+        Err(error) => println(error),
+    };
+    let number_json = json::try_to_string(NumberText { value: "-12.5e2" }).unwrap_or("");
+    println(number_json);
+    let number_result: Result[NumberText, string] = json::from_string(number_json);
+    match number_result {
+        Ok(value) => println(value.value),
+        Err(error) => println(error),
+    };
+    let differential = Item {
+        name: "differential",
+        values: Vec::[Option::Some(5), Option::None, Option::Some(-8)],
+    };
+    let differential_json = json::to_string(differential);
+    println(differential_json == json::encode(json::to_value(differential)));
+    let standard = bincode::standard();
+    let direct_standard: Vec[byte] = match bincode::encode_to_vec(differential, standard) {
+        Ok(value) => value,
+        Err(_) => Vec::[],
+    };
+    let value_standard: Vec[byte] = match bincode::encode_value(
+        serde::to_value(differential),
+        standard,
+    ) {
+        Ok(value) => value,
+        Err(_) => Vec::[],
+    };
+    println(bytes_equal(direct_standard, value_standard));
+    let legacy = bincode::legacy();
+    let direct_legacy: Vec[byte] = match bincode::encode_to_vec(differential, legacy) {
+        Ok(value) => value,
+        Err(_) => Vec::[],
+    };
+    let value_legacy: Vec[byte] = match bincode::encode_value(serde::to_value(differential), legacy) {
+        Ok(value) => value,
+        Err(_) => Vec::[],
+    };
+    println(bytes_equal(direct_legacy, value_legacy));
+    let schema: serde::TypedSchema[Item] = Deserialize::schema();
+    let dynamic_item: Item = match bincode::decode_value(
+        direct_standard.slice(0, direct_standard.len()),
+        schema.value,
+        standard,
+    ) {
+        Ok((value, _)) => serde::from_value(value).unwrap_or(
+            Item { name: "error", values: Vec::[] },
+        ),
+        Err(_) => Item { name: "error", values: Vec::[] },
+    };
+    let direct_item: Item = match bincode::decode_from_slice(
+        direct_standard.slice(0, direct_standard.len()),
+        standard,
+    ) {
+        Ok((value, _)) => value,
+        Err(_) => Item { name: "error", values: Vec::[] },
+    };
+    println(json::to_string(dynamic_item) == json::to_string(direct_item));
+    let type_error: Result[Numeric, string] = json::from_string("{\"value\":\"wrong\"}");
+    match type_error {
+        Ok(_) => println("wrong JSON type"),
+        Err(error) => println(error),
+    };
+    let duplicate_error: Result[Numeric, string] = json::from_string("{\"value\":1,\"value\":2}");
+    match duplicate_error {
+        Ok(_) => println("wrong JSON duplicate"),
+        Err(error) => println(error),
+    };
+    let missing_error: Result[Numeric, string] = json::from_string("{}");
+    match missing_error {
+        Ok(_) => println("wrong JSON missing"),
+        Err(error) => println(error),
+    };
+    let variant_error: Result[Choice, string] = json::from_string("\"Unknown\"");
+    match variant_error {
+        Ok(_) => println("wrong JSON variant"),
+        Err(error) => println(error),
+    };
+    let bool_error: Result[bool, string] = json::from_string("\"true\"");
+    match bool_error {
+        Ok(_) => println("wrong JSON bool"),
+        Err(error) => println(error),
+    };
+    let unit_error: Result[unit, string] = json::from_string("false");
+    match unit_error {
+        Ok(_) => println("wrong JSON unit"),
+        Err(error) => println(error),
+    };
+    let string_error: Result[string, string] = json::from_string("[]");
+    match string_error {
+        Ok(_) => println("wrong JSON string"),
+        Err(error) => println(error),
+    };
+    let truncated: Result[(Item, int), string] = bincode::decode_from_slice(
+        direct_standard.slice(0, direct_standard.len() - 1),
+        standard,
+    );
+    match truncated {
+        Ok(_) => println("wrong bincode truncation"),
+        Err(error) => println(error),
+    }
+}

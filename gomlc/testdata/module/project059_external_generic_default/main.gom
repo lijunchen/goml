@@ -1,0 +1,31 @@
+package main;
+
+use tests::external_generic_default::api;
+use tests::external_generic_default::model;
+use api::{Decode, Pick, Source};
+
+struct NumberSource {
+    value: int,
+}
+
+impl Source for NumberSource {
+    fn read(self: Self) -> int {
+        self.value
+    }
+}
+
+fn decode[T: Decode, S: Source](source: S) -> Result[T, string] {
+    let value: T = Decode::decode_from(source)?;
+    Result::Ok(value)
+}
+
+fn main() -> unit {
+    let value = model::Value { number: 7 };
+    println(value.pick("generic-default"));
+    println(value.number());
+    let result: Result[model::Value, string] = decode(NumberSource { value: 9 });
+    match result {
+        Ok(decoded) => println(decoded.number),
+        Err(message) => println(message),
+    }
+}

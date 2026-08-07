@@ -1,0 +1,19 @@
+package api;
+
+pub trait Pick {
+    fn number(self: Self) -> int;
+    fn pick[T](self: Self, value: T) -> T {
+        value
+    }
+}
+
+pub trait Source {
+    fn read(self: Self) -> int;
+}
+
+pub trait Decode {
+    fn decode(value: int) -> Result[Self, string];
+    fn decode_from[S: Source](source: S) -> Result[Self, string] {
+        Decode::decode(source.read())
+    }
+}

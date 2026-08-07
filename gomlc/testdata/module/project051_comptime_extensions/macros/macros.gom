@@ -14,6 +14,7 @@ pub trait Inspect {
     fn maybe(self: Self) -> Option[int];
     fn large(self: Self) -> uint64;
     fn generic[A: Adapter](self: Self, adapter: A) -> Result[A::Output, string];
+    fn counted(self: Self) -> int;
 }
 
 pub trait Render {
@@ -22,7 +23,6 @@ pub trait Render {
 
 pub trait Adapter {
     type Output;
-
     fn adapt(self: Self, value: string) -> Result[Self::Output, string];
 }
 
@@ -199,6 +199,33 @@ fn generic_method(input: DeriveInput) -> MetaMethod {
     )
 }
 
+#[comptime_derive]
+fn counted_method(input: DeriveInput) -> MetaMethod {
+    let block = meta_block_new();
+    meta_block_let_mut_typed(block, "count", meta_type_call_site("int"), meta_expr_int(0));
+    let loop_block = meta_block_new();
+    meta_block_assign(
+        loop_block,
+        meta_expr_var("count"),
+        meta_expr_binary(0, meta_expr_var("count"), meta_expr_int(1)),
+    );
+    meta_block_expr(
+        block,
+        meta_expr_while(
+            meta_expr_binary(12, meta_expr_var("count"), meta_expr_int(3)),
+            meta_block_finish_unit(loop_block),
+        ),
+    );
+    let params = meta_param_list_new();
+    meta_param_list_push(params, "self", derive_target_type(input));
+    meta_method(
+        "counted",
+        params,
+        meta_type_call_site("int"),
+        meta_block_finish(block, meta_expr_var("count")),
+    )
+}
+
 #[comptime_derive(Inspect)]
 pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
     let item_attribute = derive_attribute(input, 0);
@@ -278,5 +305,6 @@ pub fn derive_inspect(input: DeriveInput) -> DeriveOutput {
     derive_output_add_method(output, maybe_method(input));
     derive_output_add_method(output, large_method(input));
     derive_output_add_method(output, generic_method(input));
+    derive_output_add_method(output, counted_method(input));
     output
 }

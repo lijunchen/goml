@@ -40,7 +40,7 @@ fn loads_multifile_standard_package() -> unit {
         Err(error) => testing::fail(error),
     };
     match standard_sources("std::json") {
-        Ok(Some(values)) => testing::assert_eq(values.len(), 2),
+        Ok(Some(values)) => testing::assert_eq(values.len(), 3),
         Ok(None) => testing::fail("expected standard package"),
         Err(error) => testing::fail(error),
     };
@@ -99,7 +99,7 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
     );
     assert_strings(standard_package_children("std::internal"), Vec::["host", "task"]);
     match standard_sources("std::serde") {
-        Ok(Some(values)) => testing::assert_eq(values.len(), 2),
+        Ok(Some(values)) => testing::assert_eq(values.len(), 6),
         Ok(None) => testing::fail("expected serde package"),
         Err(error) => testing::fail(error),
     };
