@@ -1703,8 +1703,6 @@ The current release is a source-compatible transition. Handwritten implementatio
 
 This design removes the mandatory intermediate tree, but it is not an absolute zero-cost or Rust-style zero-copy guarantee. GoML has GC rather than ownership and `Deserialize<'de>` lifetimes, format buffers and decoded strings still allocate when required, and the Go compiler decides which static calls it inlines. The direct path means no data-model tree or dynamic dispatch is inherently required; allocations must still be measured for each format and value shape.
 
-`just bench-serde` measures a deterministic corpus containing nested structs, all enum shapes, options, tuples, short and long vectors, and large strings. It reports wall time, `ns/op`, bytes and allocations per operation, encoded size, generated Go size and function count, and executable size for JSON, bincode standard and legacy, and TOML. The harness also checks generated Go to ensure direct JSON and bincode entry points do not reference `Value`, schema construction, or serializer vtables.
-
 ```goml
 use std::serde;
 use serde::{Deserialize, Serialize};

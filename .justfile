@@ -49,7 +49,7 @@ bootstrap:
     just _bootstrap-stage3
 
 _ci-scripts:
-    bash -n tools/release/release.sh tools/release/test.sh tools/release/lsp_smoke.sh tools/bench-serde.sh tools/check-serde-direct.sh
+    bash -n tools/release/release.sh tools/release/test.sh tools/release/lsp_smoke.sh
     bash -n tools/stdlib/install.sh tools/stdlib/test.sh
     bash tools/release/test.sh
     bash tools/stdlib/test.sh stage2
@@ -119,6 +119,3 @@ verify-golden: make
     cd gomlc && ../stage2/bin/goml test formatter --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd gomlc && ../stage2/bin/goml test pipeline_test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test compiler_test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
-
-bench-serde: make
-    bash tools/bench-serde.sh
