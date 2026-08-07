@@ -3,7 +3,7 @@ package lexer;
 use std::ascii;
 use std::text;
 
-#[derive(Eq, ToString)]
+#[derive(PartialEq, Eq, ToString)]
 pub enum TokenKind {
     LParen,
     RParen,
@@ -1206,7 +1206,7 @@ pub fn token_kind_display(kind: TokenKind) -> string {
 }
 
 pub fn token_kind_equal(left: TokenKind, right: TokenKind) -> bool {
-    Eq::eq(left, right)
+    PartialEq::eq(left, right)
 }
 
 pub fn token_is_trivia(kind: TokenKind) -> bool {

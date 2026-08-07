@@ -10,11 +10,13 @@ impl Symbol {
     }
 }
 
-impl Eq for Symbol {
+impl PartialEq for Symbol {
     fn eq(self: Symbol, other: Symbol) -> bool {
         self.index == other.index
     }
 }
+
+impl Eq for Symbol {}
 
 impl Hash for Symbol {
     fn hash(self: Symbol) -> uint64 {

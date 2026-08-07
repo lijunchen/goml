@@ -3,7 +3,7 @@ package cst;
 use gomlc::lexer;
 use std::text;
 
-#[derive(Eq, ToString)]
+#[derive(PartialEq, Eq, ToString)]
 pub enum NodeKind {
     TombStone,
     ErrorTree,
@@ -208,7 +208,7 @@ pub fn node_kind_name(kind: NodeKind) -> string {
 }
 
 pub fn node_kind_equal(left: NodeKind, right: NodeKind) -> bool {
-    Eq::eq(left, right)
+    PartialEq::eq(left, right)
 }
 
 fn debug_write_spaces(builder: text::StringBuilder, count: int) -> unit {

@@ -10,11 +10,13 @@ impl[T] ArenaId[T] {
     }
 }
 
-impl[T] Eq for ArenaId[T] {
+impl[T] PartialEq for ArenaId[T] {
     fn eq(self: ArenaId[T], other: ArenaId[T]) -> bool {
         self.index == other.index
     }
 }
+
+impl[T] Eq for ArenaId[T] {}
 
 impl[T] Hash for ArenaId[T] {
     fn hash(self: ArenaId[T]) -> uint64 {

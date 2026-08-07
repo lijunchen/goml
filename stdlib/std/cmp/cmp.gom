@@ -74,7 +74,7 @@ impl Ordering {
     }
 }
 
-impl Eq for Ordering {
+impl PartialEq for Ordering {
     fn eq(self: Ordering, other: Ordering) -> bool {
         match self {
             Ordering::Less => match other {
@@ -92,6 +92,8 @@ impl Eq for Ordering {
         }
     }
 }
+
+impl Eq for Ordering {}
 
 pub trait PartialOrd: PartialEq {
     fn partial_cmp(self: Self, other: Self) -> Option[Ordering];

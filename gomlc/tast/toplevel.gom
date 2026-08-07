@@ -1680,10 +1680,18 @@ fn validate_trait_impl(
                             owner_predicates.len(),
                         )
                     },
-                    None => push_diagnostic(
-                        ctx,
-                        "Method " + method.name + " is not declared in trait " + reference.name,
-                    ),
+                    None => if reference.name == "Eq" && method.name == "eq"
+                        && !trait_infos_contain_exact_name(ctx.traits, "Eq") {
+                        push_diagnostic(
+                            ctx,
+                            "Old-style Eq implementations cannot define eq; implement PartialEq with fn eq and use an empty impl Eq",
+                        )
+                    } else {
+                        push_diagnostic(
+                            ctx,
+                            "Method " + method.name + " is not declared in trait " + reference.name,
+                        )
+                    },
                 }
             }
             for expected in info.methods {
@@ -3050,12 +3058,7 @@ fn check_file_with_package(
     let items: Vec[Item] = Vec::[];
     for item in value.items {
         match item {
-            ImplBlock(value) => if legacy_builtin_eq_impl(value, ctx.traits) {
-                items.push(Item::ImplBlock(check_impl(ctx, legacy_partial_eq_impl(value))));
-                items.push(Item::ImplBlock(check_impl(ctx, legacy_eq_marker_impl(value))))
-            } else {
-                items.push(Item::ImplBlock(check_impl(ctx, value)))
-            },
+            ImplBlock(value) => items.push(Item::ImplBlock(check_impl(ctx, value))),
             Function(value) => items.push(
                 Item::Function(check_function(ctx, value, Vec::[], Vec::[], Option::None)),
             ),

@@ -3699,26 +3699,17 @@ fn resolve_trait_static(
     } else if owner == "Eq" && name == "eq" && !trait_infos_contain_exact_name(ctx.traits, "Eq") {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);
         let receiver = fresh_type(ctx.counter, VarKind::Any);
-        let callable = trait_callable(
-            "PartialEq",
-            explicit,
-            name,
-            two_types(receiver, receiver),
-            Type::Bool,
-            receiver,
-            true,
-        );
+        push_diagnostic(ctx, "Trait Eq has no associated method eq; use PartialEq::eq");
         Option::Some(
-            ResolvedCallable {
-                callable: callable.callable,
-                ty: callable.ty,
-                predicates: Vec::[
-                    TypePredicate::Trait {
-                        for_ty: receiver,
-                        trait_ref: TraitRef { name: "Eq", args: explicit },
-                    },
-                ],
-            },
+            trait_callable(
+                "PartialEq",
+                explicit,
+                name,
+                two_types(receiver, receiver),
+                Type::Bool,
+                receiver,
+                true,
+            ),
         )
     } else if owner == "Hash" && name == "hash" {
         validate_explicit_method_type_arguments(ctx, name, "method", Vec::[], method_explicit);

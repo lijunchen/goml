@@ -10,11 +10,13 @@ impl[T] Index[T] {
     }
 }
 
-impl[T] Eq for Index[T] {
+impl[T] PartialEq for Index[T] {
     fn eq(self: Index[T], other: Index[T]) -> bool {
         self.value == other.value
     }
 }
+
+impl[T] Eq for Index[T] {}
 
 impl[T] Hash for Index[T] {
     fn hash(self: Index[T]) -> uint64 {

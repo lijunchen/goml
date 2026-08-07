@@ -1415,7 +1415,7 @@ trait Ord: Eq + PartialOrd {
 }
 ```
 
-`Eq` is a marker trait and has no methods. During the bootstrap transition, an old `impl Eq` containing `fn eq` is still accepted and is interpreted as a `PartialEq` implementation plus an `Eq` marker; new code should write the two impls separately. The compatibility spelling `Eq::eq(left, right)` requires `Eq` and dispatches to `PartialEq::eq`.
+`Eq` is a marker trait and has no methods. Equality behavior belongs in `PartialEq`; a total-equivalence type implements `PartialEq` with `fn eq` and adds an empty `impl Eq`. `Eq::eq` and an `eq` method inside `impl Eq` are invalid.
 
 Trait methods may provide a default body. An impl may omit such a method and will inherit the default; an explicitly declared impl method overrides it. Default bodies are checked using the trait's generic parameters, predicates, associated types, and `Self`, and remain available across package boundaries:
 

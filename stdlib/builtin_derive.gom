@@ -145,25 +145,6 @@ fn derive_add_all_predicates(input: DeriveInput, output: DeriveOutput, trait_nam
 }
 
 #[comptime_derive]
-fn derive_has(input: DeriveInput, name: string) -> bool {
-    let mut attribute = 0;
-    while attribute < derive_attribute_count(input) {
-        let value = derive_attribute(input, attribute);
-        if meta_attribute_name(value) == "derive" {
-            let mut argument = 0;
-            while argument < meta_attribute_argument_count(value) {
-                if meta_attribute_argument_text(value, argument) == name {
-                    return true
-                } else {};
-                argument = argument + 1;
-            }
-        } else {};
-        attribute = attribute + 1;
-    }
-    false
-}
-
-#[comptime_derive]
 fn derive_self_params(input: DeriveInput) -> MetaParamList {
     let params = meta_param_list_new();
     meta_param_list_push(params, "self", derive_target_type(input));
@@ -421,17 +402,6 @@ pub fn derive_partial_eq(input: DeriveInput) -> DeriveOutput {
 pub fn derive_eq(input: DeriveInput) -> DeriveOutput {
     let output = derive_output_new(input, "Eq");
     derive_add_all_predicates(input, output, "Eq");
-    if derive_has(input, "PartialEq") {} else {
-        let body = if derive_item_kind(input) == 0 {
-            derive_struct_eq_body(input, "Eq")
-        } else {
-            derive_enum_eq_body(input, "Eq")
-        };
-        derive_output_add_method(
-            output,
-            meta_method("eq", derive_eq_params(input), meta_type_call_site("bool"), body),
-        )
-    };
     output
 }
 
