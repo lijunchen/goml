@@ -5,7 +5,7 @@ enum Message[T] {
     Move { x: int32, y: int32, label: T }
 }
 
-#[derive(ToString, Hash, Eq)]
+#[derive(ToString, Hash, PartialEq, Eq)]
 enum Key {
     Empty,
     Point { x: int32, y: int32 }
@@ -42,7 +42,7 @@ impl Hash for Key {
   }
 }
 
-impl Eq for Key where int32: Eq {
+impl PartialEq for Key {
   fn eq(self: Key, other: Key) -> bool {
       match (self, other) {
           (Key::Empty, Key::Empty) => true,
@@ -50,11 +50,14 @@ impl Eq for Key where int32: Eq {
             Key::Point { x: #derive0_left, y: #derive2_left },
             Key::Point { x: #derive1_right, y: #derive3_right }
           ) =>
-            true && Eq::eq(#derive0_left, #derive1_right) && Eq::eq(#derive2_left, #derive3_right),
+            true && PartialEq::eq(#derive0_left, #derive1_right) &&
+              PartialEq::eq(#derive2_left, #derive3_right),
           _ => false,
       }
   }
 }
+
+impl Eq for Key where int32: Eq {}
 
 fn score(value: Message[string]) -> int32 {
     match value {
@@ -80,6 +83,6 @@ fn main() -> unit {
     println(score(first));
     println(label(second));
     println(Key::Point { x: 1, y: 2 }.to_string());
-    println(Eq::eq(Key::Point { x: 1, y: 2 }, Key::Point { y: 2, x: 1 }));
+    println(PartialEq::eq(Key::Point { x: 1, y: 2 }, Key::Point { y: 2, x: 1 }));
 }
 

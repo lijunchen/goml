@@ -1,5 +1,5 @@
 package main;
-#[derive(Hash, Eq)]
+#[derive(Hash, PartialEq, Eq)]
 enum Key {
     A,
     B(int32)
@@ -23,16 +23,18 @@ impl Hash for Key {
   }
 }
 
-impl Eq for Key where int32: Eq {
+impl PartialEq for Key {
   fn eq(self: Key, other: Key) -> bool {
       match (self, other) {
           (Key::A, Key::A) => true,
           (Key::B(#derive0_left), Key::B(#derive1_right)) =>
-            true && Eq::eq(#derive0_left, #derive1_right),
+            true && PartialEq::eq(#derive0_left, #derive1_right),
           _ => false,
       }
   }
 }
+
+impl Eq for Key where int32: Eq {}
 
 fn print_opt_int(x: Option[int32]) -> unit {
     match x {

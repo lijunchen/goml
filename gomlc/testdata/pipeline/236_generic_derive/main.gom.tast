@@ -36,7 +36,7 @@ impl[T, Marker] ToString for Generic[T, Marker] where Wrapper[T]: ToString {
   }
 }
 
-impl[T, Marker] PartialEq for Generic[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: PartialEq {
+impl[T, Marker] PartialEq for Generic[T, Marker] where Wrapper[T]: PartialEq {
   fn eq(self/7: Generic[T, Marker], other/8: Generic[T, Marker]) -> bool {
       true &&
         (PartialEq::eq : (Wrapper[T], Wrapper[T]) -> bool)(
@@ -79,7 +79,7 @@ impl[T, Marker] ToString for GenericChoice[T, Marker] where Wrapper[T]: ToString
   }
 }
 
-impl[T, Marker] PartialEq for GenericChoice[T, Marker] where Wrapper[T]: Eq, Wrapper[T]: PartialEq {
+impl[T, Marker] PartialEq for GenericChoice[T, Marker] where Wrapper[T]: PartialEq {
   fn eq(self/15: GenericChoice[T, Marker], other/16: GenericChoice[T, Marker]) -> bool {
       match ((self/15 : GenericChoice[T, Marker]), (other/16 : GenericChoice[T, Marker])) {
           (GenericChoice::Empty, GenericChoice::Empty) => true,

@@ -1,5 +1,5 @@
 package main;
-#[derive(Hash, Eq)]
+#[derive(Hash, PartialEq, Eq)]
 struct Point {
     x: int32,
     y: int32,
@@ -16,13 +16,15 @@ impl Hash for Point {
   }
 }
 
-impl Eq for Point where int32: Eq {
+impl PartialEq for Point {
   fn eq(self: Point, other: Point) -> bool {
-      true && Eq::eq(self.x, other.x) && Eq::eq(self.y, other.y)
+      true && PartialEq::eq(self.x, other.x) && PartialEq::eq(self.y, other.y)
   }
 }
 
-#[derive(Hash, Eq)]
+impl Eq for Point where int32: Eq {}
+
+#[derive(Hash, PartialEq, Eq)]
 enum Key {
     A,
     B(int32),
@@ -53,18 +55,20 @@ impl Hash for Key {
   }
 }
 
-impl Eq for Key where int32: Eq, Point: Eq {
+impl PartialEq for Key {
   fn eq(self: Key, other: Key) -> bool {
       match (self, other) {
           (Key::A, Key::A) => true,
           (Key::B(#derive0_left), Key::B(#derive1_right)) =>
-            true && Eq::eq(#derive0_left, #derive1_right),
+            true && PartialEq::eq(#derive0_left, #derive1_right),
           (Key::P(#derive2_left), Key::P(#derive3_right)) =>
-            true && Eq::eq(#derive2_left, #derive3_right),
+            true && PartialEq::eq(#derive2_left, #derive3_right),
           _ => false,
       }
   }
 }
+
+impl Eq for Key where int32: Eq, Point: Eq {}
 
 fn print_opt_int(x: Option[int32]) -> unit {
     match x {
@@ -91,7 +95,7 @@ fn main() -> unit {
     print_opt_int(m2.get(p2));
     p1.set(Point { x: 9, y: 8 });
     print_opt_int(m2.get(p1));
-    println(Eq::eq(p1, p2));
+    println(PartialEq::eq(p1, p2));
     let m3 = HashMap::new();
     let k1 = Ref::new(Key::B(7));
     let k2 = k1;

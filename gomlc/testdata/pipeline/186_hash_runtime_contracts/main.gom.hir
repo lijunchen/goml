@@ -25,11 +25,13 @@ file main.gom
       value: int32,
   }
 
-  impl Eq for CollisionKey {
+  impl PartialEq for CollisionKey {
     fn eq(local/1/5: CollisionKey, local/1/6: CollisionKey) -> bool {
         self/5.value == other/6.value
     }
   }
+
+  impl Eq for CollisionKey {}
 
   impl Hash for CollisionKey {
     fn hash(local/1/7: CollisionKey) -> uint64 {
@@ -70,15 +72,15 @@ file main.gom
       values/17.set(CollisionKey { value: 2 }, 20);
       values/17.set(CollisionKey { value: 3 }, 30);
       values/17.remove(CollisionKey { value: 2 });
-      def/1/7(values/17.get(CollisionKey { value: 1 }));
-      def/1/7(values/17.get(CollisionKey { value: 2 }));
-      def/1/7(values/17.get(CollisionKey { value: 3 }));
+      def/1/8(values/17.get(CollisionKey { value: 1 }));
+      def/1/8(values/17.get(CollisionKey { value: 2 }));
+      def/1/8(values/17.get(CollisionKey { value: 3 }));
       values/17.set(CollisionKey { value: 4 }, 40);
       println(values/17.len());
-      def/1/7(values/17.get(CollisionKey { value: 4 }));
+      def/1/8(values/17.get(CollisionKey { value: 4 }));
       values/17.set(CollisionKey { value: 4 }, 41);
       println(values/17.len());
-      def/1/7(values/17.get(CollisionKey { value: 4 }));
+      def/1/8(values/17.get(CollisionKey { value: 4 }));
       values/17.remove(CollisionKey { value: 99 });
       values/17.remove(CollisionKey { value: 99 });
       println(values/17.len());
@@ -100,17 +102,17 @@ file main.gom
       let local/1/22 = key/21;
       let local/1/23 = Ref::new(CollisionKey { value: 1 });
       values/20.set(key/21, "identity");
-      println(Eq::eq(key/21, alias/22));
-      println(Eq::eq(key/21, equal_value/23));
+      println(PartialEq::eq(key/21, alias/22));
+      println(PartialEq::eq(key/21, equal_value/23));
       println(Hash::hash(key/21) == Hash::hash(alias/22));
-      def/1/6(values/20.get(alias/22));
-      def/1/6(values/20.get(equal_value/23));
+      def/1/7(values/20.get(alias/22));
+      def/1/7(values/20.get(equal_value/23));
       key/21.set(CollisionKey { value: 99 });
-      def/1/6(values/20.get(key/21));
+      def/1/7(values/20.get(key/21));
   }
 
   fn main() -> unit {
-      def/1/8();
       def/1/9();
       def/1/10();
+      def/1/11();
   }

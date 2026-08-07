@@ -26,11 +26,13 @@ struct CollisionKey {
     value: int32,
 }
 
-impl Eq for CollisionKey {
+impl PartialEq for CollisionKey {
   fn eq(self: CollisionKey, other: CollisionKey) -> bool {
       self.value == other.value
   }
 }
+
+impl Eq for CollisionKey {}
 
 impl Hash for CollisionKey {
   fn hash(self: CollisionKey) -> uint64 {
@@ -101,8 +103,8 @@ fn reference_contracts() -> unit {
     let alias = key;
     let equal_value = Ref::new(CollisionKey { value: 1 });
     values.set(key, "identity");
-    println(Eq::eq(key, alias));
-    println(Eq::eq(key, equal_value));
+    println(PartialEq::eq(key, alias));
+    println(PartialEq::eq(key, equal_value));
     println(Hash::hash(key) == Hash::hash(alias));
     print_opt_string(values.get(alias));
     print_opt_string(values.get(equal_value));

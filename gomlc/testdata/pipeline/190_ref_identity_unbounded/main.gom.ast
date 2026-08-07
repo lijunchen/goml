@@ -14,8 +14,8 @@ fn main() {
     let first = Ref::new(Node { value: 1 });
     let alias = first;
     let distinct = Ref::new(Node { value: 1 });
-    println(Eq::eq(first, alias));
-    println(Eq::eq(first, distinct));
+    println(PartialEq::eq(first, alias));
+    println(PartialEq::eq(first, distinct));
     println(Hash::hash(first) == Hash::hash(alias));
     let map: HashMap[Ref[Node], string] = HashMap::new();
     map.set(first, "first");

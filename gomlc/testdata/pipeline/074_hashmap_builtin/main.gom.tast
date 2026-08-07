@@ -13,7 +13,7 @@ impl Hash for Point {
   }
 }
 
-impl PartialEq for Point where int32: Eq, int32: PartialEq {
+impl PartialEq for Point {
   fn eq(self/4: Point, other/5: Point) -> bool {
       true && (PartialEq::eq : (int32, int32) -> bool)((self/4 : Point).x, (other/5 : Point).x) &&
         (PartialEq::eq : (int32, int32) -> bool)((self/4 : Point).y, (other/5 : Point).y)
@@ -50,7 +50,7 @@ impl Hash for Key {
   }
 }
 
-impl PartialEq for Key where int32: Eq, Point: Eq, int32: PartialEq, Point: PartialEq {
+impl PartialEq for Key {
   fn eq(self/14: Key, other/15: Key) -> bool {
       match ((self/14 : Key), (other/15 : Key)) {
           (Key::A, Key::A) => true,

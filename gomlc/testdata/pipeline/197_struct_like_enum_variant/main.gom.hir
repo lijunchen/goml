@@ -6,7 +6,7 @@ file main.gom
       Move { x: int32, y: int32, label: T }
   }
 
-  #[derive(ToString, Hash, Eq)]
+  #[derive(ToString, Hash, PartialEq, Eq)]
   enum Key {
       Empty,
       Point { x: int32, y: int32 }
@@ -43,7 +43,7 @@ file main.gom
     }
   }
 
-  impl Eq for Key where int32: Eq {
+  impl PartialEq for Key {
     fn eq(local/1/10: Key, local/1/11: Key) -> bool {
         match (self/10, other/11) {
             (ctor(def/1/1::v0), ctor(def/1/1::v0)) => true,
@@ -51,12 +51,14 @@ file main.gom
               ctor(def/1/1::v1) { x: local/1/12, y: local/1/13 },
               ctor(def/1/1::v1) { x: local/1/14, y: local/1/15 }
             ) =>
-              true && Eq::eq(#derive0_left/12, #derive1_right/14) &&
-                Eq::eq(#derive2_left/13, #derive3_right/15),
+              true && PartialEq::eq(#derive0_left/12, #derive1_right/14) &&
+                PartialEq::eq(#derive2_left/13, #derive3_right/15),
             _ => false,
         }
     }
   }
+
+  impl Eq for Key where int32: Eq {}
 
   fn score(local/1/16: Message[string]) -> int32 {
       match value/16 {
@@ -79,8 +81,8 @@ file main.gom
       let local/1/23 = "north";
       let local/1/24 = Message::Move { label: direction/23, y: 4, x: x/22 };
       let local/1/25 = Message::Move { x: 3, y: 4, label: "north" };
-      println(def/1/5(first/24));
-      println(def/1/6(second/25));
+      println(def/1/6(first/24));
+      println(def/1/7(second/25));
       println(Key::Point { x: 1, y: 2 }.to_string());
-      println(Eq::eq(Key::Point { x: 1, y: 2 }, Key::Point { y: 2, x: 1 }));
+      println(PartialEq::eq(Key::Point { x: 1, y: 2 }, Key::Point { y: 2, x: 1 }));
   }

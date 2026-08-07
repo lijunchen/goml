@@ -1,16 +1,18 @@
 package main;
 use std::cmp;
 
-#[derive(Eq, Hash)]
+#[derive(PartialEq, Eq, Hash)]
 struct LegacyKey {
     value: int,
 }
 
-impl Eq for LegacyKey where int: Eq {
+impl PartialEq for LegacyKey {
   fn eq(self: LegacyKey, other: LegacyKey) -> bool {
-      true && Eq::eq(self.value, other.value)
+      true && PartialEq::eq(self.value, other.value)
   }
 }
+
+impl Eq for LegacyKey where int: Eq {}
 
 impl Hash for LegacyKey {
   fn hash(self: LegacyKey) -> uint64 {
@@ -80,7 +82,7 @@ fn main() -> unit {
     let legacy = LegacyKey { value: 7 };
     let modern = ModernKey { value: 9 };
     println(equal(legacy, LegacyKey { value: 7 }));
-    println(Eq::eq(legacy, LegacyKey { value: 8 }));
+    println(PartialEq::eq(legacy, LegacyKey { value: 8 }));
     println(equal(modern, ModernKey { value: 19 }));
     println(modern != ModernKey { value: 20 }.to_string());
     let legacy_map: HashMap[LegacyKey, string] = HashMap::new();
