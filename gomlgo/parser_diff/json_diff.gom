@@ -1,0 +1,188 @@
+package parser_diff;
+
+use std::json;
+
+#[derive(PartialEq, Eq)]
+pub enum Mode {
+    Acceptance,
+    Shape,
+    Position,
+    Comments,
+    Diagnostics,
+}
+
+pub struct Difference {
+    pub path: string,
+    pub expected: string,
+    pub actual: string,
+    pub offset: int,
+}
+
+pub fn mode_from_string(value: string) -> Option[Mode] {
+    match value {
+        "parse-acceptance" => Option::Some(Mode::Acceptance),
+        "ast-shape" => Option::Some(Mode::Shape),
+        "ast-position" => Option::Some(Mode::Position),
+        "ast-comments" => Option::Some(Mode::Comments),
+        "diagnostic-strict" => Option::Some(Mode::Diagnostics),
+        _ => Option::None,
+    }
+}
+
+pub fn mode_name(value: Mode) -> string {
+    match value {
+        Acceptance => "parse-acceptance",
+        Shape => "ast-shape",
+        Position => "ast-position",
+        Comments => "ast-comments",
+        Diagnostics => "diagnostic-strict",
+    }
+}
+
+fn ignored_field(mode: Mode, name: string) -> bool {
+    (mode == Mode::Shape || mode == Mode::Position)
+        && (name == "doc" || name == "comment" || name == "comments" || name == "go_version")
+}
+
+fn difference(path: string, expected: json::Value, actual: json::Value, offset: int) -> Difference {
+    Difference { path, expected: json::encode(expected), actual: json::encode(actual), offset }
+}
+
+fn compare_object(
+    actual: Vec[(string, json::Value)],
+    expected: Vec[(string, json::Value)],
+    path: string,
+    mode: Mode,
+    parent_offset: int,
+) -> Option[Difference] {
+    let actual_value = json::Value::Object(actual);
+    let expected_value = json::Value::Object(expected);
+    let offset = match json::field(expected_value, "start") {
+        Some(value) => match json::as_int(value) {
+            Some(value) => value,
+            None => parent_offset,
+        },
+        None => parent_offset,
+    };
+    for entry in expected {
+        if !ignored_field(mode, entry.0) {
+            match json::field(actual_value, entry.0) {
+                Some(value) => match compare_json(
+                    value,
+                    entry.1,
+                    path + "." + entry.0,
+                    entry.0,
+                    mode,
+                    offset,
+                ) {
+                    Some(value) => return Option::Some(value),
+                    None => {},
+                },
+                None => return Option::Some(
+                    Difference {
+                        path: path + "." + entry.0,
+                        expected: json::encode(entry.1),
+                        actual: "<missing>",
+                        offset,
+                    },
+                ),
+            }
+        } else {}
+    }
+    for entry in actual {
+        if !ignored_field(mode, entry.0) && json::field(expected_value, entry.0).is_none() {
+            return Option::Some(
+                Difference {
+                    path: path + "." + entry.0,
+                    expected: "<missing>",
+                    actual: json::encode(entry.1),
+                    offset,
+                },
+            )
+        } else {}
+    }
+    Option::None
+}
+
+fn compare_array(
+    actual: Vec[json::Value],
+    expected: Vec[json::Value],
+    path: string,
+    key: string,
+    mode: Mode,
+    offset: int,
+) -> Option[Difference] {
+    if actual.len() != expected.len() {
+        Option::Some(
+            Difference {
+                path: path + ".len",
+                expected: expected.len().to_string(),
+                actual: actual.len().to_string(),
+                offset,
+            },
+        )
+    } else {
+        for index in 0..expected.len() {
+            match compare_json(
+                actual[index],
+                expected[index],
+                path + "[" + index.to_string() + "]",
+                key,
+                mode,
+                offset,
+            ) {
+                Some(value) => return Option::Some(value),
+                None => {},
+            }
+        }
+        Option::None
+    }
+}
+
+fn compare_json(
+    actual: json::Value,
+    expected: json::Value,
+    path: string,
+    key: string,
+    mode: Mode,
+    offset: int,
+) -> Option[Difference] {
+    match (actual, expected) {
+        (json::Value::Object(actual), json::Value::Object(expected)) => {
+            compare_object(actual, expected, path, mode, offset)
+        },
+        (json::Value::Array(actual), json::Value::Array(expected)) => {
+            compare_array(actual, expected, path, key, mode, offset)
+        },
+        (json::Value::String(actual), json::Value::String(expected)) => if actual == expected {
+            Option::None
+        } else {
+            Option::Some(
+                difference(path, json::Value::String(expected), json::Value::String(actual), offset),
+            )
+        },
+        (json::Value::Number(actual), json::Value::Number(expected)) => if mode == Mode::Shape
+            && key != "dir" {
+            Option::None
+        } else if actual == expected {
+            Option::None
+        } else {
+            Option::Some(
+                difference(path, json::Value::Number(expected), json::Value::Number(actual), offset),
+            )
+        },
+        (json::Value::Bool(actual), json::Value::Bool(expected)) => if actual == expected {
+            Option::None
+        } else {
+            Option::Some(
+                difference(path, json::Value::Bool(expected), json::Value::Bool(actual), offset),
+            )
+        },
+        (json::Value::Null, json::Value::Null) => Option::None,
+        (actual, expected) => Option::Some(difference(path, expected, actual, offset)),
+    }
+}
+
+pub fn compare_ast(actual: json::Value, expected: json::Value, mode: Mode) -> Option[Difference] {
+    compare_json(actual, expected, "$", "", mode, -1)
+}

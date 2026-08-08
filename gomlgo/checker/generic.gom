@@ -1,0 +1,4037 @@
+package checker;
+
+use gomlgo::constant;
+use gomlgo::syntax;
+use gomlgo::types as go_types;
+use std::text;
+
+fn generic_parameters(state: CheckState, value: go_types::TypeId) -> Vec[go_types::TypeParameter] {
+    match go_types::get_type(state.world, value) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: _,
+                underlying: _,
+                type_params,
+                type_args,
+                methods: _,
+            },
+        }) => if type_args.is_empty() {
+            type_params
+        } else {
+            Vec::[]
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Alias { object: _, rhs: _, type_params, type_args },
+        }) => if type_args.is_empty() {
+            type_params
+        } else {
+            Vec::[]
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver: _,
+                receiver_type_params: _,
+                type_params,
+                params: _,
+                results: _,
+                variadic: _,
+            },
+        }) => type_params,
+        _ => Vec::[],
+    }
+}
+
+fn generic_type_name(state: CheckState, value: go_types::TypeId) -> Option[string] {
+    let object = match go_types::get_type(state.world, value) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object,
+                underlying: _,
+                type_params: _,
+                type_args: _,
+                methods: _,
+            } | go_types::TypeKind::Alias { object, rhs: _, type_params: _, type_args: _ },
+        }) => object,
+        _ => return Option::None,
+    };
+    match go_types::get_object(state.world, object) {
+        Some(value) => Option::Some(value.name),
+        None => Option::None,
+    }
+}
+
+fn record_instance(state: CheckState, fact: InstanceFact) -> unit {
+    for existing in state.info.instances {
+        if existing.node.value == fact.node.value {
+            return
+        } else {}
+    }
+    state.info.instances.push(fact)
+}
+
+fn constraint_type_seen(values: Vec[go_types::TypeId], value: go_types::TypeId) -> bool {
+    for existing in values {
+        if existing.value == value.value {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn union_accepts(
+    state: CheckState,
+    argument: go_types::TypeId,
+    terms: Vec[go_types::UnionTerm],
+    visited: Vec[go_types::TypeId],
+) -> bool {
+    for term in terms {
+        if !term.tilde && go_types::is_interface(state.world, term.type_id) {
+            if constraint_accepts_inner(state, argument, term.type_id, visited) {
+                return true
+            } else {}
+        } else if term.tilde {
+            if go_types::identical(
+                state.world,
+                go_types::underlying(state.world, argument),
+                go_types::underlying(state.world, term.type_id),
+            ) {
+                return true
+            } else {}
+        } else if go_types::identical(state.world, argument, term.type_id) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn constraint_accepts(state: CheckState, argument: go_types::TypeId, constraint: go_types::TypeId) -> bool {
+    if constraint.value == state.world.invalid.value {
+        true
+    } else if go_types::type_set_is_invalid(state.world, constraint) {
+        !go_types::type_set_is_empty(state.world, constraint)
+    } else {
+        constraint_accepts_inner(state, argument, constraint, Vec::[])
+    }
+}
+
+fn constraint_has_comparable(
+    state: CheckState,
+    value: go_types::TypeId,
+    visited: Vec[go_types::TypeId],
+) -> bool {
+    let resolved = go_types::unalias(state.world, value);
+    for existing in visited {
+        if existing.value == resolved.value {
+            return false
+        } else {}
+    }
+    visited.push(resolved);
+    match go_types::get_type(state.world, resolved) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object: _, constraint, index: _ },
+        }) => constraint_has_comparable(state, constraint, visited),
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: _,
+                underlying,
+                type_params: _,
+                type_args: _,
+                methods: _,
+            },
+        }) => go_types::is_interface(state.world, resolved)
+            && constraint_has_comparable(state, underlying, visited),
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ },
+        }) => {
+            if comparable {
+                return true
+            } else {};
+            for embedded in embeddeds {
+                if constraint_has_comparable(state, embedded, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        _ => false,
+    }
+}
+
+fn constraint_diagnostic_string(state: CheckState, constraint: go_types::TypeId) -> string {
+    if constraint_has_comparable(state, constraint, Vec::[])
+        && go_types::interface_methods(state.world, constraint).is_empty()
+        && go_types::type_set_terms(state.world, constraint).is_empty() {
+        "comparable"
+    } else {
+        diagnostic_type_string(state, constraint)
+    }
+}
+
+fn hard_inferred_constraint_failure(state: CheckState, constraint: go_types::TypeId) -> bool {
+    go_types::type_set_terms(state.world, constraint).len() == 1
+        || !go_types::interface_methods(state.world, constraint).is_empty()
+        || constraint_has_comparable(state, constraint, Vec::[])
+}
+
+fn constraint_depends_on_other_parameter(
+    state: CheckState,
+    constraint: go_types::TypeId,
+    parameters: Vec[go_types::TypeParameter],
+    current: go_types::ObjectId,
+) -> bool {
+    for parameter in parameters {
+        if parameter.object.value != current.value
+            && type_contains_parameter(state, constraint, parameter.object, Vec::[]) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn dependent_constraint_shape_matches(
+    state: CheckState,
+    argument: go_types::TypeId,
+    constraint: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+) -> bool {
+    let terms = go_types::type_set_terms(state.world, constraint);
+    if terms.is_empty() {
+        return true
+    } else {};
+    for term in terms {
+        let formal = if term.tilde {
+            go_types::underlying(state.world, term.type_id)
+        } else {
+            term.type_id
+        };
+        let actual = if term.tilde {
+            go_types::underlying(state.world, argument)
+        } else {
+            argument
+        };
+        if infer_from_types(state, formal, actual, copy_inference_bindings(bindings)) {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn missing_tilde_term(state: CheckState, argument: go_types::TypeId, constraint: go_types::TypeId) -> Option[
+    go_types::TypeId,
+] {
+    if go_types::is_type_parameter(state.world, argument) {
+        return Option::None
+    } else {};
+    for term in go_types::type_set_terms(state.world, constraint) {
+        if !term.tilde && !go_types::identical(state.world, argument, term.type_id)
+            && go_types::identical(
+                state.world,
+                go_types::underlying(state.world, argument),
+                go_types::underlying(state.world, term.type_id),
+            ) {
+            return Option::Some(term.type_id)
+        } else {}
+    }
+    Option::None
+}
+
+fn constraint_accepts_inner(
+    state: CheckState,
+    argument: go_types::TypeId,
+    constraint: go_types::TypeId,
+    visited: Vec[go_types::TypeId],
+) -> bool {
+    let resolved = go_types::unalias(state.world, constraint);
+    if constraint_type_seen(visited, resolved) {
+        return true
+    } else {};
+    visited.push(resolved);
+    let argument_constraint = match go_types::get_type(
+        state.world,
+        go_types::unalias(state.world, argument),
+    ) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam {
+                object: _,
+                constraint: source_constraint,
+                index: _,
+            },
+        }) => {
+            if !go_types::type_set_subset(state.world, argument, constraint) {
+                return false
+            } else {};
+            Option::Some(source_constraint)
+        },
+        _ => Option::None,
+    };
+    match go_types::get_type(state.world, go_types::underlying(state.world, constraint)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => match argument_constraint {
+            Some(_) => true,
+            None => union_accepts(state, argument, terms, visited),
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Interface { methods: _, embeddeds, comparable, implicit: _ },
+        }) => {
+            if comparable && !go_types::type_set_strictly_comparable(state.world, argument)
+                && (!go_types::comparable(state.world, argument)
+                    || !allows_relaxed_comparable(state, constraint)) {
+                return false
+            } else if !go_types::implements(
+                state.world,
+                argument_constraint.unwrap_or(argument),
+                constraint,
+            ) {
+                return false
+            } else {};
+            if argument_constraint.is_some() {
+                return true
+            } else {};
+            for embedded in embeddeds {
+                if !constraint_accepts_inner(state, argument, embedded, visited) {
+                    return false
+                } else {}
+            }
+            true
+        },
+        _ => go_types::identical(state.world, argument, constraint),
+    }
+}
+
+fn predeclared_comparable_constraint(state: CheckState, value: go_types::TypeId) -> bool {
+    match go_types::get_type(state.world, go_types::unalias(state.world, value)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object,
+                underlying: _,
+                type_params: _,
+                type_args: _,
+                methods: _,
+            },
+        }) => match go_types::get_object(state.world, object) {
+            Some(object) => object.owner.is_none() && object.name == "comparable",
+            None => false,
+        },
+        _ => false,
+    }
+}
+
+fn allows_relaxed_comparable(state: CheckState, value: go_types::TypeId) -> bool {
+    match go_types::get_type(state.world, go_types::underlying(state.world, value)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Interface {
+                methods: _,
+                embeddeds,
+                comparable: _,
+                implicit: _,
+            },
+        }) => {
+            for embedded in embeddeds {
+                if predeclared_comparable_constraint(state, embedded) {} else if !go_types::is_interface(
+                    state.world,
+                    embedded,
+                )
+                    || go_types::is_constraint_interface(state.world, embedded) {
+                    return false
+                } else {}
+            }
+            true
+        },
+        _ => false,
+    }
+}
+
+fn requires_relaxed_comparable(
+    state: CheckState,
+    argument: go_types::TypeId,
+    constraint: go_types::TypeId,
+) -> bool {
+    constraint_has_comparable(state, constraint, Vec::[])
+        && allows_relaxed_comparable(state, constraint)
+        && go_types::comparable(state.world, argument)
+        && !go_types::type_set_strictly_comparable(state.world, argument)
+}
+
+fn record_instantiated_type(
+    state: CheckState,
+    node: syntax::NodeId,
+    arguments: Vec[go_types::TypeId],
+    result: go_types::TypeId,
+) -> unit {
+    record_instance(
+        state,
+        InstanceFact {
+            node: instantiated_identifier_node(state, node),
+            type_args: arguments,
+            type_id: result,
+        },
+    )
+}
+
+fn instantiated_identifier_node(state: CheckState, node: syntax::NodeId) -> syntax::NodeId {
+    match syntax::get_node(state.syntax.arena, node) {
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::IndexExpr { expression, lbrack: _, index: _, rbrack: _ } | syntax::SyntaxKind::IndexListExpr {
+                expression,
+                lbrack: _,
+                indices: _,
+                rbrack: _,
+            },
+        }) => instantiated_identifier_node(state, expression),
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::SelectorExpr { expression: _, selector },
+        }) => selector,
+        _ => node,
+    }
+}
+
+fn type_argument_count_message(state: CheckState, origin: go_types::TypeId, have: int, want: int) -> string {
+    match generic_type_name(state, origin) {
+        Some(name) => if have < want {
+            "not enough"
+        } else {
+            "too many"
+        }
+            + " type arguments for type "
+            + name
+            + ": have "
+            + have.to_string()
+            + ", want "
+            + want.to_string(),
+        None => "wrong number of type arguments",
+    }
+}
+
+fn identity_self_constraint_instance(
+    state: CheckState,
+    origin: go_types::TypeId,
+    arguments: Vec[go_types::TypeId],
+) -> bool {
+    if state.type_parameter_cycle_depth <= 0 {
+        return false
+    } else {};
+    let object = match go_types::get_type(state.world, go_types::unalias(state.world, origin)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object,
+                underlying: _,
+                type_params: _,
+                type_args: _,
+                methods: _,
+            },
+        }) => object,
+        _ => return false,
+    };
+    let mut active = false;
+    for value in state.active_type_objects {
+        if value.value == object.value {
+            active = true;
+        } else {}
+    }
+    let parameters = generic_parameters(state, origin);
+    if !active || parameters.len() != arguments.len() {
+        return false
+    } else {};
+    for index in 0..parameters.len() {
+        match go_types::get_type(state.world, go_types::unalias(state.world, arguments[index])) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::TypeParam { object, constraint: _, index: _ },
+            }) => if object.value != parameters[index].object.value {
+                return false
+            } else {},
+            _ => return false,
+        }
+    }
+    true
+}
+
+fn instantiate_checked(
+    state: CheckState,
+    node: syntax::NodeId,
+    origin: go_types::TypeId,
+    arguments: Vec[go_types::TypeId],
+) -> go_types::TypeId {
+    if origin.value == state.world.invalid.value {
+        return state.world.invalid
+    } else {};
+    for argument in arguments {
+        if argument.value == state.world.invalid.value {
+            return state.world.invalid
+        } else {}
+    }
+    let parameters = generic_parameters(state, origin);
+    if parameters.is_empty() {
+        match go_types::get_type(state.world, origin) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Alias { object: _, rhs, type_params: _, type_args: _ },
+            }) => if rhs.value == state.world.invalid.value {
+                return origin
+            } else {},
+            _ => {},
+        };
+        let expression = match syntax::get_node(state.syntax.arena, node) {
+            Some(syntax::SyntaxNode {
+                id: _,
+                file: _,
+                span: _,
+                path: _,
+                kind: syntax::SyntaxKind::IndexExpr { expression, lbrack: _, index: _, rbrack: _ } | syntax::SyntaxKind::IndexListExpr {
+                    expression,
+                    lbrack: _,
+                    indices: _,
+                    rbrack: _,
+                },
+            }) => expression,
+            _ => node,
+        };
+        diagnostic(
+            state,
+            node,
+            "invalid operation: " + expression_source_text(state, node) + " ("
+                + expression_source_text(state, expression)
+                + " is not a generic type)",
+            false,
+        );
+        return state.world.invalid
+    } else if parameters.len() != arguments.len() {
+        if state.defer_constraint_checks {
+            state.deferred_instances.push(
+                DeferredInstanceCheck { node, origin, arguments, count_only: true, emitted: false },
+            )
+        } else {
+            diagnostic(
+                state,
+                node,
+                type_argument_count_message(state, origin, arguments.len(), parameters.len()),
+                false,
+            )
+        };
+        match go_types::get_type(state.world, origin) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Named {
+                    object: _,
+                    underlying: _,
+                    type_params: _,
+                    type_args: _,
+                    methods: _,
+                },
+            }) => match go_types::instantiate_incomplete(state.world, origin, arguments) {
+                Some(result) => {
+                    record_instantiated_type(state, node, arguments, result);
+                    return result
+                },
+                None => {},
+            },
+            _ => {},
+        };
+        return state.world.invalid
+    } else {};
+    if reject_active_instantiation_cycle(state, node, origin, arguments) {
+        return match go_types::instantiate(state.world, origin, arguments) {
+            Some(result) => {
+                record_instantiated_type(state, node, arguments, result);
+                result
+            },
+            None => state.world.invalid,
+        }
+    } else {};
+    if state.type_parameter_cycle_depth > 0 || state.defer_constraint_checks {
+        state.deferred_instances.push(
+            DeferredInstanceCheck {
+                node,
+                origin,
+                arguments,
+                count_only: false,
+                emitted: identity_self_constraint_instance(state, origin, arguments),
+            },
+        )
+    } else {
+        verify_type_arguments(state, node, origin, arguments)
+    };
+    match go_types::instantiate(state.world, origin, arguments) {
+        Some(result) => {
+            record_instantiated_type(state, node, arguments, result);
+            result
+        },
+        None => {
+            diagnostic(state, node, "cannot instantiate type", false);
+            state.world.invalid
+        },
+    }
+}
+
+fn verify_type_arguments(
+    state: CheckState,
+    node: syntax::NodeId,
+    origin: go_types::TypeId,
+    arguments: Vec[go_types::TypeId],
+) -> unit {
+    let parameters = generic_parameters(state, origin);
+    for index in 0..parameters.len() {
+        if index < arguments.len() {
+            let constraint = go_types::substitute(
+                state.world,
+                parameters[index].constraint,
+                parameters,
+                arguments,
+            );
+            if go_types::type_set_is_invalid(state.world, parameters[index].constraint) {
+                go_types::mark_invalid_type_set(state.world, constraint)
+            } else {};
+            let constraint_text = constraint_diagnostic_string(state, constraint);
+            let argument_node = match syntax::get_node(state.syntax.arena, node) {
+                Some(syntax::SyntaxNode {
+                    id: _,
+                    file: _,
+                    span: _,
+                    path: _,
+                    kind: syntax::SyntaxKind::IndexExpr {
+                        expression: _,
+                        lbrack: _,
+                        index: argument,
+                        rbrack: _,
+                    },
+                }) => argument,
+                Some(syntax::SyntaxNode {
+                    id: _,
+                    file: _,
+                    span: _,
+                    path: _,
+                    kind: syntax::SyntaxKind::IndexListExpr {
+                        expression: _,
+                        lbrack: _,
+                        indices,
+                        rbrack: _,
+                    },
+                }) => if index < indices.len() {
+                    indices[index]
+                } else {
+                    node
+                },
+                _ => node,
+            };
+            if requires_relaxed_comparable(state, arguments[index], constraint)
+                && !go_version_at_least(state, argument_node, 20) {
+                diagnostic(
+                    state,
+                    argument_node,
+                    diagnostic_type_string(state, arguments[index]) + " to satisfy "
+                        + constraint_text
+                        + " requires go1.20 or later",
+                    true,
+                )
+            } else if !constraint_accepts(state, arguments[index], constraint) {
+                if go_types::type_set_is_empty(state.world, constraint) {
+                    diagnostic(
+                        state,
+                        argument_node,
+                        "cannot satisfy " + diagnostic_type_string(state, constraint)
+                            + " (empty type set)",
+                        true,
+                    )
+                } else {
+                    let detail = interface_implementation_detail(
+                        state,
+                        arguments[index],
+                        constraint,
+                    );
+                    let terms: Vec[string] = Vec::[];
+                    if detail == "" && !go_types::is_type_parameter(state.world, arguments[index]) {
+                        for term in go_types::type_set_terms(state.world, constraint) {
+                            terms.push(union_term_string(state, term))
+                        }
+                    } else {};
+                    let missing_tilde = missing_tilde_term(state, arguments[index], constraint);
+                    diagnostic(
+                        state,
+                        argument_node,
+                        diagnostic_type_string(state, arguments[index]) + " does not satisfy "
+                            + constraint_text
+                            + if detail != "" {
+                                " " + detail
+                            } else if missing_tilde.is_some() {
+                                " (possibly missing ~ for "
+                                    + diagnostic_type_string(
+                                        state,
+                                        missing_tilde.unwrap_or(state.world.invalid),
+                                    )
+                                    + " in "
+                                    + diagnostic_type_string(state, constraint)
+                                    + ")"
+                            } else if constraint_mentions_type(
+                                state,
+                                constraint,
+                                arguments[index],
+                                Vec::[],
+                            ) {
+                                " (" + diagnostic_type_string(state, constraint) + " mentions "
+                                    + diagnostic_type_string(state, arguments[index])
+                                    + ", but "
+                                    + diagnostic_type_string(state, arguments[index])
+                                    + " is not in the type set of "
+                                    + diagnostic_type_string(state, constraint)
+                                    + ")"
+                            } else if !terms.is_empty() {
+                                " (" + diagnostic_type_string(state, arguments[index])
+                                    + " missing in "
+                                    + text::join(terms, " | ")
+                                    + ")"
+                            } else {
+                                ""
+                            },
+                        true,
+                    )
+                }
+            } else {}
+        } else {}
+    }
+}
+
+fn constraint_mentions_type(
+    state: CheckState,
+    constraint: go_types::TypeId,
+    argument: go_types::TypeId,
+    visited: Vec[go_types::TypeId],
+) -> bool {
+    constraint_mentions_type_inner(state, constraint, argument, visited, true)
+}
+
+fn constraint_mentions_type_inner(
+    state: CheckState,
+    constraint: go_types::TypeId,
+    argument: go_types::TypeId,
+    visited: Vec[go_types::TypeId],
+    unwrap_named: bool,
+) -> bool {
+    let resolved = go_types::unalias(state.world, constraint);
+    for existing in visited {
+        if existing.value == resolved.value {
+            return false
+        } else {}
+    }
+    visited.push(resolved);
+    match go_types::get_type(state.world, resolved) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: _,
+                underlying,
+                type_params: _,
+                type_args: _,
+                methods: _,
+            },
+        }) => if unwrap_named {
+            constraint_mentions_type_inner(state, underlying, argument, visited, false)
+        } else {
+            go_types::identical(state.world, resolved, argument)
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Interface {
+                methods: _,
+                embeddeds,
+                comparable: _,
+                implicit: _,
+            },
+        }) => {
+            for embedded in embeddeds {
+                if constraint_mentions_type_inner(state, embedded, argument, visited, false) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => {
+            for term in terms {
+                if constraint_mentions_type_inner(state, term.type_id, argument, visited, false) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(_) => go_types::identical(state.world, resolved, argument),
+        None => false,
+    }
+}
+
+fn check_deferred_instances(state: CheckState) -> unit {
+    let count = state.deferred_instances.len();
+    for index in state.checked_deferred_instances..count {
+        let pending = state.deferred_instances[index];
+        match go_types::get_type(state.world, go_types::unalias(state.world, pending.origin)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Named {
+                    object,
+                    underlying: _,
+                    type_params: _,
+                    type_args: _,
+                    methods: _,
+                },
+            }) => match go_types::get_object(state.world, object) {
+                Some(object) => go_types::refresh_named_instances(state.world, object.type_id),
+                None => {},
+            },
+            _ => {},
+        };
+        if pending.count_only && !pending.emitted {
+            diagnostic(
+                state,
+                pending.node,
+                type_argument_count_message(
+                    state,
+                    pending.origin,
+                    pending.arguments.len(),
+                    generic_parameters(state, pending.origin).len(),
+                ),
+                false,
+            );
+            state.deferred_instances[index].emitted = true;
+        } else {
+            if !pending.count_only && !pending.emitted {
+                verify_type_arguments(state, pending.node, pending.origin, pending.arguments)
+            } else {}
+        }
+    }
+    state.checked_deferred_instances = count;
+}
+
+fn check_deferred_instance_counts(state: CheckState) -> unit {
+    for index in state.checked_deferred_instances..state.deferred_instances.len() {
+        let pending = state.deferred_instances[index];
+        let mut preceding_constraint = false;
+        for previous in state.checked_deferred_instances..index {
+            if !state.deferred_instances[previous].count_only {
+                preceding_constraint = true;
+            } else {}
+        }
+        if pending.count_only && !pending.emitted && !preceding_constraint {
+            diagnostic(
+                state,
+                pending.node,
+                type_argument_count_message(
+                    state,
+                    pending.origin,
+                    pending.arguments.len(),
+                    generic_parameters(state, pending.origin).len(),
+                ),
+                false,
+            );
+            state.deferred_instances[index].emitted = true;
+        } else {}
+    }
+}
+
+fn instantiation_lbrack(state: CheckState, node: syntax::NodeId) -> int {
+    match syntax::get_node(state.syntax.arena, node) {
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::IndexExpr { expression: _, lbrack, index: _, rbrack: _ } | syntax::SyntaxKind::IndexListExpr {
+                expression: _,
+                lbrack,
+                indices: _,
+                rbrack: _,
+            },
+        }) => lbrack,
+        _ => node_start(state, node),
+    }
+}
+
+fn resolve_instantiated_type(
+    state: CheckState,
+    scope: go_types::ScopeId,
+    node: syntax::NodeId,
+    expression: syntax::NodeId,
+    argument_nodes: Vec[syntax::NodeId],
+) -> go_types::TypeId {
+    if !go_version_at_least(state, node, 18) {
+        diagnostic_at_position(
+            state,
+            node,
+            instantiation_lbrack(state, node),
+            "type instantiation requires go1.18 or later",
+            false,
+        )
+    } else {};
+    state.generic_type_origin_depth += 1;
+    let origin = resolve_type(state, scope, expression);
+    state.generic_type_origin_depth -= 1;
+    let invalid_origin = origin.value == state.world.invalid.value;
+    let nongeneric_origin = !invalid_origin && generic_parameters(state, origin).is_empty();
+    if nongeneric_origin {
+        let recovered = instantiate_checked(state, node, origin, Vec::[]);
+        if recovered.value != state.world.invalid.value {
+            record_type_expression(state, node, recovered);
+            return recovered
+        } else {};
+        record_invalid_type_expression(state, expression);
+        record_type_expression(state, node, state.world.invalid);
+        return state.world.invalid
+    } else {};
+    if invalid_origin {
+        record_type_expression(state, node, state.world.invalid);
+        return state.world.invalid
+    } else {};
+    let arguments: Vec[go_types::TypeId] = Vec::[];
+    for argument in argument_nodes {
+        state.type_cycle_depth += 1;
+        let resolved = match syntax::get_node(state.syntax.arena, argument) {
+            Some(syntax::SyntaxNode {
+                id: _,
+                file: _,
+                span: _,
+                path: _,
+                kind: syntax::SyntaxKind::BadExpr { from: _, to: _ },
+            }) => {
+                record_invalid_type_expression(state, argument);
+                state.world.invalid
+            },
+            _ => recovered_constraint_type(state, argument, resolve_type(state, scope, argument)),
+        };
+        arguments.push(resolved);
+        state.type_cycle_depth -= 1;
+    }
+    let result = instantiate_checked(state, node, origin, arguments);
+    record_type_expression(state, node, result);
+    result
+}
+
+fn flatten_union_terms(state: CheckState, value: go_types::TypeId, result: Vec[go_types::UnionTerm]) -> unit {
+    match go_types::get_type(state.world, value) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => for term in terms {
+            result.push(term)
+        },
+        _ => result.push(go_types::UnionTerm { tilde: false, type_id: value }),
+    }
+}
+
+fn union_term_is_type_parameter(state: CheckState, term: go_types::UnionTerm) -> bool {
+    match go_types::get_type(state.world, go_types::unalias(state.world, term.type_id)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object: _, constraint: _, index: _ },
+        }) => true,
+        _ => false,
+    }
+}
+
+fn validate_union_term(
+    state: CheckState,
+    node: syntax::NodeId,
+    term: go_types::UnionTerm,
+    multiple: bool,
+) -> bool {
+    if union_term_is_type_parameter(state, term) {
+        diagnostic(
+            state,
+            node,
+            if term.tilde {
+                "type in term ~" + diagnostic_type_string(state, term.type_id)
+                    + " cannot be a type parameter"
+            } else {
+                "term cannot be a type parameter"
+            },
+            false,
+        );
+        false
+    } else if term.tilde {
+        if go_types::is_interface(state.world, term.type_id) {
+            diagnostic(
+                state,
+                node,
+                "invalid use of ~ (" + diagnostic_type_string(state, term.type_id)
+                    + " is an interface)",
+                false,
+            );
+            match state.diagnostics.pop() {
+                Some(value) => state.deferred_union_diagnostics.push(value),
+                None => {},
+            };
+            false
+        } else if !go_types::identical(
+            state.world,
+            term.type_id,
+            go_types::underlying(state.world, term.type_id),
+        ) {
+            diagnostic(
+                state,
+                node,
+                "invalid use of ~ (underlying type of "
+                    + diagnostic_type_string(state, term.type_id)
+                    + " is "
+                    + diagnostic_type_string(state, go_types::underlying(state.world, term.type_id))
+                    + ")",
+                false,
+            );
+            match state.diagnostics.pop() {
+                Some(value) => state.deferred_union_diagnostics.push(value),
+                None => {},
+            };
+            false
+        } else {
+            true
+        }
+    } else if multiple && go_types::is_interface(state.world, term.type_id) {
+        if !go_types::interface_methods(state.world, term.type_id).is_empty() {
+            let rendered = go_types::format_type(state.world, term.type_id);
+            diagnostic(
+                state,
+                node,
+                "cannot use " + rendered + " in union (" + rendered + " contains methods)",
+                false,
+            );
+            match state.diagnostics.pop() {
+                Some(value) => state.deferred_union_diagnostics.push(value),
+                None => {},
+            };
+            false
+        } else if go_types::interface_requires_comparable(state.world, term.type_id) {
+            let rendered = go_types::format_type(state.world, term.type_id);
+            diagnostic(
+                state,
+                node,
+                "cannot use " + rendered + " in union"
+                    + if rendered == "comparable" {
+                        ""
+                    } else {
+                        " (" + rendered + " embeds comparable)"
+                    },
+                false,
+            );
+            match state.diagnostics.pop() {
+                Some(value) => state.deferred_union_diagnostics.push(value),
+                None => {},
+            };
+            false
+        } else {
+            true
+        }
+    } else {
+        true
+    }
+}
+
+fn union_terms_overlap(state: CheckState, left: go_types::UnionTerm, right: go_types::UnionTerm) -> bool {
+    if go_types::is_interface(state.world, left.type_id)
+        || go_types::is_interface(state.world, right.type_id) {
+        false
+    } else if left.tilde && right.tilde {
+        go_types::identical(state.world, left.type_id, right.type_id)
+    } else if left.tilde {
+        go_types::identical(
+            state.world,
+            left.type_id,
+            go_types::underlying(state.world, right.type_id),
+        )
+    } else if right.tilde {
+        go_types::identical(
+            state.world,
+            go_types::underlying(state.world, left.type_id),
+            right.type_id,
+        )
+    } else {
+        go_types::identical(state.world, left.type_id, right.type_id)
+    }
+}
+
+fn union_term_string(state: CheckState, term: go_types::UnionTerm) -> string {
+    if term.tilde {
+        "~"
+    } else {
+        ""
+    }
+        + go_types::format_type(state.world, term.type_id)
+}
+
+fn expanded_union_term_count(state: CheckState, terms: Vec[go_types::UnionTerm]) -> int {
+    let mut count = 0;
+    for term in terms {
+        if !term.tilde && go_types::is_interface(state.world, term.type_id) {
+            count += go_types::type_set_terms(state.world, term.type_id).len();
+        } else {
+            count += 1;
+        }
+    }
+    count
+}
+
+fn resolve_union_type(
+    state: CheckState,
+    scope: go_types::ScopeId,
+    node: syntax::NodeId,
+    left: syntax::NodeId,
+    right: syntax::NodeId,
+) -> go_types::TypeId {
+    let left_terms: Vec[go_types::UnionTerm] = Vec::[];
+    let right_terms: Vec[go_types::UnionTerm] = Vec::[];
+    state.type_cycle_depth += 1;
+    state.type_fact_recovery_depth += 1;
+    flatten_union_terms(state, resolve_type(state, scope, left), left_terms);
+    flatten_union_terms(state, resolve_type(state, scope, right), right_terms);
+    state.type_cycle_depth -= 1;
+    state.type_fact_recovery_depth -= 1;
+    if left_terms.len() == 1 && !left_terms[0].tilde {
+        let _ = validate_union_term(state, left, left_terms[0], true);
+    } else {};
+    if right_terms.len() == 1 && !right_terms[0].tilde {
+        let _ = validate_union_term(state, right, right_terms[0], true);
+    } else {};
+    for right_term in right_terms {
+        let mut overlap = false;
+        for left_term in left_terms {
+            if !overlap && union_terms_overlap(state, left_term, right_term) {
+                diagnostic(
+                    state,
+                    right,
+                    "overlapping terms " + union_term_string(state, right_term) + " and "
+                        + union_term_string(state, left_term),
+                    true,
+                );
+                match state.diagnostics.pop() {
+                    Some(value) => state.deferred_union_diagnostics.push(value),
+                    None => {},
+                };
+                overlap = true;
+            } else {}
+        }
+    }
+    let terms: Vec[go_types::UnionTerm] = Vec::[];
+    for term in left_terms {
+        terms.push(term)
+    }
+    for term in right_terms {
+        terms.push(term)
+    }
+    let expanded_too_large = expanded_union_term_count(state, terms) > 100;
+    if expanded_too_large {
+        diagnostic(
+            state,
+            if expanded_union_term_count(state, right_terms) == 1 {
+                right
+            } else {
+                node
+            },
+            "cannot handle more than 100 union terms (implementation limitation)",
+            false,
+        );
+        if terms.len() > 100 {
+            record_type_expression(state, node, state.world.invalid);
+            return state.world.invalid
+        } else {}
+    } else {};
+    let result_terms: Vec[go_types::UnionTerm] = Vec::[];
+    for term in terms {
+        result_terms.push(
+            if union_term_is_type_parameter(state, term) {
+                go_types::UnionTerm { tilde: term.tilde, type_id: state.world.invalid }
+            } else {
+                term
+            },
+        )
+    }
+    let result = go_types::add_type(state.world, go_types::TypeKind::Union { terms: result_terms });
+    if expanded_too_large {
+        go_types::mark_invalid_type_set(state.world, result)
+    } else {};
+    record_type_expression(state, node, result);
+    result
+}
+
+fn resolve_tilde_type(
+    state: CheckState,
+    scope: go_types::ScopeId,
+    node: syntax::NodeId,
+    expression: syntax::NodeId,
+) -> go_types::TypeId {
+    let term_type = resolve_type(state, scope, expression);
+    let term = go_types::UnionTerm { tilde: true, type_id: term_type };
+    let type_parameter_term = union_term_is_type_parameter(state, term);
+    let valid = validate_union_term(
+        state,
+        if type_parameter_term {
+            expression
+        } else {
+            node
+        },
+        term,
+        false,
+    );
+    let result = go_types::add_type(
+        state.world,
+        go_types::TypeKind::Union {
+            terms: Vec::[
+                if type_parameter_term {
+                    go_types::UnionTerm { tilde: true, type_id: state.world.invalid }
+                } else {
+                    term
+                },
+            ],
+        },
+    );
+    if !valid {
+        go_types::mark_invalid_type_set(state.world, result)
+    } else {};
+    record_type_expression(state, node, result);
+    result
+}
+
+struct InferenceBinding {
+    object: go_types::ObjectId,
+    type_id: Option[go_types::TypeId],
+}
+
+struct InferencePair {
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+    node: syntax::NodeId,
+    delayed: bool,
+}
+
+struct InferenceTypePair {
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+}
+
+struct InferenceChannel {
+    type_id: go_types::TypeId,
+    element: go_types::TypeId,
+    direction: int,
+    named: bool,
+}
+
+fn inference_type_pair_seen(
+    values: Vec[InferenceTypePair],
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+) -> bool {
+    for value in values {
+        if value.formal.value == formal.value && value.actual.value == actual.value {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn inferred_actual_type(state: CheckState, operand: Operand) -> go_types::TypeId {
+    operand.type_id
+}
+
+fn inference_call_name(state: CheckState, node: syntax::NodeId) -> string {
+    match syntax::get_node(state.syntax.arena, node) {
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::CallExpr {
+                function,
+                lparen: _,
+                arguments: _,
+                ellipsis: _,
+                rparen: _,
+            },
+        }) => expression_source_text(state, function),
+        _ => expression_source_text(state, node),
+    }
+}
+
+fn cannot_infer_message(state: CheckState, node: syntax::NodeId, parameter: go_types::ObjectId) -> string {
+    match go_types::get_object(state.world, parameter) {
+        Some(object) => "in call to " + inference_call_name(state, node) + ", cannot infer "
+            + object.name
+            + match object.node {
+                Some(declaration) => " (declared at " + source_position_string(state, declaration)
+                    + ")",
+                None => "",
+            },
+        None => "cannot infer type argument",
+    }
+}
+
+fn inference_channel(state: CheckState, type_id: go_types::TypeId) -> Option[InferenceChannel] {
+    let named = match go_types::get_type(state.world, go_types::unalias(state.world, type_id)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: _,
+                underlying: _,
+                type_params: _,
+                type_args: _,
+                methods: _,
+            },
+        }) => true,
+        _ => false,
+    };
+    match go_types::get_type(state.world, core_type_id(state, type_id)) {
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction, element } }) => Option::Some(
+            InferenceChannel { type_id, element, direction, named },
+        ),
+        _ => Option::None,
+    }
+}
+
+fn merge_inference_channels(
+    state: CheckState,
+    left_type: go_types::TypeId,
+    right_type: go_types::TypeId,
+) -> go_types::TypeId {
+    let left = match inference_channel(state, left_type) {
+        Some(value) => value,
+        None => return state.world.invalid,
+    };
+    let right = match inference_channel(state, right_type) {
+        Some(value) => value,
+        None => return state.world.invalid,
+    };
+    if !go_types::identical(state.world, left.element, right.element) || (left.named && right.named) {
+        state.world.invalid
+    } else if left.named {
+        left.type_id
+    } else if right.named {
+        right.type_id
+    } else if left.direction == right.direction || right.direction == 3 {
+        left.type_id
+    } else if left.direction == 3 {
+        right.type_id
+    } else {
+        state.world.invalid
+    }
+}
+
+fn bind_inference(
+    state: CheckState,
+    bindings: Vec[InferenceBinding],
+    object: go_types::ObjectId,
+    actual: go_types::TypeId,
+) -> bool {
+    if state.generic_argument_inference_depth > 0 {
+        match go_types::get_type(state.world, go_types::unalias(state.world, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::TypeParam {
+                    object: actual_object,
+                    constraint: _,
+                    index: _,
+                },
+            }) => {
+                let mut inference_parameter = false;
+                for binding in bindings {
+                    if binding.object.value == actual_object.value {
+                        inference_parameter = true;
+                    } else {}
+                }
+                if !inference_parameter {
+                    return true
+                } else {}
+            },
+            _ => {},
+        }
+    } else {};
+    for index in 0..bindings.len() {
+        if bindings[index].object.value == object.value {
+            return match bindings[index].type_id {
+                Some(existing) => if go_types::identical(state.world, existing, actual) {
+                    true
+                } else if go_types::identical(
+                    state.world,
+                    go_types::underlying(state.world, existing),
+                    go_types::underlying(state.world, actual),
+                ) {
+                    let existing_defined = match go_types::get_type(
+                        state.world,
+                        go_types::unalias(state.world, existing),
+                    ) {
+                        Some(go_types::TypeData {
+                            id: _,
+                            kind: go_types::TypeKind::Named {
+                                object: _,
+                                underlying: _,
+                                type_params: _,
+                                type_args: _,
+                                methods: _,
+                            },
+                        }) => true,
+                        _ => false,
+                    };
+                    let actual_defined = match go_types::get_type(
+                        state.world,
+                        go_types::unalias(state.world, actual),
+                    ) {
+                        Some(go_types::TypeData {
+                            id: _,
+                            kind: go_types::TypeKind::Named {
+                                object: _,
+                                underlying: _,
+                                type_params: _,
+                                type_args: _,
+                                methods: _,
+                            },
+                        }) => true,
+                        _ => false,
+                    };
+                    if existing_defined && actual_defined {
+                        false
+                    } else {
+                        if !existing_defined && actual_defined {
+                            bindings[index].type_id = Option::Some(actual);
+                        } else {};
+                        true
+                    }
+                } else {
+                    let merged = merge_inference_channels(state, existing, actual);
+                    if merged.value == state.world.invalid.value {
+                        false
+                    } else {
+                        bindings[index].type_id = Option::Some(merged);
+                        true
+                    }
+                },
+                None => {
+                    bindings[index].type_id = Option::Some(actual);
+                    true
+                },
+            }
+        } else {}
+    }
+    true
+}
+
+fn inference_mismatch(
+    state: CheckState,
+    function: syntax::NodeId,
+    pair: InferencePair,
+    bindings: Vec[InferenceBinding],
+) -> bool {
+    match go_types::get_type(state.world, go_types::unalias(state.world, pair.formal)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object, constraint: _, index: _ },
+        }) => {
+            for binding in bindings {
+                if binding.object.value == object.value {
+                    match (binding.type_id, go_types::get_object(state.world, object)) {
+                        (Some(inferred), Some(parameter)) => {
+                            diagnostic(
+                                state,
+                                pair.node,
+                                "in call to " + expression_source_text(state, function) + ", type "
+                                    + diagnostic_type_string(state, pair.actual)
+                                    + " of "
+                                    + expression_source_text(state, pair.node)
+                                    + " does not match inferred type "
+                                    + diagnostic_type_string(state, inferred)
+                                    + " for "
+                                    + parameter.name,
+                                false,
+                            );
+                            return true
+                        },
+                        _ => {},
+                    }
+                } else {}
+            }
+        },
+        _ => {},
+    };
+    let inferred_parameters: Vec[go_types::TypeParameter] = Vec::[];
+    let inferred_arguments: Vec[go_types::TypeId] = Vec::[];
+    let mut complete = true;
+    let uninferred_names: Vec[string] = Vec::[];
+    for binding in bindings {
+        if binding.type_id.is_none()
+            && type_contains_parameter(state, pair.formal, binding.object, Vec::[]) {
+            match go_types::get_object(state.world, binding.object) {
+                Some(parameter) => uninferred_names.push(parameter.name),
+                None => {},
+            }
+        } else {}
+    }
+    if !uninferred_names.is_empty() {
+        let mut names = "";
+        for index in 0..uninferred_names.len() {
+            if index > 0 {
+                names += if index + 1 == uninferred_names.len() {
+                    if uninferred_names.len() == 2 {
+                        " and "
+                    } else {
+                        ", and "
+                    }
+                } else {
+                    ", "
+                };
+            } else {};
+            names += uninferred_names[index];
+        }
+        diagnostic(
+            state,
+            pair.node,
+            "in call to " + expression_source_text(state, function) + ", type "
+                + diagnostic_type_string(state, pair.actual)
+                + " of "
+                + expression_source_text(state, pair.node)
+                + " does not match "
+                + diagnostic_type_string(state, pair.formal)
+                + " (cannot infer "
+                + names
+                + ")",
+            false,
+        );
+        return true
+    } else {};
+    for binding in bindings {
+        if type_contains_parameter(state, pair.formal, binding.object, Vec::[]) {
+            match (binding.type_id, go_types::get_object(state.world, binding.object)) {
+                (Some(argument), Some(object)) => match go_types::get_type(
+                    state.world,
+                    go_types::unalias(state.world, object.type_id),
+                ) {
+                    Some(go_types::TypeData {
+                        id: _,
+                        kind: go_types::TypeKind::TypeParam { object: _, constraint, index: _ },
+                    }) => {
+                        inferred_parameters.push(
+                            go_types::TypeParameter {
+                                object: binding.object,
+                                constraint,
+                                grouped: false,
+                            },
+                        );
+                        inferred_arguments.push(argument)
+                    },
+                    _ => {
+                        complete = false;
+                    },
+                },
+                _ => {
+                    complete = false;
+                },
+            }
+        } else {}
+    }
+    if complete && !inferred_parameters.is_empty() {
+        let inferred = go_types::substitute(
+            state.world,
+            pair.formal,
+            inferred_parameters,
+            inferred_arguments,
+        );
+        diagnostic(
+            state,
+            pair.node,
+            "in call to " + expression_source_text(state, function) + ", type "
+                + diagnostic_type_string(state, pair.actual)
+                + " of "
+                + inference_argument_description(state, pair.node, pair.actual)
+                + " does not match inferred type "
+                + diagnostic_type_string(state, inferred)
+                + " for "
+                + diagnostic_type_string(state, pair.formal),
+            false,
+        );
+        return true
+    } else {};
+    for binding in bindings {
+        if type_contains_parameter(state, pair.formal, binding.object, Vec::[]) {
+            match go_types::get_object(state.world, binding.object) {
+                Some(parameter) => diagnostic(
+                    state,
+                    pair.node,
+                    "in call to " + expression_source_text(state, function) + ", type "
+                        + diagnostic_type_string(state, pair.actual)
+                        + " of "
+                        + expression_source_text(state, pair.node)
+                        + " does not match "
+                        + diagnostic_type_string(state, pair.formal)
+                        + " (cannot infer "
+                        + parameter.name
+                        + ")",
+                    false,
+                ),
+                None => {},
+            };
+            return true
+        } else {}
+    }
+    false
+}
+
+fn inference_argument_description(state: CheckState, node: syntax::NodeId, actual: go_types::TypeId) -> string {
+    match syntax::get_node(state.syntax.arena, node) {
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::FuncLit { type_node: _, body: _ },
+        }) => "(" + diagnostic_type_string(state, actual) + " literal)",
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::CompositeLit {
+                type_node: Some(type_node),
+                lbrace: _,
+                elements,
+                rbrace: _,
+                incomplete: _,
+            },
+        }) => match syntax::get_node(state.syntax.arena, type_node) {
+            Some(syntax::SyntaxNode {
+                id: _,
+                file: _,
+                span: _,
+                path: _,
+                kind: syntax::SyntaxKind::StructType { struct_pos: _, fields, incomplete: _ },
+            }) => struct_type_source_text(state, fields)
+                + if elements.is_empty() {
+                    "{}"
+                } else {
+                    "{…}"
+                },
+            _ => expression_source_text(state, node),
+        },
+        _ => expression_source_text(state, node),
+    }
+}
+
+fn inferred_direct_parameter_bound(
+    state: CheckState,
+    formal: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+) -> bool {
+    match go_types::get_type(state.world, go_types::unalias(state.world, formal)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object, constraint: _, index: _ },
+        }) => {
+            for binding in bindings {
+                if binding.object.value == object.value && binding.type_id.is_some() {
+                    return true
+                } else {}
+            }
+            false
+        },
+        _ => false,
+    }
+}
+
+fn merge_delayed_direct_inference(
+    state: CheckState,
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+) -> bool {
+    let object = match go_types::get_type(state.world, go_types::unalias(state.world, formal)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object, constraint: _, index: _ },
+        }) => object,
+        _ => return false,
+    };
+    for index in 0..bindings.len() {
+        if bindings[index].object.value == object.value {
+            match bindings[index].type_id {
+                Some(existing) => {
+                    let existing_rank = numeric_rank(basic_kind(state, existing));
+                    let actual_rank = numeric_rank(basic_kind(state, actual));
+                    if existing_rank > 0 && actual_rank > 0 {
+                        if actual_rank > existing_rank {
+                            bindings[index].type_id = Option::Some(actual);
+                        } else {};
+                        return true
+                    } else if go_types::identical(state.world, existing, actual)
+                        && go_types::is_untyped(state.world, existing) {
+                        return true
+                    } else {
+                        return false
+                    }
+                },
+                None => return false,
+            }
+        } else {}
+    }
+    false
+}
+
+fn report_delayed_direct_inference_mismatch(
+    state: CheckState,
+    function: syntax::NodeId,
+    pair: InferencePair,
+    bindings: Vec[InferenceBinding],
+) -> bool {
+    if !go_types::is_untyped(state.world, pair.actual) {
+        return false
+    } else {};
+    let object = match go_types::get_type(state.world, go_types::unalias(state.world, pair.formal)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object, constraint: _, index: _ },
+        }) => object,
+        _ => return false,
+    };
+    for binding in bindings {
+        if binding.object.value == object.value {
+            match binding.type_id {
+                Some(existing) => if go_types::is_untyped(state.world, existing) {
+                    let name = match go_types::get_object(state.world, object) {
+                        Some(object) => object.name,
+                        None => "?",
+                    };
+                    diagnostic(
+                        state,
+                        pair.node,
+                        "in call to " + inference_call_name(state, function) + ", mismatched types "
+                            + diagnostic_type_string(state, existing)
+                            + " and "
+                            + diagnostic_type_string(state, pair.actual)
+                            + " (cannot infer "
+                            + name
+                            + ")",
+                        false,
+                    );
+                    return true
+                } else {},
+                None => {},
+            }
+        } else {}
+    }
+    false
+}
+
+fn default_inferred_type(state: CheckState, value: go_types::TypeId) -> go_types::TypeId {
+    match default_type_for_kind(state, basic_kind(state, value)) {
+        Some(type_id) => type_id,
+        None => match go_types::get_type(state.world, go_types::unalias(state.world, value)) {
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length, element } }) => go_types::add_type(
+                state.world,
+                go_types::TypeKind::Array { length, element: default_inferred_type(state, element) },
+            ),
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Slice { element } }) => go_types::add_type(
+                state.world,
+                go_types::TypeKind::Slice { element: default_inferred_type(state, element) },
+            ),
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) => go_types::add_type(
+                state.world,
+                go_types::TypeKind::Pointer { element: default_inferred_type(state, element) },
+            ),
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => go_types::add_type(
+                state.world,
+                go_types::TypeKind::Map {
+                    key: default_inferred_type(state, key),
+                    value: default_inferred_type(state, value),
+                },
+            ),
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Chan { direction, element } }) => go_types::add_type(
+                state.world,
+                go_types::TypeKind::Chan {
+                    direction,
+                    element: default_inferred_type(state, element),
+                },
+            ),
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+                let result: Vec[go_types::Variable] = Vec::[];
+                for variable in variables {
+                    result.push(
+                        go_types::Variable {
+                            name: variable.name,
+                            owner: variable.owner,
+                            type_id: default_inferred_type(state, variable.type_id),
+                        },
+                    )
+                }
+                go_types::add_type(state.world, go_types::TypeKind::Tuple { variables: result })
+            },
+            Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+                let result: Vec[go_types::StructField] = Vec::[];
+                for field in fields {
+                    result.push(
+                        go_types::StructField {
+                            object: field.object,
+                            variable: go_types::Variable {
+                                name: field.variable.name,
+                                owner: field.variable.owner,
+                                type_id: default_inferred_type(state, field.variable.type_id),
+                            },
+                            embedded: field.embedded,
+                            tag: field.tag,
+                        },
+                    )
+                }
+                go_types::add_type(state.world, go_types::TypeKind::Struct { fields: result })
+            },
+            _ => value,
+        },
+    }
+}
+
+fn infer_from_interface_methods(
+    state: CheckState,
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+    visited: Vec[InferenceTypePair],
+) -> bool {
+    for required in go_types::interface_methods(state.world, formal) {
+        let required_object = match go_types::get_object(state.world, required) {
+            Some(value) => value,
+            None => return false,
+        };
+        let selection = match go_types::lookup_field_or_method(
+            state.world,
+            actual,
+            false,
+            required_object.name,
+        ) {
+            Some(value) => value,
+            None => {
+                let pointer = go_types::add_type(
+                    state.world,
+                    go_types::TypeKind::Pointer { element: actual },
+                );
+                match go_types::lookup_field_or_method(
+                    state.world,
+                    pointer,
+                    false,
+                    required_object.name,
+                ) {
+                    Some(value) => value,
+                    None => return false,
+                }
+            },
+        };
+        let actual_object = match go_types::get_object(state.world, selection.object) {
+            Some(value) => value,
+            None => return false,
+        };
+        if !infer_from_types_inner(
+            state,
+            required_object.type_id,
+            actual_object.type_id,
+            bindings,
+            visited,
+            true,
+        ) {
+            return false
+        } else {}
+    }
+    true
+}
+
+fn infer_from_types(
+    state: CheckState,
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+) -> bool {
+    infer_from_types_inner(state, formal, actual, bindings, Vec::[], false)
+}
+
+fn infer_from_types_mode(
+    state: CheckState,
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+    exact_components: bool,
+) -> bool {
+    infer_from_types_inner(state, formal, actual, bindings, Vec::[], exact_components)
+}
+
+fn infer_from_argument_types(
+    state: CheckState,
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+    exact_top_level_interfaces: bool,
+) -> bool {
+    if generic_parameters(state, actual).is_empty() {
+        infer_from_types_mode(state, formal, actual, bindings, exact_top_level_interfaces)
+    } else {
+        state.generic_argument_inference_depth += 1;
+        let result = infer_from_types_mode(
+            state,
+            formal,
+            actual,
+            bindings,
+            exact_top_level_interfaces,
+        );
+        state.generic_argument_inference_depth -= 1;
+        result
+    }
+}
+
+fn infer_from_types_inner(
+    state: CheckState,
+    formal: go_types::TypeId,
+    actual: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+    visited: Vec[InferenceTypePair],
+    exact_components: bool,
+) -> bool {
+    if inference_type_pair_seen(visited, formal, actual) {
+        return true
+    } else {};
+    let next = visited;
+    next.push(InferenceTypePair { formal, actual });
+    let exact_named_interface = exact_components
+        && match go_types::get_type(state.world, go_types::unalias(state.world, formal)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Named {
+                    object: _,
+                    underlying: _,
+                    type_params: _,
+                    type_args: _,
+                    methods: _,
+                },
+            }) => true,
+            _ => false,
+        };
+    if go_types::is_interface(state.world, formal) && !exact_named_interface {
+        return infer_from_interface_methods(state, formal, actual, bindings, next)
+    } else {};
+    match go_types::get_type(state.world, go_types::unalias(state.world, formal)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object, constraint: _, index: _ },
+        }) => bind_inference(state, bindings, object, actual),
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Pointer { element: formal_element },
+        }) => match go_types::get_type(state.world, core_type_id(state, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Pointer { element: actual_element },
+            }) => infer_from_types_inner(
+                state,
+                formal_element,
+                actual_element,
+                bindings,
+                next,
+                true,
+            ),
+            _ => false,
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Slice { element: formal_element },
+        }) => match go_types::get_type(state.world, core_type_id(state, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Slice { element: actual_element },
+            }) => infer_from_types_inner(
+                state,
+                formal_element,
+                actual_element,
+                bindings,
+                next,
+                true,
+            ),
+            _ => false,
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Array { length: formal_length, element: formal_element },
+        }) => match go_types::get_type(state.world, core_type_id(state, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Array { length: actual_length, element: actual_element },
+            }) => formal_length == actual_length
+                && infer_from_types_inner(
+                    state,
+                    formal_element,
+                    actual_element,
+                    bindings,
+                    next,
+                    true,
+                ),
+            _ => false,
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Struct { fields: formal_fields },
+        }) => match go_types::get_type(state.world, go_types::underlying(state.world, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Struct { fields: actual_fields },
+            }) => {
+                if formal_fields.len() != actual_fields.len() {
+                    return false
+                } else {};
+                for index in 0..formal_fields.len() {
+                    if formal_fields[index].variable.name != actual_fields[index].variable.name
+                        || formal_fields[index].embedded != actual_fields[index].embedded
+                        || formal_fields[index].tag != actual_fields[index].tag
+                        || !infer_from_types_inner(
+                            state,
+                            formal_fields[index].variable.type_id,
+                            actual_fields[index].variable.type_id,
+                            bindings,
+                            next,
+                            true,
+                        ) {
+                        return false
+                    } else {}
+                }
+                true
+            },
+            _ => false,
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Map { key: formal_key, value: formal_value },
+        }) => match go_types::get_type(state.world, core_type_id(state, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Map { key: actual_key, value: actual_value },
+            }) => infer_from_types_inner(state, formal_key, actual_key, bindings, next, true)
+                && infer_from_types_inner(state, formal_value, actual_value, bindings, next, true),
+            _ => false,
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Chan { direction: formal_direction, element: formal_element },
+        }) => match go_types::get_type(state.world, core_type_id(state, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Chan {
+                    direction: actual_direction,
+                    element: actual_element,
+                },
+            }) => (!exact_components || formal_direction == actual_direction)
+                && infer_from_types_inner(
+                    state,
+                    formal_element,
+                    actual_element,
+                    bindings,
+                    next,
+                    true,
+                ),
+            _ => false,
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Tuple { variables: formal_variables },
+        }) => match go_types::get_type(state.world, go_types::unalias(state.world, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Tuple { variables: actual_variables },
+            }) => {
+                if formal_variables.len() != actual_variables.len() {
+                    return false
+                } else {};
+                for index in 0..formal_variables.len() {
+                    if !infer_from_types_inner(
+                        state,
+                        formal_variables[index].type_id,
+                        actual_variables[index].type_id,
+                        bindings,
+                        next,
+                        true,
+                    ) {
+                        return false
+                    } else {}
+                }
+                true
+            },
+            _ => false,
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver: _,
+                receiver_type_params: _,
+                type_params: _,
+                params: formal_params,
+                results: formal_results,
+                variadic: formal_variadic,
+            },
+        }) => match go_types::get_type(state.world, go_types::unalias(state.world, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Signature {
+                    receiver: _,
+                    receiver_type_params: _,
+                    type_params: _,
+                    params: actual_params,
+                    results: actual_results,
+                    variadic: actual_variadic,
+                },
+            }) => formal_variadic == actual_variadic
+                && infer_from_types_inner(state, formal_params, actual_params, bindings, next, true)
+                && infer_from_types_inner(
+                    state,
+                    formal_results,
+                    actual_results,
+                    bindings,
+                    next,
+                    true,
+                ),
+            _ => false,
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: formal_object,
+                underlying: _,
+                type_params: _,
+                type_args: formal_arguments,
+                methods: _,
+            },
+        }) => match go_types::get_type(state.world, go_types::unalias(state.world, actual)) {
+            Some(go_types::TypeData {
+                id: _,
+                kind: go_types::TypeKind::Named {
+                    object: actual_object,
+                    underlying: _,
+                    type_params: _,
+                    type_args: actual_arguments,
+                    methods: _,
+                },
+            }) => {
+                if formal_object.value != actual_object.value
+                    || formal_arguments.len() != actual_arguments.len() {
+                    return false
+                } else {};
+                for index in 0..formal_arguments.len() {
+                    if !infer_from_types_inner(
+                        state,
+                        formal_arguments[index],
+                        actual_arguments[index],
+                        bindings,
+                        next,
+                        true,
+                    ) {
+                        return false
+                    } else {}
+                }
+                true
+            },
+            _ => false,
+        },
+        _ => true,
+    }
+}
+
+fn copy_inference_bindings(values: Vec[InferenceBinding]) -> Vec[InferenceBinding] {
+    let result: Vec[InferenceBinding] = Vec::[];
+    for value in values {
+        result.push(InferenceBinding { object: value.object, type_id: value.type_id })
+    }
+    result
+}
+
+fn apply_inference_bindings(target: Vec[InferenceBinding], source: Vec[InferenceBinding]) -> unit {
+    for target_index in 0..target.len() {
+        for source_value in source {
+            if target[target_index].object.value == source_value.object.value {
+                target[target_index].type_id = source_value.type_id;
+            } else {}
+        }
+    }
+}
+
+fn infer_from_constraint(
+    state: CheckState,
+    constraint: go_types::TypeId,
+    actual: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+) -> bool {
+    infer_from_constraint_inner(state, constraint, actual, bindings, Vec::[])
+}
+
+fn infer_from_constraint_inner(
+    state: CheckState,
+    constraint: go_types::TypeId,
+    actual: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+    visited: Vec[InferenceTypePair],
+) -> bool {
+    let resolved = go_types::unalias(state.world, constraint);
+    if inference_type_pair_seen(visited, resolved, actual) {
+        return true
+    } else {};
+    let next: Vec[InferenceTypePair] = Vec::[];
+    for value in visited {
+        next.push(InferenceTypePair { formal: value.formal, actual: value.actual })
+    }
+    next.push(InferenceTypePair { formal: resolved, actual });
+    match go_types::get_type(state.world, go_types::underlying(state.world, constraint)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Interface {
+                methods: _,
+                embeddeds,
+                comparable: _,
+                implicit: _,
+            },
+        }) => {
+            if !infer_from_interface_methods(state, constraint, actual, bindings, next) {
+                return false
+            } else {};
+            for embedded in embeddeds {
+                if !infer_from_constraint_inner(state, embedded, actual, bindings, next) {
+                    return false
+                } else {}
+            }
+            true
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => {
+            for term in terms {
+                let candidate = copy_inference_bindings(bindings);
+                let target = if term.tilde {
+                    go_types::underlying(state.world, actual)
+                } else {
+                    actual
+                };
+                let matched = if go_types::is_interface(state.world, term.type_id) {
+                    infer_from_constraint_inner(state, term.type_id, target, candidate, next)
+                } else {
+                    infer_from_types(state, term.type_id, target, candidate)
+                };
+                if matched {
+                    apply_inference_bindings(bindings, candidate);
+                    return true
+                } else {}
+            }
+            false
+        },
+        _ => infer_from_types(state, constraint, actual, bindings),
+    }
+}
+
+fn inferred_binding_count(values: Vec[InferenceBinding]) -> int {
+    let mut result = 0;
+    for value in values {
+        if value.type_id.is_some() {
+            result += 1;
+        } else {}
+    }
+    result
+}
+
+fn type_contains_bound_parameter(
+    state: CheckState,
+    value: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+    visited: Vec[go_types::TypeId],
+) -> bool {
+    for existing in visited {
+        if existing.value == value.value {
+            return false
+        } else {}
+    }
+    visited.push(value);
+    match go_types::get_type(state.world, go_types::unalias(state.world, value)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object, constraint: _, index: _ },
+        }) => {
+            for binding in bindings {
+                if binding.object.value == object.value && binding.type_id.is_some() {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element } }) | Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Slice { element },
+        }) | Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Pointer { element } }) | Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Chan { direction: _, element },
+        }) => type_contains_bound_parameter(state, element, bindings, visited),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => type_contains_bound_parameter(
+            state,
+            key,
+            bindings,
+            visited,
+        )
+            || type_contains_bound_parameter(state, value, bindings, visited),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+            for variable in variables {
+                if type_contains_bound_parameter(state, variable.type_id, bindings, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+            for field in fields {
+                if type_contains_bound_parameter(state, field.variable.type_id, bindings, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: _,
+                underlying: _,
+                type_params: _,
+                type_args,
+                methods: _,
+            } | go_types::TypeKind::Alias { object: _, rhs: _, type_params: _, type_args },
+        }) => {
+            for argument in type_args {
+                if type_contains_bound_parameter(state, argument, bindings, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Interface {
+                methods: _,
+                embeddeds,
+                comparable: _,
+                implicit: _,
+            },
+        }) => {
+            for embedded in embeddeds {
+                if type_contains_bound_parameter(state, embedded, bindings, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => {
+            for term in terms {
+                if type_contains_bound_parameter(state, term.type_id, bindings, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        _ => false,
+    }
+}
+
+fn infer_from_parameter_constraints(
+    state: CheckState,
+    parameters: Vec[go_types::TypeParameter],
+    bindings: Vec[InferenceBinding],
+) -> unit {
+    for _ in 0..parameters.len() {
+        let before = inferred_binding_count(bindings);
+        for index in 0..parameters.len() {
+            match bindings[index].type_id {
+                Some(actual) => {
+                    let _ = infer_from_constraint(
+                        state,
+                        parameters[index].constraint,
+                        actual,
+                        bindings,
+                    );
+                },
+                None => {},
+            }
+        }
+        for index in 0..parameters.len() {
+            if bindings[index].type_id.is_none() {
+                let arguments: Vec[go_types::TypeId] = Vec::[];
+                for binding_index in 0..bindings.len() {
+                    let fallback = match go_types::get_object(
+                        state.world,
+                        bindings[binding_index].object,
+                    ) {
+                        Some(object) => object.type_id,
+                        None => state.world.invalid,
+                    };
+                    arguments.push(bindings[binding_index].type_id.unwrap_or(fallback))
+                }
+                let constraint = go_types::substitute(
+                    state.world,
+                    parameters[index].constraint,
+                    parameters,
+                    arguments,
+                );
+                match exact_constraint_type_inner(state, constraint, Vec::[]) {
+                    Some(candidate) => {
+                        let mut contains_unbound = false;
+                        for binding in bindings {
+                            if binding.type_id.is_none()
+                                && type_contains_parameter(
+                                    state,
+                                    candidate,
+                                    binding.object,
+                                    Vec::[],
+                                ) {
+                                contains_unbound = true;
+                            } else {}
+                        }
+                        if !contains_unbound {
+                            bindings[index].type_id = Option::Some(candidate);
+                        } else {}
+                    },
+                    None => {},
+                }
+            } else {}
+        }
+        if inferred_binding_count(bindings) == before {
+            return
+        } else {}
+    }
+}
+
+fn exact_constraint_type_inner(
+    state: CheckState,
+    value: go_types::TypeId,
+    visited: Vec[go_types::TypeId],
+) -> Option[go_types::TypeId] {
+    let resolved = go_types::unalias(state.world, value);
+    for existing in visited {
+        if existing.value == resolved.value {
+            return Option::None
+        } else {}
+    }
+    visited.push(resolved);
+    match go_types::get_type(state.world, resolved) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object: _, constraint, index: _ },
+        }) => exact_constraint_type_inner(state, constraint, visited),
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: _,
+                underlying,
+                type_params: _,
+                type_args: _,
+                methods: _,
+            },
+        }) => if go_types::is_interface(state.world, resolved) {
+            exact_constraint_type_inner(state, underlying, visited)
+        } else {
+            Option::Some(resolved)
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Interface {
+                methods: _,
+                embeddeds,
+                comparable: _,
+                implicit: _,
+            },
+        }) => {
+            let mut result = Option::None;
+            for embedded in embeddeds {
+                match exact_constraint_type_inner(state, embedded, visited) {
+                    Some(candidate) => match result {
+                        Some(existing) => if !go_types::identical(state.world, existing, candidate) {
+                            return Option::None
+                        } else {},
+                        None => {
+                            result = Option::Some(candidate);
+                        },
+                    },
+                    None => {},
+                }
+            }
+            result
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => if terms.len()
+            == 1
+            && !terms[0].tilde {
+            if go_types::is_interface(state.world, terms[0].type_id) {
+                exact_constraint_type_inner(state, terms[0].type_id, visited)
+            } else {
+                Option::Some(terms[0].type_id)
+            }
+        } else {
+            Option::None
+        },
+        Some(_) => Option::Some(resolved),
+        None => Option::None,
+    }
+}
+
+fn inferred_generic_argument_type(state: CheckState, signature: go_types::TypeId) -> go_types::TypeId {
+    let parameters = generic_parameters(state, signature);
+    if parameters.is_empty() {
+        return signature
+    } else {};
+    let arguments: Vec[go_types::TypeId] = Vec::[];
+    for parameter in parameters {
+        match exact_constraint_type_inner(state, parameter.constraint, Vec::[]) {
+            Some(value) => arguments.push(value),
+            None => return signature,
+        }
+    }
+    go_types::instantiate(state.world, signature, arguments).unwrap_or(signature)
+}
+
+fn substitute_inference_bindings(
+    state: CheckState,
+    value: go_types::TypeId,
+    bindings: Vec[InferenceBinding],
+) -> go_types::TypeId {
+    let parameters: Vec[go_types::TypeParameter] = Vec::[];
+    let arguments: Vec[go_types::TypeId] = Vec::[];
+    for binding in bindings {
+        match go_types::get_object(state.world, binding.object) {
+            Some(object) => match go_types::get_type(
+                state.world,
+                go_types::unalias(state.world, object.type_id),
+            ) {
+                Some(go_types::TypeData {
+                    id: _,
+                    kind: go_types::TypeKind::TypeParam { object: _, constraint, index: _ },
+                }) => {
+                    parameters.push(
+                        go_types::TypeParameter {
+                            object: binding.object,
+                            constraint,
+                            grouped: false,
+                        },
+                    );
+                    arguments.push(binding.type_id.unwrap_or(object.type_id))
+                },
+                _ => {},
+            },
+            None => {},
+        }
+    }
+    go_types::substitute(state.world, value, parameters, arguments)
+}
+
+fn infer_from_generic_argument_targets(
+    state: CheckState,
+    pairs: Vec[InferencePair],
+    bindings: Vec[InferenceBinding],
+) -> unit {
+    for pair in pairs {
+        let parameters = generic_parameters(state, pair.actual);
+        if parameters.is_empty() {} else {
+            let inner_bindings: Vec[InferenceBinding] = Vec::[];
+            for parameter in parameters {
+                inner_bindings.push(
+                    InferenceBinding { object: parameter.object, type_id: Option::None },
+                )
+            }
+            let target = substitute_inference_bindings(state, pair.formal, bindings);
+            state.generic_argument_inference_depth += 1;
+            let matched = infer_from_types(state, pair.actual, target, inner_bindings);
+            state.generic_argument_inference_depth -= 1;
+            if matched {
+                match complete_inference_arguments(inner_bindings) {
+                    Some(arguments) => match go_types::instantiate(
+                        state.world,
+                        pair.actual,
+                        arguments,
+                    ) {
+                        Some(actual) => {
+                            let _ = infer_from_argument_types(
+                                state,
+                                pair.formal,
+                                actual,
+                                bindings,
+                                false,
+                            );
+                        },
+                        None => {},
+                    },
+                    None => {},
+                }
+            } else {}
+        }
+    }
+}
+
+fn infer_signature(
+    state: CheckState,
+    scope: go_types::ScopeId,
+    node: syntax::NodeId,
+    signature: go_types::TypeId,
+    argument_nodes: Vec[syntax::NodeId],
+    ellipsis: int,
+) -> go_types::TypeId {
+    let parameters = generic_parameters(state, signature);
+    if parameters.is_empty() {
+        return signature
+    } else {};
+    let parameter_tuple = match go_types::get_type(state.world, signature) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver: _,
+                receiver_type_params: _,
+                type_params: _,
+                params,
+                results: _,
+                variadic,
+            },
+        }) => (tuple_variables(state, params), variadic),
+        _ => return signature,
+    };
+    let variadic = parameter_tuple.1;
+    let parameter_tuple = parameter_tuple.0;
+    let bindings: Vec[InferenceBinding] = Vec::[];
+    for parameter in parameters {
+        let mut inferred = Option::None;
+        for partial in state.partial_instances {
+            if partial.type_id.value == signature.value {
+                let origin_parameters = generic_parameters(state, partial.origin);
+                for index in 0..origin_parameters.len() {
+                    if origin_parameters[index].object.value == parameter.object.value
+                        && index < partial.inferred_arguments.len()
+                        && partial.inferred_arguments[index].value != state.world.invalid.value {
+                        inferred = Option::Some(partial.inferred_arguments[index]);
+                    } else {}
+                }
+            } else {}
+        }
+        bindings.push(InferenceBinding { object: parameter.object, type_id: inferred })
+    }
+    let argument_diagnostic_start = state.diagnostics.len();
+    let pairs: Vec[InferencePair] = Vec::[];
+    let mut invalid_argument = false;
+    for index in 0..argument_nodes.len() {
+        if parameter_tuple.is_empty() {
+            break
+        } else {};
+        let parameter_index = if index < parameter_tuple.len() {
+            index
+        } else {
+            parameter_tuple.len() - 1
+        };
+        let mut formal = parameter_tuple[parameter_index].type_id;
+        if variadic && parameter_index + 1 == parameter_tuple.len() && ellipsis < 0 {
+            formal = variadic_element(state, formal);
+        } else {};
+        state.generic_function_context_depth += 1;
+        let actual = check_expression(state, scope, argument_nodes[index]);
+        state.generic_function_context_depth -= 1;
+        if state.failed_inference_nodes.contains(argument_nodes[index].value) {
+            invalid_argument = true;
+            continue
+        } else if actual.type_id.value == state.world.invalid.value {
+            invalid_argument = true;
+            continue
+        } else if basic_kind(state, actual.type_id) == go_types::BasicKind::UntypedNil {
+            continue
+        } else {};
+        let expanded = tuple_variables(state, actual.type_id);
+        if argument_nodes.len() == 1 && expanded.len() > 1 {
+            for expanded_index in 0..expanded.len() {
+                let expanded_parameter_index = if expanded_index < parameter_tuple.len() {
+                    expanded_index
+                } else {
+                    parameter_tuple.len() - 1
+                };
+                let mut expanded_formal = parameter_tuple[expanded_parameter_index].type_id;
+                if variadic && expanded_parameter_index + 1 == parameter_tuple.len() && ellipsis < 0 {
+                    expanded_formal = variadic_element(state, expanded_formal);
+                } else {};
+                pairs.push(
+                    InferencePair {
+                        formal: expanded_formal,
+                        actual: inferred_generic_argument_type(
+                            state,
+                            expanded[expanded_index].type_id,
+                        ),
+                        node: argument_nodes[index],
+                        delayed: go_types::is_untyped(state.world, expanded[expanded_index].type_id),
+                    },
+                )
+            }
+            continue
+        } else {};
+        let actual_type = inferred_generic_argument_type(state, inferred_actual_type(state, actual));
+        pairs.push(
+            InferencePair {
+                formal,
+                actual: actual_type,
+                node: argument_nodes[index],
+                delayed: go_types::is_untyped(state.world, actual.type_id),
+            },
+        );
+    }
+    if invalid_argument {
+        return state.world.invalid
+    } else {};
+    for pair in pairs {
+        if !pair.delayed {
+            if !infer_from_argument_types(
+                state,
+                pair.formal,
+                pair.actual,
+                bindings,
+                !go_version_at_least(state, node, 21),
+            )
+                && inference_mismatch(state, node, pair, bindings) {
+                return state.world.invalid
+            } else {}
+        } else {}
+    }
+    infer_from_parameter_constraints(state, parameters, bindings);
+    for _ in 0..parameters.len() {
+        infer_from_generic_argument_targets(state, pairs, bindings);
+        infer_from_parameter_constraints(state, parameters, bindings)
+    }
+    for pair in pairs {
+        if pair.delayed {
+            if merge_delayed_direct_inference(state, pair.formal, pair.actual, bindings) {} else if report_delayed_direct_inference_mismatch(
+                state,
+                node,
+                pair,
+                bindings,
+            ) {
+                return state.world.invalid
+            } else if inferred_direct_parameter_bound(state, pair.formal, bindings) {} else if !infer_from_argument_types(
+                state,
+                pair.formal,
+                pair.actual,
+                bindings,
+                !go_version_at_least(state, node, 21),
+            )
+                && inference_mismatch(state, node, pair, bindings) {
+                return state.world.invalid
+            } else {}
+        } else {}
+    }
+    for index in 0..bindings.len() {
+        match bindings[index].type_id {
+            Some(value) => {
+                bindings[index].type_id = Option::Some(default_inferred_type(state, value));
+            },
+            None => {},
+        }
+    }
+    infer_from_parameter_constraints(state, parameters, bindings);
+    let constraint_arguments: Vec[go_types::TypeId] = Vec::[];
+    for binding in bindings {
+        let fallback = match go_types::get_object(state.world, binding.object) {
+            Some(object) => object.type_id,
+            None => state.world.invalid,
+        };
+        constraint_arguments.push(binding.type_id.unwrap_or(fallback))
+    }
+    for index in 0..parameters.len() {
+        match bindings[index].type_id {
+            Some(argument) => {
+                let constraint = go_types::substitute(
+                    state.world,
+                    parameters[index].constraint,
+                    parameters,
+                    constraint_arguments,
+                );
+                if !constraint_accepts(state, argument, constraint) {
+                    let diagnostic_constraint = if type_contains_parameter(
+                        state,
+                        parameters[index].constraint,
+                        parameters[index].object,
+                        Vec::[],
+                    ) {
+                        parameters[index].constraint
+                    } else {
+                        constraint
+                    };
+                    let constraint_text = constraint_diagnostic_string(state, diagnostic_constraint);
+                    let detail = interface_implementation_detail(
+                        state,
+                        argument,
+                        diagnostic_constraint,
+                    );
+                    let terms: Vec[string] = Vec::[];
+                    if detail == "" && !go_types::is_type_parameter(state.world, argument) {
+                        for term in go_types::type_set_terms(state.world, constraint) {
+                            terms.push(union_term_string(state, term))
+                        }
+                    } else {};
+                    let missing_tilde = missing_tilde_term(state, argument, constraint);
+                    let hard_failure = missing_tilde.is_none()
+                        && hard_inferred_constraint_failure(state, constraint)
+                        && (!constraint_depends_on_other_parameter(
+                            state,
+                            parameters[index].constraint,
+                            parameters,
+                            parameters[index].object,
+                        )
+                            || !dependent_constraint_shape_matches(
+                                state,
+                                argument,
+                                parameters[index].constraint,
+                                bindings,
+                            ));
+                    if hard_failure {
+                        let parameter_name = match go_types::get_object(
+                            state.world,
+                            parameters[index].object,
+                        ) {
+                            Some(object) => object.name,
+                            None => "?",
+                        };
+                        diagnostic(
+                            state,
+                            node,
+                            "in call to " + inference_call_name(state, node) + ", " + parameter_name
+                                + " (type "
+                                + diagnostic_type_string(state, argument)
+                                + ") does not satisfy "
+                                + constraint_diagnostic_string(state, parameters[index].constraint)
+                                + if detail == "" {
+                                    ""
+                                } else {
+                                    " " + detail
+                                },
+                            false,
+                        )
+                    } else {
+                        diagnostic(
+                            state,
+                            node,
+                            diagnostic_type_string(state, argument) + " does not satisfy "
+                                + constraint_text
+                                + if detail != "" {
+                                    " " + detail
+                                } else if missing_tilde.is_some() {
+                                    " (possibly missing ~ for "
+                                        + diagnostic_type_string(
+                                            state,
+                                            missing_tilde.unwrap_or(state.world.invalid),
+                                        )
+                                        + " in "
+                                        + diagnostic_type_string(state, constraint)
+                                        + ")"
+                                } else if constraint_mentions_type(
+                                    state,
+                                    constraint,
+                                    argument,
+                                    Vec::[],
+                                ) {
+                                    " (" + diagnostic_type_string(state, constraint) + " mentions "
+                                        + diagnostic_type_string(state, argument)
+                                        + ", but "
+                                        + diagnostic_type_string(state, argument)
+                                        + " is not in the type set of "
+                                        + diagnostic_type_string(state, constraint)
+                                        + ")"
+                                } else if !terms.is_empty() {
+                                    " (" + diagnostic_type_string(state, argument) + " missing in "
+                                        + text::join(terms, " | ")
+                                        + ")"
+                                } else {
+                                    ""
+                                },
+                            true,
+                        );
+                        let _ = finish_signature_inference_unchecked(
+                            state,
+                            node,
+                            signature,
+                            constraint_arguments,
+                        );
+                    };
+                    return state.world.invalid
+                } else {}
+            },
+            None => {},
+        }
+    }
+    let arguments: Vec[go_types::TypeId] = Vec::[];
+    for binding in bindings {
+        match binding.type_id {
+            Some(value) => arguments.push(default_inferred_type(state, value)),
+            None => {
+                let argument_diagnostics = take_diagnostics_from(state, argument_diagnostic_start);
+                diagnostic(state, node, cannot_infer_message(state, node, binding.object), false);
+                for value in argument_diagnostics {
+                    state.diagnostics.push(value)
+                }
+                for partial in state.partial_instances {
+                    if partial.type_id.value == signature.value {
+                        for index in 0..state.info.types.len() {
+                            if state.info.types[index].node.value == node.value {
+                                state.info.types[index].type_id = partial.origin;
+                            } else {}
+                        }
+                    } else {}
+                }
+                return state.world.invalid
+            },
+        }
+    }
+    finish_signature_inference(state, node, signature, arguments)
+}
+
+fn copied_type_ids(values: Vec[go_types::TypeId]) -> Vec[go_types::TypeId] {
+    let result: Vec[go_types::TypeId] = Vec::[];
+    for value in values {
+        result.push(value)
+    }
+    result
+}
+
+fn type_contains_parameter(
+    state: CheckState,
+    value: go_types::TypeId,
+    object: go_types::ObjectId,
+    visited: Vec[go_types::TypeId],
+) -> bool {
+    for existing in visited {
+        if existing.value == value.value {
+            return false
+        } else {}
+    }
+    visited.push(value);
+    match go_types::get_type(state.world, go_types::unalias(state.world, value)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object: candidate, constraint: _, index: _ },
+        }) => candidate.value == object.value,
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Array { length: _, element } }) | Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Slice { element } | go_types::TypeKind::Pointer { element },
+        }) | Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Chan { direction: _, element },
+        }) => type_contains_parameter(state, element, object, visited),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => type_contains_parameter(
+            state,
+            key,
+            object,
+            visited,
+        )
+            || type_contains_parameter(state, value, object, visited),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+            for variable in variables {
+                if type_contains_parameter(state, variable.type_id, object, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver,
+                receiver_type_params: _,
+                type_params: _,
+                params,
+                results,
+                variadic: _,
+            },
+        }) => match receiver {
+            Some(receiver) => type_contains_parameter(state, receiver.type_id, object, visited),
+            None => false,
+        }
+            || type_contains_parameter(state, params, object, visited)
+            || type_contains_parameter(state, results, object, visited),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+            for field in fields {
+                if type_contains_parameter(state, field.variable.type_id, object, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Interface {
+                methods: _,
+                embeddeds,
+                comparable: _,
+                implicit: _,
+            },
+        }) => {
+            for embedded in embeddeds {
+                if type_contains_parameter(state, embedded, object, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Union { terms } }) => {
+            for term in terms {
+                if type_contains_parameter(state, term.type_id, object, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: _,
+                underlying: _,
+                type_params: _,
+                type_args,
+                methods: _,
+            } | go_types::TypeKind::Alias { object: _, rhs: _, type_params: _, type_args },
+        }) => {
+            for argument in type_args {
+                if type_contains_parameter(state, argument, object, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        _ => false,
+    }
+}
+
+fn parameter_in_named_instance(
+    state: CheckState,
+    value: go_types::TypeId,
+    object: go_types::ObjectId,
+    nested: bool,
+    visited: Vec[go_types::TypeId],
+) -> bool {
+    let resolved = go_types::unalias(state.world, value);
+    for existing in visited {
+        if existing.value == resolved.value {
+            return false
+        } else {}
+    }
+    visited.push(resolved);
+    match go_types::get_type(state.world, resolved) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::TypeParam { object: candidate, constraint: _, index: _ },
+        }) => nested && candidate.value == object.value,
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Named {
+                object: _,
+                underlying: _,
+                type_params: _,
+                type_args,
+                methods: _,
+            } | go_types::TypeKind::Alias { object: _, rhs: _, type_params: _, type_args },
+        }) => {
+            for argument in type_args {
+                if parameter_in_named_instance(state, argument, object, true, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Array { length: _, element } | go_types::TypeKind::Slice {
+                element,
+            } | go_types::TypeKind::Pointer { element } | go_types::TypeKind::Chan {
+                direction: _,
+                element,
+            },
+        }) => parameter_in_named_instance(state, element, object, nested, visited),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Map { key, value } }) => parameter_in_named_instance(
+            state,
+            key,
+            object,
+            nested,
+            visited,
+        )
+            || parameter_in_named_instance(state, value, object, nested, visited),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Tuple { variables } }) => {
+            for variable in variables {
+                if parameter_in_named_instance(state, variable.type_id, object, nested, visited) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver: _,
+                receiver_type_params: _,
+                type_params: _,
+                params,
+                results,
+                variadic: _,
+            },
+        }) => parameter_in_named_instance(state, params, object, nested, visited)
+            || parameter_in_named_instance(state, results, object, nested, visited),
+        Some(go_types::TypeData { id: _, kind: go_types::TypeKind::Struct { fields } }) => {
+            for field in fields {
+                if parameter_in_named_instance(
+                    state,
+                    field.variable.type_id,
+                    object,
+                    nested,
+                    visited,
+                ) {
+                    return true
+                } else {}
+            }
+            false
+        },
+        _ => false,
+    }
+}
+
+fn instantiation_argument_node(state: CheckState, node: syntax::NodeId, index: int) -> syntax::NodeId {
+    match syntax::get_node(state.syntax.arena, node) {
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::IndexExpr {
+                expression: _,
+                lbrack: _,
+                index: argument,
+                rbrack: _,
+            },
+        }) if index == 0 => argument,
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::IndexListExpr { expression: _, lbrack: _, indices, rbrack: _ },
+        }) if index < indices.len() => indices[index],
+        _ => node,
+    }
+}
+
+fn reject_active_instantiation_cycle(
+    state: CheckState,
+    node: syntax::NodeId,
+    origin: go_types::TypeId,
+    arguments: Vec[go_types::TypeId],
+) -> bool {
+    for active in state.active_instantiations {
+        if active.origin.value == origin.value {
+            for index in 0..active.parameters.len() {
+                if index < arguments.len() {
+                    let parameter_type = match go_types::get_object(
+                        state.world,
+                        active.parameters[index].object,
+                    ) {
+                        Some(object) => object.type_id,
+                        None => state.world.invalid,
+                    };
+                    let mut constraint_dependency = false;
+                    for parameter in active.parameters {
+                        if type_contains_parameter(
+                            state,
+                            active.parameters[index].constraint,
+                            parameter.object,
+                            Vec::[],
+                        ) {
+                            constraint_dependency = true;
+                        } else {}
+                    }
+                    let relevant = match go_types::get_type(
+                        state.world,
+                        go_types::unalias(state.world, active.origin),
+                    ) {
+                        Some(go_types::TypeData {
+                            id: _,
+                            kind: go_types::TypeKind::Signature {
+                                receiver: _,
+                                receiver_type_params: _,
+                                type_params: _,
+                                params: _,
+                                results: _,
+                                variadic: _,
+                            },
+                        }) => constraint_dependency
+                            || parameter_in_named_instance(
+                                state,
+                                active.origin,
+                                active.parameters[index].object,
+                                false,
+                                Vec::[],
+                            ),
+                        _ => !go_types::interface_methods(
+                            state.world,
+                            active.parameters[index].constraint,
+                        ).is_empty()
+                            && parameter_in_named_instance(
+                                state,
+                                arguments[index],
+                                active.parameters[index].object,
+                                false,
+                                Vec::[],
+                            ),
+                    };
+                    if relevant
+                        && !go_types::identical(state.world, arguments[index], parameter_type)
+                        && type_contains_parameter(
+                            state,
+                            arguments[index],
+                            active.parameters[index].object,
+                            Vec::[],
+                        ) {
+                        let diagnostic_parameter = if index < active.diagnostic_parameters.len() {
+                            active.diagnostic_parameters[index].object
+                        } else {
+                            active.parameters[index].object
+                        };
+                        let diagnostic_node = match go_types::get_object(
+                            state.world,
+                            diagnostic_parameter,
+                        ) {
+                            Some(object) => object.node.unwrap_or(node),
+                            None => node,
+                        };
+                        diagnostic(state, diagnostic_node, "instantiation cycle:", false);
+                        let parameter_name = match go_types::get_object(
+                            state.world,
+                            diagnostic_parameter,
+                        ) {
+                            Some(object) => object.name,
+                            None => "?",
+                        };
+                        secondary_diagnostic(
+                            state,
+                            instantiation_argument_node(state, node, index),
+                            "\t" + parameter_name + " instantiated as "
+                                + diagnostic_type_string(state, arguments[index]),
+                        );
+                        return true
+                    } else {}
+                } else {}
+            }
+        } else {}
+    }
+    false
+}
+
+fn finish_signature_inference(
+    state: CheckState,
+    node: syntax::NodeId,
+    signature: go_types::TypeId,
+    inferred: Vec[go_types::TypeId],
+) -> go_types::TypeId {
+    for partial in state.partial_instances {
+        if partial.type_id.value == signature.value {
+            let arguments = copied_type_ids(partial.explicit_arguments);
+            for argument in inferred {
+                arguments.push(argument)
+            }
+            let result = instantiate_checked(state, node, partial.origin, arguments);
+            for index in 0..state.info.types.len() {
+                if state.info.types[index].node.value == node.value {
+                    state.info.types[index].type_id = result;
+                } else {}
+            }
+            return result
+        } else {}
+    }
+    let result = instantiate_checked(state, node, signature, inferred);
+    for index in 0..state.info.types.len() {
+        if state.info.types[index].node.value == node.value {
+            state.info.types[index].type_id = result;
+        } else {}
+    }
+    result
+}
+
+fn finish_signature_inference_unchecked(
+    state: CheckState,
+    node: syntax::NodeId,
+    signature: go_types::TypeId,
+    inferred: Vec[go_types::TypeId],
+) -> go_types::TypeId {
+    let mut origin = signature;
+    let arguments: Vec[go_types::TypeId] = Vec::[];
+    for partial in state.partial_instances {
+        if partial.type_id.value == signature.value {
+            origin = partial.origin;
+            for argument in partial.explicit_arguments {
+                arguments.push(argument)
+            }
+        } else {}
+    }
+    for argument in inferred {
+        arguments.push(argument)
+    }
+    let result = match go_types::instantiate(state.world, origin, arguments) {
+        Some(result) => result,
+        None => return state.world.invalid,
+    };
+    record_instantiated_type(state, node, arguments, result);
+    for index in 0..state.info.types.len() {
+        if state.info.types[index].node.value == node.value {
+            state.info.types[index].type_id = result;
+        } else {}
+    }
+    result
+}
+
+fn partial_signature(state: CheckState, origin: go_types::TypeId, arguments: Vec[go_types::TypeId]) -> Option[
+    go_types::TypeId,
+] {
+    let parameters = generic_parameters(state, origin);
+    match go_types::get_type(state.world, go_types::unalias(state.world, origin)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver,
+                receiver_type_params,
+                type_params: _,
+                params,
+                results,
+                variadic,
+            },
+        }) => {
+            let remaining: Vec[go_types::TypeParameter] = Vec::[];
+            for index in arguments.len()..parameters.len() {
+                remaining.push(
+                    go_types::TypeParameter {
+                        object: parameters[index].object,
+                        constraint: go_types::substitute(
+                            state.world,
+                            parameters[index].constraint,
+                            parameters,
+                            arguments,
+                        ),
+                        grouped: parameters[index].grouped,
+                    },
+                )
+            }
+            Option::Some(
+                go_types::add_type(
+                    state.world,
+                    go_types::TypeKind::Signature {
+                        receiver,
+                        receiver_type_params,
+                        type_params: remaining,
+                        params: go_types::substitute(state.world, params, parameters, arguments),
+                        results: go_types::substitute(state.world, results, parameters, arguments),
+                        variadic,
+                    },
+                ),
+            )
+        },
+        _ => Option::None,
+    }
+}
+
+fn inference_bindings_from_explicit(
+    state: CheckState,
+    origin: go_types::TypeId,
+    explicit: Vec[go_types::TypeId],
+) -> Vec[InferenceBinding] {
+    let parameters = generic_parameters(state, origin);
+    let bindings: Vec[InferenceBinding] = Vec::[];
+    for index in 0..parameters.len() {
+        bindings.push(
+            InferenceBinding {
+                object: parameters[index].object,
+                type_id: if index < explicit.len() {
+                    Option::Some(explicit[index])
+                } else {
+                    Option::None
+                },
+            },
+        )
+    }
+    infer_from_parameter_constraints(state, parameters, bindings);
+    bindings
+}
+
+fn partial_explicit_constraint_failure(
+    state: CheckState,
+    origin: go_types::TypeId,
+    explicit: Vec[go_types::TypeId],
+) -> int {
+    let parameters = generic_parameters(state, origin);
+    let bindings: Vec[InferenceBinding] = Vec::[];
+    for index in 0..parameters.len() {
+        bindings.push(
+            InferenceBinding {
+                object: parameters[index].object,
+                type_id: if index < explicit.len() {
+                    Option::Some(explicit[index])
+                } else {
+                    Option::None
+                },
+            },
+        )
+    }
+    for index in 0..explicit.len() {
+        if !infer_from_constraint(state, parameters[index].constraint, explicit[index], bindings) {
+            return index
+        } else {}
+    }
+    let success = -1;
+    success
+}
+
+fn complete_inference_arguments(bindings: Vec[InferenceBinding]) -> Option[Vec[go_types::TypeId]] {
+    let result: Vec[go_types::TypeId] = Vec::[];
+    for binding in bindings {
+        match binding.type_id {
+            Some(value) => result.push(value),
+            None => return Option::None,
+        }
+    }
+    Option::Some(result)
+}
+
+fn inference_parameter_name(
+    state: CheckState,
+    parameters: Vec[go_types::TypeParameter],
+    bindings: Vec[InferenceBinding],
+) -> string {
+    for index in 0..bindings.len() {
+        if bindings[index].type_id.is_none() {
+            return match go_types::get_object(state.world, parameters[index].object) {
+                Some(object) => object.name,
+                None => "?",
+            }
+        } else {}
+    }
+    if parameters.is_empty() {
+        "?"
+    } else {
+        match go_types::get_object(state.world, parameters[0].object) {
+            Some(object) => object.name,
+            None => "?",
+        }
+    }
+}
+
+fn inference_signature_pattern(state: CheckState, signature: go_types::TypeId) -> string {
+    match go_types::get_type(state.world, go_types::unalias(state.world, signature)) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver,
+                receiver_type_params,
+                type_params: _,
+                params,
+                results,
+                variadic,
+            },
+        }) => diagnostic_type_string(
+            state,
+            go_types::add_type(
+                state.world,
+                go_types::TypeKind::Signature {
+                    receiver,
+                    receiver_type_params,
+                    type_params: Vec::[],
+                    params,
+                    results,
+                    variadic,
+                },
+            ),
+        ),
+        _ => diagnostic_type_string(state, signature),
+    }
+}
+
+fn target_inference_cannot_infer_message(
+    state: CheckState,
+    node: syntax::NodeId,
+    signature: go_types::TypeId,
+    target: go_types::TypeId,
+    parameter: string,
+) -> string {
+    if state.target_inference_context == 1 {
+        "in call to " + state.target_inference_call + ", type "
+            + diagnostic_type_string(state, signature)
+            + " of "
+            + expression_source_text(state, node)
+            + " does not match "
+            + diagnostic_type_string(state, target)
+            + " (cannot infer "
+            + parameter
+            + ")"
+    } else {
+        "type " + diagnostic_type_string(state, target) + " of "
+            + state.target_inference_description
+            + " does not match "
+            + inference_signature_pattern(state, signature)
+            + " (cannot infer "
+            + parameter
+            + ")"
+    }
+}
+
+fn target_inference_mismatch_message(
+    state: CheckState,
+    signature: go_types::TypeId,
+    inferred: go_types::TypeId,
+    target: go_types::TypeId,
+) -> string {
+    "inferred type " + diagnostic_type_string(state, inferred) + " for "
+        + inference_signature_pattern(state, signature)
+        + " does not match type "
+        + diagnostic_type_string(state, target)
+        + " of "
+        + state.target_inference_description
+}
+
+fn partial_inference_arguments(state: CheckState, bindings: Vec[InferenceBinding]) -> Vec[
+    go_types::TypeId,
+] {
+    let result: Vec[go_types::TypeId] = Vec::[];
+    for binding in bindings {
+        result.push(binding.type_id.unwrap_or(state.world.invalid))
+    }
+    result
+}
+
+fn is_partial_signature(state: CheckState, signature: go_types::TypeId) -> bool {
+    for partial in state.partial_instances {
+        if partial.type_id.value == signature.value {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn infer_signature_from_target(
+    state: CheckState,
+    node: syntax::NodeId,
+    signature: go_types::TypeId,
+    target: go_types::TypeId,
+) -> go_types::TypeId {
+    let parameters = generic_parameters(state, signature);
+    if parameters.is_empty() {
+        return signature
+    } else {};
+    let bindings: Vec[InferenceBinding] = Vec::[];
+    for parameter in parameters {
+        bindings.push(InferenceBinding { object: parameter.object, type_id: Option::None })
+    }
+    let matched = infer_from_types(state, signature, target, bindings);
+    infer_from_parameter_constraints(state, parameters, bindings);
+    let complete = complete_inference_arguments(bindings);
+    if !matched {
+        match complete {
+            Some(arguments) => match go_types::instantiate(state.world, signature, arguments) {
+                Some(inferred) => diagnostic(
+                    state,
+                    node,
+                    target_inference_mismatch_message(state, signature, inferred, target),
+                    false,
+                ),
+                None => diagnostic(
+                    state,
+                    node,
+                    target_inference_cannot_infer_message(
+                        state,
+                        node,
+                        signature,
+                        target,
+                        inference_parameter_name(state, parameters, bindings),
+                    ),
+                    false,
+                ),
+            },
+            None => diagnostic(
+                state,
+                node,
+                target_inference_cannot_infer_message(
+                    state,
+                    node,
+                    signature,
+                    target,
+                    inference_parameter_name(state, parameters, bindings),
+                ),
+                false,
+            ),
+        };
+        return state.world.invalid
+    } else {};
+    let arguments = match complete {
+        Some(value) => value,
+        None => {
+            diagnostic(
+                state,
+                node,
+                target_inference_cannot_infer_message(
+                    state,
+                    node,
+                    signature,
+                    target,
+                    inference_parameter_name(state, parameters, bindings),
+                ),
+                false,
+            );
+            return state.world.invalid
+        },
+    };
+    let partial = is_partial_signature(state, signature);
+    if !go_version_at_least(state, node, 18) {
+        if !partial {
+            diagnostic(state, node, "function instantiation requires go1.18 or later", false)
+        } else {}
+    } else if !go_version_at_least(state, node, 21) {
+        diagnostic_at_position(
+            state,
+            node,
+            if partial {
+                instantiation_lbrack(state, node)
+            } else {
+                node_start(state, node)
+            },
+            if partial {
+                "partially"
+            } else {
+                "implicitly"
+            }
+                + " instantiated function "
+                + if state.target_inference_context == 1 {
+                    "as argument"
+                } else {
+                    "in assignment"
+                }
+                + " requires go1.21 or later",
+            false,
+        )
+    } else {};
+    let instance_start = state.info.instances.len();
+    let inferred = finish_signature_inference(state, node, signature, arguments);
+    if inferred.value != state.world.invalid.value
+        && !go_types::assignable_types(state.world, inferred, target) {
+        diagnostic(
+            state,
+            node,
+            target_inference_mismatch_message(state, signature, inferred, target),
+            false,
+        );
+        while state.info.instances.len() > instance_start {
+            let _ = state.info.instances.pop();
+        }
+        state.world.invalid
+    } else if inferred.value == state.world.invalid.value {
+        while state.info.instances.len() > instance_start {
+            let _ = state.info.instances.pop();
+        }
+        inferred
+    } else {
+        inferred
+    }
+}
+
+fn recover_failed_call_from_target(
+    state: CheckState,
+    node: syntax::NodeId,
+    target: go_types::TypeId,
+) -> bool {
+    let call = match syntax::get_node(state.syntax.arena, node) {
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::CallExpr {
+                function,
+                lparen: _,
+                arguments,
+                ellipsis,
+                rparen: _,
+            },
+        }) => (function, arguments, ellipsis),
+        _ => return false,
+    };
+    let signature = match recorded_type_fact(state, call.0) {
+        Some(fact) => fact.type_id,
+        None => return false,
+    };
+    let parameters = generic_parameters(state, signature);
+    if parameters.is_empty() {
+        return false
+    } else {};
+    let signature_result = match go_types::get_type(state.world, signature) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver: _,
+                receiver_type_params: _,
+                type_params: _,
+                params: _,
+                results,
+                variadic: _,
+            },
+        }) => {
+            let values = tuple_variables(state, results);
+            if values.len() == 1 {
+                values[0].type_id
+            } else {
+                return false
+            }
+        },
+        _ => return false,
+    };
+    let bindings: Vec[InferenceBinding] = Vec::[];
+    for parameter in parameters {
+        bindings.push(InferenceBinding { object: parameter.object, type_id: Option::None })
+    }
+    if !infer_from_types(state, signature_result, target, bindings) {
+        return false
+    } else {};
+    infer_from_parameter_constraints(state, parameters, bindings);
+    let arguments = match complete_inference_arguments(bindings) {
+        Some(arguments) => arguments,
+        None => return false,
+    };
+    let inferred = finish_signature_inference(state, call.0, signature, arguments);
+    let parameter_tuple = match go_types::get_type(state.world, inferred) {
+        Some(go_types::TypeData {
+            id: _,
+            kind: go_types::TypeKind::Signature {
+                receiver: _,
+                receiver_type_params: _,
+                type_params: _,
+                params,
+                results: _,
+                variadic,
+            },
+        }) => (tuple_variables(state, params), variadic),
+        _ => return false,
+    };
+    if parameter_tuple.0.is_empty() {
+        return false
+    } else {};
+    for index in 0..call.1.len() {
+        let parameter_index = if index < parameter_tuple.0.len() {
+            index
+        } else {
+            parameter_tuple.0.len() - 1
+        };
+        let mut parameter_type = parameter_tuple.0[parameter_index].type_id;
+        if parameter_tuple.1 && parameter_index + 1 == parameter_tuple.0.len() && call.2 < 0 {
+            parameter_type = variadic_element(state, parameter_type);
+        } else {};
+        match recorded_type_fact(state, call.1[index]) {
+            Some(fact) => if fact.type_id.value == state.world.invalid.value {
+                update_operand_fact(state, call.1[index], parameter_type, Option::None);
+                let _ = state.omitted_type_fact_nodes.remove(call.1[index].value);
+                for selection_index in 0..state.info.selections.len() {
+                    if state.info.selections[selection_index].node.value == call.1[index].value {
+                        state.info.selections[selection_index].type_id = parameter_type;
+                    } else {}
+                }
+            } else {},
+            None => {},
+        }
+    }
+    true
+}
+
+fn expression_with_target(
+    state: CheckState,
+    scope: go_types::ScopeId,
+    node: syntax::NodeId,
+    target: go_types::TypeId,
+) -> Operand {
+    let diagnostic_start = state.diagnostics.len();
+    state.generic_function_context_depth += 1;
+    let operand = check_expression(state, scope, node);
+    state.generic_function_context_depth -= 1;
+    let untyped_nonconstant_shift = operand.value.is_none()
+        && go_types::is_untyped(state.world, operand.type_id)
+        && !go_types::is_untyped(state.world, target)
+        && match syntax::get_node(state.syntax.arena, node) {
+            Some(syntax::SyntaxNode {
+                id: _,
+                file: _,
+                span: _,
+                path: _,
+                kind: syntax::SyntaxKind::BinaryExpr { left: _, op_pos: _, op, right: _ },
+            }) => op == "<<" || op == ">>",
+            _ => false,
+        };
+    if untyped_nonconstant_shift {
+        if go_types::is_integer(state.world, target) {
+            contextualize_untyped_expression(state, node, target, true);
+            return Operand {
+                type_id: target,
+                value: Option::None,
+                addressable: operand.addressable,
+                assignable: operand.assignable,
+            }
+        } else if basic_kind(state, target) != go_types::BasicKind::Invalid {
+            update_contextual_operand_fact(state, node, operand, target);
+            return invalid_operand(state)
+        } else {}
+    } else {};
+    if target.value != state.world.invalid.value
+        && state.failed_inference_nodes.contains(node.value)
+        && state.diagnostics.len() == diagnostic_start
+        && same_named_origin(state, operand.type_id, target)
+        && recover_failed_call_from_target(state, node, target) {
+        update_operand_fact(state, node, target, Option::None);
+        let _ = state.omitted_type_fact_nodes.remove(node.value);
+        let _ = state.failed_inference_nodes.remove(node.value);
+        return Operand {
+            type_id: target,
+            value: Option::None,
+            addressable: false,
+            assignable: false,
+        }
+    } else {};
+    if target.value == state.world.invalid.value
+        || generic_parameters(state, operand.type_id).is_empty() {
+        return operand
+    } else {};
+    let inferred = infer_signature_from_target(state, node, operand.type_id, target);
+    if inferred.value != state.world.invalid.value {
+        for index in 0..state.info.types.len() {
+            if state.info.types[index].node.value == node.value {
+                state.info.types[index].type_id = inferred;
+            } else {}
+        }
+        let _ = state.omitted_type_fact_nodes.remove(node.value);
+        let _ = state.failed_inference_nodes.remove(node.value);
+    } else if state.target_inference_context != 1 {
+        for index in 0..state.info.types.len() {
+            if state.info.types[index].node.value == node.value {
+                state.info.types[index].type_id = inferred;
+            } else {}
+        }
+    } else {};
+    Operand { type_id: inferred, value: Option::None, addressable: false, assignable: false }
+}
+
+fn incomplete_import_selector(state: CheckState, scope: go_types::ScopeId, node: syntax::NodeId) -> bool {
+    match syntax::get_node(state.syntax.arena, node) {
+        Some(syntax::SyntaxNode {
+            id: _,
+            file: _,
+            span: _,
+            path: _,
+            kind: syntax::SyntaxKind::SelectorExpr { expression, selector: _ },
+        }) => match identifier(state, expression) {
+            Some(name) => match go_types::lookup(state.world, scope, name) {
+                Some(object_id) => match go_types::get_object(state.world, object_id) {
+                    Some(object) => match object.imported_package {
+                        Some(package_id) => !state.world.packages[package_id.value].complete,
+                        None => false,
+                    },
+                    None => false,
+                },
+                None => false,
+            },
+            None => false,
+        },
+        _ => false,
+    }
+}
+
+fn check_explicit_instance(
+    state: CheckState,
+    scope: go_types::ScopeId,
+    node: syntax::NodeId,
+    expression: syntax::NodeId,
+    argument_nodes: Vec[syntax::NodeId],
+) -> Option[Operand] {
+    state.generic_function_context_depth += 1;
+    let origin = check_expression(state, scope, expression);
+    state.generic_function_context_depth -= 1;
+    if origin.type_id.value == state.world.invalid.value {
+        if incomplete_import_selector(state, scope, expression) {
+            for argument in argument_nodes {
+                let _ = resolve_type(state, scope, argument);
+            }
+        } else {
+            for argument in argument_nodes {
+                match conversion_target(state, scope, argument) {
+                    Some(_) => {},
+                    None => {
+                        let _ = check_expression(state, scope, argument);
+                    },
+                }
+            }
+        };
+        return Option::Some(invalid_operand(state))
+    } else {};
+    if generic_parameters(state, origin.type_id).is_empty() {
+        return Option::None
+    } else if argument_nodes.is_empty() {
+        return Option::Some(invalid_operand(state))
+    } else {};
+    if !go_version_at_least(state, node, 18) {
+        diagnostic_at_position(
+            state,
+            node,
+            instantiation_lbrack(state, node),
+            "function instantiation requires go1.18 or later",
+            false,
+        )
+    } else {};
+    let arguments: Vec[go_types::TypeId] = Vec::[];
+    let mut invalid_argument = false;
+    let mut recover_invalid_function_instance = false;
+    for argument in argument_nodes {
+        let mut resolved = resolve_type(state, scope, argument);
+        if resolved.value == state.world.invalid.value {
+            match recorded_type_fact(state, argument) {
+                Some(fact) => if go_types::is_constraint_interface(state.world, fact.type_id) {
+                    resolved = fact.type_id;
+                } else {
+                    invalid_argument = true;
+                },
+                None => {
+                    invalid_argument = true;
+                },
+            };
+            match syntax::get_node(state.syntax.arena, argument) {
+                Some(syntax::SyntaxNode {
+                    id: _,
+                    file: _,
+                    span: _,
+                    path: _,
+                    kind: syntax::SyntaxKind::Ident { name_pos: _, name },
+                }) => match go_types::lookup(state.world, scope, name) {
+                    Some(object_id) => match go_types::get_object(state.world, object_id) {
+                        Some(object) => if object.kind == go_types::ObjectKind::TypeName
+                            && !generic_parameters(state, object.type_id).is_empty() {
+                            let _ = state.omitted_type_fact_nodes.remove(argument.value);
+                            record_invalid_type_expression(state, argument)
+                        } else {},
+                        None => {},
+                    },
+                    None => {},
+                },
+                Some(syntax::SyntaxNode {
+                    id: _,
+                    file: _,
+                    span: _,
+                    path: _,
+                    kind: syntax::SyntaxKind::TypeAssertExpr {
+                        expression: _,
+                        lparen: _,
+                        type_node: _,
+                        rparen: _,
+                    },
+                }) => {
+                    recover_invalid_function_instance = true;
+                    record_invalid_type_expression(state, argument)
+                },
+                _ => {},
+            }
+        } else {};
+        arguments.push(resolved)
+    }
+    if invalid_argument {
+        if recover_invalid_function_instance {
+            state.failed_inference_nodes[node.value] = true;
+            match go_types::get_type(state.world, go_types::unalias(state.world, origin.type_id)) {
+                Some(go_types::TypeData {
+                    id: _,
+                    kind: go_types::TypeKind::Signature {
+                        receiver: _,
+                        receiver_type_params: _,
+                        type_params: _,
+                        params: _,
+                        results: _,
+                        variadic: _,
+                    },
+                }) => record_operand(
+                    state,
+                    node,
+                    Operand {
+                        type_id: origin.type_id,
+                        value: Option::None,
+                        addressable: false,
+                        assignable: false,
+                    },
+                ),
+                _ => {},
+            }
+        } else {};
+        return Option::Some(invalid_operand(state))
+    } else {}
+    let parameter_count = generic_parameters(state, origin.type_id).len();
+    if arguments.len() > parameter_count {
+        diagnostic(
+            state,
+            argument_nodes[arguments.len() - 1],
+            "got " + arguments.len().to_string() + " type arguments but want "
+                + parameter_count.to_string(),
+            false,
+        );
+        state.failed_inference_nodes[node.value] = true;
+        return Option::Some(
+            Operand {
+                type_id: origin.type_id,
+                value: Option::None,
+                addressable: false,
+                assignable: false,
+            },
+        )
+    } else {};
+    let partial_failure = if arguments.len() < parameter_count {
+        partial_explicit_constraint_failure(state, origin.type_id, arguments)
+    } else {
+        -1
+    };
+    if partial_failure >= 0 {
+        let parameters = generic_parameters(state, origin.type_id);
+        let parameter = parameters[partial_failure];
+        let name = match go_types::get_object(state.world, parameter.object) {
+            Some(object) => object.name,
+            None => "?",
+        };
+        diagnostic(
+            state,
+            node,
+            name + " (type " + diagnostic_type_string(state, arguments[partial_failure])
+                + ") does not satisfy "
+                + diagnostic_type_string(state, parameter.constraint),
+            false,
+        );
+        return Option::Some(invalid_operand(state))
+    } else {};
+    let explicit_bindings = inference_bindings_from_explicit(state, origin.type_id, arguments);
+    let inferred_explicit = complete_inference_arguments(explicit_bindings);
+    let result = if arguments.len() == parameter_count {
+        instantiate_checked(state, node, origin.type_id, arguments)
+    } else {
+        match inferred_explicit {
+            Some(inferred) => instantiate_checked(state, node, origin.type_id, inferred),
+            None => match partial_signature(state, origin.type_id, arguments) {
+                Some(result) => {
+                    state.partial_instances.push(
+                        PartialInstance {
+                            type_id: result,
+                            origin: origin.type_id,
+                            explicit_arguments: copied_type_ids(arguments),
+                            inferred_arguments: partial_inference_arguments(
+                                state,
+                                explicit_bindings,
+                            ),
+                        },
+                    );
+                    result
+                },
+                None => {
+                    diagnostic(state, node, "partial type arguments require a function", false);
+                    state.world.invalid
+                },
+            },
+        }
+    };
+    Option::Some(
+        Operand { type_id: result, value: Option::None, addressable: false, assignable: false },
+    )
+}

@@ -16,6 +16,69 @@ test: make-tools
     cd gomlc && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc GOML_TEST_COMPILER_WORLD=../stage2/lib/compiler/compiler-world-v2.gaf ../stage2/bin/goml test --target-dir ../_artifact/gomlc-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
     cd goml && GOML_TEST_GOML=../stage2/bin/goml GOML_TEST_GOMLC=../stage2/bin/gomlc ../stage2/bin/goml test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
 
+gofront-oracle:
+    mkdir -p _artifact/gomlgo
+    cd gomlgo/oracle && "${GOFRONT_GO:-/usr/lib/go-1.26/bin/go}" test ./...
+    cd gomlgo/oracle && "${GOFRONT_GO:-/usr/lib/go-1.26/bin/go}" build -o ../../_artifact/gomlgo/oracle .
+
+gofront-test: make gofront-oracle
+    bash tools/stdlib/install.sh _artifact/gomlgo-test/test
+    cd gomlgo && GOMLGO_ORACLE=../_artifact/gomlgo/oracle ../stage2/bin/goml test --target-dir ../_artifact/gomlgo-test --compiler ../stage2/bin/gomlc --jobs 16 --timeout 10m
+
+gofront-type-test: gofront-test
+
+gofront-build: make gofront-oracle
+    cd gomlgo && ../stage2/bin/goml build --target-dir ../_artifact/gomlgo-build --compiler ../stage2/bin/gomlc
+
+gofront-diff: gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_scan_diff/gofront_scan_diff gomlgo/testdata
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff ast-comments gomlgo/testdata/valid
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff parse-acceptance gomlgo/testdata/invalid
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff parse-acceptance gomlgo/testdata/regressions
+
+gofront-type-diff: gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_type_diff/gofront_type_diff gomlgo/testdata/typecheck
+
+gofront-type-diff-official: gofront-build
+    systemd-run --user --scope -p MemoryHigh=8G -p MemoryMax=10G -p MemorySwapMax=2G -p TasksMax=256 -p CPUQuota=300% sh -c 'find /usr/lib/go-1.26/src/internal/types/testdata/check /usr/lib/go-1.26/src/internal/types/testdata/spec /usr/lib/go-1.26/src/internal/types/testdata/examples /usr/lib/go-1.26/src/internal/types/testdata/fixedbugs /usr/lib/go-1.26/src/go/types/testdata/local -type f -name "*.go" -print0 | sort -z | xargs -0 -n1 env GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_type_diff/gofront_type_diff info'
+
+gofront-type-diagnostics-official: gofront-build
+    systemd-run --user --scope -p MemoryHigh=8G -p MemoryMax=10G -p MemorySwapMax=2G -p TasksMax=256 -p CPUQuota=300% sh -c 'find /usr/lib/go-1.26/src/internal/types/testdata/check /usr/lib/go-1.26/src/internal/types/testdata/spec /usr/lib/go-1.26/src/internal/types/testdata/examples /usr/lib/go-1.26/src/internal/types/testdata/fixedbugs /usr/lib/go-1.26/src/go/types/testdata/local -type f -name "*.go" -print0 | sort -z | xargs -0 -n1 env GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_type_diff/gofront_type_diff diagnostics'
+
+gofront-type-diff-goroot limit="-1" scope="std" mode="acceptance" goos="linux" goarch="amd64" cgo="0" tests="none": gofront-build
+    systemd-run --user --scope -p MemoryHigh=6G -p MemoryMax=8G -p MemorySwapMax=1G -p TasksMax=512 -p CPUQuota=300% env GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_type_goroot_diff/gofront_type_goroot_diff "{{mode}}" "{{scope}}" "{{limit}}" /usr/lib/go-1.26/src "" "{{goos}}" "{{goarch}}" "{{cgo}}" "{{tests}}"
+
+gofront-type-diff-goroot-matrix limit="16": gofront-build
+    systemd-run --user --scope -p MemoryHigh=6G -p MemoryMax=8G -p MemorySwapMax=1G -p TasksMax=512 -p CPUQuota=300% sh -c 'for target in "linux amd64" "linux arm64" "windows amd64"; do set -- $target; GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_type_goroot_diff/gofront_type_goroot_diff acceptance std "{{limit}}" /usr/lib/go-1.26/src "" "$1" "$2" 0 none || exit $?; done'
+
+gofront-type-diff-goroot-tests limit="16" tests="external": gofront-build
+    systemd-run --user --scope -p MemoryHigh=6G -p MemoryMax=8G -p MemorySwapMax=1G -p TasksMax=512 -p CPUQuota=300% env GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_type_goroot_diff/gofront_type_goroot_diff acceptance std "{{limit}}" /usr/lib/go-1.26/src "" linux amd64 0 "{{tests}}"
+
+gofront-type-mutate-diff limit="25": gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_type_mutate_diff/gofront_type_mutate_diff gomlgo/testdata/typecheck/valid "{{limit}}" "$(pwd)/_artifact/gomlgo-type-diff/failures"
+
+gofront-diff-goroot: gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_scan_diff/gofront_scan_diff /usr/lib/go-1.26/src
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff ast-comments /usr/lib/go-1.26/src
+
+gofront-parse-diff: gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff parse-acceptance gomlgo/testdata/valid
+
+gofront-parse-diff-goroot: gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff parse-acceptance /usr/lib/go-1.26/src
+
+gofront-ast-shape-goroot: gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff ast-shape /usr/lib/go-1.26/src
+
+gofront-ast-position-goroot: gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff ast-position /usr/lib/go-1.26/src
+
+gofront-ast-comments-goroot: gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_parse_diff/gofront_parse_diff ast-comments /usr/lib/go-1.26/src
+
+gofront-mutate-diff limit="25": gofront-build
+    GOMLGO_ORACLE="$(pwd)/_artifact/gomlgo/oracle" _artifact/gomlgo-build/bin/cmd/gofront_mutate_diff/gofront_mutate_diff /usr/lib/go-1.26/src "{{limit}}" "$(pwd)/_artifact/gomlgo-diff/failures"
+
 all: test
 
 cloc:

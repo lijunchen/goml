@@ -1,0 +1,162 @@
+package syntax;
+
+use gomlgo::ast;
+use gomlgo::parser;
+use std::testing;
+
+fn parse_root(source: string) -> ast::Node {
+    match parser::parse_file(source).root {
+        Some(value) => value,
+        None => {
+            testing::fail("missing parser root");
+            loop {}
+        },
+    }
+}
+
+fn all_ast_kinds() -> Vec[ast::Kind] {
+    Vec::[
+        ast::Kind::Comment,
+        ast::Kind::CommentGroup,
+        ast::Kind::Field,
+        ast::Kind::FieldList,
+        ast::Kind::BadExpr,
+        ast::Kind::Ident,
+        ast::Kind::Ellipsis,
+        ast::Kind::BasicLit,
+        ast::Kind::FuncLit,
+        ast::Kind::CompositeLit,
+        ast::Kind::ParenExpr,
+        ast::Kind::SelectorExpr,
+        ast::Kind::IndexExpr,
+        ast::Kind::IndexListExpr,
+        ast::Kind::SliceExpr,
+        ast::Kind::TypeAssertExpr,
+        ast::Kind::CallExpr,
+        ast::Kind::StarExpr,
+        ast::Kind::UnaryExpr,
+        ast::Kind::BinaryExpr,
+        ast::Kind::KeyValueExpr,
+        ast::Kind::ArrayType,
+        ast::Kind::StructType,
+        ast::Kind::FuncType,
+        ast::Kind::InterfaceType,
+        ast::Kind::MapType,
+        ast::Kind::ChanType,
+        ast::Kind::BadStmt,
+        ast::Kind::DeclStmt,
+        ast::Kind::EmptyStmt,
+        ast::Kind::LabeledStmt,
+        ast::Kind::ExprStmt,
+        ast::Kind::SendStmt,
+        ast::Kind::IncDecStmt,
+        ast::Kind::AssignStmt,
+        ast::Kind::GoStmt,
+        ast::Kind::DeferStmt,
+        ast::Kind::ReturnStmt,
+        ast::Kind::BranchStmt,
+        ast::Kind::BlockStmt,
+        ast::Kind::IfStmt,
+        ast::Kind::CaseClause,
+        ast::Kind::SwitchStmt,
+        ast::Kind::TypeSwitchStmt,
+        ast::Kind::CommClause,
+        ast::Kind::SelectStmt,
+        ast::Kind::ForStmt,
+        ast::Kind::RangeStmt,
+        ast::Kind::ImportSpec,
+        ast::Kind::ValueSpec,
+        ast::Kind::TypeSpec,
+        ast::Kind::BadDecl,
+        ast::Kind::GenDecl,
+        ast::Kind::FuncDecl,
+        ast::Kind::File,
+    ]
+}
+
+fn contains(values: Vec[string], expected: string) -> bool {
+    for value in values {
+        if value == expected {
+            return true
+        } else {}
+    }
+    false
+}
+
+#[test]
+fn lowers_every_parser_ast_kind_without_terminating() -> unit {
+    let kinds = all_ast_kinds();
+    testing::assert_eq(kinds.len(), 55);
+    for kind in kinds {
+        let result = lower_file(ast::kind_name(kind) + ".go", ast::node(kind, 0, 1, Vec::[]));
+        testing::assert_eq(result.files.len(), 1);
+        let root = testing::expect_some(
+            get_node(result.arena, result.files[0].root),
+            "missing root",
+        );
+        testing::assert_eq(syntax_kind_name(root.kind), ast::kind_name(kind))
+    }
+}
+
+#[test]
+fn lowers_valid_file_to_typed_nodes_and_canonical_paths() -> unit {
+    let result = lower_file(
+        "a.go",
+        parse_root(
+            "package p\nimport \"fmt\"\ntype Pair struct { Left int; Right int }\nvar X = Pair{Left: 1, Right: 2}\nfunc F(v int) int { if v > 0 { return v }; return X.Left }\n",
+        ),
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    let root = testing::expect_some(get_node(result.arena, result.files[0].root), "missing root");
+    match root.kind {
+        SyntaxKind::File { package_pos: _, name: _, declarations, imports, go_version: _ } => {
+            testing::assert_eq(declarations.len(), 4);
+            testing::assert_eq(imports.len(), 1);
+            testing::assert_eq(
+                testing::expect_some(node_key(result, imports[0]), "missing import key"),
+                "a.go:$.fields.decls[0].fields.specs[0]",
+            )
+        },
+        _ => testing::fail("root is not a file"),
+    };
+    let kinds: Vec[string] = Vec::[];
+    for node in result.arena.nodes {
+        kinds.push(syntax_kind_name(node.kind))
+    }
+    testing::assert(contains(kinds, "StructType"));
+    testing::assert(contains(kinds, "CompositeLit"));
+    testing::assert(contains(kinds, "IfStmt"));
+    testing::assert(contains(kinds, "SelectorExpr"))
+}
+
+#[test]
+fn node_ids_and_keys_are_unique_across_files() -> unit {
+    let result = lower_package(
+        Vec::[
+            SourceFile { name: "a.go", root: parse_root("package p\nvar X int\n") },
+            SourceFile { name: "b.go", root: parse_root("package p\nvar Y int\n") },
+        ],
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    let keys: Vec[string] = Vec::[];
+    for index in 0..result.arena.nodes.len() {
+        let node = result.arena.nodes[index];
+        testing::assert_eq(node.id.value, index);
+        let key = testing::expect_some(node_key(result, node.id), "missing node key");
+        testing::assert(!contains(keys, key));
+        keys.push(key)
+    }
+    testing::assert(result.files[0].root.value != result.files[1].root.value)
+}
+
+#[test]
+fn malformed_generic_ast_produces_recoverable_diagnostics() -> unit {
+    let result = lower_file("bad.go", ast::node(ast::Kind::Ident, 4, 7, Vec::[]));
+    testing::assert_eq(result.files.len(), 1);
+    testing::assert(result.diagnostics.len() >= 2);
+    testing::assert_eq(result.diagnostics[0].file, "bad.go");
+    testing::assert_eq(result.diagnostics[0].start, 4);
+    testing::assert_eq(result.diagnostics[0].end, 7);
+    let root = testing::expect_some(get_node(result.arena, result.files[0].root), "missing root");
+    testing::assert_eq(syntax_kind_name(root.kind), "Ident")
+}

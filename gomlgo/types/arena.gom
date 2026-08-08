@@ -1,0 +1,222 @@
+package types;
+
+use gomlgo::syntax;
+use std::unicode;
+
+pub fn empty_world() -> World {
+    let invalid = type_id(0);
+    World {
+        types: Vec::[TypeData { id: invalid, kind: TypeKind::Invalid }],
+        objects: Vec::[],
+        scopes: Vec::[],
+        packages: Vec::[],
+        basics: Vec::[],
+        universe: scope_id(-1),
+        unsafe_package: package_id(-1),
+        invalid,
+        invalid_type_sets: Vec::[],
+    }
+}
+
+pub fn add_type(world: World, kind: TypeKind) -> TypeId {
+    let id = type_id(world.types.len());
+    world.types.push(TypeData { id, kind });
+    id
+}
+
+pub fn set_type(world: World, id: TypeId, kind: TypeKind) -> bool {
+    if id.value >= 0 && id.value < world.types.len() {
+        world.types[id.value] = TypeData { id, kind };
+        true
+    } else {
+        false
+    }
+}
+
+pub fn get_type(world: World, id: TypeId) -> Option[TypeData] {
+    if id.value >= 0 && id.value < world.types.len() {
+        Option::Some(world.types[id.value])
+    } else {
+        Option::None
+    }
+}
+
+pub fn add_scope(
+    world: World,
+    kind: ScopeKind,
+    parent: Option[ScopeId],
+    file: Option[syntax::FileId],
+    start: int,
+    end: int,
+) -> ScopeId {
+    let id = scope_id(world.scopes.len());
+    world.scopes.push(
+        Scope { id, kind, parent, file, start, end, entries: Vec::[], children: Vec::[] },
+    );
+    match parent {
+        Some(parent_id) => if parent_id.value >= 0 && parent_id.value < world.scopes.len() {
+            world.scopes[parent_id.value].children.push(id)
+        } else {},
+        None => {},
+    };
+    id
+}
+
+pub fn add_package(world: World, path: string, name: string, parent: ScopeId, complete: bool) -> PackageId {
+    let scope = add_scope(world, ScopeKind::Package, Option::Some(parent), Option::None, -1, -1);
+    let id = package_id(world.packages.len());
+    world.packages.push(Package { id, path, name, scope, complete });
+    id
+}
+
+pub fn get_package(world: World, id: PackageId) -> Option[Package] {
+    if id.value >= 0 && id.value < world.packages.len() {
+        Option::Some(world.packages[id.value])
+    } else {
+        Option::None
+    }
+}
+
+pub fn is_exported(name: string) -> bool {
+    for character in name.chars() {
+        return unicode::is_uppercase(character)
+    }
+    false
+}
+
+pub fn add_object(
+    world: World,
+    kind: ObjectKind,
+    name: string,
+    owner: Option[PackageId],
+    file: Option[syntax::FileId],
+    node: Option[syntax::NodeId],
+    position: int,
+    object_type: TypeId,
+) -> ObjectId {
+    let id = object_id(world.objects.len());
+    world.objects.push(
+        Object {
+            id,
+            kind,
+            name,
+            owner,
+            file,
+            node,
+            position,
+            type_id: object_type,
+            exported: is_exported(name),
+            constant_kind: "",
+            constant: Option::None,
+            imported_package: Option::None,
+        },
+    );
+    id
+}
+
+pub fn get_object(world: World, id: ObjectId) -> Option[Object] {
+    if id.value >= 0 && id.value < world.objects.len() {
+        Option::Some(world.objects[id.value])
+    } else {
+        Option::None
+    }
+}
+
+pub fn set_object_type(world: World, id: ObjectId, object_type: TypeId) -> bool {
+    if id.value >= 0 && id.value < world.objects.len() {
+        world.objects[id.value].type_id = object_type;
+        true
+    } else {
+        false
+    }
+}
+
+pub fn set_object_constant(world: World, id: ObjectId, kind: string, value: string) -> bool {
+    if id.value >= 0 && id.value < world.objects.len() {
+        world.objects[id.value].constant_kind = kind;
+        world.objects[id.value].constant = Option::Some(value);
+        true
+    } else {
+        false
+    }
+}
+
+pub fn set_object_imported_package(world: World, id: ObjectId, imported: PackageId) -> bool {
+    if id.value >= 0 && id.value < world.objects.len() {
+        world.objects[id.value].imported_package = Option::Some(imported);
+        true
+    } else {
+        false
+    }
+}
+
+pub fn insert(world: World, scope: ScopeId, name: string, object: ObjectId) -> Option[ObjectId] {
+    if scope.value < 0 || scope.value >= world.scopes.len() {
+        return Option::Some(object)
+    } else {};
+    for entry in world.scopes[scope.value].entries {
+        if entry.name == name {
+            return Option::Some(entry.object)
+        } else {}
+    }
+    world.scopes[scope.value].entries.push(ScopeEntry { name, object });
+    Option::None
+}
+
+pub fn lookup(world: World, scope: ScopeId, name: string) -> Option[ObjectId] {
+    let mut current = Option::Some(scope);
+    while let Some(scope_id_value) = current {
+        if scope_id_value.value < 0 || scope_id_value.value >= world.scopes.len() {
+            return Option::None
+        } else {};
+        for entry in world.scopes[scope_id_value.value].entries {
+            if entry.name == name {
+                return Option::Some(entry.object)
+            } else {}
+        }
+        current = world.scopes[scope_id_value.value].parent;
+    }
+    Option::None
+}
+
+pub fn lookup_local(world: World, scope: ScopeId, name: string) -> Option[ObjectId] {
+    if scope.value < 0 || scope.value >= world.scopes.len() {
+        return Option::None
+    } else {};
+    for entry in world.scopes[scope.value].entries {
+        if entry.name == name {
+            return Option::Some(entry.object)
+        } else {}
+    }
+    Option::None
+}
+
+pub fn lookup_at(world: World, scope: ScopeId, name: string, position: int) -> Option[ObjectId] {
+    let mut current = Option::Some(scope);
+    while let Some(scope_id_value) = current {
+        if scope_id_value.value < 0 || scope_id_value.value >= world.scopes.len() {
+            return Option::None
+        } else {};
+        for entry in world.scopes[scope_id_value.value].entries {
+            if entry.name == name {
+                match get_object(world, entry.object) {
+                    Some(object) => if object.position < 0 || object.position <= position {
+                        return Option::Some(entry.object)
+                    } else {},
+                    None => {},
+                }
+            } else {}
+        }
+        current = world.scopes[scope_id_value.value].parent;
+    }
+    Option::None
+}
+
+pub fn basic_type(world: World, name: string) -> Option[TypeId] {
+    for entry in world.basics {
+        if entry.name == name {
+            return Option::Some(entry.type_id)
+        } else {}
+    }
+    Option::None
+}

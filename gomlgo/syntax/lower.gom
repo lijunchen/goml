@@ -1,0 +1,483 @@
+package syntax;
+
+use gomlgo::ast;
+
+struct LowerContext {
+    file_id: FileId,
+    file_name: string,
+    nodes: Vec[SyntaxNode],
+    imports: Vec[NodeId],
+    diagnostics: Vec[LowerDiagnostic],
+}
+
+fn report(context: LowerContext, value: ast::Node, message: string) -> unit {
+    context.diagnostics.push(
+        LowerDiagnostic {
+            file: context.file_name,
+            start: value.span.start,
+            end: value.span.end,
+            message,
+        },
+    )
+}
+
+fn int_field(context: LowerContext, value: ast::Node, name: string) -> int {
+    match ast::get_field(value, name) {
+        Some(ast::Value::Int(result)) => result,
+        Some(_) => {
+            report(context, value, "expected integer field " + name);
+            -1
+        },
+        None => {
+            report(context, value, "missing integer field " + name);
+            -1
+        },
+    }
+}
+
+fn string_field(context: LowerContext, value: ast::Node, name: string) -> string {
+    match ast::get_field(value, name) {
+        Some(ast::Value::String(result)) => result,
+        Some(_) => {
+            report(context, value, "expected string field " + name);
+            ""
+        },
+        None => {
+            report(context, value, "missing string field " + name);
+            ""
+        },
+    }
+}
+
+fn bool_field(context: LowerContext, value: ast::Node, name: string) -> bool {
+    match ast::get_field(value, name) {
+        Some(ast::Value::Bool(result)) => result,
+        Some(_) => {
+            report(context, value, "expected boolean field " + name);
+            false
+        },
+        None => {
+            report(context, value, "missing boolean field " + name);
+            false
+        },
+    }
+}
+
+fn allocate(context: LowerContext, value: ast::Node, path: string, kind: SyntaxKind) -> NodeId {
+    let id = node_id(context.nodes.len());
+    context.nodes.push(SyntaxNode { id, file: context.file_id, span: value.span, path, kind });
+    id
+}
+
+fn invalid_child(context: LowerContext, value: ast::Node, path: string, message: string) -> NodeId {
+    report(context, value, message);
+    allocate(context, value, path, SyntaxKind::Invalid { message })
+}
+
+fn optional_child(context: LowerContext, value: ast::Node, name: string, path: string) -> Option[
+    NodeId,
+] {
+    match ast::get_field(value, name) {
+        Some(ast::Value::Node(child)) => Option::Some(lower_node(context, child, path)),
+        Some(ast::Value::Null) => Option::None,
+        Some(_) => {
+            report(context, value, "expected optional node field " + name);
+            Option::None
+        },
+        None => {
+            report(context, value, "missing optional node field " + name);
+            Option::None
+        },
+    }
+}
+
+fn required_child(context: LowerContext, value: ast::Node, name: string, path: string) -> NodeId {
+    match ast::get_field(value, name) {
+        Some(ast::Value::Node(child)) => lower_node(context, child, path),
+        Some(_) => invalid_child(context, value, path, "expected node field " + name),
+        None => invalid_child(context, value, path, "missing node field " + name),
+    }
+}
+
+fn child_list(context: LowerContext, value: ast::Node, name: string, path: string) -> Vec[NodeId] {
+    match ast::get_field(value, name) {
+        Some(ast::Value::Nodes(children)) => {
+            let result: Vec[NodeId] = Vec::with_capacity(children.len());
+            for index in 0..children.len() {
+                result.push(
+                    lower_node(context, children[index], path + "[" + index.to_string() + "]"),
+                )
+            }
+            result
+        },
+        Some(ast::Value::Null) => Vec::[],
+        Some(_) => {
+            report(context, value, "expected node list field " + name);
+            Vec::[]
+        },
+        None => {
+            report(context, value, "missing node list field " + name);
+            Vec::[]
+        },
+    }
+}
+
+fn field_path(path: string, name: string) -> string {
+    path + ".fields." + name
+}
+
+fn lower_kind(context: LowerContext, value: ast::Node, path: string) -> SyntaxKind {
+    match value.kind {
+        ast::Kind::Comment => SyntaxKind::Comment { text: string_field(context, value, "text") },
+        ast::Kind::CommentGroup => SyntaxKind::CommentGroup {
+            list: child_list(context, value, "list", field_path(path, "list")),
+        },
+        ast::Kind::Field => SyntaxKind::Field {
+            names: child_list(context, value, "names", field_path(path, "names")),
+            type_node: required_child(context, value, "type", field_path(path, "type")),
+            tag: optional_child(context, value, "tag", field_path(path, "tag")),
+        },
+        ast::Kind::FieldList => SyntaxKind::FieldList {
+            opening: int_field(context, value, "opening"),
+            list: child_list(context, value, "list", field_path(path, "list")),
+            closing: int_field(context, value, "closing"),
+        },
+        ast::Kind::BadExpr => SyntaxKind::BadExpr {
+            from: int_field(context, value, "from"),
+            to: int_field(context, value, "to"),
+        },
+        ast::Kind::Ident => SyntaxKind::Ident {
+            name_pos: int_field(context, value, "name_pos"),
+            name: string_field(context, value, "name"),
+        },
+        ast::Kind::Ellipsis => SyntaxKind::Ellipsis {
+            ellipsis: int_field(context, value, "ellipsis"),
+            element: optional_child(context, value, "elt", field_path(path, "elt")),
+        },
+        ast::Kind::BasicLit => SyntaxKind::BasicLit {
+            value_pos: int_field(context, value, "value_pos"),
+            value_end: int_field(context, value, "value_end"),
+            token: string_field(context, value, "token"),
+            value: string_field(context, value, "value"),
+        },
+        ast::Kind::FuncLit => SyntaxKind::FuncLit {
+            type_node: required_child(context, value, "type", field_path(path, "type")),
+            body: required_child(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::CompositeLit => SyntaxKind::CompositeLit {
+            type_node: optional_child(context, value, "type", field_path(path, "type")),
+            lbrace: int_field(context, value, "lbrace"),
+            elements: child_list(context, value, "elts", field_path(path, "elts")),
+            rbrace: int_field(context, value, "rbrace"),
+            incomplete: bool_field(context, value, "incomplete"),
+        },
+        ast::Kind::ParenExpr => SyntaxKind::ParenExpr {
+            lparen: int_field(context, value, "lparen"),
+            expression: required_child(context, value, "x", field_path(path, "x")),
+            rparen: int_field(context, value, "rparen"),
+        },
+        ast::Kind::SelectorExpr => SyntaxKind::SelectorExpr {
+            expression: required_child(context, value, "x", field_path(path, "x")),
+            selector: required_child(context, value, "sel", field_path(path, "sel")),
+        },
+        ast::Kind::IndexExpr => SyntaxKind::IndexExpr {
+            expression: required_child(context, value, "x", field_path(path, "x")),
+            lbrack: int_field(context, value, "lbrack"),
+            index: required_child(context, value, "index", field_path(path, "index")),
+            rbrack: int_field(context, value, "rbrack"),
+        },
+        ast::Kind::IndexListExpr => SyntaxKind::IndexListExpr {
+            expression: required_child(context, value, "x", field_path(path, "x")),
+            lbrack: int_field(context, value, "lbrack"),
+            indices: child_list(context, value, "indices", field_path(path, "indices")),
+            rbrack: int_field(context, value, "rbrack"),
+        },
+        ast::Kind::SliceExpr => SyntaxKind::SliceExpr {
+            expression: required_child(context, value, "x", field_path(path, "x")),
+            lbrack: int_field(context, value, "lbrack"),
+            low: optional_child(context, value, "low", field_path(path, "low")),
+            high: optional_child(context, value, "high", field_path(path, "high")),
+            max: optional_child(context, value, "max", field_path(path, "max")),
+            slice3: bool_field(context, value, "slice3"),
+            rbrack: int_field(context, value, "rbrack"),
+        },
+        ast::Kind::TypeAssertExpr => SyntaxKind::TypeAssertExpr {
+            expression: required_child(context, value, "x", field_path(path, "x")),
+            lparen: int_field(context, value, "lparen"),
+            type_node: optional_child(context, value, "type", field_path(path, "type")),
+            rparen: int_field(context, value, "rparen"),
+        },
+        ast::Kind::CallExpr => SyntaxKind::CallExpr {
+            function: required_child(context, value, "fun", field_path(path, "fun")),
+            lparen: int_field(context, value, "lparen"),
+            arguments: child_list(context, value, "args", field_path(path, "args")),
+            ellipsis: int_field(context, value, "ellipsis"),
+            rparen: int_field(context, value, "rparen"),
+        },
+        ast::Kind::StarExpr => SyntaxKind::StarExpr {
+            star: int_field(context, value, "star"),
+            expression: required_child(context, value, "x", field_path(path, "x")),
+        },
+        ast::Kind::UnaryExpr => SyntaxKind::UnaryExpr {
+            op_pos: int_field(context, value, "op_pos"),
+            op: string_field(context, value, "op"),
+            expression: required_child(context, value, "x", field_path(path, "x")),
+        },
+        ast::Kind::BinaryExpr => SyntaxKind::BinaryExpr {
+            left: required_child(context, value, "x", field_path(path, "x")),
+            op_pos: int_field(context, value, "op_pos"),
+            op: string_field(context, value, "op"),
+            right: required_child(context, value, "y", field_path(path, "y")),
+        },
+        ast::Kind::KeyValueExpr => SyntaxKind::KeyValueExpr {
+            key: required_child(context, value, "key", field_path(path, "key")),
+            colon: int_field(context, value, "colon"),
+            value: required_child(context, value, "value", field_path(path, "value")),
+        },
+        ast::Kind::ArrayType => SyntaxKind::ArrayType {
+            lbrack: int_field(context, value, "lbrack"),
+            length: optional_child(context, value, "len", field_path(path, "len")),
+            element: required_child(context, value, "elt", field_path(path, "elt")),
+        },
+        ast::Kind::StructType => SyntaxKind::StructType {
+            struct_pos: int_field(context, value, "struct"),
+            fields: required_child(context, value, "fields", field_path(path, "fields")),
+            incomplete: bool_field(context, value, "incomplete"),
+        },
+        ast::Kind::FuncType => SyntaxKind::FuncType {
+            func_pos: int_field(context, value, "func"),
+            type_params: optional_child(
+                context,
+                value,
+                "type_params",
+                field_path(path, "type_params"),
+            ),
+            params: required_child(context, value, "params", field_path(path, "params")),
+            results: optional_child(context, value, "results", field_path(path, "results")),
+        },
+        ast::Kind::InterfaceType => SyntaxKind::InterfaceType {
+            interface_pos: int_field(context, value, "interface"),
+            methods: required_child(context, value, "methods", field_path(path, "methods")),
+            incomplete: bool_field(context, value, "incomplete"),
+        },
+        ast::Kind::MapType => SyntaxKind::MapType {
+            map_pos: int_field(context, value, "map"),
+            key: required_child(context, value, "key", field_path(path, "key")),
+            value: required_child(context, value, "value", field_path(path, "value")),
+        },
+        ast::Kind::ChanType => SyntaxKind::ChanType {
+            begin: int_field(context, value, "begin"),
+            arrow: int_field(context, value, "arrow"),
+            direction: int_field(context, value, "dir"),
+            value: required_child(context, value, "value", field_path(path, "value")),
+        },
+        ast::Kind::BadStmt => SyntaxKind::BadStmt {
+            from: int_field(context, value, "from"),
+            to: int_field(context, value, "to"),
+        },
+        ast::Kind::DeclStmt => SyntaxKind::DeclStmt {
+            declaration: required_child(context, value, "decl", field_path(path, "decl")),
+        },
+        ast::Kind::EmptyStmt => SyntaxKind::EmptyStmt {
+            semicolon: int_field(context, value, "semicolon"),
+            implicit: bool_field(context, value, "implicit"),
+        },
+        ast::Kind::LabeledStmt => SyntaxKind::LabeledStmt {
+            label: required_child(context, value, "label", field_path(path, "label")),
+            colon: int_field(context, value, "colon"),
+            statement: required_child(context, value, "stmt", field_path(path, "stmt")),
+        },
+        ast::Kind::ExprStmt => SyntaxKind::ExprStmt {
+            expression: required_child(context, value, "x", field_path(path, "x")),
+        },
+        ast::Kind::SendStmt => SyntaxKind::SendStmt {
+            channel: required_child(context, value, "chan", field_path(path, "chan")),
+            arrow: int_field(context, value, "arrow"),
+            value: required_child(context, value, "value", field_path(path, "value")),
+        },
+        ast::Kind::IncDecStmt => SyntaxKind::IncDecStmt {
+            expression: required_child(context, value, "x", field_path(path, "x")),
+            token_pos: int_field(context, value, "token_pos"),
+            token: string_field(context, value, "token"),
+        },
+        ast::Kind::AssignStmt => SyntaxKind::AssignStmt {
+            left: child_list(context, value, "lhs", field_path(path, "lhs")),
+            token_pos: int_field(context, value, "token_pos"),
+            token: string_field(context, value, "token"),
+            right: child_list(context, value, "rhs", field_path(path, "rhs")),
+        },
+        ast::Kind::GoStmt => SyntaxKind::GoStmt {
+            go_pos: int_field(context, value, "go"),
+            call: required_child(context, value, "call", field_path(path, "call")),
+        },
+        ast::Kind::DeferStmt => SyntaxKind::DeferStmt {
+            defer_pos: int_field(context, value, "defer"),
+            call: required_child(context, value, "call", field_path(path, "call")),
+        },
+        ast::Kind::ReturnStmt => SyntaxKind::ReturnStmt {
+            return_pos: int_field(context, value, "return"),
+            results: child_list(context, value, "results", field_path(path, "results")),
+        },
+        ast::Kind::BranchStmt => SyntaxKind::BranchStmt {
+            token_pos: int_field(context, value, "token_pos"),
+            token: string_field(context, value, "token"),
+            label: optional_child(context, value, "label", field_path(path, "label")),
+        },
+        ast::Kind::BlockStmt => SyntaxKind::BlockStmt {
+            lbrace: int_field(context, value, "lbrace"),
+            list: child_list(context, value, "list", field_path(path, "list")),
+            rbrace: int_field(context, value, "rbrace"),
+        },
+        ast::Kind::IfStmt => SyntaxKind::IfStmt {
+            if_pos: int_field(context, value, "if"),
+            init: optional_child(context, value, "init", field_path(path, "init")),
+            condition: required_child(context, value, "cond", field_path(path, "cond")),
+            body: required_child(context, value, "body", field_path(path, "body")),
+            else_branch: optional_child(context, value, "else", field_path(path, "else")),
+        },
+        ast::Kind::CaseClause => SyntaxKind::CaseClause {
+            case_pos: int_field(context, value, "case"),
+            list: child_list(context, value, "list", field_path(path, "list")),
+            colon: int_field(context, value, "colon"),
+            body: child_list(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::SwitchStmt => SyntaxKind::SwitchStmt {
+            switch_pos: int_field(context, value, "switch"),
+            init: optional_child(context, value, "init", field_path(path, "init")),
+            tag: optional_child(context, value, "tag", field_path(path, "tag")),
+            body: required_child(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::TypeSwitchStmt => SyntaxKind::TypeSwitchStmt {
+            switch_pos: int_field(context, value, "switch"),
+            init: optional_child(context, value, "init", field_path(path, "init")),
+            assignment: required_child(context, value, "assign", field_path(path, "assign")),
+            body: required_child(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::CommClause => SyntaxKind::CommClause {
+            case_pos: int_field(context, value, "case"),
+            communication: optional_child(context, value, "comm", field_path(path, "comm")),
+            colon: int_field(context, value, "colon"),
+            body: child_list(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::SelectStmt => SyntaxKind::SelectStmt {
+            select_pos: int_field(context, value, "select"),
+            body: required_child(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::ForStmt => SyntaxKind::ForStmt {
+            for_pos: int_field(context, value, "for"),
+            init: optional_child(context, value, "init", field_path(path, "init")),
+            condition: optional_child(context, value, "cond", field_path(path, "cond")),
+            post: optional_child(context, value, "post", field_path(path, "post")),
+            body: required_child(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::RangeStmt => SyntaxKind::RangeStmt {
+            for_pos: int_field(context, value, "for"),
+            key: optional_child(context, value, "key", field_path(path, "key")),
+            value: optional_child(context, value, "value", field_path(path, "value")),
+            token_pos: int_field(context, value, "token_pos"),
+            token: string_field(context, value, "token"),
+            range_pos: int_field(context, value, "range"),
+            expression: required_child(context, value, "x", field_path(path, "x")),
+            body: required_child(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::ImportSpec => SyntaxKind::ImportSpec {
+            name: optional_child(context, value, "name", field_path(path, "name")),
+            path: required_child(context, value, "path", field_path(path, "path")),
+            end_pos: int_field(context, value, "end_pos"),
+        },
+        ast::Kind::ValueSpec => SyntaxKind::ValueSpec {
+            names: child_list(context, value, "names", field_path(path, "names")),
+            type_node: optional_child(context, value, "type", field_path(path, "type")),
+            values: child_list(context, value, "values", field_path(path, "values")),
+        },
+        ast::Kind::TypeSpec => SyntaxKind::TypeSpec {
+            name: required_child(context, value, "name", field_path(path, "name")),
+            type_params: optional_child(
+                context,
+                value,
+                "type_params",
+                field_path(path, "type_params"),
+            ),
+            assign: int_field(context, value, "assign"),
+            type_node: required_child(context, value, "type", field_path(path, "type")),
+        },
+        ast::Kind::BadDecl => SyntaxKind::BadDecl {
+            from: int_field(context, value, "from"),
+            to: int_field(context, value, "to"),
+        },
+        ast::Kind::GenDecl => SyntaxKind::GenDecl {
+            token_pos: int_field(context, value, "token_pos"),
+            token: string_field(context, value, "token"),
+            lparen: int_field(context, value, "lparen"),
+            specs: child_list(context, value, "specs", field_path(path, "specs")),
+            rparen: int_field(context, value, "rparen"),
+        },
+        ast::Kind::FuncDecl => SyntaxKind::FuncDecl {
+            receiver: optional_child(context, value, "recv", field_path(path, "recv")),
+            name: required_child(context, value, "name", field_path(path, "name")),
+            type_node: required_child(context, value, "type", field_path(path, "type")),
+            body: optional_child(context, value, "body", field_path(path, "body")),
+        },
+        ast::Kind::File => SyntaxKind::File {
+            package_pos: int_field(context, value, "package"),
+            name: required_child(context, value, "name", field_path(path, "name")),
+            declarations: child_list(context, value, "decls", field_path(path, "decls")),
+            imports: context.imports,
+            go_version: string_field(context, value, "go_version"),
+        },
+    }
+}
+
+fn lower_node(context: LowerContext, value: ast::Node, path: string) -> NodeId {
+    let kind = lower_kind(context, value, path);
+    let id = allocate(context, value, path, kind);
+    if ast::kind_equal(value.kind, ast::Kind::ImportSpec) {
+        context.imports.push(id)
+    } else {};
+    id
+}
+
+fn contains_name(values: Vec[string], name: string) -> bool {
+    for value in values {
+        if value == name {
+            return true
+        } else {}
+    }
+    false
+}
+
+pub fn lower_package(sources: Vec[SourceFile]) -> PackageSyntax {
+    let nodes: Vec[SyntaxNode] = Vec::[];
+    let diagnostics: Vec[LowerDiagnostic] = Vec::[];
+    let files: Vec[SyntaxFile] = Vec::with_capacity(sources.len());
+    let names: Vec[string] = Vec::[];
+    for index in 0..sources.len() {
+        let source = sources[index];
+        if contains_name(names, source.name) {
+            diagnostics.push(
+                LowerDiagnostic {
+                    file: source.name,
+                    start: source.root.span.start,
+                    end: source.root.span.end,
+                    message: "duplicate source file name " + source.name,
+                },
+            )
+        } else {
+            names.push(source.name)
+        };
+        let context = LowerContext {
+            file_id: file_id(index),
+            file_name: source.name,
+            nodes,
+            imports: Vec::[],
+            diagnostics,
+        };
+        let root = lower_node(context, source.root, "$");
+        files.push(SyntaxFile { id: file_id(index), name: source.name, root })
+    }
+    PackageSyntax { arena: SyntaxArena { nodes }, files, diagnostics }
+}
+
+pub fn lower_file(name: string, root: ast::Node) -> PackageSyntax {
+    lower_package(Vec::[SourceFile { name, root }])
+}

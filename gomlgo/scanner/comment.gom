@@ -1,0 +1,44 @@
+package scanner;
+
+fn scan_comment(scanner: Scanner) -> (string, int) {
+    let start = scanner.offset.get() - 1;
+    let mut newline_offset = -1;
+    if scanner.current.get() == b'/' as int32 {
+        next(scanner);
+        while scanner.current.get() != b'\n' as int32 && scanner.current.get() >= 0 {
+            next(scanner)
+        }
+    } else {
+        next(scanner);
+        let mut closed = false;
+        while scanner.current.get() >= 0 && !closed {
+            let current = scanner.current.get();
+            if current == b'\n' as int32 && newline_offset < 0 {
+                newline_offset = scanner.offset.get();
+            } else {};
+            next(scanner);
+            if current == b'*' as int32 && scanner.current.get() == b'/' as int32 {
+                next(scanner);
+                closed = true;
+            } else {}
+        }
+        if !closed {
+            report(scanner, start, "comment not terminated")
+        } else {}
+    };
+    let end = scanner.offset.get();
+    let mut has_carriage_return = false;
+    for index in start..end {
+        if scanner.source[index] == b'\r' {
+            has_carriage_return = true;
+        } else {}
+    }
+    if has_carriage_return {
+        (
+            strip_carriage_returns(scanner.source, start, end, scanner.source[start + 1] == b'*'),
+            newline_offset,
+        )
+    } else {
+        (source_text(scanner.source, start, end), newline_offset)
+    }
+}

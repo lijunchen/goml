@@ -1,0 +1,119 @@
+package main;
+
+use gomlgo::ast;
+use gomlgo::checker;
+use gomlgo::loader;
+use gomlgo::parser;
+use gomlgo::scanner;
+use gomlgo::token;
+use std::bytes;
+use std::env;
+use std::fs;
+use std::process;
+
+fn fail(message: string) -> unit {
+    println(message);
+    process::exit(1)
+}
+
+fn read_source(file: string) -> bytes::Bytes {
+    match fs::read_bytes(file) {
+        Ok(source) => source,
+        Err(message) => {
+            fail(message);
+            bytes::Bytes::new()
+        },
+    }
+}
+
+fn print_diagnostics(result: parser::ParseResult) -> unit {
+    for value in result.diagnostics {
+        println(value.offset.to_string() + "\t" + value.message)
+    }
+}
+
+fn scan_file(file: string) -> unit {
+    let result = scanner::scan_bytes(read_source(file));
+    for value in result.tokens {
+        println(
+            token::name(value.kind) + "\t" + value.literal + "\t" + value.start.to_string() + "\t"
+                + value.end.to_string()
+                + "\t"
+                + value.synthetic.to_string(),
+        )
+    }
+    for value in result.diagnostics {
+        println(value.offset.to_string() + "\t" + value.message)
+    }
+    if !result.diagnostics.is_empty() {
+        process::exit(1)
+    } else {}
+}
+
+fn print_parse_result(result: parser::ParseResult) -> unit {
+    match result.root {
+        Some(root) => println(ast::encode(root)),
+        None => println("null"),
+    };
+    print_diagnostics(result);
+    if !result.diagnostics.is_empty() {
+        process::exit(1)
+    } else {}
+}
+
+fn check_files(files: Vec[string], package_path: string) -> unit {
+    let sources: Vec[checker::SourceFile] = Vec::[];
+    for file in files {
+        sources.push(checker::SourceFile { name: file, source: read_source(file) })
+    }
+    let result = match loader::check_sources_with_diagnostics(
+        loader::default_config(),
+        package_path,
+        sources,
+    ) {
+        Ok(value) => value,
+        Err(message) => {
+            fail(message);
+            return
+        },
+    };
+    for value in result.diagnostics {
+        println(
+            value.file + ":" + value.start.to_string() + ":" + value.end.to_string() + ": "
+                + value.message,
+        )
+    }
+    if !result.diagnostics.is_empty() {
+        process::exit(1)
+    } else {}
+}
+
+fn check_package(directory: string) -> unit {
+    match loader::check_directory(loader::default_config(), directory, directory) {
+        Ok(_) => {},
+        Err(message) => fail(message),
+    }
+}
+
+fn main() -> unit {
+    let arguments = env::args();
+    if arguments.len() >= 3 && arguments[1] == "check" {
+        let files: Vec[string] = Vec::[];
+        for index in 2..arguments.len() {
+            files.push(arguments[index])
+        }
+        check_files(files, "command-line-arguments")
+    } else if arguments.len() == 3 && arguments[1] == "check-package" {
+        check_package(arguments[2])
+    } else if arguments.len() == 3 && arguments[1] == "scan" {
+        scan_file(arguments[2])
+    } else if arguments.len() == 3 && arguments[1] == "parse" {
+        print_parse_result(parser::parse_file_bytes(read_source(arguments[2])))
+    } else if arguments.len() == 3 && arguments[1] == "parse-expr" {
+        print_parse_result(parser::parse_expr(arguments[2]))
+    } else {
+        fail(
+            "usage: gomlgo scan FILE | parse FILE | parse-expr EXPR | check FILE... | check-package DIRECTORY",
+        )
+    }
+}

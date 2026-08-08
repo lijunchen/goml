@@ -1,0 +1,607 @@
+package loader;
+
+use gomlgo::ast;
+use gomlgo::checker;
+use gomlgo::constant;
+use gomlgo::parser;
+use gomlgo::scanner;
+use gomlgo::syntax;
+use gomlgo::token;
+use gomlgo::types as go_types;
+use std::bytes;
+use std::collections;
+use std::env;
+use std::fs;
+use std::path;
+use std::text;
+use std::unicode;
+
+pub struct LoadConfig {
+    pub checker_config: checker::CheckConfig,
+    pub source_roots: Vec[string],
+    pub goos: string,
+    pub goarch: string,
+    pub cgo: bool,
+    pub tags: Vec[string],
+    pub include_tests: bool,
+    pub external_tests: bool,
+    pub root_path: string,
+    pub root_directory: string,
+    pub root_sources: Vec[checker::SourceFile],
+}
+
+struct LoadState {
+    config: LoadConfig,
+    world: go_types::World,
+    loading: Vec[string],
+    loaded: Vec[string],
+    failures: Vec[string],
+    retain_info: bool,
+    infos: Vec[Option[LoadedInfo]],
+}
+
+struct LoadedInfo {
+    syntax: syntax::PackageSyntax,
+    package_id: go_types::PackageId,
+    info: checker::TypeInfo,
+    diagnostics: Vec[checker::CheckDiagnostic],
+}
+
+pub struct LoadSession {
+    state: LoadState,
+}
+
+pub fn default_config() -> LoadConfig {
+    LoadConfig {
+        checker_config: checker::default_config(),
+        source_roots: Vec::["/usr/lib/go-1.26/src"],
+        goos: "linux",
+        goarch: "amd64",
+        cgo: false,
+        tags: Vec::[
+            "goexperiment.dwarf5",
+            "goexperiment.greenteagc",
+            "goexperiment.randomizedheapbase64",
+            "goexperiment.regabiargs",
+            "goexperiment.regabiwrappers",
+        ],
+        include_tests: false,
+        external_tests: false,
+        root_path: "",
+        root_directory: "",
+        root_sources: Vec::[],
+    }
+}
+
+fn known_goos(value: string) -> bool {
+    value == "aix" || value == "android" || value == "darwin" || value == "dragonfly"
+        || value == "freebsd"
+        || value == "hurd"
+        || value == "illumos"
+        || value == "ios"
+        || value == "js"
+        || value == "linux"
+        || value == "netbsd"
+        || value == "openbsd"
+        || value == "plan9"
+        || value == "solaris"
+        || value == "wasip1"
+        || value == "windows"
+        || value == "zos"
+}
+
+fn known_goarch(value: string) -> bool {
+    value == "386" || value == "amd64" || value == "arm" || value == "arm64" || value == "loong64"
+        || value == "mips"
+        || value == "mips64"
+        || value == "mips64le"
+        || value == "mipsle"
+        || value == "ppc64"
+        || value == "ppc64le"
+        || value == "riscv64"
+        || value == "s390x"
+        || value == "sparc64"
+        || value == "wasm"
+}
+
+fn filename_selected(name: string, config: LoadConfig) -> bool {
+    if name.starts_with(".") || name.starts_with("_")
+        || (!config.include_tests && name.ends_with("_test.go"))
+        || path::extension(name) != Option::Some("go") {
+        return false
+    } else {};
+    let stem = name.byte_slice(0, name.byte_len() - 3);
+    let parts = text::split(stem, "_");
+    if parts.len() >= 2 {
+        let last = parts[parts.len() - 1];
+        if known_goos(last)
+            && !platform_tag(config.goos, config.goarch, config.cgo, config.tags, last) {
+            return false
+        } else if known_goarch(last) && last != config.goarch {
+            return false
+        } else {}
+    } else {};
+    if parts.len() >= 3 {
+        let system = parts[parts.len() - 2];
+        let architecture = parts[parts.len() - 1];
+        if known_goos(system) && known_goarch(architecture)
+            && (!platform_tag(config.goos, config.goarch, config.cgo, config.tags, system)
+                || architecture != config.goarch) {
+            return false
+        } else {}
+    } else {};
+    true
+}
+
+fn source_constraint_selected(source: bytes::Bytes, config: LoadConfig) -> bool {
+    let scanned = scanner::scan_bytes(source);
+    let mut go_build: Option[string] = Option::None;
+    let legacy: Vec[string] = Vec::[];
+    for value in scanned.tokens {
+        if token::equal(value.kind, token::Kind::Comment) {
+            if value.literal.starts_with("//go:build") {
+                let start = "//go:build".byte_len();
+                go_build = Option::Some(value.literal.byte_slice(start, value.literal.byte_len()));
+            } else if value.literal.starts_with("// +build") {
+                let start = "// +build".byte_len();
+                legacy.push(value.literal.byte_slice(start, value.literal.byte_len()));
+            } else {}
+        } else if token::equal(value.kind, token::Kind::Package) {
+            break
+        } else {}
+    }
+    match go_build {
+        Some(value) => evaluate_constraint_with_tags(
+            value,
+            config.goos,
+            config.goarch,
+            config.cgo,
+            config.checker_config.go_version,
+            config.tags,
+        ),
+        None => {
+            for value in legacy {
+                if !evaluate_legacy_constraint(
+                    value,
+                    config.goos,
+                    config.goarch,
+                    config.cgo,
+                    config.checker_config.go_version,
+                    config.tags,
+                ) {
+                    return false
+                } else {}
+            }
+            true
+        },
+    }
+}
+
+fn source_package_name(source: checker::SourceFile) -> string {
+    let parsed = parser::parse_file_bytes(source.source);
+    match parsed.root {
+        Some(root) => match ast::get_node(root, "name") {
+            Some(name) => ast::get_string(name, "name").unwrap_or(""),
+            None => "",
+        },
+        None => "",
+    }
+}
+
+fn test_source(value: checker::SourceFile) -> bool {
+    path::file_name(value.name).unwrap_or("").ends_with("_test.go")
+}
+
+fn package_directory(config: LoadConfig, import_path: string) -> Option[string] {
+    if import_path == config.root_path && config.root_directory != "" {
+        return Option::Some(config.root_directory)
+    } else {};
+    for root in config.source_roots {
+        let directory = path::join(root, import_path);
+        if fs::is_dir(directory) {
+            return Option::Some(directory)
+        } else {};
+        let vendor_directory = path::join(path::join(root, "vendor"), import_path);
+        if fs::is_dir(vendor_directory) {
+            return Option::Some(vendor_directory)
+        } else {};
+        let command_vendor_directory = path::join(
+            path::join(path::join(root, "cmd"), "vendor"),
+            import_path,
+        );
+        if fs::is_dir(command_vendor_directory) {
+            return Option::Some(command_vendor_directory)
+        } else {}
+    }
+    Option::None
+}
+
+fn resolved_package_path(config: LoadConfig, import_path: string) -> string {
+    for root in config.source_roots {
+        if fs::is_dir(path::join(root, import_path)) {
+            return import_path
+        } else if fs::is_dir(path::join(path::join(root, "vendor"), import_path)) {
+            return "vendor/" + import_path
+        } else if fs::is_dir(path::join(path::join(path::join(root, "cmd"), "vendor"), import_path)) {
+            return "cmd/vendor/" + import_path
+        } else {}
+    }
+    import_path
+}
+
+fn missing_import_message(config: LoadConfig, import_path: string) -> string {
+    if import_path.starts_with("/") {
+        return "can't find import: \"" + import_path + "\": stat " + import_path
+            + ".a: no such file or directory"
+    } else {};
+    let goroot_source = if config.source_roots.is_empty() {
+        "/usr/lib/go-1.26/src"
+    } else {
+        config.source_roots[0]
+    };
+    let gopath = env::var("GOPATH").unwrap_or(path::join(env::var("HOME").unwrap_or(""), "go"));
+    "can't find import: \"" + import_path + "\": cannot find package \"" + import_path
+        + "\" in any of:\n\t"
+        + path::join(goroot_source, import_path)
+        + " (from $GOROOT)\n\t"
+        + path::join(path::join(gopath, "src"), import_path)
+        + " (from $GOPATH)"
+}
+
+pub fn selected_sources(config: LoadConfig, import_path: string) -> Result[
+    Vec[checker::SourceFile],
+    string,
+] {
+    if import_path == config.root_path && !config.root_sources.is_empty() {
+        return Result::Ok(config.root_sources)
+    } else {};
+    let directory = package_directory(config, import_path).ok_or(
+        "package not found: " + import_path,
+    )?;
+    let names = fs::read_dir(directory)?;
+    collections::sort(names);
+    let selected: Vec[checker::SourceFile] = Vec::[];
+    for name in names {
+        if filename_selected(name, config) {
+            let file = path::join(directory, name);
+            let source = fs::read_bytes(file);
+            match source {
+                Ok(source) => if source_constraint_selected(source, config) {
+                    selected.push(checker::SourceFile { name: file, source })
+                } else {},
+                Err(message) => return Result::Err(message),
+            }
+        } else {}
+    }
+    let result: Vec[checker::SourceFile] = Vec::[];
+    if config.include_tests {
+        let mut package_name = "";
+        for source in selected {
+            if !test_source(source) && package_name == "" {
+                package_name = source_package_name(source);
+            } else {}
+        }
+        for source in selected {
+            let test = test_source(source);
+            let external = test && source_package_name(source) != package_name;
+            if (config.external_tests && external)
+                || (!config.external_tests && (!test || !external)) {
+                result.push(source)
+            } else {}
+        }
+    } else {
+        for source in selected {
+            result.push(source)
+        }
+    };
+    if result.is_empty() {
+        Result::Err("no buildable Go source files for " + import_path)
+    } else {
+        Result::Ok(result)
+    }
+}
+
+fn source_imports(source: checker::SourceFile) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    let parsed = parser::parse_file_bytes(source.source);
+    match parsed.root {
+        Some(root) => for import in ast::get_nodes(root, "imports") {
+            match ast::get_node(import, "path") {
+                Some(path_node) => match ast::get_string(path_node, "value") {
+                    Some(value) => match constant::parse_string_literal(value) {
+                        Ok(constant::ConstValue::String(value)) => if valid_import_dependency(value) {
+                            result.push(value)
+                        } else {},
+                        _ => {},
+                    },
+                    None => {},
+                },
+                None => {},
+            }
+        },
+        None => {},
+    };
+    result
+}
+
+fn valid_import_dependency(value: string) -> bool {
+    let illegal = "!\"#$%&'()*,:;<=>?[\\]^{|}`�";
+    if value == "" {
+        return false
+    } else {};
+    for character in value.chars() {
+        if unicode::is_control(character) || unicode::is_whitespace(character)
+            || illegal.contains(character.to_string()) {
+            return false
+        } else {}
+    }
+    true
+}
+
+fn string_in(values: Vec[string], value: string) -> bool {
+    for existing in values {
+        if existing == value {
+            return true
+        } else {}
+    }
+    false
+}
+
+fn loaded_index(state: LoadState, import_path: string) -> int {
+    let mut index = 0;
+    while index < state.loaded.len() {
+        if state.loaded[index] == import_path {
+            return index
+        } else {};
+        index += 1;
+    }
+    return 0 - 1
+}
+
+fn checker_failure(result: checker::CheckResult) -> string {
+    if result.diagnostics.is_empty() {
+        "type checking failed"
+    } else {
+        result.diagnostics[0].file + ":" + result.diagnostics[0].start.to_string() + ": "
+            + result.diagnostics[0].message
+    }
+}
+
+fn load_package(state: LoadState, import_path: string, allow_diagnostics: bool) -> Result[
+    checker::CheckResult,
+    string,
+] {
+    if string_in(state.loading, import_path) {
+        return Result::Err("import cycle not allowed: " + import_path)
+    } else if import_path == "unsafe" {
+        return Result::Err("unsafe is built in")
+    } else {};
+    state.loading.push(import_path);
+    let sources = selected_sources(state.config, import_path)?;
+    let imports: Vec[string] = Vec::[];
+    for source in sources {
+        for dependency in source_imports(source) {
+            if dependency != "unsafe"
+                && !(dependency == "C" && state.config.checker_config.fake_import_c)
+                && !string_in(imports, dependency) {
+                imports.push(dependency)
+            } else {}
+        }
+    }
+    for dependency in imports {
+        if !string_in(state.loaded, dependency) {
+            match load_package(state, dependency, false) {
+                Ok(checked) => {
+                    state.world = checked.world;
+                },
+                Err(message) => if !allow_diagnostics {
+                    return Result::Err(message)
+                } else {
+                    state.config.checker_config.import_errors.push(
+                        checker::ImportFailure {
+                            path: dependency,
+                            message: if message.starts_with("package not found: ") {
+                                missing_import_message(state.config, dependency)
+                            } else {
+                                message
+                            },
+                        },
+                    )
+                },
+            }
+        } else {}
+    }
+    let checker_config = state.config.checker_config;
+    if state.config.root_path != "" && import_path != state.config.root_path {
+        checker_config.go_version = "go1.26";
+        checker_config.ignore_func_bodies = true;
+        checker_config.disable_unused_import_check = true;
+    } else {};
+    let result = checker::check_package_in_world(
+        checker_config,
+        checker::PackageInput {
+            path: resolved_package_path(state.config, import_path),
+            files: sources,
+        },
+        state.world,
+    );
+    state.world = result.world;
+    let _ = state.loading.pop();
+    state.loaded.push(import_path);
+    state.failures.push(
+        if result.diagnostics.is_empty() {
+            ""
+        } else {
+            checker_failure(result)
+        },
+    );
+    state.infos.push(
+        if state.retain_info {
+            Option::Some(
+                LoadedInfo {
+                    syntax: result.syntax,
+                    package_id: result.package_id,
+                    info: result.info,
+                    diagnostics: result.diagnostics,
+                },
+            )
+        } else {
+            Option::None
+        },
+    );
+    if result.diagnostics.is_empty() || allow_diagnostics {
+        Result::Ok(result)
+    } else {
+        Result::Err(checker_failure(result))
+    }
+}
+
+pub fn new_load_session(config: LoadConfig) -> LoadSession {
+    LoadSession {
+        state: LoadState {
+            config,
+            world: go_types::new_world(),
+            loading: Vec::[],
+            loaded: Vec::[],
+            failures: Vec::[],
+            retain_info: false,
+            infos: Vec::[],
+        },
+    }
+}
+
+pub fn new_info_load_session(config: LoadConfig) -> LoadSession {
+    LoadSession {
+        state: LoadState {
+            config,
+            world: go_types::new_world(),
+            loading: Vec::[],
+            loaded: Vec::[],
+            failures: Vec::[],
+            retain_info: true,
+            infos: Vec::[],
+        },
+    }
+}
+
+pub fn check_import_path_acceptance_in_session(session: LoadSession, import_path: string) -> Result[
+    unit,
+    string,
+] {
+    let index = loaded_index(session.state, import_path);
+    if index >= 0 {
+        if session.state.failures[index] == "" {
+            Result::Ok(())
+        } else {
+            Result::Err(session.state.failures[index])
+        }
+    } else {
+        match load_package(session.state, import_path, false) {
+            Ok(_) => Result::Ok(()),
+            Err(message) => Result::Err(message),
+        }
+    }
+}
+
+pub fn check_import_path_info_in_session(session: LoadSession, import_path: string) -> Result[
+    checker::CheckResult,
+    string,
+] {
+    let index = loaded_index(session.state, import_path);
+    if index < 0 {
+        load_package(session.state, import_path, false)
+    } else {
+        match session.state.infos[index] {
+            Some(info) => if info.diagnostics.is_empty() {
+                Result::Ok(
+                    checker::CheckResult {
+                        world: session.state.world,
+                        syntax: info.syntax,
+                        package_id: info.package_id,
+                        info: info.info,
+                        diagnostics: info.diagnostics,
+                    },
+                )
+            } else {
+                Result::Err(session.state.failures[index])
+            },
+            None => Result::Err("package info not retained: " + import_path),
+        }
+    }
+}
+
+pub fn check_import_path(config: LoadConfig, import_path: string) -> Result[
+    checker::CheckResult,
+    string,
+] {
+    let state = LoadState {
+        config,
+        world: go_types::new_world(),
+        loading: Vec::[],
+        loaded: Vec::[],
+        failures: Vec::[],
+        retain_info: false,
+        infos: Vec::[],
+    };
+    load_package(state, import_path, false)
+}
+
+pub fn check_sources_with_diagnostics(
+    config: LoadConfig,
+    import_path: string,
+    sources: Vec[checker::SourceFile],
+) -> Result[checker::CheckResult, string] {
+    for source in sources {
+        match source.source.to_string() {
+            Ok(value) => {
+                if value.contains("// -fakeImportC") {
+                    config.checker_config.fake_import_c = true;
+                } else {};
+                if value.contains("// -gotypesalias=0") {
+                    config.checker_config.enable_alias = false;
+                } else if value.contains("// -gotypesalias=1") {
+                    config.checker_config.enable_alias = true;
+                } else {};
+                for line in text::split(value, "\n") {
+                    if line.starts_with("// -lang=") {
+                        config.checker_config.go_version = text::split(
+                            line.byte_slice(9, line.byte_len()),
+                            " ",
+                        )[0];
+                    } else {}
+                }
+            },
+            Err(_) => {},
+        }
+    }
+    config.root_path = import_path;
+    config.root_sources = sources;
+    let state = LoadState {
+        config,
+        world: go_types::new_world(),
+        loading: Vec::[],
+        loaded: Vec::[],
+        failures: Vec::[],
+        retain_info: false,
+        infos: Vec::[],
+    };
+    load_package(state, import_path, true)
+}
+
+pub fn check_sources(config: LoadConfig, import_path: string, sources: Vec[checker::SourceFile]) -> Result[
+    checker::CheckResult,
+    string,
+] {
+    config.root_path = import_path;
+    config.root_sources = sources;
+    check_import_path(config, import_path)
+}
+
+pub fn check_directory(config: LoadConfig, import_path: string, directory: string) -> Result[
+    checker::CheckResult,
+    string,
+] {
+    config.root_path = import_path;
+    config.root_directory = directory;
+    check_import_path(config, import_path)
+}

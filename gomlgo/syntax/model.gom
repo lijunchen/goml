@@ -1,0 +1,431 @@
+package syntax;
+
+use gomlgo::ast;
+
+pub struct NodeList {
+    pub values: Vec[NodeId],
+}
+
+pub enum SyntaxKind {
+    Invalid {
+        message: string,
+    },
+    Comment {
+        text: string,
+    },
+    CommentGroup {
+        list: Vec[NodeId],
+    },
+    Field {
+        names: Vec[NodeId],
+        type_node: NodeId,
+        tag: Option[NodeId],
+    },
+    FieldList {
+        opening: int,
+        list: Vec[NodeId],
+        closing: int,
+    },
+    BadExpr {
+        from: int,
+        to: int,
+    },
+    Ident {
+        name_pos: int,
+        name: string,
+    },
+    Ellipsis {
+        ellipsis: int,
+        element: Option[NodeId],
+    },
+    BasicLit {
+        value_pos: int,
+        value_end: int,
+        token: string,
+        value: string,
+    },
+    FuncLit {
+        type_node: NodeId,
+        body: NodeId,
+    },
+    CompositeLit {
+        type_node: Option[NodeId],
+        lbrace: int,
+        elements: Vec[NodeId],
+        rbrace: int,
+        incomplete: bool,
+    },
+    ParenExpr {
+        lparen: int,
+        expression: NodeId,
+        rparen: int,
+    },
+    SelectorExpr {
+        expression: NodeId,
+        selector: NodeId,
+    },
+    IndexExpr {
+        expression: NodeId,
+        lbrack: int,
+        index: NodeId,
+        rbrack: int,
+    },
+    IndexListExpr {
+        expression: NodeId,
+        lbrack: int,
+        indices: Vec[NodeId],
+        rbrack: int,
+    },
+    SliceExpr {
+        expression: NodeId,
+        lbrack: int,
+        low: Option[NodeId],
+        high: Option[NodeId],
+        max: Option[NodeId],
+        slice3: bool,
+        rbrack: int,
+    },
+    TypeAssertExpr {
+        expression: NodeId,
+        lparen: int,
+        type_node: Option[NodeId],
+        rparen: int,
+    },
+    CallExpr {
+        function: NodeId,
+        lparen: int,
+        arguments: Vec[NodeId],
+        ellipsis: int,
+        rparen: int,
+    },
+    StarExpr {
+        star: int,
+        expression: NodeId,
+    },
+    UnaryExpr {
+        op_pos: int,
+        op: string,
+        expression: NodeId,
+    },
+    BinaryExpr {
+        left: NodeId,
+        op_pos: int,
+        op: string,
+        right: NodeId,
+    },
+    KeyValueExpr {
+        key: NodeId,
+        colon: int,
+        value: NodeId,
+    },
+    ArrayType {
+        lbrack: int,
+        length: Option[NodeId],
+        element: NodeId,
+    },
+    StructType {
+        struct_pos: int,
+        fields: NodeId,
+        incomplete: bool,
+    },
+    FuncType {
+        func_pos: int,
+        type_params: Option[NodeId],
+        params: NodeId,
+        results: Option[NodeId],
+    },
+    InterfaceType {
+        interface_pos: int,
+        methods: NodeId,
+        incomplete: bool,
+    },
+    MapType {
+        map_pos: int,
+        key: NodeId,
+        value: NodeId,
+    },
+    ChanType {
+        begin: int,
+        arrow: int,
+        direction: int,
+        value: NodeId,
+    },
+    BadStmt {
+        from: int,
+        to: int,
+    },
+    DeclStmt {
+        declaration: NodeId,
+    },
+    EmptyStmt {
+        semicolon: int,
+        implicit: bool,
+    },
+    LabeledStmt {
+        label: NodeId,
+        colon: int,
+        statement: NodeId,
+    },
+    ExprStmt {
+        expression: NodeId,
+    },
+    SendStmt {
+        channel: NodeId,
+        arrow: int,
+        value: NodeId,
+    },
+    IncDecStmt {
+        expression: NodeId,
+        token_pos: int,
+        token: string,
+    },
+    AssignStmt {
+        left: Vec[NodeId],
+        token_pos: int,
+        token: string,
+        right: Vec[NodeId],
+    },
+    GoStmt {
+        go_pos: int,
+        call: NodeId,
+    },
+    DeferStmt {
+        defer_pos: int,
+        call: NodeId,
+    },
+    ReturnStmt {
+        return_pos: int,
+        results: Vec[NodeId],
+    },
+    BranchStmt {
+        token_pos: int,
+        token: string,
+        label: Option[NodeId],
+    },
+    BlockStmt {
+        lbrace: int,
+        list: Vec[NodeId],
+        rbrace: int,
+    },
+    IfStmt {
+        if_pos: int,
+        init: Option[NodeId],
+        condition: NodeId,
+        body: NodeId,
+        else_branch: Option[NodeId],
+    },
+    CaseClause {
+        case_pos: int,
+        list: Vec[NodeId],
+        colon: int,
+        body: Vec[NodeId],
+    },
+    SwitchStmt {
+        switch_pos: int,
+        init: Option[NodeId],
+        tag: Option[NodeId],
+        body: NodeId,
+    },
+    TypeSwitchStmt {
+        switch_pos: int,
+        init: Option[NodeId],
+        assignment: NodeId,
+        body: NodeId,
+    },
+    CommClause {
+        case_pos: int,
+        communication: Option[NodeId],
+        colon: int,
+        body: Vec[NodeId],
+    },
+    SelectStmt {
+        select_pos: int,
+        body: NodeId,
+    },
+    ForStmt {
+        for_pos: int,
+        init: Option[NodeId],
+        condition: Option[NodeId],
+        post: Option[NodeId],
+        body: NodeId,
+    },
+    RangeStmt {
+        for_pos: int,
+        key: Option[NodeId],
+        value: Option[NodeId],
+        token_pos: int,
+        token: string,
+        range_pos: int,
+        expression: NodeId,
+        body: NodeId,
+    },
+    ImportSpec {
+        name: Option[NodeId],
+        path: NodeId,
+        end_pos: int,
+    },
+    ValueSpec {
+        names: Vec[NodeId],
+        type_node: Option[NodeId],
+        values: Vec[NodeId],
+    },
+    TypeSpec {
+        name: NodeId,
+        type_params: Option[NodeId],
+        assign: int,
+        type_node: NodeId,
+    },
+    BadDecl {
+        from: int,
+        to: int,
+    },
+    GenDecl {
+        token_pos: int,
+        token: string,
+        lparen: int,
+        specs: Vec[NodeId],
+        rparen: int,
+    },
+    FuncDecl {
+        receiver: Option[NodeId],
+        name: NodeId,
+        type_node: NodeId,
+        body: Option[NodeId],
+    },
+    File {
+        package_pos: int,
+        name: NodeId,
+        declarations: Vec[NodeId],
+        imports: Vec[NodeId],
+        go_version: string,
+    },
+}
+
+pub struct SyntaxNode {
+    pub id: NodeId,
+    pub file: FileId,
+    pub span: ast::Span,
+    pub path: string,
+    pub kind: SyntaxKind,
+}
+
+pub struct SyntaxFile {
+    pub id: FileId,
+    pub name: string,
+    pub root: NodeId,
+}
+
+pub struct SyntaxArena {
+    pub nodes: Vec[SyntaxNode],
+}
+
+pub struct LowerDiagnostic {
+    pub file: string,
+    pub start: int,
+    pub end: int,
+    pub message: string,
+}
+
+pub struct PackageSyntax {
+    pub arena: SyntaxArena,
+    pub files: Vec[SyntaxFile],
+    pub diagnostics: Vec[LowerDiagnostic],
+}
+
+pub struct SourceFile {
+    pub name: string,
+    pub root: ast::Node,
+}
+
+pub fn syntax_kind_name(value: SyntaxKind) -> string {
+    match value {
+        Invalid { message: _ } => "Invalid",
+        Comment { text: _ } => "Comment",
+        CommentGroup { list: _ } => "CommentGroup",
+        Field { names: _, type_node: _, tag: _ } => "Field",
+        FieldList { opening: _, list: _, closing: _ } => "FieldList",
+        BadExpr { from: _, to: _ } => "BadExpr",
+        Ident { name_pos: _, name: _ } => "Ident",
+        Ellipsis { ellipsis: _, element: _ } => "Ellipsis",
+        BasicLit { value_pos: _, value_end: _, token: _, value: _ } => "BasicLit",
+        FuncLit { type_node: _, body: _ } => "FuncLit",
+        CompositeLit { type_node: _, lbrace: _, elements: _, rbrace: _, incomplete: _ } => {
+            "CompositeLit"
+        },
+        ParenExpr { lparen: _, expression: _, rparen: _ } => "ParenExpr",
+        SelectorExpr { expression: _, selector: _ } => "SelectorExpr",
+        IndexExpr { expression: _, lbrack: _, index: _, rbrack: _ } => "IndexExpr",
+        IndexListExpr { expression: _, lbrack: _, indices: _, rbrack: _ } => "IndexListExpr",
+        SliceExpr { expression: _, lbrack: _, low: _, high: _, max: _, slice3: _, rbrack: _ } => {
+            "SliceExpr"
+        },
+        TypeAssertExpr { expression: _, lparen: _, type_node: _, rparen: _ } => "TypeAssertExpr",
+        CallExpr { function: _, lparen: _, arguments: _, ellipsis: _, rparen: _ } => "CallExpr",
+        StarExpr { star: _, expression: _ } => "StarExpr",
+        UnaryExpr { op_pos: _, op: _, expression: _ } => "UnaryExpr",
+        BinaryExpr { left: _, op_pos: _, op: _, right: _ } => "BinaryExpr",
+        KeyValueExpr { key: _, colon: _, value: _ } => "KeyValueExpr",
+        ArrayType { lbrack: _, length: _, element: _ } => "ArrayType",
+        StructType { struct_pos: _, fields: _, incomplete: _ } => "StructType",
+        FuncType { func_pos: _, type_params: _, params: _, results: _ } => "FuncType",
+        InterfaceType { interface_pos: _, methods: _, incomplete: _ } => "InterfaceType",
+        MapType { map_pos: _, key: _, value: _ } => "MapType",
+        ChanType { begin: _, arrow: _, direction: _, value: _ } => "ChanType",
+        BadStmt { from: _, to: _ } => "BadStmt",
+        DeclStmt { declaration: _ } => "DeclStmt",
+        EmptyStmt { semicolon: _, implicit: _ } => "EmptyStmt",
+        LabeledStmt { label: _, colon: _, statement: _ } => "LabeledStmt",
+        ExprStmt { expression: _ } => "ExprStmt",
+        SendStmt { channel: _, arrow: _, value: _ } => "SendStmt",
+        IncDecStmt { expression: _, token_pos: _, token: _ } => "IncDecStmt",
+        AssignStmt { left: _, token_pos: _, token: _, right: _ } => "AssignStmt",
+        GoStmt { go_pos: _, call: _ } => "GoStmt",
+        DeferStmt { defer_pos: _, call: _ } => "DeferStmt",
+        ReturnStmt { return_pos: _, results: _ } => "ReturnStmt",
+        BranchStmt { token_pos: _, token: _, label: _ } => "BranchStmt",
+        BlockStmt { lbrace: _, list: _, rbrace: _ } => "BlockStmt",
+        IfStmt { if_pos: _, init: _, condition: _, body: _, else_branch: _ } => "IfStmt",
+        CaseClause { case_pos: _, list: _, colon: _, body: _ } => "CaseClause",
+        SwitchStmt { switch_pos: _, init: _, tag: _, body: _ } => "SwitchStmt",
+        TypeSwitchStmt { switch_pos: _, init: _, assignment: _, body: _ } => "TypeSwitchStmt",
+        CommClause { case_pos: _, communication: _, colon: _, body: _ } => "CommClause",
+        SelectStmt { select_pos: _, body: _ } => "SelectStmt",
+        ForStmt { for_pos: _, init: _, condition: _, post: _, body: _ } => "ForStmt",
+        RangeStmt {
+            for_pos: _,
+            key: _,
+            value: _,
+            token_pos: _,
+            token: _,
+            range_pos: _,
+            expression: _,
+            body: _,
+        } => "RangeStmt",
+        ImportSpec { name: _, path: _, end_pos: _ } => "ImportSpec",
+        ValueSpec { names: _, type_node: _, values: _ } => "ValueSpec",
+        TypeSpec { name: _, type_params: _, assign: _, type_node: _ } => "TypeSpec",
+        BadDecl { from: _, to: _ } => "BadDecl",
+        GenDecl { token_pos: _, token: _, lparen: _, specs: _, rparen: _ } => "GenDecl",
+        FuncDecl { receiver: _, name: _, type_node: _, body: _ } => "FuncDecl",
+        File { package_pos: _, name: _, declarations: _, imports: _, go_version: _ } => "File",
+    }
+}
+
+pub fn get_node(value: SyntaxArena, id: NodeId) -> Option[SyntaxNode] {
+    if id.value >= 0 && id.value < value.nodes.len() {
+        Option::Some(value.nodes[id.value])
+    } else {
+        Option::None
+    }
+}
+
+pub fn node_key(value: PackageSyntax, id: NodeId) -> Option[string] {
+    match get_node(value.arena, id) {
+        Some(node) => if node.file.value >= 0 && node.file.value < value.files.len() {
+            Option::Some(value.files[node.file.value].name + ":" + node.path)
+        } else {
+            Option::None
+        },
+        None => Option::None,
+    }
+}

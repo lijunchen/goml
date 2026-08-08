@@ -1,0 +1,99 @@
+package main;
+
+use gomlgo::goroot_compare;
+use std::env;
+use std::num;
+use std::process;
+
+fn main() -> unit {
+    let arguments = env::args();
+    let mode = if arguments.len() >= 2 && arguments[1] == "info" {
+        goroot_compare::CompareMode::Info
+    } else {
+        goroot_compare::CompareMode::Acceptance
+    };
+    let scope = if arguments.len() >= 3 {
+        arguments[2]
+    } else {
+        "std"
+    };
+    if scope != "std" && scope != "cmd" && scope != "all" {
+        println("scope must be std, cmd, or all");
+        process::exit(1)
+    } else {};
+    let limit = if arguments.len() >= 4 {
+        match num::parse_int(arguments[3]) {
+            Ok(value) => value,
+            Err(message) => {
+                println(message);
+                process::exit(1);
+                -1
+            },
+        }
+    } else {
+        -1
+    };
+    let root = if arguments.len() >= 5 {
+        arguments[4]
+    } else {
+        "/usr/lib/go-1.26/src"
+    };
+    let start = if arguments.len() >= 6 {
+        arguments[5]
+    } else {
+        ""
+    };
+    let goos = if arguments.len() >= 7 {
+        arguments[6]
+    } else {
+        "linux"
+    };
+    let goarch = if arguments.len() >= 8 {
+        arguments[7]
+    } else {
+        "amd64"
+    };
+    let cgo = if arguments.len() >= 9 {
+        if arguments[8] == "1" {
+            true
+        } else if arguments[8] == "0" {
+            false
+        } else {
+            println("CGO_ENABLED must be 0 or 1");
+            process::exit(1);
+            false
+        }
+    } else {
+        false
+    };
+    let test_mode = if arguments.len() >= 10 {
+        arguments[9]
+    } else {
+        "none"
+    };
+    if test_mode != "none" && test_mode != "internal" && test_mode != "external" {
+        println("test mode must be none, internal, or external");
+        process::exit(1)
+    } else {};
+    if arguments.len() > 10 {
+        println(
+            "usage: gofront_type_goroot_diff [acceptance|info] [std|cmd|all] [LIMIT] [GOROOT_SRC] [START] [GOOS] [GOARCH] [CGO_ENABLED] [none|internal|external]",
+        );
+        process::exit(1)
+    } else {};
+    match goroot_compare::compare(root, scope, limit, start, mode, goos, goarch, cgo, test_mode) {
+        Ok(summary) => println(
+            "GOROOT type-check differential: packages=" + summary.packages.to_string()
+                + " accepted="
+                + summary.accepted.to_string()
+                + " rejected="
+                + summary.rejected.to_string()
+                + " info_compared="
+                + summary.info_compared.to_string(),
+        ),
+        Err(message) => {
+            println(message);
+            process::exit(1)
+        },
+    }
+}

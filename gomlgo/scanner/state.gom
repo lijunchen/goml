@@ -1,0 +1,305 @@
+package scanner;
+
+use gomlgo::diagnostic;
+use std::bytes;
+use std::text;
+use std::unicode;
+
+const eof: int32 = -1;
+
+const bom: int32 = 65279;
+
+const rune_error: int32 = 65533;
+
+#[go_ffi("unicode", "IsDigit")]
+extern fn go_is_digit(value: char) -> bool;
+
+pub struct ScanResult {
+    pub tokens: Vec[gomlgo::token::Token],
+    pub diagnostics: Vec[diagnostic::Diagnostic],
+}
+
+struct Scanner {
+    source: Vec[byte],
+    current: Ref[int32],
+    offset: Ref[int],
+    read_offset: Ref[int],
+    insert_semi: Ref[bool],
+    pending_newline: Ref[int],
+    diagnostics: Vec[diagnostic::Diagnostic],
+}
+
+fn decode_rune(source: Vec[byte], index: int) -> (int32, int, bool) {
+    let first = source[index];
+    if first < 128 {
+        (first as int32, 1, true)
+    } else if first >= 194 && first <= 223 && index + 1 < source.len() {
+        let second = source[index + 1];
+        if second >= 128 && second <= 191 {
+            ((((first & 31) as int32) << 6) | (second & 63) as int32, 2, true)
+        } else {
+            (rune_error, 1, false)
+        }
+    } else if first >= 224 && first <= 239 && index + 2 < source.len() {
+        let second = source[index + 1];
+        let third = source[index + 2];
+        let second_valid = if first == 224 {
+            second >= 160 && second <= 191
+        } else if first == 237 {
+            second >= 128 && second <= 159
+        } else {
+            second >= 128 && second <= 191
+        };
+        if second_valid && third >= 128 && third <= 191 {
+            (
+                (((first & 15) as int32) << 12) | (((second & 63) as int32) << 6)
+                    | (third & 63) as int32,
+                3,
+                true,
+            )
+        } else {
+            (rune_error, 1, false)
+        }
+    } else if first >= 240 && first <= 244 && index + 3 < source.len() {
+        let second = source[index + 1];
+        let third = source[index + 2];
+        let fourth = source[index + 3];
+        let second_valid = if first == 240 {
+            second >= 144 && second <= 191
+        } else if first == 244 {
+            second >= 128 && second <= 143
+        } else {
+            second >= 128 && second <= 191
+        };
+        if second_valid && third >= 128 && third <= 191 && fourth >= 128 && fourth <= 191 {
+            (
+                (((first & 7) as int32) << 18) | (((second & 63) as int32) << 12)
+                    | (((third & 63) as int32) << 6)
+                    | (fourth & 63) as int32,
+                4,
+                true,
+            )
+        } else {
+            (rune_error, 1, false)
+        }
+    } else {
+        (rune_error, 1, false)
+    }
+}
+
+fn codepoint_char(value: int32) -> Option[char] {
+    if value < 0 {
+        Option::None
+    } else {
+        char_from_uint32(value as uint32)
+    }
+}
+
+fn codepoint_text(value: int32) -> string {
+    match codepoint_char(value) {
+        Some(character) => character.to_string(),
+        None => "",
+    }
+}
+
+fn source_text(source: Vec[byte], start: int, end: int) -> string {
+    let values: Vec[byte] = Vec::with_capacity(end - start);
+    for index in start..end {
+        values.push(source[index])
+    }
+    let (valid, result) = string_from_utf8(values);
+    if valid {
+        result
+    } else {
+        let builder = text::StringBuilder::new();
+        let mut index = start;
+        while index < end {
+            let (value, width, _) = decode_rune(source, index);
+            builder.write_string(codepoint_text(value));
+            index += width;
+        }
+        builder.finish()
+    }
+}
+
+fn report(scanner: Scanner, offset: int, message: string) -> unit {
+    scanner.diagnostics.push(diagnostic::make(message, offset))
+}
+
+fn next(scanner: Scanner) -> unit {
+    if scanner.read_offset.get() < scanner.source.len() {
+        let offset = scanner.read_offset.get();
+        scanner.offset.set(offset);
+        let (value, width, valid) = decode_rune(scanner.source, offset);
+        if value == 0 {
+            report(scanner, offset, "illegal character NUL")
+        } else if !valid {
+            let remaining = scanner.source.len() - offset;
+            if offset == 0 && remaining >= 2
+                && ((scanner.source[offset] == 255 && scanner.source[offset + 1] == 254)
+                    || (scanner.source[offset] == 254 && scanner.source[offset + 1] == 255)) {
+                report(scanner, offset, "illegal UTF-8 encoding (got UTF-16)");
+                scanner.read_offset.set(scanner.source.len())
+            } else {
+                report(scanner, offset, "illegal UTF-8 encoding")
+            }
+        } else if value == bom && offset > 0 {
+            report(scanner, offset, "illegal byte order mark")
+        } else {};
+        scanner.read_offset.set(scanner.read_offset.get() + width);
+        scanner.current.set(value)
+    } else {
+        scanner.offset.set(scanner.source.len());
+        scanner.current.set(eof)
+    }
+}
+
+fn peek_byte(scanner: Scanner) -> byte {
+    if scanner.read_offset.get() < scanner.source.len() {
+        scanner.source[scanner.read_offset.get()]
+    } else {
+        0
+    }
+}
+
+fn scanner_new(source: Vec[byte]) -> Scanner {
+    let scanner = Scanner {
+        source,
+        current: Ref::new(b' ' as int32),
+        offset: Ref::new(0),
+        read_offset: Ref::new(0),
+        insert_semi: Ref::new(false),
+        pending_newline: Ref::new(-1),
+        diagnostics: Vec::[],
+    };
+    next(scanner);
+    if scanner.current.get() == bom {
+        next(scanner)
+    } else {};
+    scanner
+}
+
+fn ascii_lower(value: int32) -> int32 {
+    if value >= b'A' as int32 && value <= b'Z' as int32 {
+        value + 32
+    } else {
+        value
+    }
+}
+
+fn is_decimal(value: int32) -> bool {
+    value >= b'0' as int32 && value <= b'9' as int32
+}
+
+fn is_hex(value: int32) -> bool {
+    is_decimal(value)
+        || (ascii_lower(value) >= b'a' as int32 && ascii_lower(value) <= b'f' as int32)
+}
+
+fn is_letter(value: int32) -> bool {
+    (ascii_lower(value) >= b'a' as int32 && ascii_lower(value) <= b'z' as int32)
+        || value == b'_' as int32
+        || if value >= 128 {
+            match codepoint_char(value) {
+                Some(character) => unicode::is_letter(character),
+                None => false,
+            }
+        } else {
+            false
+        }
+}
+
+fn is_digit(value: int32) -> bool {
+    is_decimal(value)
+        || if value >= 128 {
+            match codepoint_char(value) {
+                Some(character) => go_is_digit(character),
+                None => false,
+            }
+        } else {
+            false
+        }
+}
+
+fn scan_identifier(scanner: Scanner) -> string {
+    let start = scanner.offset.get();
+    while is_letter(scanner.current.get()) || is_digit(scanner.current.get()) {
+        next(scanner)
+    }
+    source_text(scanner.source, start, scanner.offset.get())
+}
+
+fn skip_whitespace(scanner: Scanner) -> unit {
+    while scanner.current.get() == b' ' as int32 || scanner.current.get() == b'\t' as int32
+        || (scanner.current.get() == b'\n' as int32 && !scanner.insert_semi.get())
+        || scanner.current.get() == b'\r' as int32 {
+        next(scanner)
+    }
+}
+
+fn switch_two(scanner: Scanner, plain: gomlgo::token::Kind, assigned: gomlgo::token::Kind) -> gomlgo::token::Kind {
+    if scanner.current.get() == b'=' as int32 {
+        next(scanner);
+        assigned
+    } else {
+        plain
+    }
+}
+
+fn switch_three(
+    scanner: Scanner,
+    plain: gomlgo::token::Kind,
+    assigned: gomlgo::token::Kind,
+    alternate_character: int32,
+    alternate: gomlgo::token::Kind,
+) -> gomlgo::token::Kind {
+    if scanner.current.get() == b'=' as int32 {
+        next(scanner);
+        assigned
+    } else if scanner.current.get() == alternate_character {
+        next(scanner);
+        alternate
+    } else {
+        plain
+    }
+}
+
+fn switch_four(
+    scanner: Scanner,
+    plain: gomlgo::token::Kind,
+    assigned: gomlgo::token::Kind,
+    alternate_character: int32,
+    alternate: gomlgo::token::Kind,
+    alternate_assigned: gomlgo::token::Kind,
+) -> gomlgo::token::Kind {
+    if scanner.current.get() == b'=' as int32 {
+        next(scanner);
+        assigned
+    } else if scanner.current.get() == alternate_character {
+        next(scanner);
+        if scanner.current.get() == b'=' as int32 {
+            next(scanner);
+            alternate_assigned
+        } else {
+            alternate
+        }
+    } else {
+        plain
+    }
+}
+
+pub fn scan_bytes(source: bytes::Bytes) -> ScanResult {
+    let scanner = scanner_new(source.to_vec());
+    let tokens: Vec[gomlgo::token::Token] = Vec::[];
+    let mut finished = false;
+    while !finished {
+        let next_token = scan_one(scanner);
+        finished = gomlgo::token::equal(next_token.kind, gomlgo::token::Kind::Eof);
+        tokens.push(next_token)
+    }
+    ScanResult { tokens, diagnostics: scanner.diagnostics }
+}
+
+pub fn scan(source: string) -> ScanResult {
+    scan_bytes(bytes::Bytes::from_string(source))
+}

@@ -1,0 +1,198 @@
+package scanner;
+
+use gomlgo::token;
+
+fn scanned_token(kind: token::Kind, literal: string, start: int, end: int, synthetic: bool) -> token::Token {
+    token::make(kind, literal, start, end, synthetic)
+}
+
+fn scan_one(scanner: Scanner) -> token::Token {
+    if scanner.pending_newline.get() >= 0 {
+        let offset = scanner.pending_newline.get();
+        scanner.pending_newline.set(-1);
+        return scanned_token(token::Kind::Semicolon, "\n", offset, offset, true)
+    } else {};
+    skip_whitespace(scanner);
+    let start = scanner.offset.get();
+    let current = scanner.current.get();
+    let mut kind = token::Kind::Illegal;
+    let mut literal = "";
+    let mut synthetic = false;
+    let mut insert_semi = false;
+    if is_letter(current) {
+        literal = scan_identifier(scanner);
+        kind = token::lookup(literal);
+        insert_semi = token::inserts_semicolon(kind);
+    } else if is_decimal(current)
+        || (current == b'.' as int32 && is_decimal(peek_byte(scanner) as int32)) {
+        let scanned = scan_number(scanner);
+        kind = scanned.0;
+        literal = scanned.1;
+        insert_semi = true;
+    } else {
+        next(scanner);
+        if current == eof {
+            if scanner.insert_semi.get() {
+                scanner.insert_semi.set(false);
+                kind = token::Kind::Semicolon;
+                literal = "\n";
+                synthetic = true;
+            } else {
+                kind = token::Kind::Eof;
+            }
+        } else if current == b'\n' as int32 {
+            scanner.insert_semi.set(false);
+            kind = token::Kind::Semicolon;
+            literal = "\n";
+            synthetic = true;
+        } else if current == b'"' as int32 {
+            kind = token::Kind::String;
+            literal = scan_string(scanner);
+            insert_semi = true;
+        } else if current == b'\'' as int32 {
+            kind = token::Kind::Char;
+            literal = scan_rune(scanner);
+            insert_semi = true;
+        } else if current == b'`' as int32 {
+            kind = token::Kind::String;
+            literal = scan_raw_string(scanner);
+            insert_semi = true;
+        } else if current == b':' as int32 {
+            kind = switch_two(scanner, token::Kind::Colon, token::Kind::Define);
+        } else if current == b'.' as int32 {
+            kind = token::Kind::Period;
+            if scanner.current.get() == b'.' as int32 && peek_byte(scanner) == b'.' {
+                next(scanner);
+                next(scanner);
+                kind = token::Kind::Ellipsis;
+            } else {}
+        } else if current == b',' as int32 {
+            kind = token::Kind::Comma;
+        } else if current == b';' as int32 {
+            kind = token::Kind::Semicolon;
+            literal = ";";
+        } else if current == b'(' as int32 {
+            kind = token::Kind::Lparen;
+        } else if current == b')' as int32 {
+            kind = token::Kind::Rparen;
+            insert_semi = true;
+        } else if current == b'[' as int32 {
+            kind = token::Kind::Lbrack;
+        } else if current == b']' as int32 {
+            kind = token::Kind::Rbrack;
+            insert_semi = true;
+        } else if current == b'{' as int32 {
+            kind = token::Kind::Lbrace;
+        } else if current == b'}' as int32 {
+            kind = token::Kind::Rbrace;
+            insert_semi = true;
+        } else if current == b'+' as int32 {
+            kind = switch_three(
+                scanner,
+                token::Kind::Add,
+                token::Kind::AddAssign,
+                b'+' as int32,
+                token::Kind::Inc,
+            );
+            insert_semi = token::equal(kind, token::Kind::Inc);
+        } else if current == b'-' as int32 {
+            kind = switch_three(
+                scanner,
+                token::Kind::Sub,
+                token::Kind::SubAssign,
+                b'-' as int32,
+                token::Kind::Dec,
+            );
+            insert_semi = token::equal(kind, token::Kind::Dec);
+        } else if current == b'*' as int32 {
+            kind = switch_two(scanner, token::Kind::Mul, token::Kind::MulAssign);
+        } else if current == b'/' as int32 {
+            if scanner.current.get() == b'/' as int32 || scanner.current.get() == b'*' as int32 {
+                let comment = scan_comment(scanner);
+                literal = comment.0;
+                if scanner.insert_semi.get() && comment.1 >= 0 {
+                    scanner.pending_newline.set(comment.1);
+                    scanner.insert_semi.set(false)
+                } else {
+                    insert_semi = scanner.insert_semi.get();
+                };
+                kind = token::Kind::Comment;
+            } else {
+                kind = switch_two(scanner, token::Kind::Quo, token::Kind::QuoAssign);
+            }
+        } else if current == b'%' as int32 {
+            kind = switch_two(scanner, token::Kind::Rem, token::Kind::RemAssign);
+        } else if current == b'^' as int32 {
+            kind = switch_two(scanner, token::Kind::Xor, token::Kind::XorAssign);
+        } else if current == b'<' as int32 {
+            if scanner.current.get() == b'-' as int32 {
+                next(scanner);
+                kind = token::Kind::Arrow;
+            } else {
+                kind = switch_four(
+                    scanner,
+                    token::Kind::Lss,
+                    token::Kind::Leq,
+                    b'<' as int32,
+                    token::Kind::Shl,
+                    token::Kind::ShlAssign,
+                );
+            }
+        } else if current == b'>' as int32 {
+            kind = switch_four(
+                scanner,
+                token::Kind::Gtr,
+                token::Kind::Geq,
+                b'>' as int32,
+                token::Kind::Shr,
+                token::Kind::ShrAssign,
+            );
+        } else if current == b'=' as int32 {
+            kind = switch_two(scanner, token::Kind::Assign, token::Kind::Eql);
+        } else if current == b'!' as int32 {
+            kind = switch_two(scanner, token::Kind::Not, token::Kind::Neq);
+        } else if current == b'&' as int32 {
+            if scanner.current.get() == b'^' as int32 {
+                next(scanner);
+                kind = switch_two(scanner, token::Kind::AndNot, token::Kind::AndNotAssign);
+            } else {
+                kind = switch_three(
+                    scanner,
+                    token::Kind::And,
+                    token::Kind::AndAssign,
+                    b'&' as int32,
+                    token::Kind::Land,
+                );
+            }
+        } else if current == b'|' as int32 {
+            kind = switch_three(
+                scanner,
+                token::Kind::Or,
+                token::Kind::OrAssign,
+                b'|' as int32,
+                token::Kind::Lor,
+            );
+        } else if current == b'~' as int32 {
+            kind = token::Kind::Tilde;
+        } else {
+            if current != bom {
+                report(scanner, start, "illegal character")
+            } else {};
+            kind = token::Kind::Illegal;
+            literal = codepoint_text(current);
+            insert_semi = scanner.insert_semi.get();
+        }
+    };
+    if !synthetic {
+        scanner.insert_semi.set(insert_semi);
+    } else {};
+    let end = if synthetic {
+        start
+    } else {
+        scanner.offset.get()
+    };
+    if literal == "" && !token::equal(kind, token::Kind::Eof) {
+        literal = token::name(kind);
+    } else {};
+    scanned_token(kind, literal, start, end, synthetic)
+}

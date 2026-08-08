@@ -1,0 +1,24 @@
+package main;
+
+use gomlgo::scanner_diff;
+use std::env;
+use std::process;
+
+fn main() -> unit {
+    let arguments = env::args();
+    let root = if arguments.len() == 2 {
+        arguments[1]
+    } else {
+        "/usr/lib/go-1.26/src"
+    };
+    match scanner_diff::compare_tree(root) {
+        Ok(summary) => println(
+            "scanner zero diff: files=" + summary.files.to_string() + " tokens="
+                + summary.tokens.to_string(),
+        ),
+        Err(message) => {
+            println(message);
+            process::exit(1)
+        },
+    }
+}
