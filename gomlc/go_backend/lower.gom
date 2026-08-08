@@ -3238,7 +3238,10 @@ fn compile_functions(
     result
 }
 
-fn test_main_function(function_names: FunctionNames, test_cases: Vec[(string, string)]) -> Function {
+fn test_main_function(
+    function_names: FunctionNames,
+    test_cases: Vec[(string, string, Vec[(string, string)])],
+) -> Function {
     let cases: Vec[SwitchCase] = Vec::[];
     for test_case in test_cases {
         let function_name = match mapped_function_name(function_names, test_case.1) {
@@ -3246,9 +3249,19 @@ fn test_main_function(function_names: FunctionNames, test_cases: Vec[(string, st
             None => function_name(test_case.1),
         };
         let body_stmts: Vec[Stmt] = Vec::[];
+        let arguments: Vec[Expr] = Vec::[];
+        for argument in test_case.2 {
+            arguments.push(
+                if argument.0 == "string" {
+                    Expr::String { value: argument.1 }
+                } else {
+                    Expr::Bool { value: argument.1 == "true" }
+                },
+            )
+        }
         body_stmts.push(
             Stmt::Expr {
-                expr: Expr::Call { func: Expr::Var { name: function_name }, args: Vec::[] },
+                expr: Expr::Call { func: Expr::Var { name: function_name }, args: arguments },
             },
         );
         cases.push(
@@ -3283,7 +3296,11 @@ fn test_main_function(function_names: FunctionNames, test_cases: Vec[(string, st
     Function { name: "main", params: Vec::[], ret_ty: Option::None, body: Block { stmts } }
 }
 
-fn lower_with_test_cases(value: anf::File, testing: bool, test_cases: Vec[(string, string)]) -> File {
+fn lower_with_test_cases(
+    value: anf::File,
+    testing: bool,
+    test_cases: Vec[(string, string, Vec[(string, string)])],
+) -> File {
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
@@ -3444,7 +3461,10 @@ pub fn lower(value: anf::File) -> Result[File, string] {
     Result::Ok(lower_with_test_cases(value, false, Vec::[]))
 }
 
-pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string)]) -> Result[File, string] {
+pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string, Vec[(string, string)])]) -> Result[
+    File,
+    string,
+] {
     validate_anf(value)?;
     Result::Ok(lower_with_test_cases(value, true, test_cases))
 }

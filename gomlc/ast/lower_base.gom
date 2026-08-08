@@ -122,6 +122,18 @@ fn lower_attributes(node: LocatedNode) -> Vec[Attribute] {
                     } else {
                         name = token.token.text;
                     },
+                    lexer::TokenKind::TrueKeyword | lexer::TokenKind::FalseKeyword => if in_args {
+                        named_arg = push_attribute_arg(
+                            args,
+                            take_attribute_path(path_segments),
+                            named_arg,
+                        );
+                        named_arg = push_attribute_arg(
+                            args,
+                            Option::Some(AttributeArg::Ident(token.token.text)),
+                            named_arg,
+                        );
+                    } else {},
                     lexer::TokenKind::Str => if in_args {
                         named_arg = push_attribute_arg(
                             args,

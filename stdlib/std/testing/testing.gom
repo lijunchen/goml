@@ -1,6 +1,15 @@
 package testing;
 
+use std::env;
 use std::internal::host;
+use std::num;
+
+pub fn seed() -> int {
+    match env::var("GOML_TEST_SEED") {
+        Some(value) => num::parse_int(value).unwrap_or(0),
+        None => 0,
+    }
+}
 
 pub fn fail(message: string) -> unit {
     host::test_fail(message)
@@ -26,4 +35,58 @@ pub fn assert_ne[T: PartialEq + Debug](actual: T, expected: T) -> unit {
     if PartialEq::eq(actual, expected) {
         fail("assertion failed: values are equal\nvalue: " + Debug::debug(actual))
     } else {}
+}
+
+pub fn assert_some[T](value: Option[T]) -> unit {
+    if value.is_some() {} else {
+        fail("assertion failed: expected Some, found None")
+    }
+}
+
+pub fn assert_none[T](value: Option[T]) -> unit {
+    if value.is_none() {} else {
+        fail("assertion failed: expected None, found Some")
+    }
+}
+
+pub fn assert_ok[T, E](value: Result[T, E]) -> unit {
+    if value.is_ok() {} else {
+        fail("assertion failed: expected Ok, found Err")
+    }
+}
+
+pub fn assert_err[T, E](value: Result[T, E]) -> unit {
+    if value.is_err() {} else {
+        fail("assertion failed: expected Err, found Ok")
+    }
+}
+
+pub fn expect_some[T](value: Option[T], message: string) -> T {
+    match value {
+        Some(value) => value,
+        None => {
+            fail(message);
+            loop {}
+        },
+    }
+}
+
+pub fn expect_ok[T, E](value: Result[T, E], message: string) -> T {
+    match value {
+        Ok(value) => value,
+        Err(_) => {
+            fail(message);
+            loop {}
+        },
+    }
+}
+
+pub fn expect_err[T, E](value: Result[T, E], message: string) -> E {
+    match value {
+        Err(error) => error,
+        Ok(_) => {
+            fail(message);
+            loop {}
+        },
+    }
 }

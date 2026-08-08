@@ -121,8 +121,10 @@ fn links_imported_standard_package_closure() -> unit {
     let io = core_function_index(compilation.core_value, "std::io::println");
     let main = core_function_index(compilation.core_value, "main");
     testing::assert(bytes >= 0);
-    testing::assert(bytes < fs);
-    testing::assert(fs < io);
+    testing::assert(fs >= 0);
+    testing::assert(io >= 0);
+    testing::assert(bytes < main);
+    testing::assert(fs < main);
     testing::assert(io < main);
     testing::assert_eq(core_function_index(compilation.core_value, "std::env::args"), -1)
 }
@@ -136,15 +138,19 @@ fn tracks_host_api_package_link_needs() -> unit {
     testing::assert(needs.process);
     testing::assert(needs.testing);
     testing::assert(!needs.root);
-    testing::assert(!needs.ascii);
+    testing::assert(needs.ascii);
     testing::assert(!needs.cmp);
     testing::assert(!needs.collections);
-    testing::assert(!needs.env);
+    testing::assert(needs.env);
     testing::assert(!needs.fs);
-    testing::assert(!needs.io);
+    testing::assert(needs.io);
     testing::assert(!needs.iter);
     testing::assert(!needs.json);
-    testing::assert(!needs.text)
+    testing::assert(needs.num);
+    testing::assert(needs.internal_task);
+    testing::assert(needs.task);
+    testing::assert(needs.text);
+    testing::assert(needs.time)
 }
 
 #[test]
@@ -526,6 +532,104 @@ fn collects_and_encodes_test_descriptors() -> unit {
 }
 
 #[test]
+fn collects_parameterized_test_descriptors() -> unit {
+    let source = "package sample; #[test_case(\"left\", true)] #[test_case(\"right\", false)] fn pair(value: string, expected: bool) -> unit {}";
+    let files = Vec::new();
+    files.push(ast::lower(parser::parse(source)));
+    let paths = Vec::new();
+    paths.push("sample/sample_test.gom");
+    let collected = collect_package_test_candidates(files, paths);
+    testing::assert_eq(collected.diagnostics.len(), 0);
+    let exports = interface_codec::empty_exports();
+    exports.functions.push(
+        artifact::ArtifactFnScheme {
+            comptime: tast::ComptimeCapability::RuntimeOnly,
+            name: "alice::sample::pair",
+            type_params: Vec::new(),
+            constraints: Vec::new(),
+            ty: tast::Type::Func {
+                params: Vec::[tast::Type::String, tast::Type::Bool],
+                ret_ty: tast::Type::Unit,
+            },
+            body: tast::Callable::Function("alice::sample::pair"),
+        },
+    );
+    let validated = validate_package_tests("alice::sample", collected.candidates, exports);
+    testing::assert_eq(validated.diagnostics.len(), 0);
+    testing::assert_eq(validated.tests.len(), 2);
+    let mut found_left = false;
+    let mut found_right = false;
+    for test in validated.tests {
+        testing::assert(test.id.starts_with("alice::sample::pair::case_"));
+        testing::assert_eq(test.arguments.len(), 2);
+        if test.display_name == "alice::sample::pair(\"left\", true)" {
+            found_left = true;
+            testing::assert_eq(test.arguments[0].0, "string");
+            testing::assert_eq(test.arguments[0].1, "left");
+            testing::assert_eq(test.arguments[1].0, "bool");
+            testing::assert_eq(test.arguments[1].1, "true")
+        } else if test.display_name == "alice::sample::pair(\"right\", false)" {
+            found_right = true;
+            testing::assert_eq(test.arguments[0].0, "string");
+            testing::assert_eq(test.arguments[0].1, "right");
+            testing::assert_eq(test.arguments[1].0, "bool");
+            testing::assert_eq(test.arguments[1].1, "false")
+        } else {
+            testing::fail("unexpected parameterized test display name")
+        }
+    }
+    testing::assert(found_left);
+    testing::assert(found_right)
+}
+
+#[test]
+fn parameterized_test_ids_ignore_source_location() -> unit {
+    let arguments = Vec::[("string", "same"), ("bool", "true")];
+    let first = TestCandidate {
+        name: "case",
+        source_path: "first.gom",
+        start: 1,
+        end: 2,
+        label_end: 2,
+        ignored: false,
+        ignore_reason: Option::None,
+        arguments,
+    };
+    let second = TestCandidate {
+        name: "case",
+        source_path: "second.gom",
+        start: 100,
+        end: 200,
+        label_end: 200,
+        ignored: false,
+        ignore_reason: Option::None,
+        arguments: Vec::[("string", "same"), ("bool", "true")],
+    };
+    testing::assert_eq(
+        test_candidate_id("alice::sample", first),
+        test_candidate_id("alice::sample", second),
+    )
+}
+
+#[test]
+fn validates_ignore_arguments_for_parameterized_tests() -> unit {
+    let files = Vec::new();
+    files.push(
+        ast::lower(
+            parser::parse("#[test_case(true)] #[ignore(false)] fn invalid(value: bool) -> unit {}"),
+        ),
+    );
+    let paths = Vec::["invalid_test.gom"];
+    let collected = collect_package_test_candidates(files, paths);
+    testing::assert_eq(collected.candidates.len(), 1);
+    testing::assert_eq(collected.diagnostics.len(), 1);
+    testing::assert_eq(
+        collected.diagnostics[0].message,
+        "`#[ignore]` accepts either no arguments or one string reason",
+    )
+}
+
+#[test]
 fn collects_all_invalid_test_signature_diagnostics() -> unit {
     let files = Vec::new();
     files.push(ast::lower(parser::parse("#[test] fn invalid[T](value: T) -> bool { true }")));
@@ -590,7 +694,7 @@ fn collects_all_invalid_test_attribute_diagnostics() -> unit {
     expected.push("`#[test]` does not accept arguments");
     expected.push("duplicate `#[test]` attribute");
     expected.push("`#[ignore]` accepts either no arguments or one string reason");
-    expected.push("`#[test]` can only be applied to top-level functions, not struct");
+    expected.push("test attributes can only be applied to top-level functions, not struct");
     expected.push("`#[ignore]` requires a top-level `#[test]` function");
     for index in range(0, collected.diagnostics.len()) {
         let diagnostic = collected.diagnostics.get(index);
@@ -1795,12 +1899,44 @@ fn compiler_world_artifact_round_trips() -> unit {
                 world.standard.collections.interface_unit.interface_hash,
             );
             testing::assert_eq(
+                decoded.standard.error.interface_unit.interface_hash,
+                world.standard.error.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
                 decoded.standard.collections.core_value.functions.len(),
                 world.standard.collections.core_value.functions.len(),
             );
             testing::assert_eq(
                 decoded.standard.iter.interface_unit.interface_hash,
                 world.standard.iter.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.utf8.interface_unit.interface_hash,
+                world.standard.utf8.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.unicode.interface_unit.interface_hash,
+                world.standard.unicode.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.math.interface_unit.interface_hash,
+                world.standard.math.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.rand.interface_unit.interface_hash,
+                world.standard.rand.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.crypto.interface_unit.interface_hash,
+                world.standard.crypto.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.crypto_hash.interface_unit.interface_hash,
+                world.standard.crypto_hash.interface_unit.interface_hash,
+            );
+            testing::assert_eq(
+                decoded.standard.crypto_rand.interface_unit.interface_hash,
+                world.standard.crypto_rand.interface_unit.interface_hash,
             );
             testing::assert_eq(decoded.counter.get(), world.counter.get())
         },

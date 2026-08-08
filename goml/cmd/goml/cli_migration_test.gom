@@ -505,7 +505,7 @@ fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> unit {
     test_support::assert_success(json);
     test_support::assert_contains(
         test_support::stdout(json),
-        "{\"event\":\"ok\",\"name\":\"demo::math::add_works\"}",
+        "{\"event\":\"ok\",\"name\":\"demo::math::add_works\",\"seed\":",
     )
 }
 
@@ -664,7 +664,7 @@ fn project_test_supports_nocapture_and_timeouts() -> unit {
     );
     test_support::write_file(
         path::join(root, "checks/checks_test.gom"),
-        "package checks;\n\nuse std::io;\n\n#[test]\nfn output() -> unit { io::println(\"uncaptured marker\") }\n\n#[test]\n#[ignore(\"timeout case\")]\nfn timeout() -> unit { while true { () } }\n",
+        "package checks;\n\nuse std::io;\nuse std::testing;\n\n#[test]\nfn output() -> unit { io::println(\"uncaptured marker\") }\n\n#[test]\nfn seed() -> unit { testing::assert_eq(testing::seed(), 123) }\n\n#[test]\n#[ignore(\"timeout case\")]\nfn timeout() -> unit { while true { () } }\n",
     );
     let captured = test_support::project_command("test", "", Vec::["output"], root);
     test_support::assert_success(captured);
@@ -680,6 +680,14 @@ fn project_test_supports_nocapture_and_timeouts() -> unit {
     );
     test_support::assert_failure(timed_out);
     test_support::assert_contains(test_support::stdout(timed_out), "FAILED (timed out)");
+    let seeded = test_support::project_command(
+        "test",
+        "",
+        Vec::["seed", "--seed", "123", "--format", "json"],
+        root,
+    );
+    test_support::assert_success(seeded);
+    test_support::assert_contains(test_support::stdout(seeded), "\"seed\":123");
     let invalid = test_support::project_command(
         "test",
         "",
@@ -727,14 +735,14 @@ fn project_test_preserves_selection_order_when_workers_finish_out_of_order() -> 
     let json_stdout = test_support::stdout(json_output);
     let Some(json_slow) = text::find(
         json_stdout,
-        "{\"event\":\"ok\",\"name\":\"demo::checks::a_slow\"}",
+        "{\"event\":\"ok\",\"name\":\"demo::checks::a_slow\",\"seed\":",
     ) else {
         testing::fail("json output omitted slow test");
         return
     };
     let Some(json_fast) = text::find(
         json_stdout,
-        "{\"event\":\"ok\",\"name\":\"demo::checks::b_fast\"}",
+        "{\"event\":\"ok\",\"name\":\"demo::checks::b_fast\",\"seed\":",
     ) else {
         testing::fail("json output omitted fast test");
         return

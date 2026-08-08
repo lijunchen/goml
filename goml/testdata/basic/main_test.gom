@@ -28,6 +28,12 @@ fn arithmetic_is_correct() -> unit {
     testing::assert_eq(2 + 3, 5)
 }
 
+#[test_case("left", true)]
+#[test_case("right", false)]
+fn parameterized_case(value: string, expected: bool) -> unit {
+    testing::assert_eq(value == "left", expected)
+}
+
 #[test]
 #[ignore("later")]
 fn ignored_case() -> unit {

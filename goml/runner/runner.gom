@@ -20,6 +20,7 @@ pub struct Options {
     pub json: bool,
     pub nocapture: bool,
     pub timeout_ms: int,
+    pub seed: int,
 }
 
 pub struct Group {
@@ -176,7 +177,7 @@ fn run_one(module_dir: string, index: int, test: Test, options: Options) -> Exec
         let command = process::Command::new(test.executable).arg(test.id).current_dir(module_dir).env(
             "TZ",
             "UTC",
-        );
+        ).env("GOML_TEST_SEED", options.seed.to_string());
         if options.nocapture {
             match command.status_timeout(options.timeout_ms) {
                 Ok(result) => Execution {
@@ -271,7 +272,7 @@ fn ordered_executions(values: Vec[Execution]) -> Vec[Execution] {
     values
 }
 
-fn report_text(values: Vec[Execution]) -> int {
+fn report_text(values: Vec[Execution], seed: int) -> int {
     let mut passed = 0;
     let mut failed = 0;
     let mut ignored = 0;
@@ -318,10 +319,13 @@ fn report_text(values: Vec[Execution]) -> int {
         "FAILED"
     };
     io::println(f"\ntest result: {result}. {passed} passed; {failed} failed; {ignored} ignored");
+    if failed > 0 {
+        io::println(f"replay seed: {seed}")
+    } else {};
     failed
 }
 
-fn report_json(values: Vec[Execution]) -> int {
+fn report_json(values: Vec[Execution], seed: int) -> int {
     let mut failed = 0;
     for value in values {
         let event = match value.status {
@@ -338,7 +342,9 @@ fn report_json(values: Vec[Execution]) -> int {
         };
         io::println(
             "{\"event\":\"" + event + "\",\"name\":\"" + escape_json(value.test.display_name)
-                + "\"}",
+                + "\",\"seed\":"
+                + seed.to_string()
+                + "}",
         )
     }
     failed
@@ -416,9 +422,9 @@ pub fn run(module_dir: string, groups: Vec[Group], options: Options) -> Result[u
         },
     )?;
     let failures = if options.json {
-        report_json(ordered_executions(executions))
+        report_json(ordered_executions(executions), options.seed)
     } else {
-        report_text(ordered_executions(executions))
+        report_text(ordered_executions(executions), options.seed)
     };
     if failures == 0 {
         Result::Ok(())

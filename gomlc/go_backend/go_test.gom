@@ -67,7 +67,7 @@ fn lower_linked_source(source: string) -> File {
     )
 }
 
-fn lower_test_source(source: string, test_cases: Vec[(string, string)]) -> File {
+fn lower_test_source(source: string, test_cases: Vec[(string, string, Vec[(string, string)])]) -> File {
     required_lower(
         lower_tests(
             anf::lower(
@@ -104,8 +104,8 @@ fn bounds_qualified_variant_names_after_qualification() -> unit {
 #[test]
 fn emits_test_runner_entrypoint() -> unit {
     let test_cases = Vec::new();
-    test_cases.push(("example::alpha", "alpha"));
-    test_cases.push(("example::beta", "beta"));
+    test_cases.push(("example::alpha", "alpha", Vec::[]));
+    test_cases.push(("example::beta", "beta", Vec::[]));
     let output = encode(
         lower_test_source(
             "fn beta() -> unit {} fn alpha() -> unit {} fn unused() -> unit {}",
@@ -123,6 +123,27 @@ fn emits_test_runner_entrypoint() -> unit {
         ),
     );
     testing::assert(!string_contains(output, "func unused("))
+}
+
+#[test]
+fn emits_parameterized_test_arguments() -> unit {
+    let test_cases = Vec::new();
+    test_cases.push(
+        (
+            "example::parameterized::case_123",
+            "parameterized",
+            Vec::[("string", "left"), ("bool", "true")],
+        ),
+    );
+    let output = encode(
+        lower_test_source("fn parameterized(value: string, expected: bool) -> unit {}", test_cases),
+    );
+    testing::assert(
+        string_contains(
+            output,
+            "case \"example::parameterized::case_123\":\n        parameterized(\"left\", true)",
+        ),
+    )
 }
 
 #[test]
@@ -234,7 +255,10 @@ fn all_standard_runtime_hooks() -> Vec[string] {
     hooks.push("std.fs.read_file");
     hooks.push("std.fs.write_file");
     hooks.push("std.fs.read_bytes");
+    hooks.push("std.fs.read_bytes.v2");
     hooks.push("std.fs.write_bytes");
+    hooks.push("std.fs.write_bytes.v2");
+    hooks.push("std.fs.path_operation.v2");
     hooks.push("std.fs.create_dir_all");
     hooks.push("std.fs.remove_file");
     hooks.push("std.fs.remove_dir_all");
@@ -248,9 +272,13 @@ fn all_standard_runtime_hooks() -> Vec[string] {
     hooks.push("std.io.println");
     hooks.push("std.io.eprint");
     hooks.push("std.io.read_stdin");
+    hooks.push("std.io.read_stdin.v2");
     hooks.push("std.io.read_stdin_exact");
+    hooks.push("std.io.read_stdin_exact.v2");
     hooks.push("std.io.write_stdout");
+    hooks.push("std.io.write_stdout.v2");
     hooks.push("std.io.write_stderr");
+    hooks.push("std.io.write_stderr.v2");
     hooks.push("std.path.join");
     hooks.push("std.path.clean");
     hooks.push("std.path.is_absolute");
@@ -267,6 +295,9 @@ fn all_standard_runtime_hooks() -> Vec[string] {
     hooks.push("std.process.status");
     hooks.push("std.process.status_timeout");
     hooks.push("std.testing.fail");
+    hooks.push("std.math.float32_unary");
+    hooks.push("std.math.float32_pow");
+    hooks.push("std.crypto.rand.bytes");
     hooks
 }
 
@@ -280,14 +311,18 @@ fn emits_every_standard_runtime_hook() -> unit {
         string_contains(
             output,
             "import (\n" + "    _goml_bytes \"bytes\"\n" + "    _goml_context \"context\"\n"
+                + "    _goml_cryptorand \"crypto/rand\"\n"
                 + "    _goml_fmt \"fmt\"\n"
+                + "    _goml_errors \"errors\"\n"
                 + "    _goml_hash \"hash\"\n"
                 + "    _goml_io \"io\"\n"
+                + "    _goml_math \"math\"\n"
                 + "    _goml_os \"os\"\n"
                 + "    _goml_exec \"os/exec\"\n"
                 + "    _goml_filepath \"path/filepath\"\n"
                 + "    _goml_sha256 \"crypto/sha256\"\n"
                 + "    _goml_strings \"strings\"\n"
+                + "    _goml_syscall \"syscall\"\n"
                 + "    _goml_time \"time\"\n"
                 + ")",
         ),
@@ -296,6 +331,13 @@ fn emits_every_standard_runtime_hook() -> unit {
         testing::assert(string_contains(output, "func " + runtime_hook_name(key) + "("))
     }
     testing::assert(string_contains(output, "data, err = _goml_os.ReadFile(path)"));
+    testing::assert(string_contains(output, "func _goml_runtime_error_kind(err error) int"));
+    testing::assert(
+        string_contains(output, "func _goml_runtime_error_raw_code(err error) (bool, int)"),
+    );
+    testing::assert(string_contains(output, "case _goml_syscall.Errno:"));
+    testing::assert(string_contains(output, "if _goml_os.IsNotExist(err)"));
+    testing::assert(string_contains(output, "func _goml_runtime_std_fs_read_bytes_v2("));
     testing::assert(
         string_contains(output, "var err error = _goml_os.WriteFile(path, data.items, 0644)"),
     );

@@ -2,6 +2,7 @@ package main;
 
 use gomlc::artifact;
 use gomlc::ast;
+use gomlc::hash;
 use gomlc::tast;
 use std::cmp;
 use std::collections;
@@ -15,6 +16,7 @@ struct TestCandidate {
     label_end: int,
     ignored: bool,
     ignore_reason: Option[string],
+    arguments: Vec[(string, string)],
 }
 
 struct TestCandidateCollection {
@@ -79,6 +81,45 @@ fn duplicate_test_id_diagnostic(id: string, candidate: TestCandidate, first: Tes
     }
 }
 
+fn test_ignore_reason(
+    attributes: Vec[ast::Attribute],
+    source_path: string,
+    diagnostics: Vec[tast::Diagnostic],
+) -> Option[string] {
+    if attributes.is_empty() {
+        return Option::None
+    } else {};
+    let attribute = attributes[0];
+    if !attribute.has_argument_list {
+        Option::None
+    } else if attribute.args.len() == 1 {
+        match attribute.args[0] {
+            String(reason) => Option::Some(reason),
+            Ident(_) | Path(_) | Named { .. } => {
+                diagnostics.push(
+                    package_test_diagnostic(
+                        "attribute",
+                        "`#[ignore]` accepts either no arguments or one string reason",
+                        source_path,
+                        attribute.span,
+                    ),
+                );
+                Option::None
+            },
+        }
+    } else {
+        diagnostics.push(
+            package_test_diagnostic(
+                "attribute",
+                "`#[ignore]` accepts either no arguments or one string reason",
+                source_path,
+                attribute.span,
+            ),
+        );
+        Option::None
+    }
+}
+
 fn collect_function_test(
     source_path: string,
     function: ast::Function,
@@ -86,6 +127,7 @@ fn collect_function_test(
     diagnostics: Vec[tast::Diagnostic],
 ) -> unit {
     let test_attrs = named_test_attributes(function.attrs, "test");
+    let case_attrs = named_test_attributes(function.attrs, "test_case");
     let ignore_attrs = named_test_attributes(function.attrs, "ignore");
     if test_attrs.len() > 1 {
         for index in 1..test_attrs.len() {
@@ -113,7 +155,7 @@ fn collect_function_test(
             )
         }
     } else {};
-    if test_attrs.is_empty() {
+    if test_attrs.is_empty() && case_attrs.is_empty() {
         for attribute in ignore_attrs {
             diagnostics.push(
                 package_test_diagnostic(
@@ -123,6 +165,78 @@ fn collect_function_test(
                     attribute.span,
                 ),
             )
+        }
+        return
+    } else {};
+    if !test_attrs.is_empty() && !case_attrs.is_empty() {
+        diagnostics.push(
+            package_test_diagnostic(
+                "attribute",
+                "`#[test]` and `#[test_case(...)]` cannot be combined",
+                source_path,
+                case_attrs[0].span,
+            ),
+        );
+        return
+    } else {};
+    if !case_attrs.is_empty() {
+        let ignore_reason = test_ignore_reason(ignore_attrs, source_path, diagnostics);
+        for case_attr in case_attrs {
+            let arguments: Vec[(string, string)] = Vec::[];
+            let mut valid = case_attr.has_argument_list && !case_attr.args.is_empty();
+            if !valid {
+                diagnostics.push(
+                    package_test_diagnostic(
+                        "attribute",
+                        "`#[test_case(...)]` requires at least one string or boolean argument",
+                        source_path,
+                        case_attr.span,
+                    ),
+                )
+            } else {};
+            for argument in case_attr.args {
+                match argument {
+                    String(value) => arguments.push(("string", value)),
+                    Ident(value) => if value == "true" || value == "false" {
+                        arguments.push(("bool", value))
+                    } else {
+                        valid = false;
+                        diagnostics.push(
+                            package_test_diagnostic(
+                                "attribute",
+                                "test case arguments must be string or boolean literals",
+                                source_path,
+                                case_attr.span,
+                            ),
+                        )
+                    },
+                    Path(_) | Named { .. } => {
+                        valid = false;
+                        diagnostics.push(
+                            package_test_diagnostic(
+                                "attribute",
+                                "test case arguments must be string or boolean literals",
+                                source_path,
+                                case_attr.span,
+                            ),
+                        )
+                    },
+                }
+            }
+            if valid {
+                candidates.push(
+                    TestCandidate {
+                        name: function.name,
+                        source_path,
+                        start: case_attr.span.start,
+                        end: case_attr.span.end,
+                        label_end: case_attr.span.end,
+                        ignored: !ignore_attrs.is_empty(),
+                        ignore_reason,
+                        arguments,
+                    },
+                )
+            } else {}
         }
         return
     } else {};
@@ -138,39 +252,7 @@ fn collect_function_test(
         );
         return
     } else {};
-    let ignore_reason = if !ignore_attrs.is_empty() {
-        let ignore_attr = ignore_attrs[0];
-        if !ignore_attr.has_argument_list {
-            Option::None
-        } else if ignore_attr.args.len() == 1 {
-            match ignore_attr.args[0] {
-                String(reason) => Option::Some(reason),
-                Ident(_) | Path(_) | Named { .. } => {
-                    diagnostics.push(
-                        package_test_diagnostic(
-                            "attribute",
-                            "`#[ignore]` accepts either no arguments or one string reason",
-                            source_path,
-                            ignore_attr.span,
-                        ),
-                    );
-                    Option::None
-                },
-            }
-        } else {
-            diagnostics.push(
-                package_test_diagnostic(
-                    "attribute",
-                    "`#[ignore]` accepts either no arguments or one string reason",
-                    source_path,
-                    ignore_attr.span,
-                ),
-            );
-            Option::None
-        }
-    } else {
-        Option::None
-    };
+    let ignore_reason = test_ignore_reason(ignore_attrs, source_path, diagnostics);
     candidates.push(
         TestCandidate {
             name: function.name,
@@ -180,6 +262,7 @@ fn collect_function_test(
             label_end: test_attr.span.end,
             ignored: !ignore_attrs.is_empty(),
             ignore_reason,
+            arguments: Vec::[],
         },
     )
 }
@@ -191,11 +274,11 @@ fn reject_item_test_attributes(
     diagnostics: Vec[tast::Diagnostic],
 ) -> unit {
     for value in values {
-        if value.name == "test" {
+        if value.name == "test" || value.name == "test_case" {
             diagnostics.push(
                 package_test_diagnostic(
                     "attribute",
-                    "`#[test]` can only be applied to top-level functions, not " + target,
+                    "test attributes can only be applied to top-level functions, not " + target,
                     source_path,
                     value.span,
                 ),
@@ -315,9 +398,53 @@ fn find_test_scheme(exports: artifact::ArtifactPackageExports, symbol: string) -
     Option::None
 }
 
-fn find_valid_test_candidate(values: Vec[TestCandidate], name: string) -> Option[TestCandidate] {
+fn test_arguments_key(arguments: Vec[(string, string)]) -> string {
+    let result = text::StringBuilder::new();
+    for argument in arguments {
+        result.write_string(argument.0.byte_len().to_string());
+        result.write_char(':');
+        result.write_string(argument.0);
+        result.write_string(argument.1.byte_len().to_string());
+        result.write_char(':');
+        result.write_string(argument.1)
+    }
+    result.finish()
+}
+
+fn test_candidate_id(package_name: string, candidate: TestCandidate) -> string {
+    let symbol = test_symbol(package_name, candidate.name);
+    if candidate.arguments.is_empty() {
+        symbol
+    } else {
+        symbol + "::case_"
+            + hash::sha256_prefix(symbol + "\n" + test_arguments_key(candidate.arguments))
+    }
+}
+
+fn test_candidate_display(package_name: string, candidate: TestCandidate) -> string {
+    let symbol = test_symbol(package_name, candidate.name);
+    if candidate.arguments.is_empty() {
+        symbol
+    } else {
+        let values: Vec[string] = Vec::[];
+        for argument in candidate.arguments {
+            values.push(
+                if argument.0 == "string" {
+                    "\"" + argument.1 + "\""
+                } else {
+                    argument.1
+                },
+            )
+        }
+        symbol + "(" + text::join(values, ", ") + ")"
+    }
+}
+
+fn find_valid_test_candidate(package_name: string, values: Vec[TestCandidate], id: string) -> Option[
+    TestCandidate,
+] {
     for value in values {
-        if value.name == name {
+        if test_candidate_id(package_name, value) == id {
             return Option::Some(value)
         } else {}
     }
@@ -335,6 +462,7 @@ fn validate_package_tests(
     for candidate in candidates {
         let span = ast::Span { start: candidate.start, end: candidate.end };
         let symbol = test_symbol(package_name, candidate.name);
+        let id = test_candidate_id(package_name, candidate);
         let scheme = match find_test_scheme(exports, symbol) {
             Some(value) => value,
             None => {
@@ -372,15 +500,43 @@ fn validate_package_tests(
         } else {};
         match tast::resolve_type(scheme.ty) {
             Func { params, ret_ty } => {
-                if !params.is_empty() {
+                if params.len() != candidate.arguments.len() {
                     diagnostics.push(
                         package_test_diagnostic(
                             "typer",
-                            "test function `" + candidate.name + "` must not have parameters",
+                            if candidate.arguments.is_empty() {
+                                "test function `" + candidate.name + "` must not have parameters"
+                            } else {
+                                "test function `" + candidate.name + "` expects "
+                                    + params.len().to_string()
+                                    + " parameters but the case provides "
+                                    + candidate.arguments.len().to_string()
+                            },
                             candidate.source_path,
                             span,
                         ),
                     )
+                } else {};
+                if params.len() == candidate.arguments.len() {
+                    for index in 0..params.len() {
+                        let valid = match tast::resolve_type(params[index]) {
+                            String => candidate.arguments[index].0 == "string",
+                            Bool => candidate.arguments[index].0 == "bool",
+                            _ => false,
+                        };
+                        if !valid {
+                            diagnostics.push(
+                                package_test_diagnostic(
+                                    "typer",
+                                    "test case argument " + index.to_string()
+                                        + " does not match parameter type "
+                                        + tast::diagnostic_type_text(params[index]),
+                                    candidate.source_path,
+                                    span,
+                                ),
+                            )
+                        } else {}
+                    }
                 } else {};
                 match tast::resolve_type(ret_ty) {
                     Unit => (),
@@ -410,22 +566,23 @@ fn validate_package_tests(
             },
         };
         if diagnostics.len() == diagnostic_count {
-            match find_valid_test_candidate(valid_candidates, candidate.name) {
+            match find_valid_test_candidate(package_name, valid_candidates, id) {
                 Some(first) => diagnostics.push(
                     duplicate_test_id_diagnostic(symbol, candidate, first),
                 ),
                 None => {
                     tests.push(
                         artifact::ArtifactTestDescriptor {
-                            id: symbol,
+                            id,
                             package_name,
                             symbol,
-                            display_name: symbol,
+                            display_name: test_candidate_display(package_name, candidate),
                             source_path: candidate.source_path,
                             start: candidate.start,
                             end: candidate.end,
                             ignored: candidate.ignored,
                             ignore_reason: candidate.ignore_reason,
+                            arguments: candidate.arguments,
                         },
                     );
                     valid_candidates.push(candidate)
@@ -524,6 +681,18 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
             Some(reason) => write_test_json_string(builder, reason),
             None => builder.write_string("null"),
         };
+        builder.write_string(",\n    \"arguments\": [");
+        for argument_index in 0..value.arguments.len() {
+            if argument_index > 0 {
+                builder.write_char(',')
+            } else {};
+            builder.write_string("{\"kind\":");
+            write_test_json_string(builder, value.arguments[argument_index].0);
+            builder.write_string(",\"value\":");
+            write_test_json_string(builder, value.arguments[argument_index].1);
+            builder.write_char('}')
+        }
+        builder.write_char(']');
         builder.write_string("\n  }")
     }
     if !values.is_empty() {
@@ -533,10 +702,12 @@ fn encode_test_manifest(values: Vec[artifact::ArtifactTestDescriptor]) -> string
     builder.finish()
 }
 
-fn test_link_cases(values: Vec[artifact::ArtifactTestDescriptor]) -> Vec[(string, string)] {
-    let result: Vec[(string, string)] = Vec::[];
+fn test_link_cases(values: Vec[artifact::ArtifactTestDescriptor]) -> Vec[
+    (string, string, Vec[(string, string)]),
+] {
+    let result: Vec[(string, string, Vec[(string, string)])] = Vec::[];
     for value in values {
-        result.push((value.id, value.symbol))
+        result.push((value.id, value.symbol, value.arguments))
     }
     result
 }
