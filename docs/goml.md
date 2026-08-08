@@ -478,6 +478,8 @@ Public `#[comptime]` functions can be called from another package. The defining 
 
 Compile-time integer evaluation uses the same fixed-width, wrapping representation as generated runtime code. Division by zero, a negative shift count, and an out-of-bounds index fail compilation. Signed minimum divided by `-1` yields the signed minimum, and its remainder is zero. Narrowing casts retain the low bits of the destination width; widening a signed source sign-extends before conversion to the destination signedness. The CTIR target specification is part of its semantic hash. `int` and `uint` currently use the 64-bit Linux amd64 toolchain target width.
 
+At runtime, integer addition, subtraction, and multiplication use the same fixed-width wrapping representation. Integer division or remainder by zero terminates the current process with the generated Go runtime failure. Casts use the same narrowing, sign-extension, and signedness rules as compile-time evaluation.
+
 ### Structure
 
 ```goml
@@ -1721,6 +1723,7 @@ struct User {
 
 ```goml
 use std::json;
+use std::math;
 use json::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -2291,6 +2294,8 @@ use std::bincode;
 use std::bytes;
 use std::cmp;
 use std::collections;
+use std::crypto;
+use std::error;
 use std::env;
 use std::fs;
 use std::io;
@@ -2299,12 +2304,15 @@ use std::json;
 use std::num;
 use std::path;
 use std::process;
+use std::rand;
 use std::serde;
 use std::task;
 use std::testing;
 use std::text;
 use std::toml;
 use std::time;
+use std::utf8;
+use std::unicode;
 ```
 
 Current public entrances include:
@@ -2315,20 +2323,91 @@ Current public entrances include:
 - `cmp::Ordering`, `Ord`, `Reverse`, comparison helpers, and two-value minimum, maximum, and clamping operations
 - `collections::Arena`, `BitSet`, `Deque`, `HashSet`, `IndexMap`, `IndexVec`, `Interner`, and `Stack`
 - `collections::sort`, `stable_sort`, `binary_search`, `min`, `max`, comparator-based variants, `position_by`, `contains`, `dedup_by`, and `dedup`
-- `env::args`, `current_dir`, `current_exe`, and `var`
+- `crypto::hash` one-shot SHA-256 and `crypto::rand` operating-system random bytes
+- `error::Error`, `ErrorKind`, `Details`, and stable error-kind code conversion
+- `env::args`, current-directory and executable queries, and environment-variable reads
 - `fs::read_file`, `write_file`, byte I/O, directory operations, path inspection, and `sha256_file`
 - `io::print`, `println`, `eprint`, `eprintln`, and byte-oriented standard stream I/O
 - `iter::empty`, `once`, `from_fn`, iterator adapters, and single-pass consumers
 - `json::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `try_to_string`, `try_stringify`, `to_string`, `from_string`, `field`, and typed `as_*` accessors
-- `num::parse_int`, `parse_int_radix`, `parse_uint`, `parse_uint_radix`, `parse_float32`, and `parse_float64`
+- `math` float32/float64 elementary functions, IEEE 754 classification, and common constants
+- `num` string and structured parsing plus checked and saturating `int64` arithmetic
 - `path::join`, `clean`, `is_absolute`, component inspection, and `absolute`
-- `process::Command`, `ExitStatus`, `Output`, `exit`, and `look_path`
+- `process::Command`, structured whole-process execution, `ExitStatus`, `Output`, `exit`, and `look_path`
+- `rand::next_u64`, deterministic byte generation, integer ranges, and shuffle with an explicit seed
 - `serde::Value`, `Serializer`, `Deserializer`, `Serialize`, `Deserialize`, `value_serializer`, `value_deserializer`, `to_value`, and `from_value`
 - `task::Scope`, `Task[T]`, `CancelToken`, `WaitResult[T]`, `scope`, and `try_scope`
-- `testing::fail`, `assert`, `assert_eq`, and `assert_ne`
-- `text::StringBuilder`, `find`, `rfind`, `starts_with_at`, `trim`, `trim_start`, `trim_end`, `split`, `split_once`, `lines`, `replace`, `join`, `repeat`, `is_ascii`, `eq_ignore_ascii_case`, `to_ascii_lowercase`, and `to_ascii_uppercase`
+- `testing::fail`, boolean/equality assertions, and `Option`/`Result` shape assertions
+- `text::StringBuilder`, byte-offset search, character iteration and slicing, trimming, splitting, replacement, joining, repetition, and explicit ASCII operations
 - `toml::Value`, `parse`, `encode`, serde `Serialize` and `Deserialize` re-exports, `to_value`, `from_value`, `to_string`, and `from_string`
 - `time::Duration`, `Instant`, `SystemTime`, `sleep`, and `sleep_with`
+- `utf8::validate`, `decode`, `encode`, `encoded_len`, and `Utf8Error`
+- `unicode` scalar properties and Unicode case conversion using Unicode 15.0.0 tables
+
+### Structured error foundation
+
+`std::error` provides the common protocol used by structured standard-library errors. `Error` is a marker trait requiring `Debug` and `ToString`. `ErrorKind` defines stable, message-independent categories including missing files, permission failures, invalid input or data, timeouts, interruption, short I/O, broken pipes, unsupported operations, and `Other`.
+
+`Error` has a blanket implementation for every value implementing `Debug` and `ToString`. This lets domain errors participate in the common protocol without making their older standard-library packages depend on the newly introduced `std::error` package during the bootstrap transition.
+
+`kind_code` and `kind_from_code` convert between `ErrorKind` and the stable integer representation used by runtime and artifact boundaries. Unknown integer values map to `Other`. `Details` stores the stable kind code, operation, optional context, optional raw operating-system code, and a display-only message. Programs may branch on the kind code or `ErrorKind`, but must not parse the host message.
+
+```goml
+use std::error;
+
+fn describe[E: error::Error](value: E) -> string {
+    value.to_string()
+}
+
+fn example() -> string {
+    let value = error::Details::new(
+        error::kind_code(error::ErrorKind::NotFound),
+        "read",
+        Option::Some("missing.txt"),
+        Option::None,
+        "file does not exist",
+    );
+    describe(value)
+}
+```
+
+The existing `io`, `fs`, `path`, `env`, `process`, and `num` string-error APIs remain unchanged during the first compatibility phase. Domain-specific error types and structured entry points are introduced only after a released stage0 can load `std::error`.
+
+### UTF-8 validation and conversion
+
+`std::utf8` validates byte slices and converts complete byte vectors to strings without admitting invalid UTF-8. `Utf8Error::valid_up_to` is the length of the valid prefix. `error_length` is the length of the invalid sequence when known and is `None` for an incomplete sequence at the end of the input. `encode` returns the UTF-8 bytes of a string, and `encoded_len` returns the byte length of one Unicode scalar value.
+
+Importing `utf8::BytesUtf8` adds `Bytes::to_string_utf8`, which returns `Utf8Error`. The original `Bytes::to_string` string-error method remains available for bootstrap and source compatibility.
+
+`text::find`, `text::rfind`, and `text::find_bytes` return byte offsets. `text::char_indices` yields byte offsets paired with Unicode scalar values, `text::char_count` counts scalar values, and `text::slice_chars` uses scalar-value indexes and returns `None` for an invalid range.
+
+`std::unicode` fixes its public data version to Unicode 15.0.0. Character predicates operate on one Unicode scalar value. `lowercase` and `uppercase` apply Unicode case mapping to a complete string. `case_fold` uses the checked-in table generated by `tools/generate_unicode_casefold.py`, supports multi-scalar folds, and is locale independent.
+
+`std::math` delegates elementary operations to Go's `math` package and follows its IEEE 754 special-value behavior. The float32 forms calculate through float64 and round the result back to float32. Results therefore use the target Go toolchain's correctly rounded conversions but do not promise bit-for-bit equality across different operating systems or processor implementations for every transcendental function.
+
+`std::rand` uses the versioned `splitmix64-v1` algorithm. Every operation requires an explicit seed, and identical inputs produce identical outputs. It is intended for tests, simulations, sampling, and shuffling and is not cryptographically secure.
+
+`goml test --seed N` supplies one reproducible positive seed to every test process through `testing::seed()`. Failure summaries print the replay seed, and every JSON result event includes it. Captured stdout and stderr remain isolated per test process and are emitted only for failures unless `--nocapture` is selected.
+
+Parameterized tests use one or more `#[test_case(...)]` attributes on a top-level function. This release accepts string and boolean arguments and validates them against the function parameters. Each case receives a content-derived stable ID, while list, filter, text/JSON reporting, artifact manifests, and CodeLens continue to use its readable display name. Ordinary zero-argument `#[test]` functions remain unchanged.
+
+`std::crypto::hash::sha256` returns the lowercase hexadecimal SHA-256 digest of a byte buffer, and `sha256_file` hashes a complete file before returning. `std::crypto::rand::bytes` reads the requested number of bytes from the operating-system cryptographic random source. These APIs do not expose hasher or random-source handles.
+
+`Duration` provides checked and saturating scaled constructors, addition, subtraction, and multiplication. Checked operations return `None` on overflow, underflow, or a negative input. Saturating operations clamp to zero or the largest signed 64-bit nanosecond value. `Duration`, `Instant`, and `SystemTime` expose `compare`; `Instant::checked_duration_since` returns `None` when the receiver precedes the supplied instant.
+
+`fs::read_file_structured`, `read_bytes_structured`, `write_file_structured`, and `write_bytes_structured` are the additive structured-error forms of whole-file I/O. They return `fs::Error` with a stable `io::ErrorKind`, operation, path, optional raw operating-system code, and display message. The original string-error functions remain available during the compatibility period.
+
+`fs::create_dir`, `rename`, `copy`, `hard_link`, and `symbolic_link` are eager operations returning `fs::Error`. `copy` reads and writes the complete file and currently creates the destination with portable `0644` permissions; it does not preserve source metadata.
+
+`fs::metadata` and `symlink_metadata` return value-only metadata including file type, length, portable permission bits, and modification time. `read_dir_structured` eagerly snapshots directory entries. `atomic_write` writes, synchronizes, closes, and atomically renames a same-directory temporary file before returning; temporary cleanup stays inside the runtime call. `replace` exposes the host atomic rename operation under replacement semantics.
+
+`io::read_stdin_structured`, `read_stdin_exact_structured`, `write_stdout_structured`, and `write_stderr_structured` provide the same additive migration for standard streams. `read_stdin_to_string` validates the complete input as UTF-8 and reports `InvalidData` on failure. A negative exact-read length reports `InvalidInput` before accessing stdin.
+
+`num::parse_int_structured`, radix and unsigned variants, and the structured float parsers return domain parse errors without changing the original parsing entry points. The `checked_*_int64` operations return `None` on overflow; the corresponding `saturating_*_int64` operations clamp to the signed 64-bit bounds.
+
+`env::current_dir_structured`, `current_exe_structured`, and `var_structured`, `path::absolute_structured`, and `process` structured execution methods are additive whole-operation forms. Process timeout methods take `time::Duration`, terminate and wait through the existing command runtime, and return `TimedOut` instead of a separate boolean.
+
+Paths remain UTF-8 `string` values. `path::separator` reports the host separator, `components` recognizes both slash forms, `relative` uses host path rules, and `windows_prefix` recognizes drive and UNC prefixes independently of the host operating system. Non-UTF-8 operating-system names cannot be represented and therefore cannot appear in these APIs.
 
 ### Bincode typed binary data
 
