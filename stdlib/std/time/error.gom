@@ -1,0 +1,59 @@
+package time;
+
+use std::io;
+
+pub struct Error {
+    details: io::ErrorDetails,
+}
+
+impl Error {
+    pub fn new(operation: string, message: string) -> Error {
+        Error {
+            details: io::ErrorDetails::new(
+                io::ErrorKind::InvalidInput,
+                operation,
+                Option::None,
+                Option::None,
+                message,
+            ),
+        }
+    }
+
+    pub fn kind(self: Error) -> io::ErrorKind {
+        self.details.kind()
+    }
+
+    pub fn operation(self: Error) -> string {
+        self.details.operation()
+    }
+
+    pub fn context(self: Error) -> Option[string] {
+        self.details.context()
+    }
+
+    pub fn raw_os_code(self: Error) -> Option[int] {
+        self.details.raw_os_code()
+    }
+
+    pub fn message(self: Error) -> string {
+        self.details.message()
+    }
+}
+
+impl ToString for Error {
+    fn to_string(self: Error) -> string {
+        self.details.to_string()
+    }
+}
+
+impl Debug for Error {
+    fn debug(self: Error) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for Error {
+    fn eq(self: Error, other: Error) -> bool {
+        self.details == other.details
+    }
+}

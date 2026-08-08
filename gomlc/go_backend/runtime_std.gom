@@ -103,6 +103,234 @@ fn std_bool_bytes_string_expr(valid: bool, value: Expr, error: Expr) -> Expr {
     std_tuple_expr(std_bool_bytes_string_type(), values)
 }
 
+fn std_bool_bytes_error_type() -> Type {
+    std_tuple_type(
+        Vec::[
+            tast::Type::Bool,
+            std_vec_type(tast::Type::Uint8),
+            tast::Type::Int,
+            tast::Type::Bool,
+            tast::Type::Int,
+            tast::Type::String,
+        ],
+    )
+}
+
+fn std_bool_bytes_error_expr(
+    valid: bool,
+    value: Expr,
+    kind_code: Expr,
+    has_raw_code: Expr,
+    raw_code: Expr,
+    message: Expr,
+) -> Expr {
+    std_tuple_expr(
+        std_bool_bytes_error_type(),
+        Vec::[Expr::Bool { value: valid }, value, kind_code, has_raw_code, raw_code, message],
+    )
+}
+
+fn std_error_result_type() -> Type {
+    std_tuple_type(
+        Vec::[
+            tast::Type::Bool,
+            tast::Type::Int,
+            tast::Type::Bool,
+            tast::Type::Int,
+            tast::Type::String,
+        ],
+    )
+}
+
+fn std_error_result_expr(
+    valid: bool,
+    kind_code: Expr,
+    has_raw_code: Expr,
+    raw_code: Expr,
+    message: Expr,
+) -> Expr {
+    std_tuple_expr(
+        std_error_result_type(),
+        Vec::[Expr::Bool { value: valid }, kind_code, has_raw_code, raw_code, message],
+    )
+}
+
+fn std_error_failure_stmts() -> Vec[Stmt] {
+    Vec::[
+        Stmt::MultiAssign {
+            names: Vec::["has_raw_code", "raw_code"],
+            value: std_call("_goml_runtime_error_raw_code", Vec::[Expr::Var { name: "err" }]),
+        },
+        Stmt::Return {
+            expr: Option::Some(
+                std_error_result_expr(
+                    false,
+                    std_call("_goml_runtime_error_kind", Vec::[Expr::Var { name: "err" }]),
+                    Expr::Var { name: "has_raw_code" },
+                    Expr::Var { name: "raw_code" },
+                    std_error_string(),
+                ),
+            ),
+        },
+    ]
+}
+
+fn std_error_success_stmt() -> Stmt {
+    Stmt::Return {
+        expr: Option::Some(
+            std_error_result_expr(
+                true,
+                Expr::Int { value: "0" },
+                Expr::Bool { value: false },
+                Expr::Int { value: "0" },
+                Expr::String { value: "" },
+            ),
+        ),
+    }
+}
+
+fn std_runtime_error_kind_item() -> Item {
+    let params = Vec::[("err", Type::Named { name: "error" })];
+    let stmts: Vec[Stmt] = Vec::[];
+    let predicates = Vec::[
+        ("_goml_os.IsNotExist", 1),
+        ("_goml_os.IsPermission", 2),
+        ("_goml_os.IsExist", 3),
+        ("_goml_os.IsTimeout", 6),
+    ];
+    for predicate in predicates {
+        let then_stmts = Vec::[
+            Stmt::Return { expr: Option::Some(Expr::Int { value: predicate.1.to_string() }) },
+        ];
+        stmts.push(
+            Stmt::If {
+                cond: std_call(predicate.0, Vec::[Expr::Var { name: "err" }]),
+                then_: Block { stmts: then_stmts },
+                else_: Option::None,
+            },
+        )
+    }
+    let stable_errors = Vec::[
+        ("_goml_syscall.EINVAL", 4),
+        ("_goml_syscall.ENAMETOOLONG", 4),
+        ("_goml_syscall.EINTR", 7),
+        ("_goml_io.ErrUnexpectedEOF", 8),
+        ("_goml_io.EOF", 8),
+        ("_goml_io.ErrShortWrite", 9),
+        ("_goml_syscall.EPIPE", 10),
+        ("_goml_syscall.EAGAIN", 11),
+    ];
+    for stable_error in stable_errors {
+        stmts.push(
+            Stmt::If {
+                cond: std_call(
+                    "_goml_errors.Is",
+                    Vec::[Expr::Var { name: "err" }, Expr::Var { name: stable_error.0 }],
+                ),
+                then_: Block {
+                    stmts: Vec::[
+                        Stmt::Return {
+                            expr: Option::Some(Expr::Int { value: stable_error.1.to_string() }),
+                        },
+                    ],
+                },
+                else_: Option::None,
+            },
+        )
+    }
+    stmts.push(Stmt::Return { expr: Option::Some(Expr::Int { value: "0" }) });
+    Item::Function(
+        Function {
+            name: "_goml_runtime_error_kind",
+            params,
+            ret_ty: Option::Some(Type::Int),
+            body: Block { stmts },
+        },
+    )
+}
+
+fn std_runtime_errno_switch(value: Expr) -> Stmt {
+    let success = Vec::[
+        Stmt::ReturnMulti {
+            exprs: Vec::[
+                Expr::Bool { value: true },
+                Expr::Convert { ty: Type::Int, expr: Expr::Var { name: "errno" } },
+            ],
+        },
+    ];
+    Stmt::TypeSwitch {
+        binding: Option::Some("errno"),
+        expr: value,
+        cases: Vec::[
+            TypeSwitchCase {
+                ty: Type::Named { name: "_goml_syscall.Errno" },
+                body: Block { stmts: success },
+            },
+        ],
+        default: Option::None,
+    }
+}
+
+fn std_runtime_error_raw_code_item() -> Item {
+    let stmts = Vec::[
+        Stmt::TypeSwitch {
+            binding: Option::Some("host_error"),
+            expr: Expr::Var { name: "err" },
+            cases: Vec::[
+                TypeSwitchCase {
+                    ty: Type::Pointer { elem: Type::Named { name: "_goml_os.PathError" } },
+                    body: Block {
+                        stmts: Vec::[
+                            std_runtime_errno_switch(
+                                Expr::Field {
+                                    expr: Expr::Var { name: "host_error" },
+                                    field_name: "Err",
+                                },
+                            ),
+                        ],
+                    },
+                },
+                TypeSwitchCase {
+                    ty: Type::Pointer { elem: Type::Named { name: "_goml_os.LinkError" } },
+                    body: Block {
+                        stmts: Vec::[
+                            std_runtime_errno_switch(
+                                Expr::Field {
+                                    expr: Expr::Var { name: "host_error" },
+                                    field_name: "Err",
+                                },
+                            ),
+                        ],
+                    },
+                },
+                TypeSwitchCase {
+                    ty: Type::Pointer { elem: Type::Named { name: "_goml_os.SyscallError" } },
+                    body: Block {
+                        stmts: Vec::[
+                            std_runtime_errno_switch(
+                                Expr::Field {
+                                    expr: Expr::Var { name: "host_error" },
+                                    field_name: "Err",
+                                },
+                            ),
+                        ],
+                    },
+                },
+            ],
+            default: Option::None,
+        },
+        Stmt::ReturnMulti { exprs: Vec::[Expr::Bool { value: false }, Expr::Int { value: "0" }] },
+    ];
+    Item::Function(
+        Function {
+            name: "_goml_runtime_error_raw_code",
+            params: Vec::[("err", Type::Named { name: "error" })],
+            ret_ty: Option::Some(Type::Multi { items: Vec::[Type::Bool, Type::Int] }),
+            body: Block { stmts },
+        },
+    )
+}
+
 fn std_bool_strings_string_type() -> Type {
     let values: Vec[tast::Type] = Vec::[];
     values.push(tast::Type::Bool);
@@ -117,6 +345,33 @@ fn std_bool_strings_string_expr(valid: bool, value: Expr, error: Expr) -> Expr {
     values.push(value);
     values.push(error);
     std_tuple_expr(std_bool_strings_string_type(), values)
+}
+
+fn std_bool_strings_error_type() -> Type {
+    std_tuple_type(
+        Vec::[
+            tast::Type::Bool,
+            std_vec_type(tast::Type::String),
+            tast::Type::Int,
+            tast::Type::Bool,
+            tast::Type::Int,
+            tast::Type::String,
+        ],
+    )
+}
+
+fn std_bool_strings_error_expr(
+    valid: bool,
+    value: Expr,
+    kind_code: Expr,
+    has_raw_code: Expr,
+    raw_code: Expr,
+    message: Expr,
+) -> Expr {
+    std_tuple_expr(
+        std_bool_strings_error_type(),
+        Vec::[Expr::Bool { value: valid }, value, kind_code, has_raw_code, raw_code, message],
+    )
 }
 
 fn std_bool_value_string_type(value: tast::Type) -> Type {
@@ -140,6 +395,17 @@ fn std_env_args_item() -> Item {
         },
     );
     std_function_item("std.env.args", Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
+}
+
+fn std_env_vars_item() -> Item {
+    let stmts = Vec::[
+        Stmt::Return {
+            expr: Option::Some(
+                std_vec_expr(tast::Type::String, std_call("_goml_os.Environ", Vec::[])),
+            ),
+        },
+    ];
+    std_function_item("std.env.vars", Vec::[], lower_type(std_vec_type(tast::Type::String)), stmts)
 }
 
 fn std_string_result_item(key: string, function: string) -> Item {
@@ -405,6 +671,62 @@ fn std_fs_read_bytes_item() -> Item {
     std_function_item("std.fs.read_bytes", params, std_bool_bytes_string_type(), stmts)
 }
 
+fn std_fs_read_bytes_v2_item() -> Item {
+    let params = Vec::[("path", Type::String)];
+    let bytes = Type::Slice { elem: Type::Uint8 };
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Var { name: "data", ty: bytes, value: Option::None });
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["data", "err"],
+            value: std_call("_goml_os.ReadFile", Vec::[Expr::Var { name: "path" }]),
+        },
+    );
+    let failed = Vec::[
+        Stmt::MultiAssign {
+            names: Vec::["has_raw_code", "raw_code"],
+            value: std_call("_goml_runtime_error_raw_code", Vec::[Expr::Var { name: "err" }]),
+        },
+        Stmt::Return {
+            expr: Option::Some(
+                std_bool_bytes_error_expr(
+                    false,
+                    std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                    std_call("_goml_runtime_error_kind", Vec::[Expr::Var { name: "err" }]),
+                    Expr::Var { name: "has_raw_code" },
+                    Expr::Var { name: "raw_code" },
+                    std_error_string(),
+                ),
+            ),
+        },
+    ];
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block { stmts: failed },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_bool_bytes_error_expr(
+                    true,
+                    std_vec_expr(tast::Type::Uint8, Expr::Var { name: "data" }),
+                    Expr::Int { value: "0" },
+                    Expr::Bool { value: false },
+                    Expr::Int { value: "0" },
+                    Expr::String { value: "" },
+                ),
+            ),
+        },
+    );
+    std_function_item("std.fs.read_bytes.v2", params, std_bool_bytes_error_type(), stmts)
+}
+
 fn std_fs_write_bytes_item() -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("path", Type::String));
@@ -436,6 +758,572 @@ fn std_fs_write_bytes_item() -> Item {
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::String { value: "" })) },
     );
     std_function_item("std.fs.write_bytes", params, std_bool_string_type(), stmts)
+}
+
+fn std_fs_write_bytes_v2_item() -> Item {
+    let params = Vec::[
+        ("path", Type::String),
+        ("data", lower_type(std_vec_type(tast::Type::Uint8))),
+    ];
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::Var {
+            name: "err",
+            ty: Type::Named { name: "error" },
+            value: Option::Some(
+                std_call(
+                    "_goml_os.WriteFile",
+                    Vec::[
+                        Expr::Var { name: "path" },
+                        Expr::Field { expr: Expr::Var { name: "data" }, field_name: "items" },
+                        Expr::Int { value: "0644" },
+                    ],
+                ),
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::MultiAssign {
+                        names: Vec::["has_raw_code", "raw_code"],
+                        value: std_call(
+                            "_goml_runtime_error_raw_code",
+                            Vec::[Expr::Var { name: "err" }],
+                        ),
+                    },
+                    Stmt::Return {
+                        expr: Option::Some(
+                            std_error_result_expr(
+                                false,
+                                std_call(
+                                    "_goml_runtime_error_kind",
+                                    Vec::[Expr::Var { name: "err" }],
+                                ),
+                                Expr::Var { name: "has_raw_code" },
+                                Expr::Var { name: "raw_code" },
+                                std_error_string(),
+                            ),
+                        ),
+                    },
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_error_result_expr(
+                    true,
+                    Expr::Int { value: "0" },
+                    Expr::Bool { value: false },
+                    Expr::Int { value: "0" },
+                    Expr::String { value: "" },
+                ),
+            ),
+        },
+    );
+    std_function_item("std.fs.write_bytes.v2", params, std_error_result_type(), stmts)
+}
+
+fn std_error_call_block(call: Expr) -> Block {
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::Some(call) },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block { stmts: std_error_failure_stmts() },
+            else_: Option::None,
+        },
+    );
+    stmts.push(std_error_success_stmt());
+    Block { stmts }
+}
+
+fn std_fs_copy_case_block() -> Block {
+    let bytes = Type::Slice { elem: Type::Uint8 };
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Var { name: "data", ty: bytes, value: Option::None });
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["data", "err"],
+            value: std_call("_goml_os.ReadFile", Vec::[Expr::Var { name: "first" }]),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block { stmts: std_error_failure_stmts() },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Assign {
+            name: "err",
+            value: std_call(
+                "_goml_os.WriteFile",
+                Vec::[
+                    Expr::Var { name: "second" },
+                    Expr::Var { name: "data" },
+                    Expr::Int { value: "0644" },
+                ],
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block { stmts: std_error_failure_stmts() },
+            else_: Option::None,
+        },
+    );
+    stmts.push(std_error_success_stmt());
+    Block { stmts }
+}
+
+fn std_fs_path_operation_v2_item() -> Item {
+    let params = Vec::[("operation", Type::Int), ("first", Type::String), ("second", Type::String)];
+    let cases = Vec::[
+        SwitchCase {
+            value: Expr::Int { value: "0" },
+            body: std_error_call_block(
+                std_call(
+                    "_goml_os.Mkdir",
+                    Vec::[Expr::Var { name: "first" }, Expr::Int { value: "0755" }],
+                ),
+            ),
+        },
+        SwitchCase {
+            value: Expr::Int { value: "1" },
+            body: std_error_call_block(
+                std_call(
+                    "_goml_os.Rename",
+                    Vec::[Expr::Var { name: "first" }, Expr::Var { name: "second" }],
+                ),
+            ),
+        },
+        SwitchCase {
+            value: Expr::Int { value: "2" },
+            body: std_error_call_block(
+                std_call(
+                    "_goml_os.Link",
+                    Vec::[Expr::Var { name: "first" }, Expr::Var { name: "second" }],
+                ),
+            ),
+        },
+        SwitchCase {
+            value: Expr::Int { value: "3" },
+            body: std_error_call_block(
+                std_call(
+                    "_goml_os.Symlink",
+                    Vec::[Expr::Var { name: "first" }, Expr::Var { name: "second" }],
+                ),
+            ),
+        },
+        SwitchCase { value: Expr::Int { value: "4" }, body: std_fs_copy_case_block() },
+    ];
+    let stmts = Vec::[
+        Stmt::Switch {
+            expr: Expr::Var { name: "operation" },
+            cases,
+            default: Option::Some(
+                Block {
+                    stmts: Vec::[
+                        Stmt::Return {
+                            expr: Option::Some(
+                                std_error_result_expr(
+                                    false,
+                                    Expr::Int { value: "4" },
+                                    Expr::Bool { value: false },
+                                    Expr::Int { value: "0" },
+                                    Expr::String { value: "invalid filesystem operation" },
+                                ),
+                            ),
+                        },
+                    ],
+                },
+            ),
+        },
+    ];
+    std_function_item("std.fs.path_operation.v2", params, std_error_result_type(), stmts)
+}
+
+fn std_fs_metadata_type() -> Type {
+    std_tuple_type(
+        Vec::[
+            tast::Type::Bool,
+            tast::Type::Int,
+            tast::Type::Int64,
+            tast::Type::Uint32,
+            tast::Type::Int64,
+            tast::Type::Int,
+            tast::Type::Bool,
+            tast::Type::Int,
+            tast::Type::String,
+        ],
+    )
+}
+
+fn std_fs_metadata_expr(
+    ok: bool,
+    file_type: Expr,
+    size: Expr,
+    mode: Expr,
+    modified: Expr,
+    kind: Expr,
+    has_raw_code: Expr,
+    raw_code: Expr,
+    message: Expr,
+) -> Expr {
+    std_tuple_expr(
+        std_fs_metadata_type(),
+        Vec::[
+            Expr::Bool { value: ok },
+            file_type,
+            size,
+            mode,
+            modified,
+            kind,
+            has_raw_code,
+            raw_code,
+            message,
+        ],
+    )
+}
+
+fn std_fs_metadata_v2_item() -> Item {
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(
+        Stmt::Var {
+            name: "info",
+            ty: Type::Named { name: "_goml_os.FileInfo" },
+            value: Option::None,
+        },
+    );
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::If {
+            cond: Expr::Var { name: "follow" },
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::MultiAssign {
+                        names: Vec::["info", "err"],
+                        value: std_call("_goml_os.Stat", Vec::[Expr::Var { name: "path" }]),
+                    },
+                ],
+            },
+            else_: Option::Some(
+                Block {
+                    stmts: Vec::[
+                        Stmt::MultiAssign {
+                            names: Vec::["info", "err"],
+                            value: std_call("_goml_os.Lstat", Vec::[Expr::Var { name: "path" }]),
+                        },
+                    ],
+                },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::MultiAssign {
+                        names: Vec::["has_raw_code", "raw_code"],
+                        value: std_call(
+                            "_goml_runtime_error_raw_code",
+                            Vec::[Expr::Var { name: "err" }],
+                        ),
+                    },
+                    Stmt::Return {
+                        expr: Option::Some(
+                            std_fs_metadata_expr(
+                                false,
+                                Expr::Int { value: "3" },
+                                Expr::Int { value: "0" },
+                                Expr::Int { value: "0" },
+                                Expr::Int { value: "0" },
+                                std_call(
+                                    "_goml_runtime_error_kind",
+                                    Vec::[Expr::Var { name: "err" }],
+                                ),
+                                Expr::Var { name: "has_raw_code" },
+                                Expr::Var { name: "raw_code" },
+                                std_error_string(),
+                            ),
+                        ),
+                    },
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "file_type",
+            ty: Type::Int,
+            value: Option::Some(Expr::Int { value: "3" }),
+        },
+    );
+    let mode = std_method_call(Expr::Var { name: "info" }, "Mode", Vec::[]);
+    stmts.push(
+        Stmt::If {
+            cond: std_method_call(mode, "IsRegular", Vec::[]),
+            then_: Block {
+                stmts: Vec::[Stmt::Assign { name: "file_type", value: Expr::Int { value: "0" } }],
+            },
+            else_: Option::Some(
+                Block {
+                    stmts: Vec::[
+                        Stmt::If {
+                            cond: std_method_call(Expr::Var { name: "info" }, "IsDir", Vec::[]),
+                            then_: Block {
+                                stmts: Vec::[
+                                    Stmt::Assign {
+                                        name: "file_type",
+                                        value: Expr::Int { value: "1" },
+                                    },
+                                ],
+                            },
+                            else_: Option::Some(
+                                Block {
+                                    stmts: Vec::[
+                                        Stmt::If {
+                                            cond: Expr::Binary {
+                                                op: BinaryOp::NotEq,
+                                                lhs: Expr::Binary {
+                                                    op: BinaryOp::BitAnd,
+                                                    lhs: std_method_call(
+                                                        Expr::Var { name: "info" },
+                                                        "Mode",
+                                                        Vec::[],
+                                                    ),
+                                                    rhs: Expr::Var { name: "_goml_os.ModeSymlink" },
+                                                },
+                                                rhs: Expr::Int { value: "0" },
+                                            },
+                                            then_: Block {
+                                                stmts: Vec::[
+                                                    Stmt::Assign {
+                                                        name: "file_type",
+                                                        value: Expr::Int { value: "2" },
+                                                    },
+                                                ],
+                                            },
+                                            else_: Option::None,
+                                        },
+                                    ],
+                                },
+                            ),
+                        },
+                    ],
+                },
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_fs_metadata_expr(
+                    true,
+                    Expr::Var { name: "file_type" },
+                    std_method_call(Expr::Var { name: "info" }, "Size", Vec::[]),
+                    Expr::Convert {
+                        ty: Type::Uint32,
+                        expr: std_method_call(
+                            std_method_call(Expr::Var { name: "info" }, "Mode", Vec::[]),
+                            "Perm",
+                            Vec::[],
+                        ),
+                    },
+                    std_method_call(
+                        std_method_call(Expr::Var { name: "info" }, "ModTime", Vec::[]),
+                        "UnixNano",
+                        Vec::[],
+                    ),
+                    Expr::Int { value: "0" },
+                    Expr::Bool { value: false },
+                    Expr::Int { value: "0" },
+                    Expr::String { value: "" },
+                ),
+            ),
+        },
+    );
+    std_function_item(
+        "std.fs.metadata.v2",
+        Vec::[("path", Type::String), ("follow", Type::Bool)],
+        std_fs_metadata_type(),
+        stmts,
+    )
+}
+
+fn std_fs_atomic_failure(close_file: bool) -> Block {
+    let stmts: Vec[Stmt] = Vec::[];
+    if close_file {
+        stmts.push(
+            Stmt::Expr { expr: std_method_call(Expr::Var { name: "file" }, "Close", Vec::[]) },
+        )
+    } else {};
+    for stmt in std_error_failure_stmts() {
+        stmts.push(stmt)
+    }
+    Block { stmts }
+}
+
+fn std_fs_atomic_write_v2_item() -> Item {
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(
+        Stmt::Var {
+            name: "file",
+            ty: Type::Pointer { elem: Type::Named { name: "_goml_os.File" } },
+            value: Option::None,
+        },
+    );
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["file", "err"],
+            value: std_call(
+                "_goml_os.CreateTemp",
+                Vec::[
+                    std_call("_goml_filepath.Dir", Vec::[Expr::Var { name: "path" }]),
+                    Expr::Binary {
+                        op: BinaryOp::Add,
+                        lhs: Expr::Binary {
+                            op: BinaryOp::Add,
+                            lhs: Expr::String { value: "." },
+                            rhs: std_call("_goml_filepath.Base", Vec::[Expr::Var { name: "path" }]),
+                        },
+                        rhs: Expr::String { value: ".tmp-*" },
+                    },
+                ],
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: std_fs_atomic_failure(false),
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Var {
+            name: "temporary_path",
+            ty: Type::String,
+            value: Option::Some(std_method_call(Expr::Var { name: "file" }, "Name", Vec::[])),
+        },
+    );
+    stmts.push(
+        Stmt::Defer {
+            call: std_call("_goml_os.Remove", Vec::[Expr::Var { name: "temporary_path" }]),
+        },
+    );
+    stmts.push(
+        Stmt::Assign {
+            name: "err",
+            value: std_method_call(
+                Expr::Var { name: "file" },
+                "Chmod",
+                Vec::[
+                    Expr::Convert {
+                        ty: Type::Named { name: "_goml_os.FileMode" },
+                        expr: Expr::Int { value: "0644" },
+                    },
+                ],
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: std_fs_atomic_failure(true),
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["_", "err"],
+            value: std_method_call(
+                Expr::Var { name: "file" },
+                "Write",
+                Vec::[Expr::Field { expr: Expr::Var { name: "data" }, field_name: "items" }],
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: std_fs_atomic_failure(true),
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Assign {
+            name: "err",
+            value: std_method_call(Expr::Var { name: "file" }, "Sync", Vec::[]),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: std_fs_atomic_failure(true),
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Assign {
+            name: "err",
+            value: std_method_call(Expr::Var { name: "file" }, "Close", Vec::[]),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: std_fs_atomic_failure(false),
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Assign {
+            name: "err",
+            value: std_call(
+                "_goml_os.Rename",
+                Vec::[Expr::Var { name: "temporary_path" }, Expr::Var { name: "path" }],
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: std_fs_atomic_failure(false),
+            else_: Option::None,
+        },
+    );
+    stmts.push(std_error_success_stmt());
+    std_function_item(
+        "std.fs.atomic_write.v2",
+        Vec::[("path", Type::String), ("data", lower_type(std_vec_type(tast::Type::Uint8)))],
+        std_error_result_type(),
+        stmts,
+    )
 }
 
 fn std_fs_create_dir_all_item() -> Item {
@@ -729,6 +1617,121 @@ fn std_fs_read_dir_item() -> Item {
     std_function_item("std.fs.read_dir", params, std_bool_strings_string_type(), stmts)
 }
 
+fn std_fs_read_dir_v2_item() -> Item {
+    let params = Vec::[("path", Type::String)];
+    let entries_type = Type::Slice { elem: Type::Named { name: "_goml_os.DirEntry" } };
+    let names_type = Type::Slice { elem: Type::String };
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Var { name: "entries", ty: entries_type, value: Option::None });
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["entries", "err"],
+            value: std_call("_goml_os.ReadDir", Vec::[Expr::Var { name: "path" }]),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::MultiAssign {
+                        names: Vec::["has_raw_code", "raw_code"],
+                        value: std_call(
+                            "_goml_runtime_error_raw_code",
+                            Vec::[Expr::Var { name: "err" }],
+                        ),
+                    },
+                    Stmt::Return {
+                        expr: Option::Some(
+                            std_bool_strings_error_expr(
+                                false,
+                                std_vec_expr(tast::Type::String, Expr::Nil),
+                                std_call(
+                                    "_goml_runtime_error_kind",
+                                    Vec::[Expr::Var { name: "err" }],
+                                ),
+                                Expr::Var { name: "has_raw_code" },
+                                Expr::Var { name: "raw_code" },
+                                std_error_string(),
+                            ),
+                        ),
+                    },
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    stmts.push(Stmt::Var { name: "names", ty: names_type, value: Option::None });
+    stmts.push(
+        Stmt::Var { name: "i", ty: Type::Int, value: Option::Some(Expr::Int { value: "0" }) },
+    );
+    let loop_stmts: Vec[Stmt] = Vec::[];
+    loop_stmts.push(
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::GreaterEq,
+                lhs: Expr::Var { name: "i" },
+                rhs: Expr::Convert {
+                    ty: Type::Int,
+                    expr: std_call("len", Vec::[Expr::Var { name: "entries" }]),
+                },
+            },
+            then_: Block { stmts: Vec::[Stmt::Break] },
+            else_: Option::None,
+        },
+    );
+    loop_stmts.push(
+        Stmt::Var {
+            name: "entry",
+            ty: Type::Named { name: "_goml_os.DirEntry" },
+            value: Option::Some(
+                Expr::Index { base: Expr::Var { name: "entries" }, index: Expr::Var { name: "i" } },
+            ),
+        },
+    );
+    loop_stmts.push(
+        Stmt::Assign {
+            name: "names",
+            value: std_call(
+                "append",
+                Vec::[
+                    Expr::Var { name: "names" },
+                    std_method_call(Expr::Var { name: "entry" }, "Name", Vec::[]),
+                ],
+            ),
+        },
+    );
+    loop_stmts.push(
+        Stmt::Assign {
+            name: "i",
+            value: Expr::Binary {
+                op: BinaryOp::Add,
+                lhs: Expr::Var { name: "i" },
+                rhs: Expr::Int { value: "1" },
+            },
+        },
+    );
+    stmts.push(Stmt::Loop { body: Block { stmts: loop_stmts } });
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_bool_strings_error_expr(
+                    true,
+                    std_vec_expr(tast::Type::String, Expr::Var { name: "names" }),
+                    Expr::Int { value: "0" },
+                    Expr::Bool { value: false },
+                    Expr::Int { value: "0" },
+                    Expr::String { value: "" },
+                ),
+            ),
+        },
+    );
+    std_function_item("std.fs.read_dir.v2", params, std_bool_strings_error_type(), stmts)
+}
+
 fn std_io_output_item(key: string, function: string, stderr: bool) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("value", Type::String));
@@ -787,6 +1790,66 @@ fn std_io_read_stdin_item() -> Item {
     std_function_item("std.io.read_stdin", Vec::[], std_bool_bytes_string_type(), stmts)
 }
 
+fn std_bytes_error_failure_stmts() -> Vec[Stmt] {
+    Vec::[
+        Stmt::MultiAssign {
+            names: Vec::["has_raw_code", "raw_code"],
+            value: std_call("_goml_runtime_error_raw_code", Vec::[Expr::Var { name: "err" }]),
+        },
+        Stmt::Return {
+            expr: Option::Some(
+                std_bool_bytes_error_expr(
+                    false,
+                    std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                    std_call("_goml_runtime_error_kind", Vec::[Expr::Var { name: "err" }]),
+                    Expr::Var { name: "has_raw_code" },
+                    Expr::Var { name: "raw_code" },
+                    std_error_string(),
+                ),
+            ),
+        },
+    ]
+}
+
+fn std_bytes_error_success(data: Expr) -> Stmt {
+    Stmt::Return {
+        expr: Option::Some(
+            std_bool_bytes_error_expr(
+                true,
+                std_vec_expr(tast::Type::Uint8, data),
+                Expr::Int { value: "0" },
+                Expr::Bool { value: false },
+                Expr::Int { value: "0" },
+                Expr::String { value: "" },
+            ),
+        ),
+    }
+}
+
+fn std_io_read_stdin_v2_item() -> Item {
+    let bytes = Type::Slice { elem: Type::Uint8 };
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Var { name: "data", ty: bytes, value: Option::None });
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["data", "err"],
+            value: std_call("_goml_io.ReadAll", Vec::[Expr::Var { name: "_goml_os.Stdin" }]),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block { stmts: std_bytes_error_failure_stmts() },
+            else_: Option::None,
+        },
+    );
+    stmts.push(std_bytes_error_success(Expr::Var { name: "data" }));
+    std_function_item("std.io.read_stdin.v2", Vec::[], std_bool_bytes_error_type(), stmts)
+}
+
 fn std_io_read_stdin_exact_item() -> Item {
     let bytes = Type::Slice { elem: Type::Uint8 };
     let params: Vec[(string, Type)] = Vec::[];
@@ -842,6 +1905,40 @@ fn std_io_read_stdin_exact_item() -> Item {
     std_function_item("std.io.read_stdin_exact", params, std_bool_bytes_string_type(), stmts)
 }
 
+fn std_io_read_stdin_exact_v2_item() -> Item {
+    let bytes = Type::Slice { elem: Type::Uint8 };
+    let params = Vec::[("length", Type::Int)];
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(
+        Stmt::Var {
+            name: "data",
+            ty: bytes,
+            value: Option::Some(Expr::Make { ty: bytes, args: Vec::[Expr::Var { name: "length" }] }),
+        },
+    );
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["_", "err"],
+            value: std_call(
+                "_goml_io.ReadFull",
+                Vec::[Expr::Var { name: "_goml_os.Stdin" }, Expr::Var { name: "data" }],
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block { stmts: std_bytes_error_failure_stmts() },
+            else_: Option::None,
+        },
+    );
+    stmts.push(std_bytes_error_success(Expr::Var { name: "data" }));
+    std_function_item("std.io.read_stdin_exact.v2", params, std_bool_bytes_error_type(), stmts)
+}
+
 fn std_io_write_item(key: string, stream: string) -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("data", lower_type(std_vec_type(tast::Type::Uint8))));
@@ -873,6 +1970,69 @@ fn std_io_write_item(key: string, stream: string) -> Item {
         Stmt::Return { expr: Option::Some(std_bool_string_expr(true, Expr::String { value: "" })) },
     );
     std_function_item(key, params, std_bool_string_type(), stmts)
+}
+
+fn std_io_write_v2_item(key: string, stream: string) -> Item {
+    let params = Vec::[("data", lower_type(std_vec_type(tast::Type::Uint8)))];
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(Stmt::Var { name: "has_raw_code", ty: Type::Bool, value: Option::None });
+    stmts.push(Stmt::Var { name: "raw_code", ty: Type::Int, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["_", "err"],
+            value: std_method_call(
+                Expr::Var { name: stream },
+                "Write",
+                Vec::[Expr::Field { expr: Expr::Var { name: "data" }, field_name: "items" }],
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::MultiAssign {
+                        names: Vec::["has_raw_code", "raw_code"],
+                        value: std_call(
+                            "_goml_runtime_error_raw_code",
+                            Vec::[Expr::Var { name: "err" }],
+                        ),
+                    },
+                    Stmt::Return {
+                        expr: Option::Some(
+                            std_error_result_expr(
+                                false,
+                                std_call(
+                                    "_goml_runtime_error_kind",
+                                    Vec::[Expr::Var { name: "err" }],
+                                ),
+                                Expr::Var { name: "has_raw_code" },
+                                Expr::Var { name: "raw_code" },
+                                std_error_string(),
+                            ),
+                        ),
+                    },
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_error_result_expr(
+                    true,
+                    Expr::Int { value: "0" },
+                    Expr::Bool { value: false },
+                    Expr::Int { value: "0" },
+                    Expr::String { value: "" },
+                ),
+            ),
+        },
+    );
+    std_function_item(key, params, std_error_result_type(), stmts)
 }
 
 fn std_path_join_item() -> Item {
@@ -1257,6 +2417,68 @@ fn std_path_absolute_item() -> Item {
     std_function_item("std.path.absolute", params, std_bool_string_string_type(), stmts)
 }
 
+fn std_path_relative_item() -> Item {
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(Stmt::Var { name: "value", ty: Type::String, value: Option::None });
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["value", "err"],
+            value: std_call(
+                "_goml_filepath.Rel",
+                Vec::[Expr::Var { name: "base" }, Expr::Var { name: "target" }],
+            ),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::Return {
+                        expr: Option::Some(
+                            std_bool_string_string_expr(
+                                false,
+                                Expr::String { value: "" },
+                                std_error_string(),
+                            ),
+                        ),
+                    },
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_bool_string_string_expr(
+                    true,
+                    Expr::Var { name: "value" },
+                    Expr::String { value: "" },
+                ),
+            ),
+        },
+    );
+    std_function_item(
+        "std.path.relative",
+        Vec::[("base", Type::String), ("target", Type::String)],
+        std_bool_string_string_type(),
+        stmts,
+    )
+}
+
+fn std_path_separator_item() -> Item {
+    let stmts = Vec::[
+        Stmt::Return {
+            expr: Option::Some(
+                std_call("string", Vec::[Expr::Var { name: "_goml_os.PathSeparator" }]),
+            ),
+        },
+    ];
+    std_function_item("std.path.separator", Vec::[], Type::String, stmts)
+}
+
 fn std_testing_fail_item() -> Item {
     let params: Vec[(string, Type)] = Vec::[];
     params.push(("message", Type::String));
@@ -1415,6 +2637,146 @@ fn std_num_parse_float_item(single: bool) -> Item {
 
 fn std_time_monotonic_origin_name() -> string {
     go_generated_ident("_goml_runtime_std_time_monotonic_origin")
+}
+
+fn std_math_float32_call(function_name: string, args: Vec[Expr]) -> Expr {
+    let converted: Vec[Expr] = Vec::[];
+    for arg in args {
+        converted.push(Expr::Convert { ty: Type::Float64, expr: arg })
+    }
+    Expr::Convert { ty: Type::Float32, expr: std_call(function_name, converted) }
+}
+
+fn std_math_float32_unary_item() -> Item {
+    let params = Vec::[("operation", Type::Int), ("value", Type::Float32)];
+    let functions = Vec::[
+        "_goml_math.Sqrt",
+        "_goml_math.Exp",
+        "_goml_math.Log",
+        "_goml_math.Sin",
+        "_goml_math.Cos",
+        "_goml_math.Tan",
+        "_goml_math.Floor",
+        "_goml_math.Ceil",
+        "_goml_math.Round",
+        "_goml_math.Trunc",
+    ];
+    let cases: Vec[SwitchCase] = Vec::[];
+    for index in 0..functions.len() {
+        cases.push(
+            SwitchCase {
+                value: Expr::Int { value: index.to_string() },
+                body: Block {
+                    stmts: Vec::[
+                        Stmt::Return {
+                            expr: Option::Some(
+                                std_math_float32_call(
+                                    functions[index],
+                                    Vec::[Expr::Var { name: "value" }],
+                                ),
+                            ),
+                        },
+                    ],
+                },
+            },
+        )
+    }
+    let stmts = Vec::[
+        Stmt::Switch {
+            expr: Expr::Var { name: "operation" },
+            cases,
+            default: Option::Some(
+                Block {
+                    stmts: Vec::[Stmt::Return { expr: Option::Some(Expr::Var { name: "value" }) }],
+                },
+            ),
+        },
+    ];
+    std_function_item("std.math.float32_unary", params, Type::Float32, stmts)
+}
+
+fn std_math_float32_pow_item() -> Item {
+    let params = Vec::[("value", Type::Float32), ("exponent", Type::Float32)];
+    let stmts = Vec::[
+        Stmt::Return {
+            expr: Option::Some(
+                std_math_float32_call(
+                    "_goml_math.Pow",
+                    Vec::[Expr::Var { name: "value" }, Expr::Var { name: "exponent" }],
+                ),
+            ),
+        },
+    ];
+    std_function_item("std.math.float32_pow", params, Type::Float32, stmts)
+}
+
+fn std_math_runtime_hook_item(key: string) -> Option[Item] {
+    if key == "std.math.float32_unary" {
+        Option::Some(std_math_float32_unary_item())
+    } else if key == "std.math.float32_pow" {
+        Option::Some(std_math_float32_pow_item())
+    } else {
+        Option::None
+    }
+}
+
+fn std_crypto_random_bytes_item() -> Item {
+    let bytes = Type::Slice { elem: Type::Uint8 };
+    let params = Vec::[("length", Type::Int)];
+    let stmts: Vec[Stmt] = Vec::[];
+    stmts.push(
+        Stmt::Var {
+            name: "data",
+            ty: bytes,
+            value: Option::Some(Expr::Make { ty: bytes, args: Vec::[Expr::Var { name: "length" }] }),
+        },
+    );
+    stmts.push(Stmt::Var { name: "err", ty: Type::Named { name: "error" }, value: Option::None });
+    stmts.push(
+        Stmt::MultiAssign {
+            names: Vec::["_", "err"],
+            value: std_call("_goml_cryptorand.Read", Vec::[Expr::Var { name: "data" }]),
+        },
+    );
+    stmts.push(
+        Stmt::If {
+            cond: std_error_condition(),
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::Return {
+                        expr: Option::Some(
+                            std_bool_bytes_string_expr(
+                                false,
+                                std_vec_expr(tast::Type::Uint8, Expr::Nil),
+                                std_error_string(),
+                            ),
+                        ),
+                    },
+                ],
+            },
+            else_: Option::None,
+        },
+    );
+    stmts.push(
+        Stmt::Return {
+            expr: Option::Some(
+                std_bool_bytes_string_expr(
+                    true,
+                    std_vec_expr(tast::Type::Uint8, Expr::Var { name: "data" }),
+                    Expr::String { value: "" },
+                ),
+            ),
+        },
+    );
+    std_function_item("std.crypto.rand.bytes", params, std_bool_bytes_string_type(), stmts)
+}
+
+fn std_crypto_runtime_hook_item(key: string) -> Option[Item] {
+    if key == "std.crypto.rand.bytes" {
+        Option::Some(std_crypto_random_bytes_item())
+    } else {
+        Option::None
+    }
 }
 
 fn std_time_monotonic_origin_item() -> Item {
@@ -1614,10 +2976,41 @@ fn std_process_command_setup(command_function: string) -> Vec[Stmt] {
     );
     let set_environment: Vec[Stmt] = Vec::[];
     set_environment.push(
-        Stmt::FieldAssign {
-            target: Expr::Var { name: "cmd" },
-            field_name: "Env",
-            value: std_call("_goml_os.Environ", Vec::[]),
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::Eq,
+                lhs: Expr::Field {
+                    expr: Expr::Index {
+                        base: Expr::Field {
+                            expr: Expr::Var { name: "environment" },
+                            field_name: "items",
+                        },
+                        index: Expr::Int { value: "0" },
+                    },
+                    field_name: "_0",
+                },
+                rhs: Expr::String { value: "" },
+            },
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::FieldAssign {
+                        target: Expr::Var { name: "cmd" },
+                        field_name: "Env",
+                        value: Expr::Nil,
+                    },
+                ],
+            },
+            else_: Option::Some(
+                Block {
+                    stmts: Vec::[
+                        Stmt::FieldAssign {
+                            target: Expr::Var { name: "cmd" },
+                            field_name: "Env",
+                            value: std_call("_goml_os.Environ", Vec::[]),
+                        },
+                    ],
+                },
+            ),
         },
     );
     let append_args: Vec[Expr] = Vec::[];
@@ -1635,10 +3028,22 @@ fn std_process_command_setup(command_function: string) -> Vec[Stmt] {
     );
     let range_body: Vec[Stmt] = Vec::[];
     range_body.push(
-        Stmt::FieldAssign {
-            target: Expr::Var { name: "cmd" },
-            field_name: "Env",
-            value: std_call("append", append_args),
+        Stmt::If {
+            cond: Expr::Binary {
+                op: BinaryOp::NotEq,
+                lhs: Expr::Field { expr: Expr::Var { name: "entry" }, field_name: "_0" },
+                rhs: Expr::String { value: "" },
+            },
+            then_: Block {
+                stmts: Vec::[
+                    Stmt::FieldAssign {
+                        target: Expr::Var { name: "cmd" },
+                        field_name: "Env",
+                        value: std_call("append", append_args),
+                    },
+                ],
+            },
+            else_: Option::None,
         },
     );
     set_environment.push(
@@ -2184,7 +3589,7 @@ fn std_process_status_cancel_item() -> Item {
     std_process_status_item_for("cancel")
 }
 
-fn standard_runtime_hook_item(key: string) -> Option[Item] {
+fn std_env_runtime_hook_item(key: string) -> Option[Item] {
     if key == "std.env.args" {
         Option::Some(std_env_args_item())
     } else if key == "std.env.current_dir" {
@@ -2193,7 +3598,15 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_string_result_item(key, "_goml_os.Executable"))
     } else if key == "std.env.var" {
         Option::Some(std_env_var_item())
-    } else if key == "std.fs.read_file" {
+    } else if key == "std.env.vars" {
+        Option::Some(std_env_vars_item())
+    } else {
+        Option::None
+    }
+}
+
+fn std_fs_runtime_hook_item(key: string) -> Option[Item] {
+    if key == "std.fs.read_file" {
         Option::Some(std_fs_read_file_item())
     } else if key == "std.fs.sha256_file" {
         Option::Some(std_fs_sha256_file_item())
@@ -2201,8 +3614,18 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_fs_write_file_item())
     } else if key == "std.fs.read_bytes" {
         Option::Some(std_fs_read_bytes_item())
+    } else if key == "std.fs.read_bytes.v2" {
+        Option::Some(std_fs_read_bytes_v2_item())
     } else if key == "std.fs.write_bytes" {
         Option::Some(std_fs_write_bytes_item())
+    } else if key == "std.fs.write_bytes.v2" {
+        Option::Some(std_fs_write_bytes_v2_item())
+    } else if key == "std.fs.path_operation.v2" {
+        Option::Some(std_fs_path_operation_v2_item())
+    } else if key == "std.fs.metadata.v2" {
+        Option::Some(std_fs_metadata_v2_item())
+    } else if key == "std.fs.atomic_write.v2" {
+        Option::Some(std_fs_atomic_write_v2_item())
     } else if key == "std.fs.create_dir_all" {
         Option::Some(std_fs_create_dir_all_item())
     } else if key == "std.fs.remove_file" {
@@ -2219,7 +3642,15 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_fs_canonicalize_item())
     } else if key == "std.fs.read_dir" {
         Option::Some(std_fs_read_dir_item())
-    } else if key == "std.io.print" {
+    } else if key == "std.fs.read_dir.v2" {
+        Option::Some(std_fs_read_dir_v2_item())
+    } else {
+        Option::None
+    }
+}
+
+fn std_io_runtime_hook_item(key: string) -> Option[Item] {
+    if key == "std.io.print" {
         Option::Some(std_io_output_item(key, "_goml_fmt.Print", false))
     } else if key == "std.io.println" {
         Option::Some(std_io_output_item(key, "_goml_fmt.Println", false))
@@ -2227,13 +3658,27 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_io_output_item(key, "_goml_fmt.Fprint", true))
     } else if key == "std.io.read_stdin" {
         Option::Some(std_io_read_stdin_item())
+    } else if key == "std.io.read_stdin.v2" {
+        Option::Some(std_io_read_stdin_v2_item())
     } else if key == "std.io.read_stdin_exact" {
         Option::Some(std_io_read_stdin_exact_item())
+    } else if key == "std.io.read_stdin_exact.v2" {
+        Option::Some(std_io_read_stdin_exact_v2_item())
     } else if key == "std.io.write_stdout" {
         Option::Some(std_io_write_item(key, "_goml_os.Stdout"))
     } else if key == "std.io.write_stderr" {
         Option::Some(std_io_write_item(key, "_goml_os.Stderr"))
-    } else if key == "std.path.join" {
+    } else if key == "std.io.write_stdout.v2" {
+        Option::Some(std_io_write_v2_item(key, "_goml_os.Stdout"))
+    } else if key == "std.io.write_stderr.v2" {
+        Option::Some(std_io_write_v2_item(key, "_goml_os.Stderr"))
+    } else {
+        Option::None
+    }
+}
+
+fn std_path_runtime_hook_item(key: string) -> Option[Item] {
+    if key == "std.path.join" {
         Option::Some(std_path_join_item())
     } else if key == "std.path.clean" {
         Option::Some(std_path_unary_item(key, "_goml_filepath.Clean", Type::String))
@@ -2251,7 +3696,17 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_path_with_extension_item())
     } else if key == "std.path.absolute" {
         Option::Some(std_path_absolute_item())
-    } else if key == "std.process.exit" {
+    } else if key == "std.path.relative" {
+        Option::Some(std_path_relative_item())
+    } else if key == "std.path.separator" {
+        Option::Some(std_path_separator_item())
+    } else {
+        Option::None
+    }
+}
+
+fn std_process_runtime_hook_item(key: string) -> Option[Item] {
+    if key == "std.process.exit" {
         Option::Some(std_process_exit_item())
     } else if key == "std.process.output" {
         Option::Some(std_process_output_item())
@@ -2267,9 +3722,13 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_process_status_timeout_item())
     } else if key == "std.process.status_cancel" {
         Option::Some(std_process_status_cancel_item())
-    } else if key == "std.testing.fail" {
-        Option::Some(std_testing_fail_item())
-    } else if key == "std.num.parse_int" {
+    } else {
+        Option::None
+    }
+}
+
+fn std_num_runtime_hook_item(key: string) -> Option[Item] {
+    if key == "std.num.parse_int" {
         Option::Some(std_num_parse_integer_item(true))
     } else if key == "std.num.parse_uint" {
         Option::Some(std_num_parse_integer_item(false))
@@ -2277,12 +3736,44 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_num_parse_float_item(true))
     } else if key == "std.num.parse_float64" {
         Option::Some(std_num_parse_float_item(false))
-    } else if key == "std.time.monotonic_nanoseconds" {
+    } else {
+        Option::None
+    }
+}
+
+fn std_time_runtime_hook_item(key: string) -> Option[Item] {
+    if key == "std.time.monotonic_nanoseconds" {
         Option::Some(std_time_monotonic_nanoseconds_item())
     } else if key == "std.time.unix_nanoseconds" {
         Option::Some(std_time_unix_nanoseconds_item())
     } else if key == "std.time.sleep_nanoseconds" {
         Option::Some(std_time_sleep_nanoseconds_item())
+    } else {
+        Option::None
+    }
+}
+
+fn standard_runtime_hook_item(key: string) -> Option[Item] {
+    if key.starts_with("std.env.") {
+        std_env_runtime_hook_item(key)
+    } else if key.starts_with("std.fs.") {
+        std_fs_runtime_hook_item(key)
+    } else if key.starts_with("std.io.") {
+        std_io_runtime_hook_item(key)
+    } else if key.starts_with("std.path.") {
+        std_path_runtime_hook_item(key)
+    } else if key.starts_with("std.process.") {
+        std_process_runtime_hook_item(key)
+    } else if key == "std.testing.fail" {
+        Option::Some(std_testing_fail_item())
+    } else if key.starts_with("std.num.") {
+        std_num_runtime_hook_item(key)
+    } else if key.starts_with("std.math.") {
+        std_math_runtime_hook_item(key)
+    } else if key.starts_with("std.crypto.") {
+        std_crypto_runtime_hook_item(key)
+    } else if key.starts_with("std.time.") {
+        std_time_runtime_hook_item(key)
     } else {
         task_runtime_hook_item(key)
     }

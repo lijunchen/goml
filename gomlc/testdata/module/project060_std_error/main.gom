@@ -1,0 +1,251 @@
+package main;
+
+use std::bytes;
+use std::error;
+use std::crypto::hash as crypto_hash;
+use std::crypto::rand as crypto_rand;
+use std::env;
+use std::fs;
+use std::io;
+use std::math;
+use std::num;
+use std::path;
+use std::process;
+use std::rand;
+use std::time;
+use std::text;
+use std::testing;
+use std::utf8;
+use std::unicode;
+use utf8::BytesUtf8;
+
+fn describe[E: error::Error](value: E) -> string {
+    value.to_string()
+}
+
+fn main() -> unit {
+    let details = error::Details::new(
+        error::kind_code(error::ErrorKind::NotFound),
+        "read",
+        Option::Some("missing.txt"),
+        Option::Some(2),
+        "file does not exist",
+    );
+    println(error::kind_from_code(details.kind_code()).to_string());
+    println(details.operation());
+    println(details.context().unwrap_or(""));
+    println(details.raw_os_code().unwrap_or(0));
+    println(details.message());
+    println(describe(details));
+    println(error::kind_from_code(999).to_string());
+    let io_error = io::Error::new(
+        io::ErrorKind::UnexpectedEof,
+        "read exact",
+        Option::None,
+        Option::None,
+        "short read",
+    );
+    println(io_error.kind().to_string());
+    println(describe(io_error));
+    let fs_error = fs::Error::new(
+        io::ErrorKind::NotFound,
+        "read",
+        Option::Some("missing.txt"),
+        Option::Some(2),
+        "file does not exist",
+    );
+    println(fs_error.path().unwrap_or(""));
+    println(describe(fs_error));
+    let path_error = path::Error::new(
+        io::ErrorKind::InvalidInput,
+        "absolute",
+        Option::Some("bad"),
+        Option::None,
+        "invalid path",
+    );
+    println(path_error.kind().to_string());
+    let process_error = process::Error::new(
+        io::ErrorKind::NotFound,
+        "execute",
+        Option::Some("missing-command"),
+        Option::None,
+        "executable not found",
+    );
+    println(process_error.program().unwrap_or(""));
+    println(time::Error::new("duration", "overflow").message());
+    println(
+        env::VarError::new(io::ErrorKind::NotFound, "MISSING", "not present").name().unwrap_or(""),
+    );
+    println(num::ParseIntError::new("ff", 16, "invalid digit").radix());
+    println(num::ParseFloatError::new("x", "invalid syntax").input());
+    println(num::parse_int_structured("42").unwrap_or(0));
+    match num::parse_int_structured("x") {
+        Ok(_) => println("unexpected integer"),
+        Err(error) => println(error.input()),
+    };
+    println(num::checked_add_int64(9223372036854775807, 1).is_none());
+    println(num::saturating_multiply_int64(9223372036854775807, 2));
+    println(env::current_dir_structured().is_ok());
+    println(env::var_structured("GOML_TEST_MISSING_ENV").is_err());
+    println(env::vars().len() > 0);
+    println(path::absolute_structured(".").is_ok());
+    println(path::separator().byte_len());
+    println(path::components("a/b\\c").len());
+    println(path::windows_prefix("C:\\work").unwrap_or("none"));
+    println(path::windows_prefix("\\\\server\\share\\file").unwrap_or("none"));
+    println(path::relative("a", "a/b").unwrap_or("invalid"));
+    println(process::look_path_structured("definitely-missing-goml-command").is_err());
+    println(
+        process::Command::new("/bin/sh").args(Vec::["-c", "exit 0"]).status_structured().unwrap_or(
+            process::ExitStatus { code_value: -1 },
+        ).success(),
+    );
+    println(
+        process::Command::new("/usr/bin/env").env_clear().env("ONLY", "yes").output_structured().map(
+            |output: process::Output| output.stdout().to_string().unwrap_or(""),
+        ).unwrap_or("")
+            == "ONLY=yes\n",
+    );
+    let signaled = process::Command::new("/bin/sh").args(Vec::["-c", "kill -TERM $$"]).status_structured().unwrap_or(
+        process::ExitStatus { code_value: -2 },
+    );
+    match signaled.reason() {
+        process::ExitReason::Signaled => println("signal"),
+        _ => println("other"),
+    };
+    match process::Command::new("/bin/sh").args(Vec::["-c", "sleep 1"]).status_timeout_structured(
+        time::Duration::from_milliseconds(5),
+    ) {
+        Ok(_) => println("unexpected timeout"),
+        Err(error) => println(error.kind().to_string()),
+    };
+    let valid: Vec[byte] = Vec::[240, 159, 152, 128];
+    println(utf8::decode(valid).unwrap_or("invalid"));
+    let invalid: Vec[byte] = Vec::[226, 40, 161];
+    match utf8::validate(invalid.slice(0, invalid.len())) {
+        Result::Ok(()) => println("valid"),
+        Result::Err(error) => {
+            println(error.kind().to_string());
+            println(error.valid_up_to());
+            println(error.error_length().unwrap_or(0))
+        },
+    };
+    println(utf8::encoded_len('😀'));
+    println(utf8::encode("ok").len());
+    println(bytes::Bytes::from_string("utf8").to_string_utf8().unwrap_or("invalid"));
+    println(text::find_bytes("a中b", "中").unwrap_or(-1));
+    println(text::find("éxé", "é").unwrap_or(-1));
+    println(text::rfind("éxé", "é").unwrap_or(-1));
+    println(text::char_count("a中b"));
+    println(text::slice_chars("a中b", 1, 2).unwrap_or("invalid"));
+    println(text::slice_chars("a中b", 2, 1).is_none());
+    println(unicode::version);
+    println(unicode::is_whitespace('\u2003'));
+    println(unicode::is_letter('中'));
+    println(unicode::to_lowercase('Ä'));
+    println(unicode::uppercase("Straße"));
+    println(unicode::case_fold("Straße Σς İ"));
+    println(math::sqrt(9.0));
+    println(math::pow(2.0, 8.0));
+    println(math::round(-1.5));
+    println(math::is_finite(math::pi));
+    println(math::is_subnormal(5e-324));
+    println(rand::algorithm);
+    println(rand::next_u64(0));
+    println(rand::int_range(7, 10, 20).unwrap_or(0));
+    println(rand::bytes(1, 10).len());
+    for value in rand::shuffle(Vec::[1, 2, 3, 4], 42) {
+        print(value)
+    }
+    println("");
+    let second = time::Duration::checked_from_seconds(1).unwrap_or(time::Duration::zero());
+    println(second.as_nanoseconds());
+    println(second.saturating_multiply(3).as_seconds());
+    println(second.checked_subtract(time::Duration::from_seconds(2)).is_none());
+    println(
+        time::SystemTime::from_unix_nanoseconds(1).compare(
+            time::SystemTime::from_unix_nanoseconds(2),
+        ),
+    );
+    println(time::SystemTime::checked_from_unix_seconds(9223372037).is_err());
+    let none: Option[int] = Option::None;
+    let ok: Result[int, string] = Result::Ok(1);
+    let err: Result[int, string] = Result::Err("error");
+    testing::assert_some(Option::Some(1));
+    testing::assert_none(none);
+    testing::assert_ok(ok);
+    testing::assert_err(err);
+    println(testing::expect_some(Option::Some(7), "expected value"));
+    println(testing::expect_ok(ok, "expected ok"));
+    println(testing::expect_err(err, "expected err"));
+    println("assertions passed");
+    println(crypto_hash::sha256(bytes::Bytes::from_string("abc")));
+    println(crypto_rand::bytes(8).unwrap_or(bytes::Bytes::new()).len());
+    match fs::read_file_structured("missing-structured-file") {
+        Ok(_) => println("unexpected file"),
+        Err(error) => println(error.kind().to_string()),
+    };
+    match fs::read_file_structured("/root/goml-permission-denied") {
+        Ok(_) => println("unexpected permission"),
+        Err(error) => println(error.kind().to_string()),
+    };
+    match fs::read_file_structured(text::repeat("x", 5000)) {
+        Ok(_) => println("unexpected invalid path"),
+        Err(error) => println(error.kind().to_string()),
+    };
+    match fs::read_dir_structured("missing-structured-directory") {
+        Ok(_) => println("unexpected directory"),
+        Err(error) => println(error.kind().to_string()),
+    };
+    let structured_path = "_artifact/structured.txt";
+    println(fs::write_file_structured(structured_path, "structured").is_ok());
+    println(fs::read_file_structured(structured_path).unwrap_or("failed"));
+    let _ = fs::remove_file(structured_path);
+    println(io::write_stdout_structured(bytes::Bytes::new()).is_ok());
+    println(io::write_stderr_structured(bytes::Bytes::new()).is_ok());
+    println(io::read_stdin_exact_structured(0).unwrap_or(bytes::Bytes::new()).len());
+    println(io::read_stdin_to_string().unwrap_or("invalid").byte_len());
+    match io::read_stdin_exact_structured(1) {
+        Ok(_) => println("unexpected input"),
+        Err(error) => println(error.kind().to_string()),
+    };
+    let directory = "_artifact/one-shot-dir";
+    println(fs::create_dir(directory).is_ok());
+    match fs::create_dir(directory) {
+        Ok(()) => println("unexpected directory"),
+        Err(error) => println(error.kind().to_string()),
+    };
+    let source = directory + "/source";
+    let copied = directory + "/copied";
+    let hard = directory + "/hard";
+    let symbolic = directory + "/symbolic";
+    let renamed = directory + "/renamed";
+    let _ = fs::write_file_structured(source, "links");
+    match fs::metadata(source) {
+        Ok(value) => println(value.len()),
+        Err(error) => println(error.kind().to_string()),
+    };
+    println(fs::try_exists(source).unwrap_or(false));
+    println(fs::try_exists(directory + "/missing").unwrap_or(true));
+    println(fs::copy(source, copied).is_ok());
+    println(fs::hard_link(source, hard).is_ok());
+    println(fs::symbolic_link("source", symbolic).is_ok());
+    match fs::symlink_metadata(symbolic) {
+        Ok(value) => println(value.file_type().is_symlink()),
+        Err(error) => println(error.kind().to_string()),
+    };
+    println(fs::rename(copied, renamed).is_ok());
+    let empty_entries: Vec[fs::DirEntry] = Vec::[];
+    let entries = fs::read_dir_structured(directory).unwrap_or(empty_entries);
+    println(entries.len());
+    println(fs::read_file_structured(renamed).unwrap_or("failed"));
+    let atomic = directory + "/atomic";
+    println(fs::atomic_write(atomic, "first").is_ok());
+    println(fs::atomic_write(atomic, "second").is_ok());
+    println(fs::read_file_structured(atomic).unwrap_or("failed"));
+    let replacement = directory + "/replacement";
+    let _ = fs::write_file_structured(replacement, "replacement");
+    println(fs::replace(replacement, atomic).is_ok());
+    println(fs::read_file_structured(atomic).unwrap_or("failed"));
+    let _ = fs::remove_dir_all(directory);
+}

@@ -307,6 +307,18 @@ fn require_runtime_import(imports: Vec[string], name: string) -> unit {
     } else {}
 }
 
+fn needs_structured_runtime_error(hooks: Vec[string]) -> bool {
+    collections::contains(hooks, "std.fs.read_bytes.v2")
+        || collections::contains(hooks, "std.fs.write_bytes.v2")
+        || collections::contains(hooks, "std.fs.path_operation.v2")
+        || collections::contains(hooks, "std.fs.metadata.v2")
+        || collections::contains(hooks, "std.fs.atomic_write.v2")
+        || collections::contains(hooks, "std.io.read_stdin.v2")
+        || collections::contains(hooks, "std.io.read_stdin_exact.v2")
+        || collections::contains(hooks, "std.io.write_stdout.v2")
+        || collections::contains(hooks, "std.io.write_stderr.v2")
+}
+
 pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics: Vec[string]) -> unit {
     let required_imports: Vec[string] = Vec::[];
     for hook in hooks {
@@ -328,14 +340,32 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                 } else if hook == "std.io.eprint" {
                     require_runtime_import(required_imports, "fmt");
                     require_runtime_import(required_imports, "os")
-                } else if hook == "std.io.read_stdin" || hook == "std.io.read_stdin_exact" {
+                } else if hook == "std.io.read_stdin" || hook == "std.io.read_stdin_exact"
+                    || hook == "std.io.read_stdin.v2"
+                    || hook == "std.io.read_stdin_exact.v2" {
                     require_runtime_import(required_imports, "io");
-                    require_runtime_import(required_imports, "os")
+                    require_runtime_import(required_imports, "os");
+                    if hook == "std.io.read_stdin.v2" || hook == "std.io.read_stdin_exact.v2" {
+                        require_runtime_import(required_imports, "syscall")
+                    } else {}
                 } else if hook == "std.io.write_stdout" || hook == "std.io.write_stderr"
+                    || hook == "std.io.write_stdout.v2"
+                    || hook == "std.io.write_stderr.v2"
                     || hook.starts_with("std.env.")
                     || (hook.starts_with("std.fs.") && hook != "std.fs.canonicalize"
                         && hook != "std.fs.sha256_file") {
-                    require_runtime_import(required_imports, "os")
+                    require_runtime_import(required_imports, "os");
+                    if hook == "std.fs.read_bytes.v2" || hook == "std.fs.write_bytes.v2"
+                        || hook == "std.fs.path_operation.v2"
+                        || hook == "std.fs.metadata.v2"
+                        || hook == "std.fs.atomic_write.v2"
+                        || hook == "std.io.write_stdout.v2"
+                        || hook == "std.io.write_stderr.v2" {
+                        require_runtime_import(required_imports, "syscall")
+                    } else {}
+                    if hook == "std.fs.atomic_write.v2" {
+                        require_runtime_import(required_imports, "filepath")
+                    } else {}
                 } else if hook == "std.fs.canonicalize" {
                     require_runtime_import(required_imports, "filepath")
                 } else if hook == "std.fs.sha256_file" {
@@ -346,6 +376,9 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "sha256")
                 } else if hook.starts_with("std.path.") {
                     require_runtime_import(required_imports, "filepath");
+                    if hook == "std.path.separator" {
+                        require_runtime_import(required_imports, "os")
+                    } else {};
                     if hook == "std.path.extension" || hook == "std.path.file_stem"
                         || hook == "std.path.with_extension" {
                         require_runtime_import(required_imports, "strings")
@@ -355,6 +388,10 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
                     require_runtime_import(required_imports, "os")
                 } else if hook.starts_with("std.num.") {
                     require_runtime_import(required_imports, "strconv")
+                } else if hook.starts_with("std.math.") {
+                    require_runtime_import(required_imports, "math")
+                } else if hook == "std.crypto.rand.bytes" {
+                    require_runtime_import(required_imports, "cryptorand")
                 } else if hook.starts_with("std.task.") {
                     require_runtime_import(required_imports, "context");
                     require_runtime_import(required_imports, "sync");
@@ -398,6 +435,12 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
             require_runtime_import(required_imports, "sync")
         } else {}
     }
+    if needs_structured_runtime_error(hooks) {
+        require_runtime_import(required_imports, "errors");
+        require_runtime_import(required_imports, "io");
+        require_runtime_import(required_imports, "os");
+        require_runtime_import(required_imports, "syscall")
+    } else {};
     if !required_imports.is_empty() {
         let imports: Vec[(string, string)] = Vec::[];
         if collections::contains(required_imports, "bytes") {
@@ -406,8 +449,14 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
         if collections::contains(required_imports, "context") {
             imports.push(("_goml_context", "context"))
         } else {};
+        if collections::contains(required_imports, "cryptorand") {
+            imports.push(("_goml_cryptorand", "crypto/rand"))
+        } else {};
         if collections::contains(required_imports, "fmt") {
             imports.push(("_goml_fmt", "fmt"))
+        } else {};
+        if collections::contains(required_imports, "errors") {
+            imports.push(("_goml_errors", "errors"))
         } else {};
         if collections::contains(required_imports, "hash") {
             imports.push(("_goml_hash", "hash"))
@@ -474,6 +523,10 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string], intrinsics:
     for key in resources::core_runtime_keys() {
         ordered.push("core." + key)
     }
+    if needs_structured_runtime_error(hooks) {
+        items.push(std_runtime_error_kind_item());
+        items.push(std_runtime_error_raw_code_item())
+    } else {};
     for spec in resources::standard_runtime_abi_specs() {
         ordered.push(spec.key)
     }

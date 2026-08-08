@@ -1,0 +1,134 @@
+package num;
+
+use std::io;
+
+pub struct ParseIntError {
+    details: io::ErrorDetails,
+    input_value: string,
+    radix_value: int,
+}
+
+impl ParseIntError {
+    pub fn new(input: string, radix: int, message: string) -> ParseIntError {
+        ParseIntError {
+            details: io::ErrorDetails::new(
+                io::ErrorKind::InvalidInput,
+                "parse integer",
+                Option::Some(input),
+                Option::None,
+                message,
+            ),
+            input_value: input,
+            radix_value: radix,
+        }
+    }
+
+    pub fn kind(self: ParseIntError) -> io::ErrorKind {
+        self.details.kind()
+    }
+
+    pub fn operation(self: ParseIntError) -> string {
+        self.details.operation()
+    }
+
+    pub fn context(self: ParseIntError) -> Option[string] {
+        self.details.context()
+    }
+
+    pub fn raw_os_code(self: ParseIntError) -> Option[int] {
+        self.details.raw_os_code()
+    }
+
+    pub fn input(self: ParseIntError) -> string {
+        self.input_value
+    }
+
+    pub fn radix(self: ParseIntError) -> int {
+        self.radix_value
+    }
+
+    pub fn message(self: ParseIntError) -> string {
+        self.details.message()
+    }
+}
+
+impl ToString for ParseIntError {
+    fn to_string(self: ParseIntError) -> string {
+        self.details.to_string()
+    }
+}
+
+impl Debug for ParseIntError {
+    fn debug(self: ParseIntError) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for ParseIntError {
+    fn eq(self: ParseIntError, other: ParseIntError) -> bool {
+        self.details == other.details && self.input_value == other.input_value
+            && self.radix_value == other.radix_value
+    }
+}
+
+pub struct ParseFloatError {
+    details: io::ErrorDetails,
+    input_value: string,
+}
+
+impl ParseFloatError {
+    pub fn new(input: string, message: string) -> ParseFloatError {
+        ParseFloatError {
+            details: io::ErrorDetails::new(
+                io::ErrorKind::InvalidInput,
+                "parse float",
+                Option::Some(input),
+                Option::None,
+                message,
+            ),
+            input_value: input,
+        }
+    }
+
+    pub fn kind(self: ParseFloatError) -> io::ErrorKind {
+        self.details.kind()
+    }
+
+    pub fn operation(self: ParseFloatError) -> string {
+        self.details.operation()
+    }
+
+    pub fn context(self: ParseFloatError) -> Option[string] {
+        self.details.context()
+    }
+
+    pub fn raw_os_code(self: ParseFloatError) -> Option[int] {
+        self.details.raw_os_code()
+    }
+
+    pub fn input(self: ParseFloatError) -> string {
+        self.input_value
+    }
+
+    pub fn message(self: ParseFloatError) -> string {
+        self.details.message()
+    }
+}
+
+impl ToString for ParseFloatError {
+    fn to_string(self: ParseFloatError) -> string {
+        self.details.to_string()
+    }
+}
+
+impl Debug for ParseFloatError {
+    fn debug(self: ParseFloatError) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for ParseFloatError {
+    fn eq(self: ParseFloatError, other: ParseFloatError) -> bool {
+        self.details == other.details && self.input_value == other.input_value
+    }
+}

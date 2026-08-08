@@ -1,0 +1,162 @@
+package error;
+
+pub trait Error: Debug + ToString {}
+
+impl[E: Debug + ToString] Error for E {}
+
+pub enum ErrorKind {
+    NotFound,
+    PermissionDenied,
+    AlreadyExists,
+    InvalidInput,
+    InvalidData,
+    TimedOut,
+    Interrupted,
+    UnexpectedEof,
+    WriteZero,
+    BrokenPipe,
+    WouldBlock,
+    Unsupported,
+    Other,
+}
+
+impl ToString for ErrorKind {
+    fn to_string(self: ErrorKind) -> string {
+        match self {
+            ErrorKind::NotFound => "NotFound",
+            ErrorKind::PermissionDenied => "PermissionDenied",
+            ErrorKind::AlreadyExists => "AlreadyExists",
+            ErrorKind::InvalidInput => "InvalidInput",
+            ErrorKind::InvalidData => "InvalidData",
+            ErrorKind::TimedOut => "TimedOut",
+            ErrorKind::Interrupted => "Interrupted",
+            ErrorKind::UnexpectedEof => "UnexpectedEof",
+            ErrorKind::WriteZero => "WriteZero",
+            ErrorKind::BrokenPipe => "BrokenPipe",
+            ErrorKind::WouldBlock => "WouldBlock",
+            ErrorKind::Unsupported => "Unsupported",
+            ErrorKind::Other => "Other",
+        }
+    }
+}
+
+impl Debug for ErrorKind {
+    fn debug(self: ErrorKind) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for ErrorKind {
+    fn eq(self: ErrorKind, other: ErrorKind) -> bool {
+        kind_code(self) == kind_code(other)
+    }
+}
+
+impl Eq for ErrorKind {}
+
+pub struct Details {
+    kind_code_value: int,
+    operation_value: string,
+    context_value: Option[string],
+    raw_os_code_value: Option[int],
+    message_value: string,
+}
+
+impl Details {
+    pub fn new(
+        kind_code: int,
+        operation: string,
+        context: Option[string],
+        raw_os_code: Option[int],
+        message: string,
+    ) -> Details {
+        Details {
+            kind_code_value: kind_code,
+            operation_value: operation,
+            context_value: context,
+            raw_os_code_value: raw_os_code,
+            message_value: message,
+        }
+    }
+
+    pub fn kind_code(self: Details) -> int {
+        self.kind_code_value
+    }
+
+    pub fn operation(self: Details) -> string {
+        self.operation_value
+    }
+
+    pub fn context(self: Details) -> Option[string] {
+        self.context_value
+    }
+
+    pub fn raw_os_code(self: Details) -> Option[int] {
+        self.raw_os_code_value
+    }
+
+    pub fn message(self: Details) -> string {
+        self.message_value
+    }
+}
+
+impl ToString for Details {
+    fn to_string(self: Details) -> string {
+        match self.context_value {
+            Some(context) => self.operation_value + " " + context + ": " + self.message_value,
+            None => self.operation_value + ": " + self.message_value,
+        }
+    }
+}
+
+impl Debug for Details {
+    fn debug(self: Details) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for Details {
+    fn eq(self: Details, other: Details) -> bool {
+        self.kind_code_value == other.kind_code_value
+            && self.operation_value == other.operation_value
+            && self.context_value == other.context_value
+            && self.raw_os_code_value == other.raw_os_code_value
+            && self.message_value == other.message_value
+    }
+}
+
+pub fn kind_from_code(code: int) -> ErrorKind {
+    match code {
+        1 => ErrorKind::NotFound,
+        2 => ErrorKind::PermissionDenied,
+        3 => ErrorKind::AlreadyExists,
+        4 => ErrorKind::InvalidInput,
+        5 => ErrorKind::InvalidData,
+        6 => ErrorKind::TimedOut,
+        7 => ErrorKind::Interrupted,
+        8 => ErrorKind::UnexpectedEof,
+        9 => ErrorKind::WriteZero,
+        10 => ErrorKind::BrokenPipe,
+        11 => ErrorKind::WouldBlock,
+        12 => ErrorKind::Unsupported,
+        _ => ErrorKind::Other,
+    }
+}
+
+pub fn kind_code(kind: ErrorKind) -> int {
+    match kind {
+        ErrorKind::NotFound => 1,
+        ErrorKind::PermissionDenied => 2,
+        ErrorKind::AlreadyExists => 3,
+        ErrorKind::InvalidInput => 4,
+        ErrorKind::InvalidData => 5,
+        ErrorKind::TimedOut => 6,
+        ErrorKind::Interrupted => 7,
+        ErrorKind::UnexpectedEof => 8,
+        ErrorKind::WriteZero => 9,
+        ErrorKind::BrokenPipe => 10,
+        ErrorKind::WouldBlock => 11,
+        ErrorKind::Unsupported => 12,
+        ErrorKind::Other => 0,
+    }
+}

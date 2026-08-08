@@ -1,0 +1,63 @@
+package env;
+
+use std::io;
+
+pub struct VarError {
+    details: io::ErrorDetails,
+}
+
+impl VarError {
+    pub fn new(kind: io::ErrorKind, name: string, message: string) -> VarError {
+        VarError {
+            details: io::ErrorDetails::new(
+                kind,
+                "read environment variable",
+                Option::Some(name),
+                Option::None,
+                message,
+            ),
+        }
+    }
+
+    pub fn kind(self: VarError) -> io::ErrorKind {
+        self.details.kind()
+    }
+
+    pub fn operation(self: VarError) -> string {
+        self.details.operation()
+    }
+
+    pub fn name(self: VarError) -> Option[string] {
+        self.details.context()
+    }
+
+    pub fn context(self: VarError) -> Option[string] {
+        self.details.context()
+    }
+
+    pub fn raw_os_code(self: VarError) -> Option[int] {
+        self.details.raw_os_code()
+    }
+
+    pub fn message(self: VarError) -> string {
+        self.details.message()
+    }
+}
+
+impl ToString for VarError {
+    fn to_string(self: VarError) -> string {
+        self.details.to_string()
+    }
+}
+
+impl Debug for VarError {
+    fn debug(self: VarError) -> string {
+        self.to_string()
+    }
+}
+
+impl PartialEq for VarError {
+    fn eq(self: VarError, other: VarError) -> bool {
+        self.details == other.details
+    }
+}
