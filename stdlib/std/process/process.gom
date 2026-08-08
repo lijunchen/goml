@@ -2,7 +2,15 @@ package process;
 
 use std::bytes;
 use std::internal::host;
+use std::io;
 use std::task;
+use std::time;
+
+pub enum ExitReason {
+    Exited(int),
+    Signaled,
+    Unknown,
+}
 
 pub struct ExitStatus {
     pub code_value: int,
@@ -18,6 +26,16 @@ impl ExitStatus {
             Option::None
         } else {
             Option::Some(self.code_value)
+        }
+    }
+
+    pub fn reason(self: ExitStatus) -> ExitReason {
+        if self.code_value >= 0 {
+            ExitReason::Exited(self.code_value)
+        } else if self.code_value == -1 {
+            ExitReason::Signaled
+        } else {
+            ExitReason::Unknown
         }
     }
 }
@@ -94,6 +112,19 @@ impl Command {
         self
     }
 
+    pub fn env_clear(self: Command) -> Command {
+        self.environment.clear();
+        self.environment.push(("", ""));
+        self
+    }
+
+    pub fn envs(self: Command, values: Vec[(string, string)]) -> Command {
+        for value in values {
+            self.environment.push(value)
+        }
+        self
+    }
+
     pub fn input(self: Command, value: bytes::Bytes) -> Command {
         Command {
             program: self.program,
@@ -126,6 +157,53 @@ impl Command {
             )
         } else {
             Result::Err(err)
+        }
+    }
+
+    pub fn output_structured(self: Command) -> Result[Output, Error] {
+        let program = self.program;
+        match self.output() {
+            Ok(output) => Result::Ok(output),
+            Err(message) => Result::Err(
+                Error::new(
+                    io::ErrorKind::Other,
+                    "execute",
+                    Option::Some(program),
+                    Option::None,
+                    message,
+                ),
+            ),
+        }
+    }
+
+    pub fn output_timeout_structured(self: Command, timeout: time::Duration) -> Result[
+        Output,
+        Error,
+    ] {
+        let program = self.program;
+        match self.output_timeout(timeout.as_milliseconds() as int) {
+            Ok((output, timed_out)) => if timed_out {
+                Result::Err(
+                    Error::new(
+                        io::ErrorKind::TimedOut,
+                        "execute",
+                        Option::Some(program),
+                        Option::None,
+                        "process timed out",
+                    ),
+                )
+            } else {
+                Result::Ok(output)
+            },
+            Err(message) => Result::Err(
+                Error::new(
+                    io::ErrorKind::Other,
+                    "execute",
+                    Option::Some(program),
+                    Option::None,
+                    message,
+                ),
+            ),
         }
     }
 
@@ -187,6 +265,34 @@ impl Command {
         }
     }
 
+    pub fn output_cancel_structured(self: Command, cancel: task::CancelToken) -> Result[
+        Output,
+        Error,
+    ] {
+        let program = self.program;
+        match self.output_with(cancel) {
+            Ok(task::WaitResult::Completed(output)) => Result::Ok(output),
+            Ok(task::WaitResult::Cancelled) => Result::Err(
+                Error::new(
+                    io::ErrorKind::Interrupted,
+                    "execute",
+                    Option::Some(program),
+                    Option::None,
+                    "process cancelled",
+                ),
+            ),
+            Err(message) => Result::Err(
+                Error::new(
+                    io::ErrorKind::Other,
+                    "execute",
+                    Option::Some(program),
+                    Option::None,
+                    message,
+                ),
+            ),
+        }
+    }
+
     pub fn status(self: Command) -> Result[ExitStatus, string] {
         let (ok, code, err) = host::process_status(
             self.program,
@@ -199,6 +305,53 @@ impl Command {
             Result::Ok(ExitStatus { code_value: code })
         } else {
             Result::Err(err)
+        }
+    }
+
+    pub fn status_structured(self: Command) -> Result[ExitStatus, Error] {
+        let program = self.program;
+        match self.status() {
+            Ok(status) => Result::Ok(status),
+            Err(message) => Result::Err(
+                Error::new(
+                    io::ErrorKind::Other,
+                    "execute",
+                    Option::Some(program),
+                    Option::None,
+                    message,
+                ),
+            ),
+        }
+    }
+
+    pub fn status_timeout_structured(self: Command, timeout: time::Duration) -> Result[
+        ExitStatus,
+        Error,
+    ] {
+        let program = self.program;
+        match self.status_timeout(timeout.as_milliseconds() as int) {
+            Ok((status, timed_out)) => if timed_out {
+                Result::Err(
+                    Error::new(
+                        io::ErrorKind::TimedOut,
+                        "execute",
+                        Option::Some(program),
+                        Option::None,
+                        "process timed out",
+                    ),
+                )
+            } else {
+                Result::Ok(status)
+            },
+            Err(message) => Result::Err(
+                Error::new(
+                    io::ErrorKind::Other,
+                    "execute",
+                    Option::Some(program),
+                    Option::None,
+                    message,
+                ),
+            ),
         }
     }
 
@@ -238,6 +391,34 @@ impl Command {
             Result::Err(err)
         }
     }
+
+    pub fn status_cancel_structured(self: Command, cancel: task::CancelToken) -> Result[
+        ExitStatus,
+        Error,
+    ] {
+        let program = self.program;
+        match self.status_with(cancel) {
+            Ok(task::WaitResult::Completed(status)) => Result::Ok(status),
+            Ok(task::WaitResult::Cancelled) => Result::Err(
+                Error::new(
+                    io::ErrorKind::Interrupted,
+                    "execute",
+                    Option::Some(program),
+                    Option::None,
+                    "process cancelled",
+                ),
+            ),
+            Err(message) => Result::Err(
+                Error::new(
+                    io::ErrorKind::Other,
+                    "execute",
+                    Option::Some(program),
+                    Option::None,
+                    message,
+                ),
+            ),
+        }
+    }
 }
 
 pub fn exit(code: int) -> unit {
@@ -250,5 +431,20 @@ pub fn look_path(program: string) -> Result[string, string] {
         Result::Ok(result)
     } else {
         Result::Err(err)
+    }
+}
+
+pub fn look_path_structured(program: string) -> Result[string, Error] {
+    match look_path(program) {
+        Ok(path) => Result::Ok(path),
+        Err(message) => Result::Err(
+            Error::new(
+                io::ErrorKind::NotFound,
+                "look path",
+                Option::Some(program),
+                Option::None,
+                message,
+            ),
+        ),
     }
 }
