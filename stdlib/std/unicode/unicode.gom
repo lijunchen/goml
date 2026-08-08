@@ -1,0 +1,73 @@
+package unicode;
+
+pub const version: string = "15.0.0";
+
+#[go_ffi("unicode", "IsControl")]
+extern fn go_is_control(value: char) -> bool;
+
+#[go_ffi("unicode", "IsLetter")]
+extern fn go_is_letter(value: char) -> bool;
+
+#[go_ffi("unicode", "IsNumber")]
+extern fn go_is_number(value: char) -> bool;
+
+#[go_ffi("unicode", "IsSpace")]
+extern fn go_is_whitespace(value: char) -> bool;
+
+#[go_ffi("unicode", "IsLower")]
+extern fn go_is_lowercase(value: char) -> bool;
+
+#[go_ffi("unicode", "IsUpper")]
+extern fn go_is_uppercase(value: char) -> bool;
+
+#[go_ffi("unicode", "ToLower")]
+extern fn go_to_lowercase(value: char) -> char;
+
+#[go_ffi("unicode", "ToUpper")]
+extern fn go_to_uppercase(value: char) -> char;
+
+#[go_ffi("strings", "ToLower")]
+extern fn go_lowercase(value: string) -> string;
+
+#[go_ffi("strings", "ToUpper")]
+extern fn go_uppercase(value: string) -> string;
+
+pub fn is_control(value: char) -> bool {
+    go_is_control(value)
+}
+
+pub fn is_letter(value: char) -> bool {
+    go_is_letter(value)
+}
+
+pub fn is_number(value: char) -> bool {
+    go_is_number(value)
+}
+
+pub fn is_whitespace(value: char) -> bool {
+    go_is_whitespace(value)
+}
+
+pub fn is_lowercase(value: char) -> bool {
+    go_is_lowercase(value)
+}
+
+pub fn is_uppercase(value: char) -> bool {
+    go_is_uppercase(value)
+}
+
+pub fn to_lowercase(value: char) -> char {
+    go_to_lowercase(value)
+}
+
+pub fn to_uppercase(value: char) -> char {
+    go_to_uppercase(value)
+}
+
+pub fn lowercase(value: string) -> string {
+    go_lowercase(value)
+}
+
+pub fn uppercase(value: string) -> string {
+    go_uppercase(value)
+}

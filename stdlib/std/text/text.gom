@@ -41,6 +41,60 @@ pub fn find(value: string, expected: string) -> Option[int] {
     find_from(value, expected, 0)
 }
 
+pub fn find_bytes(value: string, expected: string) -> Option[int] {
+    find(value, expected)
+}
+
+pub fn char_indices(value: string) -> FnIterator[(int, char)] {
+    value.char_indices()
+}
+
+pub fn char_count(value: string) -> int {
+    let mut count = 0;
+    for _ in value.chars() {
+        count += 1;
+    }
+    count
+}
+
+pub fn slice_chars(value: string, start: int, end: int) -> Option[string] {
+    if start < 0 || end < start {
+        Option::None
+    } else {
+        let mut char_index = 0;
+        let mut start_byte = if start == 0 {
+            Option::Some(0)
+        } else {
+            Option::None
+        };
+        let mut end_byte = if end == 0 {
+            Option::Some(0)
+        } else {
+            Option::None
+        };
+        for item in value.char_indices() {
+            let (byte_index, _) = item;
+            if char_index == start {
+                start_byte = Option::Some(byte_index);
+            } else {};
+            if char_index == end {
+                end_byte = Option::Some(byte_index);
+            } else {};
+            char_index += 1;
+        }
+        if char_index == start {
+            start_byte = Option::Some(value.byte_len());
+        } else {};
+        if char_index == end {
+            end_byte = Option::Some(value.byte_len());
+        } else {};
+        match (start_byte, end_byte) {
+            (Some(first), Some(last)) => Option::Some(value.byte_slice(first, last)),
+            _ => Option::None,
+        }
+    }
+}
+
 pub fn rfind(value: string, expected: string) -> Option[int] {
     let value_len = value.byte_len();
     let expected_len = expected.byte_len();
