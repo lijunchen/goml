@@ -385,6 +385,10 @@ pub fn assert_module_shard(shard: int, shard_count: int) -> unit {
                 name,
             );
             copy_directory(source_project, project);
+            // Mirrors the default target-dir layout: a real project run has an
+            // _artifact directory in the project root, and fixtures like
+            // project060_std_error rely on it when writing files.
+            create_directory(path::join(project, "_artifact"));
             let target = path::join(
                 path::join(repository_root(), "gomlc/_artifact/test-work/compiler/module"),
                 name,
