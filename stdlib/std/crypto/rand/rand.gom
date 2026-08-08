@@ -1,0 +1,17 @@
+package rand;
+
+use std::bytes;
+use std::internal::host;
+
+pub fn bytes(length: int) -> Result[bytes::Bytes, string] {
+    if length < 0 {
+        Result::Err("random byte length must be non-negative")
+    } else {
+        let (ok, value, error) = host::crypto_random_bytes(length);
+        if ok {
+            Result::Ok(bytes::Bytes::from_vec(value))
+        } else {
+            Result::Err(error)
+        }
+    }
+}

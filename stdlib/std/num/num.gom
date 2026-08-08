@@ -61,3 +61,117 @@ pub fn parse_float32(value: string) -> Result[float32, string] {
 pub fn parse_float64(value: string) -> Result[float64, string] {
     float64_result(host::parse_float64(value))
 }
+
+pub fn parse_int_structured(value: string) -> Result[int, ParseIntError] {
+    parse_int_radix_structured(value, 10)
+}
+
+pub fn parse_int_radix_structured(value: string, radix: int) -> Result[int, ParseIntError] {
+    let (ok, parsed, message) = host::parse_int(value, radix);
+    if ok {
+        Result::Ok(parsed)
+    } else {
+        Result::Err(ParseIntError::new(value, radix, message))
+    }
+}
+
+pub fn parse_uint_structured(value: string) -> Result[uint, ParseIntError] {
+    parse_uint_radix_structured(value, 10)
+}
+
+pub fn parse_uint_radix_structured(value: string, radix: int) -> Result[uint, ParseIntError] {
+    let (ok, parsed, message) = host::parse_uint(value, radix);
+    if ok {
+        Result::Ok(parsed)
+    } else {
+        Result::Err(ParseIntError::new(value, radix, message))
+    }
+}
+
+pub fn parse_float32_structured(value: string) -> Result[float32, ParseFloatError] {
+    let (ok, parsed, message) = host::parse_float32(value);
+    if ok {
+        Result::Ok(parsed)
+    } else {
+        Result::Err(ParseFloatError::new(value, message))
+    }
+}
+
+pub fn parse_float64_structured(value: string) -> Result[float64, ParseFloatError] {
+    let (ok, parsed, message) = host::parse_float64(value);
+    if ok {
+        Result::Ok(parsed)
+    } else {
+        Result::Err(ParseFloatError::new(value, message))
+    }
+}
+
+pub fn checked_add_int64(left: int64, right: int64) -> Option[int64] {
+    if right > 0 && left > 9223372036854775807 - right {
+        Option::None
+    } else if right < 0 && left < -9223372036854775807 - 1 - right {
+        Option::None
+    } else {
+        Option::Some(left + right)
+    }
+}
+
+pub fn checked_subtract_int64(left: int64, right: int64) -> Option[int64] {
+    if right > 0 && left < -9223372036854775807 - 1 + right {
+        Option::None
+    } else if right < 0 && left > 9223372036854775807 + right {
+        Option::None
+    } else {
+        Option::Some(left - right)
+    }
+}
+
+pub fn checked_multiply_int64(left: int64, right: int64) -> Option[int64] {
+    if left == 0 || right == 0 {
+        Option::Some(0)
+    } else if left == -9223372036854775807 - 1 && right == -1 {
+        Option::None
+    } else if right == -9223372036854775807 - 1 && left == -1 {
+        Option::None
+    } else {
+        let result = left * right;
+        if result / right == left {
+            Option::Some(result)
+        } else {
+            Option::None
+        }
+    }
+}
+
+pub fn saturating_add_int64(left: int64, right: int64) -> int64 {
+    match checked_add_int64(left, right) {
+        Some(value) => value,
+        None => if right < 0 {
+            -9223372036854775807 - 1
+        } else {
+            9223372036854775807
+        },
+    }
+}
+
+pub fn saturating_subtract_int64(left: int64, right: int64) -> int64 {
+    match checked_subtract_int64(left, right) {
+        Some(value) => value,
+        None => if right < 0 {
+            9223372036854775807
+        } else {
+            -9223372036854775807 - 1
+        },
+    }
+}
+
+pub fn saturating_multiply_int64(left: int64, right: int64) -> int64 {
+    match checked_multiply_int64(left, right) {
+        Some(value) => value,
+        None => if (left < 0) != (right < 0) {
+            -9223372036854775807 - 1
+        } else {
+            9223372036854775807
+        },
+    }
+}
