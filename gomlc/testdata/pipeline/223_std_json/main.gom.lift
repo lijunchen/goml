@@ -1,85 +1,1153 @@
-fn std::num::int_result(value/0: (bool, int, string)) -> Result__int__string {
-  let mtmp0 = value/0 in
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
+  std::bytes::Bytes {
+    values: let vec_literal/130 = inherent#Vec#Vec[T]#new__T_uint8() in
+    vec_literal/130
+  }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
+  capacity/0: int
+) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
+  values/1: Vec[uint8]
+) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: values/1 }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#string#string#to_bytes(value/2) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
+  inherent#Vec#Vec[T]#len__T_uint8(std::bytes::Bytes.values(self/3))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
+  inherent#Vec#Vec[T]#capacity__T_uint8(std::bytes::Bytes.values(self/4))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
+  inherent#Vec#Vec[T]#is_empty__T_uint8(std::bytes::Bytes.values(self/5))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
+  self/6: std::bytes::Bytes,
+  index/7: int
+) -> uint8 {
+  @intrinsic(vec.get)(std::bytes::Bytes.values(self/6), index/7)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
+  self/8: std::bytes::Bytes,
+  index/9: int,
+  value/10: uint8
+) -> unit {
+  let _wild5 =
+    let place_root0 = self/8 in
+    let place1 = std::bytes::Bytes.values(place_root0) in
+    let index2 = index/9 in
+    let place3 = @intrinsic(vec.get)(place1, index2) in
+    let value4 = value/10 in
+    @intrinsic(vec.set)(place1, index2, value4) in
+  ()
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
+  self/11: std::bytes::Bytes,
+  value/12: uint8
+) -> unit {
+  inherent#Vec#Vec[T]#push__T_uint8(std::bytes::Bytes.values(self/11), value/12)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
+  inherent#Vec#Vec[T]#pop__T_uint8(std::bytes::Bytes.values(self/13))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
+  self/14: std::bytes::Bytes,
+  additional/15: int
+) -> unit {
+  inherent#Vec#Vec[T]#reserve__T_uint8(std::bytes::Bytes.values(self/14), additional/15)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
+  self/16: std::bytes::Bytes,
+  len/17: int
+) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(std::bytes::Bytes.values(self/16), len/17)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
+  inherent#Vec#Vec[T]#clear__T_uint8(std::bytes::Bytes.values(self/18))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
+  self/19: std::bytes::Bytes,
+  start/20: int,
+  end/21: int
+) -> Slice[uint8] {
+  inherent#Vec#Vec[T]#slice__T_uint8(std::bytes::Bytes.values(self/19), start/20, end/21)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
+  std::bytes::Bytes.values(self/22)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
+  self/23: std::bytes::Bytes
+) -> Result__string__string {
+  let mtmp6 = string_from_utf8(std::bytes::Bytes.values(self/23)) in
+  let x7 = mtmp6.0 in
+  let x8 = mtmp6.1 in
+  let value/25 = x8 in
+  let valid/24 = x7 in
+  if valid/24 {
+      Result__string__string::Ok(value/25)
+  } else {
+      Result__string__string::Err("invalid UTF-8")
+  }
+}
+
+fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
+  match self/0 {
+    std::io::ErrorKind::NotFound => {
+      "NotFound"
+    },
+    std::io::ErrorKind::PermissionDenied => {
+      "PermissionDenied"
+    },
+    std::io::ErrorKind::AlreadyExists => {
+      "AlreadyExists"
+    },
+    std::io::ErrorKind::InvalidInput => {
+      "InvalidInput"
+    },
+    std::io::ErrorKind::InvalidData => {
+      "InvalidData"
+    },
+    std::io::ErrorKind::TimedOut => {
+      "TimedOut"
+    },
+    std::io::ErrorKind::Interrupted => {
+      "Interrupted"
+    },
+    std::io::ErrorKind::UnexpectedEof => {
+      "UnexpectedEof"
+    },
+    std::io::ErrorKind::WriteZero => {
+      "WriteZero"
+    },
+    std::io::ErrorKind::BrokenPipe => {
+      "BrokenPipe"
+    },
+    std::io::ErrorKind::WouldBlock => {
+      "WouldBlock"
+    },
+    std::io::ErrorKind::Unsupported => {
+      "Unsupported"
+    },
+    std::io::ErrorKind::Other => {
+      "Other"
+    },
+  }
+}
+
+fn trait_impl#Debug#std::io::ErrorKind#debug(self/1: std::io::ErrorKind) -> string {
+  trait_impl#ToString#std::io::ErrorKind#to_string(self/1)
+}
+
+fn trait_impl#PartialEq#std::io::ErrorKind#eq(
+  self/2: std::io::ErrorKind,
+  other/3: std::io::ErrorKind
+) -> bool {
+  trait_impl#PartialEq#int#eq(std::io::kind_code(self/2), std::io::kind_code(other/3))
+}
+
+fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
+  match code/4 {
+    1 => {
+      std::io::ErrorKind::NotFound
+    },
+    2 => {
+      std::io::ErrorKind::PermissionDenied
+    },
+    3 => {
+      std::io::ErrorKind::AlreadyExists
+    },
+    4 => {
+      std::io::ErrorKind::InvalidInput
+    },
+    5 => {
+      std::io::ErrorKind::InvalidData
+    },
+    6 => {
+      std::io::ErrorKind::TimedOut
+    },
+    7 => {
+      std::io::ErrorKind::Interrupted
+    },
+    8 => {
+      std::io::ErrorKind::UnexpectedEof
+    },
+    9 => {
+      std::io::ErrorKind::WriteZero
+    },
+    10 => {
+      std::io::ErrorKind::BrokenPipe
+    },
+    11 => {
+      std::io::ErrorKind::WouldBlock
+    },
+    12 => {
+      std::io::ErrorKind::Unsupported
+    },
+    _ => std::io::ErrorKind::Other,
+  }
+}
+
+fn std::io::kind_code(kind/5: std::io::ErrorKind) -> int {
+  match kind/5 {
+    std::io::ErrorKind::NotFound => {
+      1
+    },
+    std::io::ErrorKind::PermissionDenied => {
+      2
+    },
+    std::io::ErrorKind::AlreadyExists => {
+      3
+    },
+    std::io::ErrorKind::InvalidInput => {
+      4
+    },
+    std::io::ErrorKind::InvalidData => {
+      5
+    },
+    std::io::ErrorKind::TimedOut => {
+      6
+    },
+    std::io::ErrorKind::Interrupted => {
+      7
+    },
+    std::io::ErrorKind::UnexpectedEof => {
+      8
+    },
+    std::io::ErrorKind::WriteZero => {
+      9
+    },
+    std::io::ErrorKind::BrokenPipe => {
+      10
+    },
+    std::io::ErrorKind::WouldBlock => {
+      11
+    },
+    std::io::ErrorKind::Unsupported => {
+      12
+    },
+    std::io::ErrorKind::Other => {
+      0
+    },
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+  kind/6: std::io::ErrorKind,
+  operation/7: string,
+  context/8: Option__string,
+  raw_os_code/9: Option__int,
+  message/10: string
+) -> std::io::ErrorDetails {
+  std::io::ErrorDetails {
+    kind_value: kind/6,
+    operation_value: operation/7,
+    context_value: context/8,
+    raw_os_code_value: raw_os_code/9,
+    message_value: message/10
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(
+  self/11: std::io::ErrorDetails
+) -> std::io::ErrorKind {
+  std::io::ErrorDetails.kind_value(self/11)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
+  self/12: std::io::ErrorDetails
+) -> string {
+  std::io::ErrorDetails.operation_value(self/12)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
+  self/13: std::io::ErrorDetails
+) -> Option__string {
+  std::io::ErrorDetails.context_value(self/13)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
+  self/14: std::io::ErrorDetails
+) -> Option__int {
+  std::io::ErrorDetails.raw_os_code_value(self/14)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(
+  self/15: std::io::ErrorDetails
+) -> string {
+  std::io::ErrorDetails.message_value(self/15)
+}
+
+fn trait_impl#ToString#std::io::ErrorDetails#to_string(self/16: std::io::ErrorDetails) -> string {
+  let mtmp0 = std::io::ErrorDetails.context_value(self/16) in
+  match mtmp0 {
+    Option__string::None => {
+      ((std::io::ErrorDetails.operation_value(self/16) + ": ") +
+        std::io::ErrorDetails.message_value(self/16))
+    },
+    Option__string::Some(x1) => {
+      let x1 = Option__string::Some._0(mtmp0) in
+      let context/17 = x1 in
+      ((((std::io::ErrorDetails.operation_value(self/16) + " ") + context/17) + ": ") +
+        std::io::ErrorDetails.message_value(self/16))
+    },
+  }
+}
+
+fn trait_impl#Debug#std::io::ErrorDetails#debug(self/18: std::io::ErrorDetails) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(self/18)
+}
+
+fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
+  self/19: std::io::ErrorDetails,
+  other/20: std::io::ErrorDetails
+) -> bool {
+  if if if if trait_impl#PartialEq#std::io::ErrorKind#eq(
+    std::io::ErrorDetails.kind_value(self/19),
+    std::io::ErrorDetails.kind_value(other/20)
+  ) {
+      trait_impl#PartialEq#string#eq(
+        std::io::ErrorDetails.operation_value(self/19),
+        std::io::ErrorDetails.operation_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#Option__string#eq(
+        std::io::ErrorDetails.context_value(self/19),
+        std::io::ErrorDetails.context_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#Option__int#eq(
+        std::io::ErrorDetails.raw_os_code_value(self/19),
+        std::io::ErrorDetails.raw_os_code_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#string#eq(
+        std::io::ErrorDetails.message_value(self/19),
+        std::io::ErrorDetails.message_value(other/20)
+      )
+  } else {
+      false
+  }
+}
+
+fn inherent#std::io::Error#std::io::Error#new(
+  kind/21: std::io::ErrorKind,
+  operation/22: string,
+  context/23: Option__string,
+  raw_os_code/24: Option__int,
+  message/25: string
+) -> std::io::Error {
+  std::io::Error {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      kind/21,
+      operation/22,
+      context/23,
+      raw_os_code/24,
+      message/25
+    )
+  }
+}
+
+fn inherent#std::io::Error#std::io::Error#kind(self/26: std::io::Error) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(std::io::Error.details(self/26))
+}
+
+fn inherent#std::io::Error#std::io::Error#operation(self/27: std::io::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(std::io::Error.details(self/27))
+}
+
+fn inherent#std::io::Error#std::io::Error#context(self/28: std::io::Error) -> Option__string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::io::Error.details(self/28))
+}
+
+fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__int {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::io::Error.details(self/29))
+}
+
+fn inherent#std::io::Error#std::io::Error#message(self/30: std::io::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(std::io::Error.details(self/30))
+}
+
+fn trait_impl#ToString#std::io::Error#to_string(self/31: std::io::Error) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(std::io::Error.details(self/31))
+}
+
+fn trait_impl#Debug#std::io::Error#debug(self/32: std::io::Error) -> string {
+  trait_impl#ToString#std::io::Error#to_string(self/32)
+}
+
+fn trait_impl#PartialEq#std::io::Error#eq(
+  self/33: std::io::Error,
+  other/34: std::io::Error
+) -> bool {
+  trait_impl#PartialEq#std::io::ErrorDetails#eq(
+    std::io::Error.details(self/33),
+    std::io::Error.details(other/34)
+  )
+}
+
+fn std::io::structured_error(
+  operation/35: string,
+  kind_code/36: int,
+  has_raw_code/37: bool,
+  raw_code/38: int,
+  message/39: string
+) -> std::io::Error {
+  inherent#std::io::Error#std::io::Error#new(
+    std::io::kind_from_code(kind_code/36),
+    operation/35,
+    Option__string::None,
+    if has_raw_code/37 {
+        Option__int::Some(raw_code/38)
+    } else {
+        Option__int::None
+    },
+    message/39
+  )
+}
+
+fn std::io::read_stdin_structured() -> Result__std::bytes::Bytes__std::io::Error {
+  let mtmp2 = @runtime(std.io.read_stdin.v2)() in
+  let x3 = mtmp2.0 in
+  let x4 = mtmp2.1 in
+  let x5 = mtmp2.2 in
+  let x6 = mtmp2.3 in
+  let x7 = mtmp2.4 in
+  let x8 = mtmp2.5 in
+  let message/45 = x8 in
+  let raw_code/44 = x7 in
+  let has_raw_code/43 = x6 in
+  let kind_code/42 = x5 in
+  let data/41 = x4 in
+  let ok/40 = x3 in
+  if ok/40 {
+      Result__std::bytes::Bytes__std::io::Error::Ok(
+        inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/41)
+      )
+  } else {
+      Result__std::bytes::Bytes__std::io::Error::Err(
+        std::io::structured_error(
+          "read stdin",
+          kind_code/42,
+          has_raw_code/43,
+          raw_code/44,
+          message/45
+        )
+      )
+  }
+}
+
+fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
+  let mtmp9 = std::io::read_stdin_structured() in
+  match mtmp9 {
+    Result__std::bytes::Bytes__std::io::Error::Ok(x10) => {
+      let x10 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp9) in
+      let data/46 = x10 in
+      let mtmp12 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/46) in
+      match mtmp12 {
+        Result__string__string::Ok(x13) => {
+          let x13 = Result__string__string::Ok._0(mtmp12) in
+          let value/47 = x13 in
+          Result__string__std::io::Error::Ok(value/47)
+        },
+        Result__string__string::Err(x14) => {
+          let x14 = Result__string__string::Err._0(mtmp12) in
+          let message/48 = x14 in
+          Result__string__std::io::Error::Err(
+            inherent#std::io::Error#std::io::Error#new(
+              std::io::ErrorKind::InvalidData,
+              "read stdin",
+              Option__string::None,
+              Option__int::None,
+              message/48
+            )
+          )
+        },
+      }
+    },
+    Result__std::bytes::Bytes__std::io::Error::Err(x11) => {
+      let x11 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp9) in
+      let error/49 = x11 in
+      Result__string__std::io::Error::Err(error/49)
+    },
+  }
+}
+
+fn std::io::read_stdin_exact_structured(
+  length/50: int
+) -> Result__std::bytes::Bytes__std::io::Error {
+  if (length/50 < 0) {
+      Result__std::bytes::Bytes__std::io::Error::Err(
+        inherent#std::io::Error#std::io::Error#new(
+          std::io::ErrorKind::InvalidInput,
+          "read stdin exact",
+          Option__string::None,
+          Option__int::None,
+          "read length must be non-negative"
+        )
+      )
+  } else {
+      let mtmp15 = @runtime(std.io.read_stdin_exact.v2)(length/50) in
+      let x16 = mtmp15.0 in
+      let x17 = mtmp15.1 in
+      let x18 = mtmp15.2 in
+      let x19 = mtmp15.3 in
+      let x20 = mtmp15.4 in
+      let x21 = mtmp15.5 in
+      let message/56 = x21 in
+      let raw_code/55 = x20 in
+      let has_raw_code/54 = x19 in
+      let kind_code/53 = x18 in
+      let data/52 = x17 in
+      let ok/51 = x16 in
+      if ok/51 {
+          Result__std::bytes::Bytes__std::io::Error::Ok(
+            inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/52)
+          )
+      } else {
+          Result__std::bytes::Bytes__std::io::Error::Err(
+            std::io::structured_error(
+              "read stdin exact",
+              kind_code/53,
+              has_raw_code/54,
+              raw_code/55,
+              message/56
+            )
+          )
+      }
+  }
+}
+
+fn std::io::write_structured(
+  stderr/57: bool,
+  data/58: std::bytes::Bytes
+) -> Result__unit__std::io::Error {
+  let result/59 =
+    if stderr/57 {
+        @runtime(std.io.write_stderr.v2)(
+          inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
+        )
+    } else {
+        @runtime(std.io.write_stdout.v2)(
+          inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
+        )
+    } in
+  let mtmp22 = result/59 in
+  let x23 = mtmp22.0 in
+  let x24 = mtmp22.1 in
+  let x25 = mtmp22.2 in
+  let x26 = mtmp22.3 in
+  let x27 = mtmp22.4 in
+  let message/64 = x27 in
+  let raw_code/63 = x26 in
+  let has_raw_code/62 = x25 in
+  let kind_code/61 = x24 in
+  let ok/60 = x23 in
+  if ok/60 {
+      Result__unit__std::io::Error::Ok(())
+  } else {
+      Result__unit__std::io::Error::Err(
+        std::io::structured_error(
+          if stderr/57 {
+              "write stderr"
+          } else {
+              "write stdout"
+          },
+          kind_code/61,
+          has_raw_code/62,
+          raw_code/63,
+          message/64
+        )
+      )
+  }
+}
+
+fn std::io::write_stdout_structured(data/65: std::bytes::Bytes) -> Result__unit__std::io::Error {
+  std::io::write_structured(false, data/65)
+}
+
+fn std::io::write_stderr_structured(data/66: std::bytes::Bytes) -> Result__unit__std::io::Error {
+  std::io::write_structured(true, data/66)
+}
+
+fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
+  let mtmp28 = @runtime(std.io.read_stdin)() in
+  let x29 = mtmp28.0 in
+  let x30 = mtmp28.1 in
+  let x31 = mtmp28.2 in
+  let err/73 = x31 in
+  let data/72 = x30 in
+  let ok/71 = x29 in
+  if ok/71 {
+      Result__std::bytes::Bytes__string::Ok(
+        inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/72)
+      )
+  } else {
+      Result__std::bytes::Bytes__string::Err(err/73)
+  }
+}
+
+fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
+  let mtmp32 =
+    @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/74)) in
+  let x33 = mtmp32.0 in
+  let x34 = mtmp32.1 in
+  let err/76 = x34 in
+  let ok/75 = x33 in
+  if ok/75 {
+      Result__unit__string::Ok(())
+  } else {
+      Result__unit__string::Err(err/76)
+  }
+}
+
+fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
+  let mtmp35 =
+    @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)) in
+  let x36 = mtmp35.0 in
+  let x37 = mtmp35.1 in
+  let err/79 = x37 in
+  let ok/78 = x36 in
+  if ok/78 {
+      Result__unit__string::Ok(())
+  } else {
+      Result__unit__string::Err(err/79)
+  }
+}
+
+fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__string {
+  if (length/80 < 0) {
+      Result__std::bytes::Bytes__string::Err("read length must be non-negative")
+  } else {
+      let mtmp38 = @runtime(std.io.read_stdin_exact)(length/80) in
+      let x39 = mtmp38.0 in
+      let x40 = mtmp38.1 in
+      let x41 = mtmp38.2 in
+      let err/83 = x41 in
+      let data/82 = x40 in
+      let ok/81 = x39 in
+      if ok/81 {
+          Result__std::bytes::Bytes__string::Ok(
+            inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/82)
+          )
+      } else {
+          Result__std::bytes::Bytes__string::Err(err/83)
+      }
+  }
+}
+
+fn inherent#std::num::ParseIntError#std::num::ParseIntError#new(
+  input/0: string,
+  radix/1: int,
+  message/2: string
+) -> std::num::ParseIntError {
+  std::num::ParseIntError {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      std::io::ErrorKind::InvalidInput,
+      "parse integer",
+      Option__string::Some(input/0),
+      Option__int::None,
+      message/2
+    ),
+    input_value: input/0,
+    radix_value: radix/1
+  }
+}
+
+fn inherent#std::num::ParseIntError#std::num::ParseIntError#kind(
+  self/3: std::num::ParseIntError
+) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(std::num::ParseIntError.details(self/3))
+}
+
+fn inherent#std::num::ParseIntError#std::num::ParseIntError#operation(
+  self/4: std::num::ParseIntError
+) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
+    std::num::ParseIntError.details(self/4)
+  )
+}
+
+fn inherent#std::num::ParseIntError#std::num::ParseIntError#context(
+  self/5: std::num::ParseIntError
+) -> Option__string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
+    std::num::ParseIntError.details(self/5)
+  )
+}
+
+fn inherent#std::num::ParseIntError#std::num::ParseIntError#raw_os_code(
+  self/6: std::num::ParseIntError
+) -> Option__int {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
+    std::num::ParseIntError.details(self/6)
+  )
+}
+
+fn inherent#std::num::ParseIntError#std::num::ParseIntError#input(
+  self/7: std::num::ParseIntError
+) -> string {
+  std::num::ParseIntError.input_value(self/7)
+}
+
+fn inherent#std::num::ParseIntError#std::num::ParseIntError#radix(
+  self/8: std::num::ParseIntError
+) -> int {
+  std::num::ParseIntError.radix_value(self/8)
+}
+
+fn inherent#std::num::ParseIntError#std::num::ParseIntError#message(
+  self/9: std::num::ParseIntError
+) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(
+    std::num::ParseIntError.details(self/9)
+  )
+}
+
+fn trait_impl#ToString#std::num::ParseIntError#to_string(
+  self/10: std::num::ParseIntError
+) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(std::num::ParseIntError.details(self/10))
+}
+
+fn trait_impl#Debug#std::num::ParseIntError#debug(self/11: std::num::ParseIntError) -> string {
+  trait_impl#ToString#std::num::ParseIntError#to_string(self/11)
+}
+
+fn trait_impl#PartialEq#std::num::ParseIntError#eq(
+  self/12: std::num::ParseIntError,
+  other/13: std::num::ParseIntError
+) -> bool {
+  if if trait_impl#PartialEq#std::io::ErrorDetails#eq(
+    std::num::ParseIntError.details(self/12),
+    std::num::ParseIntError.details(other/13)
+  ) {
+      trait_impl#PartialEq#string#eq(
+        std::num::ParseIntError.input_value(self/12),
+        std::num::ParseIntError.input_value(other/13)
+      )
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#int#eq(
+        std::num::ParseIntError.radix_value(self/12),
+        std::num::ParseIntError.radix_value(other/13)
+      )
+  } else {
+      false
+  }
+}
+
+fn inherent#std::num::ParseFloatError#std::num::ParseFloatError#new(
+  input/14: string,
+  message/15: string
+) -> std::num::ParseFloatError {
+  std::num::ParseFloatError {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      std::io::ErrorKind::InvalidInput,
+      "parse float",
+      Option__string::Some(input/14),
+      Option__int::None,
+      message/15
+    ),
+    input_value: input/14
+  }
+}
+
+fn inherent#std::num::ParseFloatError#std::num::ParseFloatError#kind(
+  self/16: std::num::ParseFloatError
+) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(
+    std::num::ParseFloatError.details(self/16)
+  )
+}
+
+fn inherent#std::num::ParseFloatError#std::num::ParseFloatError#operation(
+  self/17: std::num::ParseFloatError
+) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
+    std::num::ParseFloatError.details(self/17)
+  )
+}
+
+fn inherent#std::num::ParseFloatError#std::num::ParseFloatError#context(
+  self/18: std::num::ParseFloatError
+) -> Option__string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
+    std::num::ParseFloatError.details(self/18)
+  )
+}
+
+fn inherent#std::num::ParseFloatError#std::num::ParseFloatError#raw_os_code(
+  self/19: std::num::ParseFloatError
+) -> Option__int {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
+    std::num::ParseFloatError.details(self/19)
+  )
+}
+
+fn inherent#std::num::ParseFloatError#std::num::ParseFloatError#input(
+  self/20: std::num::ParseFloatError
+) -> string {
+  std::num::ParseFloatError.input_value(self/20)
+}
+
+fn inherent#std::num::ParseFloatError#std::num::ParseFloatError#message(
+  self/21: std::num::ParseFloatError
+) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(
+    std::num::ParseFloatError.details(self/21)
+  )
+}
+
+fn trait_impl#ToString#std::num::ParseFloatError#to_string(
+  self/22: std::num::ParseFloatError
+) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(std::num::ParseFloatError.details(self/22))
+}
+
+fn trait_impl#Debug#std::num::ParseFloatError#debug(self/23: std::num::ParseFloatError) -> string {
+  trait_impl#ToString#std::num::ParseFloatError#to_string(self/23)
+}
+
+fn trait_impl#PartialEq#std::num::ParseFloatError#eq(
+  self/24: std::num::ParseFloatError,
+  other/25: std::num::ParseFloatError
+) -> bool {
+  if trait_impl#PartialEq#std::io::ErrorDetails#eq(
+    std::num::ParseFloatError.details(self/24),
+    std::num::ParseFloatError.details(other/25)
+  ) {
+      trait_impl#PartialEq#string#eq(
+        std::num::ParseFloatError.input_value(self/24),
+        std::num::ParseFloatError.input_value(other/25)
+      )
+  } else {
+      false
+  }
+}
+
+fn std::num::int_result(value/26: (bool, int, string)) -> Result__int__string {
+  let mtmp0 = value/26 in
   let x1 = mtmp0.0 in
   let x2 = mtmp0.1 in
   let x3 = mtmp0.2 in
-  let error/3 = x3 in
-  let parsed/2 = x2 in
-  let ok/1 = x1 in
-  if ok/1 {
-      Result__int__string::Ok(parsed/2)
+  let error/29 = x3 in
+  let parsed/28 = x2 in
+  let ok/27 = x1 in
+  if ok/27 {
+      Result__int__string::Ok(parsed/28)
   } else {
-      Result__int__string::Err(error/3)
+      Result__int__string::Err(error/29)
   }
 }
 
-fn std::num::uint_result(value/4: (bool, uint, string)) -> Result__uint__string {
-  let mtmp4 = value/4 in
+fn std::num::uint_result(value/30: (bool, uint, string)) -> Result__uint__string {
+  let mtmp4 = value/30 in
   let x5 = mtmp4.0 in
   let x6 = mtmp4.1 in
   let x7 = mtmp4.2 in
-  let error/7 = x7 in
-  let parsed/6 = x6 in
-  let ok/5 = x5 in
-  if ok/5 {
-      Result__uint__string::Ok(parsed/6)
+  let error/33 = x7 in
+  let parsed/32 = x6 in
+  let ok/31 = x5 in
+  if ok/31 {
+      Result__uint__string::Ok(parsed/32)
   } else {
-      Result__uint__string::Err(error/7)
+      Result__uint__string::Err(error/33)
   }
 }
 
-fn std::num::float32_result(value/8: (bool, float32, string)) -> Result__float32__string {
-  let mtmp8 = value/8 in
+fn std::num::float32_result(value/34: (bool, float32, string)) -> Result__float32__string {
+  let mtmp8 = value/34 in
   let x9 = mtmp8.0 in
   let x10 = mtmp8.1 in
   let x11 = mtmp8.2 in
-  let error/11 = x11 in
-  let parsed/10 = x10 in
-  let ok/9 = x9 in
-  if ok/9 {
-      Result__float32__string::Ok(parsed/10)
+  let error/37 = x11 in
+  let parsed/36 = x10 in
+  let ok/35 = x9 in
+  if ok/35 {
+      Result__float32__string::Ok(parsed/36)
   } else {
-      Result__float32__string::Err(error/11)
+      Result__float32__string::Err(error/37)
   }
 }
 
-fn std::num::float64_result(value/12: (bool, float64, string)) -> Result__float64__string {
-  let mtmp12 = value/12 in
+fn std::num::float64_result(value/38: (bool, float64, string)) -> Result__float64__string {
+  let mtmp12 = value/38 in
   let x13 = mtmp12.0 in
   let x14 = mtmp12.1 in
   let x15 = mtmp12.2 in
-  let error/15 = x15 in
-  let parsed/14 = x14 in
-  let ok/13 = x13 in
-  if ok/13 {
-      Result__float64__string::Ok(parsed/14)
+  let error/41 = x15 in
+  let parsed/40 = x14 in
+  let ok/39 = x13 in
+  if ok/39 {
+      Result__float64__string::Ok(parsed/40)
   } else {
-      Result__float64__string::Err(error/15)
+      Result__float64__string::Err(error/41)
   }
 }
 
-fn std::num::parse_int(value/16: string) -> Result__int__string {
-  std::num::parse_int_radix(value/16, 10)
+fn std::num::parse_int(value/42: string) -> Result__int__string {
+  std::num::parse_int_radix(value/42, 10)
 }
 
-fn std::num::parse_int_radix(value/17: string, radix/18: int) -> Result__int__string {
-  std::num::int_result(@runtime(std.num.parse_int)(value/17, radix/18))
+fn std::num::parse_int_radix(value/43: string, radix/44: int) -> Result__int__string {
+  std::num::int_result(@runtime(std.num.parse_int)(value/43, radix/44))
 }
 
-fn std::num::parse_uint(value/19: string) -> Result__uint__string {
-  std::num::parse_uint_radix(value/19, 10)
+fn std::num::parse_uint(value/45: string) -> Result__uint__string {
+  std::num::parse_uint_radix(value/45, 10)
 }
 
-fn std::num::parse_uint_radix(value/20: string, radix/21: int) -> Result__uint__string {
-  std::num::uint_result(@runtime(std.num.parse_uint)(value/20, radix/21))
+fn std::num::parse_uint_radix(value/46: string, radix/47: int) -> Result__uint__string {
+  std::num::uint_result(@runtime(std.num.parse_uint)(value/46, radix/47))
 }
 
-fn std::num::parse_float32(value/22: string) -> Result__float32__string {
-  std::num::float32_result(@runtime(std.num.parse_float32)(value/22))
+fn std::num::parse_float32(value/48: string) -> Result__float32__string {
+  std::num::float32_result(@runtime(std.num.parse_float32)(value/48))
 }
 
-fn std::num::parse_float64(value/23: string) -> Result__float64__string {
-  std::num::float64_result(@runtime(std.num.parse_float64)(value/23))
+fn std::num::parse_float64(value/49: string) -> Result__float64__string {
+  std::num::float64_result(@runtime(std.num.parse_float64)(value/49))
+}
+
+fn std::num::parse_int_structured(value/50: string) -> Result__int__std::num::ParseIntError {
+  std::num::parse_int_radix_structured(value/50, 10)
+}
+
+fn std::num::parse_int_radix_structured(
+  value/51: string,
+  radix/52: int
+) -> Result__int__std::num::ParseIntError {
+  let mtmp16 = @runtime(std.num.parse_int)(value/51, radix/52) in
+  let x17 = mtmp16.0 in
+  let x18 = mtmp16.1 in
+  let x19 = mtmp16.2 in
+  let message/55 = x19 in
+  let parsed/54 = x18 in
+  let ok/53 = x17 in
+  if ok/53 {
+      Result__int__std::num::ParseIntError::Ok(parsed/54)
+  } else {
+      Result__int__std::num::ParseIntError::Err(
+        inherent#std::num::ParseIntError#std::num::ParseIntError#new(value/51, radix/52, message/55)
+      )
+  }
+}
+
+fn std::num::parse_uint_structured(value/56: string) -> Result__uint__std::num::ParseIntError {
+  std::num::parse_uint_radix_structured(value/56, 10)
+}
+
+fn std::num::parse_uint_radix_structured(
+  value/57: string,
+  radix/58: int
+) -> Result__uint__std::num::ParseIntError {
+  let mtmp20 = @runtime(std.num.parse_uint)(value/57, radix/58) in
+  let x21 = mtmp20.0 in
+  let x22 = mtmp20.1 in
+  let x23 = mtmp20.2 in
+  let message/61 = x23 in
+  let parsed/60 = x22 in
+  let ok/59 = x21 in
+  if ok/59 {
+      Result__uint__std::num::ParseIntError::Ok(parsed/60)
+  } else {
+      Result__uint__std::num::ParseIntError::Err(
+        inherent#std::num::ParseIntError#std::num::ParseIntError#new(value/57, radix/58, message/61)
+      )
+  }
+}
+
+fn std::num::parse_float32_structured(
+  value/62: string
+) -> Result__float32__std::num::ParseFloatError {
+  let mtmp24 = @runtime(std.num.parse_float32)(value/62) in
+  let x25 = mtmp24.0 in
+  let x26 = mtmp24.1 in
+  let x27 = mtmp24.2 in
+  let message/65 = x27 in
+  let parsed/64 = x26 in
+  let ok/63 = x25 in
+  if ok/63 {
+      Result__float32__std::num::ParseFloatError::Ok(parsed/64)
+  } else {
+      Result__float32__std::num::ParseFloatError::Err(
+        inherent#std::num::ParseFloatError#std::num::ParseFloatError#new(value/62, message/65)
+      )
+  }
+}
+
+fn std::num::parse_float64_structured(
+  value/66: string
+) -> Result__float64__std::num::ParseFloatError {
+  let mtmp28 = @runtime(std.num.parse_float64)(value/66) in
+  let x29 = mtmp28.0 in
+  let x30 = mtmp28.1 in
+  let x31 = mtmp28.2 in
+  let message/69 = x31 in
+  let parsed/68 = x30 in
+  let ok/67 = x29 in
+  if ok/67 {
+      Result__float64__std::num::ParseFloatError::Ok(parsed/68)
+  } else {
+      Result__float64__std::num::ParseFloatError::Err(
+        inherent#std::num::ParseFloatError#std::num::ParseFloatError#new(value/66, message/69)
+      )
+  }
+}
+
+fn std::num::checked_add_int64(left/70: int64, right/71: int64) -> Option__int64 {
+  if if (right/71 > 0) {
+      (left/70 > (9223372036854775807 - right/71))
+  } else {
+      false
+  } {
+      Option__int64::None
+  } else {
+      if if (right/71 < 0) {
+          (left/70 < ((-9223372036854775807 - 1) - right/71))
+      } else {
+          false
+      } {
+          Option__int64::None
+      } else {
+          Option__int64::Some((left/70 + right/71))
+      }
+  }
+}
+
+fn std::num::checked_subtract_int64(left/72: int64, right/73: int64) -> Option__int64 {
+  if if (right/73 > 0) {
+      (left/72 < ((-9223372036854775807 - 1) + right/73))
+  } else {
+      false
+  } {
+      Option__int64::None
+  } else {
+      if if (right/73 < 0) {
+          (left/72 > (9223372036854775807 + right/73))
+      } else {
+          false
+      } {
+          Option__int64::None
+      } else {
+          Option__int64::Some((left/72 - right/73))
+      }
+  }
+}
+
+fn std::num::checked_multiply_int64(left/74: int64, right/75: int64) -> Option__int64 {
+  if if trait_impl#PartialEq#int64#eq(left/74, 0) {
+      true
+  } else {
+      trait_impl#PartialEq#int64#eq(right/75, 0)
+  } {
+      Option__int64::Some(0)
+  } else {
+      if if trait_impl#PartialEq#int64#eq(left/74, (-9223372036854775807 - 1)) {
+          trait_impl#PartialEq#int64#eq(right/75, -1)
+      } else {
+          false
+      } {
+          Option__int64::None
+      } else {
+          if if trait_impl#PartialEq#int64#eq(right/75, (-9223372036854775807 - 1)) {
+              trait_impl#PartialEq#int64#eq(left/74, -1)
+          } else {
+              false
+          } {
+              Option__int64::None
+          } else {
+              let result/76 = (left/74 * right/75) in
+              if trait_impl#PartialEq#int64#eq((result/76 / right/75), left/74) {
+                  Option__int64::Some(result/76)
+              } else {
+                  Option__int64::None
+              }
+          }
+      }
+  }
+}
+
+fn std::num::saturating_add_int64(left/77: int64, right/78: int64) -> int64 {
+  let mtmp32 = std::num::checked_add_int64(left/77, right/78) in
+  match mtmp32 {
+    Option__int64::None => {
+      if (right/78 < 0) {
+          (-9223372036854775807 - 1)
+      } else {
+          9223372036854775807
+      }
+    },
+    Option__int64::Some(x33) => {
+      let x33 = Option__int64::Some._0(mtmp32) in
+      let value/79 = x33 in
+      value/79
+    },
+  }
+}
+
+fn std::num::saturating_subtract_int64(left/80: int64, right/81: int64) -> int64 {
+  let mtmp34 = std::num::checked_subtract_int64(left/80, right/81) in
+  match mtmp34 {
+    Option__int64::None => {
+      if (right/81 < 0) {
+          9223372036854775807
+      } else {
+          (-9223372036854775807 - 1)
+      }
+    },
+    Option__int64::Some(x35) => {
+      let x35 = Option__int64::Some._0(mtmp34) in
+      let value/82 = x35 in
+      value/82
+    },
+  }
+}
+
+fn std::num::saturating_multiply_int64(left/83: int64, right/84: int64) -> int64 {
+  let mtmp36 = std::num::checked_multiply_int64(left/83, right/84) in
+  match mtmp36 {
+    Option__int64::None => {
+      if (!trait_impl#PartialEq#bool#eq((left/83 < 0), (right/84 < 0))) {
+          (-9223372036854775807 - 1)
+      } else {
+          9223372036854775807
+      }
+    },
+    Option__int64::Some(x37) => {
+      let x37 = Option__int64::Some._0(mtmp36) in
+      let value/85 = x37 in
+      value/85
+    },
+  }
 }
 
 fn std::serde::field_key_matches(
@@ -3933,119 +5001,6 @@ fn std::ascii::escape_default(value/16: uint8) -> string {
   }
 }
 
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
-  std::bytes::Bytes {
-    values: let vec_literal/130 = inherent#Vec#Vec[T]#new__T_uint8() in
-    vec_literal/130
-  }
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(
-  capacity/0: int
-) -> std::bytes::Bytes {
-  std::bytes::Bytes { values: inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/0) }
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(
-  values/1: Vec[uint8]
-) -> std::bytes::Bytes {
-  std::bytes::Bytes { values: values/1 }
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
-  std::bytes::Bytes { values: inherent#string#string#to_bytes(value/2) }
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int {
-  inherent#Vec#Vec[T]#len__T_uint8(std::bytes::Bytes.values(self/3))
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int {
-  inherent#Vec#Vec[T]#capacity__T_uint8(std::bytes::Bytes.values(self/4))
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
-  inherent#Vec#Vec[T]#is_empty__T_uint8(std::bytes::Bytes.values(self/5))
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(
-  self/6: std::bytes::Bytes,
-  index/7: int
-) -> uint8 {
-  @intrinsic(vec.get)(std::bytes::Bytes.values(self/6), index/7)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(
-  self/8: std::bytes::Bytes,
-  index/9: int,
-  value/10: uint8
-) -> unit {
-  let _wild5 =
-    let place_root0 = self/8 in
-    let place1 = std::bytes::Bytes.values(place_root0) in
-    let index2 = index/9 in
-    let place3 = @intrinsic(vec.get)(place1, index2) in
-    let value4 = value/10 in
-    @intrinsic(vec.set)(place1, index2, value4) in
-  ()
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(
-  self/11: std::bytes::Bytes,
-  value/12: uint8
-) -> unit {
-  inherent#Vec#Vec[T]#push__T_uint8(std::bytes::Bytes.values(self/11), value/12)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option__uint8 {
-  inherent#Vec#Vec[T]#pop__T_uint8(std::bytes::Bytes.values(self/13))
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(
-  self/14: std::bytes::Bytes,
-  additional/15: int
-) -> unit {
-  inherent#Vec#Vec[T]#reserve__T_uint8(std::bytes::Bytes.values(self/14), additional/15)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(
-  self/16: std::bytes::Bytes,
-  len/17: int
-) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(std::bytes::Bytes.values(self/16), len/17)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
-  inherent#Vec#Vec[T]#clear__T_uint8(std::bytes::Bytes.values(self/18))
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(
-  self/19: std::bytes::Bytes,
-  start/20: int,
-  end/21: int
-) -> Slice[uint8] {
-  inherent#Vec#Vec[T]#slice__T_uint8(std::bytes::Bytes.values(self/19), start/20, end/21)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
-  std::bytes::Bytes.values(self/22)
-}
-
-fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
-  self/23: std::bytes::Bytes
-) -> Result__string__string {
-  let mtmp6 = string_from_utf8(std::bytes::Bytes.values(self/23)) in
-  let x7 = mtmp6.0 in
-  let x8 = mtmp6.1 in
-  let value/25 = x8 in
-  let valid/24 = x7 in
-  if valid/24 {
-      Result__string__string::Ok(value/25)
-  } else {
-      Result__string__string::Err("invalid UTF-8")
-  }
-}
-
 fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
   std::text::StringBuilder {
     values: let vec_literal/178 = inherent#Vec#Vec[T]#new__T_uint8() in
@@ -4223,22 +5178,152 @@ fn std::text::find(value/32: string, expected/33: string) -> Option__int {
   std::text::find_from(value/32, expected/33, 0)
 }
 
-fn std::text::rfind(value/34: string, expected/35: string) -> Option__int {
-  let value_len/36 = inherent#string#string#byte_len(value/34) in
-  let expected_len/37 = inherent#string#string#byte_len(expected/35) in
-  if (expected_len/37 > value_len/36) {
+fn std::text::find_bytes(value/34: string, expected/35: string) -> Option__int {
+  std::text::find(value/34, expected/35)
+}
+
+fn std::text::char_indices(value/36: string) -> FnIterator__(int,char) {
+  inherent#string#string#char_indices(value/36)
+}
+
+fn std::text::char_count(value/37: string) -> int {
+  let count/38 = 0 in
+  let _wild23 =
+    let for_iter17 =
+      trait_impl#IntoIterator#FnIterator__char#into_iter(inherent#string#string#chars(value/37)) in
+    while true {
+        let for_next18 = trait_impl#Iterator#FnIterator__char#next(for_iter17) in
+        match for_next18 {
+          Option__char::None => {
+            break
+          },
+          Option__char::Some(x19) => {
+            let x19 = Option__char::Some._0(for_next18) in
+            let _wild22 =
+              let compound_old20 = count/38 in
+              let compound_value21 = 1 in
+              count/38 = (compound_old20 + compound_value21) in
+            ()
+          },
+        }
+    } in
+  count/38
+}
+
+fn std::text::slice_chars(value/39: string, start/40: int, end/41: int) -> Option__string {
+  if if (start/40 < 0) {
+      true
+  } else {
+      (end/41 < start/40)
+  } {
+      Option__string::None
+  } else {
+      let char_index/42 = 0 in
+      let start_byte/43 =
+        if trait_impl#PartialEq#int#eq(start/40, 0) {
+            Option__int::Some(0)
+        } else {
+            Option__int::None
+        } in
+      let end_byte/44 =
+        if trait_impl#PartialEq#int#eq(end/41, 0) {
+            Option__int::Some(0)
+        } else {
+            Option__int::None
+        } in
+      let _wild37 =
+        let for_iter24 =
+          trait_impl#IntoIterator#FnIterator__(int,char)#into_iter(
+            inherent#string#string#char_indices(value/39)
+          ) in
+        while true {
+            let for_next25 = trait_impl#Iterator#FnIterator__(int,char)#next(for_iter24) in
+            match for_next25 {
+              Option__(int,char)::None => {
+                break
+              },
+              Option__(int,char)::Some(x26) => {
+                let x26 = Option__(int,char)::Some._0(for_next25) in
+                let item/45 = x26 in
+                let mtmp27 = item/45 in
+                let x28 = mtmp27.0 in
+                let x29 = mtmp27.1 in
+                let byte_index/46 = x28 in
+                let _wild31 =
+                  if trait_impl#PartialEq#int#eq(char_index/42, start/40) {
+                      let _wild30 = start_byte/43 = Option__int::Some(byte_index/46) in
+                      ()
+                  } else {
+                      ()
+                  } in
+                let _wild33 =
+                  if trait_impl#PartialEq#int#eq(char_index/42, end/41) {
+                      let _wild32 = end_byte/44 = Option__int::Some(byte_index/46) in
+                      ()
+                  } else {
+                      ()
+                  } in
+                let _wild36 =
+                  let compound_old34 = char_index/42 in
+                  let compound_value35 = 1 in
+                  char_index/42 = (compound_old34 + compound_value35) in
+                ()
+              },
+            }
+        } in
+      let _wild39 =
+        if trait_impl#PartialEq#int#eq(char_index/42, start/40) {
+            let _wild38 =
+              start_byte/43 = Option__int::Some(inherent#string#string#byte_len(value/39)) in
+            ()
+        } else {
+            ()
+        } in
+      let _wild41 =
+        if trait_impl#PartialEq#int#eq(char_index/42, end/41) {
+            let _wild40 =
+              end_byte/44 = Option__int::Some(inherent#string#string#byte_len(value/39)) in
+            ()
+        } else {
+            ()
+        } in
+      let mtmp42 = (start_byte/43, end_byte/44) in
+      let x43 = mtmp42.0 in
+      let x44 = mtmp42.1 in
+      match x44 {
+        Option__int::Some(x45) => {
+          let x45 = Option__int::Some._0(x44) in
+          match x43 {
+            Option__int::Some(x46) => {
+              let x46 = Option__int::Some._0(x43) in
+              let first/47 = x46 in
+              let last/48 = x45 in
+              Option__string::Some(inherent#string#string#byte_slice(value/39, first/47, last/48))
+            },
+            _ => Option__string::None,
+          }
+        },
+        _ => Option__string::None,
+      }
+  }
+}
+
+fn std::text::rfind(value/49: string, expected/50: string) -> Option__int {
+  let value_len/51 = inherent#string#string#byte_len(value/49) in
+  let expected_len/52 = inherent#string#string#byte_len(expected/50) in
+  if (expected_len/52 > value_len/51) {
       Option__int::None
   } else {
-      let start/38 = (value_len/36 - expected_len/37) in
-      let _wild20 =
-        while (start/38 >= 0) {
-            if std::text::starts_with_at(value/34, start/38, expected/35) {
-                return Option__int::Some(start/38)
+      let start/53 = (value_len/51 - expected_len/52) in
+      let _wild50 =
+        while (start/53 >= 0) {
+            if std::text::starts_with_at(value/49, start/53, expected/50) {
+                return Option__int::Some(start/53)
             } else {
-                let _wild19 =
-                  let compound_old17 = start/38 in
-                  let compound_value18 = 1 in
-                  start/38 = (compound_old17 - compound_value18) in
+                let _wild49 =
+                  let compound_old47 = start/53 in
+                  let compound_value48 = 1 in
+                  start/53 = (compound_old47 - compound_value48) in
                 ()
             }
         } in
@@ -4246,105 +5331,105 @@ fn std::text::rfind(value/34: string, expected/35: string) -> Option__int {
   }
 }
 
-fn std::text::trim_start(value/39: string) -> string {
-  let start/40 = 0 in
-  let _wild24 =
-    while if (start/40 < inherent#string#string#byte_len(value/39)) {
-        std::ascii::is_whitespace(inherent#string#string#byte_get(value/39, start/40))
+fn std::text::trim_start(value/54: string) -> string {
+  let start/55 = 0 in
+  let _wild54 =
+    while if (start/55 < inherent#string#string#byte_len(value/54)) {
+        std::ascii::is_whitespace(inherent#string#string#byte_get(value/54, start/55))
     } else {
         false
     } {
-        let _wild23 =
-          let compound_old21 = start/40 in
-          let compound_value22 = 1 in
-          start/40 = (compound_old21 + compound_value22) in
+        let _wild53 =
+          let compound_old51 = start/55 in
+          let compound_value52 = 1 in
+          start/55 = (compound_old51 + compound_value52) in
         ()
     } in
-  inherent#string#string#byte_slice(value/39, start/40, inherent#string#string#byte_len(value/39))
+  inherent#string#string#byte_slice(value/54, start/55, inherent#string#string#byte_len(value/54))
 }
 
-fn std::text::trim_end(value/41: string) -> string {
-  let end/42 = inherent#string#string#byte_len(value/41) in
-  let _wild28 =
-    while if (end/42 > 0) {
-        std::ascii::is_whitespace(inherent#string#string#byte_get(value/41, (end/42 - 1)))
+fn std::text::trim_end(value/56: string) -> string {
+  let end/57 = inherent#string#string#byte_len(value/56) in
+  let _wild58 =
+    while if (end/57 > 0) {
+        std::ascii::is_whitespace(inherent#string#string#byte_get(value/56, (end/57 - 1)))
     } else {
         false
     } {
-        let _wild27 =
-          let compound_old25 = end/42 in
-          let compound_value26 = 1 in
-          end/42 = (compound_old25 - compound_value26) in
+        let _wild57 =
+          let compound_old55 = end/57 in
+          let compound_value56 = 1 in
+          end/57 = (compound_old55 - compound_value56) in
         ()
     } in
-  inherent#string#string#byte_slice(value/41, 0, end/42)
+  inherent#string#string#byte_slice(value/56, 0, end/57)
 }
 
-fn std::text::trim(value/43: string) -> string {
-  std::text::trim_end(std::text::trim_start(value/43))
+fn std::text::trim(value/58: string) -> string {
+  std::text::trim_end(std::text::trim_start(value/58))
 }
 
-fn std::text::split(value/44: string, separator/45: string) -> Vec[string] {
-  let result/46 =
-    let vec_literal/2319 = inherent#Vec#Vec[T]#new__T_string() in
-    vec_literal/2319 in
-  let separator_len/47 = inherent#string#string#byte_len(separator/45) in
-  let value_len/48 = inherent#string#string#byte_len(value/44) in
-  let _wild30 =
-    if trait_impl#PartialEq#int#eq(separator_len/47, 0) {
-        let _wild29 = inherent#Vec#Vec[T]#push__T_string(result/46, value/44) in
-        return result/46
+fn std::text::split(value/59: string, separator/60: string) -> Vec[string] {
+  let result/61 =
+    let vec_literal/3802 = inherent#Vec#Vec[T]#new__T_string() in
+    vec_literal/3802 in
+  let separator_len/62 = inherent#string#string#byte_len(separator/60) in
+  let value_len/63 = inherent#string#string#byte_len(value/59) in
+  let _wild60 =
+    if trait_impl#PartialEq#int#eq(separator_len/62, 0) {
+        let _wild59 = inherent#Vec#Vec[T]#push__T_string(result/61, value/59) in
+        return result/61
     } else {
         ()
     } in
-  let start/49 = 0 in
-  let _wild36 =
-    loop let mtmp31 = std::text::find_from(value/44, separator/45, start/49) in
-    match mtmp31 {
+  let start/64 = 0 in
+  let _wild66 =
+    loop let mtmp61 = std::text::find_from(value/59, separator/60, start/64) in
+    match mtmp61 {
       Option__int::None => {
-        let _wild33 =
+        let _wild63 =
           inherent#Vec#Vec[T]#push__T_string(
-            result/46,
-            inherent#string#string#byte_slice(value/44, start/49, value_len/48)
+            result/61,
+            inherent#string#string#byte_slice(value/59, start/64, value_len/63)
           ) in
         break
       },
-      Option__int::Some(x32) => {
-        let x32 = Option__int::Some._0(mtmp31) in
-        let index/50 = x32 in
-        let _wild34 =
+      Option__int::Some(x62) => {
+        let x62 = Option__int::Some._0(mtmp61) in
+        let index/65 = x62 in
+        let _wild64 =
           inherent#Vec#Vec[T]#push__T_string(
-            result/46,
-            inherent#string#string#byte_slice(value/44, start/49, index/50)
+            result/61,
+            inherent#string#string#byte_slice(value/59, start/64, index/65)
           ) in
-        let _wild35 = start/49 = (index/50 + separator_len/47) in
+        let _wild65 = start/64 = (index/65 + separator_len/62) in
         ()
       },
     } in
-  result/46
+  result/61
 }
 
-fn std::text::split_once(value/51: string, separator/52: string) -> Option__(string,string) {
-  let separator_len/53 = inherent#string#string#byte_len(separator/52) in
-  let value_len/54 = inherent#string#string#byte_len(value/51) in
-  if trait_impl#PartialEq#int#eq(separator_len/53, 0) {
+fn std::text::split_once(value/66: string, separator/67: string) -> Option__(string,string) {
+  let separator_len/68 = inherent#string#string#byte_len(separator/67) in
+  let value_len/69 = inherent#string#string#byte_len(value/66) in
+  if trait_impl#PartialEq#int#eq(separator_len/68, 0) {
       Option__(string,string)::None
   } else {
-      let mtmp37 = std::text::find(value/51, separator/52) in
-      match mtmp37 {
+      let mtmp67 = std::text::find(value/66, separator/67) in
+      match mtmp67 {
         Option__int::None => {
           Option__(string,string)::None
         },
-        Option__int::Some(x38) => {
-          let x38 = Option__int::Some._0(mtmp37) in
-          let index/55 = x38 in
+        Option__int::Some(x68) => {
+          let x68 = Option__int::Some._0(mtmp67) in
+          let index/70 = x68 in
           Option__(string,string)::Some(
             (
-              inherent#string#string#byte_slice(value/51, 0, index/55),
+              inherent#string#string#byte_slice(value/66, 0, index/70),
               inherent#string#string#byte_slice(
-                value/51,
-                (index/55 + separator_len/53),
-                value_len/54
+                value/66,
+                (index/70 + separator_len/68),
+                value_len/69
               )
             )
           )
@@ -4353,195 +5438,195 @@ fn std::text::split_once(value/51: string, separator/52: string) -> Option__(str
   }
 }
 
-fn std::text::lines(value/56: string) -> Vec[string] {
-  let result/57 = std::text::split(value/56, "\n") in
-  let _wild40 =
-    if if (!inherent#Vec#Vec[T]#is_empty__T_string(result/57)) {
+fn std::text::lines(value/71: string) -> Vec[string] {
+  let result/72 = std::text::split(value/71, "\n") in
+  let _wild70 =
+    if if (!inherent#Vec#Vec[T]#is_empty__T_string(result/72)) {
         trait_impl#PartialEq#string#eq(
-          @intrinsic(vec.get)(result/57, (inherent#Vec#Vec[T]#len__T_string(result/57) - 1)),
+          @intrinsic(vec.get)(result/72, (inherent#Vec#Vec[T]#len__T_string(result/72) - 1)),
           ""
         )
     } else {
         false
     } {
-        let mtmp39 = inherent#Vec#Vec[T]#pop__T_string(result/57) in
+        let mtmp69 = inherent#Vec#Vec[T]#pop__T_string(result/72) in
         ()
     } else {
         ()
     } in
-  let _wild50 =
-    let for_index41 = 0 in
-    let for_limit42 = inherent#Vec#Vec[T]#len__T_string(result/57) in
-    while (for_index41 < for_limit42) {
-        let for_item43 = for_index41 in
-        let _wild44 = for_index41 = (for_index41 + 1) in
-        let index/58 = for_item43 in
-        let line/59 = @intrinsic(vec.get)(result/57, index/58) in
-        if if (inherent#string#string#byte_len(line/59) > 0) {
+  let _wild80 =
+    let for_index71 = 0 in
+    let for_limit72 = inherent#Vec#Vec[T]#len__T_string(result/72) in
+    while (for_index71 < for_limit72) {
+        let for_item73 = for_index71 in
+        let _wild74 = for_index71 = (for_index71 + 1) in
+        let index/73 = for_item73 in
+        let line/74 = @intrinsic(vec.get)(result/72, index/73) in
+        if if (inherent#string#string#byte_len(line/74) > 0) {
             trait_impl#PartialEq#uint8#eq(
               inherent#string#string#byte_get(
-                line/59,
-                (inherent#string#string#byte_len(line/59) - 1)
+                line/74,
+                (inherent#string#string#byte_len(line/74) - 1)
               ),
               13
             )
         } else {
             false
         } {
-            let _wild49 =
-              let place_root45 = result/57 in
-              let index46 = index/58 in
-              let place47 = @intrinsic(vec.get)(place_root45, index46) in
-              let value48 =
+            let _wild79 =
+              let place_root75 = result/72 in
+              let index76 = index/73 in
+              let place77 = @intrinsic(vec.get)(place_root75, index76) in
+              let value78 =
                 inherent#string#string#byte_slice(
-                  line/59,
+                  line/74,
                   0,
-                  (inherent#string#string#byte_len(line/59) - 1)
+                  (inherent#string#string#byte_len(line/74) - 1)
                 ) in
-              @intrinsic(vec.set)(place_root45, index46, value48) in
+              @intrinsic(vec.set)(place_root75, index76, value78) in
             ()
         } else {
             ()
         }
     } in
-  result/57
+  result/72
 }
 
-fn std::text::replace(value/60: string, expected/61: string, replacement/62: string) -> string {
-  if trait_impl#PartialEq#int#eq(inherent#string#string#byte_len(expected/61), 0) {
-      value/60
+fn std::text::replace(value/75: string, expected/76: string, replacement/77: string) -> string {
+  if trait_impl#PartialEq#int#eq(inherent#string#string#byte_len(expected/76), 0) {
+      value/75
   } else {
-      let builder/63 =
+      let builder/78 =
         inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
-          inherent#string#string#byte_len(value/60)
+          inherent#string#string#byte_len(value/75)
         ) in
-      let start/64 = 0 in
-      let _wild57 =
-        loop let mtmp51 = std::text::find_from(value/60, expected/61, start/64) in
-        match mtmp51 {
+      let start/79 = 0 in
+      let _wild87 =
+        loop let mtmp81 = std::text::find_from(value/75, expected/76, start/79) in
+        match mtmp81 {
           Option__int::None => {
-            let _wild53 =
+            let _wild83 =
               inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                builder/63,
+                builder/78,
                 inherent#string#string#byte_slice(
-                  value/60,
-                  start/64,
-                  inherent#string#string#byte_len(value/60)
+                  value/75,
+                  start/79,
+                  inherent#string#string#byte_len(value/75)
                 )
               ) in
             break
           },
-          Option__int::Some(x52) => {
-            let x52 = Option__int::Some._0(mtmp51) in
-            let index/65 = x52 in
-            let _wild54 =
+          Option__int::Some(x82) => {
+            let x82 = Option__int::Some._0(mtmp81) in
+            let index/80 = x82 in
+            let _wild84 =
               inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                builder/63,
-                inherent#string#string#byte_slice(value/60, start/64, index/65)
+                builder/78,
+                inherent#string#string#byte_slice(value/75, start/79, index/80)
               ) in
-            let _wild55 =
+            let _wild85 =
               inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                builder/63,
-                replacement/62
+                builder/78,
+                replacement/77
               ) in
-            let _wild56 = start/64 = (index/65 + inherent#string#string#byte_len(expected/61)) in
+            let _wild86 = start/79 = (index/80 + inherent#string#string#byte_len(expected/76)) in
             ()
           },
         } in
-      inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/63)
+      inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/78)
   }
 }
 
-fn std::text::join(values/66: Vec[string], separator/67: string) -> string {
-  let capacity/68 =
-    (inherent#string#string#byte_len(separator/67) *
-      inherent#Vec#Vec[T]#len__T_string(values/66)) in
-  let _wild66 =
-    let for_source58 = values/66 in
-    let for_limit59 = @intrinsic(vec.len)(for_source58) in
-    let for_index60 = 0 in
-    while (for_index60 < for_limit59) {
-        let for_item61 = @intrinsic(vec.get)(for_source58, for_index60) in
-        let _wild62 = for_index60 = (for_index60 + 1) in
-        let value/69 = for_item61 in
-        let _wild65 =
-          let compound_old63 = capacity/68 in
-          let compound_value64 = inherent#string#string#byte_len(value/69) in
-          capacity/68 = (compound_old63 + compound_value64) in
+fn std::text::join(values/81: Vec[string], separator/82: string) -> string {
+  let capacity/83 =
+    (inherent#string#string#byte_len(separator/82) *
+      inherent#Vec#Vec[T]#len__T_string(values/81)) in
+  let _wild96 =
+    let for_source88 = values/81 in
+    let for_limit89 = @intrinsic(vec.len)(for_source88) in
+    let for_index90 = 0 in
+    while (for_index90 < for_limit89) {
+        let for_item91 = @intrinsic(vec.get)(for_source88, for_index90) in
+        let _wild92 = for_index90 = (for_index90 + 1) in
+        let value/84 = for_item91 in
+        let _wild95 =
+          let compound_old93 = capacity/83 in
+          let compound_value94 = inherent#string#string#byte_len(value/84) in
+          capacity/83 = (compound_old93 + compound_value94) in
         ()
     } in
-  let _wild70 =
-    if (!inherent#Vec#Vec[T]#is_empty__T_string(values/66)) {
-        let _wild69 =
-          let compound_old67 = capacity/68 in
-          let compound_value68 = inherent#string#string#byte_len(separator/67) in
-          capacity/68 = (compound_old67 - compound_value68) in
+  let _wild100 =
+    if (!inherent#Vec#Vec[T]#is_empty__T_string(values/81)) {
+        let _wild99 =
+          let compound_old97 = capacity/83 in
+          let compound_value98 = inherent#string#string#byte_len(separator/82) in
+          capacity/83 = (compound_old97 - compound_value98) in
         ()
     } else {
         ()
     } in
-  let builder/70 =
-    inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(capacity/68) in
-  let _wild76 =
-    let for_index71 = 0 in
-    let for_limit72 = inherent#Vec#Vec[T]#len__T_string(values/66) in
-    while (for_index71 < for_limit72) {
-        let for_item73 = for_index71 in
-        let _wild74 = for_index71 = (for_index71 + 1) in
-        let index/71 = for_item73 in
-        let _wild75 =
-          if (index/71 > 0) {
+  let builder/85 =
+    inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(capacity/83) in
+  let _wild106 =
+    let for_index101 = 0 in
+    let for_limit102 = inherent#Vec#Vec[T]#len__T_string(values/81) in
+    while (for_index101 < for_limit102) {
+        let for_item103 = for_index101 in
+        let _wild104 = for_index101 = (for_index101 + 1) in
+        let index/86 = for_item103 in
+        let _wild105 =
+          if (index/86 > 0) {
               inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-                builder/70,
-                separator/67
+                builder/85,
+                separator/82
               )
           } else {
               ()
           } in
         inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-          builder/70,
-          @intrinsic(vec.get)(values/66, index/71)
+          builder/85,
+          @intrinsic(vec.get)(values/81, index/86)
         )
     } in
-  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/70)
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/85)
 }
 
-fn std::text::repeat(value/72: string, count/73: int) -> string {
-  if if (count/73 <= 0) {
+fn std::text::repeat(value/87: string, count/88: int) -> string {
+  if if (count/88 <= 0) {
       true
   } else {
-      trait_impl#PartialEq#int#eq(inherent#string#string#byte_len(value/72), 0)
+      trait_impl#PartialEq#int#eq(inherent#string#string#byte_len(value/87), 0)
   } {
       ""
   } else {
-      let builder/74 =
+      let builder/89 =
         inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
-          (inherent#string#string#byte_len(value/72) * count/73)
+          (inherent#string#string#byte_len(value/87) * count/88)
         ) in
-      let _wild81 =
-        let for_index77 = 0 in
-        let for_limit78 = count/73 in
-        while (for_index77 < for_limit78) {
-            let for_item79 = for_index77 in
-            let _wild80 = for_index77 = (for_index77 + 1) in
+      let _wild111 =
+        let for_index107 = 0 in
+        let for_limit108 = count/88 in
+        while (for_index107 < for_limit108) {
+            let for_item109 = for_index107 in
+            let _wild110 = for_index107 = (for_index107 + 1) in
             inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
-              builder/74,
-              value/72
+              builder/89,
+              value/87
             )
         } in
-      inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/74)
+      inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/89)
   }
 }
 
-fn std::text::is_ascii(value/75: string) -> bool {
-  let _wild86 =
-    let for_index82 = 0 in
-    let for_limit83 = inherent#string#string#byte_len(value/75) in
-    while (for_index82 < for_limit83) {
-        let for_item84 = for_index82 in
-        let _wild85 = for_index82 = (for_index82 + 1) in
-        let index/76 = for_item84 in
-        if (inherent#string#string#byte_get(value/75, index/76) > 127) {
+fn std::text::is_ascii(value/90: string) -> bool {
+  let _wild116 =
+    let for_index112 = 0 in
+    let for_limit113 = inherent#string#string#byte_len(value/90) in
+    while (for_index112 < for_limit113) {
+        let for_item114 = for_index112 in
+        let _wild115 = for_index112 = (for_index112 + 1) in
+        let index/91 = for_item114 in
+        if (inherent#string#string#byte_get(value/90, index/91) > 127) {
             return false
         } else {
             ()
@@ -4550,23 +5635,23 @@ fn std::text::is_ascii(value/75: string) -> bool {
   true
 }
 
-fn std::text::eq_ignore_ascii_case(left/77: string, right/78: string) -> bool {
+fn std::text::eq_ignore_ascii_case(left/92: string, right/93: string) -> bool {
   if (!trait_impl#PartialEq#int#eq(
-    inherent#string#string#byte_len(left/77),
-    inherent#string#string#byte_len(right/78)
+    inherent#string#string#byte_len(left/92),
+    inherent#string#string#byte_len(right/93)
   )) {
       false
   } else {
-      let _wild91 =
-        let for_index87 = 0 in
-        let for_limit88 = inherent#string#string#byte_len(left/77) in
-        while (for_index87 < for_limit88) {
-            let for_item89 = for_index87 in
-            let _wild90 = for_index87 = (for_index87 + 1) in
-            let index/79 = for_item89 in
+      let _wild121 =
+        let for_index117 = 0 in
+        let for_limit118 = inherent#string#string#byte_len(left/92) in
+        while (for_index117 < for_limit118) {
+            let for_item119 = for_index117 in
+            let _wild120 = for_index117 = (for_index117 + 1) in
+            let index/94 = for_item119 in
             if (!std::ascii::eq_ignore_case(
-              inherent#string#string#byte_get(left/77, index/79),
-              inherent#string#string#byte_get(right/78, index/79)
+              inherent#string#string#byte_get(left/92, index/94),
+              inherent#string#string#byte_get(right/93, index/94)
             )) {
                 return false
             } else {
@@ -4577,52 +5662,52 @@ fn std::text::eq_ignore_ascii_case(left/77: string, right/78: string) -> bool {
   }
 }
 
-fn std::text::to_ascii_lowercase(value/80: string) -> string {
-  let values/81 = inherent#string#string#to_bytes(value/80) in
-  let _wild101 =
-    let for_index92 = 0 in
-    let for_limit93 = inherent#Vec#Vec[T]#len__T_uint8(values/81) in
-    while (for_index92 < for_limit93) {
-        let for_item94 = for_index92 in
-        let _wild95 = for_index92 = (for_index92 + 1) in
-        let index/82 = for_item94 in
-        let _wild100 =
-          let place_root96 = values/81 in
-          let index97 = index/82 in
-          let place98 = @intrinsic(vec.get)(place_root96, index97) in
-          let value99 = std::ascii::to_lowercase(@intrinsic(vec.get)(values/81, index/82)) in
-          @intrinsic(vec.set)(place_root96, index97, value99) in
+fn std::text::to_ascii_lowercase(value/95: string) -> string {
+  let values/96 = inherent#string#string#to_bytes(value/95) in
+  let _wild131 =
+    let for_index122 = 0 in
+    let for_limit123 = inherent#Vec#Vec[T]#len__T_uint8(values/96) in
+    while (for_index122 < for_limit123) {
+        let for_item124 = for_index122 in
+        let _wild125 = for_index122 = (for_index122 + 1) in
+        let index/97 = for_item124 in
+        let _wild130 =
+          let place_root126 = values/96 in
+          let index127 = index/97 in
+          let place128 = @intrinsic(vec.get)(place_root126, index127) in
+          let value129 = std::ascii::to_lowercase(@intrinsic(vec.get)(values/96, index/97)) in
+          @intrinsic(vec.set)(place_root126, index127, value129) in
         ()
     } in
-  let mtmp102 = string_from_utf8(values/81) in
-  let x103 = mtmp102.0 in
-  let x104 = mtmp102.1 in
-  let result/83 = x104 in
-  result/83
+  let mtmp132 = string_from_utf8(values/96) in
+  let x133 = mtmp132.0 in
+  let x134 = mtmp132.1 in
+  let result/98 = x134 in
+  result/98
 }
 
-fn std::text::to_ascii_uppercase(value/84: string) -> string {
-  let values/85 = inherent#string#string#to_bytes(value/84) in
-  let _wild114 =
-    let for_index105 = 0 in
-    let for_limit106 = inherent#Vec#Vec[T]#len__T_uint8(values/85) in
-    while (for_index105 < for_limit106) {
-        let for_item107 = for_index105 in
-        let _wild108 = for_index105 = (for_index105 + 1) in
-        let index/86 = for_item107 in
-        let _wild113 =
-          let place_root109 = values/85 in
-          let index110 = index/86 in
-          let place111 = @intrinsic(vec.get)(place_root109, index110) in
-          let value112 = std::ascii::to_uppercase(@intrinsic(vec.get)(values/85, index/86)) in
-          @intrinsic(vec.set)(place_root109, index110, value112) in
+fn std::text::to_ascii_uppercase(value/99: string) -> string {
+  let values/100 = inherent#string#string#to_bytes(value/99) in
+  let _wild144 =
+    let for_index135 = 0 in
+    let for_limit136 = inherent#Vec#Vec[T]#len__T_uint8(values/100) in
+    while (for_index135 < for_limit136) {
+        let for_item137 = for_index135 in
+        let _wild138 = for_index135 = (for_index135 + 1) in
+        let index/101 = for_item137 in
+        let _wild143 =
+          let place_root139 = values/100 in
+          let index140 = index/101 in
+          let place141 = @intrinsic(vec.get)(place_root139, index140) in
+          let value142 = std::ascii::to_uppercase(@intrinsic(vec.get)(values/100, index/101)) in
+          @intrinsic(vec.set)(place_root139, index140, value142) in
         ()
     } in
-  let mtmp115 = string_from_utf8(values/85) in
-  let x116 = mtmp115.0 in
-  let x117 = mtmp115.1 in
-  let result/87 = x117 in
-  result/87
+  let mtmp145 = string_from_utf8(values/100) in
+  let x146 = mtmp145.0 in
+  let x147 = mtmp145.1 in
+  let result/102 = x147 in
+  result/102
 }
 
 fn std::json::json_current_index(index/0: Ref[int]) -> int {
@@ -11328,12 +12413,163 @@ fn main() -> unit {
   println__T_string(std::json::encode(value/2))
 }
 
+fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/175: int) -> Vec[uint8] {
+  @intrinsic(vec.with_capacity)(capacity/175)
+}
+
+fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
+  @runtime(core.string_to_bytes)(self/53)
+}
+
+fn inherent#Vec#Vec[T]#len__T_uint8(self/187: Vec[uint8]) -> int {
+  @intrinsic(vec.len)(self/187)
+}
+
+fn inherent#Vec#Vec[T]#capacity__T_uint8(self/188: Vec[uint8]) -> int {
+  @intrinsic(vec.capacity)(self/188)
+}
+
+fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/189: Vec[uint8]) -> bool {
+  trait_impl#PartialEq#int#eq(@intrinsic(vec.len)(self/189), 0)
+}
+
+fn inherent#Vec#Vec[T]#push__T_uint8(self/176: Vec[uint8], elem/177: uint8) -> unit {
+  @intrinsic(vec.push)(self/176, elem/177)
+}
+
+fn inherent#Vec#Vec[T]#pop__T_uint8(self/197: Vec[uint8]) -> Option__uint8 {
+  let len/198 = inherent#Vec#Vec[T]#len__T_uint8(self/197) in
+  if trait_impl#PartialEq#int#eq(len/198, 0) {
+      Option__uint8::None
+  } else {
+      let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
+      let _wild85 = inherent#Vec#Vec[T]#truncate__T_uint8(self/197, (len/198 - 1)) in
+      Option__uint8::Some(value/199)
+  }
+}
+
+fn inherent#Vec#Vec[T]#reserve__T_uint8(self/190: Vec[uint8], additional/191: int) -> unit {
+  @intrinsic(vec.reserve)(self/190, additional/191)
+}
+
+fn inherent#Vec#Vec[T]#truncate__T_uint8(self/192: Vec[uint8], len/193: int) -> unit {
+  @intrinsic(vec.truncate)(self/192, len/193)
+}
+
+fn inherent#Vec#Vec[T]#clear__T_uint8(self/194: Vec[uint8]) -> unit {
+  inherent#Vec#Vec[T]#truncate__T_uint8(self/194, 0)
+}
+
+fn inherent#Vec#Vec[T]#slice__T_uint8(self/225: Vec[uint8], start/226: int, end/227: int) -> Slice[
+  uint8
+] {
+  @intrinsic(slice.new)(self/225, start/226, end/227)
+}
+
+fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
+  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
+  let x11 = mtmp10.0 in
+  let x12 = mtmp10.1 in
+  let value/25 = x12 in
+  let index/26 = 0 in
+  let _wild20 =
+    while (index/26 < inherent#string#string#byte_len(value/25)) {
+        let mtmp13 = string_decode_utf8_at(value/25, index/26) in
+        let x14 = mtmp13.0 in
+        let x15 = mtmp13.1 in
+        let x16 = mtmp13.2 in
+        let width/28 = x16 in
+        let valid/27 = x14 in
+        if valid/27 {
+            let _wild19 =
+              let compound_old17 = index/26 in
+              let compound_value18 = width/28 in
+              index/26 = (compound_old17 + compound_value18) in
+            ()
+        } else {
+            return (false, "")
+        }
+    } in
+  (true, value/25)
+}
+
 fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
   @intrinsic(eq.primitive)(self/103, other/104)
 }
 
 fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
   @intrinsic(eq.primitive)(self/99, other/100)
+}
+
+fn trait_impl#PartialEq#Option__string#eq(
+  self/153: Option__string,
+  other/154: Option__string
+) -> bool {
+  let mtmp61 = (self/153, other/154) in
+  let x62 = mtmp61.0 in
+  let x63 = mtmp61.1 in
+  match x63 {
+    Option__string::None => {
+      match x62 {
+        Option__string::None => {
+          true
+        },
+        _ => false,
+      }
+    },
+    Option__string::Some(x64) => {
+      let x64 = Option__string::Some._0(x63) in
+      match x62 {
+        Option__string::Some(x66) => {
+          let x66 = Option__string::Some._0(x62) in
+          let left/155 = x66 in
+          let right/156 = x64 in
+          trait_impl#PartialEq#string#eq(left/155, right/156)
+        },
+        _ => false,
+      }
+    },
+  }
+}
+
+fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option__int) -> bool {
+  let mtmp61 = (self/153, other/154) in
+  let x62 = mtmp61.0 in
+  let x63 = mtmp61.1 in
+  match x63 {
+    Option__int::None => {
+      match x62 {
+        Option__int::None => {
+          true
+        },
+        _ => false,
+      }
+    },
+    Option__int::Some(x64) => {
+      let x64 = Option__int::Some._0(x63) in
+      match x62 {
+        Option__int::Some(x66) => {
+          let x66 = Option__int::Some._0(x62) in
+          let left/155 = x66 in
+          let right/156 = x64 in
+          trait_impl#PartialEq#int#eq(left/155, right/156)
+        },
+        _ => false,
+      }
+    },
+  }
+}
+
+fn trait_impl#PartialEq#int64#eq(self/111: int64, other/112: int64) -> bool {
+  @intrinsic(eq.primitive)(self/111, other/112)
+}
+
+fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
+  @intrinsic(eq.primitive)(self/97, other/98)
 }
 
 fn inherent#Vec#Vec[T]#len__T_(string,std::serde::Schema)(
@@ -11485,14 +12721,6 @@ fn trait_impl#ToString#float64#to_string(self/79: float64) -> string {
   @runtime(core.float64_to_string)(self/79)
 }
 
-fn inherent#Vec#Vec[T]#with_capacity__T_uint8(capacity/175: int) -> Vec[uint8] {
-  @intrinsic(vec.with_capacity)(capacity/175)
-}
-
-fn inherent#Vec#Vec[T]#push__T_uint8(self/176: Vec[uint8], elem/177: uint8) -> unit {
-  @intrinsic(vec.push)(self/176, elem/177)
-}
-
 fn inherent#string#string#len(self/37: string) -> int {
   @runtime(core.string_len)(self/37)
 }
@@ -11642,84 +12870,8 @@ fn trait_impl#PartialEq#uint8#eq(self/113: uint8, other/114: uint8) -> bool {
   @intrinsic(eq.primitive)(self/113, other/114)
 }
 
-fn inherent#Vec#Vec[T]#new__T_uint8() -> Vec[uint8] {
-  @intrinsic(vec.new)()
-}
-
-fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
-  let mtmp10 = @runtime(core.string_from_utf8)(bytes/24) in
-  let x11 = mtmp10.0 in
-  let x12 = mtmp10.1 in
-  let value/25 = x12 in
-  let index/26 = 0 in
-  let _wild20 =
-    while (index/26 < inherent#string#string#byte_len(value/25)) {
-        let mtmp13 = string_decode_utf8_at(value/25, index/26) in
-        let x14 = mtmp13.0 in
-        let x15 = mtmp13.1 in
-        let x16 = mtmp13.2 in
-        let width/28 = x16 in
-        let valid/27 = x14 in
-        if valid/27 {
-            let _wild19 =
-              let compound_old17 = index/26 in
-              let compound_value18 = width/28 in
-              index/26 = (compound_old17 + compound_value18) in
-            ()
-        } else {
-            return (false, "")
-        }
-    } in
-  (true, value/25)
-}
-
 fn inherent#char#char#to_string(self/36: char) -> string {
   char_to_string(self/36)
-}
-
-fn inherent#string#string#to_bytes(self/53: string) -> Vec[uint8] {
-  @runtime(core.string_to_bytes)(self/53)
-}
-
-fn inherent#Vec#Vec[T]#len__T_uint8(self/187: Vec[uint8]) -> int {
-  @intrinsic(vec.len)(self/187)
-}
-
-fn inherent#Vec#Vec[T]#capacity__T_uint8(self/188: Vec[uint8]) -> int {
-  @intrinsic(vec.capacity)(self/188)
-}
-
-fn inherent#Vec#Vec[T]#is_empty__T_uint8(self/189: Vec[uint8]) -> bool {
-  trait_impl#PartialEq#int#eq(@intrinsic(vec.len)(self/189), 0)
-}
-
-fn inherent#Vec#Vec[T]#pop__T_uint8(self/197: Vec[uint8]) -> Option__uint8 {
-  let len/198 = inherent#Vec#Vec[T]#len__T_uint8(self/197) in
-  if trait_impl#PartialEq#int#eq(len/198, 0) {
-      Option__uint8::None
-  } else {
-      let value/199 = @intrinsic(vec.get)(self/197, (len/198 - 1)) in
-      let _wild85 = inherent#Vec#Vec[T]#truncate__T_uint8(self/197, (len/198 - 1)) in
-      Option__uint8::Some(value/199)
-  }
-}
-
-fn inherent#Vec#Vec[T]#reserve__T_uint8(self/190: Vec[uint8], additional/191: int) -> unit {
-  @intrinsic(vec.reserve)(self/190, additional/191)
-}
-
-fn inherent#Vec#Vec[T]#truncate__T_uint8(self/192: Vec[uint8], len/193: int) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
-}
-
-fn inherent#Vec#Vec[T]#clear__T_uint8(self/194: Vec[uint8]) -> unit {
-  inherent#Vec#Vec[T]#truncate__T_uint8(self/194, 0)
-}
-
-fn inherent#Vec#Vec[T]#slice__T_uint8(self/225: Vec[uint8], start/226: int, end/227: int) -> Slice[
-  uint8
-] {
-  @intrinsic(slice.new)(self/225, start/226, end/227)
 }
 
 fn inherent#string#string#byte_len(self/38: string) -> int {
@@ -11736,6 +12888,42 @@ fn inherent#string#string#is_char_boundary(self/46: string, index/47: int) -> bo
 
 fn inherent#string#string#byte_slice(self/43: string, start/44: int, end/45: int) -> string {
   string_byte_slice(self/43, start/44, end/45)
+}
+
+fn inherent#string#string#char_indices(self/59: string) -> FnIterator__(int,char) {
+  let index/60 = @intrinsic(ref.new)(0) in
+  inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(
+    closure_env_inherent_string_string_char_indices_0 { index_0: index/60, self_1: self/59 }
+  )
+}
+
+fn inherent#string#string#chars(self/54: string) -> FnIterator__char {
+  let index/55 = @intrinsic(ref.new)(0) in
+  inherent#FnIterator#FnIterator[T]#from_fn__T_char(
+    closure_env_inherent_string_string_chars_1 { self_0: self/54, index_1: index/55 }
+  )
+}
+
+fn trait_impl#IntoIterator#FnIterator__char#into_iter(
+  self/174: FnIterator__char
+) -> FnIterator__char {
+  self/174
+}
+
+fn trait_impl#Iterator#FnIterator__char#next(self/173: FnIterator__char) -> Option__char {
+  FnIterator__char.next_fn(self/173)()
+}
+
+fn trait_impl#IntoIterator#FnIterator__(int,char)#into_iter(
+  self/174: FnIterator__(int,char)
+) -> FnIterator__(int,char) {
+  self/174
+}
+
+fn trait_impl#Iterator#FnIterator__(int,char)#next(
+  self/173: FnIterator__(int,char)
+) -> Option__(int,char) {
+  FnIterator__(int,char).next_fn(self/173)()
 }
 
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
@@ -11978,34 +13166,6 @@ fn println__T_bool(value/31: bool) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/31))
 }
 
-fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueDeserializeFrame(
-  self/192: Vec[std::serde::ValueDeserializeFrame],
-  len/193: int
-) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
-}
-
-fn string_get(value/17: string, index/18: int) -> char {
-  let mtmp6 = string_decode_utf8_at(value/17, index/18) in
-  let x7 = mtmp6.0 in
-  let x8 = mtmp6.1 in
-  let x9 = mtmp6.2 in
-  let character/20 = x8 in
-  let valid/19 = x7 in
-  if valid/19 {
-      character/20
-  } else {
-      @runtime(core.string_get)("", -1)
-  }
-}
-
-fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueSerializeFrame(
-  self/192: Vec[std::serde::ValueSerializeFrame],
-  len/193: int
-) -> unit {
-  @intrinsic(vec.truncate)(self/192, len/193)
-}
-
 fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   let length/7 = inherent#string#string#byte_len(value/5) in
   let _wild2 =
@@ -12135,6 +13295,34 @@ fn string_decode_utf8_at(value/5: string, index/6: int) -> (bool, char, int) {
   }
 }
 
+fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueDeserializeFrame(
+  self/192: Vec[std::serde::ValueDeserializeFrame],
+  len/193: int
+) -> unit {
+  @intrinsic(vec.truncate)(self/192, len/193)
+}
+
+fn string_get(value/17: string, index/18: int) -> char {
+  let mtmp6 = string_decode_utf8_at(value/17, index/18) in
+  let x7 = mtmp6.0 in
+  let x8 = mtmp6.1 in
+  let x9 = mtmp6.2 in
+  let character/20 = x8 in
+  let valid/19 = x7 in
+  if valid/19 {
+      character/20
+  } else {
+      @runtime(core.string_get)("", -1)
+  }
+}
+
+fn inherent#Vec#Vec[T]#truncate__T_std::serde::ValueSerializeFrame(
+  self/192: Vec[std::serde::ValueSerializeFrame],
+  len/193: int
+) -> unit {
+  @intrinsic(vec.truncate)(self/192, len/193)
+}
+
 fn char_to_string(value/29: char) -> string {
   if utf8_valid_scalar((value/29 as uint32)) {
       @runtime(core.char_to_string)(value/29)
@@ -12175,6 +13363,18 @@ fn string_byte_slice(value/21: string, start/22: int, end/23: int) -> string {
   }
 }
 
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_(int,char)(
+  next_fn/172: () -> Option__(int,char)
+) -> FnIterator__(int,char) {
+  FnIterator__(int,char) { next_fn: next_fn/172 }
+}
+
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_char(
+  next_fn/172: () -> Option__char
+) -> FnIterator__char {
+  FnIterator__char { next_fn: next_fn/172 }
+}
+
 fn inherent#Vec#Vec[T]#truncate__T_string(self/192: Vec[string], len/193: int) -> unit {
   @intrinsic(vec.truncate)(self/192, len/193)
 }
@@ -12182,7 +13382,7 @@ fn inherent#Vec#Vec[T]#truncate__T_string(self/192: Vec[string], len/193: int) -
 fn __goml_builtin_range(start/268: int, end/269: int) -> FnIterator__int {
   let current/270 = @intrinsic(ref.new)(start/268) in
   inherent#FnIterator#FnIterator[T]#from_fn__T_int(
-    closure_env_goml_builtin_range_0 { current_0: current/270, end_1: end/269 }
+    closure_env_goml_builtin_range_2 { current_0: current/270, end_1: end/269 }
   )
 }
 
@@ -12272,46 +13472,11 @@ fn trait_impl#Hash#int#hash(self/129: int) -> uint64 {
   @runtime(core.int_hash)(self/129)
 }
 
-fn trait_impl#PartialEq#bool#eq(self/97: bool, other/98: bool) -> bool {
-  @intrinsic(eq.primitive)(self/97, other/98)
-}
-
 fn trait_impl#Hash#bool#hash(self/126: bool) -> uint64 {
   if self/126 {
       1
   } else {
       0
-  }
-}
-
-fn trait_impl#PartialEq#Option__string#eq(
-  self/153: Option__string,
-  other/154: Option__string
-) -> bool {
-  let mtmp61 = (self/153, other/154) in
-  let x62 = mtmp61.0 in
-  let x63 = mtmp61.1 in
-  match x63 {
-    Option__string::None => {
-      match x62 {
-        Option__string::None => {
-          true
-        },
-        _ => false,
-      }
-    },
-    Option__string::Some(x64) => {
-      let x64 = Option__string::Some._0(x63) in
-      match x62 {
-        Option__string::Some(x66) => {
-          let x66 = Option__string::Some._0(x62) in
-          let left/155 = x66 in
-          let right/156 = x64 in
-          trait_impl#PartialEq#string#eq(left/155, right/156)
-        },
-        _ => false,
-      }
-    },
   }
 }
 
@@ -12332,11 +13497,63 @@ fn trait_impl#Hash#string#hash(self/127: string) -> uint64 {
   @runtime(core.string_hash)(self/127)
 }
 
-fn inherent#closure_env_goml_builtin_range_0#closure_env_goml_builtin_range_0#apply(
-  env191: closure_env_goml_builtin_range_0
+fn inherent#closure_env_inherent_string_string_char_indices_0#closure_env_inherent_string_string_char_indices_0#apply(
+  env191: closure_env_inherent_string_string_char_indices_0
+) -> Option__(int,char) {
+  let index/60 = closure_env_inherent_string_string_char_indices_0.index_0(env191) in
+  let self/59 = closure_env_inherent_string_string_char_indices_0.self_1(env191) in
+  let current/61 = @intrinsic(ref.get)(index/60) in
+  let mtmp37 = inherent#string#string#decode_at(self/59, current/61) in
+  match mtmp37 {
+    Option__(char,int)::None => {
+      Option__(int,char)::None
+    },
+    Option__(char,int)::Some(x38) => {
+      let x38 = Option__(char,int)::Some._0(mtmp37) in
+      let decoded/62 = x38 in
+      let mtmp39 = decoded/62 in
+      let x40 = mtmp39.0 in
+      let x41 = mtmp39.1 in
+      let width/64 = x41 in
+      let value/63 = x40 in
+      let _wild42 = @intrinsic(ref.set)(index/60, (current/61 + width/64)) in
+      Option__(int,char)::Some((current/61, value/63))
+    },
+  }
+}
+
+fn inherent#closure_env_inherent_string_string_chars_1#closure_env_inherent_string_string_chars_1#apply(
+  env192: closure_env_inherent_string_string_chars_1
+) -> Option__char {
+  let self/54 = closure_env_inherent_string_string_chars_1.self_0(env192) in
+  let index/55 = closure_env_inherent_string_string_chars_1.index_1(env192) in
+  let mtmp29 = inherent#string#string#decode_at(self/54, @intrinsic(ref.get)(index/55)) in
+  match mtmp29 {
+    Option__(char,int)::None => {
+      Option__char::None
+    },
+    Option__(char,int)::Some(x30) => {
+      let x30 = Option__(char,int)::Some._0(mtmp29) in
+      let decoded/56 = x30 in
+      let mtmp31 = decoded/56 in
+      let x32 = mtmp31.0 in
+      let x33 = mtmp31.1 in
+      let width/58 = x33 in
+      let value/57 = x32 in
+      let _wild36 =
+        let compound_old34 = @intrinsic(ref.get)(index/55) in
+        let compound_value35 = width/58 in
+        @intrinsic(ref.set)(index/55, (compound_old34 + compound_value35)) in
+      Option__char::Some(value/57)
+    },
+  }
+}
+
+fn inherent#closure_env_goml_builtin_range_2#closure_env_goml_builtin_range_2#apply(
+  env193: closure_env_goml_builtin_range_2
 ) -> Option__int {
-  let current/270 = closure_env_goml_builtin_range_0.current_0(env191) in
-  let end/269 = closure_env_goml_builtin_range_0.end_1(env191) in
+  let current/270 = closure_env_goml_builtin_range_2.current_0(env193) in
+  let end/269 = closure_env_goml_builtin_range_2.end_1(env193) in
   let value/271 = @intrinsic(ref.get)(current/270) in
   if (value/271 < end/269) {
       let _wild146 = @intrinsic(ref.set)(current/270, (value/271 + 1)) in

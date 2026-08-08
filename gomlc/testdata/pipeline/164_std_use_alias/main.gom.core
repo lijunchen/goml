@@ -2041,93 +2041,6 @@ fn inherent#Result#Result[T,E]#and_then[T, E, U](
   }
 }
 
-fn std::env::args() -> Vec[string] {
-  @runtime(std.env.args)()
-}
-
-fn std::env::current_dir() -> Result[string, string] {
-  let mtmp0 = @runtime(std.env.current_dir)() in
-  {
-    let x1 = mtmp0.0 in
-    let x2 = mtmp0.1 in
-    let x3 = mtmp0.2 in
-    {
-      let err/2 = x3 in
-      {
-        let value/1 = x2 in
-        {
-          let ok/0 = x1 in
-          {
-            if ok/0 {
-                {
-                  Result::Ok(value/1)
-                }
-            } else {
-                {
-                  Result::Err(err/2)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::env::current_exe() -> Result[string, string] {
-  let mtmp4 = @runtime(std.env.current_exe)() in
-  {
-    let x5 = mtmp4.0 in
-    let x6 = mtmp4.1 in
-    let x7 = mtmp4.2 in
-    {
-      let err/5 = x7 in
-      {
-        let value/4 = x6 in
-        {
-          let ok/3 = x5 in
-          {
-            if ok/3 {
-                {
-                  Result::Ok(value/4)
-                }
-            } else {
-                {
-                  Result::Err(err/5)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::env::var(name/6: string) -> Option[string] {
-  let mtmp8 = @runtime(std.env.var)(name/6) in
-  {
-    let x9 = mtmp8.0 in
-    let x10 = mtmp8.1 in
-    {
-      let value/8 = x10 in
-      {
-        let found/7 = x9 in
-        {
-          if found/7 {
-              {
-                Option::Some(value/8)
-              }
-          } else {
-              {
-                Option::None
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
 fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
   std::bytes::Bytes {
     values: {
@@ -2257,42 +2170,627 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::B
   }
 }
 
-fn std::io::print(value/0: T) -> unit {
-  @runtime(std.io.print)(trait_call[ToString::to_string](value/0))
+fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
+  match self/0 {
+    std::io::ErrorKind::NotFound => {
+      "NotFound"
+    },
+    std::io::ErrorKind::PermissionDenied => {
+      "PermissionDenied"
+    },
+    std::io::ErrorKind::AlreadyExists => {
+      "AlreadyExists"
+    },
+    std::io::ErrorKind::InvalidInput => {
+      "InvalidInput"
+    },
+    std::io::ErrorKind::InvalidData => {
+      "InvalidData"
+    },
+    std::io::ErrorKind::TimedOut => {
+      "TimedOut"
+    },
+    std::io::ErrorKind::Interrupted => {
+      "Interrupted"
+    },
+    std::io::ErrorKind::UnexpectedEof => {
+      "UnexpectedEof"
+    },
+    std::io::ErrorKind::WriteZero => {
+      "WriteZero"
+    },
+    std::io::ErrorKind::BrokenPipe => {
+      "BrokenPipe"
+    },
+    std::io::ErrorKind::WouldBlock => {
+      "WouldBlock"
+    },
+    std::io::ErrorKind::Unsupported => {
+      "Unsupported"
+    },
+    std::io::ErrorKind::Other => {
+      "Other"
+    },
+  }
 }
 
-fn std::io::println(value/1: T) -> unit {
-  @runtime(std.io.println)(trait_call[ToString::to_string](value/1))
+fn trait_impl#Debug#std::io::ErrorKind#debug(self/1: std::io::ErrorKind) -> string {
+  trait_call[ToString::to_string](self/1)
 }
 
-fn std::io::eprint(value/2: T) -> unit {
-  @runtime(std.io.eprint)(trait_call[ToString::to_string](value/2))
+fn trait_impl#PartialEq#std::io::ErrorKind#eq(
+  self/2: std::io::ErrorKind,
+  other/3: std::io::ErrorKind
+) -> bool {
+  trait_call[PartialEq::eq](std::io::kind_code(self/2), std::io::kind_code(other/3))
 }
 
-fn std::io::eprintln(value/3: T) -> unit {
-  @runtime(std.io.eprint)((trait_call[ToString::to_string](value/3) + "\n"))
+fn trait_impl#Eq#std::io::ErrorKind#__marker() -> unit {
+  ()
+}
+
+fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
+  match code/4 {
+    1 => {
+      std::io::ErrorKind::NotFound
+    },
+    2 => {
+      std::io::ErrorKind::PermissionDenied
+    },
+    3 => {
+      std::io::ErrorKind::AlreadyExists
+    },
+    4 => {
+      std::io::ErrorKind::InvalidInput
+    },
+    5 => {
+      std::io::ErrorKind::InvalidData
+    },
+    6 => {
+      std::io::ErrorKind::TimedOut
+    },
+    7 => {
+      std::io::ErrorKind::Interrupted
+    },
+    8 => {
+      std::io::ErrorKind::UnexpectedEof
+    },
+    9 => {
+      std::io::ErrorKind::WriteZero
+    },
+    10 => {
+      std::io::ErrorKind::BrokenPipe
+    },
+    11 => {
+      std::io::ErrorKind::WouldBlock
+    },
+    12 => {
+      std::io::ErrorKind::Unsupported
+    },
+    _ => std::io::ErrorKind::Other,
+  }
+}
+
+fn std::io::kind_code(kind/5: std::io::ErrorKind) -> int {
+  match kind/5 {
+    std::io::ErrorKind::NotFound => {
+      1
+    },
+    std::io::ErrorKind::PermissionDenied => {
+      2
+    },
+    std::io::ErrorKind::AlreadyExists => {
+      3
+    },
+    std::io::ErrorKind::InvalidInput => {
+      4
+    },
+    std::io::ErrorKind::InvalidData => {
+      5
+    },
+    std::io::ErrorKind::TimedOut => {
+      6
+    },
+    std::io::ErrorKind::Interrupted => {
+      7
+    },
+    std::io::ErrorKind::UnexpectedEof => {
+      8
+    },
+    std::io::ErrorKind::WriteZero => {
+      9
+    },
+    std::io::ErrorKind::BrokenPipe => {
+      10
+    },
+    std::io::ErrorKind::WouldBlock => {
+      11
+    },
+    std::io::ErrorKind::Unsupported => {
+      12
+    },
+    std::io::ErrorKind::Other => {
+      0
+    },
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+  kind/6: std::io::ErrorKind,
+  operation/7: string,
+  context/8: Option[string],
+  raw_os_code/9: Option[int],
+  message/10: string
+) -> std::io::ErrorDetails {
+  std::io::ErrorDetails {
+    kind_value: kind/6,
+    operation_value: operation/7,
+    context_value: context/8,
+    raw_os_code_value: raw_os_code/9,
+    message_value: message/10
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(
+  self/11: std::io::ErrorDetails
+) -> std::io::ErrorKind {
+  std::io::ErrorDetails.kind_value(self/11)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
+  self/12: std::io::ErrorDetails
+) -> string {
+  std::io::ErrorDetails.operation_value(self/12)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
+  self/13: std::io::ErrorDetails
+) -> Option[string] {
+  std::io::ErrorDetails.context_value(self/13)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
+  self/14: std::io::ErrorDetails
+) -> Option[int] {
+  std::io::ErrorDetails.raw_os_code_value(self/14)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(
+  self/15: std::io::ErrorDetails
+) -> string {
+  std::io::ErrorDetails.message_value(self/15)
+}
+
+fn trait_impl#ToString#std::io::ErrorDetails#to_string(self/16: std::io::ErrorDetails) -> string {
+  {
+    let mtmp0 = std::io::ErrorDetails.context_value(self/16) in
+    match mtmp0 {
+      Option::None => {
+        ((std::io::ErrorDetails.operation_value(self/16) + ": ") +
+          std::io::ErrorDetails.message_value(self/16))
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let context/17 = x1 in
+            ((((std::io::ErrorDetails.operation_value(self/16) + " ") + context/17) + ": ") +
+              std::io::ErrorDetails.message_value(self/16))
+          }
+        }
+      },
+    }
+  }
+}
+
+fn trait_impl#Debug#std::io::ErrorDetails#debug(self/18: std::io::ErrorDetails) -> string {
+  trait_call[ToString::to_string](self/18)
+}
+
+fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
+  self/19: std::io::ErrorDetails,
+  other/20: std::io::ErrorDetails
+) -> bool {
+  if if if if trait_call[PartialEq::eq](
+    std::io::ErrorDetails.kind_value(self/19),
+    std::io::ErrorDetails.kind_value(other/20)
+  ) {
+      trait_call[PartialEq::eq](
+        std::io::ErrorDetails.operation_value(self/19),
+        std::io::ErrorDetails.operation_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_call[PartialEq::eq](
+        std::io::ErrorDetails.context_value(self/19),
+        std::io::ErrorDetails.context_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_call[PartialEq::eq](
+        std::io::ErrorDetails.raw_os_code_value(self/19),
+        std::io::ErrorDetails.raw_os_code_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_call[PartialEq::eq](
+        std::io::ErrorDetails.message_value(self/19),
+        std::io::ErrorDetails.message_value(other/20)
+      )
+  } else {
+      false
+  }
+}
+
+fn inherent#std::io::Error#std::io::Error#new(
+  kind/21: std::io::ErrorKind,
+  operation/22: string,
+  context/23: Option[string],
+  raw_os_code/24: Option[int],
+  message/25: string
+) -> std::io::Error {
+  std::io::Error {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      kind/21,
+      operation/22,
+      context/23,
+      raw_os_code/24,
+      message/25
+    )
+  }
+}
+
+fn inherent#std::io::Error#std::io::Error#kind(self/26: std::io::Error) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(std::io::Error.details(self/26))
+}
+
+fn inherent#std::io::Error#std::io::Error#operation(self/27: std::io::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(std::io::Error.details(self/27))
+}
+
+fn inherent#std::io::Error#std::io::Error#context(self/28: std::io::Error) -> Option[string] {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::io::Error.details(self/28))
+}
+
+fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option[int] {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::io::Error.details(self/29))
+}
+
+fn inherent#std::io::Error#std::io::Error#message(self/30: std::io::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(std::io::Error.details(self/30))
+}
+
+fn trait_impl#ToString#std::io::Error#to_string(self/31: std::io::Error) -> string {
+  trait_call[ToString::to_string](std::io::Error.details(self/31))
+}
+
+fn trait_impl#Debug#std::io::Error#debug(self/32: std::io::Error) -> string {
+  trait_call[ToString::to_string](self/32)
+}
+
+fn trait_impl#PartialEq#std::io::Error#eq(
+  self/33: std::io::Error,
+  other/34: std::io::Error
+) -> bool {
+  trait_call[PartialEq::eq](std::io::Error.details(self/33), std::io::Error.details(other/34))
+}
+
+fn std::io::structured_error(
+  operation/35: string,
+  kind_code/36: int,
+  has_raw_code/37: bool,
+  raw_code/38: int,
+  message/39: string
+) -> std::io::Error {
+  inherent#std::io::Error#std::io::Error#new(
+    std::io::kind_from_code(kind_code/36),
+    operation/35,
+    Option::None,
+    if has_raw_code/37 {
+        {
+          Option::Some(raw_code/38)
+        }
+    } else {
+        {
+          Option::None
+        }
+    },
+    message/39
+  )
+}
+
+fn std::io::read_stdin_structured() -> Result[std::bytes::Bytes, std::io::Error] {
+  let mtmp2 = @runtime(std.io.read_stdin.v2)() in
+  {
+    let x3 = mtmp2.0 in
+    let x4 = mtmp2.1 in
+    let x5 = mtmp2.2 in
+    let x6 = mtmp2.3 in
+    let x7 = mtmp2.4 in
+    let x8 = mtmp2.5 in
+    {
+      let message/45 = x8 in
+      {
+        let raw_code/44 = x7 in
+        {
+          let has_raw_code/43 = x6 in
+          {
+            let kind_code/42 = x5 in
+            {
+              let data/41 = x4 in
+              {
+                let ok/40 = x3 in
+                {
+                  if ok/40 {
+                      {
+                        Result::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/41))
+                      }
+                  } else {
+                      {
+                        Result::Err(
+                          std::io::structured_error(
+                            "read stdin",
+                            kind_code/42,
+                            has_raw_code/43,
+                            raw_code/44,
+                            message/45
+                          )
+                        )
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::read_stdin_to_string() -> Result[string, std::io::Error] {
+  {
+    let mtmp9 = std::io::read_stdin_structured() in
+    match mtmp9 {
+      Result::Ok(x10) => {
+        {
+          let x10 = Result::Ok._0(mtmp9) in
+          {
+            let data/46 = x10 in
+            {
+              let mtmp12 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/46) in
+              match mtmp12 {
+                Result::Ok(x13) => {
+                  {
+                    let x13 = Result::Ok._0(mtmp12) in
+                    {
+                      let value/47 = x13 in
+                      Result::Ok(value/47)
+                    }
+                  }
+                },
+                Result::Err(x14) => {
+                  {
+                    let x14 = Result::Err._0(mtmp12) in
+                    {
+                      let message/48 = x14 in
+                      Result::Err(
+                        inherent#std::io::Error#std::io::Error#new(
+                          std::io::ErrorKind::InvalidData,
+                          "read stdin",
+                          Option::None,
+                          Option::None,
+                          message/48
+                        )
+                      )
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+      Result::Err(x11) => {
+        {
+          let x11 = Result::Err._0(mtmp9) in
+          {
+            let error/49 = x11 in
+            Result::Err(error/49)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::io::read_stdin_exact_structured(length/50: int) -> Result[
+  std::bytes::Bytes,
+  std::io::Error
+] {
+  if (length/50 < 0) {
+      {
+        Result::Err(
+          inherent#std::io::Error#std::io::Error#new(
+            std::io::ErrorKind::InvalidInput,
+            "read stdin exact",
+            Option::None,
+            Option::None,
+            "read length must be non-negative"
+          )
+        )
+      }
+  } else {
+      {
+        let mtmp15 = @runtime(std.io.read_stdin_exact.v2)(length/50) in
+        {
+          let x16 = mtmp15.0 in
+          let x17 = mtmp15.1 in
+          let x18 = mtmp15.2 in
+          let x19 = mtmp15.3 in
+          let x20 = mtmp15.4 in
+          let x21 = mtmp15.5 in
+          {
+            let message/56 = x21 in
+            {
+              let raw_code/55 = x20 in
+              {
+                let has_raw_code/54 = x19 in
+                {
+                  let kind_code/53 = x18 in
+                  {
+                    let data/52 = x17 in
+                    {
+                      let ok/51 = x16 in
+                      {
+                        if ok/51 {
+                            {
+                              Result::Ok(
+                                inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/52)
+                              )
+                            }
+                        } else {
+                            {
+                              Result::Err(
+                                std::io::structured_error(
+                                  "read stdin exact",
+                                  kind_code/53,
+                                  has_raw_code/54,
+                                  raw_code/55,
+                                  message/56
+                                )
+                              )
+                            }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+}
+
+fn std::io::write_structured(stderr/57: bool, data/58: std::bytes::Bytes) -> Result[
+  unit,
+  std::io::Error
+] {
+  let result/59 =
+    if stderr/57 {
+        {
+          @runtime(std.io.write_stderr.v2)(
+            inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
+          )
+        }
+    } else {
+        {
+          @runtime(std.io.write_stdout.v2)(
+            inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
+          )
+        }
+    } in
+  let mtmp22 = result/59 in
+  {
+    let x23 = mtmp22.0 in
+    let x24 = mtmp22.1 in
+    let x25 = mtmp22.2 in
+    let x26 = mtmp22.3 in
+    let x27 = mtmp22.4 in
+    {
+      let message/64 = x27 in
+      {
+        let raw_code/63 = x26 in
+        {
+          let has_raw_code/62 = x25 in
+          {
+            let kind_code/61 = x24 in
+            {
+              let ok/60 = x23 in
+              {
+                if ok/60 {
+                    {
+                      Result::Ok(())
+                    }
+                } else {
+                    {
+                      Result::Err(
+                        std::io::structured_error(
+                          if stderr/57 {
+                              {
+                                "write stderr"
+                              }
+                          } else {
+                              {
+                                "write stdout"
+                              }
+                          },
+                          kind_code/61,
+                          has_raw_code/62,
+                          raw_code/63,
+                          message/64
+                        )
+                      )
+                    }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stdout_structured(data/65: std::bytes::Bytes) -> Result[unit, std::io::Error] {
+  std::io::write_structured(false, data/65)
+}
+
+fn std::io::write_stderr_structured(data/66: std::bytes::Bytes) -> Result[unit, std::io::Error] {
+  std::io::write_structured(true, data/66)
+}
+
+fn std::io::print(value/67: T) -> unit {
+  @runtime(std.io.print)(trait_call[ToString::to_string](value/67))
+}
+
+fn std::io::println(value/68: T) -> unit {
+  @runtime(std.io.println)(trait_call[ToString::to_string](value/68))
+}
+
+fn std::io::eprint(value/69: T) -> unit {
+  @runtime(std.io.eprint)(trait_call[ToString::to_string](value/69))
+}
+
+fn std::io::eprintln(value/70: T) -> unit {
+  @runtime(std.io.eprint)((trait_call[ToString::to_string](value/70) + "\n"))
 }
 
 fn std::io::read_stdin() -> Result[std::bytes::Bytes, string] {
-  let mtmp0 = @runtime(std.io.read_stdin)() in
+  let mtmp28 = @runtime(std.io.read_stdin)() in
   {
-    let x1 = mtmp0.0 in
-    let x2 = mtmp0.1 in
-    let x3 = mtmp0.2 in
+    let x29 = mtmp28.0 in
+    let x30 = mtmp28.1 in
+    let x31 = mtmp28.2 in
     {
-      let err/6 = x3 in
+      let err/73 = x31 in
       {
-        let data/5 = x2 in
+        let data/72 = x30 in
         {
-          let ok/4 = x1 in
+          let ok/71 = x29 in
           {
-            if ok/4 {
+            if ok/71 {
                 {
-                  Result::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/5))
+                  Result::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/72))
                 }
             } else {
                 {
-                  Result::Err(err/6)
+                  Result::Err(err/73)
                 }
             }
           }
@@ -2302,24 +2800,24 @@ fn std::io::read_stdin() -> Result[std::bytes::Bytes, string] {
   }
 }
 
-fn std::io::write_stdout(data/7: std::bytes::Bytes) -> Result[unit, string] {
-  let mtmp4 =
-    @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/7)) in
+fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result[unit, string] {
+  let mtmp32 =
+    @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/74)) in
   {
-    let x5 = mtmp4.0 in
-    let x6 = mtmp4.1 in
+    let x33 = mtmp32.0 in
+    let x34 = mtmp32.1 in
     {
-      let err/9 = x6 in
+      let err/76 = x34 in
       {
-        let ok/8 = x5 in
+        let ok/75 = x33 in
         {
-          if ok/8 {
+          if ok/75 {
               {
                 Result::Ok(())
               }
           } else {
               {
-                Result::Err(err/9)
+                Result::Err(err/76)
               }
           }
         }
@@ -2328,24 +2826,24 @@ fn std::io::write_stdout(data/7: std::bytes::Bytes) -> Result[unit, string] {
   }
 }
 
-fn std::io::write_stderr(data/10: std::bytes::Bytes) -> Result[unit, string] {
-  let mtmp7 =
-    @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/10)) in
+fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result[unit, string] {
+  let mtmp35 =
+    @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)) in
   {
-    let x8 = mtmp7.0 in
-    let x9 = mtmp7.1 in
+    let x36 = mtmp35.0 in
+    let x37 = mtmp35.1 in
     {
-      let err/12 = x9 in
+      let err/79 = x37 in
       {
-        let ok/11 = x8 in
+        let ok/78 = x36 in
         {
-          if ok/11 {
+          if ok/78 {
               {
                 Result::Ok(())
               }
           } else {
               {
-                Result::Err(err/12)
+                Result::Err(err/79)
               }
           }
         }
@@ -2354,32 +2852,32 @@ fn std::io::write_stderr(data/10: std::bytes::Bytes) -> Result[unit, string] {
   }
 }
 
-fn std::io::read_stdin_exact(length/13: int) -> Result[std::bytes::Bytes, string] {
-  if (length/13 < 0) {
+fn std::io::read_stdin_exact(length/80: int) -> Result[std::bytes::Bytes, string] {
+  if (length/80 < 0) {
       {
         Result::Err("read length must be non-negative")
       }
   } else {
       {
-        let mtmp10 = @runtime(std.io.read_stdin_exact)(length/13) in
+        let mtmp38 = @runtime(std.io.read_stdin_exact)(length/80) in
         {
-          let x11 = mtmp10.0 in
-          let x12 = mtmp10.1 in
-          let x13 = mtmp10.2 in
+          let x39 = mtmp38.0 in
+          let x40 = mtmp38.1 in
+          let x41 = mtmp38.2 in
           {
-            let err/16 = x13 in
+            let err/83 = x41 in
             {
-              let data/15 = x12 in
+              let data/82 = x40 in
               {
-                let ok/14 = x11 in
+                let ok/81 = x39 in
                 {
-                  if ok/14 {
+                  if ok/81 {
                       {
-                        Result::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/15))
+                        Result::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/82))
                       }
                   } else {
                       {
-                        Result::Err(err/16)
+                        Result::Err(err/83)
                       }
                   }
                 }
@@ -2389,6 +2887,1488 @@ fn std::io::read_stdin_exact(length/13: int) -> Result[std::bytes::Bytes, string
         }
       }
   }
+}
+
+fn std::ascii::is_ascii(value/0: uint8) -> bool {
+  (value/0 <= 127)
+}
+
+fn std::ascii::is_uppercase(value/1: uint8) -> bool {
+  if (value/1 >= 65) {
+      (value/1 <= 90)
+  } else {
+      false
+  }
+}
+
+fn std::ascii::is_lowercase(value/2: uint8) -> bool {
+  if (value/2 >= 97) {
+      (value/2 <= 122)
+  } else {
+      false
+  }
+}
+
+fn std::ascii::is_alphabetic(value/3: uint8) -> bool {
+  if std::ascii::is_uppercase(value/3) {
+      true
+  } else {
+      std::ascii::is_lowercase(value/3)
+  }
+}
+
+fn std::ascii::is_digit(value/4: uint8) -> bool {
+  if (value/4 >= 48) {
+      (value/4 <= 57)
+  } else {
+      false
+  }
+}
+
+fn std::ascii::is_hexdigit(value/5: uint8) -> bool {
+  if if std::ascii::is_digit(value/5) {
+      true
+  } else {
+      if (value/5 >= 65) {
+          (value/5 <= 70)
+      } else {
+          false
+      }
+  } {
+      true
+  } else {
+      if (value/5 >= 97) {
+          (value/5 <= 102)
+      } else {
+          false
+      }
+  }
+}
+
+fn std::ascii::is_alphanumeric(value/6: uint8) -> bool {
+  if std::ascii::is_alphabetic(value/6) {
+      true
+  } else {
+      std::ascii::is_digit(value/6)
+  }
+}
+
+fn std::ascii::is_whitespace(value/7: uint8) -> bool {
+  if if if if if trait_call[PartialEq::eq](value/7, 9) {
+      true
+  } else {
+      trait_call[PartialEq::eq](value/7, 10)
+  } {
+      true
+  } else {
+      trait_call[PartialEq::eq](value/7, 11)
+  } {
+      true
+  } else {
+      trait_call[PartialEq::eq](value/7, 12)
+  } {
+      true
+  } else {
+      trait_call[PartialEq::eq](value/7, 13)
+  } {
+      true
+  } else {
+      trait_call[PartialEq::eq](value/7, 32)
+  }
+}
+
+fn std::ascii::is_control(value/8: uint8) -> bool {
+  if (value/8 <= 31) {
+      true
+  } else {
+      trait_call[PartialEq::eq](value/8, 127)
+  }
+}
+
+fn std::ascii::is_graphic(value/9: uint8) -> bool {
+  if (value/9 >= 33) {
+      (value/9 <= 126)
+  } else {
+      false
+  }
+}
+
+fn std::ascii::is_punctuation(value/10: uint8) -> bool {
+  if std::ascii::is_graphic(value/10) {
+      (!std::ascii::is_alphanumeric(value/10))
+  } else {
+      false
+  }
+}
+
+fn std::ascii::to_lowercase(value/11: uint8) -> uint8 {
+  if std::ascii::is_uppercase(value/11) {
+      {
+        (value/11 + (97 - 65))
+      }
+  } else {
+      {
+        value/11
+      }
+  }
+}
+
+fn std::ascii::to_uppercase(value/12: uint8) -> uint8 {
+  if std::ascii::is_lowercase(value/12) {
+      {
+        (value/12 - (97 - 65))
+      }
+  } else {
+      {
+        value/12
+      }
+  }
+}
+
+fn std::ascii::eq_ignore_case(left/13: uint8, right/14: uint8) -> bool {
+  trait_call[PartialEq::eq](std::ascii::to_lowercase(left/13), std::ascii::to_lowercase(right/14))
+}
+
+fn std::ascii::hex_digit(value/15: uint8) -> char {
+  inherent#string#string#get("0123456789abcdef", (value/15 as int))
+}
+
+fn std::ascii::escape_default(value/16: uint8) -> string {
+  match value/16 {
+    9 => {
+      "\\t"
+    },
+    13 => {
+      "\\r"
+    },
+    10 => {
+      "\\n"
+    },
+    39 => {
+      "\\'"
+    },
+    34 => {
+      "\\\""
+    },
+    92 => {
+      "\\\\"
+    },
+    _ =>
+      if if (value/16 >= 32) {
+          (value/16 <= 126)
+      } else {
+          false
+      } {
+          {
+            let mtmp1 =
+              string_from_utf8(
+                {
+                  let vec_literal/1809 = inherent#Vec#Vec[uint8]#new() in
+                  let _wild0 = inherent#Vec#Vec[uint8]#push(vec_literal/1809, value/16) in
+                  vec_literal/1809
+                }
+              ) in
+            {
+              let x2 = mtmp1.0 in
+              let x3 = mtmp1.1 in
+              {
+                let result/17 = x3 in
+                {
+                  result/17
+                }
+              }
+            }
+          }
+      } else {
+          {
+            (("\\x" + inherent#char#char#to_string(std::ascii::hex_digit((value/16 >> 4)))) +
+              inherent#char#char#to_string(std::ascii::hex_digit((value/16 & 15))))
+          }
+      },
+  }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#new() -> std::text::StringBuilder {
+  std::text::StringBuilder {
+    values: {
+      let vec_literal/178 = inherent#Vec#Vec[uint8]#new() in
+      vec_literal/178
+    }
+  }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
+  capacity/0: int
+) -> std::text::StringBuilder {
+  std::text::StringBuilder { values: inherent#Vec#Vec[uint8]#with_capacity(capacity/0) }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#len(
+  self/1: std::text::StringBuilder
+) -> int {
+  inherent#Vec#Vec[uint8]#len(std::text::StringBuilder.values(self/1))
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#is_empty(
+  self/2: std::text::StringBuilder
+) -> bool {
+  inherent#Vec#Vec[uint8]#is_empty(std::text::StringBuilder.values(self/2))
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+  self/3: std::text::StringBuilder,
+  value/4: string
+) -> unit {
+  let length/5 = inherent#string#string#byte_len(value/4) in
+  let _wild0 = inherent#Vec#Vec[uint8]#reserve(std::text::StringBuilder.values(self/3), length/5) in
+  {
+    let for_index1 = 0 in
+    let for_limit2 = length/5 in
+    while (for_index1 < for_limit2) {
+        {
+          let for_item3 = for_index1 in
+          let _wild4 = for_index1 = (for_index1 + 1) in
+          {
+            let index/6 = for_item3 in
+            {
+              inherent#Vec#Vec[uint8]#push(
+                std::text::StringBuilder.values(self/3),
+                inherent#string#string#byte_get(value/4, index/6)
+              )
+            }
+          }
+        }
+    }
+  }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_char(
+  self/7: std::text::StringBuilder,
+  value/8: char
+) -> unit {
+  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+    self/7,
+    inherent#char#char#to_string(value/8)
+  )
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_bytes(
+  self/9: std::text::StringBuilder,
+  value/10: std::bytes::Bytes
+) -> Result[unit, string] {
+  {
+    let mtmp5 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(value/10) in
+    match mtmp5 {
+      Result::Ok(x6) => {
+        {
+          let x6 = Result::Ok._0(mtmp5) in
+          {
+            let text/11 = x6 in
+            {
+              let _wild8 =
+                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                  self/9,
+                  text/11
+                ) in
+              Result::Ok(())
+            }
+          }
+        }
+      },
+      Result::Err(x7) => {
+        {
+          let x7 = Result::Err._0(mtmp5) in
+          {
+            let error/12 = x7 in
+            Result::Err(error/12)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#write_line(
+  self/13: std::text::StringBuilder,
+  value/14: string
+) -> unit {
+  let _wild9 =
+    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/13, value/14) in
+  inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(self/13, "\n")
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#clear(
+  self/15: std::text::StringBuilder
+) -> unit {
+  inherent#Vec#Vec[uint8]#clear(std::text::StringBuilder.values(self/15))
+}
+
+fn inherent#std::text::StringBuilder#std::text::StringBuilder#finish(
+  self/16: std::text::StringBuilder
+) -> string {
+  let mtmp10 = string_from_utf8(std::text::StringBuilder.values(self/16)) in
+  {
+    let x11 = mtmp10.0 in
+    let x12 = mtmp10.1 in
+    {
+      let value/17 = x12 in
+      {
+        value/17
+      }
+    }
+  }
+}
+
+fn trait_impl#ToString#std::text::StringBuilder#to_string(
+  self/18: std::text::StringBuilder
+) -> string {
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(self/18)
+}
+
+fn std::text::starts_with_at(value/19: string, start/20: int, prefix/21: string) -> bool {
+  let value_len/22 = inherent#string#string#byte_len(value/19) in
+  let prefix_len/23 = inherent#string#string#byte_len(prefix/21) in
+  if if if (start/20 < 0) {
+      true
+  } else {
+      (start/20 > value_len/22)
+  } {
+      true
+  } else {
+      (prefix_len/23 > (value_len/22 - start/20))
+  } {
+      {
+        false
+      }
+  } else {
+      {
+        let end/24 = (start/20 + prefix_len/23) in
+        if if inherent#string#string#is_char_boundary(value/19, start/20) {
+            inherent#string#string#is_char_boundary(value/19, end/24)
+        } else {
+            false
+        } {
+            trait_call[PartialEq::eq](
+              inherent#string#string#byte_slice(value/19, start/20, end/24),
+              prefix/21
+            )
+        } else {
+            false
+        }
+      }
+  }
+}
+
+fn std::text::find_from(value/25: string, expected/26: string, start/27: int) -> Option[int] {
+  let value_len/28 = inherent#string#string#byte_len(value/25) in
+  let expected_len/29 = inherent#string#string#byte_len(expected/26) in
+  if if (start/27 < 0) {
+      true
+  } else {
+      (start/27 > value_len/28)
+  } {
+      {
+        Option::None
+      }
+  } else {
+      if trait_call[PartialEq::eq](expected_len/29, 0) {
+          {
+            Option::Some(start/27)
+          }
+      } else {
+          if (expected_len/29 > (value_len/28 - start/27)) {
+              {
+                Option::None
+              }
+          } else {
+              {
+                let limit/30 = (value_len/28 - expected_len/29) in
+                let index/31 = start/27 in
+                let _wild16 =
+                  while (index/31 <= limit/30) {
+                      {
+                        if std::text::starts_with_at(value/25, index/31, expected/26) {
+                            {
+                              return Option::Some(index/31)
+                            }
+                        } else {
+                            {
+                              let _wild15 =
+                                {
+                                  let compound_old13 = index/31 in
+                                  let compound_value14 = 1 in
+                                  index/31 = (compound_old13 + compound_value14)
+                                } in
+                            }
+                        }
+                      }
+                  } in
+                Option::None
+              }
+          }
+      }
+  }
+}
+
+fn std::text::find(value/32: string, expected/33: string) -> Option[int] {
+  std::text::find_from(value/32, expected/33, 0)
+}
+
+fn std::text::find_bytes(value/34: string, expected/35: string) -> Option[int] {
+  std::text::find(value/34, expected/35)
+}
+
+fn std::text::char_indices(value/36: string) -> FnIterator[(int, char)] {
+  inherent#string#string#char_indices(value/36)
+}
+
+fn std::text::char_count(value/37: string) -> int {
+  let count/38 = 0 in
+  let _wild23 =
+    {
+      let for_iter17 =
+        trait_call[IntoIterator::into_iter](inherent#string#string#chars(value/37)) in
+      while true {
+          {
+            let for_next18 = trait_call[Iterator::next](for_iter17) in
+            match for_next18 {
+              Option::None => {
+                break
+              },
+              Option::Some(x19) => {
+                {
+                  let x19 = Option::Some._0(for_next18) in
+                  {
+                    let _wild22 =
+                      {
+                        let compound_old20 = count/38 in
+                        let compound_value21 = 1 in
+                        count/38 = (compound_old20 + compound_value21)
+                      } in
+                  }
+                }
+              },
+            }
+          }
+      }
+    } in
+  count/38
+}
+
+fn std::text::slice_chars(value/39: string, start/40: int, end/41: int) -> Option[string] {
+  if if (start/40 < 0) {
+      true
+  } else {
+      (end/41 < start/40)
+  } {
+      {
+        Option::None
+      }
+  } else {
+      {
+        let char_index/42 = 0 in
+        let start_byte/43 =
+          if trait_call[PartialEq::eq](start/40, 0) {
+              {
+                Option::Some(0)
+              }
+          } else {
+              {
+                Option::None
+              }
+          } in
+        let end_byte/44 =
+          if trait_call[PartialEq::eq](end/41, 0) {
+              {
+                Option::Some(0)
+              }
+          } else {
+              {
+                Option::None
+              }
+          } in
+        let _wild37 =
+          {
+            let for_iter24 =
+              trait_call[IntoIterator::into_iter](inherent#string#string#char_indices(value/39)) in
+            while true {
+                {
+                  let for_next25 = trait_call[Iterator::next](for_iter24) in
+                  match for_next25 {
+                    Option::None => {
+                      break
+                    },
+                    Option::Some(x26) => {
+                      {
+                        let x26 = Option::Some._0(for_next25) in
+                        {
+                          let item/45 = x26 in
+                          {
+                            let mtmp27 = item/45 in
+                            {
+                              let x28 = mtmp27.0 in
+                              let x29 = mtmp27.1 in
+                              {
+                                let byte_index/46 = x28 in
+                                {
+                                  let _wild31 =
+                                    if trait_call[PartialEq::eq](char_index/42, start/40) {
+                                        {
+                                          let _wild30 =
+                                            start_byte/43 = Option::Some(byte_index/46) in
+                                        }
+                                    } else {
+                                        {
+                                          ()
+                                        }
+                                    } in
+                                  let _wild33 =
+                                    if trait_call[PartialEq::eq](char_index/42, end/41) {
+                                        {
+                                          let _wild32 = end_byte/44 = Option::Some(byte_index/46) in
+                                        }
+                                    } else {
+                                        {
+                                          ()
+                                        }
+                                    } in
+                                  let _wild36 =
+                                    {
+                                      let compound_old34 = char_index/42 in
+                                      let compound_value35 = 1 in
+                                      char_index/42 = (compound_old34 + compound_value35)
+                                    } in
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                  }
+                }
+            }
+          } in
+        let _wild39 =
+          if trait_call[PartialEq::eq](char_index/42, start/40) {
+              {
+                let _wild38 =
+                  start_byte/43 = Option::Some(inherent#string#string#byte_len(value/39)) in
+              }
+          } else {
+              {
+                ()
+              }
+          } in
+        let _wild41 =
+          if trait_call[PartialEq::eq](char_index/42, end/41) {
+              {
+                let _wild40 =
+                  end_byte/44 = Option::Some(inherent#string#string#byte_len(value/39)) in
+              }
+          } else {
+              {
+                ()
+              }
+          } in
+        {
+          let mtmp42 = (start_byte/43, end_byte/44) in
+          {
+            let x43 = mtmp42.0 in
+            let x44 = mtmp42.1 in
+            match x44 {
+              Option::Some(x45) => {
+                {
+                  let x45 = Option::Some._0(x44) in
+                  match x43 {
+                    Option::Some(x46) => {
+                      {
+                        let x46 = Option::Some._0(x43) in
+                        {
+                          let first/47 = x46 in
+                          {
+                            let last/48 = x45 in
+                            Option::Some(
+                              inherent#string#string#byte_slice(value/39, first/47, last/48)
+                            )
+                          }
+                        }
+                      }
+                    },
+                    _ => Option::None,
+                  }
+                }
+              },
+              _ => Option::None,
+            }
+          }
+        }
+      }
+  }
+}
+
+fn std::text::rfind(value/49: string, expected/50: string) -> Option[int] {
+  let value_len/51 = inherent#string#string#byte_len(value/49) in
+  let expected_len/52 = inherent#string#string#byte_len(expected/50) in
+  if (expected_len/52 > value_len/51) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        let start/53 = (value_len/51 - expected_len/52) in
+        let _wild50 =
+          while (start/53 >= 0) {
+              {
+                if std::text::starts_with_at(value/49, start/53, expected/50) {
+                    {
+                      return Option::Some(start/53)
+                    }
+                } else {
+                    {
+                      let _wild49 =
+                        {
+                          let compound_old47 = start/53 in
+                          let compound_value48 = 1 in
+                          start/53 = (compound_old47 - compound_value48)
+                        } in
+                    }
+                }
+              }
+          } in
+        Option::None
+      }
+  }
+}
+
+fn std::text::trim_start(value/54: string) -> string {
+  let start/55 = 0 in
+  let _wild54 =
+    while if (start/55 < inherent#string#string#byte_len(value/54)) {
+        std::ascii::is_whitespace(inherent#string#string#byte_get(value/54, start/55))
+    } else {
+        false
+    } {
+        {
+          let _wild53 =
+            {
+              let compound_old51 = start/55 in
+              let compound_value52 = 1 in
+              start/55 = (compound_old51 + compound_value52)
+            } in
+        }
+    } in
+  inherent#string#string#byte_slice(value/54, start/55, inherent#string#string#byte_len(value/54))
+}
+
+fn std::text::trim_end(value/56: string) -> string {
+  let end/57 = inherent#string#string#byte_len(value/56) in
+  let _wild58 =
+    while if (end/57 > 0) {
+        std::ascii::is_whitespace(inherent#string#string#byte_get(value/56, (end/57 - 1)))
+    } else {
+        false
+    } {
+        {
+          let _wild57 =
+            {
+              let compound_old55 = end/57 in
+              let compound_value56 = 1 in
+              end/57 = (compound_old55 - compound_value56)
+            } in
+        }
+    } in
+  inherent#string#string#byte_slice(value/56, 0, end/57)
+}
+
+fn std::text::trim(value/58: string) -> string {
+  std::text::trim_end(std::text::trim_start(value/58))
+}
+
+fn std::text::split(value/59: string, separator/60: string) -> Vec[string] {
+  let result/61 =
+    {
+      let vec_literal/3802 = inherent#Vec#Vec[string]#new() in
+      vec_literal/3802
+    } in
+  let separator_len/62 = inherent#string#string#byte_len(separator/60) in
+  let value_len/63 = inherent#string#string#byte_len(value/59) in
+  let _wild60 =
+    if trait_call[PartialEq::eq](separator_len/62, 0) {
+        {
+          let _wild59 = inherent#Vec#Vec[string]#push(result/61, value/59) in
+          return result/61
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let start/64 = 0 in
+  let _wild66 =
+    loop {
+      {
+        let mtmp61 = std::text::find_from(value/59, separator/60, start/64) in
+        match mtmp61 {
+          Option::None => {
+            {
+              let _wild63 =
+                inherent#Vec#Vec[string]#push(
+                  result/61,
+                  inherent#string#string#byte_slice(value/59, start/64, value_len/63)
+                ) in
+              break
+            }
+          },
+          Option::Some(x62) => {
+            {
+              let x62 = Option::Some._0(mtmp61) in
+              {
+                let index/65 = x62 in
+                {
+                  let _wild64 =
+                    inherent#Vec#Vec[string]#push(
+                      result/61,
+                      inherent#string#string#byte_slice(value/59, start/64, index/65)
+                    ) in
+                  let _wild65 = start/64 = (index/65 + separator_len/62) in
+                }
+              }
+            }
+          },
+        }
+      }
+    } in
+  result/61
+}
+
+fn std::text::split_once(value/66: string, separator/67: string) -> Option[(string, string)] {
+  let separator_len/68 = inherent#string#string#byte_len(separator/67) in
+  let value_len/69 = inherent#string#string#byte_len(value/66) in
+  if trait_call[PartialEq::eq](separator_len/68, 0) {
+      {
+        Option::None
+      }
+  } else {
+      {
+        {
+          let mtmp67 = std::text::find(value/66, separator/67) in
+          match mtmp67 {
+            Option::None => {
+              Option::None
+            },
+            Option::Some(x68) => {
+              {
+                let x68 = Option::Some._0(mtmp67) in
+                {
+                  let index/70 = x68 in
+                  Option::Some(
+                    (
+                      inherent#string#string#byte_slice(value/66, 0, index/70),
+                      inherent#string#string#byte_slice(
+                        value/66,
+                        (index/70 + separator_len/68),
+                        value_len/69
+                      )
+                    )
+                  )
+                }
+              }
+            },
+          }
+        }
+      }
+  }
+}
+
+fn std::text::lines(value/71: string) -> Vec[string] {
+  let result/72 = std::text::split(value/71, "\n") in
+  let _wild70 =
+    if if (!inherent#Vec#Vec[string]#is_empty(result/72)) {
+        trait_call[PartialEq::eq](
+          @intrinsic(vec.get)(result/72, (inherent#Vec#Vec[string]#len(result/72) - 1)),
+          ""
+        )
+    } else {
+        false
+    } {
+        {
+          let mtmp69 = inherent#Vec#Vec[string]#pop(result/72) in
+          {
+            ()
+          }
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let _wild80 =
+    {
+      let for_index71 = 0 in
+      let for_limit72 = inherent#Vec#Vec[string]#len(result/72) in
+      while (for_index71 < for_limit72) {
+          {
+            let for_item73 = for_index71 in
+            let _wild74 = for_index71 = (for_index71 + 1) in
+            {
+              let index/73 = for_item73 in
+              {
+                let line/74 = @intrinsic(vec.get)(result/72, index/73) in
+                if if (inherent#string#string#byte_len(line/74) > 0) {
+                    trait_call[PartialEq::eq](
+                      inherent#string#string#byte_get(
+                        line/74,
+                        (inherent#string#string#byte_len(line/74) - 1)
+                      ),
+                      13
+                    )
+                } else {
+                    false
+                } {
+                    {
+                      let _wild79 =
+                        {
+                          let place_root75 = result/72 in
+                          let index76 = index/73 in
+                          let place77 = @intrinsic(vec.get)(place_root75, index76) in
+                          let value78 =
+                            inherent#string#string#byte_slice(
+                              line/74,
+                              0,
+                              (inherent#string#string#byte_len(line/74) - 1)
+                            ) in
+                          @intrinsic(vec.set)(place_root75, index76, value78)
+                        } in
+                    }
+                } else {
+                    {
+                      ()
+                    }
+                }
+              }
+            }
+          }
+      }
+    } in
+  result/72
+}
+
+fn std::text::replace(value/75: string, expected/76: string, replacement/77: string) -> string {
+  if trait_call[PartialEq::eq](inherent#string#string#byte_len(expected/76), 0) {
+      {
+        value/75
+      }
+  } else {
+      {
+        let builder/78 =
+          inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
+            inherent#string#string#byte_len(value/75)
+          ) in
+        let start/79 = 0 in
+        let _wild87 =
+          loop {
+            {
+              let mtmp81 = std::text::find_from(value/75, expected/76, start/79) in
+              match mtmp81 {
+                Option::None => {
+                  {
+                    let _wild83 =
+                      inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                        builder/78,
+                        inherent#string#string#byte_slice(
+                          value/75,
+                          start/79,
+                          inherent#string#string#byte_len(value/75)
+                        )
+                      ) in
+                    break
+                  }
+                },
+                Option::Some(x82) => {
+                  {
+                    let x82 = Option::Some._0(mtmp81) in
+                    {
+                      let index/80 = x82 in
+                      {
+                        let _wild84 =
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                            builder/78,
+                            inherent#string#string#byte_slice(value/75, start/79, index/80)
+                          ) in
+                        let _wild85 =
+                          inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                            builder/78,
+                            replacement/77
+                          ) in
+                        let _wild86 =
+                          start/79 = (index/80 + inherent#string#string#byte_len(expected/76)) in
+                      }
+                    }
+                  }
+                },
+              }
+            }
+          } in
+        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/78)
+      }
+  }
+}
+
+fn std::text::join(values/81: Vec[string], separator/82: string) -> string {
+  let capacity/83 =
+    (inherent#string#string#byte_len(separator/82) * inherent#Vec#Vec[string]#len(values/81)) in
+  let _wild96 =
+    {
+      let for_source88 = values/81 in
+      let for_limit89 = @intrinsic(vec.len)(for_source88) in
+      let for_index90 = 0 in
+      while (for_index90 < for_limit89) {
+          {
+            let for_item91 = @intrinsic(vec.get)(for_source88, for_index90) in
+            let _wild92 = for_index90 = (for_index90 + 1) in
+            {
+              let value/84 = for_item91 in
+              {
+                let _wild95 =
+                  {
+                    let compound_old93 = capacity/83 in
+                    let compound_value94 = inherent#string#string#byte_len(value/84) in
+                    capacity/83 = (compound_old93 + compound_value94)
+                  } in
+              }
+            }
+          }
+      }
+    } in
+  let _wild100 =
+    if (!inherent#Vec#Vec[string]#is_empty(values/81)) {
+        {
+          let _wild99 =
+            {
+              let compound_old97 = capacity/83 in
+              let compound_value98 = inherent#string#string#byte_len(separator/82) in
+              capacity/83 = (compound_old97 - compound_value98)
+            } in
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+  let builder/85 =
+    inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(capacity/83) in
+  let _wild106 =
+    {
+      let for_index101 = 0 in
+      let for_limit102 = inherent#Vec#Vec[string]#len(values/81) in
+      while (for_index101 < for_limit102) {
+          {
+            let for_item103 = for_index101 in
+            let _wild104 = for_index101 = (for_index101 + 1) in
+            {
+              let index/86 = for_item103 in
+              {
+                let _wild105 =
+                  if (index/86 > 0) {
+                      {
+                        inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                          builder/85,
+                          separator/82
+                        )
+                      }
+                  } else {
+                      {
+                        ()
+                      }
+                  } in
+                inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                  builder/85,
+                  @intrinsic(vec.get)(values/81, index/86)
+                )
+              }
+            }
+          }
+      }
+    } in
+  inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/85)
+}
+
+fn std::text::repeat(value/87: string, count/88: int) -> string {
+  if if (count/88 <= 0) {
+      true
+  } else {
+      trait_call[PartialEq::eq](inherent#string#string#byte_len(value/87), 0)
+  } {
+      {
+        ""
+      }
+  } else {
+      {
+        let builder/89 =
+          inherent#std::text::StringBuilder#std::text::StringBuilder#with_capacity(
+            (inherent#string#string#byte_len(value/87) * count/88)
+          ) in
+        let _wild111 =
+          {
+            let for_index107 = 0 in
+            let for_limit108 = count/88 in
+            while (for_index107 < for_limit108) {
+                {
+                  let for_item109 = for_index107 in
+                  let _wild110 = for_index107 = (for_index107 + 1) in
+                  {
+                    inherent#std::text::StringBuilder#std::text::StringBuilder#write_string(
+                      builder/89,
+                      value/87
+                    )
+                  }
+                }
+            }
+          } in
+        inherent#std::text::StringBuilder#std::text::StringBuilder#finish(builder/89)
+      }
+  }
+}
+
+fn std::text::is_ascii(value/90: string) -> bool {
+  let _wild116 =
+    {
+      let for_index112 = 0 in
+      let for_limit113 = inherent#string#string#byte_len(value/90) in
+      while (for_index112 < for_limit113) {
+          {
+            let for_item114 = for_index112 in
+            let _wild115 = for_index112 = (for_index112 + 1) in
+            {
+              let index/91 = for_item114 in
+              {
+                if (inherent#string#string#byte_get(value/90, index/91) > 127) {
+                    {
+                      return false
+                    }
+                } else {
+                    {
+                      ()
+                    }
+                }
+              }
+            }
+          }
+      }
+    } in
+  true
+}
+
+fn std::text::eq_ignore_ascii_case(left/92: string, right/93: string) -> bool {
+  if (!trait_call[PartialEq::eq](
+    inherent#string#string#byte_len(left/92),
+    inherent#string#string#byte_len(right/93)
+  )) {
+      {
+        false
+      }
+  } else {
+      {
+        let _wild121 =
+          {
+            let for_index117 = 0 in
+            let for_limit118 = inherent#string#string#byte_len(left/92) in
+            while (for_index117 < for_limit118) {
+                {
+                  let for_item119 = for_index117 in
+                  let _wild120 = for_index117 = (for_index117 + 1) in
+                  {
+                    let index/94 = for_item119 in
+                    {
+                      if (!std::ascii::eq_ignore_case(
+                        inherent#string#string#byte_get(left/92, index/94),
+                        inherent#string#string#byte_get(right/93, index/94)
+                      )) {
+                          {
+                            return false
+                          }
+                      } else {
+                          {
+                            ()
+                          }
+                      }
+                    }
+                  }
+                }
+            }
+          } in
+        true
+      }
+  }
+}
+
+fn std::text::to_ascii_lowercase(value/95: string) -> string {
+  let values/96 = inherent#string#string#to_bytes(value/95) in
+  let _wild131 =
+    {
+      let for_index122 = 0 in
+      let for_limit123 = inherent#Vec#Vec[uint8]#len(values/96) in
+      while (for_index122 < for_limit123) {
+          {
+            let for_item124 = for_index122 in
+            let _wild125 = for_index122 = (for_index122 + 1) in
+            {
+              let index/97 = for_item124 in
+              {
+                let _wild130 =
+                  {
+                    let place_root126 = values/96 in
+                    let index127 = index/97 in
+                    let place128 = @intrinsic(vec.get)(place_root126, index127) in
+                    let value129 =
+                      std::ascii::to_lowercase(@intrinsic(vec.get)(values/96, index/97)) in
+                    @intrinsic(vec.set)(place_root126, index127, value129)
+                  } in
+              }
+            }
+          }
+      }
+    } in
+  let mtmp132 = string_from_utf8(values/96) in
+  {
+    let x133 = mtmp132.0 in
+    let x134 = mtmp132.1 in
+    {
+      let result/98 = x134 in
+      {
+        result/98
+      }
+    }
+  }
+}
+
+fn std::text::to_ascii_uppercase(value/99: string) -> string {
+  let values/100 = inherent#string#string#to_bytes(value/99) in
+  let _wild144 =
+    {
+      let for_index135 = 0 in
+      let for_limit136 = inherent#Vec#Vec[uint8]#len(values/100) in
+      while (for_index135 < for_limit136) {
+          {
+            let for_item137 = for_index135 in
+            let _wild138 = for_index135 = (for_index135 + 1) in
+            {
+              let index/101 = for_item137 in
+              {
+                let _wild143 =
+                  {
+                    let place_root139 = values/100 in
+                    let index140 = index/101 in
+                    let place141 = @intrinsic(vec.get)(place_root139, index140) in
+                    let value142 =
+                      std::ascii::to_uppercase(@intrinsic(vec.get)(values/100, index/101)) in
+                    @intrinsic(vec.set)(place_root139, index140, value142)
+                  } in
+              }
+            }
+          }
+      }
+    } in
+  let mtmp145 = string_from_utf8(values/100) in
+  {
+    let x146 = mtmp145.0 in
+    let x147 = mtmp145.1 in
+    {
+      let result/102 = x147 in
+      {
+        result/102
+      }
+    }
+  }
+}
+
+fn std::env::operation_error(operation/0: string, message/1: string) -> std::io::Error {
+  inherent#std::io::Error#std::io::Error#new(
+    std::io::ErrorKind::Other,
+    operation/0,
+    Option::None,
+    Option::None,
+    message/1
+  )
+}
+
+fn std::env::args() -> Vec[string] {
+  @runtime(std.env.args)()
+}
+
+fn std::env::current_dir() -> Result[string, string] {
+  let mtmp0 = @runtime(std.env.current_dir)() in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    let x3 = mtmp0.2 in
+    {
+      let err/4 = x3 in
+      {
+        let value/3 = x2 in
+        {
+          let ok/2 = x1 in
+          {
+            if ok/2 {
+                {
+                  Result::Ok(value/3)
+                }
+            } else {
+                {
+                  Result::Err(err/4)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::env::current_dir_structured() -> Result[string, std::io::Error] {
+  {
+    let mtmp4 = std::env::current_dir() in
+    match mtmp4 {
+      Result::Ok(x5) => {
+        {
+          let x5 = Result::Ok._0(mtmp4) in
+          {
+            let value/5 = x5 in
+            Result::Ok(value/5)
+          }
+        }
+      },
+      Result::Err(x6) => {
+        {
+          let x6 = Result::Err._0(mtmp4) in
+          {
+            let message/6 = x6 in
+            Result::Err(std::env::operation_error("current directory", message/6))
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::env::current_exe() -> Result[string, string] {
+  let mtmp7 = @runtime(std.env.current_exe)() in
+  {
+    let x8 = mtmp7.0 in
+    let x9 = mtmp7.1 in
+    let x10 = mtmp7.2 in
+    {
+      let err/9 = x10 in
+      {
+        let value/8 = x9 in
+        {
+          let ok/7 = x8 in
+          {
+            if ok/7 {
+                {
+                  Result::Ok(value/8)
+                }
+            } else {
+                {
+                  Result::Err(err/9)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::env::current_exe_structured() -> Result[string, std::io::Error] {
+  {
+    let mtmp11 = std::env::current_exe() in
+    match mtmp11 {
+      Result::Ok(x12) => {
+        {
+          let x12 = Result::Ok._0(mtmp11) in
+          {
+            let value/10 = x12 in
+            Result::Ok(value/10)
+          }
+        }
+      },
+      Result::Err(x13) => {
+        {
+          let x13 = Result::Err._0(mtmp11) in
+          {
+            let message/11 = x13 in
+            Result::Err(std::env::operation_error("current executable", message/11))
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::env::var(name/12: string) -> Option[string] {
+  let mtmp14 = @runtime(std.env.var)(name/12) in
+  {
+    let x15 = mtmp14.0 in
+    let x16 = mtmp14.1 in
+    {
+      let value/14 = x16 in
+      {
+        let found/13 = x15 in
+        {
+          if found/13 {
+              {
+                Option::Some(value/14)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::env::var_structured(name/15: string) -> Result[string, std::env::VarError] {
+  {
+    let mtmp17 = std::env::var(name/15) in
+    match mtmp17 {
+      Option::None => {
+        Result::Err(
+          inherent#std::env::VarError#std::env::VarError#new(
+            std::io::ErrorKind::NotFound,
+            name/15,
+            "not present"
+          )
+        )
+      },
+      Option::Some(x18) => {
+        {
+          let x18 = Option::Some._0(mtmp17) in
+          {
+            let value/16 = x18 in
+            Result::Ok(value/16)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::env::vars() -> Vec[(string, string)] {
+  let result/17 =
+    {
+      let vec_literal/1577 = inherent#Vec#Vec[(string,string)]#new() in
+      vec_literal/1577
+    } in
+  let _wild26 =
+    {
+      let for_source19 = @runtime(std.env.vars)() in
+      let for_limit20 = @intrinsic(vec.len)(for_source19) in
+      let for_index21 = 0 in
+      while (for_index21 < for_limit20) {
+          {
+            let for_item22 = @intrinsic(vec.get)(for_source19, for_index21) in
+            let _wild23 = for_index21 = (for_index21 + 1) in
+            {
+              let entry/18 = for_item22 in
+              {
+                {
+                  let mtmp24 = std::text::split_once(entry/18, "=") in
+                  match mtmp24 {
+                    Option::None => {
+                      inherent#Vec#Vec[(string,string)]#push(result/17, (entry/18, ""))
+                    },
+                    Option::Some(x25) => {
+                      {
+                        let x25 = Option::Some._0(mtmp24) in
+                        {
+                          let pair/19 = x25 in
+                          inherent#Vec#Vec[(string,string)]#push(result/17, pair/19)
+                        }
+                      }
+                    },
+                  }
+                }
+              }
+            }
+          }
+      }
+    } in
+  result/17
+}
+
+fn inherent#std::env::VarError#std::env::VarError#new(
+  kind/20: std::io::ErrorKind,
+  name/21: string,
+  message/22: string
+) -> std::env::VarError {
+  std::env::VarError {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      kind/20,
+      "read environment variable",
+      Option::Some(name/21),
+      Option::None,
+      message/22
+    )
+  }
+}
+
+fn inherent#std::env::VarError#std::env::VarError#kind(
+  self/23: std::env::VarError
+) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(std::env::VarError.details(self/23))
+}
+
+fn inherent#std::env::VarError#std::env::VarError#operation(self/24: std::env::VarError) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
+    std::env::VarError.details(self/24)
+  )
+}
+
+fn inherent#std::env::VarError#std::env::VarError#name(self/25: std::env::VarError) -> Option[
+  string
+] {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::env::VarError.details(self/25))
+}
+
+fn inherent#std::env::VarError#std::env::VarError#context(self/26: std::env::VarError) -> Option[
+  string
+] {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::env::VarError.details(self/26))
+}
+
+fn inherent#std::env::VarError#std::env::VarError#raw_os_code(
+  self/27: std::env::VarError
+) -> Option[int] {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
+    std::env::VarError.details(self/27)
+  )
+}
+
+fn inherent#std::env::VarError#std::env::VarError#message(self/28: std::env::VarError) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(std::env::VarError.details(self/28))
+}
+
+fn trait_impl#ToString#std::env::VarError#to_string(self/29: std::env::VarError) -> string {
+  trait_call[ToString::to_string](std::env::VarError.details(self/29))
+}
+
+fn trait_impl#Debug#std::env::VarError#debug(self/30: std::env::VarError) -> string {
+  trait_call[ToString::to_string](self/30)
+}
+
+fn trait_impl#PartialEq#std::env::VarError#eq(
+  self/31: std::env::VarError,
+  other/32: std::env::VarError
+) -> bool {
+  trait_call[PartialEq::eq](
+    std::env::VarError.details(self/31),
+    std::env::VarError.details(other/32)
+  )
 }
 
 fn main() -> unit {

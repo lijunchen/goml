@@ -24,6 +24,10 @@ func _goml_runtime_std_io_println(value string) struct{} {
     return struct{}{}
 }
 
+type _goml_vec_uint8 struct {
+    items []uint8
+}
+
 type _goml_vec_string struct {
     items []string
 }
@@ -32,19 +36,44 @@ func vec_len__Vec_6string(vec *_goml_vec_string) int {
     return int(len(vec.items))
 }
 
-type _goml_vec_uint8 struct {
-    items []uint8
+type _goml_vec_Tuple2_6string_6string struct {
+    items []Tuple2_6string_6string
 }
 
-type Tuple3_4bool_6string_6string struct {
-    _0 bool
-    _1 string
-    _2 string
+type ref_int_x struct {
+    value int
 }
 
 type Tuple2_4bool_6string struct {
     _0 bool
     _1 string
+}
+
+type Tuple2_11Option__int_11Option__int struct {
+    _0 Option__int
+    _1 Option__int
+}
+
+type Tuple2_14Option__string_14Option__string struct {
+    _0 Option__string
+    _1 Option__string
+}
+
+type Tuple6_4bool_10Vec_5uint8_3int_4bool_3int_6string struct {
+    _0 bool
+    _1 *_goml_vec_uint8
+    _2 int
+    _3 bool
+    _4 int
+    _5 string
+}
+
+type Tuple5_4bool_3int_4bool_3int_6string struct {
+    _0 bool
+    _1 int
+    _2 bool
+    _3 int
+    _4 string
 }
 
 type Tuple3_4bool_10Vec_5uint8_6string struct {
@@ -53,10 +82,31 @@ type Tuple3_4bool_10Vec_5uint8_6string struct {
     _2 string
 }
 
+type Tuple2_3int_4char struct {
+    _0 int
+    _1 rune
+}
+
+type Tuple2_6string_6string struct {
+    _0 string
+    _1 string
+}
+
+type Tuple3_4bool_6string_6string struct {
+    _0 bool
+    _1 string
+    _2 string
+}
+
 type Tuple3_4bool_4char_3int struct {
     _0 bool
     _1 rune
     _2 int
+}
+
+type Tuple2_4char_3int struct {
+    _0 rune
+    _1 int
 }
 
 type Tuple2_4bool_4char struct {
@@ -67,6 +117,60 @@ type Tuple2_4bool_4char struct {
 type _goml_m_std_p_bytes_p_Bytes struct {
     values *_goml_vec_uint8
 }
+
+type _goml_m_std_p_io_p_ErrorDetails struct {
+    kind_value _goml_m_std_p_io_p_ErrorKind
+    operation_value string
+    context_value Option__string
+    raw_os_code_value Option__int
+    message_value string
+}
+
+type _goml_m_std_p_io_p_Error struct {
+    details _goml_m_std_p_io_p_ErrorDetails
+}
+
+type _goml_m_std_p_text_p_StringBuilder struct {
+    values *_goml_vec_uint8
+}
+
+type _goml_m_std_p_env_p_VarError struct {
+    details _goml_m_std_p_io_p_ErrorDetails
+}
+
+type _goml_m_FnIterator_____o_int_c_char_q_ struct {
+    next_fn func() _goml_m_Option_____o_int_c_char_q_
+}
+
+type FnIterator__char struct {
+    next_fn func() Option__char
+}
+
+type closure_env_inherent_string_string_char_indices_0 struct {
+    index_0 *ref_int_x
+    self_1 string
+}
+
+type closure_env_inherent_string_string_chars_1 struct {
+    self_0 string
+    index_1 *ref_int_x
+}
+
+type _goml_m_std_p_io_p_ErrorKind int32
+
+type Option__uint8 interface {
+    isOption__uint8()
+}
+
+type Option__uint8_None struct {}
+
+func (_ Option__uint8_None) isOption__uint8() {}
+
+type Option__uint8_Some struct {
+    _0 uint8
+}
+
+func (_ Option__uint8_Some) isOption__uint8() {}
 
 type Result__string__string interface {
     isResult__string__string()
@@ -98,19 +202,67 @@ type Option__string_Some struct {
 
 func (_ Option__string_Some) isOption__string() {}
 
-type Option__uint8 interface {
-    isOption__uint8()
+type Option__int interface {
+    isOption__int()
 }
 
-type Option__uint8_None struct {}
+type Option__int_None struct {}
 
-func (_ Option__uint8_None) isOption__uint8() {}
+func (_ Option__int_None) isOption__int() {}
 
-type Option__uint8_Some struct {
-    _0 uint8
+type Option__int_Some struct {
+    _0 int
 }
 
-func (_ Option__uint8_Some) isOption__uint8() {}
+func (_ Option__int_Some) isOption__int() {}
+
+type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error interface {
+    is_goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error()
+}
+
+type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error_Ok struct {
+    _0 _goml_m_std_p_bytes_p_Bytes
+}
+
+func (_ _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error_Ok) is_goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error() {}
+
+type _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error_Err struct {
+    _0 _goml_m_std_p_io_p_Error
+}
+
+func (_ _goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error_Err) is_goml_m_Result____std_p_bytes_p_Bytes____std_p_io_p_Error() {}
+
+type _goml_m_Result____string____std_p_io_p_Error interface {
+    is_goml_m_Result____string____std_p_io_p_Error()
+}
+
+type _goml_m_Result____string____std_p_io_p_Error_Ok struct {
+    _0 string
+}
+
+func (_ _goml_m_Result____string____std_p_io_p_Error_Ok) is_goml_m_Result____string____std_p_io_p_Error() {}
+
+type _goml_m_Result____string____std_p_io_p_Error_Err struct {
+    _0 _goml_m_std_p_io_p_Error
+}
+
+func (_ _goml_m_Result____string____std_p_io_p_Error_Err) is_goml_m_Result____string____std_p_io_p_Error() {}
+
+type _goml_m_Result____unit____std_p_io_p_Error interface {
+    is_goml_m_Result____unit____std_p_io_p_Error()
+}
+
+type _goml_m_Result____unit____std_p_io_p_Error_Ok struct {
+    _0 struct{}
+}
+
+func (_ _goml_m_Result____unit____std_p_io_p_Error_Ok) is_goml_m_Result____unit____std_p_io_p_Error() {}
+
+type _goml_m_Result____unit____std_p_io_p_Error_Err struct {
+    _0 _goml_m_std_p_io_p_Error
+}
+
+func (_ _goml_m_Result____unit____std_p_io_p_Error_Err) is_goml_m_Result____unit____std_p_io_p_Error() {}
 
 type _goml_m_Result____std_p_bytes_p_Bytes____string interface {
     is_goml_m_Result____std_p_bytes_p_Bytes____string()
@@ -144,6 +296,20 @@ type Result__unit__string_Err struct {
 
 func (_ Result__unit__string_Err) isResult__unit__string() {}
 
+type _goml_m_Option_____o_int_c_char_q_ interface {
+    is_goml_m_Option_____o_int_c_char_q_()
+}
+
+type _goml_m_Option_____o_int_c_char_q__None struct {}
+
+func (_ _goml_m_Option_____o_int_c_char_q__None) is_goml_m_Option_____o_int_c_char_q_() {}
+
+type _goml_m_Option_____o_int_c_char_q__Some struct {
+    _0 Tuple2_3int_4char
+}
+
+func (_ _goml_m_Option_____o_int_c_char_q__Some) is_goml_m_Option_____o_int_c_char_q_() {}
+
 type Option__char interface {
     isOption__char()
 }
@@ -158,19 +324,63 @@ type Option__char_Some struct {
 
 func (_ Option__char_Some) isOption__char() {}
 
+type _goml_m_Option_____o_string_c_string_q_ interface {
+    is_goml_m_Option_____o_string_c_string_q_()
+}
+
+type _goml_m_Option_____o_string_c_string_q__None struct {}
+
+func (_ _goml_m_Option_____o_string_c_string_q__None) is_goml_m_Option_____o_string_c_string_q_() {}
+
+type _goml_m_Option_____o_string_c_string_q__Some struct {
+    _0 Tuple2_6string_6string
+}
+
+func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
+
+type _goml_m_Result____string____std_p_env_p_VarError interface {
+    is_goml_m_Result____string____std_p_env_p_VarError()
+}
+
+type _goml_m_Result____string____std_p_env_p_VarError_Ok struct {
+    _0 string
+}
+
+func (_ _goml_m_Result____string____std_p_env_p_VarError_Ok) is_goml_m_Result____string____std_p_env_p_VarError() {}
+
+type _goml_m_Result____string____std_p_env_p_VarError_Err struct {
+    _0 _goml_m_std_p_env_p_VarError
+}
+
+func (_ _goml_m_Result____string____std_p_env_p_VarError_Err) is_goml_m_Result____string____std_p_env_p_VarError() {}
+
+type _goml_m_Option_____o_char_c_int_q_ interface {
+    is_goml_m_Option_____o_char_c_int_q_()
+}
+
+type _goml_m_Option_____o_char_c_int_q__None struct {}
+
+func (_ _goml_m_Option_____o_char_c_int_q__None) is_goml_m_Option_____o_char_c_int_q_() {}
+
+type _goml_m_Option_____o_char_c_int_q__Some struct {
+    _0 Tuple2_4char_3int
+}
+
+func (_ _goml_m_Option_____o_char_c_int_q__Some) is_goml_m_Option_____o_char_c_int_q_() {}
+
 func main0() struct{} {
-    var t287 *_goml_vec_string
-    var inline562 *_goml_vec_string = _goml_runtime_std_env_args()
-    t287 = inline562
-    var t288 int
-    var inline560 int = vec_len__Vec_6string(t287)
-    t288 = inline560
-    var t289 bool = t288 > 0
-    var t290 string
-    var inline558 string = _goml_runtime_core_bool_to_string(t289)
-    t290 = inline558
-    var inline555 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t290)
-    _goml_runtime_std_io_println(inline555)
+    var t1006 *_goml_vec_string
+    var inline2000 *_goml_vec_string = _goml_runtime_std_env_args()
+    t1006 = inline2000
+    var t1007 int
+    var inline1998 int = vec_len__Vec_6string(t1006)
+    t1007 = inline1998
+    var t1008 bool = t1007 > 0
+    var t1009 string
+    var inline1996 string = _goml_runtime_core_bool_to_string(t1008)
+    t1009 = inline1996
+    var inline1993 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(t1009)
+    _goml_runtime_std_io_println(inline1993)
     return struct{}{}
 }
 

@@ -126,25 +126,208 @@ fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(
   }
 }
 
-fn std::fs::read_file(path/0: string) -> Result__string__string {
+fn trait_impl#ToString#std::io::ErrorKind#to_string(self/0: std::io::ErrorKind) -> string {
+  match self/0 {
+    std::io::ErrorKind::NotFound => {
+      "NotFound"
+    },
+    std::io::ErrorKind::PermissionDenied => {
+      "PermissionDenied"
+    },
+    std::io::ErrorKind::AlreadyExists => {
+      "AlreadyExists"
+    },
+    std::io::ErrorKind::InvalidInput => {
+      "InvalidInput"
+    },
+    std::io::ErrorKind::InvalidData => {
+      "InvalidData"
+    },
+    std::io::ErrorKind::TimedOut => {
+      "TimedOut"
+    },
+    std::io::ErrorKind::Interrupted => {
+      "Interrupted"
+    },
+    std::io::ErrorKind::UnexpectedEof => {
+      "UnexpectedEof"
+    },
+    std::io::ErrorKind::WriteZero => {
+      "WriteZero"
+    },
+    std::io::ErrorKind::BrokenPipe => {
+      "BrokenPipe"
+    },
+    std::io::ErrorKind::WouldBlock => {
+      "WouldBlock"
+    },
+    std::io::ErrorKind::Unsupported => {
+      "Unsupported"
+    },
+    std::io::ErrorKind::Other => {
+      "Other"
+    },
+  }
+}
+
+fn trait_impl#Debug#std::io::ErrorKind#debug(self/1: std::io::ErrorKind) -> string {
+  trait_impl#ToString#std::io::ErrorKind#to_string(self/1)
+}
+
+fn trait_impl#PartialEq#std::io::ErrorKind#eq(
+  self/2: std::io::ErrorKind,
+  other/3: std::io::ErrorKind
+) -> bool {
+  trait_impl#PartialEq#int#eq(std::io::kind_code(self/2), std::io::kind_code(other/3))
+}
+
+fn std::io::kind_from_code(code/4: int) -> std::io::ErrorKind {
+  match code/4 {
+    1 => {
+      std::io::ErrorKind::NotFound
+    },
+    2 => {
+      std::io::ErrorKind::PermissionDenied
+    },
+    3 => {
+      std::io::ErrorKind::AlreadyExists
+    },
+    4 => {
+      std::io::ErrorKind::InvalidInput
+    },
+    5 => {
+      std::io::ErrorKind::InvalidData
+    },
+    6 => {
+      std::io::ErrorKind::TimedOut
+    },
+    7 => {
+      std::io::ErrorKind::Interrupted
+    },
+    8 => {
+      std::io::ErrorKind::UnexpectedEof
+    },
+    9 => {
+      std::io::ErrorKind::WriteZero
+    },
+    10 => {
+      std::io::ErrorKind::BrokenPipe
+    },
+    11 => {
+      std::io::ErrorKind::WouldBlock
+    },
+    12 => {
+      std::io::ErrorKind::Unsupported
+    },
+    _ => std::io::ErrorKind::Other,
+  }
+}
+
+fn std::io::kind_code(kind/5: std::io::ErrorKind) -> int {
+  match kind/5 {
+    std::io::ErrorKind::NotFound => {
+      1
+    },
+    std::io::ErrorKind::PermissionDenied => {
+      2
+    },
+    std::io::ErrorKind::AlreadyExists => {
+      3
+    },
+    std::io::ErrorKind::InvalidInput => {
+      4
+    },
+    std::io::ErrorKind::InvalidData => {
+      5
+    },
+    std::io::ErrorKind::TimedOut => {
+      6
+    },
+    std::io::ErrorKind::Interrupted => {
+      7
+    },
+    std::io::ErrorKind::UnexpectedEof => {
+      8
+    },
+    std::io::ErrorKind::WriteZero => {
+      9
+    },
+    std::io::ErrorKind::BrokenPipe => {
+      10
+    },
+    std::io::ErrorKind::WouldBlock => {
+      11
+    },
+    std::io::ErrorKind::Unsupported => {
+      12
+    },
+    std::io::ErrorKind::Other => {
+      0
+    },
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+  kind/6: std::io::ErrorKind,
+  operation/7: string,
+  context/8: Option__string,
+  raw_os_code/9: Option__int,
+  message/10: string
+) -> std::io::ErrorDetails {
+  std::io::ErrorDetails {
+    kind_value: kind/6,
+    operation_value: operation/7,
+    context_value: context/8,
+    raw_os_code_value: raw_os_code/9,
+    message_value: message/10
+  }
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(
+  self/11: std::io::ErrorDetails
+) -> std::io::ErrorKind {
+  std::io::ErrorDetails.kind_value(self/11)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(
+  self/12: std::io::ErrorDetails
+) -> string {
+  std::io::ErrorDetails.operation_value(self/12)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(
+  self/13: std::io::ErrorDetails
+) -> Option__string {
+  std::io::ErrorDetails.context_value(self/13)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(
+  self/14: std::io::ErrorDetails
+) -> Option__int {
+  std::io::ErrorDetails.raw_os_code_value(self/14)
+}
+
+fn inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(
+  self/15: std::io::ErrorDetails
+) -> string {
+  std::io::ErrorDetails.message_value(self/15)
+}
+
+fn trait_impl#ToString#std::io::ErrorDetails#to_string(self/16: std::io::ErrorDetails) -> string {
   {
-    let mtmp0 = std::fs::read_bytes(path/0) in
+    let mtmp0 = std::io::ErrorDetails.context_value(self/16) in
     match mtmp0 {
-      Result__std::bytes::Bytes__string::Ok(x1) => {
-        {
-          let x1 = Result__std::bytes::Bytes__string::Ok._0(mtmp0) in
-          {
-            let data/1 = x1 in
-            inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/1)
-          }
-        }
+      Option__string::None => {
+        ((std::io::ErrorDetails.operation_value(self/16) + ": ") +
+          std::io::ErrorDetails.message_value(self/16))
       },
-      Result__std::bytes::Bytes__string::Err(x2) => {
+      Option__string::Some(x1) => {
         {
-          let x2 = Result__std::bytes::Bytes__string::Err._0(mtmp0) in
+          let x1 = Option__string::Some._0(mtmp0) in
           {
-            let error/2 = x2 in
-            Result__string__string::Err(error/2)
+            let context/17 = x1 in
+            ((((std::io::ErrorDetails.operation_value(self/16) + " ") + context/17) + ": ") +
+              std::io::ErrorDetails.message_value(self/16))
           }
         }
       },
@@ -152,355 +335,167 @@ fn std::fs::read_file(path/0: string) -> Result__string__string {
   }
 }
 
-fn std::fs::write_file(path/3: string, content/4: string) -> Result__unit__string {
-  std::fs::write_bytes(path/3, inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(content/4))
+fn trait_impl#Debug#std::io::ErrorDetails#debug(self/18: std::io::ErrorDetails) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(self/18)
 }
 
-fn std::fs::read_bytes(path/5: string) -> Result__std::bytes::Bytes__string {
-  let mtmp3 = @runtime(std.fs.read_bytes)(path/5) in
-  {
-    let x4 = mtmp3.0 in
-    let x5 = mtmp3.1 in
-    let x6 = mtmp3.2 in
-    {
-      let err/8 = x6 in
-      {
-        let data/7 = x5 in
-        {
-          let ok/6 = x4 in
-          {
-            if ok/6 {
-                {
-                  Result__std::bytes::Bytes__string::Ok(
-                    inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/7)
-                  )
-                }
-            } else {
-                {
-                  Result__std::bytes::Bytes__string::Err(err/8)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::fs::write_bytes(path/9: string, data/10: std::bytes::Bytes) -> Result__unit__string {
-  let mtmp7 =
-    @runtime(std.fs.write_bytes)(
-      path/9,
-      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/10)
-    ) in
-  {
-    let x8 = mtmp7.0 in
-    let x9 = mtmp7.1 in
-    {
-      let err/12 = x9 in
-      {
-        let ok/11 = x8 in
-        {
-          if ok/11 {
-              {
-                Result__unit__string::Ok(())
-              }
-          } else {
-              {
-                Result__unit__string::Err(err/12)
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::fs::create_dir_all(path/13: string) -> Result__unit__string {
-  let mtmp10 = @runtime(std.fs.create_dir_all)(path/13) in
-  {
-    let x11 = mtmp10.0 in
-    let x12 = mtmp10.1 in
-    {
-      let err/15 = x12 in
-      {
-        let ok/14 = x11 in
-        {
-          if ok/14 {
-              {
-                Result__unit__string::Ok(())
-              }
-          } else {
-              {
-                Result__unit__string::Err(err/15)
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::fs::remove_file(path/16: string) -> Result__unit__string {
-  let mtmp13 = @runtime(std.fs.remove_file)(path/16) in
-  {
-    let x14 = mtmp13.0 in
-    let x15 = mtmp13.1 in
-    {
-      let err/18 = x15 in
-      {
-        let ok/17 = x14 in
-        {
-          if ok/17 {
-              {
-                Result__unit__string::Ok(())
-              }
-          } else {
-              {
-                Result__unit__string::Err(err/18)
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::fs::remove_dir_all(path/19: string) -> Result__unit__string {
-  let mtmp16 = @runtime(std.fs.remove_dir_all)(path/19) in
-  {
-    let x17 = mtmp16.0 in
-    let x18 = mtmp16.1 in
-    {
-      let err/21 = x18 in
-      {
-        let ok/20 = x17 in
-        {
-          if ok/20 {
-              {
-                Result__unit__string::Ok(())
-              }
-          } else {
-              {
-                Result__unit__string::Err(err/21)
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::fs::exists(path/22: string) -> bool {
-  @runtime(std.fs.file_exists)(path/22)
-}
-
-fn std::fs::is_file(path/23: string) -> bool {
-  @runtime(std.fs.is_file)(path/23)
-}
-
-fn std::fs::is_dir(path/24: string) -> bool {
-  @runtime(std.fs.is_dir)(path/24)
-}
-
-fn std::fs::canonicalize(path/25: string) -> Result__string__string {
-  let mtmp19 = @runtime(std.fs.canonicalize)(path/25) in
-  {
-    let x20 = mtmp19.0 in
-    let x21 = mtmp19.1 in
-    let x22 = mtmp19.2 in
-    {
-      let err/28 = x22 in
-      {
-        let result/27 = x21 in
-        {
-          let ok/26 = x20 in
-          {
-            if ok/26 {
-                {
-                  Result__string__string::Ok(result/27)
-                }
-            } else {
-                {
-                  Result__string__string::Err(err/28)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::fs::read_dir(path/29: string) -> Result__Vec[string]__string {
-  let mtmp23 = @runtime(std.fs.read_dir)(path/29) in
-  {
-    let x24 = mtmp23.0 in
-    let x25 = mtmp23.1 in
-    let x26 = mtmp23.2 in
-    {
-      let err/32 = x26 in
-      {
-        let names/31 = x25 in
-        {
-          let ok/30 = x24 in
-          {
-            if ok/30 {
-                {
-                  Result__Vec[string]__string::Ok(names/31)
-                }
-            } else {
-                {
-                  Result__Vec[string]__string::Err(err/32)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::fs::sha256_file(path/33: string) -> Result__string__string {
-  let mtmp27 = @runtime(std.fs.sha256_file)(path/33) in
-  {
-    let x28 = mtmp27.0 in
-    let x29 = mtmp27.1 in
-    let x30 = mtmp27.2 in
-    {
-      let err/36 = x30 in
-      {
-        let result/35 = x29 in
-        {
-          let ok/34 = x28 in
-          {
-            if ok/34 {
-                {
-                  Result__string__string::Ok(result/35)
-                }
-            } else {
-                {
-                  Result__string__string::Err(err/36)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
-  let mtmp0 = @runtime(std.io.read_stdin)() in
-  {
-    let x1 = mtmp0.0 in
-    let x2 = mtmp0.1 in
-    let x3 = mtmp0.2 in
-    {
-      let err/6 = x3 in
-      {
-        let data/5 = x2 in
-        {
-          let ok/4 = x1 in
-          {
-            if ok/4 {
-                {
-                  Result__std::bytes::Bytes__string::Ok(
-                    inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/5)
-                  )
-                }
-            } else {
-                {
-                  Result__std::bytes::Bytes__string::Err(err/6)
-                }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::io::write_stdout(data/7: std::bytes::Bytes) -> Result__unit__string {
-  let mtmp4 =
-    @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/7)) in
-  {
-    let x5 = mtmp4.0 in
-    let x6 = mtmp4.1 in
-    {
-      let err/9 = x6 in
-      {
-        let ok/8 = x5 in
-        {
-          if ok/8 {
-              {
-                Result__unit__string::Ok(())
-              }
-          } else {
-              {
-                Result__unit__string::Err(err/9)
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::io::write_stderr(data/10: std::bytes::Bytes) -> Result__unit__string {
-  let mtmp7 =
-    @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/10)) in
-  {
-    let x8 = mtmp7.0 in
-    let x9 = mtmp7.1 in
-    {
-      let err/12 = x9 in
-      {
-        let ok/11 = x8 in
-        {
-          if ok/11 {
-              {
-                Result__unit__string::Ok(())
-              }
-          } else {
-              {
-                Result__unit__string::Err(err/12)
-              }
-          }
-        }
-      }
-    }
-  }
-}
-
-fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__string {
-  if (length/13 < 0) {
-      {
-        Result__std::bytes::Bytes__string::Err("read length must be non-negative")
-      }
+fn trait_impl#PartialEq#std::io::ErrorDetails#eq(
+  self/19: std::io::ErrorDetails,
+  other/20: std::io::ErrorDetails
+) -> bool {
+  if if if if trait_impl#PartialEq#std::io::ErrorKind#eq(
+    std::io::ErrorDetails.kind_value(self/19),
+    std::io::ErrorDetails.kind_value(other/20)
+  ) {
+      trait_impl#PartialEq#string#eq(
+        std::io::ErrorDetails.operation_value(self/19),
+        std::io::ErrorDetails.operation_value(other/20)
+      )
   } else {
-      {
-        let mtmp10 = @runtime(std.io.read_stdin_exact)(length/13) in
+      false
+  } {
+      trait_impl#PartialEq#Option__string#eq(
+        std::io::ErrorDetails.context_value(self/19),
+        std::io::ErrorDetails.context_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#Option__int#eq(
+        std::io::ErrorDetails.raw_os_code_value(self/19),
+        std::io::ErrorDetails.raw_os_code_value(other/20)
+      )
+  } else {
+      false
+  } {
+      trait_impl#PartialEq#string#eq(
+        std::io::ErrorDetails.message_value(self/19),
+        std::io::ErrorDetails.message_value(other/20)
+      )
+  } else {
+      false
+  }
+}
+
+fn inherent#std::io::Error#std::io::Error#new(
+  kind/21: std::io::ErrorKind,
+  operation/22: string,
+  context/23: Option__string,
+  raw_os_code/24: Option__int,
+  message/25: string
+) -> std::io::Error {
+  std::io::Error {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      kind/21,
+      operation/22,
+      context/23,
+      raw_os_code/24,
+      message/25
+    )
+  }
+}
+
+fn inherent#std::io::Error#std::io::Error#kind(self/26: std::io::Error) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(std::io::Error.details(self/26))
+}
+
+fn inherent#std::io::Error#std::io::Error#operation(self/27: std::io::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(std::io::Error.details(self/27))
+}
+
+fn inherent#std::io::Error#std::io::Error#context(self/28: std::io::Error) -> Option__string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::io::Error.details(self/28))
+}
+
+fn inherent#std::io::Error#std::io::Error#raw_os_code(self/29: std::io::Error) -> Option__int {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::io::Error.details(self/29))
+}
+
+fn inherent#std::io::Error#std::io::Error#message(self/30: std::io::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(std::io::Error.details(self/30))
+}
+
+fn trait_impl#ToString#std::io::Error#to_string(self/31: std::io::Error) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(std::io::Error.details(self/31))
+}
+
+fn trait_impl#Debug#std::io::Error#debug(self/32: std::io::Error) -> string {
+  trait_impl#ToString#std::io::Error#to_string(self/32)
+}
+
+fn trait_impl#PartialEq#std::io::Error#eq(
+  self/33: std::io::Error,
+  other/34: std::io::Error
+) -> bool {
+  trait_impl#PartialEq#std::io::ErrorDetails#eq(
+    std::io::Error.details(self/33),
+    std::io::Error.details(other/34)
+  )
+}
+
+fn std::io::structured_error(
+  operation/35: string,
+  kind_code/36: int,
+  has_raw_code/37: bool,
+  raw_code/38: int,
+  message/39: string
+) -> std::io::Error {
+  inherent#std::io::Error#std::io::Error#new(
+    std::io::kind_from_code(kind_code/36),
+    operation/35,
+    Option__string::None,
+    if has_raw_code/37 {
         {
-          let x11 = mtmp10.0 in
-          let x12 = mtmp10.1 in
-          let x13 = mtmp10.2 in
+          Option__int::Some(raw_code/38)
+        }
+    } else {
+        {
+          Option__int::None
+        }
+    },
+    message/39
+  )
+}
+
+fn std::io::read_stdin_structured() -> Result__std::bytes::Bytes__std::io::Error {
+  let mtmp2 = @runtime(std.io.read_stdin.v2)() in
+  {
+    let x3 = mtmp2.0 in
+    let x4 = mtmp2.1 in
+    let x5 = mtmp2.2 in
+    let x6 = mtmp2.3 in
+    let x7 = mtmp2.4 in
+    let x8 = mtmp2.5 in
+    {
+      let message/45 = x8 in
+      {
+        let raw_code/44 = x7 in
+        {
+          let has_raw_code/43 = x6 in
           {
-            let err/16 = x13 in
+            let kind_code/42 = x5 in
             {
-              let data/15 = x12 in
+              let data/41 = x4 in
               {
-                let ok/14 = x11 in
+                let ok/40 = x3 in
                 {
-                  if ok/14 {
+                  if ok/40 {
                       {
-                        Result__std::bytes::Bytes__string::Ok(
-                          inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/15)
+                        Result__std::bytes::Bytes__std::io::Error::Ok(
+                          inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/41)
                         )
                       }
                   } else {
                       {
-                        Result__std::bytes::Bytes__string::Err(err/16)
+                        Result__std::bytes::Bytes__std::io::Error::Err(
+                          std::io::structured_error(
+                            "read stdin",
+                            kind_code/42,
+                            has_raw_code/43,
+                            raw_code/44,
+                            message/45
+                          )
+                        )
                       }
                   }
                 }
@@ -509,6 +504,1359 @@ fn std::io::read_stdin_exact(length/13: int) -> Result__std::bytes::Bytes__strin
           }
         }
       }
+    }
+  }
+}
+
+fn std::io::read_stdin_to_string() -> Result__string__std::io::Error {
+  {
+    let mtmp9 = std::io::read_stdin_structured() in
+    match mtmp9 {
+      Result__std::bytes::Bytes__std::io::Error::Ok(x10) => {
+        {
+          let x10 = Result__std::bytes::Bytes__std::io::Error::Ok._0(mtmp9) in
+          {
+            let data/46 = x10 in
+            {
+              let mtmp12 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/46) in
+              match mtmp12 {
+                Result__string__string::Ok(x13) => {
+                  {
+                    let x13 = Result__string__string::Ok._0(mtmp12) in
+                    {
+                      let value/47 = x13 in
+                      Result__string__std::io::Error::Ok(value/47)
+                    }
+                  }
+                },
+                Result__string__string::Err(x14) => {
+                  {
+                    let x14 = Result__string__string::Err._0(mtmp12) in
+                    {
+                      let message/48 = x14 in
+                      Result__string__std::io::Error::Err(
+                        inherent#std::io::Error#std::io::Error#new(
+                          std::io::ErrorKind::InvalidData,
+                          "read stdin",
+                          Option__string::None,
+                          Option__int::None,
+                          message/48
+                        )
+                      )
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+      Result__std::bytes::Bytes__std::io::Error::Err(x11) => {
+        {
+          let x11 = Result__std::bytes::Bytes__std::io::Error::Err._0(mtmp9) in
+          {
+            let error/49 = x11 in
+            Result__string__std::io::Error::Err(error/49)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::io::read_stdin_exact_structured(
+  length/50: int
+) -> Result__std::bytes::Bytes__std::io::Error {
+  if (length/50 < 0) {
+      {
+        Result__std::bytes::Bytes__std::io::Error::Err(
+          inherent#std::io::Error#std::io::Error#new(
+            std::io::ErrorKind::InvalidInput,
+            "read stdin exact",
+            Option__string::None,
+            Option__int::None,
+            "read length must be non-negative"
+          )
+        )
+      }
+  } else {
+      {
+        let mtmp15 = @runtime(std.io.read_stdin_exact.v2)(length/50) in
+        {
+          let x16 = mtmp15.0 in
+          let x17 = mtmp15.1 in
+          let x18 = mtmp15.2 in
+          let x19 = mtmp15.3 in
+          let x20 = mtmp15.4 in
+          let x21 = mtmp15.5 in
+          {
+            let message/56 = x21 in
+            {
+              let raw_code/55 = x20 in
+              {
+                let has_raw_code/54 = x19 in
+                {
+                  let kind_code/53 = x18 in
+                  {
+                    let data/52 = x17 in
+                    {
+                      let ok/51 = x16 in
+                      {
+                        if ok/51 {
+                            {
+                              Result__std::bytes::Bytes__std::io::Error::Ok(
+                                inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/52)
+                              )
+                            }
+                        } else {
+                            {
+                              Result__std::bytes::Bytes__std::io::Error::Err(
+                                std::io::structured_error(
+                                  "read stdin exact",
+                                  kind_code/53,
+                                  has_raw_code/54,
+                                  raw_code/55,
+                                  message/56
+                                )
+                              )
+                            }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+}
+
+fn std::io::write_structured(
+  stderr/57: bool,
+  data/58: std::bytes::Bytes
+) -> Result__unit__std::io::Error {
+  let result/59 =
+    if stderr/57 {
+        {
+          @runtime(std.io.write_stderr.v2)(
+            inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
+          )
+        }
+    } else {
+        {
+          @runtime(std.io.write_stdout.v2)(
+            inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/58)
+          )
+        }
+    } in
+  let mtmp22 = result/59 in
+  {
+    let x23 = mtmp22.0 in
+    let x24 = mtmp22.1 in
+    let x25 = mtmp22.2 in
+    let x26 = mtmp22.3 in
+    let x27 = mtmp22.4 in
+    {
+      let message/64 = x27 in
+      {
+        let raw_code/63 = x26 in
+        {
+          let has_raw_code/62 = x25 in
+          {
+            let kind_code/61 = x24 in
+            {
+              let ok/60 = x23 in
+              {
+                if ok/60 {
+                    {
+                      Result__unit__std::io::Error::Ok(())
+                    }
+                } else {
+                    {
+                      Result__unit__std::io::Error::Err(
+                        std::io::structured_error(
+                          if stderr/57 {
+                              {
+                                "write stderr"
+                              }
+                          } else {
+                              {
+                                "write stdout"
+                              }
+                          },
+                          kind_code/61,
+                          has_raw_code/62,
+                          raw_code/63,
+                          message/64
+                        )
+                      )
+                    }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stdout_structured(data/65: std::bytes::Bytes) -> Result__unit__std::io::Error {
+  std::io::write_structured(false, data/65)
+}
+
+fn std::io::write_stderr_structured(data/66: std::bytes::Bytes) -> Result__unit__std::io::Error {
+  std::io::write_structured(true, data/66)
+}
+
+fn std::io::read_stdin() -> Result__std::bytes::Bytes__string {
+  let mtmp28 = @runtime(std.io.read_stdin)() in
+  {
+    let x29 = mtmp28.0 in
+    let x30 = mtmp28.1 in
+    let x31 = mtmp28.2 in
+    {
+      let err/73 = x31 in
+      {
+        let data/72 = x30 in
+        {
+          let ok/71 = x29 in
+          {
+            if ok/71 {
+                {
+                  Result__std::bytes::Bytes__string::Ok(
+                    inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/72)
+                  )
+                }
+            } else {
+                {
+                  Result__std::bytes::Bytes__string::Err(err/73)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stdout(data/74: std::bytes::Bytes) -> Result__unit__string {
+  let mtmp32 =
+    @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/74)) in
+  {
+    let x33 = mtmp32.0 in
+    let x34 = mtmp32.1 in
+    {
+      let err/76 = x34 in
+      {
+        let ok/75 = x33 in
+        {
+          if ok/75 {
+              {
+                Result__unit__string::Ok(())
+              }
+          } else {
+              {
+                Result__unit__string::Err(err/76)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stderr(data/77: std::bytes::Bytes) -> Result__unit__string {
+  let mtmp35 =
+    @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)) in
+  {
+    let x36 = mtmp35.0 in
+    let x37 = mtmp35.1 in
+    {
+      let err/79 = x37 in
+      {
+        let ok/78 = x36 in
+        {
+          if ok/78 {
+              {
+                Result__unit__string::Ok(())
+              }
+          } else {
+              {
+                Result__unit__string::Err(err/79)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::read_stdin_exact(length/80: int) -> Result__std::bytes::Bytes__string {
+  if (length/80 < 0) {
+      {
+        Result__std::bytes::Bytes__string::Err("read length must be non-negative")
+      }
+  } else {
+      {
+        let mtmp38 = @runtime(std.io.read_stdin_exact)(length/80) in
+        {
+          let x39 = mtmp38.0 in
+          let x40 = mtmp38.1 in
+          let x41 = mtmp38.2 in
+          {
+            let err/83 = x41 in
+            {
+              let data/82 = x40 in
+              {
+                let ok/81 = x39 in
+                {
+                  if ok/81 {
+                      {
+                        Result__std::bytes::Bytes__string::Ok(
+                          inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/82)
+                        )
+                      }
+                  } else {
+                      {
+                        Result__std::bytes::Bytes__string::Err(err/83)
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+}
+
+fn inherent#std::fs::Error#std::fs::Error#new(
+  kind/0: std::io::ErrorKind,
+  operation/1: string,
+  path/2: Option__string,
+  raw_os_code/3: Option__int,
+  message/4: string
+) -> std::fs::Error {
+  std::fs::Error {
+    details: inherent#std::io::ErrorDetails#std::io::ErrorDetails#new(
+      kind/0,
+      operation/1,
+      path/2,
+      raw_os_code/3,
+      message/4
+    )
+  }
+}
+
+fn inherent#std::fs::Error#std::fs::Error#kind(self/5: std::fs::Error) -> std::io::ErrorKind {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#kind(std::fs::Error.details(self/5))
+}
+
+fn inherent#std::fs::Error#std::fs::Error#operation(self/6: std::fs::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#operation(std::fs::Error.details(self/6))
+}
+
+fn inherent#std::fs::Error#std::fs::Error#path(self/7: std::fs::Error) -> Option__string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::fs::Error.details(self/7))
+}
+
+fn inherent#std::fs::Error#std::fs::Error#context(self/8: std::fs::Error) -> Option__string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#context(std::fs::Error.details(self/8))
+}
+
+fn inherent#std::fs::Error#std::fs::Error#raw_os_code(self/9: std::fs::Error) -> Option__int {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#raw_os_code(std::fs::Error.details(self/9))
+}
+
+fn inherent#std::fs::Error#std::fs::Error#message(self/10: std::fs::Error) -> string {
+  inherent#std::io::ErrorDetails#std::io::ErrorDetails#message(std::fs::Error.details(self/10))
+}
+
+fn trait_impl#ToString#std::fs::Error#to_string(self/11: std::fs::Error) -> string {
+  trait_impl#ToString#std::io::ErrorDetails#to_string(std::fs::Error.details(self/11))
+}
+
+fn trait_impl#Debug#std::fs::Error#debug(self/12: std::fs::Error) -> string {
+  trait_impl#ToString#std::fs::Error#to_string(self/12)
+}
+
+fn trait_impl#PartialEq#std::fs::Error#eq(
+  self/13: std::fs::Error,
+  other/14: std::fs::Error
+) -> bool {
+  trait_impl#PartialEq#std::io::ErrorDetails#eq(
+    std::fs::Error.details(self/13),
+    std::fs::Error.details(other/14)
+  )
+}
+
+fn inherent#std::fs::FileType#std::fs::FileType#is_file(self/15: std::fs::FileType) -> bool {
+  trait_impl#PartialEq#std::fs::FileType#eq(self/15, std::fs::FileType::File)
+}
+
+fn inherent#std::fs::FileType#std::fs::FileType#is_dir(self/16: std::fs::FileType) -> bool {
+  trait_impl#PartialEq#std::fs::FileType#eq(self/16, std::fs::FileType::Directory)
+}
+
+fn inherent#std::fs::FileType#std::fs::FileType#is_symlink(self/17: std::fs::FileType) -> bool {
+  trait_impl#PartialEq#std::fs::FileType#eq(self/17, std::fs::FileType::Symlink)
+}
+
+fn trait_impl#PartialEq#std::fs::FileType#eq(
+  self/18: std::fs::FileType,
+  other/19: std::fs::FileType
+) -> bool {
+  {
+    let mtmp0 = (self/18, other/19) in
+    {
+      let x1 = mtmp0.0 in
+      let x2 = mtmp0.1 in
+      match x2 {
+        std::fs::FileType::File => {
+          match x1 {
+            std::fs::FileType::File => {
+              true
+            },
+            _ => false,
+          }
+        },
+        std::fs::FileType::Directory => {
+          match x1 {
+            std::fs::FileType::Directory => {
+              true
+            },
+            _ => false,
+          }
+        },
+        std::fs::FileType::Symlink => {
+          match x1 {
+            std::fs::FileType::Symlink => {
+              true
+            },
+            _ => false,
+          }
+        },
+        std::fs::FileType::Other => {
+          match x1 {
+            std::fs::FileType::Other => {
+              true
+            },
+            _ => false,
+          }
+        },
+      }
+    }
+  }
+}
+
+fn inherent#std::fs::Permissions#std::fs::Permissions#mode(
+  self/20: std::fs::Permissions
+) -> uint32 {
+  std::fs::Permissions.mode_value(self/20)
+}
+
+fn inherent#std::fs::Permissions#std::fs::Permissions#readonly(
+  self/21: std::fs::Permissions
+) -> bool {
+  trait_impl#PartialEq#uint32#eq((std::fs::Permissions.mode_value(self/21) & 146), 0)
+}
+
+fn inherent#std::fs::Metadata#std::fs::Metadata#file_type(
+  self/22: std::fs::Metadata
+) -> std::fs::FileType {
+  std::fs::Metadata.file_type_value(self/22)
+}
+
+fn inherent#std::fs::Metadata#std::fs::Metadata#len(self/23: std::fs::Metadata) -> int64 {
+  std::fs::Metadata.length_value(self/23)
+}
+
+fn inherent#std::fs::Metadata#std::fs::Metadata#permissions(
+  self/24: std::fs::Metadata
+) -> std::fs::Permissions {
+  std::fs::Metadata.permissions_value(self/24)
+}
+
+fn inherent#std::fs::Metadata#std::fs::Metadata#modified_unix_nanoseconds(
+  self/25: std::fs::Metadata
+) -> int64 {
+  std::fs::Metadata.modified_unix_nanoseconds_value(self/25)
+}
+
+fn inherent#std::fs::DirEntry#std::fs::DirEntry#name(self/26: std::fs::DirEntry) -> string {
+  std::fs::DirEntry.name_value(self/26)
+}
+
+fn inherent#std::fs::DirEntry#std::fs::DirEntry#path(self/27: std::fs::DirEntry) -> string {
+  std::fs::DirEntry.path_value(self/27)
+}
+
+fn inherent#std::fs::DirEntry#std::fs::DirEntry#file_type(
+  self/28: std::fs::DirEntry
+) -> std::fs::FileType {
+  std::fs::DirEntry.file_type_value(self/28)
+}
+
+fn std::fs::structured_error(
+  operation/29: string,
+  path/30: string,
+  kind_code/31: int,
+  has_raw_code/32: bool,
+  raw_code/33: int,
+  message/34: string
+) -> std::fs::Error {
+  inherent#std::fs::Error#std::fs::Error#new(
+    std::io::kind_from_code(kind_code/31),
+    operation/29,
+    Option__string::Some(path/30),
+    if has_raw_code/32 {
+        {
+          Option__int::Some(raw_code/33)
+        }
+    } else {
+        {
+          Option__int::None
+        }
+    },
+    message/34
+  )
+}
+
+fn std::fs::read_bytes_structured(path/35: string) -> Result__std::bytes::Bytes__std::fs::Error {
+  let mtmp3 = @runtime(std.fs.read_bytes.v2)(path/35) in
+  {
+    let x4 = mtmp3.0 in
+    let x5 = mtmp3.1 in
+    let x6 = mtmp3.2 in
+    let x7 = mtmp3.3 in
+    let x8 = mtmp3.4 in
+    let x9 = mtmp3.5 in
+    {
+      let message/41 = x9 in
+      {
+        let raw_code/40 = x8 in
+        {
+          let has_raw_code/39 = x7 in
+          {
+            let kind_code/38 = x6 in
+            {
+              let data/37 = x5 in
+              {
+                let ok/36 = x4 in
+                {
+                  if ok/36 {
+                      {
+                        Result__std::bytes::Bytes__std::fs::Error::Ok(
+                          inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/37)
+                        )
+                      }
+                  } else {
+                      {
+                        Result__std::bytes::Bytes__std::fs::Error::Err(
+                          std::fs::structured_error(
+                            "read file",
+                            path/35,
+                            kind_code/38,
+                            has_raw_code/39,
+                            raw_code/40,
+                            message/41
+                          )
+                        )
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::read_file_structured(path/42: string) -> Result__string__std::fs::Error {
+  {
+    let mtmp10 = std::fs::read_bytes_structured(path/42) in
+    match mtmp10 {
+      Result__std::bytes::Bytes__std::fs::Error::Ok(x11) => {
+        {
+          let x11 = Result__std::bytes::Bytes__std::fs::Error::Ok._0(mtmp10) in
+          {
+            let data/43 = x11 in
+            {
+              let mtmp13 = inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/43) in
+              match mtmp13 {
+                Result__string__string::Ok(x14) => {
+                  {
+                    let x14 = Result__string__string::Ok._0(mtmp13) in
+                    {
+                      let value/44 = x14 in
+                      Result__string__std::fs::Error::Ok(value/44)
+                    }
+                  }
+                },
+                Result__string__string::Err(x15) => {
+                  {
+                    let x15 = Result__string__string::Err._0(mtmp13) in
+                    {
+                      let message/45 = x15 in
+                      Result__string__std::fs::Error::Err(
+                        inherent#std::fs::Error#std::fs::Error#new(
+                          std::io::ErrorKind::InvalidData,
+                          "read file",
+                          Option__string::Some(path/42),
+                          Option__int::None,
+                          message/45
+                        )
+                      )
+                    }
+                  }
+                },
+              }
+            }
+          }
+        }
+      },
+      Result__std::bytes::Bytes__std::fs::Error::Err(x12) => {
+        {
+          let x12 = Result__std::bytes::Bytes__std::fs::Error::Err._0(mtmp10) in
+          {
+            let error/46 = x12 in
+            Result__string__std::fs::Error::Err(error/46)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::fs::write_bytes_structured(
+  path/47: string,
+  data/48: std::bytes::Bytes
+) -> Result__unit__std::fs::Error {
+  let mtmp16 =
+    @runtime(std.fs.write_bytes.v2)(
+      path/47,
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/48)
+    ) in
+  {
+    let x17 = mtmp16.0 in
+    let x18 = mtmp16.1 in
+    let x19 = mtmp16.2 in
+    let x20 = mtmp16.3 in
+    let x21 = mtmp16.4 in
+    {
+      let message/53 = x21 in
+      {
+        let raw_code/52 = x20 in
+        {
+          let has_raw_code/51 = x19 in
+          {
+            let kind_code/50 = x18 in
+            {
+              let ok/49 = x17 in
+              {
+                if ok/49 {
+                    {
+                      Result__unit__std::fs::Error::Ok(())
+                    }
+                } else {
+                    {
+                      Result__unit__std::fs::Error::Err(
+                        std::fs::structured_error(
+                          "write file",
+                          path/47,
+                          kind_code/50,
+                          has_raw_code/51,
+                          raw_code/52,
+                          message/53
+                        )
+                      )
+                    }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::write_file_structured(
+  path/54: string,
+  content/55: string
+) -> Result__unit__std::fs::Error {
+  std::fs::write_bytes_structured(
+    path/54,
+    inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(content/55)
+  )
+}
+
+fn std::fs::path_operation(
+  operation/56: int,
+  name/57: string,
+  first/58: string,
+  second/59: string
+) -> Result__unit__std::fs::Error {
+  let mtmp22 = @runtime(std.fs.path_operation.v2)(operation/56, first/58, second/59) in
+  {
+    let x23 = mtmp22.0 in
+    let x24 = mtmp22.1 in
+    let x25 = mtmp22.2 in
+    let x26 = mtmp22.3 in
+    let x27 = mtmp22.4 in
+    {
+      let message/64 = x27 in
+      {
+        let raw_code/63 = x26 in
+        {
+          let has_raw_code/62 = x25 in
+          {
+            let kind_code/61 = x24 in
+            {
+              let ok/60 = x23 in
+              {
+                if ok/60 {
+                    {
+                      Result__unit__std::fs::Error::Ok(())
+                    }
+                } else {
+                    {
+                      Result__unit__std::fs::Error::Err(
+                        std::fs::structured_error(
+                          name/57,
+                          if trait_impl#PartialEq#string#eq(second/59, "") {
+                              {
+                                first/58
+                              }
+                          } else {
+                              {
+                                ((first/58 + " -> ") + second/59)
+                              }
+                          },
+                          kind_code/61,
+                          has_raw_code/62,
+                          raw_code/63,
+                          message/64
+                        )
+                      )
+                    }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::create_dir(path/65: string) -> Result__unit__std::fs::Error {
+  std::fs::path_operation(0, "create directory", path/65, "")
+}
+
+fn std::fs::rename(from/66: string, to/67: string) -> Result__unit__std::fs::Error {
+  std::fs::path_operation(1, "rename", from/66, to/67)
+}
+
+fn std::fs::replace(from/68: string, to/69: string) -> Result__unit__std::fs::Error {
+  std::fs::path_operation(1, "replace", from/68, to/69)
+}
+
+fn std::fs::hard_link(from/70: string, to/71: string) -> Result__unit__std::fs::Error {
+  std::fs::path_operation(2, "create hard link", from/70, to/71)
+}
+
+fn std::fs::symbolic_link(from/72: string, to/73: string) -> Result__unit__std::fs::Error {
+  std::fs::path_operation(3, "create symbolic link", from/72, to/73)
+}
+
+fn std::fs::copy(from/74: string, to/75: string) -> Result__unit__std::fs::Error {
+  std::fs::path_operation(4, "copy file", from/74, to/75)
+}
+
+fn std::fs::atomic_write_bytes(
+  path/76: string,
+  data/77: std::bytes::Bytes
+) -> Result__unit__std::fs::Error {
+  let mtmp28 =
+    @runtime(std.fs.atomic_write.v2)(
+      path/76,
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/77)
+    ) in
+  {
+    let x29 = mtmp28.0 in
+    let x30 = mtmp28.1 in
+    let x31 = mtmp28.2 in
+    let x32 = mtmp28.3 in
+    let x33 = mtmp28.4 in
+    {
+      let message/82 = x33 in
+      {
+        let raw/81 = x32 in
+        {
+          let has_raw/80 = x31 in
+          {
+            let kind/79 = x30 in
+            {
+              let ok/78 = x29 in
+              {
+                if ok/78 {
+                    {
+                      Result__unit__std::fs::Error::Ok(())
+                    }
+                } else {
+                    {
+                      Result__unit__std::fs::Error::Err(
+                        std::fs::structured_error(
+                          "atomic write",
+                          path/76,
+                          kind/79,
+                          has_raw/80,
+                          raw/81,
+                          message/82
+                        )
+                      )
+                    }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::atomic_write(path/83: string, content/84: string) -> Result__unit__std::fs::Error {
+  std::fs::atomic_write_bytes(
+    path/83,
+    inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(content/84)
+  )
+}
+
+fn std::fs::file_type_from_code(code/85: int) -> std::fs::FileType {
+  if trait_impl#PartialEq#int#eq(code/85, 0) {
+      {
+        std::fs::FileType::File
+      }
+  } else {
+      if trait_impl#PartialEq#int#eq(code/85, 1) {
+          {
+            std::fs::FileType::Directory
+          }
+      } else {
+          if trait_impl#PartialEq#int#eq(code/85, 2) {
+              {
+                std::fs::FileType::Symlink
+              }
+          } else {
+              {
+                std::fs::FileType::Other
+              }
+          }
+      }
+  }
+}
+
+fn std::fs::query_metadata(
+  path/86: string,
+  follow/87: bool
+) -> Result__std::fs::Metadata__std::fs::Error {
+  let mtmp34 = @runtime(std.fs.metadata.v2)(path/86, follow/87) in
+  {
+    let x35 = mtmp34.0 in
+    let x36 = mtmp34.1 in
+    let x37 = mtmp34.2 in
+    let x38 = mtmp34.3 in
+    let x39 = mtmp34.4 in
+    let x40 = mtmp34.5 in
+    let x41 = mtmp34.6 in
+    let x42 = mtmp34.7 in
+    let x43 = mtmp34.8 in
+    {
+      let message/96 = x43 in
+      {
+        let raw/95 = x42 in
+        {
+          let has_raw/94 = x41 in
+          {
+            let kind/93 = x40 in
+            {
+              let modified/92 = x39 in
+              {
+                let mode/91 = x38 in
+                {
+                  let length/90 = x37 in
+                  {
+                    let file_type/89 = x36 in
+                    {
+                      let ok/88 = x35 in
+                      {
+                        if ok/88 {
+                            {
+                              Result__std::fs::Metadata__std::fs::Error::Ok(
+                                std::fs::Metadata {
+                                  file_type_value: std::fs::file_type_from_code(file_type/89),
+                                  length_value: length/90,
+                                  permissions_value: std::fs::Permissions { mode_value: mode/91 },
+                                  modified_unix_nanoseconds_value: modified/92
+                                }
+                              )
+                            }
+                        } else {
+                            {
+                              Result__std::fs::Metadata__std::fs::Error::Err(
+                                std::fs::structured_error(
+                                  "read metadata",
+                                  path/86,
+                                  kind/93,
+                                  has_raw/94,
+                                  raw/95,
+                                  message/96
+                                )
+                              )
+                            }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::metadata(path/97: string) -> Result__std::fs::Metadata__std::fs::Error {
+  std::fs::query_metadata(path/97, true)
+}
+
+fn std::fs::symlink_metadata(path/98: string) -> Result__std::fs::Metadata__std::fs::Error {
+  std::fs::query_metadata(path/98, false)
+}
+
+fn std::fs::try_exists(path/99: string) -> Result__bool__std::fs::Error {
+  {
+    let mtmp44 = std::fs::metadata(path/99) in
+    match mtmp44 {
+      Result__std::fs::Metadata__std::fs::Error::Ok(x45) => {
+        {
+          let x45 = Result__std::fs::Metadata__std::fs::Error::Ok._0(mtmp44) in
+          Result__bool__std::fs::Error::Ok(true)
+        }
+      },
+      Result__std::fs::Metadata__std::fs::Error::Err(x46) => {
+        {
+          let x46 = Result__std::fs::Metadata__std::fs::Error::Err._0(mtmp44) in
+          {
+            let error/100 = x46 in
+            if trait_impl#PartialEq#std::io::ErrorKind#eq(
+              inherent#std::fs::Error#std::fs::Error#kind(error/100),
+              std::io::ErrorKind::NotFound
+            ) {
+                {
+                  Result__bool__std::fs::Error::Ok(false)
+                }
+            } else {
+                {
+                  Result__bool__std::fs::Error::Err(error/100)
+                }
+            }
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::fs::read_dir_structured(
+  path/101: string
+) -> Result__Vec[std::fs::DirEntry]__std::fs::Error {
+  let mtmp47 = @runtime(std.fs.read_dir.v2)(path/101) in
+  {
+    let x48 = mtmp47.0 in
+    let x49 = mtmp47.1 in
+    let x50 = mtmp47.2 in
+    let x51 = mtmp47.3 in
+    let x52 = mtmp47.4 in
+    let x53 = mtmp47.5 in
+    {
+      let message/107 = x53 in
+      {
+        let raw/106 = x52 in
+        {
+          let has_raw/105 = x51 in
+          {
+            let kind/104 = x50 in
+            {
+              let names/103 = x49 in
+              {
+                let ok/102 = x48 in
+                {
+                  if (!ok/102) {
+                      {
+                        Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(
+                          std::fs::structured_error(
+                            "read directory",
+                            path/101,
+                            kind/104,
+                            has_raw/105,
+                            raw/106,
+                            message/107
+                          )
+                        )
+                      }
+                  } else {
+                      {
+                        let entries/108 =
+                          {
+                            let vec_literal/7208 = inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() in
+                            vec_literal/7208
+                          } in
+                        let _wild62 =
+                          {
+                            let for_source54 = names/103 in
+                            let for_limit55 = @intrinsic(vec.len)(for_source54) in
+                            let for_index56 = 0 in
+                            while (for_index56 < for_limit55) {
+                                {
+                                  let for_item57 = @intrinsic(vec.get)(for_source54, for_index56) in
+                                  let _wild58 = for_index56 = (for_index56 + 1) in
+                                  {
+                                    let name/109 = for_item57 in
+                                    {
+                                      let entry_path/110 =
+                                        @runtime(std.path.join)(path/101, name/109) in
+                                      {
+                                        let mtmp59 = std::fs::symlink_metadata(entry_path/110) in
+                                        match mtmp59 {
+                                          Result__std::fs::Metadata__std::fs::Error::Ok(x60) => {
+                                            {
+                                              let x60 =
+                                                Result__std::fs::Metadata__std::fs::Error::Ok._0(
+                                                  mtmp59
+                                                ) in
+                                              {
+                                                let value/111 = x60 in
+                                                inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
+                                                  entries/108,
+                                                  std::fs::DirEntry {
+                                                    name_value: name/109,
+                                                    path_value: entry_path/110,
+                                                    file_type_value: inherent#std::fs::Metadata#std::fs::Metadata#file_type(
+                                                      value/111
+                                                    )
+                                                  }
+                                                )
+                                              }
+                                            }
+                                          },
+                                          Result__std::fs::Metadata__std::fs::Error::Err(x61) => {
+                                            {
+                                              let x61 =
+                                                Result__std::fs::Metadata__std::fs::Error::Err._0(
+                                                  mtmp59
+                                                ) in
+                                              {
+                                                let error/112 = x61 in
+                                                return Result__Vec[std::fs::DirEntry]__std::fs::Error::Err(
+                                                  error/112
+                                                )
+                                              }
+                                            }
+                                          },
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                            }
+                          } in
+                        Result__Vec[std::fs::DirEntry]__std::fs::Error::Ok(entries/108)
+                      }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::read_file(path/113: string) -> Result__string__string {
+  {
+    let mtmp63 = std::fs::read_bytes(path/113) in
+    match mtmp63 {
+      Result__std::bytes::Bytes__string::Ok(x64) => {
+        {
+          let x64 = Result__std::bytes::Bytes__string::Ok._0(mtmp63) in
+          {
+            let data/114 = x64 in
+            inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(data/114)
+          }
+        }
+      },
+      Result__std::bytes::Bytes__string::Err(x65) => {
+        {
+          let x65 = Result__std::bytes::Bytes__string::Err._0(mtmp63) in
+          {
+            let error/115 = x65 in
+            Result__string__string::Err(error/115)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn std::fs::write_file(path/116: string, content/117: string) -> Result__unit__string {
+  std::fs::write_bytes(
+    path/116,
+    inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(content/117)
+  )
+}
+
+fn std::fs::read_bytes(path/118: string) -> Result__std::bytes::Bytes__string {
+  let mtmp66 = @runtime(std.fs.read_bytes)(path/118) in
+  {
+    let x67 = mtmp66.0 in
+    let x68 = mtmp66.1 in
+    let x69 = mtmp66.2 in
+    {
+      let err/121 = x69 in
+      {
+        let data/120 = x68 in
+        {
+          let ok/119 = x67 in
+          {
+            if ok/119 {
+                {
+                  Result__std::bytes::Bytes__string::Ok(
+                    inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/120)
+                  )
+                }
+            } else {
+                {
+                  Result__std::bytes::Bytes__string::Err(err/121)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::write_bytes(path/122: string, data/123: std::bytes::Bytes) -> Result__unit__string {
+  let mtmp70 =
+    @runtime(std.fs.write_bytes)(
+      path/122,
+      inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/123)
+    ) in
+  {
+    let x71 = mtmp70.0 in
+    let x72 = mtmp70.1 in
+    {
+      let err/125 = x72 in
+      {
+        let ok/124 = x71 in
+        {
+          if ok/124 {
+              {
+                Result__unit__string::Ok(())
+              }
+          } else {
+              {
+                Result__unit__string::Err(err/125)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::create_dir_all(path/126: string) -> Result__unit__string {
+  let mtmp73 = @runtime(std.fs.create_dir_all)(path/126) in
+  {
+    let x74 = mtmp73.0 in
+    let x75 = mtmp73.1 in
+    {
+      let err/128 = x75 in
+      {
+        let ok/127 = x74 in
+        {
+          if ok/127 {
+              {
+                Result__unit__string::Ok(())
+              }
+          } else {
+              {
+                Result__unit__string::Err(err/128)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::remove_file(path/129: string) -> Result__unit__string {
+  let mtmp76 = @runtime(std.fs.remove_file)(path/129) in
+  {
+    let x77 = mtmp76.0 in
+    let x78 = mtmp76.1 in
+    {
+      let err/131 = x78 in
+      {
+        let ok/130 = x77 in
+        {
+          if ok/130 {
+              {
+                Result__unit__string::Ok(())
+              }
+          } else {
+              {
+                Result__unit__string::Err(err/131)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::remove_dir_all(path/132: string) -> Result__unit__string {
+  let mtmp79 = @runtime(std.fs.remove_dir_all)(path/132) in
+  {
+    let x80 = mtmp79.0 in
+    let x81 = mtmp79.1 in
+    {
+      let err/134 = x81 in
+      {
+        let ok/133 = x80 in
+        {
+          if ok/133 {
+              {
+                Result__unit__string::Ok(())
+              }
+          } else {
+              {
+                Result__unit__string::Err(err/134)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::exists(path/135: string) -> bool {
+  @runtime(std.fs.file_exists)(path/135)
+}
+
+fn std::fs::is_file(path/136: string) -> bool {
+  @runtime(std.fs.is_file)(path/136)
+}
+
+fn std::fs::is_dir(path/137: string) -> bool {
+  @runtime(std.fs.is_dir)(path/137)
+}
+
+fn std::fs::canonicalize(path/138: string) -> Result__string__string {
+  let mtmp82 = @runtime(std.fs.canonicalize)(path/138) in
+  {
+    let x83 = mtmp82.0 in
+    let x84 = mtmp82.1 in
+    let x85 = mtmp82.2 in
+    {
+      let err/141 = x85 in
+      {
+        let result/140 = x84 in
+        {
+          let ok/139 = x83 in
+          {
+            if ok/139 {
+                {
+                  Result__string__string::Ok(result/140)
+                }
+            } else {
+                {
+                  Result__string__string::Err(err/141)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::read_dir(path/142: string) -> Result__Vec[string]__string {
+  let mtmp86 = @runtime(std.fs.read_dir)(path/142) in
+  {
+    let x87 = mtmp86.0 in
+    let x88 = mtmp86.1 in
+    let x89 = mtmp86.2 in
+    {
+      let err/145 = x89 in
+      {
+        let names/144 = x88 in
+        {
+          let ok/143 = x87 in
+          {
+            if ok/143 {
+                {
+                  Result__Vec[string]__string::Ok(names/144)
+                }
+            } else {
+                {
+                  Result__Vec[string]__string::Err(err/145)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::sha256_file(path/146: string) -> Result__string__string {
+  let mtmp90 = @runtime(std.fs.sha256_file)(path/146) in
+  {
+    let x91 = mtmp90.0 in
+    let x92 = mtmp90.1 in
+    let x93 = mtmp90.2 in
+    {
+      let err/149 = x93 in
+      {
+        let result/148 = x92 in
+        {
+          let ok/147 = x91 in
+          {
+            if ok/147 {
+                {
+                  Result__string__string::Ok(result/148)
+                }
+            } else {
+                {
+                  Result__string__string::Err(err/149)
+                }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -679,6 +2027,112 @@ fn string_from_utf8(bytes/24: Vec[uint8]) -> (bool, string) {
   }
 }
 
+fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
+  @intrinsic(eq.primitive)(self/103, other/104)
+}
+
+fn trait_impl#PartialEq#string#eq(self/99: string, other/100: string) -> bool {
+  @intrinsic(eq.primitive)(self/99, other/100)
+}
+
+fn trait_impl#PartialEq#Option__string#eq(
+  self/153: Option__string,
+  other/154: Option__string
+) -> bool {
+  {
+    let mtmp61 = (self/153, other/154) in
+    {
+      let x62 = mtmp61.0 in
+      let x63 = mtmp61.1 in
+      match x63 {
+        Option__string::None => {
+          match x62 {
+            Option__string::None => {
+              true
+            },
+            _ => false,
+          }
+        },
+        Option__string::Some(x64) => {
+          {
+            let x64 = Option__string::Some._0(x63) in
+            match x62 {
+              Option__string::Some(x66) => {
+                {
+                  let x66 = Option__string::Some._0(x62) in
+                  {
+                    let left/155 = x66 in
+                    {
+                      let right/156 = x64 in
+                      trait_impl#PartialEq#string#eq(left/155, right/156)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn trait_impl#PartialEq#Option__int#eq(self/153: Option__int, other/154: Option__int) -> bool {
+  {
+    let mtmp61 = (self/153, other/154) in
+    {
+      let x62 = mtmp61.0 in
+      let x63 = mtmp61.1 in
+      match x63 {
+        Option__int::None => {
+          match x62 {
+            Option__int::None => {
+              true
+            },
+            _ => false,
+          }
+        },
+        Option__int::Some(x64) => {
+          {
+            let x64 = Option__int::Some._0(x63) in
+            match x62 {
+              Option__int::Some(x66) => {
+                {
+                  let x66 = Option__int::Some._0(x62) in
+                  {
+                    let left/155 = x66 in
+                    {
+                      let right/156 = x64 in
+                      trait_impl#PartialEq#int#eq(left/155, right/156)
+                    }
+                  }
+                }
+              },
+              _ => false,
+            }
+          }
+        },
+      }
+    }
+  }
+}
+
+fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
+  @intrinsic(eq.primitive)(self/117, other/118)
+}
+
+fn inherent#Vec#Vec[T]#new__T_std::fs::DirEntry() -> Vec[std::fs::DirEntry] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push__T_std::fs::DirEntry(
+  self/176: Vec[std::fs::DirEntry],
+  elem/177: std::fs::DirEntry
+) -> unit {
+  @intrinsic(vec.push)(self/176, elem/177)
+}
+
 fn inherent#Vec#Vec[T]#len__T_string(self/187: Vec[string]) -> int {
   @intrinsic(vec.len)(self/187)
 }
@@ -687,12 +2141,8 @@ fn trait_impl#ToString#bool#to_string(self/66: bool) -> string {
   @runtime(core.bool_to_string)(self/66)
 }
 
-fn std::io::println__T_string(value/1: string) -> unit {
-  @runtime(std.io.println)(trait_impl#ToString#string#to_string(value/1))
-}
-
-fn trait_impl#PartialEq#int#eq(self/103: int, other/104: int) -> bool {
-  @intrinsic(eq.primitive)(self/103, other/104)
+fn std::io::println__T_string(value/68: string) -> unit {
+  @runtime(std.io.println)(trait_impl#ToString#string#to_string(value/68))
 }
 
 fn inherent#string#string#byte_len(self/38: string) -> int {
@@ -907,10 +2357,6 @@ fn utf8_invalid_continuation(value/3: uint32) -> bool {
   } else {
       (value/3 > 191)
   }
-}
-
-fn trait_impl#PartialEq#uint32#eq(self/117: uint32, other/118: uint32) -> bool {
-  @intrinsic(eq.primitive)(self/117, other/118)
 }
 
 fn char_from_uint32(value/32: uint32) -> Option__char {
