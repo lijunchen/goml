@@ -2,6 +2,301 @@ package fs;
 
 use std::bytes;
 use std::internal::host;
+use std::io;
+
+pub enum FileType {
+    File,
+    Directory,
+    Symlink,
+    Other,
+}
+
+impl FileType {
+    pub fn is_file(self: FileType) -> bool {
+        self == FileType::File
+    }
+
+    pub fn is_dir(self: FileType) -> bool {
+        self == FileType::Directory
+    }
+
+    pub fn is_symlink(self: FileType) -> bool {
+        self == FileType::Symlink
+    }
+}
+
+impl PartialEq for FileType {
+    fn eq(self: FileType, other: FileType) -> bool {
+        match (self, other) {
+            (File, File) => true,
+            (Directory, Directory) => true,
+            (Symlink, Symlink) => true,
+            (Other, Other) => true,
+            _ => false,
+        }
+    }
+}
+
+pub struct Permissions {
+    mode_value: uint32,
+}
+
+impl Permissions {
+    pub fn mode(self: Permissions) -> uint32 {
+        self.mode_value
+    }
+
+    pub fn readonly(self: Permissions) -> bool {
+        self.mode_value & 0o222 == 0
+    }
+}
+
+pub struct Metadata {
+    file_type_value: FileType,
+    length_value: int64,
+    permissions_value: Permissions,
+    modified_unix_nanoseconds_value: int64,
+}
+
+impl Metadata {
+    pub fn file_type(self: Metadata) -> FileType {
+        self.file_type_value
+    }
+
+    pub fn len(self: Metadata) -> int64 {
+        self.length_value
+    }
+
+    pub fn permissions(self: Metadata) -> Permissions {
+        self.permissions_value
+    }
+
+    pub fn modified_unix_nanoseconds(self: Metadata) -> int64 {
+        self.modified_unix_nanoseconds_value
+    }
+}
+
+pub struct DirEntry {
+    name_value: string,
+    path_value: string,
+    file_type_value: FileType,
+}
+
+impl DirEntry {
+    pub fn name(self: DirEntry) -> string {
+        self.name_value
+    }
+
+    pub fn path(self: DirEntry) -> string {
+        self.path_value
+    }
+
+    pub fn file_type(self: DirEntry) -> FileType {
+        self.file_type_value
+    }
+}
+
+fn structured_error(
+    operation: string,
+    path: string,
+    kind_code: int,
+    has_raw_code: bool,
+    raw_code: int,
+    message: string,
+) -> Error {
+    Error::new(
+        io::kind_from_code(kind_code),
+        operation,
+        Option::Some(path),
+        if has_raw_code {
+            Option::Some(raw_code)
+        } else {
+            Option::None
+        },
+        message,
+    )
+}
+
+pub fn read_bytes_structured(path: string) -> Result[bytes::Bytes, Error] {
+    let (ok, data, kind_code, has_raw_code, raw_code, message) = host::read_bytes_v2(path);
+    if ok {
+        Result::Ok(bytes::Bytes::from_vec(data))
+    } else {
+        Result::Err(structured_error("read file", path, kind_code, has_raw_code, raw_code, message))
+    }
+}
+
+pub fn read_file_structured(path: string) -> Result[string, Error] {
+    match read_bytes_structured(path) {
+        Ok(data) => match data.to_string() {
+            Ok(value) => Result::Ok(value),
+            Err(message) => Result::Err(
+                Error::new(
+                    io::ErrorKind::InvalidData,
+                    "read file",
+                    Option::Some(path),
+                    Option::None,
+                    message,
+                ),
+            ),
+        },
+        Err(error) => Result::Err(error),
+    }
+}
+
+pub fn write_bytes_structured(path: string, data: bytes::Bytes) -> Result[unit, Error] {
+    let (ok, kind_code, has_raw_code, raw_code, message) = host::write_bytes_v2(path, data.to_vec());
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(
+            structured_error("write file", path, kind_code, has_raw_code, raw_code, message),
+        )
+    }
+}
+
+pub fn write_file_structured(path: string, content: string) -> Result[unit, Error] {
+    write_bytes_structured(path, bytes::Bytes::from_string(content))
+}
+
+fn path_operation(operation: int, name: string, first: string, second: string) -> Result[
+    unit,
+    Error,
+] {
+    let (ok, kind_code, has_raw_code, raw_code, message) = host::fs_path_operation_v2(
+        operation,
+        first,
+        second,
+    );
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(
+            structured_error(
+                name,
+                if second == "" {
+                    first
+                } else {
+                    first + " -> " + second
+                },
+                kind_code,
+                has_raw_code,
+                raw_code,
+                message,
+            ),
+        )
+    }
+}
+
+pub fn create_dir(path: string) -> Result[unit, Error] {
+    path_operation(0, "create directory", path, "")
+}
+
+pub fn rename(from: string, to: string) -> Result[unit, Error] {
+    path_operation(1, "rename", from, to)
+}
+
+pub fn replace(from: string, to: string) -> Result[unit, Error] {
+    path_operation(1, "replace", from, to)
+}
+
+pub fn hard_link(from: string, to: string) -> Result[unit, Error] {
+    path_operation(2, "create hard link", from, to)
+}
+
+pub fn symbolic_link(from: string, to: string) -> Result[unit, Error] {
+    path_operation(3, "create symbolic link", from, to)
+}
+
+pub fn copy(from: string, to: string) -> Result[unit, Error] {
+    path_operation(4, "copy file", from, to)
+}
+
+pub fn atomic_write_bytes(path: string, data: bytes::Bytes) -> Result[unit, Error] {
+    let (ok, kind, has_raw, raw, message) = host::fs_atomic_write_v2(path, data.to_vec());
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(structured_error("atomic write", path, kind, has_raw, raw, message))
+    }
+}
+
+pub fn atomic_write(path: string, content: string) -> Result[unit, Error] {
+    atomic_write_bytes(path, bytes::Bytes::from_string(content))
+}
+
+fn file_type_from_code(code: int) -> FileType {
+    if code == 0 {
+        FileType::File
+    } else if code == 1 {
+        FileType::Directory
+    } else if code == 2 {
+        FileType::Symlink
+    } else {
+        FileType::Other
+    }
+}
+
+fn query_metadata(path: string, follow: bool) -> Result[Metadata, Error] {
+    let (ok, file_type, length, mode, modified, kind, has_raw, raw, message) = host::fs_metadata_v2(
+        path,
+        follow,
+    );
+    if ok {
+        Result::Ok(
+            Metadata {
+                file_type_value: file_type_from_code(file_type),
+                length_value: length,
+                permissions_value: Permissions { mode_value: mode },
+                modified_unix_nanoseconds_value: modified,
+            },
+        )
+    } else {
+        Result::Err(structured_error("read metadata", path, kind, has_raw, raw, message))
+    }
+}
+
+pub fn metadata(path: string) -> Result[Metadata, Error] {
+    query_metadata(path, true)
+}
+
+pub fn symlink_metadata(path: string) -> Result[Metadata, Error] {
+    query_metadata(path, false)
+}
+
+pub fn try_exists(path: string) -> Result[bool, Error] {
+    match metadata(path) {
+        Ok(_) => Result::Ok(true),
+        Err(error) => if error.kind() == io::ErrorKind::NotFound {
+            Result::Ok(false)
+        } else {
+            Result::Err(error)
+        },
+    }
+}
+
+pub fn read_dir_structured(path: string) -> Result[Vec[DirEntry], Error] {
+    let (ok, names, kind, has_raw, raw, message) = host::read_dir_v2(path);
+    if !ok {
+        Result::Err(structured_error("read directory", path, kind, has_raw, raw, message))
+    } else {
+        let entries: Vec[DirEntry] = Vec::[];
+        for name in names {
+            let entry_path = host::path_join(path, name);
+            match symlink_metadata(entry_path) {
+                Ok(value) => entries.push(
+                    DirEntry {
+                        name_value: name,
+                        path_value: entry_path,
+                        file_type_value: value.file_type(),
+                    },
+                ),
+                Err(error) => return Result::Err(error),
+            }
+        }
+        Result::Ok(entries)
+    }
+}
 
 pub fn read_file(path: string) -> Result[string, string] {
     match read_bytes(path) {

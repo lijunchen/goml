@@ -3,6 +3,112 @@ package io;
 use std::bytes;
 use std::internal::host;
 
+fn structured_error(
+    operation: string,
+    kind_code: int,
+    has_raw_code: bool,
+    raw_code: int,
+    message: string,
+) -> Error {
+    Error::new(
+        kind_from_code(kind_code),
+        operation,
+        Option::None,
+        if has_raw_code {
+            Option::Some(raw_code)
+        } else {
+            Option::None
+        },
+        message,
+    )
+}
+
+pub fn read_stdin_structured() -> Result[bytes::Bytes, Error] {
+    let (ok, data, kind_code, has_raw_code, raw_code, message) = host::read_stdin_v2();
+    if ok {
+        Result::Ok(bytes::Bytes::from_vec(data))
+    } else {
+        Result::Err(structured_error("read stdin", kind_code, has_raw_code, raw_code, message))
+    }
+}
+
+pub fn read_stdin_to_string() -> Result[string, Error] {
+    match read_stdin_structured() {
+        Ok(data) => match data.to_string() {
+            Ok(value) => Result::Ok(value),
+            Err(message) => Result::Err(
+                Error::new(
+                    ErrorKind::InvalidData,
+                    "read stdin",
+                    Option::None,
+                    Option::None,
+                    message,
+                ),
+            ),
+        },
+        Err(error) => Result::Err(error),
+    }
+}
+
+pub fn read_stdin_exact_structured(length: int) -> Result[bytes::Bytes, Error] {
+    if length < 0 {
+        Result::Err(
+            Error::new(
+                ErrorKind::InvalidInput,
+                "read stdin exact",
+                Option::None,
+                Option::None,
+                "read length must be non-negative",
+            ),
+        )
+    } else {
+        let (ok, data, kind_code, has_raw_code, raw_code, message) = host::read_stdin_exact_v2(
+            length,
+        );
+        if ok {
+            Result::Ok(bytes::Bytes::from_vec(data))
+        } else {
+            Result::Err(
+                structured_error("read stdin exact", kind_code, has_raw_code, raw_code, message),
+            )
+        }
+    }
+}
+
+fn write_structured(stderr: bool, data: bytes::Bytes) -> Result[unit, Error] {
+    let result = if stderr {
+        host::write_stderr_v2(data.to_vec())
+    } else {
+        host::write_stdout_v2(data.to_vec())
+    };
+    let (ok, kind_code, has_raw_code, raw_code, message) = result;
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(
+            structured_error(
+                if stderr {
+                    "write stderr"
+                } else {
+                    "write stdout"
+                },
+                kind_code,
+                has_raw_code,
+                raw_code,
+                message,
+            ),
+        )
+    }
+}
+
+pub fn write_stdout_structured(data: bytes::Bytes) -> Result[unit, Error] {
+    write_structured(false, data)
+}
+
+pub fn write_stderr_structured(data: bytes::Bytes) -> Result[unit, Error] {
+    write_structured(true, data)
+}
+
 pub fn print[T: ToString](value: T) -> unit {
     host::print(ToString::to_string(value))
 }

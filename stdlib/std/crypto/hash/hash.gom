@@ -1,0 +1,28 @@
+package hash;
+
+use std::bytes;
+use std::fs;
+use std::text;
+
+#[go_ffi("crypto/sha256", "Sum256")]
+extern fn sum256(value: Slice[byte]) -> [byte; 32];
+
+fn hex_digit(value: byte) -> string {
+    let index = value as int;
+    "0123456789abcdef".byte_slice(index, index + 1)
+}
+
+pub fn sha256(value: bytes::Bytes) -> string {
+    let sum = sum256(value.slice(0, value.len()));
+    let output = text::StringBuilder::with_capacity(64);
+    for index in 0..32 {
+        let item = sum[index];
+        output.write_string(hex_digit(item >> 4));
+        output.write_string(hex_digit(item & 15));
+    }
+    output.finish()
+}
+
+pub fn sha256_file(path: string) -> Result[string, string] {
+    fs::sha256_file(path)
+}

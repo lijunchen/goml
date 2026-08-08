@@ -1,6 +1,7 @@
 package path;
 
 use std::internal::host;
+use std::io;
 
 pub fn join(base: string, child: string) -> string {
     host::path_join(base, child)
@@ -60,5 +61,103 @@ pub fn absolute(path: string) -> Result[string, string] {
         Result::Ok(value)
     } else {
         Result::Err(err)
+    }
+}
+
+pub fn absolute_structured(path: string) -> Result[string, Error] {
+    match absolute(path) {
+        Ok(value) => Result::Ok(value),
+        Err(message) => Result::Err(
+            Error::new(
+                io::ErrorKind::Other,
+                "absolute path",
+                Option::Some(path),
+                Option::None,
+                message,
+            ),
+        ),
+    }
+}
+
+#[go_ffi("path/filepath", "VolumeName")]
+extern fn volume_name_ffi(path: string) -> string;
+
+pub fn volume_name(path: string) -> string {
+    volume_name_ffi(path)
+}
+
+pub fn separator() -> string {
+    host::path_separator()
+}
+
+pub fn is_separator(value: char) -> bool {
+    value == '/' || value == '\\'
+}
+
+fn is_separator_byte(value: byte) -> bool {
+    value == b'/' || value == b'\\'
+}
+
+pub fn components(path: string) -> Vec[string] {
+    let result: Vec[string] = Vec::[];
+    let mut start = 0;
+    let mut index = 0;
+    while index <= path.byte_len() {
+        if index == path.byte_len() || is_separator_byte(path.byte_get(index)) {
+            if index > start {
+                result.push(path.byte_slice(start, index))
+            } else {};
+            start = index + 1;
+        } else {};
+        index += 1;
+    }
+    result
+}
+
+fn is_ascii_letter(value: byte) -> bool {
+    value >= b'a' && value <= b'z' || value >= b'A' && value <= b'Z'
+}
+
+pub fn windows_prefix(path: string) -> Option[string] {
+    let length = path.byte_len();
+    if length >= 2 && is_ascii_letter(path.byte_get(0)) && path.byte_get(1) == b':' {
+        Option::Some(path.byte_slice(0, 2))
+    } else if length >= 2 && is_separator_byte(path.byte_get(0))
+        && is_separator_byte(path.byte_get(1)) {
+        let mut separators = 0;
+        let mut index = 2;
+        while index < length {
+            if is_separator_byte(path.byte_get(index)) {
+                separators += 1;
+                if separators == 2 {
+                    return Option::Some(path.byte_slice(0, index))
+                } else {};
+            } else {};
+            index += 1;
+        }
+        if separators == 1 && index > 2 {
+            Option::Some(path)
+        } else {
+            Option::None
+        }
+    } else {
+        Option::None
+    }
+}
+
+pub fn relative(base: string, target: string) -> Result[string, Error] {
+    let (ok, value, message) = host::path_relative(base, target);
+    if ok {
+        Result::Ok(value)
+    } else {
+        Result::Err(
+            Error::new(
+                io::ErrorKind::InvalidInput,
+                "relative path",
+                Option::Some(base + " -> " + target),
+                Option::None,
+                message,
+            ),
+        )
     }
 }
