@@ -301,6 +301,7 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef
         world.standard.bytes,
         world.standard.cmp,
         world.standard.collections,
+        world.standard.error,
         world.standard.env,
         world.standard.fs,
         world.standard.io,
@@ -316,6 +317,13 @@ fn artifact_world_struct_definitions(world: PackageWorld) -> Vec[tast::StructDef
         world.standard.text,
         world.standard.toml,
         world.standard.time,
+        world.standard.utf8,
+        world.standard.unicode,
+        world.standard.math,
+        world.standard.rand,
+        world.standard.crypto,
+        world.standard.crypto_hash,
+        world.standard.crypto_rand,
     ];
     for package_value in packages {
         for definition in package_value.environment_exports.structs {
@@ -348,6 +356,7 @@ fn artifact_prepare_world(world: PackageWorld) -> unit {
         world.standard.bytes,
         world.standard.cmp,
         world.standard.collections,
+        world.standard.error,
         world.standard.env,
         world.standard.fs,
         world.standard.io,
@@ -363,6 +372,13 @@ fn artifact_prepare_world(world: PackageWorld) -> unit {
         world.standard.text,
         world.standard.toml,
         world.standard.time,
+        world.standard.utf8,
+        world.standard.unicode,
+        world.standard.math,
+        world.standard.rand,
+        world.standard.crypto,
+        world.standard.crypto_hash,
+        world.standard.crypto_rand,
     ];
     for package_value in packages {
         artifact_prepare_world_core(

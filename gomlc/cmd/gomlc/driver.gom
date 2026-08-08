@@ -64,6 +64,7 @@ struct StandardLibrary {
     bytes: PackageCompilation,
     cmp: PackageCompilation,
     collections: PackageCompilation,
+    error: PackageCompilation,
     env: PackageCompilation,
     fs: PackageCompilation,
     io: PackageCompilation,
@@ -79,6 +80,13 @@ struct StandardLibrary {
     text: PackageCompilation,
     toml: PackageCompilation,
     time: PackageCompilation,
+    utf8: PackageCompilation,
+    unicode: PackageCompilation,
+    math: PackageCompilation,
+    rand: PackageCompilation,
+    crypto: PackageCompilation,
+    crypto_hash: PackageCompilation,
+    crypto_rand: PackageCompilation,
 }
 
 struct ArtifactStandardPackage {
@@ -95,6 +103,7 @@ struct ArtifactStandardLibrary {
     bytes: ArtifactStandardPackage,
     cmp: ArtifactStandardPackage,
     collections: ArtifactStandardPackage,
+    error: ArtifactStandardPackage,
     env: ArtifactStandardPackage,
     fs: ArtifactStandardPackage,
     io: ArtifactStandardPackage,
@@ -110,6 +119,13 @@ struct ArtifactStandardLibrary {
     text: ArtifactStandardPackage,
     toml: ArtifactStandardPackage,
     time: ArtifactStandardPackage,
+    utf8: ArtifactStandardPackage,
+    unicode: ArtifactStandardPackage,
+    math: ArtifactStandardPackage,
+    rand: ArtifactStandardPackage,
+    crypto: ArtifactStandardPackage,
+    crypto_hash: ArtifactStandardPackage,
+    crypto_rand: ArtifactStandardPackage,
 }
 
 fn lower_builtin_core(counter: Ref[int]) -> core::File {
@@ -155,6 +171,7 @@ fn artifact_standard_library(value: StandardLibrary) -> ArtifactStandardLibrary 
         bytes: artifact_standard_package_from_compilation(value.bytes),
         cmp: artifact_standard_package_from_compilation(value.cmp),
         collections: artifact_standard_package_from_compilation(value.collections),
+        error: artifact_standard_package_from_compilation(value.error),
         env: artifact_standard_package_from_compilation(value.env),
         fs: artifact_standard_package_from_compilation(value.fs),
         io: artifact_standard_package_from_compilation(value.io),
@@ -170,6 +187,13 @@ fn artifact_standard_library(value: StandardLibrary) -> ArtifactStandardLibrary 
         text: artifact_standard_package_from_compilation(value.text),
         toml: artifact_standard_package_from_compilation(value.toml),
         time: artifact_standard_package_from_compilation(value.time),
+        utf8: artifact_standard_package_from_compilation(value.utf8),
+        unicode: artifact_standard_package_from_compilation(value.unicode),
+        math: artifact_standard_package_from_compilation(value.math),
+        rand: artifact_standard_package_from_compilation(value.rand),
+        crypto: artifact_standard_package_from_compilation(value.crypto),
+        crypto_hash: artifact_standard_package_from_compilation(value.crypto_hash),
+        crypto_rand: artifact_standard_package_from_compilation(value.crypto_rand),
     }
 }
 
@@ -614,6 +638,7 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         bytes: required_standard_compilation(compiled, "std::bytes"),
         cmp: required_standard_compilation(compiled, "std::cmp"),
         collections: required_standard_compilation(compiled, "std::collections"),
+        error: required_standard_compilation(compiled, "std::error"),
         env: required_standard_compilation(compiled, "std::env"),
         fs: required_standard_compilation(compiled, "std::fs"),
         io: required_standard_compilation(compiled, "std::io"),
@@ -629,6 +654,13 @@ fn compile_standard_library(builtins: core::File, builtin_hash: string) -> Stand
         text: required_standard_compilation(compiled, "std::text"),
         toml: required_standard_compilation(compiled, "std::toml"),
         time: required_standard_compilation(compiled, "std::time"),
+        utf8: required_standard_compilation(compiled, "std::utf8"),
+        unicode: required_standard_compilation(compiled, "std::unicode"),
+        math: required_standard_compilation(compiled, "std::math"),
+        rand: required_standard_compilation(compiled, "std::rand"),
+        crypto: required_standard_compilation(compiled, "std::crypto"),
+        crypto_hash: required_standard_compilation(compiled, "std::crypto::hash"),
+        crypto_rand: required_standard_compilation(compiled, "std::crypto::rand"),
     }
 }
 
@@ -641,6 +673,7 @@ fn standard_library_package(value: StandardLibrary, package_name: string) -> Pac
         "std::bytes" => value.bytes,
         "std::cmp" => value.cmp,
         "std::collections" => value.collections,
+        "std::error" => value.error,
         "std::env" => value.env,
         "std::fs" => value.fs,
         "std::io" => value.io,
@@ -656,6 +689,13 @@ fn standard_library_package(value: StandardLibrary, package_name: string) -> Pac
         "std::text" => value.text,
         "std::toml" => value.toml,
         "std::time" => value.time,
+        "std::utf8" => value.utf8,
+        "std::unicode" => value.unicode,
+        "std::math" => value.math,
+        "std::rand" => value.rand,
+        "std::crypto" => value.crypto,
+        "std::crypto::hash" => value.crypto_hash,
+        "std::crypto::rand" => value.crypto_rand,
         _ => {
             fail("error[compile]: unknown standard package " + package_name);
             value.root

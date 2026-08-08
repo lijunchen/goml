@@ -12,6 +12,9 @@ pub extern fn current_exe() -> (bool, string, string);
 #[runtime("std.env.var")]
 pub extern fn env_var(name: string) -> (bool, string);
 
+#[runtime("std.env.vars")]
+pub extern fn env_vars() -> Vec[string];
+
 #[runtime("std.fs.read_file")]
 pub extern fn read_file(path: string) -> (bool, string, string);
 
@@ -21,8 +24,39 @@ pub extern fn write_file(path: string, content: string) -> (bool, string);
 #[runtime("std.fs.read_bytes")]
 pub extern fn read_bytes(path: string) -> (bool, Vec[uint8], string);
 
+#[runtime("std.fs.read_bytes.v2")]
+pub extern fn read_bytes_v2(path: string) -> (bool, Vec[uint8], int, bool, int, string);
+
 #[runtime("std.fs.write_bytes")]
 pub extern fn write_bytes(path: string, data: Vec[uint8]) -> (bool, string);
+
+#[runtime("std.fs.write_bytes.v2")]
+pub extern fn write_bytes_v2(path: string, data: Vec[uint8]) -> (bool, int, bool, int, string);
+
+#[runtime("std.fs.path_operation.v2")]
+pub extern fn fs_path_operation_v2(operation: int, first: string, second: string) -> (
+    bool,
+    int,
+    bool,
+    int,
+    string,
+);
+
+#[runtime("std.fs.metadata.v2")]
+pub extern fn fs_metadata_v2(path: string, follow: bool) -> (
+    bool,
+    int,
+    int64,
+    uint32,
+    int64,
+    int,
+    bool,
+    int,
+    string,
+);
+
+#[runtime("std.fs.atomic_write.v2")]
+pub extern fn fs_atomic_write_v2(path: string, data: Vec[uint8]) -> (bool, int, bool, int, string);
 
 #[runtime("std.fs.create_dir_all")]
 pub extern fn create_dir_all(path: string) -> (bool, string);
@@ -48,6 +82,9 @@ pub extern fn canonicalize(path: string) -> (bool, string, string);
 #[runtime("std.fs.read_dir")]
 pub extern fn read_dir(path: string) -> (bool, Vec[string], string);
 
+#[runtime("std.fs.read_dir.v2")]
+pub extern fn read_dir_v2(path: string) -> (bool, Vec[string], int, bool, int, string);
+
 #[runtime("std.fs.sha256_file")]
 pub extern fn sha256_file(path: string) -> (bool, string, string);
 
@@ -63,14 +100,26 @@ pub extern fn eprint(value: string) -> unit;
 #[runtime("std.io.read_stdin")]
 pub extern fn read_stdin() -> (bool, Vec[uint8], string);
 
+#[runtime("std.io.read_stdin.v2")]
+pub extern fn read_stdin_v2() -> (bool, Vec[uint8], int, bool, int, string);
+
 #[runtime("std.io.read_stdin_exact")]
 pub extern fn read_stdin_exact(length: int) -> (bool, Vec[uint8], string);
+
+#[runtime("std.io.read_stdin_exact.v2")]
+pub extern fn read_stdin_exact_v2(length: int) -> (bool, Vec[uint8], int, bool, int, string);
 
 #[runtime("std.io.write_stdout")]
 pub extern fn write_stdout(data: Vec[uint8]) -> (bool, string);
 
+#[runtime("std.io.write_stdout.v2")]
+pub extern fn write_stdout_v2(data: Vec[uint8]) -> (bool, int, bool, int, string);
+
 #[runtime("std.io.write_stderr")]
 pub extern fn write_stderr(data: Vec[uint8]) -> (bool, string);
+
+#[runtime("std.io.write_stderr.v2")]
+pub extern fn write_stderr_v2(data: Vec[uint8]) -> (bool, int, bool, int, string);
 
 #[runtime("std.path.join")]
 pub extern fn path_join(base: string, child: string) -> string;
@@ -98,6 +147,12 @@ pub extern fn path_with_extension(path: string, extension: string) -> string;
 
 #[runtime("std.path.absolute")]
 pub extern fn path_absolute(path: string) -> (bool, string, string);
+
+#[runtime("std.path.relative")]
+pub extern fn path_relative(base: string, target: string) -> (bool, string, string);
+
+#[runtime("std.path.separator")]
+pub extern fn path_separator() -> string;
 
 #[runtime("std.process.exit")]
 pub extern fn exit(code: int) -> unit;
@@ -192,3 +247,12 @@ pub extern fn unix_nanoseconds() -> int64;
 
 #[runtime("std.time.sleep_nanoseconds")]
 pub extern fn sleep_nanoseconds(value: int64) -> unit;
+
+#[runtime("std.math.float32_unary")]
+pub extern fn math_float32_unary(operation: int, value: float32) -> float32;
+
+#[runtime("std.math.float32_pow")]
+pub extern fn math_float32_pow(value: float32, exponent: float32) -> float32;
+
+#[runtime("std.crypto.rand.bytes")]
+pub extern fn crypto_random_bytes(length: int) -> (bool, Vec[byte], string);

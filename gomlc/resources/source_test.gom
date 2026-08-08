@@ -69,9 +69,17 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         },
     };
     testing::assert_eq(fs.declared_name, "fs");
-    assert_strings(fs.source_paths, Vec::["std/fs/fs.gom"]);
-    assert_strings(fs.dependencies, Vec::["std::bytes", "std::internal::host"]);
-    assert_strings(fs.link_dependencies, Vec::["std::bytes"]);
+    assert_strings(fs.source_paths, Vec::["std/fs/error.gom", "std/fs/fs.gom"]);
+    assert_strings(fs.dependencies, Vec::["std::bytes", "std::internal::host", "std::io"]);
+    assert_strings(fs.link_dependencies, Vec::["std::bytes", "std::io"]);
+    let host = match standard_package_spec("std::internal::host") {
+        Some(value) => value,
+        None => {
+            testing::fail("expected std::internal::host package metadata");
+            standard_package("", "", "", Vec::[], Vec::[], Vec::[])
+        },
+    };
+    assert_strings(host.source_paths, Vec::["std/internal/host/host.gom"]);
     assert_strings(
         standard_package_children("std"),
         Vec::[
@@ -80,6 +88,8 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
             "bytes",
             "cmp",
             "collections",
+            "error",
+            "crypto",
             "env",
             "fs",
             "internal",
@@ -87,17 +97,22 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
             "iter",
             "json",
             "num",
+            "math",
             "path",
             "process",
+            "rand",
             "serde",
             "task",
             "testing",
             "text",
             "toml",
             "time",
+            "utf8",
+            "unicode",
         ],
     );
     assert_strings(standard_package_children("std::internal"), Vec::["host", "task"]);
+    assert_strings(standard_package_children("std::crypto"), Vec::["hash", "rand"]);
     match standard_sources("std::serde") {
         Ok(Some(values)) => testing::assert_eq(values.len(), 6),
         Ok(None) => testing::fail("expected serde package"),
@@ -108,14 +123,20 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
         Ok(None) => testing::fail("expected TOML package"),
         Err(error) => testing::fail(error),
     };
+    match standard_sources("std::error") {
+        Ok(Some(values)) => testing::assert_eq(values.len(), 1),
+        Ok(None) => testing::fail("expected error package"),
+        Err(error) => testing::fail(error),
+    };
     assert_strings(
         standard_package_closure(Vec::["std::json", "std::fs"]),
         Vec::[
             "std::internal::host",
+            "std::bytes",
+            "std::io",
             "std::num",
             "std::serde",
             "std::ascii",
-            "std::bytes",
             "std::text",
             "std::json",
             "std::fs",
@@ -124,10 +145,11 @@ fn exposes_standard_package_sources_dependencies_and_namespaces_from_one_catalog
     assert_strings(
         standard_package_link_closure(Vec::["std::json", "std::fs"]),
         Vec::[
+            "std::bytes",
+            "std::io",
             "std::num",
             "std::serde",
             "std::ascii",
-            "std::bytes",
             "std::text",
             "std::json",
             "std::fs",

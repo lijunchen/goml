@@ -24,6 +24,7 @@ struct StandardNeeds {
     bytes: bool,
     cmp: bool,
     collections: bool,
+    error: bool,
     env: bool,
     fs: bool,
     io: bool,
@@ -39,6 +40,13 @@ struct StandardNeeds {
     text: bool,
     toml: bool,
     time: bool,
+    utf8: bool,
+    unicode: bool,
+    math: bool,
+    rand: bool,
+    crypto: bool,
+    crypto_hash: bool,
+    crypto_rand: bool,
 }
 
 struct ArtifactCompilation {
@@ -67,6 +75,7 @@ fn no_standard_needs() -> StandardNeeds {
         bytes: false,
         cmp: false,
         collections: false,
+        error: false,
         env: false,
         fs: false,
         io: false,
@@ -82,6 +91,13 @@ fn no_standard_needs() -> StandardNeeds {
         text: false,
         toml: false,
         time: false,
+        utf8: false,
+        unicode: false,
+        math: false,
+        rand: false,
+        crypto: false,
+        crypto_hash: false,
+        crypto_rand: false,
     }
 }
 
@@ -94,6 +110,7 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         bytes: collections::contains(closure, "std::bytes"),
         cmp: collections::contains(closure, "std::cmp"),
         collections: collections::contains(closure, "std::collections"),
+        error: collections::contains(closure, "std::error"),
         env: collections::contains(closure, "std::env"),
         fs: collections::contains(closure, "std::fs"),
         io: collections::contains(closure, "std::io"),
@@ -109,6 +126,13 @@ fn standard_needs_from_package_names(package_names: Vec[string]) -> StandardNeed
         text: collections::contains(closure, "std::text"),
         toml: collections::contains(closure, "std::toml"),
         time: collections::contains(closure, "std::time"),
+        utf8: collections::contains(closure, "std::utf8"),
+        unicode: collections::contains(closure, "std::unicode"),
+        math: collections::contains(closure, "std::math"),
+        rand: collections::contains(closure, "std::rand"),
+        crypto: collections::contains(closure, "std::crypto"),
+        crypto_hash: collections::contains(closure, "std::crypto::hash"),
+        crypto_rand: collections::contains(closure, "std::crypto::rand"),
     }
 }
 
@@ -130,6 +154,7 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         bytes: left.bytes || right.bytes,
         cmp: left.cmp || right.cmp,
         collections: left.collections || right.collections,
+        error: left.error || right.error,
         env: left.env || right.env,
         fs: left.fs || right.fs,
         io: left.io || right.io,
@@ -145,6 +170,13 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         text: left.text || right.text,
         toml: left.toml || right.toml,
         time: left.time || right.time,
+        utf8: left.utf8 || right.utf8,
+        unicode: left.unicode || right.unicode,
+        math: left.math || right.math,
+        rand: left.rand || right.rand,
+        crypto: left.crypto || right.crypto,
+        crypto_hash: left.crypto_hash || right.crypto_hash,
+        crypto_rand: left.crypto_rand || right.crypto_rand,
     }
 }
 
@@ -582,6 +614,9 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     if needs.collections {
         result.push(standard.collections)
     } else {};
+    if needs.error {
+        result.push(standard.error)
+    } else {};
     if needs.env {
         result.push(standard.env)
     } else {};
@@ -626,6 +661,27 @@ fn selected_standard_packages_for_needs(standard: ArtifactStandardLibrary, needs
     } else {};
     if needs.time {
         result.push(standard.time)
+    } else {};
+    if needs.utf8 {
+        result.push(standard.utf8)
+    } else {};
+    if needs.unicode {
+        result.push(standard.unicode)
+    } else {};
+    if needs.math {
+        result.push(standard.math)
+    } else {};
+    if needs.rand {
+        result.push(standard.rand)
+    } else {};
+    if needs.crypto {
+        result.push(standard.crypto)
+    } else {};
+    if needs.crypto_hash {
+        result.push(standard.crypto_hash)
+    } else {};
+    if needs.crypto_rand {
+        result.push(standard.crypto_rand)
     } else {};
     if needs.root {
         result.push(standard.root)
@@ -754,6 +810,9 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     if needs.collections {
         result.push(standard.collections.core_value)
     } else {};
+    if needs.error {
+        result.push(standard.error.core_value)
+    } else {};
     if needs.env {
         result.push(standard.env.core_value)
     } else {};
@@ -798,6 +857,27 @@ fn selected_link_standard_core(standard: ArtifactStandardLibrary, needs: Standar
     } else {};
     if needs.time {
         result.push(standard.time.core_value)
+    } else {};
+    if needs.utf8 {
+        result.push(standard.utf8.core_value)
+    } else {};
+    if needs.unicode {
+        result.push(standard.unicode.core_value)
+    } else {};
+    if needs.math {
+        result.push(standard.math.core_value)
+    } else {};
+    if needs.rand {
+        result.push(standard.rand.core_value)
+    } else {};
+    if needs.crypto {
+        result.push(standard.crypto.core_value)
+    } else {};
+    if needs.crypto_hash {
+        result.push(standard.crypto_hash.core_value)
+    } else {};
+    if needs.crypto_rand {
+        result.push(standard.crypto_rand.core_value)
     } else {};
     if needs.root {
         result.push(standard.root.core_value)
