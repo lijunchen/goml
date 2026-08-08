@@ -25,6 +25,7 @@ all: test
 cloc:
     find ./goml -type f -name '*.gom' -exec cat {} + | wc -l | awk '{ print "goml:", $1 }'
     find ./gomlc -type f -name '*.gom' -exec cat {} + | wc -l | awk '{ print "gomlc:", $1 }'
+    find ./stdlib -type f -name '*.gom' -exec cat {} + | wc -l | awk '{ print "stdlib:", $1 }'
 
 clean:
     rm -rf _artifact _bootstrap
