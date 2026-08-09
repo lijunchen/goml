@@ -1,0 +1,34 @@
+impl Display for Number {
+  fn display(self/0: Number) -> string {
+      (int::to_string : (int) -> string)((self/0 : Number).value)
+  }
+}
+
+impl Source for Number {
+  fn get(self/1: Number) -> int {
+      (self/1 : Number).value
+  }
+}
+
+fn erase[T](value/2: T) -> dyn Display where T: Display {
+    to_dyn[Display]{T}((value/2 : T))
+}
+
+fn main() -> unit {
+    let display/3: dyn Display = to_dyn[Display]{Number}(Number { value: 42 });
+    (println : (string) -> unit)(
+      (dyn Display::display : (dyn Display) -> string)((display/3 : dyn Display))
+    );
+    let erased/4: dyn Display = (erase : (Number) -> dyn Display)(Number { value: 7 });
+    (println : (string) -> unit)(
+      (dyn Display::display : (dyn Display) -> string)((erased/4 : dyn Display))
+    );
+    let source/5: dyn Source[Item = int] = to_dyn[Source]{Number}(Number { value: 11 });
+    (println : (int) -> unit)(
+      (dyn Source::get : (dyn Source[Item = int]) -> int)((source/5 : dyn Source[Item = int]))
+    );
+    let same/6: dyn Display = to_dyn[Display]{Number}(Number { value: 13 });
+    (println : (string) -> unit)(
+      (dyn Display::display : (dyn Display) -> string)((same/6 : dyn Display))
+    )
+}

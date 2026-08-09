@@ -1,0 +1,42 @@
+fn trait_impl#Display#Number#display(self/0: Number) -> string {
+  inherent#int#int#to_string(Number.value(self/0))
+}
+
+fn trait_impl#Source#Number#get(self/1: Number) -> int {
+  Number.value(self/1)
+}
+
+fn main() -> unit {
+  let display/3 = to_dyn[Display]{Number}(Number { value: 42 }) in
+  let _wild172 = println__T_string(dyn_call[Display::display](display/3)) in
+  let erased/4 = erase__T_Number(Number { value: 7 }) in
+  let _wild173 = println__T_string(dyn_call[Display::display](erased/4)) in
+  let source/5 = to_dyn[Source]{Number}(Number { value: 11 }) in
+  let _wild174 = println__T_int(dyn_call[Source::get](source/5)) in
+  let same/6 = to_dyn[Display]{Number}(Number { value: 13 }) in
+  println__T_string(dyn_call[Display::display](same/6))
+}
+
+fn inherent#int#int#to_string(self/34: int) -> string {
+  @runtime(core.int_to_string)(self/34)
+}
+
+fn println__T_string(value/31: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/31))
+}
+
+fn erase__T_Number(value/2: Number) -> dyn Display {
+  to_dyn[Display]{Number}(value/2)
+}
+
+fn println__T_int(value/31: int) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int#to_string(value/31))
+}
+
+fn trait_impl#ToString#string#to_string(self/67: string) -> string {
+  self/67
+}
+
+fn trait_impl#ToString#int#to_string(self/69: int) -> string {
+  @runtime(core.int_to_string)(self/69)
+}
