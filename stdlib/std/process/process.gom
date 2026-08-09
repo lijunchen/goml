@@ -181,7 +181,7 @@ impl Command {
         Error,
     ] {
         let program = self.program;
-        match self.output_timeout(timeout.as_milliseconds() as int) {
+        match self.output_timeout(timeout.as_milliseconds().to_int()) {
             Ok((output, timed_out)) => if timed_out {
                 Result::Err(
                     Error::new(
@@ -329,7 +329,7 @@ impl Command {
         Error,
     ] {
         let program = self.program;
-        match self.status_timeout(timeout.as_milliseconds() as int) {
+        match self.status_timeout(timeout.as_milliseconds().to_int()) {
             Ok((status, timed_out)) => if timed_out {
                 Result::Err(
                     Error::new(

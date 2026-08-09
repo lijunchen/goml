@@ -8,7 +8,7 @@ use std::text;
 extern fn sum256(value: Slice[byte]) -> [byte; 32];
 
 fn hex_digit(value: byte) -> string {
-    let index = value as int;
+    let index = value.to_int();
     "0123456789abcdef".byte_slice(index, index + 1)
 }
 

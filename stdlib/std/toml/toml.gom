@@ -23,7 +23,7 @@ fn toml_error(line: int, message: string) -> string {
 }
 
 fn strip_comment(value: string) -> string {
-    let mut quote = 0 as byte;
+    let mut quote = 0.to_uint8();
     let mut escaped = false;
     for index in 0..value.byte_len() {
         let current = value.byte_get(index);
@@ -46,11 +46,11 @@ fn strip_comment(value: string) -> string {
 
 fn hex_digit(value: byte) -> Option[uint32] {
     if value >= b'0' && value <= b'9' {
-        Option::Some((value - b'0') as uint32)
+        Option::Some((value - b'0').to_uint32())
     } else if value >= b'a' && value <= b'f' {
-        Option::Some((value - b'a' + 10) as uint32)
+        Option::Some((value - b'a' + 10).to_uint32())
     } else if value >= b'A' && value <= b'F' {
-        Option::Some((value - b'A' + 10) as uint32)
+        Option::Some((value - b'A' + 10).to_uint32())
     } else {
         Option::None
     }
@@ -60,7 +60,7 @@ fn unicode_escape(value: string, start: int, length: int) -> Result[(char, int),
     if start + length > value.byte_len() {
         return Result::Err("incomplete unicode escape")
     } else {};
-    let mut codepoint = 0 as uint32;
+    let mut codepoint = 0.to_uint32();
     for index in start..start + length {
         match hex_digit(value.byte_get(index)) {
             Some(digit) => {
@@ -141,7 +141,7 @@ fn parse_quoted(value: string) -> Result[string, string] {
 }
 
 fn top_level_separator(value: string, expected: byte) -> Option[int] {
-    let mut quote = 0 as byte;
+    let mut quote = 0.to_uint8();
     let mut escaped = false;
     let mut square = 0;
     let mut curly = 0;
@@ -252,7 +252,7 @@ fn parse_integer(value: string) -> Result[int64, string] {
             0 - parsed
         } else {
             parsed
-        }) as int64,
+        }).to_int64(),
     )
 }
 

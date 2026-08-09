@@ -79,7 +79,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
     fn probe(self: IndexMap[K, V], key: K, hash: uint64) -> IndexMapProbe {
         let indices = self.indices.get();
         let mask = indices.len() - 1;
-        let mut position = (hash & mask as uint64) as int;
+        let mut position = (hash & mask.to_uint64()).to_int();
         let mut perturb = hash;
         let mut first_deleted = -1;
         loop {
@@ -106,7 +106,7 @@ impl[K: Eq + Hash, V] IndexMap[K, V] {
                     None => (),
                 }
             };
-            position = ((position as uint64 * 5 + perturb + 1) & mask as uint64) as int;
+            position = ((position.to_uint64() * 5 + perturb + 1) & mask.to_uint64()).to_int();
             perturb >>= 5;
         }
         IndexMapProbe::Vacant(0)

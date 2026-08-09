@@ -52,7 +52,7 @@ fn unsigned_integer(value: uint64) -> Result[Value, string] {
     if value > maximum {
         Result::Err("unsigned integer exceeds TOML integer range")
     } else {
-        Result::Ok(Value::Integer(value as int64))
+        Result::Ok(Value::Integer(value.to_int64()))
     }
 }
 
@@ -67,15 +67,15 @@ pub fn from_serde_value(value: serde::Value) -> Result[Value, string] {
     match value {
         serde::Value::Unit => Result::Err("TOML has no null or unit value"),
         serde::Value::Bool(value) => Result::Ok(Value::Boolean(value)),
-        serde::Value::Int(value) => Result::Ok(Value::Integer(value as int64)),
-        serde::Value::Int8(value) => Result::Ok(Value::Integer(value as int64)),
-        serde::Value::Int16(value) => Result::Ok(Value::Integer(value as int64)),
-        serde::Value::Int32(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Int(value) => Result::Ok(Value::Integer(value.to_int64())),
+        serde::Value::Int8(value) => Result::Ok(Value::Integer(value.to_int64())),
+        serde::Value::Int16(value) => Result::Ok(Value::Integer(value.to_int64())),
+        serde::Value::Int32(value) => Result::Ok(Value::Integer(value.to_int64())),
         serde::Value::Int64(value) => Result::Ok(Value::Integer(value)),
-        serde::Value::Uint(value) => unsigned_integer(value as uint64),
-        serde::Value::Uint8(value) => Result::Ok(Value::Integer(value as int64)),
-        serde::Value::Uint16(value) => Result::Ok(Value::Integer(value as int64)),
-        serde::Value::Uint32(value) => Result::Ok(Value::Integer(value as int64)),
+        serde::Value::Uint(value) => unsigned_integer(value.to_uint64()),
+        serde::Value::Uint8(value) => Result::Ok(Value::Integer(value.to_int64())),
+        serde::Value::Uint16(value) => Result::Ok(Value::Integer(value.to_int64())),
+        serde::Value::Uint32(value) => Result::Ok(Value::Integer(value.to_int64())),
         serde::Value::Uint64(value) => unsigned_integer(value),
         serde::Value::Float32(value) => float32_value(value),
         serde::Value::Float64(value) => Result::Ok(Value::Float(value)),

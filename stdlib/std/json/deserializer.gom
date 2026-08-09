@@ -295,7 +295,7 @@ fn direct_json_number(deserializer: JsonDeserializer) -> Result[string, string] 
 fn direct_json_int(deserializer: JsonDeserializer, width: int) -> Result[int64, string] {
     let text = direct_json_number(deserializer)?;
     let value = match num::parse_int(text) {
-        Ok(value) => value as int64,
+        Ok(value) => value.to_int64(),
         Err(error) => return Result::Err(json_deserializer_error(deserializer, error)),
     };
     if width == 8 && (value < -128 || value > 127) {
@@ -312,7 +312,7 @@ fn direct_json_int(deserializer: JsonDeserializer, width: int) -> Result[int64, 
 fn direct_json_uint(deserializer: JsonDeserializer, width: int) -> Result[uint64, string] {
     let text = direct_json_number(deserializer)?;
     let value = match num::parse_uint(text) {
-        Ok(value) => value as uint64,
+        Ok(value) => value.to_uint64(),
         Err(error) => return Result::Err(json_deserializer_error(deserializer, error)),
     };
     if width == 8 && value > 255 {
@@ -478,19 +478,19 @@ impl serde::Deserializer for JsonDeserializer {
     }
 
     fn deserialize_int(self: JsonDeserializer) -> Result[int, string] {
-        Result::Ok(direct_json_int(self, 0)? as int)
+        Result::Ok(direct_json_int(self, 0)?.to_int())
     }
 
     fn deserialize_int8(self: JsonDeserializer) -> Result[int8, string] {
-        Result::Ok(direct_json_int(self, 8)? as int8)
+        Result::Ok(direct_json_int(self, 8)?.to_int8())
     }
 
     fn deserialize_int16(self: JsonDeserializer) -> Result[int16, string] {
-        Result::Ok(direct_json_int(self, 16)? as int16)
+        Result::Ok(direct_json_int(self, 16)?.to_int16())
     }
 
     fn deserialize_int32(self: JsonDeserializer) -> Result[int32, string] {
-        Result::Ok(direct_json_int(self, 32)? as int32)
+        Result::Ok(direct_json_int(self, 32)?.to_int32())
     }
 
     fn deserialize_int64(self: JsonDeserializer) -> Result[int64, string] {
@@ -498,19 +498,19 @@ impl serde::Deserializer for JsonDeserializer {
     }
 
     fn deserialize_uint(self: JsonDeserializer) -> Result[uint, string] {
-        Result::Ok(direct_json_uint(self, 0)? as uint)
+        Result::Ok(direct_json_uint(self, 0)?.to_uint())
     }
 
     fn deserialize_uint8(self: JsonDeserializer) -> Result[uint8, string] {
-        Result::Ok(direct_json_uint(self, 8)? as uint8)
+        Result::Ok(direct_json_uint(self, 8)?.to_uint8())
     }
 
     fn deserialize_uint16(self: JsonDeserializer) -> Result[uint16, string] {
-        Result::Ok(direct_json_uint(self, 16)? as uint16)
+        Result::Ok(direct_json_uint(self, 16)?.to_uint16())
     }
 
     fn deserialize_uint32(self: JsonDeserializer) -> Result[uint32, string] {
-        Result::Ok(direct_json_uint(self, 32)? as uint32)
+        Result::Ok(direct_json_uint(self, 32)?.to_uint32())
     }
 
     fn deserialize_uint64(self: JsonDeserializer) -> Result[uint64, string] {
@@ -590,7 +590,7 @@ impl serde::Deserializer for JsonDeserializer {
             } else {
                 consume_json_byte(self.parser, b',', "expected byte array separator")?;
             };
-            values.push(direct_json_uint(self, 8)? as byte)
+            values.push(direct_json_uint(self, 8)?.to_uint8())
         }
         Result::Err("unreachable byte array state")
     }

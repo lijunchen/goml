@@ -36,7 +36,7 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
     if index < 0 || index >= length {
         return utf8_invalid_decode()
     } else {};
-    let first = value.byte_get(index) as uint32;
+    let first = value.byte_get(index).to_uint32();
     if first < 128 {
         utf8_valid_decode(first, 1)
     } else if first < 194 {
@@ -45,7 +45,7 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
         if length - index < 2 {
             return utf8_invalid_decode()
         } else {};
-        let second = value.byte_get(index + 1) as uint32;
+        let second = value.byte_get(index + 1).to_uint32();
         if utf8_invalid_continuation(second) {
             utf8_invalid_decode()
         } else {
@@ -55,8 +55,8 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
         if length - index < 3 {
             return utf8_invalid_decode()
         } else {};
-        let second = value.byte_get(index + 1) as uint32;
-        let third = value.byte_get(index + 2) as uint32;
+        let second = value.byte_get(index + 1).to_uint32();
+        let third = value.byte_get(index + 2).to_uint32();
         if utf8_invalid_continuation(second) || utf8_invalid_continuation(third)
             || (first == 224 && second < 160)
             || (first == 237 && second >= 160) {
@@ -68,9 +68,9 @@ fn string_decode_utf8_at(value: string, index: int) -> (bool, char, int) {
         if length - index < 4 {
             return utf8_invalid_decode()
         } else {};
-        let second = value.byte_get(index + 1) as uint32;
-        let third = value.byte_get(index + 2) as uint32;
-        let fourth = value.byte_get(index + 3) as uint32;
+        let second = value.byte_get(index + 1).to_uint32();
+        let third = value.byte_get(index + 2).to_uint32();
+        let fourth = value.byte_get(index + 3).to_uint32();
         if utf8_invalid_continuation(second) || utf8_invalid_continuation(third)
             || utf8_invalid_continuation(fourth)
             || (first == 240 && second < 144)
@@ -129,7 +129,7 @@ fn string_from_utf8(bytes: Vec[byte]) -> (bool, string) {
 }
 
 fn char_to_string(value: char) -> string {
-    if utf8_valid_scalar(value as uint32) {
+    if utf8_valid_scalar(value.to_uint32()) {
         char_to_string_raw(value)
     } else {
         let _ = string_get_raw("", -1);

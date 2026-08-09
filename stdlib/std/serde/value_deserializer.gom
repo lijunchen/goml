@@ -102,7 +102,7 @@ fn deserialize_bytes_value(value: Value) -> Result[Vec[byte], string] {
                         if parsed > 255 {
                             return Result::Err("uint8 is out of range")
                         } else {
-                            bytes.push(parsed as uint8)
+                            bytes.push(parsed.to_uint8())
                         }
                     },
                     _ => return Result::Err("expected uint8"),
@@ -149,7 +149,7 @@ impl Deserializer for ValueDeserializer {
                 if parsed < -128 || parsed > 127 {
                     Result::Err("int8 is out of range")
                 } else {
-                    Result::Ok(parsed as int8)
+                    Result::Ok(parsed.to_int8())
                 }
             },
             _ => Result::Err("expected int8"),
@@ -164,7 +164,7 @@ impl Deserializer for ValueDeserializer {
                 if parsed < -32768 || parsed > 32767 {
                     Result::Err("int16 is out of range")
                 } else {
-                    Result::Ok(parsed as int16)
+                    Result::Ok(parsed.to_int16())
                 }
             },
             _ => Result::Err("expected int16"),
@@ -179,7 +179,7 @@ impl Deserializer for ValueDeserializer {
                 if parsed < -2147483648 || parsed > 2147483647 {
                     Result::Err("int32 is out of range")
                 } else {
-                    Result::Ok(parsed as int32)
+                    Result::Ok(parsed.to_int32())
                 }
             },
             _ => Result::Err("expected int32"),
@@ -190,7 +190,7 @@ impl Deserializer for ValueDeserializer {
         match take_deserializer_value(self)? {
             Value::Int64(value) => Result::Ok(value),
             Value::Number(value) => match num::parse_int(value) {
-                Ok(value) => Result::Ok(value as int64),
+                Ok(value) => Result::Ok(value.to_int64()),
                 Err(error) => Result::Err(error),
             },
             _ => Result::Err("expected int64"),
@@ -213,7 +213,7 @@ impl Deserializer for ValueDeserializer {
                 if parsed > 255 {
                     Result::Err("uint8 is out of range")
                 } else {
-                    Result::Ok(parsed as uint8)
+                    Result::Ok(parsed.to_uint8())
                 }
             },
             _ => Result::Err("expected uint8"),
@@ -228,7 +228,7 @@ impl Deserializer for ValueDeserializer {
                 if parsed > 65535 {
                     Result::Err("uint16 is out of range")
                 } else {
-                    Result::Ok(parsed as uint16)
+                    Result::Ok(parsed.to_uint16())
                 }
             },
             _ => Result::Err("expected uint16"),
@@ -243,7 +243,7 @@ impl Deserializer for ValueDeserializer {
                 if parsed > 4294967295 {
                     Result::Err("uint32 is out of range")
                 } else {
-                    Result::Ok(parsed as uint32)
+                    Result::Ok(parsed.to_uint32())
                 }
             },
             _ => Result::Err("expected uint32"),
@@ -254,7 +254,7 @@ impl Deserializer for ValueDeserializer {
         match take_deserializer_value(self)? {
             Value::Uint64(value) => Result::Ok(value),
             Value::Number(value) => match num::parse_uint(value) {
-                Ok(value) => Result::Ok(value as uint64),
+                Ok(value) => Result::Ok(value.to_uint64()),
                 Err(error) => Result::Err(error),
             },
             _ => Result::Err("expected uint64"),

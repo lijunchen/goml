@@ -31,14 +31,14 @@ fn push_fixed(output: Vec[byte], value: uint64, width: int, config: Config) -> u
         } else {
             width - index - 1
         };
-        output.push((value >> (position * 8)) as byte);
+        output.push((value >> (position * 8)).to_uint8());
         index = index + 1;
     }
 }
 
 fn push_variable(output: Vec[byte], value: uint64, config: Config) -> unit {
     if value < 251 {
-        output.push(value as byte)
+        output.push(value.to_uint8())
     } else if value <= 65535 {
         output.push(251);
         push_fixed(output, value, 2, config)
@@ -62,7 +62,7 @@ fn normalized_width(width: int) -> int {
 fn push_unsigned(output: Vec[byte], value: uint64, width: int, config: Config) -> unit {
     let actual_width = normalized_width(width);
     if actual_width == 8 {
-        output.push(value as byte)
+        output.push(value.to_uint8())
     } else if variable_ints(config) {
         push_variable(output, value, config)
     } else {
@@ -71,17 +71,17 @@ fn push_unsigned(output: Vec[byte], value: uint64, width: int, config: Config) -
 }
 
 fn zigzag(value: int64) -> uint64 {
-    ((value as uint64) << 1) ^ ((value >> 63) as uint64)
+    ((value.to_uint64()) << 1) ^ ((value >> 63).to_uint64())
 }
 
 fn push_signed(output: Vec[byte], value: int64, width: int, config: Config) -> unit {
     let actual_width = normalized_width(width);
     if actual_width == 8 {
-        output.push(value as byte)
+        output.push(value.to_uint8())
     } else if variable_ints(config) {
         push_variable(output, zigzag(value), config)
     } else {
-        push_fixed(output, value as uint64, actual_width / 8, config)
+        push_fixed(output, value.to_uint64(), actual_width / 8, config)
     }
 }
 
@@ -89,7 +89,7 @@ fn push_length(output: Vec[byte], value: int, config: Config) -> Result[unit, st
     if value < 0 {
         Result::Err("negative collection length")
     } else {
-        push_unsigned(output, value as uint64, 64, config);
+        push_unsigned(output, value.to_uint64(), 64, config);
         Result::Ok(())
     }
 }
@@ -149,19 +149,19 @@ fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[
             Result::Ok(())
         },
         serde::Value::Int(value) => {
-            push_signed(output, value as int64, 0, config);
+            push_signed(output, value.to_int64(), 0, config);
             Result::Ok(())
         },
         serde::Value::Int8(value) => {
-            push_signed(output, value as int64, 8, config);
+            push_signed(output, value.to_int64(), 8, config);
             Result::Ok(())
         },
         serde::Value::Int16(value) => {
-            push_signed(output, value as int64, 16, config);
+            push_signed(output, value.to_int64(), 16, config);
             Result::Ok(())
         },
         serde::Value::Int32(value) => {
-            push_signed(output, value as int64, 32, config);
+            push_signed(output, value.to_int64(), 32, config);
             Result::Ok(())
         },
         serde::Value::Int64(value) => {
@@ -169,19 +169,19 @@ fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[
             Result::Ok(())
         },
         serde::Value::Uint(value) => {
-            push_unsigned(output, value as uint64, 0, config);
+            push_unsigned(output, value.to_uint64(), 0, config);
             Result::Ok(())
         },
         serde::Value::Uint8(value) => {
-            push_unsigned(output, value as uint64, 8, config);
+            push_unsigned(output, value.to_uint64(), 8, config);
             Result::Ok(())
         },
         serde::Value::Uint16(value) => {
-            push_unsigned(output, value as uint64, 16, config);
+            push_unsigned(output, value.to_uint64(), 16, config);
             Result::Ok(())
         },
         serde::Value::Uint32(value) => {
-            push_unsigned(output, value as uint64, 32, config);
+            push_unsigned(output, value.to_uint64(), 32, config);
             Result::Ok(())
         },
         serde::Value::Uint64(value) => {
@@ -189,7 +189,7 @@ fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[
             Result::Ok(())
         },
         serde::Value::Float32(value) => {
-            push_fixed(output, float32_bits(value) as uint64, 4, config);
+            push_fixed(output, float32_bits(value).to_uint64(), 4, config);
             Result::Ok(())
         },
         serde::Value::Float64(value) => {
@@ -199,7 +199,7 @@ fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[
         serde::Value::Number(_) => Result::Err("bincode requires a precise numeric type"),
         serde::Value::String(value) => push_string(output, value, config),
         serde::Value::Char(value) => {
-            push_unsigned(output, value as uint32 as uint64, 32, config);
+            push_unsigned(output, value.to_uint32().to_uint64(), 32, config);
             Result::Ok(())
         },
         serde::Value::Sequence(values) => {
@@ -213,7 +213,7 @@ fn push_value(output: Vec[byte], value: serde::Value, config: Config) -> Result[
             if index < 0 {
                 Result::Err("negative enum variant index")
             } else {
-                push_unsigned(output, index as uint64, 32, config);
+                push_unsigned(output, index.to_uint64(), 32, config);
                 push_fields(output, fields, config)
             }
         },
@@ -346,25 +346,25 @@ impl serde::Serializer for BincodeSerializer {
 
     fn serialize_int(self: BincodeSerializer, value: int) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_signed(self.output, value as int64, 0, self.config);
+        push_signed(self.output, value.to_int64(), 0, self.config);
         Result::Ok(())
     }
 
     fn serialize_int8(self: BincodeSerializer, value: int8) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_signed(self.output, value as int64, 8, self.config);
+        push_signed(self.output, value.to_int64(), 8, self.config);
         Result::Ok(())
     }
 
     fn serialize_int16(self: BincodeSerializer, value: int16) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_signed(self.output, value as int64, 16, self.config);
+        push_signed(self.output, value.to_int64(), 16, self.config);
         Result::Ok(())
     }
 
     fn serialize_int32(self: BincodeSerializer, value: int32) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_signed(self.output, value as int64, 32, self.config);
+        push_signed(self.output, value.to_int64(), 32, self.config);
         Result::Ok(())
     }
 
@@ -376,25 +376,25 @@ impl serde::Serializer for BincodeSerializer {
 
     fn serialize_uint(self: BincodeSerializer, value: uint) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_unsigned(self.output, value as uint64, 0, self.config);
+        push_unsigned(self.output, value.to_uint64(), 0, self.config);
         Result::Ok(())
     }
 
     fn serialize_uint8(self: BincodeSerializer, value: uint8) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_unsigned(self.output, value as uint64, 8, self.config);
+        push_unsigned(self.output, value.to_uint64(), 8, self.config);
         Result::Ok(())
     }
 
     fn serialize_uint16(self: BincodeSerializer, value: uint16) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_unsigned(self.output, value as uint64, 16, self.config);
+        push_unsigned(self.output, value.to_uint64(), 16, self.config);
         Result::Ok(())
     }
 
     fn serialize_uint32(self: BincodeSerializer, value: uint32) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_unsigned(self.output, value as uint64, 32, self.config);
+        push_unsigned(self.output, value.to_uint64(), 32, self.config);
         Result::Ok(())
     }
 
@@ -406,7 +406,7 @@ impl serde::Serializer for BincodeSerializer {
 
     fn serialize_float32(self: BincodeSerializer, value: float32) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_fixed(self.output, float32_bits(value) as uint64, 4, self.config);
+        push_fixed(self.output, float32_bits(value).to_uint64(), 4, self.config);
         Result::Ok(())
     }
 
@@ -429,7 +429,7 @@ impl serde::Serializer for BincodeSerializer {
 
     fn serialize_char(self: BincodeSerializer, value: char) -> Result[unit, string] {
         claim_bincode_value(self)?;
-        push_unsigned(self.output, value as uint32 as uint64, 32, self.config);
+        push_unsigned(self.output, value.to_uint32().to_uint64(), 32, self.config);
         Result::Ok(())
     }
 
@@ -708,7 +708,7 @@ impl serde::Serializer for BincodeSerializer {
             Result::Err("unit enum variant cannot contain fields")
         } else {
             claim_bincode_value(self)?;
-            push_unsigned(self.output, index as uint64, 32, self.config);
+            push_unsigned(self.output, index.to_uint64(), 32, self.config);
             self.frames.push(
                 BincodeSerializeFrame::Variant {
                     length: fields,

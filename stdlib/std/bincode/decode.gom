@@ -116,7 +116,7 @@ fn read_fixed(decoder: Decoder, width: int) -> Result[uint64, string] {
     let mut result: uint64 = 0;
     let mut index = 0;
     while index < width {
-        let value = read_byte(decoder)? as uint64;
+        let value = read_byte(decoder)?.to_uint64();
         let position = if little_endian(decoder.config) {
             index
         } else {
@@ -131,7 +131,7 @@ fn read_fixed(decoder: Decoder, width: int) -> Result[uint64, string] {
 fn read_variable(decoder: Decoder) -> Result[uint64, string] {
     let marker = read_byte(decoder)?;
     if marker < 251 {
-        Result::Ok(marker as uint64)
+        Result::Ok(marker.to_uint64())
     } else if marker == 251 {
         read_fixed(decoder, 2)
     } else if marker == 252 {
@@ -160,7 +160,7 @@ fn unsigned_fits(value: uint64, width: int) -> bool {
 fn read_unsigned(decoder: Decoder, width: int) -> Result[uint64, string] {
     let actual_width = normalized_width(width);
     let value = if actual_width == 8 {
-        read_byte(decoder)? as uint64
+        read_byte(decoder)?.to_uint64()
     } else if variable_ints(decoder.config) {
         read_variable(decoder)?
     } else {
@@ -186,7 +186,7 @@ fn signed_fits(value: int64, width: int) -> bool {
 }
 
 fn unzigzag(value: uint64) -> int64 {
-    let magnitude = (value >> 1) as int64;
+    let magnitude = (value >> 1).to_int64();
     if value & 1 == 0 {
         magnitude
     } else {
@@ -196,20 +196,20 @@ fn unzigzag(value: uint64) -> int64 {
 
 fn fixed_signed(value: uint64, width: int) -> int64 {
     if width == 8 {
-        value as uint8 as int8 as int64
+        value.to_uint8().to_int8().to_int64()
     } else if width == 16 {
-        value as uint16 as int16 as int64
+        value.to_uint16().to_int16().to_int64()
     } else if width == 32 {
-        value as uint32 as int32 as int64
+        value.to_uint32().to_int32().to_int64()
     } else {
-        value as int64
+        value.to_int64()
     }
 }
 
 fn read_signed(decoder: Decoder, width: int) -> Result[int64, string] {
     let actual_width = normalized_width(width);
     let value = if actual_width == 8 {
-        read_byte(decoder)? as int8 as int64
+        read_byte(decoder)?.to_int8().to_int64()
     } else if variable_ints(decoder.config) {
         unzigzag(read_variable(decoder)?)
     } else {
@@ -224,11 +224,11 @@ fn read_signed(decoder: Decoder, width: int) -> Result[int64, string] {
 
 fn read_length(decoder: Decoder) -> Result[int, string] {
     let value = read_unsigned(decoder, 64)?;
-    let maximum = 9223372036854775807 as uint64;
+    let maximum = 9223372036854775807.to_uint64();
     if value > maximum {
         Result::Err(decoder_error(decoder, "collection length is too large"))
     } else {
-        Result::Ok(value as int)
+        Result::Ok(value.to_int())
     }
 }
 
@@ -255,13 +255,13 @@ fn read_integer(decoder: Decoder, signed: bool, width: int) -> Result[serde::Val
     if signed {
         let value = read_signed(decoder, width)?;
         if width == 0 {
-            Result::Ok(serde::Value::Int(value as int))
+            Result::Ok(serde::Value::Int(value.to_int()))
         } else if width == 8 {
-            Result::Ok(serde::Value::Int8(value as int8))
+            Result::Ok(serde::Value::Int8(value.to_int8()))
         } else if width == 16 {
-            Result::Ok(serde::Value::Int16(value as int16))
+            Result::Ok(serde::Value::Int16(value.to_int16()))
         } else if width == 32 {
-            Result::Ok(serde::Value::Int32(value as int32))
+            Result::Ok(serde::Value::Int32(value.to_int32()))
         } else if width == 64 {
             Result::Ok(serde::Value::Int64(value))
         } else {
@@ -270,13 +270,13 @@ fn read_integer(decoder: Decoder, signed: bool, width: int) -> Result[serde::Val
     } else {
         let value = read_unsigned(decoder, width)?;
         if width == 0 {
-            Result::Ok(serde::Value::Uint(value as uint))
+            Result::Ok(serde::Value::Uint(value.to_uint()))
         } else if width == 8 {
-            Result::Ok(serde::Value::Uint8(value as uint8))
+            Result::Ok(serde::Value::Uint8(value.to_uint8()))
         } else if width == 16 {
-            Result::Ok(serde::Value::Uint16(value as uint16))
+            Result::Ok(serde::Value::Uint16(value.to_uint16()))
         } else if width == 32 {
-            Result::Ok(serde::Value::Uint32(value as uint32))
+            Result::Ok(serde::Value::Uint32(value.to_uint32()))
         } else if width == 64 {
             Result::Ok(serde::Value::Uint64(value))
         } else {
@@ -287,7 +287,7 @@ fn read_integer(decoder: Decoder, signed: bool, width: int) -> Result[serde::Val
 
 fn read_float(decoder: Decoder, width: int) -> Result[serde::Value, string] {
     if width == 32 {
-        Result::Ok(serde::Value::Float32(float32_from_bits(read_fixed(decoder, 4)? as uint32)))
+        Result::Ok(serde::Value::Float32(float32_from_bits(read_fixed(decoder, 4)?.to_uint32())))
     } else if width == 64 {
         Result::Ok(serde::Value::Float64(float64_from_bits(read_fixed(decoder, 8)?)))
     } else {
@@ -297,7 +297,7 @@ fn read_float(decoder: Decoder, width: int) -> Result[serde::Value, string] {
 
 fn read_char(decoder: Decoder) -> Result[serde::Value, string] {
     let value = read_unsigned(decoder, 32)?;
-    match char_from_uint32(value as uint32) {
+    match char_from_uint32(value.to_uint32()) {
         Some(value) => Result::Ok(serde::Value::Char(value)),
         None => Result::Err(decoder_error(decoder, "invalid Unicode scalar value")),
     }
@@ -358,7 +358,7 @@ fn read_variant(decoder: Decoder, variants: Vec[serde::VariantSchema]) -> Result
 ] {
     let index = read_unsigned(decoder, 32)?;
     for variant in variants {
-        if variant.index >= 0 && variant.index as uint64 == index {
+        if variant.index >= 0 && variant.index.to_uint64() == index {
             let fields = read_fields(decoder, variant.fields)?;
             return Result::Ok(
                 serde::Value::Variant {
@@ -492,22 +492,22 @@ impl serde::Deserializer for Decoder {
 
     fn deserialize_int(self: Decoder) -> Result[int, string] {
         claim_bincode_input(self)?;
-        Result::Ok(read_signed(self, 0)? as int)
+        Result::Ok(read_signed(self, 0)?.to_int())
     }
 
     fn deserialize_int8(self: Decoder) -> Result[int8, string] {
         claim_bincode_input(self)?;
-        Result::Ok(read_signed(self, 8)? as int8)
+        Result::Ok(read_signed(self, 8)?.to_int8())
     }
 
     fn deserialize_int16(self: Decoder) -> Result[int16, string] {
         claim_bincode_input(self)?;
-        Result::Ok(read_signed(self, 16)? as int16)
+        Result::Ok(read_signed(self, 16)?.to_int16())
     }
 
     fn deserialize_int32(self: Decoder) -> Result[int32, string] {
         claim_bincode_input(self)?;
-        Result::Ok(read_signed(self, 32)? as int32)
+        Result::Ok(read_signed(self, 32)?.to_int32())
     }
 
     fn deserialize_int64(self: Decoder) -> Result[int64, string] {
@@ -517,22 +517,22 @@ impl serde::Deserializer for Decoder {
 
     fn deserialize_uint(self: Decoder) -> Result[uint, string] {
         claim_bincode_input(self)?;
-        Result::Ok(read_unsigned(self, 0)? as uint)
+        Result::Ok(read_unsigned(self, 0)?.to_uint())
     }
 
     fn deserialize_uint8(self: Decoder) -> Result[uint8, string] {
         claim_bincode_input(self)?;
-        Result::Ok(read_unsigned(self, 8)? as uint8)
+        Result::Ok(read_unsigned(self, 8)?.to_uint8())
     }
 
     fn deserialize_uint16(self: Decoder) -> Result[uint16, string] {
         claim_bincode_input(self)?;
-        Result::Ok(read_unsigned(self, 16)? as uint16)
+        Result::Ok(read_unsigned(self, 16)?.to_uint16())
     }
 
     fn deserialize_uint32(self: Decoder) -> Result[uint32, string] {
         claim_bincode_input(self)?;
-        Result::Ok(read_unsigned(self, 32)? as uint32)
+        Result::Ok(read_unsigned(self, 32)?.to_uint32())
     }
 
     fn deserialize_uint64(self: Decoder) -> Result[uint64, string] {
@@ -542,7 +542,7 @@ impl serde::Deserializer for Decoder {
 
     fn deserialize_float32(self: Decoder) -> Result[float32, string] {
         claim_bincode_input(self)?;
-        Result::Ok(float32_from_bits(read_fixed(self, 4)? as uint32))
+        Result::Ok(float32_from_bits(read_fixed(self, 4)?.to_uint32()))
     }
 
     fn deserialize_float64(self: Decoder) -> Result[float64, string] {
@@ -562,7 +562,7 @@ impl serde::Deserializer for Decoder {
     fn deserialize_char(self: Decoder) -> Result[char, string] {
         claim_bincode_input(self)?;
         let value = read_unsigned(self, 32)?;
-        match char_from_uint32(value as uint32) {
+        match char_from_uint32(value.to_uint32()) {
             Some(value) => Result::Ok(value),
             None => Result::Err(decoder_error(self, "invalid Unicode scalar value")),
         }
@@ -818,20 +818,20 @@ impl serde::Deserializer for Decoder {
         } else {};
         claim_bincode_input(self)?;
         let index = read_unsigned(self, 32)?;
-        if index > 9223372036854775807 as uint64 {
+        if index > 9223372036854775807.to_uint64() {
             Result::Err(decoder_error(self, "enum variant index is too large"))
         } else {
             self.frames.push(
                 BincodeFrame::Variant {
                     enum_name,
-                    variant: index as int,
+                    variant: index.to_int(),
                     fields: Ref::new(0),
                     index: Ref::new(0),
                     begun: Ref::new(false),
                     ready: Ref::new(false),
                 },
             );
-            Result::Ok(serde::VariantKey::Index(index as int))
+            Result::Ok(serde::VariantKey::Index(index.to_int()))
         }
     }
 
