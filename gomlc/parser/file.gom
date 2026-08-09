@@ -241,7 +241,7 @@ fn constant(parser: Parser) -> unit {
 
 fn constant_with_marker(parser: Parser, marker: MarkerOpened) -> unit {
     parser.expect(lexer::TokenKind::ConstKeyword);
-    parser.expect_lower_ident("constant name");
+    parser.expect(lexer::TokenKind::Ident);
     parser.expect(lexer::TokenKind::Colon);
     if is_type_first(parser.peek()) {
         type_expr(parser)

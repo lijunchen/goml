@@ -1024,18 +1024,25 @@ fn check_constructor_value_expr(
     constructor: hir::ConstructorRef,
     expected: Option[Type],
 ) -> Expr {
-    match resolve_constructor(ctx, constructor) {
-        Some(info) => resolved_constructor_value_expr(ctx, info),
-        None => missing_constructor_expr(
-            ctx,
-            match constructor {
-                Unresolved(name) => name,
-                Resolved { enum_def: _, variant_index: _ } => {
-                    "<error>"
+    let constant = match constructor {
+        Unresolved(name) => find_constant_by_name(ctx, name),
+        Resolved { enum_def: _, variant_index: _ } => Option::None,
+    };
+    match constant {
+        Some(value) => Expr::Var { name: value.name, ty: value.ty },
+        None => match resolve_constructor(ctx, constructor) {
+            Some(info) => resolved_constructor_value_expr(ctx, info),
+            None => missing_constructor_expr(
+                ctx,
+                match constructor {
+                    Unresolved(name) => name,
+                    Resolved { enum_def: _, variant_index: _ } => {
+                        "<error>"
+                    },
                 },
-            },
-            expected,
-        ),
+                expected,
+            ),
+        },
     }
 }
 

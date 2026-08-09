@@ -421,20 +421,20 @@ The top level of an ordinary source code file should only contain:
 Top-level constants require an explicit type and a compile-time expression:
 
 ```goml
-const base: int32 = 0x20;
-pub const answer: int32 = base + 10;
-const newline: byte = b'\n';
+const BASE: int32 = 0x20;
+pub const ANSWER: int32 = BASE + 10;
+const NEWLINE: byte = b'\n';
 ```
 
-Constant expressions support scalar literals, references to other constants, unary and binary operators, and casts. They may use forward references, but cycles are rejected. The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`. Public constants are available through package-qualified paths.
+Constant names may start with an uppercase letter, a lowercase letter, or `_`; `UPPER_SNAKE_CASE` is the preferred convention. Constant expressions support scalar literals, references to other constants, unary and binary operators, and casts. They may use forward references, but cycles are rejected. The allowed constant types are `bool`, numeric types, `string`, `char`, and `byte`. Public constants are available through package-qualified paths.
 
 Visible top-level constants can be used as value patterns in `match`, `if let`, `while let`, and `let else`. Both local names and package-qualified names are supported, and constant patterns can be nested or combined with or-patterns:
 
 ```goml
-const answer: int = 42;
+const ANSWER: int = 42;
 
 match value {
-    answer | config::fallback => "known",
+    ANSWER | config::FALLBACK => "known",
     _ => "other",
 }
 ```
@@ -455,7 +455,7 @@ fn factorial(value: int) -> int {
     }
 }
 
-const six: int = factorial(3);
+const SIX: int = factorial(3);
 
 fn table() -> [int; 4] {
     comptime {
@@ -466,7 +466,7 @@ fn table() -> [int; 4] {
 
 `#[comptime]` marks a non-generic free function as compile-time-capable. The function remains callable at runtime. A compile-time call may call only other `#[comptime]` free functions or the `compile_error(string) -> never` intrinsic. The compiler validates the complete body of every marked function, including branches not taken by a particular invocation. Attributes with arguments, duplicate attributes, generic functions, methods, extern functions, and other declarations are rejected.
 
-A top-level constant initializer is an implicit compile-time context, so `const six: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. Top-level constants retain their scalar-only restriction. A `comptime` expression in ordinary code may produce a reifiable tuple, fixed array, struct, or enum in addition to `unit`, `bool`, integer, `string`, and `char` values.
+A top-level constant initializer is an implicit compile-time context, so `const SIX: int = factorial(3);` and an initializer wrapped in `comptime { ... }` are equivalent. Top-level constants retain their scalar-only restriction. A `comptime` expression in ordinary code may produce a reifiable tuple, fixed array, struct, or enum in addition to `unit`, `bool`, integer, `string`, and `char` values.
 
 Compile-time code may use local bindings and assignment, blocks, `if`, `match`, `while`, `loop`, restricted `for`, `break`, `continue`, `return`, recursion, direct calls, and supported integer casts and operators. A compile-time `for` accepts only a fixed array or the builtin `int` ranges `start..end` and `start..=end`; its source and range endpoints are evaluated once, and its pattern must be irrefutable. The deterministic string methods `len`, `byte_len`, `get`, `byte_get`, `byte_slice`, `is_char_boundary`, `starts_with`, `ends_with`, and `contains` are also available. String indexes and slices use byte offsets and reject invalid UTF-8 character boundaries.
 
@@ -1159,7 +1159,7 @@ Patterns can be used with `let`, `for`, `match`, `if let` and `while let`.
 | Wildcard | `_` |
 | unit | `()` |
 | bool/number/string/character | `true`、`42`、`"ok"`、`'x'` |
-| top-level constant | `answer` or `config::answer` |
+| top-level constant | `ANSWER` or `config::ANSWER` |
 | Group | `(pattern)` |
 | tuple | `(left, right)` |
 | Single element tuple | `(value,)` |
@@ -2635,7 +2635,7 @@ go_ffi_extern = go_ffi_attribute visibility? "extern" "fn" lower_ident
                 param_list return_type? ";"
 
 function      = "fn" lower_ident generic_params? param_list return_type? where_clause? block
-constant      = "const" lower_ident ":" type "=" expression ";"
+constant      = "const" ident ":" type "=" expression ";"
 method        = visibility? "fn" lower_ident generic_params? param_list return_type? where_clause? block
 generic_params = "[" generic_param ("," generic_param)* "]"
 generic_param = upper_ident (":" trait_set)?

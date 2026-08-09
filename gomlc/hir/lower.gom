@@ -886,12 +886,19 @@ fn lower_pattern_inner(
         String { value, span: _ } => PatKind::String { value },
         Char { value, span: _ } => PatKind::Char { value },
         Byte { value, span: _ } => PatKind::Byte { value },
-        Constr { constructor: path, args, span: _ } => {
-            let result: Vec[Pat] = Vec::[];
-            for arg in args {
-                result.push(lower_pattern_inner(ctx, arg, env, state))
-            }
-            PatKind::Constr { head: pattern_head(ctx, path), args: result }
+        Constr { constructor: path, args, span: _ } => match if state.constants && args.is_empty() {
+            constant_ref(ctx, path)
+        } else {
+            Option::None
+        } {
+            Some(reference) => PatKind::Constant { reference },
+            None => {
+                let result: Vec[Pat] = Vec::[];
+                for arg in args {
+                    result.push(lower_pattern_inner(ctx, arg, env, state))
+                }
+                PatKind::Constr { head: pattern_head(ctx, path), args: result }
+            },
         },
         Struct { name: path, fields, has_rest, span: _ } => {
             let result: Vec[(string, Pat)] = Vec::[];
@@ -1175,8 +1182,9 @@ fn lower_expr_value(
         Char { value, span: _ } => ExprKind::Char { value },
         Byte { value, span: _ } => ExprKind::Byte { value },
         ByteString { values, span: _ } => ExprKind::ByteString { values },
-        ConstructorValue { constructor: path, span: _ } => {
-            ExprKind::ConstructorValue { constructor: unresolved_constructor(ctx, path) }
+        ConstructorValue { constructor: path, span: _ } => match constant_ref(ctx, path) {
+            Some(reference) => ExprKind::NameRef { name_ref: reference },
+            None => ExprKind::ConstructorValue { constructor: unresolved_constructor(ctx, path) },
         },
         Constr { constructor: path, args, span: _ } => {
             let result: Vec[Expr] = Vec::[];
